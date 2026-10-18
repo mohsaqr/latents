@@ -1,0 +1,523 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/18/2026  12:40 AM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents within-person z-scores, two-level VVI, 2 x 2;
+  DATA: FILE = scaled.dat;
+  VARIABLE:
+   NAMES = id g y1 y2 y3;
+   USEVARIABLES = y1 y2 y3;
+   IDVARIABLE = id;
+   CLUSTER = g;
+   WITHIN = y1 y2 y3;
+   CLASSES = cb(2) cw(2);
+   BETWEEN = cb;
+  ANALYSIS:
+   TYPE = TWOLEVEL MIXTURE;
+   STARTS = 400 80;
+   STSEED = 20261018;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %WITHIN%
+   %OVERALL%
+   %BETWEEN%
+   %OVERALL%
+   cw#1 ON cb;
+  MODEL cw:
+   %WITHIN%
+   %cw#1%
+   [y1 y2 y3]; y1 y2 y3;
+   %cw#2%
+   [y1 y2 y3]; y1 y2 y3;
+  SAVEDATA:
+   FILE = scaled-posteriors.dat;
+   SAVE = CPROBABILITIES;
+   FORMAT = F20.12;
+   RESULTS = scaled-results.dat;
+
+
+
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class: Y1
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class: Y2
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class: Y3
+*** WARNING in MODEL command
+  At least one variable is uncorrelated with all other variables within class.
+  Check that this is what is intended.
+   4 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+latents within-person z-scores, two-level VVI, 2 x 2;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         900
+
+Number of dependent variables                                    3
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           2
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2          Y3
+
+Categorical latent variables
+   CB          CW
+
+Variables with special functions
+
+  Cluster variable      G
+  ID variable           ID
+
+  Within variables
+   Y1          Y2          Y3
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                               10000
+  Convergence criteria
+    Loglikelihood change                                 0.100D-07
+    Relative loglikelihood change                        0.100D-08
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent Variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+Integration Specifications
+  Type                                                    STANDARD
+  Number of integration points                                  15
+  Dimensions of numerical integration                            0
+  Adaptive quadrature                                           ON
+Random Starts Specifications
+  Number of initial stage random starts                        400
+  Number of final stage optimizations                           80
+  Number of initial stage iterations                            10
+  Initial stage convergence criterion                    0.100D+01
+  Random starts scale                                    0.500D+01
+  Random seed for generating random starts                20261018
+Parameterization                                             LOGIT
+Cholesky                                                       OFF
+
+Input data file(s)
+  scaled.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of clusters                         60
+
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    0.000      -0.114      -2.686    0.11%      -0.875     -0.224      0.056
+             900.000       0.933      -0.401       2.566    0.11%       0.285      0.858
+     Y2                    0.000       0.135      -2.605    0.11%      -0.810     -0.298     -0.028
+             900.000       0.933      -0.287       2.625    0.11%       0.221      0.827
+     Y3                    0.000       0.019      -2.468    0.11%      -0.851     -0.271      0.009
+             900.000       0.933      -0.371       2.553    0.11%       0.271      0.839
+
+RANDOM STARTS RESULTS RANKED FROM THE BEST TO THE WORST LOGLIKELIHOOD VALUES
+
+Final stage loglikelihood values at local maxima, seeds, and initial stage start numbers:
+
+           -3684.022  969607           177
+           -3684.022  911097           84
+           -3684.022  602853           24
+           -3684.022  154059           257
+           -3684.022  167633           204
+           -3684.022  340421           149
+           -3684.022  532587           304
+           -3684.022  349687           371
+           -3684.022  47076            229
+           -3684.022  991827           174
+           -3684.022  535162           62
+           -3684.022  108574           268
+           -3684.022  550178           65
+           -3684.022  120776           178
+           -3684.022  133643           323
+           -3684.022  43685            218
+           -3684.022  319467           241
+           -3684.022  29445            369
+           -3684.022  532143           326
+           -3684.022  698433           222
+           -3684.022  858210           267
+           -3684.022  454202           156
+           -3684.022  445808           134
+           -3684.022  655780           37
+           -3684.022  289521           111
+           -3684.022  400423           295
+           -3684.022  831986           17
+           -3684.022  534665           316
+           -3684.022  225308           183
+           -3684.022  688000           51
+
+50 perturbed starting value run(s) did not converge or were rejected in the third stage.
+
+
+
+THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED.  RERUN WITH AT LEAST TWICE THE
+RANDOM STARTS TO CHECK THAT THE BEST LOGLIKELIHOOD IS STILL OBTAINED AND REPLICATED.
+
+     THE STANDARD ERRORS OF THE MODEL PARAMETER ESTIMATES MAY NOT BE
+     TRUSTWORTHY FOR SOME PARAMETERS DUE TO A NON-POSITIVE DEFINITE
+     FIRST-ORDER DERIVATIVE PRODUCT MATRIX.  THIS MAY BE DUE TO THE STARTING
+     VALUES BUT MAY ALSO BE AN INDICATION OF MODEL NONIDENTIFICATION.  THE
+     CONDITION NUMBER IS       0.000D+00.  PROBLEM INVOLVING THE FOLLOWING PARAMETER:
+     Parameter 8, %WITHIN% %CB#1.CW#2%: [ Y2 ] (equality/label)
+
+     THE FOLLOWING SET OF PARAMETERS IS INVOLVED IN THE NON-IDENTIFICATION
+     Parameter 1, %WITHIN% %CB#1.CW#1%: [ Y1 ] (equality/label)
+     Parameter 2, %WITHIN% %CB#1.CW#1%: [ Y2 ] (equality/label)
+     Parameter 7, %WITHIN% %CB#1.CW#2%: [ Y1 ] (equality/label)
+     Parameter 8, %WITHIN% %CB#1.CW#2%: [ Y2 ] (equality/label)
+
+     THE CORRELATIONS IN TECH3 BETWEEN THE FOLLOWING PARAMETERS ARE ABOVE 0.99 BY ABSOLUTE VALUE.
+     MORE LARGE CORRELATIONS CAN BE FOUND USING THE MLF ESTIMATOR AND CONDITION=0.
+     Parameter 7, %WITHIN% %CB#1.CW#2%: [ Y1 ] (equality/label) AND Parameter 2, %WITHIN% %CB#1.CW#1%: [ Y2 ] (equality/
+     Parameter 15, %BETWEEN%: CW#1 ON CB#1 AND Parameter 13, %BETWEEN%: [ CB#1 ]
+     PARAMETER NUMBERS USED IN TECH3 ARE FOUND IN TECH1.
+
+     ONE OR MORE MULTINOMIAL LOGIT PARAMETERS WERE FIXED TO AVOID SINGULARITY
+     OF THE INFORMATION MATRIX.  THE SINGULARITY IS MOST LIKELY BECAUSE THE
+     MODEL IS NOT IDENTIFIED, OR BECAUSE OF EMPTY CELLS IN THE JOINT
+     DISTRIBUTION OF THE CATEGORICAL LATENT VARIABLES AND ANY INDEPENDENT
+     VARIABLES.  THE FOLLOWING PARAMETERS WERE FIXED:
+     Parameter 13, %BETWEEN%: [ CB#1 ]
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       15
+
+Loglikelihood
+
+          H0 Value                       -3684.022
+          H0 Scaling Correction Factor      0.9176
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                    7398.043
+          Bayesian (BIC)                  7470.079
+          Sample-Size Adjusted BIC        7422.442
+            (n* = (n + 2) / 24)
+
+
+
+MODEL RESULTS USE THE LATENT CLASS VARIABLE ORDER
+
+   CB  CW
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASS PATTERNS
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+  Latent Class
+    Pattern
+
+    1  1        465.33869          0.51704
+    1  2        249.52890          0.27725
+    2  1        120.51081          0.13390
+    2  2         64.62160          0.07180
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR EACH LATENT CLASS VARIABLE
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+  Latent Class
+    Variable    Class
+
+    CB             1       714.86755          0.79430
+                   2       185.13242          0.20570
+    CW             1       585.84949          0.65094
+                   2       314.15051          0.34906
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASS PATTERNS
+BASED ON THEIR MOST LIKELY LATENT CLASS PATTERN
+
+Class Counts and Proportions
+
+  Latent Class
+    Pattern
+
+    1  1              618          0.68667
+    1  2              282          0.31333
+    2  1                0          0.00000
+    2  2                0          0.00000
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR EACH LATENT CLASS VARIABLE
+BASED ON THEIR MOST LIKELY LATENT CLASS PATTERN
+
+  Latent Class
+    Variable    Class
+
+    CB             1             900          1.00000
+                   2               0          0.00000
+    CW             1             618          0.68667
+                   2             282          0.31333
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.367
+
+
+C-SPECIFIC CLASSIFICATION RESULTS
+
+Classification Quality for CB
+
+     Entropy                         0.267
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.794    0.206
+    2   0.000    0.000
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   1.000    0.000
+    2   1.000    0.000
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1     13.816    0.000
+    2     13.816    0.000
+
+Classification Quality for CW
+
+     Entropy                         0.467
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.853    0.147
+    2   0.208    0.792
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.900    0.100
+    2   0.289    0.711
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      2.196    0.000
+    2     -0.900    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+Latent Class Pattern 1 1
+
+ Means
+    Y1                 0.405      0.200      2.027      0.043
+    Y2                 0.286      0.232      1.233      0.218
+    Y3                -0.209      0.190     -1.102      0.271
+
+ Variances
+    Y1                 0.634      0.079      8.026      0.000
+    Y2                 0.856      0.039     21.829      0.000
+    Y3                 0.834      0.073     11.471      0.000
+
+Latent Class Pattern 1 2
+
+ Means
+    Y1                -0.755      0.628     -1.202      0.229
+    Y2                -0.533      0.276     -1.928      0.054
+    Y3                 0.389      0.175      2.231      0.026
+
+ Variances
+    Y1                 0.616      0.390      1.580      0.114
+    Y2                 0.641      0.102      6.273      0.000
+    Y3                 0.885      0.088     10.051      0.000
+
+Latent Class Pattern 2 1
+
+ Means
+    Y1                 0.405      0.200      2.027      0.043
+    Y2                 0.286      0.232      1.233      0.218
+    Y3                -0.209      0.190     -1.102      0.271
+
+ Variances
+    Y1                 0.634      0.079      8.026      0.000
+    Y2                 0.856      0.039     21.829      0.000
+    Y3                 0.834      0.073     11.471      0.000
+
+Latent Class Pattern 2 2
+
+ Means
+    Y1                -0.755      0.628     -1.202      0.229
+    Y2                -0.533      0.276     -1.928      0.054
+    Y3                 0.389      0.175      2.231      0.026
+
+ Variances
+    Y1                 0.616      0.390      1.580      0.114
+    Y2                 0.641      0.102      6.273      0.000
+    Y3                 0.885      0.088     10.051      0.000
+
+Between Level
+
+Categorical Latent Variables
+
+Within Level
+
+ Intercepts
+    CW#1               0.623      1.300      0.479      0.632
+
+Between Level
+
+ CW#1       ON
+    CB#1               0.000      0.000      3.545      0.000
+
+ Means
+    CB#1               1.351      0.000    999.000    999.000
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.412E-04
+       (ratio of smallest to largest eigenvalue)
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    H0 Scaling Correction Factor for MLR
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Entropy
+    Condition Number
+
+  Save file
+    scaled-results.dat
+
+  Save file format           Free
+
+
+SAVEDATA INFORMATION
+
+
+  Save file
+    scaled-posteriors.dat
+
+  Order and format of variables
+
+    Y1             F20.12
+    Y2             F20.12
+    Y3             F20.12
+    CPROB1         F20.12
+    CPROB2         F20.12
+    CPROB3         F20.12
+    CPROB4         F20.12
+    MLCCB          F20.12
+    MLCCW          F20.12
+    MLCJOINT       F20.12
+    ID             I4
+    G              I3
+
+  Save file format
+    10F20.12 I4 I3
+
+  Save file record length    10000
+
+  Save missing symbol        *
+
+
+     Beginning Time:  00:40:45
+        Ending Time:  00:41:02
+       Elapsed Time:  00:00:17
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

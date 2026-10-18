@@ -107,8 +107,12 @@ comparison requires, including a \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} p
 measurement blocks differ, are held at different values, or are held in
 only one of the two models.}
 \item{\code{latents_incomparable_models}}{Two models were fitted to different
-data, or differ in covariance structure or centering mode where the
-comparison requires them to match.}
+data, or differ in covariance structure, centering or scaling mode, or
+\code{drop_empty} where the comparison requires them to match.}
+\item{\code{latents_parallel_failure}}{With \code{cores} above one, a worker
+process failed as a whole (for example, it ran out of memory), so some
+candidates of an enumeration were lost. A candidate's own estimation
+error is recorded in the grid instead.}
 \item{\code{latents_reversed_likelihood}}{The model with more parameters has
 the lower likelihood, so at least one fit is at a local optimum and the
 comparison is meaningless.}
@@ -268,6 +272,9 @@ beyond roundoff. This indicates a defect and should be reported.}
 not valid at that parameter.}
 \item{\code{latents_small_classes}}{A profile or group class has effective
 membership below one, so it is supported by less than one observation.}
+\item{\code{latents_all_starts_boundary}}{\code{boundary = "exclude"} found every
+start with a variance at \code{min_variance}, so none could be set aside and
+the best start across all of them is reported.}
 \item{\code{latents_weak_class}}{\code{multilpa(family = "additive")} only: a
 group class is supported by fewer than 50 effective groups (see
 \code{effective_groups} in \code{\link[=get_results]{get_results()}}), because it is

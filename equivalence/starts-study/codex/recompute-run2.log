@@ -1,0 +1,617 @@
+'data.frame':	58000 obs. of  17 variables:
+ $ dataset             : chr  "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" ...
+ $ family              : chr  "lca" "lca" "lca" "lca" ...
+ $ true_k              : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ separation          : chr  "high" "high" "high" "high" ...
+ $ n                   : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ rep                 : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ k                   : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ start               : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ log_likelihood      : num  -2977 -2977 -2977 -2977 -2977 ...
+ $ converged           : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+ $ boundary            : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
+ $ final_log_likelihood: num  -2977 -2977 -2977 -2977 -2977 ...
+ $ n_parameters        : int  6 6 6 6 6 6 6 6 6 6 ...
+ $ smallest_class      : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ entropy             : num  NA NA NA NA NA NA NA NA NA NA ...
+ $ seconds             : num  5.64 5.64 5.64 5.64 5.64 ...
+ $ warnings            : chr  "" "" "" "" ...
+               dataset family true_k separation    n rep k start log_likelihood converged boundary final_log_likelihood n_parameters smallest_class entropy seconds warnings
+1 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     1 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+2 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     2 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+3 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     3 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+4 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     4 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+5 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     5 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+6 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     6 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+   dataset             family              true_k            separation              n                   rep                   k                  start       
+ Length:58000       Length:58000       Min.   :2.00000000   Length:58000       Min.   : 300.00000   Min.   :1.00000000   Min.   :1.00000000   Min.   :  1.00  
+ Class :character   Class :character   1st Qu.:2.00000000   Class :character   1st Qu.: 300.00000   1st Qu.:1.00000000   1st Qu.:2.00000000   1st Qu.:125.75  
+ Mode  :character   Mode  :character   Median :3.00000000   Mode  :character   Median : 300.00000   Median :1.00000000   Median :3.00000000   Median :250.50  
+                                       Mean   :2.86206897                      Mean   : 541.37931   Mean   :1.03448276   Mean   :3.36206897   Mean   :250.50  
+                                       3rd Qu.:4.00000000                      3rd Qu.:1000.00000   3rd Qu.:1.00000000   3rd Qu.:4.00000000   3rd Qu.:375.25  
+                                       Max.   :4.00000000                      Max.   :1000.00000   Max.   :2.00000000   Max.   :6.00000000   Max.   :500.00  
+                                                                                                                                                              
+ log_likelihood         converged        boundary       final_log_likelihood    n_parameters        smallest_class           entropy         seconds              warnings        
+ Min.   :-7725.075997   Mode :logical   Mode :logical   Min.   :-7324.698206   Min.   : 6.0000000   Min.   :   1.000000   Min.   : NA     Min.   :  1.0510000   Length:58000      
+ 1st Qu.:-3596.817230   FALSE:23        FALSE:57958     1st Qu.:-3486.334607   1st Qu.:17.0000000   1st Qu.:  14.000000   1st Qu.: NA     1st Qu.: 11.9392500   Class :character  
+ Median :-1901.671899   TRUE :57977     TRUE :42        Median :-1901.671897   Median :26.0000000   Median :  35.500000   Median : NA     Median : 45.2335000   Mode  :character  
+ Mean   :-2763.190504                                   Mean   :-2756.435369   Mean   :26.3275862   Mean   : 118.681034   Mean   :NaN     Mean   : 79.0767241                     
+ 3rd Qu.:-1197.812450                                   3rd Qu.:-1196.227662   3rd Qu.:35.0000000   3rd Qu.: 117.750000   3rd Qu.: NA     3rd Qu.:128.5002500                     
+ Max.   : -743.797824                                   Max.   : -743.797824   Max.   :53.0000000   Max.   :1000.000000   Max.   : NA     Max.   :508.8750000                     
+                                                                                                                          NA's   :58000                                           
+             dataset               family               true_k           separation                    n                  rep                    k                start 
+         "character"          "character"            "integer"          "character"            "integer"            "integer"            "integer"            "integer" 
+      log_likelihood            converged             boundary final_log_likelihood         n_parameters       smallest_class              entropy              seconds 
+           "numeric"            "logical"            "logical"            "numeric"            "integer"            "integer"            "numeric"            "numeric" 
+            warnings 
+         "character" 
+DATASETS 29 CELLS 116 ROWS 58000 
+
+ 1  2 
+28  1 
+, , separation = high, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 1 1 1
+
+, , separation = low, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 1 1 1
+
+, , separation = moderate, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 2 1 1
+
+, , separation = high, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 1 0
+   lpa 0 0 1
+
+, , separation = low, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 0 0
+   lpa 1 1 1
+
+, , separation = moderate, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 0 0
+   lpa 1 1 0
+
+BLOCKS verified 9396 
+SELECTION verified 2349 
+SUMMARIES verified
+REACH COUNTS
+   family relative_k n_starts hits total
+1     lca         -1       10  713   715
+2     lpa         -1       10  833   880
+3     lca          0       10  670   715
+4     lpa          0       10  826   880
+5     lca          1       10  465   715
+6     lpa          1       10  279   880
+7     lca          2       10  400   715
+8     lpa          2       10  189   880
+9     lca         -1       20  338   338
+10    lpa         -1       20  401   416
+11    lca          0       20  325   338
+12    lpa          0       20  391   416
+13    lca          1       20  279   338
+14    lpa          1       20  174   416
+15    lca          2       20  243   338
+16    lpa          2       20  119   416
+ALL FAMILY REACH
+  relative_k n_starts hits total
+1         -1       10 1546  1595
+2          0       10 1496  1595
+3          1       10  744  1595
+4          2       10  589  1595
+5         -1       20  739   754
+6          0       20  716   754
+7          1       20  453   754
+8          2       20  362   754
+TRUE K FAILING DATASETS
+             dataset n_starts reached.n reached.min           gap.n         gap.min
+1 lca_k3_low_n300_r1       10        39           0 39.000000000000 -1.851119731113
+2 lca_k4_low_n300_r1       10         6           0  6.000000000000 -0.232991487673
+3 lpa_k4_low_n300_r1       10        54           0 54.000000000000 -5.557613715492
+4 lca_k3_low_n300_r1       20        13           0 13.000000000000 -1.149333460495
+5 lpa_k4_low_n300_r1       20        25           0 25.000000000000 -5.314897535634
+SELECT DIRECTIONS
+, , direction = -1
+
+      n_starts
+family  10  20
+   lca   0   0
+   lpa 105  47
+
+, , direction = 0
+
+      n_starts
+family  10  20
+   lca 715 338
+   lpa 775 369
+
+SELECT BY K
+   family true_k n_starts fewer more true_run true_ref total
+1     lca      2       10     0    0      275      275   330
+2     lpa      2       10     0    0      330      330   330
+3     lca      3       10     0    0      165      165   220
+4     lpa      3       10     0    0      220      220   275
+5     lca      4       10     0    0        0        0   165
+6     lpa      4       10   105    0      160       55   275
+7     lca      2       20     0    0      130      130   156
+8     lpa      2       20     0    0      156      156   156
+9     lca      3       20     0    0       78       78   104
+10    lpa      3       20     0    0      104      104   130
+11    lca      4       20     0    0        0        0    78
+12    lpa      4       20    47    0       73       26   130
+CHANGED CHOICES
+                  dataset n_starts chosen_k reference_k true_k block
+1     lpa_k4_high_n300_r1       10        4           5      4    51
+2 lpa_k4_moderate_n300_r1       10        4           5      4    54
+3     lpa_k4_high_n300_r1       20        4           5      4    22
+4 lpa_k4_moderate_n300_r1       20        4           5      4    25
+CELL DIAGNOSTICS
+                  dataset family true_k separation    n k n_parameters smallest_class seconds                               warnings       reference     selected_ll
+     lca_k2_high_n1000_r1    lca      2       high 1000 1            6           1000   5.636                                        -2977.473065567 -2977.473065567
+     lca_k2_high_n1000_r1    lca      2       high 1000 2           13            417  19.534                                        -2462.552405324 -2462.552405325
+     lca_k2_high_n1000_r1    lca      2       high 1000 3           20             40 184.786                                        -2457.103325669 -2457.103325669
+     lca_k2_high_n1000_r1    lca      2       high 1000 4           27             33 279.082                                        -2453.736635533 -2453.736635533
+      lca_k2_high_n300_r1    lca      2       high  300 1            6            300   2.604                                         -915.586729295  -915.586729295
+      lca_k2_high_n300_r1    lca      2       high  300 2           13            117  10.724                                         -752.090907173  -752.090907173
+      lca_k2_high_n300_r1    lca      2       high  300 3           20             30  56.405                                         -747.916847234  -747.916847234
+      lca_k2_high_n300_r1    lca      2       high  300 4           27             14 131.414                                         -743.797823738  -743.797823738
+      lca_k2_low_n1000_r1    lca      2        low 1000 1            6           1000   3.480                                        -3918.477179478 -3918.477179478
+      lca_k2_low_n1000_r1    lca      2        low 1000 2           13            159  55.839                                        -3887.220978405 -3887.220978568
+      lca_k2_low_n1000_r1    lca      2        low 1000 3           20             78 176.633                                        -3882.625746545 -3882.625746545
+      lca_k2_low_n1000_r1    lca      2        low 1000 4           27             62 456.288                                        -3878.785562581 -3878.785562581
+       lca_k2_low_n300_r1    lca      2        low  300 1            6            300   3.070                                        -1151.073465384 -1151.073465384
+       lca_k2_low_n300_r1    lca      2        low  300 2           13             88  45.631                                        -1139.069533721 -1139.069533772
+       lca_k2_low_n300_r1    lca      2        low  300 3           20             38  88.063                                        -1133.088689424 -1133.088689513
+       lca_k2_low_n300_r1    lca      2        low  300 4           27             20 141.835                                        -1127.748012125 -1127.748012125
+ lca_k2_moderate_n1000_r1    lca      2   moderate 1000 1            6           1000   3.679                                        -3597.265513254 -3597.265513254
+ lca_k2_moderate_n1000_r1    lca      2   moderate 1000 2           13            435  27.866                                        -3449.357637913 -3449.357638229
+ lca_k2_moderate_n1000_r1    lca      2   moderate 1000 3           20            155 181.910                                        -3445.992253613 -3445.992253613
+ lca_k2_moderate_n1000_r1    lca      2   moderate 1000 4           27             15 508.875                                        -3443.285110671 -3443.285110671
+  lca_k2_moderate_n300_r1    lca      2   moderate  300 1            6            300   2.890                                        -1054.589237693 -1054.589237693
+  lca_k2_moderate_n300_r1    lca      2   moderate  300 2           13            127  26.392                                        -1015.415063703 -1015.415063710
+  lca_k2_moderate_n300_r1    lca      2   moderate  300 3           20             67  68.278                                        -1005.626239865 -1005.626239917
+  lca_k2_moderate_n300_r1    lca      2   moderate  300 4           27             15 139.972                                        -1001.995536118 -1001.995536118
+     lca_k3_high_n1000_r1    lca      3       high 1000 2           13            174  18.850                                        -3273.492696214 -3273.492696214
+     lca_k3_high_n1000_r1    lca      3       high 1000 3           20            176  21.381                                        -2870.044397983 -2870.044398000
+     lca_k3_high_n1000_r1    lca      3       high 1000 4           27             31 193.910                                        -2864.017796873 -2864.017796873
+     lca_k3_high_n1000_r1    lca      3       high 1000 5           34             31 287.924                                        -2859.310393000 -2859.310393000
+      lca_k3_high_n300_r1    lca      3       high  300 2           13             74  10.700                                         -990.854041503  -990.854041511
+      lca_k3_high_n300_r1    lca      3       high  300 3           20             76  15.558                                         -892.597967296  -892.597967296
+      lca_k3_high_n300_r1    lca      3       high  300 4           27             10  54.448                                         -886.079753694  -886.079753699
+      lca_k3_high_n300_r1    lca      3       high  300 5           34             10  97.769                                         -881.235173850  -881.235173850
+       lca_k3_low_n300_r1    lca      3        low  300 2           13             21  51.851                                        -1207.840308305 -1207.840308425
+       lca_k3_low_n300_r1    lca      3        low  300 3           20              9 136.633                                        -1201.705989003 -1201.705989003
+       lca_k3_low_n300_r1    lca      3        low  300 4           27             16 155.694                                        -1197.507958804 -1197.507958804
+       lca_k3_low_n300_r1    lca      3        low  300 5           34             14 195.683                                        -1192.386770024 -1192.386770024
+  lca_k3_moderate_n300_r1    lca      3   moderate  300 2           13             65  26.384                                        -1097.160964503 -1097.160964555
+  lca_k3_moderate_n300_r1    lca      3   moderate  300 3           20             51  25.747                                        -1050.901841296 -1050.901841297
+  lca_k3_moderate_n300_r1    lca      3   moderate  300 4           27             30  70.778                                        -1045.419770668 -1045.419770668
+  lca_k3_moderate_n300_r1    lca      3   moderate  300 5           34             26 134.453                                        -1039.809766196 -1039.809766229
+      lca_k4_high_n300_r1    lca      4       high  300 3           20             66  14.112                                         -904.272873095  -904.272873098
+      lca_k4_high_n300_r1    lca      4       high  300 4           27             25  44.836                                         -887.597839677  -887.597839708
+      lca_k4_high_n300_r1    lca      4       high  300 5           34             16  84.268                                         -883.321308774  -883.321308774
+      lca_k4_high_n300_r1    lca      4       high  300 6           41             11 109.407                                         -879.352217807  -879.352217807
+       lca_k4_low_n300_r1    lca      4        low  300 3           20             14 122.777                                        -1217.216973575 -1217.216973629
+       lca_k4_low_n300_r1    lca      4        low  300 4           27             20 159.944                                        -1213.129454704 -1213.129454704
+       lca_k4_low_n300_r1    lca      4        low  300 5           34             11 195.795                                        -1210.197012770 -1210.197012770
+       lca_k4_low_n300_r1    lca      4        low  300 6           41             20 282.352                                        -1207.415111172 -1207.415111172
+  lca_k4_moderate_n300_r1    lca      4   moderate  300 3           20             60  38.586                                        -1131.200743208 -1131.200743315
+  lca_k4_moderate_n300_r1    lca      4   moderate  300 4           27             39 139.771                                        -1127.281715171 -1127.281715205
+  lca_k4_moderate_n300_r1    lca      4   moderate  300 5           34             14 183.089                                        -1123.305754828 -1123.305754828
+  lca_k4_moderate_n300_r1    lca      4   moderate  300 6           41             19 234.137                                        -1120.533610682 -1120.533610682
+      lpa_k2_high_n300_r1    lpa      2       high  300 1            8            300   1.061                                        -2063.013446666 -2063.013446666
+      lpa_k2_high_n300_r1    lpa      2       high  300 2           17            120   5.660                                        -1817.160686765 -1817.160686765
+      lpa_k2_high_n300_r1    lpa      2       high  300 3           26              1  48.193 latents_boundary;latents_small_classes -1792.669461664 -1792.669461664
+      lpa_k2_high_n300_r1    lpa      2       high  300 4           35              3  69.902                                        -1797.011216342 -1797.011216342
+      lpa_k2_low_n1000_r1    lpa      2        low 1000 1            8           1000   1.473                                        -6192.296323868 -6192.296323868
+      lpa_k2_low_n1000_r1    lpa      2        low 1000 2           17            432  14.641                                        -6098.930957639 -6098.930957926
+      lpa_k2_low_n1000_r1    lpa      2        low 1000 3           26              3 127.529                                        -6083.018237466 -6083.018237466
+      lpa_k2_low_n1000_r1    lpa      2        low 1000 4           35              4 208.609                                        -6076.231859592 -6076.231859592
+       lpa_k2_low_n300_r1    lpa      2        low  300 1            8            300   1.202                                        -1815.785414714 -1815.785414714
+       lpa_k2_low_n300_r1    lpa      2        low  300 2           17            136  11.337                                        -1788.535091003 -1788.535091003
+       lpa_k2_low_n300_r1    lpa      2        low  300 3           26              1  42.519 latents_boundary;latents_small_classes -1765.487410994 -1765.487410994
+       lpa_k2_low_n300_r1    lpa      2        low  300 4           35              1  57.887 latents_boundary;latents_small_classes -1754.887673728 -1754.887673728
+ lpa_k2_moderate_n1000_r1    lpa      2   moderate 1000 1            8           1000   1.464                                        -6554.564980649 -6554.564980649
+ lpa_k2_moderate_n1000_r1    lpa      2   moderate 1000 2           17            385   9.859                                        -6198.742147384 -6198.742147384
+ lpa_k2_moderate_n1000_r1    lpa      2   moderate 1000 3           26             18  98.837                                        -6189.907115329 -6189.907115329
+ lpa_k2_moderate_n1000_r1    lpa      2   moderate 1000 4           35             18 223.503                                        -6180.751372523 -6180.751372523
+  lpa_k2_moderate_n300_r1    lpa      2   moderate  300 1            8            300   1.267                                        -2002.697177342 -2002.697177342
+  lpa_k2_moderate_n300_r1    lpa      2   moderate  300 2           17            108  11.263                                        -1888.845376488 -1888.845376642
+  lpa_k2_moderate_n300_r1    lpa      2   moderate  300 3           26             49  44.447                                        -1877.809037859 -1877.809037878
+  lpa_k2_moderate_n300_r1    lpa      2   moderate  300 4           35             26  39.971                                        -1867.341841282 -1867.341841430
+  lpa_k2_moderate_n300_r2    lpa      2   moderate  300 1            8            300   1.051                                        -1867.567108352 -1867.567108352
+  lpa_k2_moderate_n300_r2    lpa      2   moderate  300 2           17            114   6.788                                        -1751.507274318 -1751.507274318
+  lpa_k2_moderate_n300_r2    lpa      2   moderate  300 3           26              7  30.945                                        -1735.193407117 -1735.193407136
+  lpa_k2_moderate_n300_r2    lpa      2   moderate  300 4           35              1  40.319 latents_boundary;latents_small_classes -1714.071629852 -1714.071629852
+      lpa_k3_high_n300_r1    lpa      3       high  300 2           17             60   9.517                                        -2249.461822813 -2249.461822813
+      lpa_k3_high_n300_r1    lpa      3       high  300 3           26             60  11.847                                        -2065.089672598 -2065.089672598
+      lpa_k3_high_n300_r1    lpa      3       high  300 4           35              2  73.176                                        -2055.788192847 -2055.788192847
+      lpa_k3_high_n300_r1    lpa      3       high  300 5           44              2  98.755                                        -2041.030319821 -2041.030319821
+      lpa_k3_low_n1000_r1    lpa      3        low 1000 2           17            165  34.335                                        -6179.436660800 -6179.436661158
+      lpa_k3_low_n1000_r1    lpa      3        low 1000 3           26            225  45.671                                        -6117.146881657 -6117.146881657
+      lpa_k3_low_n1000_r1    lpa      3        low 1000 4           35             67 240.212                                        -6107.567316710 -6107.567316820
+      lpa_k3_low_n1000_r1    lpa      3        low 1000 5           44              5 169.980                                        -6095.960467300 -6095.960467300
+       lpa_k3_low_n300_r1    lpa      3        low  300 2           17             59  10.713                                        -1850.341494629 -1850.341494630
+       lpa_k3_low_n300_r1    lpa      3        low  300 3           26             70  17.715                                        -1827.285615591 -1827.285615641
+       lpa_k3_low_n300_r1    lpa      3        low  300 4           35             26  32.502                                        -1814.622756564 -1814.622756601
+       lpa_k3_low_n300_r1    lpa      3        low  300 5           44             31  41.168                                        -1803.063981699 -1803.063981726
+ lpa_k3_moderate_n1000_r1    lpa      3   moderate 1000 2           17            185  10.314                                        -6939.275397979 -6939.275397979
+ lpa_k3_moderate_n1000_r1    lpa      3   moderate 1000 3           26            198  12.448                                        -6670.464732127 -6670.464732127
+ lpa_k3_moderate_n1000_r1    lpa      3   moderate 1000 4           35             11 168.379                                        -6660.026082158 -6660.026082212
+ lpa_k3_moderate_n1000_r1    lpa      3   moderate 1000 5           44             16 188.293                                        -6648.212229520 -6648.212229520
+  lpa_k3_moderate_n300_r1    lpa      3   moderate  300 2           17             59   6.634                                        -2028.845200282 -2028.845200282
+  lpa_k3_moderate_n300_r1    lpa      3   moderate  300 3           26             62   9.138                                        -1943.321706910 -1943.321706916
+  lpa_k3_moderate_n300_r1    lpa      3   moderate  300 4           35             16  36.975                                        -1933.521790005 -1933.521790192
+  lpa_k3_moderate_n300_r1    lpa      3   moderate  300 5           44              1  52.834 latents_boundary;latents_small_classes -1914.498417764 -1914.498417764
+     lpa_k4_high_n1000_r1    lpa      4       high 1000 3           26            197  12.900                                        -7324.698206272 -7324.698206273
+     lpa_k4_high_n1000_r1    lpa      4       high 1000 4           35             97  11.970                                        -7066.158372709 -7066.158372709
+     lpa_k4_high_n1000_r1    lpa      4       high 1000 5           44              1  89.956 latents_boundary;latents_small_classes -7041.435406785 -7041.435406785
+     lpa_k4_high_n1000_r1    lpa      4       high 1000 6           53              3 156.306                                        -7043.379868762 -7043.379868762
+      lpa_k4_high_n300_r1    lpa      4       high  300 3           26             60   9.391                                        -2172.091526132 -2172.091526138
+      lpa_k4_high_n300_r1    lpa      4       high  300 4           35             36   9.397                                        -2076.720409859 -2076.720409860
+      lpa_k4_high_n300_r1    lpa      4       high  300 5           44              1  36.852 latents_boundary;latents_small_classes -2048.678108985 -2048.678108985
+      lpa_k4_high_n300_r1    lpa      4       high  300 6           53              1  59.194 latents_boundary;latents_small_classes -2038.490084533 -2038.490084533
+      lpa_k4_low_n1000_r1    lpa      4        low 1000 3           26            222  31.263                                        -6182.869786623 -6182.869786623
+      lpa_k4_low_n1000_r1    lpa      4        low 1000 4           35             82  51.892                                        -6155.681922106 -6155.681922252
+      lpa_k4_low_n1000_r1    lpa      4        low 1000 5           44             22  81.981                                        -6139.322017543 -6139.322017591
+      lpa_k4_low_n1000_r1    lpa      4        low 1000 6           53             22 180.620                                        -6125.783192807 -6125.783192807
+       lpa_k4_low_n300_r1    lpa      4        low  300 3           26             34  35.367                                        -1885.145614650 -1885.145614650
+       lpa_k4_low_n300_r1    lpa      4        low  300 4           35              8  47.291                                        -1872.111591833 -1872.111591833
+       lpa_k4_low_n300_r1    lpa      4        low  300 5           44              1  91.450 latents_boundary;latents_small_classes -1847.837270430 -1847.837270430
+       lpa_k4_low_n300_r1    lpa      4        low  300 6           53              1  64.644 latents_boundary;latents_small_classes -1831.104885804 -1831.104885804
+  lpa_k4_moderate_n300_r1    lpa      4   moderate  300 3           26             56   9.717                                        -2035.042576167 -2035.042576169
+  lpa_k4_moderate_n300_r1    lpa      4   moderate  300 4           35             35  11.510                                        -2002.952066268 -2002.952066272
+  lpa_k4_moderate_n300_r1    lpa      4   moderate  300 5           44              1  36.804 latents_boundary;latents_small_classes -1973.109835714 -1973.109835714
+  lpa_k4_moderate_n300_r1    lpa      4   moderate  300 6           53              1  46.339 latents_boundary;latents_small_classes -1967.839352422 -1967.839352422
+ selected_difference best_hits best_converged best_boundary failed nonconverged ward_reached
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -2.71484168479e-10       477            477             0      0            0         TRUE
+  -3.68345354218e-11        57             57             0      0            0        FALSE
+   0.00000000000e+00        19             19             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -1.14141585073e-10       500            500             0      0            0         TRUE
+  -3.41060513165e-13       111            111             0      0            0        FALSE
+   0.00000000000e+00        38             38             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -1.62938249559e-07       406            406             0      0            0        FALSE
+   0.00000000000e+00        66             66             0      0            1        FALSE
+   0.00000000000e+00        16             16             0      0            1        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -5.03628143633e-08       500            500             0      0            0         TRUE
+  -8.82971562532e-08       133            133             0      0            0        FALSE
+   0.00000000000e+00       131            131             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -3.15813849738e-07       446            446             0      0            0         TRUE
+   0.00000000000e+00        27             27             0      0            9        FALSE
+   0.00000000000e+00         2              2             0      0            9        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -7.00458713254e-09       463            463             0      0            0         TRUE
+  -5.22270511283e-08       430            430             0      0            0         TRUE
+   0.00000000000e+00       133            133             0      0            0         TRUE
+  -7.73070496507e-11       217            217             0      0            0        FALSE
+  -1.70211933437e-08       467            467             0      0            0         TRUE
+   0.00000000000e+00        30             30             0      0            0        FALSE
+   0.00000000000e+00        42             42             0      0            0        FALSE
+  -8.56380211189e-09       248            248             0      0            0         TRUE
+  -3.62319951819e-10       481            481             0      0            0         TRUE
+  -5.19582954439e-09       206            206             0      0            0        FALSE
+   0.00000000000e+00        58             58             0      0            0        FALSE
+  -1.20703361972e-07       325            325             0      0            0         TRUE
+   0.00000000000e+00        19             19             0      0            0        FALSE
+   0.00000000000e+00        21             21             0      0            0        FALSE
+   0.00000000000e+00        23             23             0      0            0        FALSE
+  -5.20522007719e-08       167            167             0      0            0        FALSE
+  -7.98991095508e-10       485            485             0      0            0         TRUE
+   0.00000000000e+00        30             30             0      0            0        FALSE
+  -3.35039658239e-08        40             40             0      0            0        FALSE
+  -2.94255642075e-09       492            492             0      0            0         TRUE
+  -3.06415586238e-08       253            253             0      0            0         TRUE
+   0.00000000000e+00        53             53             0      0            0         TRUE
+   0.00000000000e+00        52             52             0      0            0        FALSE
+  -5.36447259947e-08       298            298             0      0            0        FALSE
+   0.00000000000e+00       113            113             0      0            0        FALSE
+   0.00000000000e+00        28             28             0      0            0        FALSE
+   0.00000000000e+00       101            101             0      0            0        FALSE
+  -1.06807192424e-07       443            443             0      0            0         TRUE
+  -3.42804469255e-08       154            154             0      0            0        FALSE
+   0.00000000000e+00        17             17             0      0            0        FALSE
+   0.00000000000e+00        42             42             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00         1              1             1      0            0         TRUE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -2.86808244709e-07       500            500             0      0            0         TRUE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+   0.00000000000e+00         8              8             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+   0.00000000000e+00         2              2             0      0            0        FALSE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -1.54356030180e-07       500            500             0      0            0         TRUE
+  -1.94240783458e-08       499            499             0      0            0         TRUE
+  -1.48642357090e-07        89             89             0      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -5.00222085975e-12       500            500             0      0            0         TRUE
+  -1.94261247088e-08        45             45             0      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+  -4.09272615798e-12       234            234             0      0            0         TRUE
+   0.00000000000e+00       490            490             0      0            0         TRUE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+   0.00000000000e+00         2              2             0      0            0        FALSE
+  -3.58327270078e-07       235            235             0      0            0        FALSE
+  -8.18545231596e-12       500            500             0      0            0         TRUE
+  -1.10663677333e-07        38             38             0      0            3        FALSE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+  -1.50384948938e-09       466            466             0      0            0         TRUE
+  -5.06863671035e-08       500            500             0      0            0         TRUE
+  -3.65937466995e-08        16             16             0      0            0        FALSE
+  -2.66095412371e-08        70             70             0      0            0        FALSE
+  -8.18545231596e-12       232            232             0      0            0         TRUE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -5.46042429050e-08         8              8             0      0            0        FALSE
+   0.00000000000e+00         1              1             0      0            0         TRUE
+  -1.13686837722e-12       260            260             0      0            0         TRUE
+  -5.75687408855e-09       500            500             0      0            0         TRUE
+  -1.86632178156e-07        29             29             0      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+  -5.42058842257e-10       150            150             0      0            0        FALSE
+   0.00000000000e+00       484            484             0      0            0         TRUE
+   0.00000000000e+00        10             10            10      0            0        FALSE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+  -5.97856342210e-09       306            306             0      0            0         TRUE
+  -5.11590769747e-10       444            444             0      0            0         TRUE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+   0.00000000000e+00       500            500             0      0            0         TRUE
+  -1.45847479871e-07       496            496             0      0            0         TRUE
+  -4.81304596178e-08       158            158             0      0            0        FALSE
+  -4.54747350886e-12        36             36             0      0            0        FALSE
+   0.00000000000e+00        15             15             0      0            0        FALSE
+   0.00000000000e+00         1              1             0      0            0        FALSE
+   0.00000000000e+00         2              2             2      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+  -1.79011294676e-09       484            484             0      0            0         TRUE
+  -4.69890437671e-09       494            494             0      0            0         TRUE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+   0.00000000000e+00         1              1             1      0            0        FALSE
+TOLERANCE SENSITIVITY
+               [,1]           [,2]           [,3]
+[1,] 0.957366771160 0.969278996865 0.969278996865
+[2,] 0.929780564263 0.937931034483 0.937931034483
+[3,] 0.377429467085 0.466457680251 0.499059561129
+[4,] 0.283385579937 0.369278996865 0.388714733542
+[5,] 0.976127320955 0.980106100796 0.980106100796
+[6,] 0.949602122016 0.949602122016 0.949602122016
+[7,] 0.493368700265 0.600795755968 0.619363395225
+[8,] 0.376657824934 0.480106100796 0.500000000000
+MPLUS 67 completed outputs 51 matched cells
+  family relative_k latents_minus_mplus.n latents_minus_mplus.min latents_minus_mplus.median latents_minus_mplus.max
+1    lca          K     1.30000000000e+01      -4.54704460026e-04          3.27043039761e-05       4.66278759859e-04
+2    lpa          K     1.30000000000e+01      -4.75559183251e+00          4.23605597462e-05       3.84409440130e-04
+3    lca        K+1     1.30000000000e+01      -7.96873050149e-04          4.11957300912e-05       3.10575749836e-04
+4    lpa        K+1     1.20000000000e+01      -1.25601928472e+01         -9.78497015395e-01       1.22065890060e+01
+                  dataset k mplus_best mplus_replicated mplus_not_replicated_warning terminated family true_k separation    n       reference      reached_10      reached_20
+     lca_k2_high_n1000_r1 2  -2462.552             TRUE                        FALSE       TRUE    lca      2       high 1000 -2462.552405324 1.0000000000000 1.0000000000000
+     lca_k2_high_n1000_r1 3  -2457.103             TRUE                        FALSE       TRUE    lca      2       high 1000 -2457.103325669 0.7272727272727 1.0000000000000
+      lca_k2_high_n300_r1 2   -752.091             TRUE                        FALSE       TRUE    lca      2       high  300  -752.090907173 1.0000000000000 1.0000000000000
+      lca_k2_high_n300_r1 3   -747.917             TRUE                        FALSE       TRUE    lca      2       high  300  -747.916847234 0.9454545454545 1.0000000000000
+      lca_k2_low_n1000_r1 2  -3887.221             TRUE                        FALSE       TRUE    lca      2        low 1000 -3887.220978405 1.0000000000000 1.0000000000000
+      lca_k2_low_n1000_r1 3  -3882.626             TRUE                        FALSE       TRUE    lca      2        low 1000 -3882.625746545 0.6909090909091 1.0000000000000
+       lca_k2_low_n300_r1 2  -1139.070             TRUE                        FALSE       TRUE    lca      2        low  300 -1139.069533721 1.0000000000000 1.0000000000000
+       lca_k2_low_n300_r1 3  -1133.089             TRUE                        FALSE       TRUE    lca      2        low  300 -1133.088689424 0.9636363636364 1.0000000000000
+ lca_k2_moderate_n1000_r1 2  -3449.358             TRUE                        FALSE       TRUE    lca      2   moderate 1000 -3449.357637913 1.0000000000000 1.0000000000000
+ lca_k2_moderate_n1000_r1 3  -3445.992             TRUE                        FALSE       TRUE    lca      2   moderate 1000 -3445.992253613 0.4000000000000 0.6923076923077
+  lca_k2_moderate_n300_r1 2  -1015.415             TRUE                        FALSE       TRUE    lca      2   moderate  300 -1015.415063703 1.0000000000000 1.0000000000000
+  lca_k2_moderate_n300_r1 3  -1005.626             TRUE                        FALSE       TRUE    lca      2   moderate  300 -1005.626239865 1.0000000000000 1.0000000000000
+     lca_k3_high_n1000_r1 3  -2870.044             TRUE                        FALSE       TRUE    lca      3       high 1000 -2870.044397983 1.0000000000000 1.0000000000000
+     lca_k3_high_n1000_r1 4  -2864.017             TRUE                        FALSE       TRUE    lca      3       high 1000 -2864.017796873 0.4000000000000 0.6923076923077
+      lca_k3_high_n300_r1 3   -892.598             TRUE                        FALSE       TRUE    lca      3       high  300  -892.597967296 1.0000000000000 1.0000000000000
+      lca_k3_high_n300_r1 4   -886.080             TRUE                        FALSE       TRUE    lca      3       high  300  -886.079753694 1.0000000000000 1.0000000000000
+       lca_k3_low_n300_r1 3  -1201.706             TRUE                        FALSE       TRUE    lca      3        low  300 -1201.705989003 0.2909090909091 0.5000000000000
+       lca_k3_low_n300_r1 4  -1197.508             TRUE                        FALSE       TRUE    lca      3        low  300 -1197.507958804 0.3272727272727 0.5769230769231
+  lca_k3_moderate_n300_r1 3  -1050.902             TRUE                        FALSE       TRUE    lca      3   moderate  300 -1050.901841296 1.0000000000000 1.0000000000000
+  lca_k3_moderate_n300_r1 4  -1045.420             TRUE                        FALSE       TRUE    lca      3   moderate  300 -1045.419770668 0.3636363636364 0.6538461538462
+      lca_k4_high_n300_r1 4   -887.598             TRUE                        FALSE       TRUE    lca      4       high  300  -887.597839677 1.0000000000000 1.0000000000000
+      lca_k4_high_n300_r1 5   -883.321            FALSE                        FALSE       TRUE    lca      4       high  300  -883.321308774 1.0000000000000 1.0000000000000
+       lca_k4_low_n300_r1 4  -1213.129             TRUE                        FALSE       TRUE    lca      4        low  300 -1213.129454704 0.8909090909091 1.0000000000000
+       lca_k4_low_n300_r1 5  -1210.197             TRUE                        FALSE       TRUE    lca      4        low  300 -1210.197012770 0.4000000000000 0.6923076923077
+  lca_k4_moderate_n300_r1 4  -1127.282             TRUE                        FALSE       TRUE    lca      4   moderate  300 -1127.281715171 1.0000000000000 1.0000000000000
+  lca_k4_moderate_n300_r1 5  -1123.306             TRUE                        FALSE       TRUE    lca      4   moderate  300 -1123.305754828 0.2363636363636 0.4230769230769
+      lpa_k2_high_n300_r1 2  -1817.161             TRUE                        FALSE       TRUE    lpa      2       high  300 -1817.160686765 1.0000000000000 1.0000000000000
+      lpa_k2_high_n300_r1 3  -1800.914            FALSE                         TRUE       TRUE    lpa      2       high  300 -1792.669461664 1.0000000000000 1.0000000000000
+      lpa_k2_low_n1000_r1 2  -6098.931             TRUE                        FALSE       TRUE    lpa      2        low 1000 -6098.930957639 1.0000000000000 1.0000000000000
+      lpa_k2_low_n1000_r1 3  -6081.494            FALSE                         TRUE       TRUE    lpa      2        low 1000 -6083.018237466 0.0181818181818 0.0384615384615
+       lpa_k2_low_n300_r1 2  -1788.535             TRUE                        FALSE       TRUE    lpa      2        low  300 -1788.535091003 1.0000000000000 1.0000000000000
+       lpa_k2_low_n300_r1 3  -1777.694             TRUE                        FALSE       TRUE    lpa      2        low  300 -1765.487410994 0.0181818181818 0.0384615384615
+ lpa_k2_moderate_n1000_r1 2  -6198.742             TRUE                        FALSE       TRUE    lpa      2   moderate 1000 -6198.742147384 1.0000000000000 1.0000000000000
+  lpa_k2_moderate_n300_r1 2  -1888.845             TRUE                        FALSE       TRUE    lpa      2   moderate  300 -1888.845376488 1.0000000000000 1.0000000000000
+  lpa_k2_moderate_n300_r1 3  -1872.370             TRUE                        FALSE       TRUE    lpa      2   moderate  300 -1877.809037859 1.0000000000000 1.0000000000000
+      lpa_k3_high_n300_r1 3  -2065.090             TRUE                        FALSE       TRUE    lpa      3       high  300 -2065.089672598 1.0000000000000 1.0000000000000
+      lpa_k3_high_n300_r1 4  -2043.228            FALSE                         TRUE       TRUE    lpa      3       high  300 -2055.788192847 0.0181818181818 0.0384615384615
+      lpa_k3_low_n1000_r1 3  -6117.147             TRUE                        FALSE       TRUE    lpa      3        low 1000 -6117.146881657 1.0000000000000 1.0000000000000
+      lpa_k3_low_n1000_r1 4  -6096.700            FALSE                         TRUE       TRUE    lpa      3        low 1000 -6107.567316710 0.4545454545455 0.6923076923077
+       lpa_k3_low_n300_r1 3  -1827.286             TRUE                        FALSE       TRUE    lpa      3        low  300 -1827.285615591 1.0000000000000 1.0000000000000
+       lpa_k3_low_n300_r1 4  -1814.190            FALSE                         TRUE       TRUE    lpa      3        low  300 -1814.622756564 0.2727272727273 0.4230769230769
+ lpa_k3_moderate_n1000_r1 3  -6670.465             TRUE                        FALSE       TRUE    lpa      3   moderate 1000 -6670.464732127 1.0000000000000 1.0000000000000
+ lpa_k3_moderate_n1000_r1 4  -6652.881            FALSE                         TRUE       TRUE    lpa      3   moderate 1000 -6660.026082158 0.1454545454545 0.3076923076923
+  lpa_k3_moderate_n300_r1 3  -1943.322             TRUE                        FALSE       TRUE    lpa      3   moderate  300 -1943.321706910 1.0000000000000 1.0000000000000
+  lpa_k3_moderate_n300_r1 4  -1924.388             TRUE                        FALSE       TRUE    lpa      3   moderate  300 -1933.521790005 0.3636363636364 0.6923076923077
+     lpa_k4_high_n1000_r1 4  -7066.158             TRUE                        FALSE       TRUE    lpa      4       high 1000 -7066.158372709 1.0000000000000 1.0000000000000
+     lpa_k4_high_n1000_r1 5  -7050.356             TRUE                        FALSE       TRUE    lpa      4       high 1000 -7041.435406785 0.1636363636364 0.3076923076923
+      lpa_k4_high_n300_r1 4  -2076.720             TRUE                        FALSE       TRUE    lpa      4       high  300 -2076.720409859 1.0000000000000 1.0000000000000
+      lpa_k4_high_n300_r1 5  -2059.423            FALSE                         TRUE       TRUE    lpa      4       high  300 -2048.678108985 0.0181818181818 0.0384615384615
+      lpa_k4_low_n1000_r1 5  -6139.322             TRUE                        FALSE       TRUE    lpa      4        low 1000 -6139.322017543 0.9818181818182 1.0000000000000
+       lpa_k4_low_n300_r1 4  -1867.356            FALSE                         TRUE       TRUE    lpa      4        low  300 -1872.111591833 0.0181818181818 0.0384615384615
+ latents_minus_mplus relative_k smallest_class best_boundary best_hits        h0 n_parameters_mplus nonpd
+  -4.05324409712e-04          K            417             0       477 -2462.552                 13 FALSE
+  -3.25669239828e-04        K+1             40             0        57 -2457.103                 20 FALSE
+   9.28271109615e-05          K            117             0       500  -752.091                 13 FALSE
+   1.52766021984e-04        K+1             30             0       111  -747.917                 20 FALSE
+   2.15945001401e-05          K            159             0       406 -3887.221                 13 FALSE
+   2.53455100392e-04        K+1             78             0        66 -3882.626                 20 FALSE
+   4.66278759859e-04          K             88             0       500 -1139.070                 13 FALSE
+   3.10575749836e-04        K+1             38             0       133 -1133.089                 20 FALSE
+   3.62087100257e-04          K            435             0       446 -3449.358                 13 FALSE
+  -2.53613209679e-04        K+1            155             0        27 -3445.992                 20 FALSE
+  -6.37028000483e-05          K            127             0       463 -1015.415                 13 FALSE
+  -2.39864869968e-04        K+1             67             0       430 -1005.626                 20 FALSE
+  -3.97983480070e-04          K            176             0       467 -2870.044                 20 FALSE
+  -7.96873050149e-04        K+1             31             0        30 -2864.017                 27 FALSE
+   3.27043039761e-05          K             76             0       481  -892.598                 20 FALSE
+   2.46306479085e-04        K+1             10             0       206  -886.080                 27 FALSE
+   1.09967400022e-05          K              9             0        19 -1201.706                 20 FALSE
+   4.11957300912e-05        K+1             16             0        21 -1197.508                 27 FALSE
+   1.58704030127e-04          K             51             0       485 -1050.902                 20 FALSE
+   2.29331810033e-04        K+1             30             0        30 -1045.420                 27 FALSE
+   1.60323114983e-04          K             25             0       253  -887.598                 27 FALSE
+  -3.08773676011e-04        K+1             16             0        53  -883.321                 34 FALSE
+  -4.54704460026e-04          K             20             0       113 -1213.129                 27 FALSE
+  -1.27704702209e-05        K+1             11             0        28 -1210.197                 34 FALSE
+   2.84828949816e-04          K             39             0       154 -1127.282                 27 FALSE
+   2.45172400128e-04        K+1             14             0        17 -1123.306                 34 FALSE
+   3.13234690111e-04          K            120             0       500 -1817.161                 17 FALSE
+   8.24453833575e+00        K+1              1             1         1 -1800.914                 26  TRUE
+   4.23605597462e-05          K            432             0       500 -6098.931                 17 FALSE
+  -1.52423746648e+00        K+1              3             0         1 -6081.494                 26  TRUE
+  -9.10028500130e-05          K            136             0       500 -1788.535                 17 FALSE
+   1.22065890060e+01        K+1              1             1         1 -1777.694                 26  TRUE
+  -1.47384000229e-04          K            385             0       500 -6198.742                 17 FALSE
+  -3.76487649874e-04          K            108             0       500 -1888.845                 17 FALSE
+  -5.43903785855e+00        K+1             49             0       499 -1872.370                 26  TRUE
+   3.27401980030e-04          K             60             0       490 -2065.090                 26 FALSE
+  -1.25601928472e+01        K+1              2             0         1 -2043.228                 35  TRUE
+   1.18342880342e-04          K            225             0       500 -6117.147                 26 FALSE
+  -1.08673167096e+01        K+1             67             0        38 -6096.700                 35  TRUE
+   3.84409440130e-04          K             70             0       500 -1827.286                 26 FALSE
+  -4.32756564310e-01        K+1             26             0        16 -1814.190                 35  TRUE
+   2.67872989753e-04          K            198             0       500 -6670.465                 26 FALSE
+  -7.14508215777e+00        K+1             11             0         8 -6652.881                 35  TRUE
+   2.93089719889e-04          K             62             0       500 -1943.322                 26 FALSE
+  -9.13379000538e+00        K+1             16             0        29 -1924.388                 35  TRUE
+  -3.72708709619e-04          K             97             0       484 -7066.158                 35 FALSE
+   8.92059321482e+00        K+1              1            10        10 -7050.356                 44  TRUE
+  -4.09859440424e-04          K             36             0       444 -2076.720                 35 FALSE
+   1.07448910153e+01        K+1              1             1         1 -2059.423                 44  TRUE
+  -1.75425202542e-05        K+1             22             0       158 -6139.322                 44 FALSE
+  -4.75559183251e+00          K              8             0         1 -1867.356                 35  TRUE
+MPLUS REPLICATION COUNTS
+, , mplus_replicated = FALSE, mplus_not_replicated_warning = FALSE
+
+      relative_k
+family  K K+1
+   lca  0   1
+   lpa  0   0
+
+, , mplus_replicated = TRUE, mplus_not_replicated_warning = FALSE
+
+      relative_k
+family  K K+1
+   lca 13  12
+   lpa 12   5
+
+, , mplus_replicated = FALSE, mplus_not_replicated_warning = TRUE
+
+      relative_k
+family  K K+1
+   lca  0   0
+   lpa  1   7
+
+, , mplus_replicated = TRUE, mplus_not_replicated_warning = TRUE
+
+      relative_k
+family  K K+1
+   lca  0   0
+   lpa  0   0
+
+PACKAGE SELECTION difference range -3.58327270078e-07 0 
+REFIT BEGIN
+List of 2
+ $ data :'data.frame':	300 obs. of  5 variables:
+  ..$ y1: num [1:300] 0.643 1.504 3.461 3.926 -0.801 ...
+  ..$ y2: num [1:300] 0.237 1.783 3.332 5.388 0.324 ...
+  ..$ y3: num [1:300] 1.518 -2.381 0.462 -0.368 -0.374 ...
+  ..$ y4: num [1:300] 0.56 -0.714 0.769 -0.676 0.154 ...
+  ..$ id: int [1:300] 1 2 3 4 5 6 7 8 9 10 ...
+ $ class: int [1:300] 1 2 2 2 1 3 3 4 1 2 ...
+               y1             y2              y3              y4 id
+1  0.642783682689 0.237326894436  1.518483524100  0.559768500293  1
+2  1.504420115628 1.782789880888 -2.380531788554 -0.714069832163  2
+3  3.460865633580 3.331742680435  0.461531079883  0.768969411125  3
+4  3.925939964387 5.387992475958 -0.367961711736 -0.676311829756  4
+5 -0.800829885855 0.323533476545 -0.373522056794  0.153501597992  5
+6  0.226267731834 4.004695378110  4.131235896253  4.471113735179  6
+       y1                     y2                     y3                     y4                     id        
+ Min.   :-2.588030354   Min.   :-2.912083681   Min.   :-3.404870164   Min.   :-2.418022203   Min.   :  1.00  
+ 1st Qu.:-0.219167976   1st Qu.: 0.130448245   1st Qu.:-0.464652040   1st Qu.:-0.494608275   1st Qu.: 75.75  
+ Median : 1.011496607   Median : 1.742787309   Median : 0.502814956   Median : 0.440933635   Median :150.50  
+ Mean   : 1.484574410   Mean   : 1.791018622   Mean   : 1.050936279   Mean   : 0.762327413   Mean   :150.50  
+ 3rd Qu.: 3.286401719   3rd Qu.: 3.505428171   3rd Qu.: 2.798449904   3rd Qu.: 1.748377887   3rd Qu.:225.25  
+ Max.   : 6.688511598   Max.   : 5.601950175   Max.   : 6.374638011   Max.   : 5.923169586   Max.   :300.00  
+REFIT elapsed 20.858 seed 20261035 
+REFIT names
+ [1] "means"                         "variances"                     "profile_probabilities"         "group_probabilities"           "call"                         
+ [6] "vars"                          "continuous"                    "continuous_types"              "ordinal"                       "count"                        
+[11] "extra_data"                    "categorical"                   "categorical_levels"            "min_probability"               "categorical_values"           
+[16] "indicator_data"                "centering"                     "centering_offsets"             "scaling"                       "scaling_factors"              
+[21] "categorical_data"              "id"                            "group_ids"                     "single_level"                  "weights"                      
+[26] "sampling_weights"              "time"                          "time_values"                   "group_values"                  "group_index"                  
+[31] "group_sizes"                   "n_observations"                "n_informative"                 "informative"                   "n_informative_groups"         
+[36] "drop_empty"                    "n_groups"                      "n_profiles"                    "n_group_classes"               "variance_model"               
+[41] "covariance_model"              "covariance_structure"          "prior"                         "acceleration"                  "prior_parameters"             
+[46] "missing"                       "max_iter"                      "tol"                           "n_observed_by_indicator"       "min_variance"                 
+[51] "standard_deviations"           "fixed"                         "measurement_model"             "subject_posteriors"            "group_posteriors"             
+[56] "subject_profiles"              "group_classes"                 "log_likelihood"                "group_log_likelihood"          "n_parameters"                 
+[61] "n_parameters_with_measurement" "aic"                           "bic"                           "bic_groups"                    "bic_individual"               
+[66] "converged"                     "iterations"                    "log_likelihood_history"        "starts"                        "best_start"                   
+[71] "n_failed_starts"               "boundary"                      "small_classes"                 "effective_profile_counts"      "effective_group_counts"       
+[76] "n_best_replicated"             "replication_tolerance"         "noise"                        
+ num [1:5, 1:4] 0.962672 1.313913 0.916953 0.000001 0.914357 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:5] "profile_1" "profile_2" "profile_3" "profile_4" ...
+  ..$ : chr [1:4] "y1" "y2" "y3" "y4"
+REFIT LL -2048.67810898 n_parameters 44 BIC 4348.32264685 
+REFIT hard counts 89 36 114 1 60 effective 89.0170218865 36.0870654943 113.558567215 1 60.3373454042 smallest index 4 
+REFIT smallest variances
+   y1    y2    y3    y4 
+1e-06 1e-06 1e-06 1e-06 
+REFIT smallest means
+              y1               y2               y3               y4 
+ 5.6337375678522  1.6512553617751 -0.0955500053234 -1.5931827418645 
+REFIT relative variance
+               y1                y2                y3                y4 
+2.43153701605e-07 2.63764885906e-07 2.45624044369e-07 3.48832780104e-07 
+REFIT boundary TRUE small_classes TRUE warnings latents_boundary A variance reached min_variance; this is a bound-active constrained fit. latents_small_classes A profile or group class has effective membership below one. 
+REFIT subject
+               y1            y2               y3             y4  id
+277 5.63373756785 1.65125536178 -0.0955500053234 -1.59318274186 277
+MCLUST VERSION 6.1.2 
+Error in mclustBIC(data = c(1.19291576186384, -0.0645493681599145, 0.376895131324485,  : 
+  could not find function "mclustBIC"
+Calls: lapply -> FUN -> system.time -> <Anonymous> -> eval -> eval
+Timing stopped at: 0 0 0.001
+Execution halted

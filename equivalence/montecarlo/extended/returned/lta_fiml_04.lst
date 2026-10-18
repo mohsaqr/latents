@@ -1,0 +1,197 @@
+lta_fiml_04-lg.dat
+File name:	lta_fiml_04-lg.dat	
+File size:	24624 bytes  600 records	
+File date:	2026-Oct-18 1:00:48 AM	
+Syntax:	lta_fiml_04.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+lta_fiml_04	2-State	-1602.6421	3260.4012	3227.2842	3238.2842	11	.	.	
+lta_fiml_04 - LL = -1602.6421
+2-State Syntax Model	
+					
+Number of cases	150				
+Number of time points	600				
+Number of parameters (Npar)	11				
+Activated Constraints	0				
+Random Seed	20261018				
+Best Start Seed	1127673				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1602.6421				
+Log-prior	0.0000				
+Log-posterior	-1602.6421				
+BIC (based on LL)	3260.4012				
+AIC (based on LL)	3227.2842				
+AIC3 (based on LL)	3238.2842				
+CAIC (based on LL)	3271.4012				
+SABIC (based on LL)	3225.5883				
+					
+					
+Classification Statistics	State				
+Classification errors	0.1060				
+Reduction of errors (Lambda)	0.7159				
+Entropy R-squared	0.6231				
+Standard R-squared	0.6732				
+Classification log-likelihood	-1741.8415				
+Entropy	139.1994				
+CLC	3483.6830				
+AWE	3626.9170				
+ICL-BIC	3538.8000				
+					
+State  Classification Table	Modal				
+Latent	1	2	Total		
+1	343.9034	29.5029	373.4063		
+2	34.0966	192.4971	226.5937		
+Total	378.0000	222.0000	600.0000		
+					
+State  Classification Table	Proportional				
+Latent	1	2	Total		
+1	327.5400	45.8663	373.4063		
+2	45.8663	180.7274	226.5937		
+Total	373.4063	226.5937	600.0000		
+					
+Files					
+Infile	C:\lgextended\lta_fiml_04-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261018				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     150				
+predictionstatistics	no				
+outfile					
+file name	lta_fiml_04_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+State	Nominal	Dynamic	2		
+ 					
+Case ID	g	150			
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261018 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lta_fiml_04_posteriors.txt' classification keep id t;
+variables
+   caseid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      State nominal dynamic 2;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+   y1 | State;
+   y2 | State;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+State[=0](1)	<-	1			0.0000	.	.	.				
+State[=0](2)	<-	1			-0.4092	.	.	.				
+												
+State(1)	<-	1	|	State[-1](1)	0.0000	.	.	.				
+State(2)	<-	1	|	State[-1](1)	-1.6961	.	.	.				
+State(1)	<-	1	|	State[-1](2)	0.0000	.	.	.				
+State(2)	<-	1	|	State[-1](2)	0.8837	.	.	.				
+												
+y1	<-	1			0.0091	.	.	.				
+y1	<-	State(1)			0.0000	.	.	.				
+y1	<-	State(2)			1.8058	.	.	.				
+												
+y2	<-	1			0.0257	.	.	.				
+y2	<-	State(1)			0.0000	.	.	.				
+y2	<-	State(2)			1.3020	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	State(1)	0.9415	.	.	.				
+y1			|	State(2)	0.9322	.	.	.				
+y2			|	State(1)	1.1421	.	.	.				
+y2			|	State(2)	0.5940	.	.	.				
+Profile
+ 	State	 	 	
+ 	1	2	Overall	
+Size	0.6269	0.3731	 	
+y1	 	
+Mean	0.0091	1.8150	0.6829	
+y2	 	
+Mean	0.0257	1.3277	0.5115	
+	
+ 	State[-1]	 	 	
+ 	1	2	 	
+State	 	
+1	0.8450	0.2924	 	
+2	0.1550	0.7076	 	
+Profile-Longitudinal
+ 	 	State	 	 	 	
+ 	Time	1	2	Overall	Observed	
+y1	 	
+Mean	1	0.0091	1.8150	0.7298	0.7478	
+ 	2	0.0091	1.8150	0.6873	0.6902	
+ 	3	0.0091	1.8150	0.6637	0.6467	
+ 	4	0.0091	1.8150	0.6507	0.6633	
+y2	 	
+Mean	1	0.0257	1.3277	0.5453	0.5068	
+ 	2	0.0257	1.3277	0.5146	0.5262	
+ 	3	0.0257	1.3277	0.4977	0.4947	
+ 	4	0.0257	1.3277	0.4883	0.1787	
+ProbMeans-Posterior
+	State		
+	1	2	
+Overall	0.6223	0.3777	
+Dependent			
+y1			
+-3.288 - -0.528	0.9864	0.0136	
+-0.515 - 0.308	0.9180	0.0820	
+0.320 - 0.985	0.7471	0.2529	
+0.992 - 1.910	0.3790	0.6210	
+1.912 - 5.058	0.0954	0.9046	
+.	0.5734	0.4266	
+y2			
+-2.601 - -0.626	0.9853	0.0147	
+-0.626 - 0.239	0.8869	0.1131	
+0.242 - 0.798	0.7531	0.2469	
+0.803 - 1.421	0.5339	0.4661	
+1.421 - 3.181	0.3024	0.6976	
+.	0.4154	0.5846	

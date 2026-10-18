@@ -1,0 +1,35 @@
+TITLE: latents within-person z-scores, two-level VVI, 2 x 2;
+DATA: FILE = scaled.dat;
+VARIABLE:
+ NAMES = id g y1 y2 y3;
+ USEVARIABLES = y1 y2 y3;
+ IDVARIABLE = id;
+ CLUSTER = g;
+ WITHIN = y1 y2 y3;
+ CLASSES = cb(2) cw(2);
+ BETWEEN = cb;
+ANALYSIS:
+ TYPE = TWOLEVEL MIXTURE;
+ STARTS = 400 80;
+ STSEED = 20261018;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [y1 y2 y3]; y1 y2 y3;
+ %cw#2%
+ [y1 y2 y3]; y1 y2 y3;
+SAVEDATA:
+ FILE = scaled-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = scaled-results.dat;

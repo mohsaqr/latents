@@ -102,3 +102,37 @@ test_that("cores is validated by class, and one core is lapply", {
   }))
   expect_identical(.latents_map_candidates(1:3, \(i) i^2, cores = 1L), list(1, 4, 9))
 })
+
+test_that("forked workers are refused only on macOS with Accelerate's BLAS", {
+  veclib <- paste0("/System/Library/Frameworks/Accelerate.framework/Versions/A/",
+                   "Frameworks/vecLib.framework/Versions/A/libBLAS.dylib")
+  reference <- "/Library/Frameworks/R.framework/Resources/lib/libRblas.0.dylib"
+  expect_false(.latents_fork_safe(veclib, "Darwin"))
+  expect_true(.latents_fork_safe(reference, "Darwin"))
+  expect_true(.latents_fork_safe(veclib, "Linux"))
+  expect_true(.latents_fork_safe("/usr/lib/libopenblas.so", "Linux"))
+})
+
+test_that("a forked worker killed by a signal is a parallel failure, not a NULL candidate", {
+  skip_on_cran()
+  skip_on_os("windows")
+  # The worker for candidate 2 ends itself as a segmentation fault would.
+  fun <- function(i) {
+    if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGKILL)
+    i
+  }
+  expect_error(suppressWarnings(
+    .latents_map_candidates(1:3, fun, cores = 2L, backend = "fork")),
+    class = "latents_parallel_failure")
+})
+
+test_that("a socket worker that dies is a parallel failure", {
+  skip_on_cran()
+  skip_if_not(requireNamespace("latents", quietly = TRUE))
+  fun <- function(i) {
+    if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGKILL)
+    i
+  }
+  expect_error(.latents_map_candidates(1:3, fun, cores = 2L, backend = "socket"),
+               class = "latents_parallel_failure")
+})

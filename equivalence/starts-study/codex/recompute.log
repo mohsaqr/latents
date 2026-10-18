@@ -1,0 +1,170 @@
+'data.frame':	58000 obs. of  17 variables:
+ $ dataset             : chr  "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" "lca_k2_high_n1000_r1" ...
+ $ family              : chr  "lca" "lca" "lca" "lca" ...
+ $ true_k              : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ separation          : chr  "high" "high" "high" "high" ...
+ $ n                   : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ rep                 : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ k                   : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ start               : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ log_likelihood      : num  -2977 -2977 -2977 -2977 -2977 ...
+ $ converged           : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+ $ boundary            : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
+ $ final_log_likelihood: num  -2977 -2977 -2977 -2977 -2977 ...
+ $ n_parameters        : int  6 6 6 6 6 6 6 6 6 6 ...
+ $ smallest_class      : int  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+ $ entropy             : num  NA NA NA NA NA NA NA NA NA NA ...
+ $ seconds             : num  5.64 5.64 5.64 5.64 5.64 ...
+ $ warnings            : chr  "" "" "" "" ...
+               dataset family true_k separation    n rep k start log_likelihood converged boundary final_log_likelihood n_parameters smallest_class entropy seconds warnings
+1 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     1 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+2 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     2 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+3 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     3 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+4 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     4 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+5 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     5 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+6 lca_k2_high_n1000_r1    lca      2       high 1000   1 1     6 -2977.47306557      TRUE    FALSE       -2977.47306557            6           1000      NA   5.636         
+   dataset             family              true_k            separation              n                   rep                   k                  start       
+ Length:58000       Length:58000       Min.   :2.00000000   Length:58000       Min.   : 300.00000   Min.   :1.00000000   Min.   :1.00000000   Min.   :  1.00  
+ Class :character   Class :character   1st Qu.:2.00000000   Class :character   1st Qu.: 300.00000   1st Qu.:1.00000000   1st Qu.:2.00000000   1st Qu.:125.75  
+ Mode  :character   Mode  :character   Median :3.00000000   Mode  :character   Median : 300.00000   Median :1.00000000   Median :3.00000000   Median :250.50  
+                                       Mean   :2.86206897                      Mean   : 541.37931   Mean   :1.03448276   Mean   :3.36206897   Mean   :250.50  
+                                       3rd Qu.:4.00000000                      3rd Qu.:1000.00000   3rd Qu.:1.00000000   3rd Qu.:4.00000000   3rd Qu.:375.25  
+                                       Max.   :4.00000000                      Max.   :1000.00000   Max.   :2.00000000   Max.   :6.00000000   Max.   :500.00  
+                                                                                                                                                              
+ log_likelihood         converged        boundary       final_log_likelihood    n_parameters        smallest_class           entropy         seconds              warnings        
+ Min.   :-7725.075997   Mode :logical   Mode :logical   Min.   :-7324.698206   Min.   : 6.0000000   Min.   :   1.000000   Min.   : NA     Min.   :  1.0510000   Length:58000      
+ 1st Qu.:-3596.817230   FALSE:23        FALSE:57958     1st Qu.:-3486.334607   1st Qu.:17.0000000   1st Qu.:  14.000000   1st Qu.: NA     1st Qu.: 11.9392500   Class :character  
+ Median :-1901.671899   TRUE :57977     TRUE :42        Median :-1901.671897   Median :26.0000000   Median :  35.500000   Median : NA     Median : 45.2335000   Mode  :character  
+ Mean   :-2763.190504                                   Mean   :-2756.435369   Mean   :26.3275862   Mean   : 118.681034   Mean   :NaN     Mean   : 79.0767241                     
+ 3rd Qu.:-1197.812450                                   3rd Qu.:-1196.227662   3rd Qu.:35.0000000   3rd Qu.: 117.750000   3rd Qu.: NA     3rd Qu.:128.5002500                     
+ Max.   : -743.797824                                   Max.   : -743.797824   Max.   :53.0000000   Max.   :1000.000000   Max.   : NA     Max.   :508.8750000                     
+                                                                                                                          NA's   :58000                                           
+             dataset               family               true_k           separation                    n                  rep                    k                start 
+         "character"          "character"            "integer"          "character"            "integer"            "integer"            "integer"            "integer" 
+      log_likelihood            converged             boundary final_log_likelihood         n_parameters       smallest_class              entropy              seconds 
+           "numeric"            "logical"            "logical"            "numeric"            "integer"            "integer"            "numeric"            "numeric" 
+            warnings 
+         "character" 
+DATASETS 29 CELLS 116 ROWS 58000 
+
+ 1  2 
+28  1 
+, , separation = high, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 1 1 1
+
+, , separation = low, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 1 1 1
+
+, , separation = moderate, n = 300
+
+      true_k
+family 2 3 4
+   lca 1 1 1
+   lpa 2 1 1
+
+, , separation = high, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 1 0
+   lpa 0 0 1
+
+, , separation = low, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 0 0
+   lpa 1 1 1
+
+, , separation = moderate, n = 1000
+
+      true_k
+family 2 3 4
+   lca 1 0 0
+   lpa 1 1 0
+
+BLOCKS verified 9396 
+SELECTION verified 2349 
+SUMMARIES verified
+REACH COUNTS
+   family relative_k n_starts hits total
+1     lca         -1       10  713   715
+2     lpa         -1       10  833   880
+3     lca          0       10  670   715
+4     lpa          0       10  826   880
+5     lca          1       10  465   715
+6     lpa          1       10  279   880
+7     lca          2       10  400   715
+8     lpa          2       10  189   880
+9     lca         -1       20  338   338
+10    lpa         -1       20  401   416
+11    lca          0       20  325   338
+12    lpa          0       20  391   416
+13    lca          1       20  279   338
+14    lpa          1       20  174   416
+15    lca          2       20  243   338
+16    lpa          2       20  119   416
+ALL FAMILY REACH
+  relative_k n_starts hits total
+1         -1       10 1546  1595
+2          0       10 1496  1595
+3          1       10  744  1595
+4          2       10  589  1595
+5         -1       20  739   754
+6          0       20  716   754
+7          1       20  453   754
+8          2       20  362   754
+TRUE K FAILING DATASETS
+             dataset n_starts reached.n reached.min           gap.n         gap.min
+1 lca_k3_low_n300_r1       10        39           0 39.000000000000 -1.851119731113
+2 lca_k4_low_n300_r1       10         6           0  6.000000000000 -0.232991487673
+3 lpa_k4_low_n300_r1       10        54           0 54.000000000000 -5.557613715492
+4 lca_k3_low_n300_r1       20        13           0 13.000000000000 -1.149333460495
+5 lpa_k4_low_n300_r1       20        25           0 25.000000000000 -5.314897535634
+SELECT DIRECTIONS
+, , direction = -1
+
+      n_starts
+family  10  20
+   lca   0   0
+   lpa 105  47
+
+, , direction = 0
+
+      n_starts
+family  10  20
+   lca 715 338
+   lpa 775 369
+
+SELECT BY K
+   family true_k n_starts fewer more true_run true_ref total
+1     lca      2       10     0    0      275      275   330
+2     lpa      2       10     0    0      330      330   330
+3     lca      3       10     0    0      165      165   220
+4     lpa      3       10     0    0      220      220   275
+5     lca      4       10     0    0        0        0   165
+6     lpa      4       10   105    0      160       55   275
+7     lca      2       20     0    0      130      130   156
+8     lpa      2       20     0    0      156      156   156
+9     lca      3       20     0    0       78       78   104
+10    lpa      3       20     0    0      104      104   130
+11    lca      4       20     0    0        0        0    78
+12    lpa      4       20    47    0       73       26   130
+CHANGED CHOICES
+                  dataset n_starts chosen_k reference_k true_k block
+1     lpa_k4_high_n300_r1       10        4           5      4    51
+2 lpa_k4_moderate_n300_r1       10        4           5      4    54
+3     lpa_k4_high_n300_r1       20        4           5      4    22
+4 lpa_k4_moderate_n300_r1       20        4           5      4    25
+Error: unexpected ')' in:
+"    best_hits = sum(near), best_converged = sum(near & z$converged), best_boundary = sum(near & z$boundary, na.rm = TRUE),
+    failed = sum(!is.finite(z$log_likelihood)), nonconverged = sum(!z$converged), ward_reached = near[z$start == 1]))"
+Execution halted

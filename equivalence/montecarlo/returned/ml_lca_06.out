@@ -1,0 +1,1572 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/17/2026  11:47 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents Monte Carlo equivalence ml_lca_06;
+  DATA: FILE = ml_lca_06.dat;
+  VARIABLE:
+   NAMES = id g u1 u2 u3 u4 u5;
+   USEVARIABLES = u1 u2 u3 u4 u5;
+   IDVARIABLE = id;
+   MISSING = ALL(-999);
+   CATEGORICAL = u1 u2 u3 u4 u5;
+   CLUSTER = g;
+   WITHIN = u1 u2 u3 u4 u5;
+   CLASSES = cb(2) cw(2);
+   BETWEEN = cb;
+  ANALYSIS:
+   TYPE = TWOLEVEL MIXTURE;
+   ESTIMATOR = ML;
+   STARTS = 200 40;
+   STITERATIONS = 40;
+   STSEED = 20261017;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %WITHIN%
+   %OVERALL%
+   %BETWEEN%
+   %OVERALL%
+   cw#1 ON cb;
+  MODEL cw:
+   %WITHIN%
+   %cw#1%
+   [u1$1 u2$1 u3$1 u4$1 u5$1];
+   %cw#2%
+   [u1$1 u2$1 u3$1 u4$1 u5$1];
+  OUTPUT: TECH1;
+  SAVEDATA:
+   FILE = ml_lca_06-posteriors.dat;
+   SAVE = CPROBABILITIES;
+   FORMAT = F20.12;
+   RESULTS = ml_lca_06-results.dat;
+
+
+
+*** WARNING
+  One or more individual-level variables have no variation within a
+  cluster for the following clusters.
+
+     Variable   Cluster IDs with no within-cluster variation
+
+      U2          42
+
+   1 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+latents Monte Carlo equivalence ml_lca_06;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         900
+
+Number of dependent variables                                    5
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           2
+
+Observed dependent variables
+
+  Binary and ordered categorical (ordinal)
+   U1          U2          U3          U4          U5
+
+Categorical latent variables
+   CB          CW
+
+Variables with special functions
+
+  Cluster variable      G
+  ID variable           ID
+
+  Within variables
+   U1          U2          U3          U4          U5
+
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                               10000
+  Convergence criteria
+    Loglikelihood change                                 0.100D-07
+    Relative loglikelihood change                        0.100D-08
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent Variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+Integration Specifications
+  Type                                                    STANDARD
+  Number of integration points                                  15
+  Dimensions of numerical integration                            0
+  Adaptive quadrature                                           ON
+Random Starts Specifications
+  Number of initial stage random starts                        200
+  Number of final stage optimizations                           40
+  Number of initial stage iterations                            40
+  Initial stage convergence criterion                    0.100D+01
+  Random starts scale                                    0.500D+01
+  Random seed for generating random starts                20261017
+Parameterization                                             LOGIT
+Link                                                         LOGIT
+Cholesky                                                       OFF
+
+Input data file(s)
+  ml_lca_06.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of missing data patterns             1
+     Number of y missing data patterns           0
+     Number of u missing data patterns           1
+     Number of clusters                         60
+
+
+
+COVARIANCE COVERAGE OF DATA
+
+Minimum covariance coverage value   0.100
+
+
+UNIVARIATE PROPORTIONS AND COUNTS FOR CATEGORICAL VARIABLES
+
+    U1
+      Category 1    0.574          517.000
+      Category 2    0.426          383.000
+    U2
+      Category 1    0.550          495.000
+      Category 2    0.450          405.000
+    U3
+      Category 1    0.511          460.000
+      Category 2    0.489          440.000
+    U4
+      Category 1    0.499          449.000
+      Category 2    0.501          451.000
+    U5
+      Category 1    0.508          457.000
+      Category 2    0.492          443.000
+
+
+RANDOM STARTS RESULTS RANKED FROM THE BEST TO THE WORST LOGLIKELIHOOD VALUES
+
+Final stage loglikelihood values at local maxima, seeds, and initial stage start numbers:
+
+           -2703.043  420098           19
+           -2703.043  623217           138
+           -2703.043  941021           87
+           -2703.043  538959           166
+           -2703.043  949519           155
+           -2703.043  84361            21
+           -2703.043  600776           108
+           -2703.043  200636           173
+           -2703.043  738216           180
+           -2703.043  190846           54
+           -2703.043  938246           99
+           -2703.043  466001           22
+           -2703.043  185520           50
+           -2703.043  499541           150
+           -2703.043  355832           53
+           -2703.043  677029           121
+           -2703.043  314060           100
+           -2703.043  618022           103
+           -2703.043  685858           105
+           -2703.043  316506           93
+           -2703.043  317532           64
+           -2703.043  402248           119
+           -2703.043  748012           130
+           -2703.043  9148             118
+           -2703.043  841966           148
+           -2703.043  287711           147
+           -2703.043  120657           85
+           -2703.043  460020           128
+           -2703.043  629678           140
+           -2703.043  16036            68
+           -2703.043  657622           194
+           -2703.043  274508           115
+           -2703.043  214717           71
+           -2703.043  905623           170
+           -2703.043  2036             111
+           -2703.043  751225           15
+           -2703.043  341503           134
+           -2703.043  460534           8
+           -2703.043  399937           165
+           -2703.043  933751           35
+
+
+
+THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED.  RERUN WITH AT LEAST TWICE THE
+RANDOM STARTS TO CHECK THAT THE BEST LOGLIKELIHOOD IS STILL OBTAINED AND REPLICATED.
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       13
+
+Loglikelihood
+
+          H0 Value                       -2703.043
+
+Information Criteria
+
+          Akaike (AIC)                    5432.086
+          Bayesian (BIC)                  5494.517
+          Sample-Size Adjusted BIC        5453.231
+            (n* = (n + 2) / 24)
+
+
+
+MODEL RESULTS USE THE LATENT CLASS VARIABLE ORDER
+
+   CB  CW
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASS PATTERNS
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+  Latent Class
+    Pattern
+
+    1  1        120.03118          0.13337
+    1  2        304.63596          0.33848
+    2  1        358.83839          0.39871
+    2  2        116.49447          0.12944
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR EACH LATENT CLASS VARIABLE
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+  Latent Class
+    Variable    Class
+
+    CB             1       424.66714          0.47185
+                   2       475.33286          0.52815
+    CW             1       478.86957          0.53208
+                   2       421.13043          0.46792
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASS PATTERNS
+BASED ON THEIR MOST LIKELY LATENT CLASS PATTERN
+
+Class Counts and Proportions
+
+  Latent Class
+    Pattern
+
+    1  1              105          0.11667
+    1  2              300          0.33333
+    2  1              368          0.40889
+    2  2              127          0.14111
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR EACH LATENT CLASS VARIABLE
+BASED ON THEIR MOST LIKELY LATENT CLASS PATTERN
+
+  Latent Class
+    Variable    Class
+
+    CB             1             405          0.45000
+                   2             495          0.55000
+    CW             1             473          0.52556
+                   2             427          0.47444
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.791
+
+
+C-SPECIFIC CLASSIFICATION RESULTS
+
+Classification Quality for CB
+
+     Entropy                         0.803
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.956    0.044
+    2   0.076    0.924
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.912    0.088
+    2   0.038    0.962
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      2.335    0.000
+    2     -3.245    0.000
+
+Classification Quality for CW
+
+     Entropy                         0.772
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.945    0.055
+    2   0.075    0.925
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.933    0.067
+    2   0.062    0.938
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      2.634    0.000
+    2     -2.712    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+Latent Class Pattern 1 1
+
+ Thresholds
+    U1$1               2.131      0.193     11.025      0.000
+    U2$1               1.420      0.134     10.628      0.000
+    U3$1               0.901      0.112      8.044      0.000
+    U4$1              -1.157      0.124     -9.303      0.000
+    U5$1              -1.364      0.138     -9.850      0.000
+
+Latent Class Pattern 1 2
+
+ Thresholds
+    U1$1              -1.317      0.152     -8.685      0.000
+    U2$1              -1.048      0.130     -8.037      0.000
+    U3$1              -0.927      0.121     -7.688      0.000
+    U4$1               1.350      0.142      9.504      0.000
+    U5$1               1.764      0.175     10.099      0.000
+
+Latent Class Pattern 2 1
+
+ Thresholds
+    U1$1               2.131      0.193     11.025      0.000
+    U2$1               1.420      0.134     10.628      0.000
+    U3$1               0.901      0.112      8.044      0.000
+    U4$1              -1.157      0.124     -9.303      0.000
+    U5$1              -1.364      0.138     -9.850      0.000
+
+Latent Class Pattern 2 2
+
+ Thresholds
+    U1$1              -1.317      0.152     -8.685      0.000
+    U2$1              -1.048      0.130     -8.037      0.000
+    U3$1              -0.927      0.121     -7.688      0.000
+    U4$1               1.350      0.142      9.504      0.000
+    U5$1               1.764      0.175     10.099      0.000
+
+Between Level
+
+Categorical Latent Variables
+
+Within Level
+
+ Intercepts
+    CW#1               1.125      0.183      6.157      0.000
+
+Between Level
+
+ CW#1       ON
+    CB#1              -2.056      0.179    -11.462      0.000
+
+ Means
+    CB#1              -0.113      0.333     -0.339      0.735
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.400E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+RESULTS IN PROBABILITY SCALE
+
+                    Estimate
+
+Within Level
+
+Latent Class Pattern 1 1
+
+ U1
+    Category 1         0.894
+    Category 2         0.106
+ U2
+    Category 1         0.805
+    Category 2         0.195
+ U3
+    Category 1         0.711
+    Category 2         0.289
+ U4
+    Category 1         0.239
+    Category 2         0.761
+ U5
+    Category 1         0.204
+    Category 2         0.796
+
+Latent Class Pattern 1 2
+
+ U1
+    Category 1         0.211
+    Category 2         0.789
+ U2
+    Category 1         0.260
+    Category 2         0.740
+ U3
+    Category 1         0.284
+    Category 2         0.716
+ U4
+    Category 1         0.794
+    Category 2         0.206
+ U5
+    Category 1         0.854
+    Category 2         0.146
+
+Latent Class Pattern 2 1
+
+ U1
+    Category 1         0.894
+    Category 2         0.106
+ U2
+    Category 1         0.805
+    Category 2         0.195
+ U3
+    Category 1         0.711
+    Category 2         0.289
+ U4
+    Category 1         0.239
+    Category 2         0.761
+ U5
+    Category 1         0.204
+    Category 2         0.796
+
+Latent Class Pattern 2 2
+
+ U1
+    Category 1         0.211
+    Category 2         0.789
+ U2
+    Category 1         0.260
+    Category 2         0.740
+ U3
+    Category 1         0.284
+    Category 2         0.716
+ U4
+    Category 1         0.794
+    Category 2         0.206
+ U5
+    Category 1         0.854
+    Category 2         0.146
+
+Between Level
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS PATTERN 1 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS PATTERN 1 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS PATTERN 2 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS PATTERN 2 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS PATTERN 1 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS PATTERN 1 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS PATTERN 2 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS PATTERN 2 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1                 0             0
+ U2                 0             0
+ U3                 0             0
+ U4                 0             0
+ U5                 0             0
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1                 0
+ U2                 0             0
+ U3                 0             0             0
+ U4                 0             0             0             0
+ U5                 0             0             0             0             0
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                    0             0
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CW#1               0             0
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1               0
+ CW#1               0             0
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS INDICATOR MODEL PART (WITHIN)
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    1             2             3             4             5
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    6             7             8             9            10
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    1             2             3             4             5
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    6             7             8             9            10
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS INDICATOR MODEL PART (BETWEEN)
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART (WITHIN)
+
+
+           ALPHA(C)
+              CB#1          CB#2          CW#1          CW#2
+              ________      ________      ________      ________
+                    0             0            12             0
+
+
+           GAMMA(C)
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CB#2               0             0
+ CW#1               0             0
+ CW#2               0             0
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART (BETWEEN)
+
+
+           ALPHA(C)
+              CB#1          CB#2          CW#1          CW#2
+              ________      ________      ________      ________
+                   11             0             0             0
+
+
+           GAMMA(C)
+              CB#1          CW#1
+              ________      ________
+ CB#1               0             0
+ CB#2               0             0
+ CW#1               0             0
+ CW#2               0             0
+
+
+           BETA(C)
+              CB#1          CB#2
+              ________      ________
+ CW#1              13             0
+ CW#2               0             0
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS PATTERN 1 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             1.000
+ U2             0.000         1.000
+ U3             0.000         0.000         1.000
+ U4             0.000         0.000         0.000         1.000
+ U5             0.000         0.000         0.000         0.000         1.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS PATTERN 1 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             1.000
+ U2             0.000         1.000
+ U3             0.000         0.000         1.000
+ U4             0.000         0.000         0.000         1.000
+ U5             0.000         0.000         0.000         0.000         1.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS PATTERN 2 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             1.000
+ U2             0.000         1.000
+ U3             0.000         0.000         1.000
+ U4             0.000         0.000         0.000         1.000
+ U5             0.000         0.000         0.000         0.000         1.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS PATTERN 2 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             1.000
+ U2             0.000         1.000
+ U3             0.000         0.000         1.000
+ U4             0.000         0.000         0.000         1.000
+ U5             0.000         0.000         0.000         0.000         1.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS PATTERN 1 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             0.000
+ U2             0.000         0.000
+ U3             0.000         0.000         0.000
+ U4             0.000         0.000         0.000         0.000
+ U5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS PATTERN 1 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             0.000
+ U2             0.000         0.000
+ U3             0.000         0.000         0.000
+ U4             0.000         0.000         0.000         0.000
+ U5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS PATTERN 2 1
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             0.000
+ U2             0.000         0.000
+ U3             0.000         0.000         0.000
+ U4             0.000         0.000         0.000         0.000
+ U5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS PATTERN 2 2
+
+
+           NU
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              CB#1          CW#1
+              ________      ________
+ U1             0.000         0.000
+ U2             0.000         0.000
+ U3             0.000         0.000
+ U4             0.000         0.000
+ U5             0.000         0.000
+
+
+           THETA
+              U1            U2            U3            U4            U5
+              ________      ________      ________      ________      ________
+ U1             0.000
+ U2             0.000         0.000
+ U3             0.000         0.000         0.000
+ U4             0.000         0.000         0.000         0.000
+ U5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              CB#1          CW#1
+              ________      ________
+                0.000         0.000
+
+
+           BETA
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CW#1           0.000         0.000
+
+
+           PSI
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000
+ CW#1           0.000         0.000
+
+
+     STARTING VALUES FOR LATENT CLASS INDICATOR MODEL PART (WITHIN)
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+               -0.200        -0.299        -0.456        -0.504        -0.469
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.800         0.701         0.544         0.496         0.531
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+               -0.200        -0.299        -0.456        -0.504        -0.469
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.800         0.701         0.544         0.496         0.531
+
+
+     STARTING VALUES FOR LATENT CLASS INDICATOR MODEL PART (BETWEEN)
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 1 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 1
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           TAU(U) FOR LATENT CLASS PATTERN 2 2
+              U1$1          U2$1          U3$1          U4$1          U5$1
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART (WITHIN)
+
+
+           ALPHA(C)
+              CB#1          CB#2          CW#1          CW#2
+              ________      ________      ________      ________
+                0.000         0.000         0.000         0.000
+
+
+           GAMMA(C)
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CB#2           0.000         0.000
+ CW#1           0.000         0.000
+ CW#2           0.000         0.000
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART (BETWEEN)
+
+
+           ALPHA(C)
+              CB#1          CB#2          CW#1          CW#2
+              ________      ________      ________      ________
+                0.000         0.000         0.000         0.000
+
+
+           GAMMA(C)
+              CB#1          CW#1
+              ________      ________
+ CB#1           0.000         0.000
+ CB#2           0.000         0.000
+ CW#1           0.000         0.000
+ CW#2           0.000         0.000
+
+
+           BETA(C)
+              CB#1          CB#2
+              ________      ________
+ CW#1           0.000         0.000
+ CW#2           0.000         0.000
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Entropy
+    Condition Number
+
+  Save file
+    ml_lca_06-results.dat
+
+  Save file format           Free
+
+
+SAVEDATA INFORMATION
+
+
+  Save file
+    ml_lca_06-posteriors.dat
+
+  Order and format of variables
+
+    U1             F20.12
+    U2             F20.12
+    U3             F20.12
+    U4             F20.12
+    U5             F20.12
+    CPROB1         F20.12
+    CPROB2         F20.12
+    CPROB3         F20.12
+    CPROB4         F20.12
+    MLCCB          F20.12
+    MLCCW          F20.12
+    MLCJOINT       F20.12
+    ID             I4
+    G              I3
+
+  Save file format
+    12F20.12 I4 I3
+
+  Save file record length    10000
+
+  Save missing symbol        *
+
+
+     Beginning Time:  23:47:41
+        Ending Time:  23:47:44
+       Elapsed Time:  00:00:03
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

@@ -32,7 +32,11 @@ mplus_entropy_after <- function(lines, from) {
 #' @param from Line index to search after.
 #' @param k Number of classes.
 #' @return A numeric vector of length `k`.
-mplus_avepp_after <- function(lines, from, k) {
+mplus_avepp_after <- function(lines, from, k) diag(mplus_avepp_matrix_after(lines, from, k))
+
+#' The whole AvePP matrix printed after line `from`: row = most likely class,
+#' column = class, in Mplus's labels
+mplus_avepp_matrix_after <- function(lines, from, k) {
   header <- grep("Average Latent Class Probabilities for Most Likely", lines)
   start <- header[header > from][1L]
   stopifnot("no AvePP table after the anchor" = !is.na(start))
@@ -41,7 +45,7 @@ mplus_avepp_after <- function(lines, from, k) {
   values <- do.call(rbind, lapply(lines[rows[-1L]], \(line)
     as.numeric(strsplit(trimws(line), "\\s+")[[1L]])[-1L]))
   stopifnot("the AvePP table is not k by k" = identical(dim(values), c(k, k)))
-  diag(values)
+  values
 }
 
 #' Class counts based on estimated posterior probabilities, in Mplus's labels
@@ -141,3 +145,10 @@ classification_discrepancy <- function(theirs, mine, order) {
 # Mplus prints three decimals, so a value it prints agrees with any value
 # within half a unit of the last place.
 mplus_printed_tolerance <- 5e-4
+
+#' The number printed at the end of the first line matching `pattern`
+printed_value <- function(lines, pattern) {
+  line <- grep(pattern, lines, value = TRUE)[1L]
+  stopifnot("no line matches the pattern" = !is.na(line))
+  as.numeric(utils::tail(strsplit(trimws(line), "[[:space:]]+")[[1L]], 1L))
+}

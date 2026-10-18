@@ -95,8 +95,12 @@
 #'     measurement blocks differ, are held at different values, or are held in
 #'     only one of the two models.}
 #'   \item{`latents_incomparable_models`}{Two models were fitted to different
-#'     data, or differ in covariance structure or centering mode where the
-#'     comparison requires them to match.}
+#'     data, or differ in covariance structure, centering or scaling mode, or
+#'     `drop_empty` where the comparison requires them to match.}
+#'   \item{`latents_parallel_failure`}{With `cores` above one, a worker
+#'     process failed as a whole (for example, it ran out of memory), so some
+#'     candidates of an enumeration were lost. A candidate's own estimation
+#'     error is recorded in the grid instead.}
 #'   \item{`latents_reversed_likelihood`}{The model with more parameters has
 #'     the lower likelihood, so at least one fit is at a local optimum and the
 #'     comparison is meaningless.}
@@ -250,6 +254,9 @@
 #'     not valid at that parameter.}
 #'   \item{`latents_small_classes`}{A profile or group class has effective
 #'     membership below one, so it is supported by less than one observation.}
+#'   \item{`latents_all_starts_boundary`}{`boundary = "exclude"` found every
+#'     start with a variance at `min_variance`, so none could be set aside and
+#'     the best start across all of them is reported.}
 #'   \item{`latents_weak_class`}{`multilpa(family = "additive")` only: a
 #'     group class is supported by fewer than 50 effective groups (see
 #'     `effective_groups` in [get_results()]), because it is

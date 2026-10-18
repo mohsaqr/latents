@@ -69,19 +69,37 @@
 #' @param rule `"likelihood"` takes the highest likelihood whether or not that
 #'   start converged. `"converged"` takes the highest likelihood among the
 #'   converged starts, falling back to every start when none converged.
+#' @param interior `NULL`, or a logical vector of the same length flagging
+#'   the starts with no variance at its lower bound. When supplied, only those
+#'   starts are candidates, and the rule chooses among them; when none is
+#'   flagged, every start is, with a `latents_all_starts_boundary` warning.
 #' @return A single integer index.
 #' @noRd
 .multilpa_select_start <- function(log_likelihood, converged,
-                                   rule = c("likelihood", "converged")) {
+                                   rule = c("likelihood", "converged"),
+                                   interior = NULL) {
   rule <- match.arg(rule)
   stopifnot(
     "`log_likelihood` must be numeric" = is.numeric(log_likelihood),
     "`converged` must be logical and match `log_likelihood`" =
       is.logical(converged) && length(converged) == length(log_likelihood),
     "at least one start must have a finite likelihood" =
-      any(is.finite(log_likelihood))
+      any(is.finite(log_likelihood)),
+    "`interior` must be NULL or logical and match `log_likelihood`" =
+      is.null(interior) || (is.logical(interior) &&
+        length(interior) == length(log_likelihood) && !anyNA(interior))
   )
   usable <- is.finite(log_likelihood)
+  if (!is.null(interior)) {
+    if (any(usable & interior)) {
+      usable <- usable & interior
+    } else {
+      warning(warningCondition(paste(
+        "Every start reached a variance at its lower bound, so none could be",
+        "excluded; the best start across all of them is reported."),
+        class = "latents_all_starts_boundary", call = NULL))
+    }
+  }
   settled <- usable & converged
   candidates <- if (identical(rule, "converged") && any(settled)) {
     which(settled)

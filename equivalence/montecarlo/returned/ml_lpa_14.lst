@@ -1,0 +1,218 @@
+ml_lpa_14-lg.dat
+File name:	ml_lpa_14-lg.dat	
+File size:	55175 bytes  900 records	
+File date:	2026-Oct-17 11:51:56 PM	
+Syntax:	ml_lpa_14.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+ml_lpa_14	2-GClass  2-Cluster	-4108.3595	8318.7549	8246.7190	8261.7190	15	0.1116	0.6210	
+ml_lpa_14 - LL = -4108.3595
+2-GClass  2-Cluster Syntax Model	
+					
+Number of groups	60				
+Number of cases	900				
+Number of parameters (Npar)	15				
+Activated Constraints	0				
+Random Seed	20261017				
+Best Start Seed	1644669				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4108.3595				
+Log-prior	0.0000				
+Log-posterior	-4108.3595				
+BIC (based on LL)	8318.7549				
+AIC (based on LL)	8246.7190				
+AIC3 (based on LL)	8261.7190				
+CAIC (based on LL)	8333.7549				
+SABIC (based on LL)	8271.1174				
+BIC (based on LL,Ngroups)	8278.1342				
+CAIC (based on LL,Ngroups)	8293.1342				
+SABIC (based on LL,Ngroups)	8230.9552				
+					
+					
+Classification Statistics	GClass	Cluster			
+Classification errors	0.0411	0.1116			
+Reduction of errors (Lambda)	0.9176	0.7736			
+Entropy R-squared	0.8389	0.6210			
+Standard R-squared	0.8742	0.6784			
+Classification log-likelihood	-4344.5309				
+Entropy	236.1714				
+CLC	8689.0618				
+AWE	8938.1336				
+ICL-BIC	8791.0977				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	29.3186	0.7836	30.1022		
+2	1.6814	28.2164	29.8978		
+Total	31.0000	29.0000	60.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	28.2151	1.8871	30.1022		
+2	1.8871	28.0107	29.8978		
+Total	30.1022	29.8978	60.0000		
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	392.0504	51.4700	443.5205		
+2	48.9496	407.5300	456.4795		
+Total	441.0000	459.0000	900.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	371.1664	72.3540	443.5205		
+2	72.3540	384.1255	456.4795		
+Total	443.5205	456.4795	900.0000		
+					
+Files					
+Infile	C:\lgmontecarlo\ml_lpa_14-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261017				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     900				
+predictionstatistics	no				
+outfile					
+file name	ml_lpa_14_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	60			
+Latent					
+GClass	Nominal	Group	2		
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'ml_lpa_14_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.				
+GClass(2)	<-	1			-0.0068	.	.	.				
+												
+Cluster(1)	<-	1			0.0000	.	.	.				
+Cluster(2)	<-	1			1.1582	.	.	.				
+Cluster(1)	<-	GClass(1)			0.0000	.	.	.				
+Cluster(2)	<-	GClass(1)			0.0000	.	.	.				
+Cluster(1)	<-	GClass(2)			0.0000	.	.	.				
+Cluster(2)	<-	GClass(2)			-2.2480	.	.	.				
+												
+y1	<-	1			0.1485	.	.	.				
+y1	<-	Cluster(1)			0.0000	.	.	.				
+y1	<-	Cluster(2)			1.2861	.	.	.				
+												
+y2	<-	1			0.0318	.	.	.				
+y2	<-	Cluster(1)			0.0000	.	.	.				
+y2	<-	Cluster(2)			1.3320	.	.	.				
+												
+y3	<-	1			0.0465	.	.	.				
+y3	<-	Cluster(1)			0.0000	.	.	.				
+y3	<-	Cluster(2)			-1.1859	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	Cluster(1)	1.0389	.	.	.				
+y1			|	Cluster(2)	0.8318	.	.	.				
+y2			|	Cluster(1)	1.0244	.	.	.				
+y2			|	Cluster(2)	1.1565	.	.	.				
+y3			|	Cluster(1)	0.9014	.	.	.				
+y3			|	Cluster(2)	0.9511	.	.	.				
+Profile
+ 	GClass	 	Cluster	 	 	
+ 	1	2	1	2	Overall	
+Size	0.5017	0.4983	0.4928	0.5072	 	
+y1	 	
+Mean	1.1272	0.4721	0.1485	1.4346	0.8008	
+y2	 	
+Mean	1.0455	0.3670	0.0318	1.3638	0.7074	
+y3	 	
+Mean	-0.8559	-0.2519	0.0465	-1.1393	-0.5549	
+	
+ 	GClass	 	Cluster	 	 	
+ 	1	2	1	2	 	
+Cluster	 	
+1	0.2390	0.7483	.	.	 	
+2	0.7610	0.2517	.	.	 	
+ProbMeans-Posterior
+	GClass		Cluster		
+	1	2	1	2	
+Overall	0.5017	0.4983	0.4928	0.5072	
+Dependent					
+y1					
+-2.841 - -0.186	0.3007	0.6993	0.9158	0.0842	
+-0.186 - 0.532	0.3657	0.6343	0.6678	0.3322	
+0.532 - 1.139	0.5571	0.4429	0.4438	0.5562	
+1.140 - 1.812	0.6044	0.3956	0.3024	0.6976	
+1.813 - 4.341	0.6807	0.3193	0.1343	0.8657	
+y2					
+-3.024 - -0.327	0.3532	0.6468	0.8471	0.1529	
+-0.320 - 0.407	0.3718	0.6282	0.6823	0.3177	
+0.408 - 1.058	0.4651	0.5349	0.5514	0.4486	
+1.060 - 1.737	0.6137	0.3863	0.2809	0.7191	
+1.747 - 4.171	0.7048	0.2952	0.1023	0.8977	
+y3					
+-3.996 - -1.580	0.6667	0.3333	0.1283	0.8717	
+-1.571 - -0.856	0.6103	0.3897	0.3160	0.6840	
+-0.855 - -0.276	0.5422	0.4578	0.4507	0.5493	
+-0.271 - 0.433	0.3740	0.6260	0.7211	0.2789	
+0.455 - 2.882	0.3154	0.6846	0.8479	0.1521	

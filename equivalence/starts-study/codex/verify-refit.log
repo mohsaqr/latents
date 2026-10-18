@@ -1,0 +1,29 @@
+MAX ABS START LL DIFFERENCE 0 
+ num [1:300, 1:4] 0.643 1.504 3.461 3.926 -0.801 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : NULL
+  ..$ : chr [1:4] "y1" "y2" "y3" "y4"
+MPLUS DATA DIFFERENCE 5.3290705182007514e-15 
+EFFECTIVE SMALL COUNT 0.99999999999979439 
+MANUAL ORIGINAL LL -2048.6781089846954 stored -2048.6781089846954 
+SPIKE TENFOLD SMALLER VARIANCE LL -2044.0729387987076 GAIN 4.6051701859878449 
+SCRIPTS PARSE; VERIFICATION PASSED
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_4.5.2

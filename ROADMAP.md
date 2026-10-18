@@ -32,6 +32,115 @@ its evidence (an external reference, a simulation, or both).
 | 6 | Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
 | 7 | G6: binary and count growth mixtures (adaptive quadrature) | Latent GOLD, GLMMadaptive | L | November |
 
+## Priority E — Equivalence 2.0 (plan, set 2026-10-17)
+
+Owner priority: equivalence is to be very strong. The suite has breadth (Mplus,
+Latent GOLD, mclust, lcmm, flexmix, depmixS4, tidySEM, tidyLPA; 700
+expectations at 0.95.0) but the work of 2026-10-17 exposed three weaknesses:
+
+- **Tests that could not fail.** Every group-level statistic replaced by a
+  perfect 1 still passed 26 of 26 expectations, because the two-level
+  references are so well separated that everything prints as 1.000.
+- **Tests that passed for the wrong reason.** AvePP matched by sorting apart
+  from the class alignment; reference ids unchecked; `run.sh` reusing stale
+  outputs; a two-level count parser reading the joint-pattern table.
+- **Gaps no test covered.** Rows with nothing observed were counted in
+  entropy for several releases: no reference dataset had such a row, and the
+  Mplus helper computed entropy itself instead of reading the package's value.
+
+Resources on this machine: genuine **Mplus 9 Demo** (`/Applications/MplusDemo/mpdemo`)
+and **Latent GOLD 6.1** under Wine (`~/.wine-latentgold`), both run in batch;
+**simulab** 0.4.10 (`../simulab`), whose generators store the true parameters
+with every dataset (`simulate_lpa()`, `simulate_ml_lpa()`, `simulate_lca()`,
+`simulate_hmm()`, `simulate_markov()`, `simulate_growth()`,
+`inject_missingness()` with MCAR/MAR/MNAR, `apply_batch()`); and **JStats**
+(`../JStats/validation/r-reference/`), 95 genuine Mplus mixture outputs, 62
+with their data file, of which 4 transition fixtures are used so far.
+
+Constraint to verify first: the Mplus **Demo** limits model size (number of
+dependent variables and covariates); configurations beyond it need a full
+licence or Latent GOLD alone.
+
+| # | Component | Deliverable | Acceptance | Size |
+|---|---|---|---|---|
+| E2.1 | **Coverage audit** | `equivalence/COVERAGE.md`: every exported verb and every option of the fitting functions against the external reference that checks it (program, file, tolerance) or "none" | Every row filled; every "none" either gets an item below or a stated reason | S |
+| E2.2 | **Moderately separated references** | Two-level LPA and LCA cases with entropy 0.5–0.8 at both levels, through Mplus and Latent GOLD | A deliberately perfect group-level statistic fails the suite (the regression the 2026-10-17 review found) | S |
+| E2.3 | **Monte Carlo equivalence** | `equivalence/montecarlo/`: simulab generates N datasets per configuration (single and two level; LPA over the structures Mplus parameterizes; LCA binary, polytomous, nominal; missing values MCAR/MAR; covariates); batch Mplus and Latent GOLD runs; a test compares log likelihood, parameters, posteriors (row by row, one relabelling), N, criteria, entropy, AvePP, class counts and standard errors | Per configuration, agreement within printed precision on every dataset; results and the generating seeds retained so the test runs offline | M–L |
+| E2.4 | **Global-maximum audit** | Across many seeds per dataset, the package's log likelihood is never below the reference's beyond tolerance | No dataset where a reference program finds a higher maximum; any exception investigated, not tolerated | S |
+| E2.5 | **Recovery against the truth** | On the simulab datasets, estimates and classifications against the generating parameters (bias, RMSE, coverage where standard errors are reported) | Catches errors shared by every program (parameterization, conventions); reported per configuration in `validation/` | M |
+| E2.6 | **JStats Mplus runs** | Refit the in-scope runs of the 62 (LPA EEI/VVI, LCA binary, polytomous, nominal, count, covariates, R3STEP/DU3STEP/DE3STEP, TECH14 statistics) with model sections parsed, not names | Each in-scope run compared, or its exclusion stated (factor and censored mixtures are out of scope) | M |
+| E2.7 | **Sabotage battery** | `equivalence/sabotage/`: a catalogue of deliberate defects (wrong denominator, swapped labels, wrong rows or groups counted, dropped weights, shifted entropy, wrong parameter count), each injected in turn; the suite must fail on every one | 100% of the catalogue detected; a defect that survives is a missing test | M |
+| E2.8 | **Claims registry** | Every statement of agreement in README, NEWS, vignettes and equivalence READMEs mapped to the test that establishes it; a check fails on a claim without one | No unbacked claim (the 2026-10-17 README overclaim is the case it prevents) | S–M |
+| E2.9 | **Known gaps with genuine runs** | Houle families against Mplus; sampling weights against `TYPE = MIXTURE COMPLEX` with `WEIGHT`; the bootstrap LRT statistic against TECH14; ordinal and count items against Latent GOLD; `scaling` against Mplus on standardized data | Each gap closed or its limit documented | M each |
+
+Order: E2.1 (where to aim), then E2.2 and E2.7 (tests that can fail), then
+E2.3 with E2.4 and E2.5 (the main body), then E2.6, E2.8 and E2.9.
+
+### Status (2026-10-18)
+
+- [x] **E2.1** `equivalence/COVERAGE.md`: 82 rows covered, 37 partial, 40
+  none at the audit; its gap list drives E2.9.
+- [x] **E2.2** Two-level LPA and LCA at entropy 0.55 to 0.87 (main kit) and
+  two-level EEE/VVV (extended kit), group level included.
+- [x] **E2.3** `equivalence/montecarlo/`: 160 simulated datasets through Mplus
+  and Latent GOLD; 3,461 + 403 + 49 expectations.
+- [x] **E2.4** 1,200 of 1,200 fits reach the reference maximum at the true
+  number of classes (retained `audit-maxima.csv`).
+- [x] **E2.5** `validation/MONTECARLO_RECOVERY.md`: mean bias at most 0.015,
+  item probability bias 0.003, logits within one Monte Carlo SE.
+- [x] **E2.6** `test-jstats-mplus.R`: 42 genuine Mplus runs, 450 expectations;
+  19 runs out of scope (factor, censored, growth with occasion variances,
+  constraints, KNOWNCLASS, TRAINING, direct effects).
+- [x] **E2.7** `equivalence/sabotage/run.R`: 11 injected defects, all
+  detected, with an identity control that must stay undetected.
+- [x] **E2.8** `equivalence/CLAIMS.csv` with a test that every claim names a
+  passing test or is marked unbacked.
+- [~] **E2.9** Closed: `scaling` (grand and person) against Mplus, weights in
+  a mixture against Mplus WEIGHT with robust SEs, `bootstrap_lrt()` against
+  TECH14, families at Latent GOLD's finest quadrature, ordinal and count
+  against Latent GOLD (now a test), `drop_empty = FALSE` against Latent GOLD,
+  criteria/AvePP matrix/OCC/`predict()`, `lta()` with missing values and with
+  shared variances. Open (each M): Houle families against Mplus; `lta()` order
+  2, mover-stayer, `occasions = "grid"`, full covariance, ordinal and count;
+  `mixture_regression()` negative binomial, ordinal and two-level beyond one
+  class; `three_step()` and `r3step()` robust SEs and group level;
+  `parameter_inference(method = "bootstrap")`; `pool_imputations()`;
+  `fit_staged()`; `sensitivity()`.
+
+### Found and fixed by Equivalence 2.0
+
+- `lta()` general engine: the quasi-Newton finish stopped early near a
+  boundary (factr tied to `tol` since 0.9.13); LMest occasion model off by
+  1e-4 in transitions. Fixed (factr = 10, as in 0.9.1).
+- `r3step()`: BFGS from zero settled on a separation ridge (Mplus ex7.3);
+  `latents_no_converge`. Fixed (second start from the proportional estimate).
+- Comparisons kept as scripts could not fail the suite; the Latent GOLD kit
+  compared against saved targets. Fixed (tests, live targets).
+- `enumerate_classes(cores = )` on macOS with Accelerate BLAS: forked workers
+  segfaulted once the session had used BLAS, and a worker killed by a signal
+  came back as an empty candidate. Fixed (socket cluster where forking is
+  unsafe; lost workers raise `latents_parallel_failure`).
+- The documentation claimed plain EM follows Mplus's path from the same
+  start; untested, so narrowed to mclust's, which is tested.
+
+### New item from Equivalence 2.0
+
+- [ ] **Screened random starts.** On over-extracted models (4 profiles fitted to
+  3-profile data) the random starts, converged k-means partitions, explore the
+  likelihood less widely than Mplus's screened random starts: Mplus reaches
+  -3106.613 (twice) and a degenerate -3105.390, this package -3108.709 from 30
+  to 300 starts and -3106.051 from 1000. A two-stage search (many short
+  starts, the best run to convergence, as Mplus's STARTS = n m) would close
+  it. Changes results for existing seeds, so it needs an opt-in or a
+  deliberate release. **M**
+
+Rules for every item: the reference output is genuine and retained with its
+inputs and version; the comparison reads the package's reported values, never
+a formula written in the test; class alignment uses one relabelling chosen
+from the posteriors and reused for every class-level quantity; ids are
+checked unique and complete; and each new test is shown to fail on a
+deliberate defect before it is accepted.
+
 ## Priority 0 — One engine (plan)
 
 Consolidate the eight estimation engines into measurement blocks × latent

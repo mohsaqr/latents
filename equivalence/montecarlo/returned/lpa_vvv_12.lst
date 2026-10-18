@@ -1,0 +1,196 @@
+lpa_vvv_12-lg.dat
+File name:	lpa_vvv_12-lg.dat	
+File size:	29323 bytes  500 records	
+File date:	2026-Oct-17 11:51:01 PM	
+Syntax:	lpa_vvv_12.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+lpa_vvv_12	2-Cluster	-2252.5983	4623.2741	4543.1965	4562.1965	19	0.0763	0.7215	
+lpa_vvv_12 - LL = -2252.5983
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	19				
+Activated Constraints	0				
+Random Seed	20261017				
+Best Start Seed	356704				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2252.5983				
+Log-prior	0.0000				
+Log-posterior	-2252.5983				
+BIC (based on LL)	4623.2741				
+AIC (based on LL)	4543.1965				
+AIC3 (based on LL)	4562.1965				
+CAIC (based on LL)	4642.2741				
+SABIC (based on LL)	4562.9669				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0763				
+Reduction of errors (Lambda)	0.8030				
+Entropy R-squared	0.7215				
+Standard R-squared	0.7631				
+Classification log-likelihood	-2345.5221				
+Entropy	92.9238				
+CLC	4691.0442				
+AWE	4984.1993				
+ICL-BIC	4809.1217				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	178.7026	14.8315	193.5341		
+2	23.2974	283.1685	306.4659		
+Total	202.0000	298.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	165.4271	28.1071	193.5341		
+2	28.1071	278.3588	306.4659		
+Total	193.5341	306.4659	500.0000		
+					
+Files					
+Infile	C:\lgmontecarlo\lpa_vvv_12-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261017				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+outfile					
+file name	lpa_vvv_12_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lpa_vvv_12_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+   y1 <-> y2 | Cluster;
+   y1 <-> y3 | Cluster;
+   y2 <-> y3 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+Cluster(2)	<-	1			0.4597	.	.	.				
+												
+y1	<-	1			1.7505	.	.	.				
+y1	<-	Cluster(1)			0.0000	.	.	.				
+y1	<-	Cluster(2)			-1.6679	.	.	.				
+												
+y2	<-	1			1.1615	.	.	.				
+y2	<-	Cluster(1)			0.0000	.	.	.				
+y2	<-	Cluster(2)			-1.0030	.	.	.				
+												
+y3	<-	1			-1.0690	.	.	.				
+y3	<-	Cluster(1)			0.0000	.	.	.				
+y3	<-	Cluster(2)			1.0758	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	Cluster(1)	0.6935	.	.	.				
+y1			|	Cluster(2)	1.0973	.	.	.				
+y2			|	Cluster(1)	1.5683	.	.	.				
+y2			|	Cluster(2)	1.0846	.	.	.				
+y3			|	Cluster(1)	0.7091	.	.	.				
+y3			|	Cluster(2)	0.9416	.	.	.				
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1	<->	y2	|	Cluster(1)	-0.2500	.	.	.				
+y1	<->	y2	|	Cluster(2)	0.6235	.	.	.				
+y1	<->	y3	|	Cluster(1)	0.1148	.	.	.				
+y1	<->	y3	|	Cluster(2)	0.2925	.	.	.				
+y2	<->	y3	|	Cluster(1)	0.3774	.	.	.				
+y2	<->	y3	|	Cluster(2)	0.3502	.	.	.				
+Profile
+ 	Cluster	 	 	
+ 	1	2	Overall	
+Size	0.3871	0.6129	 	
+y1	 	
+Mean	1.7505	0.0825	0.7281	
+y2	 	
+Mean	1.1615	0.1585	0.5468	
+y3	 	
+Mean	-1.0690	0.0068	-0.4096	
+ProbMeans-Posterior
+	Cluster		
+	1	2	
+Overall	0.3871	0.6129	
+Dependent			
+y1			
+-3.536 - -0.345	0.0022	0.9978	
+-0.329 - 0.435	0.0870	0.9130	
+0.444 - 1.081	0.3668	0.6332	
+1.082 - 1.785	0.6120	0.3880	
+1.793 - 3.831	0.8674	0.1326	
+y2			
+-2.971 - -0.458	0.1627	0.8373	
+-0.452 - 0.196	0.2708	0.7292	
+0.201 - 0.788	0.3246	0.6754	
+0.789 - 1.533	0.4436	0.5564	
+1.551 - 4.503	0.7337	0.2663	
+y3			
+-3.723 - -1.361	0.7286	0.2714	
+-1.345 - -0.646	0.5743	0.4257	
+-0.620 - -0.159	0.3732	0.6268	
+-0.156 - 0.461	0.1914	0.8086	
+0.462 - 3.103	0.0678	0.9322	

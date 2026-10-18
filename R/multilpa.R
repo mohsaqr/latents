@@ -828,8 +828,20 @@
 #'   none did. Use it when an unconverged start edges out a converged one by a
 #'   negligible amount, which happens when a membership logit creeps along a flat
 #'   ridge of the likelihood: the converged start is then a maximum that
-#'   [parameter_inference()] can work with, and the other is not. `summary()`
-#'   and `get_results(fit, "starts")` show every start either way.
+#'   [parameter_inference()] can work with, and the other is not.
+#'   `summary()` and `get_results(fit, "starts")` show every start either way.
+#' @param boundary Whether a start with a variance at `min_variance` (a
+#'   covariance eigenvalue, for full covariances) may be reported.
+#'   `"allow"`, the default, lets it, as Mplus does, with a `latents_boundary`
+#'   warning. `"exclude"` sets such starts aside and applies `select_start`
+#'   to the rest; the `boundary` column of the starts table shows which they
+#'   are, for models without covariates. A Gaussian profile can raise the
+#'   likelihood without limit by shrinking around one observation, so the
+#'   size of that gain is set by `min_variance` rather than by the data, and
+#'   the more starts are run the likelier one finds it. When every start is at
+#'   the bound, the best is reported with a `latents_all_starts_boundary`
+#'   warning. Categorical indicators alone have no variances and are
+#'   unaffected.
 #' @param prior `NULL`, the default, for maximum likelihood, or
 #'   [prior_control()] for maximum a posteriori estimation of the Gaussian
 #'   means and covariances under the conjugate prior of Fraley and Raftery
@@ -890,7 +902,7 @@
 #'   iteration stays monotone and converges to the same kind of maximum. The
 #'   convergence test is read over a whole cycle, so it is never looser than
 #'   plain EM's. `"none"` runs plain EM, which follows the same path as other
-#'   EM implementations from the same start (mclust, Mplus) and is the choice
+#'   EM implementations from the same start (mclust's `me()`) and is the choice
 #'   for step-by-step reproduction. `iterations` and `max_iter` count EM steps
 #'   either way. Fits with `prior`, and models with membership covariates,
 #'   always use plain EM. For EVE and VVE, whose shared orientation has no
@@ -1177,6 +1189,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        volume = NULL, shape = NULL, orientation = NULL,
                        model = NULL,
                        select_start = c("likelihood", "converged"),
+                       boundary = c("allow", "exclude"),
                        prior = NULL, noise = FALSE,
                        acceleration = c("squarem", "none"),
                        family = c("profiles", "additive", "dispersion",
@@ -1237,6 +1250,9 @@ multilpa <- function(data, vars, id, n_profiles,
       class = "latents_bad_argument", call = NULL))
   }
   select_start <- match.arg(select_start)
+  boundary <- match.arg(boundary)
+  # Read once here: `boundary` is reused below for the selected fit's flag.
+  exclude_boundary <- identical(boundary, "exclude")
   acceleration <- match.arg(acceleration)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
@@ -1367,7 +1383,8 @@ multilpa <- function(data, vars, id, n_profiles,
       missing = missing, profile_slopes = profile_slopes,
       covariance_model = covariance_model,
       categorical = categorical, min_probability = min_probability,
-      time = time, fixed = fixed, select_start = select_start, call = call,
+      time = time, fixed = fixed, select_start = select_start, boundary = boundary,
+      call = call,
       weights = weights, ordinal = ordinal, count = count,
       count_model = count_model, count_dispersion = count_dispersion,
       centering = centering, scaling = scaling, drop_empty = drop_empty)
@@ -1517,7 +1534,9 @@ multilpa <- function(data, vars, id, n_profiles,
                held, structure, prior_parameters,
                accelerate_em = identical(acceleration, "squarem"),
                sampling_weights = sampling_weights, extra = extra)
-  }, select_start)
+  }, select_start, interior = if (exclude_boundary) function(attempt) {
+    !.multilpa_covariance_boundary(attempt$parameters, min_variance)
+  })
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
@@ -1886,6 +1905,7 @@ multilpa <- function(data, vars, id, n_profiles,
 #'   [multilpa()].
 #' @param missing,profile_slopes As in [multilpa()].
 #' @param start,fixed Refused when they are anything but their default.
+#' @param boundary As in [multilpa()].
 #' @param call The user's call, recorded on the result.
 #' @return An object of class `multilpa_covariates`.
 #' @noRd
@@ -1897,6 +1917,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                       profile_slopes = "shared", covariance_model,
                                       categorical, min_probability, time,
                                       fixed, select_start = "likelihood",
+                                      boundary = "allow",
                                       call, weights = NULL, ordinal = character(),
                                       count = character(), count_model = "poisson",
                                       count_dispersion = "varying",
@@ -1923,7 +1944,8 @@ multilpa <- function(data, vars, id, n_profiles,
     min_variance = min_variance, seed = seed, time = time,
     covariance_model = covariance_model, categorical = categorical,
     min_probability = min_probability, missing = missing,
-    profile_slopes = profile_slopes, select_start = select_start, call = call,
+    profile_slopes = profile_slopes, select_start = select_start,
+    boundary = boundary, call = call,
     weights = weights, ordinal = ordinal, count = count,
     count_model = count_model, count_dispersion = count_dispersion,
     centering = centering, scaling = scaling, drop_empty = drop_empty)

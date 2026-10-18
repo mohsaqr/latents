@@ -1,0 +1,21 @@
+DATA: FILE = standardize.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3 y4;
+ USEVARIABLES = y1 y2 y3 y4;
+ IDVARIABLE = id;
+ CLASSES = c(3);
+DEFINE: STANDARDIZE y1 y2 y3 y4;
+ANALYSIS: TYPE = MIXTURE; STARTS = 200 40; STSEED = 20261017;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001; RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1-y4]; y1-y4;
+ %c#2%
+ [y1-y4]; y1-y4;
+ %c#3%
+ [y1-y4]; y1-y4;
+SAVEDATA: FILE = standardize-posteriors.dat; SAVE = CPROBABILITIES; FORMAT = F20.12;
+ RESULTS = standardize-results.dat;

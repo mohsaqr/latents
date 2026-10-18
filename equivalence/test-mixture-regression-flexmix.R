@@ -177,3 +177,17 @@ test_that("the parameter count is flexmix's", {
                          concomitant = flexmix::FLXPmultinom(~ w))
   expect_identical(ours$n_parameters, as.integer(theirs@df))
 })
+
+test_that("bic_rows is flexmix's BIC, penalised by rows", {
+  ours <- mixture_regression(yb ~ x, data_for_comparison, 2, family = "binomial",
+                 id = "id", class_level = "group", membership = ~ w,
+                 n_starts = 2, seed = 1, vcov_type = "none")
+  theirs <- best_flexmix(cbind(yb, 1 - yb) ~ x | id,
+                         data = data_for_comparison, k = 2,
+                         model = flexmix::FLXMRglm(family = "binomial"),
+                         concomitant = flexmix::FLXPmultinom(~ w))
+  fit <- as.data.frame(get_results(ours, "fit"))
+  expect_equal(fit$bic_rows, stats::BIC(theirs), tolerance = 1e-7)
+  # `bic` counts the 80 groups, flexmix the 480 rows.
+  expect_lt(fit$bic, fit$bic_rows)
+})

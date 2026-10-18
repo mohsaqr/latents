@@ -1,0 +1,13 @@
+"defect","description","target","filter","expectations","failures","errors","detected","minutes"
+"control_no_defect","No defect (the original function)",".multilpa_relative_entropy","missing-patterns|mplus-mixture-weights|mplus-standardize|mplus-person-scaling",112,0,0,FALSE,1.9
+"entropy_denominator","Relative entropy divides by 1.01 n log K",".multilpa_relative_entropy","montecarlo|mplus-classification",3879,151,0,TRUE,1.6
+"empty_rows_counted","Rows with nothing observed counted in classification statistics",".multilpa_classified_posteriors","missing-patterns|montecarlo",3956,109,0,TRUE,3.3
+"empty_groups_counted","Groups with nothing observed counted in group statistics",".multilpa_informative_groups","missing-patterns",92,1,0,TRUE,1.8
+"avepp_transposed","Average posterior matrix transposed",".multilpa_average_posterior_matrix","montecarlo|mplus-classification",3879,119,0,TRUE,1.7
+"parameter_count","One parameter too many",".multilpa_count_parameters","montecarlo|mclust",3970,1274,0,TRUE,1.8
+"gaussian_density","Gaussian log density scaled by 1.001",".latents_gaussian_log_density","montecarlo|mclust",3970,828,0,TRUE,1.7
+"variance_mstep","M-step variances inflated by 1%",".multilpa_maximization","montecarlo",538,56,6,TRUE,0.9
+"mixing_update","Mixing (class share) update shrunk toward equal shares",".mixture_update_mixing","mixture-regression-flexmix|growth-mixture-lcmm",49,10,0,TRUE,0.5
+"weights_dropped","Sampling weights ignored in the E-step",".multilpa_weigh","mplus-mixture-weights",9,6,0,TRUE,0
+"scaling_denominator","Standard deviations for scaling use n instead of n - 1",".multilpa_indicator_scales","mplus-standardize|mplus-person-scaling",11,2,0,TRUE,0.1
+"blrt_p_value","Bootstrap p-value without the +1 correction",".latents_blrt_p_value","^enumeration$",321,1,0,TRUE,0.2

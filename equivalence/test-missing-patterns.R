@@ -17,12 +17,6 @@ fit_missing_pattern <- function(case) {
            seed = 1, tol = 1e-10, max_iter = 5000)
 }
 
-#' The number printed at the end of the first line matching `pattern`
-printed_value <- function(lines, pattern) {
-  line <- grep(pattern, lines, value = TRUE)[1L]
-  as.numeric(utils::tail(strsplit(trimws(line), "[[:space:]]+")[[1L]], 1L))
-}
-
 #' The relabelling of this package's classes that brings its posteriors
 #' closest to the reference's, and the largest difference under it
 #'

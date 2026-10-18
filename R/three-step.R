@@ -757,15 +757,38 @@ r3step <- function(x, data, covariates = character(),
   }
   gradient <- function(theta) -colSums(score_rows(theta))
 
-  fitted <- stats::optim(rep(0, ncol(design) * n_free), objective, gradient,
-                         method = "BFGS",
-                         control = list(maxit = 1000L, reltol = 1e-12))
-  if (!identical(fitted$convergence, 0L)) {
+  ## The likelihood with the error matrix held fixed is not concave. When a
+  ## covariate nearly separates the classes it can hold a ridge whose basin
+  ## BFGS enters from zero and settles on, far from the finite maximum (Mplus
+  ## UG ex7.3: -log L 81.7 on the ridge against 62.6 at the maximum). The
+  ## proportional-assignment estimate, a multinomial logit weighted by the
+  ## posteriors, is concave and finite and lies in the maximum's basin; the
+  ## search runs from it and from zero and keeps the better converged end.
+  proportional_objective <- function(theta) {
+    prior <- .multilpa_logit_prior(shape(theta), design)
+    -sum(pieces$posteriors * log(pmax(prior, 1e-300)))
+  }
+  proportional_gradient <- function(theta) {
+    prior <- .multilpa_logit_prior(shape(theta), design)
+    residual <- (pieces$posteriors - prior)[, seq_len(n_free), drop = FALSE]
+    -colSums(do.call(cbind, lapply(seq_len(n_free), function(k) design * residual[, k])))
+  }
+  control <- list(maxit = 1000L, reltol = 1e-12)
+  zero <- rep(0, ncol(design) * n_free)
+  starts <- list(zero, stats::optim(zero, proportional_objective, proportional_gradient,
+                                    method = "BFGS", control = control)$par)
+  attempts <- lapply(starts, function(start)
+    stats::optim(start, objective, gradient, method = "BFGS", control = control))
+  converged <- vapply(attempts, function(attempt) identical(attempt$convergence, 0L),
+                      logical(1))
+  if (!any(converged)) {
     stop(errorCondition(
       sprintf("The membership regression did not converge (optim code %d).",
-              fitted$convergence),
+              attempts[[1L]]$convergence),
       class = "latents_no_converge", call = NULL))
   }
+  attempts <- attempts[converged]
+  fitted <- attempts[[which.min(vapply(attempts, `[[`, numeric(1), "value"))]]
   information <- .multilpa_observed_hessian(
     function(step) objective(fitted$par + step),
     function(step) gradient(fitted$par + step),

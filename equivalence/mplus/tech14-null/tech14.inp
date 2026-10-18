@@ -1,0 +1,18 @@
+TITLE: latents bootstrap LRT, 3 (H0) versus 4 classes, data from 3 classes;
+DATA: FILE = tech14.dat;
+VARIABLE:
+ NAMES = id u1 u2 u3 u4 u5 u6;
+ USEVARIABLES = u1 u2 u3 u4 u5 u6;
+ IDVARIABLE = id;
+ CATEGORICAL = u1 u2 u3 u4 u5 u6;
+ CLASSES = c(4);
+ANALYSIS:
+ TYPE = MIXTURE;
+ STARTS = 400 80;
+ STSEED = 20261018;
+ LRTSTARTS = 0 0 100 20;
+ LRTBOOTSTRAP = 100;
+ MITERATIONS = 10000;
+MODEL:
+ %OVERALL%
+OUTPUT: TECH1 TECH14;

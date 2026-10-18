@@ -1,0 +1,221 @@
+ml_lpa_eee_02-lg.dat
+File name:	ml_lpa_eee_02-lg.dat	
+File size:	55329 bytes  900 records	
+File date:	2026-Oct-18 1:01:03 AM	
+Syntax:	ml_lpa_eee_02.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+ml_lpa_eee_02	2-GClass  2-Cluster	-3924.2604	7950.5567	7878.5207	7893.5207	15	0.1069	0.6316	
+ml_lpa_eee_02 - LL = -3924.2604
+2-GClass  2-Cluster Syntax Model	
+					
+Number of groups	60				
+Number of cases	900				
+Number of parameters (Npar)	15				
+Activated Constraints	0				
+Random Seed	20261018				
+Best Start Seed	2416677				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3924.2604				
+Log-prior	0.0000				
+Log-posterior	-3924.2604				
+BIC (based on LL)	7950.5567				
+AIC (based on LL)	7878.5207				
+AIC3 (based on LL)	7893.5207				
+CAIC (based on LL)	7965.5567				
+SABIC (based on LL)	7902.9191				
+BIC (based on LL,Ngroups)	7909.9359				
+CAIC (based on LL,Ngroups)	7924.9359				
+SABIC (based on LL,Ngroups)	7862.7569				
+					
+					
+Classification Statistics	GClass	Cluster			
+Classification errors	0.0189	0.1069			
+Reduction of errors (Lambda)	0.9611	0.7735			
+Entropy R-squared	0.9061	0.6316			
+Standard R-squared	0.9322	0.6886			
+Classification log-likelihood	-4150.2491				
+Entropy	225.9888				
+CLC	8300.4982				
+AWE	8549.5701				
+ICL-BIC	8402.5342				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	30.3771	0.5086	30.8857		
+2	0.6229	28.4914	29.1143		
+Total	31.0000	29.0000	60.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	29.8689	1.0167	30.8857		
+2	1.0167	28.0976	29.1143		
+Total	30.8857	29.1143	60.0000		
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	431.0888	44.2600	475.3488		
+2	51.9112	372.7400	424.6512		
+Total	483.0000	417.0000	900.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	405.4978	69.8510	475.3488		
+2	69.8510	354.8001	424.6512		
+Total	475.3488	424.6512	900.0000		
+					
+Files					
+Infile	C:\lgextended\ml_lpa_eee_02-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261018				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     900				
+predictionstatistics	no				
+outfile					
+file name	ml_lpa_eee_02_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	60			
+Latent					
+GClass	Nominal	Group	2		
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261018 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'ml_lpa_eee_02_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y1 <-> y2;
+   y1 <-> y3;
+   y2 <-> y3;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+GClass(1)	<-	1	0.0000	.	.	.				
+GClass(2)	<-	1	-0.0591	.	.	.				
+										
+Cluster(1)	<-	1	0.0000	.	.	.				
+Cluster(2)	<-	1	-1.5625	.	.	.				
+Cluster(1)	<-	GClass(1)	0.0000	.	.	.				
+Cluster(2)	<-	GClass(1)	0.0000	.	.	.				
+Cluster(1)	<-	GClass(2)	0.0000	.	.	.				
+Cluster(2)	<-	GClass(2)	2.8786	.	.	.				
+										
+y1	<-	1	0.1215	.	.	.				
+y1	<-	Cluster(1)	0.0000	.	.	.				
+y1	<-	Cluster(2)	1.3218	.	.	.				
+										
+y2	<-	1	0.1543	.	.	.				
+y2	<-	Cluster(1)	0.0000	.	.	.				
+y2	<-	Cluster(2)	1.0840	.	.	.				
+										
+y3	<-	1	0.0661	.	.	.				
+y3	<-	Cluster(1)	0.0000	.	.	.				
+y3	<-	Cluster(2)	-1.0092	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			1.0638	.	.	.				
+y2			1.1368	.	.	.				
+y3			0.7848	.	.	.				
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1	<->	y2	0.4639	.	.	.				
+y1	<->	y3	0.1487	.	.	.				
+y2	<->	y3	0.3041	.	.	.				
+Profile
+ 	GClass	 	Cluster	 	 	
+ 	1	2	1	2	Overall	
+Size	0.5148	0.4852	0.5282	0.4718	 	
+y1	 	
+Mean	0.3505	1.1638	0.1215	1.4433	0.7452	
+y2	 	
+Mean	0.3421	1.0090	0.1543	1.2383	0.6657	
+y3	 	
+Mean	-0.1088	-0.7297	0.0661	-0.9431	-0.4101	
+	
+ 	GClass	 	Cluster	 	 	
+ 	1	2	1	2	 	
+Cluster	 	
+1	0.8267	0.2115	.	.	 	
+2	0.1733	0.7885	.	.	 	
+ProbMeans-Posterior
+	GClass		Cluster		
+	1	2	1	2	
+Overall	0.5148	0.4852	0.5282	0.4718	
+Dependent					
+y1					
+-2.653 - -0.333	0.7263	0.2737	0.8936	0.1064	
+-0.332 - 0.388	0.6254	0.3746	0.7364	0.2636	
+0.389 - 1.050	0.5400	0.4600	0.5348	0.4652	
+1.053 - 1.778	0.3887	0.6113	0.3368	0.6632	
+1.778 - 4.618	0.2934	0.7066	0.1391	0.8609	
+y2					
+-3.796 - -0.353	0.7321	0.2679	0.8514	0.1486	
+-0.348 - 0.379	0.6153	0.3847	0.6827	0.3173	
+0.381 - 0.940	0.4718	0.5282	0.5001	0.4999	
+0.940 - 1.641	0.4254	0.5746	0.4084	0.5916	
+1.655 - 4.391	0.3292	0.6708	0.1981	0.8019	
+y3					
+-3.618 - -1.289	0.2639	0.7361	0.1722	0.8278	
+-1.278 - -0.705	0.4163	0.5837	0.3636	0.6364	
+-0.679 - -0.161	0.5227	0.4773	0.5431	0.4569	
+-0.159 - 0.495	0.6262	0.3738	0.6872	0.3128	
+0.505 - 2.567	0.7447	0.2553	0.8748	0.1252	

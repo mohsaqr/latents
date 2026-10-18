@@ -1,0 +1,251 @@
+lpa_covariates_09-lg.dat
+File name:	lpa_covariates_09-lg.dat	
+File size:	47454 bytes  500 records	
+File date:	2026-Oct-17 11:48:23 PM	
+Syntax:	lpa_covariates_09.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+lpa_covariates_09	2-Cluster	-2255.6300	4604.4791	4541.2600	4556.2600	15	0.0987	0.6512	
+lpa_covariates_09 - LL = -2255.6300
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	15				
+Activated Constraints	0				
+Random Seed	20261017				
+Best Start Seed	70742				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2255.6300				
+Log-prior	0.0000				
+Log-posterior	-2255.6300				
+BIC (based on LL)	4604.4791				
+AIC (based on LL)	4541.2600				
+AIC3 (based on LL)	4556.2600				
+CAIC (based on LL)	4619.4791				
+SABIC (based on LL)	4556.8682				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0987				
+Reduction of errors (Lambda)	0.7659				
+Entropy R-squared	0.6512				
+Standard R-squared	0.7036				
+Classification log-likelihood	-2374.3648				
+Entropy	118.7348				
+CLC	4748.7296				
+AWE	4980.1678				
+ICL-BIC	4841.9487				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	264.9697	24.2976	289.2673		
+2	25.0303	185.7024	210.7327		
+Total	290.0000	210.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	253.1337	36.1336	289.2673		
+2	36.1336	174.5991	210.7327		
+Total	289.2673	210.7327	500.0000		
+					
+Model Classification Statistics	Cluster				
+Classification errors	0.3434				
+Reduction of errors (Lambda)	0.1853				
+Entropy R-squared	0.0947				
+Standard R-squared	0.1221				
+					
+Files					
+Infile	C:\lgmontecarlo\lpa_covariates_09-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261017				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+outfile					
+file name	lpa_covariates_09_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Independent					
+x1	Num-Fixed	500			
+-3.46194907046277	-3.4619491	-3.4619491			
+-3.22325335493402	-3.2232534	-3.2232534			
+-2.80183469871114	-2.8018347	-2.8018347			
+-2.69911513052074	-2.6991151	-2.6991151			
+-2.62777824279817	-2.6277782	-2.6277782			
+-2.41501846433256	-2.4150185	-2.4150185			
+-2.39170881808267	-2.3917088	-2.3917088			
+-2.23374820584851	-2.2337482	-2.2337482			
+-2.22624551637591	-2.2262455	-2.2262455			
+-2.2243832557899	-2.2243833	-2.2243833			
+...					
+2.02799289174427	2.0279929	2.0279929			
+2.03811638617827	2.0381164	2.0381164			
+2.05471875927358	2.0547188	2.0547188			
+2.14137421057165	2.1413742	2.1413742			
+2.35326329021069	2.3532633	2.3532633			
+2.41309025260498	2.4130903	2.4130903			
+2.45790909277866	2.4579091	2.4579091			
+2.50812982387754	2.5081298	2.5081298			
+2.51933915323714	2.5193392	2.5193392			
+x2	Num-Fixed	500			
+-3.06188927507265	-3.0618893	-3.0618893			
+-2.8979531217114	-2.8979531	-2.8979531			
+-2.60166150981432	-2.6016615	-2.6016615			
+-2.54912561838851	-2.5491256	-2.5491256			
+-2.47037580348629	-2.4703758	-2.4703758			
+-2.36853767461471	-2.3685377	-2.3685377			
+-2.23978713696431	-2.2397871	-2.2397871			
+-2.04012355916461	-2.0401236	-2.0401236			
+-2.00996076168723	-2.0099608	-2.0099608			
+-1.95213213568785	-1.9521321	-1.9521321			
+...					
+2.23794350971673	2.2379435	2.2379435			
+2.2779208275932	2.2779208	2.2779208			
+2.29740867052911	2.2974087	2.2974087			
+2.40439313417273	2.4043931	2.4043931			
+2.45246672770669	2.4524667	2.4524667			
+2.48992654149707	2.4899265	2.4899265			
+2.56818986566572	2.5681899	2.5681899			
+2.6667806486984	2.6667806	2.6667806			
+3.09435756273967	3.0943576	3.0943576			
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lpa_covariates_09_posteriors.txt' classification keep id;
+variables
+   independent x1, x2;
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1 + x1 + x2;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+Cluster(2)	<-	1			-0.3442	.	.	.				
+Cluster(1)	<-	x1			0.0000	.	.	.				
+Cluster(2)	<-	x1			0.6253	.	.	.				
+Cluster(1)	<-	x2			0.0000	.	.	.				
+Cluster(2)	<-	x2			-0.5777	.	.	.				
+												
+y1	<-	1			0.1069	.	.	.				
+y1	<-	Cluster(1)			0.0000	.	.	.				
+y1	<-	Cluster(2)			1.6788	.	.	.				
+												
+y2	<-	1			0.0999	.	.	.				
+y2	<-	Cluster(1)			0.0000	.	.	.				
+y2	<-	Cluster(2)			1.0516	.	.	.				
+												
+y3	<-	1			-0.0726	.	.	.				
+y3	<-	Cluster(1)			0.0000	.	.	.				
+y3	<-	Cluster(2)			-0.9735	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	Cluster(1)	1.0920	.	.	.				
+y1			|	Cluster(2)	0.4655	.	.	.				
+y2			|	Cluster(1)	1.1085	.	.	.				
+y2			|	Cluster(2)	1.3522	.	.	.				
+y3			|	Cluster(1)	0.8957	.	.	.				
+y3			|	Cluster(2)	0.7879	.	.	.				
+Profile
+ 	Cluster	 	 	
+ 	1	2	Overall	
+Size	0.5785	0.4215	 	
+y1	 	
+Mean	0.1069	1.7856	0.8144	
+y2	 	
+Mean	0.0999	1.1514	0.5431	
+y3	 	
+Mean	-0.0726	-1.0461	-0.4829	
+ProbMeans-Posterior
+	Cluster		
+	1	2	
+Overall	0.5785	0.4215	
+Dependent			
+y1			
+-3.136 - -0.306	0.9968	0.0032	
+-0.280 - 0.538	0.9295	0.0705	
+0.554 - 1.255	0.5992	0.4008	
+1.258 - 1.954	0.2403	0.7597	
+1.955 - 3.763	0.1268	0.8732	
+y2			
+-2.541 - -0.440	0.8650	0.1350	
+-0.434 - 0.191	0.7362	0.2638	
+0.206 - 0.777	0.5334	0.4666	
+0.782 - 1.520	0.4859	0.5141	
+1.527 - 4.611	0.2721	0.7279	
+y3			
+-3.436 - -1.464	0.2522	0.7478	
+-1.461 - -0.694	0.4486	0.5514	
+-0.677 - -0.219	0.5478	0.4522	
+-0.218 - 0.284	0.7330	0.2670	
+0.297 - 2.655	0.9111	0.0889	
+Independent			
+x1			
+-3.462 - -0.818	0.7505	0.2495	
+-0.808 - -0.227	0.6779	0.3221	
+-0.208 - 0.217	0.5219	0.4781	
+0.221 - 0.793	0.5151	0.4849	
+0.794 - 2.519	0.4272	0.5728	
+x2			
+-3.062 - -0.804	0.3851	0.6149	
+-0.804 - -0.322	0.5009	0.4991	
+-0.318 - 0.255	0.6571	0.3429	
+0.270 - 0.899	0.6285	0.3715	
+0.909 - 3.094	0.7211	0.2789	

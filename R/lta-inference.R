@@ -550,13 +550,17 @@
                       spec$sampling_weights, spec$extra_data)$log_likelihood
   }
   gradient <- function(v) -colSums(.lta_group_scores(v, spec))
-  # Convergence is the relative change of the log likelihood, as for EM: a
-  # transition never observed has its maximum at probability zero, where the
-  # logit runs off and the gradient decays without vanishing. That boundary is
-  # flagged separately (see .lta_probability_boundary()).
+  # A transition never observed has its maximum at probability zero, where the
+  # logit runs off and the gradient decays without vanishing; that boundary is
+  # flagged separately (see .lta_probability_boundary()). Near it each
+  # iteration gains little, so a stopping rule tied to `tol` (factr = tol /
+  # eps) stops short: at tol = 1e-10 an LMest occasion model was left 2.8e-6
+  # below its maximum with transitions 1e-4 off. The finish is therefore run
+  # to L-BFGS-B's own tight rule, as before 0.9.13; `tol` still governs EM and
+  # the code-52 check.
   finish <- .latents_quasi_newton(
     theta, lower, value, gradient, tol,
-    list(maxit = 5000L, factr = max(tol / .Machine$double.eps, 1), pgtol = 0))
+    list(maxit = 5000L, factr = 10, pgtol = 0))
   if (!finish$improved) {
     return(list(parameters = parameters, log_likelihood = -finish$start_value,
                 gradient = max(abs(gradient(finish$par))), converged = FALSE))

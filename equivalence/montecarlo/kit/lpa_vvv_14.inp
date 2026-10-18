@@ -1,0 +1,36 @@
+TITLE: latents Monte Carlo equivalence lpa_vvv_14;
+DATA: FILE = lpa_vvv_14.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3;
+ USEVARIABLES = y1 y2 y3;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ CLASSES = c(2);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 200 40;
+ STITERATIONS = 40;
+ STSEED = 20261017;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1 y2 y3];
+ y1 y2 y3;
+ y1 WITH y2 y3;
+ y2 WITH y3;
+ %c#2%
+ [y1 y2 y3];
+ y1 y2 y3;
+ y1 WITH y2 y3;
+ y2 WITH y3;
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = lpa_vvv_14-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = lpa_vvv_14-results.dat;

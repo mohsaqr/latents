@@ -32,6 +32,7 @@ multilpa(
   orientation = NULL,
   model = NULL,
   select_start = c("likelihood", "converged"),
+  boundary = c("allow", "exclude"),
   prior = NULL,
   noise = FALSE,
   acceleration = c("squarem", "none"),
@@ -260,8 +261,21 @@ starts whenever at least one converged, and falls back to every start when
 none did. Use it when an unconverged start edges out a converged one by a
 negligible amount, which happens when a membership logit creeps along a flat
 ridge of the likelihood: the converged start is then a maximum that
-\code{\link[=parameter_inference]{parameter_inference()}} can work with, and the other is not. \code{summary()}
-and \code{get_results(fit, "starts")} show every start either way.}
+\code{\link[=parameter_inference]{parameter_inference()}} can work with, and the other is not.
+\code{summary()} and \code{get_results(fit, "starts")} show every start either way.}
+
+\item{boundary}{Whether a start with a variance at \code{min_variance} (a
+covariance eigenvalue, for full covariances) may be reported.
+\code{"allow"}, the default, lets it, as Mplus does, with a \code{latents_boundary}
+warning. \code{"exclude"} sets such starts aside and applies \code{select_start}
+to the rest; the \code{boundary} column of the starts table shows which they
+are, for models without covariates. A Gaussian profile can raise the
+likelihood without limit by shrinking around one observation, so the
+size of that gain is set by \code{min_variance} rather than by the data, and
+the more starts are run the likelier one finds it. When every start is at
+the bound, the best is reported with a \code{latents_all_starts_boundary}
+warning. Categorical indicators alone have no variances and are
+unaffected.}
 
 \item{prior}{\code{NULL}, the default, for maximum likelihood, or
 \code{\link[=prior_control]{prior_control()}} for maximum a posteriori estimation of the Gaussian
@@ -325,7 +339,7 @@ whenever the extrapolated point would lower the likelihood, so the
 iteration stays monotone and converges to the same kind of maximum. The
 convergence test is read over a whole cycle, so it is never looser than
 plain EM's. \code{"none"} runs plain EM, which follows the same path as other
-EM implementations from the same start (mclust, Mplus) and is the choice
+EM implementations from the same start (mclust's \code{me()}) and is the choice
 for step-by-step reproduction. \code{iterations} and \code{max_iter} count EM steps
 either way. Fits with \code{prior}, and models with membership covariates,
 always use plain EM. For EVE and VVE, whose shared orientation has no

@@ -1,0 +1,679 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/18/2026  10:30 AM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents starts study lca_k4_moderate_n300_r1, 4 classes;
+  DATA: FILE = lca_k4_moderate_n300_r1.dat;
+  VARIABLE:
+   NAMES = id u1 u2 u3 u4 u5 u6;
+   USEVARIABLES = u1 u2 u3 u4 u5 u6;
+   IDVARIABLE = id;
+   CATEGORICAL = u1 u2 u3 u4 u5 u6;
+   CLASSES = c(4);
+  ANALYSIS:
+   TYPE = MIXTURE;
+   ESTIMATOR = ML;
+   STARTS = 400 80;
+   STITERATIONS = 40;
+   STSEED = 20261018;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %OVERALL%
+  SAVEDATA:
+   RESULTS = lca_k4_moderate_n300_r1-k4-results.dat;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+latents starts study lca_k4_moderate_n300_r1, 4 classes;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         300
+
+Number of dependent variables                                    6
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Binary and ordered categorical (ordinal)
+   U1          U2          U3          U4          U5          U6
+
+Categorical latent variables
+   C
+
+Variables with special functions
+
+  ID variable           ID
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                               10000
+  Convergence criteria
+    Loglikelihood change                                 0.100D-07
+    Relative loglikelihood change                        0.100D-08
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent Variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+Random Starts Specifications
+  Number of initial stage random starts                        400
+  Number of final stage optimizations                           80
+  Number of initial stage iterations                            40
+  Initial stage convergence criterion                    0.100D+01
+  Random starts scale                                    0.500D+01
+  Random seed for generating random starts                20261018
+Link                                                         LOGIT
+
+Input data file(s)
+  lca_k4_moderate_n300_r1.dat
+Input data format  FREE
+
+
+UNIVARIATE PROPORTIONS AND COUNTS FOR CATEGORICAL VARIABLES
+
+    U1
+      Category 1    0.567          170.000
+      Category 2    0.433          130.000
+    U2
+      Category 1    0.540          162.000
+      Category 2    0.460          138.000
+    U3
+      Category 1    0.430          129.000
+      Category 2    0.570          171.000
+    U4
+      Category 1    0.680          204.000
+      Category 2    0.320           96.000
+    U5
+      Category 1    0.643          193.000
+      Category 2    0.357          107.000
+    U6
+      Category 1    0.627          188.000
+      Category 2    0.373          112.000
+
+
+RANDOM STARTS RESULTS RANKED FROM THE BEST TO THE WORST LOGLIKELIHOOD VALUES
+
+Final stage loglikelihood values at local maxima, seeds, and initial stage start numbers:
+
+           -1127.282  979344           397
+           -1127.282  828255           238
+           -1127.282  558424           254
+           -1127.282  677318           262
+           -1127.282  807988           253
+           -1127.282  291438           93
+           -1127.282  735525           293
+           -1127.282  940209           322
+           -1127.282  803762           182
+           -1127.282  482718           29
+           -1127.282  943631           39
+           -1127.282  47076            229
+           -1127.282  357654           208
+           -1127.282  688519           226
+           -1127.282  978868           147
+           -1127.282  858210           267
+           -1127.282  675932           85
+           -1127.282  797980           342
+           -1127.282  560934           13
+           -1127.282  169584           273
+           -1127.282  155580           132
+           -1127.282  831094           118
+           -1127.282  894708           223
+           -1127.282  491543           69
+           -1127.282  146267           41
+           -1127.282  873618           87
+           -1127.282  948806           260
+           -1127.282  737980           372
+           -1127.282  517558           71
+           -1127.282  410776           203
+           -1127.430  167633           204
+           -1127.430  567405           282
+           -1127.430  493250           192
+           -1127.437  138452           18
+           -1127.520  187465           184
+           -1127.520  688000           51
+           -1127.520  831986           17
+           -1127.602  874219           82
+           -1127.942  175377           245
+           -1128.154  943006           102
+           -1128.154  253234           239
+           -1128.154  136373           158
+           -1128.332  169078           133
+           -1128.332  772062           283
+           -1128.409  337286           96
+           -1129.414  203680           115
+
+34 perturbed starting value run(s) did not converge or were rejected in the third stage.
+
+
+     IN THE OPTIMIZATION, ONE OR MORE LOGIT THRESHOLDS APPROACHED EXTREME VALUES
+     OF -15.000 AND 15.000 AND WERE FIXED TO STABILIZE MODEL ESTIMATION.  THESE
+     VALUES IMPLY PROBABILITIES OF 0 AND 1.  IN THE MODEL RESULTS SECTION, THESE
+     PARAMETERS HAVE 0 STANDARD ERRORS AND 999 IN THE Z-SCORE AND P-VALUE COLUMNS.
+
+THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED.  RERUN WITH AT LEAST TWICE THE
+RANDOM STARTS TO CHECK THAT THE BEST LOGLIKELIHOOD IS STILL OBTAINED AND REPLICATED.
+
+
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       27
+
+Loglikelihood
+
+          H0 Value                       -1127.282
+
+Information Criteria
+
+          Akaike (AIC)                    2308.563
+          Bayesian (BIC)                  2408.566
+          Sample-Size Adjusted BIC        2322.938
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit for the Binary and Ordered Categorical
+(Ordinal) Outcomes
+
+          Pearson Chi-Square
+
+          Value                             29.505
+          Degrees of Freedom                    36
+          P-Value                           0.7695
+
+          Likelihood Ratio Chi-Square
+
+          Value                             35.744
+          Degrees of Freedom                    36
+          P-Value                           0.4807
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THE ESTIMATED MODEL
+
+    Latent
+   Classes
+
+       1         87.37659          0.29126
+       2        108.25769          0.36086
+       3         61.37211          0.20457
+       4         42.99362          0.14331
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1         87.37659          0.29126
+       2        108.25769          0.36086
+       3         61.37211          0.20457
+       4         42.99362          0.14331
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1               92          0.30667
+       2              107          0.35667
+       3               62          0.20667
+       4               39          0.13000
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.599
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2        3        4
+
+    1   0.773    0.104    0.044    0.079
+    2   0.061    0.819    0.020    0.100
+    3   0.052    0.053    0.868    0.026
+    4   0.168    0.199    0.033    0.599
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2        3        4
+
+    1   0.814    0.074    0.037    0.075
+    2   0.088    0.809    0.031    0.072
+    3   0.066    0.036    0.877    0.021
+    4   0.170    0.249    0.038    0.544
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2        3        4
+
+    1      2.384   -0.010   -0.704    0.000
+    2      0.208    2.422   -0.856    0.000
+    3      1.138    0.524    3.725    0.000
+    4     -1.165   -0.781   -2.667    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ Thresholds
+    U1$1              -1.137      0.476     -2.389      0.017
+    U2$1              -2.058      1.137     -1.810      0.070
+    U3$1              -1.412      0.519     -2.723      0.006
+    U4$1               1.712      0.614      2.790      0.005
+    U5$1               1.040      0.376      2.764      0.006
+    U6$1               1.089      0.390      2.792      0.005
+
+Latent Class 2
+
+ Thresholds
+    U1$1               1.765      0.634      2.784      0.005
+    U2$1               1.161      0.404      2.870      0.004
+    U3$1               0.991      0.399      2.483      0.013
+    U4$1               1.979      0.725      2.731      0.006
+    U5$1               1.070      0.323      3.309      0.001
+    U6$1               1.538      0.428      3.595      0.000
+
+Latent Class 3
+
+ Thresholds
+    U1$1               0.721      0.327      2.209      0.027
+    U2$1               0.546      0.329      1.658      0.097
+    U3$1              -1.497      0.401     -3.728      0.000
+    U4$1              -1.098      0.412     -2.664      0.008
+    U5$1              -2.459      1.380     -1.782      0.075
+    U6$1              -2.535      1.034     -2.452      0.014
+
+Latent Class 4
+
+ Thresholds
+    U1$1              -0.620      1.052     -0.589      0.556
+    U2$1               0.928      1.093      0.849      0.396
+    U3$1               0.020      0.616      0.033      0.974
+    U4$1              -0.185      0.890     -0.208      0.835
+    U5$1              15.000      0.000    999.000    999.000
+    U6$1               0.729      0.671      1.087      0.277
+
+Categorical Latent Variables
+
+ Means
+    C#1                0.709      0.930      0.763      0.446
+    C#2                0.923      0.901      1.025      0.305
+    C#3                0.356      0.746      0.477      0.633
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.365E-02
+       (ratio of smallest to largest eigenvalue)
+
+
+LATENT CLASS INDICATOR MEANS AND PROBABILITIES FOR EACH LATENT CLASS
+
+     MEAN/PROBABILITY PROFILES FOR C
+                       Latent class
+                     1      2      3      4
+     U1
+       Category 1  0.243  0.854  0.673  0.350
+       Category 2  0.757  0.146  0.327  0.650
+     U2
+       Category 1  0.113  0.761  0.633  0.717
+       Category 2  0.887  0.239  0.367  0.283
+     U3
+       Category 1  0.196  0.729  0.183  0.505
+       Category 2  0.804  0.271  0.817  0.495
+     U4
+       Category 1  0.847  0.879  0.250  0.454
+       Category 2  0.153  0.121  0.750  0.546
+     U5
+       Category 1  0.739  0.745  0.079  1.000
+       Category 2  0.261  0.255  0.921  0.000
+     U6
+       Category 1  0.748  0.823  0.073  0.675
+       Category 2  0.252  0.177  0.927  0.325
+
+
+RESULTS IN PROBABILITY SCALE
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ U1
+    Category 1         0.243      0.088      2.776      0.005
+    Category 2         0.757      0.088      8.651      0.000
+ U2
+    Category 1         0.113      0.114      0.992      0.321
+    Category 2         0.887      0.114      7.765      0.000
+ U3
+    Category 1         0.196      0.082      2.398      0.016
+    Category 2         0.804      0.082      9.843      0.000
+ U4
+    Category 1         0.847      0.079     10.658      0.000
+    Category 2         0.153      0.079      1.924      0.054
+ U5
+    Category 1         0.739      0.073     10.175      0.000
+    Category 2         0.261      0.073      3.595      0.000
+ U6
+    Category 1         0.748      0.073     10.182      0.000
+    Category 2         0.252      0.073      3.428      0.001
+
+Latent Class 2
+
+ U1
+    Category 1         0.854      0.079     10.793      0.000
+    Category 2         0.146      0.079      1.847      0.065
+ U2
+    Category 1         0.761      0.073     10.366      0.000
+    Category 2         0.239      0.073      3.247      0.001
+ U3
+    Category 1         0.729      0.079      9.255      0.000
+    Category 2         0.271      0.079      3.437      0.001
+ U4
+    Category 1         0.879      0.077     11.366      0.000
+    Category 2         0.121      0.077      1.571      0.116
+ U5
+    Category 1         0.745      0.061     12.108      0.000
+    Category 2         0.255      0.061      4.153      0.000
+ U6
+    Category 1         0.823      0.062     13.220      0.000
+    Category 2         0.177      0.062      2.838      0.005
+
+Latent Class 3
+
+ U1
+    Category 1         0.673      0.072      9.361      0.000
+    Category 2         0.327      0.072      4.551      0.000
+ U2
+    Category 1         0.633      0.076      8.283      0.000
+    Category 2         0.367      0.076      4.800      0.000
+ U3
+    Category 1         0.183      0.060      3.048      0.002
+    Category 2         0.817      0.060     13.616      0.000
+ U4
+    Category 1         0.250      0.077      3.237      0.001
+    Category 2         0.750      0.077      9.703      0.000
+ U5
+    Category 1         0.079      0.100      0.787      0.431
+    Category 2         0.921      0.100      9.200      0.000
+ U6
+    Category 1         0.073      0.070      1.044      0.297
+    Category 2         0.927      0.070     13.168      0.000
+
+Latent Class 4
+
+ U1
+    Category 1         0.350      0.239      1.462      0.144
+    Category 2         0.650      0.239      2.718      0.007
+ U2
+    Category 1         0.717      0.222      3.228      0.001
+    Category 2         0.283      0.222      1.277      0.202
+ U3
+    Category 1         0.505      0.154      3.279      0.001
+    Category 2         0.495      0.154      3.213      0.001
+ U4
+    Category 1         0.454      0.221      2.058      0.040
+    Category 2         0.546      0.221      2.476      0.013
+ U5
+    Category 1         1.000      0.000      0.000      1.000
+    Category 2         0.000      0.000      0.000      1.000
+ U6
+    Category 1         0.675      0.147      4.582      0.000
+    Category 2         0.325      0.147      2.211      0.027
+
+
+EQUALITY TESTS OF PROBABILITIES ACROSS THE LATENT CLASSES
+
+                    Chi-Square     P-Value   Degrees of Freedom
+
+
+U1
+  Overall test         17.550      0.001        3
+  Class 1 vs. 2        14.220      0.000        1
+  Class 1 vs. 3         9.998      0.002        1
+  Class 1 vs. 4         0.193      0.660        1
+  Class 2 vs. 3         2.195      0.138        1
+  Class 2 vs. 4         3.687      0.055        1
+  Class 3 vs. 4         1.516      0.218        1
+
+U2
+  Overall test          8.586      0.035        3
+  Class 1 vs. 2         7.411      0.006        1
+  Class 1 vs. 3         4.825      0.028        1
+  Class 1 vs. 4         4.251      0.039        1
+  Class 2 vs. 3         1.420      0.233        1
+  Class 2 vs. 4         0.036      0.849        1
+  Class 3 vs. 4         0.117      0.733        1
+
+U3
+  Overall test         27.885      0.000        3
+  Class 1 vs. 2        14.363      0.000        1
+  Class 1 vs. 3         0.016      0.900        1
+  Class 1 vs. 4         3.186      0.074        1
+  Class 2 vs. 3        20.316      0.000        1
+  Class 2 vs. 4         1.542      0.214        1
+  Class 3 vs. 4         4.302      0.038        1
+
+U4
+  Overall test         22.963      0.000        3
+  Class 1 vs. 2         0.081      0.775        1
+  Class 1 vs. 3        14.569      0.000        1
+  Class 1 vs. 4         3.032      0.082        1
+  Class 2 vs. 3        14.512      0.000        1
+  Class 2 vs. 4         3.327      0.068        1
+  Class 3 vs. 4         0.935      0.334        1
+
+U5
+  Overall test       3360.451      0.000        3
+  Class 1 vs. 2         0.003      0.953        1
+  Class 1 vs. 3         5.998      0.014        1
+  Class 1 vs. 4      1375.250      0.000        1
+  Class 2 vs. 3         6.690      0.010        1
+  Class 2 vs. 4      1855.897      0.000        1
+  Class 3 vs. 4       160.171      0.000        1
+
+U6
+  Overall test         14.476      0.002        3
+  Class 1 vs. 2         0.609      0.435        1
+  Class 1 vs. 3        11.022      0.001        1
+  Class 1 vs. 4         0.174      0.677        1
+  Class 2 vs. 3        14.455      0.000        1
+  Class 2 vs. 4         0.767      0.381        1
+  Class 3 vs. 4         6.797      0.009        1
+
+
+LATENT CLASS INDICATOR ODDS RATIOS FOR THE LATENT CLASSES
+
+                                                95% C.I.
+                    Estimate       S.E.  Lower 2.5% Upper 2.5%
+
+Latent Class 1 Compared to Latent Class 2
+
+ U1
+    Category > 1      18.204     14.008      4.029     82.255
+ U2
+    Category > 1      24.989     29.543      2.463    253.565
+ U3
+    Category > 1      11.054      7.009      3.190     38.301
+ U4
+    Category > 1       1.306      1.222      0.209      8.175
+ U5
+    Category > 1       1.030      0.519      0.384      2.765
+ U6
+    Category > 1       1.568      0.904      0.507      4.852
+
+Latent Class 1 Compared to Latent Class 3
+
+ U1
+    Category > 1       6.409      3.766      2.026     20.274
+ U2
+    Category > 1      13.506     16.007      1.323    137.835
+ U3
+    Category > 1       0.919      0.620      0.245      3.448
+ U4
+    Category > 1       0.060      0.044      0.014      0.255
+ U5
+    Category > 1       0.030      0.043      0.002      0.497
+ U6
+    Category > 1       0.027      0.029      0.003      0.227
+
+Latent Class 1 Compared to Latent Class 4
+
+ U1
+    Category > 1       1.676      1.970      0.168     16.769
+ U2
+    Category > 1      19.791     28.655      1.159    338.016
+ U3
+    Category > 1       4.189      3.362      0.869     20.199
+ U4
+    Category > 1       0.150      0.163      0.018      1.269
+ U5
+    Category > 1   *********      0.000  *********  *********
+ U6
+    Category > 1       0.698      0.602      0.129      3.786
+
+Latent Class 2 Compared to Latent Class 3
+
+ U1
+    Category > 1       0.352      0.248      0.088      1.401
+ U2
+    Category > 1       0.541      0.279      0.196      1.487
+ U3
+    Category > 1       0.083      0.046      0.028      0.245
+ U4
+    Category > 1       0.046      0.037      0.009      0.225
+ U5
+    Category > 1       0.029      0.040      0.002      0.425
+ U6
+    Category > 1       0.017      0.018      0.002      0.139
+
+Latent Class 2 Compared to Latent Class 4
+
+ U1
+    Category > 1       0.092      0.114      0.008      1.051
+ U2
+    Category > 1       0.792      0.971      0.072      8.746
+ U3
+    Category > 1       0.379      0.296      0.082      1.752
+ U4
+    Category > 1       0.115      0.136      0.011      1.175
+ U5
+    Category > 1   *********      0.000  *********  *********
+ U6
+    Category > 1       0.445      0.411      0.073      2.724
+
+Latent Class 3 Compared to Latent Class 4
+
+ U1
+    Category > 1       0.262      0.285      0.031      2.212
+ U2
+    Category > 1       1.465      1.639      0.164     13.125
+ U3
+    Category > 1       4.558      3.334      1.087     19.113
+ U4
+    Category > 1       2.491      2.352      0.392     15.854
+ U5
+    Category > 1   *********      0.000  *********  *********
+ U6
+    Category > 1      26.148     32.734      2.248    304.133
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Entropy
+    Pearson Chi-Square : Value
+    Pearson Chi-Square : Degrees of Freedom
+    Pearson Chi-Square : P-Value
+    Likelihood Chi-Square : Value
+    Likelihood Chi-Square : Degrees of Freedom
+    Likelihood Chi-Square : P-Value
+    Condition Number
+
+  Save file
+    lca_k4_moderate_n300_r1-k4-results.dat
+
+  Save file format           Free
+
+
+     Beginning Time:  10:30:45
+        Ending Time:  10:30:47
+       Elapsed Time:  00:00:02
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

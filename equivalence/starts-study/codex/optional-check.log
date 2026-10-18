@@ -1,0 +1,149 @@
+Package 'mclust' version 6.1.2
+Type 'citation("mclust")' for citing this R package in publications.
+MCLUST VERSION 6.1.2 
+List of 16
+ $ call          : language Mclust(data = x, G = row$true_k + 1L, modelNames = "VVI", verbose = FALSE)
+ $ data          : num [1:300, 1:4] 1.1929 -0.0645 0.3769 1.746 1.9127 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ modelName     : chr "VVI"
+ $ n             : int 300
+ $ d             : int 4
+ $ G             : int 3
+ $ BIC           : 'mclustBIC' num [1, 1] -3721
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "G")= num 3
+  ..- attr(*, "modelNames")= chr "VVI"
+  ..- attr(*, "control")=List of 4
+  ..- attr(*, "initialization")=List of 3
+  ..- attr(*, "warn")= logi FALSE
+  ..- attr(*, "n")= int 300
+  ..- attr(*, "d")= int 4
+  ..- attr(*, "oneD")= logi FALSE
+  ..- attr(*, "criterion")= chr "BIC"
+  ..- attr(*, "returnCodes")= num [1, 1] 0
+  .. ..- attr(*, "dimnames")=List of 2
+ $ loglik        : num -1787
+ $ df            : num 26
+ $ bic           : num -3721
+ $ icl           : num -3908
+ $ hypvol        : num NA
+ $ parameters    :List of 3
+ $ z             : num [1:300, 1:3] 7.62e-02 6.23e-01 6.76e-01 4.45e-05 3.49e-02 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ classification: num [1:300] 3 1 1 3 3 2 3 2 3 1 ...
+ $ uncertainty   : num [1:300] 0.09577 0.37724 0.32419 0.00139 0.0355 ...
+ - attr(*, "class")= chr "Mclust"
+             dataset k seconds      mclust_ll     latents_ll  mplus_ll mclust_minus_latents mclust_minus_mplus smallest_hard_class smallest_effective_class   min_variance
+1 lpa_k2_low_n300_r1 3   0.022 -1786.50770411 -1765.48741099 -1777.694       -21.0202931195     -8.81370411344                  65              68.03592524 0.694491023522
+List of 16
+ $ call          : language Mclust(data = x, G = row$true_k + 1L, modelNames = "VVI", verbose = FALSE)
+ $ data          : num [1:300, 1:4] 5.057 -0.505 1.271 -1.796 -0.827 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ modelName     : chr "VVI"
+ $ n             : int 300
+ $ d             : int 4
+ $ G             : int 4
+ $ BIC           : 'mclustBIC' num [1, 1] -4318
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "G")= num 4
+  ..- attr(*, "modelNames")= chr "VVI"
+  ..- attr(*, "control")=List of 4
+  ..- attr(*, "initialization")=List of 3
+  ..- attr(*, "warn")= logi FALSE
+  ..- attr(*, "n")= int 300
+  ..- attr(*, "d")= int 4
+  ..- attr(*, "oneD")= logi FALSE
+  ..- attr(*, "criterion")= chr "BIC"
+  ..- attr(*, "returnCodes")= num [1, 1] 0
+  .. ..- attr(*, "dimnames")=List of 2
+ $ loglik        : num -2059
+ $ df            : num 35
+ $ bic           : num -4318
+ $ icl           : num -4329
+ $ hypvol        : num NA
+ $ parameters    :List of 3
+ $ z             : num [1:300, 1:4] 1.00 1.10e-12 1.15e-07 1.43e-08 1.69e-10 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ classification: num [1:300] 1 2 2 2 3 1 1 2 1 3 ...
+ $ uncertainty   : num [1:300] 5.44e-07 9.99e-10 2.85e-06 6.61e-04 8.65e-06 ...
+ - attr(*, "class")= chr "Mclust"
+              dataset k seconds     mclust_ll     latents_ll  mplus_ll mclust_minus_latents mclust_minus_mplus smallest_hard_class smallest_effective_class   min_variance
+1 lpa_k3_high_n300_r1 4   0.019 -2059.4004334 -2055.78819285 -2043.228       -3.61224054831     -16.1724333955                  12            11.7181088539 0.745756098248
+List of 16
+ $ call          : language Mclust(data = x, G = row$true_k + 1L, modelNames = "VVI", verbose = FALSE)
+ $ data          : num [1:300, 1:4] 0.643 1.504 3.461 3.926 -0.801 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ modelName     : chr "VVI"
+ $ n             : int 300
+ $ d             : int 4
+ $ G             : int 5
+ $ BIC           : 'mclustBIC' num [1, 1] -4386
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "G")= num 5
+  ..- attr(*, "modelNames")= chr "VVI"
+  ..- attr(*, "control")=List of 4
+  ..- attr(*, "initialization")=List of 3
+  ..- attr(*, "warn")= logi FALSE
+  ..- attr(*, "n")= int 300
+  ..- attr(*, "d")= int 4
+  ..- attr(*, "oneD")= logi FALSE
+  ..- attr(*, "criterion")= chr "BIC"
+  ..- attr(*, "returnCodes")= num [1, 1] 0
+  .. ..- attr(*, "dimnames")=List of 2
+ $ loglik        : num -2067
+ $ df            : num 44
+ $ bic           : num -4386
+ $ icl           : num -4399
+ $ hypvol        : num NA
+ $ parameters    :List of 3
+ $ z             : num [1:300, 1:5] 9.99e-01 8.44e-01 5.13e-07 2.45e-12 9.99e-01 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ classification: num [1:300] 1 1 2 2 1 3 3 4 1 2 ...
+ $ uncertainty   : num [1:300] 1.39e-03 1.56e-01 1.19e-06 4.15e-11 1.26e-03 ...
+ - attr(*, "class")= chr "Mclust"
+              dataset k seconds      mclust_ll     latents_ll  mplus_ll mclust_minus_latents mclust_minus_mplus smallest_hard_class smallest_effective_class   min_variance
+1 lpa_k4_high_n300_r1 5   0.027 -2067.46810517 -2048.67810898 -2059.423       -18.7899961887     -8.04510517336                   8            8.75795562003 0.472215880212
+NONBOUNDARY REFERENCE CHOICES
+                  dataset family true_k reference_k
+     lca_k2_high_n1000_r1    lca      2           2
+      lca_k2_high_n300_r1    lca      2           2
+      lca_k2_low_n1000_r1    lca      2           2
+       lca_k2_low_n300_r1    lca      2           1
+ lca_k2_moderate_n1000_r1    lca      2           2
+  lca_k2_moderate_n300_r1    lca      2           2
+     lca_k3_high_n1000_r1    lca      3           3
+      lca_k3_high_n300_r1    lca      3           3
+       lca_k3_low_n300_r1    lca      3           2
+  lca_k3_moderate_n300_r1    lca      3           3
+      lca_k4_high_n300_r1    lca      4           3
+       lca_k4_low_n300_r1    lca      4           3
+  lca_k4_moderate_n300_r1    lca      4           3
+      lpa_k2_high_n300_r1    lpa      2           2
+      lpa_k2_low_n1000_r1    lpa      2           2
+       lpa_k2_low_n300_r1    lpa      2           2
+ lpa_k2_moderate_n1000_r1    lpa      2           2
+  lpa_k2_moderate_n300_r1    lpa      2           2
+  lpa_k2_moderate_n300_r2    lpa      2           2
+      lpa_k3_high_n300_r1    lpa      3           3
+      lpa_k3_low_n1000_r1    lpa      3           3
+       lpa_k3_low_n300_r1    lpa      3           2
+ lpa_k3_moderate_n1000_r1    lpa      3           3
+  lpa_k3_moderate_n300_r1    lpa      3           3
+     lpa_k4_high_n1000_r1    lpa      4           4
+      lpa_k4_high_n300_r1    lpa      4           4
+      lpa_k4_low_n1000_r1    lpa      4           3
+       lpa_k4_low_n300_r1    lpa      4           3
+  lpa_k4_moderate_n300_r1    lpa      4           4
+NONBOUNDARY SELECTION DIRECTIONS
+, , direction = 0
+
+      n_starts
+family  10  20
+   lca 715 338
+   lpa 880 416
+
+NONBOUNDARY LPA4
+  n_starts fewer more true
+1       10     0    0  0.6
+2       20     0    0  0.6
+FOLLOW-UP COMPLETE

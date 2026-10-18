@@ -43,7 +43,7 @@ noise_compare <- function(x, z, code, prior = FALSE) {
     array(unlist(lapply(seq_len(k), function(profile) diag(fit$variances[profile, ]))),
           c(ncol(x), ncol(x), k))
   } else unname(fit$covariances)
-  data.frame(
+  structure(data.frame(
     code = code, prior = prior, converged = fit$converged,
     loglik = fit$log_likelihood - reference$loglik,
     means = max(abs(t(fit$means) - reference$parameters$mean)),
@@ -53,7 +53,7 @@ noise_compare <- function(x, z, code, prior = FALSE) {
                            reference$z)),
     parameters = fit$n_parameters - mclust::nMclustParams(code, ncol(x), k, noise = TRUE),
     bic = fit$bic + mclust::bic(code, reference$loglik, nrow(x), ncol(x), k,
-                                noise = TRUE))
+                                noise = TRUE)), fit = fit, reference = reference)
 }
 
 noise_start_z <- function(x) {
@@ -122,4 +122,19 @@ test_that("from Mclust's own noise initialization the fits agree", {
   expect_lt(row$covariances, 1e-6)
   expect_equal(reference$hypvol, exp(latents:::.multilpa_log_hypervolume(x)),
                tolerance = 1e-12)
+})
+
+test_that("an observation assigned to noise is profile 0, as in mclust", {
+  skip_if_not_installed("mclust")
+  skip_on_cran()
+  mclustBIC <- mclust::mclustBIC
+  x <- noise_reference_data()
+  flagged <- c(rep(FALSE, 270L), rep(TRUE, 30L))
+  reference <- mclust::Mclust(x, G = 2L, modelNames = "VVV", verbose = FALSE,
+                              initialization = list(noise = flagged))
+  row <- noise_compare(x, reference$z, "VVV")
+  fit <- attr(row, "fit")
+  expect_true(any(fit$subject_profiles == 0L))
+  expect_identical(as.integer(fit$subject_profiles),
+                   as.integer(mclust::map(attr(row, "reference")$z)) %% 3L)
 })

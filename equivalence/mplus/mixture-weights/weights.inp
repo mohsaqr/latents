@@ -1,0 +1,29 @@
+TITLE: latents sampling weights in a three-profile VVI mixture;
+DATA: FILE = weights.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3 y4 w;
+ USEVARIABLES = y1 y2 y3 y4;
+ IDVARIABLE = id;
+ WEIGHT = w;
+ CLASSES = c(3);
+ANALYSIS:
+ TYPE = MIXTURE;
+ STARTS = 400 80;
+ STSEED = 20261018;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1-y4]; y1-y4;
+ %c#2%
+ [y1-y4]; y1-y4;
+ %c#3%
+ [y1-y4]; y1-y4;
+SAVEDATA:
+ FILE = weights-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = weights-results.dat;

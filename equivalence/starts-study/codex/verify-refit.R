@@ -1,0 +1,33 @@
+options(digits = 17, width = 160)
+out <- file.path("equivalence", "starts-study", "codex")
+fit <- readRDS(file.path(out, "singleton-refit.rds"))
+raw <- readRDS(file.path("equivalence", "starts-study", "fits", "lpa_k4_high_n300_r1.rds"))
+raw <- subset(raw, k == 5L)
+stopifnot(identical(fit$starts$start, raw$start))
+cat("MAX ABS START LL DIFFERENCE", max(abs(fit$starts$log_likelihood - raw$log_likelihood)), "\n")
+stopifnot(max(abs(fit$starts$log_likelihood - raw$log_likelihood)) < 1e-6)
+x <- as.matrix(fit$indicator_data)
+str(x)
+dat <- read.table(file.path("equivalence", "starts-study", "mplus", "lpa_k4_high_n300_r1.dat"))
+cat("MPLUS DATA DIFFERENCE", max(abs(x - as.matrix(dat[-1]))), "\n")
+stopifnot(max(abs(x - as.matrix(dat[-1]))) < 1e-10)
+small <- which.min(colSums(fit$subject_posteriors))
+cat("EFFECTIVE SMALL COUNT", colSums(fit$subject_posteriors)[small], "\n")
+# Directly score the original parameters and a narrower spike; no EM or new start.
+ll <- function(variances) {
+  stopifnot(is.matrix(variances), all(variances > 0))
+  component <- vapply(seq_len(fit$n_profiles), function(j) {
+    log(fit$profile_probabilities[1L, j]) + rowSums(vapply(seq_len(ncol(x)), function(p)
+      dnorm(x[, p], fit$means[j, p], sqrt(variances[j, p]), log = TRUE), numeric(nrow(x))))
+  }, numeric(nrow(x)))
+  largest <- apply(component, 1L, max)
+  sum(largest + log(rowSums(exp(component - largest))))
+}
+original <- ll(fit$variances)
+narrower <- fit$variances; narrower[small, ] <- narrower[small, ] / 10
+cat("MANUAL ORIGINAL LL", original, "stored", fit$log_likelihood, "\n")
+cat("SPIKE TENFOLD SMALLER VARIANCE LL", ll(narrower), "GAIN", ll(narrower) - original, "\n")
+stopifnot(abs(original - fit$log_likelihood) < 1e-8, abs(ll(narrower) - original - 2 * log(10)) < 1e-6)
+invisible(lapply(c("recompute.R", "optional-check.R"), function(name) parse(file.path(out, name))))
+cat("SCRIPTS PARSE; VERIFICATION PASSED\n")
+print(sessionInfo())

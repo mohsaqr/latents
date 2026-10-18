@@ -14,69 +14,70 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Mixture models explain heterogeneity in a population by assuming that it
-consists of a small number of unobserved subpopulations, the latent classes,
-each with its own pattern of responses. In latent profile analysis the
-pattern is a set of means of continuous indicators, and in latent class
-analysis it is a set of response probabilities of categorical indicators.
-When observations are nested in groups, the groups themselves can differ.
-Course enrolments, for example, are nested within students, and one student
-may be engaged in most of their courses while another is engaged in few. A
-two-level model captures such differences with a second set of latent
-classes, the group classes. Each group class is a type of student, defined by
-the proportions of the student's enrolments that fall in each profile. For a
-given number of classes, the model estimates how large each class is and what
-its response pattern looks like. The number of classes itself is an input to
-the estimation, and the model returns no estimate of it. The analyst fixes
-the number of profiles, and in a two-level model the number of group classes,
-before estimation, and every substantive conclusion of the analysis depends
-on that choice.
+Finite mixture models represent population heterogeneity as a small number
+of unobserved subpopulations, the latent classes, each characterized by its
+own distribution of the observed indicators (McLachlan and Peel, 2000). In
+latent profile analysis the class-specific parameters are the means and
+variances of continuous indicators; in latent class analysis they are the
+response probabilities of categorical indicators. When observations are
+nested within higher-level units, the units may themselves differ in the
+distribution of classes. In the data used here, course enrolments are nested
+within students, and students differ in the proportion of their enrolments
+that show a given pattern of engagement. The two-level mixture model of
+Vermunt (2003) represents this variation with a second, higher-level latent
+variable whose categories, the group classes, are defined by their
+distributions over the lower-level profiles. For a fixed number of classes,
+estimation yields the class sizes and the class-specific parameters. The
+number of classes, however, is not a parameter of the model: it is specified
+before estimation, at both levels in a two-level model, and every subsequent
+inference is conditional on that specification.
 
-Choosing the number of classes is difficult because the usual tools for
-comparing models each fall short in a specific way. Fit alone always favours
-more classes, since a model with one more class can reproduce the smaller
-model and improve on it. The likelihood ratio test, which compares nested
-models in most settings, gives invalid p-values here. A model with k classes
-is a model with k + 1 classes in which one class has size zero, and at that
-edge of the parameter space the test statistic loses its usual reference
-distribution. Valid p-values then require simulating many data sets from
-the smaller model and refitting both models to each, which is slow when many
-candidates are compared. Information criteria avoid testing altogether and
-instead balance fit against a charge for every estimated parameter. The
-criteria differ in that charge, so the Akaike information criterion, with a
-light charge, tends to favour more classes than the Bayesian information
-criterion, with a heavier one.
+Determining the number of classes is difficult because each conventional
+criterion for model comparison is deficient in a specific respect. The
+maximized likelihood is non-decreasing in the number of classes, since a
+model with k + 1 classes contains the model with k classes as a special
+case. The likelihood ratio test of k against k + 1 classes does not have its
+usual chi-square reference distribution, because the null hypothesis places
+a mixing proportion on the boundary of the parameter space and leaves the
+parameters of the omitted class unidentified (McLachlan and Peel, 2000).
+Valid p-values can be obtained by parametric bootstrap (McLachlan, 1987), at
+the cost of refitting both models to many simulated data sets. Information
+criteria avoid hypothesis testing by penalizing the deviance for the number
+of estimated parameters; criteria with a weaker penalty, such as the Akaike
+information criterion, select more classes than criteria with a stronger
+penalty, such as the Bayesian information criterion (Nylund, Asparouhov and
+Muthén, 2007).
 
-Applied data raise further problems. In large samples even the
-Bayesian information criterion often keeps decreasing as classes are added,
-because small departures from the model become detectable and each new class
-absorbs some of them. The lowest value then falls on the largest model that
-was fitted, and the size of each improvement says more than the position of
-the minimum. In a two-level model the number of profiles and the number of
-group classes are chosen together, and the charge of the Bayesian information
-criterion depends on whether the sample size counts the students or their
-enrolments. Finally, a model can fit the data well and still separate its
-classes poorly, so that many enrolments or students sit between classes, and
-its estimate can be a local maximum of the likelihood that a different
-starting point would improve.
+Applied data introduce further complications. In large samples the Bayesian
+information criterion frequently continues to decrease as classes are added,
+because minor misspecifications become detectable and each additional class
+absorbs part of them. The minimum then falls at the largest model fitted,
+and the magnitude of successive improvements is more informative than the
+location of the minimum. In a two-level model the numbers of lower- and
+higher-level classes must be determined jointly, and the penalty of the
+Bayesian information criterion depends on whether the sample size is taken
+as the number of higher-level units or of lower-level observations
+(Lukočienė, Varriale and Vermunt, 2010). Moreover, a model may fit well yet
+separate its classes poorly, and the reported solution may be a local rather
+than the global maximum of the likelihood.
 
-This document applies class enumeration to a two-level latent profile model.
-Every combination of the requested numbers of profiles and group classes is
-fitted with `enumerate_classes()`, and every fitted model is kept. Each
-candidate is described by its information criteria under both definitions of
-the sample size, by the decrease of a criterion with each added profile and
-each added group class, by the knee of each of these curves, by the
-certainty of its classification and by checks of its estimation. Selected
-candidates are then compared side by side. The chosen candidate is taken
-from the fitted candidates for further analysis.
+This article applies class enumeration to a two-level latent profile model.
+All combinations of the specified numbers of profiles and group classes are
+estimated with `enumerate_classes()`, and every fitted model is retained.
+Each candidate is characterized by its information criteria under both
+definitions of the sample size, by the change in a criterion with each
+additional profile and group class, by the knee of each resulting curve, by
+the certainty of its classification and by diagnostics of its estimation.
+Selected candidates are then compared directly, and the chosen candidate is
+extracted for substantive analysis.
 
-The evidence is reported in full because no single statistic determines the
-number of classes. The criteria, the changes between candidates and the
-classification quality together show where additional classes stop improving
-the model. A choice made from this evidence can be stated, justified and
-reproduced from the reported tables. [Model selection](model-selection.html)
-describes each piece of the evidence in detail: its definition, how it is
-read and where it misleads.
+The full evidence is reported because no single statistic determines the
+number of classes. Considered jointly, the criteria, the changes between
+neighbouring candidates and the indices of classification quality indicate
+where additional classes cease to improve the model, and a decision based on
+them can be stated, justified and reproduced from the reported tables.
+[Model selection](model-selection.html) defines each source of evidence and
+discusses its interpretation and limitations.
 
 ```{r setup}
 library(latents)
@@ -89,43 +90,42 @@ n_students <- with(course_engagement, length(unique(student)))
 
 ## Data
 
-The examples use `course_engagement`, a data frame in long format with one
-row per course enrolment. It contains
+The examples use `course_engagement`, a long-format data frame with one row
+per course enrolment, comprising
 `r format(n_enrolments, big.mark = ",")` enrolments of `r n_students`
-students. Five measures of activity in each course serve as indicators:
-browsing of the course site, lecture viewing, reading of the forum, posting
-to the forum and attendance. Each measure is standardized within its course,
-so a value of zero is the course average. The column `student` identifies the
-student to whom each enrolment belongs.
+students. Five measures of course activity serve as indicators: browsing of
+the course site, lecture viewing, forum reading, forum posting and
+attendance. Each measure is standardized within its course, so that zero
+denotes the course mean. The column `student` identifies the student to whom
+each enrolment belongs.
 
 ```{r data}
 head(course_engagement)
 ```
 
-Enrolments are nested in students. The profiles therefore describe patterns
-of activity in a single course, and the group classes describe students by
-how their enrolments are distributed across those patterns.
+Because enrolments are nested within students, the profiles describe
+patterns of activity within a single course, and the group classes describe
+students by the distribution of their enrolments over those patterns.
 
 ## Fitting the candidate models
 
-The candidates are fitted with `enumerate_classes()` from the data, the
-indicators in `vars` and the group identifier in `id`. The arguments
-`n_profiles` and `n_group_classes` give the numbers of classes to try, and
-one model is fitted for every combination of them. Here the numbers of profiles run from one to six and the numbers of
-group classes from one to four. The argument `model` sets the covariance
-structure of the profiles. The value `"VVI"` gives every profile its own
-variances and fixes the covariances at zero. Without `model`, the four basic
-structures are fitted for every combination.
+`enumerate_classes()` takes the data, the indicators (`vars`) and the group
+identifier (`id`). The arguments `n_profiles` and `n_group_classes` specify
+the numbers of classes to be considered, and one model is estimated for each
+combination; here the number of profiles ranges from one to six and the
+number of group classes from one to four. The argument `model` specifies the
+within-profile covariance structure. `"VVI"` assigns each profile its own
+variances and constrains the covariances to zero; when `model` is omitted,
+the four basic structures are estimated for every combination.
 
-The likelihood of a mixture model has several local maxima, so each model is
-estimated from several random starts and the solution with the highest
-likelihood is kept. The argument `n_starts` sets the number of starts, and,
-like every other argument of the fitting function given here, it applies to
-every candidate alike. The example uses three starts per model to keep the
-computation short. Applied analyses use ten or more, and a grid is refitted as
-a whole when more starts are needed, so that every candidate has the same
-chance of reaching its best solution. The argument `seed` makes the starts
-reproducible.
+The likelihood of a mixture model is multimodal, so each model is estimated
+from several random starts and the solution with the highest likelihood is
+retained. The number of starts is set by `n_starts`, which, like every other
+estimation argument, applies identically to all candidates. Three starts per
+model are used here to limit computation; applied analyses should use at
+least ten, and a grid is re-estimated in its entirety when more starts are
+required, so that every candidate has the same opportunity to reach its
+maximum. The argument `seed` makes the starts reproducible.
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -156,25 +156,24 @@ stopifnot(bic_groups_pick == "profiles4_groups3",
           aic_pick == "profiles6_groups4")
 ```
 
-The result holds `r n_candidates` fitted candidates. Each candidate is named
-by its numbers of profiles and group classes, so that `profiles4_groups3` has
-four profiles and three group classes, and the name identifies the candidate
-in every function that follows. The `r n_failed` candidates with one profile
-and several group classes could not be estimated. Group classes are defined
-by differences in the distribution of profiles, and a model with a single
-profile has no such differences. These candidates remain in the table with
-the error that stopped them.
+The result contains `r n_candidates` candidates. Each is named by its
+numbers of profiles and group classes (`profiles4_groups3` denotes four
+profiles and three group classes), and this name identifies the candidate in
+all subsequent functions. The `r n_failed` candidates with a single profile
+and more than one group class are not identified: group classes are defined
+by differences in the distribution of profiles, and with a single profile no
+such differences exist. These candidates are retained in the table together
+with the error that terminated their estimation.
 
 ## The table of candidates
 
-The table of candidates has one row per candidate and is returned by
-`as.data.frame()`.
+`as.data.frame()` returns one row per candidate.
 
 ```{r table}
 as.data.frame(models)
 ```
 
-The columns fall into groups.
+The columns form the following groups.
 
 | Columns | Content |
 |---|---|
@@ -184,65 +183,70 @@ The columns fall into groups.
 | `profile_entropy`, `group_entropy` | Relative entropy at each level |
 | `avepp_min`, `avepp_max`, `avepp_mean`, `avepp_below` | Average posterior probability of the profiles |
 | `group_avepp_min`, `group_avepp_max`, `group_avepp_mean`, `group_avepp_below` | Average posterior probability of the group classes |
-| `converged`, `boundary`, `n_best_replicated`, `warnings`, `error` | Checks of the estimation |
+| `converged`, `boundary`, `n_best_replicated`, `warnings`, `error` | Diagnostics of the estimation |
 
 ## Information criteria
 
 An information criterion is the deviance, minus twice the maximized
-log-likelihood, plus a charge for every estimated parameter. Lower values
-indicate a better balance of fit and complexity. In a two-level model the
-charge of several criteria depends on the sample size. Criteria ending in
-`_groups` count the `r n_students` students as the independent units, and
-criteria ending in `_individual` count the
-`r format(n_enrolments, big.mark = ",")` enrolments. An analysis uses one of
-the two conventions throughout.
+log-likelihood, plus a penalty for the estimated parameters; lower values
+indicate a more favourable balance of fit and complexity. In a two-level
+model the penalty of several criteria depends on the sample size. Criteria
+with the suffix `_groups` treat the `r n_students` students as the
+independent units, and criteria with the suffix `_individual` the
+`r format(n_enrolments, big.mark = ",")` enrolments (Lukočienė, Varriale and
+Vermunt, 2010). A single convention should be used throughout an analysis.
 
-The candidate at the minimum of each criterion:
+The candidate that minimizes each criterion:
 
 ```{r best}
 get_results(models, "best")
 ```
 
-The criteria disagree. With students as the units, the Bayesian information
-criterion (BIC) is lowest for `r bic_groups_pick`, the integrated completed
-likelihood (ICL) for `r icl_groups_pick` and the approximate weight of
-evidence (AWE) for `r awe_groups_pick`. With enrolments as the units, BIC is
-lowest for `r bic_individual_pick`. The Akaike information criterion (AIC) is
-lowest for `r aic_pick`, the largest candidate fitted, because its light
-charge per parameter keeps it decreasing across the whole range.
+The criteria do not agree. With students as the units, the Bayesian
+information criterion (BIC; Schwarz, 1978) is minimized by
+`r bic_groups_pick`, the integrated completed likelihood (ICL; Biernacki,
+Celeux and Govaert, 2000) by `r icl_groups_pick` and the approximate weight
+of evidence (AWE; Banfield and Raftery, 1993) by `r awe_groups_pick`. With
+enrolments as the units, BIC is minimized by `r bic_individual_pick`. The
+Akaike information criterion (AIC; Akaike, 1974) is minimized by
+`r aic_pick`, the largest candidate, because its weak penalty leaves it
+decreasing over the entire range. ICL and AWE penalize classification
+uncertainty in addition to the number of parameters and therefore favour
+fewer, better separated classes.
 
-The criteria are plotted against the number of profiles, one line per number
-of group classes, with the lowest value of each criterion ringed.
+The criteria are plotted against the number of profiles, with one line per
+number of group classes and the minimum of each criterion circled.
 
 ```{r plot-criteria, fig.height = 5}
 plot(models)
 ```
 
-A minimum at the largest number of profiles or group classes fitted shows
-that the criterion is still decreasing there. The range of the candidates is
-then widened until the minimum lies inside it. Any criterion can be plotted
-by name, and `what = "all"` plots every criterion.
+A minimum at the largest number of profiles or group classes considered
+indicates that the criterion is still decreasing at the boundary of the
+grid, which should then be extended until the minimum is interior. Any
+criterion can be plotted by name, and `what = "all"` plots all of them.
 
 ```{r plot-bic}
 plot(models, what = "bic_groups")
 ```
 
-The tree plots how the profiles divide as more are added. Each profile of a
-model is linked to the profiles of the next model that receive its
-observations.
+The clustering tree (Zappia and Oshlack, 2018) shows how the profiles divide
+as their number increases: each profile of a model is linked to the profiles
+of the next larger model that receive its observations.
 
 ```{r plot-tree, fig.height = 6}
 plot(models, what = "tree")
 ```
 
-## Change with each added class
+## Change with each additional class
 
-When a criterion decreases across the whole range, the size of each decrease
-becomes the evidence. For every candidate, the table reports the decrease in
-BIC from the candidate with one profile fewer and the same number of group
-classes, and the decrease from the candidate with one group class fewer and
-the same number of profiles. A positive value means that the added class
-lowered the criterion. The argument `using` selects another criterion.
+When a criterion decreases over the entire range, the magnitude of each
+decrease constitutes the evidence. For each candidate, the table reports the
+decrease in BIC relative to the candidate with one profile fewer and the
+same number of group classes, and relative to the candidate with one group
+class fewer and the same number of profiles. A positive value indicates that
+the additional class lowered the criterion. Another criterion is selected
+with `using`.
 
 ```{r deltas}
 get_results(models, "deltas")
@@ -259,27 +263,27 @@ step_5 <- delta_of("profiles5_groups3")
 stopifnot(step_3 > 0, step_4 > 0, step_5 < 0)
 ```
 
-With three group classes, adding a third profile lowers BIC by
-`r format(step_3, big.mark = ",")` and adding a fourth lowers it by
-`r format(step_4, big.mark = ",")`. Adding a fifth profile raises BIC by
-`r format(-step_5, big.mark = ",")`, which appears in the table as a negative
-decrease. The decreases are plotted for both directions, along the
-number of profiles on the left and along the number of group classes on the
-right.
+With three group classes, a third profile lowers BIC by
+`r format(step_3, big.mark = ",")` and a fourth by
+`r format(step_4, big.mark = ",")`, whereas a fifth raises it by
+`r format(-step_5, big.mark = ",")`, which the table reports as a negative
+decrease. The decreases are plotted in both directions, along the number of
+profiles (left) and along the number of group classes (right).
 
 ```{r plot-deltas, fig.height = 5}
 plot(models, what = "deltas")
 ```
 
-The knee summary scales both axes of a curve to the unit interval and finds
-the candidate with the largest perpendicular distance below the straight
-line from the first point to the last. This chord-distance rule is inspired
-by Kneedle, without its smoothing or sensitivity thresholds. A nearly linear
-curve can have a very small maximum distance, so the reported distance
-describes the strength of the bend as well as its location. The knee is computed
-along the number of profiles for each number of group classes, along the
-number of group classes for each number of profiles, and across all
-candidates ordered by their number of parameters.
+The knee summary rescales both axes of a curve to the unit interval and
+identifies the candidate at the greatest perpendicular distance below the
+chord joining the first and last points. The rule follows the geometric
+definition of Kneedle (Satopää et al., 2011) without its smoothing and
+sensitivity threshold. A nearly linear curve yields a small maximum
+distance, so the reported distance indicates the strength of the bend as
+well as its location. Knees are computed along the number of profiles for
+each number of group classes, along the number of group classes for each
+number of profiles, and across all candidates ordered by their number of
+parameters.
 
 ```{r knees}
 get_results(models, "knees")
@@ -296,14 +300,14 @@ knee_along_groups <- with(subset(knees, direction == "group_classes" &
 ```
 
 With three group classes, the knee along the number of profiles is
-`r knee_along_profiles`. The straight line ends at the largest
-candidate, so the knee depends on the range fitted. Without the largest
-candidate the knee is `r knee_without_largest`, which the
-table records in `stable` and `note`. Along the number of group classes with
-four profiles, the knee is `r knee_along_groups`.
+`r knee_along_profiles`. Because the chord terminates at the largest
+candidate, the knee depends on the range of the grid; with the largest
+candidate omitted it is `r knee_without_largest`, as recorded in the
+columns `stable` and `note`. Along the number of group classes with four
+profiles, the knee is `r knee_along_groups`.
 
-The criterion over all candidates at once, as the distance of each from the
-lowest value:
+The criterion across all candidates simultaneously, expressed as the
+distance of each from the minimum:
 
 ```{r heatmap}
 plot(models, what = "heatmap")
@@ -311,23 +315,24 @@ plot(models, what = "heatmap")
 
 ## Classification quality
 
-Every observation has a posterior probability of membership in each class.
-Relative entropy summarizes these probabilities over all observations, from 0
-when every observation is equally likely to belong to every class, to 1 when
-every observation belongs to one class with certainty. The average posterior
-probability (AvePP) of a class is the mean posterior probability of that
-class among the observations assigned to it. An AvePP of 0.7 or 0.8 and
-above is commonly taken to indicate adequate separation. The table of
-candidates reports the lowest, highest and mean AvePP at each level and the
-number of classes below a cutoff, which is 0.8 by default and is set with
+Each observation has a posterior probability of membership in each class.
+Relative entropy (Ramaswamy et al., 1993) summarizes these probabilities
+over all observations; it equals 0 when every observation is equally likely
+to belong to every class and 1 when every observation is assigned to one
+class with certainty. The average posterior probability (AvePP) of a class
+is the mean posterior probability of that class among the observations
+modally assigned to it (Nagin, 2005). Values of at least 0.7 to 0.8 are
+conventionally regarded as indicating adequate separation. The table of
+candidates reports the minimum, maximum and mean AvePP at each level and the
+number of classes below a cutoff, 0.8 by default, which is set with
 `cutoff`.
 
 ```{r quality}
 plot(models, what = "diagnostics")
 ```
 
-The AvePP of every class of every candidate, with its size and the relative
-entropy of its level:
+The AvePP of every class of every candidate, together with its size and the
+relative entropy of its level:
 
 ```{r classification}
 get_results(models, "classification")
@@ -343,17 +348,18 @@ group_avepp_chosen <- with(chosen_row, round(group_avepp_min, 2))
 
 For `r bic_groups_pick`, the relative entropy is
 `r profile_entropy_chosen` for the profiles and `r group_entropy_chosen` for
-the group classes. The lowest AvePP is `r avepp_chosen` among the profiles
+the group classes; the minimum AvePP is `r avepp_chosen` among the profiles
 and `r group_avepp_chosen` among the group classes.
 
-## Checks of the estimation
+## Diagnostics of the estimation
 
-A solution reached from several random starts is more credible than a
-solution reached once, because a single start may have stopped at a local
-maximum. An estimate on the boundary of the parameter space, such as a
-variance at its lower bound, indicates a model too complex for the data. A
-class that holds a very small share of the observations is also hard to
-interpret. The following plots report these checks for every candidate.
+A maximum reached from several random starts is more credible than one
+reached once, since a single start may terminate at a local maximum. An
+estimate on the boundary of the parameter space, such as a variance at its
+lower bound, indicates a model too complex for the data, and a class
+containing a very small proportion of the observations is difficult to
+interpret and to replicate. The following plots report these diagnostics
+for every candidate.
 
 ```{r trust}
 plot(models, what = "trust")
@@ -363,17 +369,18 @@ plot(models, what = "trust")
 plot(models, what = "smallest")
 ```
 
-All of the plots for choosing the number of classes are produced together
-with `plot(models, what = "selection")`.
+`plot(models, what = "selection")` displays all plots relevant to the
+choice of the number of classes jointly.
 
 ## Comparing candidates
 
-Selected candidates are placed side by side with `compare_models()`.
-Candidates are named as in the table, given by their numbers of classes, or
-selected by a number of profiles or group classes. The comparison adds the difference in
-BIC from the lowest of the candidates compared and the BIC weight. The weight
-is `exp(-delta_bic / 2)` normalized to sum to one, the approximate posterior
-probability of each candidate when all have equal prior probability.
+`compare_models()` tabulates selected candidates side by side. Candidates
+are specified by name, by their numbers of classes, or by a number of
+profiles or group classes. The comparison adds the difference in BIC from
+the minimum among the compared candidates and the BIC weight,
+`exp(-delta_bic / 2)` normalized to sum to one, which approximates the
+posterior probability of each candidate under equal prior probabilities
+(Wagenmakers and Farrell, 2004).
 
 The candidates preferred by BIC, ICL and AWE with students as the units:
 
@@ -381,13 +388,14 @@ The candidates preferred by BIC, ICL and AWE with students as the units:
 compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
 ```
 
-The same candidates given by their numbers of classes, with labels:
+The same candidates specified by their numbers of classes, with labels:
 
 ```{r compare-counts}
 compare_models(models, bic = c(4, 3), icl = c(4, 2), awe = c(3, 2))
 ```
 
-Every candidate with four profiles, which shows what the group classes add:
+All candidates with four profiles, which isolates the contribution of the
+group classes:
 
 ```{r compare-select}
 comparison <- compare_models(models, n_profiles = 4)
@@ -395,9 +403,9 @@ comparison
 plot(comparison)
 ```
 
-The comparison keeps the fitted models. The AvePP of every class of every
-compared model is returned by `get_results()`, and the model behind a row by
-`get_candidate()`.
+The comparison retains the fitted models. `get_results()` returns the AvePP
+of every class of every compared model, and `get_candidate()` the model
+underlying a row.
 
 ```{r compare-classification}
 get_results(comparison, "classification")
@@ -405,30 +413,30 @@ get_results(comparison, "classification")
 
 ## Analysis of the chosen candidate
 
-The example continues with `r bic_groups_pick`, the candidate with the lowest
-BIC with students as the units. It is taken from the fitted candidates by
-name with `get_candidate()`. The numbers of classes give the same model, as
-in `get_candidate(models, 4, 3)`.
+The analysis proceeds with `r bic_groups_pick`, the candidate that minimizes
+BIC with students as the units. It is extracted by name with
+`get_candidate()`; specifying the numbers of classes, as in
+`get_candidate(models, 4, 3)`, returns the same model.
 
 ```{r chosen}
 chosen <- get_candidate(models, "profiles4_groups3")
 chosen
 ```
 
-`chosen` is the same kind of object that `multilpa()` returns. Its summary
+`chosen` is an object of the class returned by `multilpa()`. Its summary
 reports the estimates with their standard errors.
 
 ```{r chosen-summary}
 summary(chosen)
 ```
 
-The profiles are plotted as their means on the five indicators.
+The profiles are displayed as their means on the five indicators.
 
 ```{r chosen-profiles}
 plot_profiles(chosen)
 ```
 
-Each group class of students has its own distribution of the four profiles.
+Each group class has its own distribution over the four profiles.
 
 ```{r chosen-prevalence}
 plot_prevalence(chosen)
@@ -444,41 +452,42 @@ diagnostics(chosen)
 plot_diagnostics(chosen)
 ```
 
-With two or more group classes, the same four views are drawn for the
-students in their group classes after those for the enrolments in their
-profiles. A student is classified from all of their enrolments together, so
-the group classes are usually much sharper than the profiles; one view is
-drawn with `what`, for example `plot_diagnostics(chosen, what =
-"group_posteriors")`.
+With two or more group classes, the four views for the enrolments in their
+profiles are followed by the same views for the students in their group
+classes. Because a student is classified from all of their enrolments
+jointly, the group classes are typically far better separated than the
+profiles. A single view is selected with `what`, for example
+`plot_diagnostics(chosen, what = "group_posteriors")`.
 
-Each enrolment with its profile, its student's group class and its posterior
-probabilities:
+Each enrolment with its modal profile, the group class of its student and
+its posterior probabilities:
 
 ```{r chosen-assignments}
 head(get_results(chosen, "assignments", data = course_engagement))
 ```
 
-The profiles can be related to an outcome. The mean of `previous_grade` in
-each profile is estimated with `three_step()`, which corrects for the
-uncertainty of the classification with the BCH method.
+The profiles can be related to external variables. The mean of
+`previous_grade` in each profile is estimated with `three_step()`, which
+corrects for classification error by the BCH method (Bolck, Croon and
+Hagenaars, 2004; Vermunt, 2010).
 
 ```{r chosen-outcome}
 three_step(chosen, data = course_engagement, outcome = "previous_grade")
 ```
 
-## Testing two neighbouring candidates
+## Testing neighbouring candidates
 
-The bootstrap likelihood ratio test compares two candidates that differ by
-one class. Data sets are simulated from the smaller candidate, both
-candidates are refitted to each. With `B` simulated data sets and `b`
-likelihood ratios at least as large as the observed one, the p-value is
-`(b + 1) / (B + 1)`. The extra count includes the observed statistic and
-prevents a zero p-value from a finite simulation. Every replicate must pass
-the fitting checks; otherwise the p-value is withheld. The test below
-compares three and four profiles with three group classes. Nineteen
-simulated data sets keep the example short. With 19 simulations the
-smallest attainable p-value is 1/20 = 0.05, and applied analyses use 99 or
-more.
+The bootstrap likelihood ratio test (McLachlan, 1987) compares two
+candidates that differ by one class. Data sets are simulated from the
+smaller candidate and both candidates are re-estimated on each. With `B`
+simulated data sets, of which `b` yield a likelihood ratio at least as large
+as the observed one, the p-value is `(b + 1) / (B + 1)` (Davison and
+Hinkley, 1997); the additional count includes the observed statistic and
+precludes a p-value of zero from a finite simulation. The p-value is
+withheld unless every replicate satisfies the estimation checks. The test
+below compares three and four profiles with three group classes. Nineteen
+simulated data sets keep the example brief; the smallest attainable p-value
+is then 1/20 = 0.05, and applied analyses should use at least 99.
 
 ```{r blrt}
 smaller <- get_candidate(models, "profiles3_groups3")
@@ -489,7 +498,7 @@ test
 plot(test)
 ```
 
-## Other kinds of model
+## Other model types
 
 ### Latent class models
 
@@ -498,9 +507,10 @@ n_reports <- nrow(student_esm)
 ```
 
 `student_esm` contains `r format(n_reports, big.mark = ",")` momentary
-reports of students, with eight activities recorded as yes or no. Naming the
-indicators in `categorical` makes every candidate a latent class model, and
-the candidates are named with `classes` in place of `profiles`.
+reports from students, with eight activities recorded as present or absent.
+Declaring the indicators in `categorical` makes every candidate a latent
+class model, and the candidates are named with `classes` in place of
+`profiles`.
 
 ```{r lca}
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
@@ -525,16 +535,17 @@ lca_lowest <- with(subset(get_results(compare_models(lca_models, n_profiles = 3)
 stopifnot(lca_entropy < 0.6, lca_avepp < 0.7, lca_lowest == "classes3_groups2")
 ```
 
-With two group classes the three-class model has the lower BIC. Its relative
-entropy is `r lca_entropy`, and its least distinct class has an AvePP of
-`r lca_avepp`. The classes of this model overlap strongly, which limits
-their interpretation.
+Among the three-class models, the model with two group classes has the
+lower BIC. Its relative entropy is `r lca_entropy`, and its least distinct
+class has an AvePP of `r lca_avepp`. The classes of this model overlap
+substantially, which limits their substantive interpretation.
 
 ### Single-level models
 
-Observations without groups are modelled with `enumerate_lpa()` for
-continuous indicators and `enumerate_lca()` for categorical ones. The
-candidates are named by their numbers of profiles or classes alone.
+Observations without a grouping structure are modelled with
+`enumerate_lpa()` for continuous indicators and `enumerate_lca()` for
+categorical indicators. The candidates are named by their numbers of
+profiles or classes alone.
 
 ```{r single}
 srl_models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
@@ -558,29 +569,31 @@ stopifnot(srl_bic == "profiles6", isTRUE(eight_on_boundary),
           identical(warned, "profiles8"))
 ```
 
-BIC is lowest for `r srl_bic`. The candidate with eight profiles reaches the
-lower bound of a variance and contains a nearly empty profile, which marks
-the end of the range that `r nrow(srl)` observations support. The two
-warnings printed during the enumeration come from that candidate, and the
-table keeps them in its `warnings` column.
+BIC is minimized by `r srl_bic`. The eight-profile candidate has a variance
+at its lower bound and a nearly empty profile, which marks the limit of what
+`r nrow(srl)` observations can support. The two warnings issued during the
+enumeration originate from this candidate and are retained in the `warnings`
+column of the table.
 
 ### Missing values and scaled indicators
 
-Two settings change what the candidates are fitted to, and like `n_starts`
-they apply to every candidate. With `missing = "fiml"`, rows with some
-indicators missing are fitted from the indicators they have; rows with every
-indicator missing are left out of the individual sample size, entropy and
-AvePP, because they were never classified. `centering` and `scaling` subtract
-a mean and divide by a standard deviation over the sample (`"grand"`) or
-within each group (`"person"`); both together give grand or within-person
-z-scores. Criteria compare only candidates fitted with the same settings.
-[Model selection](model-selection.html) describes both with examples.
+Two arguments alter the data to which the candidates are fitted and, like
+`n_starts`, apply to all candidates. With `missing = "fiml"`, rows with some
+indicators missing contribute through the indicators observed (full
+information maximum likelihood); rows with every indicator missing are
+excluded from the individual sample size, entropy and AvePP, since they
+carry no information on class membership. `centering` subtracts and
+`scaling` divides by a mean or standard deviation computed over the sample
+(`"grand"`) or within each group (`"person"`); combined, they yield grand
+or within-person z-scores. Information criteria are comparable only among
+candidates fitted under the same settings. [Model
+selection](model-selection.html) describes both with examples.
 
-### Several covariance structures
+### Multiple covariance structures
 
-Several structures in `model` multiply the candidates, and the structure
-joins the name. The numbers of classes alone then match several candidates,
-so a candidate is named in full.
+Specifying several structures in `model` multiplies the candidates, and the
+structure is appended to each name. Because the numbers of classes then
+match several candidates, a candidate must be specified by its full name.
 
 ```{r crossed}
 crossed_models <- enumerate_lpa(srl, c("cognitive_strategies",
@@ -592,12 +605,12 @@ crossed_models
 compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
 ```
 
-### Transition models
+### Latent transition models
 
-With `time`, every candidate is a latent transition model across the
+With `time`, every candidate is a latent transition model over the
 occasions, here the order of each student's enrolments in `sequence`. The
-six-profile model needs more than the default 1,000 EM iterations to meet
-the convergence tolerance, so `max_iter` is raised.
+six-profile model requires more than the default 1,000 EM iterations to meet
+the convergence tolerance, so `max_iter` is increased.
 
 ```{r transitions}
 transition_models <- enumerate_classes(course_engagement, activity, "student",
@@ -662,3 +675,64 @@ knitr::kable(data.frame(
 ```{r restore, include = FALSE}
 options(old_options)
 ```
+
+## References
+
+Akaike, H. (1974). A new look at the statistical model identification.
+*IEEE Transactions on Automatic Control*, 19, 716--723.
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. *Biometrics*, 49, 803--821.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12, 3--27.
+
+Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap methods and their
+application*. Cambridge University Press.
+
+Lukočienė, O., Varriale, R., & Vermunt, J. K. (2010). The simultaneous
+decision(s) about the number of lower- and higher-level classes in
+multilevel latent class analysis. *Sociological Methodology*, 40, 247--283.
+
+McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
+statistic for the number of components in a normal mixture. *Applied
+Statistics*, 36, 318--324.
+
+McLachlan, G. J., & Peel, D. (2000). *Finite mixture models*. Wiley.
+
+Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
+University Press.
+
+Nylund, K. L., Asparouhov, T., & Muthén, B. O. (2007). Deciding on the
+number of classes in latent class analysis and growth mixture modeling: A
+Monte Carlo simulation study. *Structural Equation Modeling*, 14, 535--569.
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Satopää, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
+"kneedle" in a haystack: Detecting knee points in system behavior. In *31st
+International Conference on Distributed Computing Systems Workshops* (pp.
+166--171). IEEE.
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.
+
+Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
+weights. *Psychonomic Bulletin & Review*, 11, 192--196.
+
+Zappia, L., & Oshlack, A. (2018). Clustering trees: A visualization for
+evaluating clusterings at multiple resolutions. *GigaScience*, 7(7),
+giy083.

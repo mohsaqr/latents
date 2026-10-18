@@ -1,0 +1,258 @@
+lca_binary_15-lg.dat
+File name:	lca_binary_15-lg.dat	
+File size:	13514 bytes  800 records	
+File date:	2026-Oct-17 11:48:01 PM	
+Syntax:	lca_binary_15.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+lca_binary_15	3-Cluster	-2971.3113	6076.3148	5982.6226	6002.6226	20	56.8582	43	0.076	0.1729	0.5940	
+lca_binary_15 - L² = 56.8582
+3-Cluster Syntax Model	
+						
+Number of cases	800					
+Number of parameters (Npar)	20					
+Random Seed	20261017					
+Best Start Seed	1080782					
+						
+Chi-squared Statistics						
+Degrees of freedom (df)	43	p-value				
+L-squared (L²)	56.8582	0.076				
+X-squared	56.6333	0.079				
+Cressie-Read	56.0177	0.088				
+BIC (based on L²)	-230.5801					
+AIC (based on L²)	-29.1418					
+AIC3 (based on L²)	-72.1418					
+CAIC (based on L²)	-273.5801					
+SABIC (based on L²)	-94.0311					
+Dissimilarity Index	0.0841	 				
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-2971.3113					
+Log-prior	0.0000					
+Log-posterior	-2971.3113					
+BIC (based on LL)	6076.3148					
+AIC (based on LL)	5982.6226					
+AIC3 (based on LL)	6002.6226					
+CAIC (based on LL)	6096.3148					
+SABIC (based on LL)	6012.8037					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1729					
+Reduction of errors (Lambda)	0.7348					
+Entropy R-squared	0.5940					
+Standard R-squared	0.6121					
+Classification log-likelihood	-3327.9838					
+Entropy	356.6725					
+CLC	6655.9676					
+AWE	6983.3521					
+ICL-BIC	6789.6599					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	199.4374	33.5587	25.7568	258.7530		
+2	26.0356	245.7260	6.6966	278.4582		
+3	35.5270	10.7153	216.5465	262.7888		
+Total	261.0000	290.0000	249.0000	800.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	169.1232	44.8352	44.7946	258.7530		
+2	44.8352	219.8744	13.7486	278.4582		
+3	44.7946	13.7486	204.2457	262.7888		
+Total	258.7530	278.4582	262.7888	800.0000		
+						
+Files						
+Infile	C:\lgmontecarlo\lca_binary_15-lg.dat	
+						
+Options						
+threads	10					
+algorithm						
+tolerance	1e-10					
+emtolerance	1e-08					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261017					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	includeall					
+output						
+parameters	first					
+standard errors	no					
+identification	no					
+validation LL	no					
+sample size BIC	     800					
+predictionstatistics	no					
+outfile						
+file name	lca_binary_15_posteriors.txt	
+classification	posterior					
+prediction	no					
+simulation	no					
+seed	0					
+individualcoefficients	no					
+logdensities	no					
+id	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+u1	Nominal	2				
+1	1					
+2	2					
+u2	Nominal	2				
+1	1					
+2	2					
+u3	Nominal	2				
+1	1					
+2	2					
+u4	Nominal	2				
+1	1					
+2	2					
+u5	Nominal	2				
+1	1					
+2	2					
+u6	Nominal	2				
+1	1					
+2	2					
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lca_binary_15_posteriors.txt' classification keep id;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 3;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+Cluster(2)	<-	1	0.0734	.	.	.				
+Cluster(3)	<-	1	0.0155	.	.	.				
+										
+u1(1)	<-	1	0.0000	.	.	.				
+u1(2)	<-	1	-1.4730	.	.	.				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.				
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-0.3543	.	.	.				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	2.8815	.	.	.				
+										
+u2(1)	<-	1	0.0000	.	.	.				
+u2(2)	<-	1	-0.9774	.	.	.				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.				
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-0.4904	.	.	.				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	2.3139	.	.	.				
+										
+u3(1)	<-	1	0.0000	.	.	.				
+u3(2)	<-	1	-1.5026	.	.	.				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.				
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	0.5816	.	.	.				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	2.3799	.	.	.				
+										
+u4(1)	<-	1	0.0000	.	.	.				
+u4(2)	<-	1	-1.0982	.	.	.				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.				
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	2.6342	.	.	.				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	-0.1162	.	.	.				
+										
+u5(1)	<-	1	0.0000	.	.	.				
+u5(2)	<-	1	-1.5583	.	.	.				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.				
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	2.7980	.	.	.				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	0.5462	.	.	.				
+										
+u6(1)	<-	1	0.0000	.	.	.				
+u6(2)	<-	1	-0.9815	.	.	.				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.				
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	2.3837	.	.	.				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	-1.1858	.	.	.				
+Profile
+ 	Cluster	 	 	 	
+ 	1	2	3	Overall	
+Size	0.3234	0.3481	0.3285	 	
+u1	 	
+1	0.8135	0.8614	0.1965	0.6275	
+2	0.1865	0.1386	0.8035	0.3725	
+u2	 	
+1	0.7266	0.8127	0.2081	0.5863	
+2	0.2734	0.1873	0.7919	0.4137	
+u3	 	
+1	0.8180	0.7152	0.2937	0.6100	
+2	0.1820	0.2848	0.7063	0.3900	
+u4	 	
+1	0.7499	0.1771	0.7711	0.5575	
+2	0.2501	0.8229	0.2289	0.4425	
+u5	 	
+1	0.8261	0.2245	0.7334	0.5863	
+2	0.1739	0.7755	0.2666	0.4138	
+u6	 	
+1	0.7274	0.1975	0.8973	0.5987	
+2	0.2726	0.8025	0.1027	0.4013	
+ProbMeans-Posterior
+	Cluster			
+	1	2	3	
+Overall	0.3234	0.3481	0.3285	
+Dependent				
+u1				
+1	0.4193	0.4778	0.1028	
+2	0.1619	0.1295	0.7086	
+u2				
+1	0.4009	0.4825	0.1166	
+2	0.2137	0.1575	0.6287	
+u3				
+1	0.4337	0.4081	0.1582	
+2	0.1510	0.2541	0.5949	
+u4				
+1	0.4351	0.1106	0.4543	
+2	0.1828	0.6473	0.1699	
+u5				
+1	0.4558	0.1333	0.4110	
+2	0.1359	0.6524	0.2116	
+u6				
+1	0.3929	0.1148	0.4923	
+2	0.2197	0.6962	0.0841	

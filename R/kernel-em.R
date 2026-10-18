@@ -241,13 +241,16 @@
 #' @param select_start `"likelihood"` or `"converged"`.
 #' @param score A function of a successful attempt giving its log
 #'   likelihood; the default reads `attempt$expectation$log_likelihood`.
+#' @param interior `NULL`, or a function of a successful attempt returning
+#'   `TRUE` when no variance is at its lower bound; when supplied, starts at
+#'   the bound are excluded from the choice (see `.multilpa_select_start()`).
 #' @return A list with `attempts`, `valid`, `scores`, `converged` and
 #'   `best_start`.
 #' @noRd
 .latents_run_starts <- function(n_starts, run, select_start,
                                 score = function(attempt) {
                                   attempt$expectation$log_likelihood
-                                }) {
+                                }, interior = NULL) {
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch(run(start_index),
              error = function(error) list(error = conditionMessage(error)))
@@ -264,9 +267,13 @@
   }, numeric(1))
   converged <- vapply(attempts, function(attempt) isTRUE(attempt$converged),
                       logical(1))
+  flags <- if (!is.null(interior)) {
+    vapply(attempts, function(attempt) is.null(attempt$error) && isTRUE(interior(attempt)),
+           logical(1))
+  }
   list(attempts = attempts, valid = valid, scores = scores,
        converged = converged,
-       best_start = .multilpa_select_start(scores, converged, select_start))
+       best_start = .multilpa_select_start(scores, converged, select_start, flags))
 }
 
 #' Quasi-Newton finish from an EM point

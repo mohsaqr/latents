@@ -239,7 +239,8 @@
                                   min_probability = 1e-10,
                                   missing = c("error", "fiml"),
                                   profile_slopes = c("shared", "group_class"),
-                                  select_start = "likelihood", call = NULL,
+                                  select_start = "likelihood", boundary = "allow",
+                                  call = NULL,
                                   weights = NULL, ordinal = character(),
                                   count = character(), count_model = "poisson",
                                   count_dispersion = "varying",
@@ -359,8 +360,12 @@
   ## same likelihood, because only the converged one is a maximum;
   ## `select_start = "converged"` goes further and refuses an unconverged start
   ## whenever any start converged.
+  interior <- if (identical(boundary, "exclude")) vapply(attempts, function(result) {
+    !is.null(result$parameters) &&
+      !.multilpa_covariance_boundary(result$parameters, min_variance)
+  }, logical(1))
   best_index <- .multilpa_select_start(starts$log_likelihood, starts$converged,
-                                       select_start)
+                                       select_start, interior)
   best <- attempts[[best_index]]
   # Weighted posteriors are counts for the M-step; each unit is classified by
   # its own, unweighted posterior, and the likelihood stays the weighted one.

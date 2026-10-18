@@ -1,0 +1,191 @@
+lta_equal_07-lg.dat
+File name:	lta_equal_07-lg.dat	
+File size:	27448 bytes  600 records	
+File date:	2026-Oct-18 1:00:38 AM	
+Syntax:	lta_equal_07.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+lta_equal_07	2-State	-1895.7144	3836.5245	3809.4288	3818.4288	9	.	.	
+lta_equal_07 - LL = -1895.7144
+2-State Syntax Model	
+					
+Number of cases	150				
+Number of time points	600				
+Number of parameters (Npar)	9				
+Activated Constraints	0				
+Random Seed	20261018				
+Best Start Seed	1882130				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1895.7144				
+Log-prior	0.0000				
+Log-posterior	-1895.7144				
+BIC (based on LL)	3836.5245				
+AIC (based on LL)	3809.4288				
+AIC3 (based on LL)	3818.4288				
+CAIC (based on LL)	3845.5245				
+SABIC (based on LL)	3808.0412				
+					
+					
+Classification Statistics	State				
+Classification errors	0.1018				
+Reduction of errors (Lambda)	0.7554				
+Entropy R-squared	0.6482				
+Standard R-squared	0.6990				
+Classification log-likelihood	-2029.3419				
+Entropy	133.6275				
+CLC	4058.6838				
+AWE	4175.8753				
+ICL-BIC	4103.7795				
+					
+State  Classification Table	Modal				
+Latent	1	2	Total		
+1	324.1964	27.2847	351.4811		
+2	33.8036	214.7153	248.5189		
+Total	358.0000	242.0000	600.0000		
+					
+State  Classification Table	Proportional				
+Latent	1	2	Total		
+1	307.5928	43.8883	351.4811		
+2	43.8883	204.6305	248.5189		
+Total	351.4811	248.5189	600.0000		
+					
+Files					
+Infile	C:\lgextended\lta_equal_07-lg.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261018				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     150				
+predictionstatistics	no				
+outfile					
+file name	lta_equal_07_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+State	Nominal	Dynamic	2		
+ 					
+Case ID	g	150			
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261018 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lta_equal_07_posteriors.txt' classification keep id t;
+variables
+   caseid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      State nominal dynamic 2;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+State[=0](1)	<-	1			0.0000	.	.	.				
+State[=0](2)	<-	1			-0.5953	.	.	.				
+												
+State(1)	<-	1	|	State[-1](1)	0.0000	.	.	.				
+State(2)	<-	1	|	State[-1](1)	-1.3875	.	.	.				
+State(1)	<-	1	|	State[-1](2)	0.0000	.	.	.				
+State(2)	<-	1	|	State[-1](2)	1.3183	.	.	.				
+												
+y1	<-	1			-0.0039	.	.	.				
+y1	<-	State(1)			0.0000	.	.	.				
+y1	<-	State(2)			1.7150	.	.	.				
+												
+y2	<-	1			-0.1309	.	.	.				
+y2	<-	State(1)			0.0000	.	.	.				
+y2	<-	State(2)			1.4570	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1					1.0753	.	.	.				
+y2					0.9337	.	.	.				
+Profile
+ 	State	 	 	
+ 	1	2	Overall	
+Size	0.5838	0.4162	 	
+y1	 	
+Mean	-0.0039	1.7112	0.7100	
+y2	 	
+Mean	-0.1309	1.3262	0.4756	
+	
+ 	State[-1]	 	 	
+ 	1	2	 	
+State	 	
+1	0.8002	0.2111	 	
+2	0.1998	0.7889	 	
+Profile-Longitudinal
+ 	 	State	 	 	 	
+ 	Time	1	2	Overall	Observed	
+y1	 	
+Mean	1	-0.0039	1.7112	0.6057	0.6532	
+ 	2	-0.0039	1.7112	0.6979	0.6635	
+ 	3	-0.0039	1.7112	0.7522	0.6902	
+ 	4	-0.0039	1.7112	0.7842	0.8191	
+y2	 	
+Mean	1	-0.1309	1.3262	0.3870	0.2730	
+ 	2	-0.1309	1.3262	0.4653	0.5117	
+ 	3	-0.1309	1.3262	0.5115	0.5584	
+ 	4	-0.1309	1.3262	0.5387	0.5474	
+ProbMeans-Posterior
+	State		
+	1	2	
+Overall	0.5858	0.4142	
+Dependent			
+y1			
+-3.259 - -0.414	0.9478	0.0522	
+-0.412 - 0.316	0.8587	0.1413	
+0.319 - 1.052	0.6685	0.3315	
+1.053 - 1.810	0.3721	0.6279	
+1.815 - 4.999	0.0818	0.9182	
+y2			
+-2.566 - -0.557	0.9538	0.0462	
+-0.552 - 0.0491	0.8271	0.1729	
+0.0523 - 0.793	0.6171	0.3829	
+0.799 - 1.527	0.4118	0.5882	
+1.541 - 4.050	0.1191	0.8809	

@@ -1,0 +1,40 @@
+TITLE: latents Monte Carlo equivalence ml_lca_12;
+DATA: FILE = ml_lca_12.dat;
+VARIABLE:
+ NAMES = id g u1 u2 u3 u4 u5;
+ USEVARIABLES = u1 u2 u3 u4 u5;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ CATEGORICAL = u1 u2 u3 u4 u5;
+ CLUSTER = g;
+ WITHIN = u1 u2 u3 u4 u5;
+ CLASSES = cb(2) cw(2);
+ BETWEEN = cb;
+ANALYSIS:
+ TYPE = TWOLEVEL MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 200 40;
+ STITERATIONS = 40;
+ STSEED = 20261017;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [u1$1 u2$1 u3$1 u4$1 u5$1];
+ %cw#2%
+ [u1$1 u2$1 u3$1 u4$1 u5$1];
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = ml_lca_12-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = ml_lca_12-results.dat;

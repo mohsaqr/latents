@@ -18,11 +18,28 @@
   as.integer(cores)
 }
 
+#' Whether forked workers can use this R's linear algebra
+#'
+#' Apple's Accelerate (vecLib) BLAS is not safe in a forked process once the
+#' parent has used it: the children die with a segmentation fault in the
+#' first BLAS call (`backsolve()`, `crossprod()`). R on macOS can be switched
+#' to it from the reference BLAS, so the fork is refused only where it is.
+#'
+#' @param blas Path of the BLAS library, as `extSoftVersion()` reports it.
+#' @param sysname Operating system name, as `Sys.info()` reports it.
+#' @return `TRUE` when forked workers are safe.
+#' @noRd
+.latents_fork_safe <- function(blas = extSoftVersion()[["BLAS"]],
+                               sysname = Sys.info()[["sysname"]]) {
+  !(identical(sysname, "Darwin") && grepl("Accelerate|vecLib", blas))
+}
+
 #' Apply `fun` to every candidate, on one core or several
 #'
 #' With one core this is `lapply()`. With several, candidates are fitted by
 #' forked processes (`parallel::mclapply()`) where the platform allows it,
-#' and by a socket cluster on Windows. A worker's warnings and messages would
+#' and by a socket cluster on Windows and on macOS with Accelerate's BLAS,
+#' which forked processes cannot use (`.latents_fork_safe()`). A worker's warnings and messages would
 #' otherwise be lost or interleaved, so they are collected in the worker and
 #' signalled again here, candidate by candidate in the order of the grid, as
 #' the conditions themselves, classes included.
@@ -31,11 +48,12 @@
 #' @param fun A function of one row number returning that candidate's result.
 #'   It catches each candidate's own errors.
 #' @param cores Number of cores, from `.latents_check_cores()`.
-#' @param backend `"auto"`, or `"socket"` to use a socket cluster on any
-#'   platform (used by the tests).
+#' @param backend `"auto"`; `"socket"` or `"fork"` to force one backend
+#'   (used by the tests).
 #' @return A list, one element per candidate, in the order of `indices`.
 #' @noRd
-.latents_map_candidates <- function(indices, fun, cores, backend = c("auto", "socket")) {
+.latents_map_candidates <- function(indices, fun, cores,
+                                    backend = c("auto", "socket", "fork")) {
   backend <- match.arg(backend)
   if (cores <= 1L || length(indices) < 2L) return(lapply(indices, fun))
   cores <- min(cores, length(indices))
@@ -52,24 +70,40 @@
       })
     list(value = value, conditions = conditions)
   }
-  socket <- identical(backend, "socket") || identical(.Platform$OS.type, "windows")
+  socket <- identical(backend, "socket") || (identical(backend, "auto") &&
+    (identical(.Platform$OS.type, "windows") || !.latents_fork_safe()))
   results <- if (socket) {
     cluster <- parallel::makePSOCKcluster(cores)
     on.exit(parallel::stopCluster(cluster), add = TRUE)
-    parallel::parLapply(cluster, indices, collected)
+    # A socket worker that dies breaks its connection, and parLapply() stops
+    # with that error rather than returning the other candidates.
+    tryCatch(parallel::parLapply(cluster, indices, collected),
+      error = function(condition) {
+        if (!grepl("connection", conditionMessage(condition), fixed = TRUE)) stop(condition)
+        stop(errorCondition(sprintf(paste(
+          "A worker process failed and the candidates were lost (%s).",
+          "Run again with fewer `cores`, or `cores = 1`."),
+          conditionMessage(condition)),
+          class = "latents_parallel_failure", call = NULL))
+      })
   } else {
     parallel::mclapply(indices, collected, mc.cores = cores,
                        mc.preschedule = FALSE)
   }
-  # A worker that died (out of memory, killed) returns an error object rather
-  # than a candidate; that is a failure of the run, not of the candidate.
-  failed <- vapply(results, inherits, logical(1), "try-error")
+  # A worker that failed returns an error object, and one killed by a signal
+  # (out of memory, a segmentation fault) returns NULL with only a warning;
+  # `collected()` itself never returns NULL. Either is a failure of the run,
+  # not of the candidate.
+  lost <- vapply(results, is.null, logical(1))
+  failed <- lost | vapply(results, inherits, logical(1), "try-error")
   if (any(failed)) {
+    first <- which(failed)[1L]
+    reason <- if (lost[first]) "the process ended without returning a result" else
+      trimws(as.character(results[[first]]))
     stop(errorCondition(sprintf(paste(
       "%d of %d candidates were lost because their worker process failed",
       "(%s). Run again with fewer `cores`, or `cores = 1`."),
-      sum(failed), length(results),
-      trimws(as.character(results[[which(failed)[1L]]]))),
+      sum(failed), length(results), reason),
       class = "latents_parallel_failure", call = NULL))
   }
   invisible(lapply(results, function(result) {

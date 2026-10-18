@@ -1,6 +1,6 @@
 # Latent GOLD comparison: group-class families — results
 
-Run 2026-10-01; R version 4.5.2 (2025-10-31); latents 0.8.8. Tolerances declared in README.md before running.
+Run 2026-10-18; R version 4.5.2 (2025-10-31); latents 0.95.0. Tolerances declared in README.md before running.
 
 **16 of 24 quantities agree.**
 
@@ -23,7 +23,7 @@ Run 2026-10-01; R version 4.5.2 (2025-10-31); latents 0.8.8. Tolerances declared
 | g05 | additive_dispersion | equal | group posteriors |  |  | 3.78e-06 | 1e-03 | yes |
 | g06 | additive | varying | parameter count |     9.000000 |     9.0000 | 0.00e+00 | 0e+00 | yes |
 | g06 | additive | varying | log likelihood | -1673.755468 | -1673.7556 | 1.32e-04 | 1e-04 | **no** |
-| g06 | additive | varying | group posteriors |  |  | 2.24e-04 | 1e-03 | yes |
+| g06 | additive | varying | group posteriors |  |  | 2.28e-04 | 1e-03 | yes |
 | g07 | additive | varying | parameter count |    11.000000 |    11.0000 | 0.00e+00 | 0e+00 | yes |
 | g07 | additive | varying | log likelihood | -3118.092970 | -3118.1614 | 6.84e-02 | 1e-04 | **no** |
 | g07 | additive | varying | group posteriors |  |  | 1.91e-02 | 1e-03 | **no** |

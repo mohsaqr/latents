@@ -1,0 +1,200 @@
+lpa_eei_09-lg.dat
+File name:	lpa_eei_09-lg.dat	
+File size:	38365 bytes  500 records	
+File date:	2026-Oct-17 11:48:54 PM	
+Syntax:	lpa_eei_09.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+lpa_eei_09	3-Cluster	-3101.8050	6315.4729	6239.6099	6257.6099	18	0.1648	0.6294	
+lpa_eei_09 - LL = -3101.8050
+3-Cluster Syntax Model	
+						
+Number of cases	500					
+Number of parameters (Npar)	18					
+Activated Constraints	0					
+Random Seed	20261017					
+Best Start Seed	672392					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-3101.8050					
+Log-prior	0.0000					
+Log-posterior	-3101.8050					
+BIC (based on LL)	6315.4729					
+AIC (based on LL)	6239.6099					
+AIC3 (based on LL)	6257.6099					
+CAIC (based on LL)	6333.4729					
+SABIC (based on LL)	6258.3398					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1648					
+Reduction of errors (Lambda)	0.6859					
+Entropy R-squared	0.6294					
+Standard R-squared	0.6257					
+Classification log-likelihood	-3296.3688					
+Entropy	194.5638					
+CLC	6592.7375					
+AWE	6870.4634					
+ICL-BIC	6704.6005					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	200.7349	14.6684	22.1624	237.5657		
+2	14.5927	97.2087	0.2027	112.0041		
+3	30.6723	0.1229	119.6348	150.4301		
+Total	246.0000	112.0000	142.0000	500.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	178.9682	20.9157	37.6819	237.5657		
+2	20.9157	90.3965	0.6919	112.0041		
+3	37.6819	0.6919	112.0564	150.4301		
+Total	237.5657	112.0041	150.4301	500.0000		
+						
+Files						
+Infile	C:\lgmontecarlo\lpa_eei_09-lg.dat	
+						
+Options						
+threads	10					
+algorithm						
+tolerance	1e-10					
+emtolerance	1e-08					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261017					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	includeall					
+output						
+parameters	first					
+standard errors	no					
+identification	no					
+validation LL	no					
+sample size BIC	     500					
+predictionstatistics	no					
+outfile						
+file name	lpa_eei_09_posteriors.txt	
+classification	posterior					
+prediction	no					
+simulation	no					
+seed	0					
+individualcoefficients	no					
+logdensities	no					
+id	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+y1	Continuous					
+y2	Continuous					
+y3	Continuous					
+y4	Continuous					
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first profile probmeans=posterior;
+   outfile 'lpa_eei_09_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 3;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+Cluster(2)	<-	1	-0.7519	.	.	.				
+Cluster(3)	<-	1	-0.4569	.	.	.				
+										
+y1	<-	1	0.1401	.	.	.				
+y1	<-	Cluster(1)	0.0000	.	.	.				
+y1	<-	Cluster(2)	-1.3600	.	.	.				
+y1	<-	Cluster(3)	1.4188	.	.	.				
+										
+y2	<-	1	0.0503	.	.	.				
+y2	<-	Cluster(1)	0.0000	.	.	.				
+y2	<-	Cluster(2)	1.2212	.	.	.				
+y2	<-	Cluster(3)	1.1011	.	.	.				
+										
+y3	<-	1	-0.1297	.	.	.				
+y3	<-	Cluster(1)	0.0000	.	.	.				
+y3	<-	Cluster(2)	1.4100	.	.	.				
+y3	<-	Cluster(3)	-0.6985	.	.	.				
+										
+y4	<-	1	-0.0828	.	.	.				
+y4	<-	Cluster(1)	0.0000	.	.	.				
+y4	<-	Cluster(2)	-0.7220	.	.	.				
+y4	<-	Cluster(3)	0.7406	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			0.7991	.	.	.				
+y2			1.6103	.	.	.				
+y3			0.5992	.	.	.				
+y4			0.9939	.	.	.				
+Profile
+ 	Cluster	 	 	 	
+ 	1	2	3	Overall	
+Size	0.4751	0.2240	0.3009	 	
+y1	 	
+Mean	0.1401	-1.2199	1.5590	0.2624	
+y2	 	
+Mean	0.0503	1.2715	1.1514	0.6551	
+y3	 	
+Mean	-0.1297	1.2802	-0.8283	-0.0240	
+y4	 	
+Mean	-0.0828	-0.8048	0.6577	-0.0217	
+ProbMeans-Posterior
+	Cluster			
+	1	2	3	
+Overall	0.4751	0.2240	0.3009	
+Dependent				
+y1				
+-3.106 - -0.989	0.2833	0.7107	0.0059	
+-0.966 - -0.0821	0.6449	0.3015	0.0536	
+-0.0788 - 0.604	0.7446	0.0882	0.1672	
+0.635 - 1.436	0.5423	0.0190	0.4387	
+1.442 - 4.074	0.1606	0.0005	0.8389	
+y2				
+-3.213 - -0.522	0.7724	0.0756	0.1520	
+-0.512 - 0.327	0.6134	0.1830	0.2036	
+0.327 - 1.025	0.4564	0.1850	0.3586	
+1.027 - 1.834	0.3182	0.3549	0.3269	
+1.837 - 4.644	0.2152	0.3216	0.4632	
+y3				
+-2.701 - -0.953	0.3376	0.0062	0.6562	
+-0.950 - -0.395	0.5205	0.0142	0.4653	
+-0.395 - 0.165	0.6598	0.0889	0.2513	
+0.168 - 0.880	0.6468	0.2423	0.1109	
+0.881 - 3.426	0.2110	0.7684	0.0206	
+y4				
+-3.281 - -0.937	0.4137	0.4959	0.0904	
+-0.907 - -0.317	0.5691	0.2461	0.1848	
+-0.313 - 0.183	0.5142	0.2410	0.2448	
+0.204 - 0.984	0.5309	0.1089	0.3603	
+0.993 - 2.979	0.3477	0.0282	0.6241	

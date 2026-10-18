@@ -1,0 +1,27 @@
+TITLE: latents starts study lpa_k2_high_n1000_r1, 2 classes;
+DATA: FILE = lpa_k2_high_n1000_r1.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3 y4;
+ USEVARIABLES = y1 y2 y3 y4;
+ IDVARIABLE = id;
+ CLASSES = c(2);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 400 80;
+ STITERATIONS = 40;
+ STSEED = 20261018;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+ %c#2%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+SAVEDATA:
+ RESULTS = lpa_k2_high_n1000_r1-k2-results.dat;

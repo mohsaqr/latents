@@ -28,9 +28,10 @@ under which it is unreliable. It then outlines how these sources are combined
 into a defensible and reproducible decision. A complete applied example is
 given in [Class enumeration in mixture models](class-enumeration.html).
 
-The evidence falls into five kinds, each answering a different question.
+The evidence considered here addresses five distinct questions, summarized
+below together with the functions that report it.
 
-| Question | Evidence | Verbs |
+| Question | Evidence | Functions |
 |---|---|---|
 | Which candidate balances fit and size best? | Information criteria and their minima | `as.data.frame()`, `get_results(x, "best")`, `plot(x)` |
 | Where do added classes stop paying off? | Changes between neighbouring candidates and the knee of each curve | `get_results(x, "deltas")`, `get_results(x, "knees")`, `plot(x, what = "deltas")`, `plot(x, what = "heatmap")` |
@@ -38,8 +39,9 @@ The evidence falls into five kinds, each answering a different question.
 | Can the estimate be trusted? | Convergence, boundary estimates, replication of the best likelihood, the smallest class | `plot(x, what = "trust")`, `plot(x, what = "smallest")` |
 | Is one more class supported? | The bootstrap likelihood ratio test of neighbouring candidates | `bootstrap_lrt()` |
 
-`plot(x, what = "selection")` draws the plots of the second, third and fourth
-rows together, and `compare_models()` places chosen candidates side by side.
+`plot(x, what = "selection")` displays the evidence of the second, third and
+fourth rows jointly, and `compare_models()` tabulates selected candidates side
+by side.
 
 ```{r setup}
 library(latents)
@@ -47,13 +49,13 @@ library(latents)
 
 ## The candidates
 
-The examples use `course_engagement`: course enrolments nested in students,
-with five standardized measures of activity per enrolment. Every combination
-of one to six profiles and one to four group classes is fitted with a
-covariance structure of free variances and zero covariances (`"VVI"`). Three
-random starts per candidate keep the example short; applied analyses use ten
-or more, because replication of the best likelihood across starts is itself
-part of the evidence.
+The examples use `course_engagement`, in which course enrolments are nested
+within students and each enrolment is described by five standardized
+indicators of activity. A model is fitted for every combination of one to six
+profiles and one to four group classes, with class-specific variances and no
+covariances (`"VVI"`). Three random starts per candidate are used to limit
+computation; applied analyses should use at least ten, because replication of
+the maximum likelihood across starts is itself part of the evidence.
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -71,30 +73,32 @@ n_students <- with(course_engagement, length(unique(student)))
 n_enrolments <- nrow(course_engagement)
 ```
 
-The grid holds `r n_candidates` candidates, of which `r n_fitted` were
-fitted. A candidate with one profile and several group classes is not
-identified, because group classes that share a single profile cannot differ,
-so it is listed and left unfitted. Every candidate is named by its numbers of
-classes, `profiles4_groups3` for four profiles and three group classes, and
-the verbs below accept that name.
+The grid comprises `r n_candidates` candidates, of which `r n_fitted` were
+estimated. A model with one profile and several group classes is not
+identified, because group classes defined over a single profile cannot
+differ; such candidates are listed but not estimated. Each candidate is
+labelled by its numbers of classes (e.g., `profiles4_groups3` for four
+profiles and three group classes), and the functions below accept this label.
 
 ## Before fitting: starts, scaling and missing values
 
-Three choices are made before any candidate is fitted. Each is passed through
-the `...` of `enumerate_classes()`, `enumerate_lpa()` and `enumerate_lca()`,
-so every candidate receives the same setting, and each is reported with the
-choice of the number of classes.
+Three analytic decisions precede estimation. Each is passed through the `...`
+argument of `enumerate_classes()`, `enumerate_lpa()` and `enumerate_lca()`,
+so that it applies identically to every candidate, and each should be
+reported alongside the selected number of classes.
 
 ### Random starts
 
-`n_starts` sets the number of random starts per candidate. More starts make it
-less likely that a candidate is reported at a local maximum of its
-likelihood, and a candidate stuck at a local maximum usually separates its
-classes worse than it would at the global one: refitting with more starts
-often raises its entropy and AvePP. The whole grid is refitted with the same,
-larger number of starts, not only the candidates of interest; otherwise the
-refitted candidates gain likelihood and separation that the others were not
-given the chance to reach.
+The likelihood of a finite mixture model is typically multimodal, and the EM
+algorithm converges to a local maximum determined by its starting values.
+`n_starts` sets the number of random starts per candidate; increasing it
+reduces the probability that a candidate is reported at a local rather than
+the global maximum. A solution at a local maximum usually separates its
+classes less well, so re-estimation with more starts frequently increases
+entropy and AvePP. When more starts are required, the entire grid is
+re-estimated with the same number; re-estimating only the candidates of
+interest would confer on them an advantage in likelihood and separation that
+the remaining candidates were not given.
 
 ```{r starts, eval = FALSE}
 models <- enumerate_classes(course_engagement, activity, "student",
@@ -105,19 +109,22 @@ models <- enumerate_classes(course_engagement, activity, "student",
 ### Centring and scaling
 
 `centering` subtracts a mean and `scaling` divides by a standard deviation,
-each at one of two levels: `"grand"` uses one value per indicator over all
-observations, and `"person"` one per group. Together they give the classical
-z-scores: `centering = "grand", scaling = "grand"` standardizes each indicator
-over the sample, and `centering = "person", scaling = "person"` standardizes
-it within each group, so the profiles describe how an observation departs
-from its own group's usual level and spread.
+each computed at one of two levels: over all observations (`"grand"`) or
+within each group (`"person"`). Combined, they yield the conventional
+z-scores. Grand-mean standardization (`centering = "grand", scaling =
+"grand"`) expresses each indicator in sample standard deviations;
+within-person standardization (`centering = "person", scaling = "person"`)
+expresses each observation as a deviation from its own group's mean in units
+of that group's standard deviation, so that the profiles describe
+within-person fluctuation rather than between-person level.
 
-For the covariance structures that give every indicator its own variance
-(`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand scaling changes only the
-units of the estimates: memberships, entropy and AvePP are unchanged. The
-spherical `EII` and `VII` force one variance on every indicator, so an
-unscaled indicator with a wide range would dominate the classes; with them,
-the indicators are scaled first.
+Under covariance structures that estimate a separate variance for each
+indicator (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand-mean scaling is a
+reparameterization: it alters the units of the estimates but leaves class
+membership, entropy and AvePP unchanged. The spherical structures `EII` and
+`VII` constrain all indicators to a common variance, so that an unscaled
+indicator with a large range would dominate the classification; under these
+structures the indicators should be standardized beforehand.
 
 ```{r scaling}
 srl_indicators <- c("cognitive_strategies", "intrinsic_value",
@@ -128,27 +135,28 @@ spherical <- enumerate_lpa(srl, srl_indicators, n_profiles = 2:4,
 get_results(spherical, "best")
 ```
 
-Scaling moves the log likelihood, so information criteria compare only
-candidates fitted with the same centring and scaling, as the candidates of one
-grid are.
+Because scaling shifts the log likelihood by a constant, information criteria
+are comparable only among candidates estimated under the same centring and
+scaling, as is the case within a single grid.
 
 ### Missing values
 
-With `missing = "fiml"`, a row with some indicators missing is fitted from the
-indicators it has, and nothing is imputed. A row with every indicator missing
-adds nothing to the likelihood, and its posterior is only the prior its group
-implies: it was never classified. Such rows are left out of the sample size
-of the individual-level criteria and out of entropy, AvePP and the
-classification tables, as Mplus leaves them out of its analysis; the fit's
-`n_informative` counts the rows that remain, and its print reports how many
-were left out. A group whose every row has nothing observed is left out of
-the group sample size and the group-level statistics in the same way
-(`n_informative_groups`); a group with at least one observed row stays, and
-the effective class counts are of the classified rows and groups. Rows with
-some values missing stay in every statistic: they are classified, less
-certainly, from fewer indicators. `drop_empty = FALSE` restores the counting
-of latents 0.9.37 and earlier, so that results reported with those versions
-can be reproduced.
+With `missing = "fiml"`, the likelihood of each observation is evaluated over
+its observed indicators, without imputation; under the missing-at-random
+assumption this yields unbiased estimates. An observation with all indicators
+missing contributes nothing to the likelihood, and its posterior probability
+equals the prior implied by its group; it is therefore not classified.
+Following Mplus, such observations are excluded from the sample size of the
+individual-level information criteria, from entropy and AvePP, from the
+classification tables and from the effective class counts; `n_informative`
+records the number retained, and the printed fit reports the number
+excluded. Groups in which no observation has an observed indicator are
+excluded from the group-level sample size and statistics on the same grounds
+(`n_informative_groups`), whereas a group with at least one observed row is
+retained. Partially observed rows remain in every statistic: they are
+classified, with correspondingly greater uncertainty, from the indicators
+available. Setting `drop_empty = FALSE` restores the counting rules of latents
+0.9.37 and earlier, so that previously reported results can be reproduced.
 
 ```{r missing}
 set.seed(3)
@@ -170,23 +178,23 @@ classified_rows <- with(subset(incomplete_entropy, level == "individuals"),
 stopifnot(classified_rows == nrow(incomplete) - length(empty))
 ```
 
-The entropy of the individuals is taken over `r classified_rows` rows: the
-`r format(nrow(incomplete), big.mark = ",")` enrolments less the
-`r length(empty)` with nothing observed. Dropping those rows from the data by
-hand gives the same estimates, likelihood and classification statistics;
-dropping rows with only some values missing would change the sample and, if
-their missingness depends on what was observed, bias the profiles.
+Individual-level entropy is computed over `r classified_rows` observations:
+the `r format(nrow(incomplete), big.mark = ",")` enrolments less the
+`r length(empty)` with no observed indicator. Deleting those rows from the
+data yields identical estimates, likelihood and classification statistics.
+Deleting partially observed rows, by contrast, alters the sample and, where
+missingness depends on observed values, biases the estimated profiles.
 
 ## Information criteria
 
 ### Definitions
 
-Each criterion starts from the deviance, `-2L`, where `L` is the maximized
-log likelihood, and adds a charge. With `q` free parameters, `n` the sample
-size and `EN` the classification entropy, `EN = -sum(p log p)` summed over
-every unit and class of the posterior probabilities `p`:
+Each criterion adds a penalty to the deviance, `-2L`, where `L` is the
+maximized log likelihood. Let `q` denote the number of free parameters, `n`
+the sample size, and `EN = -sum(p log p)` the classification entropy, summed
+over all units and classes of the posterior probabilities `p`:
 
-| Criterion | Formula | Charge depends on | Reference |
+| Criterion | Formula | Penalty depends on | Reference |
 |---|---|---|---|
 | `aic` | `-2L + 2q` | parameters only | Akaike (1974) |
 | `kic` | `-2L + 3(q + 1)` | parameters only | Cavanaugh (1999) |
@@ -197,43 +205,45 @@ every unit and class of the posterior probabilities `p`:
 | `awe` | `-2(L - EN) + 2q (1.5 + log(n))` | sample size and classification | Banfield and Raftery (1993) |
 | `clc` | `-2L + 2 EN` | classification only | Biernacki and Govaert (1997) |
 
-Lower is better for every criterion. The charge per parameter is 2 for AIC,
-3 for KIC, `log((n + 2) / 24)` for SABIC, `log(n)` for BIC and
-`log(n) + 1` for CAIC, so above a few dozen units AIC is the most lenient and
-CAIC the strictest of these, and a larger charge favours fewer classes. ICL
-and AWE add a charge for classification uncertainty, because a class that
-overlaps its neighbours raises `EN`, and so favour fewer and better
-separated classes than BIC. CLC has no charge per parameter, only the
-entropy charge, so it can favour many classes when they are well separated
-and few when they are not. CLC uses the entropy sum as ICL and AWE do. Some software reports a CLC built
-from relative entropy, which is bounded by one and charges almost nothing,
-and the two numbers are not comparable.
+Smaller values indicate a better trade-off between fit and complexity. The
+penalty per parameter is 2 for AIC, 3 for KIC, `log((n + 2) / 24)` for
+SABIC, `log(n)` for BIC and `log(n) + 1` for CAIC; for samples beyond a few
+dozen units, AIC is therefore the most lenient and CAIC the most conservative,
+and heavier penalties favour fewer classes. ICL and AWE additionally penalize
+classification uncertainty, since overlapping classes increase `EN`; they
+consequently favour fewer and better-separated classes than BIC. CLC carries
+no per-parameter penalty, only the entropy term, and may favour many classes
+when these are well separated and few when they are not. CLC is defined here,
+as are ICL and AWE, on the entropy sum; some software reports a variant based
+on relative entropy, which is bounded by one and therefore imposes almost no
+penalty, and the two are not comparable.
 
 ### Two conventions for the sample size
 
-In a two-level model the sample size is either the number of groups, here
-the `r n_students` students, or the number of observations, the
-`r format(n_enrolments, big.mark = ",")` enrolments. latents reports every
-criterion that depends on a sample size under both conventions: the columns
-ending `_groups` count groups and use the posterior probabilities of the
-group classes for `EN`, and the columns ending `_individual` count
-observations and use the posterior probabilities of the profiles. Neither is
-the definition of a multilevel BIC; they are two stated choices, and an
-analysis picks one and keeps it for every candidate. AIC and KIC have no
-sample size and carry no convention.
+In a two-level model the sample size may be defined as the number of groups
+(here, `r n_students` students) or the number of observations (here,
+`r format(n_enrolments, big.mark = ",")` enrolments). latents reports every
+sample-size-dependent criterion under both conventions: columns ending in
+`_groups` use the number of groups and the posterior probabilities of the
+group classes for `EN`, and columns ending in `_individual` use the number of
+observations and the posterior probabilities of the profiles. Neither
+constitutes a uniquely correct multilevel BIC; each is a stated convention,
+and an analysis adopts one and applies it to every candidate. AIC and KIC do
+not depend on the sample size.
 
-In a single-level grid there are no groups, the two sample sizes coincide,
-and BIC, SABIC and CAIC are the same under both conventions. The entropy
-criteria are not: their `_groups` columns use the classification of the
-group classes, of which a single-level model has one, so they carry no
-classification charge and ICL there equals BIC. In a single-level grid, read
-the `_individual` columns of ICL, AWE and CLC.
+In a single-level model the two sample sizes coincide, and BIC, SABIC and CAIC
+are identical under both conventions. The entropy-based criteria are not: their
+`_groups` columns use the classification of the group classes, of which a
+single-level model has only one, so they carry no classification penalty and
+ICL reduces to BIC. For single-level models, the `_individual` columns of ICL,
+AWE and CLC should therefore be used.
 
 ### The table of every candidate
 
-`as.data.frame()` returns one row per candidate with every criterion under
-both conventions, beside its log likelihood, number of parameters,
-classification summaries and estimation checks.
+`as.data.frame()` returns one row per candidate, containing every criterion
+under both conventions together with the log likelihood, the number of
+parameters, summaries of classification quality and diagnostics of
+estimation.
 
 ```{r candidates}
 as.data.frame(models)
@@ -241,10 +251,10 @@ as.data.frame(models)
 
 ### The minimum of each criterion
 
-`get_results(x, "best")` reduces that table to one row per criterion and
-convention: the candidate at the criterion's minimum, its numbers of
-classes and the minimum value. It answers "which candidate does each
-criterion favour?" and nothing more.
+`get_results(x, "best")` reduces this table to one row per criterion and
+convention, giving the candidate at which the criterion attains its minimum,
+its numbers of classes and the minimum value. It identifies the candidate
+favoured by each criterion and makes no further inference.
 
 ```{r best}
 get_results(models, "best")
@@ -266,26 +276,28 @@ largest <- with(subset(candidates, !is.na(log_likelihood)),
                         max(n_group_classes)))
 ```
 
-Here the criteria name `r n_distinct_picks` different candidates. BIC with
-students as the units favours `r bic_groups_pick`, BIC with enrolments
-`r bic_individual_pick`, ICL with students `r icl_groups_pick`, and AIC
-`r aic_pick`. Disagreement is the usual outcome, not a failure: the
-criteria were built for different purposes, and the size of their charges
-explains much of the disagreement: AIC, with the lightest charge, names the
-largest candidate, and the entropy criteria name smaller ones.
+In this example the criteria favour `r n_distinct_picks` different
+candidates: BIC with students as units favours `r bic_groups_pick`, BIC with
+enrolments as units `r bic_individual_pick`, ICL with students as units
+`r icl_groups_pick`, and AIC `r aic_pick`. Such disagreement is typical rather
+than anomalous. The criteria were derived for different purposes, and their
+penalties largely account for the pattern: AIC, with the lightest penalty,
+favours the largest candidate, whereas the entropy-based criteria favour
+smaller ones.
 
-A minimum on the edge of the grid, at the largest number of profiles or
-group classes fitted, means the criterion was still falling there. Such a
-minimum says only that the range was too narrow. The range is widened until
-the minimum lies inside it, or, when the criterion keeps falling at every
-size the data can support, the size of each decrease becomes the evidence,
-as in the next section.
+A minimum at the boundary of the grid, that is, at the largest number of
+profiles or group classes estimated, indicates that the criterion was still
+decreasing and that the range examined was too narrow. The range is then
+extended until the minimum lies in its interior. Where the criterion
+continues to decrease at every size the data can support, as is common in
+large samples, the magnitude of successive decreases becomes the relevant
+evidence (see below).
 
 ### Plotting the criteria
 
-`plot()` draws the criteria against the number of profiles, one line per
-number of group classes, and rings the lowest value of each. `what` names
-criteria by their columns, and `what = "all"` draws every one.
+`plot()` displays the criteria against the number of profiles, with one line
+per number of group classes and the minimum of each criterion marked. `what`
+selects criteria by column name, and `what = "all"` displays all of them.
 
 ```{r plot-criteria, fig.height = 5}
 plot(models)
@@ -299,15 +311,15 @@ plot(models, what = "bic_groups")
 
 ### Deltas
 
-When a criterion falls across the whole range, its minimum carries little
-information, but the size of each fall does. `get_results(x, "deltas")`
-reports, for every candidate, the decrease in a criterion from its neighbour
-with one profile fewer (`delta_profile`, from `from_profile`) and from its
-neighbour with one group class fewer (`delta_group_class`, from
-`from_group_class`). A positive delta means the added class lowered the
-criterion; a negative delta means it raised it. A candidate with no such
-neighbour in the grid has `NA`. The criterion is BIC with groups as the
-units unless `using` names another column.
+When a criterion decreases across the entire range, its minimum is
+uninformative, but the magnitude of each decrease is not.
+`get_results(x, "deltas")` reports, for every candidate, the decrease in a
+criterion relative to the neighbouring candidate with one profile fewer
+(`delta_profile`, from `from_profile`) and with one group class fewer
+(`delta_group_class`, from `from_group_class`). A positive value indicates
+that the additional class reduced the criterion, and a negative value that it
+increased it; candidates without such a neighbour in the grid have `NA`. BIC
+with groups as units is used unless `using` specifies another criterion.
 
 ```{r deltas}
 get_results(models, "deltas")
@@ -323,22 +335,22 @@ step_5 <- delta_of("profiles5_groups3")
 stopifnot(step_3 > step_4, step_4 > 0, step_5 < 0)
 ```
 
-With three group classes, the third profile lowers BIC by
+With three group classes, the third profile reduces BIC by
 `r format(step_3, big.mark = ",")` and the fourth by
-`r format(step_4, big.mark = ",")`, and the fifth raises it by
-`r format(-step_5, big.mark = ",")`, which the table shows as a negative
-decrease. The candidate with two profiles has no delta along the profiles,
-because its neighbour with one profile and three group classes is not
-identified. Shrinking falls mark the point after which further profiles add
-detail rather than structure, and the first negative delta marks where they
-stop improving the criterion at all. The deltas are plotted for both directions, along the number of
-profiles on the left and along the number of group classes on the right.
+`r format(step_4, big.mark = ",")`, whereas the fifth increases it by
+`r format(-step_5, big.mark = ",")` (shown as a negative decrease). The
+candidate with two profiles has no profile-wise delta because its neighbour,
+with one profile and three group classes, is not identified. Diminishing
+decreases indicate the point beyond which additional profiles capture detail
+rather than structure, and the first negative value marks where they cease to
+improve the criterion. The deltas are displayed for both directions: along
+the number of profiles (left) and along the number of group classes (right).
 
 ```{r plot-deltas, fig.height = 5}
 plot(models, what = "deltas")
 ```
 
-Any criterion can be read this way:
+The same display is available for any criterion:
 
 ```{r plot-deltas-icl, fig.height = 5}
 plot(models, what = "deltas", using = "icl_individual")
@@ -346,41 +358,42 @@ plot(models, what = "deltas", using = "icl_individual")
 
 ### Knees
 
-The knee, or elbow, is where a falling curve bends from steep to flat.
-`get_results(x, "knees")` locates it by a rule inspired by Kneedle
-(Satopää, Albrecht, Irwin and Raghavan, 2011), simplified to its geometric
-core:
+The knee, or elbow, of a decreasing curve is the point at which it changes
+from steep to flat. `get_results(x, "knees")` locates it with a simplified,
+geometric version of the Kneedle algorithm (Satopää, Albrecht, Irwin and
+Raghavan, 2011):
 
-1. both axes of the curve, the number of classes and the criterion, are
-   rescaled to the unit interval;
-2. a straight line is drawn from the first candidate to the last;
-3. the knee is the candidate furthest below that line, measured
-   perpendicular to it, and `distance` is that perpendicular distance in the
-   rescaled units.
+1. both axes, the number of classes and the criterion, are rescaled to the
+   unit interval;
+2. a chord is drawn from the first candidate to the last;
+3. the knee is the candidate with the greatest perpendicular distance below
+   the chord, and `distance` is that distance in rescaled units.
 
-Kneedle's smoothing and sensitivity thresholds are left out, so a nearly
-straight curve can still name a knee with a very small `distance`. The
-distance therefore reports the strength of the bend as well as its place. A
-curve whose last value is not below its first has no knee, because a bend in
-a rising criterion marks no diminishing return.
+The smoothing and sensitivity thresholds of the original algorithm are
+omitted, so a nearly linear curve may still yield a knee with a very small
+`distance`; the distance therefore quantifies the strength of the bend as well
+as its location. A curve whose final value is not below its initial value has
+no knee, since a bend in an increasing criterion does not indicate
+diminishing returns.
 
-Knees are found along three kinds of line: along the number of profiles at
-each number of group classes (`direction = "profiles"`), along the number of
-group classes at each number of profiles (`"group_classes"`), and across all
-candidates ordered by their number of parameters (`"parameters"`). The
-columns `from` and `to` give the ends of the line and `n_points` its length.
+Knees are computed along three families of curves: over the number of
+profiles at each number of group classes (`direction = "profiles"`), over the
+number of group classes at each number of profiles (`"group_classes"`), and
+over all candidates ordered by number of parameters (`"parameters"`). The
+columns `from` and `to` identify the endpoints of each curve and `n_points`
+its length.
 
 ```{r knees}
 get_results(models, "knees")
 ```
 
-The straight line ends at the largest candidate fitted, so the knee depends
-on where the grid stops: fitting one more candidate moves the line and can
-move the knee. The table tests that directly. `knee_without_largest` is the
-knee of the same line with its last candidate removed, and `stable` is
-`TRUE` when the two agree. A knee that moves when the range shrinks by one
-candidate is weak evidence. `note` explains every row without a full
-answer:
+Because the chord terminates at the largest candidate estimated, the location
+of the knee depends on the extent of the grid: adding a candidate moves the
+chord and may move the knee. This dependence is assessed directly.
+`knee_without_largest` is the knee of the same curve with its final
+candidate removed, and `stable` is `TRUE` when the two coincide; a knee that
+shifts when the range is shortened by one candidate constitutes weak evidence.
+`note` explains every row for which no complete result is available:
 
 | `note` | Meaning |
 |---|---|
@@ -403,18 +416,17 @@ knee_three_stable <- with(profile_line, stable)
 ```
 
 With three group classes, the knee along the number of profiles is
-`r knee_three` at a distance of `r knee_three_distance`. Without the largest
-candidate it is `r knee_three_without`, so `stable` is
-`r knee_three_stable`: the bend lies between three and four profiles, and
-which of the two the rule names depends on where the grid stops. The deltas
-locate the same region with less ambiguity, which is why the two are read
-together.
+`r knee_three`, at a distance of `r knee_three_distance`. Without the largest
+candidate it is `r knee_three_without`, so `stable` is `r knee_three_stable`:
+the bend lies between three and four profiles, and which of the two is
+identified depends on the extent of the grid. The deltas locate the same
+region with less ambiguity, which is why the two are interpreted jointly.
 
 ### The criterion over the whole grid
 
-The heatmap shows every candidate at once, coloured by how far its criterion
-lies above the lowest value in the grid. It reads the same criterion as the
-deltas and takes the same `using`.
+The heatmap displays all candidates simultaneously, shaded by the difference
+between each candidate's criterion and the minimum in the grid. It uses the
+same criterion as the deltas and accepts the same `using` argument.
 
 ```{r heatmap}
 plot(models, what = "heatmap")
@@ -422,124 +434,128 @@ plot(models, what = "heatmap")
 
 ## Are the classes distinct?
 
-A candidate can fit well and still separate its classes poorly, leaving many
-units between classes and their assignments uncertain. Three statistics
-describe the separation, each from the posterior probabilities of
-membership.
+A candidate may fit the data well yet separate its classes poorly, leaving
+many units with uncertain class membership. Three statistics derived from the
+posterior probabilities of membership quantify separation.
 
-- **Relative entropy**, `1 - EN / (n log K)` for `K` classes, runs from 0,
-  every unit equally likely to belong to every class, to 1, every unit
-  certain. It summarizes a whole level in one number and is `NA` for a level
-  with one class, where it is undefined rather than perfect.
+- **Relative entropy**, `1 - EN / (n log K)` for `K` classes, ranges from 0,
+  when every unit is equally likely to belong to every class, to 1, when
+  every unit is classified with certainty. It summarizes an entire level in a
+  single value and is undefined (`NA`) for a level with one class.
 - **Average posterior probability (AvePP)** of a class is the mean posterior
-  probability of that class among the units assigned to it. Values of 0.7 to
-  0.8 and above are commonly read as adequate separation (Nagin, 2005). It
-  is reported per class, so a single poorly separated class is visible
-  where entropy would average it away.
+  probability of that class among the units modally assigned to it. Values of
+  0.7 to 0.8 or above are conventionally taken to indicate adequate
+  separation (Nagin, 2005). Being class-specific, it reveals a single poorly
+  separated class that entropy would average away.
 - **Odds of correct classification (OCC)** of a class is
-  `(p / (1 - p)) / (r / (1 - r))`, with `p` its AvePP and `r` its estimated
-  share. It compares classification against a guess from the class size
-  alone: near 1 is no better than the guess, and 5 or more is the usual
-  floor for adequate separation (Nagin, 2005).
+  `(p / (1 - p)) / (r / (1 - r))`, where `p` is its AvePP and `r` its
+  estimated proportion. It compares model-based classification with
+  assignment by class proportion alone: values near 1 indicate no
+  improvement, and values of 5 or more are conventionally taken to indicate
+  adequate separation (Nagin, 2005).
 
 The table of candidates summarizes each level by its relative entropy and the
-smallest, largest and mean AvePP, and counts the classes below a cutoff of
-0.8, set with `cutoff`. `get_results(x, "classification")` gives every class
-of every candidate: its size by modal assignment and by estimate, its AvePP,
-its OCC and the relative entropy of its level.
+minimum, maximum and mean AvePP, and counts the classes below a cutoff (0.8 by
+default, set with `cutoff`). `get_results(x, "classification")` reports, for
+every class of every candidate, its size by modal assignment and by estimate,
+its AvePP, its OCC and the relative entropy of its level.
 
 ```{r classification}
 get_results(models, "classification")
 ```
 
-`plot(x, what = "diagnostics")` draws relative entropy and the lowest AvePP
-across the candidates, with the cutoff dashed; `what = "entropy"` and
-`what = "avepp"` draw one of the two. For one fitted candidate,
-`plot_diagnostics()` draws the certainty of every unit in its class, the
-uncertainty of every unit, the class sizes and the average posterior
-matrix, for the profiles and, when there are two or more group classes, for
-the group classes (`what = "group_posteriors"` and the like). The two levels
-often differ sharply: a group is classified from all of its observations
-together, and an observation from its own responses alone.
+`plot(x, what = "diagnostics")` displays relative entropy and the minimum
+AvePP across candidates, with the cutoff indicated; `what = "entropy"` and
+`what = "avepp"` display either one. For a single fitted candidate,
+`plot_diagnostics()` displays the posterior probability of each unit's
+assigned class, each unit's relative entropy, the class sizes and the matrix
+of average posterior probabilities, for the profiles and, when there are two
+or more group classes, for the group classes (`what = "group_posteriors"`,
+etc.).
 
 ```{r diagnostics}
 plot(models, what = "diagnostics")
 ```
 
-Entropy and AvePP can disagree, and the difference is informative. AvePP
-reads only the posterior of each unit's assigned class; entropy reads the
-whole row of posteriors. A unit at 0.70 for its class and 0.10 for each of
-three others, and a unit at 0.70 and 0.30, give the same AvePP, but the first,
-spread over every class, lowers entropy much more. Entropy also falls faster
-for a few very uncertain units than it rises for many certain ones. A level
-with most units near certainty and a tail of uncertain ones therefore shows a
-moderate AvePP beside a low entropy.
+Entropy and AvePP may diverge, and the divergence is informative. AvePP
+depends only on the posterior probability of each unit's assigned class,
+whereas entropy depends on the full vector of posterior probabilities. A unit
+with posterior probabilities of 0.70, 0.10, 0.10 and 0.10 and a unit with 0.70
+and 0.30 contribute equally to AvePP, but the former, whose uncertainty is
+distributed across all classes, reduces entropy considerably more. Moreover,
+entropy is more sensitive to a minority of highly uncertain units than to a
+majority of nearly certain ones. A level comprising mostly well-classified
+units and a tail of uncertain ones therefore exhibits moderate AvePP
+together with low entropy.
 
-The two levels of a two-level model are classified from different amounts of
-information. A group class is assigned from all of a group's observations
-together, an observation's profile from its own responses alone, so group
-classes are usually much sharper. For one candidate, `plot_diagnostics()`
-draws both levels:
+The two levels of a two-level model are classified on the basis of different
+amounts of information. A group's class is inferred from all of its
+observations jointly, whereas an observation's profile is inferred from its
+own responses alone; group classes are consequently classified with
+considerably greater certainty. For a single candidate, `plot_diagnostics()`
+displays both levels:
 
 ```{r group-certainty}
 plot_diagnostics(get_candidate(models, "profiles4_groups3"),
                  what = "group_posteriors")
 ```
 
-When every candidate separates its profiles poorly, so that no number of
-classes brings entropy or the smallest AvePP up, the indicators do not
-separate single observations well, and the number of classes is chosen from
-the criteria and the interpretation, with the separation reported as a
-limitation. Modal assignments are then a poor substitute for the classes in
-a later analysis, and the bias-corrected three-step estimates (`r3step()`,
-`three_step()`) are used instead.
+When all candidates separate their profiles poorly, such that no number of
+classes yields adequate entropy or minimum AvePP, the indicators do not
+discriminate well among individual observations. The number of classes is
+then determined from the information criteria and substantive
+interpretation, and the limited separation is reported as a limitation. In
+this situation modal class assignments are an unreliable substitute for the
+latent classes in subsequent analyses, and bias-corrected three-step
+estimators (`r3step()`, `three_step()`) should be used instead.
 
-Classification quality is not a criterion for the number of classes in
-itself: a model with fewer classes is usually better separated, so choosing
-by entropy alone favours too few classes. It decides between candidates that
-the criteria leave close, and it qualifies how the chosen classes can be
-used, for instance whether modal assignments can stand in for the classes in
-a later analysis.
+Classification quality is not in itself a criterion for the number of
+classes: models with fewer classes are generally better separated, so
+selection on entropy alone favours too few classes. It serves to discriminate
+between candidates that the information criteria do not distinguish, and it
+determines how the selected classes may be used, for example whether modal
+assignments can represent them in subsequent analyses.
 
 ## Can the estimate be trusted?
 
 ### Estimation checks
 
-The likelihood of a mixture model has several local maxima. A solution
-reached from several random starts is more credible than one reached once,
-and an estimate on the boundary of the parameter space, a variance at its
-floor or a class with almost no members, marks a model too complex for the
-data. `plot(x, what = "trust")` gives each candidate one tile, labelled with
-the number of starts that reached its best log likelihood, and coloured by
-the first problem it has:
+Because the likelihood is multimodal, a solution replicated from several random
+starts is more credible than one obtained from a single start. An estimate on
+the boundary of the parameter space, such as a variance at its lower bound or
+a class with negligible membership, indicates a model too complex for the
+data. `plot(x, what = "trust")` represents each candidate by a tile labelled
+with the number of starts that reached its maximum likelihood and shaded by
+the first problem detected:
 
 | Status | Meaning |
 |---|---|
-| best replicated | converged, inside the parameter space, best likelihood reached by more than one start |
-| best found once | as above, but only one start reached the best likelihood |
-| on a boundary | an estimate reached the edge of the parameter space |
-| not converged | the EM algorithm stopped before meeting its tolerance |
-| not fitted (`x`) | not identified, or failed with an error kept in the table |
+| best replicated | converged within the interior of the parameter space, with the maximum likelihood reached by more than one start |
+| best found once | as above, but the maximum likelihood was reached by a single start |
+| on a boundary | an estimate lies on the boundary of the parameter space |
+| not converged | the EM algorithm terminated before meeting its convergence criterion |
+| not fitted (`x`) | not identified, or estimation failed (the error is retained in the table) |
 
 ```{r trust}
 plot(models, what = "trust")
 ```
 
-A candidate found once is refitted with more starts before it is chosen, and
-so is the rest of the grid (see *Random starts* above). If the refit raises its
-likelihood, the earlier solution was a local maximum and the new one replaces
-it; its entropy and AvePP often rise with it. A higher AvePP is never a
-reason to prefer one solution over another of the same candidate: the
-solution with the higher likelihood is the estimate. The columns
-`converged`, `boundary`, `n_best_replicated`, `warnings` and `error` of the
-table of candidates hold the same checks.
+A candidate whose maximum was found only once should be re-estimated with
+more starts before it is selected, together with the remainder of the grid
+(see *Random starts*). If re-estimation increases its likelihood, the earlier
+solution was a local maximum and is superseded; entropy and AvePP often
+increase as well. A higher AvePP is never a ground for preferring one
+solution of a given candidate over another: the maximum likelihood solution
+is the estimate. The columns `converged`, `boundary`, `n_best_replicated`,
+`warnings` and `error` of the table of candidates report the same
+diagnostics.
 
 ### The smallest class
 
-A class holding a very small share of the units is hard to interpret and
-estimated from little data. `plot(x, what = "smallest")` draws the estimated
-share of the smallest class of every candidate, with a dashed line at 5%, a
-common floor rather than a rule.
+A class comprising a very small proportion of units is difficult to interpret
+and is estimated from little data. `plot(x, what = "smallest")` displays the
+estimated proportion of the smallest class of every candidate, with a
+reference line at 5%, a conventional threshold rather than a rule.
 
 ```{r smallest}
 plot(models, what = "smallest")
@@ -548,9 +564,9 @@ plot(models, what = "smallest")
 ## All of the plots together
 
 `plot(x, what = "selection")` returns the deltas, the heatmap, the smallest
-class, the estimation checks and the classification diagnostics as one list
-of plots, drawn in turn. `using` sets the criterion of the first two and
-`cutoff` the AvePP line of the last.
+class, the estimation diagnostics and the classification diagnostics as a
+list of plots displayed in sequence. `using` sets the criterion for the first
+two and `cutoff` the AvePP threshold for the last.
 
 ```{r selection, fig.height = 5}
 plot(models, what = "selection")
@@ -558,11 +574,12 @@ plot(models, what = "selection")
 
 ## How the profiles divide
 
-The tree shows how the profiles of each model divide into those of the next:
-each profile is linked to the profiles of the model with one more that
-receive its observations (Zappia and Oshlack, 2018). A profile that splits
-cleanly in two suggests a real distinction; one that draws from several
-profiles of the smaller model suggests a reshuffling.
+The clustering tree shows how the profiles of each model are partitioned in the
+model with one additional profile: each profile is linked to the profiles of
+the larger model that receive its observations (Zappia and Oshlack, 2018). A
+profile that divides cleanly into two suggests a substantive distinction,
+whereas a profile formed from several profiles of the smaller model suggests
+a reallocation of observations rather than a refinement.
 
 ```{r tree, fig.height = 6}
 plot(models, what = "tree")
@@ -570,14 +587,14 @@ plot(models, what = "tree")
 
 ## Comparing chosen candidates
 
-Once the evidence narrows the choice to a few candidates,
-`compare_models()` places them side by side, named or by their numbers of
-classes. Its table adds the difference of each candidate's BIC from the
-lowest among those compared, `delta_bic`, and its BIC weight,
-`exp(-delta_bic / 2)` normalized over the compared candidates: the
-approximate posterior probability of each if one of them is true and all
-were equally likely beforehand (Wagenmakers and Farrell, 2004). The weights
-depend on which candidates are compared.
+Once the evidence has reduced the choice to a few candidates,
+`compare_models()` tabulates them side by side, specified by label or by
+numbers of classes. The table adds each candidate's difference in BIC from the
+smallest value among those compared (`delta_bic`) and its BIC weight,
+`exp(-delta_bic / 2)` normalized over the compared candidates, which
+approximates the posterior probability of each model under equal prior
+probabilities, assuming one of them is correct (Wagenmakers and Farrell,
+2004). The weights are conditional on the set of candidates compared.
 
 ```{r compare}
 comparison <- compare_models(models, "profiles3_groups3", "profiles4_groups3",
@@ -586,8 +603,8 @@ comparison
 plot(comparison)
 ```
 
-The model behind a row is taken out with `get_candidate()`, by name or by
-numbers of classes.
+The fitted model corresponding to a row is extracted with `get_candidate()`,
+by label or by numbers of classes.
 
 ```{r chosen}
 chosen <- get_candidate(models, "profiles4_groups3")
@@ -596,18 +613,19 @@ chosen
 
 ## Testing one more class
 
-The usual likelihood ratio test is invalid between mixtures with `k` and
-`k + 1` classes, because the smaller model sits on the boundary of the
-larger one, where the statistic loses its reference distribution.
-`bootstrap_lrt()` simulates that distribution (McLachlan, 1987; Nylund,
-Asparouhov and Muthén, 2007): data sets are drawn from the smaller fitted
-model, both models are refitted to each, and the observed statistic is
-placed among the simulated ones. With `B` simulated data sets and `b`
-statistics at least as large as the observed one, the p-value is
-`(b + 1) / (B + 1)`, which can never be zero and cannot fall below
-`1 / (B + 1)`. A replicate that fails a fitting check withholds the p-value
-rather than drop silently. The example uses 19 data sets, whose smallest
-attainable p-value is 0.05; applied analyses use 99 or more.
+The conventional likelihood ratio test is invalid for comparing mixtures with
+`k` and `k + 1` classes, because the null model lies on the boundary of the
+parameter space of the alternative, where the test statistic does not follow
+its usual asymptotic distribution. `bootstrap_lrt()` approximates the null
+distribution by parametric bootstrap (McLachlan, 1987; Nylund, Asparouhov and
+Muthén, 2007): data sets are simulated from the fitted null model, both
+models are re-estimated on each, and the observed statistic is referred to
+the simulated distribution. With `B` simulated data sets of which `b` yield a
+statistic at least as large as the observed one, the p-value is
+`(b + 1) / (B + 1)`, which is bounded below by `1 / (B + 1)`. If any replicate
+fails an estimation check, the p-value is withheld rather than computed from
+the remaining replicates. The example uses 19 replicates, for which the
+smallest attainable p-value is 0.05; applied analyses should use 99 or more.
 
 ```{r blrt}
 smaller <- get_candidate(models, "profiles3_groups3")
@@ -620,33 +638,35 @@ plot(test)
 
 ## Putting the evidence together
 
-No rule turns this evidence into a number of classes, and latents does not
-apply one. A choice is made by reading the evidence in a fixed order and
-reporting every step:
+No algorithm converts this evidence into a number of classes, and latents
+applies none. A defensible decision is reached by examining the evidence in a
+fixed sequence and reporting each step:
 
-0. **State the preparation**: the number of starts, any centring and
-   scaling, and how missing values were handled, with how many rows had
-   nothing observed.
-1. **State the convention** for the sample size before reading any
-   criterion, and keep it.
-2. **Read the minima** of the criteria under that convention. Note where
-   they agree and in which direction they disagree. A minimum on the edge of
-   the grid calls for a wider grid.
-3. **Read the deltas and knees** when the criteria keep falling. Report the
-   knee with its `distance` and whether it is `stable`.
-4. **Check classification** of the candidates still in contention: relative
-   entropy, the smallest AvePP and OCC of each level.
-5. **Check estimation**: replication of the best likelihood, boundary
-   estimates and the smallest class. Refit a candidate found once with more
-   starts.
-6. **Test** the leading candidate against its neighbour with the bootstrap
-   likelihood ratio test when the evidence is close.
-7. **Interpret** the leading candidates. Between candidates that the
-   statistics leave close, the one whose classes are distinct and
-   meaningful for the question is chosen, and the reason is stated.
+0. **Analytic decisions**: report the number of random starts, any centring
+   or scaling, the treatment of missing values, and the number of
+   observations with no observed indicator.
+1. **Sample-size convention**: specify the convention before examining any
+   criterion and apply it consistently.
+2. **Criterion minima**: examine the minima under that convention, noting
+   where the criteria agree and the direction in which they disagree. A
+   minimum at the boundary of the grid requires an extended grid.
+3. **Deltas and knees**: where the criteria decrease throughout, examine the
+   magnitude of successive decreases and report the knee with its `distance`
+   and stability.
+4. **Classification quality**: for the remaining candidates, report relative
+   entropy and the minimum AvePP and OCC at each level.
+5. **Estimation diagnostics**: verify replication of the maximum likelihood,
+   the absence of boundary estimates and the size of the smallest class;
+   re-estimate candidates whose maximum was found only once.
+6. **Likelihood ratio test**: when the evidence is equivocal, test the leading
+   candidate against its neighbour with the bootstrap likelihood ratio test.
+7. **Substantive interpretation**: among candidates that the statistics do
+   not distinguish, select the one whose classes are distinct and
+   substantively meaningful for the research question, and state the
+   rationale.
 
-The tables behind every step are returned by the verbs above, so the
-reported choice can be reproduced from the reported evidence.
+The tables underlying each step are returned by the functions above, so that
+the reported decision can be reproduced from the reported evidence.
 
 ## Functions
 

@@ -36,3 +36,4 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 ^tests/equivalence$
+^tests/testthat/_problems$
