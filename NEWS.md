@@ -1,3 +1,10 @@
+# latents 0.95.9
+
+### Documentation
+
+* The package website links each author's name to their own website
+  (https://saqr.me, https://sonsoles.me), as the sibling packages' sites do.
+
 # latents 0.95.8
 
 ### Documentation

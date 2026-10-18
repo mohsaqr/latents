@@ -3,6 +3,12 @@ url: https://pak.dynasite.org/latents
 template:
   bootstrap: 5
 
+authors:
+  Mohammed Saqr:
+    href: https://saqr.me
+  Sonsoles López-Pernas:
+    href: https://sonsoles.me
+
 navbar:
   structure:
     left:  [intro, reference, articles, news]
