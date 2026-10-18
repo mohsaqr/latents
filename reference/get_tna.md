@@ -1,9 +1,9 @@
-# A transition network for the whole sample
+# Build one transition network for the whole sample
 
-Builds one
+Builds a single
 [`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) model
-from a fitted transition model, aggregated over every latent group
-class.
+from a fitted transition model, aggregated over all latent group
+classes, and returns it.
 
 ## Usage
 
@@ -37,44 +37,38 @@ get_tna(x, ...)
 
 ## Value
 
-An object of class `tna`, as
-[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html)
-returns: every verb of that package applies to it, including
+An object of class `tna`, as returned by
+[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html), to
+which the functions of the tna package apply, including
 `centralities()`, `communities()`, `cliques()` and
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
 ## Details
 
-The aggregate is formed from the expected transition counts, summed
-across classes and then normalised, rather than by averaging the class
-transition matrices. The two differ: averaging weights each class by how
-probable it is, and summing counts weights it by how much transition
-mass it actually contributes, which is what a marginal transition
-probability means. A class holding a tenth of the students but a fifth
-of the observed moves counts for the latter. If a profile has no
-expected outgoing moves in any class, its transition row has no
-count-based estimate; the network uses the fitted class rows averaged by
-class probability and warns that the row is unestimated. It never
-interprets absent moves as a certain self-transition.
+The network's transition probabilities are the expected transition
+counts summed across group classes and normalised by row, so each class
+contributes in proportion to its share of the expected transitions, not
+its class probability. If a profile has no expected outgoing transitions
+in any class, its row is the class rows averaged by class probability,
+and a warning states that the row is unestimated; absent transitions are
+not treated as self-transitions.
 
 A general [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
-fit – with occasion-varying or covariate-dependent transitions, a second
-order, movers and stayers, or ordinal, count or weighted data – has no
-single transition matrix, and is refused with `latents_unsupported_tna`;
-its transitions are in `get_results(x, "transitions")`.
+fit (occasion-varying or covariate-dependent transitions, second order,
+movers and stayers, or ordinal, count or weighted data) has no single
+transition matrix and is refused with `latents_unsupported_tna`; its
+transitions are returned by `get_results(x, "transitions")`.
 
-For a
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+A [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 or
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-fit made with `time =`, there is no estimated transition matrix: the
-network is built by
+fit made with `time =` has no estimated transition matrix: the network
+is built by
 [`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) from
-each group's sequence of modal profiles in time order, the observed
-transitions between the profiles the observations were assigned to.
+each group's sequence of modal profiles in time order.
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
 splits those sequences by each group's modal group class. A fit made
-without `time` has no order and is refused.
+without `time` is refused.
 
 ## See also
 

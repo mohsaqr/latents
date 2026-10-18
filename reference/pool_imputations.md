@@ -3,12 +3,12 @@
 Fits
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 to every completed data set, aligns each fit's profile and group-class
-labels to the first one, and pools the estimates with Rubin's rules.
-This is the route for missing *covariates*, which `missing = "fiml"`
-cannot integrate out: the model conditions on covariates, so it has no
-distribution for them to integrate over. Impute them first (for example
-with the mice package, including the indicators and the group identifier
-in the imputation model), then pass the completed data here.
+labels to those of the first, and pools the estimates with Rubin's
+rules, returning a `latents_pooled` object. Use it for missing
+covariates, which `missing = "fiml"` cannot handle because the model
+conditions on covariates. Impute them first (for example with the mice
+package, with the indicators and the group identifier in the imputation
+model) and pass the completed data.
 
 ## Usage
 
@@ -31,7 +31,7 @@ pool_imputations(
 
   The completed data sets: a list of at least two data frames with the
   same columns and rows in the same order, or a `mids` object from the
-  mice package (which is then completed here).
+  mice package, which is completed here.
 
 - vars, id, n_profiles:
 
@@ -43,26 +43,28 @@ pool_imputations(
   Further arguments for
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   such as `n_group_classes`, `profile_covariates`, `group_covariates`,
-  `categorical`, `n_starts` and `seed`. The same arguments fit every
-  imputation.
+  `categorical`, `n_starts` and `seed`, used for every imputation.
 
 - level:
 
-  Confidence level of the pooled intervals.
+  Confidence level of the pooled intervals (default 0.95).
 
 - vcov_type:
 
-  As in
+  `"observed"` (default), `"robust"` or `"opg"`, as in
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
-  applied to every imputation's fit.
+  applied to every imputation's fit. For fits with sampling weights the
+  default is `"robust"`, and the other types are refused with
+  `latents_unsupported_weights`.
 
 - adjust:
 
-  Multiplicity correction, as in
-  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
-  applied to the pooled p-values to give `p_adjusted`. Each imputation's
-  own table is computed without one, since only the pooled p-values are
-  reported.
+  Multiplicity correction applied to the pooled p-values to give
+  `p_adjusted`, as in
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md):
+  `"none"` (default) or a method of
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). The
+  per-imputation tables are computed without correction.
 
 ## Value
 
@@ -86,53 +88,50 @@ convergence and the label permutation that aligned it.
 
 ## Details
 
-Pooling is on the reported (natural) scale: for each parameter the
-pooled estimate is the mean over imputations, and its variance is the
-mean within-imputation variance plus `(1 + 1/m)` times the
-between-imputation variance. Degrees of freedom follow Rubin (1987) with
-a large complete-data sample, which is what maximum-likelihood inference
-assumes. Pooled intervals are symmetric t intervals on this scale;
-unlike the transformed Wald intervals of
-[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
-they can extend outside the parameter space for probabilities or
-variances. A structural constant, such as the sole class's probability
-of one, has zero within- and between-imputation variance and zero
-missing information. If within-imputation variance is zero but
+Pooling is on the reported (natural) scale: the pooled estimate is the
+mean over imputations, and its variance is the mean within-imputation
+variance plus `(1 + 1/m)` times the between-imputation variance. Degrees
+of freedom follow Rubin (1987) with a large complete-data sample. Pooled
+intervals are symmetric t intervals on this scale, so for probabilities
+and variances they can extend outside the parameter space, unlike the
+transformed Wald intervals of
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
+A structural constant, such as the probability of one for a single
+class, has zero within- and between-imputation variance and zero missing
+information. When the within-imputation variance is zero and the
 between-imputation variance is positive, `riv` is infinite and `fmi` is
 one.
 
 ## Choosing the imputation model
 
-Rubin's rules are only as good as the imputations. The covariate and the
-indicators are related through the latent classes, so an imputation
-model that is linear in the indicators (mice's defaults) misses that
-structure: in `validation/pool-imputations-coverage.R` (a membership
-slope with 30% of its covariate missing at random given the indicators,
-200 replications, ten imputations) 95% intervals covered 0.925 under
-predictive mean matching and 0.935 under Bayesian linear regression,
-against 0.995 when the covariate was approximately drawn from its
-conditional distribution using known generating parameters. That oracle
-arm omits uncertainty in the imputation parameters and is not a
-validation of proper multiple imputation or nominal interval coverage.
-The study is one design, not a general guarantee for any method. Use an
-imputation model that accounts for the latent structure and clustering,
-includes the indicators and relevant nonlinearities, and propagates
-parameter uncertainty. Imputing separately within assigned classes alone
-ignores classification uncertainty. Complete-case coverage was 0.955 in
-that design, but selecting on the indicators changes their within-class
-distributions; the usual logistic case-control slope argument does not
-guarantee unbiased slopes when the outcome is latent and its measurement
-model is estimated.
+The pooled results are only as valid as the imputations. The covariate
+and the indicators are related through the latent classes, which an
+imputation model linear in the indicators (mice's defaults) does not
+capture. In `validation/pool-imputations-coverage.R` (a membership slope
+with 30% of its covariate missing at random given the indicators, 200
+replications, ten imputations), 95% intervals covered 0.925 under
+predictive mean matching and 0.935 under Bayesian linear regression, and
+0.995 when the covariate was drawn approximately from its conditional
+distribution given the known generating parameters. That reference arm
+omits uncertainty in the imputation parameters, so it does not validate
+proper multiple imputation, and the study covers one design only. The
+imputation model should account for the latent structure and the
+clustering, include the indicators and relevant nonlinearities, and
+propagate parameter uncertainty; imputing separately within assigned
+classes ignores classification uncertainty. Complete-case analysis
+covered 0.955 in that design, but selecting on the indicators changes
+their within-class distributions, and the case-control argument for
+unbiased logistic slopes does not carry over when the outcome is latent
+and its measurement model is estimated.
 
 ## Conditions
 
 `latents_bad_data` when `imputed` is not a list of at least two data
 frames with identical columns and row counts; `latents_pooling_failed`
-when an imputation's fit or inference fails (its message names the
-imputation and carries the original reason), since Rubin's rules need
-every imputation; `latents_missing_package` for a `mids` object without
-mice installed. Warnings from the individual fits are passed on as they
-are raised.
+when any imputation's fit or inference fails (the message names the
+imputation and gives the original reason); `latents_missing_package` for
+a `mids` object without mice installed. Warnings from the individual
+fits are passed on as they are raised.
 
 ## References
 

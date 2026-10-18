@@ -1,10 +1,9 @@
 # Study hours and quiz scores under two study strategies
 
 A simulated dataset for
-[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
-built so that every nesting of the mixture regression has a model that
-generated some of its columns, and the truth is kept for checking
-recovery.
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
+Each row is one student's study week: 150 students, six weeks each. The
+generating classes are included for checking recovery.
 
 ## Usage
 
@@ -64,22 +63,20 @@ Simulated by `data-raw/study-hours.R` in the source repository.
 
 ## Details
 
-150 students each report six study weeks. In every week a student
-studies with one of two strategies, and the strategy decides how hours
-become a quiz `score`: a deep week gains about 4.5 points per hour from
-a base of 35, a surface week under one point per hour from a base of 55.
-Students are of two kinds that differ in their *mix* of strategies –
-steady students study deeply in about 85% of weeks, erratic ones in
-about 25% – and higher `motivation` makes a student more likely to be
-steady. More `sleep` makes a deep week more likely.
+Each week a student uses one of two study strategies, which sets the
+regression of quiz `score` on `hours`: a deep week gains about 4.5
+points per hour from a base of 35, a surface week under one point per
+hour from a base of 55. Steady students study deeply in about 85% of
+weeks and erratic students in about 25%; higher `motivation` makes a
+student more likely to be steady, and more `sleep` makes a deep week
+more likely.
 
-So `score ~ hours` is a two-class mixture at the level of the week
-(`class_level = "observation"`), whose class shares differ by student
-(the two-level model, `id = "student"`, `n_group_classes = 2`). `passed`
-depends on the student's kind, not the week's strategy, so it is a
-mixture at the level of the student (`class_level = "group"`).
-`questions` is a count whose Poisson regression depends on the week's
-strategy.
+`score ~ hours` is therefore a two-class mixture at the week level
+(`class_level = "observation"`) with class shares that differ by student
+(`id = "student"`, `n_group_classes = 2`). `passed` depends on the
+student's kind, not the week's strategy, so it is a mixture at the
+student level (`class_level = "group"`). `questions` is a count whose
+Poisson regression depends on the week's strategy.
 
 ## See also
 

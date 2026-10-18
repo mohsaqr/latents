@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -151,8 +151,9 @@ indicator’s variance that lies between groups.</p>
 <code>n_profiles</code> for the number of profiles,
 <code>n_group_classes</code> for the number of group classes,
 <code>n_starts</code> for the number of random EM starts, and
-<code>seed</code> for reproducible starts. Printing the fit gives the
-profile means.</p>
+<code>seed</code> for reproducible starts. With many starts on large
+data, <code>cores</code> runs the starts in parallel and returns the
+same fit as one core. Printing the fit gives the profile means.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
@@ -218,11 +219,11 @@ indicator.</p>
 <span><span class="co">#&gt; 8                   0.0228</span></span>
 <span><span class="co">#&gt; 9                   0.0261</span></span>
 <span><span class="co">#&gt; 10                  0.0228</span></span></code></pre></div>
-<p>To see the profiles, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on the fit. Each
-line is a profile’s mean on each indicator, and its label gives the
+<p>To see the profiles, we call <code><a href="../reference/latents-plots.html">plot_profiles()</a></code> on the fit.
+Each line is a profile’s mean on each indicator, and its label gives the
 profile’s share of the cases.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lpa_files/figure-html/profile-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -241,11 +242,10 @@ class.</p>
 <span><span class="co">#&gt; 2           1       2       0.214                   0.675</span></span>
 <span><span class="co">#&gt; 3           2       1       0.170                   0.325</span></span>
 <span><span class="co">#&gt; 4           2       2       0.830                   0.325</span></span></code></pre></div>
-<p>To compare the group classes, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
-<code>what = "probabilities"</code>: one line per group class across the
-profiles.</p>
+<p>To compare the group classes, we call <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code>:
+one line per group class across the profiles.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"probabilities"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_prevalence</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lpa_files/figure-html/probability-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -360,15 +360,16 @@ for a fitted model. Each comment states what the call returns.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>                             <span class="co"># BIC with the number of groups</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>                            <span class="co"># number of groups</span></span>
 <span></span>
-<span><span class="co"># Plots: plot(fit, what)</span></span>
-<span><span class="fu"><a href="../reference/latents-plots.html">plot_views</a></span><span class="op">(</span><span class="op">)</span>                <span class="co"># every view and what it shows</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"bars"</span><span class="op">)</span>             <span class="co"># profile means with 95% intervals</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span>          <span class="co"># means in standard deviations</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"sizes"</span><span class="op">)</span>            <span class="co"># effective size of each profile</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span>          <span class="co"># per-case classification uncertainty</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span>       <span class="co"># posterior of each assigned profile</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"avepp"</span><span class="op">)</span>            <span class="co"># average posteriors, assigned by posterior class</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>              <span class="co"># every view this fit supports</span></span>
+<span><span class="co"># Plots: the plot_ functions, each with what = and "all"</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_views</a></span><span class="op">(</span><span class="op">)</span>                                   <span class="co"># every view and what it shows</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"bars"</span><span class="op">)</span>              <span class="co"># profile means with 95% intervals</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span>           <span class="co"># means in standard deviations</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>               <span class="co"># every profile view</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"sizes"</span><span class="op">)</span>          <span class="co"># effective size of each profile</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span>        <span class="co"># per-case classification uncertainty</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span>     <span class="co"># posterior of each assigned profile</span></span>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"avepp"</span><span class="op">)</span>          <span class="co"># average posteriors, assigned by posterior class</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>                        <span class="co"># every view this fit supports</span></span>
 <span></span>
 <span><span class="co"># Other functions</span></span>
 <span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">fit</span>, seeds <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>       <span class="co"># refits under several seeds</span></span>
@@ -611,7 +612,7 @@ comparing them.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

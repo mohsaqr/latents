@@ -1,11 +1,11 @@
 # Compare latent profile models
 
-Fits single-level latent profile models with each number of profiles in
-`n_profiles` under each covariance structure in `model`, and returns
-them in one table for comparison by information criteria, entropy and
-the diagnostics of each fit. It is
+Fits a single-level latent profile model for each number of profiles in
+`n_profiles` under each covariance structure in `model`, and returns a
+`multilpa_enumeration` object that tabulates the information criteria,
+entropy and diagnostics of every fit. It is
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-with `id = NULL`, and it returns the same object.
+with `id = NULL`.
 
 ## Usage
 

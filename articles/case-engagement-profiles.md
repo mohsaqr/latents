@@ -371,7 +371,7 @@ classes.
 
 ``` r
 
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 ![](case-engagement-profiles_files/figure-html/probabilities-1.png)
@@ -416,15 +416,16 @@ starting values used in this analysis.
 
 ## Profile means as a plot
 
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) displays the
-estimated profile means across the five activity indicators. Because the
-indicators were standardized within course, the vertical axis is
-expressed in standard deviations from the corresponding course mean.
-Point symbols distinguish the profiles in addition to colour.
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+displays the estimated profile means across the five activity
+indicators. Because the indicators were standardized within course, the
+vertical axis is expressed in standard deviations from the corresponding
+course mean. Point symbols distinguish the profiles in addition to
+colour.
 
 ``` r
 
-plot(fit, subtitle = "Profile means, standard deviations from each course mean")
+plot_profiles(fit, subtitle = "Profile means, standard deviations from each course mean")
 ```
 
 ![](case-engagement-profiles_files/figure-html/profiles-1.png)

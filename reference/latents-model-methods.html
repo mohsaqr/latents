@@ -15,7 +15,7 @@ document the same methods with their get_results() page."><meta property="og:ima
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -143,8 +143,7 @@ covariate model (<code>multilpa_covariates</code>), a latent transition model
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>Optional. The data frame the model was fitted to. When omitted
 it is rebuilt from what the fit stores (indicators, identifiers, occasions
-and designs), which round-trips to floating-point precision; supplying it is the stronger check
-that the caller still holds that frame.</p></dd>
+and designs), to floating-point precision.</p></dd>
 
 
 <dt id="arg-step">step<a class="anchor" aria-label="anchor" href="#arg-step"></a></dt>
@@ -186,13 +185,13 @@ otherwise.</p></dd>
 
 <dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>
 <dd><p>Optional coefficient names or indices; defaults to every
-estimated coefficient. Naming a coefficient that <code>fixed</code> held raises
-<code>latents_held_parameter</code>, because a held value has no interval; an
-unknown name or an out-of-range index raises <code>latents_bad_argument</code>.</p></dd>
+estimated coefficient. A coefficient held by <code>fixed</code> has no interval and
+raises <code>latents_held_parameter</code>; an unknown name or an out-of-range index
+raises <code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
-<dd><p>Confidence level strictly between zero and one.</p></dd>
+<dd><p>Confidence level, strictly between 0 and 1 (default 0.95).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -262,7 +261,7 @@ errors and intervals.</p></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

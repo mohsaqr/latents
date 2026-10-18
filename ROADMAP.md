@@ -548,9 +548,9 @@ one vocabulary.
 All four decided 2026-10-15 (0.9.31).
 
 Cluster-robust variance: **CR1** (`G/(G-1)`) everywhere, matching
-`sandwich::vcovCL()`; one helper, `.inference_cluster_factor()`, and a
-required `n_units` on `.inference_sandwich()` so no robust path can skip
-it.
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
+one helper, `.inference_cluster_factor()`, and a required `n_units` on
+`.inference_sandwich()` so no robust path can skip it.
 
 Separated covariate fit: **refuse** Wald inference
 (`latents_boundary_fit`) on a unit-free check (coefficient per RMS unit

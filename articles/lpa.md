@@ -58,7 +58,9 @@ To fit the model, we call
 with `vars` for the indicators, `id` for the group, `n_profiles` for the
 number of profiles, `n_group_classes` for the number of group classes,
 `n_starts` for the number of random EM starts, and `seed` for
-reproducible starts. Printing the fit gives the profile means.
+reproducible starts. With many starts on large data, `cores` runs the
+starts in parallel and returns the same fit as one core. Printing the
+fit gives the profile means.
 
 ``` r
 
@@ -136,13 +138,13 @@ get_results(fit)
 ```
 
 To see the profiles, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the fit.
-Each line is a profile’s mean on each indicator, and its label gives the
-profile’s share of the cases.
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+on the fit. Each line is a profile’s mean on each indicator, and its
+label gives the profile’s share of the cases.
 
 ``` r
 
-plot(fit)
+plot_profiles(fit)
 ```
 
 ![](lpa_files/figure-html/profile-plot-1.png)
@@ -166,12 +168,12 @@ get_results(fit, "profile_probabilities")
 ```
 
 To compare the group classes, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "probabilities"`: one line per group class across the profiles.
+[`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
+one line per group class across the profiles.
 
 ``` r
 
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 ![](lpa_files/figure-html/probability-plot-1.png)
@@ -301,15 +303,16 @@ AIC(fit)                             # Akaike information criterion
 BIC(fit)                             # BIC with the number of groups
 nobs(fit)                            # number of groups
 
-# Plots: plot(fit, what)
-plot_views()                # every view and what it shows
-plot(fit, what = "bars")             # profile means with 95% intervals
-plot(fit, what = "heatmap")          # means in standard deviations
-plot(fit, what = "sizes")            # effective size of each profile
-plot(fit, what = "entropy")          # per-case classification uncertainty
-plot(fit, what = "posteriors")       # posterior of each assigned profile
-plot(fit, what = "avepp")            # average posteriors, assigned by posterior class
-plot(fit, what = "all")              # every view this fit supports
+# Plots: the plot_ functions, each with what = and "all"
+plot_views()                                   # every view and what it shows
+plot_profiles(fit, what = "bars")              # profile means with 95% intervals
+plot_profiles(fit, what = "heatmap")           # means in standard deviations
+plot_profiles(fit, what = "all")               # every profile view
+plot_diagnostics(fit, what = "sizes")          # effective size of each profile
+plot_diagnostics(fit, what = "entropy")        # per-case classification uncertainty
+plot_diagnostics(fit, what = "posteriors")     # posterior of each assigned profile
+plot_diagnostics(fit, what = "avepp")          # average posteriors, assigned by posterior class
+plot(fit, what = "all")                        # every view this fit supports
 
 # Other functions
 sensitivity(fit, seeds = 1:10)       # refits under several seeds

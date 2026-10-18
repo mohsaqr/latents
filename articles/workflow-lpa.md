@@ -58,7 +58,7 @@ estimates these four structures with every number of profiles requested.
 ``` r
 
 models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)
-plot(models)
+plot_enumeration(models)
 ```
 
 ![](workflow-lpa_files/figure-html/enumerate-1.png)
@@ -224,7 +224,7 @@ indicator with its 95% confidence interval.
 
 ``` r
 
-plot(fit)
+plot_profiles(fit)
 ```
 
 ![](workflow-lpa_files/figure-html/profiles-1.png)
@@ -267,7 +267,7 @@ The same means as bars with their confidence intervals:
 
 ``` r
 
-plot(fit, what = "bars")
+plot_profiles(fit, what = "bars")
 ```
 
 ![](workflow-lpa_files/figure-html/bars-1.png)
@@ -278,7 +278,7 @@ across indicators:
 
 ``` r
 
-plot(fit, what = "heatmap")
+plot_profiles(fit, what = "heatmap")
 ```
 
 ![](workflow-lpa_files/figure-html/heatmap-1.png)
@@ -292,7 +292,7 @@ and overlap almost completely on test anxiety.
 
 ``` r
 
-plot(fit, what = "raincloud")
+plot_profiles(fit, what = "raincloud")
 ```
 
 ![](workflow-lpa_files/figure-html/raincloud-1.png)

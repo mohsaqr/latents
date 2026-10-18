@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -278,7 +278,7 @@ L_j = \sum_{h=1}^{H}\eta_h
 </h3>
 <p><code>get_results(fit)</code> returns the measurement parameters, with one row for each profile and indicator. Means describe the location of a profile, while variances describe dispersion within it. The default plot displays the profile means across indicators.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-profile-plot-1.png" alt="plot of chunk profile-plot" width="100%"><p class="caption">
 plot of chunk profile-plot
@@ -298,7 +298,7 @@ plot of chunk profile-plot
 <span><span class="co">#&gt; 2           1       2       0.214                   0.675</span></span>
 <span><span class="co">#&gt; 3           2       1       0.170                   0.325</span></span>
 <span><span class="co">#&gt; 4           2       2       0.830                   0.325</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"probabilities"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/latents-plots.html">plot_prevalence</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-probabilities-1.png" alt="plot of chunk probabilities" width="100%"><p class="caption">
 plot of chunk probabilities
@@ -545,7 +545,7 @@ plot of chunk probabilities
 <span><span class="co">#&gt; 12       icl individuals profiles2_groups3          2               3   VVI 17142</span></span>
 <span><span class="co">#&gt; 13       clc      groups profiles4_groups3          4               3   VVI 16656</span></span>
 <span><span class="co">#&gt; 14       clc individuals profiles2_groups3          2               3   VVI 16960</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/latents-plots.html">plot_enumeration</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-enumeration-1.png" alt="plot of chunk enumeration" width="100%"><p class="caption">
 plot of chunk enumeration
@@ -773,7 +773,7 @@ plot of chunk enumeration
 <span><span class="co">#&gt; 6           2    1  2      0.2579           27.9  FALSE      TRUE                   0.352</span></span>
 <span><span class="co">#&gt; 7           2    2  1      0.0693           24.6  FALSE      TRUE                   0.352</span></span>
 <span><span class="co">#&gt; 8           2    2  2      0.9307          330.3   TRUE      TRUE                   0.352</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"transitions"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/latents-plots.html">plot_transitions</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-transitions-1.png" alt="plot of chunk transitions" width="100%"><p class="caption">
 plot of chunk transitions
@@ -834,7 +834,7 @@ plot of chunk transitions
 <span><span class="co">#&gt; 30       2     part_time_job       no      0.9587     3.144                    0.00730</span></span>
 <span><span class="co">#&gt; 31       1     part_time_job      yes      0.0162        NA                    0.00625</span></span>
 <span><span class="co">#&gt; 32       2     part_time_job      yes      0.0413        NA                    0.00730</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"responses"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/latents-plots.html">plot_responses</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-categorical-1.png" alt="plot of chunk categorical" width="100%"><p class="caption">
 plot of chunk categorical
@@ -962,8 +962,10 @@ plot of chunk categorical
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Mohammed Saqr <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0000-0001-5881-3109" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
-<li>Sonsoles López-Pernas <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-9621-1392" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://saqr.me" class="external-link">Mohammed Saqr</a> <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0000-0001-5881-3109" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-9621-1392" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -979,7 +981,7 @@ plot of chunk categorical
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

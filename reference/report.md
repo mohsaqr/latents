@@ -1,12 +1,8 @@
-# Everything about a fit, in one call
+# Print a full report of a fitted model
 
-Prints the estimates, then the classification diagnostics, then draws
-every plot the fit supports. A first look, not a substitute for the
-verbs: each section is what
-[`summary()`](https://rdrr.io/r/base/summary.html),
-[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-and [`plot()`](https://rdrr.io/r/graphics/plot.default.html) return, and
-the tables are reachable from those rather than from here.
+Prints the model summary, the descriptive statistics of its variables
+and the classification diagnostics, then draws every plot view the fit
+supports.
 
 ## Usage
 
@@ -34,42 +30,43 @@ report(
 
 - plots:
 
-  `TRUE`, the default, draws the plots. `FALSE` prints only.
+  `TRUE` (the default) draws the plots. `FALSE` prints only.
 
 - by:
 
   Passed to
-  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
-  and from there to the bivariate residuals: `"profile"`, the default,
-  assesses each profile separately, `"overall"` pools them.
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  for the bivariate residuals: `"profile"` (the default) assesses each
+  profile separately, `"overall"` pools them.
 
 - rows:
 
-  How many rows of each of the summary's tables to print, passed to
-  `print(summary(x))`. A first look at a fit with thousands of
-  observations would otherwise be mostly posteriors.
+  Number of rows of each summary table to print, passed to
+  `print(summary(x))`. Default 10.
 
 - ...:
 
-  Nothing further is accepted. An argument this function cannot forward
-  raises an error of class `latents_bad_argument` naming it, before
-  anything has been printed, rather than being dropped.
+  Not used. Any further argument raises `latents_bad_argument` before
+  anything is printed.
 
 ## Value
 
-The fitted model, invisibly. Called for the printing and drawing.
+The fitted model, invisibly. Called for its printed and plotted output.
 
 ## What it prints
 
-[`summary()`](https://rdrr.io/r/base/summary.html), which is every table
-the fit can produce, then
+[`summary()`](https://rdrr.io/r/base/summary.html), then
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-then the condensed reading of
+then the one-line-per-diagnostic reading of
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
-then every plot view the fit supports. Each section is what that verb
-returns, and the tables are reached from
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-rather than from here.
+then every plot view the fit supports. Views that the plot method
+declines for this model are listed after the plots as not drawn. The
+tables themselves are obtained from
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+[`summary()`](https://rdrr.io/r/base/summary.html),
+[`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+and
+[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md).
 
 ## See also
 

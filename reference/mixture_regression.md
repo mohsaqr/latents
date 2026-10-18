@@ -1,11 +1,10 @@
 # Fit a finite mixture of regressions
 
-Fits a regression whose coefficients differ across latent classes: the
-data are assumed to come from `n_classes` subpopulations, each with its
-own regression of the outcome on the predictors, and the model estimates
-the regressions, the class sizes and every row's posterior class
-membership at once. This is clusterwise, latent class or mixture
-regression (DeSarbo and Cron 1988; Wedel and DeSarbo 1995).
+Fits a regression whose coefficients differ across `n_classes` latent
+classes and returns the fitted model: the class-specific regressions,
+the class sizes and every row's posterior class membership, estimated
+jointly by maximum likelihood. This is clusterwise, latent class or
+mixture regression (DeSarbo and Cron 1988; Wedel and DeSarbo 1995).
 
 ## Usage
 
@@ -57,23 +56,25 @@ mixture_regression(
 
 - family:
 
-  `"gaussian"`, `"binomial"`, `"poisson"`, `"negative_binomial"` or
-  `"ordinal"` (proportional-odds cumulative logit; see *Families*).
+  `"gaussian"` (default), `"binomial"`, `"poisson"`,
+  `"negative_binomial"` or `"ordinal"` (proportional-odds cumulative
+  logit; see *Families*).
 
 - id:
 
-  `NULL`, or the name of the column identifying groups (persons,
-  schools, ...).
+  `NULL` (default), or the name of the column identifying groups
+  (persons, schools, ...).
 
 - class_level:
 
-  `"observation"` (each row has its own class) or `"group"` (all rows of
-  a group share a class; needs `id`).
+  `"observation"` (default; each row has its own class) or `"group"`
+  (all rows of a group share a class; requires `id`).
 
 - n_group_classes:
 
-  Number of second-level group classes, for
-  `class_level = "observation"` with `id`. `1` fits no second level.
+  Number of second-level group classes (default 1, no second level), for
+  `class_level = "observation"` with `id`, or for the clusters of a
+  multilevel growth mixture (`cluster`).
 
 - common:
 
@@ -96,53 +97,53 @@ mixture_regression(
 
 - variance:
 
-  `"varying"` (a residual standard deviation, or a negative-binomial
-  dispersion, per class) or `"equal"` (one shared). Gaussian and
-  negative-binomial families only.
+  `"varying"` (default; a residual standard deviation, or a
+  negative-binomial dispersion, per class) or `"equal"` (one shared).
+  Gaussian and negative-binomial families only.
 
 - n_starts:
 
-  Number of random starts, besides one start built from the residuals of
-  a pooled regression. Every start runs 50 EM iterations; the better
-  half (at least two) continue to convergence.
+  Number of random starts (default 10), besides one start built from the
+  residuals of a pooled regression. Every start runs up to 50 EM
+  iterations; the better half (at least two) continue to convergence.
 
 - max_iter:
 
-  Maximum EM iterations per start.
+  Maximum EM iterations per start (default 1000).
 
 - tol:
 
-  Relative convergence tolerance on the log likelihood.
+  Relative convergence tolerance on the log likelihood (default `1e-8`).
 
 - min_variance:
 
   Floor for a Gaussian residual variance, relative to the outcome's
-  variance. A class that reaches it is fitting too few rows exactly;
-  such starts are set aside.
+  variance (default `1e-6`). Starts in which a class reaches the floor
+  (fits too few rows exactly) are set aside.
 
 - seed:
 
-  `NULL` or an integer seed. The caller's random state is restored
-  afterwards.
+  `NULL` (default) or an integer seed. The caller's random state is
+  restored afterwards.
 
 - missing:
 
-  `"error"` refuses rows with missing values in any variable the model
-  uses; `"omit"` drops them with a `latents_rows_dropped` warning
-  stating how many.
+  `"error"` (default) refuses rows with missing values in any variable
+  the model uses; `"omit"` drops them with a `latents_rows_dropped`
+  warning stating how many.
 
 - select_start:
 
-  `"likelihood"` keeps the start with the highest likelihood;
+  `"likelihood"` (default) keeps the start with the highest likelihood;
   `"converged"` prefers the best start that converged.
 
 - vcov_type:
 
-  Covariance of the estimates stored with the fit: `"observed"` (inverse
-  observed information), `"robust"` (sandwich with the CR1 factor
-  `G / (G - 1)`, clustered on the top-level unit, or on `id` for a
-  single-level fit given `id`) or `"opg"` (outer product of the scores).
-  `"none"` skips inference.
+  Covariance of the estimates stored with the fit: `"observed"`
+  (default; inverse observed information), `"robust"` (sandwich with the
+  CR1 factor `G / (G - 1)`, clustered on the top-level unit, or on `id`
+  for a single-level fit given `id`) or `"opg"` (outer product of the
+  scores). `"none"` skips inference.
 
 - weights:
 
@@ -156,36 +157,36 @@ mixture_regression(
 
 - random:
 
-  `NULL` (no random effects), or the random effects within classes:
-  variable names such as `"time"` (a random intercept and a random slope
-  on `time`) or `"intercept"` (random intercepts only), or a one-sided
-  formula such as `~ 1 + time` (needed for anything names cannot say,
-  such as `~ 0 + time`, a slope without a random intercept). See the
-  growth mixture section.
+  `NULL` (default; no random effects), or the random effects within
+  classes: variable names such as `"time"` (a random intercept and a
+  random slope on `time`) or `"intercept"` (random intercepts only), or
+  a one-sided formula such as `~ 1 + time`. A slope without a random
+  intercept needs the formula `~ 0 + time`. See *Growth mixture models*.
 
 - random_covariance:
 
   How the random-effect covariance differs across classes: `"varying"`
-  (one per class), `"equal"` (one shared matrix, as `lcmm::hlme()` with
-  `nwg = FALSE`) or `"proportional"` (a shared matrix times a
-  class-specific scale, the last class's being one; `nwg = TRUE`).
+  (default; one per class), `"equal"` (one shared matrix, as
+  `lcmm::hlme()` with `nwg = FALSE`) or `"proportional"` (a shared
+  matrix times a class-specific scale, the last class's being one;
+  `nwg = TRUE`).
 
 - random_diagonal:
 
   `TRUE` for uncorrelated random effects (a diagonal covariance, as
-  `idiag = TRUE` in lcmm).
+  `idiag = TRUE` in lcmm); default `FALSE`.
 
 - cluster:
 
-  `NULL`, or the name of a column grouping the persons (`id`) into
-  clusters, such as schools, for the multilevel growth mixture model
-  (with `random`): each cluster belongs to one of `n_group_classes`
-  group classes, which shifts how probable each trajectory class is for
-  its persons. The clusters are the independent units of the likelihood,
-  the standard errors and the BIC; with `n_group_classes = 1` the model
-  is the single-level growth mixture with clusters as those units,
-  comparable by BIC with more group classes. See the growth mixture
-  section.
+  `NULL` (default), or the name of a column grouping the persons (`id`)
+  into clusters, such as schools, for the multilevel growth mixture
+  model (with `random`): each cluster belongs to one of
+  `n_group_classes` group classes, which sets the trajectory-class
+  probabilities of its persons. The clusters are the independent units
+  of the likelihood, the standard errors and the BIC; with
+  `n_group_classes = 1` the model is the single-level growth mixture
+  with clusters as those units, comparable by BIC with fits with more
+  group classes. See *Growth mixture models*.
 
 - residual_correlation:
 
@@ -194,12 +195,12 @@ mixture_regression(
   covariance `sd^2 exp(-rate |t - s|)`, and `"brownian"` Brownian
   motion, `sd^2 min(t, s)`, to the residual variance, shared by the
   classes: `lcmm::hlme(cor = AR(time))` and `cor = BM(time)`. The model
-  without the process is fitted first, from every start, and the process
-  is then estimated with everything else. A process the data cannot
-  separate from the residual variance or the random effects is left on
-  its bound and warned about (`latents_random_boundary`); its rows then
-  have no standard error. Refused with `latents_bad_argument` without
-  `random`.
+  without the process is fitted first from every start; the process is
+  then estimated jointly with all other parameters. A process the data
+  cannot separate from the residual variance or the random effects is
+  left on its bound and warned about (`latents_random_boundary`); its
+  rows then have no standard error. Refused with `latents_bad_argument`
+  without `random`.
 
 - residual_time:
 
@@ -210,11 +211,11 @@ mixture_regression(
 ## Value
 
 An object of class `latents_mixture_regression`, or
-`latents_growth_mixture` when `random` is given. Read it with
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) (the
-coefficient table) or
+`latents_growth_mixture` when `random` is given.
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the coefficient table and
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-(every table, by name), and use
+every table by name (described there);
 [`predict()`](https://rdrr.io/r/stats/predict.html),
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
 [`summary()`](https://rdrr.io/r/base/summary.html),
@@ -222,9 +223,7 @@ coefficient table) or
 [`vcov()`](https://rdrr.io/r/stats/vcov.html),
 [`confint()`](https://rdrr.io/r/stats/confint.html),
 [`logLik()`](https://rdrr.io/r/stats/logLik.html) and
-[`nobs()`](https://rdrr.io/r/stats/nobs.html) on it. The tables are
-described on
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+[`nobs()`](https://rdrr.io/r/stats/nobs.html) also apply.
 
 ## Nesting
 
@@ -232,48 +231,47 @@ described on
 
 - Single level (`id = NULL`):
 
-  Every row is its own unit and has its own class.
+  Every row is its own unit with its own class.
 
 - `class_level = "group"`:
 
-  Every row of a group (`id`) belongs to the same class, so a class is a
-  kind of *group*: the regression mixture for repeated measures,
-  `flexmix(y ~ x | id)`. Each group's evidence is the product of its
-  rows' densities.
+  All rows of a group (`id`) belong to the same class: the regression
+  mixture for repeated measures, as `flexmix(y ~ x | id)`. A group's
+  likelihood contribution is the product of its rows' densities.
 
 - `class_level = "observation"` with `id` and `n_group_classes >= 2`:
 
-  Rows keep their own class, and a second-level group class shifts how
-  probable each regression class is within its groups (Vermunt 2003).
-  With `n_group_classes = 1` the groups only enter the `"robust"`
-  standard errors, which are then clustered on `id`.
+  Each row has its own class, and a second-level group class sets the
+  class probabilities within its groups (Vermunt 2003). With
+  `n_group_classes = 1`, `id` enters only the `"robust"` standard
+  errors, which are then clustered on `id`.
 
 ## Growth mixture models
 
 With repeated measures of persons (`id`, `class_level = "group"`), a
 time predictor in `formula` gives every class its own trajectory: latent
-class growth analysis (Nagin 2005). `random` adds random effects
-*within* classes, so persons scatter around their class trajectory: the
-growth mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden
-1999). Within class k, person i's outcomes are \$\$y_i = X_i \beta_k +
-Z_i b_i + e_i, \quad b_i \sim N(0, G_k), \quad e_i \sim N(0, \sigma_k^2
+class growth analysis (Nagin 2005). `random` adds random effects within
+classes, so that persons vary around their class trajectory: the growth
+mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden 1999).
+Within class k, person i's outcomes are \$\$y_i = X_i \beta_k + Z_i
+b_i + e_i, \quad b_i \sim N(0, G_k), \quad e_i \sim N(0, \sigma_k^2
 I),\$\$ with `Z` built from `random`. The likelihood is exact (Gaussian,
 no numerical integration); estimation is EM with the random effects as
 missing data, finished by quasi-Newton with analytic scores. Such a fit
-has class `latents_growth_mixture`; its tables, plots and inference are
-described on
+has class `latents_growth_mixture`; its tables and plots are described
+on
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 and
 [plot()](https://pak.dynasite.org/latents/reference/latents-plots.md).
-Random effects need the gaussian family, `id` and
+Random effects require the gaussian family, `id` and
 `class_level = "group"`.
 
 With `residual_correlation`, the residuals also carry a process shared
 by the classes, \\e_i \sim N(0, W_i + \sigma_k^2 I)\\: a continuous-time
 autoregressive process (`"ar"`) or Brownian motion (`"brownian"`) over
-`residual_time`, as in `lcmm::hlme(cor = )`. At hlme's own estimates the
-likelihood equals hlme's; the comparison is recorded in
-`equivalence/test-growth-correlated-lcmm.R` of the source repository.
+`residual_time`, as in `lcmm::hlme(cor = )`; at hlme's estimates the two
+likelihoods agree (`equivalence/test-growth-correlated-lcmm.R` in the
+source repository).
 
 With `cluster`, persons are nested in clusters (students in schools) and
 the multilevel growth mixture model is fitted: each cluster belongs to a
@@ -281,8 +279,8 @@ group class h, and the trajectory-class logits of its persons have a
 group-class-specific intercept and shared covariate slopes, \$\$L =
 \prod_j \sum_h \omega_h \prod\_{i \in j} \sum_k \pi\_{k\|h} f_k(y_i)\$\$
 (Asparouhov and Muthen 2008; Vermunt 2003). `group_membership` names
-cluster-level covariates of the group class. The group classes are read
-with `get_results(fit, "group_classes")` and `"clusters"`.
+cluster-level covariates of the group class. The group classes are
+returned by `get_results(fit, "group_classes")` and `"clusters"`.
 
 ## Families
 
@@ -315,22 +313,20 @@ ordinal outcome (fitted values,
 [`predict()`](https://rdrr.io/r/stats/predict.html), trajectories) is
 the expected category score \\\sum_c c P(Y = c)\\, the categories scored
 1 to C in order; `predict(type = "probabilities")` gives the category
-probabilities. With one outcome per class assignment the classes are
-identified by how continuous predictors shift the category
-probabilities: a mixture with no predictors, or with two categories
-(then the logistic mixture of `"binomial"`), is refused with
-`latents_not_identified` unless `class_level = "group"` gives each class
-assignment several outcomes. So is a single-level mixture whose
-predictors take too few distinct values: with P distinct covariate
-patterns the data hold at most P (C - 1) free category probabilities,
-and a model with more free parameters than that (for example two classes
-and one binary factor) cannot be identified.
+probabilities. With one outcome per class assignment, an ordinal mixture
+with no predictors or with two categories (the logistic mixture of
+`"binomial"`) is not identified and is refused with
+`latents_not_identified`, unless `class_level = "group"` gives each
+class assignment several outcomes. A single-level mixture is also
+refused when it has more free parameters than P (C - 1), the number of
+free category probabilities in P distinct covariate patterns (for
+example two classes and one binary factor).
 
 A mixture of Bernoulli regressions with one trial per unit is not
-identified – any mixture of Bernoullis is again a Bernoulli – so a
-binary outcome requires `class_level = "group"` (several rows per class
-assignment) or binomial counts with more than one trial per row. The
-request is refused otherwise.
+identified (a mixture of Bernoullis is again a Bernoulli), so a binary
+outcome requires `class_level = "group"` (several rows per class
+assignment) or binomial counts with more than one trial per row; other
+binary specifications are refused.
 
 ## Conditions
 

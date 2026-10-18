@@ -1,10 +1,10 @@
 # Leisure activities of university students in daily life
 
-Experience-sampling data on what university students did between prompts
-when they were not studying. Prompts are nested within students, so the
-data suit a two-level latent class analysis: each prompt belongs to an
-activity profile, and students differ in how often their prompts fall in
-each profile.
+Experience-sampling data on the leisure activities of university
+students between prompts at which they had not studied. Each row is one
+answered non-study prompt, with all eight activity items and all four
+affect ratings observed. Prompts are nested in students, so the data
+suit a two-level latent class analysis.
 
 ## Usage
 
@@ -89,21 +89,16 @@ identifiers are renumbered and the values are otherwise unchanged.
 
 ## Details
 
-The students answered six prompts a day for fourteen days. At a prompt
-where the student had not studied since the previous prompt, the
-questionnaire asked which of eight leisure activities they had done. The
-study asked these items only at non-study prompts, so the dataset
-contains those prompts alone. Each row is one answered non-study prompt
-with all eight activity items and all four affect ratings observed.
-
-The dataset is a subset of the original study: 100 of its students,
-drawn with a fixed seed from the students with at least 15 such prompts,
-with every such prompt they answered. Each student contributes 15 to 51
-prompts (median 24). The eight activity items are categorical
-indicators; the four affect ratings are continuous-scored and can be
-combined with them in a mixed measurement model. `worried` has a floor:
-49.7% of its ratings are 1, so a profile of low-worry prompts can have
-zero variance on it and reach the `min_variance` bound.
+In the original study students answered six prompts a day for fourteen
+days; the activity items were asked only at prompts where the student
+had not studied since the previous prompt. The dataset holds 100
+students, drawn with a fixed seed from those with at least 15 such
+prompts, and every such prompt they answered: 15 to 51 per student
+(median 24). The eight activity items are categorical indicators; the
+four affect ratings can be added as continuous indicators in a mixed
+measurement model. `worried` has a floor (49.7% of ratings are 1), so a
+profile of low-worry prompts can have zero variance on it and reach the
+`min_variance` bound.
 
 ## References
 

@@ -1,11 +1,12 @@
-# A transition network for each latent group class
+# Build one transition network per latent group class
 
 Builds one
 [`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) model
-per latent group class of a fitted transition model, collected into the
-`group_tna` object tna's grouped verbs expect. A class row with no
-expected outgoing moves keeps the fit's unestimated transition
-probabilities and raises `latents_empty_transition_row`.
+per latent group class of a fitted transition model and returns them as
+a `group_tna` object, the input of tna's grouped functions. A class row
+with no expected outgoing transitions keeps the fit's unestimated
+transition probabilities and raises the warning
+`latents_empty_transition_row`.
 
 ## Usage
 
@@ -44,15 +45,15 @@ get_group_tna(x, label = "Group class", ...)
 
 - label:
 
-  What the classes are called in tna's output.
+  Name given to the classes in tna's output (default `"Group class"`).
 
 ## Value
 
-An object of class `group_tna`, one `tna` model per latent class:
-`centralities()` returns one tidy table with a `group` column,
+An object of class `group_tna`, a list of `tna` models, one per latent
+group class. `centralities()` returns one table with a `group` column,
 `compare()` contrasts two classes, and
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws them
-together.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws all
+networks.
 
 ## See also
 

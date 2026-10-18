@@ -11,9 +11,9 @@ persons (and their clusters new clusters): it returns class trajectories,
 which need no outcome, or, given the outcomes, class posteriors and each
 person's own curve with their empirical Bayes random effects, the
 quantities of lcmm::predictY(), predictClass() and predictRE().
-Membership-
-covariate and latent transition fits refuse with the same class; their
-fitted rows' posteriors are get_results(x, &quot;posteriors&quot;)."><meta property="og:description" content="predict() evaluates a fit on new rows. For multilpa() and multilca()
+Membership-covariate and latent transition fits are refused with
+latents_unsupported_prediction; the posteriors of their fitted rows are
+given by get_results(x, &quot;posteriors&quot;)."><meta property="og:description" content="predict() evaluates a fit on new rows. For multilpa() and multilca()
 fits without membership covariates it is the E-step at the estimates,
 applied through the fit's own preparation (categorical levels, centering,
 missing-data handling), so predicting the training rows reproduces the
@@ -25,9 +25,9 @@ persons (and their clusters new clusters): it returns class trajectories,
 which need no outcome, or, given the outcomes, class posteriors and each
 person's own curve with their empirical Bayes random effects, the
 quantities of lcmm::predictY(), predictClass() and predictRE().
-Membership-
-covariate and latent transition fits refuse with the same class; their
-fitted rows' posteriors are get_results(x, &quot;posteriors&quot;)."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
+Membership-covariate and latent transition fits are refused with
+latents_unsupported_prediction; the posteriors of their fitted rows are
+given by get_results(x, &quot;posteriors&quot;)."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -35,7 +35,7 @@ fitted rows' posteriors are get_results(x, &quot;posteriors&quot;)."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,9 +101,9 @@ persons (and their clusters new clusters): it returns class trajectories,
 which need no outcome, or, given the outcomes, class posteriors and each
 person's own curve with their empirical Bayes random effects, the
 quantities of <code>lcmm::predictY()</code>, <code>predictClass()</code> and <code>predictRE()</code>.
-Membership-
-covariate and latent transition fits refuse with the same class; their
-fitted rows' posteriors are <code>get_results(x, "posteriors")</code>.</p>
+Membership-covariate and latent transition fits are refused with
+<code>latents_unsupported_prediction</code>; the posteriors of their fitted rows are
+given by <code>get_results(x, "posteriors")</code>.</p>
     </div>
 
     <div class="section level2">
@@ -269,7 +269,7 @@ ignores.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

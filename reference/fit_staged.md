@@ -1,10 +1,10 @@
 # Fit a two-level model in stages, holding the measurement solution
 
-Estimates the measurement model once, on its own, and then estimates the
-group-class structure with that measurement held fixed. This is the
-staged workflow used when the measurement solution is meant to be
-decided before the grouping question is asked, so that adding group
-classes cannot move the profiles they are meant to describe.
+Fits a two-level model in two stages and returns the second-stage
+`multilpa` object. The first stage estimates the measurement model with
+one group class; the second estimates the group-class structure with
+that measurement held fixed, so adding group classes does not change the
+profiles.
 
 ## Usage
 
@@ -34,7 +34,7 @@ fit_staged(
 
 - data:
 
-  A data frame containing indicators and a group identifier.
+  A data frame containing the indicators and the group identifier.
 
 - vars:
 
@@ -43,12 +43,9 @@ fit_staged(
 
 - id:
 
-  Name of the observed group identifier column. Character, factor, or
+  Name of the observed group identifier column. Character, factor and
   numeric identifiers are supported; missing identifiers are not.
-  Required here: this model has a second level by construction, so it
-  has no single-level form and does not take
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)'s
-  `id = NULL`.
+  Required; `id = NULL` is not accepted.
 
 - n_profiles:
 
@@ -56,27 +53,23 @@ fit_staged(
 
 - n_group_classes:
 
-  Number of latent group classes to estimate in the second stage. Must
-  be at least two; one would leave nothing to estimate.
+  Number of latent group classes to estimate in the second stage
+  (default 2); must be at least two.
 
 - measurement:
 
-  Optional fitted `multilpa` model to use as the first stage, so that a
-  measurement solution already chosen and inspected is carried forward
-  rather than refitted. Its profiles, indicators and measurement options
-  must match the ones requested here, and it must have one group class:
-  a multi-class fit already estimates group structure and is not a
-  measurement-only first stage. A fit made with `weights`, `centering`
-  or `ordinal`/`count` indicators is refused too, since the second stage
-  fitted here uses none of them and would hold the measurement under a
-  likelihood it was not estimated on. Every refusal raises
-  `latents_bad_stage`. When `NULL`, the first stage is fitted here with
-  one group class.
+  `NULL` (the default), to fit the first stage here with one group
+  class, or a fitted `multilpa` model to use as the first stage. Its
+  profiles, indicators and measurement options must match the ones
+  requested here, and it must have one group class. Fits made with
+  `weights`, `centering` or `scaling`, or with `ordinal` or `count`
+  indicators, are refused, as are covariance structures other than EEI,
+  VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
 
 - variance_model:
 
-  Either `"varying"` (profile-specific variances or covariance matrices)
-  or `"equal"` (shared across profiles).
+  `"varying"` (the default; profile-specific variances or covariance
+  matrices) or `"equal"` (shared across profiles).
 
 - n_starts:
 
@@ -84,87 +77,83 @@ fit_staged(
 
 - max_iter:
 
-  Nonnegative integer maximum number of EM updates per start.
-  `max_iter = 0` performs no update. With `start`, it returns the model
-  evaluated at exactly those values, whatever `n_starts` is, so that
-  [`logLik()`](https://rdrr.io/r/stats/logLik.html) scores a parameter
-  set supplied from elsewhere rather than the best of some random
-  initializations that were never asked for. Without `start` there is
-  nothing to evaluate at, so the random initializations are scored and
-  the highest is returned.
+  Nonnegative integer maximum number of EM updates per start (default
+  1000). `max_iter = 0` performs no update: with `start`, the model is
+  evaluated at exactly those values, for example to score them with
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html); without `start`,
+  the random initializations are evaluated and the one with the highest
+  log likelihood is returned.
 
 - tol:
 
-  Positive relative log-likelihood tolerance. Convergence requires
-  absolute change no greater than
+  Positive relative log-likelihood tolerance (default `1e-8`).
+  Convergence requires an absolute change no greater than
   `tol * (1 + abs(previous log likelihood))`.
 
 - min_variance:
 
-  Positive lower bound on each variance, or each covariance eigenvalue
-  for full covariance, in squared input units. This defines a
-  constrained maximum-likelihood problem. Bound-active estimates are
-  explicitly reported and generate a warning.
+  Positive lower bound on each variance, or on each covariance
+  eigenvalue under full covariance, in squared input units (default
+  `1e-6`); the fit is then constrained maximum likelihood. Estimates at
+  the bound are reported and raise a warning.
 
 - seed:
 
   Optional random seed: any whole number
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts, negative
-  ones included. With a supplied seed, the caller's random-number state
-  is restored on exit.
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts, including
+  negative ones. When supplied, the caller's random-number state is
+  restored on exit.
 
 - missing:
 
-  `"error"` rejects missing indicators; `"fiml"` maximizes the
-  observed-data likelihood under an ignorable missingness mechanism
-  (MAR). Missing indicators are integrated out, not filled in for
-  likelihood fitting. This holds with membership covariates too; the
-  covariates themselves must be complete (`latents_bad_data`).
+  `"error"` (the default) rejects missing indicators; `"fiml"` maximizes
+  the observed-data likelihood under an ignorable missingness mechanism
+  (MAR), integrating missing indicators out rather than filling them in.
+  This also holds with membership covariates; the covariates themselves
+  must be complete (`latents_bad_data`).
 
 - covariance_model:
 
-  `"diagonal"` assumes conditional independence; `"full"` estimates
-  within-profile residual covariances.
+  `"diagonal"` (the default) assumes conditional independence; `"full"`
+  estimates within-profile residual covariances.
 
 - categorical:
 
   Character vector naming indicators to treat as categorical. Each is
   modelled by unrestricted, profile-specific response probabilities over
-  its observed categories, which is the latent class measurement model.
-  Binary, ordinal and unordered indicators are all handled by the same
-  unrestricted parameterization; numeric, integer, logical, character
-  and factor columns are accepted. Indicators not named here stay
-  Gaussian, so naming a subset fits a mixed-mode model.
+  its observed categories (the latent class measurement model); binary,
+  ordinal and unordered indicators are handled by the same
+  parameterization. Numeric, integer, logical, character and factor
+  columns are accepted. Indicators not named here stay Gaussian, so
+  naming a subset fits a mixed-mode model.
 
 - min_probability:
 
-  Positive lower bound on every categorical response probability,
-  defining a constrained maximum-likelihood problem in the same way
+  Positive lower bound on every categorical response probability
+  (default `1e-10`), constraining the maximum-likelihood problem as
   `min_variance` does for Gaussian indicators.
 
 - time:
 
   Optional name of a column giving each observation's position within
-  its group, such as a wave, occasion or course number. The model does
-  not use it; it is stored so that `get_results(x, "sequences")`,
-  `get_results(x, "sequence_summary")` and `plot(what = "sequences")`
-  can read the assignments back in order. Values must be complete and
-  unique within each group. They are ordered as
-  [`sort()`](https://rdrr.io/r/base/sort.html) orders them; numbers
+  its group, such as a wave, occasion or course number. It is not used
+  in estimation; it is stored for `get_results(x, "sequences")`,
+  `get_results(x, "sequence_summary")` and `plot(what = "sequences")`.
+  Values must be complete and unique within each group, and are ordered
+  as [`sort()`](https://rdrr.io/r/base/sort.html) orders them. Numbers
   stored as text whose alphabetical order is not their numeric order
-  (`"2"`, `"10"`) are refused (`latents_bad_time`), while zero-padded
-  numbers and ISO dates are accepted.
+  (`"2"`, `"10"`) raise `latents_bad_time`; zero-padded numbers and ISO
+  dates are accepted.
 
 ## Value
 
-A `multilpa` object for the second stage, so that every accessor,
-diagnostic and method works on it unchanged. Its measurement parameters
-are exactly the first stage's. It additionally carries `fixed`, naming
-the held blocks; `n_parameters`, counting only the parameters this stage
-estimated; and `n_parameters_with_measurement`, which adds the held
-measurement back. Use
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `what = "stages"` for a tidy two-row summary of both stages.
+A `multilpa` object for the second stage, on which every accessor,
+diagnostic and method works. Its measurement parameters are exactly the
+first stage's. It also carries `fixed`, naming the held blocks;
+`n_parameters`, counting only the parameters this stage estimated; and
+`n_parameters_with_measurement`, which adds the held measurement back.
+`get_results(fit, what = "stages")` gives a two-row summary of both
+stages.
 
 ## Details
 
@@ -172,21 +161,17 @@ The second stage treats the measurement solution as known, so its Wald
 standard errors
 ([`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)'s
 default), information criteria and likelihood-ratio comparisons are
-conditional on that solution and are narrower than they would be if the
-measurement had been estimated jointly.
+conditional on that solution and narrower than under joint estimation.
 `parameter_inference(fit, method = "bootstrap")` removes that
 conditioning for the standard errors and intervals: every resample of
-the groups is staged again, measurement first, so the replicates carry
-the first stage's sampling variability into the second stage, and the
-table also reports the measurement parameters with their own errors. A
-`measurement` supplied by the caller is re-estimated on each resample
-with the same options, since the resample is new data. The conditioning
-of the criteria and likelihood comparisons is a property of staging
-itself, and it is the reason both parameter counts are reported: compare
-staged fits with one another using `n_parameters`, and compare a staged
-fit with a jointly estimated one using `n_parameters_with_measurement`,
-remembering that the staged likelihood is not the joint maximum and the
-comparison is descriptive.
+the groups is staged again, measurement first, and the table also
+reports the measurement parameters with their own errors. A supplied
+`measurement` is re-estimated on each resample with the same options.
+The criteria and likelihood comparisons remain conditional: compare
+staged fits with one another using `n_parameters`, and a staged fit with
+a jointly estimated one using `n_parameters_with_measurement`; the
+staged likelihood is not the joint maximum, so the latter comparison is
+descriptive.
 
 ## See also
 

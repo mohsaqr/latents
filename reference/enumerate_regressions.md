@@ -2,14 +2,15 @@
 
 Fits
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-for every requested number of classes (and of group classes, for the
-two-level model) and returns their fit statistics in one table.
-Optionally adds a parametric bootstrap likelihood-ratio test of `k - 1`
-against `k` classes (McLachlan 1987; Nylund, Asparouhov and Muthen
-2007): outcomes are simulated from the `k - 1` class fit, both models
-are refitted to every replicate, and the p-value is the share of
-replicate statistics at least as large as the observed one,
-`(1 + b) / (1 + B)`.
+for every requested number of classes (crossed with numbers of group
+classes, for the two-level model) and returns their fit statistics in
+one table. Optionally adds a parametric bootstrap likelihood-ratio test
+of `k - 1` against `k` classes, at the same number of group classes
+(McLachlan 1987; Nylund, Asparouhov and Muthen 2007): outcomes are
+simulated from the `k - 1` class fit, both models are refitted to every
+replicate, and the p-value is `(1 + b) / (1 + B)`, where `b` counts
+replicate statistics at least as large as the observed one and `B` is
+the number of replicates requested.
 
 ## Usage
 
@@ -54,33 +55,34 @@ print(x, digits = 4L, ...)
 
 - n_classes:
 
-  Integer vector of class counts to fit.
+  Positive integer class counts to fit. Default `1:4`.
 
 - n_group_classes:
 
-  Integer vector of group-class counts (two-level model; needs `id`).
-  Crossed with `n_classes`.
+  Positive integer group-class counts (two-level model; needs `id`),
+  crossed with `n_classes`. Default 1.
 
 - bootstrap:
 
-  Number of bootstrap replicates for the likelihood-ratio test; `0`
-  skips it.
+  Number of bootstrap replicates for the likelihood-ratio test; `0` (the
+  default) skips it. Not available with sampling weights.
 
 - bootstrap_starts:
 
-  Random starts for each bootstrap refit.
+  Random starts for each bootstrap refit. Default 3.
 
 - seed:
 
-  `NULL` or an integer seed. The caller's random state is restored
-  afterwards.
+  `NULL` (default) or an integer seed. The caller's random state is
+  restored afterwards.
 
 - ...:
 
   Further arguments to
   [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
   such as `family`, `id`, `class_level`, `common`, `membership` or
-  `variance`.
+  `variance`. `n_classes`, `n_group_classes` and `vcov_type` are not
+  accepted here.
 
 - x:
 
@@ -88,7 +90,7 @@ print(x, digits = 4L, ...)
 
 - row.names, optional:
 
-  Unused; part of the generic.
+  Not used; part of the generic.
 
 - what:
 
@@ -102,24 +104,33 @@ print(x, digits = 4L, ...)
 
 An object of class `latents_regression_enumeration`. Its table (from
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) or
-`get_results(x, "fit")`) has one row per model: `n_classes`,
-`n_group_classes`, `log_likelihood`, `n_parameters`, `aic`, `bic`,
-`bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`, `converged`,
-`n_best_replicated`, `note` (why a cell could not be fitted), `best_bic`
-(the minimum-BIC row), and, with `bootstrap > 0`, `blrt_statistic`,
-`blrt_p_value` and `blrt_replicates` (the successful replicates) and
-`blrt_flagged` (the failed, unconverged, separated or
-reversed-likelihood replicates). The p-value is `NA` if any requested
-replicate fails validation.
+`get_results(x, "fit")`) has one row per model, with columns
+`n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`, `aic`,
+`bic`, `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`,
+`converged`, `n_best_replicated`, `note` (why a model could not be
+fitted), `best_bic` (`TRUE` for the minimum-BIC row), and, with
+`bootstrap > 0`, `blrt_statistic`, `blrt_p_value`, `blrt_replicates`
+(the successful replicates) and `blrt_flagged` (the failed, unconverged,
+separated or reversed-likelihood replicates). The test columns are `NA`
+where the `k - 1` or `k` class model is missing or failed, and the
+p-value is `NA` if any requested replicate fails validation.
 `get_results(x, "model", n_classes = , n_group_classes = )` returns one
 fitted model.
 
 ## Conditions
 
-`latents_bad_argument` for an empty or invalid grid. A model that cannot
-be fitted at some count (for example every start degenerates) gets a row
-of `NA` with its condition message in `note`, rather than stopping the
-comparison.
+A model whose fit raises `latents_no_valid_start` or `latents_bad_data`
+at some count gets a row of `NA` with the condition message in `note`;
+other errors stop the enumeration. Invalid `n_classes`,
+`n_group_classes`, `bootstrap` or `bootstrap_starts` fail the argument
+checks. `latents_bad_argument` for an invalid `seed`, for `n_classes`,
+`n_group_classes` or `vcov_type` passed through `...`, for a bootstrap
+test whose outcome is not a plain column name, and from
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+for a model that is not in the grid or could not be fitted.
+`latents_unsupported_weights` for a bootstrap test with sampling
+weights. `latents_failed_replicates` is warned, and the p-value is `NA`,
+when the observed fits or any replicate fail validation.
 
 ## References
 

@@ -73,27 +73,27 @@ get_results(moves, "starts")
 ## Profiles
 
 To see the profiles, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "profiles"` (on a transition fit,
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+(on a transition fit,
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) alone draws the
 transition matrices). Each line is a profile’s mean on each indicator,
 and its label gives the profile’s share of the cases.
 
 ``` r
 
-plot(moves, what = "profiles")
+plot_profiles(moves)
 ```
 
 ![](lta_files/figure-html/profiles-1.png)
 
 To compare profiles on a common scale, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "heatmap"`, which shows each mean in standard deviations from
-the indicator’s overall mean.
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+with `what = "heatmap"`, which shows each mean in standard deviations
+from the indicator’s overall mean.
 
 ``` r
 
-plot(moves, what = "heatmap")
+plot_profiles(moves, what = "heatmap")
 ```
 
 ![](lta_files/figure-html/heatmap-1.png)
@@ -153,13 +153,13 @@ get_results(moves, "transitions")
 ```
 
 To draw the transition matrices, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "transitions"`: one heatmap per group class, current profile in
-rows and next profile in columns.
+[`plot_transitions()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
+one heatmap per group class, current profile in rows and next profile in
+columns.
 
 ``` r
 
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 ![](lta_files/figure-html/transition-plot-1.png)
@@ -167,14 +167,13 @@ plot(moves, what = "transitions")
 ## Sequences
 
 To see each group’s path, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "sequences"`: one row per group, coloured by its most probable
-profile at each occasion. These assignments ignore classification
-uncertainty.
+[`plot_sequences()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
+one row per group, coloured by its most probable profile at each
+occasion. These assignments ignore classification uncertainty.
 
 ``` r
 
-plot(moves, what = "sequences")
+plot_sequences(moves)
 ```
 
 ![](lta_files/figure-html/sequences-1.png)
@@ -196,21 +195,21 @@ get_results(moves, "entropy")
 ```
 
 To see where the uncertainty lies, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "entropy"` for the per-case uncertainty within each profile, and
-with `what = "posteriors"` for the posterior probability of each case’s
-assigned profile.
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+with `what = "entropy"` for the per-case uncertainty within each
+profile, and with `what = "posteriors"` for the posterior probability of
+each case’s assigned profile.
 
 ``` r
 
-plot(moves, what = "entropy")
+plot_diagnostics(moves, what = "entropy")
 ```
 
 ![](lta_files/figure-html/entropy-plot-1.png)
 
 ``` r
 
-plot(moves, what = "posteriors")
+plot_diagnostics(moves, what = "posteriors")
 ```
 
 ![](lta_files/figure-html/posteriors-plot-1.png)

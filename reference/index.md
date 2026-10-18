@@ -4,39 +4,40 @@
 
 Two-level latent profile, latent class and latent transition models.
 
-- [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) : Latent
-  profile analysis
-- [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) : Latent
-  class analysis
+- [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) : Fit a
+  latent profile model
+- [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) : Fit a
+  latent class model
 - [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   : Fit a two-level latent profile model
 - [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
   : Fit a two-level latent class model
-- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) : Latent
-  transition analysis
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) : Fit a
+  latent transition model
 - [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   : Fit a two-level model in stages, holding the measurement solution
 - [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md)
-  : Build starting values for a multilevel latent profile fit
+  : Extract starting values for a latent profile fit
 - [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
   [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
-  : Conjugate prior for Gaussian mixture estimation
+  : Specify a conjugate prior for Gaussian mixture estimation
 
 ## Results
 
 Every table of a fitted model, retrieved by name.
 
 - [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-  : Every table a fitted model holds, from one verb
+  : Extract the result tables of a fitted model
 - [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
-  : Describe the variables a model uses, or will use
+  : Descriptive statistics and intraclass correlations of model
+  variables
 - [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`as.data.frame(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  : Every classification diagnostic, in one call
+  : Classification diagnostics of a fitted model
 - [`report()`](https://pak.dynasite.org/latents/reference/report.md) :
-  Everything about a fit, in one call
+  Print a full report of a fitted model
 
 ## Evaluating a model
 
@@ -50,15 +51,15 @@ Every table of a fitted model, retrieved by name.
   [`candidate_fit()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
   : Take one fitted model out of an enumeration grid or a comparison
 - [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-  : Parametric bootstrap likelihood-ratio comparison
+  : Parametric bootstrap likelihood-ratio test of two nested models
 - [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
-  : Does the solution survive a different seed?
+  : Refit a model under several seeds
 - [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
   : Tidy inference for a covariate fit
 - [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
   [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
   [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
-  : Wald inference for a latent transition model
+  : Standard errors and intervals for a latent transition model
 - [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
   : Fit a model to multiply imputed data and pool it with Rubin's rules
 
@@ -92,10 +93,10 @@ models).
 Three-step analysis with a correction for classification error.
 
 - [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-  : Relate a latent class to an outcome it did not help define
+  : Estimate a distal outcome's mean in each latent class
 - [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) :
-  Covariates predicting class membership, corrected for
-  misclassification
+  Regress latent class membership on covariates by the three-step
+  approach
 
 ## Plots
 
@@ -130,9 +131,9 @@ Three-step analysis with a correction for classification error.
 Latent transitions handed to the tna package.
 
 - [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) :
-  A transition network for the whole sample
+  Build one transition network for the whole sample
 - [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
-  : A transition network for each latent group class
+  : Build one transition network per latent group class
 
 ## Data
 
@@ -172,4 +173,4 @@ Coefficients, covariance, intervals and likelihood of a fit.
 ## Conditions
 
 - [`latents-conditions`](https://pak.dynasite.org/latents/reference/latents-conditions.md)
-  : Conditions this package raises
+  : Conditions raised by the package

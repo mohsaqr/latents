@@ -1,5 +1,55 @@
 # Changelog
 
+## latents 0.95.9
+
+#### Documentation
+
+- The package website links each author’s name to their own website
+  (<https://saqr.me>, <https://sonsoles.me>), as the sibling packages’
+  sites do.
+
+## latents 0.95.8
+
+#### Documentation
+
+- The vignettes, the guides, the case studies and the README use the
+  named plot functions:
+  [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  (with `what = "bars"`, `"heatmap"`, `"raincloud"`),
+  [`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_sequences()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_transitions()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_selection()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  and
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  in place of `plot(x, what = )`. The function tables of the enumeration
+  guides list them. The model families without named functions (growth
+  mixtures, trajectory classes, mixture regression, additive and
+  cross-level models) keep `plot(x, what = )`.
+- The LPA and enumeration vignettes mention `cores`.
+- Every help page is revised: titles and descriptions now say what each
+  function does and returns, without design rationale or history, and
+  every argument states its default. The revision corrected statements
+  that did not match the code, among them the refusals listed by
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md),
+  [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md),
+  [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  and
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md);
+  the columns of
+  [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md)
+  under full covariance; the tables offered by
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  (starting values, ordinal and count tables, diagnostics); when
+  `latents_no_group_classes` and `latents_unsupported_inference` are
+  raised; and the default `vcov_type` of weighted fits.
+
 ## latents 0.95.7
 
 #### Bug fixes
@@ -665,15 +715,16 @@ and documentation.
 
 - Cluster-robust standard errors now carry the CR1 small-sample factor
   `G / (G - 1)` for `G` independent units, the default of
-  `sandwich::vcovCL()`. It applies to every `vcov_type = "robust"`
-  result (profile, covariate, transition, family, mixture-regression and
-  growth fits) and to
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+  It applies to every `vcov_type = "robust"` result (profile, covariate,
+  transition, family, mixture-regression and growth fits) and to
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   (both `vcov_type`s, every `method`) and
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md).
   Robust standard errors rise by `sqrt(G / (G - 1))`: about 2.6% with 20
   groups and 0.5% with 100. A one-class robust regression now reproduces
-  `sandwich::vcovCL()` exactly.
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  exactly.
 - Wald inference is refused (`latents_boundary_fit`) for a
   membership-covariate fit whose logit coefficients are heading to
   infinity because a covariate separates the classes. Previously the

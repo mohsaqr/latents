@@ -1,12 +1,13 @@
-# Latent profile analysis
+# Fit a latent profile model
 
-Fits a single-level latent profile model: a finite mixture of
-multivariate normal distributions, in which each observation belongs to
-one of `n_profiles` unobserved profiles and each profile has its own
-mean on every indicator. It is the model
+Fits a single-level latent profile model and returns a fitted `multilpa`
+object. The model is a finite mixture of multivariate normal
+distributions: each observation belongs to one of `n_profiles`
+unobserved profiles, and each profile has its own mean on every
+indicator. It is the model
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-fits with `id = NULL`, and it returns the same object, so every
-accessor, plot and inference verb of the package applies to it.
+fits with `id = NULL`, so every accessor, plot and inference verb of the
+package applies to the result.
 
 ## Usage
 
@@ -23,7 +24,7 @@ lpa(data, vars, n_profiles, ...)
 - vars:
 
   Names of the indicator columns. Numeric columns are continuous
-  indicators; name categorical ones in `categorical`.
+  indicators; categorical ones are named in `categorical`.
 
 - n_profiles:
 
@@ -37,18 +38,17 @@ lpa(data, vars, n_profiles, ...)
   `covariance_model`, or `volume`, `shape` and `orientation`),
   `missing`, `categorical`, `n_starts`, `seed`, `boundary`, `prior`,
   `noise`, `profile_covariates` and the others it documents, except `id`
-  and `n_group_classes`, which a single-level model does not have.
+  and `n_group_classes`.
 
 ## Value
 
 A fitted `multilpa` object, as
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-returns, recording the `lpa()` call as written.
+returns, whose `call` is the `lpa()` call.
 
 ## Details
 
-For observations nested in groups (students in schools, occasions in
-persons), use
+For observations nested in groups, use
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 with the grouping column as `id`, which adds latent classes of groups
 above the profiles.

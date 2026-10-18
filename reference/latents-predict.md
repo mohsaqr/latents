@@ -17,9 +17,9 @@ new persons (and their clusters new clusters): it returns class
 trajectories, which need no outcome, or, given the outcomes, class
 posteriors and each person's own curve with their empirical Bayes random
 effects, the quantities of `lcmm::predictY()`, `predictClass()` and
-`predictRE()`. Membership- covariate and latent transition fits refuse
-with the same class; their fitted rows' posteriors are
-`get_results(x, "posteriors")`.
+`predictRE()`. Membership-covariate and latent transition fits are
+refused with `latents_unsupported_prediction`; the posteriors of their
+fitted rows are given by `get_results(x, "posteriors")`.
 
 ## Usage
 

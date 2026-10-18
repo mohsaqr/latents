@@ -1,16 +1,16 @@
 # Achievement growth of students with three kinds of trajectory
 
-A simulated longitudinal dataset made for growth models. 300 students
-sit an achievement test on up to seven occasions (`wave` 0 to 6). Three
-kinds of student follow three trajectories: *improving* (starts near 48,
-gains 3.5 points a wave), *stable* (starts near 62, gains 0.5) and
-*declining* (starts near 58, loses 2.5). Within each kind, students vary
-around the trajectory: each has their own start and rate of change
-(random intercept SD 4, random slope SD 0.8, correlation -0.3, the same
-spread in every kind), with residual SD 3. Motivation, measured once,
-makes a student more likely to be improving and less likely to be
-declining. About 12% of tests were missed at random, so the panel is
-unbalanced.
+A simulated longitudinal dataset for growth models. Each row is one
+student's test score at one occasion: 300 students tested on up to seven
+occasions (`wave` 0 to 6). Three kinds of student follow three
+trajectories: *improving* (starts near 48, gains 3.5 points a wave),
+*stable* (starts near 62, gains 0.5) and *declining* (starts near 58,
+loses 2.5). Within each kind, students vary around the trajectory: each
+has their own start and rate of change (random intercept SD 4, random
+slope SD 0.8, correlation -0.3, the same spread in every kind), with
+residual SD 3. Motivation, measured once, makes a student more likely to
+be improving and less likely to be declining. About 12% of tests were
+missed at random, so the panel is unbalanced.
 
 ## Usage
 
@@ -50,9 +50,8 @@ Simulated by `data-raw/growth-scores.R` in the source repository.
 ## Details
 
 Because students vary within their kind, a trajectory model without
-random effects needs more classes than the three that generated the
-data; a growth mixture model with random intercepts and slopes recovers
-three.
+random effects needs more than three classes; a growth mixture model
+with random intercepts and slopes recovers three.
 
 ## See also
 

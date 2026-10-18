@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -167,11 +167,11 @@ is replicated within this seed’s starts.</p>
 <div class="section level2">
 <h2 id="the-profiles">The profiles<a class="anchor" aria-label="anchor" href="#the-profiles"></a>
 </h2>
-<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with <code>what = "profiles"</code> draws the
-profile means across the indicators, and each line’s label gives the
-profile’s share of the enrolments.</p>
+<p><code><a href="../reference/latents-plots.html">plot_profiles()</a></code> draws the profile means across the
+indicators, and each line’s label gives the profile’s share of the
+enrolments.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"profiles"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span>
@@ -214,7 +214,7 @@ and profile 3 lies between them; their attendance means are -0.929,
 intermediate activity. The heatmap shows the same means as standard
 deviations from each indicator’s grand mean.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The contrast between profiles is present on all five indicators, so
 the profiles differ in overall activity more than in its
@@ -285,7 +285,7 @@ this fit.</p>
 <p>The transition plot draws each class’s matrix as a heatmap, with the
 origin profile in rows and the destination in columns.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"transitions"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_transitions</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/transition-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>In class 2, lower activity persists with probability 0.939, estimated
 from 303 expected transitions. Each of its other transitions rests on
@@ -317,7 +317,7 @@ divides the available transitions too finely.</p>
 position, one row per student. Modal assignment discards classification
 uncertainty.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"sequences"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_sequences</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/sequences-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"sequence_summary"</span><span class="op">)</span></span>
@@ -341,10 +341,10 @@ entropy plot shows, within each profile, how the per-case entropy
 contributions are distributed, and the posterior plot shows the
 posterior probability of each case’s assigned profile.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/entropy-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/posteriors-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>Both levels retain uncertainty, so an analysis that replaces the
 posteriors by modal assignments treats some enrolments and students as
@@ -412,7 +412,7 @@ Measurement</em>. <a href="https://doi.org/10.1177/01466216251348840" class="ext
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

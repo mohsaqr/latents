@@ -1,9 +1,10 @@
-# Describe the variables a model uses, or will use
+# Descriptive statistics and intraclass correlations of model variables
 
-One row per variable, with the summaries you would look at before
-fitting and the one that decides whether a two-level model has anything
-to find: the intraclass correlation, the share of each variable's
-variance that lies *between* groups rather than within them.
+Returns a table with one row per variable giving the number of observed
+and missing values, the mean, standard deviation, minimum, maximum and
+number of distinct values, and, when groups are known, the number of
+groups and the intraclass correlation (ICC): the share of the variable's
+variance that lies between groups.
 
 ## Usage
 
@@ -27,44 +28,40 @@ descriptives(x, by = NULL, ...)
 
 - x:
 
-  A data frame, or a fitted model of this package. A fit carries the
-  columns it was built from, so `vars` and `id` are read from it. A
-  single-level fit (`id = NULL`) has no groups, so its table has no
-  `n_groups` or `icc`.
+  A data frame, or a fitted model of this package, whose own `vars` and
+  `id` are then used. A single-level fit has no groups, so its table has
+  no `n_groups` or `icc`.
 
 - ...:
 
-  Nothing further is used. For a data frame, any other argument is
-  reported with a `latents_unused_argument` warning; for a fit, which
-  supplies its own `vars` and `id`, it raises `latents_bad_argument`.
+  Not used. For a data frame, any further argument raises a
+  `latents_unused_argument` warning; for a fit, it raises
+  `latents_bad_argument`.
 
 - vars:
 
-  Character vector of column names to describe. Repeated names are
-  described once. Columns must be vectors; matrix-valued columns raise
+  Character vector of column names to describe; repeated names are
+  described once. Columns must be vectors: matrix-valued columns raise
   `latents_bad_data`. For a data frame, defaults to every numeric column
-  that is not `id`.
+  other than `id` and `by`.
 
 - id:
 
-  Optional. The column identifying the groups rows are nested in.
-  Supplying it adds `n_groups` and `icc`; omitting it leaves them out.
+  Optional. The column identifying the groups the rows are nested in.
+  Supplying it adds `n_groups` and `icc`.
 
 - by:
 
-  Optional. `"profile"` or `"group_class"` on a fitted model, or a
-  column name on a data frame: describe each variable once per level of
-  it, rather than once overall. Rows whose stratifier is `NA` are
-  neither dropped nor folded into another level: they form their own
-  stratum, labelled `NA` in the `by` column and reported last, so that
-  the strata account for every input row exactly once. The stratifier is
-  never compared with `==`, so a missing value cannot select rows it
-  does not belong to.
+  Optional. On a fitted model, `"profile"` or `"group_class"`; on a data
+  frame, a column name. Each variable is then described once per level
+  of it. Rows whose stratifier is `NA` form their own stratum, labelled
+  `NA` and reported last, so every input row is counted in exactly one
+  stratum.
 
 ## Value
 
-A base `data.frame`, one row per variable, or one row per variable and
-`by` level, with the columns
+A base `data.frame`, one row per variable (or per variable and `by`
+level), with the columns
 
 - `variable`:
 
@@ -80,37 +77,35 @@ A base `data.frame`, one row per variable, or one row per variable and
 
 - `mean`,`sd`,`min`,`max`:
 
-  numeric, and `NA_real_` for a variable that is not numeric.
+  numeric; `NA_real_` for a variable that is not numeric.
 
 - `n_distinct`:
 
-  integer: distinct observed values, which is the useful summary where a
-  mean is not.
+  integer: distinct observed values.
 
 - `n_groups`,`icc`:
 
   present only when `id` is known. `icc` is the one-way random-effects
-  estimate, and may be slightly negative when the between-group mean
-  square falls below the within-group one; that is the estimator
-  reporting no group structure, not an error. Rows with a missing group
-  ID do not contribute to either statistic.
+  estimate; it can be slightly negative when the between-group mean
+  square is below the within-group one, which indicates no group
+  structure. Rows with a missing group ID do not contribute to either
+  statistic.
 
-A `by` column comes first, named after what it splits on and holding
-that level's own value, `NA` for the stratum of rows whose stratifier is
-missing. For every variable, `n + n_missing` summed over the strata
-equals the number of input rows; that invariant is asserted before the
-table is returned. Describing by a class the model assigned keeps that
-assignment out of the described frame, so an indicator of the caller's
-own that is named `profile` or `group_class` is summarized as itself,
-not replaced by the assignment. A `by` whose name is one of the
-summary's own columns cannot be told apart from them and raises
-`latents_bad_data`.
+With `by`, a first column named after the stratifier holds each
+stratum's value (`NA` for the stratum of missing values). For every
+variable, `n + n_missing` summed over the strata equals the number of
+input rows. When describing a fit by `"profile"` or `"group_class"`, the
+model's assignment is used as the stratifier without replacing an
+indicator of the same name. A `by` named like one of the summary's own
+columns raises `latents_bad_data`. Describing no variables raises
+`latents_nothing_to_describe`.
 
 ## Details
 
-An ICC near zero suggests little between-group mean variation in that
-variable. It does not rule out group classes that differ in other
-variables, profile prevalence, or other features of their distributions.
+An ICC near zero indicates little between-group variation in that
+variable's mean. It does not rule out group classes that differ in other
+variables, in profile prevalence, or in other features of the
+distributions.
 
 ## References
 

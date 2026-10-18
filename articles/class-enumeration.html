@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -606,7 +606,7 @@ parameters and therefore favour fewer, better separated classes.</p>
 line per number of group classes and the minimum of each criterion
 circled.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-criteria-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>A minimum at the largest number of profiles or group classes
 considered indicates that the criterion is still decreasing at the
@@ -614,13 +614,13 @@ boundary of the grid, which should then be extended until the minimum is
 interior. Any criterion can be plotted by name, and
 <code>what = "all"</code> plots all of them.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-bic-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The clustering tree (Zappia and Oshlack, 2018) shows how the profiles
 divide as their number increases: each profile of a model is linked to
 the profiles of the next larger model that receive its observations.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"tree"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_tree</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-tree-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -691,7 +691,7 @@ as a negative decrease. The decreases are plotted in both directions,
 along the number of profiles (left) and along the number of group
 classes (right).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-deltas-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The knee summary rescales both axes of a curve to the unit interval
 and identifies the candidate at the greatest perpendicular distance
@@ -738,7 +738,7 @@ classes with four profiles, the knee is profiles4_groups2.</p>
 <p>The criterion across all candidates simultaneously, expressed as the
 distance of each from the minimum:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -756,7 +756,7 @@ adequate separation. The table of candidates reports the minimum,
 maximum and mean AvePP at each level and the number of classes below a
 cutoff, 0.8 by default, which is set with <code>cutoff</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/quality-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The AvePP of every class of every candidate, together with its size
 and the relative entropy of its level:</p>
@@ -1029,13 +1029,13 @@ class containing a very small proportion of the observations is
 difficult to interpret and to replicate. The following plots report
 these diagnostics for every candidate.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/trust-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"smallest"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"smallest"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/smallest-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p><code>plot(models, what = "selection")</code> displays all plots
-relevant to the choice of the number of classes jointly.</p>
+<p><code>plot_selection(models)</code> displays all plots relevant to
+the choice of the number of classes jointly.</p>
 <p>A candidate on a boundary whose smallest profile holds about one
 observation is a degenerate solution, not a profile: a Gaussian profile
 centred on one observation raises the likelihood without limit as its
@@ -1580,7 +1580,7 @@ latent class model, and the candidates are named with
 <span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca_models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">lca_models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/lca-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">lca_models</span>, n_profiles <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
@@ -1657,7 +1657,7 @@ are named by their numbers of profiles or classes alone.</p>
 <span><span class="co">#&gt; profiles5         5  54  -644.38  1596.76   4.98   0.077  1684.33     0.91       0.92      0</span></span>
 <span><span class="co">#&gt; profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0</span></span>
 <span><span class="co">#&gt; profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">srl_models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">srl_models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/single-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>BIC is minimized by profiles6. The eight-profile candidate has a
 variance at its lower bound and a nearly empty profile, which marks the
@@ -1779,8 +1779,8 @@ default 1,000 EM iterations to meet the convergence tolerance, so
 </h2>
 <table class="table">
 <colgroup>
-<col width="49%">
-<col width="50%">
+<col width="51%">
+<col width="48%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Call</th>
@@ -1831,27 +1831,27 @@ group class fewer</td>
 its stability</td>
 </tr>
 <tr class="even">
-<td align="left">plot(models), plot(models, what = “bic_groups”), what =
-“all”</td>
+<td align="left">plot_enumeration(models), plot_enumeration(models, what
+= “bic_groups”), what = “all”</td>
 <td align="left">Information criteria across the candidates</td>
 </tr>
 <tr class="odd">
-<td align="left">plot(models, what = “tree”)</td>
+<td align="left">plot_tree(models)</td>
 <td align="left">Division of profiles as more are added</td>
 </tr>
 <tr class="even">
-<td align="left">plot(models, what = “entropy”, “avepp” or
+<td align="left">plot_enumeration(models, what = “entropy”, “avepp” or
 “diagnostics”, cutoff = )</td>
 <td align="left">Entropy and lowest AvePP across the candidates</td>
 </tr>
 <tr class="odd">
-<td align="left">plot(models, what = “deltas”, “heatmap”, “smallest” or
-“trust”, using = )</td>
+<td align="left">plot_selection(models, what = “deltas”, “heatmap”,
+“smallest” or “trust”, using = )</td>
 <td align="left">Decreases, distance from the lowest criterion, smallest
 class, estimation checks</td>
 </tr>
 <tr class="even">
-<td align="left">plot(models, what = “selection”)</td>
+<td align="left">plot_selection(models)</td>
 <td align="left">All of the plots for choosing the number of
 classes</td>
 </tr>
@@ -1945,7 +1945,7 @@ visualization for evaluating clusterings at multiple resolutions.
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

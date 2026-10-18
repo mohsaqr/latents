@@ -124,21 +124,21 @@ get_results(fit, "classification")
 ```
 
 To see the uncertainty, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "entropy"` for the per-case uncertainty within each profile, and
-with `what = "avepp"` for the average posterior of each assigned class
-across all classes.
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+with `what = "entropy"` for the per-case uncertainty within each
+profile, and with `what = "avepp"` for the average posterior of each
+assigned class across all classes.
 
 ``` r
 
-plot(fit, what = "entropy")
+plot_diagnostics(fit, what = "entropy")
 ```
 
 ![](evaluation_files/figure-html/entropy-plot-1.png)
 
 ``` r
 
-plot(fit, what = "avepp")
+plot_diagnostics(fit, what = "avepp")
 ```
 
 ![](evaluation_files/figure-html/avepp-plot-1.png)
@@ -391,7 +391,7 @@ as.data.frame(candidates)
 #> 27     0.653     0.971      0.771           3           0.841           0.971            0.920
 #> 28     0.959     0.971      0.965           0              NA              NA               NA
 #> 29     0.665     0.956      0.833           1              NA              NA               NA
-#> 30     0.627     0.943      0.829           1              NA              NA               NA
+#> 30     0.630     0.943      0.829           1              NA              NA               NA
 #> 31     0.973     0.978      0.976           0           0.971           0.993            0.982
 #> 32     0.649     0.972      0.845           1           0.982           0.990            0.986
 #> 33     0.785     0.973      0.854           1           0.962           0.995            0.979
@@ -463,12 +463,12 @@ get_results(candidates, "best")
 ```
 
 To draw one criterion across the grid, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with its name
-as `what`; `what = "all"` draws every criterion.
+[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+with its name as `what`; `what = "all"` draws every criterion.
 
 ``` r
 
-plot(candidates, what = "bic_groups")
+plot_enumeration(candidates, what = "bic_groups")
 ```
 
 ![](evaluation_files/figure-html/enumeration-plot-1.png)
@@ -636,8 +636,8 @@ enumerate_classes(course_engagement, vars = c("browse", "lectures"),
                   model = c("VVI", "VVV"))      # crossing covariance models (slow)
 confint(fit)                                    # confidence intervals
 vcov(fit, vcov_type = "robust")                 # robust covariance matrix
-plot(fit, what = "posteriors")                  # posterior of each assigned profile
-plot(fit, what = "bars")                        # profile means with 95% intervals
+plot_diagnostics(fit, what = "posteriors")                  # posterior of each assigned profile
+plot_profiles(fit, what = "bars")                        # profile means with 95% intervals
 diagnostics(fit)                                # all classification diagnostics
 ```
 

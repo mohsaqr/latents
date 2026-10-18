@@ -1,11 +1,11 @@
-# Covariates predicting class membership, corrected for misclassification
+# Regress latent class membership on covariates by the three-step approach
 
-The R3STEP approach. A multinomial logit of class membership on
-covariates, fitted after the measurement model rather than alongside it,
-but treating the assigned class as an error-prone indicator of the true
-one with the error rates held fixed at what step one found. Regressing
-the modal class directly instead attenuates every coefficient, because
-some units are in the wrong class and the covariate cannot explain why.
+Fits a multinomial logit of latent class membership on covariates after
+the measurement model (the R3STEP approach) and returns its coefficients
+as a `data.frame`. The assigned class is treated as an error-prone
+indicator of the true class, with the classification-error rates fixed
+at their step-one values; regressing the modal class directly attenuates
+the coefficients (Vermunt 2010; Asparouhov and Muthen 2014).
 
 ## Usage
 
@@ -33,109 +33,101 @@ r3step(
   or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model,
   or a trajectory model from
   [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  (persons classified, with or without `random`), whose person classes
-  are then predicted. A fit that already uses membership covariates
-  cannot be corrected by the fixed, unconditional classification-error
-  matrix used here, and a multilevel growth mixture (`cluster`) is
-  refused because its persons are not independent; both raise
-  `latents_unsupported_three_step`.
+  that classifies persons (with or without `random`), whose person
+  classes are then predicted. Fits with membership covariates and
+  multilevel growth mixtures (`cluster`) are refused with
+  `latents_unsupported_three_step`: the correction uses a fixed,
+  unconditional classification-error matrix and independent units.
 
 - data:
 
-  The data frame carrying the covariates, in the fit's row order. Shared
-  fit columns are checked row by row; a frame with too little
-  identifying information warns that alignment cannot be verified.
+  The data frame carrying the covariates, in the fit's row order.
+  Columns shared with the fit are checked row by row; a frame with too
+  little identifying information raises a warning that alignment cannot
+  be verified.
 
 - covariates:
 
-  Character vector of numeric columns not used as measurement indicators
-  in `x`. For `level = "groups"` each must be constant within a group;
-  for a trajectory model each must be constant within a person and not
-  part of the trajectory regression (`latents_bad_covariate`).
+  Character vector of numeric columns, without missing or infinite
+  values, that are not measurement indicators of `x`. For
+  `level = "groups"` each must be constant within a group; for a
+  trajectory model each must be constant within a person and not part of
+  the trajectory regression (`latents_bad_covariate`).
 
 - level:
 
-  `"individuals"` predicts profile membership, `"groups"` predicts
-  group-class membership. A trajectory model classifies persons: its
-  rows have `level = "persons"` and outcomes `class_1`, `class_2`, ...,
-  and `"groups"` is refused with `latents_bad_argument`.
+  `"individuals"` (default) predicts profile membership, `"groups"`
+  group-class membership. For a trajectory model the rows have
+  `level = "persons"` and outcomes `class_1`, `class_2`, ...; `"groups"`
+  is refused there with `latents_bad_argument`.
 
 - ci_level:
 
-  Confidence level for the intervals.
+  Confidence level for the intervals (default 0.95).
 
 - vcov_type:
 
-  `"robust"`, the default, uses the sandwich clustered on the fit's
-  groups, with the small-sample (CR1) factor `G / (G - 1)` for `G`
-  groups, which is the honest choice when the covariates are measured on
-  observations nested inside them, and matches the default of
+  `"robust"` (default) uses the sandwich clustered on the fit's groups
+  with the small-sample (CR1) factor `G / (G - 1)` for `G` groups, as
+  the default of
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md).
   `"observed"` uses the observed information; for the pooled regression
   it treats every observation as independent, and with
   `by_group_class = TRUE` it is the model-based variance of the
-  two-level likelihood. `"robust"` needs more independent groups than
+  two-level likelihood. `"robust"` requires more independent groups than
   the regression has coefficients, because the group score contributions
-  sum to zero at the estimate and so span at most one dimension fewer
-  than there are groups; with too few it is refused with
-  `latents_too_few_groups` rather than reporting a variance that is
-  singular, or, with a single group, numerically zero. `"observed"`
-  remains available there.
+  sum to zero at the estimate; otherwise it is refused with
+  `latents_too_few_groups`, and `"observed"` remains available.
 
 - adjust:
 
-  Multiplicity correction applied across the covariate terms, passed to
-  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). `"BH"`
-  by default; `"none"` leaves the p-values uncorrected. The family is
-  every covariate term of every non-reference class, which is the set of
-  tests this call computes; the intercepts are not part of it.
+  Multiplicity correction across the covariate terms of every
+  non-reference class (not the intercepts), passed to
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html): `"BH"`
+  (default), `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BY"`
+  or `"none"`.
 
 - by_group_class:
 
-  `FALSE`, the default, fits one pooled multinomial logit with a single
+  `FALSE` (default) fits one pooled multinomial logit with a single
   intercept per profile. `TRUE` fits the two-level form of the one-step
-  model instead: every group class has its own profile intercepts, the
-  covariate slopes are shared across group classes, and a group's
-  observations share one latent group class whose proportions are
-  estimated alongside. Differences between groups that the covariates do
-  not explain are then absorbed by the group classes rather than left in
-  the residual, where the pooled regression attenuates the slopes and
-  inflates their clustered standard errors. For `level = "individuals"`
-  on a covariate-free
+  model: each group class has its own profile intercepts, the covariate
+  slopes are shared across group classes, and a group's observations
+  share one latent group class whose proportions are estimated jointly.
+  Between-group differences not explained by the covariates are then
+  captured by the group classes; the pooled regression attenuates the
+  slopes and inflates their clustered standard errors in that case. Only
+  for `level = "individuals"` on a covariate-free
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  fit only; refused with `latents_bad_argument` otherwise.
+  fit; refused with `latents_bad_argument` otherwise.
 
 - initial_covariates, transition_covariates:
 
   For an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
   fit with one group class: covariates of the profile at the first
   occasion (constant within a person) and of every transition (read at
-  the destination occasion, so they may change over occasions). Either
-  one makes this the three-step latent Markov model described below, in
-  place of the occasion-by-occasion profile regression of `covariates`,
-  which must then be left empty; `level` and `by_group_class` do not
-  apply. Refused with `latents_bad_argument` on a fit that is not a
-  transition model.
+  the destination occasion, so they may vary over occasions). Either one
+  fits the three-step latent Markov model described below instead of the
+  occasion-by-occasion profile regression; `covariates` must then be
+  empty, and `level` and `by_group_class` do not apply. Refused with
+  `latents_bad_argument` on a fit that is not a transition model.
 
 ## Value
 
 A base `data.frame` with one row per non-reference class and term, and
 the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
 `statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`.
-`p_value` is uncorrected and `p_adjusted` carries the correction named
-by `adjust`, which is also recorded in the result's `adjust` attribute;
-it is `NA` on the intercept rows, which are not part of the tested
-family. A coefficient with zero standard error has an undefined Wald
-statistic and p-value, reported as `NA_real_` rather than infinity or
-zero. Coefficients are log odds against the final class, which is the
-reference, matching `multilpa(profile_covariates = )`; that class is
-named in the result's `reference_class` attribute, and the variance that
-was used in its `vcov_type` attribute. With `by_group_class = TRUE` the
-intercept rows are one per group class, named `group_class_1`,
-`group_class_2`, ..., followed by the shared slopes and, at
-`level = "groups"`, the group-class logits against the last group class;
-the result also carries `by_group_class` and the maximised
-`log_likelihood` as attributes.
+`p_value` is uncorrected; `p_adjusted` applies `adjust` (also recorded
+in the `adjust` attribute) and is `NA` on the intercept rows. A
+coefficient with zero standard error has `NA_real_` statistic and
+p-value. Coefficients are log odds against the last class, as in
+`multilpa(profile_covariates = )`; the reference class is named in the
+`reference_class` attribute and the variance used in the `vcov_type`
+attribute. With `by_group_class = TRUE` there is one intercept row per
+group class (`group_class_1`, `group_class_2`, ...), followed by the
+shared slopes and, at `level = "groups"`, the group-class logits against
+the last group class; the result also carries the attributes
+`by_group_class` and `log_likelihood` (the maximised log likelihood).
 
 With `initial_covariates` or `transition_covariates`, one row per
 coefficient of the step-three chain: `block` (`"initial"` or
@@ -150,11 +142,10 @@ covers the covariate terms.
 
 ## Details
 
-The error matrix is held fixed rather than estimated jointly, which is
-what makes this a three-step method and what keeps the covariates from
-reshaping the classes. On a
+The classification-error matrix is held fixed rather than estimated
+jointly, so the covariates do not change the classes. On an
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit,
-`level = "individuals"` models the marginal profile at each occasion. It
+`level = "individuals"` models the marginal profile at each occasion; it
 does not regress initial-state or transition probabilities on the
 covariates. `vcov_type = "robust"` clusters the occasion scores by
 group; `"observed"` treats them as independent. On a trajectory model
@@ -163,34 +154,32 @@ the sandwich over persons.
 
 The three-step latent Markov model (`initial_covariates`,
 `transition_covariates`) classifies each occasion from its own
-indicators, with the transition fit's measurement and its profile shares
-pooled over occasions (the latent class model of the pooled data), and
-assigns it to its modal profile. Step three is a hidden Markov model for
-those assignments, with the classification errors held at their step-two
-values and the initial and transition logits regressed on the covariates
-(Di Mari, Oberski and Vermunt 2016). The transition fit's own posteriors
-are not used for the assignments: they borrow from a person's other
-occasions, so their errors are not independent across occasions as step
-three assumes. The step-one fit must have no covariates of its own and
-one group class (`latents_unsupported_three_step` otherwise). It agrees
-with Latent GOLD 6.1's `step3 modal ml` latent Markov model to its
-printed precision on three designs (equivalence/latentgold-step3-markov
-in the source repository); `"robust"` is the sandwich over persons and
-`"observed"` the information Latent GOLD reports.
+indicators, using the transition fit's measurement model and its profile
+shares pooled over occasions (the latent class model of the pooled
+data), and assigns it to its modal profile. Step three is a hidden
+Markov model for those assignments, with the classification errors fixed
+at their step-two values and the initial and transition logits regressed
+on the covariates (Di Mari, Oberski and Vermunt 2016). The transition
+fit's own posteriors are not used for the assignments, because they draw
+on a person's other occasions and their errors are therefore not
+independent across occasions, as step three assumes. The step-one fit
+must have no covariates and one group class
+(`latents_unsupported_three_step` otherwise). Results agree with Latent
+GOLD 6.1's `step3 modal ml` latent Markov model to its printed precision
+on three designs (equivalence/latentgold-step3-markov in the source
+repository); `"robust"` is the sandwich over persons and `"observed"`
+the information Latent GOLD reports.
 
 Over 60 replications of a two-profile design with a true log-odds slope
-of 1.2 and intercept -0.3, this recovered the slope with a bias of
--0.002 and the intercept with a bias of +0.006, where a logistic
-regression on the modal class was biased by -0.163 on the slope. The
-correction costs some precision: the standard deviation of the slope
-across replications was 0.127 against 0.100 for the naive fit. The
-nominal 95% intervals covered the true slope in 95% of those
-replications.
-
-That coverage was measured where the profiles separate well. The error
-matrix is still treated as known rather than estimated, so intervals
-should be expected to run narrow where classification is poorer; check
-`get_results(x, "classification_errors")` before relying on them.
+of 1.2 and intercept -0.3, the slope had a bias of -0.002 and the
+intercept +0.006, against -0.163 on the slope for a logistic regression
+on the modal class. The standard deviation of the slope across
+replications was 0.127 (0.100 for the modal regression), and the nominal
+95% intervals covered the true slope in 95% of replications. The
+profiles in that design were well separated; because the error matrix is
+treated as known, intervals are expected to be too narrow where
+classification is poorer (see
+`get_results(x, "classification_errors")`).
 
 ## References
 

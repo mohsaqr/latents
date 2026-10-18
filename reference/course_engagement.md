@@ -1,9 +1,11 @@
 # Student engagement across a sequence of courses
 
-A simulated dataset with the structure this package exists for, and all
-of it in one place: enrolments nested in students, ordered within each
-student, with a covariate that predicts which pattern an enrolment
-follows.
+A simulated dataset of course enrolments nested in students. Each row is
+one student's enrolment in one course. Students take 10 to 15 courses,
+ordered by `sequence`, so the data support a cross-sectional two-level
+model (`id = "student"`), a latent transition model
+(`time = "sequence"`) and a membership-covariate model
+(`profile_covariates = "previous_grade"`).
 
 ## Usage
 
@@ -23,13 +25,13 @@ enrolments each) and 11 columns:
 
 - course:
 
-  Integer course identifier, 1 to 32. Which course the enrolment was in.
+  Integer course identifier, 1 to 32.
 
 - sequence:
 
-  Integer, the position of this course in the student's own order, 1
-  upwards. Pass it as `time`. Students who took fewer courses have
-  shorter sequences, so the panel is ragged.
+  Integer position of the course in the student's own order, 1 to 15.
+  Pass it as `time`. Students who took fewer courses have shorter
+  sequences, so the panel is unbalanced.
 
 - browse:
 
@@ -54,111 +56,70 @@ enrolments each) and 11 columns:
 - attendance:
 
   Numeric, days the student was active in the course, on the
-  `log1p(events)` scale, standardized within course. It is **generated
-  from the four click measures** and then blurred, because a student is
-  recorded present on a day precisely because they clicked something,
-  and a day is a coarse unit – one tick however much happened inside it.
-  The indicators are therefore locally dependent on purpose:
-  `attendance` correlates 0.51 to 0.67 with the click measures overall
-  and 0.10 to 0.23 among the enrolments assigned to one profile of the
-  example fit, which is more association than a shared profile alone
-  would produce. See the note on local dependence below.
+  `log1p(events)` scale, standardized within course. Generated from the
+  four click measures with added noise, so it correlates 0.51 to 0.67
+  with them overall and 0.10 to 0.23 among the enrolments assigned to
+  one profile of the example fit. See *Local dependence*.
 
 - previous_grade:
 
-  Numeric, the grade the student earned in the course *before* this one,
-  standardised across the cohort. At a student's first course an entry
-  grade stands in its place. It is a predictor of engagement here, not
-  an outcome of it: pass it as `profile_covariates` to
-  `multilpa(profile_covariates = )`, or as the predictor to
+  Numeric, the grade the student earned in the previous course,
+  standardised across the cohort; an entry grade at a student's first
+  course. A predictor of engagement, for
+  `multilpa(profile_covariates = )` or
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md).
 
 - engagement:
 
-  Factor, `"disengaged"` or `"engaged"`, the pattern the row was
-  generated from. This is the truth behind the data, not something a
-  study would observe; it is shipped so a fitted model can be checked
-  against what produced it. It is deliberately not called `profile`:
-  `get_results(fit, "assignments")` adds a column of that name, and a
-  dataset already carrying it would make the verb refuse to join its own
-  output.
+  Factor, `"disengaged"` or `"engaged"`: the pattern the row was
+  generated from. Not for fitting; kept to check recovery.
 
 - student_type:
 
-  Factor, `"committed"` or `"wavering"`, the kind of student the row's
-  student was generated as. The truth behind the group classes, shipped
-  for the same reason.
+  Factor, `"committed"` or `"wavering"`: the student's generating kind,
+  corresponding to the group classes. Not for fitting; kept to check
+  recovery.
 
 ## Source
 
 Simulated by `data-raw/course-engagement.R`, seed 2026. The simulation
-is calibrated to the shape of a real learning-analytics export – its
-scales, its spreads, its correlations and how persistent engagement is
-across a student's courses – but only those aggregate constants were
-used. No row, identifier or value of any real student is present, and
-the source is not distributed.
+is calibrated to aggregate constants of a real learning-analytics export
+(scales, spreads, correlations and the persistence of engagement across
+courses). No row, identifier or value of any real student is included,
+and the source data are not distributed.
 
 ## Details
 
-Each row is one student's enrolment in one course. A student takes up to
-fifteen courses, and `sequence` orders them, so the same rows support a
-cross-sectional two-level model (`id = "student"`), a latent transition
-model (`time = "sequence"`), and a membership-covariate model
-(`profile_covariates = "previous_grade"`).
+Enrolments follow one of two engagement patterns, and students are of
+two kinds that differ in the mix of patterns: a committed student is
+engaged in about four enrolments in five, a wavering student in about
+one in four. The pooled engaged share describes neither kind; a
+two-level model recovers the two kinds.
 
-Two kinds of student were generated. Both contain both patterns of
-engagement; they differ in the *mix*, which is the two-level quantity
-this package estimates. A committed student is engaged in about four
-enrolments in five, a wavering student in about one in four. Pooled
-across the sample the engaged share describes neither kind, which is the
-point: recovering the split is what a two-level model does and a pooled
-one cannot.
+The five activity indicators were simulated on the `log1p(events)` scale
+of a logged activity export (no raw counts were generated) and then
+standardised within course: each value is the enrolment's distance from
+its course's mean in that course's standard deviations, so every
+indicator has mean zero and standard deviation one within every course.
+A `browse` of 1.2 is 1.2 standard deviations above the average enrolment
+in that course. The simulated courses do not differ in activity volume,
+so the standardisation sets the scale but removes no course effect. The
+log transformation removes the right skew of raw activity counts, which
+standardisation within course would leave unchanged.
 
-## Local independence does not hold here, on purpose
+## Local dependence
 
-A latent profile model with a diagonal residual covariance assumes the
-indicators are independent given the profile. `attendance` is built from
-the click measures, so for these data that assumption is false, and the
-package finds it. For the two-profile, two-group-class fit of the
-example below, `get_results(fit, "residuals")` reports a largest
-residual of 0.23 (`lectures` with `attendance` within the first profile,
-`p = 6.4e-12`), and `covariance_model = "full"` improves the log
-likelihood from -8439.8 to -8313.1 for twenty more parameters, which
-every information criterion except the individual-level AWE prefers.
-
-This is deliberate. A bundled dataset that satisfies local independence
-exactly can only ever show those verbs agreeing that nothing is wrong;
-here the diagnostic has a real violation to find, its cause is known,
-and the fix can be seen to work. One consequence is worth knowing before
-it surprises you: under a diagonal model
+`attendance` is generated from the four click measures, so the
+indicators are not independent given the profile, as a latent profile
+model with a diagonal residual covariance assumes. For the two-profile,
+two-group-class fit of the example, `get_results(fit, "residuals")`
+reports a largest residual of 0.23 (`lectures` with `attendance` within
+the first profile, `p = 6.4e-12`), and `covariance_model = "full"`
+improves the log likelihood from -8439.8 to -8313.1 for twenty more
+parameters, preferred by every information criterion except the
+individual-level AWE. Under a diagonal model,
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-keeps preferring more classes, because extra classes absorb residual
-association the model is not allowed to express directly.
-
-The five activity indicators are **standardized within course**: each
-value is that enrolment's distance from its own course's mean, in that
-course's standard deviations. Every indicator therefore has mean zero
-and standard deviation one within every course, and a `browse` of 1.2
-reads as "1.2 standard deviations more active than the average enrolment
-in that course". This is the scale a learning-analytics reader meets,
-because activity volume is not comparable across courses: a course with
-weekly quizzes generates more clicks than a seminar whatever its
-students are like, so an analyst compares a student with their
-coursemates rather than with the whole cohort.
-
-In this simulation the courses do not in fact differ in activity volume,
-so the standardization sets the scale rather than removing a course
-effect. It is stated here rather than left implicit because a reader who
-assumed otherwise would misread what the `course` column does.
-
-The indicators are simulated directly on the `log1p(events)` scale, the
-scale of a logged activity export; no raw counts are generated. They are
-standardized on that scale, not as counts. Standardizing is affine
-within a course, so it leaves the within-course skew exactly as it found
-it, and raw learning-analytics counts are strongly right-skewed: on an
-unlogged draft of these data the skew alone looked like an extra class,
-exactly as a floor or ceiling effect does. The log removes the skew; the
-standardization puts the courses on a common footing afterwards.
+tends to favour more classes, which absorb the residual association.
 
 ## See also
 

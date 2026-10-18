@@ -173,12 +173,12 @@ get_results(lca, "responses")
 ```
 
 To see them, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "responses"`: one line per profile across the items.
+[`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
+one line per profile across the items.
 
 ``` r
 
-plot(lca, what = "responses")
+plot_responses(lca)
 ```
 
 ![](lca_files/figure-html/responses-plot-1.png)
@@ -188,9 +188,9 @@ summarize each item’s fitted distribution on the original score scale:
 
 ``` r
 
-plot(lca, what = "profiles")                       # probability-weighted means
-plot(lca, what = "profiles", statistic = "median") # fitted medians
-plot(lca, what = "profiles", statistic = "mode")   # most probable scores
+plot_profiles(lca)                        # probability-weighted means
+plot_profiles(lca, statistic = "median")  # fitted medians
+plot_profiles(lca, statistic = "mode")    # most probable scores
 ```
 
 Means assume meaningful spacing between category scores. The median is
@@ -200,14 +200,14 @@ including in FIML models, rather than averages of cases assigned to each
 class. They require numeric category labels and use the raw scale.
 Confidence intervals are not computed, so these plots avoid the
 parameter-inference calculation used by the response-probability plot.
-In mixed models, `"profiles"` continues to show only continuous
-indicators.
+In mixed models,
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+continues to show only continuous indicators.
 
 To obtain the profile probabilities of each group class, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 with `"profile_probabilities"`, and to compare the classes,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "probabilities"`.
+[`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md).
 
 ``` r
 
@@ -221,7 +221,7 @@ get_results(lca, "profile_probabilities")
 
 ``` r
 
-plot(lca, what = "probabilities")
+plot_prevalence(lca)
 ```
 
 ![](lca_files/figure-html/probability-plot-1.png)
@@ -395,8 +395,8 @@ parameter_inference(lca)                         # standard errors and intervals
 enumerate_classes(first_week, vars = activities, categorical = activities,
                   id = "student", n_profiles = 2:3,
                   n_group_classes = 1:2, seed = 1)  # compare numbers of classes (slow)
-plot(mixed)                                      # means of the continuous indicators
-plot(mixed, what = "responses")                  # answers to the categorical ones
+plot_profiles(mixed)                             # means of the continuous indicators
+plot_responses(mixed)                            # answers to the categorical ones
 multilca(first_week, vars = activities, id = "student", n_profiles = 2,
          n_group_classes = 2, missing = "fiml")  # incomplete answers, if any
 ```

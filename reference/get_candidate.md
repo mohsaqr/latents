@@ -1,10 +1,9 @@
 # Take one fitted model out of an enumeration grid or a comparison
 
-An enumeration keeps every candidate it fitted, and
-[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
-keeps every model it compared. This returns one of them, so that a
-caller who wants to plot, summarise or test a particular candidate names
-it by its class counts instead of indexing the grid by position.
+Returns one fitted model from an enumeration, selected by its name or by
+its number of profiles and group classes (and its covariance structure
+when the grid has several), or one model from a comparison, selected by
+its row label.
 
 ## Usage
 
@@ -27,58 +26,54 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 
 - n_profiles:
 
-  Number of individual profiles identifying the candidate, the
-  candidate's name (`"profiles3_groups4"`), or its two class counts
-  (`c(3, 4)`). For a comparison, the label of the row, as its `model`
-  column shows it.
+  Number of individual profiles of the candidate, the candidate's name
+  (`"profiles3_groups4"`), or its two class counts (`c(3, 4)`). For a
+  comparison, the row label, as its `model` column shows it.
 
 - n_group_classes:
 
-  Number of group classes identifying the candidate.
+  Number of group classes of the candidate. Default 1.
 
 - model:
 
-  The covariance model identifying the candidate, needed when
+  The covariance structure of the candidate, needed when
   [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  was given several `model`s and the class counts alone name several
-  candidates. Counts that match more than one candidate raise
-  `latents_unknown_candidate`, listing their names.
+  crossed several structures and the class counts match several
+  candidates; on a group-class family grid, the family model as the
+  grid's `model` column shows it.
 
 ## Value
 
-The fitted model for that cell of the grid: an object of class
-`multilpa`, the same kind of object
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-returns, so the verbs for a fitted model apply to it.
+The fitted model of that candidate, the same kind of object its fitting
+function returns (for a profile grid, class `multilpa`), so the verbs
+for a fitted model apply to it.
 
 ## Details
 
-A candidate is named by its name,
-`get_candidate(grid, "classes3_groups4")`, as the grid's `candidate`
-column shows it; by its class counts, `get_candidate(grid, 3, 4)` or
-`get_candidate(grid, c(3, 4))`; or, on a grid that crosses covariance
-structures, by its counts and `model`. From a comparison, name the row:
-`get_candidate(comparison, "classes3_groups4")`. The same model is
-`grid$classes3_groups4`.
+A candidate is selected by its name, as the grid's `candidate` column
+shows it (`get_candidate(grid, "profiles3_groups4")`; `classes` instead
+of `profiles` when every indicator is categorical); by its class counts,
+`get_candidate(grid, 3, 4)` or `get_candidate(grid, c(3, 4))`; or, on a
+grid that crosses covariance structures, by its counts and `model`. From
+a comparison, give the row label:
+`get_candidate(comparison, "profiles3_groups4")`.
 
-`candidate_fit()` is the name this function had in latents 0.9.21. It is
-still accepted with the same arguments and without a warning, so code
-written for that release keeps working; it forwards to
-`get_candidate()`, which new code uses.
+`candidate_fit()` is the former name of `get_candidate()`, kept for
+compatibility. It takes the same arguments, forwards to
+`get_candidate()` and gives no warning.
 
 ## Conditions
 
 `latents_unknown_candidate` for a name or class counts not in the grid,
 for counts that match several candidates (the message lists their
 names), and for a label that is not a row of a comparison;
-`latents_failed_candidate` when the candidate is in the grid but its fit
-raised an error, so no model exists to return; `latents_bad_argument`
-for a name or pair of counts given together with `n_group_classes` or
-`model`, or for a value that names no candidate;
+`latents_failed_candidate` when the candidate's fit raised an error, so
+there is no model to return; `latents_bad_argument` for a name or pair
+of counts given together with `n_group_classes` or `model`, for a value
+that names no candidate, and for a comparison given no label;
 `latents_incomplete_fit` for a comparison that no longer carries its
-models. Counts that are not whole positive numbers raise an error from
-the argument checks. None of these returns `NULL`, because a `NULL`
-would flow silently into whatever the caller did next.
+models. Counts that are not single positive whole numbers fail the
+argument checks.
 
 ## Examples
 

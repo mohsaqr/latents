@@ -126,7 +126,9 @@ starts reproducible. With many starts, a candidate with too many
 profiles can reach a solution in which one profile sits on a single
 observation with every variance at its lower bound; its likelihood is
 then set by `min_variance`, not by the data. `boundary = "exclude"` sets
-such starts aside (see *Checks of the estimation*).
+such starts aside (see *Checks of the estimation*). Large grids take
+time; `cores` fits the candidates in parallel and returns the same
+result as one core.
 
 ``` r
 
@@ -467,7 +469,7 @@ number of group classes, with the lowest value of each criterion ringed.
 
 ``` r
 
-plot(models)
+plot_enumeration(models)
 ```
 
 ![](enumeration_files/figure-html/plot-criteria-1.png)
@@ -480,7 +482,7 @@ criterion.
 
 ``` r
 
-plot(models, what = "bic_groups")
+plot_enumeration(models, what = "bic_groups")
 ```
 
 ![](enumeration_files/figure-html/plot-bic-1.png)
@@ -491,7 +493,7 @@ observations.
 
 ``` r
 
-plot(models, what = "tree")
+plot_tree(models)
 ```
 
 ![](enumeration_files/figure-html/plot-tree-1.png)
@@ -569,7 +571,7 @@ and along the number of group classes on the right.
 
 ``` r
 
-plot(models, what = "deltas")
+plot_selection(models, what = "deltas")
 ```
 
 ![](enumeration_files/figure-html/plot-deltas-1.png)
@@ -626,7 +628,7 @@ the lowest value:
 
 ``` r
 
-plot(models, what = "heatmap")
+plot_selection(models, what = "heatmap")
 ```
 
 ![](enumeration_files/figure-html/heatmap-1.png)
@@ -646,7 +648,7 @@ which is 0.8 by default and is set with `cutoff`.
 
 ``` r
 
-plot(models, what = "diagnostics")
+plot_selection(models, what = "diagnostics")
 ```
 
 ![](enumeration_files/figure-html/quality-1.png)
@@ -930,20 +932,20 @@ report these checks for every candidate.
 
 ``` r
 
-plot(models, what = "trust")
+plot_selection(models, what = "trust")
 ```
 
 ![](enumeration_files/figure-html/trust-1.png)
 
 ``` r
 
-plot(models, what = "smallest")
+plot_selection(models, what = "smallest")
 ```
 
 ![](enumeration_files/figure-html/smallest-1.png)
 
 All of the plots for choosing the number of classes are produced
-together with `plot(models, what = "selection")`.
+together with `plot_selection(models)`.
 
 ## Comparing candidates
 
@@ -1454,11 +1456,11 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 | get_results(models, “candidates”, cutoff = 0.9) | The table of candidates with another AvePP cutoff |
 | get_results(models, “deltas”, using = ) | Decrease in a criterion from one profile fewer and one group class fewer |
 | get_results(models, “knees”, using = ) | Maximum chord-distance knee of each line, its range and its stability |
-| plot(models), plot(models, what = “bic_groups”), what = “all” | Information criteria across the candidates |
-| plot(models, what = “tree”) | Division of profiles as more are added |
-| plot(models, what = “entropy”, “avepp” or “diagnostics”, cutoff = ) | Entropy and lowest AvePP across the candidates |
-| plot(models, what = “deltas”, “heatmap”, “smallest” or “trust”, using = ) | Decreases, distance from the lowest criterion, smallest class, estimation checks |
-| plot(models, what = “selection”) | All of the plots for choosing the number of classes |
+| plot_enumeration(models), plot_enumeration(models, what = “bic_groups”), what = “all” | Information criteria across the candidates |
+| plot_tree(models) | Division of profiles as more are added |
+| plot_enumeration(models, what = “entropy”, “avepp” or “diagnostics”, cutoff = ) | Entropy and lowest AvePP across the candidates |
+| plot_selection(models, what = “deltas”, “heatmap”, “smallest” or “trust”, using = ) | Decreases, distance from the lowest criterion, smallest class, estimation checks |
+| plot_selection(models) | All of the plots for choosing the number of classes |
 | get_candidate(models, “profiles4_groups3”), get_candidate(models, 4, 3) | One fitted candidate |
 | compare_models(models, “name”, c(4, 2), …) | Named candidates side by side |
 | compare_models(models, n_profiles = , n_group_classes = ) | All candidates with the given numbers of classes |

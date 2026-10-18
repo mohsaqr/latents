@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -164,19 +164,19 @@ support the solution.</p>
 <div class="section level2">
 <h2 id="profiles">Profiles<a class="anchor" aria-label="anchor" href="#profiles"></a>
 </h2>
-<p>To see the profiles, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
-<code>what = "profiles"</code> (on a transition fit, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>
-alone draws the transition matrices). Each line is a profile’s mean on
-each indicator, and its label gives the profile’s share of the
-cases.</p>
+<p>To see the profiles, we call <code><a href="../reference/latents-plots.html">plot_profiles()</a></code> (on a
+transition fit, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> alone draws the transition
+matrices). Each line is a profile’s mean on each indicator, and its
+label gives the profile’s share of the cases.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"profiles"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>To compare profiles on a common scale, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>
-with <code>what = "heatmap"</code>, which shows each mean in standard
-deviations from the indicator’s overall mean.</p>
+<p>To compare profiles on a common scale, we call
+<code><a href="../reference/latents-plots.html">plot_profiles()</a></code> with <code>what = "heatmap"</code>, which
+shows each mean in standard deviations from the indicator’s overall
+mean.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -230,22 +230,21 @@ expected number of such moves in the data, and
 <span><span class="co">#&gt; 16           2    3  1      0.3392          11.44  FALSE      TRUE                     0.3</span></span>
 <span><span class="co">#&gt; 17           2    3  2      0.1406           4.74  FALSE      TRUE                     0.3</span></span>
 <span><span class="co">#&gt; 18           2    3  3      0.5202          17.54   TRUE      TRUE                     0.3</span></span></code></pre></div>
-<p>To draw the transition matrices, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
-<code>what = "transitions"</code>: one heatmap per group class, current
+<p>To draw the transition matrices, we call
+<code><a href="../reference/latents-plots.html">plot_transitions()</a></code>: one heatmap per group class, current
 profile in rows and next profile in columns.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"transitions"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_transitions</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/transition-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="sequences">Sequences<a class="anchor" aria-label="anchor" href="#sequences"></a>
 </h2>
-<p>To see each group’s path, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
-<code>what = "sequences"</code>: one row per group, coloured by its most
-probable profile at each occasion. These assignments ignore
-classification uncertainty.</p>
+<p>To see each group’s path, we call <code><a href="../reference/latents-plots.html">plot_sequences()</a></code>: one
+row per group, coloured by its most probable profile at each occasion.
+These assignments ignore classification uncertainty.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"sequences"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_sequences</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/sequences-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -260,15 +259,16 @@ with certainty, 0 means no separation.</p>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
 <span><span class="co">#&gt; 1 individuals         3    1422       309.5            0.802</span></span>
 <span><span class="co">#&gt; 2      groups         2     106        16.3            0.778</span></span></code></pre></div>
-<p>To see where the uncertainty lies, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
-<code>what = "entropy"</code> for the per-case uncertainty within each
-profile, and with <code>what = "posteriors"</code> for the posterior
-probability of each case’s assigned profile.</p>
+<p>To see where the uncertainty lies, we call
+<code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code> with <code>what = "entropy"</code> for
+the per-case uncertainty within each profile, and with
+<code>what = "posteriors"</code> for the posterior probability of each
+case’s assigned profile.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/entropy-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/posteriors-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -373,7 +373,7 @@ covariance; <code>covariance_model = "full"</code> or
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

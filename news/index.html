@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,22 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.9" id="latents-0959">latents 0.95.9<a class="anchor" aria-label="anchor" href="#latents-0959"></a></h2>
+<div class="section level4">
+<h4 id="documentation-0-95-9">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-95-9"></a></h4>
+<ul><li>The package website links each author’s name to their own website (<a href="https://saqr.me" class="external-link uri">https://saqr.me</a>, <a href="https://sonsoles.me" class="external-link uri">https://sonsoles.me</a>), as the sibling packages’ sites do.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.8" id="latents-0958">latents 0.95.8<a class="anchor" aria-label="anchor" href="#latents-0958"></a></h2>
+<div class="section level4">
+<h4 id="documentation-0-95-8">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-95-8"></a></h4>
+<ul><li>The vignettes, the guides, the case studies and the README use the named plot functions: <code><a href="../reference/latents-plots.html">plot_profiles()</a></code> (with <code>what = "bars"</code>, <code>"heatmap"</code>, <code>"raincloud"</code>), <code><a href="../reference/latents-plots.html">plot_responses()</a></code>, <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code>, <code><a href="../reference/latents-plots.html">plot_sequences()</a></code>, <code><a href="../reference/latents-plots.html">plot_transitions()</a></code>, <code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code>, <code><a href="../reference/latents-plots.html">plot_enumeration()</a></code>, <code><a href="../reference/latents-plots.html">plot_selection()</a></code> and <code><a href="../reference/latents-plots.html">plot_tree()</a></code>, in place of <code>plot(x, what = )</code>. The function tables of the enumeration guides list them. The model families without named functions (growth mixtures, trajectory classes, mixture regression, additive and cross-level models) keep <code>plot(x, what = )</code>.</li>
+<li>The LPA and enumeration vignettes mention <code>cores</code>.</li>
+<li>Every help page is revised: titles and descriptions now say what each function does and returns, without design rationale or history, and every argument states its default. The revision corrected statements that did not match the code, among them the refusals listed by <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code>, <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="../reference/compare_models.html">compare_models()</a></code>, <code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code>, <code><a href="../reference/prior_control.html">prior_control()</a></code> and <code><a href="../reference/fit_staged.html">fit_staged()</a></code>; the columns of <code><a href="../reference/starting_values.html">starting_values()</a></code> under full covariance; the tables offered by <code><a href="../reference/get_results.html">get_results()</a></code> (starting values, ordinal and count tables, diagnostics); when <code>latents_no_group_classes</code> and <code>latents_unsupported_inference</code> are raised; and the default <code>vcov_type</code> of weighted fits.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.95.7" id="latents-0957">latents 0.95.7<a class="anchor" aria-label="anchor" href="#latents-0957"></a></h2>
 <div class="section level4">
@@ -320,7 +336,7 @@ Each draws exactly what <code>plot(x, what = )</code> draws.</li>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.31" id="latents-0931">latents 0.9.31<a class="anchor" aria-label="anchor" href="#latents-0931"></a></h2>
-<ul><li>Cluster-robust standard errors now carry the CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> independent units, the default of <code>sandwich::vcovCL()</code>. It applies to every <code>vcov_type = "robust"</code> result (profile, covariate, transition, family, mixture-regression and growth fits) and to <code><a href="../reference/three_step.html">three_step()</a></code> (both <code>vcov_type</code>s, every <code>method</code>) and <code><a href="../reference/r3step.html">r3step()</a></code>. Robust standard errors rise by <code>sqrt(G / (G - 1))</code>: about 2.6% with 20 groups and 0.5% with 100. A one-class robust regression now reproduces <code>sandwich::vcovCL()</code> exactly.</li>
+<ul><li>Cluster-robust standard errors now carry the CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> independent units, the default of <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. It applies to every <code>vcov_type = "robust"</code> result (profile, covariate, transition, family, mixture-regression and growth fits) and to <code><a href="../reference/three_step.html">three_step()</a></code> (both <code>vcov_type</code>s, every <code>method</code>) and <code><a href="../reference/r3step.html">r3step()</a></code>. Robust standard errors rise by <code>sqrt(G / (G - 1))</code>: about 2.6% with 20 groups and 0.5% with 100. A one-class robust regression now reproduces <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> exactly.</li>
 <li>Wald inference is refused (<code>latents_boundary_fit</code>) for a membership-covariate fit whose logit coefficients are heading to infinity because a covariate separates the classes. Previously the refusal held only when the observed information happened to be numerically singular; otherwise a coefficient such as -504 was reported with a standard error of 669 and p = 0.45.</li>
 <li>The separation check (and the <code>latents_extreme_coefficients</code> warning) measures each coefficient per root-mean-square unit of its covariate, so it no longer depends on the units a covariate is recorded in: a real effect of a covariate in tiny units is no longer flagged, and a separating covariate in large units no longer escapes.</li>
 <li>
@@ -827,7 +843,7 @@ Each draws exactly what <code>plot(x, what = )</code> draws.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

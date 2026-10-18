@@ -482,7 +482,7 @@ per number of group classes and the minimum of each criterion circled.
 
 ``` r
 
-plot(models)
+plot_enumeration(models)
 ```
 
 ![](class-enumeration_files/figure-html/plot-criteria-1.png)
@@ -494,7 +494,7 @@ criterion can be plotted by name, and `what = "all"` plots all of them.
 
 ``` r
 
-plot(models, what = "bic_groups")
+plot_enumeration(models, what = "bic_groups")
 ```
 
 ![](class-enumeration_files/figure-html/plot-bic-1.png)
@@ -505,7 +505,7 @@ the profiles of the next larger model that receive its observations.
 
 ``` r
 
-plot(models, what = "tree")
+plot_tree(models)
 ```
 
 ![](class-enumeration_files/figure-html/plot-tree-1.png)
@@ -583,7 +583,7 @@ the number of profiles (left) and along the number of group classes
 
 ``` r
 
-plot(models, what = "deltas")
+plot_selection(models, what = "deltas")
 ```
 
 ![](class-enumeration_files/figure-html/plot-deltas-1.png)
@@ -640,7 +640,7 @@ distance of each from the minimum:
 
 ``` r
 
-plot(models, what = "heatmap")
+plot_selection(models, what = "heatmap")
 ```
 
 ![](class-enumeration_files/figure-html/heatmap-1.png)
@@ -661,7 +661,7 @@ cutoff, 0.8 by default, which is set with `cutoff`.
 
 ``` r
 
-plot(models, what = "diagnostics")
+plot_selection(models, what = "diagnostics")
 ```
 
 ![](class-enumeration_files/figure-html/quality-1.png)
@@ -942,20 +942,20 @@ for every candidate.
 
 ``` r
 
-plot(models, what = "trust")
+plot_selection(models, what = "trust")
 ```
 
 ![](class-enumeration_files/figure-html/trust-1.png)
 
 ``` r
 
-plot(models, what = "smallest")
+plot_selection(models, what = "smallest")
 ```
 
 ![](class-enumeration_files/figure-html/smallest-1.png)
 
-`plot(models, what = "selection")` displays all plots relevant to the
-choice of the number of classes jointly.
+`plot_selection(models)` displays all plots relevant to the choice of
+the number of classes jointly.
 
 A candidate on a boundary whose smallest profile holds about one
 observation is a degenerate solution, not a profile: a Gaussian profile
@@ -1558,7 +1558,7 @@ lca_models
 #>                  1
 #>                  1
 #> No candidate is selected automatically. Compare one convention consistently.
-plot(lca_models, what = "diagnostics")
+plot_selection(lca_models, what = "diagnostics")
 ```
 
 ![](class-enumeration_files/figure-html/lca-1.png)
@@ -1644,7 +1644,7 @@ compare_models(srl_models, "profiles5", "profiles6", "profiles7")
 #> profiles5         5  54  -644.38  1596.76   4.98   0.077  1684.33     0.91       0.92      0
 #> profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0
 #> profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0
-plot(srl_models, what = "deltas")
+plot_selection(srl_models, what = "deltas")
 ```
 
 ![](class-enumeration_files/figure-html/single-1.png)
@@ -1777,11 +1777,11 @@ compare_models(transition_models)
 | get_results(models, “candidates”, cutoff = 0.9) | The table of candidates with another AvePP cutoff |
 | get_results(models, “deltas”, using = ) | Decrease in a criterion from one profile fewer and one group class fewer |
 | get_results(models, “knees”, using = ) | Maximum chord-distance knee of each line, its range and its stability |
-| plot(models), plot(models, what = “bic_groups”), what = “all” | Information criteria across the candidates |
-| plot(models, what = “tree”) | Division of profiles as more are added |
-| plot(models, what = “entropy”, “avepp” or “diagnostics”, cutoff = ) | Entropy and lowest AvePP across the candidates |
-| plot(models, what = “deltas”, “heatmap”, “smallest” or “trust”, using = ) | Decreases, distance from the lowest criterion, smallest class, estimation checks |
-| plot(models, what = “selection”) | All of the plots for choosing the number of classes |
+| plot_enumeration(models), plot_enumeration(models, what = “bic_groups”), what = “all” | Information criteria across the candidates |
+| plot_tree(models) | Division of profiles as more are added |
+| plot_enumeration(models, what = “entropy”, “avepp” or “diagnostics”, cutoff = ) | Entropy and lowest AvePP across the candidates |
+| plot_selection(models, what = “deltas”, “heatmap”, “smallest” or “trust”, using = ) | Decreases, distance from the lowest criterion, smallest class, estimation checks |
+| plot_selection(models) | All of the plots for choosing the number of classes |
 | get_candidate(models, “profiles4_groups3”), get_candidate(models, 4, 3) | One fitted candidate |
 | compare_models(models, “name”, c(4, 2), …) | Named candidates side by side |
 | compare_models(models, n_profiles = , n_group_classes = ) | All candidates with the given numbers of classes |

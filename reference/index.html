@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,14 +73,14 @@
           <code><a href="lpa.html">lpa()</a></code>
 
         </dt>
-        <dd>Latent profile analysis</dd>
+        <dd>Fit a latent profile model</dd>
 
         <dt>
 
           <code><a href="lca.html">lca()</a></code>
 
         </dt>
-        <dd>Latent class analysis</dd>
+        <dd>Fit a latent class model</dd>
 
         <dt>
 
@@ -101,7 +101,7 @@
           <code><a href="lta.html">lta()</a></code>
 
         </dt>
-        <dd>Latent transition analysis</dd>
+        <dd>Fit a latent transition model</dd>
 
         <dt>
 
@@ -115,14 +115,14 @@
           <code><a href="starting_values.html">starting_values()</a></code>
 
         </dt>
-        <dd>Build starting values for a multilevel latent profile fit</dd>
+        <dd>Extract starting values for a latent profile fit</dd>
 
         <dt>
 
           <code><a href="prior_control.html">prior_control()</a></code> <code><a href="prior_control.html">print(<i>&lt;latents_prior&gt;</i>)</a></code>
 
         </dt>
-        <dd>Conjugate prior for Gaussian mixture estimation</dd>
+        <dd>Specify a conjugate prior for Gaussian mixture estimation</dd>
       </dl></div><div class="section level2">
       <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a></h2>
 
@@ -138,28 +138,28 @@
           <code><a href="get_results.html">get_results()</a></code>
 
         </dt>
-        <dd>Every table a fitted model holds, from one verb</dd>
+        <dd>Extract the result tables of a fitted model</dd>
 
         <dt>
 
           <code><a href="descriptives.html">descriptives()</a></code>
 
         </dt>
-        <dd>Describe the variables a model uses, or will use</dd>
+        <dd>Descriptive statistics and intraclass correlations of model variables</dd>
 
         <dt>
 
           <code><a href="diagnostics.html">diagnostics()</a></code> <code><a href="diagnostics.html">as.data.frame(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code> <code><a href="diagnostics.html">print(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code> <code><a href="diagnostics.html">plot(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code>
 
         </dt>
-        <dd>Every classification diagnostic, in one call</dd>
+        <dd>Classification diagnostics of a fitted model</dd>
 
         <dt>
 
           <code><a href="report.html">report()</a></code>
 
         </dt>
-        <dd>Everything about a fit, in one call</dd>
+        <dd>Print a full report of a fitted model</dd>
       </dl></div><div class="section level2">
       <h2 id="evaluating-a-model">Evaluating a model<a class="anchor" aria-label="anchor" href="#evaluating-a-model"></a></h2>
 
@@ -203,14 +203,14 @@
           <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>
 
         </dt>
-        <dd>Parametric bootstrap likelihood-ratio comparison</dd>
+        <dd>Parametric bootstrap likelihood-ratio test of two nested models</dd>
 
         <dt>
 
           <code><a href="sensitivity.html">sensitivity()</a></code>
 
         </dt>
-        <dd>Does the solution survive a different seed?</dd>
+        <dd>Refit a model under several seeds</dd>
 
         <dt>
 
@@ -224,7 +224,7 @@
           <code><a href="parameter_inference.multilpa_transitions.html">parameter_inference(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="parameter_inference.multilpa_transitions.html">vcov(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="parameter_inference.multilpa_transitions.html">confint(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
-        <dd>Wald inference for a latent transition model</dd>
+        <dd>Standard errors and intervals for a latent transition model</dd>
 
         <dt>
 
@@ -284,14 +284,14 @@
           <code><a href="three_step.html">three_step()</a></code>
 
         </dt>
-        <dd>Relate a latent class to an outcome it did not help define</dd>
+        <dd>Estimate a distal outcome's mean in each latent class</dd>
 
         <dt>
 
           <code><a href="r3step.html">r3step()</a></code>
 
         </dt>
-        <dd>Covariates predicting class membership, corrected for misclassification</dd>
+        <dd>Regress latent class membership on covariates by the three-step approach</dd>
       </dl></div><div class="section level2">
       <h2 id="plots">Plots<a class="anchor" aria-label="anchor" href="#plots"></a></h2>
 
@@ -323,14 +323,14 @@
           <code><a href="get_tna.html">get_tna()</a></code>
 
         </dt>
-        <dd>A transition network for the whole sample</dd>
+        <dd>Build one transition network for the whole sample</dd>
 
         <dt>
 
           <code><a href="get_group_tna.html">get_group_tna()</a></code>
 
         </dt>
-        <dd>A transition network for each latent group class</dd>
+        <dd>Build one transition network per latent group class</dd>
       </dl></div><div class="section level2">
       <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a></h2>
 
@@ -413,14 +413,14 @@
           <code><a href="latents-conditions.html">latents-conditions</a></code>
 
         </dt>
-        <dd>Conditions this package raises</dd>
+        <dd>Conditions raised by the package</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

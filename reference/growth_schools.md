@@ -1,16 +1,16 @@
 # Reading growth of students nested in schools
 
-A simulated multilevel longitudinal dataset made for the multilevel
-growth mixture model. 600 students in 40 schools (15 per school) sit a
-reading test on five occasions (`wave` 0 to 4). Two kinds of student
-follow two trajectories: *improving* (starts near 48, gains 3 points a
-wave) and *plateauing* (starts near 56, gains 0.3). Students vary around
-their trajectory (random intercept SD 3, random slope SD 0.6,
-correlation -0.2; residual SD 2). Schools are of two types: in
-*supportive* schools 80% of students improve, in *struggling* schools
-25% do, and a school's support programme (standardized, measured once)
-makes it more likely to be supportive. About 8% of tests were missed at
-random.
+A simulated multilevel longitudinal dataset for the multilevel growth
+mixture model. Each row is one student's reading score at one occasion:
+600 students in 40 schools (15 per school), tested on up to five
+occasions (`wave` 0 to 4). Two kinds of student follow two trajectories:
+*improving* (starts near 48, gains 3 points a wave) and *plateauing*
+(starts near 56, gains 0.3). Students vary around their trajectory
+(random intercept SD 3, random slope SD 0.6, correlation -0.2; residual
+SD 2). Schools are of two types: in *supportive* schools 80% of students
+improve, in *struggling* schools 25% do, and a school's support
+programme (standardized, measured once) makes it more likely to be
+supportive. About 8% of tests were missed at random.
 
 ## Usage
 
@@ -58,8 +58,7 @@ Simulated by `data-raw/growth-schools.R` in the source repository.
 
 ## Details
 
-The school types are what a multilevel growth mixture model's group
-classes recover:
+The school types correspond to the group classes of
 `mixture_regression(..., cluster = "school", n_group_classes = 2)`, with
 `group_membership = "programme"`.
 

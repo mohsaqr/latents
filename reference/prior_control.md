@@ -1,14 +1,13 @@
-# Conjugate prior for Gaussian mixture estimation
+# Specify a conjugate prior for Gaussian mixture estimation
 
-Requests maximum a posteriori (MAP) estimation of the Gaussian profile
-means and covariances under the conjugate prior of Fraley and Raftery
-(2007), exactly as
+Returns a `latents_prior` object requesting maximum a posteriori (MAP)
+estimation of the Gaussian profile means and covariances under the
+conjugate prior of Fraley and Raftery (2007), as
 [`mclust::priorControl()`](https://mclust-org.github.io/mclust/reference/priorControl.html)
 does for
 [`mclust::Mclust()`](https://mclust-org.github.io/mclust/reference/Mclust.html).
-Pass the result as `multilpa(prior = )`. The prior keeps covariances
-away from singularity, which is what lets a many-profile or
-many-indicator model be fitted where maximum likelihood degenerates.
+Pass the result as `multilpa(prior = )`. The prior keeps the covariance
+estimates away from singularity.
 
 ## Usage
 
@@ -23,22 +22,20 @@ print(x, ...)
 
 - shrinkage:
 
-  Non-negative prior precision factor for the means, `kappa`; mclust's
-  default `0.01`. Zero leaves the means unshrunk.
+  Non-negative prior precision factor for the means, `kappa` (default
+  `0.01`, as in mclust). Zero leaves the means unshrunk.
 
 - mean:
 
   Optional prior mean, one value per continuous indicator, on the scale
   the profile means are estimated on: the indicators' own units, or
-  their centred values when
+  their centred values under
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)'s
-  `centering` centres them (so a mean of the raw data is far from the
-  centred data's and is not the default). Naming one needs a positive
-  `shrinkage`.
+  `centering`. Requires a positive `shrinkage`.
 
 - dof:
 
-  Optional prior degrees of freedom, a single number.
+  Optional prior degrees of freedom, a single positive number.
 
 - scale:
 
@@ -73,21 +70,20 @@ indicators, and the scale is `(1/G)^(2/d)` times the sample covariance
 (axis-parallel and spherical structures), for `G` profiles.
 
 The updates follow mclust's fitted-model convention, including its
-structure-specific departures from a textbook conjugate update. For
-`EII`, `scale` does not enter the variance update. For `EEI`,
-`shrinkage` and `mean` enter the variance calculation but do not shrink
-the fitted means. For `VEV`, `dof` does not enter the update. `EEI`,
-`EVI` and `EEV` count the mean-prior contribution once rather than once
-per profile. These conventions are retained for agreement with mclust;
-the controls therefore have different effects across covariance
-structures.
+structure-specific departures from a textbook conjugate update, so the
+controls have different effects across covariance structures. For `EII`,
+`scale` does not enter the variance update. For `EEI`, `shrinkage` and
+`mean` enter the variance calculation but do not shrink the fitted
+means. For `VEV`, `dof` does not enter the update. `EEI`, `EVI` and
+`EEV` count the mean-prior contribution once rather than once per
+profile.
 
 ## Conditions
 
-Raises `latents_bad_argument` for a negative or non-finite `shrinkage`,
-a `mean` with a zero `shrinkage`, a non-positive `dof`, or a `scale`
-that is neither a positive number nor a square, symmetric,
-positive-definite matrix.
+`latents_bad_argument` for a negative or non-finite `shrinkage`, a
+non-finite `mean`, a `mean` with a zero `shrinkage`, a non-positive or
+non-finite `dof`, or a `scale` that is neither a positive number nor a
+square, symmetric, positive-definite matrix.
 
 ## References
 

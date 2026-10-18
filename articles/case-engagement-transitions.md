@@ -67,13 +67,13 @@ replicated within this seed’s starts.
 
 ## The profiles
 
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`what = "profiles"` draws the profile means across the indicators, and
-each line’s label gives the profile’s share of the enrolments.
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+draws the profile means across the indicators, and each line’s label
+gives the profile’s share of the enrolments.
 
 ``` r
 
-plot(moves, what = "profiles")
+plot_profiles(moves)
 ```
 
 ![](case-engagement-transitions_files/figure-html/profiles-1.png)
@@ -124,7 +124,7 @@ each indicator’s grand mean.
 
 ``` r
 
-plot(moves, what = "heatmap")
+plot_profiles(moves, what = "heatmap")
 ```
 
 ![](case-engagement-transitions_files/figure-html/heatmap-1.png)
@@ -202,7 +202,7 @@ origin profile in rows and the destination in columns.
 
 ``` r
 
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 ![](case-engagement-transitions_files/figure-html/transition-plot-1.png)
@@ -237,7 +237,7 @@ uncertainty.
 
 ``` r
 
-plot(moves, what = "sequences")
+plot_sequences(moves)
 ```
 
 ![](case-engagement-transitions_files/figure-html/sequences-1.png)
@@ -271,14 +271,14 @@ posterior probability of each case’s assigned profile.
 
 ``` r
 
-plot(moves, what = "entropy")
+plot_diagnostics(moves, what = "entropy")
 ```
 
 ![](case-engagement-transitions_files/figure-html/entropy-plot-1.png)
 
 ``` r
 
-plot(moves, what = "posteriors")
+plot_diagnostics(moves, what = "posteriors")
 ```
 
 ![](case-engagement-transitions_files/figure-html/posteriors-plot-1.png)

@@ -1,10 +1,13 @@
-# Every classification diagnostic, in one call
+# Classification diagnostics of a fitted model
 
-[`summary()`](https://rdrr.io/r/base/summary.html) reports what a model
-estimated. This reports whether to believe it: how sharply the posterior
-separates the classes, how big each class actually is, how confidently
-each unit was assigned, and whether the within-profile independence the
-model assumes survives contact with the data.
+Gathers the four classification tables of
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+(`"entropy"`, `"classification"`, `"average_posteriors"` and
+`"residuals"`) for a fitted model, prints one line per diagnostic, and
+by default draws the classification plots. The diagnostics are relative
+entropy, estimated class sizes, average posterior probabilities of the
+assigned classes, and the bivariate residuals that check the
+within-profile independence the model assumes.
 
 ## Usage
 
@@ -34,77 +37,57 @@ plot(x, ...)
 
 - plots:
 
-  `TRUE`, the default, also draws the four classification plots
-  (effective profile sizes, posterior probabilities of the assigned
-  profiles, case entropy, and the average posterior probability matrix),
-  as printing [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
-  on the result does. Without the ggplot2 package a message says so and
-  the tables are still returned. `FALSE` returns the tables only.
+  `TRUE` (the default) also draws the four classification plots:
+  effective profile sizes, posterior probabilities of the assigned
+  profiles, case entropy, and the average posterior probability matrix.
+  Without the ggplot2 package a message says so and the tables are still
+  returned. `FALSE` returns the tables only.
 
 - by:
 
-  `"profile"`, the default, assesses each profile's bivariate residuals
-  separately; `"overall"` pools them. It is the one argument of a
-  gathered table this function forwards, because it is the one that
-  changes what a gathered table means rather than which fit it is taken
-  from. The `level` the classification tables use is not an argument
-  here: it follows from whether the fit has discrete group classes.
+  `"profile"` (the default) assesses each profile's bivariate residuals
+  separately; `"overall"` pools them. It is the only argument forwarded
+  to the gathered tables. The `level` of the classification tables is
+  set from whether the fit has discrete group classes.
 
 - ...:
 
-  For `diagnostics()`, nothing further is accepted. An argument this
-  function cannot forward raises an error of class
-  `latents_bad_argument` naming it, rather than being dropped on the way
-  to a table that then means something other than what was asked for.
-  For [`plot()`](https://rdrr.io/r/graphics/plot.default.html), nothing
-  further is accepted either; style the returned plots with ggplot2.
+  Not used. For `diagnostics()` and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html), any further
+  argument raises `latents_bad_argument`; style the returned plots with
+  ggplot2.
 
 - row.names, optional:
 
-  Passed to the base generic; `row.names` is applied to the returned
+  Part of the base generic; `row.names` is applied to the returned
   table.
 
 ## Value
 
-An object of class `multilpa_diagnostics`. Read its tables with
-`get_results(result, what = )`, which offers `"entropy"`,
-`"classification"`, `"average_posteriors"`, `"residuals"` and `"all"`,
-and never with `$`. A model family that has no bivariate residuals
-leaves that table out of `"all"`, and asking for it by name raises
-`latents_no_group_classes`; a fit with a noise component has none
-either, and raises `latents_unsupported_noise`.
+An object of class `multilpa_diagnostics`. Its tables are read with
+`get_results(result, what = )`, where `what` is `"entropy"`,
+`"classification"`, `"average_posteriors"`, `"residuals"` or `"all"`. A
+model family without bivariate residuals leaves that table out of
+`"all"`, and asking for it by name raises `latents_no_group_classes`; a
+fit with a noise component has none either, and raises
+`latents_unsupported_noise`.
 
-[`print()`](https://rdrr.io/r/base/print.html) returns the object
-invisibly, having printed one line per diagnostic: relative entropy,
-smallest class, lowest average posterior and largest residual, at each
-level the fit has.
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) returns every
-classification plot as a `latents_plots` list of ggplot objects – the
-effective profile sizes, the posterior probability of each case's
-assigned profile, each case's relative entropy, and the average
-posterior probability matrix – that draws all four when printed.
+[`print()`](https://rdrr.io/r/base/print.html) prints one line per
+diagnostic (relative entropy, smallest class, lowest average posterior
+and largest residual, at each level the fit has) and returns the object
+invisibly. [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+returns the four classification plots as a `latents_plots` list of
+ggplot objects, which draws all four when printed.
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
-the entropy table, the primary one.
-
-## Details
-
-It gathers the four classification tables of
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-— `"entropy"`, `"classification"`, `"average_posteriors"` and
-`"residuals"` — and prints one line of reading per diagnostic rather
-than four differently shaped tables. The tables themselves come back
-from
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-on the result, or on the fit.
+the entropy table.
 
 ## See also
 
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-for these tables and every other one,
+for these and the other tables,
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
-for the before-the-fit counterpart, and
-[`summary()`](https://rdrr.io/r/base/summary.html) for what the model
-estimated rather than whether to trust it.
+for the variables before fitting, and
+[`summary()`](https://rdrr.io/r/base/summary.html) for the estimates.
 
 ## Examples
 

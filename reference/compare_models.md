@@ -1,13 +1,13 @@
 # Compare fitted models on the same data
 
-One row per model with its log likelihood, number of parameters,
-information criteria, classification quality and convergence, so
-alternative specifications (for example trajectory classes alone against
-a growth mixture model) are compared without assembling tables by hand.
-`delta_bic` is each model's BIC above the smallest, and `bic_weight` the
-Schwarz weight, exp(-delta/2) normalized over the models compared
-(Wagenmakers and Farrell 2004): the approximate posterior probability of
-each model if one of them is true, with equal prior probabilities.
+Returns a table with one row per model giving its log likelihood, number
+of parameters, information criteria, classification quality and
+convergence, together with `delta_bic`, each model's BIC above the
+smallest, and `bic_weight`, the Schwarz weight `exp(-delta_bic / 2)`
+normalised over the models compared (Wagenmakers and Farrell 2004). The
+weight is the approximate posterior probability of each model, assuming
+one of them is true and all have equal prior probability. No row is
+marked as best.
 
 ## Usage
 
@@ -31,64 +31,71 @@ compare_models(..., n_profiles = NULL, n_group_classes = NULL, cutoff = 0.8)
   [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
   or two or more fits from
   [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  (with or without `random`). Name fits to label the rows; unnamed fits
-  are labelled by their expression, candidates by their name.
+  (with or without `random`). Named fits are labelled by their names,
+  unnamed fits by their expression, and candidates by their candidate
+  name. Labels must be distinct.
 
 - n_profiles, n_group_classes:
 
-  With a grid, the class counts of the candidates to compare, instead of
-  naming them; `NULL` takes every count. Candidates whose fit failed are
-  left out, with a message.
+  With a grid, the class counts of the candidates to compare; `NULL`
+  (the default) takes every count. Candidates whose fit failed are left
+  out, with a message.
 
 - cutoff:
 
   For profile and class models, the average posterior probability below
-  which a class is counted in `avepp_below` and `group_avepp_below`. Not
-  used for mixture regressions.
+  which a class is counted in `avepp_below` and `group_avepp_below`; a
+  single number in (0, 1\], default 0.8. Not used for mixture
+  regressions.
 
 ## Value
 
-A base `data.frame` of class `latents_comparison` with one row per
-model. For mixture regressions: `model`, `n_classes`, `random`,
+A base `data.frame` of class `latents_comparison`, one row per model.
+
+For mixture regressions the columns are `model`, `n_classes`, `random`,
 `n_parameters`, `log_likelihood`, `aic`, `bic`, `sabic`, `icl`,
-`entropy`, `smallest_share`, `delta_bic`, `bic_weight`, `converged`. For
-profile and class models: `model`, `n_profiles`, `n_group_classes`,
-`structure` (the covariance structure, `NA` without continuous
-indicators), `n_parameters`, `log_likelihood`, every information
-criterion of
+`entropy`, `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
+
+For profile and class models they are `model`, `n_profiles`,
+`n_group_classes`, `structure` (the covariance structure, `NA` without
+continuous indicators), `n_parameters`, `log_likelihood`, every
+information criterion of
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)'s
 candidates table, `profile_entropy`, `group_entropy`, `avepp_min`,
 `avepp_max`, `avepp_mean`, `avepp_below` and the same four prefixed
 `group_`, `smallest_share` (the smallest estimated profile share,
 relative to all observation mass including any noise component),
-`converged`, `n_best_replicated`, and `delta_bic` and `bic_weight` on
-`bic_groups` (the BIC that counts groups as the independent units; on a
-single-level model it is the ordinary BIC). The numbers are the ones the
-grid's candidates table reports. No row is marked as best: `delta_bic`
-and `bic_weight` carry the evidence. Raises `latents_bad_argument` for
-fits it cannot compare, for a group-class family grid (compare those in
-their own table), for candidates named together with `n_profiles` or
-`n_group_classes`, and for `n_profiles` or `n_group_classes` without a
-grid; `latents_unknown_candidate` for a name or counts not in the grid;
-`latents_failed_candidate` for a named candidate that could not be
-fitted; and `latents_incomparable_models` for fits to different data. A
+`converged`, `n_best_replicated`, and `delta_bic` and `bic_weight`,
+computed on `bic_groups` (the BIC that counts groups as the independent
+units; on a single-level model, the ordinary BIC). The values are those
+of the grid's candidates table.
+
+Raises `latents_bad_argument` for fits that cannot be compared, for
+fewer than two models, for duplicate labels, for a group-class family
+grid (its own table, `as.data.frame(grid)`, compares its candidates),
+for candidates named together with `n_profiles` or `n_group_classes`,
+and for `n_profiles` or `n_group_classes` without a grid;
+`latents_unknown_candidate` for a name, counts or selection not in the
+grid; `latents_failed_candidate` for a named candidate that could not be
+fitted; `latents_incomparable_models` for fits to different data. A
 `cutoff` outside (0, 1\] fails the argument checks.
 
 ## Details
 
 Information criteria are comparable only on the same data: every model
-must be fitted to the same outcome, persons (or groups) and
-observations, or the comparison is refused.
+must be fitted to the same outcome or indicators, persons (or groups)
+and observations, or the comparison is refused.
 
-Candidates of an enumeration grid are compared by naming them, as the
-grid's `candidate` column shows them:
-`compare_models(grid, "classes3_groups4", "classes3_groups5")`, or by
-their class counts, `compare_models(grid, c(3, 4), c(3, 5))` (one number
-is one group class). `n_profiles` and `n_group_classes` select
-candidates instead: `compare_models(grid, n_profiles = 3)` compares
-every candidate with 3 profiles; `compare_models(grid)` compares them
-all. Latent class models are compared the same way; their `n_profiles`
-column counts classes. Fits from
+Candidates of an enumeration grid are selected by name, as the grid's
+`candidate` column shows them
+(`compare_models(grid, "profiles3_groups4", "profiles3_groups5")`), or
+by class counts (`compare_models(grid, c(3, 4), c(3, 5))`, where a
+single number means one group class). Alternatively, `n_profiles` and
+`n_group_classes` select candidates:
+`compare_models(grid, n_profiles = 3)` compares every candidate with 3
+profiles, and `compare_models(grid)` compares them all. Latent class
+grids work the same way, with `classes` in the names, and the
+`n_profiles` column counting classes. Fits from
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
 [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
 [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),

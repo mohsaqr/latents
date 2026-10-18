@@ -1,11 +1,10 @@
-# Does the solution survive a different seed?
+# Refit a model under several seeds
 
-A latent profile model is fitted by EM from random starts, so what comes
-back is a local maximum reached from one particular set of them.
-`n_starts` reports how many starts *within a single seed's stream*
-reached the best likelihood; it cannot say whether a different stream
-would have found a different mode. This verb refits the model under each
-of several seeds and reports what changed.
+Refits the model under each of several random seeds and returns one row
+per seed with the maximised log likelihood, convergence, which distinct
+optimum the refit reached, and the proportion of observations assigned
+to the same profile as in the reference fit. Profile labels of each
+refit are matched to the reference fit's before agreement is computed.
 
 ## Usage
 
@@ -34,9 +33,9 @@ sensitivity(
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   result varies the second-stage starts while holding its first-stage
   measurement solution fixed. A directly fitted model with measurement
-  blocks held is refused: its original free starting values are not
-  retained, so replaying the same seed would not replay the same search.
-  A membership-covariate fit is refused with
+  blocks held fixed is refused (`latents_unsupported_sensitivity`),
+  because its original free starting values are not retained. A
+  membership-covariate fit is refused with
   `latents_unsupported_sensitivity`. For an
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit,
   `agreement` is the share of occasions given the same profile, after
@@ -48,31 +47,27 @@ sensitivity(
 
   Optional for a
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  fit or a growth mixture, which carry the columns they were built from,
-  so it is only needed to override them; required for an
+  fit or a growth mixture, which carry the columns they were built from.
+  Required for an
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
-  (`latents_bad_argument` otherwise), whose refits need the occasions
-  and covariates. It must be the data the model was fitted to, in its
-  original row order; shared identifier and indicator columns are
-  checked against the fit before assignment agreement is calculated
-  (`latents_bad_inference_data`).
+  (`latents_bad_argument` otherwise). It must be the data the model was
+  fitted to, in its original row order; shared identifier and indicator
+  columns are checked against the fit (`latents_bad_inference_data`).
 
 - seeds:
 
-  Seeds to refit under: at least two distinct whole numbers of either
-  sign, as [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts.
-  Anything else raises `latents_bad_argument`. The reference fit's own
-  seed may be among them, in which case that row reproduces it and is
-  the arithmetic check that the refit is the same model.
+  Seeds to refit under: at least two distinct whole numbers that
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts. Default
+  `1:10`. Anything else raises `latents_bad_argument`. If the reference
+  fit's own seed is included, that row reproduces the reference fit.
 
 - n_starts:
 
-  Starts per refit. Defaults to the number the reference fit used, so
-  each seed gets the same search effort it did.
+  Starts per refit. Defaults to the number the reference fit used.
 
 - max_iter, tol:
 
-  Passed to each refit; default to the reference fit's (for an
+  Passed to each refit. Default to the reference fit's (for an
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit, to
   the defaults of
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)).
@@ -80,9 +75,8 @@ sensitivity(
 - tolerance:
 
   Two log likelihoods within this of each other count as the same
-  optimum. Defaults to the reference fit's own replication tolerance,
-  which is what it used to decide whether its starts agreed (for a
-  growth mixture `1e-6 * (1 + abs(logLik))`).
+  optimum. Defaults to the reference fit's replication tolerance (for a
+  growth mixture, `1e-6 * (1 + abs(logLik))`).
 
 ## Value
 
@@ -91,24 +85,17 @@ A base `data.frame`, one row per seed, with columns `seed`,
 maximum found across the seeds, 2 for the next distinct one, and so on),
 `best` (whether this seed reached optimum 1) and `agreement` (the
 proportion of observations given the same profile as the reference fit,
-after label alignment). A failed refit has `NA` throughout except
+after label matching). A failed refit has `NA` in every column except
 `seed`.
 
 ## Details
 
-Three things are worth reading off the result. Whether every seed
-reached the same maximised log likelihood, which is what `optimum`
-counts. Whether the seeds that reached it converged. And how many
-observations were assigned to a different profile, which is what
-`agreement` measures, after the arbitrary profile labels of each refit
-have been matched to the reference fit's – two fits of the same mixture
-can be identical and still number their profiles differently, so
-comparing labels directly would report disagreement that is not there.
+A fit's own replication count describes only the starts within one
+seed's random-number stream; refitting under other seeds shows whether
+other streams reach the same maximum and the same classification.
 
-A seed whose refit fails contributes a row with `NA` estimates rather
-than being dropped silently, and a `latents_sensitivity_dropped` warning
-names how many failed, so the table is never quietly shorter than
-`seeds`.
+A seed whose refit fails gives a row with `NA` estimates, and a
+`latents_sensitivity_dropped` warning reports how many seeds failed.
 
 ## References
 
@@ -118,7 +105,7 @@ growth mixture models. *Psychological Methods, 11*, 36–53.
 ## See also
 
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-to vary the number of classes rather than the seed, and
+to vary the number of classes, and
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
 for uncertainty about the parameters of a single solution.
 

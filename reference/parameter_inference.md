@@ -1,17 +1,17 @@
 # Tidy inference for a covariate fit
 
-Standard errors, tests and intervals for every free parameter of
-`multilpa(profile_covariates = )`, at all three levels at once: the
+For a `multilpa(profile_covariates = )` fit, returns standard errors,
+tests and intervals for every free parameter at all three levels: the
 measurement model, the profile logits and the group-class logits.
-Without them a membership coefficient cannot be reported, because
-nothing distinguishes a real effect from separation.
 
-Computes ordinary maximum-likelihood standard errors from the inverse
-observed Hessian and delta-method Wald confidence intervals. These are
-local, asymptotic estimates conditional on the selected numbers of
-classes. They are not robust sandwich errors and do not account for
-model selection. Mixture boundary solutions and unidentified Hessians do
-not admit this calculation.
+Returns a table of the estimated parameters of a fitted model with their
+standard errors, Wald tests and confidence intervals. By default the
+standard errors are maximum-likelihood errors from the inverse observed
+information, with delta-method Wald intervals; `method = "bootstrap"`
+resamples groups instead. The estimates are local and asymptotic,
+conditional on the selected numbers of classes, and do not account for
+model selection. Boundary solutions and unidentified Hessians are
+refused by the Wald path.
 
 ## Usage
 
@@ -124,216 +124,186 @@ parameter_inference(
 
 - data:
 
-  Optional. The data frame the model was fitted to; when omitted it is
-  rebuilt from the indicators, identifiers and occasions the fit stores,
-  which round-trip exactly. Supplying it is the stronger check that the
-  caller still holds that frame. A supplied frame is checked exactly
-  against the stored indicators and identifiers; for an older fit
-  without stored indicators, the likelihood provides a weaker
-  consistency check.
+  Optional data frame the model was fitted to. When omitted it is
+  rebuilt from the indicators, identifiers and occasions the fit stores.
+  A supplied frame is checked exactly against the stored indicators and
+  identifiers; for an older fit without stored indicators, the
+  likelihood gives a weaker consistency check.
 
 - level:
 
-  Confidence level strictly between zero and one.
+  Confidence level, strictly between zero and one. Default `0.95`.
 
 - step:
 
   Positive finite-difference step for the analytic score derivative.
+  Default `1e-4`.
 
 - vcov_type:
 
-  `"observed"` inverts the observed information. `"robust"` returns the
-  Huber-White sandwich `A^-1 B A^-1`, where `B` accumulates the outer
-  product of the per-group scores, multiplied by the CR1 small-sample
-  factor `G / (G - 1)` for `G` groups (the default of
-  `sandwich::vcovCL()`; every robust standard error in the package
-  carries it). Mplus's MLR applies no such factor, so these errors are
-  exactly `sqrt(G / (G - 1))` times Mplus's (0.8% larger with 60
-  groups). Groups are the independent units, so robust errors relax the
-  assumption that the Gaussian within-group model is correctly
-  specified. They do not relax the assumption that groups are
-  independent. `"opg"` inverts the outer product of the per-group scores
-  (the BHHH or outer-product-of-gradients estimate), which estimates the
-  information by the variance of the score rather than by the curvature
-  of the likelihood. It is the estimator `glca` reports, so it
-  reproduces that package's standard errors; the two agree with
-  `"observed"` in large samples and can differ noticeably in small ones,
-  where `"observed"` is usually the more reliable. `"robust"` and
-  `"opg"` need more groups than parameters. `vcov_type` and `step`
-  belong to the Wald path; `method = "bootstrap"` does not use them,
-  since resampling groups already makes its errors robust in the sense
-  `"robust"` is.
+  Covariance estimator for the Wald path. `"observed"` (default) inverts
+  the observed information. `"robust"` returns the Huber-White sandwich
+  `A^-1 B A^-1`, where `B` is the outer product of the per-group scores,
+  multiplied by the CR1 small-sample factor `G / (G - 1)` for `G` groups
+  (the default of
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
+  applied to every robust standard error in the package). Mplus's MLR
+  applies no such factor, so these errors are `sqrt(G / (G - 1))` times
+  Mplus's. Groups are the independent units: robust errors relax the
+  assumption that the within-group model is correctly specified, not the
+  assumption that groups are independent. `"opg"` inverts the outer
+  product of the per-group scores (the BHHH estimator), as `glca`
+  reports; it agrees with `"observed"` in large samples and can differ
+  in small ones, where `"observed"` is usually more reliable. `"robust"`
+  and `"opg"` need more groups than parameters. For a fit with sampling
+  weights the default is `"robust"`, and any other value raises
+  `latents_unsupported_weights`. `vcov_type` and `step` are not used by
+  `method = "bootstrap"`.
 
 - adjust:
 
-  Multiplicity correction applied to `p_value` to produce `p_adjusted`,
-  one of the methods
-  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) accepts.
-  The default `"none"` leaves the two columns equal: a correction
-  changes what a p-value means, so it is applied only when it is asked
-  for, and the method that was applied is recorded in the `adjust`
-  attribute. The correction is taken over the tests the table actually
-  reports; bounded parameters carry no test and do not count towards the
-  family.
+  Multiplicity correction applied to `p_value` to give `p_adjusted`:
+  `"none"` (default) or one of the
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) methods.
+  The method applied is stored in the `adjust` attribute. The correction
+  is taken over the tests the table reports; bounded parameters carry no
+  test and are not counted.
 
 - method:
 
-  How uncertainty is measured. `"wald"`, the default, inverts the
-  observed information in the estimation coordinates, and is available
-  for all fourteen covariance structures. EEI, VVI, EEE and VVV are
-  estimated in log variances or log-Cholesky coordinates; the ten
-  structures that constrain the volume, the shape or the orientation
-  across profiles are estimated in log volumes, log shapes whose
-  determinant-one constraint is written into the coordinates, and
+  `"wald"` (default) inverts the observed information in the estimation
+  coordinates; it is available for all fourteen covariance structures.
+  EEI, VVI, EEE and VVV are estimated in log variances or log-Cholesky
+  coordinates; the ten structures that constrain volume, shape or
+  orientation across profiles are estimated in log volumes, log shapes
+  with the determinant-one constraint built into the coordinates, and
   Cayley-transform orientations (or, for VEE and EVV, determinant-one
   log-Cholesky factors), so the information has one row per free
-  parameter of the structure. The reported variances and covariances are
-  then carried from those coordinates by the delta method, and their
-  natural-scale covariance is singular, as it is for the class
-  probabilities. `"bootstrap"` resamples *groups* with replacement,
-  refits inside the same covariance family, undoes the relabelling each
-  refit comes back with, and reports the percentile interval and the
-  standard deviation of the replicates. It is available for all fourteen
-  structures. Groups are the resampling unit rather than rows, so the
-  interval carries the same independence assumption as
-  `vcov_type = "robust"` and not the stronger one `"observed"` makes.
+  parameter. The reported variances and covariances are obtained from
+  these coordinates by the delta method, and their natural-scale
+  covariance is singular, as for the class probabilities. `"bootstrap"`
+  resamples groups with replacement, refits within the same covariance
+  structure, realigns each refit's labels, and reports the percentile
+  interval and the standard deviation of the replicates; it is also
+  available for all fourteen structures and assumes independent groups,
+  as `vcov_type = "robust"` does.
 
 - ...:
 
-  Unused by most methods; accepted so every method shares the generic's
-  signature.
+  Further arguments; unused by most methods.
 
 - iter:
 
-  Number of resamples when `method = "bootstrap"`, at least two. The
-  default 199 is enough for a standard error; a 95% percentile interval
-  is steadier at 999 and above.
+  Number of resamples for `method = "bootstrap"`, at least two. Default
+  `199`; a 95% percentile interval is more stable with 999 or more.
 
 - n_starts, max_iter, tol:
 
-  Passed to each bootstrap refit. Each replicate is a fresh fit, so
-  `n_starts` buys the same protection against a local maximum here as it
-  does in
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  at the same multiple of the cost.
+  Passed to each bootstrap refit, as in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
 
 - seed:
 
-  Optional seed for the resampling: any whole number
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts; anything
-  else raises `latents_bad_argument`, on either path. The Wald path
-  draws nothing, so it uses no seed. The stream is restored on exit, so
-  a seeded call leaves the caller's random state exactly as it found it.
+  Optional seed for the resampling: a whole number accepted by
+  [`set.seed()`](https://rdrr.io/r/base/Random.html); any other value
+  raises `latents_bad_argument` on either path. The Wald path uses no
+  random numbers. The caller's random state is restored on exit.
 
 - boundary:
 
-  What to do when categorical response probabilities sit on their lower
-  bound, `min_probability`. There the likelihood is flat in the logit
-  and the information is singular, so `"error"`, the default, refuses
-  with `latents_boundary_fit`. `"fix"` holds those probabilities at the
-  bound and reports every other parameter conditionally on them, the
-  convention Mplus follows; the held probabilities are left out of the
-  table (or, for a covariate fit, reported with `NA` standard errors)
-  and named in the result's `fixed_at_bound` attribute.
+  Handling of categorical response probabilities at their lower bound,
+  `min_probability`, where the information is singular. `"error"`
+  (default) raises `latents_boundary_fit`. `"fix"` holds those
+  probabilities at the bound and reports every other parameter
+  conditional on them, as Mplus does; the held probabilities are omitted
+  from the table (or, for a covariate fit, reported with `NA` standard
+  errors) and named in the `fixed_at_bound` attribute.
 
 ## Value
 
-A base `data.frame` with one row per free parameter and the same
-columns, in the same order, that `parameter_inference()` returns for
-every other fitted class: `level` (`"measurement"`, `"profile"` or
-`"group"`), `outcome` (which profile or group class the coefficient
-predicts, or which profile a measurement parameter belongs to), `term`,
-`parameter` (`"mean"`, `"variance"`, `"covariance"`, `"response"` or
-`"coefficient"`), `estimate`, `standard_error`, `statistic`, `p_value`,
-`p_adjusted`, `conf_low` and `conf_high`. Variances and covariances are
-reported in their natural units, with standard errors carried through
-the delta method from the log and log-Cholesky coordinates on which they
-are estimated. Categorical indicators contribute one `"response"` row
-per profile, indicator and category, named `indicator:category`: the
-probability of that category, with its standard error carried from the
-multinomial logits it is estimated on, and no Wald test, as for the
-covariate-free model.
+For a covariate fit, a base `data.frame` with one row per free parameter
+and the same columns as for every other class: `level` (`"measurement"`,
+`"profile"` or `"group"`), `outcome` (the profile or group class the
+coefficient predicts, or the profile a measurement parameter belongs
+to), `term`, `parameter` (`"mean"`, `"variance"`, `"covariance"`,
+`"response"` or `"coefficient"`), `estimate`, `standard_error`,
+`statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`.
+Variances and covariances are in their natural units, with standard
+errors obtained by the delta method from the log and log-Cholesky
+coordinates on which they are estimated. Each categorical indicator
+contributes one `"response"` row per profile, indicator and category,
+named `indicator:category`: the category probability, with its standard
+error from the multinomial logits and no Wald test.
 
 A base `data.frame` with one row per reported parameter and the columns
 `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`, `term`,
 `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
 `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
-scale: variances in their own units, probabilities as probabilities. A
-parameter whose null value is on the boundary of its space – a variance,
-a probability, a residual variance on the covariance diagonal – carries
-`NA` for `statistic`, `p_value` and `p_adjusted`, because a Wald test
-against that boundary is not a question worth asking; the interval still
-is. All class probabilities are reported; their sum constraints make the
-natural covariance singular. Wald intervals for probabilities are formed
-on the logit scale and for variances (and covariance diagonals) on the
-log scale, then mapped back with the same standard error, so they stay
-inside the parameter's range and widen towards the far side of a bound;
+scale (variances in their own units, probabilities as probabilities). A
+parameter whose null value lies on the boundary of its space (a
+variance, a probability, a covariance diagonal) has `NA` `statistic`,
+`p_value` and `p_adjusted`, but still has an interval. All class
+probabilities are reported; their sum constraints make the natural
+covariance singular. Wald intervals for probabilities are formed on the
+logit scale and for variances (and covariance diagonals) on the log
+scale, then back-transformed, so they stay within the parameter's range;
 every other interval is `estimate +/- z * standard_error`.
 [`confint()`](https://rdrr.io/r/stats/confint.html) returns the same
 intervals. A probability at or below 1e-6 is treated as on its bound
 (refused, or held by `boundary = "fix"`).
 
 A fit made with `fixed` reports only the parameters it estimated: a held
-measurement block is a constant of this likelihood, so it contributes no
-row here and no row or column to the information matrix. The table is on
-the natural scale, where every class probability is reported, so it has
-one row per estimated natural coefficient: `n_parameters` rows plus one
-for each set of probabilities whose reference category the estimation
-scale drops. The held values still enter the likelihood at the values
-they were held at, so every standard error, interval and p-value is
-conditional on that measurement solution and does not propagate its
-uncertainty. See
+measurement block contributes no row to the table or to the information
+matrix. The table has one row per estimated natural coefficient:
+`n_parameters` rows plus one for each set of probabilities whose
+reference category the estimation scale drops. Standard errors,
+intervals and p-values are conditional on the held measurement solution
+and do not include its uncertainty (see
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)).
+For a
 [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-for what that conditioning means. For a
-[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-result, `method = "bootstrap"` does propagate it: each resample refits
-both stages, and the table has a row for every parameter, the
-measurement included (attribute `stages_resampled` is 2).
+result, `method = "bootstrap"` refits both stages in each resample, so
+the table includes the measurement parameters and that uncertainty is
+propagated (attribute `stages_resampled` is 2).
 
-With `method = "bootstrap"` the table has the same columns and the same
-rows, `estimate` is still the fitted value, `standard_error` is the
-standard deviation of the replicates and `conf_low`/`conf_high` are the
-percentile interval. `statistic`, `p_value` and `p_adjusted` are `NA`
-throughout: putting a normal approximation back on top of the replicates
-the interval was read from is the assumption this path exists to avoid,
-so the interval is the inference. Its attributes are `covariance` (the
-covariance of the replicates, which
-[`vcov()`](https://rdrr.io/r/stats/vcov.html) returns), `level`,
-`method`, `iter`, `n_valid`, `replicates` (the kept replicates, one row
-each), `messages` (why a resample was dropped, `NA` where it was not),
-`structure` and `fixed`; `covariance_unconstrained` is `NULL`, because
-the estimation-scale chart is what this path does without.
+With `method = "bootstrap"` the table has the same columns and rows;
+`estimate` is the fitted value, `standard_error` the standard deviation
+of the replicates and `conf_low`/`conf_high` the percentile interval.
+`statistic`, `p_value` and `p_adjusted` are `NA`. Its attributes are
+`covariance` (the covariance of the replicates, returned by
+[`vcov()`](https://rdrr.io/r/stats/vcov.html)), `level`, `method`,
+`iter`, `n_valid`, `replicates` (the kept replicates, one row each),
+`messages` (why a resample was dropped, `NA` where it was not),
+`structure` and `fixed`; `covariance_unconstrained` is `NULL`.
 
-Diagnostics of the fit as a whole travel as attributes rather than as
-columns repeated down every row: `covariance` and
-`covariance_unconstrained` (natural and estimation-scale covariance of
-the estimates), `hessian`, `gradient`, `scaled_score`,
-`score_displacement` (the largest score times its estimation-scale
-standard error, the quantity the `latents_unconverged` warning reads),
-`condition_ratio`, `level`, `step`, `method`, `vcov_type`, `fixed` (the
-measurement blocks this fit held,
+For the Wald path, diagnostics of the whole fit are attributes:
+`covariance` and `covariance_unconstrained` (natural and
+estimation-scale covariance of the estimates), `hessian`, `gradient`,
+`scaled_score`, `score_displacement` (the largest score times its
+estimation-scale standard error, which the `latents_unconverged` warning
+uses), `condition_ratio`, `level`, `step`, `method`, `vcov_type`,
+`fixed` (the measurement blocks the fit held,
 [`character()`](https://rdrr.io/r/base/character.html) when none),
-`fixed_at_bound` (the probabilities `boundary = "fix"` held) and
+`fixed_at_bound` (the probabilities held by `boundary = "fix"`) and
 `adjust`. When `vcov_type` is `"robust"` or `"opg"`, `group_scores`
 holds the groups-by-parameters score matrix and `scaling_correction` the
-MLR scaling correction factor `tr(A^-1 B) / q`, with `B` the
-cross-product of those scores without the CR1 factor, used for scaled
-likelihood-ratio difference tests; it is `NA` otherwise.
+MLR scaling correction factor `tr(A^-1 B) / q` (with `B` without the CR1
+factor), used for scaled likelihood-ratio difference tests; it is `NA`
+otherwise.
 
 ## Details
 
-Class-membership coefficients are on the multinomial logit scale with
-the final profile and the final group class as references, so a
-coefficient is a log odds against that reference. The tests are Wald
-tests, which are meaningless for a coefficient driven to the boundary by
-separation or an empty class. A fit with a membership logit above 20 in
-coordinates that depend neither on the covariates' units nor on their
+Class-membership coefficients of a covariate fit are on the multinomial
+logit scale, with the final profile and the final group class as
+references, so each coefficient is a log odds against that reference.
+The tests are Wald tests, which are invalid for a coefficient driven to
+the boundary by separation or an empty class. A fit with a membership
+logit above 20 in coordinates independent of the covariates' units and
 origin (roughly, a slope per standard deviation of its covariate and an
-intercept at the covariates' means) is therefore refused with
-`latents_boundary_fit` rather than given a standard error; the fit
-itself warns with `latents_extreme_coefficients`. Only `method = "wald"`
-is implemented for a covariate fit; `"bootstrap"` is refused with
-`latents_unsupported_inference`.
+intercept at the covariates' means) raises `latents_boundary_fit`; the
+fit itself warns with `latents_extreme_coefficients`. Only
+`method = "wald"` is implemented for a covariate fit; `"bootstrap"`
+raises `latents_unsupported_inference`.
 
 For a growth mixture
 ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
@@ -352,14 +322,15 @@ scale, and only coefficients and logits are tested against zero.
 posterior memberships of the original persons; it is refused for a
 multilevel growth mixture (`latents_unsupported_inference`). In a
 simulation of 1000 datasets per design, Wald intervals covered
-0.936-0.965 with separated classes but 0.885-0.943 with weakly separated
-ones, whose standard errors ran 6-30% small
-(validation/GROWTH_SIMULATION.md in the source repository); prefer the
-bootstrap there. A class whose random-effect covariance is degenerate
-raises `latents_boundary_fit` under `boundary = "error"`; under `"fix"`
-its random-effect rows have no standard error or interval. `data`, when
-given, must be the fitted data; `step` is not used (the information is
-the derivative of the analytic score).
+0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
+separated ones, whose standard errors were 6-30% too small
+(validation/GROWTH_SIMULATION.md in the source repository); the
+bootstrap is preferable for weakly separated classes. A class whose
+random-effect covariance is degenerate raises `latents_boundary_fit`
+under `boundary = "error"`; under `"fix"` its random-effect rows have no
+standard error or interval. `data`, when given, must be the fitted data;
+`step` is not used (the information is the derivative of the analytic
+score).
 
 For a general transition fit (an
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with
@@ -372,37 +343,37 @@ persons, refits, and matches every replicate's profiles (on the
 measurement) and group classes to the original's, rebasing the initial
 logits when the reference profile moves; it needs `data`, and works
 where Wald inference is refused (for example full covariance
-structures). Transition inference holds nothing at a bound: with no
-bound active `boundary = "fix"` gives the same table as `"error"`, and a
-fit with an active bound raises `latents_boundary_fit` under either.
+structures). Transition inference fixes no parameter at a bound: without
+an active bound `boundary = "fix"` gives the same table as `"error"`,
+and a fit with an active bound raises `latents_boundary_fit` under
+either.
 
 ## Conditions
 
-`latents_no_converge` for an unconverged fit, `latents_boundary_fit`
-when a variance, a response probability or a mixing probability sits at
-its bound, `latents_singular_information` when the observed information
-cannot be inverted, `latents_no_free_parameters` when `fixed` held every
-parameter, `latents_bad_inference_data` when a supplied `data` does not
-reproduce the fit, and `latents_too_few_groups` for
+Errors: `latents_no_converge` for an unconverged fit;
+`latents_boundary_fit` when a variance, response probability or mixing
+probability is at its bound; `latents_singular_information` when the
+observed information cannot be inverted; `latents_no_free_parameters`
+when `fixed` held every parameter; `latents_bad_inference_data` when a
+supplied `data` does not reproduce the fit; `latents_too_few_groups` for
 `vcov_type = "robust"` or `"opg"` when the fit has no more independent
-groups than free parameters. A fit whose score is still far from zero is
-reported with a `latents_unconverged` warning rather than refused. A fit
-made with `multilpa(prior = )` is refused by the Wald path with
-`latents_unsupported_inference` (it sits at a posterior mode, where the
-likelihood's score is not zero), and a fit with a noise component by
-either path with `latents_unsupported_noise`.
+groups than free parameters. The Wald path raises
+`latents_unsupported_inference` for a fit made with `multilpa(prior = )`
+(a posterior mode, where the score is not zero), and either path raises
+`latents_unsupported_noise` for a fit with a noise component. A fit
+whose score is still far from zero gives a `latents_unconverged`
+warning.
 
-`method = "bootstrap"` adds `latents_unsupported_inference` for a fit
-that holds a measurement block through `multilpa(fixed = )` — the held
-values came from another fit and resampling these data does not resample
-them; a
+`method = "bootstrap"` also raises `latents_unsupported_inference` for
+an additive or covariate fit, and for a fit holding a measurement block
+through `multilpa(fixed = )`, since resampling the data does not
+resample the held values (a
 [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-result is bootstrapped by staging again instead — and
-`latents_bootstrap_failed` when fewer than two resamples produced a
-usable fit, whose message carries the first reason one gave. Resamples
-that fail or do not converge are dropped with a
-`latents_bootstrap_dropped` warning naming how many, rather than being
-silently left out of the count.
+result is bootstrapped by refitting both stages instead), and
+`latents_bootstrap_failed` when fewer than two resamples gave a usable
+fit; its message gives the first reason. Resamples that fail or do not
+converge are dropped with a `latents_bootstrap_dropped` warning stating
+how many.
 
 ## Examples
 

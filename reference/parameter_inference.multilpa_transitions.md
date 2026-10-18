@@ -1,12 +1,12 @@
-# Wald inference for a latent transition model
+# Standard errors and intervals for a latent transition model
 
-Standard errors, tests and intervals for every parameter of an
+Returns standard errors, tests and intervals for every parameter of an
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit: the
 measurement model, the group-class shares, each group class's initial
 profile distribution and its transition matrix. The scores follow the
 Fisher identity (each is an expected count from the forward-backward
-pass minus the count the fitted probabilities imply), and the observed
-information is the numerical Jacobian of that analytic score.
+pass minus the count implied by the fitted probabilities), and the
+observed information is the numerical Jacobian of that analytic score.
 
 ## Usage
 
@@ -51,13 +51,14 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 - data:
 
-  Optional. The data frame the model was fitted to. The fit stores its
-  indicators, codes, groups and occasions, so it is not needed; when
-  given it must reproduce them.
+  Optional data frame the model was fitted to. Not needed for the Wald
+  path, since the fit stores its indicators, codes, groups and
+  occasions; when given it must reproduce them. Required for
+  `method = "bootstrap"`.
 
 - level:
 
-  Confidence level of the intervals.
+  Confidence level of the intervals. Default `0.95`.
 
 - step:
 
@@ -65,35 +66,36 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 - vcov_type:
 
-  `"observed"` (observed information), `"robust"` (the sandwich
+  `"observed"` (default; observed information), `"robust"` (the sandwich
   clustered on groups, which are the sequences) or `"opg"` (the outer
   product of the group scores).
 
 - adjust:
 
-  Multiplicity correction for `p_adjusted`, one of the methods
-  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) accepts.
+  Multiplicity correction for `p_adjusted`: `"none"` (default) or one of
+  the [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html)
+  methods.
 
 - method:
 
-  `"wald"` (the default) or `"bootstrap"`. The bootstrap resamples
-  persons with replacement, refits the same specification, and matches
-  each replicate's profiles and group classes to the original's;
-  `standard_error` is the replicates' standard deviation, `conf_low` and
-  `conf_high` their percentile interval, and `statistic`, `p_value` and
-  `p_adjusted` are `NA`. It needs `data`.
+  `"wald"` (default) or `"bootstrap"`. The bootstrap resamples persons
+  with replacement, refits the same specification and matches each
+  replicate's profiles and group classes to the original's;
+  `standard_error` is the standard deviation of the replicates,
+  `conf_low` and `conf_high` their percentile interval, and `statistic`,
+  `p_value` and `p_adjusted` are `NA`.
 
 - iter, n_starts, max_iter, tol, seed:
 
-  Bootstrap resamples, the controls of each refit, and an optional seed
-  (the caller's random state is restored).
+  Number of bootstrap resamples, the controls of each refit, and an
+  optional seed (the caller's random state is restored).
 
 - boundary:
 
-  Accepted for the generic. Transition inference holds nothing at a
-  bound: with no bound active `"fix"` gives the same table as `"error"`,
-  and a fit with an active bound raises `latents_boundary_fit` under
-  either.
+  Accepted for consistency with the generic. Transition inference holds
+  no parameter at a bound: without an active bound `"fix"` gives the
+  same table as `"error"`, and a fit with an active bound raises
+  `latents_boundary_fit` under either.
 
 - object:
 
@@ -129,21 +131,23 @@ probability (`parameter = "initial_probability"`, `level = "profile"`)
 has `outcome` the profile and `term` the group class; a transition
 probability (`"transition_probability"`) has `outcome` the profile moved
 to and `term` `group_class_h:profile_j`, the group class and the profile
-moved from. Probabilities and variances carry no Wald test. Attributes
-`covariance` (natural scale), `covariance_unconstrained`, `vcov_type`
-and `level`.
+moved from. Probabilities and variances have no Wald test. The Wald
+table has attributes `covariance` (natural scale),
+`covariance_unconstrained`, `level`, `step`, `method` and `vcov_type`.
 
 ## Conditions
 
 `latents_no_converge` for an unconverged fit; `latents_boundary_fit`
 when a variance, a response, initial or transition probability, or a
-group-class share sits at its bound, or a transition row was never
-informed (a profile no group occupies before its last occasion);
+group-class share is at its bound, or a transition row has no
+information (a profile no group occupies before its last occasion);
 `latents_singular_information` when the information cannot be inverted;
 `latents_bad_inference_data` when a supplied `data` does not reproduce
 the fit; `latents_too_few_groups` for robust or OPG errors with no more
 groups than parameters; `latents_bad_argument` for
-`method = "bootstrap"` without `data`.
+`method = "bootstrap"` without `data`; `latents_bootstrap_failed` when
+fewer than two resamples give a usable fit, with a
+`latents_bootstrap_dropped` warning for resamples that were dropped.
 
 ## Examples
 

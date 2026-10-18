@@ -1,13 +1,13 @@
 # Compare latent class models
 
-Fits single-level latent class models with each number of classes in
-`n_classes` and returns them in one table for comparison by information
-criteria, entropy and the diagnostics of each fit. Every indicator is
-categorical unless named in `ordinal` or `count`, as in
+Fits a single-level latent class model for each number of classes in
+`n_classes`, and returns a `multilpa_enumeration` object that tabulates
+the information criteria, entropy and diagnostics of every fit. Every
+indicator is categorical unless named in `ordinal` or `count`, as in
 [`lca()`](https://pak.dynasite.org/latents/reference/lca.md). It is
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-with `id = NULL`, and it returns the same object; the number of classes
-is its `n_profiles` column.
+with `id = NULL`; the number of classes is reported in the `n_profiles`
+column.
 
 ## Usage
 
@@ -35,8 +35,8 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
   such as `missing`, `n_starts`, `seed` and `min_probability`, except
   `id` and `n_group_classes`. Every indicator is categorical unless
-  named in `ordinal` or `count`; `categorical` may be given but changes
-  nothing.
+  named in `ordinal` or `count`. `categorical` is accepted but has no
+  further effect; its names must be in `vars`.
 
 ## Value
 
@@ -59,8 +59,10 @@ with the grouping column as `id` and the indicators as `categorical`.
 
 ## Conditions
 
-`latents_bad_argument` when `id`, `n_group_classes`, `categorical` or
-`model` is passed.
+`latents_bad_argument` when `id` or `n_group_classes` is passed, or when
+`model` is passed (no indicator is continuous);
+`latents_bad_categorical` when `categorical` names a column not in
+`vars`.
 
 ## See also
 
@@ -113,8 +115,8 @@ summary(models)
 #>   classes3          3               1  <NA> individuals     2     185
 #>   classes3          3               1  <NA> individuals     3     343
 #>  proportion_modal estimated_n estimated_proportion average_posterior
-#>           1.00000      2322.1              0.89934            0.8993
-#>           0.00000       259.9              0.10066                NA
+#>           1.00000      2322.1              0.89935            0.8993
+#>           0.00000       259.9              0.10065                NA
 #>           0.79551      2053.6              0.79535            0.9996
 #>           0.07165       185.4              0.07182            0.9997
 #>           0.13284       343.0              0.13283            0.9983
@@ -122,7 +124,7 @@ summary(models)
 #>                          1.0           0.7594
 #>                           NA           0.7594
 #>                        573.9           0.9953
-#>                      46383.9           0.9953
+#>                      46383.8           0.9953
 #>                       3920.3           0.9953
 #> 
 #> -- deltas ----------------------------------------------------------

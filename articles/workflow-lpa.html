@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,7 +147,7 @@ estimates these four structures with every number of profiles
 requested.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">indicators</span>, n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/latents-plots.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/enumerate-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The choice of structure matters here because four of the five
 constructs are strongly correlated. The structures without covariances
@@ -300,7 +300,7 @@ fitted model:</p>
 <p>The profile plot shows the estimated mean of each profile on each
 indicator with its 95% confidence interval.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/profiles-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The larger profile, comprising 69% of the respondents, has higher
 means on cognitive strategy use, intrinsic value, self-efficacy and
@@ -334,13 +334,13 @@ standard errors:</p>
 <span><span class="co">#&gt; 10                  0.0333</span></span></code></pre></div>
 <p>The same means as bars with their confidence intervals:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"bars"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"bars"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/bars-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The heatmap expresses each mean as a distance from the indicator’s
 grand mean in standard deviations, which makes the differences
 comparable across indicators:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The means summarize distributions. The raincloud plot shows, for the
 respondents assigned to each profile, the density of each indicator, a
@@ -349,7 +349,7 @@ individual scores. It shows how much the profiles overlap on each
 indicator: they are well separated on intrinsic value and self-efficacy,
 and overlap almost completely on test anxiety.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"raincloud"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"raincloud"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/raincloud-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -456,7 +456,7 @@ clustering models. <em>Pattern Recognition</em>, 28(5), 781–793.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Mohammed Saqr, Sonsoles López-Pernas.</p>
+  <p>Developed by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a>, <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
