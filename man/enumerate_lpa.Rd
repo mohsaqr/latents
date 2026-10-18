@@ -19,7 +19,8 @@ present (\code{EEI}, \code{VVI}, \code{EEE}, \code{VVV}); \code{"all"} for all 1
 three-letter codes. See \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}, such as \code{missing},
-\code{n_starts}, \code{seed} and \code{categorical}, except \code{id} and \code{n_group_classes}.}
+\code{n_starts}, \code{seed}, \code{boundary} and \code{categorical}, except \code{id} and
+\code{n_group_classes}.}
 }
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}

@@ -1,3 +1,33 @@
+# latents 0.95.3
+
+### New features
+
+* `multilpa()`, and so `multilca()`, `lpa()` and `lca()`, take `cores` to run
+  the random starts of one fit in parallel. The starting values are drawn
+  first, in order, so the fit is identical to `cores = 1`. Models with
+  membership covariates still run their starts on one core.
+
+### Bug fixes
+
+* `multilca()` and `enumerate_lca()` no longer refuse `categorical`, so a call written for
+  `enumerate_classes()` or `multilpa()` (`categorical = vars`) works as is.
+  Every indicator in `vars` stays categorical whatever `categorical` names;
+  a name that is not in `vars` is still refused.
+
+* `plot(what = "heatmap")` on polytomous categorical indicators now draws one
+  panel per profile, with indicators as rows and response categories as
+  columns. The former layout, a block of columns per indicator, ran to
+  indicators x categories columns, so with many indicators the numbers
+  overlapped and the indicator names were cut off. Binary indicators keep
+  their one-column-per-indicator layout.
+
+### Documentation
+
+* The model-selection and class-enumeration guides, the enumeration and
+  evaluation vignettes, the LPA workflow, the README and the help pages of
+  `lpa()`, `enumerate_lpa()` and `enumerate_classes()` describe the
+  degenerate one-observation solution and `boundary = "exclude"`.
+
 # latents 0.95.2
 
 Fixes found by Equivalence 2.0, the strengthened external validation.

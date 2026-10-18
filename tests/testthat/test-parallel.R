@@ -136,3 +136,31 @@ test_that("a socket worker that dies is a parallel failure", {
   expect_error(.latents_map_candidates(1:3, fun, cores = 2L, backend = "socket"),
                class = "latents_parallel_failure")
 })
+
+test_that("one fit's starts on several cores give the same fit as one core", {
+  skip_on_cran()
+  skip_on_os("windows")
+  items <- c("time_with_friends", "on_social_media", "sports")
+  sample_data <- subset(student_esm, day <= 3)
+  serial <- multilca(sample_data, vars = items, id = "student", n_profiles = 3,
+                     n_group_classes = 2, n_starts = 6, seed = 1)
+  spread <- multilca(sample_data, vars = items, id = "student", n_profiles = 3,
+                     n_group_classes = 2, n_starts = 6, seed = 1, cores = 2)
+  expect_identical(spread$log_likelihood, serial$log_likelihood)
+  expect_identical(get_results(spread, "starts"), get_results(serial, "starts"))
+  profiles <- c("happy", "relaxed", "worried")
+  serial_lpa <- lpa(student_esm, profiles, n_profiles = 3, n_starts = 5,
+                    seed = 2)
+  spread_lpa <- lpa(student_esm, profiles, n_profiles = 3, n_starts = 5,
+                    seed = 2, cores = 3)
+  expect_identical(spread_lpa$log_likelihood, serial_lpa$log_likelihood)
+  expect_identical(as.data.frame(spread_lpa), as.data.frame(serial_lpa))
+})
+
+test_that("a fit refuses a `cores` that is not a whole number of at least 1", {
+  items <- c("time_with_friends", "on_social_media", "sports")
+  expect_error(lca(student_esm, items, n_classes = 2, n_starts = 1, cores = 0),
+               class = "latents_bad_argument")
+  expect_error(lca(student_esm, items, n_classes = 2, n_starts = 1, cores = 1.5),
+               class = "latents_bad_argument")
+})

@@ -509,10 +509,12 @@ utils::globalVariables(c(
   shown <- if (binary) sprintf(" (category %s shown)",
                                paste(unique(cells$category_label),
                                      collapse = "/")) else ""
-  # A binary indicator is one column named by the indicator; a polytomous one
-  # is a block of columns named by category, under the indicator's strip.
-  cells$column_label <- if (binary) cells$indicator else
-    factor(cells$category_label, levels = unique(cells$category_label))
+  if (!binary) {
+    return(.gg_view_polytomous_heatmap(cells, key, shown = "", main, subtitle,
+                                       caption = .gg_undrawn_caption(
+                                         x, names(blocks))))
+  }
+  cells$column_label <- cells$indicator
   plot <- ggplot2::ggplot(cells, ggplot2::aes(column_label, profile_label,
                                               fill = probability)) +
     ggplot2::geom_tile(colour = "white", linewidth = 1) +
@@ -528,17 +530,48 @@ utils::globalVariables(c(
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +
     .gg_tile_theme()
-  if (binary) {
-    return(plot + ggplot2::scale_x_discrete(expand = c(0, 0)) +
-             ggplot2::theme(axis.text.x = ggplot2::element_text(
-               angle = 30, hjust = 1)))
-  }
-  plot +
-    ggplot2::facet_grid(cols = ggplot2::vars(indicator), scales = "free_x",
-                        space = "free_x") +
+  plot + ggplot2::scale_x_discrete(expand = c(0, 0)) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1))
+}
+
+#' Polytomous response probabilities: one panel per profile
+#'
+#' Indicators run down the rows and categories across, so a row is that
+#' profile's response distribution on one indicator. Indicator names sit
+#' horizontally and each panel has only as many columns as categories, which
+#' keeps the numbers legible however many indicators there are; a block of
+#' columns per indicator ran to indicators x categories columns and overlapped.
+#' @param cells One row per indicator, category and profile.
+#' @param key The profile key from .gg_profile_key().
+#' @noRd
+.gg_view_polytomous_heatmap <- function(cells, key, shown, main, subtitle,
+                                        caption) {
+  cells$indicator <- factor(cells$indicator,
+                            levels = rev(levels(cells$indicator)))
+  cells$category_label <- factor(cells$category_label,
+                                 levels = unique(cells$category_label))
+  cells$profile_label <- factor(as.character(cells$profile_label),
+                                levels = levels(key$label))
+  n_profiles <- nlevels(cells$profile_label)
+  ggplot2::ggplot(cells, ggplot2::aes(category_label, indicator,
+                                      fill = probability)) +
+    ggplot2::geom_tile(colour = "white", linewidth = 1) +
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", probability),
+                                    colour = text_colour), size = 2.9) +
+    ggplot2::facet_wrap(ggplot2::vars(profile_label),
+                        ncol = min(n_profiles, 3L)) +
+    ggplot2::scale_colour_identity() +
+    .gg_probability_scale("Probability") +
     ggplot2::scale_x_discrete(expand = c(0, 0)) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1),
-                   panel.spacing = ggplot2::unit(0.6, "lines"),
+    ggplot2::scale_y_discrete(expand = c(0, 0)) +
+    .gg_titles(main, subtitle, "Response probabilities",
+               sprintf(paste("Probability of each response category (columns)",
+                             "on each indicator (rows), by profile%s"), shown),
+               caption = caption) +
+    ggplot2::labs(x = NULL, y = NULL) +
+    .gg_theme() +
+    .gg_tile_theme() +
+    ggplot2::theme(panel.spacing = ggplot2::unit(1, "lines"),
                    strip.text = ggplot2::element_text(face = "bold",
                                                       hjust = 0.5))
 }

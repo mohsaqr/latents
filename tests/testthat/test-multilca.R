@@ -24,12 +24,31 @@ test_that("multilca() is multilpa() with every indicator categorical", {
                    2L * length(.lca_items) * 2L)
 })
 
-test_that("multilca() refuses `categorical` and checks `vars`", {
+test_that("multilca() checks `vars` and the names in `categorical`", {
   expect_error(multilca(.lca_data, vars = .lca_items, id = "student",
-                        n_profiles = 2, categorical = "sports", n_starts = 1),
-               class = "latents_bad_argument")
+                        n_profiles = 2, categorical = "not_a_column",
+                        n_starts = 1),
+               class = "latents_bad_categorical")
   expect_error(multilca(.lca_data, vars = character(), id = "student",
                         n_profiles = 2, n_starts = 1))
+})
+
+test_that("multilca() keeps every indicator categorical whatever `categorical` says", {
+  without <- multilca(.lca_data, vars = .lca_items, id = "student",
+                      n_profiles = 2, n_group_classes = 2, n_starts = 1,
+                      seed = 1)
+  repeated <- multilca(.lca_data, vars = .lca_items, id = "student",
+                       n_profiles = 2, n_group_classes = 2, n_starts = 1,
+                       seed = 1, categorical = rev(.lca_items))
+  expect_equal(repeated$log_likelihood, without$log_likelihood,
+               tolerance = 1e-10)
+  expect_identical(repeated$categorical, without$categorical)
+  partial <- multilca(.lca_data, vars = .lca_items, id = "student",
+                      n_profiles = 2, n_group_classes = 2, n_starts = 1,
+                      seed = 1, categorical = .lca_items[1])
+  expect_equal(partial$log_likelihood, without$log_likelihood,
+               tolerance = 1e-10)
+  expect_identical(partial$categorical, without$categorical)
 })
 
 test_that("multilca() with id = NULL fits one group class without being told", {

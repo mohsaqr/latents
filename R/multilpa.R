@@ -965,6 +965,15 @@
 #'   different `drop_empty` are not compared by [compare_models()] or
 #'   [bootstrap_lrt()]. The setting is kept on the fit and passed on by
 #'   enumerations and refits; it has no effect on data without such rows.
+#' @param cores Number of processor cores to run the random starts on
+#'   (default 1). The starting values are drawn first, in order, on this
+#'   process, and only the iterations from them are spread over the cores, so
+#'   the result is identical to `cores = 1`; only the time differs. Workers
+#'   are forked processes on macOS and Linux and a socket cluster on Windows
+#'   and on macOS with Apple's Accelerate BLAS, as in
+#'   [enumerate_classes()]; a worker that fails as a whole raises
+#'   `latents_parallel_failure`. Models with membership covariates run their
+#'   starts on one core.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. The model does
 #'   not use it; it is stored so that `get_results(x, "sequences")`,
@@ -1201,8 +1210,9 @@ multilpa <- function(data, vars, id, n_profiles,
                        count_model = c("poisson", "negative_binomial"),
                        count_dispersion = c("varying", "equal"),
                        scaling = c("none", "person", "grand"),
-                       drop_empty = TRUE) {
+                       drop_empty = TRUE, cores = 1L) {
   family <- match.arg(family)
+  cores <- .latents_check_cores(cores)
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
@@ -1507,7 +1517,7 @@ multilpa <- function(data, vars, id, n_profiles,
   if (max_iter == 0L && !is.null(start)) n_starts <- 1L
   # Each start runs to completion or is recorded as failed; the best is
   # chosen by the shared rule (see .latents_run_starts()).
-  starts <- .latents_run_starts(n_starts, function(start_index) {
+  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
     initial <- if (start_index == 1L && !is.null(start)) start else {
       # The first start is Ward's hierarchical clustering, deterministic
       # and good at profiles that differ in shape; the rest are k-means
@@ -1529,12 +1539,15 @@ multilpa <- function(data, vars, id, n_profiles,
         if (start_index == 1L && !is.null(noise_start)) noise_start else 0.1,
         noise_log_density)
     }
+    initial
+  }, run = function(start_index, initial) {
     .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                tol, covariance_model, codes, n_categories, min_probability,
                held, structure, prior_parameters,
                accelerate_em = identical(acceleration, "squarem"),
                sampling_weights = sampling_weights, extra = extra)
-  }, select_start, interior = if (exclude_boundary) function(attempt) {
+  }, select_start = select_start, cores = cores,
+  interior = if (exclude_boundary) function(attempt) {
     !.multilpa_covariance_boundary(attempt$parameters, min_variance)
   })
   attempts <- starts$attempts

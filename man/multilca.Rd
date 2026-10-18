@@ -24,7 +24,8 @@ or to 1 when \code{id = NULL} (a single-level model has no second level).}
 \item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}, such as \code{n_starts}, \code{seed},
 \code{missing}, \code{tol} or \code{profile_covariates}. \code{ordinal} and \code{count} can name
 structured discrete indicators; the
-remaining indicators are categorical. \code{categorical} cannot be supplied.}
+remaining indicators are categorical. \code{categorical} may be given but
+changes nothing.}
 }
 \value{
 A fitted model of class \code{multilpa} (or \code{multilpa_covariates} when
@@ -46,9 +47,8 @@ indicators, call \code{\link[=multilpa]{multilpa()}} and name the categorical on
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{categorical} is supplied, since its
-columns are derived from \code{vars}, \code{ordinal} and \code{count} here. Every condition of
-\code{\link[=multilpa]{multilpa()}} can also be raised.
+\code{latents_bad_categorical} when \code{categorical} names a column not in
+\code{vars}. Every condition of \code{\link[=multilpa]{multilpa()}} can also be raised.
 }
 
 \examples{

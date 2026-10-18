@@ -125,7 +125,13 @@ estimation argument, applies identically to all candidates. Three starts per
 model are used here to limit computation; applied analyses should use at
 least ten, and a grid is re-estimated in its entirety when more starts are
 required, so that every candidate has the same opportunity to reach its
-maximum. The argument `seed` makes the starts reproducible.
+maximum. The argument `seed` makes the starts reproducible. When many starts
+are used, a candidate with more profiles than the data support can reach a
+degenerate solution in which one profile collapses on a single observation
+with every variance at its lower bound; its likelihood, and hence its
+criteria, then depend on `min_variance` rather than on the data.
+`boundary = "exclude"` sets such starts aside for every candidate (see
+*Diagnostics of the estimation*).
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -371,6 +377,23 @@ plot(models, what = "smallest")
 
 `plot(models, what = "selection")` displays all plots relevant to the
 choice of the number of classes jointly.
+
+A candidate on a boundary whose smallest profile holds about one observation
+is a degenerate solution, not a profile: a Gaussian profile centred on one
+observation raises the likelihood without limit as its variances shrink, so
+the reported likelihood is fixed by `min_variance`. The default,
+`boundary = "allow"`, reports it, as Mplus does, with a warning.
+`boundary = "exclude"` retains for each candidate the best start with no
+variance at its lower bound, and is advisable when many starts are used,
+since each additional start increases the chance of reaching such a
+solution. Categorical indicators are unaffected.
+
+```{r exclude, eval = FALSE}
+models <- enumerate_classes(course_engagement, activity, "student",
+                            n_profiles = 1:5, n_group_classes = 1:3,
+                            model = "VVI", n_starts = 200,
+                            boundary = "exclude", seed = 1)
+```
 
 ## Comparing candidates
 
@@ -632,6 +655,7 @@ knitr::kable(data.frame(
   Call = c(
     "enumerate_classes(data, vars, id, n_profiles, n_group_classes, model)",
     "enumerate_classes(..., n_starts = , missing = \"fiml\", centering = , scaling = )",
+    "enumerate_classes(..., boundary = \"exclude\")",
     "as.data.frame(models)",
     "get_results(models, \"best\")",
     "get_results(models, \"classification\")",
@@ -652,6 +676,7 @@ knitr::kable(data.frame(
   Result = c(
     "The fitted candidate models",
     "The same starts, missing-data handling, centring and scaling for every candidate",
+    "Starts with a variance at its lower bound set aside for every candidate",
     "One row per candidate with every column",
     "The candidate at the minimum of each criterion",
     "Size, AvePP and entropy of every class of every candidate",

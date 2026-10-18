@@ -64,6 +64,16 @@ test_that("enumerate_lca() treats every indicator as categorical", {
                alone$log_likelihood)
 })
 
+test_that("enumerate_lca() takes `categorical` as written for enumerate_classes()", {
+  plain <- enumerate_lca(student_esm, esm_activities, n_classes = 1:2,
+                         n_starts = 1, seed = 1)
+  repeated <- enumerate_lca(student_esm, esm_activities, n_classes = 1:2,
+                            n_starts = 1, seed = 1,
+                            categorical = esm_activities)
+  expect_equal(as.data.frame(repeated)$log_likelihood,
+               as.data.frame(plain)$log_likelihood, tolerance = 1e-10)
+})
+
 test_that("the single-level verbs refuse two-level and misplaced arguments", {
   expect_error(enumerate_lpa(srl, srl_indicators, id = "x", n_starts = 1),
                class = "latents_bad_argument")
@@ -74,8 +84,8 @@ test_that("the single-level verbs refuse two-level and misplaced arguments", {
   expect_error(enumerate_lca(student_esm, esm_activities, id = "student", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(enumerate_lca(student_esm, esm_activities,
-                             categorical = esm_activities, n_starts = 1),
-               class = "latents_bad_argument")
+                             categorical = "not_a_column", n_starts = 1),
+               class = "latents_bad_categorical")
   expect_error(enumerate_lca(student_esm, esm_activities, model = "EEE", n_starts = 1),
                class = "latents_bad_argument")
 })

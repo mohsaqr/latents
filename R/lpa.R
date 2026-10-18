@@ -25,7 +25,7 @@
 #' @param ... Further arguments for [multilpa()]: the covariance structure
 #'   (`model`, or `variance_model` and `covariance_model`, or `volume`,
 #'   `shape` and `orientation`), `missing`, `categorical`, `n_starts`,
-#'   `seed`, `prior`, `noise`, `profile_covariates` and the others it
+#'   `seed`, `boundary`, `prior`, `noise`, `profile_covariates` and the others it
 #'   documents, except `id` and `n_group_classes`, which a single-level model
 #'   does not have.
 #' @return A fitted `multilpa` object, as [multilpa()] returns, recording the
@@ -130,7 +130,8 @@ lca <- function(data, vars, n_classes, ...) {
 #'   present (`EEI`, `VVI`, `EEE`, `VVV`); `"all"` for all 14; or their
 #'   three-letter codes. See [enumerate_classes()].
 #' @param ... Further arguments for [multilpa()], such as `missing`,
-#'   `n_starts`, `seed` and `categorical`, except `id` and `n_group_classes`.
+#'   `n_starts`, `seed`, `boundary` and `categorical`, except `id` and
+#'   `n_group_classes`.
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
 #'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
 #'   candidate each criterion prefers, [plot()] the criteria against the
@@ -184,8 +185,9 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' @param vars Names of the categorical indicator columns.
 #' @param n_classes Positive whole numbers of classes to compare.
 #' @param ... Further arguments for [multilca()], such as `missing`,
-#'   `n_starts`, `seed` and `min_probability`, except `id`,
-#'   `n_group_classes` and `categorical`.
+#'   `n_starts`, `seed` and `min_probability`, except `id` and
+#'   `n_group_classes`. Every indicator is categorical unless named in
+#'   `ordinal` or `count`; `categorical` may be given but changes nothing.
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
 #'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
 #'   candidate each criterion prefers, [plot()] the criteria against the
@@ -205,15 +207,14 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 enumerate_lca <- function(data, vars, n_classes = 1:4, ...) {
   extra <- list(...)
   .multilpa_single_level_call("enumerate_lca", "enumerate_classes", extra)
-  if ("categorical" %in% names(extra)) {
-    stop(errorCondition(paste(
-      "`categorical` cannot be supplied to enumerate_lca(): every indicator in",
-      "`vars` is categorical. Use enumerate_lpa() for mixed indicators."),
-      class = "latents_bad_argument", call = NULL))
-  }
+  # As in multilca(), a `categorical` adds to the set; every indicator stays
+  # categorical.
+  categorical <- .latents_lca_categorical(vars, extra)
+  extra$categorical <- NULL
   .latents_candidate_data(.multilpa_quiet_single_level(
-    enumerate_classes(data, vars, id = NULL, n_profiles = n_classes,
-                      categorical = setdiff(vars, c(extra$ordinal, extra$count)), ...)),
+    do.call(enumerate_classes, c(list(data = data, vars = vars, id = NULL,
+                                      n_profiles = n_classes,
+                                      categorical = categorical), extra))),
     substitute(data))
 }
 

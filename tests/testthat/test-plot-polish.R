@@ -76,6 +76,29 @@ test_that("an all-categorical fit gets a response heatmap", {
   expect_plot(plot(mixed, what = "heatmap"))
 })
 
+test_that("a polytomous response heatmap has one panel per profile", {
+  skip_if_not_installed("ggplot2")
+  set.seed(3)
+  items <- sprintf("item_%02d", seq_len(8))
+  responses <- as.data.frame(lapply(stats::setNames(items, items), \(item) {
+    factor(sample(1:5, 240, replace = TRUE), levels = 1:5)
+  }))
+  fit <- quietly(lca(responses, items, n_classes = 3, n_starts = 1, seed = 1))
+  heat <- expect_plot(plot(fit, what = "heatmap"))
+  # Indicators run down the rows and categories across, so the panel has five
+  # columns however many indicators there are.
+  expect_identical(rev(levels(heat$data$indicator)), items)
+  expect_identical(levels(heat$data$category_label), as.character(1:5))
+  expect_identical(nlevels(heat$data$profile_label), 3L)
+  expect_identical(names(heat$facet$params$facets), "profile_label")
+  expect_identical(all.vars(heat$mapping$y), "indicator")
+  expect_identical(all.vars(heat$mapping$x), "category_label")
+  expect_identical(nrow(heat$data), length(items) * 5L * 3L)
+  # Each profile's distribution on an indicator sums to one across its row.
+  sums <- aggregate(probability ~ indicator + profile_label, heat$data, sum)
+  expect_true(all(abs(sums$probability - 1) < 1e-8))
+})
+
 test_that("covariate fits draw the measurement and classification views", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")

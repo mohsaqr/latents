@@ -22,16 +22,16 @@
 #' @param ... Further arguments to [multilpa()], such as `n_starts`, `seed`,
 #'   `missing`, `tol` or `profile_covariates`. `ordinal` and `count` can name
 #'   structured discrete indicators; the
-#'   remaining indicators are categorical. `categorical` cannot be supplied.
+#'   remaining indicators are categorical. `categorical` may be given but
+#'   changes nothing.
 #' @return A fitted model of class `multilpa` (or `multilpa_covariates` when
 #'   membership covariates are given), exactly as [multilpa()] returns it with
 #'   the corresponding discrete indicator types. Categorical response
 #'   probabilities are in
 #'   `get_results(fit, "responses")`, one row per profile, item and category.
 #' @section Conditions:
-#'   `latents_bad_argument` when `categorical` is supplied, since its
-#'   columns are derived from `vars`, `ordinal` and `count` here. Every condition of
-#'   [multilpa()] can also be raised.
+#'   `latents_bad_categorical` when `categorical` names a column not in
+#'   `vars`. Every condition of [multilpa()] can also be raised.
 #' @seealso [multilpa()] for continuous and mixed indicators, and
 #'   `vignette("lca", package = "latents")`.
 #' @examples
@@ -46,16 +46,13 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
   if (missing(id)) .multilpa_missing_id("multilca", "`lca()`")
   stopifnot("`vars` must be a character vector of column names" =
               is.character(vars) && length(vars) >= 1L && !anyNA(vars))
-  if ("categorical" %in% names(list(...))) {
-    stop(errorCondition(paste(
-      "`categorical` cannot be supplied to multilca(): every indicator in",
-      "`vars` is categorical. Use multilpa() for mixed indicators."),
-      class = "latents_bad_argument", call = NULL))
-  }
   # Forward `n_group_classes` only when it was given, so that `id = NULL`
   # resolves to one group class exactly as it does in multilpa().
   extra <- list(...)
-  categorical <- setdiff(vars, c(extra$ordinal, extra$count))
+  # A `categorical` written as for multilpa() or enumerate_classes() adds to
+  # the set rather than replacing it, so every indicator stays categorical.
+  categorical <- .latents_lca_categorical(vars, extra)
+  extra$categorical <- NULL
   arguments <- c(list(data = data, vars = vars, id = id, n_profiles = n_profiles,
                        categorical = categorical), extra)
   if (!missing(n_group_classes)) arguments$n_group_classes <- n_group_classes
@@ -63,4 +60,29 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
   # Report the call the caller wrote, as multilpa() does for its own calls.
   fit$call <- match.call()
   fit
+}
+
+#' The categorical indicators of an all-categorical verb
+#'
+#' Every indicator in `vars` not named in `ordinal` or `count`, together with
+#' any `categorical` the caller wrote as for [multilpa()]. A name in
+#' `categorical` that is not in `vars` is refused here, before an enumeration
+#' could turn it into a grid of failed candidates.
+#' @param vars The indicator names.
+#' @param extra `list(...)` as the verb received it.
+#' @return A character vector of indicator names.
+#' @noRd
+.latents_lca_categorical <- function(vars, extra) {
+  stopifnot("`categorical` must be a character vector of column names" =
+              is.null(extra$categorical) ||
+              (is.character(extra$categorical) && !anyNA(extra$categorical)))
+  unknown <- setdiff(extra$categorical, vars)
+  if (length(unknown) > 0L) {
+    stop(errorCondition(sprintf(
+      "`categorical` names %s, which %s not in `vars`.",
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      if (length(unknown) == 1L) "is" else "are"),
+      class = "latents_bad_categorical", call = NULL))
+  }
+  union(setdiff(vars, c(extra$ordinal, extra$count)), extra$categorical)
 }

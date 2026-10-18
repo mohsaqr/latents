@@ -244,17 +244,37 @@
 #' @param interior `NULL`, or a function of a successful attempt returning
 #'   `TRUE` when no variance is at its lower bound; when supplied, starts at
 #'   the bound are excluded from the choice (see `.multilpa_select_start()`).
+#' @param prepare `NULL`, or a function of the start index returning that
+#'   start's initial values; `run` is then a function of the start index and
+#'   those values. Every start is prepared first, in order and on this
+#'   process, so the random numbers are drawn exactly as when each start is
+#'   prepared and run in turn (the iterations draw none); only the
+#'   iterations are spread over `cores`.
+#' @param cores Number of cores for the iterations, from
+#'   `.latents_check_cores()`; used only with `prepare`.
 #' @return A list with `attempts`, `valid`, `scores`, `converged` and
 #'   `best_start`.
 #' @noRd
 .latents_run_starts <- function(n_starts, run, select_start,
                                 score = function(attempt) {
                                   attempt$expectation$log_likelihood
-                                }, interior = NULL) {
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch(run(start_index),
-             error = function(error) list(error = conditionMessage(error)))
-  })
+                                }, interior = NULL, prepare = NULL,
+                                cores = 1L) {
+  failure <- function(error) list(error = conditionMessage(error))
+  attempts <- if (is.null(prepare)) {
+    lapply(seq_len(n_starts), function(start_index) {
+      tryCatch(run(start_index), error = failure)
+    })
+  } else {
+    initial <- lapply(seq_len(n_starts), function(start_index) {
+      tryCatch(list(values = prepare(start_index)), error = failure)
+    })
+    .latents_map_candidates(seq_len(n_starts), function(start_index) {
+      prepared <- initial[[start_index]]
+      if (!is.null(prepared$error)) return(prepared)
+      tryCatch(run(start_index, prepared$values), error = failure)
+    }, cores)
+  }
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
   if (!any(valid)) {
     stop(errorCondition(sprintf(

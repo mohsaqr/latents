@@ -106,6 +106,28 @@ models <- enumerate_classes(course_engagement, activity, "student",
                             model = "VVI", n_starts = 20, seed = 1)
 ```
 
+Additional starts also make a degenerate solution more likely to be found
+when a candidate has more profiles than the data support: one profile
+collapses on a single observation, with every variance at its lower bound
+(`min_variance`). The Gaussian likelihood of such a profile increases without
+limit as its variances shrink, so its value, and every criterion computed
+from it, is determined by `min_variance` rather than by the data, and BIC can
+favour one profile too many as a result. In a simulation with 500 starts per
+candidate, this occurred in two of 29 datasets; with ten or twenty starts it
+was rare. Such candidates carry `boundary = TRUE` in the table of
+candidates. `boundary = "exclude"` sets aside every start with a variance at
+its lower bound and retains the best of the remaining starts; the default,
+`"allow"`, retains the highest likelihood, as Mplus does. The option is
+advisable when many starts are used, and it has no effect on categorical
+indicators, which have no variances.
+
+```{r starts-exclude, eval = FALSE}
+models <- enumerate_classes(course_engagement, activity, "student",
+                            n_profiles = 1:6, n_group_classes = 1:4,
+                            model = "VVI", n_starts = 200,
+                            boundary = "exclude", seed = 1)
+```
+
 ### Centring and scaling
 
 `centering` subtracts a mean and `scaling` divides by a standard deviation,
@@ -548,7 +570,10 @@ increase as well. A higher AvePP is never a ground for preferring one
 solution of a given candidate over another: the maximum likelihood solution
 is the estimate. The columns `converged`, `boundary`, `n_best_replicated`,
 `warnings` and `error` of the table of candidates report the same
-diagnostics.
+diagnostics. A candidate on a boundary whose smallest class holds about one
+observation is a degenerate solution rather than a class; re-estimating the
+grid with `boundary = "exclude"` replaces it with the best solution in the
+interior of the parameter space (see *Random starts*).
 
 ### The smallest class
 
@@ -642,9 +667,10 @@ No algorithm converts this evidence into a number of classes, and latents
 applies none. A defensible decision is reached by examining the evidence in a
 fixed sequence and reporting each step:
 
-0. **Analytic decisions**: report the number of random starts, any centring
-   or scaling, the treatment of missing values, and the number of
-   observations with no observed indicator.
+0. **Analytic decisions**: report the number of random starts, whether
+   starts at a variance bound were excluded (`boundary`), any centring or
+   scaling, the treatment of missing values, and the number of observations
+   with no observed indicator.
 1. **Sample-size convention**: specify the convention before examining any
    criterion and apply it consistently.
 2. **Criterion minima**: examine the minima under that convention, noting
@@ -674,6 +700,7 @@ the reported decision can be reproduced from the reported evidence.
 knitr::kable(data.frame(
   Call = c(
     "enumerate_classes(..., n_starts = , centering = , scaling = , missing = \"fiml\")",
+    "enumerate_classes(..., boundary = \"exclude\")",
     "as.data.frame(models)",
     "get_results(models, \"best\")",
     "plot(models), plot(models, what = \"bic_groups\"), what = \"all\"",
@@ -695,6 +722,7 @@ knitr::kable(data.frame(
     "bootstrap_lrt(smaller, larger, data, iter)"),
   Result = c(
     "The same starts, centring, scaling and missing-data handling for every candidate",
+    "Starts with a variance at its lower bound set aside for every candidate",
     "One row per candidate: every criterion, classification summaries and checks",
     "The candidate at the minimum of each criterion and convention",
     "Criteria across the candidates, lowest ringed",

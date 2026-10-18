@@ -14,8 +14,9 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 \item{n_classes}{Positive whole numbers of classes to compare.}
 
 \item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
-\code{n_starts}, \code{seed} and \code{min_probability}, except \code{id},
-\code{n_group_classes} and \code{categorical}.}
+\code{n_starts}, \code{seed} and \code{min_probability}, except \code{id} and
+\code{n_group_classes}. Every indicator is categorical unless named in
+\code{ordinal} or \code{count}; \code{categorical} may be given but changes nothing.}
 }
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}

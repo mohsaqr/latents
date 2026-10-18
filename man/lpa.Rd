@@ -17,7 +17,7 @@ indicators; name categorical ones in \code{categorical}.}
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}: the covariance structure
 (\code{model}, or \code{variance_model} and \code{covariance_model}, or \code{volume},
 \code{shape} and \code{orientation}), \code{missing}, \code{categorical}, \code{n_starts},
-\code{seed}, \code{prior}, \code{noise}, \code{profile_covariates} and the others it
+\code{seed}, \code{boundary}, \code{prior}, \code{noise}, \code{profile_covariates} and the others it
 documents, except \code{id} and \code{n_group_classes}, which a single-level model
 does not have.}
 }

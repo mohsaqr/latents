@@ -69,7 +69,9 @@ utils::globalVariables("statistic")
 #'   applied to every candidate alike, such as `n_starts` (random starts per
 #'   candidate; more starts make a local maximum less likely, and every
 #'   candidate gets the same number), `max_iter`, `missing`, `categorical`,
-#'   `centering`, `scaling` and `drop_empty`. For example, `enumerate_classes(data, vars, id,
+#'   `centering`, `scaling`, `drop_empty` and `boundary` (`"exclude"` sets
+#'   aside starts with a variance at `min_variance`, the degenerate solutions
+#'   that become likelier as `n_starts` grows). For example, `enumerate_classes(data, vars, id,
 #'   n_profiles = 2:6, n_starts = 20, seed = 1)`. Group-class families take
 #'   only `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs

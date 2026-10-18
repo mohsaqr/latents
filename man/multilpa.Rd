@@ -45,7 +45,8 @@ multilpa(
   count_model = c("poisson", "negative_binomial"),
   count_dispersion = c("varying", "equal"),
   scaling = c("none", "person", "grand"),
-  drop_empty = TRUE
+  drop_empty = TRUE,
+  cores = 1L
 )
 }
 \arguments{
@@ -509,6 +510,16 @@ counted in those statistics, except the individual sample size of a
 different \code{drop_empty} are not compared by \code{\link[=compare_models]{compare_models()}} or
 \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}. The setting is kept on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}
+
+\item{cores}{Number of processor cores to run the random starts on
+(default 1). The starting values are drawn first, in order, on this
+process, and only the iterations from them are spread over the cores, so
+the result is identical to \code{cores = 1}; only the time differs. Workers
+are forked processes on macOS and Linux and a socket cluster on Windows
+and on macOS with Apple's Accelerate BLAS, as in
+\code{\link[=enumerate_classes]{enumerate_classes()}}; a worker that fails as a whole raises
+\code{latents_parallel_failure}. Models with membership covariates run their
+starts on one core.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional
