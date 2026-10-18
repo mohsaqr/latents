@@ -3,23 +3,22 @@
 \name{prior_control}
 \alias{prior_control}
 \alias{print.latents_prior}
-\title{Conjugate prior for Gaussian mixture estimation}
+\title{Specify a conjugate prior for Gaussian mixture estimation}
 \usage{
 prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
 
 \method{print}{latents_prior}(x, ...)
 }
 \arguments{
-\item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa};
-mclust's default \code{0.01}. Zero leaves the means unshrunk.}
+\item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa}
+(default \code{0.01}, as in mclust). Zero leaves the means unshrunk.}
 
 \item{mean}{Optional prior mean, one value per continuous indicator, on the
 scale the profile means are estimated on: the indicators' own units, or
-their centred values when \code{\link[=multilpa]{multilpa()}}'s \code{centering} centres them (so a
-mean of the raw data is far from the centred data's and is not the
-default). Naming one needs a positive \code{shrinkage}.}
+their centred values under \code{\link[=multilpa]{multilpa()}}'s \code{centering}. Requires a positive
+\code{shrinkage}.}
 
-\item{dof}{Optional prior degrees of freedom, a single number.}
+\item{dof}{Optional prior degrees of freedom, a single positive number.}
 
 \item{scale}{Optional prior scale: a single positive number for an
 axis-parallel or spherical structure, or a positive-definite \code{d} by \code{d}
@@ -37,12 +36,11 @@ computed from the data.
 \code{print()} returns \code{x} invisibly.
 }
 \description{
-Requests maximum a posteriori (MAP) estimation of the Gaussian profile means
-and covariances under the conjugate prior of Fraley and Raftery (2007),
-exactly as \code{mclust::priorControl()} does for \code{mclust::Mclust()}. Pass the
-result as \code{multilpa(prior = )}. The prior keeps covariances away from
-singularity, which is what lets a many-profile or many-indicator model be
-fitted where maximum likelihood degenerates.
+Returns a \code{latents_prior} object requesting maximum a posteriori (MAP)
+estimation of the Gaussian profile means and covariances under the
+conjugate prior of Fraley and Raftery (2007), as \code{mclust::priorControl()}
+does for \code{mclust::Mclust()}. Pass the result as \code{multilpa(prior = )}. The
+prior keeps the covariance estimates away from singularity.
 }
 \details{
 Every argument left \code{NULL} takes \code{mclust::defaultPrior()}'s value, computed
@@ -53,20 +51,19 @@ the average sample variance (axis-parallel and spherical structures), for
 \code{G} profiles.
 
 The updates follow mclust's fitted-model convention, including its
-structure-specific departures from a textbook conjugate update. For \code{EII},
+structure-specific departures from a textbook conjugate update, so the
+controls have different effects across covariance structures. For \code{EII},
 \code{scale} does not enter the variance update. For \code{EEI}, \code{shrinkage} and
 \code{mean} enter the variance calculation but do not shrink the fitted means.
 For \code{VEV}, \code{dof} does not enter the update. \code{EEI}, \code{EVI} and \code{EEV} count the
-mean-prior contribution once rather than once per profile. These
-conventions are retained for agreement with mclust; the controls therefore
-have different effects across covariance structures.
+mean-prior contribution once rather than once per profile.
 }
 \section{Conditions}{
 
-Raises \code{latents_bad_argument} for a negative or non-finite \code{shrinkage}, a
-\code{mean} with a zero \code{shrinkage}, a non-positive \code{dof}, or a \code{scale} that is
-neither a positive number nor a square, symmetric, positive-definite
-matrix.
+\code{latents_bad_argument} for a negative or non-finite \code{shrinkage}, a
+non-finite \code{mean}, a \code{mean} with a zero \code{shrinkage}, a non-positive or
+non-finite \code{dof}, or a \code{scale} that is neither a positive number nor a
+square, symmetric, positive-definite matrix.
 }
 
 \examples{

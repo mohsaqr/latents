@@ -2,7 +2,7 @@
 % Please edit documentation in R/report.R
 \name{report}
 \alias{report}
-\title{Everything about a fit, in one call}
+\title{Print a full report of a fitted model}
 \usage{
 report(
   x,
@@ -19,35 +19,33 @@ report(
 \item{data}{Optional. The data the model was fitted to; a fit carries the
 columns it was built from.}
 
-\item{plots}{\code{TRUE}, the default, draws the plots. \code{FALSE} prints only.}
+\item{plots}{\code{TRUE} (the default) draws the plots. \code{FALSE} prints only.}
 
-\item{by}{Passed to \code{\link[=diagnostics]{diagnostics()}}, and from there to
-the bivariate residuals: \code{"profile"}, the default, assesses each profile
-separately, \code{"overall"} pools them.}
+\item{by}{Passed to \code{\link[=diagnostics]{diagnostics()}} for the bivariate residuals:
+\code{"profile"} (the default) assesses each profile separately, \code{"overall"}
+pools them.}
 
-\item{rows}{How many rows of each of the summary's tables to print, passed
-to \code{print(summary(x))}. A first look at a fit with thousands of
-observations would otherwise be mostly posteriors.}
+\item{rows}{Number of rows of each summary table to print, passed to
+\code{print(summary(x))}. Default 10.}
 
-\item{...}{Nothing further is accepted. An argument this function cannot
-forward raises an error of class \code{latents_bad_argument} naming it, before
-anything has been printed, rather than being dropped.}
+\item{...}{Not used. Any further argument raises \code{latents_bad_argument}
+before anything is printed.}
 }
 \value{
-The fitted model, invisibly. Called for the printing and drawing.
+The fitted model, invisibly. Called for its printed and plotted
+output.
 }
 \description{
-Prints the estimates, then the classification diagnostics, then draws every
-plot the fit supports. A first look, not a substitute for the verbs: each
-section is what \code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}} and \code{\link[=plot]{plot()}} return, and the
-tables are reachable from those rather than from here.
+Prints the model summary, the descriptive statistics of its variables and
+the classification diagnostics, then draws every plot view the fit
+supports.
 }
 \section{What it prints}{
- \code{summary()}, which is every table the fit can
-produce, then \code{descriptives()}, then the condensed reading of
-\code{diagnostics()}, then every plot view the fit supports. Each section is
-what that verb returns, and the tables are reached from \code{\link[=get_results]{get_results()}}
-rather than from here.
+ \code{summary()}, then \code{descriptives()}, then the
+one-line-per-diagnostic reading of \code{diagnostics()}, then every plot view
+the fit supports. Views that the plot method declines for this model are
+listed after the plots as not drawn. The tables themselves are obtained
+from \code{\link[=get_results]{get_results()}}, \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}} and \code{\link[=diagnostics]{diagnostics()}}.
 }
 
 \examples{

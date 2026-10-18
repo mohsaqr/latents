@@ -241,173 +241,186 @@ plot_views()
 }
 \arguments{
 \item{x}{The object to plot: a profile, class or transition model for the
-named fit views and \code{plot_diagnostics()}, an
-enumeration from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}} or
-\code{\link[=enumerate_lca]{enumerate_lca()}} for \code{plot_enumeration()} and \code{plot_tree()}, a
-transition fit from \code{\link[=lta]{lta()}} for \code{plot_transitions()}. A general \code{\link[=lta]{lta()}}
-fit (occasion-varying transitions, covariates, mover-stayer, second
-order, weights, ordinal or count indicators) draws only its transition
-matrix, with \code{plot_transitions()} or \code{plot()}; a transition or
-group-class family grid plots with \code{plot(x, what = )}.}
+named fit views and \code{plot_diagnostics()}; an enumeration from
+\code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}} for
+\code{plot_enumeration()}, \code{plot_selection()} and \code{plot_tree()}; a transition
+fit from \code{\link[=lta]{lta()}} for \code{plot_transitions()}. A general \code{\link[=lta]{lta()}} fit
+(occasion-varying transitions, covariates, mover-stayer, second order,
+weights, ordinal or count indicators) draws only its transition matrix,
+with \code{plot_transitions()} or \code{plot()}. Transition and group-class family
+grids plot with \code{plot(x, what = )}.}
 
-\item{what}{Which view to draw; \code{"all"} draws every view of that function
-the model has, as a list, and names any it cannot draw. For
-\code{plot_profiles()}: \code{"lines"} (default), \code{"bars"} (means from zero with
-95\% intervals), \code{"heatmap"} (means in observed standard deviations, or
-the response probabilities of categorical indicators), \code{"raincloud"}
-(each indicator's distribution by assigned profile), \code{"parallel"} (every
-case as a line) or \code{"pairs"} (scatter-plot matrix with each profile's 95\%
-covariance ellipse). For
-\code{plot_selection()}: \code{"all"} (default), \code{"deltas"}, \code{"heatmap"},
+\item{what}{The view to draw. \code{"all"} draws every view of that function
+that the model supports, as a list, and names in a message any it cannot
+draw. For \code{plot_profiles()}: \code{"lines"} (default), \code{"bars"} (means from
+zero with 95\% intervals), \code{"heatmap"} (means in observed standard
+deviations, or the response probabilities of categorical indicators),
+\code{"raincloud"} (each indicator's distribution by assigned profile),
+\code{"parallel"} (every case as a line) or \code{"pairs"} (scatter-plot matrix
+with each profile's 95\% covariance ellipse).
+
+For \code{plot_diagnostics()}: \code{"all"} (default), \code{"sizes"} (effective profile
+counts), \code{"posteriors"} (posterior probability of each case's assigned
+profile), \code{"entropy"} (each case's entropy relative to a flat posterior)
+or \code{"avepp"} (average posterior probability matrix). \code{"group_sizes"},
+\code{"group_posteriors"}, \code{"group_entropy"} and \code{"group_avepp"} draw the same
+four views for the groups and their group classes; \code{"all"} includes them
+when the fit has two or more group classes, and with fewer they are
+refused with \code{latents_no_group_classes}. A fit with a noise component
+supports \code{"sizes"} and the group views only: \code{"all"} returns \code{"sizes"},
+and the other individual-level views are refused with
+\code{latents_unsupported_noise}.
+
+For \code{plot_selection()}: \code{"all"} (default), \code{"deltas"}, \code{"heatmap"},
 \code{"smallest"}, \code{"trust"} or \code{"diagnostics"}, as described for
-\code{plot_enumeration()} below. For \code{plot_diagnostics()}: \code{"all"}
-(default), \code{"sizes"}
-(effective profile counts), \code{"posteriors"} (posterior probability of each
-case's assigned profile), \code{"entropy"} (each case's entropy relative to a
-flat posterior) or \code{"avepp"} (average posterior probability matrix).
-\code{"group_sizes"}, \code{"group_posteriors"}, \code{"group_entropy"} and
-\code{"group_avepp"} draw the same four views for the groups and their group
-classes, and \code{"all"} includes them when the fit has two or more group
-classes; with fewer they refuse with \code{latents_no_group_classes}.
-A noise fit supports \code{"sizes"} and the group views only; \code{"all"} returns
-\code{"sizes"}, and the other individual diagnostics refuse with
-\code{latents_unsupported_noise}. For
-\code{plot_enumeration()}: criterion columns of \code{as.data.frame(x)}, such as
-\code{"bic_groups"}, or \code{"all"}; the default draws AIC, both BICs and ICL
-over individuals. Or classification quality across the candidates, in
-the words of a single model's plot: \code{"entropy"} (relative entropy),
-\code{"avepp"} (the lowest AvePP, with the cutoff dashed) or \code{"diagnostics"}
-(both), at each level with two or more classes. Or model-selection
-evidence, none of which selects a model: \code{"deltas"} (how much the
-criterion in \code{using} fell with each added profile and each added group
-class; see \code{get_results(x, "deltas")} and \code{"knees"}), \code{"heatmap"} (the criterion over profiles and group classes,
-above the lowest), \code{"smallest"} (the smallest class share, 5\% dashed) or
-\code{"trust"} (convergence, boundary and replication of every candidate);
-\code{"selection"} draws all of them and \code{"diagnostics"}, as a list.}
+\code{plot_enumeration()}.
 
-\item{main, subtitle}{Title and subtitle. \code{NULL} uses the view's own.}
+For \code{plot_enumeration()}, three kinds of view; information criteria
+cannot be requested together with the other two:
+\itemize{
+\item Information criteria: criterion columns of \code{as.data.frame(x)}, such as
+\code{"bic_groups"}, or \code{"all"}. The default draws AIC, both BICs and ICL
+over individuals.
+\item Classification quality across the candidates, at each level with two
+or more classes: \code{"entropy"} (relative entropy), \code{"avepp"} (the lowest
+AvePP, with the cutoff dashed) or \code{"diagnostics"} (both).
+\item Model-selection evidence (none of which selects a model): \code{"deltas"}
+(the decrease in the criterion in \code{using} with each added profile and
+each added group class; see \code{get_results(x, "deltas")} and
+\code{"knees"}), \code{"heatmap"} (the criterion over profiles and group classes,
+relative to the lowest), \code{"smallest"} (the smallest class share, with
+5\% dashed) or \code{"trust"} (convergence, boundary and replication of every
+candidate). \code{"selection"} draws all four and \code{"diagnostics"}, as a
+list.
+}}
 
-\item{criterion}{The former name for enumeration criteria. On a profile
-grid, use alone or with \code{what = "enumeration"}; other grid families use
-\code{"bic"}, \code{"aic"} or \code{"bic_individual"}.}
+\item{main, subtitle}{Title and subtitle. \code{NULL} (default) uses the view's
+own.}
 
-\item{...}{Additional arguments. Profile/class plot methods refuse unknown
-names; methods that ignored them in 0.9.21 warn with
-\code{latents_unused_argument}, as described below.}
+\item{criterion}{The former name of \code{what} for enumeration criteria. On a
+profile grid it is used alone or with \code{what = "enumeration"}; transition
+and group-class family grids take \code{"bic"}, \code{"aic"} or
+\code{"bic_individual"}.}
 
-\item{level}{Confidence level for additive, regression and growth views
-(default 0.95). On pooled plots, the former name for \code{what}: \code{"profile"},
-\code{"group"} or \code{"measurement"}.}
+\item{...}{Not used. Profile, class and transition models and enumerations
+refuse unknown arguments with \code{latents_bad_argument}; the other methods
+ignore them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
 
-\item{palette}{For bootstrap plots, a colour vector; \code{NULL} uses the
-standard histogram and observed-statistic colours.}
+\item{level}{Confidence level for additive, mixture-regression and growth
+views (default 0.95). On pooled plots, the former name of \code{what}:
+\code{"profile"}, \code{"group"} or \code{"measurement"}.}
 
-\item{style}{The former bootstrap drawing style; unused with a warning.}
+\item{palette}{For bootstrap plots, a colour vector for the histogram and
+the observed statistic; \code{NULL} (default) uses the standard colours.}
 
-\item{time}{For growth/trajectory views, the numeric time column. \code{NULL}
-uses the first numeric variable in the fitted random or regression design.}
+\item{style}{The former bootstrap drawing style; ignored with a
+\code{latents_unused_argument} warning.}
 
-\item{facet}{For trajectories, \code{FALSE} draws all classes together;
-\code{TRUE} draws one panel per class.}
+\item{time}{For growth and trajectory views, the numeric time column.
+\code{NULL} (default) uses the first numeric variable in the fitted random or
+regression design.}
+
+\item{facet}{For trajectories, \code{FALSE} (default) draws all classes in one
+panel; \code{TRUE} draws one panel per class.}
 
 \item{persons}{For individual trajectories, the number of persons to show
 (default 12), or a vector of their identifiers.}
 
-\item{max_persons}{The maximum observed trajectories behind the class
-means (default 120); zero hides them.}
+\item{max_persons}{The maximum number of observed trajectories drawn
+behind the class means (default 120); zero hides them.}
 
-\item{spread}{For growth trajectories, the random-effect spread of persons
-around the class curve, from zero (hidden) to less than one; default 0.8.}
+\item{spread}{For growth trajectories, the band of random-effect spread of
+persons around the class curve, from 0 (hidden) to less than 1; default
+0.8.}
 
-\item{predictor}{For the fitted mixture-regression view, a numeric
-predictor in the formula. \code{NULL} uses its first numeric predictor.}
+\item{predictor}{For the fitted view of a mixture regression, a numeric
+predictor in the formula. \code{NULL} (default) uses the first numeric
+predictor.}
 
 \item{statistic}{\code{"mean"} (default), \code{"median"} or \code{"mode"}. They coincide
 for continuous indicators; for categorical ones they summarise the fitted
 probabilities on the numeric category scale, without intervals.}
 
-\item{scale}{\code{"raw"} keeps each indicator in its own units; \code{"standardized"}
-divides its deviation from the observed mean by its observed standard
-deviation.}
+\item{scale}{\code{"raw"} (default) keeps each indicator in its own units;
+\code{"standardized"} divides its deviation from the observed mean by its
+observed standard deviation.}
 
-\item{intervals}{For profile, bar and response views, \code{TRUE} draws 95\%
-intervals when the fit has standard
-errors; otherwise the subtitle says why there are none. They are the
-\code{conf_low} and \code{conf_high} of \code{\link[=parameter_inference]{parameter_inference()}}: a response
-probability's interval is built on the logit scale.}
+\item{intervals}{For profile, bar and response views, \code{TRUE} (default)
+draws 95\% intervals when the fit has standard errors; otherwise the
+subtitle states why there are none. They are the \code{conf_low} and
+\code{conf_high} of \code{\link[=parameter_inference]{parameter_inference()}}; a response probability's interval
+is formed on the logit scale.}
 
-\item{labels}{\code{TRUE} labels each series directly; \code{FALSE} uses a legend.
-On sequence views, \code{TRUE} blocks the groups by group class under
+\item{labels}{\code{TRUE} (default) labels each series directly; \code{FALSE} uses a
+legend. On sequence views, \code{TRUE} groups the rows by group class under
 labelled strips.}
 
-\item{data}{Optional. The data the model was fitted to, used only to
-compute intervals from a different frame.}
+\item{data}{The data the model was fitted to, used only to compute the
+intervals. \code{NULL} (default) uses the data stored in the fit.}
 
 \item{category}{Which category's probability to draw: \code{"last"} (default),
 \code{"first"}, or a single label or index.}
 
-\item{cell_labels}{For sequence views, \code{TRUE} prints each assigned profile
-in its cell while the display is sparse enough to hold the text.}
+\item{cell_labels}{For sequence views, \code{TRUE} (default) prints each
+assigned profile in its cell when the cells are large enough for the
+text.}
 
 \item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
-\code{"selection"}, the information criterion they read (default
-\code{"bic_groups"}); \code{"smallest"} and \code{"trust"} do not use one.}
+\code{"selection"}, the information criterion used (default
+\code{"bic_groups"}); \code{"smallest"} and \code{"trust"} use none.}
 
 \item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
-\code{"selection"}, the AvePP cutoff drawn as a dashed line.}
+\code{"selection"}, the AvePP cutoff drawn as a dashed line (default 0.8).}
 
-\item{combine}{\code{TRUE} draws several criteria as panels of one plot; \code{FALSE}
-returns one plot per criterion.}
+\item{combine}{\code{TRUE} (default) draws several criteria as panels of one
+plot; \code{FALSE} returns one plot per criterion.}
 
-\item{mark_minimum}{\code{TRUE} rings each criterion's lowest value among
-converged candidates. It marks an extremum; it does not select a model.
-Information criteria only.}
+\item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest value
+among converged candidates, without selecting a model. Information
+criteria only.}
 }
 \value{
-A ggplot object. \code{plot_diagnostics(what = "all")},
-\code{plot(fit, what = "all")} on a fitted model,
-\code{plot_enumeration(combine = FALSE)} with several criteria, and the
-enumeration views when more than one is asked for (including
-\code{"selection"}) return a \code{latents_plots} list of them, which draws every
-one when printed.
-\code{plot_views()} returns a \code{data.frame} with one row per view: \code{type} (the
-value for \code{what}), \code{group} and \code{description}.
+A ggplot object. \code{what = "all"} (on \code{plot()} of a fitted model or
+on a named plot function), \code{plot_enumeration(combine = FALSE)} with
+several criteria or classification-quality measures, and enumeration
+views when more than one is requested (including \code{"selection"}) return
+a \code{latents_plots} list of ggplot objects, which draws each one when
+printed. \code{plot_views()} returns a \code{data.frame} with one row per view:
+\code{type} (the value for \code{what}), \code{group} and \code{description}.
 }
 \description{
-Every result of this package plots with \code{plot()}, which returns a ggplot
-object to print, save with \code{ggplot2::ggsave()} or restyle with
-\code{+ ggplot2::theme()}. The formerly base-graphics plots of mixture
-regressions, pooled imputations and bootstrap tests draw when called,
-including inside loops, and return their ggplot invisibly to avoid drawing
-twice at the console. The main views also have functions of their own,
-whose arguments an editor completes, and each groups related views under
-\code{what}, with \code{"all"} drawing every one: \code{plot_profiles()} (profile means as
-lines, bars, a heatmap, rainclouds, parallel lines or pairs, or
-categorical means, medians and modes),
-\code{plot_responses()} (categorical response probabilities),
-\code{plot_sequences()} (each group's profile at each
-occasion), \code{plot_prevalence()} (profile shares within each group class),
-\code{plot_diagnostics()} (classification quality), \code{plot_selection()} (the
-model-selection evidence of a grid),
-\code{plot_transitions()} (transition matrix), \code{plot_enumeration()}
-(information criteria, classification quality and model-selection evidence
-across a grid) and \code{plot_tree()} (how profiles split as more are added).
-Each draws exactly what the matching \code{plot(x, what = )} draws.
-\code{plot_views()} lists the views of a fitted model, and \code{"enumeration"} and
-\code{"tree"} for a grid, each with a one-line description; the other grid views
-are listed under \code{what} below.
+\code{plot()} draws any result of this package and returns a ggplot object,
+which can be printed, saved with \code{ggplot2::ggsave()} or restyled with
+\code{+ ggplot2::theme()}. The plots of mixture regressions (for fits that
+classify persons, the \code{"fitted"} view only), pooled imputations and
+bootstrap tests are drawn when called, including inside loops, and their
+ggplot is returned invisibly.
 }
 \details{
-Profiles keep one order (largest first), one set of Okabe-Ito colours and
-one point shape each across every view. The plots need ggplot2, which
-latents suggests rather than requires.
+The main views also have their own functions, each grouping related views
+under \code{what}, with \code{"all"} drawing every one: \code{plot_profiles()} (profile
+means as lines, bars, a heatmap, rainclouds, parallel lines or pairs, or
+categorical means, medians and modes), \code{plot_responses()} (categorical
+response probabilities), \code{plot_sequences()} (each group's profile at each
+occasion), \code{plot_prevalence()} (profile shares within each group class),
+\code{plot_diagnostics()} (classification quality), \code{plot_transitions()}
+(transition matrix), \code{plot_enumeration()} (information criteria,
+classification quality and model-selection evidence across a grid),
+\code{plot_selection()} (the model-selection evidence of a grid) and
+\code{plot_tree()} (how profiles split as more are added). Each draws the same
+plot as the matching \code{plot(x, what = )}. \code{plot_views()} lists the views of
+a fitted model, and \code{"enumeration"} and \code{"tree"} for a grid, with a
+one-line description of each; the other grid views are listed under
+\code{what} below.
+
+Each profile keeps the same order (largest first), Okabe-Ito colour and
+point shape in every view. The plots require ggplot2, which is a suggested
+package.
 }
 \section{What \code{plot()} draws}{
 
-Each object takes \verb{what =} for its views, \code{main} and \code{subtitle}, and the
-arguments named here. Profile/class methods refuse an argument they do not
-use with \code{latents_bad_argument}; methods that ignored it in 0.9.21 instead
-draw with a \code{latents_unused_argument} warning, as listed below.
+Each object takes \verb{what =} for its views, \code{main}, \code{subtitle} and the
+arguments named here.
 \describe{
 \item{Fitted profile and class models}{From \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}},
 \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and covariate models: \code{"profiles"}
@@ -417,7 +430,7 @@ draw with a \code{latents_unused_argument} warning, as listed below.
 \code{time}; \code{cell_labels = TRUE} prints the profile in each cell),
 \code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}. The
 profile views name in a caption any ordinal, count or (for the means)
-categorical indicator they leave out.}
+categorical indicator they omit.}
 \item{Transition fits}{From \code{\link[=lta]{lta()}}: \code{"transitions"} (default), then
 \code{"profiles"}, \code{"bars"}, \code{"heatmap"}, \code{"responses"}, \code{"sequences"},
 \code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}, without
@@ -427,65 +440,63 @@ A general \code{\link[=lta]{lta()}} fit takes no \code{what} and draws its trans
 \item{Enumerations}{Criterion columns or \code{"all"} (with \code{combine},
 \code{labels} and \code{mark_minimum}), \code{"tree"}, the classification-quality
 views \code{"entropy"}, \code{"avepp"} and \code{"diagnostics"} (with \code{cutoff}), and
-the model-selection views \code{"deltas"} and \code{"heatmap"} (which read the
+the model-selection views \code{"deltas"} and \code{"heatmap"} (which use the
 criterion in \code{using}), \code{"smallest"} and \code{"trust"}; \code{"selection"} draws
 those four and \code{"diagnostics"}. Transition and group-class family
 grids take \code{"bic"} (default), \code{"aic"} or \code{"bic_individual"}.}
-\item{Additive fits}{\code{"means"} (each group class's mean with its Wald
-interval), \code{"variances"} (within- beside between-group variances) or
-\code{"intercepts"} (each group's posterior intercept); \code{level} sets the
-interval.}
-\item{Cross-level fits}{\code{"profiles"}, \code{"group_means"} or
+\item{Additive fits}{\code{"means"} (default; each group class's mean with
+its Wald interval), \code{"variances"} (within- and between-group
+variances) or \code{"intercepts"} (each group's posterior intercept);
+\code{level} sets the interval.}
+\item{Cross-level fits}{\code{"profiles"} (default), \code{"group_means"} or
 \code{"composition"} (profile shares within each group class).}
 \item{Mixture regressions}{\code{"fitted"} (default: the outcome against a
 numeric \code{predictor}, one line per class), \code{"coefficients"} or
 \code{"posteriors"}; \code{level} sets the intervals. Fits that classify persons
-(\code{class_level = "group"}) draw the growth views below instead.}
+(\code{class_level = "group"}) default to \code{"trajectories"} (unless
+\code{predictor} is given) and also take \code{"individuals"} and
+\code{"classification"}, as growth mixtures do.}
 \item{Growth mixtures}{\code{"trajectories"} (default: class mean
 trajectories with bands; \code{facet}, \code{max_persons}, \code{spread}),
 \code{"individuals"} (\code{persons}: a number or identifiers),
 \code{"coefficients"}, \code{"random"} (predicted random effects with each
-class's 95\% ellipse) or \code{"classification"}; \code{time} names the variable
-drawn along, \code{level} the band.}
+class's 95\% ellipse) or \code{"classification"} (also \code{"posteriors"});
+\code{time} names the time variable, \code{level} the band.}
 \item{Pooled imputations}{\code{"profile"} (default), \code{"group"} or
 \code{"measurement"} parameters: each imputation's estimate beside the
 pooled one with its interval.}
 \item{Model comparisons, bootstrap tests, diagnostics}{One view each:
 the criteria of each compared model, the simulated null distribution
-with the observed statistic, and the four views of
-\code{plot_diagnostics()}.}
+with the observed statistic, and the views of \code{plot_diagnostics()}.}
 }
 }
 
-\section{Names from latents 0.9.21}{
- Code written for that release keeps
-working. Enumeration plots still take \code{criterion} (now \code{what}; on a
-profile grid \code{what = "enumeration"} is the default criteria view), a
-pooled fit's plot still takes \code{level} (now \code{what}), and a bootstrap
-test's plot still takes \code{palette} (the histogram and observed-line
-colours). On an enumeration, \code{criterion} with any \code{what} other than
-\code{"enumeration"} is an error of class \code{latents_bad_argument} (with
-\code{"tree"}, a warning, as the tree uses no criterion); \code{level} together
-with \code{what} on a pooled fit is an error of the same class.
+\section{Former argument names}{
+ Enumeration plots accept \code{criterion}
+(now \code{what}; on a profile grid \code{what = "enumeration"} is the default
+criteria view), pooled plots accept \code{level} (now \code{what}), and bootstrap
+plots accept \code{palette} (the histogram and observed-line colours). On an
+enumeration, \code{criterion} with any \code{what} other than \code{"enumeration"} is an
+error of class \code{latents_bad_argument} (with \code{"tree"}, a warning, as the
+tree uses no criterion); \code{level} together with \code{what} on a pooled plot is
+an error of the same class.
 }
 
 \section{Errors}{
  \code{latents_missing_package} without ggplot2;
-\code{latents_bad_argument} for an argument the object's plot does not take;
-the plots of additive, cross-level, general transition (\code{lta()}), growth-mixture,
-mixture-regression, pooled, comparison, bootstrap and transition or
-group-class family grids instead warn with class
-\code{latents_unused_argument} and draw, as they ignored such arguments in
-0.9.21 (this includes a bootstrap plot's former \code{style});
-\code{latents_bad_argument} also when a named plot function is given an
-object it does not draw;
-\code{latents_nothing_to_plot} when the fit lacks what a view needs (for
-example posteriors or entropy of a one-profile fit, prevalence of a
-covariate model, or the case-level views of a centred fit);
-\code{latents_unknown_category} when \code{category} names no category of an
-indicator;
-\code{latents_no_continuous}, \code{latents_no_categorical} and \code{latents_no_time}
-when a view needs indicators or occasions the fit does not have;
+\code{latents_bad_argument} for an argument the object's plot does not take,
+except that the plots of additive, cross-level, general transition
+(\code{lta()}), growth-mixture, mixture-regression, pooled, comparison and
+bootstrap results and of transition or group-class family grids ignore
+it with a \code{latents_unused_argument} warning (including a bootstrap
+plot's \code{style}); \code{latents_bad_argument} also when a named plot function
+is given an object it does not draw; \code{latents_nothing_to_plot} when the
+fit lacks what a view needs (for example posteriors or entropy of a
+one-profile fit, prevalence of a covariate model, or the case-level
+views of a centred fit); \code{latents_unknown_category} when \code{category}
+names no category of an indicator; \code{latents_no_continuous},
+\code{latents_no_categorical} and \code{latents_no_time} when a view needs
+indicators or occasions the fit does not have;
 \code{latents_unknown_criterion} for a criterion not in the grid.
 }
 

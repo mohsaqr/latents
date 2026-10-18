@@ -62,7 +62,7 @@ results in one table.
 
 ```{r enumerate}
 models <- enumerate_lca(student_esm, activities, n_classes = 1:6)
-plot(models)
+plot_enumeration(models)
 ```
 
 ```{r choose}
@@ -94,7 +94,7 @@ The heatmap shows, for each class, the estimated probability that the
 activity was reported.
 
 ```{r heatmap, fig.height = 3.4}
-plot(fit, what = "heatmap")
+plot_profiles(fit, what = "heatmap")
 ```
 
 The largest class, comprising 58% of the reports, is characterized by
@@ -107,7 +107,7 @@ probabilities are shown below as profiles across the activities, with 95%
 confidence intervals where the probability is not on its boundary.
 
 ```{r responses}
-plot(fit, what = "responses")
+plot_responses(fit)
 ```
 
 The probabilities with their standard errors. Several are estimated at zero

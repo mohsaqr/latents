@@ -124,7 +124,8 @@ With many starts, a candidate with too many profiles can reach a solution in
 which one profile sits on a single observation with every variance at its
 lower bound; its likelihood is then set by `min_variance`, not by the data.
 `boundary = "exclude"` sets such starts aside (see *Checks of the
-estimation*).
+estimation*). Large grids take time; `cores` fits the candidates in parallel
+and returns the same result as one core.
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -213,7 +214,7 @@ The criteria are plotted against the number of profiles, one line per number
 of group classes, with the lowest value of each criterion ringed.
 
 ```{r plot-criteria, fig.height = 5}
-plot(models)
+plot_enumeration(models)
 ```
 
 A minimum at the largest number of profiles or group classes fitted shows
@@ -222,7 +223,7 @@ then widened until the minimum lies inside it. Any criterion can be plotted
 by name, and `what = "all"` plots every criterion.
 
 ```{r plot-bic}
-plot(models, what = "bic_groups")
+plot_enumeration(models, what = "bic_groups")
 ```
 
 The tree plots how the profiles divide as more are added. Each profile of a
@@ -230,7 +231,7 @@ model is linked to the profiles of the next model that receive its
 observations.
 
 ```{r plot-tree, fig.height = 6}
-plot(models, what = "tree")
+plot_tree(models)
 ```
 
 ## Change with each added class
@@ -266,7 +267,7 @@ number of profiles on the left and along the number of group classes on the
 right.
 
 ```{r plot-deltas, fig.height = 5}
-plot(models, what = "deltas")
+plot_selection(models, what = "deltas")
 ```
 
 The knee summary scales both axes of a curve to the unit interval and finds
@@ -304,7 +305,7 @@ The criterion over all candidates at once, as the distance of each from the
 lowest value:
 
 ```{r heatmap}
-plot(models, what = "heatmap")
+plot_selection(models, what = "heatmap")
 ```
 
 ## Classification quality
@@ -321,7 +322,7 @@ number of classes below a cutoff, which is 0.8 by default and is set with
 `cutoff`.
 
 ```{r quality}
-plot(models, what = "diagnostics")
+plot_selection(models, what = "diagnostics")
 ```
 
 The AvePP of every class of every candidate, with its size and the relative
@@ -358,15 +359,15 @@ variance at its lower bound. The following plots report these checks for
 every candidate.
 
 ```{r trust}
-plot(models, what = "trust")
+plot_selection(models, what = "trust")
 ```
 
 ```{r smallest}
-plot(models, what = "smallest")
+plot_selection(models, what = "smallest")
 ```
 
 All of the plots for choosing the number of classes are produced together
-with `plot(models, what = "selection")`.
+with `plot_selection(models)`.
 
 ## Comparing candidates
 
@@ -473,11 +474,11 @@ knitr::kable(data.frame(
     "get_results(models, \"candidates\", cutoff = 0.9)",
     "get_results(models, \"deltas\", using = )",
     "get_results(models, \"knees\", using = )",
-    "plot(models), plot(models, what = \"bic_groups\"), what = \"all\"",
-    "plot(models, what = \"tree\")",
-    "plot(models, what = \"entropy\", \"avepp\" or \"diagnostics\", cutoff = )",
-    "plot(models, what = \"deltas\", \"heatmap\", \"smallest\" or \"trust\", using = )",
-    "plot(models, what = \"selection\")",
+    "plot_enumeration(models), plot_enumeration(models, what = \"bic_groups\"), what = \"all\"",
+    "plot_tree(models)",
+    "plot_enumeration(models, what = \"entropy\", \"avepp\" or \"diagnostics\", cutoff = )",
+    "plot_selection(models, what = \"deltas\", \"heatmap\", \"smallest\" or \"trust\", using = )",
+    "plot_selection(models)",
     "get_candidate(models, \"profiles4_groups3\"), get_candidate(models, 4, 3)",
     "compare_models(models, \"name\", c(4, 2), ...)",
     "compare_models(models, n_profiles = , n_group_classes = )",

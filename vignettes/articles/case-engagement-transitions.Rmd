@@ -65,11 +65,11 @@ replicated within this seed's starts.
 
 ## The profiles
 
-`plot()` with `what = "profiles"` draws the profile means across the
-indicators, and each line's label gives the profile's share of the enrolments.
+`plot_profiles()` draws the profile means across the indicators, and each
+line's label gives the profile's share of the enrolments.
 
 ```{r profiles}
-plot(moves, what = "profiles")
+plot_profiles(moves)
 ```
 
 ```{r profile-means}
@@ -82,7 +82,7 @@ profiles are therefore lower, higher and intermediate activity. The heatmap
 shows the same means as standard deviations from each indicator's grand mean.
 
 ```{r heatmap}
-plot(moves, what = "heatmap")
+plot_profiles(moves, what = "heatmap")
 ```
 
 The contrast between profiles is present on all five indicators, so the
@@ -127,7 +127,7 @@ The transition plot draws each class's matrix as a heatmap, with the origin
 profile in rows and the destination in columns.
 
 ```{r transition-plot}
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 In class 2, lower activity persists with probability 0.939, estimated from 303
@@ -156,7 +156,7 @@ The sequence plot shows each student's modal profile at each course position,
 one row per student. Modal assignment discards classification uncertainty.
 
 ```{r sequences, fig.height = 6}
-plot(moves, what = "sequences")
+plot_sequences(moves)
 ```
 
 ```{r sequence-summary}
@@ -179,11 +179,11 @@ distributed, and the posterior plot shows the posterior probability of each
 case's assigned profile.
 
 ```{r entropy-plot}
-plot(moves, what = "entropy")
+plot_diagnostics(moves, what = "entropy")
 ```
 
 ```{r posteriors-plot}
-plot(moves, what = "posteriors")
+plot_diagnostics(moves, what = "posteriors")
 ```
 
 Both levels retain uncertainty, so an analysis that replaces the posteriors by

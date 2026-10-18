@@ -302,53 +302,45 @@
 
 #' Tidy inference for a covariate fit
 #'
-#' Standard errors, tests and intervals for every free parameter of
-#' `multilpa(profile_covariates = )`, at all three levels at once: the
-#' measurement model, the
-#' profile logits and the group-class logits. Without them a membership
-#' coefficient cannot be reported, because nothing distinguishes a real effect
-#' from separation.
+#' For a `multilpa(profile_covariates = )` fit, returns standard errors, tests
+#' and intervals for every free parameter at all three levels: the
+#' measurement model, the profile logits and the group-class logits.
 #'
 #' @param x A fitted `multilpa_covariates` model.
-#' @param data Optional. The data frame the model was fitted to; when omitted
-#'   it is rebuilt from the indicators, group index and designs the fit stores.
-#'   Supplying it is the stronger check that the caller still holds that frame.
+#' @param data Optional data frame the model was fitted to. When omitted it is
+#'   rebuilt from the indicators, group index and designs the fit stores.
 #' @param level Confidence level for the intervals, between 0 and 1.
 #' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"` uses the observed information;
-#'   `"robust"` uses the group-clustered sandwich (with the CR1 factor
-#'   `G / (G - 1)` for `G` groups), which is the appropriate
-#'   choice when the measurement model may be misspecified; `"opg"` inverts the
-#'   outer product of the group scores, as `glca` does.
-#' @param adjust Multiplicity correction applied to `p_value` to produce
-#'   `p_adjusted`, defaulting to `"none"`; see [parameter_inference()].
-#' @return A base `data.frame` with one row per free parameter and the same
-#'   columns, in the same order, that [parameter_inference()] returns for every
-#'   other fitted class: `level` (`"measurement"`, `"profile"` or `"group"`),
-#'   `outcome` (which profile or group class the coefficient predicts, or which
-#'   profile a measurement parameter belongs to), `term`, `parameter`
-#'   (`"mean"`, `"variance"`, `"covariance"`, `"response"` or
-#'   `"coefficient"`), `estimate`,
+#' @param vcov_type `"observed"` uses the observed information; `"robust"`
+#'   uses the group-clustered sandwich (with the CR1 factor `G / (G - 1)` for
+#'   `G` groups), appropriate when the measurement model may be misspecified;
+#'   `"opg"` inverts the outer product of the group scores, as `glca` does.
+#' @param adjust Multiplicity correction applied to `p_value` to give
+#'   `p_adjusted`; default `"none"`. See [parameter_inference()].
+#' @return For a covariate fit, a base `data.frame` with one row per free
+#'   parameter and the same columns as for every other class: `level`
+#'   (`"measurement"`, `"profile"` or `"group"`), `outcome` (the profile or
+#'   group class the coefficient predicts, or the profile a measurement
+#'   parameter belongs to), `term`, `parameter` (`"mean"`, `"variance"`,
+#'   `"covariance"`, `"response"` or `"coefficient"`), `estimate`,
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`. Variances and covariances are reported in their natural units,
-#'   with standard errors carried through the delta method from the log and
-#'   log-Cholesky coordinates on which they are estimated. Categorical
-#'   indicators contribute one `"response"` row per profile, indicator and
-#'   category, named `indicator:category`: the probability of that category,
-#'   with its standard error carried from the multinomial logits it is
-#'   estimated on, and no Wald test, as for the covariate-free model.
-#' @details Class-membership coefficients are on the multinomial logit scale
-#'   with the final profile and the final group class as references, so a
-#'   coefficient is a log odds against that reference. The tests are Wald tests,
-#'   which are meaningless for a coefficient driven to the boundary by
-#'   separation or an empty class. A fit with a membership logit above 20 in
-#'   coordinates that depend neither on the covariates' units nor on their
+#'   `conf_high`. Variances and covariances are in their natural units, with
+#'   standard errors obtained by the delta method from the log and
+#'   log-Cholesky coordinates on which they are estimated. Each categorical
+#'   indicator contributes one `"response"` row per profile, indicator and
+#'   category, named `indicator:category`: the category probability, with its
+#'   standard error from the multinomial logits and no Wald test.
+#' @details Class-membership coefficients of a covariate fit are on the
+#'   multinomial logit scale, with the final profile and the final group class
+#'   as references, so each coefficient is a log odds against that reference.
+#'   The tests are Wald tests, which are invalid for a coefficient driven to
+#'   the boundary by separation or an empty class. A fit with a membership
+#'   logit above 20 in coordinates independent of the covariates' units and
 #'   origin (roughly, a slope per standard deviation of its covariate and an
-#'   intercept at the covariates' means) is therefore refused with
-#'   `latents_boundary_fit` rather than given a standard error; the fit itself
-#'   warns with `latents_extreme_coefficients`. Only
-#'   `method = "wald"` is implemented for a covariate fit; `"bootstrap"` is
-#'   refused with `latents_unsupported_inference`.
+#'   intercept at the covariates' means) raises `latents_boundary_fit`; the
+#'   fit itself warns with `latents_extreme_coefficients`. Only
+#'   `method = "wald"` is implemented for a covariate fit; `"bootstrap"`
+#'   raises `latents_unsupported_inference`.
 #' @examples
 #' # Two separated profiles, membership driven by `x` and by the group's class.
 #' set.seed(5)

@@ -92,16 +92,16 @@ To obtain classification quality by class, we call `get_results()` with
 get_results(fit, "classification")
 ```
 
-To see the uncertainty, we call `plot()` with `what = "entropy"` for the
-per-case uncertainty within each profile, and with `what = "avepp"` for the
+To see the uncertainty, we call `plot_diagnostics()` with `what = "entropy"`
+for the per-case uncertainty within each profile, and with `what = "avepp"` for the
 average posterior of each assigned class across all classes.
 
 ```{r entropy-plot}
-plot(fit, what = "entropy")
+plot_diagnostics(fit, what = "entropy")
 ```
 
 ```{r avepp-plot}
-plot(fit, what = "avepp")
+plot_diagnostics(fit, what = "avepp")
 ```
 
 ## Local independence
@@ -156,11 +156,11 @@ number of groups and with the number of observations.
 get_results(candidates, "best")
 ```
 
-To draw one criterion across the grid, we call `plot()` with its name as
-`what`; `what = "all"` draws every criterion.
+To draw one criterion across the grid, we call `plot_enumeration()` with its
+name as `what`; `what = "all"` draws every criterion.
 
 ```{r enumeration-plot}
-plot(candidates, what = "bic_groups")
+plot_enumeration(candidates, what = "bic_groups")
 ```
 
 To take one candidate out of the grid as a fitted model, we call
@@ -201,8 +201,8 @@ enumerate_classes(course_engagement, vars = c("browse", "lectures"),
                   model = c("VVI", "VVV"))      # crossing covariance models (slow)
 confint(fit)                                    # confidence intervals
 vcov(fit, vcov_type = "robust")                 # robust covariance matrix
-plot(fit, what = "posteriors")                  # posterior of each assigned profile
-plot(fit, what = "bars")                        # profile means with 95% intervals
+plot_diagnostics(fit, what = "posteriors")                  # posterior of each assigned profile
+plot_profiles(fit, what = "bars")                        # profile means with 95% intervals
 diagnostics(fit)                                # all classification diagnostics
 ```
 

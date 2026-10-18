@@ -27,9 +27,10 @@ Simulated by \code{data-raw/growth-schools.R} in the source repository.
 growth_schools
 }
 \description{
-A simulated multilevel longitudinal dataset made for the multilevel growth
-mixture model. 600 students in 40 schools (15 per school) sit a reading
-test on five occasions (\code{wave} 0 to 4). Two kinds of student follow two
+A simulated multilevel longitudinal dataset for the multilevel growth
+mixture model. Each row is one student's reading score at one occasion:
+600 students in 40 schools (15 per school), tested on up to five occasions
+(\code{wave} 0 to 4). Two kinds of student follow two
 trajectories: \emph{improving} (starts near 48, gains 3 points a wave) and
 \emph{plateauing} (starts near 56, gains 0.3). Students vary around their
 trajectory (random intercept SD 3, random slope SD 0.6, correlation -0.2;
@@ -39,8 +40,9 @@ programme (standardized, measured once) makes it more likely to be
 supportive. About 8\% of tests were missed at random.
 }
 \details{
-The school types are what a multilevel growth mixture model's group
-classes recover: \code{mixture_regression(..., cluster = "school", n_group_classes = 2)}, with \code{group_membership = "programme"}.
+The school types correspond to the group classes of
+\code{mixture_regression(..., cluster = "school", n_group_classes = 2)}, with
+\code{group_membership = "programme"}.
 }
 \examples{
 descriptives(growth_schools, c("score", "programme"))

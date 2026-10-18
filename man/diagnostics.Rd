@@ -5,7 +5,7 @@
 \alias{as.data.frame.multilpa_diagnostics}
 \alias{print.multilpa_diagnostics}
 \alias{plot.multilpa_diagnostics}
-\title{Every classification diagnostic, in one call}
+\title{Classification diagnostics of a fitted model}
 \usage{
 diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 
@@ -21,59 +21,46 @@ diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 \item{data}{Optional. The data the model was fitted to. A fit carries the
 columns it was built from, so this is only needed to override them.}
 
-\item{plots}{\code{TRUE}, the default, also draws the four classification plots
-(effective profile sizes, posterior probabilities of the assigned
-profiles, case entropy, and the average posterior probability matrix), as
-printing \code{plot()} on the result does. Without the ggplot2 package a
-message says so and the tables are still returned. \code{FALSE} returns the
-tables only.}
+\item{plots}{\code{TRUE} (the default) also draws the four classification plots:
+effective profile sizes, posterior probabilities of the assigned
+profiles, case entropy, and the average posterior probability matrix.
+Without the ggplot2 package a message says so and the tables are still
+returned. \code{FALSE} returns the tables only.}
 
-\item{by}{\code{"profile"}, the default, assesses each profile's bivariate
-residuals separately; \code{"overall"} pools them. It is the one argument of a
-gathered table this function forwards, because it is the one that changes
-what a gathered table means rather than which fit it is taken from. The
-\code{level} the classification tables use is not an argument here: it follows
-from whether the fit has discrete group classes.}
+\item{by}{\code{"profile"} (the default) assesses each profile's bivariate
+residuals separately; \code{"overall"} pools them. It is the only argument
+forwarded to the gathered tables. The \code{level} of the classification
+tables is set from whether the fit has discrete group classes.}
 
-\item{...}{For \code{diagnostics()}, nothing further is accepted. An argument this
-function cannot forward raises an error of class \code{latents_bad_argument}
-naming it, rather than being dropped on the way to a table that then means
-something other than what was asked for. For \code{plot()}, nothing further is
-accepted either; style the returned plots with ggplot2.}
+\item{...}{Not used. For \code{diagnostics()} and \code{plot()}, any further argument
+raises \code{latents_bad_argument}; style the returned plots with ggplot2.}
 
-\item{row.names, optional}{Passed to the base generic; \code{row.names} is applied
+\item{row.names, optional}{Part of the base generic; \code{row.names} is applied
 to the returned table.}
 }
 \value{
-An object of class \code{multilpa_diagnostics}. Read its tables with
-\code{get_results(result, what = )}, which offers \code{"entropy"}, \code{"classification"},
-\code{"average_posteriors"}, \code{"residuals"} and \code{"all"}, and never with \code{$}. A
-model family that has no bivariate residuals leaves that table out of
+An object of class \code{multilpa_diagnostics}. Its tables are read with
+\code{get_results(result, what = )}, where \code{what} is \code{"entropy"},
+\code{"classification"}, \code{"average_posteriors"}, \code{"residuals"} or \code{"all"}. A
+model family without bivariate residuals leaves that table out of
 \code{"all"}, and asking for it by name raises \code{latents_no_group_classes}; a
 fit with a noise component has none either, and raises
 \code{latents_unsupported_noise}.
 
-\code{print()} returns the object invisibly, having printed one line per
-diagnostic: relative entropy, smallest class, lowest average posterior and
-largest residual, at each level the fit has. \code{plot()} returns every
-classification plot as a \code{latents_plots} list of ggplot objects -- the
-effective profile sizes, the posterior probability of each case's assigned
-profile, each case's relative entropy, and the average posterior
-probability matrix -- that draws all four when printed.
-\code{as.data.frame()} returns the entropy table, the primary one.
+\code{print()} prints one line per diagnostic (relative entropy, smallest
+class, lowest average posterior and largest residual, at each level the
+fit has) and returns the object invisibly. \code{plot()} returns the four
+classification plots as a \code{latents_plots} list of ggplot objects, which
+draws all four when printed. \code{as.data.frame()} returns the entropy table.
 }
 \description{
-\code{summary()} reports what a model estimated. This reports whether to believe
-it: how sharply the posterior separates the classes, how big each class
-actually is, how confidently each unit was assigned, and whether the
-within-profile independence the model assumes survives contact with the data.
-}
-\details{
-It gathers the four classification tables of \code{\link[=get_results]{get_results()}} --- \code{"entropy"},
-\code{"classification"}, \code{"average_posteriors"} and \code{"residuals"} --- and prints
-one line of reading per diagnostic rather than four differently shaped
-tables. The tables themselves come back from \code{get_results()} on the result, or
-on the fit.
+Gathers the four classification tables of \code{\link[=get_results]{get_results()}} (\code{"entropy"},
+\code{"classification"}, \code{"average_posteriors"} and \code{"residuals"}) for a fitted
+model, prints one line per diagnostic, and by default draws the
+classification plots. The diagnostics are relative entropy, estimated class
+sizes, average posterior probabilities of the assigned classes, and the
+bivariate residuals that check the within-profile independence the model
+assumes.
 }
 \examples{
 fit <- multilpa(
@@ -88,7 +75,6 @@ get_results(quality, what = "classification")
 get_results(diagnostics(fit, by = "overall"), what = "residuals")
 }
 \seealso{
-\code{\link[=get_results]{get_results()}} for these tables and every other one, \code{\link[=descriptives]{descriptives()}}
-for the before-the-fit counterpart, and \code{\link[=summary]{summary()}} for what the model
-estimated rather than whether to trust it.
+\code{\link[=get_results]{get_results()}} for these and the other tables, \code{\link[=descriptives]{descriptives()}}
+for the variables before fitting, and \code{\link[=summary]{summary()}} for the estimates.
 }

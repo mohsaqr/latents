@@ -61,21 +61,21 @@ get_results(moves, "starts")
 
 ## Profiles
 
-To see the profiles, we call `plot()` with `what = "profiles"` (on a
-transition fit, `plot()` alone draws the transition matrices). Each line is a
+To see the profiles, we call `plot_profiles()` (on a transition fit, `plot()`
+alone draws the transition matrices). Each line is a
 profile's mean on each indicator, and its label gives the profile's share of
 the cases.
 
 ```{r profiles}
-plot(moves, what = "profiles")
+plot_profiles(moves)
 ```
 
-To compare profiles on a common scale, we call `plot()` with
+To compare profiles on a common scale, we call `plot_profiles()` with
 `what = "heatmap"`, which shows each mean in standard deviations from the
 indicator's overall mean.
 
 ```{r heatmap}
-plot(moves, what = "heatmap")
+plot_profiles(moves, what = "heatmap")
 ```
 
 ## Starting probabilities
@@ -102,22 +102,21 @@ row the data cannot inform.
 get_results(moves, "transitions")
 ```
 
-To draw the transition matrices, we call `plot()` with `what = "transitions"`:
-one heatmap per group class, current profile in rows and next profile in
+To draw the transition matrices, we call `plot_transitions()`: one heatmap per group class, current profile in rows and next profile in
 columns.
 
 ```{r transition-plot}
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 ## Sequences
 
-To see each group's path, we call `plot()` with `what = "sequences"`: one row
+To see each group's path, we call `plot_sequences()`: one row
 per group, coloured by its most probable profile at each occasion. These
 assignments ignore classification uncertainty.
 
 ```{r sequences, fig.height = 6}
-plot(moves, what = "sequences")
+plot_sequences(moves)
 ```
 
 ## Classification
@@ -130,17 +129,17 @@ is assigned with certainty, 0 means no separation.
 get_results(moves, "entropy")
 ```
 
-To see where the uncertainty lies, we call `plot()` with `what = "entropy"`
-for the per-case uncertainty within each profile, and with
+To see where the uncertainty lies, we call `plot_diagnostics()` with
+`what = "entropy"` for the per-case uncertainty within each profile, and with
 `what = "posteriors"` for the posterior probability of each case's assigned
 profile.
 
 ```{r entropy-plot}
-plot(moves, what = "entropy")
+plot_diagnostics(moves, what = "entropy")
 ```
 
 ```{r posteriors-plot}
-plot(moves, what = "posteriors")
+plot_diagnostics(moves, what = "posteriors")
 ```
 
 ## Transition networks

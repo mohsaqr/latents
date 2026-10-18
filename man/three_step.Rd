@@ -2,7 +2,7 @@
 % Please edit documentation in R/three-step.R
 \name{three_step}
 \alias{three_step}
-\title{Relate a latent class to an outcome it did not help define}
+\title{Estimate a distal outcome's mean in each latent class}
 \usage{
 three_step(
   x,
@@ -20,108 +20,98 @@ three_step(
 \item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model, or a
 trajectory model that classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with
 \code{class_level = "group"}, with or without \code{random} effects) fitted without
-\code{membership} covariates. A fit that already uses membership covariates
-cannot be corrected by the fixed, unconditional classification-error
-matrix used here.}
+\code{membership} covariates. Fits with membership covariates and multilevel
+growth mixtures (\code{cluster}) are refused with
+\code{latents_unsupported_three_step}: the correction uses a fixed,
+unconditional classification-error matrix and independent units.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order.
-Shared fit columns are checked row by row; a frame with too little
-identifying information warns that alignment cannot be verified. For a
-trajectory model it must be the data frame the model was fitted to.}
+Columns shared with the fit are checked row by row; a frame with too
+little identifying information raises a warning that alignment cannot be
+verified. For a trajectory model it must be the data frame the model was
+fitted to.}
 
-\item{outcome}{Name of a numeric outcome column not used as a measurement
-indicator in \code{x}. For \code{level = "groups"} it must be constant within each
-group, and for a trajectory model within each person.}
+\item{outcome}{Name of a numeric outcome column, without missing or
+infinite values, that is not a measurement indicator of \code{x}. For
+\code{level = "groups"} it must be constant within each group, and for a
+trajectory model within each person.}
 
-\item{level}{\code{"individuals"} relates the outcome to profiles, \code{"groups"} to
-group classes. A trajectory model relates the outcome to its person
-classes, reported with \code{level = "persons"}; \code{"groups"} is refused there
-with \code{latents_bad_argument}.}
+\item{level}{\code{"individuals"} (default) relates the outcome to profiles,
+\code{"groups"} to group classes. For a trajectory model the outcome is
+related to its person classes, reported with \code{level = "persons"};
+\code{"groups"} is refused there with \code{latents_bad_argument}.}
 
-\item{method}{\code{"bch"} applies the Bolck-Croon-Hagenaars weights;
-\code{"proportional"} weights by the posteriors, which is simpler and
-attenuated; \code{"modal"} is the naive assignment, shown for comparison.}
+\item{method}{\code{"bch"} (default) applies the Bolck-Croon-Hagenaars weights;
+\code{"proportional"} weights by the posterior probabilities (attenuated);
+\code{"modal"} uses the uncorrected modal assignment, for comparison.}
 
-\item{ci_level}{Confidence level for the intervals.}
+\item{ci_level}{Confidence level for the intervals (default 0.95).}
 
-\item{contrast}{\code{"none"} (the default) reports one outcome mean per class.
-\code{"pairs"} reports the difference between every pair of classes instead,
-which is the quantity a three-step analysis is usually run to test, with a
-statistic and a p-value against a difference of zero.}
+\item{contrast}{\code{"none"} (default) reports one outcome mean per class;
+\code{"pairs"} reports the difference between every pair of classes, with a
+test against zero.}
 
-\item{adjust}{Multiplicity correction applied across the pairwise
-differences, passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}. \code{"BH"} by default; \code{"none"}
-leaves the p-values uncorrected. Ignored for \code{contrast = "none"}, which
-tests nothing.}
+\item{adjust}{Multiplicity correction across the pairwise differences,
+passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default), \code{"holm"},
+\code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BY"} or \code{"none"}. Ignored for
+\code{contrast = "none"}.}
 
-\item{vcov_type}{\code{"cluster"}, the default, sums the influence contributions
-within the fit's groups and takes those groups as the independent units,
-which is the honest choice when the outcome is measured on observations
-nested inside them. \code{"independent"} treats every observation as its own
-independent unit instead. That ignores the nesting the model was fitted to
-and is only defensible when there is no nesting left to ignore, such as a
-fit with a single group; it is never substituted silently, and the choice
-is recorded in the result's \code{vcov_type} attribute.}
+\item{vcov_type}{\code{"cluster"} (default) sums the influence contributions
+within the fit's groups and treats the groups as the independent units,
+as required when the outcome is measured on observations nested in
+groups. \code{"independent"} treats every observation as an independent unit,
+which is appropriate only without nesting (for example a fit with a
+single group). The choice is recorded in the result's \code{vcov_type}
+attribute.}
 }
 \value{
-A base \code{data.frame}. For \code{contrast = "none"} it has one row per class
-and the columns \code{level}, \code{method}, \code{class}, \code{estimate}, \code{standard_error},
-\code{conf_low}, \code{conf_high} and \code{effective_n}. It carries no \code{statistic} or
-\code{p_value}, unlike \code{\link[=r3step]{r3step()}}: an outcome mean has no meaningful null value
-to be tested against, and a p-value for "this class's mean is zero" would
-answer a question nobody asked. The comparison that does have a null is the
-difference between two classes, and that is what \code{contrast = "pairs"}
-returns: one row per pair with the columns \code{level}, \code{method}, \code{class},
-\code{reference_class}, \code{estimate} (the mean of \code{class} minus the mean of
-\code{reference_class}), \code{standard_error}, \code{statistic}, \code{p_value},
-\code{p_adjusted}, \code{conf_low} and \code{conf_high}, matching \code{\link[=r3step]{r3step()}}.
-A contrast with zero standard error has no defined test statistic or
-p-value; those columns are \code{NA_real_} rather than a spurious finite test.
+A base \code{data.frame}. For \code{contrast = "none"}, one row per class
+with the columns \code{level}, \code{method}, \code{class}, \code{estimate},
+\code{standard_error}, \code{conf_low}, \code{conf_high} and \code{effective_n}; class means
+are not tested. For \code{contrast = "pairs"}, one row per pair of classes
+with the columns \code{level}, \code{method}, \code{class}, \code{reference_class},
+\code{estimate} (the mean of \code{class} minus the mean of \code{reference_class}),
+\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
+\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. A contrast with zero standard error has
+\code{NA_real_} statistic and p-values.
 
-Standard errors are cluster-robust in both shapes under the default
-\code{vcov_type = "cluster"}, taking the fit's groups as the independent units,
-so they remain honest when the outcome is measured on observations nested
-inside those groups; \code{vcov_type = "independent"} gives the unclustered
-variance instead. The variance that was used is recorded in the result's
-\code{vcov_type} attribute, and for \code{contrast = "pairs"} the correction applied
-to \code{p_adjusted} is recorded in its \code{adjust} attribute. A
-\code{contrast = "none"} table tests nothing, so it carries no \code{adjust}
-attribute.
+The result's \code{vcov_type} attribute records the variance used; for
+\code{contrast = "pairs"} the \code{adjust} attribute records the correction
+applied to \code{p_adjusted}.
 }
 \description{
-The three-step approach: the measurement model is fitted first, units are
-assigned to classes, and only then is the outcome brought in, corrected for
-the fact that some assignments are wrong. Doing it in one step instead lets
-the outcome pull the classes toward itself; doing it naively by modal class
-instead attenuates every difference. This does neither.
+Estimates the mean of an outcome in each latent class of a fitted model,
+or the difference between every pair of classes, by the three-step
+approach, and returns a \code{data.frame}. The measurement model is fitted
+first, units are assigned to classes, and the outcome is then related to
+the assignments with a correction for classification error, so the outcome
+does not influence the classes. \code{"bch"} weights give approximately
+unbiased class means; regressing on the modal class attenuates the
+differences (Vermunt 2010; Bakk and Vermunt 2016).
 }
 \details{
 The correction assumes the outcome is independent of the assigned
-class given the true one, which is what makes a three-step method valid.
-On a \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} uses one row per occasion and
-relates the outcome to the profile at that occasion. The default
-group-clustered variance accounts for repeated occasions within a group.
-This is a marginal profile-outcome analysis; it does not estimate an
-outcome effect on transitions or a sequence-level outcome model.
+class given the true class. On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"}
+uses one row per occasion and relates the outcome to the profile at that
+occasion, with the default group-clustered variance accounting for the
+repeated occasions within a group. This is a marginal profile-outcome
+analysis, not a model of outcome effects on transitions or of a
+sequence-level outcome.
 
-A cluster-robust variance is the sum of one outer product per independent
-unit, scaled by the small-sample (CR1) factor \code{G / (G - 1)} for \code{G} units
-(groups, or observations under \code{vcov_type = "independent"}). Those
-contributions sum to zero at the estimate, so it has rank
-at most one less than the number of units. With a single group it is
-exactly zero and with as many groups as classes it is singular. Both are
-refused with \code{latents_too_few_groups} rather than reported as a very
-small standard error; \code{vcov_type = "independent"} is the labelled way to
-ask for the unclustered variance instead.
+The cluster-robust variance is the sum of one outer product per
+independent unit, scaled by the small-sample (CR1) factor \code{G / (G - 1)}
+for \code{G} units (groups, or observations under \code{vcov_type = "independent"}). These contributions sum to zero at the estimate, so the
+variance has rank at most \code{G - 1}: it is zero with a single group and
+singular with as many groups as classes. Both cases are refused with
+\code{latents_too_few_groups}; \code{vcov_type = "independent"} gives the
+unclustered variance.
 
-The error matrix is treated as known rather than estimated, so the intervals
-are optimistic and the amount is worth stating. Over 60 replications of a
-two-profile design with 8\% misclassification and a true class difference of
-10, \code{"bch"} recovered that difference with a bias of -0.13 against -1.28 for
-\code{"modal"} and -1.82 for \code{"proportional"}, and its nominal 95\% intervals
-covered the truth 85\% of the time. Treat the point estimate as close to
-unbiased and the interval as somewhat too narrow; the other two methods are
-biased enough that their intervals covered the truth in none of the 60.
+The classification-error matrix is treated as known, so the intervals
+are too narrow. Over 60 replications of a two-profile design with 8\%
+misclassification and a true class difference of 10, \code{"bch"} had a bias
+of -0.13 (against -1.28 for \code{"modal"} and -1.82 for \code{"proportional"})
+and its nominal 95\% intervals covered the true difference in 85\% of
+replications; the intervals of the other two methods covered it in none.
 }
 \examples{
 set.seed(11)

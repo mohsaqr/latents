@@ -285,8 +285,7 @@ logLik.multilpa_additive <- function(object, ...) {
 nobs.multilpa_additive <- function(object, ...) object$n_groups
 
 #' @rdname parameter_inference
-#' @param ... Unused by most methods; accepted so every method shares the
-#'   generic's signature.
+#' @param ... Further arguments; unused by most methods.
 #' @export
 parameter_inference.multilpa_additive <- function(
     x, data = NULL, level = 0.95, step = 1e-4,

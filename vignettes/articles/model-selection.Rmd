@@ -33,13 +33,13 @@ below together with the functions that report it.
 
 | Question | Evidence | Functions |
 |---|---|---|
-| Which candidate balances fit and size best? | Information criteria and their minima | `as.data.frame()`, `get_results(x, "best")`, `plot(x)` |
-| Where do added classes stop paying off? | Changes between neighbouring candidates and the knee of each curve | `get_results(x, "deltas")`, `get_results(x, "knees")`, `plot(x, what = "deltas")`, `plot(x, what = "heatmap")` |
-| Are the classes distinct? | Entropy, average posterior probability, odds of correct classification | `get_results(x, "classification")`, `plot(x, what = "diagnostics")` |
-| Can the estimate be trusted? | Convergence, boundary estimates, replication of the best likelihood, the smallest class | `plot(x, what = "trust")`, `plot(x, what = "smallest")` |
+| Which candidate balances fit and size best? | Information criteria and their minima | `as.data.frame()`, `get_results(x, "best")`, `plot_enumeration(x)` |
+| Where do added classes stop paying off? | Changes between neighbouring candidates and the knee of each curve | `get_results(x, "deltas")`, `get_results(x, "knees")`, `plot_selection(x, what = "deltas")`, `plot_selection(x, what = "heatmap")` |
+| Are the classes distinct? | Entropy, average posterior probability, odds of correct classification | `get_results(x, "classification")`, `plot_selection(x, what = "diagnostics")` |
+| Can the estimate be trusted? | Convergence, boundary estimates, replication of the best likelihood, the smallest class | `plot_selection(x, what = "trust")`, `plot_selection(x, what = "smallest")` |
 | Is one more class supported? | The bootstrap likelihood ratio test of neighbouring candidates | `bootstrap_lrt()` |
 
-`plot(x, what = "selection")` displays the evidence of the second, third and
+`plot_selection(x)` displays the evidence of the second, third and
 fourth rows jointly, and `compare_models()` tabulates selected candidates side
 by side.
 
@@ -317,16 +317,16 @@ evidence (see below).
 
 ### Plotting the criteria
 
-`plot()` displays the criteria against the number of profiles, with one line
+`plot_enumeration()` displays the criteria against the number of profiles, with one line
 per number of group classes and the minimum of each criterion marked. `what`
 selects criteria by column name, and `what = "all"` displays all of them.
 
 ```{r plot-criteria, fig.height = 5}
-plot(models)
+plot_enumeration(models)
 ```
 
 ```{r plot-bic}
-plot(models, what = "bic_groups")
+plot_enumeration(models, what = "bic_groups")
 ```
 
 ## Where added classes stop paying off
@@ -369,13 +369,13 @@ improve the criterion. The deltas are displayed for both directions: along
 the number of profiles (left) and along the number of group classes (right).
 
 ```{r plot-deltas, fig.height = 5}
-plot(models, what = "deltas")
+plot_selection(models, what = "deltas")
 ```
 
 The same display is available for any criterion:
 
 ```{r plot-deltas-icl, fig.height = 5}
-plot(models, what = "deltas", using = "icl_individual")
+plot_selection(models, what = "deltas", using = "icl_individual")
 ```
 
 ### Knees
@@ -451,7 +451,7 @@ between each candidate's criterion and the minimum in the grid. It uses the
 same criterion as the deltas and accepts the same `using` argument.
 
 ```{r heatmap}
-plot(models, what = "heatmap")
+plot_selection(models, what = "heatmap")
 ```
 
 ## Are the classes distinct?
@@ -486,7 +486,7 @@ its AvePP, its OCC and the relative entropy of its level.
 get_results(models, "classification")
 ```
 
-`plot(x, what = "diagnostics")` displays relative entropy and the minimum
+`plot_selection(x, what = "diagnostics")` displays relative entropy and the minimum
 AvePP across candidates, with the cutoff indicated; `what = "entropy"` and
 `what = "avepp"` display either one. For a single fitted candidate,
 `plot_diagnostics()` displays the posterior probability of each unit's
@@ -496,7 +496,7 @@ or more group classes, for the group classes (`what = "group_posteriors"`,
 etc.).
 
 ```{r diagnostics}
-plot(models, what = "diagnostics")
+plot_selection(models, what = "diagnostics")
 ```
 
 Entropy and AvePP may diverge, and the divergence is informative. AvePP
@@ -546,7 +546,7 @@ Because the likelihood is multimodal, a solution replicated from several random
 starts is more credible than one obtained from a single start. An estimate on
 the boundary of the parameter space, such as a variance at its lower bound or
 a class with negligible membership, indicates a model too complex for the
-data. `plot(x, what = "trust")` represents each candidate by a tile labelled
+data. `plot_selection(x, what = "trust")` represents each candidate by a tile labelled
 with the number of starts that reached its maximum likelihood and shaded by
 the first problem detected:
 
@@ -559,7 +559,7 @@ the first problem detected:
 | not fitted (`x`) | not identified, or estimation failed (the error is retained in the table) |
 
 ```{r trust}
-plot(models, what = "trust")
+plot_selection(models, what = "trust")
 ```
 
 A candidate whose maximum was found only once should be re-estimated with
@@ -578,23 +578,23 @@ interior of the parameter space (see *Random starts*).
 ### The smallest class
 
 A class comprising a very small proportion of units is difficult to interpret
-and is estimated from little data. `plot(x, what = "smallest")` displays the
+and is estimated from little data. `plot_selection(x, what = "smallest")` displays the
 estimated proportion of the smallest class of every candidate, with a
 reference line at 5%, a conventional threshold rather than a rule.
 
 ```{r smallest}
-plot(models, what = "smallest")
+plot_selection(models, what = "smallest")
 ```
 
 ## All of the plots together
 
-`plot(x, what = "selection")` returns the deltas, the heatmap, the smallest
+`plot_selection(x)` returns the deltas, the heatmap, the smallest
 class, the estimation diagnostics and the classification diagnostics as a
 list of plots displayed in sequence. `using` sets the criterion for the first
 two and `cutoff` the AvePP threshold for the last.
 
 ```{r selection, fig.height = 5}
-plot(models, what = "selection")
+plot_selection(models)
 ```
 
 ## How the profiles divide
@@ -607,7 +607,7 @@ whereas a profile formed from several profiles of the smaller model suggests
 a reallocation of observations rather than a refinement.
 
 ```{r tree, fig.height = 6}
-plot(models, what = "tree")
+plot_tree(models)
 ```
 
 ## Comparing chosen candidates
@@ -703,20 +703,20 @@ knitr::kable(data.frame(
     "enumerate_classes(..., boundary = \"exclude\")",
     "as.data.frame(models)",
     "get_results(models, \"best\")",
-    "plot(models), plot(models, what = \"bic_groups\"), what = \"all\"",
+    "plot_enumeration(models), plot_enumeration(models, what = \"bic_groups\"), what = \"all\"",
     "get_results(models, \"deltas\", using = )",
-    "plot(models, what = \"deltas\", using = )",
+    "plot_selection(models, what = \"deltas\", using = )",
     "get_results(models, \"knees\", using = )",
-    "plot(models, what = \"heatmap\", using = )",
+    "plot_selection(models, what = \"heatmap\", using = )",
     "get_results(models, \"classification\")",
     "get_results(models, \"candidates\", cutoff = )",
-    "plot(models, what = \"diagnostics\", \"entropy\" or \"avepp\", cutoff = )",
+    "plot_enumeration(models, what = \"diagnostics\", \"entropy\" or \"avepp\", cutoff = )",
     "get_results(fit, \"entropy\")",
     "plot_diagnostics(fit), what = \"group_posteriors\" and the like",
-    "plot(models, what = \"trust\")",
-    "plot(models, what = \"smallest\")",
-    "plot(models, what = \"selection\")",
-    "plot(models, what = \"tree\")",
+    "plot_selection(models, what = \"trust\")",
+    "plot_selection(models, what = \"smallest\")",
+    "plot_selection(models)",
+    "plot_tree(models)",
     "compare_models(models, \"name\", ...)",
     "get_candidate(models, \"name\")",
     "bootstrap_lrt(smaller, larger, data, iter)"),

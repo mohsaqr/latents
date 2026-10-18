@@ -25,122 +25,112 @@ fit_staged(
 )
 }
 \arguments{
-\item{data}{A data frame containing indicators and a group identifier.}
+\item{data}{A data frame containing the indicators and the group identifier.}
 
 \item{vars}{Unique character vector of indicator column names. Columns not
 named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
 
-\item{id}{Name of the observed group identifier column. Character, factor, or
-numeric identifiers are supported; missing identifiers are not. Required
-here: this model has a second level by construction, so it has no
-single-level form and does not take \code{multilpa()}'s \code{id = NULL}.}
+\item{id}{Name of the observed group identifier column. Character, factor
+and numeric identifiers are supported; missing identifiers are not.
+Required; \code{id = NULL} is not accepted.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
 \item{n_group_classes}{Number of latent group classes to estimate in the
-second stage. Must be at least two; one would leave nothing to estimate.}
+second stage (default 2); must be at least two.}
 
-\item{measurement}{Optional fitted \code{multilpa} model to use as the first
-stage, so that a measurement solution already chosen and inspected is
-carried forward rather than refitted. Its profiles, indicators and
-measurement options must match the ones requested here, and it must have
-one group class: a multi-class fit already estimates group structure and
-is not a measurement-only first stage. A fit made with \code{weights},
-\code{centering} or \code{ordinal}/\code{count} indicators is refused too, since the
-second stage fitted here uses none of them and would hold the measurement
-under a likelihood it was not estimated on. Every refusal raises
-\code{latents_bad_stage}. When \code{NULL}, the first stage is fitted here with one
-group class.}
+\item{measurement}{\code{NULL} (the default), to fit the first stage here with
+one group class, or a fitted \code{multilpa} model to use as the first stage.
+Its profiles, indicators and measurement options must match the ones
+requested here, and it must have one group class. Fits made with
+\code{weights}, \code{centering} or \code{scaling}, or with \code{ordinal} or \code{count}
+indicators, are refused, as are covariance structures other than EEI,
+VVI, EEE and VVV. Every refusal raises \code{latents_bad_stage}.}
 
-\item{variance_model}{Either \code{"varying"} (profile-specific variances or
-covariance matrices) or \code{"equal"} (shared across profiles).}
+\item{variance_model}{\code{"varying"} (the default; profile-specific variances
+or covariance matrices) or \code{"equal"} (shared across profiles).}
 
 \item{n_starts}{Number of EM starts, used for both stages.}
 
-\item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-\code{max_iter = 0} performs no update. With \code{start}, it returns the model
-evaluated at exactly those values, whatever \code{n_starts} is, so that
-\code{logLik()} scores a parameter set supplied from elsewhere rather than the
-best of some random initializations that were never asked for. Without
-\code{start} there is nothing to evaluate at, so the random initializations are
-scored and the highest is returned.}
+\item{max_iter}{Nonnegative integer maximum number of EM updates per start
+(default 1000). \code{max_iter = 0} performs no update: with \code{start}, the model
+is evaluated at exactly those values, for example to score them with
+\code{logLik()}; without \code{start}, the random initializations are evaluated and
+the one with the highest log likelihood is returned.}
 
-\item{tol}{Positive relative log-likelihood tolerance. Convergence requires
-absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.}
+\item{tol}{Positive relative log-likelihood tolerance (default \code{1e-8}).
+Convergence requires an absolute change no greater than
+\verb{tol * (1 + abs(previous log likelihood))}.}
 
-\item{min_variance}{Positive lower bound on each variance, or each covariance
-eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
-estimates are explicitly reported and generate a warning.}
+\item{min_variance}{Positive lower bound on each variance, or on each
+covariance eigenvalue under full covariance, in squared input units
+(default \code{1e-6}); the fit is then constrained maximum likelihood.
+Estimates at the bound are reported and raise a warning.}
 
 \item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
-negative ones included. With a supplied seed,
-the caller's random-number state is restored on exit.}
+including negative ones. When supplied, the caller's random-number state
+is restored on exit.}
 
-\item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
-observed-data likelihood under an ignorable missingness mechanism (MAR).
-Missing indicators are integrated out, not filled in for likelihood fitting.
-This holds with membership covariates too; the covariates themselves must
-be complete (\code{latents_bad_data}).}
+\item{missing}{\code{"error"} (the default) rejects missing indicators; \code{"fiml"}
+maximizes the observed-data likelihood under an ignorable missingness
+mechanism (MAR), integrating missing indicators out rather than filling
+them in. This also holds with membership covariates; the covariates
+themselves must be complete (\code{latents_bad_data}).}
 
-\item{covariance_model}{\code{"diagonal"} assumes conditional independence;
-\code{"full"} estimates within-profile residual covariances.}
+\item{covariance_model}{\code{"diagonal"} (the default) assumes conditional
+independence; \code{"full"} estimates within-profile residual covariances.}
 
 \item{categorical}{Character vector naming indicators to treat as
 categorical. Each is modelled by unrestricted, profile-specific response
-probabilities over its observed categories, which is the latent class
-measurement model. Binary, ordinal and unordered indicators are all handled
-by the same unrestricted parameterization; numeric, integer, logical,
-character and factor columns are accepted. Indicators not named here stay
-Gaussian, so naming a subset fits a mixed-mode model.}
+probabilities over its observed categories (the latent class measurement
+model); binary, ordinal and unordered indicators are handled by the same
+parameterization. Numeric, integer, logical, character and factor columns
+are accepted. Indicators not named here stay Gaussian, so naming a subset
+fits a mixed-mode model.}
 
 \item{min_probability}{Positive lower bound on every categorical response
-probability, defining a constrained maximum-likelihood problem in the same
-way \code{min_variance} does for Gaussian indicators.}
+probability (default \code{1e-10}), constraining the maximum-likelihood problem
+as \code{min_variance} does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
-within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that \code{get_results(x, "sequences")},
-\code{get_results(x, "sequence_summary")} and
-\code{plot(what = "sequences")} can read the assignments back in order. Values
-must be complete and unique within each group. They are ordered as
-\code{\link[=sort]{sort()}} orders them; numbers stored as text whose alphabetical order is
-not their numeric order (\code{"2"}, \code{"10"}) are refused (\code{latents_bad_time}),
-while zero-padded numbers and ISO dates are accepted.}
+within its group, such as a wave, occasion or course number. It is not
+used in estimation; it is stored for \code{get_results(x, "sequences")},
+\code{get_results(x, "sequence_summary")} and \code{plot(what = "sequences")}.
+Values must be complete and unique within each group, and are ordered as
+\code{\link[=sort]{sort()}} orders them. Numbers stored as text whose alphabetical order is
+not their numeric order (\code{"2"}, \code{"10"}) raise \code{latents_bad_time};
+zero-padded numbers and ISO dates are accepted.}
 }
 \value{
-A \code{multilpa} object for the second stage, so that every accessor,
-diagnostic and method works on it unchanged. Its measurement parameters
-are exactly the first stage's. It additionally carries \code{fixed}, naming the
-held blocks; \code{n_parameters}, counting only the parameters this stage
-estimated; and \code{n_parameters_with_measurement}, which adds the held
-measurement back. Use \code{\link[=get_results]{get_results()}} with \code{what = "stages"} for a tidy
-two-row summary of both stages.
+A \code{multilpa} object for the second stage, on which every accessor,
+diagnostic and method works. Its measurement parameters are exactly the
+first stage's. It also carries \code{fixed}, naming the held blocks;
+\code{n_parameters}, counting only the parameters this stage estimated; and
+\code{n_parameters_with_measurement}, which adds the held measurement back.
+\code{get_results(fit, what = "stages")} gives a two-row summary of both
+stages.
 }
 \description{
-Estimates the measurement model once, on its own, and then estimates the
-group-class structure with that measurement held fixed. This is the staged
-workflow used when the measurement solution is meant to be decided before
-the grouping question is asked, so that adding group classes cannot move the
-profiles they are meant to describe.
+Fits a two-level model in two stages and returns the second-stage
+\code{multilpa} object. The first stage estimates the measurement model with one
+group class; the second estimates the group-class structure with that
+measurement held fixed, so adding group classes does not change the
+profiles.
 }
 \details{
 The second stage treats the measurement solution as known, so its
 Wald standard errors (\code{\link[=parameter_inference]{parameter_inference()}}'s default), information
 criteria and likelihood-ratio comparisons are conditional on that solution
-and are narrower than they would be if the measurement had been estimated
-jointly. \code{parameter_inference(fit, method = "bootstrap")} removes that
-conditioning for the standard errors and intervals: every resample of the
-groups is staged again, measurement first, so the replicates carry the
-first stage's sampling variability into the second stage, and the table
-also reports the measurement parameters with their own errors. A
-\code{measurement} supplied by the caller is re-estimated on each resample
-with the same options, since the resample is new data. The conditioning
-of the criteria and likelihood comparisons is a property of staging
-itself, and it is the reason both parameter counts are reported:
-compare staged fits with one another using \code{n_parameters}, and compare a
-staged fit with a jointly estimated one using
-\code{n_parameters_with_measurement}, remembering that the staged likelihood is
-not the joint maximum and the comparison is descriptive.
+and narrower than under joint estimation.
+\code{parameter_inference(fit, method = "bootstrap")} removes that conditioning
+for the standard errors and intervals: every resample of the groups is
+staged again, measurement first, and the table also reports the
+measurement parameters with their own errors. A supplied \code{measurement} is
+re-estimated on each resample with the same options. The criteria and
+likelihood comparisons remain conditional: compare staged fits with one
+another using \code{n_parameters}, and a staged fit with a jointly estimated
+one using \code{n_parameters_with_measurement}; the staged likelihood is not
+the joint maximum, so the latter comparison is descriptive.
 }
 \examples{
 set.seed(7)

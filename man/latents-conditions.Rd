@@ -2,224 +2,213 @@
 % Please edit documentation in R/conditions.R
 \name{latents-conditions}
 \alias{latents-conditions}
-\title{Conditions this package raises}
+\title{Conditions raised by the package}
 \value{
 Nothing; this page documents conditions rather than a function.
 }
 \description{
-Every error a caller might reasonably want to handle carries a class, so it
-can be caught by what went wrong rather than by matching message text, which
-changes between versions. This page is the contract: the classes below are
-stable, the messages are not.
+Lists the classes of the errors, warnings and messages the package raises,
+and what raises each. A condition can be caught by its class with
+\code{\link[=tryCatch]{tryCatch()}} or \code{\link[=withCallingHandlers]{withCallingHandlers()}}. The classes are stable; the
+message text may change between versions.
 }
 \section{Input and data contracts}{
 
 \describe{
 \item{\code{latents_bad_data}}{The data frame, the indicator columns or the
-group column break the input contract: too few rows, a duplicated or
-absent column name, an indicator that is not a numeric vector, an
-indicator that is constant or wholly unobserved, missing or non-finite
-values under \code{missing = "error"}, or a missing group identifier.}
-\item{\code{latents_bad_argument}}{An argument is outside its contract: a
-scalar such as \code{n_profiles}, \code{n_group_classes}, \code{n_starts}, \code{max_iter},
-\code{tol}, \code{min_variance}, or a \code{seed} or \code{seeds} that is not a whole number
-\code{set.seed()} accepts; a \code{what} naming a table or view the object does
-not have; or an argument a verb or table does not use, which is named
-back rather than dropped.}
+group column are invalid: too few rows, a duplicated or absent column
+name, an indicator that is not a numeric vector, an indicator that is
+constant or entirely unobserved, missing or non-finite values under
+\code{missing = "error"}, or a missing group identifier.}
+\item{\code{latents_bad_argument}}{An argument has an invalid value: a scalar
+such as \code{n_profiles}, \code{n_group_classes}, \code{n_starts}, \code{max_iter}, \code{tol}
+or \code{min_variance}; a \code{seed} or \code{seeds} that is not a whole number
+accepted by \code{set.seed()}; a \code{what} naming a table or view the object
+does not have; or an argument the verb or table does not use.}
 \item{\code{latents_bad_time}}{\code{time} is missing, or repeats a position within
-a group, so the ordering it is supposed to supply does not exist.}
+a group.}
 \item{\code{latents_bad_categorical}}{A categorical indicator cannot be
-encoded, or \code{min_probability} leaves no room for its number of
+encoded, or \code{min_probability} is too large for its number of
 categories.}
-\item{\code{latents_bad_start}}{Supplied starting values are missing a block
-the model needs, do not have the shape it requires, or carry labels that
-name an indicator or a category this fit does not have.}
+\item{\code{latents_bad_start}}{Supplied starting values lack a block the
+model needs, have the wrong shape, or carry labels naming an indicator
+or category the fit does not have.}
 \item{\code{latents_bad_fixed}}{A \code{fixed} request names a block the model does
-not have, or one that \code{start} does not supply, or \code{start} is absent.}
-\item{\code{latents_bad_stage}}{A \code{measurement} fit offered to \code{\link[=fit_staged]{fit_staged()}}
-has already estimated multiple group classes, or was fitted to different
-indicators, profiles or measurement options than the stage requested,
-or was fitted with \code{weights}, \code{centering}, or ordinal or count
-indicators, which the staged likelihood cannot hold faithfully.}
-\item{\code{latents_bad_transition}}{A transition model was asked for with
+not have or that \code{start} does not supply, or \code{start} is absent.}
+\item{\code{latents_bad_stage}}{A \code{measurement} fit given to \code{\link[=fit_staged]{fit_staged()}}
+already has more than one group class; was fitted to different
+indicators, profiles or measurement options than the stage requests; or
+was fitted with \code{weights}, \code{centering}, or ordinal or count indicators.}
+\item{\code{latents_bad_transition}}{A transition model was requested with
 fewer than two profiles, or with no group observed at two occasions.}
-\item{\code{latents_bad_inference_data}}{The data passed to a verb alongside
-a fit do not reproduce the fit: a different number of rows, different
-values, or a different group ordering. Raised for a plain \code{multilpa} fit and for a
-covariate fit alike.}
+\item{\code{latents_bad_inference_data}}{The data passed to a verb with a fit
+do not reproduce the fit: a different number of rows, different values
+or a different group ordering.}
 \item{\code{latents_no_indicator_data}}{A fit carries no stored indicators, so
-the request cannot be answered without the original data.}
-\item{\code{latents_incomplete_fit}}{A fit is missing fields the request
-needs, usually because it was made by an older version. Raised instead
-of letting a list subset by an absent name yield a \code{NULL} element keyed
-\code{NA}, which would leave a hole in the result.}
+the request needs the original data.}
+\item{\code{latents_incomplete_fit}}{A fit lacks fields the request needs,
+usually because it was made by an older version.}
 }
 }
 
 \section{Estimation and identification}{
 
 \describe{
-\item{\code{latents_unidentified}}{The requested model cannot be identified
-from these data: more profiles than distinct observed indicator rows,
-more group classes than groups, or more than one group class with only
-one profile or only singleton groups.}
-\item{\code{latents_all_starts_failed}}{Every EM start raised, so no fit was
-produced. The message carries the distinct start errors.}
+\item{\code{latents_unidentified}}{The requested model is not identified from
+the data: more profiles than distinct observed indicator rows, more
+group classes than groups, or more than one group class with only one
+profile or only singleton groups.}
+\item{\code{latents_all_starts_failed}}{Every EM start failed, so no fit was
+produced. The message gives the distinct start errors.}
 \item{\code{latents_empty_profile}}{A profile has no observed responses for an
 indicator, so its response probabilities are not identified; or a group
-class has no effective membership, so the profile prevalence within it is
-not defined.}
-\item{\code{latents_too_few_groups}}{Fewer independent groups than the
-quantities being reported, so the covariance cannot be formed. Raised by
-robust \code{\link[=parameter_inference]{parameter_inference()}}, and by \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}},
-whose cluster-robust contributions sum to zero at the estimate and so
-span at most one dimension fewer than the number of groups.}
-\item{\code{latents_inseparable_classes}}{Classes cannot be separated well
+class has no effective membership, so its profile prevalences are not
+defined.}
+\item{\code{latents_too_few_groups}}{There are too few independent groups to
+form the covariance of the reported quantities. Raised by robust and
+OPG \code{\link[=parameter_inference]{parameter_inference()}}, and by \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}}, whose
+cluster-robust contributions sum to zero at the estimate and so span at
+most one dimension fewer than the number of groups.}
+\item{\code{latents_inseparable_classes}}{The classes are not separated well
 enough for the requested three-step correction.}
 \item{\code{latents_no_converge}}{A fit required by the request did not
-converge, and using it would report an unconverged estimate as final.
-Raised for a plain \code{multilpa} fit and for a covariate fit alike.}
-\item{\code{latents_boundary_fit}}{A variance or a response probability sits
-at its bound, a mixing probability is zero, or a membership logit
-coefficient is heading to infinity (separation), so the parameter is on
-the edge of its space and the asymptotic normal approximation Wald
-inference relies on does not hold. The standard error is refused rather
-than reported.}
+converge.}
+\item{\code{latents_boundary_fit}}{A variance or response probability is at
+its bound, a mixing probability is zero, or a membership logit
+coefficient diverges (separation). The parameter is on the edge of its
+space, where the normal approximation of Wald inference does not hold,
+so no standard error is reported.}
 \item{\code{latents_singular_information}}{The observed information is not
-positive definite, or is numerically singular, so it cannot be inverted
-and no standard error can be formed.}
+positive definite or is numerically singular, so no standard error can
+be formed.}
 \item{\code{latents_unknown_candidate}}{The requested profile and group-class
-combination was never enumerated.}
+combination was not enumerated.}
 \item{\code{latents_failed_candidate}}{An enumerated candidate could not be
-fitted. The message carries that candidate's error.}
-\item{\code{latents_no_group_classes}}{A verb that needs discrete group
-classes was called on a model that has none. Every model family this
-version fits has them, so this is a guard against a future family
-rather than a refusal the current surface can produce.}
+fitted. The message gives that candidate's error.}
+\item{\code{latents_no_group_classes}}{A table, level or view that needs
+discrete group classes was requested from a model without them, for
+example \code{level = "groups"} for a fit without group classes, or a
+group-level plot of a fit with fewer than two group classes.}
 }
 }
 
 \section{Model comparison}{
 
 \describe{
-\item{\code{latents_bad_nesting}}{Two models are not nested in the way the
-comparison requires, including a \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} pair whose held
-measurement blocks differ, are held at different values, or are held in
-only one of the two models.}
+\item{\code{latents_bad_nesting}}{Two models are not nested as the comparison
+requires, including a \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} pair whose held measurement
+blocks differ, are held at different values, or are held in only one of
+the two models.}
 \item{\code{latents_incomparable_models}}{Two models were fitted to different
-data, or differ in covariance structure, centering or scaling mode, or
+data, or differ in covariance structure, centering, scaling mode or
 \code{drop_empty} where the comparison requires them to match.}
 \item{\code{latents_parallel_failure}}{With \code{cores} above one, a worker
-process failed as a whole (for example, it ran out of memory), so some
-candidates of an enumeration were lost. A candidate's own estimation
-error is recorded in the grid instead.}
+process failed as a whole (for example by running out of memory), so
+some candidates of an enumeration were lost. An estimation error of a
+single candidate is recorded in the grid instead.}
 \item{\code{latents_reversed_likelihood}}{The model with more parameters has
-the lower likelihood, so at least one fit is at a local optimum and the
-comparison is meaningless.}
-\item{\code{latents_bad_outcome}}{A distal outcome given to \code{\link[=three_step]{three_step()}}
-is not of a type the requested method can handle, varies within a group
-when a group-level outcome is requested, or is a measurement indicator
-that already helped define the classes.}
+the lower likelihood, so at least one fit is at a local optimum.}
+\item{\code{latents_bad_outcome}}{A distal outcome given to \code{\link[=three_step]{three_step()}} is
+of a type the requested method cannot handle, varies within a group
+when a group-level outcome is requested, or is a measurement
+indicator.}
 \item{\code{latents_bad_covariate}}{A predictor given to \code{\link[=r3step]{r3step()}} varies
 within a group when group-level membership is predicted, makes the
-design rank deficient, or is a measurement indicator that already
-helped define the classes; or, given to
-\code{multilpa(profile_covariates =, group_covariates =)}, is an indicator
-or the group identifier, or makes the membership design rank
-deficient. The counterpart of \code{latents_bad_outcome}.}
-\item{\code{multilpa_indicator_reused}}{A measurement indicator was offered
-as an external variable, to \code{\link[=three_step]{three_step()}} as an outcome or to
-\code{\link[=r3step]{r3step()}} as a predictor. Raised alongside \code{latents_bad_outcome} or
-\code{latents_bad_covariate}, so one handler catches the mistake from
-either verb.}
-\item{\code{latents_bad_scores}}{Score contributions could not be formed for
-the robust sandwich.}
+design rank deficient, or is a measurement indicator; or a predictor
+given to \code{multilpa(profile_covariates =, group_covariates =)} is an
+indicator or the group identifier, or makes the membership design rank
+deficient.}
+\item{\code{multilpa_indicator_reused}}{A measurement indicator was given as
+an outcome to \code{\link[=three_step]{three_step()}} or as a predictor to \code{\link[=r3step]{r3step()}}. Raised
+together with \code{latents_bad_outcome} or \code{latents_bad_covariate}.}
+\item{\code{latents_bad_scores}}{Score contributions for the robust sandwich
+could not be formed.}
 }
 }
 
 \section{Unsupported requests}{
 
-These name capabilities the package does not have. They are raised in place
-of returning a number that would be wrong.
+These are raised when the package does not implement the requested
+analysis.
 \describe{
 \item{\code{latents_unsupported_inference}}{Standard errors are not available
-for this particular fit. Raised for a covariate fit with categorical
-indicators, where no score is implemented for the response
-probabilities, for fits made by an older version, for a fit recording
-a covariance structure code this version does not know, and by
-\code{parameter_inference(method = "bootstrap")} for a fit holding a
-measurement block, whose held values came from a fit these data do not
-resample, and by \code{\link[=parameter_inference]{parameter_inference()}} for a fit made with \code{prior},
-which sits at a posterior mode rather than a likelihood maximum.}
-\item{\code{latents_unsupported_prior}}{\code{multilpa(prior = )} was asked for a
-combination the conjugate prior is not defined for: the VEE, EVE, VVE
-or EVV covariance structure (mclust defines none), categorical
+for this fit. Raised by \code{\link[=parameter_inference]{parameter_inference()}} for a fit made with
+\code{prior} (Wald path), for the cross-level families, for a covariate fit
+made by an older version, and for a fit recording a covariance
+structure code this version does not know; and by
+\code{parameter_inference(method = "bootstrap")} for an additive or
+covariate fit, a multilevel growth mixture, or a fit holding a
+measurement block through \code{fixed}. Also raised by
+\code{vcov(scale = "unconstrained")} for a bootstrap covariance.}
+\item{\code{latents_unsupported_prior}}{\code{multilpa(prior = )} was combined
+with an option the conjugate prior is not defined for: the VEE, EVE,
+VVE or EVV covariance structure (mclust defines none), categorical
 indicators, a \code{fixed} block, membership covariates, or missing
 indicator values.}
-\item{\code{latents_unsupported_noise}}{\code{multilpa(noise = TRUE)} was asked
-for more than one group class, categorical indicators, a \code{fixed} block,
-membership covariates or missing indicator values; or a verb that does
-not yet account for a noise component --- \code{\link[=parameter_inference]{parameter_inference()}},
-\code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}},
-bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a posterior plot --- was given a
-fit that has one.}
+\item{\code{latents_unsupported_noise}}{\code{multilpa(noise = TRUE)} was combined
+with more than one group class, categorical indicators, a \code{fixed}
+block, membership covariates or missing indicator values; or a fit with
+a noise component was given to a verb that does not support one:
+\code{\link[=parameter_inference]{parameter_inference()}}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
+\code{\link[=starting_values]{starting_values()}}, bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a
+posterior plot.}
 \item{\code{latents_unsupported_structure}}{\code{multilpa()} was asked for a
 covariance structure other than EEI, VVI, EEE or VVV together with
-\code{profile_covariates} or \code{group_covariates}, which fit those four only.}
+\code{profile_covariates} or \code{group_covariates}.}
 \item{\code{latents_bad_weights}}{\code{weights} does not name a column, or its
 values are missing, negative, non-finite, vary within a unit, or are
 positive for fewer than two units.}
-\item{\code{latents_unsupported_weights}}{A weighted fit was given to a verb or
-option that does not account for sampling weights: \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
+\item{\code{latents_unsupported_weights}}{A weighted fit was given to a verb
+or option that does not support sampling weights: \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
 \code{enumerate_regressions(bootstrap = )}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}},
-\code{prior} or \code{noise}; or a non-sandwich \code{vcov_type} was asked of one.}
-\item{\code{latents_unsupported_indicator}}{\code{ordinal} or \code{count} indicators were
-combined with an option that does not take them yet: membership
+\code{prior} or \code{noise}; or a \code{vcov_type} other than \code{"robust"} was
+requested for it.}
+\item{\code{latents_unsupported_indicator}}{\code{ordinal} or \code{count} indicators
+were combined with an option that does not support them: membership
 covariates, \code{start}, \code{fixed}, \code{prior} or \code{noise}.}
-\item{\code{latents_pooling_failed}}{An imputation's fit or inference failed
-in \code{\link[=pool_imputations]{pool_imputations()}}, or the imputations' fits report different
-parameters. Rubin's rules need every imputation, so none is dropped; the
-message names the imputation and carries the original reason.}
+\item{\code{latents_pooling_failed}}{A fit or its inference failed for one
+imputation in \code{\link[=pool_imputations]{pool_imputations()}}, or the imputations' fits report
+different parameters. No imputation is dropped; the message names the
+imputation and gives the original reason.}
 \item{\code{latents_bootstrap_failed}}{Fewer than two resamples produced a
-usable fit, so there is nothing to read a spread from. Raised by
-\code{parameter_inference(method = "bootstrap")}; the message carries the
-first reason a resample gave.}
-\item{\code{latents_no_free_parameters}}{The fit holds every parameter it has,
-so there is no free coordinate to report a standard error for. Raised by
-\code{\link[=parameter_inference]{parameter_inference()}} and \code{\link[=vcov]{vcov()}} on a fully held fit.}
-\item{\code{latents_held_parameter}}{A named parameter was held fixed by this
-fit, so it has no sampling distribution and no confidence interval.
-Raised by \code{\link[=confint]{confint()}} when \code{parm} names a held coordinate.}
+usable fit. Raised by \code{parameter_inference(method = "bootstrap")}; the
+message gives the first reason a resample failed.}
+\item{\code{latents_no_free_parameters}}{The fit holds every parameter fixed,
+so there is no standard error to report. Raised by
+\code{\link[=parameter_inference]{parameter_inference()}} and \code{\link[=vcov]{vcov()}}.}
+\item{\code{latents_held_parameter}}{A parameter named in \code{parm} was held
+fixed by the fit and has no confidence interval. Raised by
+\code{\link[=confint]{confint()}}.}
 \item{\code{latents_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} was called on a
-model family whose refit needs arguments the shared refit does not carry,
-whose profile labels cannot yet be aligned between two fits, or a
-directly fixed fit whose original free starts cannot be replayed.}
+model family whose refit needs arguments the shared refit does not
+carry, whose profile labels cannot yet be aligned between two fits, or
+on a directly fixed fit whose original free starts cannot be
+replayed.}
 \item{\code{latents_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
-called on a membership-covariate fit. Its classification errors depend
-on the fitted predictors, but the correction here uses one unconditional
-error matrix.}
+called on a membership-covariate fit, whose classification errors
+depend on the predictors; the correction uses one unconditional error
+matrix.}
 \item{\code{latents_unsupported_bootstrap}}{\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} was called on a
-person-centred fit. Group baselines were removed before estimation and
-no distribution for them is available to simulate raw data under the
-null model.}
+person-centred fit, for which raw data cannot be simulated under the
+null model because the group baselines were removed before
+estimation.}
 \item{\code{latents_unsupported_tna}}{\code{\link[=get_tna]{get_tna()}} or \code{\link[=get_group_tna]{get_group_tna()}} was
-called on a general transition fit (a \code{\link[=lta]{lta()}} fit with occasion-varying
-or covariate-dependent transitions, a second order, movers and stayers,
-or ordinal, count or weighted data), which has no single transition
-matrix to hand over; its transitions are in
+called on a general transition fit (an \code{\link[=lta]{lta()}} fit with
+occasion-varying or covariate-dependent transitions, a second order,
+movers and stayers, or ordinal, count or weighted data), which has no
+single transition matrix; its transitions are given by
 \code{get_results(x, "transitions")}.}
 \item{\code{latents_no_plot}}{\code{plot(x, what = "all")} was called on an object
-whose plot method names no views to draw.}
-\item{\code{latents_no_time}}{A sequence verb was called on a fit made without
-\code{time}, so it carries no ordering.}
+whose plot method has no views to draw.}
+\item{\code{latents_no_time}}{A sequence table or verb was requested for a
+fit made without \code{time}.}
 \item{\code{latents_unsupported_prediction}}{\code{predict()} was called on a
 growth mixture, a membership-covariate fit or a latent transition fit,
-for which prediction on new rows is not implemented; their fitted
-rows' results are tables of \code{\link[=get_results]{get_results()}}.}
-\item{\code{latents_missing_package}}{A verb needs a package listed in
-\code{Suggests} that is not installed. Raised by \code{\link[=get_tna]{get_tna()}} and
-\code{\link[=get_group_tna]{get_group_tna()}} when the \code{tna} package is absent; the message names
-the package and how to install it.}
+for which prediction on new rows is not implemented; results for the
+fitted rows are available from \code{\link[=get_results]{get_results()}}.}
+\item{\code{latents_missing_package}}{A required package from \code{Suggests} is
+not installed. Raised by \code{\link[=get_tna]{get_tna()}} and \code{\link[=get_group_tna]{get_group_tna()}} when \code{tna}
+is absent; the message names the package and how to install it.}
 }
 }
 
@@ -227,59 +216,58 @@ the package and how to install it.}
 
 \describe{
 \item{\code{latents_no_continuous}, \code{latents_no_categorical}}{The requested
-panel needs indicators of a kind this fit does not have.}
-\item{\code{latents_nothing_to_describe}}{\code{\link[=descriptives]{descriptives()}} was given no
-variables to describe: either \code{vars} named none, or the frame has no
-numeric column outside \code{id} and \code{by} to fall back on.}
+panel needs indicators of a kind the fit does not have.}
+\item{\code{latents_nothing_to_describe}}{\code{\link[=descriptives]{descriptives()}} has no variables to
+describe: \code{vars} named none, or the frame has no numeric column outside
+\code{id} and \code{by}.}
 \item{\code{latents_nothing_to_plot}}{The requested panel has no rows to draw.}
 \item{\code{latents_unknown_category}, \code{latents_unknown_criterion}}{A named
-category or information criterion does not exist in this fit.}
+category or information criterion does not exist in the fit.}
 \item{\code{latents_bad_scale}}{An unrecognised plotting scale was requested,
 or \code{scale = "standardized"} met an indicator with zero or undefined
-standard deviation, which it cannot be divided by.}
+standard deviation.}
 }
 }
 
 \section{Warnings}{
 
-A fit that is returned but qualified warns rather than errors, so that a
-simulation loop can catch the qualification it cares about and let the
-others through.
+These are raised when a result is returned but qualified.
 \describe{
-\item{\code{latents_failed_starts}}{Some, but not all, EM starts raised. The
-surviving starts are in \code{get_results(fit, "starts")}.}
-\item{\code{latents_not_identified}}{\code{\link[=mixture_regression]{mixture_regression()}} with a binary outcome and one
-trial per class assignment: a mixture of Bernoulli regressions is not
-identified there.}
-\item{\code{latents_missing_data}}{\code{\link[=mixture_regression]{mixture_regression()}} with \code{missing = "error"} met a
-missing value in a variable the model uses.}
-\item{\code{latents_rows_dropped}}{Warning. \code{\link[=mixture_regression]{mixture_regression()}} with
+\item{\code{latents_failed_starts}}{Some, but not all, EM starts failed. The
+remaining starts are in \code{get_results(fit, "starts")}.}
+\item{\code{latents_not_identified}}{\code{\link[=mixture_regression]{mixture_regression()}} with a binary
+outcome and one trial per class assignment, where a mixture of
+Bernoulli regressions is not identified.}
+\item{\code{latents_missing_data}}{\code{\link[=mixture_regression]{mixture_regression()}} with
+\code{missing = "error"} met a missing value in a variable the model uses.}
+\item{\code{latents_rows_dropped}}{\code{\link[=mixture_regression]{mixture_regression()}} with
 \code{missing = "omit"} dropped incomplete rows; the message states how
 many.}
-\item{\code{latents_no_valid_start}}{Every \code{\link[=mixture_regression]{mixture_regression()}} start degenerated: a
-class emptied or its variance collapsed.}
-\item{\code{latents_degenerate_start}}{Warning. Some \code{\link[=mixture_regression]{mixture_regression()}} starts
+\item{\code{latents_no_valid_start}}{Every \code{\link[=mixture_regression]{mixture_regression()}} start
+degenerated: a class emptied or its variance collapsed.}
+\item{\code{latents_degenerate_start}}{Some \code{\link[=mixture_regression]{mixture_regression()}} starts
 degenerated and were set aside.}
-\item{\code{latents_separation}}{Warning. A \code{\link[=mixture_regression]{mixture_regression()}} logit or log-link
+\item{\code{latents_separation}}{A \code{\link[=mixture_regression]{mixture_regression()}} logit or log-link
 coefficient diverged (perfect separation); it and its standard error
 are unreliable.}
-\item{\code{latents_em_decrease}}{The \code{\link[=mixture_regression]{mixture_regression()}} EM likelihood decreased
-beyond roundoff. This indicates a defect and should be reported.}
+\item{\code{latents_em_decrease}}{The \code{\link[=mixture_regression]{mixture_regression()}} EM likelihood
+decreased beyond rounding error. This indicates a defect and should be
+reported.}
 \item{\code{latents_unconverged}}{The best start had not converged when
 \code{max_iter} was reached, so the returned estimate is not a maximum.}
-\item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, sits at
+\item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, is at
 \code{min_variance}, so the fit is bound-active and its standard errors are
 not valid at that parameter.}
-\item{\code{latents_small_classes}}{A profile or group class has effective
-membership below one, so it is supported by less than one observation.}
+\item{\code{latents_small_classes}}{A profile or group class has an effective
+membership below one observation.}
 \item{\code{latents_all_starts_boundary}}{\code{boundary = "exclude"} found every
-start with a variance at \code{min_variance}, so none could be set aside and
-the best start across all of them is reported.}
+start with a variance at \code{min_variance}, so none was set aside and the
+best start across all of them is reported.}
 \item{\code{latents_weak_class}}{\code{multilpa(family = "additive")} only: a
 group class is supported by fewer than 50 effective groups (see
-\code{effective_groups} in \code{\link[=get_results]{get_results()}}), because it is
-small, poorly separated, or both. Standard errors are still reported,
-but intervals for class means and weights can be miscalibrated.}
+\code{effective_groups} in \code{\link[=get_results]{get_results()}}), because it is small, poorly
+separated, or both. Standard errors are reported, but intervals for
+class means and weights may be miscalibrated.}
 \item{\code{latents_failed_replicates}}{Some bootstrap replicates failed
 validation, so the bootstrap p-value is \code{NA}.}
 \item{\code{latents_single_level}}{A message, not a warning: \code{id = NULL} was
@@ -287,54 +275,51 @@ passed, so the fit has one observation per unit and no second level.
 Raised by \code{\link[=multilpa]{multilpa()}} on every such fit and once by an
 \code{\link[=enumerate_classes]{enumerate_classes()}} grid; \code{suppressMessages()} or a
 \code{latents_single_level} handler silences it.}
-\item{\code{latents_bootstrap_dropped}}{Some resamples did not produce a usable
-fit and were left out of the interval. Raised by
-\code{parameter_inference(method = "bootstrap")}, naming how many, so the
-count the interval rests on is never quietly smaller than \code{iter}.}
+\item{\code{latents_bootstrap_dropped}}{Some resamples did not produce a
+usable fit and were excluded from the interval. Raised by
+\code{parameter_inference(method = "bootstrap")}; the message states how
+many.}
 \item{\code{latents_sensitivity_dropped}}{One or more seeds did not produce a
-fit in \code{\link[=sensitivity]{sensitivity()}}. Their rows are \code{NA} rather than absent, and the
-warning names how many failed and the first reason, so the table is never
-quietly shorter than \code{seeds}.}
+fit in \code{\link[=sensitivity]{sensitivity()}}. Their rows are \code{NA}, and the warning states how
+many failed and the first reason.}
 \item{\code{latents_extreme_coefficients}}{A membership logit coefficient,
-measured per root-mean-square unit of its covariate so the verdict does
-not depend on the covariate's units, is large enough that the class is
-close to separated, so the estimate is
-driven by scaling, a sparse class or separation rather than by the data.}
-\item{\code{latents_empty_transition_row}}{A profile is never occupied before a
-final occasion, so its transition row is uniform by construction rather
-than estimated. \code{get_results(fit, "transitions", estimated = FALSE)}
-lists them. The transition-network handoff also warns when it includes
-such a row, because it cannot be read as evidence of persistence.}
+measured per root-mean-square unit of its covariate, is large enough
+that the class is close to separated, so the estimate is driven by
+scaling, a sparse class or separation rather than by the data.}
+\item{\code{latents_empty_transition_row}}{A profile is never occupied before
+a final occasion, so its transition row is uniform by construction
+rather than estimated; \code{get_results(fit, "transitions", estimated = FALSE)} lists such rows. The transition-network handoff also warns when
+it includes such a row.}
 \item{\code{latents_unverified_alignment}}{A supplied \code{data} frame has too
-little fitted information to establish row order, for example only a
-repeated group identifier. The result is returned on the caller's
-assurance that the rows are in fitting order.}
+little fitted information to verify row order (for example only a
+repeated group identifier). The result assumes the rows are in fitting
+order.}
 \item{\code{latents_random_boundary}}{A growth mixture's random-effect
-covariance is degenerate in a class (a variance at its floor, or random
-effects perfectly correlated), or, with \code{residual_correlation}, the
-residual variance, the process variance or the process rate is on its
-bound, so the data cannot separate those parts and their standard
-errors are not reported.}
+covariance is degenerate in a class (a variance at its floor, or
+perfectly correlated random effects), or, with \code{residual_correlation},
+the residual variance, process variance or process rate is on its
+bound; the standard errors of those parameters are not reported.}
 \item{\code{latents_singular_covariance}}{A growth mixture with correlated
-residuals met a marginal covariance that is singular in floating point
-(a process variance far beyond the residual variance). The fit treats
-it as a rejected step; it reaches the caller only from parameter values
-supplied by hand.}
-\item{\code{latents_unused_argument}}{A method that ignored unknown arguments
-up to latents 0.9.21 (several \code{plot()} methods, and \code{\link[=descriptives]{descriptives()}} of
-a data frame) was given one. It still runs as before and names what it
-did not use.}
-\item{\code{latents_unused_category}}{An ordinal indicator is a factor that
-declares levels never observed in the data. Their intercepts diverge,
-so Wald inference is refused; call \code{droplevels()} before fitting. A
-warning rather than an error, because bootstrap refits keep the
-fitted categories on purpose.}
+residuals met a marginal covariance that is numerically singular (a
+process variance far larger than the residual variance). During
+fitting this is treated as a rejected step; it reaches the caller only
+for parameter values supplied by hand.}
+\item{\code{latents_unused_argument}}{A method that accepts \code{...} (several
+\code{plot()} methods, \code{vcov()}, \code{predict()} and \code{\link[=descriptives]{descriptives()}} of a data
+frame) was given an argument it does not use. The call proceeds and
+the warning names the argument.}
+\item{\code{latents_unused_category}}{An ordinal indicator is a factor with
+levels never observed in the data. Their intercepts diverge, so Wald
+inference is refused; call \code{droplevels()} before fitting. It is a
+warning rather than an error because bootstrap refits keep the fitted
+categories.}
 \item{\code{latents_no_standard_errors}}{A message, not a warning: a table
-that carries standard errors by default could not compute them for this
-fit (a bound-active or unconverged fit, singular information, or a
+that includes standard errors by default could not compute them for
+this fit (a bound-active or unconverged fit, singular information, or a
 family or noise component without inference), so they are \code{NA} and the
-message gives the reason. Passing \code{data} to \code{get_results(x, "profiles")} or \code{"responses"} raises the underlying condition
-instead.}
+message gives the reason. Passing \code{data} to
+\code{get_results(x, "profiles")} or \code{"responses"} raises the underlying
+condition instead.}
 }
 }
 

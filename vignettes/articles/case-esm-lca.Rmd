@@ -106,7 +106,7 @@ five starts.
 The ICL plot shows the same choice across the grid.
 
 ```{r icl-plot}
-plot(candidates, what = "icl_individual")
+plot_enumeration(candidates, what = "icl_individual")
 ```
 
 The plot marks the minimum at two profiles and two classes, and the analysis
@@ -151,7 +151,7 @@ The response plot draws the same probabilities, one line per profile across
 the items.
 
 ```{r responses-plot}
-plot(lca, what = "responses")
+plot_responses(lca)
 ```
 
 The lines separate on the three media items and nearly coincide on sports, so
@@ -177,7 +177,7 @@ for them it is the usual pattern, while most students almost never report it.
 The probability plot compares the two mixes.
 
 ```{r probabilities-plot}
-plot(lca, what = "probabilities")
+plot_prevalence(lca)
 ```
 
 Class 2 runs close to one on the low-media profile and close to zero on the

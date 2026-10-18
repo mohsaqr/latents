@@ -2,7 +2,7 @@
 % Please edit documentation in R/lpa.R
 \name{lca}
 \alias{lca}
-\title{Latent class analysis}
+\title{Fit a latent class model}
 \usage{
 lca(data, vars, n_classes, ...)
 }
@@ -10,29 +10,28 @@ lca(data, vars, n_classes, ...)
 \item{data}{A data frame with one row per observation.}
 
 \item{vars}{Names of the discrete indicator columns. Categories are taken
-from the data; \code{ordinal} and \code{count} in \code{...} identify structured
-discrete indicators and the remaining columns are categorical.}
+from the data. Columns named in \code{ordinal} or \code{count} (through \code{...}) are
+modelled as such; the rest are categorical.}
 
 \item{n_classes}{Number of classes, a positive whole number.}
 
 \item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
 \code{n_starts}, \code{seed}, \code{min_probability} and \code{profile_covariates}, except
-\code{id} and \code{n_group_classes}, which a single-level model does not have.}
+\code{id} and \code{n_group_classes}.}
 }
 \value{
-A fitted \code{multilpa} object, as \code{\link[=multilca]{multilca()}} returns, recording the
-\code{lca()} call as written.
+A fitted \code{multilpa} object, as \code{\link[=multilca]{multilca()}} returns, whose \code{call}
+is the \code{lca()} call.
 }
 \description{
-Fits a single-level latent class model: each observation belongs to one of
-\code{n_classes} unobserved classes, and within a class the discrete
-indicators are independent. Categorical indicators have unrestricted
-response probabilities; \code{ordinal} and \code{count} in \code{...} choose the
-structured measurement models described by \code{\link[=multilpa]{multilpa()}}. It
-is the model \code{\link[=multilca]{multilca()}} fits with \code{id = NULL}, and it returns the same
-object, so every accessor, plot and inference verb of the package applies
-to it. In the results the classes are labelled \code{profile_1}, \code{profile_2},
-and so on, as throughout the package.
+Fits a single-level latent class model and returns a fitted \code{multilpa}
+object. Each observation belongs to one of \code{n_classes} unobserved classes,
+and within a class the discrete indicators are independent. Categorical
+indicators have unrestricted response probabilities; \code{ordinal} and \code{count}
+in \code{...} select the structured measurement models described in
+\code{\link[=multilpa]{multilpa()}}. It is the model \code{\link[=multilca]{multilca()}} fits with \code{id = NULL}, so every
+accessor, plot and inference verb of the package applies to the result. In
+the results the classes are labelled \code{profile_1}, \code{profile_2}, and so on.
 }
 \details{
 For observations nested in groups, use \code{\link[=multilca]{multilca()}} with the grouping

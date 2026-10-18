@@ -64,8 +64,7 @@ covariate model (\code{multilpa_covariates}), a latent transition model
 
 \item{data}{Optional. The data frame the model was fitted to. When omitted
 it is rebuilt from what the fit stores (indicators, identifiers, occasions
-and designs), which round-trips to floating-point precision; supplying it is the stronger check
-that the caller still holds that frame.}
+and designs), to floating-point precision.}
 
 \item{step}{Finite-difference step for the observed information (covariate
 models).}
@@ -95,11 +94,11 @@ of a covariate model, passed to \code{\link[=parameter_inference]{parameter_infe
 otherwise.}
 
 \item{parm}{Optional coefficient names or indices; defaults to every
-estimated coefficient. Naming a coefficient that \code{fixed} held raises
-\code{latents_held_parameter}, because a held value has no interval; an
-unknown name or an out-of-range index raises \code{latents_bad_argument}.}
+estimated coefficient. A coefficient held by \code{fixed} has no interval and
+raises \code{latents_held_parameter}; an unknown name or an out-of-range index
+raises \code{latents_bad_argument}.}
 
-\item{level}{Confidence level strictly between zero and one.}
+\item{level}{Confidence level, strictly between 0 and 1 (default 0.95).}
 }
 \value{
 \code{coef()}: a named numeric vector. \code{vcov()}: a named symmetric matrix

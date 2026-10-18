@@ -4,7 +4,7 @@
 \alias{parameter_inference.multilpa_transitions}
 \alias{vcov.multilpa_transitions}
 \alias{confint.multilpa_transitions}
-\title{Wald inference for a latent transition model}
+\title{Standard errors and intervals for a latent transition model}
 \usage{
 \method{parameter_inference}{multilpa_transitions}(
   x,
@@ -36,35 +36,37 @@
 \arguments{
 \item{x}{A fitted \code{multilpa_transitions} model from \code{\link[=lta]{lta()}}.}
 
-\item{data}{Optional. The data frame the model was fitted to. The fit stores
-its indicators, codes, groups and occasions, so it is not needed; when
-given it must reproduce them.}
+\item{data}{Optional data frame the model was fitted to. Not needed for
+the Wald path, since the fit stores its indicators, codes, groups and
+occasions; when given it must reproduce them. Required for
+\code{method = "bootstrap"}.}
 
-\item{level}{Confidence level of the intervals.}
+\item{level}{Confidence level of the intervals. Default \code{0.95}.}
 
 \item{step}{Finite-difference step for the observed information.}
 
-\item{vcov_type}{\code{"observed"} (observed information), \code{"robust"} (the
-sandwich clustered on groups, which are the sequences) or \code{"opg"} (the
-outer product of the group scores).}
+\item{vcov_type}{\code{"observed"} (default; observed information), \code{"robust"}
+(the sandwich clustered on groups, which are the sequences) or \code{"opg"}
+(the outer product of the group scores).}
 
-\item{adjust}{Multiplicity correction for \code{p_adjusted}, one of the methods
-\code{\link[stats:p.adjust]{stats::p.adjust()}} accepts.}
+\item{adjust}{Multiplicity correction for \code{p_adjusted}: \code{"none"} (default)
+or one of the \code{\link[stats:p.adjust]{stats::p.adjust()}} methods.}
 
-\item{method}{\code{"wald"} (the default) or \code{"bootstrap"}. The bootstrap
-resamples persons with replacement, refits the same specification, and
-matches each replicate's profiles and group classes to the original's;
-\code{standard_error} is the replicates' standard deviation, \code{conf_low} and
-\code{conf_high} their percentile interval, and \code{statistic}, \code{p_value} and
-\code{p_adjusted} are \code{NA}. It needs \code{data}.}
+\item{method}{\code{"wald"} (default) or \code{"bootstrap"}. The bootstrap resamples
+persons with replacement, refits the same specification and matches each
+replicate's profiles and group classes to the original's;
+\code{standard_error} is the standard deviation of the replicates,
+\code{conf_low} and \code{conf_high} their percentile interval, and \code{statistic},
+\code{p_value} and \code{p_adjusted} are \code{NA}.}
 
-\item{iter, n_starts, max_iter, tol, seed}{Bootstrap resamples, the controls of
-each refit, and an optional seed (the caller's random state is restored).}
+\item{iter, n_starts, max_iter, tol, seed}{Number of bootstrap resamples, the
+controls of each refit, and an optional seed (the caller's random state
+is restored).}
 
-\item{boundary}{Accepted for the generic. Transition inference holds
-nothing at a bound: with no bound active \code{"fix"} gives the same table as
-\code{"error"}, and a fit with an active bound raises \code{latents_boundary_fit}
-under either.}
+\item{boundary}{Accepted for consistency with the generic. Transition
+inference holds no parameter at a bound: without an active bound
+\code{"fix"} gives the same table as \code{"error"}, and a fit with an active bound
+raises \code{latents_boundary_fit} under either.}
 
 \item{object}{A fitted \code{multilpa_transitions} model.}
 
@@ -82,32 +84,37 @@ A base \code{data.frame} with one row per natural parameter and the
 columns of \code{\link[=parameter_inference]{parameter_inference()}}: \code{level}, \code{outcome}, \code{term},
 \code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value},
 \code{p_adjusted}, \code{conf_low} and \code{conf_high}, named as \code{\link[=coef]{coef()}} names them.
-An initial probability (\code{parameter = "initial_probability"}, \code{level = "profile"}) has \code{outcome} the profile and \code{term} the group class; a
-transition probability (\code{"transition_probability"}) has \code{outcome} the
-profile moved to and \code{term} \code{group_class_h:profile_j}, the group class
-and the profile moved from. Probabilities and variances carry no Wald
-test. Attributes \code{covariance} (natural scale),
-\code{covariance_unconstrained}, \code{vcov_type} and \code{level}.
+An initial probability (\code{parameter = "initial_probability"},
+\code{level = "profile"}) has \code{outcome} the profile and \code{term} the group
+class; a transition probability (\code{"transition_probability"}) has
+\code{outcome} the profile moved to and \code{term} \code{group_class_h:profile_j}, the
+group class and the profile moved from. Probabilities and variances have
+no Wald test. The Wald table has attributes \code{covariance} (natural
+scale), \code{covariance_unconstrained}, \code{level}, \code{step}, \code{method} and
+\code{vcov_type}.
 }
 \description{
-Standard errors, tests and intervals for every parameter of an \code{\link[=lta]{lta()}}
-fit: the measurement model, the group-class shares, each group class's
-initial profile distribution and its transition matrix. The scores follow
-the Fisher identity (each is an expected count from the forward-backward
-pass minus the count the fitted probabilities imply), and the observed
-information is the numerical Jacobian of that analytic score.
+Returns standard errors, tests and intervals for every parameter of an
+\code{\link[=lta]{lta()}} fit: the measurement model, the group-class shares, each group
+class's initial profile distribution and its transition matrix. The scores
+follow the Fisher identity (each is an expected count from the
+forward-backward pass minus the count implied by the fitted
+probabilities), and the observed information is the numerical Jacobian of
+that analytic score.
 }
 \section{Conditions}{
 
 \code{latents_no_converge} for an unconverged fit; \code{latents_boundary_fit} when
 a variance, a response, initial or transition probability, or a
-group-class share sits at its bound, or a transition row was never
-informed (a profile no group occupies before its last occasion);
+group-class share is at its bound, or a transition row has no
+information (a profile no group occupies before its last occasion);
 \code{latents_singular_information} when the information cannot be inverted;
 \code{latents_bad_inference_data} when a supplied \code{data} does not reproduce
 the fit; \code{latents_too_few_groups} for robust or OPG errors with no more
 groups than parameters; \code{latents_bad_argument} for \code{method = "bootstrap"}
-without \code{data}.
+without \code{data}; \code{latents_bootstrap_failed} when fewer than two resamples
+give a usable fit, with a \code{latents_bootstrap_dropped} warning for resamples
+that were dropped.
 }
 
 \examples{

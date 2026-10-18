@@ -6,7 +6,7 @@
 \alias{get_tna.multilpa_lta}
 \alias{get_tna.multilpa}
 \alias{get_tna.multilpa_covariates}
-\title{A transition network for the whole sample}
+\title{Build one transition network for the whole sample}
 \usage{
 get_tna(x, ...)
 
@@ -24,38 +24,34 @@ get_tna(x, ...)
 \item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}}.}
 }
 \value{
-An object of class \code{tna}, as \code{\link[tna:build_model]{tna::tna()}} returns: every verb of that
-package applies to it, including \code{centralities()}, \code{communities()},
-\code{cliques()} and \code{plot()}.
+An object of class \code{tna}, as returned by \code{\link[tna:build_model]{tna::tna()}}, to which the
+functions of the tna package apply, including \code{centralities()},
+\code{communities()}, \code{cliques()} and \code{plot()}.
 }
 \description{
-Builds one \code{\link[tna:build_model]{tna::tna()}} model from a fitted transition model, aggregated
-over every latent group class.
+Builds a single \code{\link[tna:build_model]{tna::tna()}} model from a fitted transition model,
+aggregated over all latent group classes, and returns it.
 }
 \details{
-The aggregate is formed from the expected transition counts, summed across
-classes and then normalised, rather than by averaging the class transition
-matrices. The two differ: averaging weights each class by how probable it is,
-and summing counts weights it by how much transition mass it actually
-contributes, which is what a marginal transition probability means. A class
-holding a tenth of the students but a fifth of the observed moves counts for
-the latter. If a profile has no expected outgoing moves in any class, its
-transition row has no count-based estimate; the network uses the fitted
-class rows averaged by class probability and warns that the row is
-unestimated. It never interprets absent moves as a certain self-transition.
+The network's transition probabilities are the expected transition counts
+summed across group classes and normalised by row, so each class
+contributes in proportion to its share of the expected transitions, not its
+class probability. If a profile has no expected outgoing transitions in any
+class, its row is the class rows averaged by class probability, and a
+warning states that the row is unestimated; absent transitions are not
+treated as self-transitions.
 
-A general \code{\link[=lta]{lta()}} fit -- with occasion-varying or covariate-dependent
-transitions, a second order, movers and stayers, or ordinal, count or
-weighted data -- has no single transition matrix, and is refused with
-\code{latents_unsupported_tna}; its transitions are in
+A general \code{\link[=lta]{lta()}} fit (occasion-varying or covariate-dependent
+transitions, second order, movers and stayers, or ordinal, count or
+weighted data) has no single transition matrix and is refused with
+\code{latents_unsupported_tna}; its transitions are returned by
 \code{get_results(x, "transitions")}.
 
-For a \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =}, there is
-no estimated transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from
-each group's sequence of modal profiles in time order, the observed
-transitions between the profiles the observations were assigned to.
-\code{get_group_tna()} splits those sequences by each group's modal group class.
-A fit made without \code{time} has no order and is refused.
+A \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =} has no
+estimated transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from
+each group's sequence of modal profiles in time order.
+\code{get_group_tna()} splits those sequences by each group's modal group
+class. A fit made without \code{time} is refused.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

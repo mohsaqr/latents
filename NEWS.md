@@ -1,3 +1,28 @@
+# latents 0.95.8
+
+### Documentation
+
+* The vignettes, the guides, the case studies and the README use the named
+  plot functions: `plot_profiles()` (with `what = "bars"`, `"heatmap"`,
+  `"raincloud"`), `plot_responses()`, `plot_prevalence()`,
+  `plot_sequences()`, `plot_transitions()`, `plot_diagnostics()`,
+  `plot_enumeration()`, `plot_selection()` and `plot_tree()`, in place of
+  `plot(x, what = )`. The function tables of the enumeration guides list
+  them. The model families without named functions (growth mixtures,
+  trajectory classes, mixture regression, additive and cross-level models)
+  keep `plot(x, what = )`.
+* The LPA and enumeration vignettes mention `cores`.
+* Every help page is revised: titles and descriptions now say what each
+  function does and returns, without design rationale or history, and every
+  argument states its default. The revision corrected statements that did
+  not match the code, among them the refusals listed by `enumerate_lca()`,
+  `enumerate_classes()`, `bootstrap_lrt()`, `compare_models()`,
+  `enumerate_regressions()`, `prior_control()` and `fit_staged()`; the
+  columns of `starting_values()` under full covariance; the tables offered by
+  `get_results()` (starting values, ordinal and count tables, diagnostics);
+  when `latents_no_group_classes` and `latents_unsupported_inference` are
+  raised; and the default `vcov_type` of weighted fits.
+
 # latents 0.95.7
 
 ### Bug fixes

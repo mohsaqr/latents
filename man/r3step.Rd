@@ -2,7 +2,7 @@
 % Please edit documentation in R/three-step.R
 \name{r3step}
 \alias{r3step}
-\title{Covariates predicting class membership, corrected for misclassification}
+\title{Regress latent class membership on covariates by the three-step approach}
 \usage{
 r3step(
   x,
@@ -19,87 +19,82 @@ r3step(
 }
 \arguments{
 \item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model, or a
-trajectory model from \code{\link[=mixture_regression]{mixture_regression()}} (persons classified, with or
-without \code{random}), whose person classes are then predicted. A fit that
-already uses membership covariates cannot be corrected by the fixed,
-unconditional classification-error matrix used here, and a multilevel
-growth mixture (\code{cluster}) is refused because its persons are not
-independent; both raise \code{latents_unsupported_three_step}.}
+trajectory model from \code{\link[=mixture_regression]{mixture_regression()}} that classifies persons
+(with or without \code{random}), whose person classes are then predicted.
+Fits with membership covariates and multilevel growth mixtures
+(\code{cluster}) are refused with \code{latents_unsupported_three_step}: the
+correction uses a fixed, unconditional classification-error matrix and
+independent units.}
 
 \item{data}{The data frame carrying the covariates, in the fit's row order.
-Shared fit columns are checked row by row; a frame with too little
-identifying information warns that alignment cannot be verified.}
+Columns shared with the fit are checked row by row; a frame with too
+little identifying information raises a warning that alignment cannot be
+verified.}
 
-\item{covariates}{Character vector of numeric columns not used as measurement
-indicators in \code{x}. For \code{level = "groups"} each must be constant within a
-group; for a trajectory model each must be constant within a person and
-not part of the trajectory regression (\code{latents_bad_covariate}).}
+\item{covariates}{Character vector of numeric columns, without missing or
+infinite values, that are not measurement indicators of \code{x}. For
+\code{level = "groups"} each must be constant within a group; for a
+trajectory model each must be constant within a person and not part of
+the trajectory regression (\code{latents_bad_covariate}).}
 
-\item{level}{\code{"individuals"} predicts profile membership, \code{"groups"}
-predicts group-class membership. A trajectory model classifies persons:
-its rows have \code{level = "persons"} and outcomes \code{class_1}, \code{class_2}, ...,
-and \code{"groups"} is refused with \code{latents_bad_argument}.}
+\item{level}{\code{"individuals"} (default) predicts profile membership,
+\code{"groups"} group-class membership. For a trajectory model the rows have
+\code{level = "persons"} and outcomes \code{class_1}, \code{class_2}, ...; \code{"groups"} is
+refused there with \code{latents_bad_argument}.}
 
-\item{ci_level}{Confidence level for the intervals.}
+\item{ci_level}{Confidence level for the intervals (default 0.95).}
 
-\item{vcov_type}{\code{"robust"}, the default, uses the sandwich clustered on the
-fit's groups, with the small-sample (CR1) factor \code{G / (G - 1)} for \code{G}
-groups, which is the honest choice when the covariates are measured
-on observations nested inside them, and matches the default of
-\code{\link[=three_step]{three_step()}}. \code{"observed"} uses the observed information; for the pooled
-regression it treats every observation as independent, and with
-\code{by_group_class = TRUE} it is the model-based variance of the two-level
-likelihood. \code{"robust"} needs more independent groups than the regression
-has coefficients, because the group score contributions sum to zero at the
-estimate and so span at most one dimension fewer than there are groups;
-with too few it is refused with \code{latents_too_few_groups} rather than
-reporting a variance that is singular, or, with a single group, numerically
-zero. \code{"observed"} remains available there.}
+\item{vcov_type}{\code{"robust"} (default) uses the sandwich clustered on the
+fit's groups with the small-sample (CR1) factor \code{G / (G - 1)} for \code{G}
+groups, as the default of \code{\link[=three_step]{three_step()}}. \code{"observed"} uses the observed
+information; for the pooled regression it treats every observation as
+independent, and with \code{by_group_class = TRUE} it is the model-based
+variance of the two-level likelihood. \code{"robust"} requires more
+independent groups than the regression has coefficients, because the
+group score contributions sum to zero at the estimate; otherwise it is
+refused with \code{latents_too_few_groups}, and \code{"observed"} remains
+available.}
 
-\item{adjust}{Multiplicity correction applied across the covariate terms,
-passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}. \code{"BH"} by default; \code{"none"} leaves the
-p-values uncorrected. The family is every covariate term of every
-non-reference class, which is the set of tests this call computes; the
-intercepts are not part of it.}
+\item{adjust}{Multiplicity correction across the covariate terms of every
+non-reference class (not the intercepts), passed to
+\code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default), \code{"holm"}, \code{"hochberg"},
+\code{"hommel"}, \code{"bonferroni"}, \code{"BY"} or \code{"none"}.}
 
-\item{by_group_class}{\code{FALSE}, the default, fits one pooled multinomial logit
-with a single intercept per profile. \code{TRUE} fits the two-level form of the
-one-step model instead: every group class has its own profile intercepts,
-the covariate slopes are shared across group classes, and a group's
-observations share one latent group class whose proportions are estimated
-alongside. Differences between groups that the covariates do not explain
-are then absorbed by the group classes rather than left in the residual,
-where the pooled regression attenuates the slopes and inflates their
-clustered standard errors. For \code{level = "individuals"} on a covariate-free
-\code{\link[=multilpa]{multilpa()}} fit only; refused with \code{latents_bad_argument} otherwise.}
+\item{by_group_class}{\code{FALSE} (default) fits one pooled multinomial logit
+with a single intercept per profile. \code{TRUE} fits the two-level form of
+the one-step model: each group class has its own profile intercepts, the
+covariate slopes are shared across group classes, and a group's
+observations share one latent group class whose proportions are
+estimated jointly. Between-group differences not explained by the
+covariates are then captured by the group classes; the pooled regression
+attenuates the slopes and inflates their clustered standard errors in
+that case. Only for \code{level = "individuals"} on a covariate-free
+\code{\link[=multilpa]{multilpa()}} fit; refused with \code{latents_bad_argument} otherwise.}
 
 \item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit with one
 group class: covariates of the profile at the first occasion (constant
 within a person) and of every transition (read at the destination
-occasion, so they may change over occasions). Either one makes this the
-three-step latent Markov model described below, in place of the
-occasion-by-occasion profile regression of \code{covariates}, which must then
-be left empty; \code{level} and \code{by_group_class} do not apply. Refused with
+occasion, so they may vary over occasions). Either one fits the
+three-step latent Markov model described below instead of the
+occasion-by-occasion profile regression; \code{covariates} must then be
+empty, and \code{level} and \code{by_group_class} do not apply. Refused with
 \code{latents_bad_argument} on a fit that is not a transition model.}
 }
 \value{
 A base \code{data.frame} with one row per non-reference class and term,
-and the columns \code{level}, \code{outcome}, \code{term}, \code{estimate}, \code{standard_error},
-\code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and \code{conf_high}.
-\code{p_value} is uncorrected and \code{p_adjusted} carries the correction named
-by \code{adjust}, which is also recorded in the result's \code{adjust} attribute;
-it is \code{NA} on the intercept rows, which are not part of the tested family.
-A coefficient with zero standard error has an undefined Wald statistic and
-p-value, reported as \code{NA_real_} rather than infinity or zero.
-Coefficients are log odds against the final class, which is the reference,
-matching \code{multilpa(profile_covariates = )}; that class is named in the
-result's
-\code{reference_class} attribute, and the variance that was used in its
-\code{vcov_type} attribute. With \code{by_group_class = TRUE} the intercept rows are
-one per group class, named \code{group_class_1}, \code{group_class_2}, ..., followed
-by the shared slopes and, at \code{level = "groups"}, the group-class logits
-against the last group class; the result also carries \code{by_group_class} and
-the maximised \code{log_likelihood} as attributes.
+and the columns \code{level}, \code{outcome}, \code{term}, \code{estimate},
+\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
+\code{conf_high}. \code{p_value} is uncorrected; \code{p_adjusted} applies \code{adjust}
+(also recorded in the \code{adjust} attribute) and is \code{NA} on the intercept
+rows. A coefficient with zero standard error has \code{NA_real_} statistic
+and p-value. Coefficients are log odds against the last class, as in
+\code{multilpa(profile_covariates = )}; the reference class is named in the
+\code{reference_class} attribute and the variance used in the \code{vcov_type}
+attribute. With \code{by_group_class = TRUE} there is one intercept row per
+group class (\code{group_class_1}, \code{group_class_2}, ...), followed by the
+shared slopes and, at \code{level = "groups"}, the group-class logits against
+the last group class; the result also carries the attributes
+\code{by_group_class} and \code{log_likelihood} (the maximised log likelihood).
 
 With \code{initial_covariates} or \code{transition_covariates}, one row per
 coefficient of the step-three chain: \code{block} (\code{"initial"} or
@@ -113,19 +108,18 @@ against the last profile and transition logits against staying, as in
 the covariate terms.
 }
 \description{
-The R3STEP approach. A multinomial logit of class membership on covariates,
-fitted after the measurement model rather than alongside it, but treating the
-assigned class as an error-prone indicator of the true one with the error
-rates held fixed at what step one found. Regressing the modal class directly
-instead attenuates every coefficient, because some units are in the wrong
-class and the covariate cannot explain why.
+Fits a multinomial logit of latent class membership on covariates after
+the measurement model (the R3STEP approach) and returns its coefficients
+as a \code{data.frame}. The assigned class is treated as an error-prone
+indicator of the true class, with the classification-error rates fixed at
+their step-one values; regressing the modal class directly attenuates the
+coefficients (Vermunt 2010; Asparouhov and Muthen 2014).
 }
 \details{
-The error matrix is held fixed rather than estimated jointly, which
-is what makes this a three-step method and what keeps the covariates from
-reshaping the classes.
-On a \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} models the marginal profile at
-each occasion. It does not regress initial-state or transition
+The classification-error matrix is held fixed rather than
+estimated jointly, so the covariates do not change the classes.
+On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} models the marginal profile at
+each occasion; it does not regress initial-state or transition
 probabilities on the covariates. \code{vcov_type = "robust"} clusters the
 occasion scores by group; \code{"observed"} treats them as independent.
 On a trajectory model the units are persons, each with one covariate
@@ -133,33 +127,31 @@ value, and \code{"robust"} is the sandwich over persons.
 
 The three-step latent Markov model (\code{initial_covariates},
 \code{transition_covariates}) classifies each occasion from its own
-indicators, with the transition fit's measurement and its profile shares
-pooled over occasions (the latent class model of the pooled data), and
-assigns it to its modal profile. Step three is a hidden Markov model for
-those assignments, with the classification errors held at their step-two
-values and the initial and transition logits regressed on the
-covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's own
-posteriors are not used for the assignments: they borrow from a person's
-other occasions, so their errors are not independent across occasions as
-step three assumes. The step-one fit must have no covariates of its own
-and one group class (\code{latents_unsupported_three_step} otherwise). It
-agrees with Latent GOLD 6.1's \verb{step3 modal ml} latent Markov model to its
-printed precision on three designs (equivalence/latentgold-step3-markov
-in the source repository); \code{"robust"} is the sandwich over persons and
-\code{"observed"} the information Latent GOLD reports.
+indicators, using the transition fit's measurement model and its profile
+shares pooled over occasions (the latent class model of the pooled
+data), and assigns it to its modal profile. Step three is a hidden Markov
+model for those assignments, with the classification errors fixed at
+their step-two values and the initial and transition logits regressed on
+the covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's
+own posteriors are not used for the assignments, because they draw on a
+person's other occasions and their errors are therefore not independent
+across occasions, as step three assumes. The step-one fit must have no
+covariates and one group class (\code{latents_unsupported_three_step}
+otherwise). Results agree with Latent GOLD 6.1's \verb{step3 modal ml} latent
+Markov model to its printed precision on three designs
+(equivalence/latentgold-step3-markov in the source repository);
+\code{"robust"} is the sandwich over persons and \code{"observed"} the information
+Latent GOLD reports.
 
-Over 60 replications of a two-profile design with a true log-odds slope of
-1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
-the intercept with a bias of +0.006, where a logistic regression on the
-modal class was biased by -0.163 on the slope. The correction costs some
-precision: the standard deviation of the slope across replications was
-0.127 against 0.100 for the naive fit. The nominal 95\% intervals covered
-the true slope in 95\% of those replications.
-
-That coverage was measured where the profiles separate well. The error
-matrix is still treated as known rather than estimated, so intervals should
-be expected to run narrow where classification is poorer; check
-\code{get_results(x, "classification_errors")} before relying on them.
+Over 60 replications of a two-profile design with a true log-odds slope
+of 1.2 and intercept -0.3, the slope had a bias of -0.002 and the
+intercept +0.006, against -0.163 on the slope for a logistic regression
+on the modal class. The standard deviation of the slope across
+replications was 0.127 (0.100 for the modal regression), and the nominal
+95\% intervals covered the true slope in 95\% of replications. The
+profiles in that design were well separated; because the error matrix is
+treated as known, intervals are expected to be too narrow where
+classification is poorer (see \code{get_results(x, "classification_errors")}).
 }
 \examples{
 set.seed(21)

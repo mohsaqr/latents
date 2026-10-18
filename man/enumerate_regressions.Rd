@@ -36,25 +36,26 @@ and \code{offset()} are supported.}
 
 \item{data}{A data frame.}
 
-\item{n_classes}{Integer vector of class counts to fit.}
+\item{n_classes}{Positive integer class counts to fit. Default \code{1:4}.}
 
-\item{n_group_classes}{Integer vector of group-class counts (two-level
-model; needs \code{id}). Crossed with \code{n_classes}.}
+\item{n_group_classes}{Positive integer group-class counts (two-level
+model; needs \code{id}), crossed with \code{n_classes}. Default 1.}
 
 \item{bootstrap}{Number of bootstrap replicates for the likelihood-ratio
-test; \code{0} skips it.}
+test; \code{0} (the default) skips it. Not available with sampling weights.}
 
-\item{bootstrap_starts}{Random starts for each bootstrap refit.}
+\item{bootstrap_starts}{Random starts for each bootstrap refit. Default 3.}
 
-\item{seed}{\code{NULL} or an integer seed. The caller's random state is
-restored afterwards.}
+\item{seed}{\code{NULL} (default) or an integer seed. The caller's random state
+is restored afterwards.}
 
-\item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family}, \code{id},
-\code{class_level}, \code{common}, \code{membership} or \code{variance}.}
+\item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family},
+\code{id}, \code{class_level}, \code{common}, \code{membership} or \code{variance}. \code{n_classes},
+\code{n_group_classes} and \code{vcov_type} are not accepted here.}
 
 \item{x}{A \code{latents_regression_enumeration} object.}
 
-\item{row.names, optional}{Unused; part of the generic.}
+\item{row.names, optional}{Not used; part of the generic.}
 
 \item{what}{\code{"fit"} for the comparison table, \code{"model"} for one fitted
 model.}
@@ -62,32 +63,45 @@ model.}
 \item{digits}{Significant digits.}
 }
 \value{
-An object of class \code{latents_regression_enumeration}. Its table (from
-\code{\link[=as.data.frame]{as.data.frame()}} or \code{get_results(x, "fit")}) has one row per model:
-\code{n_classes}, \code{n_group_classes}, \code{log_likelihood}, \code{n_parameters},
-\code{aic}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy}, \code{smallest_share},
-\code{converged}, \code{n_best_replicated}, \code{note} (why a cell could not be
-fitted), \code{best_bic} (the minimum-BIC row), and,
-with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value} and
+An object of class \code{latents_regression_enumeration}. Its table
+(from \code{\link[=as.data.frame]{as.data.frame()}} or \code{get_results(x, "fit")}) has one row per
+model, with columns \code{n_classes}, \code{n_group_classes}, \code{log_likelihood},
+\code{n_parameters}, \code{aic}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy},
+\code{smallest_share}, \code{converged}, \code{n_best_replicated}, \code{note} (why a model
+could not be fitted), \code{best_bic} (\code{TRUE} for the minimum-BIC row), and,
+with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value},
 \code{blrt_replicates} (the successful replicates) and \code{blrt_flagged} (the
 failed, unconverged, separated or reversed-likelihood replicates). The
-p-value is \code{NA} if any requested replicate fails validation. \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one fitted model.
+test columns are \code{NA} where the \code{k - 1} or \code{k} class model is missing
+or failed, and the p-value is \code{NA} if any requested replicate fails
+validation.
+\code{get_results(x, "model", n_classes = , n_group_classes = )} returns one
+fitted model.
 }
 \description{
-Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (and of
-group classes, for the two-level model) and returns their fit statistics in
-one table. Optionally adds a parametric bootstrap likelihood-ratio test of
-\code{k - 1} against \code{k} classes (McLachlan 1987; Nylund, Asparouhov and Muthen
-2007): outcomes are simulated from the \code{k - 1} class fit, both models are
-refitted to every replicate, and the p-value is the share of replicate
-statistics at least as large as the observed one, \code{(1 + b) / (1 + B)}.
+Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (crossed
+with numbers of group classes, for the two-level model) and returns their
+fit statistics in one table. Optionally adds a parametric bootstrap
+likelihood-ratio test of \code{k - 1} against \code{k} classes, at the same number of
+group classes (McLachlan 1987; Nylund, Asparouhov and Muthen 2007):
+outcomes are simulated from the \code{k - 1} class fit, both models are refitted
+to every replicate, and the p-value is \code{(1 + b) / (1 + B)}, where \code{b}
+counts replicate statistics at least as large as the observed one and \code{B}
+is the number of replicates requested.
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} for an empty or invalid grid. A model that cannot
-be fitted at some count (for example every start degenerates) gets a row
-of \code{NA} with its condition message in \code{note}, rather than stopping the
-comparison.
+A model whose fit raises \code{latents_no_valid_start} or \code{latents_bad_data}
+at some count gets a row of \code{NA} with the condition message in \code{note};
+other errors stop the enumeration. Invalid \code{n_classes},
+\code{n_group_classes}, \code{bootstrap} or \code{bootstrap_starts} fail the argument
+checks. \code{latents_bad_argument} for an invalid \code{seed}, for \code{n_classes},
+\code{n_group_classes} or \code{vcov_type} passed through \code{...}, for a bootstrap
+test whose outcome is not a plain column name, and from \code{get_results()}
+for a model that is not in the grid or could not be fitted.
+\code{latents_unsupported_weights} for a bootstrap test with sampling
+weights. \code{latents_failed_replicates} is warned, and the p-value is \code{NA},
+when the observed fits or any replicate fail validation.
 }
 
 \examples{

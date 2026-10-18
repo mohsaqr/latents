@@ -2,7 +2,7 @@
 % Please edit documentation in R/transitions.R
 \name{lta}
 \alias{lta}
-\title{Latent transition analysis}
+\title{Fit a latent transition model}
 \usage{
 lta(
   data,
@@ -39,109 +39,105 @@ lta(
 )
 }
 \arguments{
-\item{data}{A data frame containing indicators and a group identifier.}
+\item{data}{A data frame containing the indicators and the group identifier.}
 
 \item{vars}{Unique character vector of indicator column names. Columns not
 named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
 
-\item{id}{Name of the observed group identifier column. Character, factor, or
-numeric identifiers are supported; missing identifiers are not. Required
-here: this model has a second level by construction, so it has no
-single-level form and does not take \code{multilpa()}'s \code{id = NULL}.}
+\item{id}{Name of the observed group identifier column. Character, factor
+and numeric identifiers are supported; missing identifiers are not.
+Required; \code{id = NULL} is not accepted.}
 
-\item{n_profiles}{Integer number of individual profiles, at least two.}
+\item{n_profiles}{Integer number of individual profiles, at least two
+(\code{latents_bad_transition} otherwise).}
 
-\item{time}{Name of the column giving each observation's occasion within its
-group. Required: this model is defined by the ordering. Values must be
-complete and unique within each group. They are ordered as \code{\link[=sort]{sort()}}
-orders them: numbers numerically, a factor by its levels, and character
-strings alphabetically. Numbers stored as text whose alphabetical order
-is not their numeric order (\code{"2"}, \code{"10"}) are refused
-(\code{latents_bad_time}, also \code{latents_bad_data}); zero-padded numbers and ISO dates sort correctly
-and are accepted.}
+\item{time}{Name of the column giving each observation's occasion within
+its group. Required. Values must be complete and unique within each
+group. They are ordered as \code{\link[=sort]{sort()}} orders them: numbers numerically, a
+factor by its levels, and character strings alphabetically. Numbers
+stored as text whose alphabetical order is not their numeric order
+(\code{"2"}, \code{"10"}) raise \code{latents_bad_time} (also \code{latents_bad_data});
+zero-padded numbers and ISO dates are accepted.}
 
-\item{n_group_classes}{Positive integer number of latent group classes. One
-gives an ordinary single-level latent transition model; more than one fits
-a mixture of transition models over groups.}
+\item{n_group_classes}{Positive integer number of latent group classes
+(default 1). One gives an ordinary latent transition model; more than one
+fits a mixture of transition models over groups.}
 
-\item{variance_model}{Either \code{"varying"} (profile-specific variances or
-covariance matrices) or \code{"equal"} (shared across profiles).}
+\item{variance_model}{\code{"varying"} (the default; profile-specific variances
+or covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Positive integer number of EM starts. The first is
-deterministic: Ward's hierarchical clustering of the standardized
-indicators (on at most 2000 evenly spaced rows), each cluster described by
-its own means and spread, which is the start mclust's name refers to and
-finds solutions whose profiles differ in shape. The rest are k-means from
-random centres. When \code{start} is supplied, it supplies the first start
-instead; remaining starts are random initializations.
-It is ignored when \code{max_iter = 0} and \code{start} is supplied: that call
-evaluates the supplied parameters and nothing else, so exactly one start is
-run whatever \code{n_starts} says.}
+\item{n_starts}{Positive integer number of EM starts (default 10). The
+first start is deterministic: Ward's hierarchical clustering of the
+standardized indicators (on at most 2000 evenly spaced rows), each cluster
+described by its own means and spread, as in mclust's initialization. The
+remaining starts are k-means from random centres. A supplied \code{start}
+replaces the first start, and the remaining starts are random. With
+\code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
+is.}
 
-\item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-The default, \code{5000}, is higher than the \code{1000} of \code{\link[=multilpa]{multilpa()}} because
-the tighter \code{tol} needs more of them: on \code{course_engagement}, three- and
-four-profile models of two indicators take 1,000 to 1,500. A fit that
-still stops short warns (\code{latents_unconverged}). \code{max_iter = 0} updates
-nothing and evaluates the starting values.}
+\item{max_iter}{Nonnegative integer maximum number of EM updates per start
+(default 5000, higher than the 1000 of \code{\link[=multilpa]{multilpa()}} to match the tighter
+\code{tol}). A fit that stops short warns with \code{latents_unconverged}.
+\code{max_iter = 0} updates nothing and evaluates the starting values.}
 
-\item{tol}{Positive relative log-likelihood tolerance. Convergence requires
+\item{tol}{Positive relative log-likelihood tolerance (default \code{1e-10},
+tighter than the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}). Convergence requires an
 absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.
-The default, \code{1e-10}, is tighter than the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}: the
-group-class shares are re-estimated from posteriors one EM step behind
-them, and at \code{1e-8} the two still differed by up to about \code{2e-4}; at
-\code{1e-10} they agree to about \code{2e-5}, for roughly 1.5 times the iterations.}
+The group-class shares are re-estimated from posteriors one EM step
+behind them; at \code{1e-8} the two differed by up to about \code{2e-4}, at \code{1e-10}
+by about \code{2e-5}, for roughly 1.5 times the iterations.}
 
-\item{min_variance}{Positive lower bound on each variance, or each covariance
-eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
-estimates are explicitly reported and generate a warning.}
+\item{min_variance}{Positive lower bound on each variance, or on each
+covariance eigenvalue under full covariance, in squared input units
+(default \code{1e-6}); the fit is then constrained maximum likelihood.
+Estimates at the bound are reported and raise a warning.}
 
 \item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
-negative ones included. With a supplied seed,
-the caller's random-number state is restored on exit.}
+including negative ones. When supplied, the caller's random-number state
+is restored on exit.}
 
-\item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
-observed-data likelihood under an ignorable missingness mechanism (MAR).
-Missing indicators are integrated out, not filled in for likelihood fitting.
-This holds with membership covariates too; the covariates themselves must
-be complete (\code{latents_bad_data}).}
+\item{missing}{\code{"error"} (the default) rejects missing indicators; \code{"fiml"}
+maximizes the observed-data likelihood under an ignorable missingness
+mechanism (MAR), integrating missing indicators out rather than filling
+them in. This also holds with membership covariates; the covariates
+themselves must be complete (\code{latents_bad_data}).}
 
-\item{covariance_model}{\code{"diagonal"} assumes conditional independence;
-\code{"full"} estimates within-profile residual covariances.}
+\item{covariance_model}{\code{"diagonal"} (the default) assumes conditional
+independence; \code{"full"} estimates within-profile residual covariances.}
 
 \item{categorical}{Character vector naming indicators to treat as
 categorical. Each is modelled by unrestricted, profile-specific response
-probabilities over its observed categories, which is the latent class
-measurement model. Binary, ordinal and unordered indicators are all handled
-by the same unrestricted parameterization; numeric, integer, logical,
-character and factor columns are accepted. Indicators not named here stay
-Gaussian, so naming a subset fits a mixed-mode model.}
+probabilities over its observed categories (the latent class measurement
+model); binary, ordinal and unordered indicators are handled by the same
+parameterization. Numeric, integer, logical, character and factor columns
+are accepted. Indicators not named here stay Gaussian, so naming a subset
+fits a mixed-mode model.}
 
 \item{min_probability}{Positive lower bound on every categorical response
-probability, defining a constrained maximum-likelihood problem in the same
-way \code{min_variance} does for Gaussian indicators.}
+probability (default \code{1e-10}), constraining the maximum-likelihood problem
+as \code{min_variance} does for Gaussian indicators.}
 
 \item{occasions}{How a group's occasions are placed on the transition grid.
-\code{"observed"} numbers each group's own observations consecutively, so a
-transition always links two adjacent observations. \code{"grid"} places them on
-the grid of every position seen in the data, so a group that skips a
-position still consumes a transition across the gap and contributes no
-measurement information at it. The two agree whenever every group is
-observed at every position. Under either, a group's first observation is
-its first occasion, so a group that enters late starts the sequence there:
-occasion-specific transitions and measurement count occasions from each
-group's own start, not from the first position in the data.}
+\code{"observed"} (the default) numbers each group's own observations
+consecutively, so a transition always links two adjacent observations.
+\code{"grid"} places them on the grid of every position seen in the data, so a
+group that skips a position still makes a transition across the gap and
+contributes no measurement information at it. The two agree when every
+group is observed at every position. Under either, a group's first
+observation is its first occasion: occasion-specific transitions and
+measurement count occasions from each group's own start, not from the
+first position in the data.}
 
-\item{select_start}{Which start the fit reports. \code{"likelihood"}, the
-default, takes the highest log likelihood across starts, preferring a
-converged start only among those tied with it to within a relative
-\code{1e-10}. \code{"converged"} takes the highest log likelihood among the converged
-starts whenever at least one converged, and falls back to every start when
-none did. Use it when an unconverged start edges out a converged one by a
-negligible amount, which happens when a membership logit creeps along a flat
-ridge of the likelihood: the converged start is then a maximum that
-the standard errors can work with, and the other is not. \code{summary()}
-and \code{get_results(fit, "starts")} show every start either way.}
+\item{select_start}{Which start the fit reports. \code{"likelihood"} (the
+default) takes the highest log likelihood across starts, preferring a
+converged start only among those within a relative \code{1e-10} of it.
+\code{"converged"} takes the highest log likelihood among the converged starts
+when at least one converged, and among all starts otherwise. The two
+differ when an unconverged start exceeds a converged one by a negligible
+amount, as happens when a membership logit drifts along a flat ridge of
+the likelihood; only the converged start is a maximum on which standard
+errors can be based. \code{summary()} and \code{get_results(fit, "starts")} show
+every start.}
 
 \item{transitions}{\code{"homogeneous"} (the default) uses one transition matrix
 for every occasion; \code{"occasion"} estimates a separate one for each move
@@ -152,7 +148,7 @@ transition probabilities through a multinomial logit per origin profile:
 the log odds of moving to each other profile rather than staying. A
 column may change over occasions; the value at the destination occasion
 is used. Factors are expanded to indicator columns. With \code{occasions = "grid"}, a move into a position the group skipped has no row to read the
-covariates from, and the fit is refused (\code{latents_bad_data}): use
+covariates from, and the fit raises \code{latents_bad_data}; use
 \code{occasions = "observed"}, or add the skipped rows with their covariate
 values (their indicators may be missing under \code{missing = "fiml"}).}
 
@@ -162,9 +158,7 @@ each group's first occasion.}
 
 \item{measurement}{\code{"invariant"} (the default) keeps the profiles' means,
 variances and response probabilities equal across occasions;
-\code{"occasion"} estimates them separately at each occasion, so a profile is
-defined by its position in the sequence of transitions rather than by
-one fixed measurement model.}
+\code{"occasion"} estimates them separately at each occasion.}
 
 \item{order}{\code{1} (the default) or \code{2}. With \code{2}, the profile at each
 occasion from the third on depends on the profiles at the two previous
@@ -178,10 +172,11 @@ second-order transitions, occasion-specific measurement), and for EEI,
 VVI, EEE and VVV in the homogeneous model, which refuses the other ten
 with \code{latents_unsupported_inference}.}
 
-\item{mover_stayer}{\code{TRUE} adds a class of stayers: groups that never
-change profile (identity transitions) and have their own initial profile
-distribution (Goodman's mover-stayer model). \code{n_group_classes} then counts
-the mover classes; the stayer class is reported as \code{"stayers"}.}
+\item{mover_stayer}{\code{FALSE} (the default), or \code{TRUE} to add a class of
+stayers: groups that never change profile (identity transitions) and have
+their own initial profile distribution (Goodman's mover-stayer model).
+\code{n_group_classes} then counts the mover classes; the stayer class is
+reported as \code{"stayers"}.}
 
 \item{weights}{\code{NULL}, or the name of a column of \code{data} holding one
 sampling weight per \code{id} (constant over its occasions). As in
@@ -198,20 +193,19 @@ parameters are estimated per occasion. Read them with
 \code{get_results(fit, "ordinal")} and \code{get_results(fit, "count_means")}. A
 fit with them uses the general transition engine.}
 
-\item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: what the reported
-statistics do with rows whose every indicator is missing, and with groups
-whose every row is such a row. These add nothing to the likelihood, so the
-estimates are the same either way; their posterior is the prior, not a
-classification. With \code{TRUE} they are left out of the individual and group
-sample sizes of the information criteria, of relative entropy, AvePP and
-the entropy charge of ICL, AWE and CLC, of the classification tables and
-diagnostic plots, and of the effective class counts, as Mplus leaves them
-out of its analysis. \code{FALSE} reports what latents 0.9.37 and earlier
-reported, so their results can be reproduced: every row and group is
-counted in those statistics, except the individual sample size of a
-\code{multilpa()} fit, which already left such rows out. Fits made with
-different \code{drop_empty} are not compared by \code{\link[=compare_models]{compare_models()}} or
-\code{\link[=bootstrap_lrt]{bootstrap_lrt()}}. The setting is kept on the fit and passed on by
+\item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: how the reported
+statistics treat rows whose every indicator is missing, and groups
+consisting only of such rows. These contribute nothing to the likelihood,
+so the estimates are the same either way, and their posterior is the
+prior. With \code{TRUE} they are excluded, as in Mplus, from the individual and
+group sample sizes of the information criteria, from relative entropy,
+AvePP and the entropy term of ICL, AWE and CLC, from the classification
+tables and diagnostic plots, and from the effective class counts. With
+\code{FALSE} every row and group is counted in those statistics (the results
+of latents 0.9.37 and earlier), except in the individual sample size of a
+\code{multilpa()} fit, which excludes such rows either way. \code{\link[=compare_models]{compare_models()}}
+and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} do not compare fits made with different
+\code{drop_empty}. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}
 }
 \value{
@@ -221,52 +215,46 @@ optional \code{covariances} and \code{response_probabilities},
 \code{transition_probabilities} (profiles by profiles by group classes, rows
 indexing the profile moved from), \code{group_probabilities}, posterior
 matrices, classifications, log likelihood, information criteria, restart
-diagnostics and convergence history. Use \code{\link[=get_results]{get_results()}} for the tidy
-transition table and for the other tables, \code{\link[=parameter_inference]{parameter_inference()}} for
-Wald or bootstrap standard errors and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to compare nested
-fits. Global optimality is not guaranteed; compare several starts.
+diagnostics and convergence history. \code{\link[=get_results]{get_results()}} returns the tidy
+transition table and the other tables, \code{\link[=parameter_inference]{parameter_inference()}} Wald or
+bootstrap standard errors, and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} compares nested fits.
+Global optimality is not guaranteed.
 
 With \code{transitions = "occasion"}, \code{transition_covariates},
 \code{initial_covariates}, \code{measurement = "occasion"}, \code{order = 2},
-\code{mover_stayer = TRUE}, \code{weights}, \code{ordinal} or \code{count} the
-result is a \code{multilpa_lta} object instead, read with
-\code{\link[=get_results]{get_results()}}: transition and initial logit coefficients
-with Wald standard errors (observed, robust or OPG, from analytic
-scores), model-implied transition probabilities per occasion, profiles
-per occasion. Missing indicators (\code{missing = "fiml"}) and covariance
-structures are supported; diagonal fits are finished by a quasi-Newton
-search on the exact likelihood, others by EM.
-Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
-thresholds), depmixS4 and LMest is recorded in
+\code{mover_stayer = TRUE}, \code{weights}, \code{ordinal} or \code{count}, the result is a
+\code{multilpa_lta} object, read with \code{\link[=get_results]{get_results()}}: transition and initial
+logit coefficients with Wald standard errors (observed, robust or OPG,
+from analytic scores), model-implied transition probabilities per
+occasion, and profiles per occasion. Missing indicators
+(\code{missing = "fiml"}) and covariance structures are supported; diagonal
+fits are finished by a quasi-Newton search on the exact likelihood,
+others by EM. Agreement with Mplus (User's Guide examples 8.13, 8.14;
+occasion-specific thresholds), depmixS4 and LMest is recorded in
 \verb{equivalence/lta-extensions/} of the source repository.
 }
 \description{
-Fits latent profiles to repeated observations of the same group and
-estimates the probabilities of moving between them from one occasion to the
-next. The measurement model is that of \code{\link[=multilpa]{multilpa()}} -- Gaussian, categorical
-or mixed indicators, invariant across occasions -- so profiles keep the same
-meaning at every occasion and a change of profile is a change of state
-rather than a change of definition. With more than one group class, each
-class carries its own initial distribution and its own transition matrix,
-which is how groups that differ in their dynamics are separated from groups
-that differ only in where they start.
+Fits latent profiles to repeated observations of the same group, estimates
+the probabilities of moving between profiles from one occasion to the next,
+and returns a \code{multilpa_transitions} (or \code{multilpa_lta}) object. The
+measurement model is that of \code{\link[=multilpa]{multilpa()}} (Gaussian, categorical or mixed
+indicators) and is invariant across occasions by default, so a profile has
+the same meaning at every occasion. With more than one group class, each
+class has its own initial distribution and its own transition matrix, so
+the group classes are a mixture over transition patterns. \code{\link[=multilpa]{multilpa()}} is
+the cross-sectional counterpart.
 }
 \details{
-This is latent transition analysis (LTA); with more than one group class it
-is a mixture over transition patterns, so the classes are trajectories rather
-than states. \code{\link[=multilpa]{multilpa()}} is the cross-sectional counterpart.
-
 By default transitions are first order and homogeneous over
 occasions: the probability of moving from one profile to another does not
 depend on the occasion or on earlier profiles. Measurement parameters are
-shared across occasions and across group classes. A profile that no group occupies before
-its final occasion leaves its transition row without information; the row
-is then uniform by construction rather than estimated. Such a row is warned
-about when the model is fitted, is flagged by the \code{estimated} column of
-the transition table and is listed by
-\code{get_results(fit, "transitions", estimated = FALSE)}.
-Profile labels are arbitrary and
-are not comparable across fits without alignment.
+shared across occasions and across group classes. A profile that no group
+occupies before its final occasion leaves its transition row without
+information; the row is then uniform by construction, not estimated. Such
+a row raises a warning when the model is fitted, is flagged by the
+\code{estimated} column of the transition table and is listed by
+\code{get_results(fit, "transitions", estimated = FALSE)}. Profile labels are
+arbitrary and are not comparable across fits without alignment.
 
 \code{max_iter = 0} updates nothing: the starting values are evaluated and
 returned with the expectation they imply, and the fit reports

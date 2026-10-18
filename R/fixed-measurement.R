@@ -184,55 +184,46 @@
 
 #' Fit a two-level model in stages, holding the measurement solution
 #'
-#' Estimates the measurement model once, on its own, and then estimates the
-#' group-class structure with that measurement held fixed. This is the staged
-#' workflow used when the measurement solution is meant to be decided before
-#' the grouping question is asked, so that adding group classes cannot move the
-#' profiles they are meant to describe.
+#' Fits a two-level model in two stages and returns the second-stage
+#' `multilpa` object. The first stage estimates the measurement model with one
+#' group class; the second estimates the group-class structure with that
+#' measurement held fixed, so adding group classes does not change the
+#' profiles.
 #'
 #' @inheritParams multilpa
-#' @param id Name of the observed group identifier column. Character, factor, or
-#'   numeric identifiers are supported; missing identifiers are not. Required
-#'   here: this model has a second level by construction, so it has no
-#'   single-level form and does not take `multilpa()`'s `id = NULL`.
+#' @param id Name of the observed group identifier column. Character, factor
+#'   and numeric identifiers are supported; missing identifiers are not.
+#'   Required; `id = NULL` is not accepted.
 #' @param n_group_classes Number of latent group classes to estimate in the
-#'   second stage. Must be at least two; one would leave nothing to estimate.
-#' @param measurement Optional fitted `multilpa` model to use as the first
-#'   stage, so that a measurement solution already chosen and inspected is
-#'   carried forward rather than refitted. Its profiles, indicators and
-#'   measurement options must match the ones requested here, and it must have
-#'   one group class: a multi-class fit already estimates group structure and
-#'   is not a measurement-only first stage. A fit made with `weights`,
-#'   `centering` or `ordinal`/`count` indicators is refused too, since the
-#'   second stage fitted here uses none of them and would hold the measurement
-#'   under a likelihood it was not estimated on. Every refusal raises
-#'   `latents_bad_stage`. When `NULL`, the first stage is fitted here with one
-#'   group class.
+#'   second stage (default 2); must be at least two.
+#' @param measurement `NULL` (the default), to fit the first stage here with
+#'   one group class, or a fitted `multilpa` model to use as the first stage.
+#'   Its profiles, indicators and measurement options must match the ones
+#'   requested here, and it must have one group class. Fits made with
+#'   `weights`, `centering` or `scaling`, or with `ordinal` or `count`
+#'   indicators, are refused, as are covariance structures other than EEI,
+#'   VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
 #' @param n_starts Number of EM starts, used for both stages.
-#' @return A `multilpa` object for the second stage, so that every accessor,
-#'   diagnostic and method works on it unchanged. Its measurement parameters
-#'   are exactly the first stage's. It additionally carries `fixed`, naming the
-#'   held blocks; `n_parameters`, counting only the parameters this stage
-#'   estimated; and `n_parameters_with_measurement`, which adds the held
-#'   measurement back. Use [get_results()] with `what = "stages"` for a tidy
-#'   two-row summary of both stages.
+#' @return A `multilpa` object for the second stage, on which every accessor,
+#'   diagnostic and method works. Its measurement parameters are exactly the
+#'   first stage's. It also carries `fixed`, naming the held blocks;
+#'   `n_parameters`, counting only the parameters this stage estimated; and
+#'   `n_parameters_with_measurement`, which adds the held measurement back.
+#'   `get_results(fit, what = "stages")` gives a two-row summary of both
+#'   stages.
 #' @details The second stage treats the measurement solution as known, so its
 #'   Wald standard errors ([parameter_inference()]'s default), information
 #'   criteria and likelihood-ratio comparisons are conditional on that solution
-#'   and are narrower than they would be if the measurement had been estimated
-#'   jointly. `parameter_inference(fit, method = "bootstrap")` removes that
-#'   conditioning for the standard errors and intervals: every resample of the
-#'   groups is staged again, measurement first, so the replicates carry the
-#'   first stage's sampling variability into the second stage, and the table
-#'   also reports the measurement parameters with their own errors. A
-#'   `measurement` supplied by the caller is re-estimated on each resample
-#'   with the same options, since the resample is new data. The conditioning
-#'   of the criteria and likelihood comparisons is a property of staging
-#'   itself, and it is the reason both parameter counts are reported:
-#'   compare staged fits with one another using `n_parameters`, and compare a
-#'   staged fit with a jointly estimated one using
-#'   `n_parameters_with_measurement`, remembering that the staged likelihood is
-#'   not the joint maximum and the comparison is descriptive.
+#'   and narrower than under joint estimation.
+#'   `parameter_inference(fit, method = "bootstrap")` removes that conditioning
+#'   for the standard errors and intervals: every resample of the groups is
+#'   staged again, measurement first, and the table also reports the
+#'   measurement parameters with their own errors. A supplied `measurement` is
+#'   re-estimated on each resample with the same options. The criteria and
+#'   likelihood comparisons remain conditional: compare staged fits with one
+#'   another using `n_parameters`, and a staged fit with a jointly estimated
+#'   one using `n_parameters_with_measurement`; the staged likelihood is not
+#'   the joint maximum, so the latter comparison is descriptive.
 #' @seealso [multilpa()] with `fixed` for finer control over which blocks are
 #'   held, and [starting_values()] with `what = "measurement"` for the values a
 #'   stage hands on.

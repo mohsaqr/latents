@@ -26,14 +26,13 @@
 #
 # mclust has no prior for VEE, EVE, VVE or EVV, and neither has this package.
 
-#' Conjugate prior for Gaussian mixture estimation
+#' Specify a conjugate prior for Gaussian mixture estimation
 #'
-#' Requests maximum a posteriori (MAP) estimation of the Gaussian profile means
-#' and covariances under the conjugate prior of Fraley and Raftery (2007),
-#' exactly as `mclust::priorControl()` does for `mclust::Mclust()`. Pass the
-#' result as `multilpa(prior = )`. The prior keeps covariances away from
-#' singularity, which is what lets a many-profile or many-indicator model be
-#' fitted where maximum likelihood degenerates.
+#' Returns a `latents_prior` object requesting maximum a posteriori (MAP)
+#' estimation of the Gaussian profile means and covariances under the
+#' conjugate prior of Fraley and Raftery (2007), as `mclust::priorControl()`
+#' does for `mclust::Mclust()`. Pass the result as `multilpa(prior = )`. The
+#' prior keeps the covariance estimates away from singularity.
 #'
 #' Every argument left `NULL` takes `mclust::defaultPrior()`'s value, computed
 #' from the indicators being fitted: the prior mean is their column means, the
@@ -43,22 +42,20 @@
 #' `G` profiles.
 #'
 #' The updates follow mclust's fitted-model convention, including its
-#' structure-specific departures from a textbook conjugate update. For `EII`,
+#' structure-specific departures from a textbook conjugate update, so the
+#' controls have different effects across covariance structures. For `EII`,
 #' `scale` does not enter the variance update. For `EEI`, `shrinkage` and
 #' `mean` enter the variance calculation but do not shrink the fitted means.
 #' For `VEV`, `dof` does not enter the update. `EEI`, `EVI` and `EEV` count the
-#' mean-prior contribution once rather than once per profile. These
-#' conventions are retained for agreement with mclust; the controls therefore
-#' have different effects across covariance structures.
+#' mean-prior contribution once rather than once per profile.
 #'
-#' @param shrinkage Non-negative prior precision factor for the means, `kappa`;
-#'   mclust's default `0.01`. Zero leaves the means unshrunk.
+#' @param shrinkage Non-negative prior precision factor for the means, `kappa`
+#'   (default `0.01`, as in mclust). Zero leaves the means unshrunk.
 #' @param mean Optional prior mean, one value per continuous indicator, on the
 #'   scale the profile means are estimated on: the indicators' own units, or
-#'   their centred values when [multilpa()]'s `centering` centres them (so a
-#'   mean of the raw data is far from the centred data's and is not the
-#'   default). Naming one needs a positive `shrinkage`.
-#' @param dof Optional prior degrees of freedom, a single number.
+#'   their centred values under [multilpa()]'s `centering`. Requires a positive
+#'   `shrinkage`.
+#' @param dof Optional prior degrees of freedom, a single positive number.
 #' @param scale Optional prior scale: a single positive number for an
 #'   axis-parallel or spherical structure, or a positive-definite `d` by `d`
 #'   matrix for an ellipsoidal one.
@@ -66,10 +63,10 @@
 #'   `dof` and `scale`, the last three `NULL` where the default is to be
 #'   computed from the data.
 #' @section Conditions:
-#'   Raises `latents_bad_argument` for a negative or non-finite `shrinkage`, a
-#'   `mean` with a zero `shrinkage`, a non-positive `dof`, or a `scale` that is
-#'   neither a positive number nor a square, symmetric, positive-definite
-#'   matrix.
+#'   `latents_bad_argument` for a negative or non-finite `shrinkage`, a
+#'   non-finite `mean`, a `mean` with a zero `shrinkage`, a non-positive or
+#'   non-finite `dof`, or a `scale` that is neither a positive number nor a
+#'   square, symmetric, positive-definite matrix.
 #' @references Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for
 #'   normal mixture estimation and model-based clustering. *Journal of
 #'   Classification*, 24, 155--181. \doi{10.1007/s00357-007-0004-5}

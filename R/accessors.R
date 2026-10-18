@@ -751,45 +751,39 @@ print.multilpa_enumeration <- function(x, ...) {
 }
 
 
-#' Build starting values for a multilevel latent profile fit
+#' Extract starting values for a latent profile fit
 #'
-#' Returns the starting-value list [multilpa()] accepts, taken from a fitted
-#' model or from any object that already carries the parameter blocks, such as a
-#' retained reference solution. This exists so that callers never assemble the
-#' list by hand, and so that starting values are validated where they are built
-#' rather than deep inside the fitting loop.
+#' Returns a `multilpa_start` object, the starting-value list [multilpa()]
+#' accepts as `start`, taken from a fitted model or from any list that carries
+#' the parameter blocks. The blocks are validated when the list is built.
 #'
 #' @param x A fitted `multilpa` model, or a list carrying
-#'   `profile_probabilities`, `group_probabilities`, and whichever measurement
+#'   `profile_probabilities`, `group_probabilities`, and the measurement
 #'   blocks the model uses: `means` with `variances` or `covariances` for
 #'   continuous indicators, `response_probabilities` for categorical ones. An
-#'   all-categorical model needs no Gaussian block. Any other elements are
-#'   ignored.
-#' @param what `"all"` returns the measurement and mixing blocks.
-#'   `"measurement"` omits `profile_probabilities` and `group_probabilities`,
-#'   which are sized for the model that produced them and must not be carried
-#'   into a staged fit that changes the number of group classes. Pass the
-#'   result as `start` alongside `fixed` in [multilpa()].
-#' @param covariance `"auto"` keeps `covariances` when the object carries them,
-#'   `"drop"` always returns the diagonal parameterization, and `"keep"`
-#'   requires `covariances` and fails when they are absent.
-#' @return An object of class `multilpa_start`: the list [multilpa()] accepts as
-#'   `start`, with elements `means`, `variances`, `profile_probabilities`, and
-#'   `group_probabilities`, plus `covariances` when the full-covariance
-#'   parameterization is returned and `response_probabilities` when the object
-#'   carries a categorical measurement model. `what = "measurement"` drops
-#'   `profile_probabilities` and `group_probabilities`. The Gaussian blocks are
-#'   unnamed and indexed by position, matching what [multilpa()] expects of
-#'   `start`; read them with [as.data.frame()], which labels the positions,
-#'   rather than out of the list. `response_probabilities` is the exception: the
-#'   list keeps each indicator's name and each block keeps its category names,
-#'   because those labels are what lets [multilpa()] attach a block to the item
-#'   it was estimated for rather than to whichever item happens to sit in that
-#'   position. A fit that names its categorical indicators in another order, or
-#'   that has other categories, therefore refuses the start with
-#'   `latents_bad_start` instead of reporting a likelihood for a measurement
-#'   model it never held. The list payload is unchanged by the class, so a
-#'   `multilpa_start` can be passed straight back as `start`.
+#'   all-categorical model needs no Gaussian block. Other elements are
+#'   ignored. A missing block raises `latents_bad_start`; a fit with a noise
+#'   component raises `latents_unsupported_noise`.
+#' @param what `"all"` (the default) returns the measurement and mixing
+#'   blocks. `"measurement"` omits `profile_probabilities` and
+#'   `group_probabilities`, which are sized for the model that produced them;
+#'   use it with `fixed` in [multilpa()] for a staged fit that changes the
+#'   number of group classes.
+#' @param covariance `"auto"` (the default) keeps `covariances` when the
+#'   object carries them, `"drop"` always returns the diagonal
+#'   parameterization, and `"keep"` requires `covariances` and raises
+#'   `latents_bad_start` when they are absent.
+#' @return An object of class `multilpa_start`: the list [multilpa()] accepts
+#'   as `start`, with elements `means`, `variances`, `profile_probabilities`
+#'   and `group_probabilities`. When covariances are returned, `covariances`
+#'   replaces `variances`; when the object carries a categorical measurement
+#'   model, `response_probabilities` is added. `what = "measurement"` drops
+#'   `profile_probabilities` and `group_probabilities`. The Gaussian blocks
+#'   are unnamed and indexed by position; [as.data.frame()] returns them as a
+#'   labelled table. `response_probabilities` keeps each indicator's name and
+#'   each block's category names, and [multilpa()] matches the blocks by these
+#'   labels, so a fit whose categorical indicators or categories do not match
+#'   raises `latents_bad_start`. The object can be passed directly as `start`.
 #' @seealso [get_results()] for the values as tidy tables.
 #' @examples
 #' set.seed(7)

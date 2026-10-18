@@ -2,7 +2,7 @@
 % Please edit documentation in R/lpa.R
 \name{lpa}
 \alias{lpa}
-\title{Latent profile analysis}
+\title{Fit a latent profile model}
 \usage{
 lpa(data, vars, n_profiles, ...)
 }
@@ -10,33 +10,31 @@ lpa(data, vars, n_profiles, ...)
 \item{data}{A data frame with one row per observation.}
 
 \item{vars}{Names of the indicator columns. Numeric columns are continuous
-indicators; name categorical ones in \code{categorical}.}
+indicators; categorical ones are named in \code{categorical}.}
 
 \item{n_profiles}{Number of profiles, a positive whole number.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}: the covariance structure
 (\code{model}, or \code{variance_model} and \code{covariance_model}, or \code{volume},
 \code{shape} and \code{orientation}), \code{missing}, \code{categorical}, \code{n_starts},
-\code{seed}, \code{boundary}, \code{prior}, \code{noise}, \code{profile_covariates} and the others it
-documents, except \code{id} and \code{n_group_classes}, which a single-level model
-does not have.}
+\code{seed}, \code{boundary}, \code{prior}, \code{noise}, \code{profile_covariates} and the others
+it documents, except \code{id} and \code{n_group_classes}.}
 }
 \value{
-A fitted \code{multilpa} object, as \code{\link[=multilpa]{multilpa()}} returns, recording the
-\code{lpa()} call as written.
+A fitted \code{multilpa} object, as \code{\link[=multilpa]{multilpa()}} returns, whose \code{call}
+is the \code{lpa()} call.
 }
 \description{
-Fits a single-level latent profile model: a finite mixture of multivariate
-normal distributions, in which each observation belongs to one of
-\code{n_profiles} unobserved profiles and each profile has its own mean on every
-indicator. It is the model \code{\link[=multilpa]{multilpa()}} fits with \code{id = NULL}, and it
-returns the same object, so every accessor, plot and inference verb of the
-package applies to it.
+Fits a single-level latent profile model and returns a fitted \code{multilpa}
+object. The model is a finite mixture of multivariate normal distributions:
+each observation belongs to one of \code{n_profiles} unobserved profiles, and each
+profile has its own mean on every indicator. It is the model \code{\link[=multilpa]{multilpa()}}
+fits with \code{id = NULL}, so every accessor, plot and inference verb of the
+package applies to the result.
 }
 \details{
-For observations nested in groups (students in schools, occasions in
-persons), use \code{\link[=multilpa]{multilpa()}} with the grouping column as \code{id}, which adds
-latent classes of groups above the profiles.
+For observations nested in groups, use \code{\link[=multilpa]{multilpa()}} with the grouping column
+as \code{id}, which adds latent classes of groups above the profiles.
 }
 \section{Conditions}{
 

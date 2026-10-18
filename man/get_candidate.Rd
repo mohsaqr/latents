@@ -15,55 +15,53 @@ class, transition or group-class family grid), or a comparison from
 \code{\link[=compare_models]{compare_models()}}. On a family grid, give the name, or \code{n_group_classes}
 with \code{model}.}
 
-\item{n_profiles}{Number of individual profiles identifying the candidate,
-the candidate's name (\code{"profiles3_groups4"}), or its two class counts
-(\code{c(3, 4)}). For a comparison, the label of the row, as its \code{model}
-column shows it.}
+\item{n_profiles}{Number of individual profiles of the candidate, the
+candidate's name (\code{"profiles3_groups4"}), or its two class counts
+(\code{c(3, 4)}). For a comparison, the row label, as its \code{model} column shows
+it.}
 
-\item{n_group_classes}{Number of group classes identifying the candidate.}
+\item{n_group_classes}{Number of group classes of the candidate. Default 1.}
 
-\item{model}{The covariance model identifying the candidate, needed when
-\code{\link[=enumerate_classes]{enumerate_classes()}} was given several \code{model}s and the class counts
-alone name several candidates. Counts that match more than one
-candidate raise \code{latents_unknown_candidate}, listing their names.}
+\item{model}{The covariance structure of the candidate, needed when
+\code{\link[=enumerate_classes]{enumerate_classes()}} crossed several structures and the class counts
+match several candidates; on a group-class family grid, the family model
+as the grid's \code{model} column shows it.}
 }
 \value{
-The fitted model for that cell of the grid: an object of class
-\code{multilpa}, the same kind of object \code{\link[=multilpa]{multilpa()}} returns, so the verbs
-for a fitted model apply to it.
+The fitted model of that candidate, the same kind of object its
+fitting function returns (for a profile grid, class \code{multilpa}), so the
+verbs for a fitted model apply to it.
 }
 \description{
-An enumeration keeps every candidate it fitted, and \code{\link[=compare_models]{compare_models()}}
-keeps every model it compared. This returns one of them, so that a caller
-who wants to plot, summarise or test a particular candidate names it by its
-class counts instead of indexing the grid by position.
+Returns one fitted model from an enumeration, selected by its name or by
+its number of profiles and group classes (and its covariance structure when
+the grid has several), or one model from a comparison, selected by its row
+label.
 }
 \details{
-A candidate is named by its name, \code{get_candidate(grid, "classes3_groups4")},
-as the grid's \code{candidate} column shows it; by its class counts,
+A candidate is selected by its name, as the grid's \code{candidate} column shows
+it (\code{get_candidate(grid, "profiles3_groups4")}; \code{classes} instead of
+\code{profiles} when every indicator is categorical); by its class counts,
 \code{get_candidate(grid, 3, 4)} or \code{get_candidate(grid, c(3, 4))}; or, on a grid
 that crosses covariance structures, by its counts and \code{model}. From a
-comparison, name the row: \code{get_candidate(comparison, "classes3_groups4")}.
-The same model is \code{grid$classes3_groups4}.
+comparison, give the row label: \code{get_candidate(comparison, "profiles3_groups4")}.
 
-\code{candidate_fit()} is the name this function had in latents 0.9.21.
-It is still accepted with the same arguments and without a warning, so
-code written for that release keeps working; it forwards to
-\code{get_candidate()}, which new code uses.
+\code{candidate_fit()} is the former name of \code{get_candidate()}, kept
+for compatibility. It takes the same arguments, forwards to
+\code{get_candidate()} and gives no warning.
 }
 \section{Conditions}{
 
 \code{latents_unknown_candidate} for a name or class counts not in the grid,
 for counts that match several candidates (the message lists their
 names), and for a label that is not a row of a comparison;
-\code{latents_failed_candidate} when the candidate is in the grid but its fit
-raised an error, so no model exists to return; \code{latents_bad_argument}
-for a name or pair of counts given together with \code{n_group_classes} or
-\code{model}, or for a value that names no candidate; \code{latents_incomplete_fit}
-for a comparison that no longer carries its models. Counts that are not
-whole positive numbers raise an error from the argument checks. None of
-these returns \code{NULL}, because a \code{NULL} would flow silently into whatever
-the caller did next.
+\code{latents_failed_candidate} when the candidate's fit raised an error, so
+there is no model to return; \code{latents_bad_argument} for a name or pair of
+counts given together with \code{n_group_classes} or \code{model}, for a value that
+names no candidate, and for a comparison given no label;
+\code{latents_incomplete_fit} for a comparison that no longer carries its
+models. Counts that are not single positive whole numbers fail the
+argument checks.
 }
 
 \examples{

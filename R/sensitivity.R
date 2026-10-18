@@ -1,66 +1,56 @@
-#' Does the solution survive a different seed?
+#' Refit a model under several seeds
 #'
-#' A latent profile model is fitted by EM from random starts, so what comes back
-#' is a local maximum reached from one particular set of them. `n_starts`
-#' reports how many starts *within a single seed's stream* reached the best
-#' likelihood; it cannot say whether a different stream would have found a
-#' different mode. This verb refits the model under each of several seeds and
-#' reports what changed.
+#' Refits the model under each of several random seeds and returns one row
+#' per seed with the maximised log likelihood, convergence, which distinct
+#' optimum the refit reached, and the proportion of observations assigned to
+#' the same profile as in the reference fit. Profile labels of each refit are
+#' matched to the reference fit's before agreement is computed.
 #'
-#' Three things are worth reading off the result. Whether every seed reached the
-#' same maximised log likelihood, which is what `optimum` counts. Whether the
-#' seeds that reached it converged. And how many observations were assigned to a
-#' different profile, which is what `agreement` measures, after the arbitrary
-#' profile labels of each refit have been matched to the reference fit's -- two
-#' fits of the same mixture can be identical and still number their profiles
-#' differently, so comparing labels directly would report disagreement that is
-#' not there.
+#' A fit's own replication count describes only the starts within one seed's
+#' random-number stream; refitting under other seeds shows whether other
+#' streams reach the same maximum and the same classification.
 #'
-#' A seed whose refit fails contributes a row with `NA` estimates rather than
-#' being dropped silently, and a `latents_sensitivity_dropped` warning names
-#' how many failed, so the table is never quietly shorter than `seeds`.
+#' A seed whose refit fails gives a row with `NA` estimates, and a
+#' `latents_sensitivity_dropped` warning reports how many seeds failed.
 #'
 #' @param x The reference fit: a [multilpa()] model, an [lta()] model, or a
-#'   growth mixture ([mixture_regression()] with `random`).
-#'   A [fit_staged()] result varies the second-stage starts while holding its
-#'   first-stage measurement solution fixed. A directly fitted model with
-#'   measurement blocks held is refused: its original free starting
-#'   values are not retained, so replaying the same seed would not replay the
-#'   same search. A membership-covariate fit is refused with
-#'   `latents_unsupported_sensitivity`. For an [lta()] fit, `agreement` is
-#'   the share of occasions given the same profile, after matching the
-#'   refit's profiles on the measurement; for a growth mixture it is the
-#'   share of persons given the same class, after matching the refit's
-#'   classes by their posterior memberships of the fitted persons.
-#' @param data Optional for a [multilpa()] fit or a growth mixture, which carry
-#'   the columns they were built from, so it is only needed to override them;
-#'   required for an [lta()] fit (`latents_bad_argument` otherwise), whose
-#'   refits need the occasions and covariates. It must be the data the model
-#'   was fitted to, in its original row order; shared identifier and indicator
-#'   columns are checked against the fit before assignment agreement is
-#'   calculated (`latents_bad_inference_data`).
-#' @param seeds Seeds to refit under: at least two distinct whole numbers of
-#'   either sign, as `set.seed()` accepts. Anything else raises
-#'   `latents_bad_argument`. The reference fit's own seed may
-#'   be among them, in which case that row reproduces it and is the arithmetic
-#'   check that the refit is the same model.
+#'   growth mixture ([mixture_regression()] with `random`). A [fit_staged()]
+#'   result varies the second-stage starts while holding its first-stage
+#'   measurement solution fixed. A directly fitted model with measurement
+#'   blocks held fixed is refused (`latents_unsupported_sensitivity`), because
+#'   its original free starting values are not retained. A
+#'   membership-covariate fit is refused with
+#'   `latents_unsupported_sensitivity`. For an [lta()] fit, `agreement` is the
+#'   share of occasions given the same profile, after matching the refit's
+#'   profiles on the measurement; for a growth mixture it is the share of
+#'   persons given the same class, after matching the refit's classes by
+#'   their posterior memberships of the fitted persons.
+#' @param data Optional for a [multilpa()] fit or a growth mixture, which
+#'   carry the columns they were built from. Required for an [lta()] fit
+#'   (`latents_bad_argument` otherwise). It must be the data the model was
+#'   fitted to, in its original row order; shared identifier and indicator
+#'   columns are checked against the fit (`latents_bad_inference_data`).
+#' @param seeds Seeds to refit under: at least two distinct whole numbers
+#'   that `set.seed()` accepts. Default `1:10`. Anything else raises
+#'   `latents_bad_argument`. If the reference fit's own seed is included, that
+#'   row reproduces the reference fit.
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
-#'   used, so each seed gets the same search effort it did.
-#' @param max_iter,tol Passed to each refit; default to the reference fit's
+#'   used.
+#' @param max_iter,tol Passed to each refit. Default to the reference fit's
 #'   (for an [lta()] fit, to the defaults of [lta()]).
-#' @param tolerance Two log likelihoods within this of each other count as the
-#'   same optimum. Defaults to the reference fit's own replication tolerance,
-#'   which is what it used to decide whether its starts agreed (for a growth
-#'   mixture `1e-6 * (1 + abs(logLik))`).
+#' @param tolerance Two log likelihoods within this of each other count as
+#'   the same optimum. Defaults to the reference fit's replication tolerance
+#'   (for a growth mixture, `1e-6 * (1 + abs(logLik))`).
 #' @return A base `data.frame`, one row per seed, with columns `seed`,
 #'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
 #'   maximum found across the seeds, 2 for the next distinct one, and so on),
 #'   `best` (whether this seed reached optimum 1) and `agreement` (the
 #'   proportion of observations given the same profile as the reference fit,
-#'   after label alignment). A failed refit has `NA` throughout except `seed`.
-#' @seealso [enumerate_classes()] to vary the number of classes rather than the
-#'   seed, and [parameter_inference()] for uncertainty about the parameters of a
-#'   single solution.
+#'   after label matching). A failed refit has `NA` in every column except
+#'   `seed`.
+#' @seealso [enumerate_classes()] to vary the number of classes, and
+#'   [parameter_inference()] for uncertainty about the parameters of a single
+#'   solution.
 #' @references Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the
 #'   estimation of growth mixture models. *Psychological Methods, 11*, 36--53.
 #' @examples

@@ -6,7 +6,7 @@
 \alias{descriptives.multilpa}
 \alias{descriptives.multilpa_transitions}
 \alias{descriptives.multilpa_covariates}
-\title{Describe the variables a model uses, or will use}
+\title{Descriptive statistics and intraclass correlations of model variables}
 \usage{
 descriptives(x, ...)
 
@@ -19,68 +19,63 @@ descriptives(x, ...)
 \method{descriptives}{multilpa_covariates}(x, by = NULL, ...)
 }
 \arguments{
-\item{x}{A data frame, or a fitted model of this package. A fit carries the
-columns it was built from, so \code{vars} and \code{id} are read from it. A
-single-level fit (\code{id = NULL}) has no groups, so its table has no
-\code{n_groups} or \code{icc}.}
+\item{x}{A data frame, or a fitted model of this package, whose own \code{vars}
+and \code{id} are then used. A single-level fit has no groups, so its table
+has no \code{n_groups} or \code{icc}.}
 
-\item{...}{Nothing further is used. For a data frame, any other argument is
-reported with a \code{latents_unused_argument} warning; for a fit, which
-supplies its own \code{vars} and \code{id}, it raises \code{latents_bad_argument}.}
+\item{...}{Not used. For a data frame, any further argument raises a
+\code{latents_unused_argument} warning; for a fit, it raises
+\code{latents_bad_argument}.}
 
-\item{vars}{Character vector of column names to describe. Repeated names
-are described once. Columns must be vectors; matrix-valued columns raise
+\item{vars}{Character vector of column names to describe; repeated names
+are described once. Columns must be vectors: matrix-valued columns raise
 \code{latents_bad_data}. For a data frame, defaults to every numeric column
-that is not \code{id}.}
+other than \code{id} and \code{by}.}
 
-\item{id}{Optional. The column identifying the groups rows are nested in.
-Supplying it adds \code{n_groups} and \code{icc}; omitting it leaves them out.}
+\item{id}{Optional. The column identifying the groups the rows are nested
+in. Supplying it adds \code{n_groups} and \code{icc}.}
 
-\item{by}{Optional. \code{"profile"} or \code{"group_class"} on a fitted model, or a
-column name on a data frame: describe each variable once per level of it,
-rather than once overall. Rows whose stratifier is \code{NA} are neither dropped
-nor folded into another level: they form their own stratum, labelled \code{NA}
-in the \code{by} column and reported last, so that the strata account for every
-input row exactly once. The stratifier is never compared with \code{==}, so a
-missing value cannot select rows it does not belong to.}
+\item{by}{Optional. On a fitted model, \code{"profile"} or \code{"group_class"}; on a
+data frame, a column name. Each variable is then described once per level
+of it. Rows whose stratifier is \code{NA} form their own stratum, labelled \code{NA}
+and reported last, so every input row is counted in exactly one stratum.}
 }
 \value{
-A base \code{data.frame}, one row per variable, or one row per variable
-and \code{by} level, with the columns
+A base \code{data.frame}, one row per variable (or per variable and \code{by}
+level), with the columns
 \describe{
 \item{\code{variable}}{character: the column described.}
 \item{\code{n}}{integer: observations with a value.}
 \item{\code{n_missing}}{integer: observations without one.}
-\item{\code{mean},\code{sd},\code{min},\code{max}}{numeric, and \code{NA_real_} for a variable
+\item{\code{mean},\code{sd},\code{min},\code{max}}{numeric; \code{NA_real_} for a variable
 that is not numeric.}
-\item{\code{n_distinct}}{integer: distinct observed values, which is the
-useful summary where a mean is not.}
+\item{\code{n_distinct}}{integer: distinct observed values.}
 \item{\code{n_groups},\code{icc}}{present only when \code{id} is known. \code{icc} is the
-one-way random-effects estimate, and may be slightly negative when the
-between-group mean square falls below the within-group one; that is the
-estimator reporting no group structure, not an error. Rows with a
-missing group ID do not contribute to either statistic.}
+one-way random-effects estimate; it can be slightly negative when the
+between-group mean square is below the within-group one, which
+indicates no group structure. Rows with a missing group ID do not
+contribute to either statistic.}
 }
-A \code{by} column comes first, named after what it splits on and holding that
-level's own value, \code{NA} for the stratum of rows whose stratifier is
-missing. For every variable, \code{n + n_missing} summed over the strata equals
-the number of input rows; that invariant is asserted before the table is
-returned. Describing by a class the model assigned keeps that assignment
-out of the described frame, so an indicator of the caller's own that is
-named \code{profile} or \code{group_class} is summarized as itself, not replaced by
-the assignment. A \code{by} whose name is one of the summary's own columns
-cannot be told apart from them and raises \code{latents_bad_data}.
+With \code{by}, a first column named after the stratifier holds each stratum's
+value (\code{NA} for the stratum of missing values). For every variable,
+\code{n + n_missing} summed over the strata equals the number of input rows.
+When describing a fit by \code{"profile"} or \code{"group_class"}, the model's
+assignment is used as the stratifier without replacing an indicator of
+the same name. A \code{by} named like one of the summary's own columns raises
+\code{latents_bad_data}. Describing no variables raises
+\code{latents_nothing_to_describe}.
 }
 \description{
-One row per variable, with the summaries you would look at before fitting and
-the one that decides whether a two-level model has anything to find: the
-intraclass correlation, the share of each variable's variance that lies
-\emph{between} groups rather than within them.
+Returns a table with one row per variable giving the number of observed and
+missing values, the mean, standard deviation, minimum, maximum and number of
+distinct values, and, when groups are known, the number of groups and the
+intraclass correlation (ICC): the share of the variable's variance that lies
+between groups.
 }
 \details{
-An ICC near zero suggests little between-group mean variation in that
-variable. It does not rule out group classes that differ in other variables,
-profile prevalence, or other features of their distributions.
+An ICC near zero indicates little between-group variation in that
+variable's mean. It does not rule out group classes that differ in other
+variables, in profile prevalence, or in other features of the distributions.
 }
 \examples{
 descriptives(

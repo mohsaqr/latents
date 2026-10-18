@@ -18,23 +18,25 @@ pool_imputations(
 \arguments{
 \item{imputed}{The completed data sets: a list of at least two data frames
 with the same columns and rows in the same order, or a \code{mids} object from
-the mice package (which is then completed here).}
+the mice package, which is completed here.}
 
 \item{vars, id, n_profiles}{As in \code{\link[=multilpa]{multilpa()}}.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}, such as \code{n_group_classes},
 \code{profile_covariates}, \code{group_covariates}, \code{categorical}, \code{n_starts} and
-\code{seed}. The same arguments fit every imputation.}
+\code{seed}, used for every imputation.}
 
-\item{level}{Confidence level of the pooled intervals.}
+\item{level}{Confidence level of the pooled intervals (default 0.95).}
 
-\item{vcov_type}{As in \code{\link[=parameter_inference]{parameter_inference()}}, applied to every
-imputation's fit.}
+\item{vcov_type}{\code{"observed"} (default), \code{"robust"} or \code{"opg"}, as in
+\code{\link[=parameter_inference]{parameter_inference()}}, applied to every imputation's fit. For fits
+with sampling weights the default is \code{"robust"}, and the other types are
+refused with \code{latents_unsupported_weights}.}
 
-\item{adjust}{Multiplicity correction, as in \code{\link[=parameter_inference]{parameter_inference()}},
-applied to the pooled p-values to give \code{p_adjusted}. Each imputation's
-own table is computed without one, since only the pooled p-values are
-reported.}
+\item{adjust}{Multiplicity correction applied to the pooled p-values to
+give \code{p_adjusted}, as in \code{\link[=parameter_inference]{parameter_inference()}}: \code{"none"} (default) or
+a method of \code{\link[stats:p.adjust]{stats::p.adjust()}}. The per-imputation tables are computed
+without correction.}
 }
 \value{
 An object of class \code{latents_pooled}. \code{\link[=as.data.frame]{as.data.frame()}} and
@@ -53,59 +55,57 @@ permutation that aligned it.
 }
 \description{
 Fits \code{\link[=multilpa]{multilpa()}} to every completed data set, aligns each fit's profile and
-group-class labels to the first one, and pools the estimates with Rubin's
-rules. This is the route for missing \emph{covariates}, which
-\code{missing = "fiml"} cannot integrate out: the model conditions on
-covariates, so it has no distribution for them to integrate over. Impute
-them first (for example with the mice package, including the indicators and
-the group identifier in the imputation model), then pass the completed data
-here.
+group-class labels to those of the first, and pools the estimates with
+Rubin's rules, returning a \code{latents_pooled} object. Use it for missing
+covariates, which \code{missing = "fiml"} cannot handle because the model
+conditions on covariates. Impute them first (for example with the mice
+package, with the indicators and the group identifier in the imputation
+model) and pass the completed data.
 }
 \details{
-Pooling is on the reported (natural) scale: for each parameter the pooled
-estimate is the mean over imputations, and its variance is the mean
-within-imputation variance plus \code{(1 + 1/m)} times the between-imputation
-variance. Degrees of freedom follow Rubin (1987) with a large complete-data
-sample, which is what maximum-likelihood inference assumes.
-Pooled intervals are symmetric t intervals on this scale; unlike the
-transformed Wald intervals of \code{\link[=parameter_inference]{parameter_inference()}}, they can extend
-outside the parameter space for probabilities or variances.
-A structural constant, such as the sole class's probability of one, has
-zero within- and between-imputation variance and zero missing information.
-If within-imputation variance is zero but between-imputation variance is
+Pooling is on the reported (natural) scale: the pooled estimate is the mean
+over imputations, and its variance is the mean within-imputation variance
+plus \code{(1 + 1/m)} times the between-imputation variance. Degrees of freedom
+follow Rubin (1987) with a large complete-data sample. Pooled intervals are
+symmetric t intervals on this scale, so for probabilities and variances
+they can extend outside the parameter space, unlike the transformed Wald
+intervals of \code{\link[=parameter_inference]{parameter_inference()}}. A structural constant, such as the
+probability of one for a single class, has zero within- and
+between-imputation variance and zero missing information. When the
+within-imputation variance is zero and the between-imputation variance is
 positive, \code{riv} is infinite and \code{fmi} is one.
 }
 \section{Choosing the imputation model}{
 
-Rubin's rules are only as good as the imputations. The covariate and the
-indicators are related through the latent classes, so an imputation model
-that is linear in the indicators (mice's defaults) misses that structure:
-in \code{validation/pool-imputations-coverage.R} (a membership slope with 30\%
-of its covariate missing at random given the indicators, 200 replications,
-ten imputations) 95\% intervals covered 0.925 under predictive mean
-matching and 0.935 under Bayesian linear regression, against 0.995 when the
-covariate was approximately drawn from its conditional distribution using
-known generating parameters. That oracle arm omits uncertainty in the
-imputation parameters and is not a validation of proper multiple
-imputation or nominal interval coverage. The study is one design, not a
-general guarantee for any method. Use an imputation model that accounts for
-the latent structure and clustering, includes the indicators and relevant
-nonlinearities, and propagates parameter uncertainty. Imputing separately
-within assigned classes alone ignores classification uncertainty.
-Complete-case coverage was 0.955 in that design, but selecting on the
-indicators changes their within-class distributions; the usual logistic
-case-control slope argument does not guarantee unbiased slopes when the
-outcome is latent and its measurement model is estimated.
+The pooled results are only as valid as the imputations. The covariate and
+the indicators are related through the latent classes, which an imputation
+model linear in the indicators (mice's defaults) does not capture. In
+\code{validation/pool-imputations-coverage.R} (a membership slope with 30\% of
+its covariate missing at random given the indicators, 200 replications,
+ten imputations), 95\% intervals covered 0.925 under predictive mean
+matching and 0.935 under Bayesian linear regression, and 0.995 when the
+covariate was drawn approximately from its conditional distribution given
+the known generating parameters. That reference arm omits uncertainty in
+the imputation parameters, so it does not validate proper multiple
+imputation, and the study covers one design only. The imputation model
+should account for the latent structure and the clustering, include the
+indicators and relevant nonlinearities, and propagate parameter
+uncertainty; imputing separately within assigned classes ignores
+classification uncertainty. Complete-case analysis covered 0.955 in that
+design, but selecting on the indicators changes their within-class
+distributions, and the case-control argument for unbiased logistic slopes
+does not carry over when the outcome is latent and its measurement model
+is estimated.
 }
 
 \section{Conditions}{
 
 \code{latents_bad_data} when \code{imputed} is not a list of at least two data frames
-with identical columns and row counts; \code{latents_pooling_failed} when an
-imputation's fit or inference fails (its message names the imputation and
-carries the original reason), since Rubin's rules need every imputation;
-\code{latents_missing_package} for a \code{mids} object without mice installed.
-Warnings from the individual fits are passed on as they are raised.
+with identical columns and row counts; \code{latents_pooling_failed} when any
+imputation's fit or inference fails (the message names the imputation and
+gives the original reason); \code{latents_missing_package} for a \code{mids} object
+without mice installed. Warnings from the individual fits are passed on
+as they are raised.
 }
 
 \examples{

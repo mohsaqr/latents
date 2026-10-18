@@ -2,7 +2,7 @@
 % Please edit documentation in R/enumeration.R
 \name{bootstrap_lrt}
 \alias{bootstrap_lrt}
-\title{Parametric bootstrap likelihood-ratio comparison}
+\title{Parametric bootstrap likelihood-ratio test of two nested models}
 \usage{
 bootstrap_lrt(
   null_model,
@@ -16,111 +16,117 @@ bootstrap_lrt(
 )
 }
 \arguments{
-\item{null_model}{Smaller, converged \code{\link[=multilpa]{multilpa()}} model, with or without
-membership covariates.}
+\item{null_model}{The smaller model: a converged \code{\link[=multilpa]{multilpa()}} fit, with or
+without membership covariates.}
 
-\item{alternative_model}{Larger model fitted to exactly the same data.}
+\item{alternative_model}{The larger model, fitted to the same data.}
 
 \item{data}{Optional. The data both models were fitted to, used to verify
-both fitted likelihoods; when omitted it is rebuilt from what the null
-model stores.}
+both fitted likelihoods. When omitted it is rebuilt from what the null
+model stores (from the alternative for covariate fits).}
 
-\item{iter}{Number of simulated datasets (at least two; use many for inference).}
+\item{iter}{Number of simulated datasets, at least 2. Default 199; use many
+for inference.}
 
-\item{n_starts}{Number of starts for each simulated fit.}
+\item{n_starts}{Number of random starts for each simulated fit. Default 10.}
 
-\item{max_iter}{Maximum EM iterations for each simulated fit.}
+\item{max_iter}{Maximum EM iterations for each simulated fit. Default 1000.}
 
-\item{tol}{Relative likelihood convergence tolerance.}
+\item{tol}{Relative likelihood convergence tolerance. Default \code{1e-8}.}
 
-\item{seed}{Optional seed: any whole number \code{set.seed()} accepts. The
+\item{seed}{Optional seed: a whole number \code{set.seed()} accepts. The
 caller's random-number state is restored on exit.}
 }
 \value{
-An object of class \code{multilpa_bootstrap_lrt}, carrying the observed
-statistic, the finite-simulation corrected p-value, its Monte Carlo
-standard error, the measurement blocks held fixed in every fit, and one
-record per replicate. Read it with the verbs that describe it:
+An object of class \code{multilpa_bootstrap_lrt}, holding the observed
+statistic, the p-value, its Monte Carlo standard error, the measurement
+blocks held fixed in every fit, and one record per replicate.
 \code{\link[=as.data.frame]{as.data.frame()}} gives the single-row test result,
 \code{get_results(what = "replicates")} one row per simulated replicate,
-\code{\link[=summary]{summary()}} the
-test beside the replicate diagnostics, and \code{\link[=plot]{plot()}} the simulated null
-distribution with the observed statistic marked. Inspect failed starts,
-boundary flags and likelihood replication before interpreting results.
+\code{\link[=summary]{summary()}} the test beside the replicate diagnostics, and \code{\link[=plot]{plot()}} the
+simulated null distribution with the observed statistic marked. Failed
+starts, boundary flags and likelihood replication should be inspected
+before the result is interpreted.
 }
 \description{
-Simulates indicators under the null model while preserving observed group
-sizes, refits both models, and compares their likelihood differences.
-Models must differ by exactly one individual profile or one group class, with
-the other count, covariance structure and centering mode fixed. Grand-mean
-centering is repeated in every simulated refit. Person-centred fits are
-refused because this model does not specify a generative distribution for
-the group baselines removed by that transformation. This is a native
-parametric bootstrap, not an implementation of Mplus TECH14. It does not use
-a chi-square reference distribution. Any failed/nonconverged or reversed
-replicate makes the p-value NA, avoiding silent deletion of difficult fits.
+Tests a model against one with one more individual profile or one more
+group class. Indicators are simulated from the null model with the observed
+group sizes, both models are refitted to every simulated dataset, and the
+observed likelihood-ratio statistic is compared with the simulated ones.
+The p-value is \code{(1 + b) / (iter + 1)}, where \code{b} counts simulated
+statistics at least as large as the observed one; no chi-square reference
+distribution is used. This is a native parametric bootstrap, not an
+implementation of Mplus TECH14.
 }
 \details{
-Fits made with \code{missing = "fiml"} are supported when both models were: every
-replicate is given the observed data's missing cells before it is refitted,
-preserving the pattern of available measurements. Calibration requires
-missingness independent of the indicators and latent classes, conditional
-on any fixed covariates. Carrying a fixed mask does not reproduce a general
-MAR mechanism that depends on observed indicators, or an MNAR mechanism.
-FIML estimation under MAR does not by itself validate this bootstrap under
-MAR; the retained size study covers MCAR only.
+The two models must differ by exactly one individual profile or one group
+class, with the observations, group layout, covariance structure,
+centering and scaling, missing-data handling and \code{drop_empty} the same.
+Grand-mean centering is repeated in every simulated refit. Person-centred
+or person-scaled fits are refused, because the model specifies no
+distribution for the group baselines that transformation removes. If any
+replicate fails validation (fails, does not converge, or has a reversed
+likelihood), the p-value is \code{NA}; no replicate is dropped.
+
+Fits made with \code{missing = "fiml"} are supported when both models were:
+every replicate is given the observed data's missing cells before it is
+refitted. Calibration requires missingness independent of the indicators
+and latent classes, conditional on any fixed covariates. A fixed mask does
+not reproduce a MAR mechanism that depends on observed indicators, or an
+MNAR mechanism, and FIML estimation under MAR does not by itself validate
+this bootstrap under MAR; the size study covers MCAR only.
 
 Membership-covariate fits (\code{multilpa(profile_covariates = , group_covariates = )}) are supported: the covariates are held at their
 observed values, group classes are drawn from the fitted group logits and
-profiles from each row's profile logits, as the model conditions on the
-covariates. Both models must use the same profile covariates, group
-covariates and slope specification, except that a one-group-class null,
-which cannot carry group covariates or slopes by group class, may be
-compared with an alternative that adds them. When \code{data} is omitted it is
-rebuilt from the alternative, whose columns include the null's. A
-covariate replicate counts as valid when its likelihood has converged even
-if a membership logit is still drifting, as it does for an empty or
-separated class in an over-fitted alternative: the statistic reads only the
-maximized likelihood, which such a fit has reached. The replicate table's
+profiles from each row's profile logits. Both models must use the same
+profile covariates, group covariates and slope specification, except that
+a one-group-class null, which cannot carry group covariates or slopes by
+group class, may be compared with an alternative that adds them. When
+\code{data} is omitted it is rebuilt from the alternative, whose columns include
+the null's. A covariate replicate counts as valid when its likelihood has
+converged even if a membership logit is still changing, as happens for an
+empty or separated class in an over-fitted alternative, because the
+statistic uses only the maximised likelihood. The replicate table's
 \code{logits_settled} column records whether both refits' logits had also
 converged. The original models must be fully converged.
 
 Models fitted with \code{fixed}, including those from \code{\link[=fit_staged]{fit_staged()}}, are
-supported: every replicate is refitted with the same blocks held at the same
-values, so the simulated statistics compare the same two constrained models
-as the observed statistic does. The p-value is then conditional on that
-measurement solution, which is treated as known and whose own uncertainty is
-not propagated. A constrained pair whose nesting cannot be established is
-refused rather than given a p-value.
+supported: every replicate is refitted with the same blocks held at the
+same values. The p-value is then conditional on that measurement solution,
+whose own uncertainty is not propagated. A constrained pair whose nesting
+cannot be established is refused.
+
+Two transition fits (\code{\link[=lta]{lta()}}) or two group-class family fits are also
+accepted; each is handled by its own family's bootstrap.
 }
 \section{Conditions}{
 
-\code{latents_bad_nesting} when only one of the two models holds measurement
-blocks fixed, when they hold different blocks, when they hold the same
-blocks at different values, when they hold a measurement fixed while
-differing in the number of profiles (the held blocks then have different
-shapes, so the null is not a restriction of the alternative), or when the
-alternative does not estimate more free parameters than the null.
-\code{latents_failed_replicates} is warned when some replicate fails
-validation, and the p-value is \code{NA}.
-\code{latents_unsupported_bootstrap} refuses person-centred fits, for which
-this simulator has no group-baseline distribution.
-\code{latents_unsupported_prior} refuses fits estimated with a prior: their
-likelihoods are evaluated at posterior modes, not ML estimates.
-\code{latents_incomparable_models} when the two models differ in their
-observations, grouping, covariance structure, centering or missing-data
-handling; \code{latents_bad_data} when the data have missing indicators and
-the models were not fitted with \code{missing = "fiml"}; \code{latents_bad_nesting}
-also when two covariate models use different covariates or slope
-specifications (other than a one-group-class null), and when the models
-do not differ by exactly one class at one level.
+\code{latents_bad_nesting} when the models do not differ by exactly one class
+at one level; when only one of them holds measurement blocks fixed, when
+they hold different blocks or the same blocks at different values, or
+when they hold a measurement fixed while differing in the number of
+profiles; when the alternative does not estimate more free parameters
+than the null; and when two covariate models use different covariates or
+slope specifications (other than a one-group-class null).
+\code{latents_incomparable_models} when the models differ in their
+observations, grouping, covariance structure, centering, scaling,
+missing-data handling or \code{drop_empty}.
+\code{latents_unsupported_bootstrap} for person-centred or person-scaled fits.
+\code{latents_unsupported_prior} for fits estimated with a prior, whose
+likelihoods are evaluated at posterior modes rather than ML estimates.
+\code{latents_unsupported_weights} for fits with sampling weights;
+\code{latents_unsupported_noise} for fits with a noise component.
+\code{latents_bad_data} when the data have missing indicators and the models
+were not fitted with \code{missing = "fiml"}; \code{latents_bad_inference_data}
+when \code{data} does not reproduce a fitted likelihood or the original
+observations and their order.
 \code{latents_no_converge} when either original model has not converged or
 has an active variance bound; \code{latents_reversed_likelihood} when the
 alternative's log likelihood is below the null's by more than \code{tol} can
-explain; \code{latents_bad_inference_data} when \code{data} does not reproduce a
-fitted likelihood; \code{latents_unsupported_weights} for fits with sampling
-weights; \code{latents_unsupported_noise} for fits with a noise component;
-\code{latents_bad_argument} for an invalid \code{seed}.
+explain; \code{latents_bad_argument} for an invalid \code{seed}, or for a
+transition fit paired with a fit of another family.
+\code{latents_failed_replicates} is a warning, given when some replicate
+fails validation; the p-value is then \code{NA}.
 }
 
 \examples{

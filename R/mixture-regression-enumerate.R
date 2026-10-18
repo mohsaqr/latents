@@ -2,39 +2,52 @@
 
 #' Compare mixture regressions with different numbers of classes
 #'
-#' Fits [mixture_regression()] for every requested number of classes (and of
-#' group classes, for the two-level model) and returns their fit statistics in
-#' one table. Optionally adds a parametric bootstrap likelihood-ratio test of
-#' `k - 1` against `k` classes (McLachlan 1987; Nylund, Asparouhov and Muthen
-#' 2007): outcomes are simulated from the `k - 1` class fit, both models are
-#' refitted to every replicate, and the p-value is the share of replicate
-#' statistics at least as large as the observed one, `(1 + b) / (1 + B)`.
+#' Fits [mixture_regression()] for every requested number of classes (crossed
+#' with numbers of group classes, for the two-level model) and returns their
+#' fit statistics in one table. Optionally adds a parametric bootstrap
+#' likelihood-ratio test of `k - 1` against `k` classes, at the same number of
+#' group classes (McLachlan 1987; Nylund, Asparouhov and Muthen 2007):
+#' outcomes are simulated from the `k - 1` class fit, both models are refitted
+#' to every replicate, and the p-value is `(1 + b) / (1 + B)`, where `b`
+#' counts replicate statistics at least as large as the observed one and `B`
+#' is the number of replicates requested.
 #'
 #' @inheritParams mixture_regression
-#' @param n_classes Integer vector of class counts to fit.
-#' @param n_group_classes Integer vector of group-class counts (two-level
-#'   model; needs `id`). Crossed with `n_classes`.
+#' @param n_classes Positive integer class counts to fit. Default `1:4`.
+#' @param n_group_classes Positive integer group-class counts (two-level
+#'   model; needs `id`), crossed with `n_classes`. Default 1.
 #' @param bootstrap Number of bootstrap replicates for the likelihood-ratio
-#'   test; `0` skips it.
-#' @param bootstrap_starts Random starts for each bootstrap refit.
-#' @param ... Further arguments to [mixture_regression()], such as `family`, `id`,
-#'   `class_level`, `common`, `membership` or `variance`.
-#' @return An object of class `latents_regression_enumeration`. Its table (from
-#'   [as.data.frame()] or `get_results(x, "fit")`) has one row per model:
-#'   `n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`,
-#'   `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`,
-#'   `converged`, `n_best_replicated`, `note` (why a cell could not be
-#'   fitted), `best_bic` (the minimum-BIC row), and,
-#'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value` and
+#'   test; `0` (the default) skips it. Not available with sampling weights.
+#' @param bootstrap_starts Random starts for each bootstrap refit. Default 3.
+#' @param ... Further arguments to [mixture_regression()], such as `family`,
+#'   `id`, `class_level`, `common`, `membership` or `variance`. `n_classes`,
+#'   `n_group_classes` and `vcov_type` are not accepted here.
+#' @return An object of class `latents_regression_enumeration`. Its table
+#'   (from [as.data.frame()] or `get_results(x, "fit")`) has one row per
+#'   model, with columns `n_classes`, `n_group_classes`, `log_likelihood`,
+#'   `n_parameters`, `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`,
+#'   `smallest_share`, `converged`, `n_best_replicated`, `note` (why a model
+#'   could not be fitted), `best_bic` (`TRUE` for the minimum-BIC row), and,
+#'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value`,
 #'   `blrt_replicates` (the successful replicates) and `blrt_flagged` (the
 #'   failed, unconverged, separated or reversed-likelihood replicates). The
-#'   p-value is `NA` if any requested replicate fails validation. `get_results(x, "model",
-#'   n_classes = , n_group_classes = )` returns one fitted model.
+#'   test columns are `NA` where the `k - 1` or `k` class model is missing
+#'   or failed, and the p-value is `NA` if any requested replicate fails
+#'   validation.
+#'   `get_results(x, "model", n_classes = , n_group_classes = )` returns one
+#'   fitted model.
 #' @section Conditions:
-#'   `latents_bad_argument` for an empty or invalid grid. A model that cannot
-#'   be fitted at some count (for example every start degenerates) gets a row
-#'   of `NA` with its condition message in `note`, rather than stopping the
-#'   comparison.
+#'   A model whose fit raises `latents_no_valid_start` or `latents_bad_data`
+#'   at some count gets a row of `NA` with the condition message in `note`;
+#'   other errors stop the enumeration. Invalid `n_classes`,
+#'   `n_group_classes`, `bootstrap` or `bootstrap_starts` fail the argument
+#'   checks. `latents_bad_argument` for an invalid `seed`, for `n_classes`,
+#'   `n_group_classes` or `vcov_type` passed through `...`, for a bootstrap
+#'   test whose outcome is not a plain column name, and from `get_results()`
+#'   for a model that is not in the grid or could not be fitted.
+#'   `latents_unsupported_weights` for a bootstrap test with sampling
+#'   weights. `latents_failed_replicates` is warned, and the p-value is `NA`,
+#'   when the observed fits or any replicate fail validation.
 #' @references
 #' McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
 #' statistic for the number of components in a normal mixture. *Applied
@@ -246,7 +259,7 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
 
 #' @rdname enumerate_regressions
 #' @param x A `latents_regression_enumeration` object.
-#' @param row.names,optional Unused; part of the generic.
+#' @param row.names,optional Not used; part of the generic.
 #' @export
 as.data.frame.latents_regression_enumeration <- function(x, row.names = NULL,
                                                      optional = FALSE, ...) {

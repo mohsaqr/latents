@@ -16,7 +16,8 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 \item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
 \code{n_starts}, \code{seed} and \code{min_probability}, except \code{id} and
 \code{n_group_classes}. Every indicator is categorical unless named in
-\code{ordinal} or \code{count}; \code{categorical} may be given but changes nothing.}
+\code{ordinal} or \code{count}. \code{categorical} is accepted but has no further
+effect; its names must be in \code{vars}.}
 }
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
@@ -26,13 +27,12 @@ number of classes, and \code{\link[=get_candidate]{get_candidate()}} one fitted 
 its \code{n_profiles}.
 }
 \description{
-Fits single-level latent class models with each number of classes in
-\code{n_classes} and returns them in one table for comparison by information
-criteria, entropy and the diagnostics of each fit. Every indicator is
-categorical unless named in \code{ordinal} or \code{count}, as in \code{\link[=lca]{lca()}}. It is
-\code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL},
-and it returns the same object; the number of classes is its \code{n_profiles}
-column.
+Fits a single-level latent class model for each number of classes in
+\code{n_classes}, and returns a \code{multilpa_enumeration} object that tabulates the
+information criteria, entropy and diagnostics of every fit. Every indicator
+is categorical unless named in \code{ordinal} or \code{count}, as in \code{\link[=lca]{lca()}}. It is
+\code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL}; the number of classes is reported in
+the \code{n_profiles} column.
 }
 \details{
 For observations nested in groups, use \code{\link[=enumerate_classes]{enumerate_classes()}} with the
@@ -40,8 +40,9 @@ grouping column as \code{id} and the indicators as \code{categorical}.
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{id}, \code{n_group_classes}, \code{categorical} or
-\code{model} is passed.
+\code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed, or when
+\code{model} is passed (no indicator is continuous); \code{latents_bad_categorical}
+when \code{categorical} names a column not in \code{vars}.
 }
 
 \examples{

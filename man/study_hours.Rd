@@ -29,26 +29,24 @@ Simulated by \code{data-raw/study-hours.R} in the source repository.
 study_hours
 }
 \description{
-A simulated dataset for \code{\link[=mixture_regression]{mixture_regression()}}, built so that every nesting of the
-mixture regression has a model that generated some of its columns, and the
-truth is kept for checking recovery.
+A simulated dataset for \code{\link[=mixture_regression]{mixture_regression()}}. Each row is one student's
+study week: 150 students, six weeks each. The generating classes are
+included for checking recovery.
 }
 \details{
-150 students each report six study weeks. In every week a student studies
-with one of two strategies, and the strategy decides how hours become a quiz
-\code{score}: a deep week gains about 4.5 points per hour from a base of 35, a
-surface week under one point per hour from a base of 55. Students are of two
-kinds that differ in their \emph{mix} of strategies -- steady students study
-deeply in about 85\% of weeks, erratic ones in about 25\% -- and higher
-\code{motivation} makes a student more likely to be steady. More \code{sleep} makes a
-deep week more likely.
+Each week a student uses one of two study strategies, which sets the
+regression of quiz \code{score} on \code{hours}: a deep week gains about 4.5 points
+per hour from a base of 35, a surface week under one point per hour from a
+base of 55. Steady students study deeply in about 85\% of weeks and erratic
+students in about 25\%; higher \code{motivation} makes a student more likely to
+be steady, and more \code{sleep} makes a deep week more likely.
 
-So \code{score ~ hours} is a two-class mixture at the level of the week
-(\code{class_level = "observation"}), whose class shares differ by student (the
-two-level model, \code{id = "student"}, \code{n_group_classes = 2}). \code{passed} depends
-on the student's kind, not the week's strategy, so it is a mixture at the
-level of the student (\code{class_level = "group"}). \code{questions} is a count whose
-Poisson regression depends on the week's strategy.
+\code{score ~ hours} is therefore a two-class mixture at the week level
+(\code{class_level = "observation"}) with class shares that differ by student
+(\code{id = "student"}, \code{n_group_classes = 2}). \code{passed} depends on the
+student's kind, not the week's strategy, so it is a mixture at the student
+level (\code{class_level = "group"}). \code{questions} is a count whose Poisson
+regression depends on the week's strategy.
 }
 \examples{
 fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,

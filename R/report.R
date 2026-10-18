@@ -1,55 +1,42 @@
-#' Every classification diagnostic, in one call
+#' Classification diagnostics of a fitted model
 #'
-#' `summary()` reports what a model estimated. This reports whether to believe
-#' it: how sharply the posterior separates the classes, how big each class
-#' actually is, how confidently each unit was assigned, and whether the
-#' within-profile independence the model assumes survives contact with the data.
-#'
-#' It gathers the four classification tables of [get_results()] --- `"entropy"`,
-#' `"classification"`, `"average_posteriors"` and `"residuals"` --- and prints
-#' one line of reading per diagnostic rather than four differently shaped
-#' tables. The tables themselves come back from `get_results()` on the result, or
-#' on the fit.
+#' Gathers the four classification tables of [get_results()] (`"entropy"`,
+#' `"classification"`, `"average_posteriors"` and `"residuals"`) for a fitted
+#' model, prints one line per diagnostic, and by default draws the
+#' classification plots. The diagnostics are relative entropy, estimated class
+#' sizes, average posterior probabilities of the assigned classes, and the
+#' bivariate residuals that check the within-profile independence the model
+#' assumes.
 #'
 #' @param x A fitted model of this package.
 #' @param data Optional. The data the model was fitted to. A fit carries the
 #'   columns it was built from, so this is only needed to override them.
-#' @param plots `TRUE`, the default, also draws the four classification plots
-#'   (effective profile sizes, posterior probabilities of the assigned
-#'   profiles, case entropy, and the average posterior probability matrix), as
-#'   printing `plot()` on the result does. Without the ggplot2 package a
-#'   message says so and the tables are still returned. `FALSE` returns the
-#'   tables only.
-#' @param by `"profile"`, the default, assesses each profile's bivariate
-#'   residuals separately; `"overall"` pools them. It is the one argument of a
-#'   gathered table this function forwards, because it is the one that changes
-#'   what a gathered table means rather than which fit it is taken from. The
-#'   `level` the classification tables use is not an argument here: it follows
-#'   from whether the fit has discrete group classes.
-#' @param ... For `diagnostics()`, nothing further is accepted. An argument this
-#'   function cannot forward raises an error of class `latents_bad_argument`
-#'   naming it, rather than being dropped on the way to a table that then means
-#'   something other than what was asked for. For `plot()`, nothing further is
-#'   accepted either; style the returned plots with ggplot2.
-#' @return An object of class `multilpa_diagnostics`. Read its tables with
-#'   `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
-#'   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
-#'   model family that has no bivariate residuals leaves that table out of
+#' @param plots `TRUE` (the default) also draws the four classification plots:
+#'   effective profile sizes, posterior probabilities of the assigned
+#'   profiles, case entropy, and the average posterior probability matrix.
+#'   Without the ggplot2 package a message says so and the tables are still
+#'   returned. `FALSE` returns the tables only.
+#' @param by `"profile"` (the default) assesses each profile's bivariate
+#'   residuals separately; `"overall"` pools them. It is the only argument
+#'   forwarded to the gathered tables. The `level` of the classification
+#'   tables is set from whether the fit has discrete group classes.
+#' @param ... Not used. For `diagnostics()` and `plot()`, any further argument
+#'   raises `latents_bad_argument`; style the returned plots with ggplot2.
+#' @return An object of class `multilpa_diagnostics`. Its tables are read with
+#'   `get_results(result, what = )`, where `what` is `"entropy"`,
+#'   `"classification"`, `"average_posteriors"`, `"residuals"` or `"all"`. A
+#'   model family without bivariate residuals leaves that table out of
 #'   `"all"`, and asking for it by name raises `latents_no_group_classes`; a
 #'   fit with a noise component has none either, and raises
 #'   `latents_unsupported_noise`.
 #'
-#'   `print()` returns the object invisibly, having printed one line per
-#'   diagnostic: relative entropy, smallest class, lowest average posterior and
-#'   largest residual, at each level the fit has. `plot()` returns every
-#'   classification plot as a `latents_plots` list of ggplot objects -- the
-#'   effective profile sizes, the posterior probability of each case's assigned
-#'   profile, each case's relative entropy, and the average posterior
-#'   probability matrix -- that draws all four when printed.
-#'   `as.data.frame()` returns the entropy table, the primary one.
-#' @seealso [get_results()] for these tables and every other one, [descriptives()]
-#'   for the before-the-fit counterpart, and [summary()] for what the model
-#'   estimated rather than whether to trust it.
+#'   `print()` prints one line per diagnostic (relative entropy, smallest
+#'   class, lowest average posterior and largest residual, at each level the
+#'   fit has) and returns the object invisibly. `plot()` returns the four
+#'   classification plots as a `latents_plots` list of ggplot objects, which
+#'   draws all four when printed. `as.data.frame()` returns the entropy table.
+#' @seealso [get_results()] for these and the other tables, [descriptives()]
+#'   for the variables before fitting, and [summary()] for the estimates.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -91,7 +78,7 @@ diagnostics <- function(x, data = NULL, plots = TRUE,
 }
 
 #' @rdname diagnostics
-#' @param row.names,optional Passed to the base generic; `row.names` is applied
+#' @param row.names,optional Part of the base generic; `row.names` is applied
 #'   to the returned table.
 #' @export
 as.data.frame.multilpa_diagnostics <- function(x, row.names = NULL,
@@ -239,32 +226,30 @@ plot.multilpa_diagnostics <- function(x, ...) {
   plot_diagnostics(x$fit)
 }
 
-#' Everything about a fit, in one call
+#' Print a full report of a fitted model
 #'
-#' Prints the estimates, then the classification diagnostics, then draws every
-#' plot the fit supports. A first look, not a substitute for the verbs: each
-#' section is what [summary()], [diagnostics()] and [plot()] return, and the
-#' tables are reachable from those rather than from here.
+#' Prints the model summary, the descriptive statistics of its variables and
+#' the classification diagnostics, then draws every plot view the fit
+#' supports.
 #'
 #' @param x A fitted model of this package.
 #' @param data Optional. The data the model was fitted to; a fit carries the
 #'   columns it was built from.
-#' @param plots `TRUE`, the default, draws the plots. `FALSE` prints only.
-#' @param rows How many rows of each of the summary's tables to print, passed
-#'   to `print(summary(x))`. A first look at a fit with thousands of
-#'   observations would otherwise be mostly posteriors.
-#' @param by Passed to [diagnostics()], and from there to
-#'   the bivariate residuals: `"profile"`, the default, assesses each profile
-#'   separately, `"overall"` pools them.
-#' @param ... Nothing further is accepted. An argument this function cannot
-#'   forward raises an error of class `latents_bad_argument` naming it, before
-#'   anything has been printed, rather than being dropped.
-#' @section What it prints: `summary()`, which is every table the fit can
-#'   produce, then `descriptives()`, then the condensed reading of
-#'   `diagnostics()`, then every plot view the fit supports. Each section is
-#'   what that verb returns, and the tables are reached from [get_results()]
-#'   rather than from here.
-#' @return The fitted model, invisibly. Called for the printing and drawing.
+#' @param plots `TRUE` (the default) draws the plots. `FALSE` prints only.
+#' @param rows Number of rows of each summary table to print, passed to
+#'   `print(summary(x))`. Default 10.
+#' @param by Passed to [diagnostics()] for the bivariate residuals:
+#'   `"profile"` (the default) assesses each profile separately, `"overall"`
+#'   pools them.
+#' @param ... Not used. Any further argument raises `latents_bad_argument`
+#'   before anything is printed.
+#' @section What it prints: `summary()`, then `descriptives()`, then the
+#'   one-line-per-diagnostic reading of `diagnostics()`, then every plot view
+#'   the fit supports. Views that the plot method declines for this model are
+#'   listed after the plots as not drawn. The tables themselves are obtained
+#'   from [get_results()], [summary()], [descriptives()] and [diagnostics()].
+#' @return The fitted model, invisibly. Called for its printed and plotted
+#'   output.
 #' @seealso [summary()], [diagnostics()], [descriptives()],
 #'   [plot_views()].
 #' @examples

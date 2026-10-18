@@ -58,7 +58,9 @@ descriptives(course_engagement,
 To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
 for the group, `n_profiles` for the number of profiles, `n_group_classes` for
 the number of group classes, `n_starts` for the number of random EM starts, and
-`seed` for reproducible starts. Printing the fit gives the profile means.
+`seed` for reproducible starts. With many starts on large data, `cores` runs
+the starts in parallel and returns the same fit as one core. Printing the fit
+gives the profile means.
 
 ```{r fit}
 fit <- multilpa(course_engagement,
@@ -85,11 +87,11 @@ There is one row per profile and indicator.
 get_results(fit)
 ```
 
-To see the profiles, we call `plot()` on the fit. Each line is a profile's
-mean on each indicator, and its label gives the profile's share of the cases.
+To see the profiles, we call `plot_profiles()` on the fit. Each line is a
+profile's mean on each indicator, and its label gives the profile's share of the cases.
 
 ```{r profile-plot}
-plot(fit)
+plot_profiles(fit)
 ```
 
 ## Group classes
@@ -103,11 +105,11 @@ that an observation of a group in that class falls in each profile, and
 get_results(fit, "profile_probabilities")
 ```
 
-To compare the group classes, we call `plot()` with `what = "probabilities"`:
-one line per group class across the profiles.
+To compare the group classes, we call `plot_prevalence()`: one line per group
+class across the profiles.
 
 ```{r probability-plot}
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 ## Class sizes
@@ -193,15 +195,16 @@ AIC(fit)                             # Akaike information criterion
 BIC(fit)                             # BIC with the number of groups
 nobs(fit)                            # number of groups
 
-# Plots: plot(fit, what)
-plot_views()                # every view and what it shows
-plot(fit, what = "bars")             # profile means with 95% intervals
-plot(fit, what = "heatmap")          # means in standard deviations
-plot(fit, what = "sizes")            # effective size of each profile
-plot(fit, what = "entropy")          # per-case classification uncertainty
-plot(fit, what = "posteriors")       # posterior of each assigned profile
-plot(fit, what = "avepp")            # average posteriors, assigned by posterior class
-plot(fit, what = "all")              # every view this fit supports
+# Plots: the plot_ functions, each with what = and "all"
+plot_views()                                   # every view and what it shows
+plot_profiles(fit, what = "bars")              # profile means with 95% intervals
+plot_profiles(fit, what = "heatmap")           # means in standard deviations
+plot_profiles(fit, what = "all")               # every profile view
+plot_diagnostics(fit, what = "sizes")          # effective size of each profile
+plot_diagnostics(fit, what = "entropy")        # per-case classification uncertainty
+plot_diagnostics(fit, what = "posteriors")     # posterior of each assigned profile
+plot_diagnostics(fit, what = "avepp")          # average posteriors, assigned by posterior class
+plot(fit, what = "all")                        # every view this fit supports
 
 # Other functions
 sensitivity(fit, seeds = 1:10)       # refits under several seeds

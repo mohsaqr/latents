@@ -64,7 +64,7 @@ profiles requested.
 
 ```{r enumerate}
 models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)
-plot(models)
+plot_enumeration(models)
 ```
 
 The choice of structure matters here because four of the five constructs are
@@ -107,7 +107,7 @@ The profile plot shows the estimated mean of each profile on each indicator
 with its 95% confidence interval.
 
 ```{r profiles}
-plot(fit)
+plot_profiles(fit)
 ```
 
 The larger profile, comprising 69% of the respondents, has higher means on
@@ -123,7 +123,7 @@ get_results(fit, "profiles")
 The same means as bars with their confidence intervals:
 
 ```{r bars}
-plot(fit, what = "bars")
+plot_profiles(fit, what = "bars")
 ```
 
 The heatmap expresses each mean as a distance from the indicator's grand
@@ -131,7 +131,7 @@ mean in standard deviations, which makes the differences comparable across
 indicators:
 
 ```{r heatmap, fig.height = 3.2}
-plot(fit, what = "heatmap")
+plot_profiles(fit, what = "heatmap")
 ```
 
 The means summarize distributions. The raincloud plot shows, for the
@@ -142,7 +142,7 @@ the profiles overlap on each indicator: they are well separated on intrinsic
 value and self-efficacy, and overlap almost completely on test anxiety.
 
 ```{r raincloud, fig.height = 6}
-plot(fit, what = "raincloud")
+plot_profiles(fit, what = "raincloud")
 ```
 
 ## Classification quality

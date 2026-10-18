@@ -6,7 +6,7 @@
 \alias{get_group_tna.multilpa_lta}
 \alias{get_group_tna.multilpa}
 \alias{get_group_tna.multilpa_covariates}
-\title{A transition network for each latent group class}
+\title{Build one transition network per latent group class}
 \usage{
 get_group_tna(x, ...)
 
@@ -24,18 +24,21 @@ made with \verb{time =}, whose modal profile sequences are then used.}
 
 \item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}} for each class.}
 
-\item{label}{What the classes are called in tna's output.}
+\item{label}{Name given to the classes in tna's output (default
+\code{"Group class"}).}
 }
 \value{
-An object of class \code{group_tna}, one \code{tna} model per latent class:
-\code{centralities()} returns one tidy table with a \code{group} column,
-\code{compare()} contrasts two classes, and \code{plot()} draws them together.
+An object of class \code{group_tna}, a list of \code{tna} models, one per
+latent group class. \code{centralities()} returns one table with a \code{group}
+column, \code{compare()} contrasts two classes, and \code{plot()} draws all
+networks.
 }
 \description{
 Builds one \code{\link[tna:build_model]{tna::tna()}} model per latent group class of a fitted transition
-model, collected into the \code{group_tna} object tna's grouped verbs expect.
-A class row with no expected outgoing moves keeps the fit's unestimated
-transition probabilities and raises \code{latents_empty_transition_row}.
+model and returns them as a \code{group_tna} object, the input of tna's grouped
+functions. A class row with no expected outgoing transitions keeps the
+fit's unestimated transition probabilities and raises the warning
+\code{latents_empty_transition_row}.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

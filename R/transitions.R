@@ -466,59 +466,54 @@
   cross_sectional + n_group_classes * n_profiles * (n_profiles - 1L)
 }
 
-#' Latent transition analysis
+#' Fit a latent transition model
 #'
-#' Fits latent profiles to repeated observations of the same group and
-#' estimates the probabilities of moving between them from one occasion to the
-#' next. The measurement model is that of [multilpa()] -- Gaussian, categorical
-#' or mixed indicators, invariant across occasions -- so profiles keep the same
-#' meaning at every occasion and a change of profile is a change of state
-#' rather than a change of definition. With more than one group class, each
-#' class carries its own initial distribution and its own transition matrix,
-#' which is how groups that differ in their dynamics are separated from groups
-#' that differ only in where they start.
-#'
-#' This is latent transition analysis (LTA); with more than one group class it
-#' is a mixture over transition patterns, so the classes are trajectories rather
-#' than states. [multilpa()] is the cross-sectional counterpart.
+#' Fits latent profiles to repeated observations of the same group, estimates
+#' the probabilities of moving between profiles from one occasion to the next,
+#' and returns a `multilpa_transitions` (or `multilpa_lta`) object. The
+#' measurement model is that of [multilpa()] (Gaussian, categorical or mixed
+#' indicators) and is invariant across occasions by default, so a profile has
+#' the same meaning at every occasion. With more than one group class, each
+#' class has its own initial distribution and its own transition matrix, so
+#' the group classes are a mixture over transition patterns. [multilpa()] is
+#' the cross-sectional counterpart.
 #'
 #' @inheritParams multilpa
-#' @param id Name of the observed group identifier column. Character, factor, or
-#'   numeric identifiers are supported; missing identifiers are not. Required
-#'   here: this model has a second level by construction, so it has no
-#'   single-level form and does not take `multilpa()`'s `id = NULL`.
-#' @param n_profiles Integer number of individual profiles, at least two.
-#' @param time Name of the column giving each observation's occasion within its
-#'   group. Required: this model is defined by the ordering. Values must be
-#'   complete and unique within each group. They are ordered as [sort()]
-#'   orders them: numbers numerically, a factor by its levels, and character
-#'   strings alphabetically. Numbers stored as text whose alphabetical order
-#'   is not their numeric order (`"2"`, `"10"`) are refused
-#'   (`latents_bad_time`, also `latents_bad_data`); zero-padded numbers and ISO dates sort correctly
-#'   and are accepted.
-#' @param n_group_classes Positive integer number of latent group classes. One
-#'   gives an ordinary single-level latent transition model; more than one fits
-#'   a mixture of transition models over groups.
-#' @param select_start Which start the fit reports. `"likelihood"`, the
-#'   default, takes the highest log likelihood across starts, preferring a
-#'   converged start only among those tied with it to within a relative
-#'   `1e-10`. `"converged"` takes the highest log likelihood among the converged
-#'   starts whenever at least one converged, and falls back to every start when
-#'   none did. Use it when an unconverged start edges out a converged one by a
-#'   negligible amount, which happens when a membership logit creeps along a flat
-#'   ridge of the likelihood: the converged start is then a maximum that
-#'   the standard errors can work with, and the other is not. `summary()`
-#'   and `get_results(fit, "starts")` show every start either way.
+#' @param id Name of the observed group identifier column. Character, factor
+#'   and numeric identifiers are supported; missing identifiers are not.
+#'   Required; `id = NULL` is not accepted.
+#' @param n_profiles Integer number of individual profiles, at least two
+#'   (`latents_bad_transition` otherwise).
+#' @param time Name of the column giving each observation's occasion within
+#'   its group. Required. Values must be complete and unique within each
+#'   group. They are ordered as [sort()] orders them: numbers numerically, a
+#'   factor by its levels, and character strings alphabetically. Numbers
+#'   stored as text whose alphabetical order is not their numeric order
+#'   (`"2"`, `"10"`) raise `latents_bad_time` (also `latents_bad_data`);
+#'   zero-padded numbers and ISO dates are accepted.
+#' @param n_group_classes Positive integer number of latent group classes
+#'   (default 1). One gives an ordinary latent transition model; more than one
+#'   fits a mixture of transition models over groups.
+#' @param select_start Which start the fit reports. `"likelihood"` (the
+#'   default) takes the highest log likelihood across starts, preferring a
+#'   converged start only among those within a relative `1e-10` of it.
+#'   `"converged"` takes the highest log likelihood among the converged starts
+#'   when at least one converged, and among all starts otherwise. The two
+#'   differ when an unconverged start exceeds a converged one by a negligible
+#'   amount, as happens when a membership logit drifts along a flat ridge of
+#'   the likelihood; only the converged start is a maximum on which standard
+#'   errors can be based. `summary()` and `get_results(fit, "starts")` show
+#'   every start.
 #' @param occasions How a group's occasions are placed on the transition grid.
-#'   `"observed"` numbers each group's own observations consecutively, so a
-#'   transition always links two adjacent observations. `"grid"` places them on
-#'   the grid of every position seen in the data, so a group that skips a
-#'   position still consumes a transition across the gap and contributes no
-#'   measurement information at it. The two agree whenever every group is
-#'   observed at every position. Under either, a group's first observation is
-#'   its first occasion, so a group that enters late starts the sequence there:
-#'   occasion-specific transitions and measurement count occasions from each
-#'   group's own start, not from the first position in the data.
+#'   `"observed"` (the default) numbers each group's own observations
+#'   consecutively, so a transition always links two adjacent observations.
+#'   `"grid"` places them on the grid of every position seen in the data, so a
+#'   group that skips a position still makes a transition across the gap and
+#'   contributes no measurement information at it. The two agree when every
+#'   group is observed at every position. Under either, a group's first
+#'   observation is its first occasion: occasion-specific transitions and
+#'   measurement count occasions from each group's own start, not from the
+#'   first position in the data.
 #' @param transitions `"homogeneous"` (the default) uses one transition matrix
 #'   for every occasion; `"occasion"` estimates a separate one for each move
 #'   (occasion 1 to 2, 2 to 3, ...).
@@ -528,7 +523,7 @@
 #'   column may change over occasions; the value at the destination occasion
 #'   is used. Factors are expanded to indicator columns. With `occasions =
 #'   "grid"`, a move into a position the group skipped has no row to read the
-#'   covariates from, and the fit is refused (`latents_bad_data`): use
+#'   covariates from, and the fit raises `latents_bad_data`; use
 #'   `occasions = "observed"`, or add the skipped rows with their covariate
 #'   values (their indicators may be missing under `missing = "fiml"`).
 #' @param initial_covariates Names of columns that shift the initial profile
@@ -536,29 +531,26 @@
 #'   each group's first occasion.
 #' @param measurement `"invariant"` (the default) keeps the profiles' means,
 #'   variances and response probabilities equal across occasions;
-#'   `"occasion"` estimates them separately at each occasion, so a profile is
-#'   defined by its position in the sequence of transitions rather than by
-#'   one fixed measurement model.
-#' @param tol Positive relative log-likelihood tolerance. Convergence requires
+#'   `"occasion"` estimates them separately at each occasion.
+#' @param tol Positive relative log-likelihood tolerance (default `1e-10`,
+#'   tighter than the `1e-8` of [multilpa()]). Convergence requires an
 #'   absolute change no greater than `tol * (1 + abs(previous log likelihood))`.
-#'   The default, `1e-10`, is tighter than the `1e-8` of [multilpa()]: the
-#'   group-class shares are re-estimated from posteriors one EM step behind
-#'   them, and at `1e-8` the two still differed by up to about `2e-4`; at
-#'   `1e-10` they agree to about `2e-5`, for roughly 1.5 times the iterations.
-#' @param max_iter Nonnegative integer maximum number of EM updates per start.
-#'   The default, `5000`, is higher than the `1000` of [multilpa()] because
-#'   the tighter `tol` needs more of them: on `course_engagement`, three- and
-#'   four-profile models of two indicators take 1,000 to 1,500. A fit that
-#'   still stops short warns (`latents_unconverged`). `max_iter = 0` updates
-#'   nothing and evaluates the starting values.
+#'   The group-class shares are re-estimated from posteriors one EM step
+#'   behind them; at `1e-8` the two differed by up to about `2e-4`, at `1e-10`
+#'   by about `2e-5`, for roughly 1.5 times the iterations.
+#' @param max_iter Nonnegative integer maximum number of EM updates per start
+#'   (default 5000, higher than the 1000 of [multilpa()] to match the tighter
+#'   `tol`). A fit that stops short warns with `latents_unconverged`.
+#'   `max_iter = 0` updates nothing and evaluates the starting values.
 #' @param order `1` (the default) or `2`. With `2`, the profile at each
 #'   occasion from the third on depends on the profiles at the two previous
 #'   occasions (a second-order Markov chain); the first move stays first
 #'   order.
-#' @param mover_stayer `TRUE` adds a class of stayers: groups that never
-#'   change profile (identity transitions) and have their own initial profile
-#'   distribution (Goodman's mover-stayer model). `n_group_classes` then counts
-#'   the mover classes; the stayer class is reported as `"stayers"`.
+#' @param mover_stayer `FALSE` (the default), or `TRUE` to add a class of
+#'   stayers: groups that never change profile (identity transitions) and have
+#'   their own initial profile distribution (Goodman's mover-stayer model).
+#'   `n_group_classes` then counts the mover classes; the stayer class is
+#'   reported as `"stayers"`.
 #' @param weights `NULL`, or the name of a column of `data` holding one
 #'   sampling weight per `id` (constant over its occasions). As in
 #'   [multilpa()]: pseudo maximum likelihood with the weights scaled to sum to
@@ -584,35 +576,33 @@
 #'   `transition_probabilities` (profiles by profiles by group classes, rows
 #'   indexing the profile moved from), `group_probabilities`, posterior
 #'   matrices, classifications, log likelihood, information criteria, restart
-#'   diagnostics and convergence history. Use [get_results()] for the tidy
-#'   transition table and for the other tables, [parameter_inference()] for
-#'   Wald or bootstrap standard errors and [bootstrap_lrt()] to compare nested
-#'   fits. Global optimality is not guaranteed; compare several starts.
+#'   diagnostics and convergence history. [get_results()] returns the tidy
+#'   transition table and the other tables, [parameter_inference()] Wald or
+#'   bootstrap standard errors, and [bootstrap_lrt()] compares nested fits.
+#'   Global optimality is not guaranteed.
 #'
 #'   With `transitions = "occasion"`, `transition_covariates`,
 #'   `initial_covariates`, `measurement = "occasion"`, `order = 2`,
-#'   `mover_stayer = TRUE`, `weights`, `ordinal` or `count` the
-#'   result is a `multilpa_lta` object instead, read with
-#'   [get_results()]: transition and initial logit coefficients
-#'   with Wald standard errors (observed, robust or OPG, from analytic
-#'   scores), model-implied transition probabilities per occasion, profiles
-#'   per occasion. Missing indicators (`missing = "fiml"`) and covariance
-#'   structures are supported; diagonal fits are finished by a quasi-Newton
-#'   search on the exact likelihood, others by EM.
-#'   Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
-#'   thresholds), depmixS4 and LMest is recorded in
+#'   `mover_stayer = TRUE`, `weights`, `ordinal` or `count`, the result is a
+#'   `multilpa_lta` object, read with [get_results()]: transition and initial
+#'   logit coefficients with Wald standard errors (observed, robust or OPG,
+#'   from analytic scores), model-implied transition probabilities per
+#'   occasion, and profiles per occasion. Missing indicators
+#'   (`missing = "fiml"`) and covariance structures are supported; diagonal
+#'   fits are finished by a quasi-Newton search on the exact likelihood,
+#'   others by EM. Agreement with Mplus (User's Guide examples 8.13, 8.14;
+#'   occasion-specific thresholds), depmixS4 and LMest is recorded in
 #'   `equivalence/lta-extensions/` of the source repository.
 #' @details By default transitions are first order and homogeneous over
 #'   occasions: the probability of moving from one profile to another does not
 #'   depend on the occasion or on earlier profiles. Measurement parameters are
-#'   shared across occasions and across group classes. A profile that no group occupies before
-#'   its final occasion leaves its transition row without information; the row
-#'   is then uniform by construction rather than estimated. Such a row is warned
-#'   about when the model is fitted, is flagged by the `estimated` column of
-#'   the transition table and is listed by
-#'   `get_results(fit, "transitions", estimated = FALSE)`.
-#'   Profile labels are arbitrary and
-#'   are not comparable across fits without alignment.
+#'   shared across occasions and across group classes. A profile that no group
+#'   occupies before its final occasion leaves its transition row without
+#'   information; the row is then uniform by construction, not estimated. Such
+#'   a row raises a warning when the model is fitted, is flagged by the
+#'   `estimated` column of the transition table and is listed by
+#'   `get_results(fit, "transitions", estimated = FALSE)`. Profile labels are
+#'   arbitrary and are not comparable across fits without alignment.
 #'
 #'   `max_iter = 0` updates nothing: the starting values are evaluated and
 #'   returned with the expectation they imply, and the fit reports

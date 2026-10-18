@@ -9,9 +9,9 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 \arguments{
 \item{data}{A data frame with one row per observation.}
 
-\item{vars}{Names of the categorical indicator columns. Numeric, integer,
-logical, character and factor columns are accepted; factor levels keep
-their declared order and other types are sorted.}
+\item{vars}{Names of the indicator columns. Numeric, integer, logical,
+character and factor columns are accepted; factor levels keep their
+declared order and other types are sorted.}
 
 \item{id}{Name of the group identifier column, or \code{NULL} for a single-level
 model.}
@@ -19,36 +19,34 @@ model.}
 \item{n_profiles}{Number of observation-level latent classes (profiles).}
 
 \item{n_group_classes}{Number of group-level latent classes. Defaults to 2,
-or to 1 when \code{id = NULL} (a single-level model has no second level).}
+or to 1 when \code{id = NULL}.}
 
 \item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}, such as \code{n_starts}, \code{seed},
-\code{missing}, \code{tol} or \code{profile_covariates}. \code{ordinal} and \code{count} can name
-structured discrete indicators; the
-remaining indicators are categorical. \code{categorical} may be given but
-changes nothing.}
+\code{missing}, \code{tol} or \code{profile_covariates}. \code{ordinal} and \code{count} name
+ordinal and count indicators; the remaining indicators are categorical.
+\code{categorical} is accepted but has no further effect; its names must be in
+\code{vars}.}
 }
 \value{
-A fitted model of class \code{multilpa} (or \code{multilpa_covariates} when
-membership covariates are given), exactly as \code{\link[=multilpa]{multilpa()}} returns it with
-the corresponding discrete indicator types. Categorical response
-probabilities are in
-\code{get_results(fit, "responses")}, one row per profile, item and category.
+A fitted \code{multilpa} object (\code{multilpa_covariates} when membership
+covariates are given), as \code{\link[=multilpa]{multilpa()}} returns it. Categorical response
+probabilities are in \code{get_results(fit, "responses")}, one row per
+profile, item and category.
 }
 \description{
-Two-level latent class analysis for categorical indicators: \code{\link[=multilpa]{multilpa()}}
-with discrete indicators in \code{vars} treated as categorical unless named
-in \code{ordinal} or \code{count} through \code{...}. Each profile is described by
-unrestricted response probabilities for categorical items and the
-corresponding structured parameters for ordinal and count items,
-and the group classes differ in how probable each profile is for their
-observations. For models that combine categorical and continuous
-indicators, call \code{\link[=multilpa]{multilpa()}} and name the categorical ones in its
-\code{categorical} argument.
+Fits a two-level latent class model for discrete indicators and returns a
+fitted \code{multilpa} object. It is \code{\link[=multilpa]{multilpa()}} with every indicator in \code{vars}
+treated as categorical, except those named in \code{ordinal} or \code{count} through
+\code{...}. Each profile has unrestricted response probabilities for the
+categorical indicators and structured parameters for the ordinal and count
+ones; the group classes differ in the probability of each profile. For
+models that combine categorical and continuous indicators, use \code{\link[=multilpa]{multilpa()}}
+and name the categorical ones in its \code{categorical} argument.
 }
 \section{Conditions}{
 
 \code{latents_bad_categorical} when \code{categorical} names a column not in
-\code{vars}. Every condition of \code{\link[=multilpa]{multilpa()}} can also be raised.
+\code{vars}; otherwise the conditions of \code{\link[=multilpa]{multilpa()}}.
 }
 
 \examples{

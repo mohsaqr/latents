@@ -183,7 +183,7 @@ Because mixture likelihoods can have local maxima, estimation is repeated from m
 `get_results(fit)` returns the measurement parameters, with one row for each profile and indicator. Means describe the location of a profile, while variances describe dispersion within it. The default plot displays the profile means across indicators.
 
 ```{r profile-plot}
-plot(fit)
+plot_profiles(fit)
 ```
 
 In this solution, profile 1 has the higher engagement pattern and profile 2 the lower engagement pattern. Because the indicators were standardized within course, the separation concerns relative activity within courses. The interpretation should be based on the configuration of means across all indicators, together with within-profile dispersion, rather than on a single indicator or the numerical profile label.
@@ -196,7 +196,7 @@ The higher-level structure is inspected through the probabilities of the observa
 
 ```{r probabilities}
 get_results(fit, "profile_probabilities")
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 79% probability to the more engaged profile, whereas student class 2 assigns approximately 83% probability to the less engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
@@ -293,7 +293,7 @@ candidates <- enumerate_classes(
 )
 candidates
 get_results(candidates, "best")
-plot(candidates)
+plot_enumeration(candidates)
 ```
 
 Information criteria balance the fitted likelihood against model complexity; smaller values are preferred within a given criterion. For example, BIC takes the form $-2\ell + p\log(n)$, where $\ell$ is the maximized log likelihood and $p$ is the number of estimated parameters. In a multilevel mixture, the choice of sample size in the penalty requires attention. The package reports criteria under both group-count and observation-count conventions. For the single-level LPA specification, the individual-count BIC is the relevant version.
@@ -423,7 +423,7 @@ moves <- lta(
 )
 get_results(moves, "initial")
 get_results(moves, "transitions")
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 For group class $h$, a transition probability can be expressed as $P(C_{j,t}=l\mid C_{j,t-1}=k,G_j=h)$. Each row of a transition matrix conditions on the preceding profile and sums to one across possible destination profiles. Diagonal entries quantify persistence; off-diagonal entries quantify transitions to other profiles.
@@ -451,7 +451,7 @@ lca <- multilca(
   n_starts = 10, seed = 1
 )
 get_results(lca, "responses")
-plot(lca, what = "responses")
+plot_responses(lca)
 ```
 
 The response table describes the probability of each answer conditional on profile membership. These probabilities define the activity profiles. As in the continuous model, `get_results(lca, "profile_probabilities")` describes how the distribution of those profiles varies between student classes.

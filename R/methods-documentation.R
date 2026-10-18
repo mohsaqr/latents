@@ -23,13 +23,12 @@
 #'   `scale = "unconstrained"` raises `latents_unsupported_inference`.
 #' @param data Optional. The data frame the model was fitted to. When omitted
 #'   it is rebuilt from what the fit stores (indicators, identifiers, occasions
-#'   and designs), which round-trips to floating-point precision; supplying it is the stronger check
-#'   that the caller still holds that frame.
+#'   and designs), to floating-point precision.
 #' @param parm Optional coefficient names or indices; defaults to every
-#'   estimated coefficient. Naming a coefficient that `fixed` held raises
-#'   `latents_held_parameter`, because a held value has no interval; an
-#'   unknown name or an out-of-range index raises `latents_bad_argument`.
-#' @param level Confidence level strictly between zero and one.
+#'   estimated coefficient. A coefficient held by `fixed` has no interval and
+#'   raises `latents_held_parameter`; an unknown name or an out-of-range index
+#'   raises `latents_bad_argument`.
+#' @param level Confidence level, strictly between 0 and 1 (default 0.95).
 #' @param step Finite-difference step for the observed information (covariate
 #'   models).
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`, as for

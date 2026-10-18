@@ -103,9 +103,9 @@ persons (and their clusters new clusters): it returns class trajectories,
 which need no outcome, or, given the outcomes, class posteriors and each
 person's own curve with their empirical Bayes random effects, the
 quantities of \code{lcmm::predictY()}, \code{predictClass()} and \code{predictRE()}.
-Membership-
-covariate and latent transition fits refuse with the same class; their
-fitted rows' posteriors are \code{get_results(x, "posteriors")}.
+Membership-covariate and latent transition fits are refused with
+\code{latents_unsupported_prediction}; the posteriors of their fitted rows are
+given by \code{get_results(x, "posteriors")}.
 }
 \details{
 \code{simulate()} draws new outcomes on the fitted design of a mixture

@@ -108,193 +108,171 @@ parameter_inference(
 \arguments{
 \item{x}{A converged \code{multilpa} fit with inactive variance bounds.}
 
-\item{data}{Optional. The data frame the model was fitted to; when omitted
-it is rebuilt from the indicators, identifiers and occasions the fit
-stores, which round-trip exactly. Supplying it is the stronger check that
-the caller still holds that frame.
-A supplied frame is checked exactly against the stored indicators and
+\item{data}{Optional data frame the model was fitted to. When omitted it is
+rebuilt from the indicators, identifiers and occasions the fit stores. A
+supplied frame is checked exactly against the stored indicators and
 identifiers; for an older fit without stored indicators, the likelihood
-provides a weaker consistency check.}
+gives a weaker consistency check.}
 
-\item{level}{Confidence level strictly between zero and one.}
+\item{level}{Confidence level, strictly between zero and one. Default
+\code{0.95}.}
 
-\item{step}{Positive finite-difference step for the analytic score derivative.}
+\item{step}{Positive finite-difference step for the analytic score
+derivative. Default \code{1e-4}.}
 
-\item{vcov_type}{\code{"observed"} inverts the observed information.
-\code{"robust"} returns the Huber-White sandwich \verb{A^-1 B A^-1}, where \code{B}
-accumulates the outer product of the per-group scores, multiplied by the
-CR1 small-sample factor \code{G / (G - 1)} for \code{G} groups (the default of
-\code{sandwich::vcovCL()}; every robust standard error in the package carries
-it). Mplus's MLR applies no such factor, so these errors are exactly
-\code{sqrt(G / (G - 1))} times Mplus's (0.8\% larger with 60 groups). Groups are the
-independent units, so robust errors relax the assumption that the Gaussian
-within-group model is correctly specified. They do not relax the assumption
-that groups are independent.
-\code{"opg"} inverts the outer product of the per-group scores (the BHHH or
-outer-product-of-gradients estimate), which estimates the information by
-the variance of the score rather than by the curvature of the likelihood.
-It is the estimator \code{glca} reports, so it reproduces that package's
-standard errors; the two agree with \code{"observed"} in large samples and can
-differ noticeably in small ones, where \code{"observed"} is usually the more
-reliable. \code{"robust"} and \code{"opg"} need more groups than parameters.
-\code{vcov_type} and \code{step} belong to the Wald path; \code{method = "bootstrap"}
-does not use them, since resampling groups already makes its errors
-robust in the sense \code{"robust"} is.}
+\item{vcov_type}{Covariance estimator for the Wald path.
+\code{"observed"} (default) inverts the observed information.
+\code{"robust"} returns the Huber-White sandwich \verb{A^-1 B A^-1}, where \code{B} is
+the outer product of the per-group scores, multiplied by the CR1
+small-sample factor \code{G / (G - 1)} for \code{G} groups (the default of
+\code{sandwich::vcovCL()}, applied to every robust standard error in the
+package). Mplus's MLR applies no such factor, so these errors are
+\code{sqrt(G / (G - 1))} times Mplus's. Groups are the independent units:
+robust errors relax the assumption that the within-group model is
+correctly specified, not the assumption that groups are independent.
+\code{"opg"} inverts the outer product of the per-group scores (the BHHH
+estimator), as \code{glca} reports; it agrees with \code{"observed"} in large
+samples and can differ in small ones, where \code{"observed"} is usually more
+reliable. \code{"robust"} and \code{"opg"} need more groups than parameters. For a
+fit with sampling weights the default is \code{"robust"}, and any other value
+raises \code{latents_unsupported_weights}. \code{vcov_type} and \code{step} are not used
+by \code{method = "bootstrap"}.}
 
-\item{adjust}{Multiplicity correction applied to \code{p_value} to produce
-\code{p_adjusted}, one of the methods \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts. The default
-\code{"none"} leaves the two columns equal: a correction changes what a p-value
-means, so it is applied only when it is asked for, and the method that was
-applied is recorded in the \code{adjust} attribute. The correction is taken
-over the tests the table actually reports; bounded parameters carry no test
-and do not count towards the family.}
+\item{adjust}{Multiplicity correction applied to \code{p_value} to give
+\code{p_adjusted}: \code{"none"} (default) or one of the \code{\link[stats:p.adjust]{stats::p.adjust()}}
+methods. The method applied is stored in the \code{adjust} attribute. The
+correction is taken over the tests the table reports; bounded parameters
+carry no test and are not counted.}
 
-\item{method}{How uncertainty is measured. \code{"wald"}, the default, inverts the
-observed information in the estimation coordinates, and is available for
-all fourteen covariance structures. EEI, VVI, EEE and VVV are estimated in
-log variances or log-Cholesky coordinates; the ten structures that
-constrain the volume, the shape or the orientation across profiles are
-estimated in log volumes, log shapes whose determinant-one constraint is
-written into the coordinates, and Cayley-transform orientations (or, for
-VEE and EVV, determinant-one log-Cholesky factors), so the information has
-one row per free parameter of the structure. The reported variances and
-covariances are then carried from those coordinates by the delta method,
-and their natural-scale covariance is singular, as it is for the class
-probabilities. \code{"bootstrap"} resamples \emph{groups} with replacement, refits inside
-the same covariance family, undoes the relabelling each refit comes back
-with, and reports the percentile interval and the standard deviation of the
-replicates. It is available for all fourteen structures. Groups are the resampling unit
-rather than rows, so the interval carries the same independence assumption
-as \code{vcov_type = "robust"} and not the stronger one \code{"observed"} makes.}
+\item{method}{\code{"wald"} (default) inverts the observed information in the
+estimation coordinates; it is available for all fourteen covariance
+structures. EEI, VVI, EEE and VVV are estimated in log variances or
+log-Cholesky coordinates; the ten structures that constrain volume,
+shape or orientation across profiles are estimated in log volumes, log
+shapes with the determinant-one constraint built into the coordinates,
+and Cayley-transform orientations (or, for VEE and EVV, determinant-one
+log-Cholesky factors), so the information has one row per free
+parameter. The reported variances and covariances are obtained from
+these coordinates by the delta method, and their natural-scale
+covariance is singular, as for the class probabilities. \code{"bootstrap"}
+resamples groups with replacement, refits within the same covariance
+structure, realigns each refit's labels, and reports the percentile
+interval and the standard deviation of the replicates; it is also
+available for all fourteen structures and assumes independent groups, as
+\code{vcov_type = "robust"} does.}
 
-\item{...}{Unused by most methods; accepted so every method shares the
-generic's signature.}
+\item{...}{Further arguments; unused by most methods.}
 
-\item{iter}{Number of resamples when \code{method = "bootstrap"}, at least two.
-The default 199 is enough for a standard error; a 95\% percentile interval
-is steadier at 999 and above.}
+\item{iter}{Number of resamples for \code{method = "bootstrap"}, at least two.
+Default \code{199}; a 95\% percentile interval is more stable with 999 or more.}
 
-\item{n_starts, max_iter, tol}{Passed to each bootstrap refit. Each replicate
-is a fresh fit, so \code{n_starts} buys the same protection against a local
-maximum here as it does in \code{\link[=multilpa]{multilpa()}}, at the same multiple of the cost.}
+\item{n_starts, max_iter, tol}{Passed to each bootstrap refit, as in
+\code{\link[=multilpa]{multilpa()}}.}
 
-\item{seed}{Optional seed for the resampling: any whole number \code{set.seed()}
-accepts; anything else raises \code{latents_bad_argument}, on either path. The
-Wald path draws nothing, so it uses no seed. The stream is restored on exit,
-so a seeded call leaves the caller's random state exactly as it found it.}
+\item{seed}{Optional seed for the resampling: a whole number accepted by
+\code{set.seed()}; any other value raises \code{latents_bad_argument} on either
+path. The Wald path uses no random numbers. The caller's random state is
+restored on exit.}
 
-\item{boundary}{What to do when categorical response probabilities sit on
-their lower bound, \code{min_probability}. There the likelihood is flat in the
-logit and the information is singular, so \code{"error"}, the default, refuses
-with \code{latents_boundary_fit}. \code{"fix"} holds those probabilities at the bound
-and reports every other parameter conditionally on them, the convention
-Mplus follows; the held probabilities are left out of the table (or, for a
-covariate fit, reported with \code{NA} standard errors) and named in the
-result's \code{fixed_at_bound} attribute.}
+\item{boundary}{Handling of categorical response probabilities at their
+lower bound, \code{min_probability}, where the information is singular.
+\code{"error"} (default) raises \code{latents_boundary_fit}. \code{"fix"} holds those
+probabilities at the bound and reports every other parameter conditional
+on them, as Mplus does; the held probabilities are omitted from the table
+(or, for a covariate fit, reported with \code{NA} standard errors) and named in
+the \code{fixed_at_bound} attribute.}
 }
 \value{
-A base \code{data.frame} with one row per free parameter and the same
-columns, in the same order, that \code{\link[=parameter_inference]{parameter_inference()}} returns for every
-other fitted class: \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}),
-\code{outcome} (which profile or group class the coefficient predicts, or which
-profile a measurement parameter belongs to), \code{term}, \code{parameter}
-(\code{"mean"}, \code{"variance"}, \code{"covariance"}, \code{"response"} or
-\code{"coefficient"}), \code{estimate},
+For a covariate fit, a base \code{data.frame} with one row per free
+parameter and the same columns as for every other class: \code{level}
+(\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome} (the profile or
+group class the coefficient predicts, or the profile a measurement
+parameter belongs to), \code{term}, \code{parameter} (\code{"mean"}, \code{"variance"},
+\code{"covariance"}, \code{"response"} or \code{"coefficient"}), \code{estimate},
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}. Variances and covariances are reported in their natural units,
-with standard errors carried through the delta method from the log and
-log-Cholesky coordinates on which they are estimated. Categorical
-indicators contribute one \code{"response"} row per profile, indicator and
-category, named \code{indicator:category}: the probability of that category,
-with its standard error carried from the multinomial logits it is
-estimated on, and no Wald test, as for the covariate-free model.
+\code{conf_high}. Variances and covariances are in their natural units, with
+standard errors obtained by the delta method from the log and
+log-Cholesky coordinates on which they are estimated. Each categorical
+indicator contributes one \code{"response"} row per profile, indicator and
+category, named \code{indicator:category}: the category probability, with its
+standard error from the multinomial logits and no Wald test.
 
 A base \code{data.frame} with one row per reported parameter and the
 columns \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome},
 \code{term}, \code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value},
 \code{p_adjusted}, \code{conf_low} and \code{conf_high}. Estimates are on the natural
-scale: variances in their own units, probabilities as probabilities. A
-parameter whose null value is on the boundary of its space -- a variance, a
-probability, a residual variance on the covariance diagonal -- carries \code{NA}
-for \code{statistic}, \code{p_value} and \code{p_adjusted}, because a Wald test against
-that boundary is not a question worth asking; the interval still is. All
-class probabilities are reported; their sum constraints make the natural
-covariance singular. Wald intervals for probabilities are formed on the
-logit scale and for variances (and covariance diagonals) on the log
-scale, then mapped back with the same standard error, so they stay inside
-the parameter's range and widen towards the far side of a bound; every
-other interval is \verb{estimate +/- z * standard_error}. \code{confint()} returns
-the same intervals. A probability at or below 1e-6 is treated as on its
-bound (refused, or held by \code{boundary = "fix"}).
+scale (variances in their own units, probabilities as probabilities). A
+parameter whose null value lies on the boundary of its space (a variance,
+a probability, a covariance diagonal) has \code{NA} \code{statistic}, \code{p_value} and
+\code{p_adjusted}, but still has an interval. All class probabilities are
+reported; their sum constraints make the natural covariance singular.
+Wald intervals for probabilities are formed on the logit scale and for
+variances (and covariance diagonals) on the log scale, then
+back-transformed, so they stay within the parameter's range; every other
+interval is \verb{estimate +/- z * standard_error}. \code{confint()} returns the
+same intervals. A probability at or below 1e-6 is treated as on its bound
+(refused, or held by \code{boundary = "fix"}).
 
 A fit made with \code{fixed} reports only the parameters it estimated: a held
-measurement block is a constant of this likelihood, so it contributes no
-row here and no row or column to the information matrix. The table is on
-the natural scale, where every class probability is reported, so it has one
-row per estimated natural coefficient: \code{n_parameters} rows plus one for
-each set of probabilities whose reference category the estimation scale
-drops. The held values still enter the likelihood at
-the values they were held at, so every standard error, interval and p-value
-is conditional on that measurement solution and does not propagate its
-uncertainty. See \code{\link[=fit_staged]{fit_staged()}} for what that conditioning means. For a
-\code{\link[=fit_staged]{fit_staged()}} result, \code{method = "bootstrap"} does propagate it: each
-resample refits both stages, and the table has a row for every
-parameter, the measurement included (attribute \code{stages_resampled} is 2).
+measurement block contributes no row to the table or to the information
+matrix. The table has one row per estimated natural coefficient:
+\code{n_parameters} rows plus one for each set of probabilities whose
+reference category the estimation scale drops. Standard errors,
+intervals and p-values are conditional on the held measurement solution
+and do not include its uncertainty (see \code{\link[=fit_staged]{fit_staged()}}). For a
+\code{\link[=fit_staged]{fit_staged()}} result, \code{method = "bootstrap"} refits both stages in each
+resample, so the table includes the measurement parameters and that
+uncertainty is propagated (attribute \code{stages_resampled} is 2).
 
-With \code{method = "bootstrap"} the table has the same columns and the same
-rows, \code{estimate} is still the fitted value, \code{standard_error} is the
-standard deviation of the replicates and \code{conf_low}/\code{conf_high} are the
-percentile interval. \code{statistic}, \code{p_value} and \code{p_adjusted} are \code{NA}
-throughout: putting a normal approximation back on top of the replicates
-the interval was read from is the assumption this path exists to avoid, so
-the interval is the inference. Its attributes are \code{covariance} (the
-covariance of the replicates, which \code{vcov()} returns), \code{level}, \code{method},
-\code{iter}, \code{n_valid}, \code{replicates} (the kept replicates, one row each),
-\code{messages} (why a resample was dropped, \code{NA} where it was not),
-\code{structure} and \code{fixed}; \code{covariance_unconstrained} is \code{NULL}, because the
-estimation-scale chart is what this path does without.
+With \code{method = "bootstrap"} the table has the same columns and rows;
+\code{estimate} is the fitted value, \code{standard_error} the standard deviation
+of the replicates and \code{conf_low}/\code{conf_high} the percentile interval.
+\code{statistic}, \code{p_value} and \code{p_adjusted} are \code{NA}. Its attributes are
+\code{covariance} (the covariance of the replicates, returned by \code{vcov()}),
+\code{level}, \code{method}, \code{iter}, \code{n_valid}, \code{replicates} (the kept replicates,
+one row each), \code{messages} (why a resample was dropped, \code{NA} where it was
+not), \code{structure} and \code{fixed}; \code{covariance_unconstrained} is \code{NULL}.
 
-Diagnostics of the fit as a whole travel as attributes rather than as
-columns repeated down every row: \code{covariance} and \code{covariance_unconstrained}
-(natural and estimation-scale covariance of the estimates), \code{hessian},
-\code{gradient}, \code{scaled_score}, \code{score_displacement} (the largest score times
-its estimation-scale standard error, the quantity the
-\code{latents_unconverged} warning reads), \code{condition_ratio}, \code{level}, \code{step},
-\code{method}, \code{vcov_type}, \code{fixed} (the measurement blocks this fit held,
-\code{character()} when none), \code{fixed_at_bound} (the probabilities
-\code{boundary = "fix"} held) and \code{adjust}. When \code{vcov_type} is \code{"robust"} or
-\code{"opg"}, \code{group_scores} holds the groups-by-parameters score matrix and
-\code{scaling_correction} the MLR scaling correction factor \verb{tr(A^-1 B) / q},
-with \code{B} the cross-product of those scores without the CR1 factor, used
-for scaled likelihood-ratio difference tests; it is \code{NA} otherwise.
+For the Wald path, diagnostics of the whole fit are attributes:
+\code{covariance} and \code{covariance_unconstrained} (natural and
+estimation-scale covariance of the estimates), \code{hessian}, \code{gradient},
+\code{scaled_score}, \code{score_displacement} (the largest score times its
+estimation-scale standard error, which the \code{latents_unconverged} warning
+uses), \code{condition_ratio}, \code{level}, \code{step}, \code{method}, \code{vcov_type}, \code{fixed}
+(the measurement blocks the fit held, \code{character()} when none),
+\code{fixed_at_bound} (the probabilities held by \code{boundary = "fix"}) and
+\code{adjust}. When \code{vcov_type} is \code{"robust"} or \code{"opg"}, \code{group_scores} holds
+the groups-by-parameters score matrix and \code{scaling_correction} the MLR
+scaling correction factor \verb{tr(A^-1 B) / q} (with \code{B} without the CR1
+factor), used for scaled likelihood-ratio difference tests; it is \code{NA}
+otherwise.
 }
 \description{
-Standard errors, tests and intervals for every free parameter of
-\code{multilpa(profile_covariates = )}, at all three levels at once: the
-measurement model, the
-profile logits and the group-class logits. Without them a membership
-coefficient cannot be reported, because nothing distinguishes a real effect
-from separation.
+For a \code{multilpa(profile_covariates = )} fit, returns standard errors, tests
+and intervals for every free parameter at all three levels: the
+measurement model, the profile logits and the group-class logits.
 
-Computes ordinary maximum-likelihood standard errors from the inverse
-observed Hessian and delta-method Wald confidence intervals. These are local,
-asymptotic estimates conditional on the selected numbers of classes. They are
-not robust sandwich errors and do not account for model selection. Mixture
-boundary solutions and unidentified Hessians do not admit this calculation.
+Returns a table of the estimated parameters of a fitted model with their
+standard errors, Wald tests and confidence intervals. By default the
+standard errors are maximum-likelihood errors from the inverse observed
+information, with delta-method Wald intervals; \code{method = "bootstrap"}
+resamples groups instead. The estimates are local and asymptotic,
+conditional on the selected numbers of classes, and do not account for
+model selection. Boundary solutions and unidentified Hessians are refused
+by the Wald path.
 }
 \details{
-Class-membership coefficients are on the multinomial logit scale
-with the final profile and the final group class as references, so a
-coefficient is a log odds against that reference. The tests are Wald tests,
-which are meaningless for a coefficient driven to the boundary by
-separation or an empty class. A fit with a membership logit above 20 in
-coordinates that depend neither on the covariates' units nor on their
+Class-membership coefficients of a covariate fit are on the
+multinomial logit scale, with the final profile and the final group class
+as references, so each coefficient is a log odds against that reference.
+The tests are Wald tests, which are invalid for a coefficient driven to
+the boundary by separation or an empty class. A fit with a membership
+logit above 20 in coordinates independent of the covariates' units and
 origin (roughly, a slope per standard deviation of its covariate and an
-intercept at the covariates' means) is therefore refused with
-\code{latents_boundary_fit} rather than given a standard error; the fit itself
-warns with \code{latents_extreme_coefficients}. Only
-\code{method = "wald"} is implemented for a covariate fit; \code{"bootstrap"} is
-refused with \code{latents_unsupported_inference}.
+intercept at the covariates' means) raises \code{latents_boundary_fit}; the
+fit itself warns with \code{latents_extreme_coefficients}. Only
+\code{method = "wald"} is implemented for a covariate fit; \code{"bootstrap"}
+raises \code{latents_unsupported_inference}.
 
 For a growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}), the
 table has one row per natural parameter: \code{block} (\code{"coefficient"},
@@ -311,10 +289,11 @@ scale, and only coefficients and logits are tested against zero.
 \code{n_starts} starts and matches its classes to the original by their
 posterior memberships of the original persons; it is refused for a
 multilevel growth mixture (\code{latents_unsupported_inference}). In a
-simulation of 1000 datasets per design, Wald intervals covered 0.936-0.965
-with separated classes but 0.885-0.943 with weakly separated ones, whose
-standard errors ran 6-30\% small (validation/GROWTH_SIMULATION.md in the
-source repository); prefer the bootstrap there. A class
+simulation of 1000 datasets per design, Wald intervals covered
+0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
+separated ones, whose standard errors were 6-30\% too small
+(validation/GROWTH_SIMULATION.md in the source repository); the
+bootstrap is preferable for weakly separated classes. A class
 whose random-effect covariance is degenerate raises
 \code{latents_boundary_fit} under \code{boundary = "error"}; under \code{"fix"} its
 random-effect rows have no standard error or interval. \code{data}, when
@@ -330,35 +309,35 @@ second-order fit). \code{method = "bootstrap"} resamples persons, refits, and
 matches every replicate's profiles (on the measurement) and group classes
 to the original's, rebasing the initial logits when the reference profile
 moves; it needs \code{data}, and works where Wald inference is refused (for
-example full covariance structures). Transition inference holds nothing
-at a bound: with no bound active \code{boundary = "fix"} gives the same table
-as \code{"error"}, and a fit with an active bound raises \code{latents_boundary_fit}
-under either.
+example full covariance structures). Transition inference fixes no
+parameter at a bound: without an active bound \code{boundary = "fix"} gives
+the same table as \code{"error"}, and a fit with an active bound raises
+\code{latents_boundary_fit} under either.
 }
 \section{Conditions}{
 
-\code{latents_no_converge} for an unconverged fit, \code{latents_boundary_fit} when
-a variance, a response probability or a mixing probability sits at its
-bound, \code{latents_singular_information} when the observed information cannot
-be inverted, \code{latents_no_free_parameters} when \code{fixed} held every
-parameter, \code{latents_bad_inference_data} when a supplied \code{data} does not
-reproduce the fit, and \code{latents_too_few_groups} for \code{vcov_type = "robust"}
-or \code{"opg"} when the fit has no more independent groups than free
-parameters. A fit whose score
-is still far from zero is reported with a \code{latents_unconverged} warning
-rather than refused. A fit made with \code{multilpa(prior = )} is refused by
-the Wald path with \code{latents_unsupported_inference} (it sits at a
-posterior mode, where the likelihood's score is not zero), and a fit with
-a noise component by either path with \code{latents_unsupported_noise}.
+Errors: \code{latents_no_converge} for an unconverged fit;
+\code{latents_boundary_fit} when a variance, response probability or mixing
+probability is at its bound; \code{latents_singular_information} when the
+observed information cannot be inverted; \code{latents_no_free_parameters}
+when \code{fixed} held every parameter; \code{latents_bad_inference_data} when a
+supplied \code{data} does not reproduce the fit; \code{latents_too_few_groups} for
+\code{vcov_type = "robust"} or \code{"opg"} when the fit has no more independent
+groups than free parameters. The Wald path raises
+\code{latents_unsupported_inference} for a fit made with \code{multilpa(prior = )}
+(a posterior mode, where the score is not zero), and either path raises
+\code{latents_unsupported_noise} for a fit with a noise component. A fit whose
+score is still far from zero gives a \code{latents_unconverged} warning.
 
-\code{method = "bootstrap"} adds \code{latents_unsupported_inference} for a fit that
-holds a measurement block through \code{multilpa(fixed = )} --- the held values
-came from another fit and resampling these data does not resample them;
-a \code{\link[=fit_staged]{fit_staged()}} result is bootstrapped by staging again instead --- and
-\code{latents_bootstrap_failed} when fewer than two resamples produced a usable
-fit, whose message carries the first reason one gave. Resamples that fail
-or do not converge are dropped with a \code{latents_bootstrap_dropped} warning
-naming how many, rather than being silently left out of the count.
+\code{method = "bootstrap"} also raises \code{latents_unsupported_inference} for an
+additive or covariate fit, and for a
+fit holding a measurement block through \code{multilpa(fixed = )}, since
+resampling the data does not resample the held values (a \code{\link[=fit_staged]{fit_staged()}}
+result is bootstrapped by refitting both stages instead), and
+\code{latents_bootstrap_failed} when fewer than two resamples gave a usable
+fit; its message gives the first reason. Resamples that fail or do not
+converge are dropped with a \code{latents_bootstrap_dropped} warning stating
+how many.
 }
 
 \examples{

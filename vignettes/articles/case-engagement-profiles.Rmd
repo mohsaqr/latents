@@ -281,7 +281,7 @@ shape of the lines therefore show how the distribution of engagement profiles
 varies across student classes.
 
 ```{r probabilities}
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 Class 3 has an almost level profile because its probabilities are similar across
@@ -309,13 +309,13 @@ this analysis.
 
 ## Profile means as a plot
 
-`plot()` displays the estimated profile means across the five activity
+`plot_profiles()` displays the estimated profile means across the five activity
 indicators. Because the indicators were standardized within course, the
 vertical axis is expressed in standard deviations from the corresponding course
 mean. Point symbols distinguish the profiles in addition to colour.
 
 ```{r profiles}
-plot(fit, subtitle = "Profile means, standard deviations from each course mean")
+plot_profiles(fit, subtitle = "Profile means, standard deviations from each course mean")
 ```
 
 The three profiles retain the same ordering across all five indicators, with

@@ -5,31 +5,29 @@
 # one observation per unit and no group classes. `multilpa(id = NULL)` fits it;
 # these two verbs name it, so that the ordinary analysis reads as what it is.
 
-#' Latent profile analysis
+#' Fit a latent profile model
 #'
-#' Fits a single-level latent profile model: a finite mixture of multivariate
-#' normal distributions, in which each observation belongs to one of
-#' `n_profiles` unobserved profiles and each profile has its own mean on every
-#' indicator. It is the model [multilpa()] fits with `id = NULL`, and it
-#' returns the same object, so every accessor, plot and inference verb of the
-#' package applies to it.
+#' Fits a single-level latent profile model and returns a fitted `multilpa`
+#' object. The model is a finite mixture of multivariate normal distributions:
+#' each observation belongs to one of `n_profiles` unobserved profiles, and each
+#' profile has its own mean on every indicator. It is the model [multilpa()]
+#' fits with `id = NULL`, so every accessor, plot and inference verb of the
+#' package applies to the result.
 #'
-#' For observations nested in groups (students in schools, occasions in
-#' persons), use [multilpa()] with the grouping column as `id`, which adds
-#' latent classes of groups above the profiles.
+#' For observations nested in groups, use [multilpa()] with the grouping column
+#' as `id`, which adds latent classes of groups above the profiles.
 #'
 #' @param data A data frame with one row per observation.
 #' @param vars Names of the indicator columns. Numeric columns are continuous
-#'   indicators; name categorical ones in `categorical`.
+#'   indicators; categorical ones are named in `categorical`.
 #' @param n_profiles Number of profiles, a positive whole number.
 #' @param ... Further arguments for [multilpa()]: the covariance structure
 #'   (`model`, or `variance_model` and `covariance_model`, or `volume`,
 #'   `shape` and `orientation`), `missing`, `categorical`, `n_starts`,
-#'   `seed`, `boundary`, `prior`, `noise`, `profile_covariates` and the others it
-#'   documents, except `id` and `n_group_classes`, which a single-level model
-#'   does not have.
-#' @return A fitted `multilpa` object, as [multilpa()] returns, recording the
-#'   `lpa()` call as written.
+#'   `seed`, `boundary`, `prior`, `noise`, `profile_covariates` and the others
+#'   it documents, except `id` and `n_group_classes`.
+#' @return A fitted `multilpa` object, as [multilpa()] returns, whose `call`
+#'   is the `lpa()` call.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed; the
 #'   conditions [multilpa()] raises otherwise.
@@ -57,17 +55,16 @@ lpa <- function(data, vars, n_profiles, ...) {
   fit
 }
 
-#' Latent class analysis
+#' Fit a latent class model
 #'
-#' Fits a single-level latent class model: each observation belongs to one of
-#' `n_classes` unobserved classes, and within a class the discrete
-#' indicators are independent. Categorical indicators have unrestricted
-#' response probabilities; `ordinal` and `count` in `...` choose the
-#' structured measurement models described by [multilpa()]. It
-#' is the model [multilca()] fits with `id = NULL`, and it returns the same
-#' object, so every accessor, plot and inference verb of the package applies
-#' to it. In the results the classes are labelled `profile_1`, `profile_2`,
-#' and so on, as throughout the package.
+#' Fits a single-level latent class model and returns a fitted `multilpa`
+#' object. Each observation belongs to one of `n_classes` unobserved classes,
+#' and within a class the discrete indicators are independent. Categorical
+#' indicators have unrestricted response probabilities; `ordinal` and `count`
+#' in `...` select the structured measurement models described in
+#' [multilpa()]. It is the model [multilca()] fits with `id = NULL`, so every
+#' accessor, plot and inference verb of the package applies to the result. In
+#' the results the classes are labelled `profile_1`, `profile_2`, and so on.
 #'
 #' For observations nested in groups, use [multilca()] with the grouping
 #' column as `id`, which adds latent classes of groups above the classes of
@@ -75,14 +72,14 @@ lpa <- function(data, vars, n_profiles, ...) {
 #'
 #' @param data A data frame with one row per observation.
 #' @param vars Names of the discrete indicator columns. Categories are taken
-#'   from the data; `ordinal` and `count` in `...` identify structured
-#'   discrete indicators and the remaining columns are categorical.
+#'   from the data. Columns named in `ordinal` or `count` (through `...`) are
+#'   modelled as such; the rest are categorical.
 #' @param n_classes Number of classes, a positive whole number.
 #' @param ... Further arguments for [multilca()], such as `missing`,
 #'   `n_starts`, `seed`, `min_probability` and `profile_covariates`, except
-#'   `id` and `n_group_classes`, which a single-level model does not have.
-#' @return A fitted `multilpa` object, as [multilca()] returns, recording the
-#'   `lca()` call as written.
+#'   `id` and `n_group_classes`.
+#' @return A fitted `multilpa` object, as [multilca()] returns, whose `call`
+#'   is the `lca()` call.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
 #'   passed; the conditions [multilca()] raises otherwise.
@@ -113,11 +110,11 @@ lca <- function(data, vars, n_classes, ...) {
 
 #' Compare latent profile models
 #'
-#' Fits single-level latent profile models with each number of profiles in
-#' `n_profiles` under each covariance structure in `model`, and returns them
-#' in one table for comparison by information criteria, entropy and the
-#' diagnostics of each fit. It is [enumerate_classes()] with `id = NULL`, and
-#' it returns the same object.
+#' Fits a single-level latent profile model for each number of profiles in
+#' `n_profiles` under each covariance structure in `model`, and returns a
+#' `multilpa_enumeration` object that tabulates the information criteria,
+#' entropy and diagnostics of every fit. It is [enumerate_classes()] with
+#' `id = NULL`.
 #'
 #' For observations nested in groups, use [enumerate_classes()] with the
 #' grouping column as `id`, which also crosses the number of group classes.
@@ -170,13 +167,12 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 
 #' Compare latent class models
 #'
-#' Fits single-level latent class models with each number of classes in
-#' `n_classes` and returns them in one table for comparison by information
-#' criteria, entropy and the diagnostics of each fit. Every indicator is
-#' categorical unless named in `ordinal` or `count`, as in [lca()]. It is
-#' [enumerate_classes()] with `id = NULL`,
-#' and it returns the same object; the number of classes is its `n_profiles`
-#' column.
+#' Fits a single-level latent class model for each number of classes in
+#' `n_classes`, and returns a `multilpa_enumeration` object that tabulates the
+#' information criteria, entropy and diagnostics of every fit. Every indicator
+#' is categorical unless named in `ordinal` or `count`, as in [lca()]. It is
+#' [enumerate_classes()] with `id = NULL`; the number of classes is reported in
+#' the `n_profiles` column.
 #'
 #' For observations nested in groups, use [enumerate_classes()] with the
 #' grouping column as `id` and the indicators as `categorical`.
@@ -187,15 +183,17 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' @param ... Further arguments for [multilca()], such as `missing`,
 #'   `n_starts`, `seed` and `min_probability`, except `id` and
 #'   `n_group_classes`. Every indicator is categorical unless named in
-#'   `ordinal` or `count`; `categorical` may be given but changes nothing.
+#'   `ordinal` or `count`. `categorical` is accepted but has no further
+#'   effect; its names must be in `vars`.
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
 #'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
 #'   candidate each criterion prefers, [plot()] the criteria against the
 #'   number of classes, and [get_candidate()] one fitted candidate, named by
 #'   its `n_profiles`.
 #' @section Conditions:
-#'   `latents_bad_argument` when `id`, `n_group_classes`, `categorical` or
-#'   `model` is passed.
+#'   `latents_bad_argument` when `id` or `n_group_classes` is passed, or when
+#'   `model` is passed (no indicator is continuous); `latents_bad_categorical`
+#'   when `categorical` names a column not in `vars`.
 #' @seealso [lca()] to fit one model; [enumerate_lpa()] for continuous
 #'   indicators.
 #' @examples

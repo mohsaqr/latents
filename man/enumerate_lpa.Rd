@@ -29,11 +29,11 @@ candidate each criterion prefers, \code{\link[=plot]{plot()}} the criteria again
 number of profiles, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate.
 }
 \description{
-Fits single-level latent profile models with each number of profiles in
-\code{n_profiles} under each covariance structure in \code{model}, and returns them
-in one table for comparison by information criteria, entropy and the
-diagnostics of each fit. It is \code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL}, and
-it returns the same object.
+Fits a single-level latent profile model for each number of profiles in
+\code{n_profiles} under each covariance structure in \code{model}, and returns a
+\code{multilpa_enumeration} object that tabulates the information criteria,
+entropy and diagnostics of every fit. It is \code{\link[=enumerate_classes]{enumerate_classes()}} with
+\code{id = NULL}.
 }
 \details{
 For observations nested in groups, use \code{\link[=enumerate_classes]{enumerate_classes()}} with the

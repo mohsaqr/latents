@@ -1,37 +1,35 @@
 #' Fit a two-level latent class model
 #'
-#' Two-level latent class analysis for categorical indicators: [multilpa()]
-#' with discrete indicators in `vars` treated as categorical unless named
-#' in `ordinal` or `count` through `...`. Each profile is described by
-#' unrestricted response probabilities for categorical items and the
-#' corresponding structured parameters for ordinal and count items,
-#' and the group classes differ in how probable each profile is for their
-#' observations. For models that combine categorical and continuous
-#' indicators, call [multilpa()] and name the categorical ones in its
-#' `categorical` argument.
+#' Fits a two-level latent class model for discrete indicators and returns a
+#' fitted `multilpa` object. It is [multilpa()] with every indicator in `vars`
+#' treated as categorical, except those named in `ordinal` or `count` through
+#' `...`. Each profile has unrestricted response probabilities for the
+#' categorical indicators and structured parameters for the ordinal and count
+#' ones; the group classes differ in the probability of each profile. For
+#' models that combine categorical and continuous indicators, use [multilpa()]
+#' and name the categorical ones in its `categorical` argument.
 #'
 #' @param data A data frame with one row per observation.
-#' @param vars Names of the categorical indicator columns. Numeric, integer,
-#'   logical, character and factor columns are accepted; factor levels keep
-#'   their declared order and other types are sorted.
+#' @param vars Names of the indicator columns. Numeric, integer, logical,
+#'   character and factor columns are accepted; factor levels keep their
+#'   declared order and other types are sorted.
 #' @param id Name of the group identifier column, or `NULL` for a single-level
 #'   model.
 #' @param n_profiles Number of observation-level latent classes (profiles).
 #' @param n_group_classes Number of group-level latent classes. Defaults to 2,
-#'   or to 1 when `id = NULL` (a single-level model has no second level).
+#'   or to 1 when `id = NULL`.
 #' @param ... Further arguments to [multilpa()], such as `n_starts`, `seed`,
-#'   `missing`, `tol` or `profile_covariates`. `ordinal` and `count` can name
-#'   structured discrete indicators; the
-#'   remaining indicators are categorical. `categorical` may be given but
-#'   changes nothing.
-#' @return A fitted model of class `multilpa` (or `multilpa_covariates` when
-#'   membership covariates are given), exactly as [multilpa()] returns it with
-#'   the corresponding discrete indicator types. Categorical response
-#'   probabilities are in
-#'   `get_results(fit, "responses")`, one row per profile, item and category.
+#'   `missing`, `tol` or `profile_covariates`. `ordinal` and `count` name
+#'   ordinal and count indicators; the remaining indicators are categorical.
+#'   `categorical` is accepted but has no further effect; its names must be in
+#'   `vars`.
+#' @return A fitted `multilpa` object (`multilpa_covariates` when membership
+#'   covariates are given), as [multilpa()] returns it. Categorical response
+#'   probabilities are in `get_results(fit, "responses")`, one row per
+#'   profile, item and category.
 #' @section Conditions:
 #'   `latents_bad_categorical` when `categorical` names a column not in
-#'   `vars`. Every condition of [multilpa()] can also be raised.
+#'   `vars`; otherwise the conditions of [multilpa()].
 #' @seealso [multilpa()] for continuous and mixed indicators, and
 #'   `vignette("lca", package = "latents")`.
 #' @examples

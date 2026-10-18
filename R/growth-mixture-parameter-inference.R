@@ -268,10 +268,11 @@
 #'   `n_starts` starts and matches its classes to the original by their
 #'   posterior memberships of the original persons; it is refused for a
 #'   multilevel growth mixture (`latents_unsupported_inference`). In a
-#'   simulation of 1000 datasets per design, Wald intervals covered 0.936-0.965
-#'   with separated classes but 0.885-0.943 with weakly separated ones, whose
-#'   standard errors ran 6-30% small (validation/GROWTH_SIMULATION.md in the
-#'   source repository); prefer the bootstrap there. A class
+#'   simulation of 1000 datasets per design, Wald intervals covered
+#'   0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
+#'   separated ones, whose standard errors were 6-30% too small
+#'   (validation/GROWTH_SIMULATION.md in the source repository); the
+#'   bootstrap is preferable for weakly separated classes. A class
 #'   whose random-effect covariance is degenerate raises
 #'   `latents_boundary_fit` under `boundary = "error"`; under `"fix"` its
 #'   random-effect rows have no standard error or interval. `data`, when

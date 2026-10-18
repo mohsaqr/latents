@@ -223,7 +223,7 @@ Because mixture likelihoods can have local maxima, estimation is repeated from m
 
 
 ``` r
-plot(fit)
+plot_profiles(fit)
 ```
 
 <div class="figure" style="text-align: center">
@@ -247,7 +247,7 @@ get_results(fit, "profile_probabilities")
 #> 2           1       2       0.214                   0.675
 #> 3           2       1       0.170                   0.325
 #> 4           2       2       0.830                   0.325
-plot(fit, what = "probabilities")
+plot_prevalence(fit)
 ```
 
 <div class="figure" style="text-align: center">
@@ -524,7 +524,7 @@ get_results(candidates, "best")
 #> 12       icl individuals profiles2_groups3          2               3   VVI 17142
 #> 13       clc      groups profiles4_groups3          4               3   VVI 16656
 #> 14       clc individuals profiles2_groups3          2               3   VVI 16960
-plot(candidates)
+plot_enumeration(candidates)
 ```
 
 <div class="figure" style="text-align: center">
@@ -783,7 +783,7 @@ get_results(moves, "transitions")
 #> 6           2    1  2      0.2579           27.9  FALSE      TRUE                   0.352
 #> 7           2    2  1      0.0693           24.6  FALSE      TRUE                   0.352
 #> 8           2    2  2      0.9307          330.3   TRUE      TRUE                   0.352
-plot(moves, what = "transitions")
+plot_transitions(moves)
 ```
 
 <div class="figure" style="text-align: center">
@@ -850,7 +850,7 @@ get_results(lca, "responses")
 #> 30       2     part_time_job       no      0.9587     3.144                    0.00730
 #> 31       1     part_time_job      yes      0.0162        NA                    0.00625
 #> 32       2     part_time_job      yes      0.0413        NA                    0.00730
-plot(lca, what = "responses")
+plot_responses(lca)
 ```
 
 <div class="figure" style="text-align: center">
