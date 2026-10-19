@@ -233,3 +233,16 @@ test_that("bootstrap replicates are refitted with the models' direct effects and
   expect_error(bootstrap_lrt(null, plain, iter = 2, n_starts = 1, seed = 8),
                class = "latents_incomparable_models")
 })
+
+test_that("a staged fit refuses a measurement with direct effects or chosen covariances", {
+  data <- transform(direct_data(n = 200), g = rep(seq_len(20), each = 10))
+  vars <- c("y1", "y2", "y3")
+  effects <- quietly(multilpa(data, vars, "g", 2, 1, n_starts = 2, seed = 1,
+                              direct_effects = "y3 ~ z"))
+  expect_error(fit_staged(data, vars, "g", 2, 2, measurement = effects, n_starts = 2,
+                          seed = 1), class = "latents_bad_stage")
+  paired <- quietly(multilpa(data, vars, "g", 2, 1, n_starts = 2, seed = 1,
+                             local_dependence = "y1:y2"))
+  expect_error(fit_staged(data, vars, "g", 2, 2, measurement = paired, n_starts = 2,
+                          seed = 1, covariance_model = "full"), class = "latents_bad_stage")
+})

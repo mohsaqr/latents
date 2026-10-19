@@ -200,9 +200,10 @@
 #'   one group class, or a fitted `multilpa` model to use as the first stage.
 #'   Its profiles, indicators and measurement options must match the ones
 #'   requested here, and it must have one group class. Fits made with
-#'   `weights`, `centering` or `scaling`, or with `ordinal` or `count`
-#'   indicators, are refused, as are covariance structures other than EEI,
-#'   VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
+#'   `weights`, `centering` or `scaling`, with `ordinal` or `count`
+#'   indicators, with `direct_effects` or with `local_dependence` between
+#'   continuous indicators, are refused, as are covariance structures other
+#'   than EEI, VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
 #' @param n_starts Number of EM starts, used for both stages.
 #' @return A `multilpa` object for the second stage, on which every accessor,
 #'   diagnostic and method works. Its measurement parameters are exactly the
@@ -278,15 +279,20 @@ fit_staged <- function(data, vars, id, n_profiles,
     }
     .multilpa_refuse_noise(measurement, "fit_staged(measurement = )")
     ## The second stage is fitted unweighted, to uncentred indicators, with
-    ## every indicator continuous or categorical. A measurement estimated under
-    ## sampling weights, on group-centred indicators or with ordinal or count
-    ## indicators would be held under a likelihood it was never estimated on:
-    ## centred means applied to raw scores describe no profile at all.
+    ## every indicator continuous or categorical, without direct effects and
+    ## with a diagonal or full covariance. A measurement estimated under
+    ## sampling weights, on group-centred indicators, with ordinal or count
+    ## indicators, with direct effects or with covariances for chosen pairs
+    ## would be held under a likelihood it was never estimated on: centred
+    ## means applied to raw scores, or intercepts at a covariate of zero
+    ## applied to unadjusted scores, describe no profile at all.
     options_used <- c(
       "sampling weights" = .latents_is_weighted(measurement),
       "centred or scaled indicators" = .multilpa_is_transformed(measurement),
       "ordinal or count indicators" =
-        length(c(measurement$ordinal, measurement$count)) > 0L)
+        length(c(measurement$ordinal, measurement$count)) > 0L,
+      "direct effects" = !is.null(measurement$extra_data$direct),
+      "covariances for chosen pairs" = !is.null(measurement$covariance_pattern))
     if (any(options_used)) {
       stop(errorCondition(sprintf(paste(
         "`measurement` was fitted with %s, which the staged second stage does",

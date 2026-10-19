@@ -43,9 +43,10 @@ second stage (default 2); must be at least two.}
 one group class, or a fitted \code{multilpa} model to use as the first stage.
 Its profiles, indicators and measurement options must match the ones
 requested here, and it must have one group class. Fits made with
-\code{weights}, \code{centering} or \code{scaling}, or with \code{ordinal} or \code{count}
-indicators, are refused, as are covariance structures other than EEI,
-VVI, EEE and VVV. Every refusal raises \code{latents_bad_stage}.}
+\code{weights}, \code{centering} or \code{scaling}, with \code{ordinal} or \code{count}
+indicators, with \code{direct_effects} or with \code{local_dependence} between
+continuous indicators, are refused, as are covariance structures other
+than EEI, VVI, EEE and VVV. Every refusal raises \code{latents_bad_stage}.}
 
 \item{variance_model}{\code{"varying"} (the default; profile-specific variances
 or covariance matrices) or \code{"equal"} (shared across profiles).}
