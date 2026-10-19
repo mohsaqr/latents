@@ -95,7 +95,7 @@ test_that("ML standard errors do not depend on the outcome's units", {
   data <- ml_data()
   fit <- ml_fit(data)
   base <- three_step(fit, data, "distal", method = "ml")
-  invisible(lapply(c(1e-4, 1e4), \(scale) {
+  invisible(lapply(c(1e-4, 1e4, 1e8), \(scale) {
     scaled <- three_step(fit, transform(data, distal = distal * scale), "distal",
                          method = "ml")
     expect_equal(scaled$estimate / scale, base$estimate, tolerance = 1e-6)

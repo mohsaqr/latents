@@ -117,7 +117,9 @@
       return(c(state[c("parameters", "value")], list(done = TRUE)))
     }
     hessian <- .multilpa_step_ml_hessian(gradient, state$parameters, scale)
-    direction <- tryCatch(solve(hessian, score), error = function(condition) NULL)
+    # Solved on the coordinates' own scale, like the sandwich's inverse.
+    direction <- tryCatch(scale * solve(hessian * tcrossprod(scale), score * scale),
+                          error = function(condition) NULL)
     if (is.null(direction)) return(c(state[c("parameters", "value")], list(done = FALSE)))
     # Halve the step until the likelihood does not fall.
     candidates <- lapply(2^-(0:20), \(size) state$parameters - size * direction)
@@ -260,11 +262,16 @@
 #' @noRd
 .multilpa_step_ml_influence <- function(fit, values, variance) {
   coordinates <- .multilpa_step_ml_coordinates(fit, variance)
+  scale <- .multilpa_step_ml_scale(fit, variance)
   information <- .multilpa_step_ml_hessian(
     function(parameters) -colSums(.multilpa_step_ml_scores(fit, values, variance,
                                                           parameters)),
-    coordinates, .multilpa_step_ml_scale(fit, variance))
-  inverse <- tryCatch(solve(information), error = function(condition) {
+    coordinates, scale)
+  # Inverted on the coordinates' own scale, D (D H D)^-1 D: in raw units the
+  # means' and log standard deviations' information differ by the outcome's
+  # units squared, and at 1e8 that alone made an identified model singular.
+  inverse <- tryCatch(solve(information * tcrossprod(scale)) * tcrossprod(scale),
+                      error = function(condition) {
     stop(errorCondition(
       "The information of the step-three model is singular; the class means are not identified.",
       class = "latents_singular_information", call = NULL))
