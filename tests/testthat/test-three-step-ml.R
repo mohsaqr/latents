@@ -91,6 +91,18 @@ test_that("shifting the outcome shifts the means; scaling scales means and error
   expect_equal(scaled$variance, base$variance * 100, tolerance = 1e-6)
 })
 
+test_that("ML standard errors do not depend on the outcome's units", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  base <- three_step(fit, data, "distal", method = "ml")
+  invisible(lapply(c(1e-4, 1e4), \(scale) {
+    scaled <- three_step(fit, transform(data, distal = distal * scale), "distal",
+                         method = "ml")
+    expect_equal(scaled$estimate / scale, base$estimate, tolerance = 1e-6)
+    expect_equal(scaled$standard_error / scale, base$standard_error, tolerance = 1e-4)
+  }))
+})
+
 test_that("ML pairs are the differences of its class means", {
   data <- ml_data()
   fit <- ml_fit(data)

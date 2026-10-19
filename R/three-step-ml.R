@@ -109,13 +109,14 @@
   gradient <- function(parameters) {
     -colSums(.multilpa_step_ml_scores(fit, values, variance, parameters))
   }
+  scale <- .multilpa_step_ml_scale(fit, variance)
   newton <- function(state, step) {
     if (isTRUE(state$done)) return(state)
     score <- gradient(state$parameters)
-    if (max(abs(score)) < 1e-9 * (1 + abs(state$value))) {
+    if (max(abs(score * scale)) < 1e-9 * (1 + abs(state$value))) {
       return(c(state[c("parameters", "value")], list(done = TRUE)))
     }
-    hessian <- stats::optimHess(state$parameters, objective, gradient)
+    hessian <- .multilpa_step_ml_hessian(gradient, state$parameters, scale)
     direction <- tryCatch(solve(hessian, score), error = function(condition) NULL)
     if (is.null(direction)) return(c(state[c("parameters", "value")], list(done = FALSE)))
     # Halve the step until the likelihood does not fall.
@@ -190,6 +191,49 @@
   c(fit$means, log(if (identical(variance, "equal")) sds[1L] else sds))
 }
 
+#' The scale of each step-three coordinate
+#'
+#' The means are in the outcome's units and the log standard deviations are
+#' unit free. The finite differences of the Hessian and the stopping rule on
+#' the score are taken on this scale, so neither depends on the outcome's
+#' units: an absolute step of 1e-3 is far wider than the curvature of an
+#' outcome measured in units of 1e-4.
+#' @param fit A step-three fit with `means` and `variances`.
+#' @param variance `"varying"` or `"equal"`.
+#' @return One positive scale per coordinate of `.multilpa_step_ml_coordinates()`.
+#' @noRd
+.multilpa_step_ml_scale <- function(fit, variance) {
+  spread <- sqrt(mean(fit$variances))
+  c(rep(spread, length(fit$means)),
+    rep(1, if (identical(variance, "equal")) 1L else length(fit$means)))
+}
+
+#' The Hessian of the step-three objective from its analytic gradient
+#'
+#' Central differences of the gradient, each coordinate stepped by a fixed
+#' fraction of its own scale, then symmetrized. `stats::optimHess()` steps by
+#' 1e-3 in the coordinates' units, which on an outcome measured in units of
+#' 1e-4 is wider than the curvature it measures (an information of 0.15 for
+#' 365, and standard errors 3000 times too large); with `parscale` it was
+#' still wrong.
+#' @param gradient A function of the coordinates.
+#' @param parameters The point.
+#' @param scale From `.multilpa_step_ml_scale()`.
+#' @return A symmetric matrix.
+#' @noRd
+.multilpa_step_ml_hessian <- function(gradient, parameters, scale) {
+  steps <- 1e-5 * scale
+  columns <- vapply(seq_along(parameters), function(j) {
+    up <- parameters
+    up[j] <- up[j] + steps[j]
+    down <- parameters
+    down[j] <- down[j] - steps[j]
+    (gradient(up) - gradient(down)) / (2 * steps[j])
+  }, numeric(length(parameters)))
+  hessian <- matrix(columns, length(parameters))
+  (hessian + t(hessian)) / 2
+}
+
 #' The step-three log likelihood at given coordinates
 #' @noRd
 .multilpa_step_ml_log_likelihood <- function(fit, values, variance, parameters) {
@@ -216,12 +260,10 @@
 #' @noRd
 .multilpa_step_ml_influence <- function(fit, values, variance) {
   coordinates <- .multilpa_step_ml_coordinates(fit, variance)
-  information <- stats::optimHess(
-    coordinates,
-    function(parameters) -.multilpa_step_ml_log_likelihood(fit, values, variance,
-                                                          parameters),
+  information <- .multilpa_step_ml_hessian(
     function(parameters) -colSums(.multilpa_step_ml_scores(fit, values, variance,
-                                                          parameters)))
+                                                          parameters)),
+    coordinates, .multilpa_step_ml_scale(fit, variance))
   inverse <- tryCatch(solve(information), error = function(condition) {
     stop(errorCondition(
       "The information of the step-three model is singular; the class means are not identified.",
