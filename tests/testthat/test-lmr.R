@@ -24,10 +24,11 @@ test_that("the Imhof tail matches exact weighted chi-square probabilities", {
                    tolerance = 1e-7)
     }))
   }))
-  # A negative weight (an eigenvalue of Vuong's matrix can be negative).
-  skip_if_not_installed("CompQuadForm")
-  expect_equal(.latents_imhof_upper(3, c(2, 1, 0.5, -0.4)),
-               CompQuadForm::imhof(3, c(2, 1, 0.5, -0.4))$Qq, tolerance = 1e-6)
+  # A negative weight (an eigenvalue of Vuong's matrix can be negative): the
+  # same convolution, which holds for either sign of the second weight.
+  invisible(lapply(c(0.5, 3, 9), \(q) {
+    expect_equal(.latents_imhof_upper(q, c(1.5, -0.4)), two(q, 1.5, -0.4), tolerance = 1e-7)
+  }))
 })
 
 test_that("for regular nested models the weights are one per added parameter", {

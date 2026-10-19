@@ -1,4 +1,4 @@
-# latents (development version)
+# latents 0.96.0
 
 ### Direct effects
 
@@ -13,13 +13,12 @@
   standard errors agree to every printed digit. Effects on categorical
   indicators and effects that differ by profile are not yet available.
 
-### Fixes
+### Compatibility
 
-* Bootstrap inference and seed sensitivity refitted a model with
-  covariances for chosen continuous pairs as a full covariance; refits now
-  keep the pattern.
-* `three_step(method = "m")` again means `"modal"`, as in 0.95.12; `"ml"` is
-  taken by its full name.
+* Every call that worked in 0.95.12 gives the same result: the new arguments
+  (`local_dependence`, `direct_effects`, `three_step(variance = )`) come last
+  with defaults that change nothing, and `three_step(method = "m")` still
+  means `"modal"`; `"ml"` is taken by its full name.
 
 ### Local dependence
 
