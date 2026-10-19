@@ -39,6 +39,9 @@ get_results(
 )
 
 # S3 method for class 'latents_regression_enumeration'
+summary(object, ...)
+
+# S3 method for class 'latents_regression_enumeration'
 print(x, digits = 4L, ...)
 ```
 
@@ -96,6 +99,10 @@ print(x, digits = 4L, ...)
 
   `"fit"` for the comparison table, `"model"` for one fitted model.
 
+- object:
+
+  A `latents_regression_enumeration` object.
+
 - digits:
 
   Significant digits.
@@ -115,7 +122,14 @@ separated or reversed-likelihood replicates). The test columns are `NA`
 where the `k - 1` or `k` class model is missing or failed, and the
 p-value is `NA` if any requested replicate fails validation.
 `get_results(x, "model", n_classes = , n_group_classes = )` returns one
-fitted model.
+fitted model. [`summary()`](https://rdrr.io/r/base/summary.html) returns
+the same table as
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html).
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws AIC, BIC,
+SABIC and ICL across the classes (see
+[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+for its other views, and `plot_views(x)` for the views a regression grid
+offers).
 
 ## Conditions
 

@@ -17,7 +17,7 @@ the n_profiles column."><meta property="og:image" content="https://pak.dynasite.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@ the n_profiles column."><meta property="og:image" content="https://pak.dynasite.
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -211,7 +212,27 @@ indicators.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- tree ------------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree       level from_candidate from_class from_share to_candidate to_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes1          1     1.0000     classes2        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes1          1     1.0000     classes2        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          1     0.8993     classes3        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          2     0.1007     classes3        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          1     0.8993     classes3        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          2     0.1007     classes3        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          1     0.8993     classes3        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          2     0.1007     classes3        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  to_share      mass share_of_from share_of_to</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.89935 8.993e-01     0.8993466   1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.10065 1.007e-01     0.1006534   1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 6.947e-01     0.7724755   0.8734857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 1.006e-01     0.9996946   0.1265143</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 7.181e-02     0.0798445   0.9997967</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 1.460e-05     0.0001451   0.0002033</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.328e-01     0.1476800   0.9998785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.614e-05     0.0001603   0.0001215</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 </code></pre></div>
     </div>

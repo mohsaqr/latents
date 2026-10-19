@@ -19,7 +19,7 @@ unreplicated fits are reported, not silently selected."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,6 +42,7 @@ unreplicated fits are reported, not silently selected."><meta property="og:image
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -383,7 +384,19 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      NA fewer than three candidates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      NA fewer than three candidates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- tree ------------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree       level        from_candidate from_class from_share</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   EEI individuals profiles1_groups1_EEI          1          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   EEI individuals profiles1_groups1_EEI          1          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVI individuals profiles1_groups1_VVI          1          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVI individuals profiles1_groups1_VVI          1          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           to_candidate to_class to_share   mass share_of_from share_of_to</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        1   0.8231 0.8231        0.8231           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        2   0.1769 0.1769        0.1769           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single level, crossing class counts with two named structures:</span></span></span>
@@ -502,7 +515,32 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  three candidates: stability not assessed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  three candidates: stability not assessed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- tree ------------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  tree       level from_candidate from_class from_share  to_candidate to_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  to_share      mass share_of_from share_of_to</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3333 3.333e-01     3.333e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.6667 6.667e-01     6.667e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3333 3.333e-01     1.000e+00   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3333 4.220e-06     6.330e-06   1.266e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.2992 2.274e-17     6.822e-17   7.601e-17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.2992 2.992e-01     4.488e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3675 2.016e-21     6.047e-21   5.485e-21</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3675 3.675e-01     5.512e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.3333 3.333e-01     3.333e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.6667 6.667e-01     6.667e-01   1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 6 more rows.  get_results(x, what = "tree")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 </code></pre></div>
     </div>

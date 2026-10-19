@@ -19,9 +19,10 @@ articles:
   articles/mixture-regression: mixture-regression.html
   articles/model-selection: model-selection.html
   articles/trajectory-classes: trajectory-classes.html
+  articles/tree-plot: tree-plot.html
   articles/workflow-lca: workflow-lca.html
   articles/workflow-lpa: workflow-lpa.html
-last_built: 2026-10-18T16:44Z
+last_built: 2026-10-19T14:02Z
 urls:
   reference: https://pak.dynasite.org/latents/reference
   article: https://pak.dynasite.org/latents/articles

@@ -75,6 +75,7 @@ models).
 - [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   [`as.data.frame(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`summary(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   : Compare mixture regressions with different numbers of classes
 - [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
@@ -108,6 +109,7 @@ Three-step analysis with a correction for classification error.
   [`plot(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
   [`plot(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
   [`plot(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
   [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
   [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
   [`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md)

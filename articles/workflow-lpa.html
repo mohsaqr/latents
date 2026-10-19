@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -254,7 +255,32 @@ are:</p>
 <span><span class="co">#&gt;        NA                 &lt;NA&gt;     NA the criterion does not fall along this line</span></span>
 <span><span class="co">#&gt;        NA                 &lt;NA&gt;     NA the criterion does not fall along this line</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 5 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
+<span><span class="co">#&gt; -- tree ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  tree       level from_candidate from_class from_share to_candidate to_class to_share</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles3          1     0.4327    profiles4        1   0.2976</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles3          2     0.2679    profiles4        1   0.2976</span></span>
+<span><span class="co">#&gt;      mass share_of_from share_of_to</span></span>
+<span><span class="co">#&gt;  0.310248       0.31025     1.00000</span></span>
+<span><span class="co">#&gt;  0.689752       0.68975     1.00000</span></span>
+<span><span class="co">#&gt;  0.046280       0.14917     0.10696</span></span>
+<span><span class="co">#&gt;  0.386387       0.56018     0.89304</span></span>
+<span><span class="co">#&gt;  0.010081       0.03249     0.03763</span></span>
+<span><span class="co">#&gt;  0.257841       0.37382     0.96237</span></span>
+<span><span class="co">#&gt;  0.253888       0.81834     0.84796</span></span>
+<span><span class="co">#&gt;  0.045523       0.06600     0.15204</span></span>
+<span><span class="co">#&gt;  0.051486       0.11900     0.17302</span></span>
+<span><span class="co">#&gt;  0.007563       0.02823     0.02542</span></span>
+<span><span class="co">#&gt;    ... 60 more rows.  get_results(x, what = "tree")</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; 6 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
 <span><span class="co">#&gt; of them whole, and get_results(x, what = "all") returns every one.</span></span></code></pre></div>
 <p>The BIC is lowest for one profile, and the two-profile model is 4.7
 points higher; the information criteria therefore do not decide between

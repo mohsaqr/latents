@@ -331,7 +331,19 @@ summary(candidates)
 #>      NA fewer than three candidates
 #>      NA fewer than three candidates
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level        from_candidate from_class from_share
+#>   EEI individuals profiles1_groups1_EEI          1          1
+#>   EEI individuals profiles1_groups1_EEI          1          1
+#>   VVI individuals profiles1_groups1_VVI          1          1
+#>   VVI individuals profiles1_groups1_VVI          1          1
+#>           to_candidate to_class to_share   mass share_of_from share_of_to
+#>  profiles2_groups1_EEI        1   0.8231 0.8231        0.8231           1
+#>  profiles2_groups1_EEI        2   0.1769 0.1769        0.1769           1
+#>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1
+#>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 
 # Single level, crossing class counts with two named structures:
@@ -450,6 +462,31 @@ summary(single)
 #>  three candidates: stability not assessed
 #>  three candidates: stability not assessed
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level from_candidate from_class from_share  to_candidate to_class
+#>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        1
+#>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        2
+#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        1
+#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        1
+#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        2
+#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        2
+#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        3
+#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        3
+#>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        1
+#>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        2
+#>  to_share      mass share_of_from share_of_to
+#>    0.3333 3.333e-01     3.333e-01   1.000e+00
+#>    0.6667 6.667e-01     6.667e-01   1.000e+00
+#>    0.3333 3.333e-01     1.000e+00   1.000e+00
+#>    0.3333 4.220e-06     6.330e-06   1.266e-05
+#>    0.2992 2.274e-17     6.822e-17   7.601e-17
+#>    0.2992 2.992e-01     4.488e-01   1.000e+00
+#>    0.3675 2.016e-21     6.047e-21   5.485e-21
+#>    0.3675 3.675e-01     5.512e-01   1.000e+00
+#>    0.3333 3.333e-01     3.333e-01   1.000e+00
+#>    0.6667 6.667e-01     6.667e-01   1.000e+00
+#>    ... 6 more rows.  get_results(x, what = "tree")
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

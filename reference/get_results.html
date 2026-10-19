@@ -13,7 +13,7 @@ the object and are listed under Tables.'><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@ the object and are listed under Tables.'><meta property="og:image" content="http
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -369,6 +370,25 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for <code>knee_without_largest</code> and <code>stable</code>; otherwise they are <code>NA</code> and
 <code>note</code> gives the reason.</p></dd>
+
+<dt><code>"tree"</code></dt>
+<dd><p>The flows of <code><a href="latents-plots.html">plot_tree()</a></code>, taking its arguments
+<code>n_group_classes</code>, <code>n_profiles</code>, <code>model</code>, <code>candidates</code>, <code>from</code>, <code>to</code>
+and <code>level</code>
+(default <code>"individuals"</code>). One row per pair of classes in consecutive
+rows of each tree: <code>tree</code> (the tree's name, as in the plot list),
+<code>level</code>, <code>from_candidate</code>, <code>from_class</code>, <code>from_share</code>, <code>to_candidate</code>,
+<code>to_class</code>, <code>to_share</code>, <code>mass</code> (the share of all units the two classes
+share, the sum over units of the product of their posterior
+probabilities, weighted by sampling weights at the individual level),
+<code>share_of_from</code> and <code>share_of_to</code> (<code>mass</code> as a part of each class).
+Every pair is listed, including those that share no mass. Units are
+the rows and groups the fit counts (see <code>drop_empty</code>), weighted by
+their sampling weights at both levels. A grid with no tree raises
+<code>latents_no_tree</code>, a fit with a noise component
+<code>latents_unsupported_noise</code>, and <code>what = "all"</code> leaves the table out.
+The summary of a grid carries the default table only, without these
+arguments.</p></dd>
 
 <dt><code>"comparison"</code>, <code>"classification"</code></dt>
 <dd><p>A <code><a href="compare_models.html">compare_models()</a></code> result.

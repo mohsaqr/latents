@@ -23,7 +23,7 @@ is the number of replicates requested."><meta property="og:image" content="https
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,7 @@ is the number of replicates requested."><meta property="og:image" content="https
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -114,6 +115,9 @@ is the number of replicates requested.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'latents_regression_enumeration'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'latents_regression_enumeration'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, digits <span class="op">=</span> <span class="fl">4L</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -172,6 +176,10 @@ is restored afterwards.</p></dd>
 model.</p></dd>
 
 
+<dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
+<dd><p>A <code>latents_regression_enumeration</code> object.</p></dd>
+
+
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Significant digits.</p></dd>
 
@@ -191,7 +199,10 @@ test columns are <code>NA</code> where the <code>k - 1</code> or <code>k</code> 
 or failed, and the p-value is <code>NA</code> if any requested replicate fails
 validation.
 <code>get_results(x, "model", n_classes = , n_group_classes = )</code> returns one
-fitted model.</p>
+fitted model. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> returns the same table as <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>.
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws AIC, BIC, SABIC and ICL across the classes (see
+<code><a href="latents-plots.html">plot_enumeration()</a></code> for its other views, and <code>plot_views(x)</code> for the
+views a regression grid offers).</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>

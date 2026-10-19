@@ -502,10 +502,14 @@ plot_enumeration(models, what = "bic_groups")
 The clustering tree (Zappia and Oshlack, 2018) shows how the profiles
 divide as their number increases: each profile of a model is linked to
 the profiles of the next larger model that receive its observations.
+Each number of group classes has its own tree, selected with
+`n_group_classes`; without it, every tree is returned as a separate
+plot. The guide *Tree plot* covers the comparison of solutions at one
+number of profiles and the tree of group classes.
 
 ``` r
 
-plot_tree(models)
+plot_tree(models, n_group_classes = 1)
 ```
 
 ![](class-enumeration_files/figure-html/plot-tree-1.png)

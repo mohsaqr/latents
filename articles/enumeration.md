@@ -489,11 +489,14 @@ plot_enumeration(models, what = "bic_groups")
 
 The tree plots how the profiles divide as more are added. Each profile
 of a model is linked to the profiles of the next model that receive its
-observations.
+observations. Each number of group classes has its own tree, and
+`n_group_classes` selects one; `plot_tree(models)` returns them all, one
+plot each. The guide *Tree plot* compares solutions at one number of
+profiles and plots the tree of group classes.
 
 ``` r
 
-plot_tree(models)
+plot_tree(models, n_group_classes = 1)
 ```
 
 ![](enumeration_files/figure-html/plot-tree-1.png)

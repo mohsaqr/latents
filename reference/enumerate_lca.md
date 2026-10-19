@@ -148,6 +148,26 @@ summary(models)
 #>  the criterion does not fall along this line
 #>  the criterion does not fall along this line
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level from_candidate from_class from_share to_candidate to_class
+#>  tree individuals       classes1          1     1.0000     classes2        1
+#>  tree individuals       classes1          1     1.0000     classes2        2
+#>  tree individuals       classes2          1     0.8993     classes3        1
+#>  tree individuals       classes2          2     0.1007     classes3        1
+#>  tree individuals       classes2          1     0.8993     classes3        2
+#>  tree individuals       classes2          2     0.1007     classes3        2
+#>  tree individuals       classes2          1     0.8993     classes3        3
+#>  tree individuals       classes2          2     0.1007     classes3        3
+#>  to_share      mass share_of_from share_of_to
+#>   0.89935 8.993e-01     0.8993466   1.0000000
+#>   0.10065 1.007e-01     0.1006534   1.0000000
+#>   0.79535 6.947e-01     0.7724755   0.8734857
+#>   0.79535 1.006e-01     0.9996946   0.1265143
+#>   0.07182 7.181e-02     0.0798445   0.9997967
+#>   0.07182 1.460e-05     0.0001451   0.0002033
+#>   0.13283 1.328e-01     0.1476800   0.9998785
+#>   0.13283 1.614e-05     0.0001603   0.0001215
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

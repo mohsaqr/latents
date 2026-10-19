@@ -379,9 +379,30 @@ analysis.
 
   The requested panel has no rows to draw.
 
+- `latents_no_tree`:
+
+  A tree would have fewer than two rows, or the group level of a grid
+  with one group class was asked for. Also of class
+  `latents_nothing_to_plot`; `get_results(x, "all")` leaves the `"tree"`
+  table out.
+
+- `latents_unsupported_view`:
+
+  A grid verb
+  ([`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_selection()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  or [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a grid)
+  was asked for a view that this kind of grid cannot draw, such as the
+  tree of a group-class family or regression grid. The message gives the
+  reason and the views the grid offers; `plot_views(x)` lists them. Also
+  of class `latents_bad_argument`.
+
 - `latents_unknown_category`, `latents_unknown_criterion`:
 
   A named category or information criterion does not exist in the fit.
+  An unknown criterion of a grid is also of class
+  `latents_bad_argument`.
 
 - `latents_bad_scale`:
 

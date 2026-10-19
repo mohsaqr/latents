@@ -17,7 +17,7 @@ ggplot is returned invisibly.'><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@ ggplot is returned invisibly.'><meta property="og:image" content="https://pak.dy
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -66,7 +67,7 @@ ggplot is returned invisibly.'><meta property="og:image" content="https://pak.dy
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Plot latents results</h1>
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-compare.R" class="external-link"><code>R/additive-compare.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-methods.R" class="external-link"><code>R/additive-methods.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/compare-models.R" class="external-link"><code>R/compare-models.R</code></a>, and 11 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-compare.R" class="external-link"><code>R/additive-compare.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-methods.R" class="external-link"><code>R/additive-methods.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/compare-models.R" class="external-link"><code>R/compare-models.R</code></a>, and 12 more</small>
       <div class="d-none name"><code>latents-plots.Rd</code></div>
     </div>
 
@@ -145,6 +146,20 @@ ggplot is returned invisibly.</p>
 <span><span class="co"># S3 method for class 'multilpa_lta'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, main <span class="op">=</span> <span class="cn">NULL</span>, subtitle <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># S3 method for class 'latents_regression_enumeration'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aic"</span>, <span class="st">"bic"</span>, <span class="st">"sabic"</span>, <span class="st">"icl"</span><span class="op">)</span>,</span>
+<span>  combine <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mark_minimum <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cutoff <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  using <span class="op">=</span> <span class="st">"bic"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># S3 method for class 'latents_mixture_regression'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
@@ -202,7 +217,19 @@ ggplot is returned invisibly.</p>
 <span></span>
 <span><span class="fu">plot_transitions</span><span class="op">(</span><span class="va">x</span>, main <span class="op">=</span> <span class="cn">NULL</span>, subtitle <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plot_tree</span><span class="op">(</span><span class="va">x</span>, main <span class="op">=</span> <span class="cn">NULL</span>, subtitle <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu">plot_tree</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  n_group_classes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  n_profiles <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  candidates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  from <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  to <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"individuals"</span>, <span class="st">"groups"</span><span class="op">)</span>,</span>
+<span>  combine <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plot_selection</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
@@ -254,7 +281,8 @@ ggplot is returned invisibly.</p>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cutoff <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span>  using <span class="op">=</span> <span class="st">"bic_groups"</span></span>
+<span>  using <span class="op">=</span> <span class="st">"bic_groups"</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_covariates'</span></span>
@@ -274,7 +302,7 @@ ggplot is returned invisibly.</p>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plot_views</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">plot_views</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'latents_pooled'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
@@ -308,21 +336,31 @@ ggplot is returned invisibly.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>The object to plot: a profile, class or transition model for the
-named fit views and <code>plot_diagnostics()</code>; an enumeration from
-<code><a href="enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="enumerate_lpa.html">enumerate_lpa()</a></code> or <code><a href="enumerate_lca.html">enumerate_lca()</a></code> for
-<code>plot_enumeration()</code>, <code>plot_selection()</code> and <code>plot_tree()</code>; a transition
-fit from <code><a href="lta.html">lta()</a></code> for <code>plot_transitions()</code>. A general <code><a href="lta.html">lta()</a></code> fit
-(occasion-varying transitions, covariates, mover-stayer, second order,
-weights, ordinal or count indicators) draws only its transition matrix,
-with <code>plot_transitions()</code> or <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>. Transition and group-class family
-grids plot with <code>plot(x, what = )</code>.</p></dd>
+<dd><p>The object to plot. For <code>plot_profiles()</code>, <code>plot_responses()</code>,
+<code>plot_sequences()</code>, <code>plot_prevalence()</code>, <code>plot_diagnostics()</code> and
+<code>plot_transitions()</code>, any fitted model of the package: profile, class
+and transition models from <code><a href="multilpa.html">multilpa()</a></code>, <code><a href="multilca.html">multilca()</a></code>, <code><a href="lpa.html">lpa()</a></code>, <code><a href="lca.html">lca()</a></code>
+and <code><a href="lta.html">lta()</a></code> (with or without covariates) take the views described
+under <code>what</code> and <em>What <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws</em>; growth
+mixtures and mixture regressions from <code><a href="mixture_regression.html">mixture_regression()</a></code>, additive,
+dispersion and cross-level fits from <code><a href="multilpa.html">multilpa()</a></code>, pooled imputations
+from <code><a href="pool_imputations.html">pool_imputations()</a></code> and general <code><a href="lta.html">lta()</a></code> fits (occasion-varying
+transitions, covariates, mover-stayer, second order, weights, ordinal or
+count indicators) take the views listed under <em>Named plot functions on
+other fitted models</em>. For <code>plot_enumeration()</code>, <code>plot_selection()</code> and
+<code>plot_tree()</code>, a grid from <code><a href="enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="enumerate_lpa.html">enumerate_lpa()</a></code>,
+<code><a href="enumerate_lca.html">enumerate_lca()</a></code> or <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code>; each refuses the views
+that grid does not offer (see above). Optionally a grid for
+<code>plot_views()</code>.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>The view to draw. <code>"all"</code> draws every view of that function
 that the model supports, as a list, and names in a message any it cannot
-draw. For <code>plot_profiles()</code>: <code>"lines"</code> (default), <code>"bars"</code> (means from
+draw. On fitted models other than profile, class and transition models,
+<code>plot_profiles()</code> draws only <code>"lines"</code> and <code>plot_diagnostics()</code> only
+<code>"posteriors"</code>, where that model has the view (see <em>Named plot functions
+on other fitted models</em>). For <code>plot_profiles()</code>: <code>"lines"</code> (default), <code>"bars"</code> (means from
 zero with 95% intervals), <code>"heatmap"</code> (means in observed standard
 deviations, or the response probabilities of categorical indicators),
 <code>"raincloud"</code> (each indicator's distribution by assigned profile),
@@ -344,8 +382,10 @@ and the other individual-level views are refused with
 <code>plot_enumeration()</code>.</p>
 <p>For <code>plot_enumeration()</code>, three kinds of view; information criteria
 cannot be requested together with the other two:</p><ul><li><p>Information criteria: criterion columns of <code>as.data.frame(x)</code>, such as
-<code>"bic_groups"</code>, or <code>"all"</code>. The default draws AIC, both BICs and ICL
-over individuals.</p></li>
+<code>"bic_groups"</code>, or <code>"all"</code>. On a profile or class grid the default
+draws AIC, both BICs and ICL over individuals; on a transition or
+family grid AIC, BIC and BIC over individuals; on a regression grid
+AIC, BIC, SABIC and ICL.</p></li>
 <li><p>Classification quality across the candidates, at each level with two
 or more classes: <code>"entropy"</code> (relative entropy), <code>"avepp"</code> (the lowest
 AvePP, with the cutoff dashed) or <code>"diagnostics"</code> (both).</p></li>
@@ -369,17 +409,25 @@ own.</p></dd>
 <dd><p>The former name of <code>what</code> for enumeration criteria. On a
 profile grid it is used alone or with <code>what = "enumeration"</code>; transition
 and group-class family grids take <code>"bic"</code>, <code>"aic"</code> or
-<code>"bic_individual"</code>.</p></dd>
+<code>"bic_individual"</code> (or a unique abbreviation, such as <code>"bic_i"</code>), or any
+other view of the grid.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Not used. Profile, class and transition models and enumerations
-refuse unknown arguments with <code>latents_bad_argument</code>; the other methods
-ignore them with a <code>latents_unused_argument</code> warning (see <em>Errors</em>).</p></dd>
+<dd><p>With <code>what = "tree"</code> (on <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of an enumeration or on
+<code>plot_enumeration()</code>), the arguments of <code>plot_tree()</code>. On <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a
+transition or group-class family grid, also <code>combine</code>, <code>labels</code>,
+<code>mark_minimum</code>, <code>cutoff</code> and <code>using</code>, passed to <code>plot_enumeration()</code>.
+Otherwise not used. Profile, class and transition models and enumerations refuse
+unknown arguments with <code>latents_bad_argument</code>; the other methods ignore
+them with a <code>latents_unused_argument</code> warning (see <em>Errors</em>).</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
-<dd><p>Confidence level for additive, mixture-regression and growth
+<dd><p>For <code>plot_tree()</code>, <code>"individuals"</code> (default; the cases
+divided into profiles or classes) or <code>"groups"</code> (the groups divided into
+group classes). Otherwise the confidence level for additive,
+mixture-regression and growth
 views (default 0.95). On pooled plots, the former name of <code>what</code>:
 <code>"profile"</code>, <code>"group"</code> or <code>"measurement"</code>.</p></dd>
 
@@ -421,6 +469,37 @@ persons around the class curve, from 0 (hidden) to less than 1; default
 0.8.</p></dd>
 
 
+<dt id="arg-combine">combine<a class="anchor" aria-label="anchor" href="#arg-combine"></a></dt>
+<dd><p><code>TRUE</code> (default) draws several criteria as panels of one
+plot; <code>FALSE</code> returns one plot per criterion. For <code>plot_tree()</code> (and
+<code>what = "tree"</code>), <code>FALSE</code> (default) returns one plot per tree and <code>TRUE</code>
+draws every tree as a panel of one plot.</p></dd>
+
+
+<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
+<dd><p><code>TRUE</code> (default) labels each series directly; <code>FALSE</code> uses a
+legend. On sequence views, <code>TRUE</code> groups the rows by group class under
+labelled strips.</p></dd>
+
+
+<dt id="arg-mark-minimum">mark_minimum<a class="anchor" aria-label="anchor" href="#arg-mark-minimum"></a></dt>
+<dd><p><code>TRUE</code> (default) circles each criterion's lowest value
+among converged candidates, without selecting a model. Information
+criteria only.</p></dd>
+
+
+<dt id="arg-cutoff">cutoff<a class="anchor" aria-label="anchor" href="#arg-cutoff"></a></dt>
+<dd><p>For <code>plot_enumeration(what = "avepp")</code>, <code>"diagnostics"</code> or
+<code>"selection"</code>, the AvePP cutoff drawn as a dashed line (default 0.8).</p></dd>
+
+
+<dt id="arg-using">using<a class="anchor" aria-label="anchor" href="#arg-using"></a></dt>
+<dd><p>For <code>plot_enumeration(what = "deltas")</code>, <code>"heatmap"</code> or
+<code>"selection"</code>, the information criterion used. When not given, a profile
+or class grid uses <code>"bic_groups"</code> and the other grids <code>"bic"</code>;
+<code>"smallest"</code> and <code>"trust"</code> use none.</p></dd>
+
+
 <dt id="arg-predictor">predictor<a class="anchor" aria-label="anchor" href="#arg-predictor"></a></dt>
 <dd><p>For the fitted view of a mixture regression, a numeric
 predictor in the formula. <code>NULL</code> (default) uses the first numeric
@@ -447,12 +526,6 @@ subtitle states why there are none. They are the <code>conf_low</code> and
 is formed on the logit scale.</p></dd>
 
 
-<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p><code>TRUE</code> (default) labels each series directly; <code>FALSE</code> uses a
-legend. On sequence views, <code>TRUE</code> groups the rows by group class under
-labelled strips.</p></dd>
-
-
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>The data the model was fitted to, used only to compute the
 intervals. <code>NULL</code> (default) uses the data stored in the fit.</p></dd>
@@ -469,26 +542,34 @@ assigned profile in its cell when the cells are large enough for the
 text.</p></dd>
 
 
-<dt id="arg-using">using<a class="anchor" aria-label="anchor" href="#arg-using"></a></dt>
-<dd><p>For <code>plot_enumeration(what = "deltas")</code>, <code>"heatmap"</code> or
-<code>"selection"</code>, the information criterion used (default
-<code>"bic_groups"</code>); <code>"smallest"</code> and <code>"trust"</code> use none.</p></dd>
+<dt id="arg-n-group-classes-n-profiles-model">n_group_classes, n_profiles, model<a class="anchor" aria-label="anchor" href="#arg-n-group-classes-n-profiles-model"></a></dt>
+<dd><p>For <code>plot_tree()</code>, the trees and
+rows to draw. At the individual level a tree runs down the numbers of
+profiles (classes) at one number of group classes and one structure:
+<code>n_group_classes</code> and <code>model</code> choose trees, <code>n_profiles</code> the rows. At the
+group level a tree runs down the numbers of group classes at one number
+of profiles: <code>n_profiles</code> and <code>model</code> choose trees, <code>n_group_classes</code> the
+rows. <code>NULL</code> (default) keeps every converged candidate. A single count
+for the rows (<code>n_profiles</code> at the individual level, <code>n_group_classes</code> at
+the group level) is one level of every tree, and the plot compares that
+level's solutions instead: <code>plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))</code> draws the four-profile solution at two and at
+five group classes as two rows, each class in the colour of the class it
+matches in the first row.</p></dd>
 
 
-<dt id="arg-cutoff">cutoff<a class="anchor" aria-label="anchor" href="#arg-cutoff"></a></dt>
-<dd><p>For <code>plot_enumeration(what = "avepp")</code>, <code>"diagnostics"</code> or
-<code>"selection"</code>, the AvePP cutoff drawn as a dashed line (default 0.8).</p></dd>
+<dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
+<dd><p>For <code>plot_tree()</code>, two or more candidate names drawn as
+the rows of one tree, in the order given, to compare those solutions.
+Not combined with <code>n_group_classes</code>, <code>n_profiles</code> or <code>model</code>.</p></dd>
 
 
-<dt id="arg-combine">combine<a class="anchor" aria-label="anchor" href="#arg-combine"></a></dt>
-<dd><p><code>TRUE</code> (default) draws several criteria as panels of one
-plot; <code>FALSE</code> returns one plot per criterion.</p></dd>
-
-
-<dt id="arg-mark-minimum">mark_minimum<a class="anchor" aria-label="anchor" href="#arg-mark-minimum"></a></dt>
-<dd><p><code>TRUE</code> (default) circles each criterion's lowest value
-among converged candidates, without selecting a model. Information
-criteria only.</p></dd>
+<dt id="arg-from-to">from, to<a class="anchor" aria-label="anchor" href="#arg-from-to"></a></dt>
+<dd><p>For <code>plot_tree()</code>, two solutions to compare as a two-row
+tree, each named by its class counts <code>c(n_profiles, n_group_classes)</code>
+(one count means one group class) or by its name:
+<code>plot_tree(x, from = c(3, 3), to = c(4, 3))</code>. Given together, and not
+with <code>candidates</code>. On a grid crossed with covariance structures, <code>model</code>
+names the structure of both.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -498,8 +579,15 @@ on a named plot function), <code>plot_enumeration(combine = FALSE)</code> with
 several criteria or classification-quality measures, and enumeration
 views when more than one is requested (including <code>"selection"</code>) return
 a <code>latents_plots</code> list of ggplot objects, which draws each one when
-printed. <code>plot_views()</code> returns a <code>data.frame</code> with one row per view:
-<code>type</code> (the value for <code>what</code>), <code>group</code> and <code>description</code>.</p>
+printed, pausing between plots on an interactive screen device.
+<code>plot_tree()</code> and <code>what = "tree"</code> return one ggplot for a single tree or
+<code>combine = TRUE</code>, and otherwise a <code>latents_plots</code> list named by tree.
+<code>plot_views()</code> returns a <code>data.frame</code> with one row per view: <code>type</code> (the
+value for <code>what</code>), <code>group</code> and <code>description</code>. <code>plot_views(x)</code> of a grid
+returns one row per <code>what</code> value of that grid: <code>type</code>, <code>group</code>
+(<code>"criteria"</code>, <code>"quality"</code>, <code>"selection"</code> or <code>"tree"</code>), <code>supported</code>
+(<code>TRUE</code> when the grid offers it), <code>description</code> and <code>reason</code> (why it is
+not offered; <code>NA</code> when it is).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -513,11 +601,30 @@ occasion), <code>plot_prevalence()</code> (profile shares within each group clas
 (transition matrix), <code>plot_enumeration()</code> (information criteria,
 classification quality and model-selection evidence across a grid),
 <code>plot_selection()</code> (the model-selection evidence of a grid) and
-<code>plot_tree()</code> (how profiles split as more are added). Each draws the same
-plot as the matching <code>plot(x, what = )</code>. <code>plot_views()</code> lists the views of
+<code>plot_tree()</code> (how profiles split as more are added, one plot per tree, or
+how chosen solutions correspond). Each draws the same
+plot as the matching <code>plot(x, what = )</code>. The fit functions take every
+fitted model of the package; for growth mixtures, mixture regressions,
+additive and dispersion fits, cross-level fits, pooled imputations and
+general <code><a href="lta.html">lta()</a></code> fits they draw the view of that fit's own <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> that
+shows the same quantity, and refuse the rest (see <em>Named plot functions on
+other fitted models</em>). <code>plot_views()</code> lists the views of
 a fitted model, and <code>"enumeration"</code> and <code>"tree"</code> for a grid, with a
-one-line description of each; the other grid views are listed under
-<code>what</code> below.</p>
+one-line description of each; <code>plot_views(grid)</code> lists every view of that
+grid, whether it is offered, and why not.</p>
+<p>The grid functions take every grid of the package: profile and class grids
+(<code><a href="enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="enumerate_lpa.html">enumerate_lpa()</a></code>, <code><a href="enumerate_lca.html">enumerate_lca()</a></code>), transition
+grids (<code>enumerate_classes(time = )</code>), group-class family grids
+(<code>enumerate_classes(family = )</code>) and regression grids
+(<code><a href="enumerate_regressions.html">enumerate_regressions()</a></code>). Each kind offers the views its candidates
+carry:</p><table class="table table"><tr><td>View</td><td>Profiles, classes</td><td>Transitions</td><td>Families</td><td>Regressions</td></tr><tr><td>criteria</td><td>14 columns</td><td>aic, bic, bic_individual</td><td>aic, bic,
+bic_individual</td><td>aic, bic, bic_rows, sabic, icl</td></tr><tr><td>entropy, avepp, diagnostics</td><td>yes</td><td>yes</td><td>group classes</td><td>yes</td></tr><tr><td>deltas, heatmap, smallest, trust, selection</td><td>yes</td><td>yes</td><td>no</td><td>yes</td></tr><tr><td>tree</td><td>yes</td><td>yes</td><td>no</td><td>no</td></tr></table><p>A family grid's candidates have group classes and no profiles, so its
+criteria and quality are drawn against the number of group classes, and
+the views laid out by profiles and group classes, and the tree, are not
+drawn. A regression grid's candidates are not named, so it has no tree; its
+smallest-class view reads the <code>smallest_share</code> of its table, and its trust
+view has no boundary column to read. A view a grid does not offer is
+refused with <code>latents_unsupported_view</code>.</p>
 <p>Each profile keeps the same order (largest first), Okabe-Ito colour and
 point shape in every view. The plots require ggplot2, which is a suggested
 package.</p>
@@ -544,26 +651,33 @@ categorical indicator they omit.</p></dd>
 <code>"sizes"</code>, <code>"entropy"</code>, <code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>, without
 <code>statistic</code>; the profile, bar and response views draw the 95%
 intervals of the transition fit's <code><a href="parameter_inference.html">parameter_inference()</a></code> (<code>intervals</code>).
-A general <code><a href="lta.html">lta()</a></code> fit takes no <code>what</code> and draws its transition matrix.</p></dd>
+A general <code><a href="lta.html">lta()</a></code> fit takes no <code>what</code> and draws its transition matrix,
+which <code>plot_transitions()</code> draws too.</p></dd>
 
 <dt>Enumerations</dt>
 <dd><p>Criterion columns or <code>"all"</code> (with <code>combine</code>,
-<code>labels</code> and <code>mark_minimum</code>), <code>"tree"</code>, the classification-quality
+<code>labels</code> and <code>mark_minimum</code>), <code>"tree"</code> (with the arguments of
+<code>plot_tree()</code>), the classification-quality
 views <code>"entropy"</code>, <code>"avepp"</code> and <code>"diagnostics"</code> (with <code>cutoff</code>), and
 the model-selection views <code>"deltas"</code> and <code>"heatmap"</code> (which use the
 criterion in <code>using</code>), <code>"smallest"</code> and <code>"trust"</code>; <code>"selection"</code> draws
 those four and <code>"diagnostics"</code>. Transition and group-class family
-grids take <code>"bic"</code> (default), <code>"aic"</code> or <code>"bic_individual"</code>.</p></dd>
+grids draw <code>"bic"</code> by default, as in latents 0.9.21, and take every
+view they offer (the table under <em>Description</em>); a regression grid
+draws its default criteria and takes the same arguments as
+<code>plot_enumeration()</code>.</p></dd>
 
 <dt>Additive fits</dt>
 <dd><p><code>"means"</code> (default; each group class's mean with
 its Wald interval), <code>"variances"</code> (within- and between-group
 variances) or <code>"intercepts"</code> (each group's posterior intercept);
-<code>level</code> sets the interval.</p></dd>
+<code>level</code> sets the interval. <code>plot_profiles()</code> draws <code>"means"</code>.</p></dd>
 
 <dt>Cross-level fits</dt>
 <dd><p><code>"profiles"</code> (default), <code>"group_means"</code> or
-<code>"composition"</code> (profile shares within each group class).</p></dd>
+<code>"composition"</code> (profile shares within each group class).
+<code>plot_profiles()</code> draws <code>"profiles"</code> and <code>plot_prevalence()</code>
+<code>"composition"</code>.</p></dd>
 
 <dt>Mixture regressions</dt>
 <dd><p><code>"fitted"</code> (default: the outcome against a
@@ -571,7 +685,9 @@ numeric <code>predictor</code>, one line per class), <code>"coefficients"</code>
 <code>"posteriors"</code>; <code>level</code> sets the intervals. Fits that classify persons
 (<code>class_level = "group"</code>) default to <code>"trajectories"</code> (unless
 <code>predictor</code> is given) and also take <code>"individuals"</code> and
-<code>"classification"</code>, as growth mixtures do.</p></dd>
+<code>"classification"</code>, as growth mixtures do. <code>plot_profiles()</code> draws
+<code>"fitted"</code>, or <code>"trajectories"</code> for fits that classify persons, and
+<code>plot_diagnostics(what = "posteriors")</code> draws <code>"posteriors"</code>.</p></dd>
 
 <dt>Growth mixtures</dt>
 <dd><p><code>"trajectories"</code> (default: class mean
@@ -579,12 +695,16 @@ trajectories with bands; <code>facet</code>, <code>max_persons</code>, <code>spr
 <code>"individuals"</code> (<code>persons</code>: a number or identifiers),
 <code>"coefficients"</code>, <code>"random"</code> (predicted random effects with each
 class's 95% ellipse) or <code>"classification"</code> (also <code>"posteriors"</code>);
-<code>time</code> names the time variable, <code>level</code> the band.</p></dd>
+<code>time</code> names the time variable, <code>level</code> the band. <code>plot_profiles()</code>
+draws <code>"trajectories"</code> and <code>plot_diagnostics(what = "posteriors")</code>
+draws <code>"posteriors"</code>.</p></dd>
 
 <dt>Pooled imputations</dt>
-<dd><p><code>"profile"</code> (default), <code>"group"</code> or
-<code>"measurement"</code> parameters: each imputation's estimate beside the
-pooled one with its interval.</p></dd>
+<dd><p><code>"profile"</code> (default; the probability of each
+profile within each group class), <code>"group"</code> or <code>"measurement"</code> (profile
+means and variances) parameters: each imputation's estimate beside the
+pooled one with its interval. <code>plot_profiles()</code> draws <code>"measurement"</code>
+and <code>plot_prevalence()</code> draws <code>"profile"</code>.</p></dd>
 
 <dt>Model comparisons, bootstrap tests, diagnostics</dt>
 <dd><p>One view each:
@@ -593,6 +713,53 @@ with the observed statistic, and the views of <code>plot_diagnostics()</code>.</
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="named-plot-functions-on-other-fitted-models">Named plot functions on other fitted models<a class="anchor" aria-label="anchor" href="#named-plot-functions-on-other-fitted-models"></a></h2>
+
+
+<p>Each named fit function draws the view of the fit's own <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> that
+shows the same quantity, so <code>plot_profiles(fit)</code> and
+<code>plot(fit, what = "trajectories")</code> on a growth mixture draw one plot:</p><dl><dt>Growth mixtures, and mixture regressions that classify persons
+(<code>class_level = "group"</code>)</dt>
+<dd><p><code>plot_profiles()</code> draws <code>"trajectories"</code>
+(each class's curve over time) and <code>plot_diagnostics(what = "posteriors")</code> draws <code>"posteriors"</code> (each person's class
+probabilities).</p></dd>
+
+<dt>Other mixture regressions</dt>
+<dd><p><code>plot_profiles()</code> draws <code>"fitted"</code>
+(each class's line against the first numeric predictor) and
+<code>plot_diagnostics(what = "posteriors")</code> draws <code>"posteriors"</code>.</p></dd>
+
+<dt>Additive and dispersion fits</dt>
+<dd><p><code>plot_profiles()</code> draws <code>"means"</code>
+(each group class's means across indicators).</p></dd>
+
+<dt>Cross-level fits</dt>
+<dd><p><code>plot_profiles()</code> draws <code>"profiles"</code> and
+<code>plot_prevalence()</code> draws <code>"composition"</code> (profile shares within each
+group class).</p></dd>
+
+<dt>Pooled imputations</dt>
+<dd><p><code>plot_profiles()</code> draws <code>"measurement"</code> (the
+pooled profile means and variances beside each imputation's) and
+<code>plot_prevalence()</code> draws <code>"profile"</code> (the pooled probability of each
+profile within each group class).</p></dd>
+
+<dt>General <code><a href="lta.html">lta()</a></code> fits</dt>
+<dd><p><code>plot_transitions()</code> draws the transition
+matrix.</p></dd>
+
+
+</dl><p>Every other combination, including the <code>what</code> values of
+<code>plot_profiles()</code> other than <code>"lines"</code> and those of <code>plot_diagnostics()</code>
+other than <code>"posteriors"</code>, is refused with <code>latents_nothing_to_plot</code>
+naming the views that fit's <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> offers; <code>what = "all"</code> draws the
+mapped views and names the others in a message. These functions pass on
+only the arguments given, and refuse with <code>latents_bad_argument</code> one the
+mapped view does not take (for example <code>intervals</code> or <code>scale</code> for a growth
+trajectory); use <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> for that view's own arguments, such as <code>time</code>,
+<code>facet</code> or <code>predictor</code>, and for the views no named function draws.</p>
+    </div>
     <div class="section level2">
     <h2 id="former-argument-names">Former argument names<a class="anchor" aria-label="anchor" href="#former-argument-names"></a></h2>
     <p>Enumeration plots accept <code>criterion</code>
@@ -613,14 +780,30 @@ except that the plots of additive, cross-level, general transition
 bootstrap results and of transition or group-class family grids ignore
 it with a <code>latents_unused_argument</code> warning (including a bootstrap
 plot's <code>style</code>); <code>latents_bad_argument</code> also when a named plot function
-is given an object it does not draw; <code>latents_nothing_to_plot</code> when the
+is given an object it does not draw (a named fit function given anything
+other than a fitted model, or a grid function given anything other than
+an enumeration); <code>latents_nothing_to_plot</code> (also of class
+<code>latents_bad_argument</code>) when a named fit function, or its <code>what</code>, has no
+view of that fitted model, naming the views its <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> offers (for
+example <code>plot_transitions()</code> on a model without transitions, or
+<code>plot_diagnostics(what = "sizes")</code> on a growth mixture);
+<code>latents_nothing_to_plot</code> when the
 fit lacks what a view needs (for example posteriors or entropy of a
 one-profile fit, prevalence of a covariate model, or the case-level
 views of a centred fit); <code>latents_unknown_category</code> when <code>category</code>
 names no category of an indicator; <code>latents_no_continuous</code>,
 <code>latents_no_categorical</code> and <code>latents_no_time</code> when a view needs
 indicators or occasions the fit does not have;
-<code>latents_unknown_criterion</code> for a criterion not in the grid.</p>
+<code>latents_unknown_criterion</code> (also <code>latents_bad_argument</code>) for a
+criterion not in the grid; <code>latents_unsupported_view</code> (also
+<code>latents_bad_argument</code>) for a view the kind of grid does not offer;
+<code>latents_no_tree</code> (also of class <code>latents_nothing_to_plot</code>) when a tree
+would have fewer than two rows, or at the group level of a grid with one
+group class; <code>latents_unknown_candidate</code> when <code>candidates</code>,
+<code>n_group_classes</code>, <code>n_profiles</code> or <code>model</code> names something no converged
+candidate has; <code>latents_failed_candidate</code> when a named candidate was not
+fitted; <code>latents_unconverged</code> when a named candidate did not converge;
+<code>latents_unsupported_noise</code> for a tree of a fit with a noise component.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -654,24 +837,24 @@ visualization for evaluating clusterings at multiple resolutions.
 <span class="r-out co"><span class="r-pr">#&gt;</span> 15   enumeration   selection</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 16          tree   selection</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17           all       every</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                       description</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         Profile means, medians or modes across indicators, one line per profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                     Profile means as grouped bars from zero, with 95% intervals</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                            Profile means in observed standard deviations from the observed mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   Each indicator's distribution by assigned profile: density, box, observations</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                   Every case as a line across indicators, one panel per profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                  Scatter-plot matrix with each profile's 95% covariance ellipse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                        Categorical response probabilities, one line per profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                              Profile prevalence within each group class, the two-level quantity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                        Each group's profile at each occasion, one row per group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                      Estimated transition matrix, one panel per group class (a transition fit)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                      Effective number of cases in each profile, with its share</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                   Each case's entropy relative to a flat posterior, by profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                              Posterior probability of each case's assigned profile, by profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14                           Average posterior probability: assigned profile by posterior profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Information criteria across a candidate grid (plot an enumeration; or name criteria in `what`)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                     How profiles split as more are added (plot an enumeration)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17                            Every view above that this fit has the ingredients for, in one call</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                               description</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                                 Profile means, medians or modes across indicators, one line per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                                             Profile means as grouped bars from zero, with 95% intervals</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                                    Profile means in observed standard deviations from the observed mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                           Each indicator's distribution by assigned profile: density, box, observations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                                           Every case as a line across indicators, one panel per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                                          Scatter-plot matrix with each profile's 95% covariance ellipse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                                                                Categorical response probabilities, one line per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                                                      Profile prevalence within each group class, the two-level quantity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                                                                Each group's profile at each occasion, one row per group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                                              Estimated transition matrix, one panel per group class (a transition fit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                                                              Effective number of cases in each profile, with its share</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                                                           Each case's entropy relative to a flat posterior, by profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                                      Posterior probability of each case's assigned profile, by profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                                                                   Average posterior probability: assigned profile by posterior profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Information criteria across a candidate grid (plot any enumeration; or name criteria in `what`; plot_views(grid) lists a grid's views)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                           How classes split as more are added, one plot per tree (a profile, class or transition grid)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                                                                    Every view above that this fit has the ingredients for, in one call</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                  <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>

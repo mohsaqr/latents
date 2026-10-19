@@ -162,7 +162,32 @@ summary(models)
 #>              classes2   TRUE     
 #>              classes2   TRUE     
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level from_candidate from_class from_share to_candidate to_class to_share
+#>  tree individuals       classes1          1    1.00000     classes2        1  0.37932
+#>  tree individuals       classes1          1    1.00000     classes2        2  0.62068
+#>  tree individuals       classes2          1    0.37932     classes3        1  0.57732
+#>  tree individuals       classes2          2    0.62068     classes3        1  0.57732
+#>  tree individuals       classes2          1    0.37932     classes3        2  0.03624
+#>  tree individuals       classes2          2    0.62068     classes3        2  0.03624
+#>  tree individuals       classes2          1    0.37932     classes3        3  0.38643
+#>  tree individuals       classes2          2    0.62068     classes3        3  0.38643
+#>  tree individuals       classes3          1    0.57732     classes4        1  0.56780
+#>  tree individuals       classes3          2    0.03624     classes4        1  0.56780
+#>      mass share_of_from share_of_to
+#>  0.379322      0.379322    1.000000
+#>  0.620678      0.620678    1.000000
+#>  0.102737      0.270845    0.177954
+#>  0.474587      0.764626    0.822046
+#>  0.033119      0.087311    0.913794
+#>  0.003124      0.005034    0.086206
+#>  0.243465      0.641844    0.630034
+#>  0.142967      0.230340    0.369966
+#>  0.442298      0.766117    0.778967
+#>  0.001456      0.040186    0.002565
+#>    ... 60 more rows.  get_results(x, what = "tree")
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 

@@ -331,6 +331,26 @@ Tables specific to one family or object:
   `knee_without_largest` and `stable`; otherwise they are `NA` and
   `note` gives the reason.
 
+- `"tree"`:
+
+  The flows of
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  taking its arguments `n_group_classes`, `n_profiles`, `model`,
+  `candidates`, `from`, `to` and `level` (default `"individuals"`). One
+  row per pair of classes in consecutive rows of each tree: `tree` (the
+  tree's name, as in the plot list), `level`, `from_candidate`,
+  `from_class`, `from_share`, `to_candidate`, `to_class`, `to_share`,
+  `mass` (the share of all units the two classes share, the sum over
+  units of the product of their posterior probabilities, weighted by
+  sampling weights at the individual level), `share_of_from` and
+  `share_of_to` (`mass` as a part of each class). Every pair is listed,
+  including those that share no mass. Units are the rows and groups the
+  fit counts (see `drop_empty`), weighted by their sampling weights at
+  both levels. A grid with no tree raises `latents_no_tree`, a fit with
+  a noise component `latents_unsupported_noise`, and `what = "all"`
+  leaves the table out. The summary of a grid carries the default table
+  only, without these arguments.
+
 - `"comparison"`, `"classification"`:
 
   A

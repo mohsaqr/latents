@@ -1227,11 +1227,13 @@ profiles of the larger model that receive its observations (Zappia and
 Oshlack, 2018). A profile that divides cleanly into two suggests a
 substantive distinction, whereas a profile formed from several profiles
 of the smaller model suggests a reallocation of observations rather than
-a refinement.
+a refinement. Each number of group classes has its own tree, selected
+with `n_group_classes`; the guide *Tree plot* compares solutions at one
+number of profiles.
 
 ``` r
 
-plot_tree(models)
+plot_tree(models, n_group_classes = 1)
 ```
 
 ![](model-selection_files/figure-html/tree-1.png)

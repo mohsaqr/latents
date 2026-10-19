@@ -21,6 +21,7 @@
   models](https://pak.dynasite.org/latents/articles/class-enumeration.md):
 - [Model selection: the evidence for the number of
   classes](https://pak.dynasite.org/latents/articles/model-selection.md):
+- [Tree plot](https://pak.dynasite.org/latents/articles/tree-plot.md):
 - [Evaluating a multilevel latent profile
   model](https://pak.dynasite.org/latents/articles/evaluation.md):
 - [Covariates, outcomes and staged

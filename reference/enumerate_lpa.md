@@ -234,7 +234,32 @@ summary(models)
 #>     three candidates: stability not assessed
 #>  the criterion does not fall along this line
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level from_candidate from_class from_share  to_candidate to_class
+#>   EEI individuals  profiles1_EEI          1     1.0000 profiles2_EEI        1
+#>   EEI individuals  profiles1_EEI          1     1.0000 profiles2_EEI        2
+#>   EEI individuals  profiles2_EEI          1     0.4348 profiles3_EEI        1
+#>   EEI individuals  profiles2_EEI          2     0.5652 profiles3_EEI        1
+#>   EEI individuals  profiles2_EEI          1     0.4348 profiles3_EEI        2
+#>   EEI individuals  profiles2_EEI          2     0.5652 profiles3_EEI        2
+#>   EEI individuals  profiles2_EEI          1     0.4348 profiles3_EEI        3
+#>   EEI individuals  profiles2_EEI          2     0.5652 profiles3_EEI        3
+#>   VVI individuals  profiles1_VVI          1     1.0000 profiles2_VVI        1
+#>   VVI individuals  profiles1_VVI          1     1.0000 profiles2_VVI        2
+#>  to_share      mass share_of_from share_of_to
+#>    0.4348 4.348e-01     4.348e-01   1.000e+00
+#>    0.5652 5.652e-01     5.652e-01   1.000e+00
+#>    0.4102 2.468e-01     5.677e-01   6.017e-01
+#>    0.4102 1.634e-01     2.891e-01   3.983e-01
+#>    0.4020 1.404e-04     3.228e-04   3.492e-04
+#>    0.4020 4.018e-01     7.109e-01   9.997e-01
+#>    0.1878 1.878e-01     4.320e-01   1.000e+00
+#>    0.1878 1.643e-06     2.908e-06   8.751e-06
+#>    0.4738 4.738e-01     4.738e-01   1.000e+00
+#>    0.5262 5.262e-01     5.262e-01   1.000e+00
+#>    ... 22 more rows.  get_results(x, what = "tree")
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 plot(models)
 ```

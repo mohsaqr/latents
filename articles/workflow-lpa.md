@@ -169,7 +169,32 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>        NA                 <NA>     NA the criterion does not fall along this line
 #>        NA                 <NA>     NA the criterion does not fall along this line
 #> 
-#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- tree ------------------------------------------------------------
+#>  tree       level from_candidate from_class from_share to_candidate to_class to_share
+#>  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102
+#>  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898
+#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327
+#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327
+#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679
+#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679
+#>  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994
+#>  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994
+#>  tree individuals      profiles3          1     0.4327    profiles4        1   0.2976
+#>  tree individuals      profiles3          2     0.2679    profiles4        1   0.2976
+#>      mass share_of_from share_of_to
+#>  0.310248       0.31025     1.00000
+#>  0.689752       0.68975     1.00000
+#>  0.046280       0.14917     0.10696
+#>  0.386387       0.56018     0.89304
+#>  0.010081       0.03249     0.03763
+#>  0.257841       0.37382     0.96237
+#>  0.253888       0.81834     0.84796
+#>  0.045523       0.06600     0.15204
+#>  0.051486       0.11900     0.17302
+#>  0.007563       0.02823     0.02542
+#>    ... 60 more rows.  get_results(x, what = "tree")
+#> 
+#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 

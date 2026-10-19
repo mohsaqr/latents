@@ -13,7 +13,7 @@ message text may change between versions."><meta property="og:image" content="ht
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@ message text may change between versions."><meta property="og:image" content="ht
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -391,9 +392,24 @@ describe: <code>vars</code> named none, or the frame has no numeric column outsi
 <dt><code>latents_nothing_to_plot</code></dt>
 <dd><p>The requested panel has no rows to draw.</p></dd>
 
+<dt><code>latents_no_tree</code></dt>
+<dd><p>A tree would have fewer than two rows, or the
+group level of a grid with one group class was asked for. Also of
+class <code>latents_nothing_to_plot</code>; <code>get_results(x, "all")</code> leaves the
+<code>"tree"</code> table out.</p></dd>
+
+<dt><code>latents_unsupported_view</code></dt>
+<dd><p>A grid verb (<code><a href="latents-plots.html">plot_enumeration()</a></code>,
+<code><a href="latents-plots.html">plot_selection()</a></code>, <code><a href="latents-plots.html">plot_tree()</a></code> or <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a grid) was asked for
+a view that this kind of grid cannot draw, such as the tree of a
+group-class family or regression grid. The message gives the reason
+and the views the grid offers; <code>plot_views(x)</code> lists them. Also of
+class <code>latents_bad_argument</code>.</p></dd>
+
 <dt><code>latents_unknown_category</code>, <code>latents_unknown_criterion</code></dt>
 <dd><p>A named
-category or information criterion does not exist in the fit.</p></dd>
+category or information criterion does not exist in the fit. An
+unknown criterion of a grid is also of class <code>latents_bad_argument</code>.</p></dd>
 
 <dt><code>latents_bad_scale</code></dt>
 <dd><p>An unrecognised plotting scale was requested,

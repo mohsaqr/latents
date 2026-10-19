@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,7 @@
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -251,7 +252,7 @@
 
         <dt>
 
-          <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code> <code><a href="enumerate_regressions.html">as.data.frame(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">get_results(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">print(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code>
+          <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code> <code><a href="enumerate_regressions.html">as.data.frame(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">get_results(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">summary(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">print(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code>
 
         </dt>
         <dd>Compare mixture regressions with different numbers of classes</dd>
@@ -304,7 +305,7 @@
 
       <dl><dt>
 
-          <code><a href="latents-plots.html">plot(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_comparison&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_transition_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_lta&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_profiles()</a></code> <code><a href="latents-plots.html">plot_responses()</a></code> <code><a href="latents-plots.html">plot_sequences()</a></code> <code><a href="latents-plots.html">plot_prevalence()</a></code> <code><a href="latents-plots.html">plot_diagnostics()</a></code> <code><a href="latents-plots.html">plot_transitions()</a></code> <code><a href="latents-plots.html">plot_tree()</a></code> <code><a href="latents-plots.html">plot_selection()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_enumeration()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_views()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
+          <code><a href="latents-plots.html">plot(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_comparison&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_transition_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_lta&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_profiles()</a></code> <code><a href="latents-plots.html">plot_responses()</a></code> <code><a href="latents-plots.html">plot_sequences()</a></code> <code><a href="latents-plots.html">plot_prevalence()</a></code> <code><a href="latents-plots.html">plot_diagnostics()</a></code> <code><a href="latents-plots.html">plot_transitions()</a></code> <code><a href="latents-plots.html">plot_tree()</a></code> <code><a href="latents-plots.html">plot_selection()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_enumeration()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_views()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot latents results</dd>

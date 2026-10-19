@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,7 @@
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
+    <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -59,6 +60,50 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.11" id="latents-09511">latents 0.95.11<a class="anchor" aria-label="anchor" href="#latents-09511"></a></h2>
+<div class="section level4">
+<h4 id="named-plot-functions-on-every-fitted-model-0-95-11">Named plot functions on every fitted model<a class="anchor" aria-label="anchor" href="#named-plot-functions-on-every-fitted-model-0-95-11"></a></h4>
+<ul><li>
+<code><a href="../reference/latents-plots.html">plot_profiles()</a></code>, <code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code>, <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code> and <code><a href="../reference/latents-plots.html">plot_transitions()</a></code> take every fitted model of the package and draw the view of that fit’s own <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> that shows the same quantity: <code><a href="../reference/latents-plots.html">plot_profiles()</a></code> draws a growth mixture’s <code>"trajectories"</code> (also of a mixture regression with <code>class_level = "group"</code>), another mixture regression’s <code>"fitted"</code> lines, an additive or dispersion fit’s <code>"means"</code>, a cross-level fit’s <code>"profiles"</code> and a pooled fit’s <code>"measurement"</code> parameters; <code>plot_diagnostics(what = "posteriors")</code> draws the <code>"posteriors"</code> of growth mixtures and mixture regressions; <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code> draws a cross-level fit’s <code>"composition"</code> and a pooled fit’s <code>"profile"</code> parameters (each profile’s probability within each group class); <code><a href="../reference/latents-plots.html">plot_transitions()</a></code> draws a general <code><a href="../reference/lta.html">lta()</a></code> fit’s transition matrix, as before. <code>what = "all"</code> draws these and names the views it leaves out.</li>
+<li>Any other combination (for example <code>plot_profiles(what = "bars")</code> on a growth mixture, or <code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code> on an additive fit) is refused with <code>latents_nothing_to_plot</code>, which is also of class <code>latents_bad_argument</code> (the class of the former refusal), and the message names the views the fit’s <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> offers and the named functions that draw them. An argument the mapped view does not take (for example <code>intervals</code> for a trajectory) is refused by name with <code>latents_bad_argument</code>.</li>
+<li>For profile, class and transition models nothing changes, except that <code><a href="../reference/latents-plots.html">plot_transitions()</a></code> on a model without transitions, and a named function whose view the fit’s <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> lacks (for example <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code> on a transition fit), now raise <code>latents_nothing_to_plot</code> with <code>latents_bad_argument</code>, where they raised one of the two.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="one-contract-for-every-grid-0-95-11">One contract for every grid<a class="anchor" aria-label="anchor" href="#one-contract-for-every-grid-0-95-11"></a></h4>
+<ul><li>
+<code><a href="../reference/latents-plots.html">plot_enumeration()</a></code>, <code><a href="../reference/latents-plots.html">plot_selection()</a></code> and <code><a href="../reference/latents-plots.html">plot_tree()</a></code> take every grid the package makes: profile and class grids, transition grids (<code>enumerate_classes(time = )</code>), group-class family grids (<code>enumerate_classes(family = )</code>) and regression grids (<code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code>). Each grid offers the views its candidates carry. Transition grids draw every view, the tree included. Family grids draw their criteria and classification quality against the number of group classes; their candidates have no profiles, so the selection views and the tree are not drawn. Regression grids draw criteria, classification quality and the selection views, but not the tree.</li>
+<li>A view a grid does not offer is refused with the new condition <code>latents_unsupported_view</code> (also of class <code>latents_bad_argument</code>), whose message gives the reason and the views the grid offers. An unknown criterion of a grid is now also of class <code>latents_bad_argument</code>.</li>
+<li>
+<code>plot_views(x)</code> of a grid lists every view of that grid, whether it is offered, and why not.</li>
+<li>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a transition or family grid draws through the same views. Without <code>what</code> it draws the grid’s summary, AIC, BIC and BIC over individuals as panels of one plot, as <code><a href="../reference/latents-plots.html">plot_enumeration()</a></code> does (0.9.21 drew BIC alone). The 0.9.21 calls that name a criterion still work: <code>plot(x, what = "aic")</code>, abbreviations such as <code>"bic_i"</code>, and <code>criterion =</code>. It also takes <code>"all"</code> and every other view of the grid, and passes <code>combine</code>, <code>labels</code>, <code>mark_minimum</code>, <code>cutoff</code> and <code>using</code> on to <code><a href="../reference/latents-plots.html">plot_enumeration()</a></code>, which 0.9.21 ignored. The plots have the look of the other grid plots: a criterion in its own panel, the lowest value ringed.</li>
+<li>Regression grids get <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, which draws AIC, BIC, SABIC and ICL across the classes, and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, which returns their table (as <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> does). Formerly <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> failed with a base R error and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> gave the default list summary.</li>
+<li>The selection views of a class (LCA) grid name the singular “class” instead of “classe”.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="criterion-panels-0-95-11">Criterion panels<a class="anchor" aria-label="anchor" href="#criterion-panels-0-95-11"></a></h4>
+<ul><li>A grid whose every candidate has one group class draws each criterion once, under its plain name: the group versions of AWE, ICL and CLC are left out when their individual versions are drawn, since without group classes ICL over groups equals BIC over groups. <code>what = "all"</code> on such a grid draws AIC, KIC, BIC, SABIC, CAIC, AWE, ICL and CLC.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.10" id="latents-09510">latents 0.95.10<a class="anchor" aria-label="anchor" href="#latents-09510"></a></h2>
+<div class="section level4">
+<h4 id="tree-plots-0-95-10">Tree plots<a class="anchor" aria-label="anchor" href="#tree-plots-0-95-10"></a></h4>
+<ul><li>
+<code><a href="../reference/latents-plots.html">plot_tree()</a></code>, <code>plot(x, what = "tree")</code> and <code>plot_enumeration(x, what = "tree")</code> return one plot per tree, printed one at a time on an interactive screen device; <code>combine = TRUE</code> returns every tree as a panel of one plot, the figure of earlier versions. A class has the colour of the class it matches in the first tree, and the classes of one row have distinct colours. Every band that carries posterior mass is plotted.</li>
+<li>New arguments choose the trees and rows: <code>n_group_classes</code>, <code>n_profiles</code> and <code>model</code>. A single value of <code>n_profiles</code> compares the solutions with that number of profiles across numbers of group classes. <code>level = "groups"</code> plots how the group classes divide. <code>from = c(3, 3), to = c(4, 3)</code> (or <code>candidates</code> by name) compares two chosen solutions.</li>
+<li>
+<code>get_results(x, "tree", ...)</code> returns the shared posterior mass behind any tree, one row per pair of classes, with the same arguments.</li>
+<li>Trees use the rows and groups the fit counts (<code>drop_empty</code>) and their sampling weights at both levels, as the effective class counts do. A fit with a noise component is refused with <code>latents_unsupported_noise</code>, and a named candidate that did not converge with <code>latents_unconverged</code>. A grid with no tree raises <code>latents_no_tree</code>, also of class <code>latents_nothing_to_plot</code>.</li>
+<li>
+<code><a href="../reference/latents-plots.html">plot_enumeration()</a></code> refuses an argument it does not use with <code>latents_bad_argument</code>.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-0-95-10">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-95-10"></a></h4>
+<ul><li>New guide, <em>Tree plot</em>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.95.9" id="latents-0959">latents 0.95.9<a class="anchor" aria-label="anchor" href="#latents-0959"></a></h2>
 <div class="section level4">
