@@ -663,6 +663,27 @@ test
 plot(test)
 ```
 
+The Vuong-Lo-Mendell-Rubin test refers the same statistic to an asymptotic
+approximation of its distribution (Vuong, 1989; Lo, Mendell and Rubin, 2001):
+a weighted sum of chi-square variables with one degree of freedom, whose
+weights are the eigenvalues of a matrix formed from the scores and second
+derivatives of both models. The test requires no simulation. Its adjusted
+version (aLMR) divides the statistic by `1 + 1 / (d log n)`, with `d` the
+number of added parameters and `n` the number of independent units, and
+refers it to the same distribution. `get_results()` with `"lmr"` reports both
+for every pair of converged candidates that differ by one profile or one group
+class. A pair whose information matrix is singular, here the candidates with
+five and six profiles, is kept with its reason in `note`.
+
+```{r lmr}
+subset(get_results(models, "lmr"), n_group_classes == 3)
+```
+
+The regularity conditions of Vuong's theorem do not hold for mixture models
+(Jeffries, 2003), and the test's p-values are not uniformly distributed when
+the smaller model is true (Vermunt, 2024). It is one piece of evidence beside
+the criteria, the classification and the bootstrap.
+
 ## Putting the evidence together
 
 No algorithm converts this evidence into a number of classes, and latents
@@ -721,7 +742,8 @@ knitr::kable(data.frame(
     "plot_tree(models)",
     "compare_models(models, \"name\", ...)",
     "get_candidate(models, \"name\")",
-    "bootstrap_lrt(smaller, larger, data, iter)"),
+    "bootstrap_lrt(smaller, larger, data, iter)",
+    "get_results(models, \"lmr\")"),
   Result = c(
     "The same starts, centring, scaling and missing-data handling for every candidate",
     "Starts with a variance at its lower bound set aside for every candidate",
@@ -743,7 +765,8 @@ knitr::kable(data.frame(
     "How the profiles divide as more are added",
     "Chosen candidates side by side, with BIC weights",
     "One fitted candidate",
-    "Bootstrap likelihood ratio test of k against k + 1 classes")),
+    "Bootstrap likelihood ratio test of k against k + 1 classes",
+    "VLMR and adjusted LMR tests of every pair of neighbouring candidates")),
   col.names = c("Call", "Result"))
 ```
 
@@ -770,6 +793,12 @@ Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
 Kullback's symmetric divergence. *Statistics and Probability Letters*, 42,
 333--343.
 
+Jeffries, N. O. (2003). A note on 'Testing the number of components in a
+normal mixture'. *Biometrika*, 90, 991--994.
+
+Lo, Y., Mendell, N. R., & Rubin, D. B. (2001). Testing the number of
+components in a normal mixture. *Biometrika*, 88, 767--778.
+
 McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
 statistic for the number of components in a normal mixture. *Applied
 Statistics*, 36, 318--324.
@@ -791,6 +820,14 @@ Statistics*, 6, 461--464.
 
 Sclove, S. L. (1987). Application of model-selection criteria to some
 problems in multivariate analysis. *Psychometrika*, 52, 333--343.
+
+Vermunt, J. K. (2024). The Vuong-Lo-Mendell-Rubin test for latent class and
+latent profile analysis: A note on the different implementations in Mplus
+and LatentGOLD. *Methodology*, 20(1), 72--83.
+<https://doi.org/10.5964/meth.12467>
+
+Vuong, Q. H. (1989). Likelihood ratio tests for model selection and
+non-nested hypotheses. *Econometrica*, 57, 307--333.
 
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
 weights. *Psychonomic Bulletin & Review*, 11, 192--196.

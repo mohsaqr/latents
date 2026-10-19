@@ -221,6 +221,11 @@ panel needs indicators of a kind the fit does not have.}
 describe: \code{vars} named none, or the frame has no numeric column outside
 \code{id} and \code{by}.}
 \item{\code{latents_nothing_to_plot}}{The requested panel has no rows to draw.}
+\item{\code{latents_inaccurate_probability}}{The numerical integral behind a
+Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+\item{\code{latents_no_lmr}}{\code{get_results(x, "lmr")} on a grid with no two
+converged candidates one profile or one group class apart. Also of class
+\code{latents_nothing_to_plot}.}
 \item{\code{latents_no_tree}}{A tree would have fewer than two rows, or the
 group level of a grid with one group class was asked for. Also of
 class \code{latents_nothing_to_plot}; \code{get_results(x, "all")} leaves the

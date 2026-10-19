@@ -337,6 +337,26 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} and
 \code{note} gives the reason.}
+\item{\code{"lmr"}}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
+Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
+Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged
+candidates that differ by one profile (\code{direction = "profiles"}) or one
+group class (\code{"group_classes"}) at the same structure: \code{direction},
+\code{null_candidate}, \code{alternative_candidate}, \code{n_profiles},
+\code{n_group_classes} and \code{model} of the alternative, \code{n_units} (the
+independent units scored: groups, or observations without groups),
+\code{parameters_added}, \code{lr} (twice the log-likelihood difference),
+\code{vlmr_p}, \code{adjusted_lr} (\code{lr / (1 + 1 / (parameters_added * log(n_units)))}),
+\code{almr_p}, \code{reference_mean} and \code{reference_sd} of the weighted
+chi-square reference distribution, whose weights are the eigenvalues of
+Vuong's matrix of the two models' scores and Hessians, and \code{note}. The
+p-values are computed by Imhof's method to about \code{1e-9}. A pair whose
+information matrix is singular, or whose candidate is on a boundary,
+keeps its row with \code{NA} statistics and the reason in \code{note}; warnings
+raised while scoring a candidate are recorded there too. Every
+candidate's information is computed, so the table is built only when
+asked for, and \code{what = "all"} leaves it out. A grid with no such pair
+raises \code{latents_no_lmr}.}
 \item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, on every grid, taking its
 arguments \code{n_group_classes}, \code{n_profiles} (\code{n_classes} on a regression
 grid), \code{model}, \code{candidates}, \code{from}, \code{to} and \code{level}

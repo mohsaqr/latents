@@ -1,5 +1,16 @@
 # latents (development version)
 
+### Lo-Mendell-Rubin tests
+
+* `get_results(models, "lmr")` reports the Vuong-Lo-Mendell-Rubin (VLMR) and
+  adjusted Lo-Mendell-Rubin (aLMR) tests for every pair of converged
+  candidates of a grid that differ by one profile or one group class, as
+  Latent GOLD computes them: the likelihood-ratio statistic referred to a
+  weighted chi-square distribution whose weights are the eigenvalues of
+  Vuong's matrix, with p-values by Imhof's method. On two test cases the
+  statistics, the mean and standard deviation of the reference distribution
+  and the p-values agree with Latent GOLD 6.1 to every printed digit.
+
 ### Maximum-likelihood three-step distal outcomes
 
 * `three_step(method = "ml")` estimates the class means of a distal outcome

@@ -205,6 +205,11 @@
 #'     describe: `vars` named none, or the frame has no numeric column outside
 #'     `id` and `by`.}
 #'   \item{`latents_nothing_to_plot`}{The requested panel has no rows to draw.}
+#'   \item{`latents_inaccurate_probability`}{The numerical integral behind a
+#'     Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+#'   \item{`latents_no_lmr`}{`get_results(x, "lmr")` on a grid with no two
+#'     converged candidates one profile or one group class apart. Also of class
+#'     `latents_nothing_to_plot`.}
 #'   \item{`latents_no_tree`}{A tree would have fewer than two rows, or the
 #'     group level of a grid with one group class was asked for. Also of
 #'     class `latents_nothing_to_plot`; `get_results(x, "all")` leaves the

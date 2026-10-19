@@ -189,6 +189,26 @@
 #'     can still name a knee. A line needs three candidates for a knee and four
 #'     for `knee_without_largest` and `stable`; otherwise they are `NA` and
 #'     `note` gives the reason.}
+#'   \item{`"lmr"`}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
+#'     Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
+#'     Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged
+#'     candidates that differ by one profile (`direction = "profiles"`) or one
+#'     group class (`"group_classes"`) at the same structure: `direction`,
+#'     `null_candidate`, `alternative_candidate`, `n_profiles`,
+#'     `n_group_classes` and `model` of the alternative, `n_units` (the
+#'     independent units scored: groups, or observations without groups),
+#'     `parameters_added`, `lr` (twice the log-likelihood difference),
+#'     `vlmr_p`, `adjusted_lr` (`lr / (1 + 1 / (parameters_added * log(n_units)))`),
+#'     `almr_p`, `reference_mean` and `reference_sd` of the weighted
+#'     chi-square reference distribution, whose weights are the eigenvalues of
+#'     Vuong's matrix of the two models' scores and Hessians, and `note`. The
+#'     p-values are computed by Imhof's method to about `1e-9`. A pair whose
+#'     information matrix is singular, or whose candidate is on a boundary,
+#'     keeps its row with `NA` statistics and the reason in `note`; warnings
+#'     raised while scoring a candidate are recorded there too. Every
+#'     candidate's information is computed, so the table is built only when
+#'     asked for, and `what = "all"` leaves it out. A grid with no such pair
+#'     raises `latents_no_lmr`.}
 #'   \item{`"tree"`}{The flows of [plot_tree()], on every grid, taking its
 #'     arguments `n_group_classes`, `n_profiles` (`n_classes` on a regression
 #'     grid), `model`, `candidates`, `from`, `to` and `level`
@@ -781,6 +801,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 .multilpa_all_tables <- function(x, catalogue, extra) {
   .multilpa_check_table_arguments("all", character(), extra)
   absent <- .multilpa_absent_table_conditions()
+  catalogue <- Filter(function(entry) !isFALSE(entry$in_all), catalogue)
   tables <- lapply(catalogue, function(entry) {
     # Errors only: a table that warns is still a table, and the warning is the
     # fit's own, so it is left to reach the caller who asked for every table.
@@ -822,7 +843,10 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
         function(x, using = "bic_groups") .latents_deltas_table(x, using), "using"),
       knees = .multilpa_table(
         function(x, using = "bic_groups") .latents_knees_table(x, using), "using"),
-      tree = .multilpa_table(.latents_tree_table, .latents_tree_arguments())))
+      tree = .multilpa_table(.latents_tree_table, .latents_tree_arguments()),
+      # Every candidate's information matrix: computed when asked for, not by
+      # get_results(x, "all") or summary().
+      lmr = .multilpa_table(.latents_lmr_table, in_all = FALSE)))
   }
   if (inherits(x, "latents_comparison")) {
     catalogue <- list(comparison = .multilpa_table(function(x) {
@@ -869,10 +893,12 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' One catalogue entry
 #' @param build A function of the object and that table's own arguments.
 #' @param args The argument names it accepts.
-#' @return A list of the two.
+#' @param in_all `FALSE` leaves the table out of `what = "all"` (and so of
+#'   `summary()`), for a table too costly to build unasked.
+#' @return A list of the three.
 #' @noRd
-.multilpa_table <- function(build, args = character()) {
-  list(build = build, args = args)
+.multilpa_table <- function(build, args = character(), in_all = TRUE) {
+  list(build = build, args = args, in_all = in_all)
 }
 
 #' Is this the summary of a fitted model of this package?
