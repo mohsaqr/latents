@@ -900,6 +900,19 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       if (x$variance_model == "equal") 1L else seq_len(x$n_profiles))
     parameter_scale[length(x$means) + seq_along(covariance_scale)] <- covariance_scale
   }
+  # A direct effect is in indicator units per covariate unit, so its finite
+  # differences are taken on the indicator's spread over the covariate's; at
+  # unit scale a covariate in units of 1e4 gave a standard error 10% too large.
+  direct <- x$extra_data$direct
+  if (!is.null(direct)) {
+    widths <- .multilpa_coordinate_widths(x, "unconstrained")
+    effects <- direct$effects
+    last <- sum(widths[c("means", "variances", "response_probabilities", "extra")])
+    positions <- last - nrow(effects) + seq_len(nrow(effects))
+    spread <- sqrt(colMeans(x$variances))[effects$column]
+    parameter_scale[positions] <- spread /
+      apply(direct$covariates, 2L, stats::sd)[effects$covariate_column]
+  }
   parameter_scale <- parameter_scale[free]
   scaled_objective <- function(displacement) {
     stopifnot(is.numeric(displacement))

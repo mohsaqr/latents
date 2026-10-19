@@ -100,12 +100,16 @@ test_that("shifting a covariate moves the means; scaling it scales the effect", 
   expect_equal(unname(shifted$direct_effects), unname(base$direct_effects), tolerance = 1e-6)
   expect_equal(unname(shifted$means[, "y3"]),
                unname(base$means[, "y3"] - 10 * base$direct_effects), tolerance = 1e-5)
-  scaled <- quietly(lpa(transform(data, z = z * 10), paste0("y", 1:4), 2, model = "VVI",
-                        n_starts = 5, seed = 1, tol = 1e-12, direct_effects = "y3 ~ z"))
-  expect_equal(unname(scaled$direct_effects), unname(base$direct_effects) / 10,
-               tolerance = 1e-6)
-  expect_equal(get_results(scaled, "direct_effects")$standard_error,
-               get_results(base, "direct_effects")$standard_error / 10, tolerance = 1e-4)
+  # Standard errors follow the covariate's units over many orders of magnitude.
+  invisible(lapply(c(10, 1e4, 1e-4), \(factor) {
+    scaled <- quietly(lpa(transform(data, z = z * factor), paste0("y", 1:4), 2,
+                          model = "VVI", n_starts = 5, seed = 1, tol = 1e-12,
+                          direct_effects = "y3 ~ z"))
+    expect_equal(unname(scaled$direct_effects) * factor, unname(base$direct_effects),
+                 tolerance = 1e-6)
+    expect_equal(get_results(scaled, "direct_effects")$standard_error * factor,
+                 get_results(base, "direct_effects")$standard_error, tolerance = 1e-4)
+  }))
 })
 
 test_that("a direct effect nests the model without it and removes the covariate's association", {
