@@ -47,6 +47,17 @@
                  count = x$count %||% character(),
                  count_model = x$extra_data$count_model %||% "poisson",
                  count_dispersion = x$extra_data$count_dispersion %||% "varying")
+  # Covariances for chosen pairs are refitted as the same pattern: the pairs,
+  # read from the fit's pattern, and the variance model, which a full
+  # structure argument would replace by a full covariance.
+  pattern <- x$covariance_pattern
+  if (!is.null(pattern)) {
+    pairs <- which(pattern & upper.tri(pattern), arr.ind = TRUE)
+    return(c(shared, list(variance_model = x$variance_model,
+                          local_dependence = paste(rownames(pattern)[pairs[, "row"]],
+                                                   colnames(pattern)[pairs[, "col"]],
+                                                   sep = ":"))))
+  }
   structure <- x$covariance_structure
   if (is.null(structure) || is.na(structure) || !structure %in% .multilpa_structures()) {
     return(c(shared, list(variance_model = x$variance_model,

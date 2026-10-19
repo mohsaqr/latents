@@ -187,3 +187,19 @@ test_that("continuous pairs that the model cannot hold are refused by class", {
                         local_dependence = "y2:y3", n_starts = 1, seed = 1),
                class = "latents_bad_argument")
 })
+
+test_that("refits of a fit with chosen covariances keep the pattern", {
+  skip_on_cran()
+  data <- correlated_pair(n = 300)
+  fit <- quietly(lpa(data, c("y1", "y2", "y3"), 2, n_starts = 3, seed = 1,
+                     local_dependence = "y1:y2"))
+  arguments <- .multilpa_refit_arguments(fit)
+  expect_identical(arguments$local_dependence, "y1:y2")
+  # A single-level fit is refitted on its rebuilt frame, which carries the
+  # row identifier the refit groups by, as the bootstrap does.
+  refit <- quietly(do.call(multilpa, c(list(data = .multilpa_resolve_data(fit, NULL),
+                                            n_starts = 3, seed = 1), arguments)))
+  expect_equal(refit$n_parameters, fit$n_parameters)
+  expect_equal(refit$log_likelihood, fit$log_likelihood, tolerance = 1e-6)
+  expect_identical(refit$covariance_pattern, fit$covariance_pattern)
+})
