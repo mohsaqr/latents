@@ -37,8 +37,16 @@ test_that("the Imhof tail matches exact weighted chi-square probabilities", {
                       cases$m, cases$b, cases$k),
                with(cases, stats::pf(b * k / m, m, k, lower.tail = FALSE)),
                tolerance = 1e-10)
-  expect_equal(.latents_imhof_upper(0, c(1, -1e4, -1e4, -1e4)),
-               stats::pf(3e4, 1, 3, lower.tail = FALSE), tolerance = 1e-8)
+  # The accuracy is absolute: about 1e-12, here on a probability of 4e-7.
+  expect_lt(abs(.latents_imhof_upper(0, c(1, -1e4, -1e4, -1e4)) -
+                  stats::pf(3e4, 1, 3, lower.tail = FALSE)), 1e-12)
+  # The probability does not depend on the weights' units.
+  invisible(lapply(c(1e-12, 1e-6, 1e6), \(size) {
+    expect_equal(.latents_imhof_upper(0, size * c(1, -2)),
+                 stats::pf(2, 1, 1, lower.tail = FALSE), tolerance = 1e-10)
+    expect_equal(.latents_imhof_upper(5 * size, size * c(2, 1, 0.5, -0.4)),
+                 .latents_imhof_upper(5, c(2, 1, 0.5, -0.4)), tolerance = 1e-10)
+  }))
 })
 
 test_that("for regular nested models the weights are one per added parameter", {

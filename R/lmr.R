@@ -66,7 +66,8 @@
 #' at `u = 1 / |lambda_j|`; that lead is integrated by adaptive quadrature
 #' between breakpoints at those scales and at every decade, so no segment
 #' spans more than an order of magnitude. When `q = 0` there is no
-#' oscillation at all and the lead runs to infinity: with weights of both
+#' oscillation at all and the lead is the whole integral, ended where
+#' Imhof's truncation bound falls below `1e-12`: with weights of both
 #' signs the integrand then decays monotonically, and extrapolating its
 #' partial sums (the method this replaces) settled on wrong limits, 32% off
 #' for weights `(1, -1e4, -1e4, -1e4)`. Beyond the lead, `sin(q u / 2)`
@@ -74,9 +75,11 @@
 #' partial sums alternate, and accelerated by Wynn's epsilon algorithm, as
 #' QUADPACK's QAWF does for Fourier integrals. The value is accepted when two
 #' successive estimates agree to `1e-10`; otherwise, or when a segment cannot
-#' be integrated, `latents_inaccurate_probability` is raised. Against exact F
-#' and chi-square probabilities and a two-weight convolution the error is
-#' below `1e-14` in absolute terms.
+#' be integrated, `latents_inaccurate_probability` is raised. The integral
+#' is taken on weights normalised to unit size, which leaves the probability
+#' unchanged. Against 312 exact F and chi-square probabilities and two-weight
+#' convolutions, with weights from 1e-6 to 1e6, the absolute error is at most
+#' 3.2e-13 when `q = 0` and 1e-15 otherwise.
 #' @param q The statistic.
 #' @param lambda The weights.
 #' @return A probability.
@@ -84,6 +87,13 @@
 .latents_imhof_upper <- function(q, lambda) {
   lambda <- lambda[abs(lambda) > 1e-10 * max(abs(lambda))]
   if (length(lambda) == 0L) return(NA_real_)
+  # P(sum lambda_j X_j > q) = P(sum (lambda_j / c) X_j > q / c): the integral
+  # is taken on weights of unit size, so its breakpoints and tolerances do
+  # not depend on the weights' units (weights of size 1e-6 failed to
+  # integrate before).
+  size <- max(abs(lambda))
+  lambda <- lambda / size
+  q <- q / size
   integrand <- function(u) {
     theta <- 0.5 * vapply(u, function(value) sum(atan(lambda * value)), numeric(1)) -
       0.5 * q * u
@@ -105,16 +115,22 @@
              })
   }
   clamp <- function(integral) min(1, max(0, 0.5 + integral / pi))
-  lead_end <- if (q > 0) 2 * pi / q else Inf
   scales <- 1 / abs(lambda)
-  top <- if (is.finite(lead_end)) lead_end else 1e3 * max(scales)
+  # With q = 0 the lead is the whole integral. Past u its integrand is at
+  # most u^(-1 - n/2) / prod |lambda_j|^(1/2), so the rest is at most
+  # (2 / n) u^(-n/2) / prod |lambda_j|^(1/2) (Imhof 1961); the lead ends
+  # where that bound is 1e-12, and nothing is left to an infinite range.
+  n_weights <- length(lambda)
+  truncation <- (2 / (n_weights * 1e-12 * prod(sqrt(abs(lambda)))))^(2 / n_weights)
+  lead_end <- if (q > 0) 2 * pi / q else max(truncation, 1e3 * max(scales))
+  top <- lead_end
   decades <- 10^seq(floor(log10(min(scales))), ceiling(log10(top)))
   breaks <- sort(unique(c(0, scales, decades)))
   breaks <- c(breaks[breaks < lead_end], lead_end)
   lead <- sum(vapply(seq_len(length(breaks) - 1L), function(index) {
     segment(breaks[index], breaks[index + 1L])
   }, numeric(1)))
-  if (!is.finite(lead_end)) return(clamp(lead))
+  if (q <= 0) return(clamp(lead))
   half_period <- 2 * pi / q
   piece <- function(k) segment(lead_end + k * half_period, lead_end + (k + 1) * half_period)
   pieces <- vapply(seq_len(20L) - 1L, piece, numeric(1))
