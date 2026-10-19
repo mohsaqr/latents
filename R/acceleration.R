@@ -13,7 +13,7 @@
 .multilpa_accelerated_blocks <- function() {
   c("means", "variances", "covariances", "profile_probabilities",
     "group_probabilities", "response_probabilities", "ordinal_intercepts",
-    "ordinal_locations", "count_means", "count_dispersion")
+    "ordinal_locations", "count_means", "count_dispersion", "direct_effects")
 }
 
 #' Flatten the updatable blocks of a parameter list

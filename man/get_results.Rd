@@ -349,6 +349,13 @@ continuous pair has one row per profile, with the pair's \code{covariance}
 and the \code{correlation} it implies; its category and probability
 columns are \code{NA}. A fit without pairs raises
 \code{latents_no_local_dependence}, and \code{what = "all"} leaves the table out.}
+\item{\code{"direct_effects"}}{For a fit with \code{direct_effects}, one row per
+effect: \code{indicator}, \code{covariate}, \code{estimate} (the change in the
+indicator's mean per unit of the covariate, the same in every profile),
+\code{standard_error}, \code{statistic}, \code{p_value}, \code{conf_low} and \code{conf_high}
+(Wald, from \code{\link[=parameter_inference]{parameter_inference()}}). A fit without direct effects
+raises \code{latents_no_direct_effects}, and \code{what = "all"} leaves the table
+out.}
 \item{\code{"lmr"}}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
 Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
 Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged

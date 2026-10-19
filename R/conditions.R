@@ -209,6 +209,8 @@
 #'     Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
 #'   \item{`latents_no_local_dependence`}{`get_results(fit, "local_dependence")`
 #'     on a fit made without `local_dependence`.}
+#'   \item{`latents_no_direct_effects`}{`get_results(fit, "direct_effects")`
+#'     on a fit made without `direct_effects`.}
 #'   \item{`latents_partial_pair`}{A warning: rows observe one item of a
 #'     `local_dependence` pair and not the other, so the pair is treated as
 #'     missing in those rows.}

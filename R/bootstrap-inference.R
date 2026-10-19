@@ -46,7 +46,9 @@
                  weights = x$weights, ordinal = x$ordinal %||% character(),
                  count = x$count %||% character(),
                  count_model = x$extra_data$count_model %||% "poisson",
-                 count_dispersion = x$extra_data$count_dispersion %||% "varying")
+                 count_dispersion = x$extra_data$count_dispersion %||% "varying",
+                 direct_effects = if (is.null(x$extra_data$direct)) character() else
+                   .latents_direct_terms(x$extra_data$direct$effects))
   # Covariances for chosen pairs are refitted as the same pattern: the pairs,
   # read from the fit's pattern, and the variance model, which a full
   # structure argument would replace by a full covariance.

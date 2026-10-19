@@ -47,7 +47,8 @@ multilpa(
   scaling = c("none", "person", "grand"),
   drop_empty = TRUE,
   cores = 1L,
-  local_dependence = character()
+  local_dependence = character(),
+  direct_effects = character()
 )
 }
 \arguments{
@@ -507,6 +508,31 @@ and not the other treats the pair as missing, with a
 \code{latents_partial_pair} warning. A pair of indicators that are not both
 categorical, that names an indicator twice or that shares an indicator
 with another pair raises \code{latents_bad_argument}. Default: none.}
+
+\item{direct_effects}{Direct effects of covariates on continuous
+indicators, written \code{"indicator ~ covariate"} (several covariates joined
+with \code{+}, several indicators as a character vector). The covariate moves
+the indicator's mean by the same amount in every profile,
+\verb{y = mean_k + b z + e} (Bandeen-Roche et al., 1997), so a difference in
+the indicator that the covariate explains is not read as a difference
+between profiles: the direct effect Latent GOLD fits with
+\code{y <- 1 + Cluster + z}. Covariates are numeric columns of \code{data},
+observed in every row (code a categorical covariate as indicator
+columns), and enter with their values as given, so \code{means} are the
+profile means at a covariate value of zero; centre a covariate first to
+read them at its mean. The effects are estimated with the profiles (a
+conditional maximization step in EM; Meng & Rubin, 1993), have standard
+errors in \code{\link[=parameter_inference]{parameter_inference()}} (parameter \code{direct_effect}, term
+\code{"indicator:covariate"}), and are reported by
+\code{get_results(fit, "direct_effects")}. \code{\link[=predict]{predict()}} and the functions that
+take \code{data} read the covariates from it. Direct effects need a diagonal
+covariance (EEI or VVI) and are not combined with \code{local_dependence}
+between continuous indicators, \code{profile_covariates}, \code{group_covariates},
+\code{time}, \code{prior}, \code{noise}, \code{fixed}, \code{start}, \code{centering} or \code{scaling};
+those, a term that is not \code{"indicator ~ covariate"}, and an indicator
+that is not continuous raise \code{latents_bad_argument}, and a covariate
+that is absent, not numeric, missing or constant raises
+\code{latents_bad_data}. Default: none.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional
@@ -572,6 +598,14 @@ doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
+
+Bandeen-Roche, K., Miglioretti, D. L., Zeger, S. L., & Rathouz, P. J.
+(1997). Latent variable regression for multiple discrete outcomes.
+Journal of the American Statistical Association, 92(440), 1375--1386.
+
+Meng, X.-L., & Rubin, D. B. (1993). Maximum likelihood estimation via the
+ECM algorithm: A general framework. Biometrika, 80(2), 267--278.
+doi:10.1093/biomet/80.2.267.
 
 Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. Organizational Research Methods.

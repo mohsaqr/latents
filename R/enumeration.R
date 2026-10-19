@@ -785,6 +785,10 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     object$profile_probabilities[group_class[object$group_index], , drop = FALSE])
   result <- .multilpa_draw_indicators(object, profile)
   result[[object$id]] <- object$group_values[object$group_index]
+  # The model conditions on the covariates of its direct effects, so a draw
+  # keeps them as observed.
+  covariates <- object$extra_data$direct$covariates
+  if (!is.null(covariates)) result[colnames(covariates)] <- as.data.frame(covariates)
   result
 }
 
@@ -861,6 +865,12 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     } else {
       object$means[profile, , drop = FALSE] +
         noise * sqrt(object$variances[profile, , drop = FALSE])
+    }
+    # A direct effect moves each row's mean by its covariates.
+    direct <- object$extra_data$direct
+    if (!is.null(direct)) {
+      values <- values + tcrossprod(direct$covariates, .latents_direct_matrix(
+        direct, object$direct_effects, dimension))
     }
     values <- as.data.frame(values)
     names(values) <- continuous

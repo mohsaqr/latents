@@ -1,5 +1,26 @@
 # latents (development version)
 
+### Direct effects
+
+* `multilpa(direct_effects = "y ~ z")` lets a covariate move a continuous
+  indicator's mean by the same amount in every profile (differential item
+  functioning), Latent GOLD's `y <- 1 + Cluster + z`. The effects are
+  estimated with the profiles, by a conditional maximization step in EM on
+  centred covariates, have standard errors in `parameter_inference()`, and are
+  reported by `get_results(fit, "direct_effects")`. `predict()`, refits, the
+  bivariate residuals and parametric draws use the covariates. Against Latent
+  GOLD 6.1 the log likelihood, BIC, effect, intercepts, variances and their
+  standard errors agree to every printed digit. Effects on categorical
+  indicators and effects that differ by profile are not yet available.
+
+### Fixes
+
+* Bootstrap inference and seed sensitivity refitted a model with
+  covariances for chosen continuous pairs as a full covariance; refits now
+  keep the pattern.
+* `three_step(method = "m")` again means `"modal"`, as in 0.95.12; `"ml"` is
+  taken by its full name.
+
 ### Local dependence
 
 * `local_dependence = "item1:item2"` in `lca()`, `multilca()`, `multilpa()`

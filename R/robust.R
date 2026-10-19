@@ -30,9 +30,10 @@
   } else if (identical(object$covariance_model, "full")) {
     .multilpa_full_measurement_group_score(parameters, expectation, object)
   } else {
+    shifted <- .latents_direct_shift(x, object$extra_data, parameters)
     observed <- !is.na(x)
     blocks <- lapply(seq_len(n_profiles), function(profile) {
-      residuals <- sweep(x, 2L, parameters$means[profile, ], "-")
+      residuals <- sweep(shifted, 2L, parameters$means[profile, ], "-")
       residuals[!observed] <- 0
       weights <- expectation$subject_posteriors[, profile]
       list(
@@ -65,7 +66,7 @@
     group_index)
   extra_scores <- .latents_extra_scores(object$extra_data,
                                         expectation$subject_posteriors,
-                                        parameters, group_index)
+                                        parameters, group_index, x = x)
   scores <- cbind(measurement$means, measurement$covariances, response_scores,
                   extra_scores, profile_scores, group_scores)
   dimnames(scores) <- list(object$group_ids, names(theta))

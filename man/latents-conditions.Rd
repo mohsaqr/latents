@@ -225,6 +225,8 @@ describe: \code{vars} named none, or the frame has no numeric column outside
 Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
 \item{\code{latents_no_local_dependence}}{\code{get_results(fit, "local_dependence")}
 on a fit made without \code{local_dependence}.}
+\item{\code{latents_no_direct_effects}}{\code{get_results(fit, "direct_effects")}
+on a fit made without \code{direct_effects}.}
 \item{\code{latents_partial_pair}}{A warning: rows observe one item of a
 \code{local_dependence} pair and not the other, so the pair is treated as
 missing in those rows.}

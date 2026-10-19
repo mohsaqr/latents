@@ -341,7 +341,11 @@
   start <- list(
     ordinal_intercepts = lapply(extra$ordinal_categories, function(k) numeric(k - 1L)),
     ordinal_locations = matrix(0, n_profiles, length(extra$ordinal_categories)))
-  .latents_extra_maximize(extra, posteriors, start)
+  blocks <- .latents_extra_maximize(extra, posteriors, start)
+  # Direct effects start at zero; the first M-step fits them to the start's
+  # classes.
+  if (!is.null(extra$direct)) blocks$direct_effects <- numeric(nrow(extra$direct$effects))
+  blocks
 }
 
 #' Standardized columns for the initial clustering
@@ -368,7 +372,8 @@
   as.integer(sum(extra$ordinal_categories - 1L) +
                length(extra$ordinal_categories) * (n_profiles - 1L) +
                (ncol(extra$count) %||% 0L) * n_profiles +
-               (ncol(extra$count) %||% 0L) * .latents_dispersion_rows(extra, n_profiles))
+               (ncol(extra$count) %||% 0L) * .latents_dispersion_rows(extra, n_profiles) +
+               NROW(extra$direct$effects))
 }
 
 #' Distinct observed rows of the ordinal and count indicators, for the
@@ -430,6 +435,10 @@
   if (!is.null(parameters$count_dispersion)) {
     dimnames(parameters$count_dispersion) <- list(profile_names, colnames(extra$count))
   }
+  if (!is.null(parameters$direct_effects)) {
+    effects <- extra$direct$effects
+    names(parameters$direct_effects) <- paste(effects$indicator, effects$covariate, sep = ":")
+  }
   parameters
 }
 
@@ -486,7 +495,12 @@
       sprintf(if (natural) "count_dispersion[%s,%s]" else "log_count_dispersion[%s,%s]",
               outcome, indicator)))
   })
-  unlist(c(ordinal, count))
+  # Direct effects are regression coefficients, the same on both scales.
+  effects <- extra$direct$effects
+  direct <- if (is.null(effects)) NULL else
+    stats::setNames(unname(parameters$direct_effects),
+                    sprintf("direct_effect[shared,%s,%s]", effects$indicator, effects$covariate))
+  unlist(c(ordinal, count, list(direct)))
 }
 
 #' Number of ordinal and count coordinates (the same on both scales)
@@ -515,6 +529,7 @@
     list(means = exp(take(n_profiles)),
          dispersion = if (negative_binomial) rep_len(exp(take(rows)), n_profiles))
   })
+  direct <- take(NROW(extra$direct$effects))
   stopifnot("the extra coordinates must be used exactly" = at == length(theta))
   list(ordinal_intercepts = if (length(ordinal) == 0L) NULL else
          lapply(ordinal, `[[`, "intercepts"),
@@ -523,7 +538,8 @@
        count_means = if (length(count) == 0L) NULL else
          matrix(vapply(count, `[[`, numeric(n_profiles), "means"), n_profiles),
        count_dispersion = if (length(count) == 0L || !negative_binomial) NULL else
-         matrix(vapply(count, `[[`, numeric(n_profiles), "dispersion"), n_profiles))
+         matrix(vapply(count, `[[`, numeric(n_profiles), "dispersion"), n_profiles),
+       direct_effects = if (length(direct) == 0L) NULL else direct)
 }
 
 #' Scores of the ordinal and count coordinates
@@ -539,9 +555,12 @@
 #' @param posteriors n x C posteriors (weighted, under sampling weights).
 #' @param parameters The blocks at which to evaluate.
 #' @param group_index Group of each row, or `NULL` for the total.
+#' @param x The continuous matrix, unshifted; needed for direct effects, whose
+#'   scores are `.latents_direct_scores()`.
 #' @return Groups (or one row) by `.latents_extra_width()` columns.
 #' @noRd
-.latents_extra_scores <- function(extra, posteriors, parameters, group_index = NULL) {
+.latents_extra_scores <- function(extra, posteriors, parameters, group_index = NULL,
+                                  x = NULL) {
   n_rows <- nrow(posteriors)
   n_profiles <- ncol(posteriors)
   if (is.null(extra)) {
@@ -585,8 +604,14 @@
     cbind(mean_scores, dispersion_scores)
   })
   rows <- do.call(cbind, c(ordinal, count))
-  if (is.null(group_index)) matrix(colSums(rows), 1L) else
-    rowsum(rows, group_index, reorder = FALSE)
+  n_out <- if (is.null(group_index)) 1L else max(group_index)
+  indicator_scores <- if (is.null(rows)) matrix(numeric(0), n_out, 0L) else
+    if (is.null(group_index)) matrix(colSums(rows), 1L) else
+      rowsum(rows, group_index, reorder = FALSE)
+  if (is.null(extra$direct)) return(indicator_scores)
+  stopifnot("direct-effect scores need the continuous indicators" = is.matrix(x))
+  cbind(indicator_scores,
+        .latents_direct_scores(x, extra, posteriors, parameters, group_index))
 }
 
 #' Natural-by-unconstrained Jacobian of the ordinal and count block
@@ -764,7 +789,8 @@
     }, numeric(n)), n, dimnames = list(NULL, colnames(extra$count)))
   list(ordinal = ordinal, ordinal_levels = extra$ordinal_levels,
        ordinal_categories = extra$ordinal_categories, count = count,
-       count_model = extra$count_model, count_dispersion = extra$count_dispersion)
+       count_model = extra$count_model, count_dispersion = extra$count_dispersion,
+       direct = if (!is.null(extra$direct)) .latents_direct_like(extra$direct, newdata))
 }
 
 #' Print the ordinal and count indicators of a fit
@@ -779,7 +805,10 @@
       "count %s (%s; get_results(x, \"count_means\"))",
       paste(x$count, collapse = ", "),
       if (.latents_negative_binomial(x$extra_data)) sprintf(
-        "negative binomial, %s dispersion", x$extra_data$count_dispersion) else "Poisson"))
+        "negative binomial, %s dispersion", x$extra_data$count_dispersion) else "Poisson"),
+    if (!is.null(x$extra_data$direct)) sprintf(
+      "direct effects %s (get_results(x, \"direct_effects\"))",
+      paste(.latents_direct_terms(x$extra_data$direct$effects), collapse = ", ")))
   if (length(pieces) > 0L) cat(sprintf("Also %s\n", paste(pieces, collapse = "; ")))
   invisible(NULL)
 }
@@ -837,7 +866,12 @@
             row(dispersion_outcomes, rep(indicator, length(dispersion_outcomes)),
                 if (free) "log_count_dispersion" else "count_dispersion"))
   })
-  do.call(rbind, c(list(empty), ordinal, count))
+  effects <- extra$direct$effects
+  direct <- if (!is.null(effects)) {
+    row(rep("shared", nrow(effects)), paste(effects$indicator, effects$covariate, sep = ":"),
+        "direct_effect")
+  }
+  do.call(rbind, c(list(empty), ordinal, count, list(direct)))
 }
 
 #' The rows of prepared ordinal and count indicators
@@ -849,6 +883,9 @@
   if (is.null(extra)) return(NULL)
   if (!is.null(extra$ordinal)) extra$ordinal <- extra$ordinal[rows, , drop = FALSE]
   if (!is.null(extra$count)) extra$count <- extra$count[rows, , drop = FALSE]
+  if (!is.null(extra$direct)) {
+    extra$direct$covariates <- extra$direct$covariates[rows, , drop = FALSE]
+  }
   extra
 }
 

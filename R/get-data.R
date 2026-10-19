@@ -201,6 +201,13 @@
 #'     and the `correlation` it implies; its category and probability
 #'     columns are `NA`. A fit without pairs raises
 #'     `latents_no_local_dependence`, and `what = "all"` leaves the table out.}
+#'   \item{`"direct_effects"`}{For a fit with `direct_effects`, one row per
+#'     effect: `indicator`, `covariate`, `estimate` (the change in the
+#'     indicator's mean per unit of the covariate, the same in every profile),
+#'     `standard_error`, `statistic`, `p_value`, `conf_low` and `conf_high`
+#'     (Wald, from [parameter_inference()]). A fit without direct effects
+#'     raises `latents_no_direct_effects`, and `what = "all"` leaves the table
+#'     out.}
 #'   \item{`"lmr"`}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
 #'     Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
 #'     Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged
@@ -802,7 +809,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     # A grid with one solution per model has no tree.
     "latents_no_tree",
     # A fit without locally dependent pairs has no table of them.
-    "latents_no_local_dependence")
+    "latents_no_local_dependence",
+    # Nor does a fit without direct effects.
+    "latents_no_direct_effects")
 }
 
 #' Build every table an object can produce
@@ -965,7 +974,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
                                                         standard_errors = TRUE),
       "data"),
     covariances = .multilpa_table(.multilpa_covariance_frame),
-    local_dependence = .multilpa_table(.latents_local_dependence_table))
+    local_dependence = .multilpa_table(.latents_local_dependence_table),
+    direct_effects = .multilpa_table(
+      function(x, data = NULL) .latents_direct_frame(x, data = data), "data"))
 }
 
 #' The mixing-structure tables, which differ by model family

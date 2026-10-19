@@ -61,6 +61,11 @@
   stopifnot(is.matrix(x), is.list(expectation),
             variance_model %in% c("varying", "equal"), min_variance > 0,
             is.null(held) || is.list(held))
+  # With direct effects this is an ECM step: the means and variances are
+  # maximized for the indicators with the current effects removed, then the
+  # effects for the new means and variances (R/direct-effects.R).
+  unshifted <- x
+  x <- .latents_direct_shift(x, extra, previous)
   weights <- colSums(expectation$subject_posteriors)
   group_weights <- colSums(expectation$group_posteriors)
   if (any(weights <= 0) || any(group_weights <= 0)) {
@@ -137,6 +142,10 @@
   if (!is.null(extra)) {
     blocks <- .latents_extra_maximize(extra, expectation$subject_posteriors, previous)
     parameters[names(blocks)] <- blocks
+  }
+  if (!is.null(extra$direct)) {
+    parameters$direct_effects <- .latents_direct_maximize(
+      unshifted, extra, expectation$subject_posteriors, means, variances)
   }
   if (any(!is.finite(unlist(parameters, use.names = FALSE)))) {
     stop("Non-finite parameters in the M-step; check indicator scales.")
@@ -974,6 +983,30 @@
 #'   `latents_partial_pair` warning. A pair of indicators that are not both
 #'   categorical, that names an indicator twice or that shares an indicator
 #'   with another pair raises `latents_bad_argument`. Default: none.
+#' @param direct_effects Direct effects of covariates on continuous
+#'   indicators, written `"indicator ~ covariate"` (several covariates joined
+#'   with `+`, several indicators as a character vector). The covariate moves
+#'   the indicator's mean by the same amount in every profile,
+#'   `y = mean_k + b z + e` (Bandeen-Roche et al., 1997), so a difference in
+#'   the indicator that the covariate explains is not read as a difference
+#'   between profiles: the direct effect Latent GOLD fits with
+#'   `y <- 1 + Cluster + z`. Covariates are numeric columns of `data`,
+#'   observed in every row (code a categorical covariate as indicator
+#'   columns), and enter with their values as given, so `means` are the
+#'   profile means at a covariate value of zero; centre a covariate first to
+#'   read them at its mean. The effects are estimated with the profiles (a
+#'   conditional maximization step in EM; Meng & Rubin, 1993), have standard
+#'   errors in [parameter_inference()] (parameter `direct_effect`, term
+#'   `"indicator:covariate"`), and are reported by
+#'   `get_results(fit, "direct_effects")`. [predict()] and the functions that
+#'   take `data` read the covariates from it. Direct effects need a diagonal
+#'   covariance (EEI or VVI) and are not combined with `local_dependence`
+#'   between continuous indicators, `profile_covariates`, `group_covariates`,
+#'   `time`, `prior`, `noise`, `fixed`, `start`, `centering` or `scaling`;
+#'   those, a term that is not `"indicator ~ covariate"`, and an indicator
+#'   that is not continuous raise `latents_bad_argument`, and a covariate
+#'   that is absent, not numeric, missing or constant raises
+#'   `latents_bad_data`. Default: none.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. It is not
 #'   used in estimation; it is stored for `get_results(x, "sequences")`,
@@ -1150,6 +1183,14 @@
 #'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 #'   non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
 #'
+#'   Bandeen-Roche, K., Miglioretti, D. L., Zeger, S. L., & Rathouz, P. J.
+#'   (1997). Latent variable regression for multiple discrete outcomes.
+#'   Journal of the American Statistical Association, 92(440), 1375--1386.
+#'
+#'   Meng, X.-L., & Rubin, D. B. (1993). Maximum likelihood estimation via the
+#'   ECM algorithm: A general framework. Biometrika, 80(2), 267--278.
+#'   doi:10.1093/biomet/80.2.267.
+#'
 #'   Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 #'   profile analyses: A comprehensive guide. Organizational Research Methods.
 #'   doi:10.1177/10944281261469432.
@@ -1207,7 +1248,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        count_dispersion = c("varying", "equal"),
                        scaling = c("none", "person", "grand"),
                        drop_empty = TRUE, cores = 1L,
-                       local_dependence = character()) {
+                       local_dependence = character(),
+                       direct_effects = character()) {
   # Read before any argument is reassigned: missing() is FALSE afterwards.
   covariance_model_given <- !missing(covariance_model)
   # Locally dependent categorical pairs are joined into one indicator each,
@@ -1373,6 +1415,22 @@ multilpa <- function(data, vars, id, n_profiles,
   # parameters while fitting free per-profile variances.
   if (structure %in% c("EEI", "EEE")) variance_model <- "equal"
   if (structure %in% c("VVI", "VVV")) variance_model <- "varying"
+  # Direct effects are checked here, before the covariate and transition
+  # engines take over: those engines do not fit them.
+  direct_terms <- NULL
+  if (length(direct_effects) > 0L) {
+    direct_terms <- .latents_parse_direct_effects(direct_effects)
+    .latents_check_direct_conflicts(c(
+      "a covariance structure other than EEI or VVI" = !structure %in% c("EEI", "VVI"),
+      "`local_dependence` between continuous indicators" = length(local_dependence) > 0L,
+      "`profile_covariates` or `group_covariates`" =
+        length(profile_covariates) > 0L || length(group_covariates) > 0L,
+      "`time`" = !is.null(time), "`prior`" = !is.null(prior),
+      "`noise`" = isTRUE(noise),
+      "`fixed` or `start`" = length(fixed) > 0L || !is.null(start),
+      "`centering` or `scaling`" = !identical(centering[[1L]], "none") ||
+        !identical(scaling[[1L]], "none")))
+  }
   # Counted across every M-step of every start, and reported once at the end.
   .multilpa_reset_structure_log()
   on.exit(.multilpa_report_structure_log(), add = TRUE)
@@ -1437,6 +1495,10 @@ multilpa <- function(data, vars, id, n_profiles,
                                             other = c(ordinal, count))
   extra <- .latents_set_count_model(
     .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
+  if (!is.null(direct_terms)) {
+    extra <- .latents_add_direct(extra, .latents_prepare_direct(
+      data, direct_terms, vars, measurement$continuous))
+  }
   continuous <- measurement$continuous
   indicator_frame <- measurement$frame
   encoded <- measurement$encoded
@@ -1504,6 +1566,12 @@ multilpa <- function(data, vars, id, n_profiles,
   # offsets. This is a translation, with no density Jacobian or scale change.
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
+  # Direct effects are fitted on centred covariates too: an intercept and the
+  # effect of a covariate far from zero are nearly collinear, which makes the
+  # conditional M-steps crawl (4911 EM iterations for a covariate centred at
+  # 41, against 21 at 1). The model is the same; the means are moved back to
+  # a covariate value of zero after EM.
+  fitting_extra <- .latents_center_direct(extra)
   if (any(!is.finite(x[!is.na(x)]^2))) {
     stop(errorCondition(
       "Indicator scales overflow squared residuals; rescale the data.",
@@ -1549,7 +1617,7 @@ multilpa <- function(data, vars, id, n_profiles,
       .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                          variance_model, min_variance, start_index,
                          covariance_model, codes, n_categories, min_probability,
-                         hierarchical = start_index == 1L, extra = extra)
+                         hierarchical = start_index == 1L, extra = fitting_extra)
     }
     # Every restart begins from the held values, so a random start cannot
     # report a measurement solution that was neither estimated nor supplied.
@@ -1570,7 +1638,7 @@ multilpa <- function(data, vars, id, n_profiles,
                tol, covariance_model, codes, n_categories, min_probability,
                held, structure, prior_parameters,
                accelerate_em = identical(acceleration, "squarem"),
-               sampling_weights = sampling_weights, extra = extra,
+               sampling_weights = sampling_weights, extra = fitting_extra,
                covariance_pattern = covariance_pattern)
   }, select_start = select_start, cores = cores,
   interior = if (exclude_boundary) function(attempt) {
@@ -1587,7 +1655,7 @@ multilpa <- function(data, vars, id, n_profiles,
   weighted_expectation <- best$expectation
   if (!is.null(sampling_weights)) {
     best$expectation <- .multilpa_expectation(x, group_index, parameters, codes,
-                                              extra = extra)
+                                              extra = fitting_extra)
   }
   subject_posteriors <- best$expectation$subject_posteriors
   subject_profiles <- max.col(subject_posteriors, ties.method = "first")
@@ -1604,6 +1672,7 @@ multilpa <- function(data, vars, id, n_profiles,
       n_noise = sum(subject_profiles == 0L))
   }
   parameters$means <- sweep(parameters$means, 2L, centers, "+")
+  parameters <- .latents_uncenter_direct(parameters, fitting_extra)
   profile_names <- paste0("profile_", seq_len(n_profiles))
   type_names <- paste0("group_class_", seq_len(n_group_classes))
   parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
@@ -1653,7 +1722,8 @@ multilpa <- function(data, vars, id, n_profiles,
   # individual-level BIC penalizes against.
   observed_per_row <- rowSums(!is.na(x)) +
     (if (is.null(codes)) 0L else rowSums(!is.na(codes))) +
-    if (is.null(extra)) 0L else rowSums(!is.na(.latents_extra_matrix(extra)))
+    if (is.null(.latents_extra_matrix(extra))) 0L else
+      rowSums(!is.na(.latents_extra_matrix(extra)))
   # Reported by print() and summary() rather than warned about: resampling verbs
   # refit the same data many times, and a warning would fire once per replicate.
   n_informative <- sum(observed_per_row > 0L)

@@ -102,7 +102,10 @@
   if (length(continuous) < 2L) return(NULL)
   # On the scale the model was fitted on, which is not the caller's scale
   # when the fit centred its indicators.
-  x <- .multilpa_center_like(object, as.matrix(data[continuous]))
+  # Residual association given the class and, with direct effects, given the
+  # covariates: the effects are removed before the pairs are compared.
+  x <- .latents_direct_shift(.multilpa_center_like(object, as.matrix(data[continuous])),
+                             object$extra_data, object)
   sampling <- .multilpa_level_weights(object, "individuals", object$n_observations)
   pairs <- utils::combn(seq_along(continuous), 2L)
   profiles <- if (identical(by, "profile"))

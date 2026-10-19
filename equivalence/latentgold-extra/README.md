@@ -31,5 +31,11 @@ GOLD's own ratio: 26.3304 / 25.5321 = 1 + 1 / (5 log 600).
 |---|---|---|---|
 | `cov_pair` | 4 continuous items, 2 classes, class-specific variances, `y1 <-> y2 \| Cluster` | LL -7272.5017, 19 parameters, BIC 14679.7150, covariances -0.4362 (s.e. 0.0442) and 0.5968 (s.e. 0.0580) | the same to every printed digit, classes in the other order (`tests/testthat/test-local-dependence.R`) |
 
+## `direct-effects/` — a direct effect of a covariate (`direct_effects = "y3 ~ z"`)
+
+| Run | Model | Latent GOLD | latents |
+|---|---|---|---|
+| `direct` | 4 continuous items, 2 classes, class-specific variances, `y3 <- 1 + Cluster + z` | LL -9396.9944, 18 parameters, BIC 18925.6267, effect 0.7864 (s.e. 0.0140), class-1 y3 intercept 0.0161 (s.e. 0.0421), y3 variances 0.9775 and 1.0451 (s.e. 0.0549, 0.0630) | the same to every printed digit (`tests/testthat/test-direct-effects.R`) |
+
 The ML three-step cases are part of the main kit (`../latentgold/`, case
 `c09`).

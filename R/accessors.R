@@ -222,7 +222,11 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   indicators <- c(continuous, categorical, .latents_draw_extra_columns(x$extra_data))
   # Back in the order the caller named them, not the order the model stored them.
   ordered <- x$vars[x$vars %in% names(indicators)]
-  frame <- c(columns, indicators[ordered])
+  # The covariates of direct effects are part of the measurement model, so the
+  # rebuilt data carry them after the indicators.
+  covariates <- x$extra_data$direct$covariates
+  frame <- c(columns, indicators[ordered],
+             if (!is.null(covariates)) as.list(as.data.frame(covariates)))
   as.data.frame(frame, stringsAsFactors = FALSE, check.names = FALSE)
 }
 
@@ -328,6 +332,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       match(as.character(data[[name]]), levels_for)
     record(name, .multilpa_same_values(codes, x$categorical_data[, name]))
   })
+  covariates <- x$extra_data$direct$covariates
+  lapply(intersect(colnames(covariates), names(data)), function(name)
+    record(name, .multilpa_same_values(data[[name]], covariates[, name])))
   extra_names <- intersect(c(x$ordinal, x$count), names(data))
   if (length(extra_names) > 0L) {
     original <- .latents_draw_extra_columns(x$extra_data)

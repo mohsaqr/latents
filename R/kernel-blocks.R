@@ -69,6 +69,9 @@
                                              offset = TRUE,
                                              n_profiles = nrow(parameters$means),
                                              constant = "separate") {
+  # Direct effects move the indicators' means with covariates; the Gaussian
+  # block measures what is left (R/direct-effects.R).
+  x <- .latents_direct_shift(x, extra, parameters)
   gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
     .multilpa_gaussian_moments(x, parameters)
   } else NULL

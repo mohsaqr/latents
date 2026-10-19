@@ -446,10 +446,13 @@
     mean_score <- measurement$means
     variance_score <- measurement$covariances
   } else {
+  # The expectation removes the direct effects itself; the residuals here
+  # must be of the indicators with them removed too.
+  shifted <- .latents_direct_shift(x, object$extra_data, parameters)
   observed <- !is.na(x)
   measurement_scores <- lapply(seq_len(object$n_profiles), function(profile) {
     stopifnot(is.numeric(profile), length(profile) == 1L)
-    residuals <- sweep(x, 2L, parameters$means[profile, ], "-")
+    residuals <- sweep(shifted, 2L, parameters$means[profile, ], "-")
     residuals[!observed] <- 0
     weights <- expectation$subject_posteriors[, profile]
     list(means = colSums(sweep(residuals, 2L, parameters$variances[profile, ], "/") * weights),
@@ -473,7 +476,7 @@
   response_score <- as.vector(.multilpa_response_scores(
     codes, expectation$subject_posteriors, parameters$response_probabilities))
   extra_score <- as.vector(.latents_extra_scores(
-    object$extra_data, expectation$subject_posteriors, parameters))
+    object$extra_data, expectation$subject_posteriors, parameters, x = x))
   -c(mean_score, variance_score, response_score, extra_score, profile_score,
      group_score)
 }
@@ -1266,11 +1269,20 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   if (!is.null(object$extra_data)) {
     extra <- .latents_prepare_extra(data, object$ordinal, object$count,
                                     object$missing %||% "error")
-    if (!identical(unname(extra$ordinal), unname(object$extra_data$ordinal)) ||
-        !identical(extra$ordinal_levels, object$extra_data$ordinal_levels) ||
-        !identical(unname(extra$count), unname(object$extra_data$count))) {
+    # A carrier can hold direct effects alone, with no indicator to compare.
+    if (length(c(object$ordinal, object$count)) > 0L &&
+        (!identical(unname(extra$ordinal), unname(object$extra_data$ordinal)) ||
+           !identical(extra$ordinal_levels, object$extra_data$ordinal_levels) ||
+           !identical(unname(extra$count), unname(object$extra_data$count)))) {
       stop(errorCondition(
         "data must reproduce the original ordinal and count indicators.",
+        class = "latents_bad_inference_data", call = NULL))
+    }
+    direct <- object$extra_data$direct
+    if (!is.null(direct) && !identical(
+      unname(.latents_direct_like(direct, data)$covariates), unname(direct$covariates))) {
+      stop(errorCondition(
+        "data must reproduce the original direct-effect covariates and row order.",
         class = "latents_bad_inference_data", call = NULL))
     }
   }
@@ -1388,13 +1400,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                                  "response", "response_logit",
                                  "ordinal_intercept", "ordinal_location",
                                  "count_mean", "log_count_mean",
-                                 "count_dispersion", "log_count_dispersion")
+                                 "count_dispersion", "log_count_dispersion",
+                                 "direct_effect")
 
 #' Parameter kinds whose term names a pair, written `a:b`
 #' @noRd
 .multilpa_paired_kinds <- c("covariance", "cholesky", "log_cholesky",
                             "rotation", "shape_cholesky", "log_shape_cholesky",
-                            "response", "response_logit", "ordinal_intercept")
+                            "response", "response_logit", "ordinal_intercept",
+                            "direct_effect")
 
 #' Multiplicity corrections an inference verb accepts
 #'

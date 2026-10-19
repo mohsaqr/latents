@@ -141,6 +141,47 @@ get_results(one_step, "coefficients")
 parameter_inference(one_step)
 ```
 
+## Direct effects on indicators
+
+A covariate can also act on an indicator rather than on membership: students
+with better previous grades may attend more within every profile. Left out
+of the model, such an effect is read as a difference between the profiles
+(differential item functioning). To estimate it, we call `multilpa()` with
+`direct_effects`, one `"indicator ~ covariate"` term per effect. The
+covariate shifts the indicator's mean by the same amount in every profile,
+and the profile means are then the means at a covariate value of zero, here
+the average standardized grade.
+
+```{r direct}
+direct <- multilpa(course_engagement,
+                   vars = c("browse", "lectures", "forum_read",
+                            "forum_post", "attendance"),
+                   id = "student", n_profiles = 2, n_group_classes = 2,
+                   direct_effects = c("attendance ~ previous_grade",
+                                      "forum_post ~ previous_grade"),
+                   n_starts = 3, seed = 1)
+get_results(direct, "direct_effects")
+compare_models(without = fit, direct = direct)
+```
+
+```{r direct-values, include = FALSE}
+effects <- get_results(direct, "direct_effects")
+effect_of <- function(name, column) with(subset(effects, indicator == name), get(column))
+compared <- compare_models(without = fit, direct = direct)
+bic_of <- function(name) sprintf("%.1f", with(subset(compared, model == name), bic_groups))
+```
+
+Attendance rises by `r round(effect_of("attendance", "estimate"), 3)` per
+unit of previous grade within each profile (95% interval
+`r round(effect_of("attendance", "conf_low"), 3)` to
+`r round(effect_of("attendance", "conf_high"), 3)`), and forum posting by
+`r round(effect_of("forum_post", "estimate"), 3)` (interval
+`r round(effect_of("forum_post", "conf_low"), 3)` to
+`r round(effect_of("forum_post", "conf_high"), 3)`). The effects are small
+against the profile differences, and BIC is lower without them
+(`r bic_of("without")` against `r bic_of("direct")`), so
+the profiles do not owe their separation to previous grades.
+
 ## Staged estimation
 
 To hold the profiles fixed while the group classes are estimated, we call
