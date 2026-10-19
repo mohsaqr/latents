@@ -157,8 +157,10 @@
 #' first, units are assigned to classes, and the outcome is then related to
 #' the assignments with a correction for classification error, so the outcome
 #' does not influence the classes. `"bch"` weights give approximately
-#' unbiased class means; regressing on the modal class attenuates the
-#' differences (Vermunt 2010; Bakk and Vermunt 2016).
+#' unbiased class means; `"ml"` estimates them by maximum likelihood with the
+#' classification errors held fixed; regressing on the modal class attenuates
+#' the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
+#' Vermunt 2016).
 #'
 #' @param x A covariate-free fitted [multilpa()] or [lta()] model, or a
 #'   trajectory model that classifies persons ([mixture_regression()] with
@@ -181,6 +183,7 @@
 #'   related to its person classes, reported with `level = "persons"`;
 #'   `"groups"` is refused there with `latents_bad_argument`.
 #' @param method `"bch"` (default) applies the Bolck-Croon-Hagenaars weights;
+#'   `"ml"` fits the maximum-likelihood step-three model (see *Details*);
 #'   `"proportional"` weights by the posterior probabilities (attenuated);
 #'   `"modal"` uses the uncorrected modal assignment, for comparison.
 #' @param ci_level Confidence level for the intervals (default 0.95).
@@ -198,10 +201,16 @@
 #'   which is appropriate only without nesting (for example a fit with a
 #'   single group). The choice is recorded in the result's `vcov_type`
 #'   attribute.
+#' @param variance For `method = "ml"`: `"varying"` (default) estimates a
+#'   variance of the outcome in each class, `"equal"` one variance shared by
+#'   the classes. Given with another method it raises `latents_bad_argument`.
 #' @return A base `data.frame`. For `contrast = "none"`, one row per class
 #'   with the columns `level`, `method`, `class`, `estimate`,
 #'   `standard_error`, `conf_low`, `conf_high` and `effective_n`; class means
-#'   are not tested. For `contrast = "pairs"`, one row per pair of classes
+#'   are not tested. For `method = "ml"`, a `variance` column (the outcome's
+#'   estimated variance in the class) comes before `effective_n`, which is
+#'   then the expected number of units in the class under the step-three
+#'   model; the `variance` attribute records the choice. For `contrast = "pairs"`, one row per pair of classes
 #'   with the columns `level`, `method`, `class`, `reference_class`,
 #'   `estimate` (the mean of `class` minus the mean of `reference_class`),
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
@@ -228,6 +237,20 @@
 #'   `latents_too_few_groups`; `vcov_type = "independent"` gives the
 #'   unclustered variance.
 #'
+#'   With `method = "ml"` the assigned class is an indicator of the true
+#'   class whose error probabilities are those of step one, and the outcome is
+#'   normal within each true class. The log likelihood
+#'   `sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)` is maximised over
+#'   the class means and variances by EM followed by Newton steps, with the
+#'   class sizes `pi_t` fixed at the average posterior probabilities and the
+#'   classification errors `D` fixed, as in Latent GOLD's step-three model for
+#'   a dependent variable. The standard errors are the sandwich of that
+#'   likelihood, clustered as for the other methods. Maximum likelihood
+#'   relies on the normal distribution within classes: when the outcome is
+#'   skewed, or its variance differs between classes while `variance =
+#'   "equal"`, ML can shift the class means, and BCH is the more robust choice
+#'   (Bakk and Vermunt 2016).
+#'
 #'   The classification-error matrix is treated as known, so the intervals
 #'   are too narrow. Over 60 replications of a two-profile design with 8%
 #'   misclassification and a true class difference of 10, `"bch"` had a bias
@@ -236,6 +259,10 @@
 #'   replications; the intervals of the other two methods covered it in none.
 #' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
 #'   improved three-step approaches. *Political Analysis*, 18, 450--469.
+#'   Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
+#'   association between latent class membership and external variables
+#'   using bias-adjusted three-step approaches. *Sociological Methodology*,
+#'   43, 272--311.
 #'   Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
 #'   modeling with continuous distal outcomes. *Structural Equation Modeling*,
 #'   23, 20--31.
@@ -256,13 +283,24 @@
 #' @export
 three_step <- function(x, data, outcome,
                        level = c("individuals", "groups"),
-                       method = c("bch", "proportional", "modal"),
+                       method = c("bch", "proportional", "modal", "ml"),
                        ci_level = 0.95, contrast = c("none", "pairs"),
                        adjust = c("BH", "holm", "hochberg", "hommel",
                                     "bonferroni", "BY", "none"),
-                       vcov_type = c("cluster", "independent")) {
+                       vcov_type = c("cluster", "independent"),
+                       variance = c("varying", "equal")) {
+  # Whether `variance` was given is read before it is matched: missing() is
+  # FALSE once an argument has been reassigned.
+  variance_given <- !missing(variance)
   level <- match.arg(level)
   method <- match.arg(method)
+  variance <- match.arg(variance)
+  if (variance_given && !identical(method, "ml")) {
+    stop(errorCondition(paste(
+      "`variance` sets the class variances of the outcome in the ML step-three",
+      "model; the other methods weight the outcome and model no variance. Use",
+      "`method = \"ml\"`."), class = "latents_bad_argument", call = NULL))
+  }
   contrast <- match.arg(contrast)
   adjust <- match.arg(adjust)
   vcov_type <- match.arg(vcov_type)
@@ -303,6 +341,10 @@ three_step <- function(x, data, outcome,
     .multilpa_check_alignment(x, data)
     values <- .multilpa_outcome_values(x, data, outcome, level)
   }
+  if (identical(method, "ml")) {
+    return(.multilpa_three_step_ml(pieces, values, level, variance, ci_level,
+                                   contrast, adjust, vcov_type))
+  }
   weights <- .multilpa_step_weights(pieces, method)
   classes <- seq_len(pieces$n_classes)
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
@@ -327,22 +369,7 @@ three_step <- function(x, data, outcome,
   ## two means are independent when they share every unit.
   influence <- sweep(weights * outer(centered, centered_estimates, "-"),
                      2L, totals, "/")
-  units <- if (identical(vcov_type, "cluster")) {
-    pieces$group_index
-  } else seq_len(nrow(influence))
-  clustered <- rowsum(influence, units, reorder = FALSE)
-  .multilpa_require_clusters(
-    nrow(clustered), pieces$n_classes,
-    what = "A cluster-robust standard error for the class outcome means",
-    unit = if (identical(vcov_type, "cluster")) "independent groups" else "observations",
-    alternative = if (identical(vcov_type, "cluster")) {
-      paste("`vcov_type = \"independent\"` treats every observation as its own",
-            "unit instead, which ignores the nesting and must be reported as",
-            "having done so.")
-    })
-  ## CR1: scaling the unit contributions by sqrt(G / (G - 1)) scales every
-  ## variance and covariance formed from them, class means and differences.
-  clustered <- clustered * sqrt(.inference_cluster_factor(nrow(clustered)))
+  clustered <- .multilpa_step_clusters(influence, pieces, vcov_type)
 
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
@@ -365,6 +392,34 @@ three_step <- function(x, data, outcome,
                              c("conf_low", "conf_high"), "ci", "estimate"),
                       column("SE", "standard_error"),
                       column("Effective n", "effective_n")))
+}
+
+#' Sum influence contributions over the independent units, scaled by CR1
+#'
+#' Shared by every three-step method: the contributions are summed within
+#' each group (`vcov_type = "cluster"`) or kept per observation, and scaled by
+#' `sqrt(G / (G - 1))`, which scales every variance and covariance formed from
+#' them, class means and differences alike.
+#' @param influence Units-by-classes influence contributions.
+#' @param pieces The list from `.multilpa_level_assignments()`.
+#' @param vcov_type `"cluster"` or `"independent"`.
+#' @return The scaled contributions, one row per independent unit.
+#' @noRd
+.multilpa_step_clusters <- function(influence, pieces, vcov_type) {
+  units <- if (identical(vcov_type, "cluster")) {
+    pieces$group_index
+  } else seq_len(nrow(influence))
+  clustered <- rowsum(influence, units, reorder = FALSE)
+  .multilpa_require_clusters(
+    nrow(clustered), pieces$n_classes,
+    what = "A cluster-robust standard error for the class outcome means",
+    unit = if (identical(vcov_type, "cluster")) "independent groups" else "observations",
+    alternative = if (identical(vcov_type, "cluster")) {
+      paste("`vcov_type = \"independent\"` treats every observation as its own",
+            "unit instead, which ignores the nesting and must be reported as",
+            "having done so.")
+    })
+  clustered * sqrt(.inference_cluster_factor(nrow(clustered)))
 }
 
 #' Pairwise differences between class outcome means

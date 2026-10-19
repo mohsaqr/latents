@@ -1,0 +1,163 @@
+c09_step1_posteriors.txt
+File name:	c09_step1_posteriors.txt	
+File size:	62313 bytes  600 records	
+File date:	2026-Oct-19 7:38:09 PM	
+Syntax:	c09_distal_ml_equal.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Max. BVR	
+c09_distal_ml_equal	2-Cluster	-1858.5415	3736.2737	3723.0829	3726.0829	3	0.0361	
+c09_distal_ml_equal - LL = -1858.5415
+2-Cluster Syntax Model	
+					
+Number of cases	600				
+Number of parameters (Npar)	3				
+Activated Constraints	0				
+Random Seed	20260922				
+Best Start Seed	20260922				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1858.5415				
+Log-prior	0.0000				
+Log-posterior	-1858.5415				
+BIC (based on LL)	3736.2737				
+AIC (based on LL)	3723.0829				
+AIC3 (based on LL)	3726.0829				
+CAIC (based on LL)	3739.2737				
+SABIC (based on LL)	3726.7495				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0075				
+Reduction of errors (Lambda)	0.9818				
+Entropy R-squared	0.9706				
+Standard R-squared	0.9767				
+Classification log-likelihood	-1870.4611				
+Entropy	11.9197				
+CLC	3740.9222				
+AWE	3788.3038				
+ICL-BIC	3760.1130				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	333.2465	2.7290	335.9755		
+2	1.7535	262.2710	264.0245		
+Total	335.0000	265.0000	600.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	332.5883	3.3872	335.9755		
+2	3.3872	260.6374	264.0245		
+Total	335.9755	264.0245	600.0000		
+					
+Files					
+Infile	C:\latents_ml_run\c09_step1_posteriors.txt	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20260922				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+step3					
+classification	modal				
+adjustment	ML				
+simultaneous	no				
+aggregate	no				
+output					
+parameters	first				
+standard errors	standard				
+bivariate residuals	marginal				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Variables					
+distal	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+variables
+   dependent distal continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 );
+equations
+   distal <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+distal	<-	1	0.0004	0.1116	0.0036	1.00	0.0000	1	1.00	
+distal	<-	Cluster(1)	0.0000	.	.	.	3637.0758	1	2.2e-792	
+distal	<-	Cluster(2)	9.9637	0.1652	60.3082	2.2e-792				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+distal			4.0231	0.2374	16.9478	2.0e-64	287.2280	1	2.0e-64	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+distal	<-	 Cluster	Cluster	1	2	3637.0758	1	2.2e-792	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5904	.	0.4096	.	 	 	
+distal	 	
+Mean	0.0004	0.1116	9.9641	0.1256	4.0811	0.0849	
+ProbMeans-Posterior
+	Cluster		
+	1	2	
+Overall	0.5593	0.4407	
+Variables			
+distal			
+-6.334 - -0.664	1.0000	0.0000	
+-0.648 - 1.114	1.0000	0.0000	
+1.123 - 7.113	0.7963	0.2037	
+7.297 - 10.28	0.0002	0.9998	
+10.28 - 16.10	0.0000	1.0000	
+Bivariate Residuals
+Dependent	distal	Cluster_Modal	
+distal	.		
+Cluster_Modal	0.0361	.	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	
+ 	0.5904	.	0.4096	.	
+	
+ 	distal	
+Cluster	Mean	s.e.	 	 	
+1	0.0004	0.1116	 	 	
+2	9.9641	0.1256	 	 	
+	
+ 	Cluster_Modal	
+Cluster	Cluster#1	s.e.	Cluster#2	s.e.	
+1	0.9073	.	0.0927	.	
+2	0.1163	.	0.8837	.	

@@ -1,11 +1,11 @@
 # Retained Latent GOLD output
 
-Produced 2026-09-22 by Latent GOLD 6.1 (Basic+Advanced/Syntax+Choice), free academic single-user licence,
+Produced 2026-10-19 by Latent GOLD 6.1 (Basic+Advanced/Syntax+Choice), free academic single-user licence,
 running under Wine Devel 11.17 (Gcenx build) on macOS 26.3.1, arm64; prefix ~/.wine-latentgold.
 
 Each model was estimated in batch as `lg61.exe <case>.lgs /b /o <case>.lst`, from a directory inside the
 Wine drive. The kit that produced it was built by `make-kit.R` under multilpa
-0.5.0.
+0.95.12.
 
 ## Why it is kept
 
@@ -17,8 +17,8 @@ change. `INPUTS.md5` fingerprints exactly those inputs; `compare.R` warns with
 
 ## Files
 
-- 28 listings and posterior files (`OUTPUTS.md5`)
-- from 26 input files (`INPUTS.md5`)
+- 30 listings and posterior files (`OUTPUTS.md5`)
+- from 28 input files (`INPUTS.md5`)
 
 These are Latent GOLD's own output, kept for verification only. They are not
 redistributed as part of the package: `equivalence/` is in `.Rbuildignore`.

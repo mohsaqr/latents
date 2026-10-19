@@ -1,4 +1,4 @@
-multilpa 0.5.0, R 4.5.2, built 2026-09-22
+multilpa 0.95.12, R 4.5.2, built 2026-10-19
 
 Run order:
   1. c01_continuous_varying.lgs
@@ -14,9 +14,11 @@ Run order:
   11. c09_distal_bch.lgs
   12. c09_distal_modal.lgs
   13. c09_distal_proportional.lgs
-  14. c09_covariate_ml.lgs
-  15. c10_lta.lgs
-  16. c11_lta_mixture.lgs
+  14. c09_distal_ml_varying.lgs
+  15. c09_distal_ml_equal.lgs
+  16. c09_covariate_ml.lgs
+  17. c10_lta.lgs
+  18. c11_lta_mixture.lgs
 
 md5:
   3d0c3ebccb5b60ea6e37c2b26950df2a  c01_continuous_varying.lgs
@@ -36,6 +38,8 @@ md5:
   8d65a2b85c89b2f7ea73407344994163  c08.dat
   eb6126e4809d2b6e7e1309d0dcb2e446  c09_covariate_ml.lgs
   97318b6201522dd9fffae90e8a0d3679  c09_distal_bch.lgs
+  f6f9ca2d28cd3775f6285cabd5307d66  c09_distal_ml_equal.lgs
+  987372d459b11683764532017ee734ac  c09_distal_ml_varying.lgs
   ebeba6f53cd820bc9d5f7179f5d9c9ee  c09_distal_modal.lgs
   21ecc375d711b5546cff5759352a2029  c09_distal_proportional.lgs
   d62dd7d9e98302757e41fdad5523c076  c09_step1.lgs
@@ -45,4 +49,4 @@ md5:
   dfa38195117bc6f00d94c275e5039924  c11_lta_mixture.lgs
   0b8405cb8d728411dbee13167ebdef75  c12_course_engagement.lgs
   078a7e2c4c283c75c90d8bf24a6ea48b  c12.dat
-  3fb578771c946cc97059916cbac11aa7  run-all.bat
+  36895687b42cf6a648b304692426198c  run-all.bat

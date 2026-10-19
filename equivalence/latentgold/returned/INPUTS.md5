@@ -15,6 +15,8 @@ bba75ed7d8a52aa07345d08fbb5bea7d  c08_bivariate_residuals.lgs
 8d65a2b85c89b2f7ea73407344994163  c08.dat
 eb6126e4809d2b6e7e1309d0dcb2e446  c09_covariate_ml.lgs
 97318b6201522dd9fffae90e8a0d3679  c09_distal_bch.lgs
+f6f9ca2d28cd3775f6285cabd5307d66  c09_distal_ml_equal.lgs
+987372d459b11683764532017ee734ac  c09_distal_ml_varying.lgs
 ebeba6f53cd820bc9d5f7179f5d9c9ee  c09_distal_modal.lgs
 21ecc375d711b5546cff5759352a2029  c09_distal_proportional.lgs
 d62dd7d9e98302757e41fdad5523c076  c09_step1.lgs

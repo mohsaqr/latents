@@ -6,8 +6,9 @@ model this package fits (Vermunt 2003) and of the three-step corrections
 on this machine under Wine; see "Pilot" below. This directory builds the data
 and syntax, has Latent GOLD estimate them, and compares the output here.
 
-**Status: run, 2026-09-22. 372 quantities compared, 372 agree, 0 disagree;
-7 more shown but not comparable, each with its reason.**
+**Status: run, 2026-09-22; ML step-three cases added and run 2026-10-19.
+376 quantities compared, 376 agree, 0 disagree; 11 more shown but not
+comparable, each with its reason.**
 Latent GOLD's own output is retained in `returned/`, so `compare.R` runs
 offline: **Latent GOLD is not needed again** unless the kit's data or syntax
 change, which `compare.R` detects (`multilpa_stale_latentgold_output`).
@@ -19,13 +20,15 @@ change, which `compare.R` detects (`multilpa_stale_latentgold_output`).
 | Means, variances, group-class proportions, recomputed from Latent GOLD's posteriors | 118 | largest difference 9.7e-7 |
 | Information criteria, in both sample-size conventions | 75 | largest difference 4.8e-5, which is twice the likelihood's rounding |
 | Sample sizes (cases, groups) | 21 | exact |
-| Estimates read from the listing's tables: means, variances, class probabilities, logits, Step-3 means and R3STEP logits | 58 | largest difference 4.9e-5, inside the printed rounding of 5e-5 |
+| Estimates read from the listing's tables: means, variances, class probabilities, logits, Step-3 means (BCH, modal, proportional, ML with equal and class-specific variances) and R3STEP logits | 62 | largest difference 4.9e-5, inside the printed rounding of 5e-5 |
 | Standard errors read from the listing, including R3STEP's | 51 | largest difference 5.0e-5 (4.95e-5), inside the printed rounding |
 | Bivariate residuals, as the ranking of indicator pairs | 3 | identical ranking |
 
 Seven rows are `not comparable`, and show both values with the reason:
 
-- the six Step-3 distal-mean standard errors. This package's are
+- the ten Step-3 distal-mean standard errors (four of them ML; there this
+  package's model-based errors, which `three_step()` does not report, match
+  Latent GOLD's to every printed digit, 0.1128 and 0.1249). This package's are
   cluster-robust, which on this single-level case is the Huber-White
   sandwich. Latent GOLD's are its `standard` errors, the option its listing
   records, and for the modal and proportional models they assume one variance

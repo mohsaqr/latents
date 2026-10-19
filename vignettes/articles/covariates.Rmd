@@ -80,6 +80,19 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
            contrast = "pairs")
 ```
 
+Maximum likelihood is the other correction. With `method = "ml"`, the
+assigned profile becomes an indicator of the true profile whose
+classification errors are fixed at those of the measurement model, and the
+external variable is normal within each profile, with its own variance. The
+table adds that variance. When the variable is close to normal within
+profiles, ML gives smaller standard errors than BCH; when it is skewed, BCH
+is the more robust choice.
+
+```{r ml}
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "ml")
+```
+
 To see the effect of ignoring classification error, we call `three_step()`
 with `method = "modal"`, which treats each case's most probable profile as
 known.
@@ -163,6 +176,8 @@ get_results(fit, "bch_weights", level = "individuals")       # BCH weights per c
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "proportional")        # weighting by posterior probabilities
 three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "ml", variance = "equal")  # ML with one shared variance
+three_step(fit, data = course_engagement, outcome = "previous_grade",
            vcov_type = "independent")      # standard errors without clustering
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "observed")             # observed-information standard errors
@@ -189,6 +204,8 @@ parameter_inference(staged)                # standard errors of the estimated st
 
 - Three-step methods assume classification errors are independent of the
   external variable given the true class, and treat the error matrix as known.
+- The ML correction also assumes the external variable is normal within each
+  class; BCH does not.
 - One-step coefficients are conditional on the group class and can change the
   profiles, so they need not equal the three-step coefficients.
 - Staged estimation does not carry first-stage uncertainty into the second

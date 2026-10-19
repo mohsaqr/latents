@@ -1,0 +1,147 @@
+# The ML step-three model of a distal outcome (Vermunt 2010; Bakk, Tekle and
+# Vermunt 2013): the assigned class is an indicator with the step-one
+# classification errors held fixed, the outcome normal within each class.
+
+ml_data <- function(seed = 11, n_groups = 80, per = 10) {
+  set.seed(seed)
+  n <- n_groups * per
+  truth <- 1L + as.integer(stats::runif(n) > 0.5)
+  data.frame(g = rep(seq_len(n_groups), each = per),
+             y1 = stats::rnorm(n, c(-1, 1)[truth]),
+             y2 = stats::rnorm(n, c(-1, 1)[truth]),
+             distal = stats::rnorm(n, c(0, 3)[truth], c(1, 2)[truth]),
+             truth = truth)
+}
+
+ml_fit <- function(data) {
+  quietly(multilpa(data, c("y1", "y2"), "g", n_profiles = 2, n_group_classes = 1,
+                   n_starts = 3, seed = 1))
+}
+
+test_that("with no classification error the ML means are the class means", {
+  # Hard posteriors make the error matrix the identity, so each unit belongs
+  # to its assigned class and the step-three model is a normal model per class.
+  set.seed(4)
+  values <- c(stats::rnorm(30, 2), stats::rnorm(20, -1, 3))
+  modal <- rep(1:2, c(30, 20))
+  pieces <- list(posteriors = cbind(modal == 1, modal == 2) * 1, modal = modal,
+                 n_classes = 2L)
+  fit <- .multilpa_step_ml_fit(pieces, values, "varying")
+  expect_true(fit$converged)
+  expect_equal(fit$means, as.vector(tapply(values, modal, mean)), tolerance = 1e-10)
+  expected_variances <- as.vector(tapply(values, modal, \(v) mean((v - mean(v))^2)))
+  expect_equal(fit$variances, expected_variances, tolerance = 1e-10)
+  pooled <- .multilpa_step_ml_fit(pieces, values, "equal")
+  expect_equal(pooled$variances[1L], sum(30 * expected_variances[1L],
+                                         20 * expected_variances[2L]) / 50,
+               tolerance = 1e-10)
+})
+
+test_that("the analytic scores are the gradient of the step-three likelihood", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  pieces <- .multilpa_level_assignments(fit, "individuals")
+  invisible(lapply(c("varying", "equal"), \(variance) {
+    step <- .multilpa_step_ml_fit(pieces, data$distal, variance)
+    point <- .multilpa_step_ml_coordinates(step, variance) + c(0.1, -0.2, 0.05,
+      if (identical(variance, "varying")) -0.1)
+    analytic <- colSums(.multilpa_step_ml_scores(step, data$distal, variance, point))
+    numeric <- vapply(seq_along(point), \(j) {
+      h <- 1e-6
+      up <- point; up[j] <- up[j] + h
+      down <- point; down[j] <- down[j] - h
+      (.multilpa_step_ml_log_likelihood(step, data$distal, variance, up) -
+         .multilpa_step_ml_log_likelihood(step, data$distal, variance, down)) / (2 * h)
+    }, numeric(1))
+    expect_equal(analytic, numeric, tolerance = 1e-6)
+    # At the estimate the score is zero.
+    expect_lt(max(abs(colSums(.multilpa_step_ml_scores(step, data$distal, variance)))),
+              1e-4)
+  }))
+})
+
+test_that("ML recovers the class means and variances of a simulated outcome", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  result <- three_step(fit, data, "distal", method = "ml")
+  expect_s3_class(result, "data.frame")
+  expect_named(result, c("level", "method", "class", "estimate", "standard_error",
+                         "conf_low", "conf_high", "variance", "effective_n"))
+  # The profiles are numbered by the fit; match them to the simulated classes.
+  order <- order(result$estimate)
+  expect_equal(result$estimate[order], c(0, 3), tolerance = 0.15)
+  expect_equal(result$variance[order], c(1, 4), tolerance = 0.25)
+  expect_true(all(result$conf_low < result$estimate & result$estimate < result$conf_high))
+  expect_equal(sum(result$effective_n), nrow(data), tolerance = 1e-8)
+  expect_identical(attr(result, "variance"), "varying")
+})
+
+test_that("shifting the outcome shifts the means; scaling scales means and errors", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  base <- three_step(fit, data, "distal", method = "ml")
+  shifted <- three_step(fit, transform(data, distal = distal + 100), "distal",
+                        method = "ml")
+  expect_equal(shifted$estimate, base$estimate + 100, tolerance = 1e-6)
+  expect_equal(shifted$standard_error, base$standard_error, tolerance = 1e-6)
+  scaled <- three_step(fit, transform(data, distal = distal * 10), "distal",
+                       method = "ml")
+  expect_equal(scaled$estimate, base$estimate * 10, tolerance = 1e-6)
+  expect_equal(scaled$standard_error, base$standard_error * 10, tolerance = 1e-6)
+  expect_equal(scaled$variance, base$variance * 100, tolerance = 1e-6)
+})
+
+test_that("ML pairs are the differences of its class means", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  means <- three_step(fit, data, "distal", method = "ml")
+  pairs <- three_step(fit, data, "distal", method = "ml", contrast = "pairs")
+  expect_identical(nrow(pairs), 1L)
+  expect_equal(pairs$estimate,
+               means$estimate[means$class == pairs$class] -
+                 means$estimate[means$class == pairs$reference_class],
+               tolerance = 1e-10)
+  expect_identical(unique(pairs$method), "ml")
+})
+
+test_that("ML arguments and outcomes it cannot take are refused by class", {
+  data <- ml_data()
+  fit <- ml_fit(data)
+  expect_error(three_step(fit, data, "distal", method = "bch", variance = "equal"),
+               class = "latents_bad_argument")
+  expect_error(three_step(fit, transform(data, distal = 1), "distal", method = "ml"),
+               class = "latents_bad_outcome")
+  # The released methods are unchanged by the new argument.
+  expect_identical(three_step(fit, data, "distal"),
+                   three_step(fit, data, "distal", method = "bch"))
+})
+
+test_that("both variance models converge and agree with Latent GOLD's step three", {
+  # Latent GOLD 6.1, `step3 modal ml` on this package's case c09 with the
+  # class sizes fixed at the average posteriors (equivalence/latentgold/):
+  # log likelihoods, means and variances as printed there.
+  skip_if_not(file.exists(test_path("..", "..", "equivalence", "latentgold", "cases.R")),
+              "the Latent GOLD kit is not available")
+  source(test_path("..", "..", "equivalence", "latentgold", "cases.R"), local = TRUE)
+  case <- .lg_step_case(.lg_step_data(seed = 109L))
+  fit <- case$fit()
+  pieces <- .multilpa_level_assignments(fit, "individuals")
+  varying <- .multilpa_step_ml_fit(pieces, case$data$distal, "varying")
+  equal <- .multilpa_step_ml_fit(pieces, case$data$distal, "equal")
+  expect_true(varying$converged)
+  expect_true(equal$converged)
+  # Within half a unit of Latent GOLD's last printed digit (1e-4 for the
+  # likelihood of the equal-variance model, which Latent GOLD itself stops at
+  # its own tolerance).
+  within <- function(actual, printed, half_unit = 5e-5) {
+    expect_true(all(abs(actual - printed) <= half_unit),
+                info = paste(format(actual, digits = 8), collapse = " "))
+  }
+  within(varying$log_likelihood, -1858.5077)
+  within(equal$log_likelihood, -1858.5415, 1e-4)
+  # Latent GOLD numbers its classes as this package does on this case.
+  within(varying$means, c(0.0029, 9.9668))
+  within(varying$variances, c(4.0837, 3.9502))
+  within(equal$means, c(0.0004, 9.9641))
+  within(equal$variances[1L], 4.0231)
+})

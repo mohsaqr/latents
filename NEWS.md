@@ -1,3 +1,16 @@
+# latents (development version)
+
+### Maximum-likelihood three-step distal outcomes
+
+* `three_step(method = "ml")` estimates the class means of a distal outcome
+  by maximum likelihood, with the step-one classification errors held fixed
+  (Vermunt 2010; Bakk, Tekle and Vermunt 2013). `variance = "varying"`
+  (default) or `"equal"` sets the outcome's variances; the table adds the
+  estimated `variance` of each class. Standard errors are the clustered
+  sandwich, and `contrast = "pairs"` compares the classes, as for the other
+  methods. BCH remains the default, being more robust to non-normal
+  outcomes (Bakk and Vermunt 2016).
+
 # latents 0.95.12
 
 ### Quieter and stricter checks

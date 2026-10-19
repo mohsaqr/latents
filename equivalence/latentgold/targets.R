@@ -58,6 +58,10 @@
          distal_modal = three_step(fit, case$data, "distal", method = "modal"),
          distal_proportional = three_step(fit, case$data, "distal",
                                           method = "proportional"),
+         distal_ml_varying = three_step(fit, case$data, "distal", method = "ml",
+                                        variance = "varying"),
+         distal_ml_equal = three_step(fit, case$data, "distal", method = "ml",
+                                      variance = "equal"),
          # The retained listing reports model-based information SEs. The
          # package's default is now robust, a different covariance estimator.
          covariate_ml = r3step(fit, case$data, "x", vcov_type = "observed"))

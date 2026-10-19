@@ -388,13 +388,16 @@ lg_cases <- function() {
 #' | `three_step(method = "bch")` | `step3 modal bch` |
 #' | `three_step(method = "modal")` | `step3 modal none` |
 #' | `three_step(method = "proportional")` | `step3 proportional none` |
+#' | `three_step(method = "ml", variance = "varying")` | `step3 modal ml`, `distal | Cluster` |
+#' | `three_step(method = "ml", variance = "equal")` | `step3 modal ml` |
 #' | `r3step()` | `step3 modal ml` |
 #'
 #' @param data From [.lg_step_data()].
 #' @return One case.
 .lg_step_case <- function(data) {
   posterior_columns <- "( Cluster#1 Cluster#2 )"
-  step3_model <- function(name, step3, dependent = NULL, predictor = NULL) {
+  step3_model <- function(name, step3, dependent = NULL, predictor = NULL,
+                          variance_by_class = FALSE) {
     c(sprintf("title '%s';", name),
       .lg_options(step3 = step3),
       "variables",
@@ -402,8 +405,15 @@ lg_cases <- function() {
       if (!is.null(dependent)) sprintf("   dependent %s continuous;", dependent),
       sprintf("   latent Cluster nominal posterior = %s;", posterior_columns),
       "equations",
-      sprintf("   Cluster <- 1%s;", if (is.null(predictor)) "" else paste0(" + ", predictor)),
-      if (!is.null(dependent)) sprintf("   %s <- 1 + Cluster;", dependent))
+      # An ML model for a dependent variable fixes the class sizes at the
+      # average posterior probabilities, as three_step(method = "ml") does,
+      # which Latent GOLD does when the sizes have no equation.
+      if (!(grepl("ml$", step3) && !is.null(dependent))) {
+        sprintf("   Cluster <- 1%s;", if (is.null(predictor)) "" else paste0(" + ", predictor))
+      },
+      if (!is.null(dependent)) sprintf("   %s <- 1 + Cluster;", dependent),
+      # A class-specific residual variance of the dependent variable.
+      if (!is.null(dependent) && variance_by_class) sprintf("   %s | Cluster;", dependent))
   }
   step1 <- c("title 'c09_step1';",
              .lg_options(outfile = "c09_step1_posteriors.txt",
@@ -415,7 +425,7 @@ lg_cases <- function() {
              "   Cluster <- 1;",
              .lg_measurement(c("y1", "y2")))
   list(
-    description = "Single-level 2-profile measurement model, then Step-3 for a distal outcome (BCH, modal, proportional) and for a covariate (ML).",
+    description = "Single-level 2-profile measurement model, then Step-3 for a distal outcome (BCH, modal, proportional, ML with equal and class-specific variances) and for a covariate (ML).",
     anchors = c("likelihood", "posteriors", "classification errors", "BCH means", "modal means",
                 "proportional means", "R3STEP slope"),
     data = data,
@@ -436,6 +446,11 @@ lg_cases <- function() {
         step3_model("c09_distal_modal", "modal none", dependent = "distal"))),
       c09_distal_proportional.lgs = .lg_file("c09_step1_posteriors.txt", list(
         step3_model("c09_distal_proportional", "proportional none", dependent = "distal"))),
+      c09_distal_ml_varying.lgs = .lg_file("c09_step1_posteriors.txt", list(
+        step3_model("c09_distal_ml_varying", "modal ml", dependent = "distal",
+                    variance_by_class = TRUE))),
+      c09_distal_ml_equal.lgs = .lg_file("c09_step1_posteriors.txt", list(
+        step3_model("c09_distal_ml_equal", "modal ml", dependent = "distal"))),
       c09_covariate_ml.lgs = .lg_file("c09_step1_posteriors.txt", list(
         step3_model("c09_covariate_ml", "modal ml", predictor = "x")))),
     data_file = "c09.dat")

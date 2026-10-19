@@ -611,7 +611,9 @@
     .lg_rows(case, c(paste("estimate:", labels), paste("standard error:", labels)),
              NA_real_, c(estimates, errors), NA_real_, status = status, note = note)
   }
-  means <- lapply(c("distal_bch", "distal_modal", "distal_proportional"), function(name) {
+  means <- lapply(intersect(c("distal_bch", "distal_modal", "distal_proportional",
+                              "distal_ml_varying", "distal_ml_equal"), names(steps)),
+                  function(name) {
     table <- steps[[name]]
     labels <- sprintf("%s: class %d mean", name, table$class)
     lines <- read(name)
@@ -638,7 +640,7 @@
     .lg_located_rows(case, labels, located, table$estimate, table$standard_error,
                      error_note = sprintf("This package's is %s; Latent GOLD's is model-based%s.",
                                           attr(table, "vcov_type") %||% "not recorded",
-                                          if (identical(name, "distal_bch")) "" else
+                                          if (name %in% c("distal_bch", "distal_ml_varying")) "" else
                                             ", with one variance shared by the classes"))
   })
   slopes <- steps$covariate_ml

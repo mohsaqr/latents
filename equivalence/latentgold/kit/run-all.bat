@@ -35,6 +35,10 @@ echo Estimating c09_distal_modal.lgs
 %LG% c09_distal_modal.lgs /b /o c09_distal_modal.lst
 echo Estimating c09_distal_proportional.lgs
 %LG% c09_distal_proportional.lgs /b /o c09_distal_proportional.lst
+echo Estimating c09_distal_ml_varying.lgs
+%LG% c09_distal_ml_varying.lgs /b /o c09_distal_ml_varying.lst
+echo Estimating c09_distal_ml_equal.lgs
+%LG% c09_distal_ml_equal.lgs /b /o c09_distal_ml_equal.lst
 echo Estimating c09_covariate_ml.lgs
 %LG% c09_covariate_ml.lgs /b /o c09_covariate_ml.lst
 echo Estimating c10_lta.lgs
