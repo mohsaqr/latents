@@ -67,13 +67,10 @@
 .multilpa_refit_measurement <- function(x) {
   extensions <- list(direct_effects = if (is.null(x$extra_data$direct)) character() else
     .latents_direct_terms(x$extra_data$direct$effects))
-  pattern <- x$covariance_pattern
-  if (!is.null(pattern)) {
-    pairs <- which(pattern & upper.tri(pattern), arr.ind = TRUE)
+  if (!is.null(x$covariance_pattern)) {
     return(c(list(variance_model = x$variance_model,
-                  local_dependence = paste(rownames(pattern)[pairs[, "row"]],
-                                           colnames(pattern)[pairs[, "col"]],
-                                           sep = ":")), extensions))
+                  local_dependence = .latents_pattern_pairs(x$covariance_pattern)),
+             extensions))
   }
   structure <- x$covariance_structure
   family <- if (is.null(structure) || is.na(structure) ||

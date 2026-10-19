@@ -217,7 +217,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
-    requested <- .multilpa_structure_arguments(grid$model[i])
+    requested <- .multilpa_enumeration_arguments(grid$model[i], vars, extra)
     fit <- tryCatch(withCallingHandlers(do.call(multilpa,
       c(list(data = data, vars = vars, id = id,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed),
@@ -303,6 +303,25 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   structure is to be crossed.
 #' @noRd
 .multilpa_enumeration_models <- function(model, model_given, vars, extra) {
+  # Covariances for chosen pairs set the covariance themselves; the choice
+  # left is the diagonal they extend, one shared set (EEI) or one per profile
+  # (VVI), which `.multilpa_enumeration_arguments()` passes as
+  # `variance_model`.
+  if (.multilpa_enumeration_patterned(vars, extra)) {
+    # A `variance_model` the caller gave is the choice, made once.
+    if ("variance_model" %in% names(extra)) return(NA_character_)
+    if (!model_given || is.null(model)) return(c("EEI", "VVI"))
+    codes <- unique(unlist(lapply(model, \(name) switch(name, basic = , all = c("EEI", "VVI"),
+                                                         name)), use.names = FALSE))
+    if (!all(codes %in% c("EEI", "VVI"))) {
+      stop(errorCondition(paste(
+        "With `local_dependence` between continuous indicators the covariance",
+        "is the pattern of chosen pairs; `model` can choose only the diagonal",
+        "it extends, \"EEI\" or \"VVI\"."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(codes)
+  }
   switches <- intersect(names(extra), c("variance_model", "covariance_model",
                                         "volume", "shape", "orientation"))
   if (length(switches) > 0L) {
@@ -771,6 +790,30 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_enumeration`" = inherits(x, "summary_multilpa_enumeration"))
   .multilpa_coerce(x, row.names, list(...))
+}
+
+#' Does an enumeration fit covariances for chosen continuous pairs?
+#' @param vars The indicators.
+#' @param extra The other arguments of the enumeration.
+#' @return A single logical.
+#' @noRd
+.multilpa_enumeration_patterned <- function(vars, extra) {
+  pairs <- extra$local_dependence %||% character()
+  if (length(pairs) == 0L) return(FALSE)
+  items <- .latents_parse_pairs(pairs)$item_1
+  any(!items %in% c(extra$categorical, extra$ordinal, extra$count))
+}
+
+#' The `multilpa()` arguments of one enumerated structure
+#' @param code A structure code, or `NA`.
+#' @param vars,extra As for `.multilpa_enumeration_patterned()`.
+#' @return A named list.
+#' @noRd
+.multilpa_enumeration_arguments <- function(code, vars, extra) {
+  if (.multilpa_enumeration_patterned(vars, extra) && !is.na(code)) {
+    return(list(variance_model = if (identical(code, "EEI")) "equal" else "varying"))
+  }
+  .multilpa_structure_arguments(code)
 }
 
 #' Generate observations from a fitted discrete multilevel model

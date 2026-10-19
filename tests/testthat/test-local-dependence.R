@@ -224,3 +224,27 @@ test_that("the items of a joined pair count as indicators for the three-step gua
                         profile_covariates = "a", n_starts = 1, seed = 1),
                class = "multilpa_indicator_reused")
 })
+
+test_that("enumeration with chosen covariances crosses the diagonal they extend", {
+  skip_on_cran()
+  data <- correlated_pair(n = 300)
+  vars <- c("y1", "y2", "y3")
+  grid <- quietly(enumerate_lpa(data, vars, n_profiles = 1:2, local_dependence = "y1:y2",
+                                n_starts = 2, seed = 1))
+  table <- as.data.frame(grid)
+  expect_identical(nrow(table), 4L)
+  expect_true(all(is.na(table$error)))
+  expect_setequal(unique(table$model), c("EEI + y1:y2", "VVI + y1:y2"))
+  direct <- quietly(lpa(data, vars, 2, local_dependence = "y1:y2", n_starts = 2, seed = 1))
+  expect_equal(subset(table, n_profiles == 2 & model == "VVI + y1:y2")$log_likelihood,
+               direct$log_likelihood, tolerance = 1e-8)
+  expect_error(enumerate_lpa(data, vars, n_profiles = 1:2, local_dependence = "y1:y2",
+                             model = "VVV", n_starts = 1, seed = 1),
+               class = "latents_bad_argument")
+  # A pattern fit is labelled by the diagonal it extends and its pairs, not
+  # as the full covariance it is estimated through.
+  full <- quietly(lpa(data, vars, 2, model = "VVV", n_starts = 2, seed = 1))
+  compared <- compare_models(paired = direct, full = full)
+  expect_identical(compared$structure, c("VVI + y1:y2", "VVV"))
+  expect_output(print(direct), "VVI + y1:y2", fixed = TRUE)
+})

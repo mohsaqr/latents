@@ -27,7 +27,12 @@ print.multilpa <- function(x, rows = 20L, ...) {
     plural(n_categorical, "categorical indicator")
   } else {
     covariance_model <- x$covariance_model %||% "diagonal"
-    paste0(sprintf("%s %s residual covariance%s", x$variance_model,
+    paste0(if (!is.null(x$covariance_pattern)) {
+      sprintf("%s diagonal residual covariance with covariances for %s (%s)",
+              x$variance_model,
+              paste(.latents_pattern_pairs(x$covariance_pattern), collapse = ", "),
+              .latents_pattern_label(x))
+    } else sprintf("%s %s residual covariance%s", x$variance_model,
                    covariance_model,
                    if (is.null(x$covariance_structure)) "" else
                      sprintf(" (%s)", x$covariance_structure)),

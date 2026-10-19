@@ -100,6 +100,29 @@
   pattern
 }
 
+#' The pairs a covariance pattern frees, as `"a:b"` names
+#' @param pattern From `.latents_covariance_pattern()`.
+#' @return A character vector, one name per pair.
+#' @noRd
+.latents_pattern_pairs <- function(pattern) {
+  pairs <- which(pattern & upper.tri(pattern), arr.ind = TRUE)
+  paste(rownames(pattern)[pairs[, "row"]], colnames(pattern)[pairs[, "col"]], sep = ":")
+}
+
+#' The covariance label of a fit with covariances for chosen pairs
+#'
+#' The diagonal structure the pattern extends, EEI with one shared covariance
+#' matrix and VVI with one per profile, and the pairs: `"VVI + y1:y2"`. The
+#' fit is estimated as a full covariance, so its structure field reads VVV or
+#' EEE, which would describe a model with every covariance free.
+#' @param fit A fit with `covariance_pattern`.
+#' @return A single string.
+#' @noRd
+.latents_pattern_label <- function(fit) {
+  sprintf("%s + %s", if (identical(fit$variance_model, "equal")) "EEI" else "VVI",
+          paste(.latents_pattern_pairs(fit$covariance_pattern), collapse = ", "))
+}
+
 #' Hold a start's covariances to a pattern
 #' @param parameters A start, with `covariances` under a full model.
 #' @param pattern From `.latents_covariance_pattern()`, or `NULL`.

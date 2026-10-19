@@ -483,6 +483,7 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
 #' Covariance code even for families that store only the older switches
 #' @noRd
 .latents_comparison_structure <- function(fit) {
+  if (!is.null(fit$covariance_pattern)) return(.latents_pattern_label(fit))
   fit$covariance_structure %||% .multilpa_resolve_structure(
     fit$variance_model %||% "varying", fit$covariance_model %||% "diagonal")
 }
