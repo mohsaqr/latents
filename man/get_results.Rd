@@ -337,6 +337,23 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} and
 \code{note} gives the reason.}
+\item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, taking its arguments
+\code{n_group_classes}, \code{n_profiles}, \code{model}, \code{candidates}, \code{from}, \code{to}
+and \code{level}
+(default \code{"individuals"}). One row per pair of classes in consecutive
+rows of each tree: \code{tree} (the tree's name, as in the plot list),
+\code{level}, \code{from_candidate}, \code{from_class}, \code{from_share}, \code{to_candidate},
+\code{to_class}, \code{to_share}, \code{mass} (the share of all units the two classes
+share, the sum over units of the product of their posterior
+probabilities, weighted by sampling weights at the individual level),
+\code{share_of_from} and \code{share_of_to} (\code{mass} as a part of each class).
+Every pair is listed, including those that share no mass. Units are
+the rows and groups the fit counts (see \code{drop_empty}), weighted by
+their sampling weights at both levels. A grid with no tree raises
+\code{latents_no_tree}, a fit with a noise component
+\code{latents_unsupported_noise}, and \code{what = "all"} leaves the table out.
+The summary of a grid carries the default table only, without these
+arguments.}
 \item{\code{"comparison"}, \code{"classification"}}{A \code{\link[=compare_models]{compare_models()}} result.
 \code{"comparison"} is its table, one row per model. \code{"classification"},
 offered when every model is a profile, class, membership-covariate or

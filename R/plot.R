@@ -212,8 +212,6 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
                                       using = "bic_groups", ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"))
-  .multilpa_reject_extra_arguments(
-    list(...), "plot()", .multilpa_enumeration_plot_advice())
   # The released view names were matched with match.arg(), so their unique
   # abbreviations remain valid alongside the new criterion names.
   if (is.null(what)) what <- "enumeration"
@@ -222,12 +220,23 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
   } else NA_integer_
   if (!is.na(legacy)) what <- c("enumeration", "tree")[legacy]
   if (identical(what, "tree")) {
+    # The tree takes its own arguments; any other is refused by name.
+    tree_arguments <- list(...)
+    .multilpa_reject_extra_arguments(
+      tree_arguments[setdiff(names(tree_arguments), .latents_tree_arguments())],
+      "plot(what = \"tree\")", paste(
+        "The tree takes `n_group_classes`, `n_profiles`, `model`, `candidates`,",
+        "`from`, `to`, `level`, `combine`, `main` and `subtitle`."))
     # In 0.9.21 `criterion` always had a value and the tree did not use it.
     .latents_warn_unused_arguments(
       if (is.null(criterion)) list() else list(criterion = criterion),
       "plot(what = \"tree\")", "The tree shows no criterion.")
-    return(plot_tree(x, main = main, subtitle = subtitle))
+    return(do.call(plot_tree, c(list(x), tree_arguments,
+                                list(combine = if (missing(combine)) FALSE else combine,
+                                     main = main, subtitle = subtitle))))
   }
+  .multilpa_reject_extra_arguments(
+    list(...), "plot()", .multilpa_enumeration_plot_advice())
   # 0.9.21 chose the view with `what = "enumeration"` and the criteria with
   # `criterion`; both spellings still draw the same plot.
   what <- .latents_former_argument(
@@ -243,6 +252,13 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
   plot_enumeration(x, what = what, combine = combine, labels = labels,
                    mark_minimum = mark_minimum, main = main,
                    subtitle = subtitle, cutoff = cutoff, using = using)
+}
+
+#' The arguments a tree takes besides `combine`, `main` and `subtitle`
+#' @return A character vector.
+#' @noRd
+.latents_tree_arguments <- function() {
+  c("n_group_classes", "n_profiles", "model", "candidates", "from", "to", "level")
 }
 
 #' What an enumeration plot takes instead of a refused argument
@@ -290,8 +306,16 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
                              combine = TRUE, labels = TRUE,
                              mark_minimum = TRUE, main = NULL,
                              subtitle = NULL, cutoff = 0.8,
-                             using = "bic_groups") {
+                             using = "bic_groups", ...) {
   .gg_require_enumeration(x, "plot_enumeration")
+  # The tree's own arguments reach it through `...`; no other view takes any.
+  tree_arguments <- list(...)
+  tree_only <- is.character(what) && identical(what, "tree")
+  .multilpa_reject_extra_arguments(
+    if (tree_only) tree_arguments[setdiff(names(tree_arguments),
+                                          .latents_tree_arguments())] else
+      tree_arguments,
+    "plot_enumeration()", .multilpa_enumeration_plot_advice())
   stopifnot("`what` must name one or more criteria, or be \"all\"" =
               is.character(what) && length(what) >= 1L && !anyNA(what),
             "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
@@ -299,6 +323,16 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
   .gg_require()
+  if ("tree" %in% what) {
+    if (!identical(what, "tree")) {
+      stop(errorCondition(
+        "`what = \"tree\"` draws the tree on its own; ask for other views separately.",
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(do.call(plot_tree, c(list(x), tree_arguments,
+                                list(combine = if (missing(combine)) FALSE else combine,
+                                     main = main, subtitle = subtitle))))
+  }
   quality <- c("entropy", "avepp", "diagnostics")
   # Model selection: each view on its own plot; "selection" draws them all,
   # with classification quality, which is part of choosing a model.
@@ -467,7 +501,7 @@ plot_views <- function() {
       "Posterior probability of each case's assigned profile, by profile",
       "Average posterior probability: assigned profile by posterior profile",
       "Information criteria across a candidate grid (plot an enumeration; or name criteria in `what`)",
-      "How profiles split as more are added (plot an enumeration)",
+      "How classes split as more are added, one plot per tree (plot an enumeration)",
       "Every view above that this fit has the ingredients for, in one call"
     ),
     stringsAsFactors = FALSE

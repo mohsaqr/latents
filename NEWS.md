@@ -1,3 +1,34 @@
+# latents 0.95.10
+
+### Tree plots
+
+* `plot_tree()`, `plot(x, what = "tree")` and
+  `plot_enumeration(x, what = "tree")` return one plot per tree, printed one
+  at a time on an interactive screen device; `combine = TRUE` returns every
+  tree as a panel of one plot, the figure of earlier versions. A class has
+  the colour of the class it matches in the first tree, and the classes of
+  one row have distinct colours. Every band that carries posterior mass is
+  plotted.
+* New arguments choose the trees and rows: `n_group_classes`, `n_profiles`
+  and `model`. A single value of `n_profiles` compares the solutions with
+  that number of profiles across numbers of group classes. `level = "groups"`
+  plots how the group classes divide. `from = c(3, 3), to = c(4, 3)` (or
+  `candidates` by name) compares two chosen solutions.
+* `get_results(x, "tree", ...)` returns the shared posterior mass behind any
+  tree, one row per pair of classes, with the same arguments.
+* Trees use the rows and groups the fit counts (`drop_empty`) and their
+  sampling weights at both levels, as the effective class counts do. A fit
+  with a noise component is refused with `latents_unsupported_noise`, and a
+  named candidate that did not converge with `latents_unconverged`. A grid
+  with no tree raises `latents_no_tree`, also of class
+  `latents_nothing_to_plot`.
+* `plot_enumeration()` refuses an argument it does not use with
+  `latents_bad_argument`.
+
+### Documentation
+
+* New guide, *Tree plot*.
+
 # latents 0.95.9
 
 ### Documentation

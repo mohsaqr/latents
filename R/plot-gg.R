@@ -1586,182 +1586,6 @@ utils::globalVariables(c(
   data.frame(x = c(left, rev(right)), y = c(y, rev(y)))
 }
 
-#' How cases move between profiles as the number of profiles grows
-#'
-#' An icicle: each row is one solution, a bar split into its profiles by
-#' posterior share. Bands between rows carry the posterior mass shared by a
-#' profile and one in the next solution, the sum over cases of p(a) * p(b), so
-#' each profile's bands add up exactly to its share. Colour is lineage: a
-#' profile that is its dominant parent's main continuation keeps the parent's
-#' colour, any other profile takes a new one. The layout follows clustering
-#' trees (Zappia and Oshlack, 2018). One panel per series (covariance model
-#' and number of group classes).
-#' @noRd
-.gg_view_tree <- function(x, main, subtitle) {
-  grid <- as.data.frame(x)
-  grid <- grid[grid$converged %in% TRUE, , drop = FALSE]
-  model <- grid$model
-  model[is.na(model)] <- ""
-  keys <- unique(data.frame(model = model,
-                            n_group_classes = grid$n_group_classes))
-  several_groups <- length(unique(keys$n_group_classes)) > 1L
-  half <- 0.16
-  gap <- 0.03
-  segments_of <- \(share, ordering) {
-    widths <- share[ordering]
-    k <- length(widths)
-    right <- cumsum(widths) + gap * (seq_len(k) - 1) - gap * (k - 1) / 2
-    data.frame(profile = ordering, xmin = right - widths, xmax = right,
-               share = widths)
-  }
-  per_series <- lapply(seq_len(nrow(keys)), \(index) {
-    series_model <- keys$model[index]
-    classes <- keys$n_group_classes[index]
-    rows_in <- model == series_model & grid$n_group_classes == classes
-    counts <- sort(unique(grid$n_profiles[rows_in]))
-    if (length(counts) < 2L) return(NULL)
-    fits <- lapply(counts, \(k) {
-      get_candidate(x, n_profiles = k, n_group_classes = classes,
-                    model = if (nzchar(series_model)) series_model)
-    })
-    posteriors <- lapply(fits, `[[`, "subject_posteriors")
-    weights <- if (is.null(fits[[1L]]$sampling_weights)) {
-      rep(1, nrow(posteriors[[1L]]))
-    } else unname(fits[[1L]]$sampling_weights)[fits[[1L]]$group_index]
-    total_weight <- sum(weights)
-    flows <- lapply(seq_along(counts)[-1L], \(level) {
-      crossprod(posteriors[[level - 1L]] * weights, posteriors[[level]]) /
-        total_weight
-    })
-    first_share <- colSums(posteriors[[1L]] * weights) / total_weight
-    first_order <- order(-first_share, seq_along(first_share))
-    # Order each row's profiles by the flow-weighted centre of their parents,
-    # so bands cross only where cases really are reshuffled.
-    rows <- Reduce(\(previous, level) {
-      parent <- previous[[length(previous)]]
-      flow <- flows[[level - 1L]]
-      centres <- (parent$xmin + parent$xmax)[order(parent$profile)] / 2
-      child_centre <- colSums(flow * centres) / colSums(flow)
-      c(previous, list(segments_of(colSums(flow),
-                                   order(child_centre,
-                                         seq_along(child_centre)))))
-    }, seq_along(counts)[-1L], init = list(segments_of(first_share,
-                                                       first_order)))
-    first_colours <- character(counts[1L])
-    first_colours[first_order] <- rep_len(.gg_okabe_ito, counts[1L])
-    lineage <- Reduce(\(state, level) {
-      flow <- flows[[level - 1L]]
-      dominant_parent <- apply(flow, 2L, which.max)
-      main_child <- apply(flow, 1L, which.max)
-      continues <- main_child[dominant_parent] == seq_len(ncol(flow))
-      fresh <- rep_len(.gg_okabe_ito,
-                       state$used + sum(!continues))[-seq_len(state$used)]
-      colours <- character(ncol(flow))
-      colours[continues] <- state$colours[[level - 1L]][
-        dominant_parent[continues]]
-      colours[!continues] <- fresh
-      list(colours = c(state$colours, list(colours)),
-           used = state$used + sum(!continues))
-    }, seq_along(counts)[-1L],
-    init = list(colours = list(first_colours), used = counts[1L]))$colours
-    panel <- if (nzchar(series_model)) series_model else "Candidates"
-    classes_label <- sprintf("%d group class%s", classes,
-                             if (classes == 1L) "" else "es")
-    bars <- do.call(rbind, Map(\(k, segments, colours) {
-      cbind(segments, panel = panel, classes_label = classes_label,
-            n_profiles = k, fill = colours[segments$profile])
-    }, counts, rows, lineage))
-    bands <- do.call(rbind, lapply(seq_along(counts)[-1L], \(level) {
-      parent <- rows[[level - 1L]]
-      child <- rows[[level]]
-      flow <- flows[[level - 1L]]
-      links <- expand.grid(from = parent$profile, to = child$profile)
-      links$mass <- flow[cbind(links$from, links$to)]
-      links <- links[links$mass > 1e-3, , drop = FALSE]
-      # Outflows stack inside a parent in child order and inflows inside a
-      # child in parent order, so bands tile both bars without overlap.
-      links$from_rank <- match(links$from, parent$profile)
-      links$to_rank <- match(links$to, child$profile)
-      links <- links[order(links$from_rank, links$to_rank), , drop = FALSE]
-      links$top_right <- parent$xmin[links$from_rank] +
-        stats::ave(links$mass, links$from, FUN = cumsum)
-      links$top_left <- links$top_right - links$mass
-      links <- links[order(links$to_rank, links$from_rank), , drop = FALSE]
-      links$bottom_right <- child$xmin[links$to_rank] +
-        stats::ave(links$mass, links$to, FUN = cumsum)
-      links$bottom_left <- links$bottom_right - links$mass
-      do.call(rbind, lapply(seq_len(nrow(links)), \(i) {
-        band <- .gg_flow_band(links$top_left[i], links$top_right[i],
-                              links$bottom_left[i], links$bottom_right[i],
-                              y_top = counts[level - 1L] + half,
-                              y_bottom = counts[level] - half)
-        cbind(band, panel = panel, classes_label = classes_label,
-              group = sprintf("%s-%s-%d-%d-%d", panel, classes_label,
-                              counts[level], links$from[i], links$to[i]),
-              fill = lineage[[level - 1L]][links$from[i]])
-      }))
-    }))
-    list(bars = bars, bands = bands)
-  })
-  per_series <- Filter(Negate(is.null), per_series)
-  if (length(per_series) == 0L) {
-    stop(errorCondition(
-      "A tree needs at least two numbers of profiles for one model.",
-      class = "latents_nothing_to_plot", call = NULL))
-  }
-  bars <- do.call(rbind, lapply(per_series, `[[`, "bars"))
-  bands <- do.call(rbind, lapply(per_series, `[[`, "bands"))
-  levels <- unique(bars$panel)
-  class_levels <- unique(bars$classes_label[order(bars$classes_label)])
-  # A share is written only where its segment is wide enough to hold it; the
-  # more structures side by side, the narrower every segment.
-  min_share <- 0.02 + 0.04 * length(levels)
-  bars$label <- ifelse(bars$share < min_share, "", .gg_percent(bars$share))
-  bars$text_colour <- .gg_ink(bars$fill)
-  bars$panel <- factor(bars$panel, levels = levels)
-  bands$panel <- factor(bands$panel, levels = levels)
-  bars$classes_label <- factor(bars$classes_label, levels = class_levels)
-  bands$classes_label <- factor(bands$classes_label, levels = class_levels)
-  counts <- sort(unique(bars$n_profiles))
-  facets <- if (several_groups) {
-    ggplot2::facet_grid(rows = ggplot2::vars(classes_label),
-                        cols = ggplot2::vars(panel))
-  } else ggplot2::facet_wrap(ggplot2::vars(panel), nrow = 1L)
-  ggplot2::ggplot() +
-    ggplot2::geom_polygon(data = bands,
-                          ggplot2::aes(x = x, y = y, group = group,
-                                       fill = fill),
-                          alpha = 0.4, colour = NA) +
-    ggplot2::geom_rect(data = bars,
-                       ggplot2::aes(xmin = xmin, xmax = xmax,
-                                    ymin = n_profiles - half,
-                                    ymax = n_profiles + half, fill = fill),
-                       colour = "white", linewidth = 0.9) +
-    ggplot2::geom_text(data = bars,
-                       ggplot2::aes(x = (xmin + xmax) / 2, y = n_profiles,
-                                    label = label, colour = text_colour),
-                       size = 3, fontface = "bold") +
-    ggplot2::scale_fill_identity() +
-    ggplot2::scale_colour_identity() +
-    facets +
-    ggplot2::scale_y_reverse(breaks = counts,
-                             expand = ggplot2::expansion(add = 0.25)) +
-    ggplot2::scale_x_continuous(expand = ggplot2::expansion(0)) +
-    .gg_titles(main, subtitle, "How profiles split as more are added",
-               paste0("Each row is one solution, divided into its profiles ",
-                      "by share of cases\n",
-                      "Colour follows a profile across solutions; a new ",
-                      "colour marks a profile that split off"),
-               caption = paste0("A band that forks: a profile split in two ",
-                                "(nested, stable solutions). Bands that merge ",
-                                "or cross: cases reshuffled between profiles.")) +
-    ggplot2::labs(x = NULL, y = "Number of profiles") +
-    .gg_theme() +
-    ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                   panel.grid.major.y = ggplot2::element_blank(),
-                   panel.spacing = ggplot2::unit(1.5, "lines"))
-}
-
 # -- several plots ------------------------------------------------------------
 
 #' A list of ggplot objects that draws every one when printed
@@ -1773,6 +1597,12 @@ utils::globalVariables(c(
 #' @noRd
 #' @export
 print.latents_plots <- function(x, ...) {
+  # One plot at a time on a screen device, as plot.lm() does; a file device or
+  # a knitted document receives every plot without pausing.
+  if (length(x) > 1L && interactive() && grDevices::dev.interactive(orNone = TRUE)) {
+    asking <- grDevices::devAskNewPage(TRUE)
+    on.exit(grDevices::devAskNewPage(asking), add = TRUE)
+  }
   invisible(lapply(x, print))
   invisible(x)
 }

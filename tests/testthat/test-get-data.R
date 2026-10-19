@@ -137,7 +137,8 @@ test_that("the enumeration and bootstrap objects carry their own tables", {
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
   expect_s3_class(get_results(candidates, "best"), "data.frame")
   expect_named(get_results(candidates, "all"),
-               c("candidates", "best", "classification", "deltas", "knees"))
+               c("candidates", "best", "classification", "deltas", "knees",
+                 "tree"))
   expect_identical(get_results(summary(candidates), "best"),
                    get_results(candidates, "best"))
   # The table's earlier name still finds it, on the grid and on its summary.

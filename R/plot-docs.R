@@ -17,7 +17,8 @@
 #' (transition matrix), `plot_enumeration()` (information criteria,
 #' classification quality and model-selection evidence across a grid),
 #' `plot_selection()` (the model-selection evidence of a grid) and
-#' `plot_tree()` (how profiles split as more are added). Each draws the same
+#' `plot_tree()` (how profiles split as more are added, one plot per tree, or
+#' how chosen solutions correspond). Each draws the same
 #' plot as the matching `plot(x, what = )`. `plot_views()` lists the views of
 #' a fitted model, and `"enumeration"` and `"tree"` for a grid, with a
 #' one-line description of each; the other grid views are listed under
@@ -96,7 +97,31 @@
 #' @param category Which category's probability to draw: `"last"` (default),
 #'   `"first"`, or a single label or index.
 #' @param combine `TRUE` (default) draws several criteria as panels of one
-#'   plot; `FALSE` returns one plot per criterion.
+#'   plot; `FALSE` returns one plot per criterion. For `plot_tree()` (and
+#'   `what = "tree"`), `FALSE` (default) returns one plot per tree and `TRUE`
+#'   draws every tree as a panel of one plot.
+#' @param n_group_classes,n_profiles,model For `plot_tree()`, the trees and
+#'   rows to draw. At the individual level a tree runs down the numbers of
+#'   profiles (classes) at one number of group classes and one structure:
+#'   `n_group_classes` and `model` choose trees, `n_profiles` the rows. At the
+#'   group level a tree runs down the numbers of group classes at one number
+#'   of profiles: `n_profiles` and `model` choose trees, `n_group_classes` the
+#'   rows. `NULL` (default) keeps every converged candidate. A single count
+#'   for the rows (`n_profiles` at the individual level, `n_group_classes` at
+#'   the group level) is one level of every tree, and the plot compares that
+#'   level's solutions instead: `plot_tree(x, n_profiles = 4,
+#'   n_group_classes = c(2, 5))` draws the four-profile solution at two and at
+#'   five group classes as two rows, each class in the colour of the class it
+#'   matches in the first row.
+#' @param candidates For `plot_tree()`, two or more candidate names drawn as
+#'   the rows of one tree, in the order given, to compare those solutions.
+#'   Not combined with `n_group_classes`, `n_profiles` or `model`.
+#' @param from,to For `plot_tree()`, two solutions to compare as a two-row
+#'   tree, each named by its class counts `c(n_profiles, n_group_classes)`
+#'   (one count means one group class) or by its name:
+#'   `plot_tree(x, from = c(3, 3), to = c(4, 3))`. Given together, and not
+#'   with `candidates`. On a grid crossed with covariance structures, `model`
+#'   names the structure of both.
 #' @param mark_minimum `TRUE` (default) circles each criterion's lowest value
 #'   among converged candidates, without selecting a model. Information
 #'   criteria only.
@@ -125,7 +150,10 @@
 #' @param spread For growth trajectories, the band of random-effect spread of
 #'   persons around the class curve, from 0 (hidden) to less than 1; default
 #'   0.8.
-#' @param level Confidence level for additive, mixture-regression and growth
+#' @param level For `plot_tree()`, `"individuals"` (default; the cases
+#'   divided into profiles or classes) or `"groups"` (the groups divided into
+#'   group classes). Otherwise the confidence level for additive,
+#'   mixture-regression and growth
 #'   views (default 0.95). On pooled plots, the former name of `what`:
 #'   `"profile"`, `"group"` or `"measurement"`.
 #' @param criterion The former name of `what` for enumeration criteria. On a
@@ -136,15 +164,19 @@
 #'   the observed statistic; `NULL` (default) uses the standard colours.
 #' @param style The former bootstrap drawing style; ignored with a
 #'   `latents_unused_argument` warning.
-#' @param ... Not used. Profile, class and transition models and enumerations
-#'   refuse unknown arguments with `latents_bad_argument`; the other methods
-#'   ignore them with a `latents_unused_argument` warning (see *Errors*).
+#' @param ... With `what = "tree"` (on `plot()` of an enumeration or on
+#'   `plot_enumeration()`), the arguments of `plot_tree()`. Otherwise not
+#'   used. Profile, class and transition models and enumerations refuse
+#'   unknown arguments with `latents_bad_argument`; the other methods ignore
+#'   them with a `latents_unused_argument` warning (see *Errors*).
 #' @return A ggplot object. `what = "all"` (on `plot()` of a fitted model or
 #'   on a named plot function), `plot_enumeration(combine = FALSE)` with
 #'   several criteria or classification-quality measures, and enumeration
 #'   views when more than one is requested (including `"selection"`) return
 #'   a `latents_plots` list of ggplot objects, which draws each one when
-#'   printed. `plot_views()` returns a `data.frame` with one row per view:
+#'   printed, pausing between plots on an interactive screen device.
+#'   `plot_tree()` and `what = "tree"` return one ggplot for a single tree or
+#'   `combine = TRUE`, and otherwise a `latents_plots` list named by tree. `plot_views()` returns a `data.frame` with one row per view:
 #'   `type` (the value for `what`), `group` and `description`.
 #'
 #' @section What `plot()` draws:
@@ -167,7 +199,8 @@
 #'     intervals of the transition fit's [parameter_inference()] (`intervals`).
 #'     A general [lta()] fit takes no `what` and draws its transition matrix.}
 #'   \item{Enumerations}{Criterion columns or `"all"` (with `combine`,
-#'     `labels` and `mark_minimum`), `"tree"`, the classification-quality
+#'     `labels` and `mark_minimum`), `"tree"` (with the arguments of
+#'     `plot_tree()`), the classification-quality
 #'     views `"entropy"`, `"avepp"` and `"diagnostics"` (with `cutoff`), and
 #'     the model-selection views `"deltas"` and `"heatmap"` (which use the
 #'     criterion in `using`), `"smallest"` and `"trust"`; `"selection"` draws
@@ -220,7 +253,14 @@
 #'   names no category of an indicator; `latents_no_continuous`,
 #'   `latents_no_categorical` and `latents_no_time` when a view needs
 #'   indicators or occasions the fit does not have;
-#'   `latents_unknown_criterion` for a criterion not in the grid.
+#'   `latents_unknown_criterion` for a criterion not in the grid;
+#'   `latents_no_tree` (also of class `latents_nothing_to_plot`) when a tree
+#'   would have fewer than two rows, or at the group level of a grid with one
+#'   group class; `latents_unknown_candidate` when `candidates`,
+#'   `n_group_classes`, `n_profiles` or `model` names something no converged
+#'   candidate has; `latents_failed_candidate` when a named candidate was not
+#'   fitted; `latents_unconverged` when a named candidate did not converge;
+#'   `latents_unsupported_noise` for a tree of a fit with a noise component.
 #' @references Satopaa, V., Albrecht, J., Irwin, D. and Raghavan, B. (2011). Finding a
 #'   "kneedle" in a haystack: detecting knee points in system behavior.
 #'   *31st International Conference on Distributed Computing Systems

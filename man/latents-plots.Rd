@@ -144,7 +144,19 @@ plot_diagnostics(
 
 plot_transitions(x, main = NULL, subtitle = NULL)
 
-plot_tree(x, main = NULL, subtitle = NULL)
+plot_tree(
+  x,
+  main = NULL,
+  subtitle = NULL,
+  n_group_classes = NULL,
+  n_profiles = NULL,
+  model = NULL,
+  candidates = NULL,
+  from = NULL,
+  to = NULL,
+  level = c("individuals", "groups"),
+  combine = FALSE
+)
 
 plot_selection(
   x,
@@ -194,7 +206,8 @@ plot_enumeration(
   main = NULL,
   subtitle = NULL,
   cutoff = 0.8,
-  using = "bic_groups"
+  using = "bic_groups",
+  ...
 )
 
 \method{plot}{multilpa_covariates}(
@@ -302,11 +315,16 @@ profile grid it is used alone or with \code{what = "enumeration"}; transition
 and group-class family grids take \code{"bic"}, \code{"aic"} or
 \code{"bic_individual"}.}
 
-\item{...}{Not used. Profile, class and transition models and enumerations
-refuse unknown arguments with \code{latents_bad_argument}; the other methods
-ignore them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
+\item{...}{With \code{what = "tree"} (on \code{plot()} of an enumeration or on
+\code{plot_enumeration()}), the arguments of \code{plot_tree()}. Otherwise not
+used. Profile, class and transition models and enumerations refuse
+unknown arguments with \code{latents_bad_argument}; the other methods ignore
+them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
 
-\item{level}{Confidence level for additive, mixture-regression and growth
+\item{level}{For \code{plot_tree()}, \code{"individuals"} (default; the cases
+divided into profiles or classes) or \code{"groups"} (the groups divided into
+group classes). Otherwise the confidence level for additive,
+mixture-regression and growth
 views (default 0.95). On pooled plots, the former name of \code{what}:
 \code{"profile"}, \code{"group"} or \code{"measurement"}.}
 
@@ -365,15 +383,41 @@ intervals. \code{NULL} (default) uses the data stored in the fit.}
 assigned profile in its cell when the cells are large enough for the
 text.}
 
+\item{n_group_classes, n_profiles, model}{For \code{plot_tree()}, the trees and
+rows to draw. At the individual level a tree runs down the numbers of
+profiles (classes) at one number of group classes and one structure:
+\code{n_group_classes} and \code{model} choose trees, \code{n_profiles} the rows. At the
+group level a tree runs down the numbers of group classes at one number
+of profiles: \code{n_profiles} and \code{model} choose trees, \code{n_group_classes} the
+rows. \code{NULL} (default) keeps every converged candidate. A single count
+for the rows (\code{n_profiles} at the individual level, \code{n_group_classes} at
+the group level) is one level of every tree, and the plot compares that
+level's solutions instead: \code{plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))} draws the four-profile solution at two and at
+five group classes as two rows, each class in the colour of the class it
+matches in the first row.}
+
+\item{candidates}{For \code{plot_tree()}, two or more candidate names drawn as
+the rows of one tree, in the order given, to compare those solutions.
+Not combined with \code{n_group_classes}, \code{n_profiles} or \code{model}.}
+
+\item{from, to}{For \code{plot_tree()}, two solutions to compare as a two-row
+tree, each named by its class counts \code{c(n_profiles, n_group_classes)}
+(one count means one group class) or by its name:
+\code{plot_tree(x, from = c(3, 3), to = c(4, 3))}. Given together, and not
+with \code{candidates}. On a grid crossed with covariance structures, \code{model}
+names the structure of both.}
+
+\item{combine}{\code{TRUE} (default) draws several criteria as panels of one
+plot; \code{FALSE} returns one plot per criterion. For \code{plot_tree()} (and
+\code{what = "tree"}), \code{FALSE} (default) returns one plot per tree and \code{TRUE}
+draws every tree as a panel of one plot.}
+
 \item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
 \code{"selection"}, the information criterion used (default
 \code{"bic_groups"}); \code{"smallest"} and \code{"trust"} use none.}
 
 \item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
 \code{"selection"}, the AvePP cutoff drawn as a dashed line (default 0.8).}
-
-\item{combine}{\code{TRUE} (default) draws several criteria as panels of one
-plot; \code{FALSE} returns one plot per criterion.}
 
 \item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest value
 among converged candidates, without selecting a model. Information
@@ -385,7 +429,9 @@ on a named plot function), \code{plot_enumeration(combine = FALSE)} with
 several criteria or classification-quality measures, and enumeration
 views when more than one is requested (including \code{"selection"}) return
 a \code{latents_plots} list of ggplot objects, which draws each one when
-printed. \code{plot_views()} returns a \code{data.frame} with one row per view:
+printed, pausing between plots on an interactive screen device.
+\code{plot_tree()} and \code{what = "tree"} return one ggplot for a single tree or
+\code{combine = TRUE}, and otherwise a \code{latents_plots} list named by tree. \code{plot_views()} returns a \code{data.frame} with one row per view:
 \code{type} (the value for \code{what}), \code{group} and \code{description}.
 }
 \description{
@@ -407,7 +453,8 @@ occasion), \code{plot_prevalence()} (profile shares within each group class),
 (transition matrix), \code{plot_enumeration()} (information criteria,
 classification quality and model-selection evidence across a grid),
 \code{plot_selection()} (the model-selection evidence of a grid) and
-\code{plot_tree()} (how profiles split as more are added). Each draws the same
+\code{plot_tree()} (how profiles split as more are added, one plot per tree, or
+how chosen solutions correspond). Each draws the same
 plot as the matching \code{plot(x, what = )}. \code{plot_views()} lists the views of
 a fitted model, and \code{"enumeration"} and \code{"tree"} for a grid, with a
 one-line description of each; the other grid views are listed under
@@ -438,7 +485,8 @@ categorical indicator they omit.}
 intervals of the transition fit's \code{\link[=parameter_inference]{parameter_inference()}} (\code{intervals}).
 A general \code{\link[=lta]{lta()}} fit takes no \code{what} and draws its transition matrix.}
 \item{Enumerations}{Criterion columns or \code{"all"} (with \code{combine},
-\code{labels} and \code{mark_minimum}), \code{"tree"}, the classification-quality
+\code{labels} and \code{mark_minimum}), \code{"tree"} (with the arguments of
+\code{plot_tree()}), the classification-quality
 views \code{"entropy"}, \code{"avepp"} and \code{"diagnostics"} (with \code{cutoff}), and
 the model-selection views \code{"deltas"} and \code{"heatmap"} (which use the
 criterion in \code{using}), \code{"smallest"} and \code{"trust"}; \code{"selection"} draws
@@ -497,7 +545,14 @@ views of a centred fit); \code{latents_unknown_category} when \code{category}
 names no category of an indicator; \code{latents_no_continuous},
 \code{latents_no_categorical} and \code{latents_no_time} when a view needs
 indicators or occasions the fit does not have;
-\code{latents_unknown_criterion} for a criterion not in the grid.
+\code{latents_unknown_criterion} for a criterion not in the grid;
+\code{latents_no_tree} (also of class \code{latents_nothing_to_plot}) when a tree
+would have fewer than two rows, or at the group level of a grid with one
+group class; \code{latents_unknown_candidate} when \code{candidates},
+\code{n_group_classes}, \code{n_profiles} or \code{model} names something no converged
+candidate has; \code{latents_failed_candidate} when a named candidate was not
+fitted; \code{latents_unconverged} when a named candidate did not converge;
+\code{latents_unsupported_noise} for a tree of a fit with a noise component.
 }
 
 \examples{

@@ -1,0 +1,262 @@
+---
+title: "Tree plot"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Tree plot}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+old_options <- options(digits = 3, width = 100)
+```
+
+Class enumeration estimates one mixture model for each number of classes.
+Each model is fitted from its own starting values, and the numbering of its
+classes is arbitrary, so class 2 of a three-class solution has no defined
+relation to class 2 of a four-class solution. The relation between two
+solutions is carried by the observations they classify. When the classes of
+the larger solution subdivide those of the smaller one, each class of the
+smaller solution passes its members to one or more classes of the larger,
+and the solutions are nested. When the larger solution redistributes
+observations across class boundaries, the classes of the two solutions
+overlap without nesting. A clustering tree represents these relations for a
+sequence of solutions (Zappia and Oshlack, 2018). Each row of the tree is
+one solution, divided into its classes in proportion to their size, and the
+band between two classes in adjacent rows is proportional to the
+observations they share.
+
+In a mixture model each observation belongs to every class with a posterior
+probability. For two solutions $A$ and $B$ fitted to the same $N$
+observations, with posterior probabilities $p_{ia}$ and $q_{ib}$ and
+observation weights $w_i$, the shared posterior mass of class $a$ of $A$ and
+class $b$ of $B$ is
+
+$$m_{ab} = \frac{\sum_{i=1}^{N} w_i \, p_{ia} \, q_{ib}}{\sum_{i=1}^{N} w_i}.$$
+
+The masses form a joint distribution over the pairs of classes. Summed over
+the classes of $B$, they give the posterior share of class $a$, and summed
+over the classes of $A$, the posterior share of class $b$. The ratio of
+$m_{ab}$ to the share of $a$ is the part of class $a$ that the larger
+solution places in class $b$. A tree built from posterior probabilities
+retains the uncertainty of the classification, which a tree built from
+modal assignments discards.
+
+A two-level mixture model has two sequences of solutions (Vermunt, 2003).
+Observations are classified into classes, and the groups that contain them
+are classified into group classes by their distribution over those classes.
+The classes form a tree at each number of group classes, and the group
+classes form a tree at each number of classes. Solutions can also be
+compared at a single level, for example the four-class solutions estimated
+with different numbers of group classes, whose classes need not coincide.
+
+## Data and candidates
+
+`student_esm` holds experience-sampling data from 100 university students
+(Neubauer and Schmiedek, 2024). At each prompt when they had not studied
+since the previous one, the students reported which of eight leisure
+activities they had done. The prompts are the observations and the students
+the groups. The candidates combine one to six classes of prompts with one to
+four group classes of students.
+
+```{r candidates, message = FALSE, warning = FALSE}
+library(latents)
+activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+                "listened_music", "sports", "walking", "reading",
+                "part_time_job")
+models <- enumerate_classes(student_esm, activities, "student",
+                            n_profiles = 1:6, n_group_classes = 1:4,
+                            categorical = activities, n_starts = 3, seed = 1)
+```
+
+```{r candidates-values, include = FALSE}
+candidates <- as.data.frame(models)
+n_candidates <- nrow(candidates)
+n_failed <- with(candidates, sum(!converged %in% TRUE))
+```
+
+The grid holds `r n_candidates` candidates. Their classes of prompts are
+counted by `n_profiles`, the name the package uses at both levels of a
+two-level model. The `r n_failed` candidates with one class and several group
+classes could not be estimated. A group class is defined by its distribution
+over the classes, and with a single class every group has the same
+distribution. Every tree with two or more group classes therefore begins at
+two classes.
+
+## The tree at one number of group classes
+
+At one group class the model is a single-level latent class model of the
+prompts. Its tree shows how the classes of prompts divide as classes are
+added.
+
+```{r tree-one, fig.height = 5}
+plot_tree(models, n_group_classes = 1)
+```
+
+```{r tree-one-values, include = FALSE}
+splits <- get_results(models, "tree", n_group_classes = 1)
+two_to_three <- subset(splits, from_candidate == "classes2_groups1")
+media_kept <- with(subset(two_to_three, from_share > 0.5), max(share_of_from))
+offline_kept <- with(subset(two_to_three, from_share < 0.5), max(share_of_from))
+offline_to_media <- with(subset(two_to_three, from_share < 0.5 & to_share > 0.5),
+                         share_of_from)
+three_to_four <- subset(splits, from_candidate == "classes3_groups1")
+job_share <- with(three_to_four, min(from_share))
+job_kept <- with(subset(three_to_four, from_share < 0.1), max(share_of_from))
+# The classes the text names, pinned by their own numbers.
+smallest <- subset(three_to_four, from_share == job_share)
+job_class <- with(smallest, unique(from_class))
+yes_three <- subset(get_results(get_candidate(models, n_profiles = 3,
+                                              n_group_classes = 1), "responses"),
+                    category == "yes")
+job_probability <- with(subset(yes_three, indicator == "part_time_job" &
+                                 profile == job_class), probability)
+media_class <- with(subset(two_to_three, from_share > 0.5), unique(from_class))
+yes_two <- subset(get_results(get_candidate(models, n_profiles = 2,
+                                            n_group_classes = 1), "responses"),
+                  category == "yes" & indicator == "on_social_media")
+media_probability <- with(subset(yes_two, profile == media_class), probability)
+offline_probability <- with(subset(yes_two, profile != media_class), probability)
+# The text below names these classes; stop if the results ever change.
+stopifnot(media_kept > 0.7, offline_kept > 0.6, job_share < 0.1,
+          job_kept > 0.9, length(job_class) == 1L, job_probability > 0.9,
+          media_probability > offline_probability)
+```
+
+```{r responses-three, fig.height = 4.5}
+plot_responses(get_candidate(models, n_profiles = 3, n_group_classes = 1),
+               intervals = FALSE)
+```
+
+The two-class solution separates prompts with media use (social media,
+television or games, music) from prompts with offline activities. In the
+three-class solution the media class keeps
+`r round(100 * media_kept)`% of its posterior mass. The offline class divides
+into three parts. The largest, `r round(100 * offline_kept)`%, forms a class
+of time with friends and walking, `r round(100 * offline_to_media)`% joins the
+media class, and the remainder forms a class of `r round(100 * job_share)`% of
+prompts in which the probability of a part-time job is
+`r sprintf("%.2f", job_probability)`. The part-time job class passes
+`r round(100 * job_kept)`% of its mass to a single class of the four-class
+solution, so it persists as further classes are added.
+
+## Every tree
+
+Without a choice of group classes, each number of group classes has its own
+tree, returned as a separate plot. On an interactive screen device the plots
+are shown one at a time.
+
+```{r trees, fig.height = 5}
+plot_tree(models)
+```
+
+A class in a later tree takes the colour of the class of the first tree with
+which it shares the most posterior mass, at the same number of classes, so a
+colour marks corresponding classes across the trees. `combine = TRUE` plots
+every tree as a panel of one figure.
+
+## Comparing solutions at one level
+
+A single value of `n_profiles` selects one level of every tree. The rows of
+the plot are then the solutions with that number of classes, one for each
+number of group classes, and the bands show where the same prompts are
+classified in each.
+
+```{r level, fig.height = 3}
+plot_tree(models, n_profiles = 4, n_group_classes = c(1, 3))
+```
+
+The values behind the plot are returned by `get_results()` with the same
+arguments, one row per pair of classes.
+
+```{r level-table}
+get_results(models, "tree", n_profiles = 4, n_group_classes = c(1, 3))
+```
+
+```{r level-values, include = FALSE}
+compared <- get_results(models, "tree", n_profiles = 4, n_group_classes = c(1, 3))
+retained <- aggregate(share_of_from ~ from_class, compared, max)
+retained_low <- with(retained, min(share_of_from))
+retained_high <- with(retained, max(share_of_from))
+```
+
+Each class of the four-class solution with one group class places between
+`r round(100 * retained_low)`% and `r round(100 * retained_high)`% of its
+posterior mass in a single class of the solution with three group classes.
+The two solutions describe similar classes, and the group classes shift a
+part of the prompts between them. Omitting `n_group_classes` compares the
+same level across every number of group classes.
+
+```{r level-all, fig.height = 5}
+plot_tree(models, n_profiles = 4)
+```
+
+## Comparing two solutions
+
+Any two candidates are compared with `from` and `to`, each given by its
+number of classes and number of group classes.
+
+```{r from-to, fig.height = 3}
+plot_tree(models, from = c(3, 1), to = c(4, 3))
+```
+
+The candidates can also be given by name, in the order of the rows, with
+`candidates = c("classes3_groups1", "classes4_groups3")`.
+
+## The tree of group classes
+
+With `level = "groups"` the units are the students and the classes are the
+group classes. A tree then runs down the numbers of group classes at one
+number of classes of prompts.
+
+```{r groups, fig.height = 4}
+plot_tree(models, level = "groups", n_profiles = 4)
+```
+
+```{r groups-values, include = FALSE}
+group_splits <- get_results(models, "tree", level = "groups", n_profiles = 4)
+two_to_three_groups <- subset(group_splits, from_candidate == "classes4_groups2")
+group_kept <- with(two_to_three_groups, max(share_of_to))
+```
+
+From two to three group classes, one group class of the three-group-class
+solution receives `r round(100 * group_kept)`% of its students from a single
+group class of the two-group-class solution. The other group classes draw
+their students from both. The tree of group classes is read in the same way
+as the tree of classes. With `level = "groups"`, a single value of
+`n_group_classes` compares one level of group classes across numbers of
+classes, as `n_profiles` does for the classes.
+
+## Summary of calls
+
+| Question | Call |
+|---|---|
+| How do the classes divide as classes are added? | `plot_tree(models, n_group_classes = 1)` |
+| The same for every number of group classes | `plot_tree(models)`, `combine = TRUE` for one figure |
+| How do the solutions with four classes differ across group classes? | `plot_tree(models, n_profiles = 4, n_group_classes = c(1, 3))` |
+| How do two chosen solutions correspond? | `plot_tree(models, from = c(3, 1), to = c(4, 3))` |
+| How do the group classes divide? | `plot_tree(models, level = "groups", n_profiles = 4)` |
+| The shared masses behind any of these | `get_results(models, "tree", ...)` with the same arguments |
+
+```{r restore, include = FALSE}
+options(old_options)
+```
+
+## References
+
+Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
+multiple time scales. *Zeitschrift für Erziehungswissenschaft, 27*(1),
+147-168. <https://doi.org/10.1007/s11618-023-01182-8>
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
+
+Zappia, L., & Oshlack, A. (2018). Clustering trees: A visualization for
+evaluating clusterings at multiple resolutions. *GigaScience*, 7(7),
+giy083.

@@ -239,7 +239,7 @@ test_that("the enumeration plot draws several criteria as panels or plots", {
   separate <- expect_plots(plot(grid, what = c("aic", "bic_groups"),
                                 combine = FALSE))
   expect_length(separate, 2L)
-  expect_plot(plot(grid, what = "tree"))
+  expect_plot(plot(grid, what = "tree", combine = TRUE))
   expect_error(plot(grid, combine = NA))
   expect_error(plot(grid, what = c("aic", "not_a_criterion")),
                class = "latents_unknown_criterion")
@@ -789,7 +789,8 @@ test_that("deltas and knees read the candidates table in both directions", {
   expect_true(all(knees$knee_candidate %in% c(candidates$candidate, NA)))
   expect_true(all(knees$n_points >= 1L))
   expect_named(get_results(grid, "all"),
-               c("candidates", "best", "classification", "deltas", "knees"))
+               c("candidates", "best", "classification", "deltas", "knees",
+                 "tree"))
 
   skip_if_not_installed("ggplot2")
   views <- c("deltas", "heatmap", "smallest", "trust")

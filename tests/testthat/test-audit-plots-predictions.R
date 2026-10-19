@@ -33,11 +33,17 @@ test_that("weighted tree shares agree with fitted effective proportions", {
   )
   invisible(lapply(grids, function(models) {
     tree <- expect_plot(plot_tree(models))$layers[[2L]]$data
+    flows <- get_results(models, "tree")
+    names <- as.data.frame(models)$candidate
     invisible(lapply(1:2, function(k) {
       counts <- get_results(get_candidate(models, n_profiles = k), "counts")
       expected <- counts$effective_proportion[counts$level == "individuals"]
-      drawn <- tree$share[tree$n_profiles == k]
+      drawn <- tree$share[tree$row == k]
       expect_equal(sort(drawn), sort(expected), tolerance = 1e-10)
+      side <- if (k == 1L) "from" else "to"
+      tabled <- unique(flows[flows[[paste0(side, "_candidate")]] == names[k],
+                             paste0(side, c("_class", "_share"))])
+      expect_equal(tabled[[2L]][order(tabled[[1L]])], expected, tolerance = 1e-10)
     }))
   }))
 })

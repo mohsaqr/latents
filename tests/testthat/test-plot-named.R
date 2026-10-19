@@ -60,8 +60,8 @@ test_that("each named plot draws what plot(what = ) draws", {
                plot_enumeration(fits$grid, what = "deltas"))
   # A transition fit takes the measurement views too, without intervals.
   same_drawing(plot_profiles(fits$lta), plot(fits$lta, what = "profiles"))
-  same_drawing(expect_plot(plot_tree(fits$grid)),
-               plot(fits$grid, what = "tree"))
+  same_drawing(expect_plot(plot_tree(fits$grid, combine = TRUE)),
+               plot(fits$grid, what = "tree", combine = TRUE))
   # Titles are the caller's to set through the named function as well.
   titled <- plot_profiles(fits$lpa, main = "custom", subtitle = "sub")
   expect_identical(titled$labels$title, "custom")
@@ -168,7 +168,8 @@ test_that("enumeration plots choose criteria with `what`, and 0.9.21's `criterio
   expect_error(plot(grid, what = "bic_groups", criterion = "aic"),
                class = "latents_bad_argument")
   # plot_enumeration() is newer than 0.9.21 and has only `what`.
-  expect_error(plot_enumeration(grid, criterion = "aic"), "unused argument")
+  expect_error(plot_enumeration(grid, criterion = "aic"),
+               class = "latents_bad_argument")
 
   set.seed(1)
   ratings <- data.frame(

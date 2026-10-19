@@ -15,7 +15,8 @@ test_that("every view of a fit and a grid builds without a warning", {
                  "avepp")
   invisible(lapply(fit_views, \(view) expect_plot(plot(gg_fit, what = view))))
   expect_plot(plot(gg_grid))
-  expect_plot(plot(gg_grid, what = "tree"))
+  expect_plots(plot(gg_grid, what = "tree"))
+  expect_plot(plot(gg_grid, what = "tree", combine = TRUE))
 })
 
 test_that("the profile key orders by posterior share and matches counts", {
@@ -83,19 +84,23 @@ test_that("label spreading keeps order and the minimum gap", {
 })
 
 test_that("tree bars are posterior shares and every row sums to one", {
-  tree <- plot(gg_grid, what = "tree")
+  tree <- plot_tree(gg_grid, model = "EEE")
   bars <- plot_layer(tree, 2L)
   widths <- bars$xmax - bars$xmin
   bars$row <- round((bars$ymin + bars$ymax) / 2)
-  row_total <- tapply(widths, list(bars$PANEL, bars$row), sum)
+  row_total <- tapply(widths, bars$row, sum)
   expect_equal(as.vector(row_total), rep(1, length(row_total)),
                tolerance = 1e-8)
   fit_three <- get_candidate(gg_grid, n_profiles = 3, model = "EEE")
   counts <- get_results(fit_three, what = "counts")
   shares <- counts$effective_proportion[counts$level == "individuals"]
-  eee <- which(levels(tree$layers[[2L]]$data$panel) == "EEE")
-  eee_three <- sort(widths[bars$PANEL == eee & abs(bars$row) == 3])
-  expect_equal(eee_three, sort(shares), tolerance = 1e-8)
+  # Rows sit at their count: 2, 3, 4 profiles are the rows 1, 2, 3.
+  expect_equal(sort(widths[abs(bars$row) == 2]), sort(shares), tolerance = 1e-8)
+  flows <- get_results(gg_grid, "tree", model = "EEE")
+  into_three <- unique(flows[flows$to_candidate == "profiles3_EEE",
+                             c("to_class", "to_share")])
+  expect_equal(into_three$to_share[order(into_three$to_class)], shares,
+               tolerance = 1e-10)
 })
 
 test_that("a tree needs two numbers of profiles for some model", {

@@ -106,6 +106,7 @@ articles:
   - articles/workflow-lca
   - articles/class-enumeration
   - articles/model-selection
+  - articles/tree-plot
   - articles/evaluation
   - articles/covariates
   - articles/mixture-regression

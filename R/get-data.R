@@ -189,6 +189,23 @@
 #'     can still name a knee. A line needs three candidates for a knee and four
 #'     for `knee_without_largest` and `stable`; otherwise they are `NA` and
 #'     `note` gives the reason.}
+#'   \item{`"tree"`}{The flows of [plot_tree()], taking its arguments
+#'     `n_group_classes`, `n_profiles`, `model`, `candidates`, `from`, `to`
+#'     and `level`
+#'     (default `"individuals"`). One row per pair of classes in consecutive
+#'     rows of each tree: `tree` (the tree's name, as in the plot list),
+#'     `level`, `from_candidate`, `from_class`, `from_share`, `to_candidate`,
+#'     `to_class`, `to_share`, `mass` (the share of all units the two classes
+#'     share, the sum over units of the product of their posterior
+#'     probabilities, weighted by sampling weights at the individual level),
+#'     `share_of_from` and `share_of_to` (`mass` as a part of each class).
+#'     Every pair is listed, including those that share no mass. Units are
+#'     the rows and groups the fit counts (see `drop_empty`), weighted by
+#'     their sampling weights at both levels. A grid with no tree raises
+#'     `latents_no_tree`, a fit with a noise component
+#'     `latents_unsupported_noise`, and `what = "all"` leaves the table out.
+#'     The summary of a grid carries the default table only, without these
+#'     arguments.}
 #'   \item{`"comparison"`, `"classification"`}{A [compare_models()] result.
 #'     `"comparison"` is its table, one row per model. `"classification"`,
 #'     offered when every model is a profile, class, membership-covariate or
@@ -749,7 +766,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     # to fail.
     "latents_inseparable_classes",
     # A noise component has no classification-error correction yet.
-    "latents_unsupported_noise")
+    "latents_unsupported_noise",
+    # A grid with one solution per model has no tree.
+    "latents_no_tree")
 }
 
 #' Build every table an object can produce
@@ -802,7 +821,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
       deltas = .multilpa_table(
         function(x, using = "bic_groups") .latents_deltas_table(x, using), "using"),
       knees = .multilpa_table(
-        function(x, using = "bic_groups") .latents_knees_table(x, using), "using")))
+        function(x, using = "bic_groups") .latents_knees_table(x, using), "using"),
+      tree = .multilpa_table(.latents_tree_table, .latents_tree_arguments())))
   }
   if (inherits(x, "latents_comparison")) {
     catalogue <- list(comparison = .multilpa_table(function(x) {

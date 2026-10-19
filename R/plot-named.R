@@ -256,10 +256,20 @@ plot_transitions <- function(x, main = NULL, subtitle = NULL) {
 
 #' @rdname latents-plots
 #' @export
-plot_tree <- function(x, main = NULL, subtitle = NULL) {
+plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
+                      n_profiles = NULL, model = NULL, candidates = NULL,
+                      from = NULL, to = NULL,
+                      level = c("individuals", "groups"), combine = FALSE) {
   .gg_require_enumeration(x, "plot_tree")
+  level <- .latents_check_tree_arguments(level, n_profiles, n_group_classes,
+                                         model, combine)
+  candidates <- .latents_tree_candidates(x, candidates, from, to, model)
+  if (!is.null(from)) model <- NULL
   .gg_require()
-  .gg_view_tree(x, main, subtitle)
+  .gg_view_tree(x, level = level, n_profiles = n_profiles,
+                n_group_classes = n_group_classes, model = model,
+                candidates = candidates, combine = combine, main = main,
+                subtitle = subtitle)
 }
 
 #' @rdname latents-plots

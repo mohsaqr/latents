@@ -27,7 +27,7 @@ test_that("plot methods return ggplot objects for every view", {
   expect_plot(plot(candidates))
   expect_plot(plot(candidates, what = "sabic_individual"))
   expect_plot(plot(candidates, labels = FALSE, mark_minimum = FALSE))
-  expect_plot(plot(candidates, what = "tree"))
+  expect_plot(plot(candidates, what = "tree", combine = TRUE))
 })
 
 test_that("plot refuses the styling arguments it no longer takes", {
@@ -96,7 +96,8 @@ test_that("plot_enumeration() draws the enumeration view plot() draws", {
   expect_equal(plot_enumeration(candidates, what = "sabic_groups")$data,
                plot(candidates, what = "sabic_groups")$data)
   # Its arguments are its own formals, so a misspelt one is refused by R.
-  expect_error(plot_enumeration(candidates, palette = "x"), "unused argument")
+  expect_error(plot_enumeration(candidates, palette = "x"),
+               class = "latents_bad_argument")
 })
 
 test_that("what = \"all\" draws every information criterion once", {
