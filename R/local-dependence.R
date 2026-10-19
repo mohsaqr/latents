@@ -4,7 +4,9 @@
 # joint distribution of the pair, with no independence assumed between them.
 # For two nominal items this is the class-specific two-variable log-linear
 # association Latent GOLD fits with `item1 <-> item2 | Cluster`, which has the
-# same (C1 C2 - 1) free probabilities per class.
+# same (C1 C2 - 1) free probabilities per class. Two continuous indicators
+# instead get a covariance of their own within each class, every other
+# covariance staying zero: the covariance Latent GOLD fits with the same term.
 
 #' Read `local_dependence` into pairs of indicators
 #'
@@ -43,6 +45,82 @@
   pairs
 }
 
+#' Mark each pair as categorical or continuous, refusing a mixed pair
+#' @param pairs From `.latents_parse_pairs()`.
+#' @param categorical The categorical indicators.
+#' @return `pairs` with a `kind` column.
+#' @noRd
+.latents_classify_pairs <- function(pairs, categorical) {
+  first <- pairs$item_1 %in% categorical
+  second <- pairs$item_2 %in% categorical
+  if (any(first != second)) {
+    stop(errorCondition(sprintf(paste(
+      "A pair in `local_dependence` joins items of the same kind: two",
+      "categorical items, modelled jointly, or two continuous ones, given a",
+      "covariance. %s mixes the two."),
+      paste(sprintf("\"%s\"", pairs$name[first != second]), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  pairs$kind <- ifelse(first, "categorical", "continuous")
+  pairs
+}
+
+#' The free covariance entries of continuous local dependence
+#'
+#' @param pairs From `.latents_parse_pairs()`, continuous pairs.
+#' @param vars,categorical,ordinal,count The fit's indicators by kind.
+#' @param conflicts A named logical vector: settings that set the covariance
+#'   another way, refused when any is `TRUE`.
+#' @return A logical continuous-by-continuous matrix: `TRUE` on the diagonal
+#'   and for each pair.
+#' @noRd
+.latents_covariance_pattern <- function(pairs, vars, categorical, ordinal, count,
+                                        conflicts) {
+  continuous <- setdiff(vars, c(categorical, ordinal, count))
+  items <- c(pairs$item_1, pairs$item_2)
+  absent <- setdiff(items, continuous)
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf(paste(
+      "`local_dependence` names %s, which %s not a continuous indicator among",
+      "`vars`; pair two categorical items, or two continuous ones."),
+      paste(sprintf("`%s`", absent), collapse = ", "),
+      if (length(absent) > 1L) "are" else "is"), class = "latents_bad_argument", call = NULL))
+  }
+  if (any(conflicts)) {
+    stop(errorCondition(sprintf(paste(
+      "A covariance for chosen pairs of continuous indicators sets the",
+      "covariance itself; it is not combined with %s."),
+      paste(sprintf("`%s`", names(conflicts)[conflicts]), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  pattern <- diag(length(continuous)) > 0
+  dimnames(pattern) <- list(continuous, continuous)
+  pattern[cbind(pairs$item_1, pairs$item_2)] <- TRUE
+  pattern[cbind(pairs$item_2, pairs$item_1)] <- TRUE
+  pattern
+}
+
+#' Hold a start's covariances to a pattern
+#' @param parameters A start, with `covariances` under a full model.
+#' @param pattern From `.latents_covariance_pattern()`, or `NULL`.
+#' @return The start, its covariances zero outside the pattern.
+#' @noRd
+.latents_mask_covariances <- function(parameters, pattern) {
+  if (is.null(pattern) || is.null(parameters$covariances)) return(parameters)
+  masked <- parameters$covariances
+  masked[!array(pattern, dim(masked))] <- 0
+  parameters$covariances <- masked
+  parameters
+}
+
+#' The number of covariances a pattern holds at zero, per covariance matrix
+#' @param pattern From `.latents_covariance_pattern()`.
+#' @return An integer.
+#' @noRd
+.latents_pattern_zeros <- function(pattern) {
+  sum(lower.tri(pattern) & !pattern)
+}
+
 #' Replace the paired indicators by their joint indicator
 #'
 #' The joint indicator takes the place of the first item of its pair, so the
@@ -68,6 +146,7 @@
 #' @return The data frame with one more column per pair.
 #' @noRd
 .latents_join_pairs <- function(data, pairs) {
+  if (!is.null(pairs$kind)) pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
   joined <- Reduce(function(frame, index) {
     pair <- pairs[index, ]
     has_items <- all(c(pair$item_1, pair$item_2) %in% names(frame))
@@ -131,27 +210,24 @@
       paste(sprintf("`%s`", absent), collapse = ", "),
       if (length(absent) > 1L) "are" else "is"), class = "latents_bad_argument", call = NULL))
   }
-  continuous <- setdiff(items, categorical)
-  if (length(continuous) > 0L) {
-    stop(errorCondition(sprintf(paste(
-      "`local_dependence` pairs categorical indicators; %s %s not declared in",
-      "`categorical`."), paste(sprintf("`%s`", continuous), collapse = ", "),
-      if (length(continuous) > 1L) "are" else "is"),
-      class = "latents_bad_argument", call = NULL))
-  }
-  arguments$data <- .latents_join_pairs(arguments$data, pairs)
+  pairs <- .latents_classify_pairs(pairs, categorical)
+  joined_pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
+  continuous_pairs <- pairs[pairs$kind == "continuous", , drop = FALSE]
+  arguments$local_dependence <- if (nrow(continuous_pairs) > 0L) continuous_pairs$name
+  arguments$data <- .latents_join_pairs(arguments$data, joined_pairs)
   # Each joint category's two levels, read from the data rather than from the
   # label, so a level that itself holds a colon is not split.
-  categories <- lapply(stats::setNames(seq_len(nrow(pairs)), pairs$name), function(index) {
-    first <- as.character(arguments$data[[pairs$item_1[index]]])
-    second <- as.character(arguments$data[[pairs$item_2[index]]])
-    label <- as.character(arguments$data[[pairs$name[index]]])
+  categories <- lapply(stats::setNames(seq_len(nrow(joined_pairs)), joined_pairs$name),
+                       function(index) {
+    first <- as.character(arguments$data[[joined_pairs$item_1[index]]])
+    second <- as.character(arguments$data[[joined_pairs$item_2[index]]])
+    label <- as.character(arguments$data[[joined_pairs$name[index]]])
     unique(data.frame(label = label, level_1 = first, level_2 = second,
                       stringsAsFactors = FALSE)[!is.na(label), , drop = FALSE])
   })
   original <- list(vars = arguments$vars, categorical = categorical)
-  arguments$vars <- .latents_joined_names(arguments$vars, pairs)
-  arguments$categorical <- .latents_joined_names(categorical, pairs)
+  arguments$vars <- .latents_joined_names(arguments$vars, joined_pairs)
+  arguments$categorical <- .latents_joined_names(categorical, joined_pairs)
   fit <- do.call(multilpa, arguments)
   fit$local_dependence <- pairs
   fit$local_dependence_categories <- categories
@@ -173,7 +249,8 @@
 #'   categorical item of the caller, or `NULL` without categorical items.
 #' @noRd
 .latents_categorical_labels <- function(fit) {
-  codes <- fit$categorical_data
+  # A general lta() fit keeps its categorical codes as `codes`.
+  codes <- fit$categorical_data %||% fit$codes
   if (is.null(codes) || ncol(codes) == 0L) return(NULL)
   labels <- lapply(colnames(codes), function(name) {
     fit$categorical_levels[[name]][codes[, name]]
@@ -214,8 +291,26 @@
       "`local_dependence = \"item1:item2\"` to model one."),
       class = "latents_no_local_dependence", call = NULL))
   }
+  kinds <- pairs$kind %||% rep("categorical", nrow(pairs))
   rows <- lapply(seq_len(nrow(pairs)), function(index) {
     pair <- pairs[index, ]
+    if (identical(kinds[index], "continuous")) {
+      # The pair's covariance in each profile, and the correlation it implies.
+      continuous <- .multilpa_continuous_names(x)
+      first <- match(pair$item_1, continuous)
+      second <- match(pair$item_2, continuous)
+      return(do.call(rbind, lapply(seq_len(x$n_profiles), function(profile) {
+        covariance <- matrix(x$covariances[, , profile], length(continuous))
+        data.frame(pair = pair$name, kind = "continuous", profile = profile,
+                   item_1 = pair$item_1, category_1 = NA_character_,
+                   item_2 = pair$item_2, category_2 = NA_character_,
+                   probability = NA_real_, independent = NA_real_, ratio = NA_real_,
+                   covariance = covariance[first, second],
+                   correlation = covariance[first, second] /
+                     sqrt(covariance[first, first] * covariance[second, second]),
+                   stringsAsFactors = FALSE)
+      })))
+    }
     probabilities <- x$response_probabilities[[pair$name]]
     labels <- x$categorical_levels[[pair$name]]
     categories <- x$local_dependence_categories[[pair$name]]
@@ -227,11 +322,12 @@
       marginal_1 <- tapply(joint, first_items, sum)[first_items]
       marginal_2 <- tapply(joint, second_items, sum)[second_items]
       independent <- unname(marginal_1 * marginal_2)
-      data.frame(pair = pair$name, profile = profile, item_1 = pair$item_1,
-                 category_1 = first_items, item_2 = pair$item_2,
-                 category_2 = second_items, probability = unname(joint),
-                 independent = independent, ratio = unname(joint) / independent,
-                 stringsAsFactors = FALSE)
+      data.frame(pair = pair$name, kind = "categorical", profile = profile,
+                 item_1 = pair$item_1, category_1 = first_items,
+                 item_2 = pair$item_2, category_2 = second_items,
+                 probability = unname(joint), independent = independent,
+                 ratio = unname(joint) / independent, covariance = NA_real_,
+                 correlation = NA_real_, stringsAsFactors = FALSE)
     }))
   })
   result <- do.call(rbind, rows)

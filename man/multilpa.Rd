@@ -486,9 +486,15 @@ socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as in
 \code{latents_parallel_failure}. Models with membership covariates run their
 starts on one core.}
 
-\item{local_dependence}{Pairs of categorical indicators modelled jointly
-within each class, written \code{"item1:item2"} (several as a character
-vector). Each pair becomes one categorical indicator, named
+\item{local_dependence}{Pairs of indicators that stay associated within
+each class, written \code{"item1:item2"} (several as a character vector).
+A pair of continuous indicators gets its own covariance in each class
+(one shared covariance with \code{variance_model = "equal"}), every other
+covariance staying zero: the covariance Latent GOLD fits with
+\verb{item1 <-> item2 | Cluster}. It is not combined with \code{covariance_model},
+\code{model} or the structure arguments, covariates, \code{time}, \code{prior}, \code{noise}
+or held variances. A pair of categorical indicators is modelled jointly
+within each class. Each such pair becomes one categorical indicator, named
 \code{"item1:item2"}, whose categories are the observed combinations of the
 two items' categories, so every class has its own joint distribution of
 the pair: the class-specific association Latent GOLD fits with

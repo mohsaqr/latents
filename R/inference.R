@@ -256,8 +256,19 @@
 .multilpa_free_index <- function(object, scale) {
   widths <- .multilpa_coordinate_widths(object, scale)
   total <- as.integer(sum(widths))
+  # A covariance pattern (local dependence) holds the other covariances at
+  # zero; their coordinates, in the same lower-triangle order in both scales,
+  # are constants of the likelihood like a held block.
+  pattern <- object$covariance_pattern
+  patterned <- if (is.null(pattern)) integer() else {
+    lower <- lower.tri(pattern, diag = TRUE)
+    zero <- which(!pattern[lower])
+    width <- sum(lower)
+    blocks <- widths[["variances"]] %/% width
+    as.integer(widths[["means"]] + as.vector(outer(zero, (seq_len(blocks) - 1L) * width, "+")))
+  }
   held <- object$fixed %||% character()
-  if (length(held) == 0L) return(seq_len(total))
+  if (length(held) == 0L) return(setdiff(seq_len(total), patterned))
   measurement <- c("means", "variances", "response_probabilities")
   unknown <- setdiff(held, measurement)
   if (length(unknown) > 0L) {
@@ -272,7 +283,7 @@
       offsets[[position]] + seq_len(widths[[measurement[[position]]]])
     } else integer(0)
   }), use.names = FALSE)
-  setdiff(seq_len(total), as.integer(frozen))
+  setdiff(seq_len(total), c(as.integer(frozen), patterned))
 }
 
 #' Restore the held coordinates around a free parameter vector

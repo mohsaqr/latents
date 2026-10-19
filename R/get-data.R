@@ -189,13 +189,17 @@
 #'     can still name a knee. A line needs three candidates for a knee and four
 #'     for `knee_without_largest` and `stable`; otherwise they are `NA` and
 #'     `note` gives the reason.}
-#'   \item{`"local_dependence"`}{For a fit with `local_dependence`, one row per
-#'     pair, profile and combination of the two items' categories: `pair`,
-#'     `profile`, `item_1`, `category_1`, `item_2`, `category_2`,
-#'     `probability` (the fitted joint probability in the profile),
-#'     `independent` (the product of the two marginal probabilities, the
-#'     joint probability under independence within the profile) and `ratio`
-#'     (`probability / independent`). A fit without pairs raises
+#'   \item{`"local_dependence"`}{For a fit with `local_dependence`: `pair`,
+#'     `kind` (`"categorical"` or `"continuous"`), `profile`, `item_1`,
+#'     `category_1`, `item_2`, `category_2`, `probability`, `independent`,
+#'     `ratio`, `covariance` and `correlation`. A categorical pair has one row
+#'     per profile and combination of the two items' categories: the fitted
+#'     joint `probability`, the product of the two marginal probabilities
+#'     (`independent`, the joint probability under independence within the
+#'     profile) and their `ratio`; its covariance columns are `NA`. A
+#'     continuous pair has one row per profile, with the pair's `covariance`
+#'     and the `correlation` it implies; its category and probability
+#'     columns are `NA`. A fit without pairs raises
 #'     `latents_no_local_dependence`, and `what = "all"` leaves the table out.}
 #'   \item{`"lmr"`}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
 #'     Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,

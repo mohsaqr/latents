@@ -74,13 +74,16 @@
 #' @param covariance_model Diagonal or full covariance.
 #' @param held Parameters to hold at supplied values, or `NULL` to estimate
 #'   every one of them. Only `means`, `variances` and `covariances` are read.
+#' @param covariance_pattern `NULL`, or a logical indicators-by-indicators
+#'   matrix marking the free covariance entries (the diagonal and the
+#'   `local_dependence` pairs); every other entry is held at zero.
 #' @return Means, diagonal variances, and optional covariance array. A held
 #'   block is returned as supplied.
 #' @noRd
 .multilpa_maximize_moments <- function(x, expectation, variance_model,
                                      min_variance, covariance_model,
                                      held = NULL, structure = NULL,
-                                     previous = NULL) {
+                                     previous = NULL, covariance_pattern = NULL) {
   stopifnot(is.matrix(x), is.list(expectation), min_variance > 0,
             variance_model %in% c("varying", "equal"),
             covariance_model %in% c("diagonal", "full"),
@@ -137,8 +140,19 @@
       return(matrix(structured[, , profile], n_indicators, n_indicators))
     }
     covariance <- shared %||% (covariance_sums[[profile]] / weights[profile])
-    if (covariance_model == "full") .multilpa_bound_covariance(covariance, min_variance)
-    else diag(pmax(diag(covariance), min_variance), n_indicators)
+    if (covariance_model != "full") {
+      return(diag(pmax(diag(covariance), min_variance), n_indicators))
+    }
+    # A covariance pattern (local dependence) frees the diagonal and the named
+    # pairs only. Its blocks are disjoint, so the maximum of the expected
+    # log likelihood over such matrices is the expected scatter with every
+    # other entry zero, and the eigenvalue bound acts block by block; the
+    # mask is applied again after it to clear rounding.
+    if (is.null(covariance_pattern)) return(.multilpa_bound_covariance(covariance, min_variance))
+    covariance[!covariance_pattern] <- 0
+    bounded <- .multilpa_bound_covariance(covariance, min_variance)
+    bounded[!covariance_pattern] <- 0
+    bounded
   })
   result <- list(means = means,
     variances = t(matrix(vapply(covariances, diag, numeric(n_indicators)),

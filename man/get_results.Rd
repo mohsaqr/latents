@@ -337,13 +337,17 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} and
 \code{note} gives the reason.}
-\item{\code{"local_dependence"}}{For a fit with \code{local_dependence}, one row per
-pair, profile and combination of the two items' categories: \code{pair},
-\code{profile}, \code{item_1}, \code{category_1}, \code{item_2}, \code{category_2},
-\code{probability} (the fitted joint probability in the profile),
-\code{independent} (the product of the two marginal probabilities, the
-joint probability under independence within the profile) and \code{ratio}
-(\code{probability / independent}). A fit without pairs raises
+\item{\code{"local_dependence"}}{For a fit with \code{local_dependence}: \code{pair},
+\code{kind} (\code{"categorical"} or \code{"continuous"}), \code{profile}, \code{item_1},
+\code{category_1}, \code{item_2}, \code{category_2}, \code{probability}, \code{independent},
+\code{ratio}, \code{covariance} and \code{correlation}. A categorical pair has one row
+per profile and combination of the two items' categories: the fitted
+joint \code{probability}, the product of the two marginal probabilities
+(\code{independent}, the joint probability under independence within the
+profile) and their \code{ratio}; its covariance columns are \code{NA}. A
+continuous pair has one row per profile, with the pair's \code{covariance}
+and the \code{correlation} it implies; its category and probability
+columns are \code{NA}. A fit without pairs raises
 \code{latents_no_local_dependence}, and \code{what = "all"} leaves the table out.}
 \item{\code{"lmr"}}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
 Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,

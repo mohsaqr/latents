@@ -25,5 +25,11 @@ GOLD's own ratio: 26.3304 / 25.5321 = 1 + 1 / (5 log 600).
 | `ld_plain` | 4 binary items, 2 classes | LL -3645.2184, 9 parameters | -3645.2184, 9 |
 | `ld_joint` | as `ld_plain` with `a <-> b \| Cluster` | LL -3614.1388, 11 parameters, BIC 7308.7229, sizes 0.5093 / 0.4907, P(a = yes) 0.6914 / 0.2184, P(b = yes) 0.6827 / 0.2750 | the same to every printed digit (`tests/testthat/test-local-dependence.R`) |
 
+## `local-dependence-continuous/` — a covariance for a continuous pair (`local_dependence = "y1:y2"`)
+
+| Run | Model | Latent GOLD | latents |
+|---|---|---|---|
+| `cov_pair` | 4 continuous items, 2 classes, class-specific variances, `y1 <-> y2 \| Cluster` | LL -7272.5017, 19 parameters, BIC 14679.7150, covariances -0.4362 (s.e. 0.0442) and 0.5968 (s.e. 0.0580) | the same to every printed digit, classes in the other order (`tests/testthat/test-local-dependence.R`) |
+
 The ML three-step cases are part of the main kit (`../latentgold/`, case
 `c09`).

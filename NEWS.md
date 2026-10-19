@@ -10,6 +10,11 @@
   joint probabilities beside their values under independence. On simulated
   data the log likelihood, parameter count, class sizes and item marginals
   agree with Latent GOLD 6.1 to every printed digit.
+* A pair of continuous indicators, `local_dependence = "y1:y2"`, gets its own
+  covariance within each class while every other covariance stays zero:
+  between local independence (VVI) and a full covariance (VVV). The log
+  likelihood, parameter count, covariances and their standard errors agree
+  with Latent GOLD 6.1 (`y1 <-> y2 | Cluster`) to every printed digit.
 * `compare_models()` compares a model with paired items and one without, which
   are fitted to the same data.
 

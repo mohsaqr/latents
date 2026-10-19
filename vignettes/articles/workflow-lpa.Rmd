@@ -190,6 +190,40 @@ without such a variance.
 sensitivity(fit)
 ```
 
+## Covariance between chosen indicators
+
+Between local independence within profiles (EEI) and a full covariance
+(EEE) lies a covariance for chosen pairs of indicators only.
+`local_dependence` names the pairs, and every other covariance within a
+profile stays zero. The bivariate residuals of the model without covariances
+indicate which pairs carry the dependence.
+
+```{r pair-residuals}
+independent <- lpa(srl, indicators, n_profiles = 2, model = "EEI")
+head(subset(get_results(independent, "residuals"), statistic > 5))
+```
+
+```{r pair-fit}
+paired <- lpa(srl, indicators, n_profiles = 2, variance_model = "equal",
+              local_dependence = "cognitive_strategies:intrinsic_value")
+compare_models(independent = independent, paired = paired, full = fit)
+```
+
+```{r pair-values, include = FALSE}
+compared <- compare_models(independent = independent, paired = paired, full = fit)
+bic_of <- function(name) with(subset(compared, model == name), bic_groups)
+residuals <- get_results(independent, "residuals")
+large <- with(residuals, sum(statistic > 5))
+```
+
+`r large` pairs of indicators have a residual above 5 in the model without
+covariances, so the dependence is not confined to one pair. The covariance of
+one pair lowers BIC from `r round(bic_of("independent"), 1)` to
+`r round(bic_of("paired"), 1)`, and the full covariance lowers it to
+`r round(bic_of("full"), 1)`. A covariance for chosen pairs suits a
+dependence between one or two pairs of indicators; when every pair is
+dependent, the full covariance is the model.
+
 ## Further analyses
 
 The profiles can be related to covariates with `r3step()` and to distal

@@ -61,8 +61,9 @@ test_that("the dependence table holds each class's joint table and its independe
   skip_on_cran()
   fit <- joint_fit(dependent_items())
   table <- get_results(fit, "local_dependence")
-  expect_named(table, c("pair", "profile", "item_1", "category_1", "item_2",
-                        "category_2", "probability", "independent", "ratio"))
+  expect_named(table, c("pair", "kind", "profile", "item_1", "category_1", "item_2",
+                        "category_2", "probability", "independent", "ratio",
+                        "covariance", "correlation"))
   expect_identical(nrow(table), 8L)
   totals <- aggregate(cbind(probability, independent) ~ profile, table, sum)
   expect_equal(totals$probability, c(1, 1), tolerance = 1e-10)
@@ -113,4 +114,76 @@ test_that("pairs that cannot be modelled are refused by class", {
   expect_warning(lca(gappy, c("a", "b", "c", "e"), 2, n_starts = 1, seed = 1,
                      missing = "fiml", local_dependence = "a:b"),
                  class = "latents_partial_pair")
+})
+
+correlated_pair <- function(seed = 9, n = 1200) {
+  set.seed(seed)
+  class <- sample(1:2, n, TRUE)
+  correlation <- c(0.6, -0.5)[class]
+  first <- stats::rnorm(n)
+  second <- correlation * first + sqrt(1 - correlation^2) * stats::rnorm(n)
+  data.frame(y1 = c(0, 2.5)[class] + first, y2 = c(0, 2)[class] + second,
+             y3 = stats::rnorm(n, c(0, 1.5)[class]), y4 = stats::rnorm(n, c(0, 1)[class]))
+}
+
+test_that("a covariance for a continuous pair agrees with Latent GOLD", {
+  skip_on_cran()
+  # Latent GOLD 6.1, class-specific variances and `y1 <-> y2 | Cluster`:
+  # log likelihood -7272.5017 with 19 parameters, the pair's covariances
+  # 0.5968 (s.e. 0.0580) and -0.4362 (s.e. 0.0442).
+  fit <- quietly(lpa(correlated_pair(), paste0("y", 1:4), 2, n_starts = 10, seed = 1,
+                     tol = 1e-12, local_dependence = "y1:y2"))
+  within <- function(actual, printed) {
+    expect_true(all(abs(actual - printed) <= 5e-5),
+                info = paste(format(actual, digits = 8), collapse = " "))
+  }
+  within(fit$log_likelihood, -7272.5017)
+  expect_equal(fit$n_parameters, 19)
+  table <- get_results(fit, "local_dependence")
+  within(sort(table$covariance), c(-0.4362, 0.5968))
+  inference <- parameter_inference(fit)
+  pair_rows <- subset(inference, parameter == "covariance" & term == "y2:y1")
+  within(sort(pair_rows$standard_error), c(0.0442, 0.0580))
+  # The other covariances are zero and carry no coordinate.
+  expect_true(all(fit$covariances[3, 1, ] == 0) && all(fit$covariances[4, 2, ] == 0))
+  expect_false(any(subset(inference, parameter == "covariance")$term %in%
+                     c("y3:y1", "y4:y2")))
+})
+
+test_that("one pair of two indicators frees every covariance, as the full model does", {
+  skip_on_cran()
+  data <- correlated_pair()[c("y1", "y2")]
+  pattern <- quietly(lpa(data, c("y1", "y2"), 2, n_starts = 10, seed = 1, tol = 1e-12,
+                         local_dependence = "y1:y2"))
+  full <- quietly(lpa(data, c("y1", "y2"), 2, n_starts = 10, seed = 1, tol = 1e-12,
+                      model = "VVV"))
+  expect_equal(pattern$log_likelihood, full$log_likelihood, tolerance = 1e-8)
+  expect_equal(pattern$n_parameters, full$n_parameters)
+  reversed <- quietly(lpa(correlated_pair(), paste0("y", 1:4), 2, n_starts = 10, seed = 1,
+                          tol = 1e-12, local_dependence = "y2:y1"))
+  forward <- quietly(lpa(correlated_pair(), paste0("y", 1:4), 2, n_starts = 10, seed = 1,
+                         tol = 1e-12, local_dependence = "y1:y2"))
+  expect_equal(reversed$log_likelihood, forward$log_likelihood, tolerance = 1e-8)
+  # With one covariance matrix shared by the classes, the pair adds one.
+  equal <- quietly(lpa(correlated_pair(), paste0("y", 1:4), 2, n_starts = 5, seed = 1,
+                       variance_model = "equal", local_dependence = "y1:y2"))
+  independent <- quietly(lpa(correlated_pair(), paste0("y", 1:4), 2, n_starts = 5,
+                             seed = 1, model = "EEI"))
+  expect_equal(equal$n_parameters, independent$n_parameters + 1)
+})
+
+test_that("continuous pairs that the model cannot hold are refused by class", {
+  data <- transform(correlated_pair(n = 300), group = rep(1:30, each = 10),
+                    item = factor(stats::rbinom(300, 1, 0.5)))
+  vars <- paste0("y", 1:4)
+  expect_error(lpa(data, vars, 2, model = "VVV", local_dependence = "y1:y2",
+                   n_starts = 1, seed = 1), class = "latents_bad_argument")
+  expect_error(lpa(data, vars, 2, covariance_model = "full", local_dependence = "y1:y2",
+                   n_starts = 1, seed = 1), class = "latents_bad_argument")
+  expect_error(multilpa(data, c(vars, "item"), NULL, 2, 1, categorical = "item",
+                        local_dependence = "y1:item", n_starts = 1, seed = 1),
+               class = "latents_bad_argument")
+  expect_error(multilpa(data, vars[2:4], "group", 2, 2, profile_covariates = "y1",
+                        local_dependence = "y2:y3", n_starts = 1, seed = 1),
+               class = "latents_bad_argument")
 })

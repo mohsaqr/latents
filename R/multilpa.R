@@ -47,13 +47,17 @@
 #' @param variance_model Either varying or equal across profiles.
 #' @param min_variance Lower bound on every indicator variance.
 #' @param covariance_model Diagonal or full residual covariance.
+#' @param covariance_pattern `NULL`, or a logical indicators-by-indicators
+#'   matrix marking the free covariance entries (the diagonal and the
+#'   `local_dependence` pairs); every other entry is held at zero.
 #' @return Updated model parameters.
 #' @noRd
 .multilpa_maximization <- function(x, expectation, variance_model, min_variance,
                                   covariance_model = "diagonal", codes = NULL,
                                   n_categories = NULL, min_probability = 1e-10,
                                   held = NULL, structure = NULL,
-                                  previous = NULL, prior = NULL, extra = NULL) {
+                                  previous = NULL, prior = NULL, extra = NULL,
+                                  covariance_pattern = NULL) {
   stopifnot(is.matrix(x), is.list(expectation),
             variance_model %in% c("varying", "equal"), min_variance > 0,
             is.null(held) || is.list(held))
@@ -78,7 +82,8 @@
                              prior, min_variance)
   } else if (!is.null(expectation$gaussian_moments)) {
     .multilpa_maximize_moments(x, gaussian_expectation, variance_model, min_variance,
-                               covariance_model, held, structure, previous)
+                               covariance_model, held, structure, previous,
+                               covariance_pattern = covariance_pattern)
   } else NULL
   if (ncol(x) == 0L) {
     means <- matrix(numeric(0), length(weights), 0L)
@@ -541,6 +546,9 @@
 #' @param max_iter Maximum M-steps.
 #' @param tol Relative likelihood convergence tolerance.
 #' @param covariance_model Diagonal or full residual covariance.
+#' @param covariance_pattern `NULL`, or a logical indicators-by-indicators
+#'   matrix marking the free covariance entries (the diagonal and the
+#'   `local_dependence` pairs); every other entry is held at zero.
 #' @return Final parameters, posterior calculation, and convergence history.
 #' @noRd
 .multilpa_em <- function(x, group_index, parameters, variance_model,
@@ -548,7 +556,7 @@
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
                         held = NULL, structure = NULL, prior = NULL,
                         accelerate_em = TRUE, sampling_weights = NULL,
-                        extra = NULL) {
+                        extra = NULL, covariance_pattern = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
@@ -570,7 +578,8 @@
     maximize = function(point, expectation) {
       .multilpa_maximization(x, expectation, variance_model, min_variance,
                              covariance_model, codes, n_categories,
-                             min_probability, held, structure, point, prior, extra)
+                             min_probability, held, structure, point, prior, extra,
+                             covariance_pattern = covariance_pattern)
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(guard_decrease = is.null(prior),
@@ -944,9 +953,15 @@
 #'   [enumerate_classes()]; a worker that fails as a whole raises
 #'   `latents_parallel_failure`. Models with membership covariates run their
 #'   starts on one core.
-#' @param local_dependence Pairs of categorical indicators modelled jointly
-#'   within each class, written `"item1:item2"` (several as a character
-#'   vector). Each pair becomes one categorical indicator, named
+#' @param local_dependence Pairs of indicators that stay associated within
+#'   each class, written `"item1:item2"` (several as a character vector).
+#'   A pair of continuous indicators gets its own covariance in each class
+#'   (one shared covariance with `variance_model = "equal"`), every other
+#'   covariance staying zero: the covariance Latent GOLD fits with
+#'   `item1 <-> item2 | Cluster`. It is not combined with `covariance_model`,
+#'   `model` or the structure arguments, covariates, `time`, `prior`, `noise`
+#'   or held variances. A pair of categorical indicators is modelled jointly
+#'   within each class. Each such pair becomes one categorical indicator, named
 #'   `"item1:item2"`, whose categories are the observed combinations of the
 #'   two items' categories, so every class has its own joint distribution of
 #'   the pair: the class-specific association Latent GOLD fits with
@@ -1193,9 +1208,13 @@ multilpa <- function(data, vars, id, n_profiles,
                        scaling = c("none", "person", "grand"),
                        drop_empty = TRUE, cores = 1L,
                        local_dependence = character()) {
-  # Locally dependent pairs are joined into one indicator each, and the model
-  # is fitted on the joint indicators with the caller's other arguments.
-  if (length(local_dependence) > 0L) {
+  # Read before any argument is reassigned: missing() is FALSE afterwards.
+  covariance_model_given <- !missing(covariance_model)
+  # Locally dependent categorical pairs are joined into one indicator each,
+  # and the model is fitted on the joint indicators with the caller's other
+  # arguments; continuous pairs go on to a covariance pattern below.
+  if (length(local_dependence) > 0L &&
+      any(.latents_parse_pairs(local_dependence)$item_1 %in% categorical)) {
     return(.latents_fit_local_dependence(match.call(), environment(),
                                          local_dependence))
   }
@@ -1323,6 +1342,23 @@ multilpa <- function(data, vars, id, n_profiles,
       "`profile_slopes = \"group_class\"` lets profile-covariate slopes differ",
       "across group classes, so it needs `profile_covariates`."),
       class = "latents_bad_argument", call = NULL))
+  }
+  # Continuous local dependence: a covariance for each named pair within every
+  # class, every other covariance zero, fitted as a patterned full covariance.
+  covariance_pattern <- NULL
+  if (length(local_dependence) > 0L) {
+    covariance_pattern <- .latents_covariance_pattern(
+      .latents_parse_pairs(local_dependence), vars, categorical, ordinal, count,
+      conflicts = c(
+        "covariance_model" = covariance_model_given, "model" = !is.null(model),
+        "volume, shape or orientation" =
+          !is.null(volume) || !is.null(shape) || !is.null(orientation),
+        "profile_covariates or group_covariates" =
+          length(profile_covariates) > 0L || length(group_covariates) > 0L,
+        "time" = !is.null(time), "prior" = !is.null(prior),
+        "fixed variances" = any(c("variances", "measurement") %in% fixed),
+        "noise" = isTRUE(noise)))
+    covariance_model <- "full"
   }
   structure <- .multilpa_resolve_structure(variance_model, covariance_model,
                                            volume, shape, orientation)
@@ -1529,11 +1565,13 @@ multilpa <- function(data, vars, id, n_profiles,
     }
     initial
   }, run = function(start_index, initial) {
-    .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
+    .multilpa_em(x, group_index, .latents_mask_covariances(initial, covariance_pattern),
+               variance_model, min_variance, max_iter,
                tol, covariance_model, codes, n_categories, min_probability,
                held, structure, prior_parameters,
                accelerate_em = identical(acceleration, "squarem"),
-               sampling_weights = sampling_weights, extra = extra)
+               sampling_weights = sampling_weights, extra = extra,
+               covariance_pattern = covariance_pattern)
   }, select_start = select_start, cores = cores,
   interior = if (exclude_boundary) function(attempt) {
     !.multilpa_covariance_boundary(attempt$parameters, min_variance)
@@ -1583,6 +1621,12 @@ multilpa <- function(data, vars, id, n_profiles,
     n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
     covariance_model)
   if (isTRUE(noise)) n_parameters_unconstrained <- n_parameters_unconstrained + 2L
+  # The covariances a pattern holds at zero are not parameters.
+  if (!is.null(covariance_pattern)) {
+    n_parameters_unconstrained <- n_parameters_unconstrained -
+      .latents_pattern_zeros(covariance_pattern) *
+      if (identical(variance_model, "equal")) 1L else n_profiles
+  }
   n_parameters_unconstrained <- n_parameters_unconstrained +
     .latents_extra_n_parameters(extra, n_profiles)
   n_parameters <- n_parameters_unconstrained -
@@ -1692,6 +1736,13 @@ multilpa <- function(data, vars, id, n_profiles,
                              1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields)
   class(result) <- "multilpa"
+  # Recorded only when used, so a fit without local dependence has exactly the
+  # fields it always had.
+  if (!is.null(covariance_pattern)) {
+    result$covariance_pattern <- covariance_pattern
+    result$local_dependence <- .latents_classify_pairs(
+      .latents_parse_pairs(local_dependence), categorical)
+  }
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; see get_results(fit, \"starts\").",
