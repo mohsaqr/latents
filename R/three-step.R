@@ -293,7 +293,14 @@ three_step <- function(x, data, outcome,
   # FALSE once an argument has been reassigned.
   variance_given <- !missing(variance)
   level <- match.arg(level)
-  method <- match.arg(method)
+  # The released methods keep their abbreviations ("m" is "modal", as it was
+  # before "ml" existed); anything else is matched against all four, so "ml"
+  # is taken by its full name and an unknown method's error lists every one.
+  methods <- eval(formals(three_step)$method)
+  released <- pmatch(method[1L], c("bch", "proportional", "modal"))
+  method <- if (identical(method, methods)) "bch" else
+    if (length(method) == 1L && !is.na(released)) methods[released] else
+      match.arg(method, methods)
   variance <- match.arg(variance)
   if (variance_given && !identical(method, "ml")) {
     stop(errorCondition(paste(

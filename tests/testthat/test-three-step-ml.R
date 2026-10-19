@@ -111,9 +111,15 @@ test_that("ML arguments and outcomes it cannot take are refused by class", {
                class = "latents_bad_argument")
   expect_error(three_step(fit, transform(data, distal = 1), "distal", method = "ml"),
                class = "latents_bad_outcome")
-  # The released methods are unchanged by the new argument.
+  # The released methods are unchanged by the new argument and method,
+  # abbreviations included: "m" is still "modal".
   expect_identical(three_step(fit, data, "distal"),
                    three_step(fit, data, "distal", method = "bch"))
+  expect_identical(three_step(fit, data, "distal", method = "m"),
+                   three_step(fit, data, "distal", method = "modal"))
+  expect_identical(three_step(fit, data, "distal", method = "p"),
+                   three_step(fit, data, "distal", method = "proportional"))
+  expect_error(three_step(fit, data, "distal", method = "x"), "ml")
 })
 
 test_that("both variance models converge and agree with Latent GOLD's step three", {
