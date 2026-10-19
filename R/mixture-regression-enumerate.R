@@ -273,11 +273,18 @@ as.data.frame.latents_regression_enumeration <- function(x, row.names = NULL,
 #' @param what `"fit"` for the comparison table, `"model"` for one fitted
 #'   model.
 #' @export
-get_results.latents_regression_enumeration <- function(x, what = c("fit", "model"),
+get_results.latents_regression_enumeration <- function(x, what = c("fit", "model", "tree"),
                                                    n_classes = NULL,
                                                    n_group_classes = 1L, ...) {
   what <- match.arg(what)
   if (identical(what, "fit")) return(x$table)
+  if (identical(what, "tree")) {
+    # The tree counts its classes as `n_profiles`, as every grid's tree does.
+    extra <- list(...)
+    if (!missing(n_classes)) extra$n_profiles <- n_classes
+    if (!missing(n_group_classes)) extra$n_group_classes <- n_group_classes
+    return(.latents_tree_results(x, extra))
+  }
   stopifnot("`n_classes` must name one fitted class count" =
               .mixture_is_count(n_classes %||% NA_real_))
   row <- which(x$grid$n_classes == n_classes &

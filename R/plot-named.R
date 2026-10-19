@@ -176,12 +176,23 @@
 #' @param what Its `what` (`""` for a function without one).
 #' @param arguments Named list of the arguments the caller supplied.
 #' @param uses The arguments this view uses, or `NULL` for all.
+#' @param warn_unused `TRUE` warns (`latents_unused_argument`) about supplied
+#'   arguments outside `uses`.
 #' @return The method's ggplot object.
 #' @noRd
-.latents_draw_named <- function(x, verb, what, arguments, uses = NULL) {
+.latents_draw_named <- function(x, verb, what, arguments, uses = NULL,
+                                warn_unused = FALSE) {
   view <- .latents_named_plot_lookup(x, verb, what)
   if (is.null(view)) .latents_refuse_named_plot(x, verb, what)
   if (identical(.latents_plot_kind(x), "profile_model") && !is.null(uses)) {
+    # A view asked for by name says which supplied arguments it leaves unused;
+    # under what = "all" each view takes its share without a word.
+    if (isTRUE(warn_unused)) {
+      .latents_warn_unused_arguments(
+        arguments[setdiff(names(arguments), uses)],
+        sprintf("%s(what = \"%s\")", verb, what),
+        "Those arguments belong to the function's other views.")
+    }
     arguments <- arguments[intersect(names(arguments), uses)]
   }
   .multilpa_plot_named_view(x, view, arguments, verb, what)
@@ -294,7 +305,7 @@
   if (identical(what, "all")) {
     return(.multilpa_plot_named_views(x, uses, arguments, verb))
   }
-  .latents_draw_named(x, verb, what, arguments, uses[[what]])
+  .latents_draw_named(x, verb, what, arguments, uses[[what]], warn_unused = TRUE)
 }
 
 #' @rdname latents-plots
@@ -409,6 +420,9 @@ plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
                       from = NULL, to = NULL,
                       level = c("individuals", "groups"), combine = FALSE) {
   .latents_require_grid_views(x, "tree", "plot_tree")
+  # A family grid's candidates have group classes only, so its tree is theirs.
+  if (identical(level, eval(formals(plot_tree)$level)) &&
+      identical(.latents_grid_kind(x), "families")) level <- "groups"
   level <- .latents_check_tree_arguments(level, n_profiles, n_group_classes,
                                          model, combine)
   candidates <- .latents_tree_candidates(x, candidates, from, to, model)

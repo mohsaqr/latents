@@ -189,9 +189,9 @@
 #'     can still name a knee. A line needs three candidates for a knee and four
 #'     for `knee_without_largest` and `stable`; otherwise they are `NA` and
 #'     `note` gives the reason.}
-#'   \item{`"tree"`}{The flows of [plot_tree()], taking its arguments
-#'     `n_group_classes`, `n_profiles`, `model`, `candidates`, `from`, `to`
-#'     and `level`
+#'   \item{`"tree"`}{The flows of [plot_tree()], on every grid, taking its
+#'     arguments `n_group_classes`, `n_profiles` (`n_classes` on a regression
+#'     grid), `model`, `candidates`, `from`, `to` and `level`
 #'     (default `"individuals"`). One row per pair of classes in consecutive
 #'     rows of each tree: `tree` (the tree's name, as in the plot list),
 #'     `level`, `from_candidate`, `from_class`, `from_share`, `to_candidate`,

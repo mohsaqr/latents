@@ -73,3 +73,29 @@ test_that("a structure the covariate model cannot fit is refused, not swapped", 
   expect_identical(c(equal_full$variance_model, equal_full$covariance_model),
                    c("equal", "full"))
 })
+
+test_that("the one-start base fit's estimation warnings do not reach the caller", {
+  # One profile sits on a constant indicator, so the variance reaches its
+  # bound in the base start and in the covariate model: one warning, about the
+  # model returned, where there used to be a second from the base start.
+  set.seed(3)
+  n <- 400
+  profile <- sample(1:2, n, TRUE)
+  data <- data.frame(g = rep(1:40, each = 10),
+                     a = ifelse(profile == 1, 5, stats::rnorm(n)),
+                     b = stats::rnorm(n, c(-1, 1)[profile]), z = stats::rnorm(n))
+  raised <- character()
+  fit <- withCallingHandlers(
+    multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+             profile_covariates = "z", n_starts = 3, seed = 1),
+    warning = function(condition) {
+      raised <<- c(raised, class(condition)[1L])
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(raised, "latents_boundary")
+  expect_true(fit$boundary)
+  # The covariate model judges its own classes' sizes, by the rule of multilpa().
+  expect_identical(fit$small_classes,
+                   any(fit$effective_profile_counts < 1) ||
+                     any(fit$effective_group_counts < 1))
+})

@@ -310,3 +310,48 @@ test_that("model resolves from and to on a grid crossed with structures", {
                plot_tree(crossed, candidates = c("profiles2_VVI",
                                                  "profiles3_VVI"))$layers[[2L]]$data)
 })
+
+test_that("a family grid's tree divides its groups, as the fits count them", {
+  family <- quietly(enumerate_classes(subset(course_engagement, student <= 30),
+                                      c("browse", "lectures"), "student",
+                                      family = "additive", n_group_classes = 1:3,
+                                      n_starts = 1, seed = 1))
+  trees <- expect_plots(plot_tree(family))
+  expect_named(trees, c("additive", "additive_equal"))
+  flows <- get_results(family, "tree", model = "additive")
+  expect_setequal(c(flows$from_candidate, flows$to_candidate),
+                  c("additive_groups1", "additive_groups2", "additive_groups3"))
+  fit <- .latents_tree_fit(family, match("additive_groups3",
+                                         .latents_tree_table_of(family)$candidate))
+  expected <- colSums(fit$group_posteriors) / nrow(fit$group_posteriors)
+  into_three <- unique(flows[flows$to_candidate == "additive_groups3",
+                             c("to_class", "to_share")])
+  expect_equal(into_three$to_share[order(into_three$to_class)], unname(expected),
+               tolerance = 1e-10)
+  # One count names a number of group classes on a family grid.
+  expect_identical(
+    get_results(family, "tree", from = 2, to = 3, model = "additive"),
+    get_results(family, "tree", candidates = c("additive_groups2", "additive_groups3")))
+  expect_error(get_results(family, "tree", from = 2, to = 3),
+               class = "latents_unknown_candidate")
+})
+
+test_that("a regression grid's tree divides the cases by their class posteriors", {
+  regression <- quietly(enumerate_regressions(score ~ hours, study_hours,
+                                              n_classes = 1:3, n_starts = 1,
+                                              seed = 1))
+  expect_plot(plot_tree(regression))
+  flows <- get_results(regression, "tree")
+  fit <- .latents_tree_fit(regression, 3L)
+  posteriors <- .latents_regression_posteriors(fit, "individuals")
+  into_three <- unique(flows[flows$to_candidate == "classes3", c("to_class", "to_share")])
+  expect_equal(into_three$to_share[order(into_three$to_class)],
+               unname(colMeans(posteriors)), tolerance = 1e-10)
+  expect_equal(as.vector(tapply(flows$mass, flows$from_candidate, sum)), c(1, 1),
+               tolerance = 1e-10)
+  # The regression grid names its class counts n_classes; the tree takes it.
+  flow_columns <- c("from_candidate", "from_class", "to_candidate", "to_class", "mass")
+  expect_identical(get_results(regression, "tree", n_classes = 2:3)[flow_columns],
+                   get_results(regression, "tree", from = 2, to = 3)[flow_columns])
+  expect_identical(get_results(regression), get_results(regression, "fit"))
+})

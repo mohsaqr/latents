@@ -42,12 +42,13 @@
 #'   entropy, avepp, diagnostics \tab yes \tab yes \tab group classes \tab yes \cr
 #'   deltas, heatmap, smallest, trust, selection \tab yes \tab yes \tab no \tab
 #'     yes \cr
-#'   tree \tab yes \tab yes \tab no \tab no
+#'   tree \tab yes \tab yes \tab group classes \tab yes
 #' }
 #' A family grid's candidates have group classes and no profiles, so its
-#' criteria and quality are drawn against the number of group classes, and
-#' the views laid out by profiles and group classes, and the tree, are not
-#' drawn. A regression grid's candidates are not named, so it has no tree; its
+#' criteria and quality are drawn against the number of group classes, the
+#' views laid out by profiles and group classes are not drawn, and its tree
+#' divides the groups (`level = "groups"`, its default), one tree per family.
+#' A regression grid's tree divides the cases by their class posteriors; its
 #' smallest-class view reads the `smallest_share` of its table, and its trust
 #' view has no boundary column to read. A view a grid does not offer is
 #' refused with `latents_unsupported_view`.

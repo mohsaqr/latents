@@ -444,9 +444,10 @@
 #' @noRd
 #' @export
 get_results.latents_transition_enumeration <- function(
-    x, what = c("candidates", "best", "all"),
+    x, what = c("candidates", "best", "all", "tree"),
     criterion = c("bic", "aic", "bic_individual"), ...) {
   what <- match.arg(what)
+  if (identical(what, "tree")) return(.latents_tree_results(x, list(...)))
   criterion <- match.arg(criterion)
   .latents_warn_unused_arguments(list(...), "get_results()",
                                  "An enumeration's tables take only `what` and `criterion`.")

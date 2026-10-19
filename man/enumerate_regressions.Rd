@@ -23,7 +23,7 @@ enumerate_regressions(
 
 \method{get_results}{latents_regression_enumeration}(
   x,
-  what = c("fit", "model"),
+  what = c("fit", "model", "tree"),
   n_classes = NULL,
   n_group_classes = 1L,
   ...

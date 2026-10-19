@@ -711,6 +711,13 @@
 #'   scaling correction factor `tr(A^-1 B) / q` (with `B` without the CR1
 #'   factor), used for scaled likelihood-ratio difference tests; it is `NA`
 #'   otherwise.
+#' @section Computation: The observed information takes two evaluations of
+#'   the score over all the data for each free parameter, which makes it the
+#'   slowest part of Wald inference. For profile, class, covariate and
+#'   transition models it is computed once per R session for a fit, its data
+#'   and `step`, and reused by later calls, including those made by the plots
+#'   that draw intervals and by `get_results()`. Any change to the fit or its
+#'   data computes it anew, and the result is the same either way.
 #' @section Conditions:
 #'   Errors: `latents_no_converge` for an unconverged fit;
 #'   `latents_boundary_fit` when a variance, response probability or mixing
@@ -888,8 +895,10 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     stopifnot(is.numeric(displacement))
     score(centered_theta + displacement * parameter_scale) * parameter_scale
   }
-  information <- .multilpa_observed_hessian(scaled_objective, scaled_gradient,
-                                          parameter_scale, step)
+  information <- .multilpa_observed_hessian(
+    scaled_objective, scaled_gradient, parameter_scale, step,
+    cache_key = list(path = "profile", fit = x, observed = observed,
+                     codes = codes, free = free))
   scaled_hessian <- information$scaled
   hessian <- information$natural
   condition_ratio <- information$condition_ratio

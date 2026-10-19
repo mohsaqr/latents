@@ -314,6 +314,16 @@ parameter at a bound: without an active bound \code{boundary = "fix"} gives
 the same table as \code{"error"}, and a fit with an active bound raises
 \code{latents_boundary_fit} under either.
 }
+\section{Computation}{
+ The observed information takes two evaluations of
+the score over all the data for each free parameter, which makes it the
+slowest part of Wald inference. For profile, class, covariate and
+transition models it is computed once per R session for a fit, its data
+and \code{step}, and reused by later calls, including those made by the plots
+that draw intervals and by \code{get_results()}. Any change to the fit or its
+data computes it anew, and the result is the same either way.
+}
+
 \section{Conditions}{
 
 Errors: \code{latents_no_converge} for an unconverged fit;

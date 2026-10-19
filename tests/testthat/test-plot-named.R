@@ -226,3 +226,16 @@ test_that("a grouped plot function's \"all\" draws each of its views", {
   same_drawing(plot_profiles(fits$lpa, "median"),
                plot(fits$lpa, statistic = "median"))
 })
+
+test_that("a view asked for by name warns about the arguments it does not use", {
+  skip_if_not_installed("ggplot2")
+  fit <- quietly(lpa(engagement_small, c("browse", "lectures"), 2, n_starts = 1,
+                     seed = 1))
+  expect_warning(plot_profiles(fit, what = "heatmap", scale = "standardized"),
+                 class = "latents_unused_argument")
+  # A view that uses the argument, and every view under "all", stay silent.
+  expect_no_warning(plot_profiles(fit, what = "bars", scale = "standardized",
+                                  intervals = FALSE))
+  expect_no_warning(suppressMessages(
+    plot_profiles(fit, what = "all", scale = "standardized", intervals = FALSE)))
+})

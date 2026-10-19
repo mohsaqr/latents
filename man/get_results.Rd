@@ -337,9 +337,9 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} and
 \code{note} gives the reason.}
-\item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, taking its arguments
-\code{n_group_classes}, \code{n_profiles}, \code{model}, \code{candidates}, \code{from}, \code{to}
-and \code{level}
+\item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, on every grid, taking its
+arguments \code{n_group_classes}, \code{n_profiles} (\code{n_classes} on a regression
+grid), \code{model}, \code{candidates}, \code{from}, \code{to} and \code{level}
 (default \code{"individuals"}). One row per pair of classes in consecutive
 rows of each tree: \code{tree} (the tree's name, as in the plot list),
 \code{level}, \code{from_candidate}, \code{from_class}, \code{from_share}, \code{to_candidate},

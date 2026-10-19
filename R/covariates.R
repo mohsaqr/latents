@@ -287,7 +287,15 @@
   .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
                                vars, id)
   # The base fit validates indicators/model sizes and supplies an initial mode.
-  base <- multilpa(data, vars, id, n_profiles, n_group_classes,
+  # It runs one start, so its estimation warnings (a variance at its bound, no
+  # convergence, failed starts, a class below one member) describe that start,
+  # not the model returned: the covariate model checks its own estimate for
+  # each of them below. Those classes alone are muffled; any other warning,
+  # about the data for example, reaches the caller.
+  base_estimation <- c("latents_boundary", "latents_unconverged",
+                       "latents_failed_starts", "latents_all_starts_boundary",
+                       "latents_small_classes")
+  base <- withCallingHandlers(multilpa(data, vars, id, n_profiles, n_group_classes,
                      variance_model = variance_model,
                      n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance,
@@ -297,7 +305,10 @@
                      weights = weights, ordinal = ordinal, count = count,
                      count_model = count_model, count_dispersion = count_dispersion,
                      centering = centering, scaling = scaling,
-                     drop_empty = drop_empty)
+                     drop_empty = drop_empty),
+    warning = function(condition) {
+      if (inherits(condition, base_estimation)) invokeRestart("muffleWarning")
+    })
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -440,6 +451,14 @@
   if (result$boundary) {
     warning(warningCondition("A residual variance reached min_variance.",
                              class = "latents_boundary", call = NULL))
+  }
+  # The rule of multilpa(), applied to this model's own effective counts.
+  result$small_classes <- any(result$effective_profile_counts < 1) ||
+    any(result$effective_group_counts < 1)
+  if (result$small_classes) {
+    warning(warningCondition(
+      "A profile or group class has effective membership below one.",
+      class = "latents_small_classes", call = NULL))
   }
   if (result$extreme_logits) {
     warning(warningCondition(

@@ -570,7 +570,9 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     function(displacement) objective(theta + as.vector(moves %*% displacement)),
     function(displacement) {
       as.vector(crossprod(moves, gradient(theta + as.vector(moves %*% displacement))))
-    }, diag(transform)[free], step)
+    }, diag(transform)[free], step,
+    cache_key = list(path = "covariates", fit = object, indicators = x,
+                     designs = designs, codes = codes, moves = moves))
   free_covariance <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
     scores <- .multilpa_cov_group_scores(theta, x, object, codes) %*% moves

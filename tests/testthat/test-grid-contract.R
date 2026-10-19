@@ -122,21 +122,26 @@ test_that("each kind offers the views its candidates carry", {
              "trust", "selection", "tree")
   expect_true(all(views %in% offered$profiles))
   expect_true(all(views %in% offered$transitions))
-  expect_setequal(intersect(views, offered$families), c("entropy", "avepp", "diagnostics"))
-  expect_setequal(setdiff(views, offered$regressions), "tree")
+  expect_setequal(intersect(views, offered$families),
+                  c("entropy", "avepp", "diagnostics", "tree"))
+  expect_true(all(views %in% offered$regressions))
   expect_identical(setdiff(offered$transitions, c(views, "all")),
                    c("aic", "bic", "bic_individual"))
   expect_identical(setdiff(offered$regressions, c(views, "all")),
                    c("aic", "bic", "bic_rows", "sabic", "icl"))
-  # plot_tree() and plot_selection() refuse what the grid does not offer.
-  expect_error(plot_tree(grids$families), class = "latents_unsupported_view")
-  expect_error(plot_tree(grids$regressions), class = "latents_unsupported_view")
+  # plot_selection() refuses what the grid does not offer.
   expect_error(plot_selection(grids$families), class = "latents_unsupported_view")
   expect_error(plot_selection(grids$families, what = "trust"),
                class = "latents_unsupported_view")
   # The refusal keeps the class callers caught before the contract.
-  expect_error(plot_tree(grids$families), class = "latents_bad_argument")
-  expect_error(plot_tree(grids$families), "\"entropy\"")
+  expect_error(plot_selection(grids$families), class = "latents_bad_argument")
+  # A family grid's tree is of its groups; its candidates have no profiles.
+  expect_plots(plot_tree(grids$families))
+  expect_error(plot_tree(grids$families, level = "individuals"),
+               class = "latents_unsupported_view")
+  expect_error(plot_tree(grids$families, level = "individuals"), "level = \"groups\"")
+  # This regression grid has one and two group classes: a tree for each.
+  expect_plots(plot_tree(grids$regressions))
   # A transition grid draws its trees, at both levels.
   expect_plots(plot_tree(grids$transitions))
   expect_plots(plot_tree(grids$transitions, level = "groups"))
@@ -160,8 +165,10 @@ test_that("an object that is not a grid, or a criterion it lacks, is refused by 
                class = "latents_unsupported_view")
   expect_error(plot_enumeration(grids$transitions, what = "deltas", using = "bic_groups"),
                class = "latents_bad_argument")
-  expect_error(plot(grids$regressions, what = "tree", n_profiles = 2),
-               class = "latents_bad_argument")
+  # One class count compares that level across the numbers of group classes.
+  expect_plot(plot(grids$regressions, what = "tree", n_profiles = 2))
+  expect_error(plot(grids$regressions, what = "tree", n_profiles = 2,
+                    n_group_classes = 1), class = "latents_no_tree")
 })
 
 test_that("transition and family plots keep their 0.9.21 calls", {

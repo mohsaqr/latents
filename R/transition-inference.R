@@ -516,7 +516,9 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
   information <- .multilpa_observed_hessian(
     function(displacement) negative(start + displacement * scale),
     function(displacement) gradient(start + displacement * scale) * scale,
-    scale, step)
+    scale, step,
+    cache_key = list(path = "transitions", fit = x, indicators = centred,
+                     codes = codes, start = start))
   scaled_inverse <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
     scores <- sweep(.multilpa_transition_group_scores(start, centred, layout, view,

@@ -299,16 +299,58 @@
 }
 
 
+#' Results computed in this session, reused for identical inputs
+#' @noRd
+.latents_cache <- new.env(parent = emptyenv())
+
+#' Reuse an expensive deterministic result whose inputs are identical
+#'
+#' Entries are compared with `identical()` on the whole key, so any change to
+#' a fit, its data or an argument computes the result anew; the same fit
+#' object passed again is recognised at once. Only values are stored: a
+#' computation that fails is not, and fails again the next time. The most
+#' recently used `size` entries are kept.
+#' @param store The name of the store in `.latents_cache`.
+#' @param key A list of everything the result depends on.
+#' @param compute A function of no arguments that computes the result.
+#' @param size The number of entries kept.
+#' @return The result.
+#' @noRd
+.latents_memo <- function(store, key, compute, size = 8L) {
+  entries <- .latents_cache[[store]] %||% list()
+  hit <- Position(\(entry) identical(entry$key, key), entries)
+  if (!is.na(hit)) {
+    .latents_cache[[store]] <- c(entries[hit], entries[-hit])
+    return(entries[[hit]]$value)
+  }
+  value <- compute()
+  .latents_cache[[store]] <- utils::head(c(list(list(key = key, value = value)),
+                                           entries), size)
+  value
+}
+
 #' Differentiate the observed information and check that it is usable
 #'
 #' Curvature is tested after scaling, so that indicators on different units do
-#' not by themselves make an identified model look singular.
+#' not by themselves make an identified model look singular. The Hessian
+#' takes two score evaluations over all the data per parameter, which makes
+#' it the slowest step of Wald inference; with a `cache_key` it is computed
+#' once per session for those inputs, so a model plotted with intervals again
+#' and again (or tabulated) does not differentiate its likelihood each time.
 #'
+#' @param cache_key `NULL`, or a list of everything the objective and the
+#'   gradient depend on (see `.latents_memo()`).
 #' @return A list with the `scaled` and `natural` Hessians, the scaled
 #'   `condition_ratio`, and the `inverse` of the scaled Hessian.
 #' @noRd
 .multilpa_observed_hessian <- function(scaled_objective, scaled_gradient,
-                                     parameter_scale, step) {
+                                     parameter_scale, step, cache_key = NULL) {
+  if (!is.null(cache_key)) {
+    return(.latents_memo("observed_information",
+                         c(cache_key, list(scale = parameter_scale, step = step)),
+                         \() .multilpa_observed_hessian(
+                           scaled_objective, scaled_gradient, parameter_scale, step)))
+  }
   n_parameters <- length(parameter_scale)
   scaled <- tryCatch(
     stats::optimHess(rep(0, n_parameters), scaled_objective, gr = scaled_gradient,

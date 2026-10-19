@@ -27,8 +27,14 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
 #' @noRd
 .latents_tree_specs <- function(x, level, n_profiles, n_group_classes, model,
                                 candidates) {
-  table <- .subset2(x, "table")
-  names <- .latents_candidate_names(x)
+  table <- .latents_tree_table_of(x)
+  names <- table$candidate
+  if (identical(.latents_grid_kind(x), "families") && !identical(level, "groups")) {
+    stop(errorCondition(paste(
+      "A family grid's candidates have group classes only, so their tree is",
+      "of the groups: use `level = \"groups\"`."),
+      class = c("latents_unsupported_view", "latents_bad_argument"), call = NULL))
+  }
   if (!is.null(candidates)) {
     if (!is.null(n_profiles) || !is.null(n_group_classes) || !is.null(model)) {
       stop(errorCondition(paste(
@@ -44,9 +50,15 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
         "class counts, such as from = c(3, 3), to = c(4, 3)."),
         class = "latents_bad_argument", call = NULL))
     }
-    at <- vapply(candidates, \(name) as.integer(.latents_candidate_row(x, name)),
-                 integer(1), USE.NAMES = FALSE)
-    invisible(lapply(at, \(row) .latents_candidate_at(x, row)))
+    at <- match(candidates, names)
+    if (anyNA(at)) {
+      stop(errorCondition(sprintf(
+        "%s is not a candidate of this grid. Its candidates are %s.",
+        paste(sprintf("\"%s\"", candidates[is.na(at)]), collapse = ", "),
+        paste(sprintf("\"%s\"", names), collapse = ", ")),
+        class = "latents_unknown_candidate", call = NULL))
+    }
+    invisible(lapply(at, \(row) .latents_tree_fit(x, row)))
     unconverged <- !table$converged[at] %in% TRUE
     if (any(unconverged)) {
       stop(errorCondition(sprintf(
@@ -61,8 +73,9 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
     }
     # Each row is labelled by its counts (and structure, on a grid crossed
     # with structures), as the axis of every other tree.
-    word <- .latents_class_word(x)
+    word <- .latents_tree_word(x)
     counts_label <- \(count, noun) {
+      if (is.na(count)) return(NULL)
       sprintf("%d %s", count, if (count == 1L) .latents_singular(noun) else noun)
     }
     crossed <- length(unique(table$model[!is.na(table$model)])) > 1L
@@ -78,7 +91,9 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
                         label = labels, stringsAsFactors = FALSE))))
   }
   structure <- ifelse(is.na(table$model), "", table$model)
-  fitted <- !vapply(.subset2(x, "fits"), is.null, logical(1))
+  fitted <- !vapply(.subset2(x, "fits"), \(fit) {
+    is.null(fit) || inherits(fit, "condition")
+  }, logical(1))
   usable <- table$converged %in% TRUE & fitted
   .latents_check_tree_filter(model, structure[usable], "model")
   .latents_check_tree_filter(n_profiles, table$n_profiles[usable], "n_profiles")
@@ -91,7 +106,11 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
       table$n_group_classes %in% n_group_classes)
   groups_level <- identical(level, "groups")
   # The count that indexes trees, and the count that runs down each tree.
-  tree_count <- if (groups_level) table$n_profiles else table$n_group_classes
+  # A family grid has no profiles: each family is one tree of group classes.
+  no_profiles <- all(is.na(table$n_profiles))
+  tree_count <- if (groups_level) {
+    if (no_profiles) rep(0L, nrow(table)) else table$n_profiles
+  } else table$n_group_classes
   row_count <- if (groups_level) table$n_group_classes else table$n_profiles
   # One count asked for down the rows is one level of every tree: the rows
   # then run across the trees, comparing that level's solutions.
@@ -108,7 +127,7 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
       "A group-level tree needs two or more numbers of group classes."),
       class = c("latents_no_tree", "latents_nothing_to_plot"), call = NULL))
   }
-  word <- .latents_class_word(x)
+  word <- .latents_tree_word(x)
   # What the rows count, for the axis and the messages, and the level held
   # fixed when the rows run across the trees.
   rows_noun <- if (groups_level != across) "group classes" else word
@@ -127,7 +146,8 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
     rows_in <- rows_in[order(row_count[rows_in])]
     count <- keys$count[index]
     count_label <- if (across) fixed_label else if (groups_level) {
-      sprintf("%d %s", count, if (count == 1L) .latents_singular(word) else word)
+      if (no_profiles) "" else
+        sprintf("%d %s", count, if (count == 1L) .latents_singular(word) else word)
     } else if (single_level) "" else {
       sprintf("%d group class%s", count, if (count == 1L) "" else "es")
     }
@@ -136,7 +156,9 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
       name = paste(c(if (nzchar(tree_structure)) tree_structure,
                      if (across) {
                        sprintf("%s%d", if (groups_level) "groups" else word, fixed)
-                     } else if (groups_level) sprintf("%s%d", word, count) else
+                     } else if (groups_level) {
+                       if (!no_profiles) sprintf("%s%d", word, count)
+                     } else
                        if (!single_level) sprintf("groups%d", count)),
                    collapse = "_"),
       label = paste(c(if (nzchar(tree_structure)) tree_structure,
@@ -181,24 +203,41 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
       "`from` and `to` name the two solutions to compare, both of them and",
       "without `candidates`."), class = "latents_bad_argument", call = NULL))
   }
-  names <- .latents_candidate_names(x)
-  table <- .subset2(x, "table")
+  table <- .latents_tree_table_of(x)
+  families <- all(is.na(table$n_profiles))
   resolve <- \(value) {
-    # On a grid crossed with structures, `model` picks the structure of a
-    # candidate given by its class counts.
-    if (is.null(model) || is.character(value)) {
-      return(names[.latents_candidate_row(x, value)])
+    if (is.character(value) && length(value) == 1L && !is.na(value)) {
+      if (!value %in% table$candidate) {
+        stop(errorCondition(sprintf(
+          "\"%s\" is not a candidate of this grid. Its candidates are %s.", value,
+          paste(sprintf("\"%s\"", table$candidate), collapse = ", ")),
+          class = "latents_unknown_candidate", call = NULL))
+      }
+      return(value)
     }
-    counts <- c(value, 1)[seq_len(2L)]
-    at <- which(table$n_profiles == counts[1L] & table$n_group_classes == counts[2L] &
-                  table$model %in% model)
+    if (!(is.numeric(value) && length(value) %in% 1:2 && all(is.finite(value)))) {
+      stop(errorCondition(paste(
+        "`from` and `to` each take one candidate: its name, or its class counts",
+        "c(n_profiles, n_group_classes) (one count means one group class; on a",
+        "family grid, one count is its number of group classes)."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    # On a grid crossed with structures (or families), `model` picks one.
+    rows <- if (families) table$n_group_classes == value[1L] else
+      table$n_profiles == value[1L] & table$n_group_classes == c(value, 1)[2L]
+    if (!is.null(model)) rows <- rows & table$model %in% model
+    at <- which(rows)
     if (length(at) != 1L) {
       stop(errorCondition(sprintf(
-        "No single candidate has %s classes, %s group classes and `model` %s.",
-        counts[1L], counts[2L], paste(model, collapse = ", ")),
+        "%s candidates have the counts %s%s. %s", if (length(at) == 0L) "No" else length(at),
+        paste(value, collapse = ", "),
+        if (is.null(model)) "" else sprintf(" and `model` %s", paste(model, collapse = ", ")),
+        if (length(at) == 0L) "" else paste("Name one, or give its `model`:",
+                                           paste(sprintf("\"%s\"", table$candidate[at]),
+                                                 collapse = ", "))),
         class = "latents_unknown_candidate", call = NULL))
     }
-    names[at]
+    table$candidate[at]
   }
   c(resolve(from), resolve(to))
 }
@@ -231,6 +270,48 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
   }
   if (!(isTRUE(combine) || isFALSE(combine))) refuse("`combine` must be TRUE or FALSE.")
   level
+}
+
+#' What a grid's lower-level classes are called, for titles and labels
+#' @param x An enumeration grid.
+#' @return `"profiles"` or `"classes"`.
+#' @noRd
+.latents_tree_word <- function(x) {
+  switch(.latents_grid_kind(x), regressions = "classes", families = "profiles",
+         .latents_class_word(x))
+}
+
+#' The table a tree reads: every grid in one layout
+#'
+#' The layout of `.latents_grid_table()`, with a column of profile counts on a
+#' family grid (whose candidates have none) so every tree reads the same
+#' columns.
+#' @param x An enumeration grid.
+#' @return A data frame with `candidate`, `n_profiles`, `n_group_classes`,
+#'   `model` and `converged`, one row per candidate.
+#' @noRd
+.latents_tree_table_of <- function(x) {
+  table <- .latents_grid_table(x)
+  if (is.null(table$n_profiles)) table$n_profiles <- NA_integer_
+  if (is.null(table$model)) table$model <- NA_character_
+  table
+}
+
+#' The fitted candidate in one row of a grid a tree reads
+#' @param x An enumeration grid.
+#' @param at A row of its table.
+#' @return The fit; a candidate that was not fitted raises
+#'   `latents_failed_candidate`.
+#' @noRd
+.latents_tree_fit <- function(x, at) {
+  fit <- .subset2(x, "fits")[[at]]
+  if (is.null(fit) || inherits(fit, "condition")) {
+    stop(errorCondition(sprintf(
+      "Candidate \"%s\" could not be fitted%s", .latents_tree_table_of(x)$candidate[at],
+      if (inherits(fit, "condition")) paste0(": ", conditionMessage(fit)) else "."),
+      class = "latents_failed_candidate", call = NULL))
+  }
+  fit
 }
 
 #' The singular of a class word
@@ -267,6 +348,15 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
 #' @return A list of `posteriors` (units x classes) and `weights`.
 #' @noRd
 .latents_tree_posteriors <- function(fit, level) {
+  if (inherits(fit, c("latents_mixture_regression", "latents_growth_mixture"))) {
+    posteriors <- .latents_regression_posteriors(fit, level)
+    if (is.null(posteriors)) {
+      stop(errorCondition(
+        "These regression fits have no group classes, so their groups have no tree.",
+        class = c("latents_no_tree", "latents_nothing_to_plot"), call = NULL))
+    }
+    return(list(posteriors = posteriors, weights = rep(1, nrow(posteriors))))
+  }
   sampling <- fit$sampling_weights
   if (identical(level, "groups")) {
     # The groups the fit counts, weighted by their sampling weights, as in
@@ -375,7 +465,7 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
 .latents_tree_layout <- function(x, tree, level) {
   gap <- 0.03
   drawn <- lapply(tree$rows$at, \(at) {
-    .latents_tree_posteriors(.latents_candidate_at(x, at), level)
+    .latents_tree_posteriors(.latents_tree_fit(x, at), level)
   })
   posteriors <- lapply(drawn, `[[`, "posteriors")
   weights <- drawn[[1L]]$weights
@@ -458,6 +548,25 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
   }))
 }
 
+#' `get_results(x, "tree", ...)` on a grid whose method has its own tables
+#' @param x A transition, family or regression grid.
+#' @param extra The caller's `...`: the arguments of the tree.
+#' @return The table of `.latents_tree_table()`.
+#' @noRd
+.latents_tree_results <- function(x, extra) {
+  supplied <- names(extra) %||% rep("", length(extra))
+  unused <- !nzchar(supplied) | !supplied %in% .latents_tree_arguments()
+  if (any(unused)) {
+    stop(errorCondition(sprintf(
+      "`what = \"tree\"` takes %s, not %s.",
+      paste(sprintf("`%s`", .latents_tree_arguments()), collapse = ", "),
+      paste(sprintf("`%s`", ifelse(nzchar(supplied[unused]), supplied[unused],
+                                   "an unnamed argument")), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  do.call(.latents_tree_table, c(list(x), extra))
+}
+
 #' The flows of every tree, one row per pair of classes in consecutive rows
 #'
 #' @inheritParams .latents_tree_specs
@@ -468,6 +577,8 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
 .latents_tree_table <- function(x, n_group_classes = NULL, n_profiles = NULL,
                                 model = NULL, candidates = NULL, from = NULL,
                                 to = NULL, level = c("individuals", "groups")) {
+  if (identical(level, c("individuals", "groups")) &&
+      identical(.latents_grid_kind(x), "families")) level <- "groups"
   level <- .latents_check_tree_arguments(level, n_profiles, n_group_classes, model)
   candidates <- .latents_tree_candidates(x, candidates, from, to, model)
   if (!is.null(from)) model <- NULL
@@ -636,7 +747,7 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
   trees <- .latents_tree_anchor(lapply(specs, \(tree) {
     .latents_tree_layout(x, tree, level)
   }))
-  word <- .latents_class_word(x)
+  word <- .latents_tree_word(x)
   groups_level <- identical(level, "groups")
   noun <- if (groups_level) "group classes" else word
   units <- if (groups_level) "groups" else "cases"

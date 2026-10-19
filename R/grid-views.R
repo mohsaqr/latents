@@ -79,19 +79,12 @@
       axis = "n_group_classes", word = "group classes",
       refused = c(
         deltas = no_profiles, heatmap = no_profiles, smallest = no_profiles,
-        trust = no_profiles, selection = no_profiles,
-        tree = paste("a tree runs down the numbers of profiles of named",
-                     "candidates, and a family grid's candidates have group",
-                     "classes only"))),
+        trust = no_profiles, selection = no_profiles)),
     regressions = list(
       criteria = c(AIC = "aic", BIC = "bic", "BIC (rows)" = "bic_rows",
                    SABIC = "sabic", ICL = "icl"),
       default = c("aic", "bic", "sabic", "icl"), using = "bic",
-      axis = "n_profiles", word = "classes",
-      refused = c(tree = paste(
-        "a tree reads each named candidate's case posteriors, and a",
-        "regression grid's candidates are not named (read one with",
-        "get_results(x, \"model\", n_classes = ))"))))
+      axis = "n_profiles", word = "classes", refused = character()))
   spec$kind <- kind
   spec$views <- setdiff(.latents_grid_view_names(), names(spec$refused))
   spec

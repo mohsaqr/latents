@@ -1,3 +1,30 @@
+# latents 0.95.12
+
+### Quieter and stricter checks
+
+* A covariate model no longer passes on the estimation warnings of the
+  one-start base fit it uses to check its input (a variance at its bound, no
+  convergence, failed starts): it checks its own estimate for each of them,
+  so one boundary gave two warnings and now gives one, about the model
+  returned. It now also warns, with `latents_small_classes`, when one of its
+  own classes has effective membership below one.
+* A named plot function asked for one view (`plot_profiles(fit, what =
+  "heatmap", scale = "standardized")`) warns with `latents_unused_argument`
+  about an argument that view does not use, instead of ignoring it without
+  a word. `what = "all"` stays silent, as each view takes its share.
+
+### Faster standard errors
+
+* `parameter_inference()` computes the observed information of a profile,
+  class, covariate or transition model once per R session for that fit and
+  its data, and reuses it. The first call takes as long as before; later
+  calls, including those made by `plot_profiles()`, `plot_responses()` and
+  `get_results()` when they draw or tabulate intervals, skip the two score
+  evaluations per parameter. On a two-level model of 20,000 observations
+  with 94 parameters, a repeated call took 0.23 s instead of 13 s. Results
+  are identical to a computation without reuse, and any change to the fit or
+  its data computes the information anew.
+
 # latents 0.95.11
 
 ### Named plot functions on every fitted model
@@ -38,9 +65,10 @@
   (`enumerate_regressions()`). Each grid offers the views its candidates
   carry. Transition grids draw every view, the tree included. Family grids
   draw their criteria and classification quality against the number of group
-  classes; their candidates have no profiles, so the selection views and the
-  tree are not drawn. Regression grids draw criteria, classification quality
-  and the selection views, but not the tree.
+  classes, and a tree of their group classes for each family; their
+  candidates have no profiles, so the selection views are not drawn.
+  Regression grids draw every view, the tree of their classes included.
+  `get_results(x, "tree", ...)` returns the shared masses on every grid.
 * A view a grid does not offer is refused with the new condition
   `latents_unsupported_view` (also of class `latents_bad_argument`), whose
   message gives the reason and the views the grid offers. An unknown
