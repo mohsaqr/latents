@@ -35,7 +35,10 @@
 #'   or failed, and the p-value is `NA` if any requested replicate fails
 #'   validation.
 #'   `get_results(x, "model", n_classes = , n_group_classes = )` returns one
-#'   fitted model.
+#'   fitted model. `summary()` returns the same table as [as.data.frame()].
+#'   `plot()` draws AIC, BIC, SABIC and ICL across the classes (see
+#'   [plot_enumeration()] for its other views, and `plot_views(x)` for the
+#'   views a regression grid offers).
 #' @section Conditions:
 #'   A model whose fit raises `latents_no_valid_start` or `latents_bad_data`
 #'   at some count gets a row of `NA` with the condition message in `note`;
@@ -290,6 +293,32 @@ get_results.latents_regression_enumeration <- function(x, what = c("fit", "model
     .growth_resolve_inference(fit)
   } else .mixture_resolve_inference(fit, NULL)
   fit
+}
+
+#' @rdname enumerate_regressions
+#' @param object A `latents_regression_enumeration` object.
+#' @export
+summary.latents_regression_enumeration <- function(object, ...) {
+  stopifnot("`object` must be a `latents_regression_enumeration` grid" =
+              inherits(object, "latents_regression_enumeration"))
+  .latents_warn_unused_arguments(list(...), "summary()",
+                                 "A regression grid's summary is its table.")
+  .subset2(object, "table")
+}
+
+#' @rdname latents-plots
+#' @export
+plot.latents_regression_enumeration <- function(x, what = c("aic", "bic", "sabic",
+                                                            "icl"),
+                                                combine = TRUE, labels = TRUE,
+                                                mark_minimum = TRUE, main = NULL,
+                                                subtitle = NULL, cutoff = 0.8,
+                                                using = "bic", ...) {
+  stopifnot("`x` must be a `latents_regression_enumeration` grid" =
+              inherits(x, "latents_regression_enumeration"))
+  plot_enumeration(x, what = what, combine = combine, labels = labels,
+                   mark_minimum = mark_minimum, main = main,
+                   subtitle = subtitle, cutoff = cutoff, using = using, ...)
 }
 
 #' @rdname enumerate_regressions

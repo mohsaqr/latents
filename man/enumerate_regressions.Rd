@@ -4,6 +4,7 @@
 \alias{enumerate_regressions}
 \alias{as.data.frame.latents_regression_enumeration}
 \alias{get_results.latents_regression_enumeration}
+\alias{summary.latents_regression_enumeration}
 \alias{print.latents_regression_enumeration}
 \title{Compare mixture regressions with different numbers of classes}
 \usage{
@@ -27,6 +28,8 @@ enumerate_regressions(
   n_group_classes = 1L,
   ...
 )
+
+\method{summary}{latents_regression_enumeration}(object, ...)
 
 \method{print}{latents_regression_enumeration}(x, digits = 4L, ...)
 }
@@ -60,6 +63,8 @@ is restored afterwards.}
 \item{what}{\code{"fit"} for the comparison table, \code{"model"} for one fitted
 model.}
 
+\item{object}{A \code{latents_regression_enumeration} object.}
+
 \item{digits}{Significant digits.}
 }
 \value{
@@ -76,7 +81,10 @@ test columns are \code{NA} where the \code{k - 1} or \code{k} class model is mis
 or failed, and the p-value is \code{NA} if any requested replicate fails
 validation.
 \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one
-fitted model.
+fitted model. \code{summary()} returns the same table as \code{\link[=as.data.frame]{as.data.frame()}}.
+\code{plot()} draws AIC, BIC, SABIC and ICL across the classes (see
+\code{\link[=plot_enumeration]{plot_enumeration()}} for its other views, and \code{plot_views(x)} for the
+views a regression grid offers).
 }
 \description{
 Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (crossed

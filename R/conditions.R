@@ -209,8 +209,15 @@
 #'     group level of a grid with one group class was asked for. Also of
 #'     class `latents_nothing_to_plot`; `get_results(x, "all")` leaves the
 #'     `"tree"` table out.}
+#'   \item{`latents_unsupported_view`}{A grid verb ([plot_enumeration()],
+#'     [plot_selection()], [plot_tree()] or `plot()` of a grid) was asked for
+#'     a view that this kind of grid cannot draw, such as the tree of a
+#'     group-class family or regression grid. The message gives the reason
+#'     and the views the grid offers; `plot_views(x)` lists them. Also of
+#'     class `latents_bad_argument`.}
 #'   \item{`latents_unknown_category`, `latents_unknown_criterion`}{A named
-#'     category or information criterion does not exist in the fit.}
+#'     category or information criterion does not exist in the fit. An
+#'     unknown criterion of a grid is also of class `latents_bad_argument`.}
 #'   \item{`latents_bad_scale`}{An unrecognised plotting scale was requested,
 #'     or `scale = "standardized"` met an indicator with zero or undefined
 #'     standard deviation.}

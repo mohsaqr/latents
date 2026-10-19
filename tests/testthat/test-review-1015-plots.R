@@ -52,17 +52,20 @@ test_that("named plots refuse objects they cannot draw with a classed error", {
   expect_error(plot_profiles(data.frame(a = 1)), class = "latents_bad_argument")
 })
 
-test_that("plot_enumeration() and plot_tree() refuse other grids, naming plot()", {
+test_that("plot_enumeration() and plot_tree() draw a transition grid", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   grid <- enumerate_classes(review_lta_data(), c("browse", "lectures"),
                             "student", 2:3, 1, time = "sequence",
                             n_starts = 1, seed = 1)
   expect_s3_class(grid, "latents_transition_enumeration")
-  expect_error(plot_enumeration(grid), class = "latents_bad_argument")
-  expect_error(plot_tree(grid), class = "latents_bad_argument")
-  expect_error(plot_enumeration(grid), "what = \"bic\"", fixed = TRUE)
+  # Refused before the grid contract; every grid kind now draws its views
+  # (test-grid-contract.R).
+  expect_plot(plot_enumeration(grid))
+  expect_plot(plot_tree(grid))
   expect_plot(plot(grid, what = "bic"))
+  expect_error(plot_enumeration(grid, what = "bic_groups"),
+               class = "latents_bad_argument")
 })
 
 test_that("a noise fit's prevalence plot accounts for the noise share", {

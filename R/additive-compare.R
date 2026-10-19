@@ -296,34 +296,8 @@ plot.latents_family_enumeration <- function(x, what = c("bic", "aic",
                                                         "bic_individual"),
                                             main = NULL, subtitle = NULL,
                                             criterion = NULL, ...) {
-  stopifnot(inherits(x, "latents_family_enumeration"))
-  .latents_warn_unused_arguments(
-    list(...), "plot()", .latents_grid_plot_advice())
-  what <- .latents_former_argument(what, !missing(what), criterion,
-                                   c("what", "criterion"))
-  criterion <- .latents_grid_criterion(what)
-  .gg_require()
-  frame <- x$table
-  frame$value <- frame[[criterion]]
-  frame <- subset(frame, is.finite(value))
-  models <- unique(frame$model)
-  frame$series <- factor(frame$model, levels = models)
-  colours <- stats::setNames(rep_len(.gg_okabe_ito, length(models)), models)
-  shapes <- stats::setNames(rep_len(.gg_shapes, length(models)), models)
-  linetypes <- stats::setNames(rep_len(c("solid", "dashed", "dotdash", "dotted",
-                                         "longdash"), length(models)), models)
-  ggplot2::ggplot(frame, ggplot2::aes(x = n_group_classes, y = value,
-                                      colour = series, fill = series,
-                                      shape = series, linetype = series)) +
-    ggplot2::geom_line(linewidth = 0.6) +
-    ggplot2::geom_point(size = 2.8, colour = "grey20") +
-    ggplot2::scale_colour_manual(values = colours) +
-    ggplot2::scale_fill_manual(values = colours) +
-    ggplot2::scale_shape_manual(values = shapes) +
-    ggplot2::scale_linetype_manual(values = linetypes) +
-    ggplot2::scale_x_continuous(breaks = sort(unique(frame$n_group_classes))) +
-    .gg_theme() + .gg_top_legend() +
-    ggplot2::labs(x = "Group classes", y = toupper(criterion)) +
-    .gg_titles(main, subtitle, "Group-class families compared",
-               "Lower is better", NULL)
+  stopifnot("`x` must be a `latents_family_enumeration` grid" =
+              inherits(x, "latents_family_enumeration"))
+  .latents_plot_former_grid(x, what, !missing(what), criterion, main, subtitle,
+                            list(...))
 }

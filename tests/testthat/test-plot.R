@@ -326,3 +326,25 @@ test_that("what = \"all\" returns every drawable view, named", {
   fewer <- expect_plots(plot(one_profile, what = "all"))
   expect_false(any(c("entropy", "posteriors") %in% names(fewer)))
 })
+
+test_that("a grid without group classes draws each criterion once, by its plain name", {
+  skip_if_not_installed("ggplot2")
+  single <- quietly(enumerate_lpa(engagement_small, c("browse", "lectures"),
+                                  n_profiles = 1:3, model = "VVI", n_starts = 1,
+                                  seed = 1))
+  # With one group class the group level classifies nothing: ICL over groups
+  # is BIC over groups, so its panel would repeat BIC's.
+  table <- as.data.frame(single)
+  expect_equal(table$icl_groups, table$bic_groups)
+  panels <- function(plot) {
+    layout <- ggplot2::ggplot_build(plot)$layout$layout
+    as.character(layout[[setdiff(names(layout), c("PANEL", "ROW", "COL",
+                                                  "SCALE_X", "SCALE_Y"))[1L]]])
+  }
+  expect_identical(panels(plot_enumeration(single, what = "all")),
+                   c("AIC", "KIC", "BIC", "SABIC", "CAIC", "AWE", "ICL", "CLC"))
+  expect_identical(panels(plot_enumeration(single)), c("AIC", "BIC", "ICL"))
+  # Asked for by name, the group version is drawn and says so.
+  expect_identical(plot_enumeration(single, what = "icl_groups")$labels$title,
+                   "ICL (groups) by candidate model")
+})

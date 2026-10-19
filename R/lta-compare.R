@@ -488,33 +488,8 @@ plot.latents_transition_enumeration <- function(x, what = c("bic", "aic",
                                                             "bic_individual"),
                                                 main = NULL, subtitle = NULL,
                                                 criterion = NULL, ...) {
-  stopifnot(inherits(x, "latents_transition_enumeration"))
-  .latents_warn_unused_arguments(
-    list(...), "plot()", .latents_grid_plot_advice())
-  what <- .latents_former_argument(what, !missing(what), criterion,
-                                   c("what", "criterion"))
-  criterion <- .latents_grid_criterion(what)
-  .gg_require()
-  frame <- x$table
-  frame$value <- frame[[criterion]]
-  frame <- subset(frame, is.finite(value))
-  frame$series <- factor(paste0(frame$n_group_classes, " group class",
-                                ifelse(frame$n_group_classes == 1L, "", "es"),
-                                ifelse(is.na(frame$model), "", paste0(", ", frame$model))))
-  series <- levels(frame$series)
-  ggplot2::ggplot(frame, ggplot2::aes(x = n_profiles, y = value, colour = series,
-                                      fill = series, shape = series,
-                                      linetype = series)) +
-    ggplot2::geom_line(linewidth = 0.6) +
-    ggplot2::geom_point(size = 2.8, colour = "grey20") +
-    ggplot2::scale_colour_manual(values = rep_len(.gg_okabe_ito, length(series))) +
-    ggplot2::scale_fill_manual(values = rep_len(.gg_okabe_ito, length(series))) +
-    ggplot2::scale_shape_manual(values = rep_len(.gg_shapes, length(series))) +
-    ggplot2::scale_linetype_manual(values = rep_len(c("solid", "dashed", "dotdash",
-                                                      "dotted", "longdash"),
-                                                    length(series))) +
-    ggplot2::scale_x_continuous(breaks = sort(unique(frame$n_profiles))) +
-    .gg_theme() + .gg_top_legend() +
-    ggplot2::labs(x = "Profiles", y = toupper(criterion)) +
-    .gg_titles(main, subtitle, "Transition models compared", "Lower is better", NULL)
+  stopifnot("`x` must be a `latents_transition_enumeration` grid" =
+              inherits(x, "latents_transition_enumeration"))
+  .latents_plot_former_grid(x, what, !missing(what), criterion, main, subtitle,
+                            list(...))
 }

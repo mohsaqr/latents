@@ -111,12 +111,19 @@ test_that("covariate fits draw the measurement and classification views", {
 
 test_that("a single-level grid draws one BIC panel, named for display", {
   skip_on_cran()
-  grid <- data.frame(bic_groups = c(1, 2), bic_individual = c(1, 2),
-                     icl_groups = c(1, 2), icl_individual = c(3, 4), aic = c(5, 6))
+  grid <- data.frame(n_group_classes = 1L, bic_groups = c(1, 2),
+                     bic_individual = c(1, 2), icl_groups = c(1, 2),
+                     icl_individual = c(3, 4), aic = c(5, 6))
   chosen <- .multilpa_distinct_criteria(
     grid, c("aic", "bic_groups", "bic_individual", "icl_individual"))
   expect_identical(unname(chosen), c("aic", "bic_groups", "icl_individual"))
-  expect_identical(names(chosen), c("AIC", "BIC", "ICL (individuals)"))
+  # Without group classes ICL has no group version to tell apart.
+  expect_identical(names(chosen), c("AIC", "BIC", "ICL"))
+  # A table that does not record group classes keeps the level in the name.
+  grid$n_group_classes <- NULL
+  expect_identical(names(.multilpa_distinct_criteria(
+    grid, c("aic", "bic_groups", "bic_individual", "icl_individual"))),
+    c("AIC", "BIC", "ICL (individuals)"))
 })
 
 test_that("the enumeration print shows a compact candidates table", {

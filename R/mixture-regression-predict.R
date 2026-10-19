@@ -270,11 +270,11 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   trajectory <- identical(x$spec$nesting, "group")
-  trajectory_views <- c("trajectories", "individuals", "classification")
+  trajectory_views <- .mixture_trajectory_views()
   # Naming a `predictor` asks for the fitted-values view, as before.
   what <- match.arg(what %||% if (trajectory && is.null(predictor)) "trajectories" else
     "fitted",
-                    c("fitted", "coefficients", "posteriors", trajectory_views))
+                    union(.mixture_plot_views(x), trajectory_views))
   if (what %in% trajectory_views && !trajectory) {
     stop(errorCondition(sprintf(paste(
       "`what = \"%s\"` draws trajectories of persons: fit with `id` and",
@@ -297,6 +297,25 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
     coefficients = .mixture_plot_coefficients(x, level, main, subtitle),
     posteriors = .mixture_plot_posteriors(x, main, subtitle))
   .gg_draw_on_call(drawn)
+}
+
+#' The views of a mixture regression that classifies persons
+#' @return A character vector of `what` values.
+#' @noRd
+.mixture_trajectory_views <- function() {
+  c("trajectories", "individuals", "classification")
+}
+
+#' The views a mixture regression's plot() draws
+#'
+#' Every fit draws the fitted values, coefficients and posteriors; a fit that
+#' classifies persons (`class_level = "group"`) also draws trajectories.
+#' @param x A `latents_mixture_regression` fit.
+#' @return A character vector of `what` values.
+#' @noRd
+.mixture_plot_views <- function(x) {
+  c("fitted", "coefficients", "posteriors",
+    if (identical(x$spec$nesting, "group")) .mixture_trajectory_views())
 }
 
 #' @noRd

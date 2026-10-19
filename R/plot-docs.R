@@ -19,27 +19,65 @@
 #' `plot_selection()` (the model-selection evidence of a grid) and
 #' `plot_tree()` (how profiles split as more are added, one plot per tree, or
 #' how chosen solutions correspond). Each draws the same
-#' plot as the matching `plot(x, what = )`. `plot_views()` lists the views of
+#' plot as the matching `plot(x, what = )`. The fit functions take every
+#' fitted model of the package; for growth mixtures, mixture regressions,
+#' additive and dispersion fits, cross-level fits, pooled imputations and
+#' general [lta()] fits they draw the view of that fit's own `plot()` that
+#' shows the same quantity, and refuse the rest (see *Named plot functions on
+#' other fitted models*). `plot_views()` lists the views of
 #' a fitted model, and `"enumeration"` and `"tree"` for a grid, with a
-#' one-line description of each; the other grid views are listed under
-#' `what` below.
+#' one-line description of each; `plot_views(grid)` lists every view of that
+#' grid, whether it is offered, and why not.
+#'
+#' The grid functions take every grid of the package: profile and class grids
+#' ([enumerate_classes()], [enumerate_lpa()], [enumerate_lca()]), transition
+#' grids (`enumerate_classes(time = )`), group-class family grids
+#' (`enumerate_classes(family = )`) and regression grids
+#' ([enumerate_regressions()]). Each kind offers the views its candidates
+#' carry:
+#' \tabular{lllll}{
+#'   View \tab Profiles, classes \tab Transitions \tab Families \tab Regressions \cr
+#'   criteria \tab 14 columns \tab aic, bic, bic_individual \tab aic, bic,
+#'     bic_individual \tab aic, bic, bic_rows, sabic, icl \cr
+#'   entropy, avepp, diagnostics \tab yes \tab yes \tab group classes \tab yes \cr
+#'   deltas, heatmap, smallest, trust, selection \tab yes \tab yes \tab no \tab
+#'     yes \cr
+#'   tree \tab yes \tab yes \tab no \tab no
+#' }
+#' A family grid's candidates have group classes and no profiles, so its
+#' criteria and quality are drawn against the number of group classes, and
+#' the views laid out by profiles and group classes, and the tree, are not
+#' drawn. A regression grid's candidates are not named, so it has no tree; its
+#' smallest-class view reads the `smallest_share` of its table, and its trust
+#' view has no boundary column to read. A view a grid does not offer is
+#' refused with `latents_unsupported_view`.
 #'
 #' Each profile keeps the same order (largest first), Okabe-Ito colour and
 #' point shape in every view. The plots require ggplot2, which is a suggested
 #' package.
 #'
-#' @param x The object to plot: a profile, class or transition model for the
-#'   named fit views and `plot_diagnostics()`; an enumeration from
-#'   [enumerate_classes()], [enumerate_lpa()] or [enumerate_lca()] for
-#'   `plot_enumeration()`, `plot_selection()` and `plot_tree()`; a transition
-#'   fit from [lta()] for `plot_transitions()`. A general [lta()] fit
-#'   (occasion-varying transitions, covariates, mover-stayer, second order,
-#'   weights, ordinal or count indicators) draws only its transition matrix,
-#'   with `plot_transitions()` or `plot()`. Transition and group-class family
-#'   grids plot with `plot(x, what = )`.
+#' @param x The object to plot. For `plot_profiles()`, `plot_responses()`,
+#'   `plot_sequences()`, `plot_prevalence()`, `plot_diagnostics()` and
+#'   `plot_transitions()`, any fitted model of the package: profile, class
+#'   and transition models from [multilpa()], [multilca()], [lpa()], [lca()]
+#'   and [lta()] (with or without covariates) take the views described
+#'   under `what` and *What `plot()` draws*; growth
+#'   mixtures and mixture regressions from [mixture_regression()], additive,
+#'   dispersion and cross-level fits from [multilpa()], pooled imputations
+#'   from [pool_imputations()] and general [lta()] fits (occasion-varying
+#'   transitions, covariates, mover-stayer, second order, weights, ordinal or
+#'   count indicators) take the views listed under *Named plot functions on
+#'   other fitted models*. For `plot_enumeration()`, `plot_selection()` and
+#'   `plot_tree()`, a grid from [enumerate_classes()], [enumerate_lpa()],
+#'   [enumerate_lca()] or [enumerate_regressions()]; each refuses the views
+#'   that grid does not offer (see above). Optionally a grid for
+#'   `plot_views()`.
 #' @param what The view to draw. `"all"` draws every view of that function
 #'   that the model supports, as a list, and names in a message any it cannot
-#'   draw. For `plot_profiles()`: `"lines"` (default), `"bars"` (means from
+#'   draw. On fitted models other than profile, class and transition models,
+#'   `plot_profiles()` draws only `"lines"` and `plot_diagnostics()` only
+#'   `"posteriors"`, where that model has the view (see *Named plot functions
+#'   on other fitted models*). For `plot_profiles()`: `"lines"` (default), `"bars"` (means from
 #'   zero with 95% intervals), `"heatmap"` (means in observed standard
 #'   deviations, or the response probabilities of categorical indicators),
 #'   `"raincloud"` (each indicator's distribution by assigned profile),
@@ -65,8 +103,10 @@
 #'   For `plot_enumeration()`, three kinds of view; information criteria
 #'   cannot be requested together with the other two:
 #'   * Information criteria: criterion columns of `as.data.frame(x)`, such as
-#'     `"bic_groups"`, or `"all"`. The default draws AIC, both BICs and ICL
-#'     over individuals.
+#'     `"bic_groups"`, or `"all"`. On a profile or class grid the default
+#'     draws AIC, both BICs and ICL over individuals; on a transition or
+#'     family grid AIC, BIC and BIC over individuals; on a regression grid
+#'     AIC, BIC, SABIC and ICL.
 #'   * Classification quality across the candidates, at each level with two
 #'     or more classes: `"entropy"` (relative entropy), `"avepp"` (the lowest
 #'     AvePP, with the cutoff dashed) or `"diagnostics"` (both).
@@ -128,8 +168,9 @@
 #' @param cutoff For `plot_enumeration(what = "avepp")`, `"diagnostics"` or
 #'   `"selection"`, the AvePP cutoff drawn as a dashed line (default 0.8).
 #' @param using For `plot_enumeration(what = "deltas")`, `"heatmap"` or
-#'   `"selection"`, the information criterion used (default
-#'   `"bic_groups"`); `"smallest"` and `"trust"` use none.
+#'   `"selection"`, the information criterion used. When not given, a profile
+#'   or class grid uses `"bic_groups"` and the other grids `"bic"`;
+#'   `"smallest"` and `"trust"` use none.
 #' @param main,subtitle Title and subtitle. `NULL` (default) uses the view's
 #'   own.
 #' @param cell_labels For sequence views, `TRUE` (default) prints each
@@ -159,14 +200,17 @@
 #' @param criterion The former name of `what` for enumeration criteria. On a
 #'   profile grid it is used alone or with `what = "enumeration"`; transition
 #'   and group-class family grids take `"bic"`, `"aic"` or
-#'   `"bic_individual"`.
+#'   `"bic_individual"` (or a unique abbreviation, such as `"bic_i"`), or any
+#'   other view of the grid.
 #' @param palette For bootstrap plots, a colour vector for the histogram and
 #'   the observed statistic; `NULL` (default) uses the standard colours.
 #' @param style The former bootstrap drawing style; ignored with a
 #'   `latents_unused_argument` warning.
 #' @param ... With `what = "tree"` (on `plot()` of an enumeration or on
-#'   `plot_enumeration()`), the arguments of `plot_tree()`. Otherwise not
-#'   used. Profile, class and transition models and enumerations refuse
+#'   `plot_enumeration()`), the arguments of `plot_tree()`. On `plot()` of a
+#'   transition or group-class family grid, also `combine`, `labels`,
+#'   `mark_minimum`, `cutoff` and `using`, passed to `plot_enumeration()`.
+#'   Otherwise not used. Profile, class and transition models and enumerations refuse
 #'   unknown arguments with `latents_bad_argument`; the other methods ignore
 #'   them with a `latents_unused_argument` warning (see *Errors*).
 #' @return A ggplot object. `what = "all"` (on `plot()` of a fitted model or
@@ -176,8 +220,13 @@
 #'   a `latents_plots` list of ggplot objects, which draws each one when
 #'   printed, pausing between plots on an interactive screen device.
 #'   `plot_tree()` and `what = "tree"` return one ggplot for a single tree or
-#'   `combine = TRUE`, and otherwise a `latents_plots` list named by tree. `plot_views()` returns a `data.frame` with one row per view:
-#'   `type` (the value for `what`), `group` and `description`.
+#'   `combine = TRUE`, and otherwise a `latents_plots` list named by tree.
+#'   `plot_views()` returns a `data.frame` with one row per view: `type` (the
+#'   value for `what`), `group` and `description`. `plot_views(x)` of a grid
+#'   returns one row per `what` value of that grid: `type`, `group`
+#'   (`"criteria"`, `"quality"`, `"selection"` or `"tree"`), `supported`
+#'   (`TRUE` when the grid offers it), `description` and `reason` (why it is
+#'   not offered; `NA` when it is).
 #'
 #' @section What `plot()` draws:
 #' Each object takes `what =` for its views, `main`, `subtitle` and the
@@ -197,7 +246,8 @@
 #'     `"sizes"`, `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`, without
 #'     `statistic`; the profile, bar and response views draw the 95%
 #'     intervals of the transition fit's [parameter_inference()] (`intervals`).
-#'     A general [lta()] fit takes no `what` and draws its transition matrix.}
+#'     A general [lta()] fit takes no `what` and draws its transition matrix,
+#'     which `plot_transitions()` draws too.}
 #'   \item{Enumerations}{Criterion columns or `"all"` (with `combine`,
 #'     `labels` and `mark_minimum`), `"tree"` (with the arguments of
 #'     `plot_tree()`), the classification-quality
@@ -205,32 +255,78 @@
 #'     the model-selection views `"deltas"` and `"heatmap"` (which use the
 #'     criterion in `using`), `"smallest"` and `"trust"`; `"selection"` draws
 #'     those four and `"diagnostics"`. Transition and group-class family
-#'     grids take `"bic"` (default), `"aic"` or `"bic_individual"`.}
+#'     grids draw `"bic"` by default, as in latents 0.9.21, and take every
+#'     view they offer (the table under *Description*); a regression grid
+#'     draws its default criteria and takes the same arguments as
+#'     `plot_enumeration()`.}
 #'   \item{Additive fits}{`"means"` (default; each group class's mean with
 #'     its Wald interval), `"variances"` (within- and between-group
 #'     variances) or `"intercepts"` (each group's posterior intercept);
-#'     `level` sets the interval.}
+#'     `level` sets the interval. `plot_profiles()` draws `"means"`.}
 #'   \item{Cross-level fits}{`"profiles"` (default), `"group_means"` or
-#'     `"composition"` (profile shares within each group class).}
+#'     `"composition"` (profile shares within each group class).
+#'     `plot_profiles()` draws `"profiles"` and `plot_prevalence()`
+#'     `"composition"`.}
 #'   \item{Mixture regressions}{`"fitted"` (default: the outcome against a
 #'     numeric `predictor`, one line per class), `"coefficients"` or
 #'     `"posteriors"`; `level` sets the intervals. Fits that classify persons
 #'     (`class_level = "group"`) default to `"trajectories"` (unless
 #'     `predictor` is given) and also take `"individuals"` and
-#'     `"classification"`, as growth mixtures do.}
+#'     `"classification"`, as growth mixtures do. `plot_profiles()` draws
+#'     `"fitted"`, or `"trajectories"` for fits that classify persons, and
+#'     `plot_diagnostics(what = "posteriors")` draws `"posteriors"`.}
 #'   \item{Growth mixtures}{`"trajectories"` (default: class mean
 #'     trajectories with bands; `facet`, `max_persons`, `spread`),
 #'     `"individuals"` (`persons`: a number or identifiers),
 #'     `"coefficients"`, `"random"` (predicted random effects with each
 #'     class's 95% ellipse) or `"classification"` (also `"posteriors"`);
-#'     `time` names the time variable, `level` the band.}
-#'   \item{Pooled imputations}{`"profile"` (default), `"group"` or
-#'     `"measurement"` parameters: each imputation's estimate beside the
-#'     pooled one with its interval.}
+#'     `time` names the time variable, `level` the band. `plot_profiles()`
+#'     draws `"trajectories"` and `plot_diagnostics(what = "posteriors")`
+#'     draws `"posteriors"`.}
+#'   \item{Pooled imputations}{`"profile"` (default; the probability of each
+#'     profile within each group class), `"group"` or `"measurement"` (profile
+#'     means and variances) parameters: each imputation's estimate beside the
+#'     pooled one with its interval. `plot_profiles()` draws `"measurement"`
+#'     and `plot_prevalence()` draws `"profile"`.}
 #'   \item{Model comparisons, bootstrap tests, diagnostics}{One view each:
 #'     the criteria of each compared model, the simulated null distribution
 #'     with the observed statistic, and the views of `plot_diagnostics()`.}
 #' }
+#' @section Named plot functions on other fitted models:
+#' Each named fit function draws the view of the fit's own `plot()` that
+#' shows the same quantity, so `plot_profiles(fit)` and
+#' `plot(fit, what = "trajectories")` on a growth mixture draw one plot:
+#' \describe{
+#'   \item{Growth mixtures, and mixture regressions that classify persons
+#'     (`class_level = "group"`)}{`plot_profiles()` draws `"trajectories"`
+#'     (each class's curve over time) and `plot_diagnostics(what =
+#'     "posteriors")` draws `"posteriors"` (each person's class
+#'     probabilities).}
+#'   \item{Other mixture regressions}{`plot_profiles()` draws `"fitted"`
+#'     (each class's line against the first numeric predictor) and
+#'     `plot_diagnostics(what = "posteriors")` draws `"posteriors"`.}
+#'   \item{Additive and dispersion fits}{`plot_profiles()` draws `"means"`
+#'     (each group class's means across indicators).}
+#'   \item{Cross-level fits}{`plot_profiles()` draws `"profiles"` and
+#'     `plot_prevalence()` draws `"composition"` (profile shares within each
+#'     group class).}
+#'   \item{Pooled imputations}{`plot_profiles()` draws `"measurement"` (the
+#'     pooled profile means and variances beside each imputation's) and
+#'     `plot_prevalence()` draws `"profile"` (the pooled probability of each
+#'     profile within each group class).}
+#'   \item{General [lta()] fits}{`plot_transitions()` draws the transition
+#'     matrix.}
+#' }
+#' Every other combination, including the `what` values of
+#' `plot_profiles()` other than `"lines"` and those of `plot_diagnostics()`
+#' other than `"posteriors"`, is refused with `latents_nothing_to_plot`
+#' naming the views that fit's `plot()` offers; `what = "all"` draws the
+#' mapped views and names the others in a message. These functions pass on
+#' only the arguments given, and refuse with `latents_bad_argument` one the
+#' mapped view does not take (for example `intervals` or `scale` for a growth
+#' trajectory); use `plot()` for that view's own arguments, such as `time`,
+#' `facet` or `predictor`, and for the views no named function draws.
+#'
 #' @section Former argument names: Enumeration plots accept `criterion`
 #'   (now `what`; on a profile grid `what = "enumeration"` is the default
 #'   criteria view), pooled plots accept `level` (now `what`), and bootstrap
@@ -246,14 +342,23 @@
 #'   bootstrap results and of transition or group-class family grids ignore
 #'   it with a `latents_unused_argument` warning (including a bootstrap
 #'   plot's `style`); `latents_bad_argument` also when a named plot function
-#'   is given an object it does not draw; `latents_nothing_to_plot` when the
+#'   is given an object it does not draw (a named fit function given anything
+#'   other than a fitted model, or a grid function given anything other than
+#'   an enumeration); `latents_nothing_to_plot` (also of class
+#'   `latents_bad_argument`) when a named fit function, or its `what`, has no
+#'   view of that fitted model, naming the views its `plot()` offers (for
+#'   example `plot_transitions()` on a model without transitions, or
+#'   `plot_diagnostics(what = "sizes")` on a growth mixture);
+#'   `latents_nothing_to_plot` when the
 #'   fit lacks what a view needs (for example posteriors or entropy of a
 #'   one-profile fit, prevalence of a covariate model, or the case-level
 #'   views of a centred fit); `latents_unknown_category` when `category`
 #'   names no category of an indicator; `latents_no_continuous`,
 #'   `latents_no_categorical` and `latents_no_time` when a view needs
 #'   indicators or occasions the fit does not have;
-#'   `latents_unknown_criterion` for a criterion not in the grid;
+#'   `latents_unknown_criterion` (also `latents_bad_argument`) for a
+#'   criterion not in the grid; `latents_unsupported_view` (also
+#'   `latents_bad_argument`) for a view the kind of grid does not offer;
 #'   `latents_no_tree` (also of class `latents_nothing_to_plot`) when a tree
 #'   would have fewer than two rows, or at the group level of a grid with one
 #'   group class; `latents_unknown_candidate` when `candidates`,
@@ -285,4 +390,5 @@
 #'   plot.latents_mixture_regression plot.latents_pooled
 #'   plot.latents_comparison plot.multilpa_bootstrap_lrt
 #'   plot.latents_transition_enumeration plot.latents_family_enumeration
+#'   plot.latents_regression_enumeration
 NULL

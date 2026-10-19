@@ -141,7 +141,7 @@ test_that("named plots refuse what a fit cannot draw, by condition class", {
   expect_error(plot_profiles(fits$lpa, statistic = "average"), "should be one of")
   # Their arguments are their own formals, so a misspelt one is refused by R.
   expect_error(plot_profiles(fits$lpa, palette = "x"), "unused argument")
-  expect_error(plot_tree(fits$lpa), "multilpa_enumeration")
+  expect_error(plot_tree(fits$lpa), class = "latents_bad_argument")
 })
 
 test_that("enumeration plots choose criteria with `what`, and 0.9.21's `criterion` still works", {

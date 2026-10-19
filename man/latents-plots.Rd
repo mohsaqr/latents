@@ -2,8 +2,9 @@
 % Please edit documentation in R/additive-compare.R, R/additive-methods.R,
 %   R/compare-models.R, R/cross-level.R, R/enumeration.R,
 %   R/growth-mixture-plot.R, R/lta-compare.R, R/lta-methods.R,
-%   R/mixture-regression-predict.R, R/plot-docs.R, R/plot-named.R, R/plot.R,
-%   R/pool-imputations.R, R/transitions.R
+%   R/mixture-regression-enumerate.R, R/mixture-regression-predict.R,
+%   R/plot-docs.R, R/plot-named.R, R/plot.R, R/pool-imputations.R,
+%   R/transitions.R
 \name{plot.latents_family_enumeration}
 \alias{plot.latents_family_enumeration}
 \alias{plot.multilpa_additive}
@@ -13,6 +14,7 @@
 \alias{plot.latents_growth_mixture}
 \alias{plot.latents_transition_enumeration}
 \alias{plot.multilpa_lta}
+\alias{plot.latents_regression_enumeration}
 \alias{plot.latents_mixture_regression}
 \alias{latents-plots}
 \alias{plot.multilpa}
@@ -87,6 +89,19 @@
 )
 
 \method{plot}{multilpa_lta}(x, main = NULL, subtitle = NULL, ...)
+
+\method{plot}{latents_regression_enumeration}(
+  x,
+  what = c("aic", "bic", "sabic", "icl"),
+  combine = TRUE,
+  labels = TRUE,
+  mark_minimum = TRUE,
+  main = NULL,
+  subtitle = NULL,
+  cutoff = 0.8,
+  using = "bic",
+  ...
+)
 
 \method{plot}{latents_mixture_regression}(
   x,
@@ -226,7 +241,7 @@ plot_enumeration(
   ...
 )
 
-plot_views()
+plot_views(x = NULL)
 
 \method{plot}{latents_pooled}(
   x,
@@ -253,19 +268,29 @@ plot_views()
 )
 }
 \arguments{
-\item{x}{The object to plot: a profile, class or transition model for the
-named fit views and \code{plot_diagnostics()}; an enumeration from
-\code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}} for
-\code{plot_enumeration()}, \code{plot_selection()} and \code{plot_tree()}; a transition
-fit from \code{\link[=lta]{lta()}} for \code{plot_transitions()}. A general \code{\link[=lta]{lta()}} fit
-(occasion-varying transitions, covariates, mover-stayer, second order,
-weights, ordinal or count indicators) draws only its transition matrix,
-with \code{plot_transitions()} or \code{plot()}. Transition and group-class family
-grids plot with \code{plot(x, what = )}.}
+\item{x}{The object to plot. For \code{plot_profiles()}, \code{plot_responses()},
+\code{plot_sequences()}, \code{plot_prevalence()}, \code{plot_diagnostics()} and
+\code{plot_transitions()}, any fitted model of the package: profile, class
+and transition models from \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}
+and \code{\link[=lta]{lta()}} (with or without covariates) take the views described
+under \code{what} and \emph{What \code{plot()} draws}; growth
+mixtures and mixture regressions from \code{\link[=mixture_regression]{mixture_regression()}}, additive,
+dispersion and cross-level fits from \code{\link[=multilpa]{multilpa()}}, pooled imputations
+from \code{\link[=pool_imputations]{pool_imputations()}} and general \code{\link[=lta]{lta()}} fits (occasion-varying
+transitions, covariates, mover-stayer, second order, weights, ordinal or
+count indicators) take the views listed under \emph{Named plot functions on
+other fitted models}. For \code{plot_enumeration()}, \code{plot_selection()} and
+\code{plot_tree()}, a grid from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}; each refuses the views
+that grid does not offer (see above). Optionally a grid for
+\code{plot_views()}.}
 
 \item{what}{The view to draw. \code{"all"} draws every view of that function
 that the model supports, as a list, and names in a message any it cannot
-draw. For \code{plot_profiles()}: \code{"lines"} (default), \code{"bars"} (means from
+draw. On fitted models other than profile, class and transition models,
+\code{plot_profiles()} draws only \code{"lines"} and \code{plot_diagnostics()} only
+\code{"posteriors"}, where that model has the view (see \emph{Named plot functions
+on other fitted models}). For \code{plot_profiles()}: \code{"lines"} (default), \code{"bars"} (means from
 zero with 95\% intervals), \code{"heatmap"} (means in observed standard
 deviations, or the response probabilities of categorical indicators),
 \code{"raincloud"} (each indicator's distribution by assigned profile),
@@ -292,8 +317,10 @@ For \code{plot_enumeration()}, three kinds of view; information criteria
 cannot be requested together with the other two:
 \itemize{
 \item Information criteria: criterion columns of \code{as.data.frame(x)}, such as
-\code{"bic_groups"}, or \code{"all"}. The default draws AIC, both BICs and ICL
-over individuals.
+\code{"bic_groups"}, or \code{"all"}. On a profile or class grid the default
+draws AIC, both BICs and ICL over individuals; on a transition or
+family grid AIC, BIC and BIC over individuals; on a regression grid
+AIC, BIC, SABIC and ICL.
 \item Classification quality across the candidates, at each level with two
 or more classes: \code{"entropy"} (relative entropy), \code{"avepp"} (the lowest
 AvePP, with the cutoff dashed) or \code{"diagnostics"} (both).
@@ -313,11 +340,14 @@ own.}
 \item{criterion}{The former name of \code{what} for enumeration criteria. On a
 profile grid it is used alone or with \code{what = "enumeration"}; transition
 and group-class family grids take \code{"bic"}, \code{"aic"} or
-\code{"bic_individual"}.}
+\code{"bic_individual"} (or a unique abbreviation, such as \code{"bic_i"}), or any
+other view of the grid.}
 
 \item{...}{With \code{what = "tree"} (on \code{plot()} of an enumeration or on
-\code{plot_enumeration()}), the arguments of \code{plot_tree()}. Otherwise not
-used. Profile, class and transition models and enumerations refuse
+\code{plot_enumeration()}), the arguments of \code{plot_tree()}. On \code{plot()} of a
+transition or group-class family grid, also \code{combine}, \code{labels},
+\code{mark_minimum}, \code{cutoff} and \code{using}, passed to \code{plot_enumeration()}.
+Otherwise not used. Profile, class and transition models and enumerations refuse
 unknown arguments with \code{latents_bad_argument}; the other methods ignore
 them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
 
@@ -351,6 +381,27 @@ behind the class means (default 120); zero hides them.}
 persons around the class curve, from 0 (hidden) to less than 1; default
 0.8.}
 
+\item{combine}{\code{TRUE} (default) draws several criteria as panels of one
+plot; \code{FALSE} returns one plot per criterion. For \code{plot_tree()} (and
+\code{what = "tree"}), \code{FALSE} (default) returns one plot per tree and \code{TRUE}
+draws every tree as a panel of one plot.}
+
+\item{labels}{\code{TRUE} (default) labels each series directly; \code{FALSE} uses a
+legend. On sequence views, \code{TRUE} groups the rows by group class under
+labelled strips.}
+
+\item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest value
+among converged candidates, without selecting a model. Information
+criteria only.}
+
+\item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
+\code{"selection"}, the AvePP cutoff drawn as a dashed line (default 0.8).}
+
+\item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
+\code{"selection"}, the information criterion used. When not given, a profile
+or class grid uses \code{"bic_groups"} and the other grids \code{"bic"};
+\code{"smallest"} and \code{"trust"} use none.}
+
 \item{predictor}{For the fitted view of a mixture regression, a numeric
 predictor in the formula. \code{NULL} (default) uses the first numeric
 predictor.}
@@ -368,10 +419,6 @@ draws 95\% intervals when the fit has standard errors; otherwise the
 subtitle states why there are none. They are the \code{conf_low} and
 \code{conf_high} of \code{\link[=parameter_inference]{parameter_inference()}}; a response probability's interval
 is formed on the logit scale.}
-
-\item{labels}{\code{TRUE} (default) labels each series directly; \code{FALSE} uses a
-legend. On sequence views, \code{TRUE} groups the rows by group class under
-labelled strips.}
 
 \item{data}{The data the model was fitted to, used only to compute the
 intervals. \code{NULL} (default) uses the data stored in the fit.}
@@ -406,22 +453,6 @@ tree, each named by its class counts \code{c(n_profiles, n_group_classes)}
 \code{plot_tree(x, from = c(3, 3), to = c(4, 3))}. Given together, and not
 with \code{candidates}. On a grid crossed with covariance structures, \code{model}
 names the structure of both.}
-
-\item{combine}{\code{TRUE} (default) draws several criteria as panels of one
-plot; \code{FALSE} returns one plot per criterion. For \code{plot_tree()} (and
-\code{what = "tree"}), \code{FALSE} (default) returns one plot per tree and \code{TRUE}
-draws every tree as a panel of one plot.}
-
-\item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
-\code{"selection"}, the information criterion used (default
-\code{"bic_groups"}); \code{"smallest"} and \code{"trust"} use none.}
-
-\item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
-\code{"selection"}, the AvePP cutoff drawn as a dashed line (default 0.8).}
-
-\item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest value
-among converged candidates, without selecting a model. Information
-criteria only.}
 }
 \value{
 A ggplot object. \code{what = "all"} (on \code{plot()} of a fitted model or
@@ -431,8 +462,13 @@ views when more than one is requested (including \code{"selection"}) return
 a \code{latents_plots} list of ggplot objects, which draws each one when
 printed, pausing between plots on an interactive screen device.
 \code{plot_tree()} and \code{what = "tree"} return one ggplot for a single tree or
-\code{combine = TRUE}, and otherwise a \code{latents_plots} list named by tree. \code{plot_views()} returns a \code{data.frame} with one row per view:
-\code{type} (the value for \code{what}), \code{group} and \code{description}.
+\code{combine = TRUE}, and otherwise a \code{latents_plots} list named by tree.
+\code{plot_views()} returns a \code{data.frame} with one row per view: \code{type} (the
+value for \code{what}), \code{group} and \code{description}. \code{plot_views(x)} of a grid
+returns one row per \code{what} value of that grid: \code{type}, \code{group}
+(\code{"criteria"}, \code{"quality"}, \code{"selection"} or \code{"tree"}), \code{supported}
+(\code{TRUE} when the grid offers it), \code{description} and \code{reason} (why it is
+not offered; \code{NA} when it is).
 }
 \description{
 \code{plot()} draws any result of this package and returns a ggplot object,
@@ -455,10 +491,38 @@ classification quality and model-selection evidence across a grid),
 \code{plot_selection()} (the model-selection evidence of a grid) and
 \code{plot_tree()} (how profiles split as more are added, one plot per tree, or
 how chosen solutions correspond). Each draws the same
-plot as the matching \code{plot(x, what = )}. \code{plot_views()} lists the views of
+plot as the matching \code{plot(x, what = )}. The fit functions take every
+fitted model of the package; for growth mixtures, mixture regressions,
+additive and dispersion fits, cross-level fits, pooled imputations and
+general \code{\link[=lta]{lta()}} fits they draw the view of that fit's own \code{plot()} that
+shows the same quantity, and refuse the rest (see \emph{Named plot functions on
+other fitted models}). \code{plot_views()} lists the views of
 a fitted model, and \code{"enumeration"} and \code{"tree"} for a grid, with a
-one-line description of each; the other grid views are listed under
-\code{what} below.
+one-line description of each; \code{plot_views(grid)} lists every view of that
+grid, whether it is offered, and why not.
+
+The grid functions take every grid of the package: profile and class grids
+(\code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}}), transition
+grids (\code{enumerate_classes(time = )}), group-class family grids
+(\code{enumerate_classes(family = )}) and regression grids
+(\code{\link[=enumerate_regressions]{enumerate_regressions()}}). Each kind offers the views its candidates
+carry:
+\tabular{lllll}{
+View \tab Profiles, classes \tab Transitions \tab Families \tab Regressions \cr
+criteria \tab 14 columns \tab aic, bic, bic_individual \tab aic, bic,
+bic_individual \tab aic, bic, bic_rows, sabic, icl \cr
+entropy, avepp, diagnostics \tab yes \tab yes \tab group classes \tab yes \cr
+deltas, heatmap, smallest, trust, selection \tab yes \tab yes \tab no \tab
+yes \cr
+tree \tab yes \tab yes \tab no \tab no
+}
+A family grid's candidates have group classes and no profiles, so its
+criteria and quality are drawn against the number of group classes, and
+the views laid out by profiles and group classes, and the tree, are not
+drawn. A regression grid's candidates are not named, so it has no tree; its
+smallest-class view reads the \code{smallest_share} of its table, and its trust
+view has no boundary column to read. A view a grid does not offer is
+refused with \code{latents_unsupported_view}.
 
 Each profile keeps the same order (largest first), Okabe-Ito colour and
 point shape in every view. The plots require ggplot2, which is a suggested
@@ -483,7 +547,8 @@ categorical indicator they omit.}
 \code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}, without
 \code{statistic}; the profile, bar and response views draw the 95\%
 intervals of the transition fit's \code{\link[=parameter_inference]{parameter_inference()}} (\code{intervals}).
-A general \code{\link[=lta]{lta()}} fit takes no \code{what} and draws its transition matrix.}
+A general \code{\link[=lta]{lta()}} fit takes no \code{what} and draws its transition matrix,
+which \code{plot_transitions()} draws too.}
 \item{Enumerations}{Criterion columns or \code{"all"} (with \code{combine},
 \code{labels} and \code{mark_minimum}), \code{"tree"} (with the arguments of
 \code{plot_tree()}), the classification-quality
@@ -491,32 +556,79 @@ views \code{"entropy"}, \code{"avepp"} and \code{"diagnostics"} (with \code{cuto
 the model-selection views \code{"deltas"} and \code{"heatmap"} (which use the
 criterion in \code{using}), \code{"smallest"} and \code{"trust"}; \code{"selection"} draws
 those four and \code{"diagnostics"}. Transition and group-class family
-grids take \code{"bic"} (default), \code{"aic"} or \code{"bic_individual"}.}
+grids draw \code{"bic"} by default, as in latents 0.9.21, and take every
+view they offer (the table under \emph{Description}); a regression grid
+draws its default criteria and takes the same arguments as
+\code{plot_enumeration()}.}
 \item{Additive fits}{\code{"means"} (default; each group class's mean with
 its Wald interval), \code{"variances"} (within- and between-group
 variances) or \code{"intercepts"} (each group's posterior intercept);
-\code{level} sets the interval.}
+\code{level} sets the interval. \code{plot_profiles()} draws \code{"means"}.}
 \item{Cross-level fits}{\code{"profiles"} (default), \code{"group_means"} or
-\code{"composition"} (profile shares within each group class).}
+\code{"composition"} (profile shares within each group class).
+\code{plot_profiles()} draws \code{"profiles"} and \code{plot_prevalence()}
+\code{"composition"}.}
 \item{Mixture regressions}{\code{"fitted"} (default: the outcome against a
 numeric \code{predictor}, one line per class), \code{"coefficients"} or
 \code{"posteriors"}; \code{level} sets the intervals. Fits that classify persons
 (\code{class_level = "group"}) default to \code{"trajectories"} (unless
 \code{predictor} is given) and also take \code{"individuals"} and
-\code{"classification"}, as growth mixtures do.}
+\code{"classification"}, as growth mixtures do. \code{plot_profiles()} draws
+\code{"fitted"}, or \code{"trajectories"} for fits that classify persons, and
+\code{plot_diagnostics(what = "posteriors")} draws \code{"posteriors"}.}
 \item{Growth mixtures}{\code{"trajectories"} (default: class mean
 trajectories with bands; \code{facet}, \code{max_persons}, \code{spread}),
 \code{"individuals"} (\code{persons}: a number or identifiers),
 \code{"coefficients"}, \code{"random"} (predicted random effects with each
 class's 95\% ellipse) or \code{"classification"} (also \code{"posteriors"});
-\code{time} names the time variable, \code{level} the band.}
-\item{Pooled imputations}{\code{"profile"} (default), \code{"group"} or
-\code{"measurement"} parameters: each imputation's estimate beside the
-pooled one with its interval.}
+\code{time} names the time variable, \code{level} the band. \code{plot_profiles()}
+draws \code{"trajectories"} and \code{plot_diagnostics(what = "posteriors")}
+draws \code{"posteriors"}.}
+\item{Pooled imputations}{\code{"profile"} (default; the probability of each
+profile within each group class), \code{"group"} or \code{"measurement"} (profile
+means and variances) parameters: each imputation's estimate beside the
+pooled one with its interval. \code{plot_profiles()} draws \code{"measurement"}
+and \code{plot_prevalence()} draws \code{"profile"}.}
 \item{Model comparisons, bootstrap tests, diagnostics}{One view each:
 the criteria of each compared model, the simulated null distribution
 with the observed statistic, and the views of \code{plot_diagnostics()}.}
 }
+}
+
+\section{Named plot functions on other fitted models}{
+
+Each named fit function draws the view of the fit's own \code{plot()} that
+shows the same quantity, so \code{plot_profiles(fit)} and
+\code{plot(fit, what = "trajectories")} on a growth mixture draw one plot:
+\describe{
+\item{Growth mixtures, and mixture regressions that classify persons
+(\code{class_level = "group"})}{\code{plot_profiles()} draws \code{"trajectories"}
+(each class's curve over time) and \code{plot_diagnostics(what = "posteriors")} draws \code{"posteriors"} (each person's class
+probabilities).}
+\item{Other mixture regressions}{\code{plot_profiles()} draws \code{"fitted"}
+(each class's line against the first numeric predictor) and
+\code{plot_diagnostics(what = "posteriors")} draws \code{"posteriors"}.}
+\item{Additive and dispersion fits}{\code{plot_profiles()} draws \code{"means"}
+(each group class's means across indicators).}
+\item{Cross-level fits}{\code{plot_profiles()} draws \code{"profiles"} and
+\code{plot_prevalence()} draws \code{"composition"} (profile shares within each
+group class).}
+\item{Pooled imputations}{\code{plot_profiles()} draws \code{"measurement"} (the
+pooled profile means and variances beside each imputation's) and
+\code{plot_prevalence()} draws \code{"profile"} (the pooled probability of each
+profile within each group class).}
+\item{General \code{\link[=lta]{lta()}} fits}{\code{plot_transitions()} draws the transition
+matrix.}
+}
+Every other combination, including the \code{what} values of
+\code{plot_profiles()} other than \code{"lines"} and those of \code{plot_diagnostics()}
+other than \code{"posteriors"}, is refused with \code{latents_nothing_to_plot}
+naming the views that fit's \code{plot()} offers; \code{what = "all"} draws the
+mapped views and names the others in a message. These functions pass on
+only the arguments given, and refuse with \code{latents_bad_argument} one the
+mapped view does not take (for example \code{intervals} or \code{scale} for a growth
+trajectory); use \code{plot()} for that view's own arguments, such as \code{time},
+\code{facet} or \code{predictor}, and for the views no named function draws.
 }
 
 \section{Former argument names}{
@@ -538,14 +650,23 @@ except that the plots of additive, cross-level, general transition
 bootstrap results and of transition or group-class family grids ignore
 it with a \code{latents_unused_argument} warning (including a bootstrap
 plot's \code{style}); \code{latents_bad_argument} also when a named plot function
-is given an object it does not draw; \code{latents_nothing_to_plot} when the
+is given an object it does not draw (a named fit function given anything
+other than a fitted model, or a grid function given anything other than
+an enumeration); \code{latents_nothing_to_plot} (also of class
+\code{latents_bad_argument}) when a named fit function, or its \code{what}, has no
+view of that fitted model, naming the views its \code{plot()} offers (for
+example \code{plot_transitions()} on a model without transitions, or
+\code{plot_diagnostics(what = "sizes")} on a growth mixture);
+\code{latents_nothing_to_plot} when the
 fit lacks what a view needs (for example posteriors or entropy of a
 one-profile fit, prevalence of a covariate model, or the case-level
 views of a centred fit); \code{latents_unknown_category} when \code{category}
 names no category of an indicator; \code{latents_no_continuous},
 \code{latents_no_categorical} and \code{latents_no_time} when a view needs
 indicators or occasions the fit does not have;
-\code{latents_unknown_criterion} for a criterion not in the grid;
+\code{latents_unknown_criterion} (also \code{latents_bad_argument}) for a
+criterion not in the grid; \code{latents_unsupported_view} (also
+\code{latents_bad_argument}) for a view the kind of grid does not offer;
 \code{latents_no_tree} (also of class \code{latents_nothing_to_plot}) when a tree
 would have fewer than two rows, or at the group level of a grid with one
 group class; \code{latents_unknown_candidate} when \code{candidates},

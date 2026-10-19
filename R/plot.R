@@ -273,30 +273,36 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
 #' @return One sentence for the unused-argument warning.
 #' @noRd
 .latents_grid_plot_advice <- function() {
-  paste("Name the criterion with `what`: \"bic\", \"aic\" or",
-        "\"bic_individual\"; style the plot with ggplot2.")
+  paste("Name the view with `what`, such as \"bic\", \"aic\", \"bic_individual\",",
+        "\"all\" or a view listed by plot_views(x); style the plot with ggplot2.")
 }
 
-#' The criterion a transition or family grid's plot draws
+#' The view a transition or family grid's plot draws
 #'
-#' As `match.arg()`, which these methods used in 0.9.21 (so abbreviations
-#' such as `"bic_i"` still work), but refusing with a classed condition.
+#' In 0.9.21 these methods matched `"bic"`, `"aic"` and `"bic_individual"`
+#' with `match.arg()`: the full vector meant `"bic"`, and a unique
+#' abbreviation such as `"bic_i"` names its criterion. Both still hold. A name
+#' the grid offers in full (a criterion, `"all"` or a view) is kept, as are
+#' several criteria; anything else is left for [plot_enumeration()] to refuse
+#' by class.
 #'
 #' @param what The caller's `what`.
-#' @return One of `"bic"`, `"aic"`, `"bic_individual"`.
+#' @param views `.latents_grid_views()` of the grid.
+#' @return The `what` to pass to [plot_enumeration()].
 #' @noRd
-.latents_grid_criterion <- function(what) {
+.latents_grid_criterion <- function(what, views) {
+  if (!(is.character(what) && length(what) >= 1L && !anyNA(what))) {
+    stop(errorCondition(sprintf(
+      "`what` must name views of the grid, such as %s; not %s.",
+      .latents_grid_offer_text(views), deparse1(what)),
+      class = "latents_bad_argument", call = NULL))
+  }
   choices <- c("bic", "aic", "bic_individual")
   if (identical(what, choices)) return(choices[1L])
-  at <- if (is.character(what) && length(what) == 1L && !is.na(what)) {
-    pmatch(what, choices)
-  } else NA_integer_
-  if (is.na(at)) {
-    stop(errorCondition(sprintf(
-      "`what` must be one of \"bic\", \"aic\" or \"bic_individual\", not %s.",
-      deparse1(what)), class = "latents_bad_argument", call = NULL))
-  }
-  choices[at]
+  offered <- c(unname(views$criteria), "all", views$views)
+  if (length(what) > 1L || what %in% offered) return(what)
+  at <- pmatch(what, choices)
+  if (is.na(at)) what else choices[at]
 }
 
 #' @rdname latents-plots
@@ -307,7 +313,11 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
                              mark_minimum = TRUE, main = NULL,
                              subtitle = NULL, cutoff = 0.8,
                              using = "bic_groups", ...) {
-  .gg_require_enumeration(x, "plot_enumeration")
+  grid_views <- .latents_grid_views(x, "plot_enumeration")
+  # Each kind of grid has its own criteria and its own default criterion for
+  # the selection views; an explicit `what` or `using` is taken as given.
+  if (missing(what)) what <- grid_views$default
+  if (missing(using)) using <- grid_views$using
   # The tree's own arguments reach it through `...`; no other view takes any.
   tree_arguments <- list(...)
   tree_only <- is.character(what) && identical(what, "tree")
@@ -322,6 +332,7 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
+  .latents_require_grid_views(x, what, "plot_enumeration")
   .gg_require()
   if ("tree" %in% what) {
     if (!identical(what, "tree")) {
@@ -347,8 +358,11 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
     stopifnot("`cutoff` must be a single number between 0 and 1" =
                 is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
                 cutoff > 0 && cutoff <= 1)
+    # "selection" is every selection view the grid offers, and diagnostics.
     views <- unique(unlist(lapply(what, function(view) {
-      if (identical(view, "selection")) c(selection, "diagnostics") else view
+      if (identical(view, "selection")) {
+        intersect(c(selection, "diagnostics"), grid_views$views)
+      } else view
     })))
     plots <- stats::setNames(lapply(views, function(view) {
       if (view %in% quality) {
@@ -380,14 +394,16 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
     return(.gg_view_enumeration_quality(x, measures, labels, main, subtitle,
                                         cutoff))
   }
-  grid <- as.data.frame(x)
-  criterion <- if (identical(what, "all")) .multilpa_enumeration_criteria() else what
-  unknown <- setdiff(criterion, .multilpa_enumeration_criteria())
+  grid <- .latents_grid_table(x)
+  offered <- unname(grid_views$criteria)
+  criterion <- if (identical(what, "all")) offered else what
+  unknown <- setdiff(criterion, offered)
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
-      "%s is not an information criterion in the enumeration grid.",
-      paste(sprintf("`%s`", unknown), collapse = ", ")),
-      class = "latents_unknown_criterion", call = NULL))
+      "%s is not an information criterion of this grid. Its `what` takes %s.",
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      .latents_grid_offer_text(grid_views)),
+      class = c("latents_unknown_criterion", "latents_bad_argument"), call = NULL))
   }
   empty <- criterion[!vapply(criterion, \(name) {
     any(grid$converged %in% TRUE & is.finite(grid[[name]]))
@@ -398,7 +414,7 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
       paste(sprintf("`%s`", empty), collapse = ", ")),
       class = "latents_nothing_to_plot", call = NULL))
   }
-  criteria <- .multilpa_distinct_criteria(grid, criterion)
+  criteria <- .latents_grid_criteria_titles(x, grid, criterion)
   if (length(criteria) > 1L && isFALSE(combine)) {
     return(.gg_plots(stats::setNames(lapply(seq_along(criteria), \(index) {
       .gg_view_enumeration(x, criteria[index], labels, mark_minimum, main,
@@ -413,11 +429,26 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
 #' A single-level grid has one unit per observation, so every criterion's
 #' group-level and individual-level versions are the same numbers; drawing both
 #' repeats a panel. Such a pair is kept once under the criterion's plain name.
+#' A grid whose every candidate has one group class classifies nothing at the
+#' group level, so the group version of a classification criterion (AWE, ICL,
+#' CLC) is its penalty alone, and ICL over groups equals BIC over groups. When
+#' both versions are asked for, only the individual one is kept, under the
+#' criterion's plain name.
 #' @param grid The enumeration table.
 #' @param criterion Requested criterion columns.
 #' @return The criteria to draw, named by their display titles.
 #' @noRd
 .multilpa_distinct_criteria <- function(grid, criterion) {
+  classification <- c("awe", "icl", "clc")
+  # An empty table (titles alone) has no candidates to judge.
+  no_group_classes <- nrow(grid) > 0L && !is.null(grid$n_group_classes) &&
+    all(grid$n_group_classes %in% 1L)
+  if (no_group_classes) {
+    stems <- sub("_groups$", "", criterion)
+    redundant <- grepl("_groups$", criterion) & stems %in% classification &
+      paste0(stems, "_individual") %in% criterion
+    criterion <- criterion[!redundant]
+  }
   base <- sub("_(groups|individual)$", "", criterion)
   level <- ifelse(grepl("_groups$", criterion), "groups",
                   ifelse(grepl("_individual$", criterion), "individuals", ""))
@@ -426,9 +457,10 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
     all(both %in% names(grid)) &&
       isTRUE(all.equal(grid[[both[1L]]], grid[[both[2L]]]))
   }, logical(1))
+  plain <- same_at_both | !nzchar(level) |
+    (no_group_classes & base %in% classification & level == "individuals")
   keep <- !duplicated(ifelse(same_at_both, base, criterion))
-  titles <- ifelse(same_at_both | !nzchar(level), toupper(base),
-                   sprintf("%s (%s)", toupper(base), level))
+  titles <- ifelse(plain, toupper(base), sprintf("%s (%s)", toupper(base), level))
   stats::setNames(criterion[keep], titles[keep])
 }
 
@@ -477,7 +509,8 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
 
 #' @rdname latents-plots
 #' @export
-plot_views <- function() {
+plot_views <- function(x = NULL) {
+  if (!is.null(x)) return(.latents_grid_view_table(x))
   data.frame(
     type = c("profiles", "bars", "heatmap", "raincloud", "parallel", "pairs",
              "responses", "probabilities", "sequences", "transitions",
@@ -500,8 +533,8 @@ plot_views <- function() {
       "Each case's entropy relative to a flat posterior, by profile",
       "Posterior probability of each case's assigned profile, by profile",
       "Average posterior probability: assigned profile by posterior profile",
-      "Information criteria across a candidate grid (plot an enumeration; or name criteria in `what`)",
-      "How classes split as more are added, one plot per tree (plot an enumeration)",
+      "Information criteria across a candidate grid (plot any enumeration; or name criteria in `what`; plot_views(grid) lists a grid's views)",
+      "How classes split as more are added, one plot per tree (a profile, class or transition grid)",
       "Every view above that this fit has the ingredients for, in one call"
     ),
     stringsAsFactors = FALSE

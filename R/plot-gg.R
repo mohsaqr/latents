@@ -1476,11 +1476,16 @@ utils::globalVariables(c(
 #' @noRd
 .gg_view_enumeration <- function(x, criteria, labels, mark_minimum, main,
                                  subtitle) {
-  grid <- as.data.frame(x)
+  grid <- .latents_grid_table(x)
+  views <- .latents_grid_views(x)
   # A grid over group classes at one number of profiles would stack every
-  # candidate in one column; the group classes then go on the x-axis.
-  by_classes <- length(unique(grid$n_profiles)) == 1L &&
-    length(unique(grid$n_group_classes)) > 1L
+  # candidate in one column; the group classes then go on the x-axis, as they
+  # always do for a family grid, whose candidates have no profiles.
+  on_group_axis <- identical(views$axis, "n_group_classes")
+  by_classes <- on_group_axis || (length(unique(grid$n_profiles)) == 1L &&
+    length(unique(grid$n_group_classes)) > 1L)
+  # A profile or class grid keeps the axis words it has always had.
+  count_word <- if (identical(views$kind, "profiles")) "profiles" else views$word
   long <- .gg_enumeration_frame(grid, criteria, by_classes)
   long$title <- factor(long$title, levels = names(criteria))
   series_levels <- unique(long$series[order(grid$n_group_classes, grid$model)])
@@ -1559,10 +1564,11 @@ utils::globalVariables(c(
                        if (failures == 0L) "" else
                          sprintf(", %d did not converge (x)", failures),
                        if (isTRUE(mark_minimum)) ", ring = lowest" else "")) +
-    ggplot2::labs(x = if (by_classes) {
-                    sprintf("Number of group classes (%d profiles)",
-                            grid$n_profiles[[1L]])
-                  } else "Number of profiles",
+    ggplot2::labs(x = if (on_group_axis) "Number of group classes" else
+                    if (by_classes) {
+                      sprintf("Number of group classes (%d %s)",
+                              grid$n_profiles[[1L]], count_word)
+                    } else sprintf("Number of %s", count_word),
                   y = if (several) NULL else names(criteria)) +
     .gg_theme() +
     ggplot2::theme(panel.spacing = ggplot2::unit(1.6, "lines"),
@@ -1624,7 +1630,11 @@ print.latents_plots <- function(x, ...) {
 #' @noRd
 .gg_view_enumeration_quality <- function(x, measures, labels, main, subtitle,
                                          cutoff) {
-  grid <- .multilpa_enumeration_grid(x, cutoff)
+  grid <- .latents_grid_quality_table(x, cutoff)
+  views <- .latents_grid_views(x)
+  # A family grid's candidates differ in group classes only, so they go on
+  # the x-axis.
+  by_classes <- identical(views$axis, "n_group_classes")
   columns <- c(
     if ("entropy" %in% measures) c("Entropy, individuals" = "profile_entropy",
                                    "Entropy, groups" = "group_entropy"),
@@ -1642,7 +1652,7 @@ print.latents_plots <- function(x, ...) {
   if (!any(grepl("groups$", names(present)))) {
     names(present) <- sub(", individuals$", "", names(present))
   }
-  long <- .gg_enumeration_frame(grid, present)
+  long <- .gg_enumeration_frame(grid, present, by_classes)
   long$title <- factor(long$title, levels = names(present))
   series_levels <- unique(long$series[order(grid$n_group_classes, grid$model)])
   long$series <- factor(long$series, levels = series_levels)
@@ -1687,7 +1697,7 @@ print.latents_plots <- function(x, ...) {
     ggplot2::facet_wrap(ggplot2::vars(title), scales = "free_y",
                         ncol = if (length(present) > 2L) 2L else NULL) +
     ggplot2::scale_x_continuous(
-      breaks = sort(unique(grid$n_profiles)),
+      breaks = sort(unique(grid[[views$axis]])),
       expand = ggplot2::expansion(add = c(0.3, if (labelled) 1.1 else 0.3))) +
     ggplot2::scale_colour_manual(values = colours, guide = guide) +
     ggplot2::scale_fill_manual(values = colours, guide = guide) +
@@ -1699,7 +1709,7 @@ print.latents_plots <- function(x, ...) {
                          sprintf(", %d did not converge", failures),
                        if (nrow(reference) == 0L) "" else
                          sprintf("; dashed line: AvePP %s", format(cutoff)))) +
-    ggplot2::labs(x = sprintf("Number of %s", .latents_class_word(x)), y = NULL) +
+    ggplot2::labs(x = sprintf("Number of %s", views$word), y = NULL) +
     .gg_theme() +
     ggplot2::theme(panel.spacing = ggplot2::unit(1.6, "lines"),
                    strip.text = ggplot2::element_text(

@@ -1,3 +1,77 @@
+# latents 0.95.11
+
+### Named plot functions on every fitted model
+
+* `plot_profiles()`, `plot_diagnostics()`, `plot_prevalence()` and
+  `plot_transitions()` take every fitted model of the package and draw the
+  view of that fit's own `plot()` that shows the same quantity:
+  `plot_profiles()` draws a growth mixture's `"trajectories"` (also of a
+  mixture regression with `class_level = "group"`), another mixture
+  regression's `"fitted"` lines, an additive or dispersion fit's `"means"`,
+  a cross-level fit's `"profiles"` and a pooled fit's `"measurement"`
+  parameters; `plot_diagnostics(what = "posteriors")` draws the
+  `"posteriors"` of growth mixtures and mixture regressions;
+  `plot_prevalence()` draws a cross-level fit's `"composition"` and a pooled
+  fit's `"profile"` parameters (each profile's probability within each group
+  class);
+  `plot_transitions()` draws a general `lta()` fit's transition matrix, as
+  before. `what = "all"` draws these and names the views it leaves out.
+* Any other combination (for example `plot_profiles(what = "bars")` on a
+  growth mixture, or `plot_diagnostics()` on an additive fit) is refused with
+  `latents_nothing_to_plot`, which is also of class `latents_bad_argument`
+  (the class of the former refusal), and the message names the views the
+  fit's `plot()` offers and the named functions that draw them. An argument
+  the mapped view does not take (for example `intervals` for a trajectory)
+  is refused by name with `latents_bad_argument`.
+* For profile, class and transition models nothing changes, except that
+  `plot_transitions()` on a model without transitions, and a named function
+  whose view the fit's `plot()` lacks (for example `plot_prevalence()` on a
+  transition fit), now raise `latents_nothing_to_plot` with
+  `latents_bad_argument`, where they raised one of the two.
+
+### One contract for every grid
+
+* `plot_enumeration()`, `plot_selection()` and `plot_tree()` take every grid
+  the package makes: profile and class grids, transition grids
+  (`enumerate_classes(time = )`), group-class family grids
+  (`enumerate_classes(family = )`) and regression grids
+  (`enumerate_regressions()`). Each grid offers the views its candidates
+  carry. Transition grids draw every view, the tree included. Family grids
+  draw their criteria and classification quality against the number of group
+  classes; their candidates have no profiles, so the selection views and the
+  tree are not drawn. Regression grids draw criteria, classification quality
+  and the selection views, but not the tree.
+* A view a grid does not offer is refused with the new condition
+  `latents_unsupported_view` (also of class `latents_bad_argument`), whose
+  message gives the reason and the views the grid offers. An unknown
+  criterion of a grid is now also of class `latents_bad_argument`.
+* `plot_views(x)` of a grid lists every view of that grid, whether it is
+  offered, and why not.
+* `plot()` of a transition or family grid draws through the same views.
+  Without `what` it draws the grid's summary, AIC, BIC and BIC over
+  individuals as panels of one plot, as `plot_enumeration()` does (0.9.21
+  drew BIC alone). The 0.9.21 calls that name a criterion still work:
+  `plot(x, what = "aic")`, abbreviations such as `"bic_i"`, and
+  `criterion =`. It also takes `"all"` and every other view of the grid, and
+  passes `combine`, `labels`, `mark_minimum`, `cutoff` and `using` on to
+  `plot_enumeration()`, which 0.9.21 ignored. The plots have the look of the
+  other grid plots: a criterion in its own panel, the lowest value ringed.
+* Regression grids get `plot()`, which draws AIC, BIC, SABIC and ICL across
+  the classes, and `summary()`, which returns their table (as
+  `as.data.frame()` does). Formerly `plot()` failed with a base R error and
+  `summary()` gave the default list summary.
+* The selection views of a class (LCA) grid name the singular "class"
+  instead of "classe".
+
+### Criterion panels
+
+* A grid whose every candidate has one group class draws each criterion once,
+  under its plain name: the group versions of AWE, ICL and CLC are left out
+  when their individual versions are drawn, since without group classes ICL
+  over groups equals BIC over groups. `what = "all"` on such a grid draws AIC,
+  KIC, BIC, SABIC, CAIC, AWE, ICL and CLC.
+
+
 # latents 0.95.10
 
 ### Tree plots

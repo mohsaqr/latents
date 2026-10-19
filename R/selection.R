@@ -25,18 +25,16 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
 #'   value).
 #' @noRd
 .latents_selection_frame <- function(x, using) {
-  stopifnot("`x` must be an enumeration grid from enumerate_classes()" =
-              inherits(x, "multilpa_enumeration"))
-  if (!is.character(using) || length(using) != 1L ||
-      !using %in% .multilpa_enumeration_criteria()) {
+  criteria <- unname(.latents_grid_views(x, "The selection view")$criteria)
+  if (!is.character(using) || length(using) != 1L || !using %in% criteria) {
     stop(errorCondition(sprintf(
       "`using` must name one information criterion of the grid: %s.",
-      paste(sprintf("\"%s\"", .multilpa_enumeration_criteria()), collapse = ", ")),
+      paste(sprintf("\"%s\"", criteria), collapse = ", ")),
       class = "latents_bad_argument", call = NULL))
   }
   # The criteria and diagnostics are stored; the AvePP columns, which need
   # every fit's posteriors, are not needed here.
-  grid <- .latents_named_table(x)
+  grid <- .latents_grid_table(x)
   value <- grid[[using]]
   data.frame(candidate = grid$candidate, n_profiles = grid$n_profiles,
              n_group_classes = grid$n_group_classes, model = grid$model,
@@ -240,8 +238,8 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
 #' @noRd
 .gg_selection_deltas <- function(x, using, main, subtitle) {
   deltas <- .latents_deltas_table(x, using)
-  word <- .latents_class_word(x)
-  singular <- sub("s$", "", word)
+  word <- .latents_grid_views(x)$word
+  singular <- .latents_singular(word)
   several_models <- length(unique(deltas$model[!is.na(deltas$model)])) > 1L
   structure_suffix <- if (several_models) paste0(", ", deltas$model) else ""
   panel_profile <- sprintf("Adding a %s", singular)
@@ -325,35 +323,20 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
   .latents_selection_look(
     plot, main, subtitle, sprintf("%s over the whole grid", using),
     "Each tile: the criterion above the lowest candidate; x = not fitted or not converged",
-    sprintf("Number of %s", .latents_class_word(x))) +
+    sprintf("Number of %s", .latents_grid_views(x)$word)) +
     ggplot2::theme(legend.position = "right", panel.grid = ggplot2::element_blank())
 }
 
 #' Smallest-class view: the share of the smallest class of every candidate
 #' @noRd
 .gg_selection_smallest <- function(x, main, subtitle) {
-  frame <- .latents_selection_frame(x, "bic_groups")
-  fits <- .subset2(x, "fits")
-  share <- function(fit, level) {
-    # The rows and groups the fit counts (see `drop_empty`).
-    posteriors <- if (identical(level, "individuals"))
-      .multilpa_classified_posteriors(fit) else .multilpa_classified_group_posteriors(fit)
-    if (is.null(posteriors)) return(NA_real_)
-    weights <- .multilpa_level_weights(fit, level, nrow(posteriors)) %||% 1
-    counts <- fit[[levels_wanted[[level]]]] %||%
-      colSums(posteriors[, seq_len(if (identical(level, "individuals"))
-        ncol(fit$subject_posteriors) else ncol(posteriors)), drop = FALSE] * weights)
-    if (length(counts) < 2L) return(NA_real_)
-    min(counts) / sum(posteriors * weights)
-  }
-  levels_wanted <- c(individuals = "effective_profile_counts",
-                     groups = "effective_group_counts")
-  word <- .latents_class_word(x)
-  singular <- sub("s$", "", word)
-  long <- do.call(rbind, lapply(names(levels_wanted), function(level) {
-    values <- vapply(fits, function(fit) {
-      if (is.null(fit)) NA_real_ else share(fit, level)
-    }, numeric(1L))
+  views <- .latents_grid_views(x)
+  frame <- .latents_selection_frame(x, views$using)
+  shares <- .latents_grid_smallest_shares(x)
+  word <- views$word
+  singular <- .latents_singular(word)
+  long <- do.call(rbind, lapply(names(shares), function(level) {
+    values <- shares[[level]]
     data.frame(frame[c("candidate", "n_profiles", "n_group_classes", "model")],
                panel = if (identical(level, "individuals"))
                  sprintf("Smallest %s", singular) else "Smallest group class",
@@ -398,7 +381,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
 #' Trust view: whether each candidate's estimate can be believed
 #' @noRd
 .gg_selection_trust <- function(x, main, subtitle) {
-  grid <- .latents_named_table(x)
+  grid <- .latents_grid_table(x)
   status <- ifelse(is.na(grid$log_likelihood), "not fitted",
                    ifelse(!(grid$converged %in% TRUE), "not converged",
                           ifelse(grid$boundary %in% TRUE, "on a boundary",
@@ -431,7 +414,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
   .latents_selection_look(
     plot, main, subtitle, "Can each candidate be trusted?",
     "Label: how many random starts reached the best log likelihood; x = not fitted",
-    sprintf("Number of %s", .latents_class_word(x)), legend = TRUE) +
+    sprintf("Number of %s", .latents_grid_views(x)$word), legend = TRUE) +
     ggplot2::theme(panel.grid = ggplot2::element_blank())
 }
 
