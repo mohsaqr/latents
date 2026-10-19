@@ -1252,7 +1252,9 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   scaling_for <- function(model) model$scaling %||% "none"
   drop_empty_for <- function(model) model$drop_empty %||% TRUE
   same_fields <- all(vapply(fields, function(field)
-    identical(null_model[[field]], alternative_model[[field]]), logical(1)))
+    identical(null_model[[field]], alternative_model[[field]]), logical(1))) &&
+    identical(null_model$covariance_pattern, alternative_model$covariance_pattern) &&
+    identical(null_model$extra_data$direct$effects, alternative_model$extra_data$direct$effects)
   if (!same_fields || !identical(extra_spec(null_model), extra_spec(alternative_model)) ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model)) ||
@@ -1261,8 +1263,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       !identical(missing_for(null_model), missing_for(alternative_model))) {
     stop(errorCondition(paste(
       "Models must use the same observations, group layout, covariance",
-      "structure, centering and scaling mode, missing-data handling and",
-      "`drop_empty`."),
+      "structure, local dependence, direct effects, centering and scaling",
+      "mode, missing-data handling and `drop_empty`."),
         class = "latents_incomparable_models", call = NULL))
   }
   if (covariate_family) .multilpa_check_covariate_nesting(null_model, alternative_model)
@@ -1378,17 +1380,13 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       simulated <- .multilpa_carry_missingness(simulated, data, null_model$vars)
     }
     models <- lapply(list(null_model, alternative_model), function(model) {
-      ## `variance_model` and `covariance_model` cannot express a structure
-      ## that constrains the volume, the shape or the orientation: refitting
-      ## from them alone returned a VEI replicate as VVI, two parameters
-      ## wider, so the reference distribution belonged to a different pair of
-      ## models than the statistic compared against it.
-      family <- .multilpa_structure_arguments(
-        model$covariance_structure %||% NA_character_)
-      if (length(family) == 0L) {
-        family <- list(variance_model = model$variance_model,
-                       covariance_model = model$covariance_model %||% "diagonal")
-      }
+      ## The covariance and the measurement extensions come from the shared
+      ## refit rule: refitting from `variance_model` and `covariance_model`
+      ## alone returned a VEI replicate as VVI, two parameters wider, and
+      ## dropped direct effects and covariance patterns, so the reference
+      ## distribution belonged to a different pair of models than the
+      ## statistic compared against it.
+      family <- .multilpa_refit_measurement(model)
       do.call(multilpa, c(
         list(data = simulated, vars = model$vars, id = model$id,
              n_profiles = model$n_profiles,

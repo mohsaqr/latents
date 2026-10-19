@@ -190,3 +190,46 @@ test_that("direct effects the model cannot hold are refused by class", {
   expect_error(get_results(plain, "direct_effects"), class = "latents_no_direct_effects")
   expect_false("direct_effects" %in% names(get_results(plain, "all")))
 })
+
+# The parameter count, number of direct effects and covariance pattern of every
+# multilpa() fit made while `code` runs.
+refits_during <- function(code) {
+  seen <- new.env()
+  seen$fits <- list()
+  suppressMessages(trace("multilpa", where = asNamespace("latents"), print = FALSE,
+                         exit = bquote({
+                           fit <- returnValue()
+                           assign("fits", c(get("fits", .(seen)), list(data.frame(
+                             parameters = fit$n_parameters,
+                             effects = length(fit$direct_effects),
+                             pattern = !is.null(fit$covariance_pattern)))), envir = .(seen))
+                         })))
+  on.exit(suppressMessages(untrace("multilpa", where = asNamespace("latents"))))
+  force(code)
+  do.call(rbind, seen$fits)
+}
+
+test_that("bootstrap replicates are refitted with the models' direct effects and patterns", {
+  skip_on_cran()
+  data <- direct_data(n = 400)
+  null <- quietly(lpa(data, c("y1", "y2", "y3"), 1, n_starts = 2, seed = 1,
+                      direct_effects = "y3 ~ z"))
+  alternative <- quietly(lpa(data, c("y1", "y2", "y3"), 2, n_starts = 2, seed = 1,
+                             direct_effects = "y3 ~ z"))
+  refits <- refits_during(quietly(bootstrap_lrt(null, alternative, iter = 2, n_starts = 2,
+                                                seed = 8)))
+  expect_setequal(refits$parameters, c(null$n_parameters, alternative$n_parameters))
+  expect_true(all(refits$effects == 1L))
+  paired_null <- quietly(lpa(data, c("y1", "y2", "y4"), 1, n_starts = 2, seed = 1,
+                             local_dependence = "y1:y2"))
+  paired <- quietly(lpa(data, c("y1", "y2", "y4"), 2, n_starts = 2, seed = 1,
+                        local_dependence = "y1:y2"))
+  refits <- refits_during(quietly(bootstrap_lrt(paired_null, paired, iter = 2,
+                                                n_starts = 2, seed = 8)))
+  expect_setequal(refits$parameters, c(paired_null$n_parameters, paired$n_parameters))
+  expect_true(all(refits$pattern))
+  # Models that differ in their effects are not nested in the test's sense.
+  plain <- quietly(lpa(data, c("y1", "y2", "y3"), 2, n_starts = 2, seed = 1))
+  expect_error(bootstrap_lrt(null, plain, iter = 2, n_starts = 1, seed = 8),
+               class = "latents_incomparable_models")
+})

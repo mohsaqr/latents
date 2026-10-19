@@ -46,26 +46,42 @@
                  weights = x$weights, ordinal = x$ordinal %||% character(),
                  count = x$count %||% character(),
                  count_model = x$extra_data$count_model %||% "poisson",
-                 count_dispersion = x$extra_data$count_dispersion %||% "varying",
-                 direct_effects = if (is.null(x$extra_data$direct)) character() else
-                   .latents_direct_terms(x$extra_data$direct$effects))
-  # Covariances for chosen pairs are refitted as the same pattern: the pairs,
-  # read from the fit's pattern, and the variance model, which a full
-  # structure argument would replace by a full covariance.
+                 count_dispersion = x$extra_data$count_dispersion %||% "varying")
+  c(shared, .multilpa_refit_measurement(x))
+}
+
+#' The arguments that refit a fit's covariance and its measurement extensions
+#'
+#' One place for every verb that refits a model (bootstrap inference, seed
+#' sensitivity, the bootstrap likelihood ratio test), so a measurement option
+#' cannot be carried by one refit and dropped by another. A fit that records
+#' a covariance structure is refitted from the structure, one that does not
+#' from its two switches; covariances for chosen pairs are refitted as the
+#' same pattern (the pairs, read from the fit's pattern, and the variance
+#' model, which a full structure argument would replace by a full
+#' covariance); direct effects are refitted from their terms.
+#'
+#' @param x A fitted `multilpa` model.
+#' @return A named list of [multilpa()] arguments.
+#' @noRd
+.multilpa_refit_measurement <- function(x) {
+  extensions <- list(direct_effects = if (is.null(x$extra_data$direct)) character() else
+    .latents_direct_terms(x$extra_data$direct$effects))
   pattern <- x$covariance_pattern
   if (!is.null(pattern)) {
     pairs <- which(pattern & upper.tri(pattern), arr.ind = TRUE)
-    return(c(shared, list(variance_model = x$variance_model,
-                          local_dependence = paste(rownames(pattern)[pairs[, "row"]],
-                                                   colnames(pattern)[pairs[, "col"]],
-                                                   sep = ":"))))
+    return(c(list(variance_model = x$variance_model,
+                  local_dependence = paste(rownames(pattern)[pairs[, "row"]],
+                                           colnames(pattern)[pairs[, "col"]],
+                                           sep = ":")), extensions))
   }
   structure <- x$covariance_structure
-  if (is.null(structure) || is.na(structure) || !structure %in% .multilpa_structures()) {
-    return(c(shared, list(variance_model = x$variance_model,
-                          covariance_model = x$covariance_model %||% "diagonal")))
-  }
-  c(shared, .multilpa_structure_arguments(structure))
+  family <- if (is.null(structure) || is.na(structure) ||
+                !structure %in% .multilpa_structures()) {
+    list(variance_model = x$variance_model,
+         covariance_model = x$covariance_model %||% "diagonal")
+  } else .multilpa_structure_arguments(structure)
+  c(family, extensions)
 }
 
 #' The `fit_staged()` arguments that refit a staged model as it was fitted
