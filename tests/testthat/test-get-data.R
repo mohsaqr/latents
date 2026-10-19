@@ -14,7 +14,8 @@ test_that("every table in a fit's catalogue is a data frame", {
   fit <- two_level()
   catalogue <- setdiff(names(latents:::.multilpa_catalogue(fit)), "all")
   expect_gt(length(catalogue), 15L)
-  absent <- c("latents_no_time", "latents_no_group_classes")
+  # The refusals that mean "this fit has no such table", as `"all"` reads them.
+  absent <- latents:::.multilpa_absent_table_conditions()
   for (what in catalogue) {
     table <- tryCatch(get_results(fit, what), error = function(condition) {
       if (inherits(condition, absent)) NULL else stop(condition)

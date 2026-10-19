@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 'c09.dat'
+
+model
+title 'c09_vlmr';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+variables
+   dependent y1 continuous, y2 continuous;
+   latent Cluster nominal 1:3;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+end model

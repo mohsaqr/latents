@@ -238,6 +238,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 .multilpa_resolve_data <- function(x, data) {
   if (is.null(data)) return(.multilpa_model_frame(x))
   stopifnot("`data` must be a data frame" = is.data.frame(data))
+  # The caller's own data holds the paired items; the fit, their joint ones.
+  if (!is.null(x$local_dependence)) data <- .latents_join_pairs(data, x$local_dependence)
   data
 }
 

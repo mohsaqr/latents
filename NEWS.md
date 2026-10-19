@@ -1,5 +1,18 @@
 # latents (development version)
 
+### Local dependence
+
+* `local_dependence = "item1:item2"` in `lca()`, `multilca()`, `multilpa()`
+  and the enumeration functions models a pair of categorical indicators
+  jointly within each class, the class-specific association Latent GOLD fits
+  with `item1 <-> item2 | Cluster`; the other indicators stay independent
+  given the class. `get_results(fit, "local_dependence")` gives each class's
+  joint probabilities beside their values under independence. On simulated
+  data the log likelihood, parameter count, class sizes and item marginals
+  agree with Latent GOLD 6.1 to every printed digit.
+* `compare_models()` compares a model with paired items and one without, which
+  are fitted to the same data.
+
 ### Lo-Mendell-Rubin tests
 
 * `get_results(models, "lmr")` reports the Vuong-Lo-Mendell-Rubin (VLMR) and

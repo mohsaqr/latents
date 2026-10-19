@@ -337,6 +337,14 @@ smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} and
 \code{note} gives the reason.}
+\item{\code{"local_dependence"}}{For a fit with \code{local_dependence}, one row per
+pair, profile and combination of the two items' categories: \code{pair},
+\code{profile}, \code{item_1}, \code{category_1}, \code{item_2}, \code{category_2},
+\code{probability} (the fitted joint probability in the profile),
+\code{independent} (the product of the two marginal probabilities, the
+joint probability under independence within the profile) and \code{ratio}
+(\code{probability / independent}). A fit without pairs raises
+\code{latents_no_local_dependence}, and \code{what = "all"} leaves the table out.}
 \item{\code{"lmr"}}{The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
 Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
 Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged

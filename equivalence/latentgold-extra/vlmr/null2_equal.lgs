@@ -1,0 +1,24 @@
+//LG6.1//
+version = 6.1
+infile 'null2.dat'
+
+model
+title 'null2_equal';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent Cluster nominal 2:3;
+equations
+   Cluster <- 1;
+   y1 - y4 <- 1 + Cluster;
+end model

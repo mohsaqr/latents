@@ -944,6 +944,21 @@
 #'   [enumerate_classes()]; a worker that fails as a whole raises
 #'   `latents_parallel_failure`. Models with membership covariates run their
 #'   starts on one core.
+#' @param local_dependence Pairs of categorical indicators modelled jointly
+#'   within each class, written `"item1:item2"` (several as a character
+#'   vector). Each pair becomes one categorical indicator, named
+#'   `"item1:item2"`, whose categories are the observed combinations of the
+#'   two items' categories, so every class has its own joint distribution of
+#'   the pair: the class-specific association Latent GOLD fits with
+#'   `item1 <-> item2 | Cluster`. The other indicators stay independent given
+#'   the class. `get_results(fit, "local_dependence")` reports each class's
+#'   joint probabilities beside their values under independence; `predict()`,
+#'   `parameter_inference(data = )` and the other functions that take `data`
+#'   join the pair in the caller's data. A row observing one item of a pair
+#'   and not the other treats the pair as missing, with a
+#'   `latents_partial_pair` warning. A pair of indicators that are not both
+#'   categorical, that names an indicator twice or that shares an indicator
+#'   with another pair raises `latents_bad_argument`. Default: none.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. It is not
 #'   used in estimation; it is stored for `get_results(x, "sequences")`,
@@ -1176,7 +1191,14 @@ multilpa <- function(data, vars, id, n_profiles,
                        count_model = c("poisson", "negative_binomial"),
                        count_dispersion = c("varying", "equal"),
                        scaling = c("none", "person", "grand"),
-                       drop_empty = TRUE, cores = 1L) {
+                       drop_empty = TRUE, cores = 1L,
+                       local_dependence = character()) {
+  # Locally dependent pairs are joined into one indicator each, and the model
+  # is fitted on the joint indicators with the caller's other arguments.
+  if (length(local_dependence) > 0L) {
+    return(.latents_fit_local_dependence(match.call(), environment(),
+                                         local_dependence))
+  }
   family <- match.arg(family)
   cores <- .latents_check_cores(cores)
   count_model <- match.arg(count_model)

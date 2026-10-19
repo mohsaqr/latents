@@ -132,6 +132,57 @@ diagnostics(fit)
 
 The relative entropy of 0.66 indicates a moderately clear classification.
 
+## Local dependence
+
+The latent class model assumes that the activities are independent within
+each class. The bivariate residual of a pair of activities compares their
+observed co-occurrence within a class with the co-occurrence the model
+implies, and a large value indicates a dependence the classes do not explain.
+
+```{r residuals}
+subset(get_results(fit, "residuals"), p_adjusted < 0.01)
+```
+
+```{r residuals-values, include = FALSE}
+residuals <- get_results(fit, "residuals")
+largest <- subset(residuals, statistic == max(statistic))
+stopifnot(nrow(largest) == 1L, with(largest, indicator_1 == "listened_music" &&
+                                      indicator_2 == "walking"))
+```
+
+The largest residual is that of listening to music and walking in class
+`r sub("profile_", "", largest$profile)` (`r round(largest$statistic, 1)`). `local_dependence`
+names pairs of categorical indicators that are modelled jointly within each
+class: the pair then has its own joint distribution in every class, and the
+other activities remain independent given the class.
+
+```{r dependent}
+dependent <- lca(student_esm, activities, n_classes = 3,
+                 local_dependence = "listened_music:walking")
+get_results(dependent, "local_dependence")
+```
+
+The table gives each class's joint probabilities of the pair beside the
+products of its marginal probabilities, which are the probabilities under
+independence, and their ratio. The two models describe the same data and are
+compared with `compare_models()`.
+
+```{r dependent-compare}
+compare_models(independent = fit, dependent = dependent)
+```
+
+```{r dependent-values, include = FALSE}
+compared <- compare_models(independent = fit, dependent = dependent)
+gain <- dependent$log_likelihood - fit$log_likelihood
+added <- dependent$n_parameters - fit$n_parameters
+lower <- with(subset(compared, delta_bic == 0), model)
+```
+
+The joint model raises the log likelihood by `r round(gain, 1)` at the cost
+of `r added` parameters, and BIC is lower for the `r lower` model. The
+dependence is present in the data, and the three classes describe the
+activities about as well without modelling it.
+
 ## Classes and a distal outcome
 
 `three_step()` estimates the mean of an outcome within each class. It uses

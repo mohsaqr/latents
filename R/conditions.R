@@ -207,6 +207,11 @@
 #'   \item{`latents_nothing_to_plot`}{The requested panel has no rows to draw.}
 #'   \item{`latents_inaccurate_probability`}{The numerical integral behind a
 #'     Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+#'   \item{`latents_no_local_dependence`}{`get_results(fit, "local_dependence")`
+#'     on a fit made without `local_dependence`.}
+#'   \item{`latents_partial_pair`}{A warning: rows observe one item of a
+#'     `local_dependence` pair and not the other, so the pair is treated as
+#'     missing in those rows.}
 #'   \item{`latents_no_lmr`}{`get_results(x, "lmr")` on a grid with no two
 #'     converged candidates one profile or one group class apart. Also of class
 #'     `latents_nothing_to_plot`.}

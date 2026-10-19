@@ -46,7 +46,8 @@ multilpa(
   count_dispersion = c("varying", "equal"),
   scaling = c("none", "person", "grand"),
   drop_empty = TRUE,
-  cores = 1L
+  cores = 1L,
+  local_dependence = character()
 )
 }
 \arguments{
@@ -484,6 +485,22 @@ socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as in
 \code{\link[=enumerate_classes]{enumerate_classes()}}; a worker that fails as a whole raises
 \code{latents_parallel_failure}. Models with membership covariates run their
 starts on one core.}
+
+\item{local_dependence}{Pairs of categorical indicators modelled jointly
+within each class, written \code{"item1:item2"} (several as a character
+vector). Each pair becomes one categorical indicator, named
+\code{"item1:item2"}, whose categories are the observed combinations of the
+two items' categories, so every class has its own joint distribution of
+the pair: the class-specific association Latent GOLD fits with
+\verb{item1 <-> item2 | Cluster}. The other indicators stay independent given
+the class. \code{get_results(fit, "local_dependence")} reports each class's
+joint probabilities beside their values under independence; \code{predict()},
+\code{parameter_inference(data = )} and the other functions that take \code{data}
+join the pair in the caller's data. A row observing one item of a pair
+and not the other treats the pair as missing, with a
+\code{latents_partial_pair} warning. A pair of indicators that are not both
+categorical, that names an indicator twice or that shares an indicator
+with another pair raises \code{latents_bad_argument}. Default: none.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional

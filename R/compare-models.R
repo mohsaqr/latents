@@ -495,11 +495,14 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
     .multilpa_uncentered_indicators(fit)
   # Engines use different storage types for an absent Gaussian block.
   if (!is.null(raw) && ncol(raw) == 0L) raw <- NULL
-  list(vars = fit$vars, id = if (isTRUE(fit$single_level)) NULL else fit$id,
+  # Categorical responses as their labels, item by item: a model that pairs
+  # two items jointly is fitted to the same data as one that does not.
+  list(vars = fit$original_vars %||% fit$vars,
+       id = if (isTRUE(fit$single_level)) NULL else fit$id,
        groups = as.character(fit$group_values %||% fit$group_ids),
        group_index = fit$group_index, indicators = raw,
-       categorical = if (general) fit$codes else fit$categorical_data,
-       categorical_levels = fit$categorical_levels,
+       categorical = if (general) fit$codes else .latents_categorical_labels(fit),
+       categorical_levels = if (general) fit$categorical_levels,
        extra = .latents_draw_extra_columns(fit$extra_data),
        weights = unname(fit$sampling_weights), time = fit$time_values,
        centering = fit$centering %||% "none",

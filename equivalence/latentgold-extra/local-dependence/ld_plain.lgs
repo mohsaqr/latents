@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 'ld.dat'
+
+model
+title 'ld_plain';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+variables
+   dependent a nominal, b nominal, c nominal, e nominal;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   a <- 1 + Cluster;
+   b <- 1 + Cluster;
+   c <- 1 + Cluster;
+   e <- 1 + Cluster;
+end model

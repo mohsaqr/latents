@@ -223,6 +223,11 @@ describe: \code{vars} named none, or the frame has no numeric column outside
 \item{\code{latents_nothing_to_plot}}{The requested panel has no rows to draw.}
 \item{\code{latents_inaccurate_probability}}{The numerical integral behind a
 Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+\item{\code{latents_no_local_dependence}}{\code{get_results(fit, "local_dependence")}
+on a fit made without \code{local_dependence}.}
+\item{\code{latents_partial_pair}}{A warning: rows observe one item of a
+\code{local_dependence} pair and not the other, so the pair is treated as
+missing in those rows.}
 \item{\code{latents_no_lmr}}{\code{get_results(x, "lmr")} on a grid with no two
 converged candidates one profile or one group class apart. Also of class
 \code{latents_nothing_to_plot}.}
