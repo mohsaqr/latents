@@ -232,6 +232,13 @@ test_that("bootstrap replicates are refitted with the models' direct effects and
                                                 n_starts = 2, seed = 8)))
   expect_setequal(refits$parameters, c(paired_null$n_parameters, paired$n_parameters))
   expect_true(all(refits$pattern))
+  # The same effects listed in another order are the same model.
+  reordered <- quietly(lpa(data, c("y1", "y2", "y3"), 1, n_starts = 2, seed = 1,
+                           direct_effects = c("y3 ~ z", "y1 ~ z")))
+  two_effects <- quietly(lpa(data, c("y1", "y2", "y3"), 2, n_starts = 2, seed = 1,
+                             direct_effects = c("y1 ~ z", "y3 ~ z")))
+  expect_s3_class(quietly(bootstrap_lrt(reordered, two_effects, iter = 2, n_starts = 1,
+                                        seed = 8)), "multilpa_bootstrap_lrt")
   # Models that differ in their effects are not nested in the test's sense.
   plain <- quietly(lpa(data, c("y1", "y2", "y3"), 2, n_starts = 2, seed = 1))
   expect_error(bootstrap_lrt(null, plain, iter = 2, n_starts = 1, seed = 8),

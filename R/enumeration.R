@@ -308,9 +308,20 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   # (VVI), which `.multilpa_enumeration_arguments()` passes as
   # `variance_model`.
   if (.multilpa_enumeration_patterned(vars, extra)) {
-    # A `variance_model` the caller gave is the choice, made once.
-    if ("variance_model" %in% names(extra)) return(NA_character_)
-    if (!model_given || is.null(model)) return(c("EEI", "VVI"))
+    # A `variance_model` the caller gave is the choice, made once; a `model`
+    # beside it contradicts it, as it does without pairs.
+    if ("variance_model" %in% names(extra)) {
+      if (model_given && !is.null(model)) {
+        stop(errorCondition(paste(
+          "`model` and `variance_model` both set the covariance structure;",
+          "name the structures with `model` alone."),
+          class = "latents_bad_argument", call = NULL))
+      }
+      return(NA_character_)
+    }
+    # `model = NULL` crosses no structure, with pairs as without.
+    if (model_given && is.null(model)) return(NA_character_)
+    if (!model_given) return(c("EEI", "VVI"))
     codes <- unique(unlist(lapply(model, \(name) switch(name, basic = , all = c("EEI", "VVI"),
                                                          name)), use.names = FALSE))
     if (!all(codes %in% c("EEI", "VVI"))) {
@@ -1297,7 +1308,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   same_fields <- all(vapply(fields, function(field)
     identical(null_model[[field]], alternative_model[[field]]), logical(1))) &&
     identical(null_model$covariance_pattern, alternative_model$covariance_pattern) &&
-    identical(null_model$extra_data$direct$effects, alternative_model$extra_data$direct$effects)
+    identical(.latents_direct_key(null_model), .latents_direct_key(alternative_model))
   if (!same_fields || !identical(extra_spec(null_model), extra_spec(alternative_model)) ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model)) ||

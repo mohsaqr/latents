@@ -114,6 +114,16 @@
   parameters
 }
 
+#' A fit's direct effects as a set, for comparing two fits
+#' @param fit A fitted model.
+#' @return The sorted `"indicator:covariate"` names; empty without effects.
+#' @noRd
+.latents_direct_key <- function(fit) {
+  effects <- fit$extra_data$direct$effects
+  if (is.null(effects)) return(character())
+  sort(paste(effects$indicator, effects$covariate, sep = ":"))
+}
+
 #' The `direct_effects` terms that give a table of effects back
 #' @param effects From `.latents_parse_direct_effects()`.
 #' @return One `"indicator ~ covariate + ..."` term per indicator.

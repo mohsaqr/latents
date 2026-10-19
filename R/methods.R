@@ -254,8 +254,11 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
              n_group_classes = .multilpa_one(x$n_group_classes, NA_integer_),
              centering = .multilpa_one(x$centering %||% "none", NA_character_),
              scaling = .multilpa_one(x$scaling %||% "none", NA_character_),
-             covariance_structure = .multilpa_one(x$covariance_structure,
-                                                  NA_character_),
+             # A pattern fit is estimated as a full covariance; its label names
+             # the diagonal it extends and the pairs, not VVV or EEE.
+             covariance_structure = .multilpa_one(
+               if (is.null(x$covariance_pattern)) x$covariance_structure else
+                 .latents_pattern_label(x), NA_character_),
              n_parameters = .multilpa_one(x$n_parameters, NA_integer_),
              n_parameters_with_measurement =
                .multilpa_one(x$n_parameters_with_measurement %||%

@@ -241,10 +241,24 @@ test_that("enumeration with chosen covariances crosses the diagonal they extend"
   expect_error(enumerate_lpa(data, vars, n_profiles = 1:2, local_dependence = "y1:y2",
                              model = "VVV", n_starts = 1, seed = 1),
                class = "latents_bad_argument")
+  expect_error(enumerate_lpa(data, vars, n_profiles = 2, local_dependence = "y1:y2",
+                             model = "EEI", variance_model = "varying", n_starts = 1,
+                             seed = 1), class = "latents_bad_argument")
+  # `model = NULL` crosses no structure, and `variance_model` alone is the one.
+  single <- as.data.frame(quietly(enumerate_lpa(data, vars, n_profiles = 2, model = NULL,
+                                                local_dependence = "y1:y2", n_starts = 1,
+                                                seed = 1)))
+  expect_identical(single$model, "VVI + y1:y2")
+  equal <- as.data.frame(quietly(enumerate_lpa(data, vars, n_profiles = 2,
+                                               variance_model = "equal",
+                                               local_dependence = "y1:y2", n_starts = 1,
+                                               seed = 1)))
+  expect_identical(equal$model, "EEI + y1:y2")
   # A pattern fit is labelled by the diagonal it extends and its pairs, not
   # as the full covariance it is estimated through.
   full <- quietly(lpa(data, vars, 2, model = "VVV", n_starts = 2, seed = 1))
   compared <- compare_models(paired = direct, full = full)
   expect_identical(compared$structure, c("VVI + y1:y2", "VVV"))
   expect_output(print(direct), "VVI + y1:y2", fixed = TRUE)
+  expect_identical(get_results(direct, "model")$covariance_structure, "VVI + y1:y2")
 })
