@@ -507,7 +507,9 @@ join the pair in the caller's data. A row observing one item of a pair
 and not the other treats the pair as missing, with a
 \code{latents_partial_pair} warning. A pair of indicators that are not both
 categorical, that names an indicator twice or that shares an indicator
-with another pair raises \code{latents_bad_argument}. Default: none.}
+with another pair raises \code{latents_bad_argument}; a categorical item of a
+pair whose categories contain \code{":"} raises \code{latents_bad_data}. Default:
+none.}
 
 \item{direct_effects}{Direct effects of covariates on continuous
 indicators, written \code{"indicator ~ covariate"} (several covariates joined

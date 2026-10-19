@@ -158,6 +158,19 @@
     }
     first <- frame[[pair$item_1]]
     second <- frame[[pair$item_2]]
+    # A joint category is written "first:second", so a category that already
+    # holds a colon makes two responses one label: ("x:y", "z") and
+    # ("x", "y:z") would be counted as the same response.
+    colons <- Filter(function(item) {
+      any(grepl(":", unique(as.character(frame[[item]])), fixed = TRUE))
+    }, c(pair$item_1, pair$item_2))
+    if (length(colons) > 0L) {
+      stop(errorCondition(sprintf(paste(
+        "The categories of %s contain \":\", which joins the two items of the",
+        "pair \"%s\"; recode them without a colon."),
+        paste(sprintf("`%s`", colons), collapse = " and "), pair$name),
+        class = "latents_bad_data", call = NULL))
+    }
     observed <- !is.na(first) & !is.na(second)
     partial <- xor(is.na(first), is.na(second))
     if (any(partial)) {

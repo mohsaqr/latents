@@ -982,7 +982,9 @@
 #'   and not the other treats the pair as missing, with a
 #'   `latents_partial_pair` warning. A pair of indicators that are not both
 #'   categorical, that names an indicator twice or that shares an indicator
-#'   with another pair raises `latents_bad_argument`. Default: none.
+#'   with another pair raises `latents_bad_argument`; a categorical item of a
+#'   pair whose categories contain `":"` raises `latents_bad_data`. Default:
+#'   none.
 #' @param direct_effects Direct effects of covariates on continuous
 #'   indicators, written `"indicator ~ covariate"` (several covariates joined
 #'   with `+`, several indicators as a character vector). The covariate moves

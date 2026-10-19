@@ -108,6 +108,12 @@ test_that("pairs that cannot be modelled are refused by class", {
                class = "latents_no_local_dependence")
   expect_error(.latents_join_pairs(data["a"], .latents_parse_pairs("a:b")),
                class = "latents_bad_data")
+  # A colon in a category would merge ("x:y", "z") with ("x", "y:z").
+  colons <- data.frame(a = factor(rep(c("x:y", "x", "u"), each = 20)),
+                       b = factor(rep(c("z", "y:z", "v"), each = 20)),
+                       c = factor(rep(0:1, 30)))
+  expect_error(lca(colons, c("a", "b", "c"), 1, local_dependence = "a:b", n_starts = 1,
+                   seed = 1), class = "latents_bad_data")
   # Rows observing one item of the pair lose the pair, and say so.
   gappy <- data
   gappy$b[1:5] <- NA
