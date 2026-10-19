@@ -157,6 +157,17 @@ utils::globalVariables(c(
   scales[aesthetics]
 }
 
+#' A subtitle line for views that draw cases of a fit with direct effects
+#' @param x A fitted model.
+#' @return `""` without direct effects; otherwise a line naming them.
+#' @noRd
+.gg_adjusted_note <- function(x) {
+  effects <- x$extra_data$direct$effects
+  if (is.null(effects)) return("")
+  sprintf("\nCases at a covariate value of zero: direct effects %s removed",
+          paste(.latents_direct_terms(effects), collapse = ", "))
+}
+
 #' Title and subtitle: the caller's when given, the view's default otherwise
 #' @noRd
 .gg_titles <- function(main, subtitle, default_main, default_subtitle,
@@ -685,8 +696,9 @@ utils::globalVariables(c(
                                 expand = ggplot2::expansion(add = c(0.35, 0.1))) +
     .gg_scales(key, c("colour", "fill")) +
     .gg_titles(main, subtitle, "Indicator distributions by profile",
-               paste("Density, interquartile range with median, and each",
-                     "case, grouped by its most likely profile")) +
+               paste0("Density, interquartile range with median, and each ",
+                      "case, grouped by its most likely profile",
+                      .gg_adjusted_note(x))) +
     ggplot2::labs(x = if (identical(scale, "standardized"))
       "Standardized value" else NULL, y = NULL) +
     .gg_theme() +
@@ -1296,9 +1308,9 @@ utils::globalVariables(c(
                                     guide = "none") +
     .gg_scales(key) +
     .gg_titles(main, subtitle, "Cases across indicators",
-               paste("Each line is a case, faded by the certainty of its",
-                     "assignment; the dark line is the profile mean;",
-                     "other cases in grey")) +
+               paste0("Each line is a case, faded by the certainty of its ",
+                      "assignment; the dark line is the profile mean; ",
+                      "other cases in grey", .gg_adjusted_note(x))) +
     ggplot2::labs(x = NULL, y = "Standardized value (z)") +
     .gg_theme() +
     ggplot2::theme(panel.spacing = ggplot2::unit(1.2, "lines"),
@@ -1427,7 +1439,8 @@ utils::globalVariables(c(
     .gg_titles(main, subtitle, "Profiles in each pair of indicators",
                paste0("Cases coloured by profile, larger when less certain; ",
                       "95% ellipses of the fitted covariances\n",
-                      "Diagonal: each profile's density, weighted by its size")) +
+                      "Diagonal: each profile's density, weighted by its size",
+                      .gg_adjusted_note(x))) +
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +
     ggplot2::theme(panel.grid = ggplot2::element_blank(),

@@ -173,7 +173,8 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 #' The observations behind a case-level view, with each case's profile
 #'
 #' The indicators are taken as the fit stored them, which are the values it was
-#' fitted to. A centred fit reports its means on the centred scale, where the
+#' fitted to, with any direct effects removed (`.gg_adjusted_note()` says so on
+#' the plot). A centred fit reports its means on the centred scale, where the
 #' stored columns would not sit, so it is refused rather than drawn wrongly.
 #' @param x A fitted model.
 #' @param vars The continuous indicators.
@@ -194,6 +195,10 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
   }
   values <- matrix(as.numeric(values), nrow(values), ncol(values),
                    dimnames = list(NULL, colnames(values)))
+  # The profile means of a fit with direct effects are its means at a
+  # covariate value of zero, so the cases are drawn there too: each indicator
+  # with its effects removed, as the model measures it.
+  values <- .latents_direct_shift(values, x$extra_data, x)
   # A noise component's cases belong to no profile, so they are not drawn.
   kept <- x$subject_profiles >= 1L & x$subject_profiles <= x$n_profiles
   list(values = values[kept, vars, drop = FALSE],

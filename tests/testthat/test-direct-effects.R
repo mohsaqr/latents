@@ -250,3 +250,27 @@ test_that("a staged fit refuses a measurement with direct effects or chosen cova
   expect_error(fit_staged(data, vars, "g", 2, 2, measurement = paired, n_starts = 2,
                           seed = 1, covariance_model = "full"), class = "latents_bad_stage")
 })
+
+test_that("plots draw the cases of a direct-effect fit where its profile means are", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  data <- direct_data(n = 600)
+  data$y3 <- data$y3 + 30
+  data$z <- data$z + 10
+  fit <- quietly(lpa(data, paste0("y", 1:4), 2, model = "VVI", n_starts = 3, seed = 1,
+                     direct_effects = "y3 ~ z"))
+  observed <- .multilpa_plot_observations(fit, paste0("y", 1:4))
+  case_means <- vapply(seq_len(2), \(profile) {
+    mean(observed$values[observed$profile == profile, "y3"])
+  }, numeric(1))
+  # The cases' class means sit at the profile means (at z = 0), not 30 units
+  # and an effect away from them.
+  expect_lt(max(abs(case_means - fit$means[, "y3"])), 0.2)
+  plain <- quietly(lpa(data, paste0("y", 1:4), 2, model = "VVI", n_starts = 3, seed = 1))
+  expect_identical(unname(.multilpa_plot_observations(plain, "y3")$values[, 1L]),
+                   unname(data$y3[plain$subject_profiles >= 1L]))
+  invisible(lapply(c("pairs", "parallel", "raincloud"), \(view) {
+    drawn <- plot(fit, what = view)
+    expect_match(drawn$labels$subtitle, "direct effects y3 ~ z removed", fixed = TRUE)
+  }))
+})
