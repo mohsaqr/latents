@@ -224,12 +224,26 @@
       if (length(absent) > 1L) "are" else "is"), class = "latents_bad_argument", call = NULL))
   }
   pairs <- .latents_classify_pairs(pairs, categorical)
+  # Once joined, a paired item is no longer among `vars`, so the checks that
+  # keep an indicator from also being a covariate cannot see it; they are made
+  # here, with the classes those checks raise.
+  covariates <- c(arguments$profile_covariates, arguments$group_covariates,
+                  if (length(arguments$direct_effects) > 0L)
+                    .latents_parse_direct_effects(arguments$direct_effects)$covariate)
+  reused <- intersect(covariates, items)
+  if (length(reused) > 0L) {
+    stop(errorCondition(sprintf(
+      "%s %s an indicator of a `local_dependence` pair, so it cannot also be a covariate.",
+      paste(sprintf("`%s`", reused), collapse = ", "),
+      if (length(reused) > 1L) "are" else "is"),
+      class = c("multilpa_indicator_reused", "latents_bad_covariate"), call = NULL))
+  }
   joined_pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
   continuous_pairs <- pairs[pairs$kind == "continuous", , drop = FALSE]
   arguments$local_dependence <- if (nrow(continuous_pairs) > 0L) continuous_pairs$name
   arguments$data <- .latents_join_pairs(arguments$data, joined_pairs)
-  # Each joint category's two levels, read from the data rather than from the
-  # label, so a level that itself holds a colon is not split.
+  # Each joint category's two levels, read from the data rather than parsed
+  # back out of the label.
   categories <- lapply(stats::setNames(seq_len(nrow(joined_pairs)), joined_pairs$name),
                        function(index) {
     first <- as.character(arguments$data[[joined_pairs$item_1[index]]])

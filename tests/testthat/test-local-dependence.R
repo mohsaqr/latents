@@ -209,3 +209,18 @@ test_that("refits of a fit with chosen covariances keep the pattern", {
   expect_equal(refit$log_likelihood, fit$log_likelihood, tolerance = 1e-6)
   expect_identical(refit$covariance_pattern, fit$covariance_pattern)
 })
+
+test_that("the items of a joined pair count as indicators for the three-step guards", {
+  set.seed(9)
+  data <- data.frame(a = stats::rbinom(300, 1, 0.5), b = stats::rbinom(300, 1, 0.5),
+                     c = stats::rbinom(300, 1, 0.5), e = stats::rbinom(300, 1, 0.5),
+                     g = rep(seq_len(30), each = 10))
+  fit <- quietly(lca(data, c("a", "b", "c", "e"), 2, local_dependence = "a:b",
+                     n_starts = 2, seed = 1))
+  expect_error(three_step(fit, data, "a", method = "modal"), class = "multilpa_indicator_reused")
+  expect_error(r3step(fit, data, "b"), class = "multilpa_indicator_reused")
+  expect_error(multilpa(data, c("a", "b", "c", "e"), "g", 2, 2,
+                        categorical = c("a", "b", "c", "e"), local_dependence = "a:b",
+                        profile_covariates = "a", n_starts = 1, seed = 1),
+               class = "multilpa_indicator_reused")
+})

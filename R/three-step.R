@@ -337,7 +337,7 @@ three_step <- function(x, data, outcome,
     level <- "persons"
   } else {
     .multilpa_check_three_step_fit(x)
-    if (outcome %in% x$vars) {
+    if (outcome %in% .multilpa_measured_items(x)) {
       stop(errorCondition(sprintf(
         "`%s` helped define the fitted classes, so it is not a distal outcome.",
         outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
@@ -736,7 +736,7 @@ r3step <- function(x, data, covariates = character(),
         "group classes govern transitions rather than a profile mix."),
         class = "latents_bad_argument", call = NULL))
     }
-    reused <- intersect(covariates, x$vars)
+    reused <- intersect(covariates, .multilpa_measured_items(x))
     if (length(reused) > 0L) {
       stop(errorCondition(sprintf(
         "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
@@ -1174,4 +1174,16 @@ r3step <- function(x, data, covariates = character(),
   attr(result, "by_group_class") <- TRUE
   attr(result, "log_likelihood") <- log_likelihood
   result
+}
+
+#' Every item that entered a fit's measurement model
+#'
+#' The fit's indicators and, for a fit with `local_dependence`, the items each
+#' joint indicator was made from: `"a:b"` stands in `vars`, and `"a"` and
+#' `"b"` helped define the classes just as much.
+#' @param x A fitted model.
+#' @return A character vector of column names.
+#' @noRd
+.multilpa_measured_items <- function(x) {
+  unique(c(x$vars, x$original_vars))
 }

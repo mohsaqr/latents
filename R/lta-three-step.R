@@ -37,7 +37,8 @@
   }
   .lta_check_data(x, data)
   a <- .lta_arguments(x)
-  reused <- intersect(c(initial_covariates, transition_covariates), a$vars)
+  reused <- intersect(c(initial_covariates, transition_covariates),
+                      unique(c(a$vars, .multilpa_measured_items(x))))
   if (length(reused) > 0L) {
     stop(errorCondition(sprintf(
       "Measurement indicator(s) %s already helped define the profiles and cannot be used as covariates.",
