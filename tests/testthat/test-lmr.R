@@ -11,24 +11,34 @@ test_that("the Imhof tail matches exact weighted chi-square probabilities", {
     expect_equal(.latents_imhof_upper(q, 2.5), stats::pchisq(q / 2.5, 1, lower.tail = FALSE),
                  tolerance = 1e-8)
   }))
-  # Two weights, against the convolution of their distributions; one weight
-  # small, so the tail decays slowly, which adaptive quadrature alone fails on.
+  # Two weights, against the convolution of their distributions: P(a X + b Y >
+  # q) with y = t^2, so the chi-square(1) density times dy is 2 dnorm(t) dt,
+  # smooth at zero. One weight small, so the tail decays slowly; one
+  # negative, as an eigenvalue of Vuong's matrix can be.
   two <- function(q, a, b) {
-    stats::integrate(function(y) {
-      stats::pchisq(pmax((q - b * y) / a, 0), 1, lower.tail = FALSE) * stats::dchisq(y, 1)
-    }, 0, Inf, rel.tol = 1e-12, subdivisions = 5000L)$value
+    f <- function(t) stats::pchisq(pmax((q - b * t^2) / a, 0), 1, lower.tail = FALSE) *
+      2 * stats::dnorm(t)
+    if (b > 0) {
+      kink <- sqrt(q / b)
+      stats::integrate(f, 0, kink, rel.tol = 1e-12)$value +
+        2 * stats::pnorm(kink, lower.tail = FALSE)
+    } else stats::integrate(f, 0, Inf, rel.tol = 1e-12)$value
   }
-  invisible(lapply(list(c(0.9, 0.05), c(0.01, 3)), \(weights) {
-    invisible(lapply(c(0.5, 5.5, 9, 30), \(q) {
-      expect_equal(.latents_imhof_upper(q, weights), two(q, weights[1], weights[2]),
-                   tolerance = 1e-7)
-    }))
-  }))
-  # A negative weight (an eigenvalue of Vuong's matrix can be negative): the
-  # same convolution, which holds for either sign of the second weight.
-  invisible(lapply(c(0.5, 3, 9), \(q) {
-    expect_equal(.latents_imhof_upper(q, c(1.5, -0.4)), two(q, 1.5, -0.4), tolerance = 1e-7)
-  }))
+  grid <- expand.grid(q = c(1e-6, 0.5, 5.5, 30, 80), a = c(0.9, 3, 0.01),
+                      b = c(0.05, -0.4, -3, 50))
+  expect_equal(mapply(function(q, a, b) .latents_imhof_upper(q, c(a, b)),
+                      grid$q, grid$a, grid$b),
+               mapply(two, grid$q, grid$a, grid$b), tolerance = 1e-10)
+  # A statistic of zero with weights of both signs has no oscillation to
+  # extrapolate: P(a X_m - b Y_k > 0) = P(F(m, k) > b k / (a m)), exactly.
+  # Extrapolating partial sums returned 5.6e-7 for 4.2e-7 here.
+  cases <- expand.grid(m = c(1, 3), b = c(0.1, 10, 1e4), k = c(1, 3, 6))
+  expect_equal(mapply(function(m, b, k) .latents_imhof_upper(0, c(rep(1, m), rep(-b, k))),
+                      cases$m, cases$b, cases$k),
+               with(cases, stats::pf(b * k / m, m, k, lower.tail = FALSE)),
+               tolerance = 1e-10)
+  expect_equal(.latents_imhof_upper(0, c(1, -1e4, -1e4, -1e4)),
+               stats::pf(3e4, 1, 3, lower.tail = FALSE), tolerance = 1e-8)
 })
 
 test_that("for regular nested models the weights are one per added parameter", {

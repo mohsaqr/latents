@@ -61,15 +61,22 @@
 #' `rho(u) = prod_j (1 + lambda_j^2 u^2)^(1/4)`. Weights that are zero to
 #' rounding contribute nothing and are dropped.
 #'
-#' The integrand oscillates with half-period `2 pi / q` and, with few
-#' weights, decays slowly, which defeats adaptive quadrature over an
-#' infinite range. It is integrated half-period by half-period, where it is
-#' smooth, and the alternating partial sums are accelerated by Wynn's
-#' epsilon algorithm, as QUADPACK's QAWF does for Fourier integrals. The
-#' value is accepted when estimates from 40 and 60 more half-periods agree
-#' to `1e-9`; otherwise `latents_inaccurate_probability` is raised. The
-#' probability is accurate to about `1e-9` in absolute terms: a p-value
-#' below that is reported as a value of that order, not its exact size.
+#' The integral has two regimes, and each is integrated where it is smooth.
+#' Up to `u = 2 pi / q` the phase is dominated by the arctangents, which bend
+#' at `u = 1 / |lambda_j|`; that lead is integrated by adaptive quadrature
+#' between breakpoints at those scales and at every decade, so no segment
+#' spans more than an order of magnitude. When `q = 0` there is no
+#' oscillation at all and the lead runs to infinity: with weights of both
+#' signs the integrand then decays monotonically, and extrapolating its
+#' partial sums (the method this replaces) settled on wrong limits, 32% off
+#' for weights `(1, -1e4, -1e4, -1e4)`. Beyond the lead, `sin(q u / 2)`
+#' dominates, so the tail is integrated in half-periods aligned to it, whose
+#' partial sums alternate, and accelerated by Wynn's epsilon algorithm, as
+#' QUADPACK's QAWF does for Fourier integrals. The value is accepted when two
+#' successive estimates agree to `1e-10`; otherwise, or when a segment cannot
+#' be integrated, `latents_inaccurate_probability` is raised. Against exact F
+#' and chi-square probabilities and a two-weight convolution the error is
+#' below `1e-14` in absolute terms.
 #' @param q The statistic.
 #' @param lambda The weights.
 #' @return A probability.
@@ -83,31 +90,44 @@
     rho <- vapply(u, function(value) prod((1 + lambda^2 * value^2)^0.25), numeric(1))
     ifelse(u == 0, 0.5 * (sum(lambda) - q), sin(theta) / (u * rho))
   }
-  # Half a period of sin(q u / 2); a statistic near zero oscillates slowly, so
-  # the step is capped at the scale of the weights.
-  half_period <- min(2 * pi / max(abs(q), 1e-8), 2 * pi / max(abs(lambda)))
-  piece <- function(k) {
-    stats::integrate(integrand, k * half_period, (k + 1) * half_period,
-                     rel.tol = 1e-10, abs.tol = 1e-13)$value
+  inaccurate <- function(reason) {
+    stop(errorCondition(sprintf(paste(
+      "The tail probability of the weighted chi-square distribution %s",
+      "(statistic %g, %d weights); the p-value cannot be reported."),
+      reason, q, length(lambda)), class = "latents_inaccurate_probability", call = NULL))
   }
-  estimate <- function(pieces) .latents_wynn(cumsum(pieces))
-  pieces <- vapply(seq_len(60L) - 1L, piece, numeric(1))
-  previous <- estimate(pieces)
-  # Each round adds 40 half-periods until two successive estimates agree;
+  segment <- function(lower, upper) {
+    tryCatch(stats::integrate(integrand, lower, upper, rel.tol = 1e-11,
+                              abs.tol = 1e-14, subdivisions = 2000L)$value,
+             error = function(condition) {
+               inaccurate(sprintf("could not be integrated over [%g, %g]: %s", lower,
+                                  upper, conditionMessage(condition)))
+             })
+  }
+  clamp <- function(integral) min(1, max(0, 0.5 + integral / pi))
+  lead_end <- if (q > 0) 2 * pi / q else Inf
+  scales <- 1 / abs(lambda)
+  top <- if (is.finite(lead_end)) lead_end else 1e3 * max(scales)
+  decades <- 10^seq(floor(log10(min(scales))), ceiling(log10(top)))
+  breaks <- sort(unique(c(0, scales, decades)))
+  breaks <- c(breaks[breaks < lead_end], lead_end)
+  lead <- sum(vapply(seq_len(length(breaks) - 1L), function(index) {
+    segment(breaks[index], breaks[index + 1L])
+  }, numeric(1)))
+  if (!is.finite(lead_end)) return(clamp(lead))
+  half_period <- 2 * pi / q
+  piece <- function(k) segment(lead_end + k * half_period, lead_end + (k + 1) * half_period)
+  pieces <- vapply(seq_len(20L) - 1L, piece, numeric(1))
+  previous <- .latents_wynn(lead + cumsum(pieces))
+  # Each round adds 20 half-periods until two successive estimates agree;
   # the number of rounds is bounded, and reaching the bound is reported.
   for (round in seq_len(25L)) {
-    pieces <- c(pieces, vapply(length(pieces) + seq_len(40L) - 1L, piece, numeric(1)))
-    current <- estimate(pieces)
-    if (abs(current - previous) < 1e-9) {
-      # The integral's own rounding can stray outside [0, 1] far in a tail.
-      return(min(1, max(0, 0.5 + current / pi)))
-    }
+    pieces <- c(pieces, vapply(length(pieces) + seq_len(20L) - 1L, piece, numeric(1)))
+    current <- .latents_wynn(lead + cumsum(pieces))
+    if (abs(current - previous) < 1e-10) return(clamp(current))
     previous <- current
   }
-  stop(errorCondition(sprintf(paste(
-    "The tail probability of the weighted chi-square distribution did not",
-    "settle (statistic %g, %d weights); the p-value cannot be reported."),
-    q, length(lambda)), class = "latents_inaccurate_probability", call = NULL))
+  inaccurate("did not settle")
 }
 
 #' The limit of a sequence by Wynn's epsilon algorithm
