@@ -163,6 +163,32 @@
   invisible(NULL)
 }
 
+#' Independent groups contributing to the fitted likelihood
+#'
+#' Empty measurement units do not supply independent estimating equations.
+#' Preserve the explicit legacy empty-unit convention, but a unit with zero
+#' sampling weight never contributes under either convention. Score matrices
+#' keep all their rows for alignment with fitted groups; only validity counts
+#' and the finite-sample correction use this selection.
+#' @param object A fit with `n_groups`, `group_index` and optional `informative`
+#'   and `sampling_weights` entries.
+#' @param observed_only Require observed measurement even under the legacy
+#'   empty-unit counting convention. Used for validity and rank checks; CR1
+#'   retains the explicitly requested legacy convention.
+#' @return A logical vector in fitted-group order.
+#' @noRd
+.multilpa_inference_groups <- function(object, observed_only = FALSE) {
+  stopifnot(is.list(object), length(object$n_groups) == 1L,
+            isTRUE(observed_only) || isFALSE(observed_only))
+  selected <- rep(TRUE, object$n_groups)
+  if ((observed_only || !isFALSE(object$drop_empty)) && !is.null(object$informative)) {
+    selected[] <- FALSE
+    selected[seq_len(object$n_groups) %in%
+               object$group_index[object$informative]] <- TRUE
+  }
+  selected & (object$sampling_weights %||% rep(1, object$n_groups)) > 0
+}
+
 #' Small-sample factor of a cluster-robust variance
 #'
 #' `G / (G - 1)` for `G` independent units: the CR1 correction, which is the

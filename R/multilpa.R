@@ -1573,7 +1573,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # conditional M-steps crawl (4911 EM iterations for a covariate centred at
   # 41, against 21 at 1). The model is the same; the means are moved back to
   # a covariate value of zero after EM.
-  fitting_extra <- .latents_center_direct(extra)
+  fitting_extra <- .latents_center_direct(extra, x, sampling_weights[group_index])
   if (any(!is.finite(x[!is.na(x)]^2))) {
     stop(errorCondition(
       "Indicator scales overflow squared residuals; rescale the data.",

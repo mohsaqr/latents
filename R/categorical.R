@@ -1,3 +1,50 @@
+#' Validate native categorical values and obtain their ordered labels
+#'
+#' Validation precedes conversion to text so distinct numeric values cannot
+#' silently become one category. Prediction subsets may have no variation.
+#' @param value A categorical column in its original type.
+#' @param indicator Its column name, for errors.
+#' @param min_categories Minimum number of observed categories; fitting uses
+#'   two, while preparing prediction subsets uses zero.
+#' @return The observed categories, in their native type and declared order.
+#' @noRd
+.multilpa_categorical_levels <- function(value, indicator, min_categories = 2L) {
+  if (!(is.factor(value) || is.numeric(value) || is.logical(value) ||
+        is.character(value))) {
+    stop(errorCondition(sprintf(
+      "Categorical indicator `%s` must be numeric, logical, character or a factor.", indicator),
+      class = "latents_bad_categorical", call = NULL))
+  }
+  if (!is.null(dim(value))) {
+    stop(errorCondition(sprintf("Categorical indicator `%s` must be a vector.", indicator),
+                        class = "latents_bad_categorical", call = NULL))
+  }
+  if (is.numeric(value) && any(!is.finite(value[!is.na(value)]))) {
+    stop(errorCondition(sprintf("Categorical indicator `%s` contains non-finite values.", indicator),
+                        class = "latents_bad_categorical", call = NULL))
+  }
+  levels_observed <- if (is.factor(value)) {
+    levels(droplevels(value))
+  } else sort(unique(value[!is.na(value)]))
+  if (length(levels_observed) < min_categories) {
+    stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
+                        class = "latents_bad_categorical", call = NULL))
+  }
+  # Categories are reported, aligned and mapped back to values by their
+  # labels, so two distinct values with one label (0.3 and 0.1 + 0.2 both
+  # print as "0.3") would be two categories nobody can tell apart.
+  labels <- as.character(levels_observed)
+  if (anyDuplicated(labels) > 0L) {
+    stop(errorCondition(sprintf(paste(
+      "Categorical indicator `%s` has distinct values that print alike (%s);",
+      "round the column so that each category has its own label."),
+      indicator, paste(sprintf("\"%s\"", unique(labels[duplicated(labels)])),
+                       collapse = ", ")),
+      class = "latents_bad_categorical", call = NULL))
+  }
+  levels_observed
+}
+
 #' Encode categorical indicators as consecutive integer codes
 #'
 #' Maps each categorical indicator's observed values onto `1..C`, keeping the
@@ -17,33 +64,7 @@
             "`frame` must have at least one column" = ncol(frame) >= 1L)
   encoded <- lapply(names(frame), function(indicator) {
     value <- frame[[indicator]]
-    if (!is.null(dim(value))) {
-      stop(errorCondition(sprintf("Categorical indicator `%s` must be a vector.", indicator),
-                          class = "latents_bad_categorical", call = NULL))
-    }
-    if (is.numeric(value) && any(!is.finite(value[!is.na(value)]))) {
-      stop(errorCondition(sprintf("Categorical indicator `%s` contains non-finite values.", indicator),
-                          class = "latents_bad_categorical", call = NULL))
-    }
-    levels_observed <- if (is.factor(value)) {
-      levels(droplevels(value))
-    } else sort(unique(value[!is.na(value)]))
-    if (length(levels_observed) < 2L) {
-      stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
-                          class = "latents_bad_categorical", call = NULL))
-    }
-    # Categories are reported, aligned and mapped back to values by their
-    # labels, so two distinct values with one label (0.3 and 0.1 + 0.2 both
-    # print as "0.3") would be two categories nobody can tell apart.
-    labels <- as.character(levels_observed)
-    if (anyDuplicated(labels) > 0L) {
-      stop(errorCondition(sprintf(paste(
-        "Categorical indicator `%s` has distinct values that print alike (%s);",
-        "round the column so that each category has its own label."),
-        indicator, paste(sprintf("\"%s\"", unique(labels[duplicated(labels)])),
-                         collapse = ", ")),
-        class = "latents_bad_categorical", call = NULL))
-    }
+    levels_observed <- .multilpa_categorical_levels(value, indicator)
     code <- if (is.factor(value)) {
       match(as.character(value), levels_observed)
     } else match(value, levels_observed)

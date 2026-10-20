@@ -863,6 +863,33 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   observed <- prepared$x
   centered_object <- x
   centered_object$means <- sweep(x$means, 2L, prepared$centers, "-")
+  # Evaluate intercepts at the predictor centres. Scaling slope coordinates
+  # alone leaves a large predictor origin nearly collinear with the means.
+  # The shear below maps centred coordinates back to the reported origin,
+  # including every intercept/effect covariance.
+  back_transform <- diag(length(full_theta))
+  direct <- x$extra_data$direct
+  if (!is.null(direct)) {
+    centered_object$extra_data <- .latents_center_direct(
+      x$extra_data, observed, x$sampling_weights[x$group_index])
+    centers <- centered_object$extra_data$direct$centers
+    centered_direct <- centered_object$extra_data$direct
+    effects <- centered_direct$effects
+    shift <- as.vector(.latents_direct_matrix(centered_direct, x$direct_effects,
+                                               ncol(x$means)) %*% centers)
+    centered_object$means <- sweep(centered_object$means, 2L, shift, "+")
+    widths <- .multilpa_coordinate_widths(x, "unconstrained")
+    last <- sum(widths[c("means", "variances", "response_probabilities", "extra")])
+    positions <- last - nrow(effects) + seq_len(nrow(effects))
+    mean_positions <- outer((seq_len(x$n_profiles) - 1L) * ncol(x$means),
+                             effects$column, "+")
+    back_transform[cbind(as.vector(mean_positions),
+                           rep(positions, each = x$n_profiles))] <-
+      -rep(centers[effects$covariate_column], each = x$n_profiles)
+  }
+  back_transform <- back_transform[free, free, drop = FALSE]
+  # This is an identity plus a mean/effect shear, whose square is zero.
+  forward_transform <- 2 * diag(length(free)) - back_transform
   centered_full <- .multilpa_coefficients(centered_object, "unconstrained")
   ## A held block is a constant of this likelihood, not a parameter: it is put
   ## back at its held value on every evaluation, so the model is conditional on
@@ -874,11 +901,11 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     stopifnot(is.numeric(parameters))
     -.multilpa_expectation(observed, x$group_index,
       .multilpa_decode(restore(parameters), x), codes,
-      unname(x$sampling_weights), x$extra_data)$log_likelihood
+      unname(x$sampling_weights), centered_object$extra_data)$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    .multilpa_score(restore(parameters), observed, x, codes)[free]
+    .multilpa_score(restore(parameters), observed, centered_object, codes)[free]
   }
   fitted_likelihood <- -objective(centered_theta)
   if (abs(fitted_likelihood - x$log_likelihood) > 1e-8 * (1 + abs(x$log_likelihood))) {
@@ -903,15 +930,9 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   # A direct effect is in indicator units per covariate unit, so its finite
   # differences are taken on the indicator's spread over the covariate's; at
   # unit scale a covariate in units of 1e4 gave a standard error 10% too large.
-  direct <- x$extra_data$direct
   if (!is.null(direct)) {
-    widths <- .multilpa_coordinate_widths(x, "unconstrained")
-    effects <- direct$effects
-    last <- sum(widths[c("means", "variances", "response_probabilities", "extra")])
-    positions <- last - nrow(effects) + seq_len(nrow(effects))
     spread <- sqrt(colMeans(x$variances))[effects$column]
-    parameter_scale[positions] <- spread /
-      apply(direct$covariates, 2L, stats::sd)[effects$covariate_column]
+    parameter_scale[positions] <- spread / centered_direct$scales
   }
   parameter_scale <- parameter_scale[free]
   scaled_objective <- function(displacement) {
@@ -931,17 +952,26 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   condition_ratio <- information$condition_ratio
   scaled_inverse <- information$inverse
   group_scores <- NULL
+  group_scores_conditioned <- NULL
   scaling_correction <- NA_real_
   if (vcov_type %in% c("robust", "opg")) {
     group_scores <- .multilpa_group_scores(restore(centered_theta), observed,
-                                           x, codes)[, free, drop = FALSE]
-    scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
+                                           centered_object, codes)[, free, drop = FALSE]
+    group_scores_conditioned <- sweep(group_scores, 2L, parameter_scale, "*")
+    .inference_require_rank(group_scores_conditioned[
+      .multilpa_inference_groups(x, observed_only = TRUE), , drop = FALSE],
+      "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
+    scaled_cross <- .multilpa_cross_product(group_scores_conditioned)
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(scaled_cross)
-    } else .inference_sandwich(scaled_inverse, scaled_cross, nrow(group_scores))
+    } else .inference_sandwich(scaled_inverse, scaled_cross,
+                                sum(.multilpa_inference_groups(x)))
+    group_scores <- group_scores %*% forward_transform
   }
-  covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
+  centered_covariance <- scaled_inverse * tcrossprod(parameter_scale)
+  covariance_unconstrained <- back_transform %*% centered_covariance %*% t(back_transform)
+  hessian <- t(forward_transform) %*% hessian %*% forward_transform
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
   ## The natural coordinates of a held block depend only on the held
   ## unconstrained ones, so restricting the Jacobian to the free rows and
@@ -954,8 +984,9 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   critical <- .inference_critical(level, "upper")
   intervals <- cbind(estimates - critical * standard_errors, estimates + critical * standard_errors)
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
-  gradient <- stats::setNames(score(centered_theta), names(theta))
-  scaled_score <- max(abs(gradient * parameter_scale))
+  centered_gradient <- score(centered_theta)
+  gradient <- stats::setNames(as.vector(centered_gradient %*% forward_transform), names(theta))
+  scaled_score <- max(abs(centered_gradient * parameter_scale))
   ## How far the reported estimate sits from the stationary point, measured in
   ## its own standard errors: a score `g` against information `I` displaces the
   ## estimate by `g / I`, and the standard error is `sqrt(1 / I)`, so `g * SE`
@@ -966,8 +997,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   ## under a fifth of one percent of a standard error and unable to move any
   ## reported figure. A genuinely loose fit still trips it: `tol = 1e-4` on the
   ## same data gives 5.0e-02, five percent of a standard error.
-  standard_errors_unconstrained <- sqrt(pmax(diag(covariance_unconstrained), 0))
-  score_displacement <- max(abs(gradient) * standard_errors_unconstrained)
+  standard_errors_unconstrained <- sqrt(pmax(diag(centered_covariance), 0))
+  score_displacement <- max(abs(centered_gradient) * standard_errors_unconstrained)
   if (is.finite(score_displacement) && score_displacement > 0.01) {
     warning(warningCondition(sprintf(
       paste("The fitted likelihood still carries a score worth %.1f%% of a",
@@ -1005,6 +1036,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     score_displacement = score_displacement,
     condition_ratio = condition_ratio, level = level, step = step,
     method = "wald", vcov_type = vcov_type, group_scores = group_scores,
+    hessian_conditioned = scaled_hessian,
+    group_scores_conditioned = group_scores_conditioned,
     scaling_correction = scaling_correction,
     fixed = x$fixed %||% character(),
     fixed_at_bound = at_bound$natural))
@@ -1152,10 +1185,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
 .multilpa_check_regularity <- function(object, vcov_type, boundary = "error") {
-  if (vcov_type %in% c("robust", "opg") && object$n_groups <= object$n_parameters) {
+  n_groups <- sum(.multilpa_inference_groups(object, observed_only = TRUE))
+  if (vcov_type %in% c("robust", "opg") && n_groups <= object$n_parameters) {
     stop(errorCondition(sprintf(
       "Robust and OPG inference need more groups than parameters; this fit has %d groups and %d parameters.",
-      object$n_groups, object$n_parameters),
+      n_groups, object$n_parameters),
       class = "latents_too_few_groups", call = NULL))
   }
   if (!isTRUE(object$converged)) {

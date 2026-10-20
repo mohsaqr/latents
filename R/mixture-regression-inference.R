@@ -167,6 +167,7 @@
   if (identical(spec$nesting, "observation") && !is.null(spec$id)) {
     scores_for_meat <- rowsum(scores, spec$group_index, reorder = TRUE)
   } else scores_for_meat <- scores
+  n_units <- sum((spec$sampling_weights %||% rep(1, nrow(scores_for_meat))) > 0)
   meat <- crossprod(scores_for_meat)
   information <- if (identical(vcov_type, "opg")) crossprod(scores) else
     .mixture_observed_information(spec, params)
@@ -175,7 +176,7 @@
   # NA, and the others are conditional on it.
   free <- !.mixture_boundary_coordinates(spec, theta)
   if (identical(vcov_type, "robust")) {
-    .multilpa_require_clusters(nrow(scores_for_meat), sum(free),
+    .multilpa_require_clusters(n_units, sum(free),
                                "A robust regression covariance",
                                unit = "independent units")
     .inference_require_rank(scores_for_meat[, free, drop = FALSE],
@@ -183,7 +184,7 @@
   }
   inverse <- .mixture_invert(information[free, free, drop = FALSE])
   free_vcov <- if (identical(vcov_type, "robust")) {
-    .inference_sandwich(inverse, meat[free, free, drop = FALSE], nrow(scores_for_meat))
+    .inference_sandwich(inverse, meat[free, free, drop = FALSE], n_units)
   } else inverse
   vcov <- matrix(NA_real_, length(theta), length(theta))
   vcov[free, free] <- free_vcov

@@ -19,13 +19,16 @@
 #' @param fit A fitted profile or class model.
 #' @return A list of `scores` (units by free coordinates), `information`
 #'   (minus the Hessian, in the same coordinates), `log_likelihood` and
-#'   `n_parameters`.
+#'   `n_parameters` and the counted independent `n_units`.
 #' @noRd
 .latents_vuong_parts <- function(fit) {
   inference <- parameter_inference(fit, vcov_type = "robust")
-  list(scores = attr(inference, "group_scores"),
-       information = attr(inference, "hessian"),
-       log_likelihood = fit$log_likelihood, n_parameters = fit$n_parameters)
+  list(scores = attr(inference, "group_scores_conditioned") %||%
+         attr(inference, "group_scores"),
+       information = attr(inference, "hessian_conditioned") %||%
+         attr(inference, "hessian"),
+       log_likelihood = fit$log_likelihood, n_parameters = fit$n_parameters,
+       n_units = sum(.multilpa_inference_groups(fit)))
 }
 
 #' The weights of the reference distribution of Vuong's statistic
@@ -37,20 +40,50 @@
 #' the score, the nonzero eigenvalues are `p1 - p0` ones, and the reference
 #' distribution is the familiar chi-square on `p1 - p0` degrees of freedom.
 #' @param alternative,null From `.latents_vuong_parts()`, on the same units.
-#' @return The real parts of the eigenvalues of `W`.
+#' @return The eigenvalues of `W`, computed from an equivalent symmetric matrix.
 #' @noRd
 .latents_vuong_weights <- function(alternative, null) {
   stopifnot("the two models must be scored on the same units" =
               nrow(alternative$scores) == nrow(null$scores))
-  cross_alternative <- crossprod(alternative$scores)
-  cross_null <- crossprod(null$scores)
-  cross_both <- crossprod(alternative$scores, null$scores)
-  inverse_alternative <- solve(alternative$information)
-  inverse_null <- solve(null$information)
-  weights_matrix <- rbind(
-    cbind(cross_alternative %*% inverse_alternative, cross_both %*% inverse_null),
-    cbind(-t(cross_both) %*% inverse_alternative, -cross_null %*% inverse_null))
-  Re(eigen(weights_matrix, only.values = TRUE)$values)
+  # Congruent scaling of information and score columns changes only the
+  # chart, so Vuong's eigenvalues are unchanged. Raw inverses can otherwise
+  # reject a regular model merely because an indicator's units changed.
+  condition <- function(parts) {
+    diagonal <- diag(parts$information)
+    if (any(!is.finite(diagonal) | diagonal <= 0)) {
+      stop(errorCondition("The Vuong comparison information is not positive definite.",
+                          class = "latents_singular_information", call = NULL))
+    }
+    scale <- 1 / sqrt(diagonal)
+    parts$scores <- sweep(parts$scores, 2L, scale, "*")
+    parts$information <- parts$information * tcrossprod(scale)
+    parts
+  }
+  alternative <- condition(alternative)
+  null <- condition(null)
+  whiten <- function(parts) {
+    tryCatch(parts$scores %*% solve(chol(parts$information)),
+      error = function(condition) {
+        stop(errorCondition("The Vuong comparison information is singular or nonpositive.",
+                            class = "latents_singular_information", call = NULL))
+      })
+  }
+  combined <- cbind(whiten(alternative), whiten(null))
+  signs <- c(rep(1, ncol(alternative$scores)), rep(-1, ncol(null$scores)))
+  # W is similar to J S'S for the information-whitened combined scores S.
+  # Its nonzero eigenvalues equal those of S J S'. With S = U D V', use
+  # the smaller symmetric D V' J V D: the unsymmetric W has defective zero
+  # eigenvalues in regular nested models, and a generic eigen() can turn
+  # their rounding error into spurious positive/negative weights of 1e-7.
+  decomposition <- svd(combined, nu = 0L)
+  signed <- crossprod(decomposition$v, signs * decomposition$v) *
+    tcrossprod(decomposition$d)
+  weights <- eigen(signed, symmetric = TRUE, only.values = TRUE)$values
+  # This is the backward-error scale of the symmetric matrix construction,
+  # not a probability-independent relative cutoff in the Imhof helper.
+  rounding <- 64 * .Machine$double.eps * ncol(combined) * max(decomposition$d)^2
+  weights[abs(weights) <= rounding] <- 0
+  c(weights, rep(0, ncol(combined) - length(weights)))
 }
 
 #' Upper tail of a weighted sum of chi-square(1) variables (Imhof 1961)
@@ -58,8 +91,11 @@
 #' `P(sum_j lambda_j X_j > q)` for independent `X_j ~ chi-square(1)`:
 #' `1/2 + (1/pi) int_0^Inf sin(theta(u)) / (u rho(u)) du`, with
 #' `theta(u) = sum_j atan(lambda_j u) / 2 - q u / 2` and
-#' `rho(u) = prod_j (1 + lambda_j^2 u^2)^(1/4)`. Weights that are zero to
-#' rounding contribute nothing and are dropped.
+#' `rho(u) = prod_j (1 + lambda_j^2 u^2)^(1/4)`. Weights that are
+#' exactly zero contribute nothing and are dropped. Small nonzero weights
+#' are retained: their relative size does not bound the probability error
+#' near a statistic of zero. Negative statistics are handled by the symmetry
+#' `P(Q > q) = 1 - P(-Q > -q)` for the continuous nonzero-weight distribution.
 #'
 #' The integral has two regimes, and each is integrated where it is smooth.
 #' Up to `u = 2 pi / q` the phase is dominated by the arctangents, which bend
@@ -85,8 +121,13 @@
 #' @return A probability.
 #' @noRd
 .latents_imhof_upper <- function(q, lambda) {
-  lambda <- lambda[abs(lambda) > 1e-10 * max(abs(lambda))]
-  if (length(lambda) == 0L) return(NA_real_)
+  stopifnot(is.numeric(q), length(q) == 1L, is.finite(q),
+            is.numeric(lambda), all(is.finite(lambda)))
+  lambda <- lambda[lambda != 0]
+  if (length(lambda) == 0L) return(as.numeric(q < 0))
+  if (q < 0) return(1 - .latents_imhof_upper(-q, -lambda))
+  if (q == 0 && all(lambda > 0)) return(1)
+  if (all(lambda < 0)) return(0)
   # P(sum lambda_j X_j > q) = P(sum (lambda_j / c) X_j > q / c): the integral
   # is taken on weights of unit size, so its breakpoints and tolerances do
   # not depend on the weights' units (weights of size 1e-6 failed to
@@ -97,8 +138,14 @@
   integrand <- function(u) {
     theta <- 0.5 * vapply(u, function(value) sum(atan(lambda * value)), numeric(1)) -
       0.5 * q * u
-    rho <- vapply(u, function(value) prod((1 + lambda^2 * value^2)^0.25), numeric(1))
-    ifelse(u == 0, 0.5 * (sum(lambda) - q), sin(theta) / (u * rho))
+    log_rho <- vapply(u, function(value) {
+      # log(1 + exp(2 z)) without squaring huge integration coordinates or
+      # multiplying many small factors; both overflow at extreme weight ratios.
+      logs <- log(abs(lambda)) + log(value)
+      sum(0.5 * pmax(logs, 0) + 0.25 * log1p(exp(-2 * abs(logs))))
+    }, numeric(1))
+    ifelse(u == 0, 0.5 * (sum(lambda) - q),
+           sin(theta) * exp(-log(u) - log_rho))
   }
   inaccurate <- function(reason) {
     stop(errorCondition(sprintf(paste(
@@ -115,14 +162,19 @@
              })
   }
   clamp <- function(integral) min(1, max(0, 0.5 + integral / pi))
+  if (any(lambda == 0)) inaccurate("has weights beyond representable relative precision")
   scales <- 1 / abs(lambda)
   # With q = 0 the lead is the whole integral. Past u its integrand is at
   # most u^(-1 - n/2) / prod |lambda_j|^(1/2), so the rest is at most
   # (2 / n) u^(-n/2) / prod |lambda_j|^(1/2) (Imhof 1961); the lead ends
   # where that bound is 1e-12, and nothing is left to an infinite range.
   n_weights <- length(lambda)
-  truncation <- (2 / (n_weights * 1e-12 * prod(sqrt(abs(lambda)))))^(2 / n_weights)
+  truncation <- exp(2 / n_weights *
+    (log(2 / n_weights) - log(1e-12) - 0.5 * sum(log(abs(lambda)))))
   lead_end <- if (q > 0) 2 * pi / q else max(truncation, 1e3 * max(scales))
+  if (!is.finite(lead_end) || any(!is.finite(scales))) {
+    inaccurate("has weights or a statistic beyond the integration range")
+  }
   top <- lead_end
   decades <- 10^seq(floor(log10(min(scales))), ceiling(log10(top)))
   breaks <- sort(unique(c(0, scales, decades)))
@@ -137,7 +189,9 @@
   previous <- .latents_wynn(lead + cumsum(pieces))
   # Each round adds 20 half-periods until two successive estimates agree;
   # the number of rounds is bounded, and reaching the bound is reported.
-  for (round in seq_len(25L)) {
+  round <- 0L
+  while (round < 25L) {
+    round <- round + 1L
     pieces <- c(pieces, vapply(length(pieces) + seq_len(20L) - 1L, piece, numeric(1)))
     current <- .latents_wynn(lead + cumsum(pieces))
     if (abs(current - previous) < 1e-10) return(clamp(current))
@@ -184,10 +238,18 @@
 #'   `vlmr_p`, `adjusted_lr`, `almr_p`, `reference_mean`, `reference_sd`.
 #' @noRd
 .latents_vuong_row <- function(alternative, null) {
-  lambda <- .latents_vuong_weights(alternative, null)
   lr <- 2 * (alternative$log_likelihood - null$log_likelihood)
+  if (lr < -1e-8 * (1 + abs(null$log_likelihood))) {
+    stop(errorCondition(paste("The alternative has a lower likelihood than the null;",
+                              "the nested comparison needs a better-fitting alternative."),
+                        class = "latents_invalid_lmr", call = NULL))
+  }
+  lr <- max(0, lr)
+  lambda <- .latents_vuong_weights(alternative, null)
   added <- alternative$n_parameters - null$n_parameters
-  n_units <- nrow(alternative$scores)
+  n_units <- alternative$n_units %||% nrow(alternative$scores)
+  stopifnot("the two models must count the same independent units" =
+              n_units == (null$n_units %||% nrow(null$scores)))
   adjusted <- lr / (1 + 1 / (added * log(n_units)))
   data.frame(n_units = n_units, parameters_added = added, lr = lr,
              vlmr_p = .latents_imhof_upper(lr, lambda), adjusted_lr = adjusted,
@@ -246,7 +308,8 @@
       latents_boundary_fit = function(condition) condition,
       latents_singular_information = function(condition) condition,
       latents_unsupported_inference = function(condition) condition,
-      latents_no_converge = function(condition) condition)
+      latents_no_converge = function(condition) condition,
+      latents_too_few_groups = function(condition) condition)
     list(parts = parts, notes = notes)
   })
   rows <- lapply(seq_len(nrow(pairs)), function(index) {
@@ -258,10 +321,21 @@
       data.frame(n_units = NA_integer_, parameters_added = NA_integer_, lr = NA_real_,
                  vlmr_p = NA_real_, adjusted_lr = NA_real_, almr_p = NA_real_,
                  reference_mean = NA_real_, reference_sd = NA_real_)
-    } else .latents_vuong_row(alternative$parts, null$parts)
+    } else tryCatch(.latents_vuong_row(alternative$parts, null$parts),
+      latents_invalid_lmr = identity,
+      latents_singular_information = identity,
+      latents_inaccurate_probability = identity)
+    comparison_reason <- character()
+    if (inherits(statistics, "condition")) {
+      comparison_reason <- conditionMessage(statistics)
+      statistics <- data.frame(n_units = NA_integer_, parameters_added = NA_integer_,
+                               lr = NA_real_, vlmr_p = NA_real_, adjusted_lr = NA_real_,
+                               almr_p = NA_real_, reference_mean = NA_real_,
+                               reference_sd = NA_real_)
+    }
     reasons <- c(vapply(names(failed), function(role) {
       sprintf("%s model: %s", role, conditionMessage(failed[[role]]$parts))
-    }, character(1)), unique(c(null$notes, alternative$notes)))
+    }, character(1)), comparison_reason, unique(c(null$notes, alternative$notes)))
     alternative_at <- pairs$alternative[index]
     data.frame(direction = pairs$direction[index],
                null_candidate = table$candidate[pairs$null[index]],

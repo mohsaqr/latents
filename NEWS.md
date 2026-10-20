@@ -1,3 +1,32 @@
+# latents 0.96.1
+
+### Inference and numerical corrections
+
+* Entirely missing groups under `drop_empty = TRUE`, and zero-weight units,
+  no longer satisfy robust-inference minimum-unit checks or inflate the
+  number of independent units used for the CR1 correction. The correction
+  is consistent across profile, covariate, transition, additive, regression
+  and growth models where those units are supported.
+* Direct-effect information is evaluated with centered covariates and its
+  full covariance transformed back to the reported origin. Translating a
+  predictor no longer causes a false singular-information error.
+* ML three-step outcomes are fitted and differentiated in centered, scaled
+  coordinates, preserving standard errors when the outcome has a large
+  origin relative to its spread.
+* VLMR calculations retain well-conditioned information coordinates and
+  use an equivalent symmetric eigenvalue calculation. Imhof probabilities
+  handle negative statistics and retain genuine small distribution weights.
+
+### Paired indicators and weighted trees
+
+* Pair preparation rejects generated names that conflict with existing raw
+  columns and applies native categorical validation before joining labels.
+  Distinct numeric categories cannot silently merge during pair creation.
+* Regression and growth trees use the sampling weights of the units their
+  posteriors classify, including row, group and person adapters.
+* The independent mover-stayer equivalence reference uses stable probability
+  normalization, so large initial logits no longer overflow its path sum.
+
 # latents 0.96.0
 
 ### Direct effects

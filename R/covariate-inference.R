@@ -576,10 +576,14 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   free_covariance <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
     scores <- .multilpa_cov_group_scores(theta, x, object, codes) %*% moves
+    .inference_require_rank(scores[
+      .multilpa_inference_groups(object, observed_only = TRUE), , drop = FALSE],
+      "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
     cross <- .multilpa_cross_product(scores)
     free_covariance <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
-    } else .inference_sandwich(free_covariance, cross, nrow(scores))
+    } else .inference_sandwich(free_covariance, cross,
+                                sum(.multilpa_inference_groups(object)))
   }
   covariance <- moves %*% free_covariance %*% t(moves)
   ## The covariance is of the estimated coordinates, so it is named for them;

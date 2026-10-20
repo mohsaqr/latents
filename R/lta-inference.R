@@ -478,6 +478,12 @@
   }
   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
   names(theta) <- .lta_names(fit)
+  n_units <- sum(.multilpa_inference_groups(fit))
+  if (vcov_type != "observed") {
+    .multilpa_require_clusters(sum(.multilpa_inference_groups(fit, observed_only = TRUE)),
+                               length(theta),
+                               "A robust or OPG transition covariance")
+  }
   scores <- .lta_group_scores(theta, fit)
   total <- function(v) colSums(.lta_group_scores(v, fit))
   # Fourth-order differences of the analytic score with h = step * max(1, |theta|),
@@ -488,10 +494,12 @@
   inverse <- .inference_invert(information, "min_le_eps_max")
   meat <- crossprod(scores)
   if (vcov_type != "observed") {
-    .inference_require_rank(scores, "Too few groups for a robust or OPG covariance.")
+    .inference_require_rank(scores[
+      .multilpa_inference_groups(fit, observed_only = TRUE), , drop = FALSE],
+      "Too few groups for a robust or OPG covariance.")
   }
   covariance <- switch(vcov_type, observed = inverse,
-                       robust = .inference_sandwich(inverse, meat, nrow(scores)),
+                       robust = .inference_sandwich(inverse, meat, n_units),
                        opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   list(theta = theta, vcov = covariance, information = information,

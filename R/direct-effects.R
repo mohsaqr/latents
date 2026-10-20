@@ -90,13 +90,40 @@
 #' nearly uncorrelated, and `.latents_uncenter_direct()` moves the means back.
 #'
 #' @param extra The extra carrier, or `NULL`.
-#' @return The carrier with centred covariates and their `centers`.
+#' @param x Continuous indicators, used to select the observations of each
+#'   effect's target; `NULL` uses every row.
+#' @param row_weights Optional sampling weights in observation order.
+#' @return The carrier with one centred internal covariate column per effect,
+#'   its target-specific `centers` and `scales`. The original carrier is kept
+#'   on the reported fit, retaining the caller's covariate names and columns.
 #' @noRd
-.latents_center_direct <- function(extra) {
+.latents_center_direct <- function(extra, x = NULL, row_weights = NULL) {
+  stopifnot(is.null(extra) || is.list(extra), is.null(x) || is.matrix(x),
+            is.null(row_weights) || is.numeric(row_weights))
   if (is.null(extra$direct)) return(extra)
-  centers <- colMeans(extra$direct$covariates)
-  extra$direct$covariates <- sweep(extra$direct$covariates, 2L, centers, "-")
+  effects <- extra$direct$effects
+  values <- extra$direct$covariates[, effects$covariate_column, drop = FALSE]
+  weights <- row_weights %||% rep(1, nrow(values))
+  stopifnot(length(weights) == nrow(values),
+            is.null(x) || nrow(x) == nrow(values))
+  # A predictor value on a missing target or a zero-weight row supplies no
+  # information about this effect. Including it in the centre can make a
+  # regular intercept/slope pair arbitrarily collinear. Each target gets its
+  # own chart, even when its predictor is shared with another target.
+  observed <- if (is.null(x)) matrix(TRUE, nrow(values), ncol(values)) else
+    !is.na(x[, effects$column, drop = FALSE])
+  observed <- observed & weights > 0
+  centers <- vapply(seq_len(ncol(values)), function(column) {
+    rows <- observed[, column]
+    stats::weighted.mean(values[rows, column], weights[rows])
+  }, numeric(1))
+  scales <- vapply(seq_len(ncol(values)), function(column) {
+    stats::sd(values[observed[, column], column])
+  }, numeric(1))
+  extra$direct$covariates <- sweep(values, 2L, centers, "-")
+  extra$direct$effects$covariate_column <- seq_len(nrow(effects))
   extra$direct$centers <- centers
+  extra$direct$scales <- scales
   extra
 }
 

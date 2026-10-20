@@ -524,10 +524,14 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
     scores <- sweep(.multilpa_transition_group_scores(start, centred, layout, view,
                                                       widths, codes),
                     2L, scale, "*")
+    .inference_require_rank(scores[
+      .multilpa_inference_groups(x, observed_only = TRUE), , drop = FALSE],
+      "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
     cross <- .multilpa_cross_product(scores)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
-    } else .inference_sandwich(scaled_inverse, cross, nrow(scores))
+    } else .inference_sandwich(scaled_inverse, cross,
+                                sum(.multilpa_inference_groups(x)))
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(scale)
   dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
@@ -555,10 +559,11 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
       "EEE and VVV structures; this fit uses", x$covariance_structure, "."),
       "latents_unsupported_inference")
   }
-  if (vcov_type %in% c("robust", "opg") && x$n_groups <= x$n_parameters) {
+  n_groups <- sum(.multilpa_inference_groups(x, observed_only = TRUE))
+  if (vcov_type %in% c("robust", "opg") && n_groups <= x$n_parameters) {
     refuse(sprintf(paste(
       "Robust and OPG inference need more groups than parameters; this fit has",
-      "%d groups and %d parameters."), x$n_groups, x$n_parameters),
+      "%d groups and %d parameters."), n_groups, x$n_parameters),
       "latents_too_few_groups")
   }
   if (isTRUE(x$boundary)) {

@@ -355,7 +355,15 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
         "These regression fits have no group classes, so their groups have no tree.",
         class = c("latents_no_tree", "latents_nothing_to_plot"), call = NULL))
     }
-    return(list(posteriors = posteriors, weights = rep(1, nrow(posteriors))))
+    # Regression classes can classify rows or whole groups; growth classes
+    # classify persons. Sampling weights must use precisely those same units.
+    spec <- fit$spec
+    weights <- if (inherits(fit, "latents_growth_mixture") ||
+                   identical(level, "groups") || identical(spec$nesting, "group")) {
+      spec$sampling_weights
+    } else spec$row_weights
+    return(list(posteriors = posteriors,
+                weights = weights %||% rep(1, nrow(posteriors))))
   }
   sampling <- fit$sampling_weights
   if (identical(level, "groups")) {

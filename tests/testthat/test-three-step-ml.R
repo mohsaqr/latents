@@ -163,3 +163,46 @@ test_that("both variance models converge and agree with Latent GOLD's step three
   within(equal$means, c(0.0004, 9.9641))
   within(equal$variances[1L], 4.0231)
 })
+
+test_that("ML uncertainty at a large origin matches known normal means", {
+  set.seed(4)
+  values <- c(stats::rnorm(30, 2), stats::rnorm(20, -1, 3)) + 1e12
+  modal <- rep(1:2, c(30, 20))
+  pieces <- list(posteriors = cbind(modal == 1, modal == 2) * 1,
+                 modal = modal, n_classes = 2L)
+  centered <- values - mean(values)
+  reference <- vapply(split(centered, modal), function(value) {
+    sqrt(sum((value - mean(value))^2)) / length(value)
+  }, numeric(1))
+  invisible(lapply(c("varying", "equal"), function(variance) {
+    fit <- .multilpa_step_ml_fit(pieces, values, variance)
+    influence <- .multilpa_step_ml_influence(fit, values, variance)
+    expect_equal(unname(sqrt(colSums(influence^2))), unname(reference),
+                 tolerance = 1e-7)
+  }))
+})
+
+test_that("public ML means and contrasts retain uncertainty at large outcome origins", {
+  data <- ml_data(n_groups = 30, per = 8)
+  fit <- ml_fit(data)
+  # Compare with the actual representable centered data, avoiding attributing
+  # the rounding of the supplied 1e12-offset values to the statistical method.
+  shifted <- transform(data, distal = distal + 1e12)
+  origin <- mean(shifted$distal)
+  centered <- transform(shifted, distal = distal - origin)
+  settings <- expand.grid(variance = c("equal", "varying"),
+                          vcov_type = c("independent", "cluster"),
+                          contrast = c("none", "pairs"), stringsAsFactors = FALSE)
+  invisible(lapply(seq_len(nrow(settings)), function(index) {
+    arguments <- as.list(settings[index, ])
+    reference <- do.call(three_step, c(list(fit, centered, "distal", method = "ml"), arguments))
+    result <- do.call(three_step, c(list(fit, shifted, "distal", method = "ml"), arguments))
+    expect_equal(result$standard_error, reference$standard_error, tolerance = 1e-7)
+    estimate <- if (arguments$contrast == "none") result$estimate - origin else result$estimate
+    expect_equal(estimate, reference$estimate, tolerance = 2e-4)
+    if (arguments$contrast == "none") {
+      expect_equal(result$variance, reference$variance, tolerance = 1e-7)
+      expect_equal(result$effective_n, reference$effective_n, tolerance = 1e-7)
+    }
+  }))
+})

@@ -32,6 +32,12 @@
       "The outcome takes one value, so it has no distribution to estimate by class.",
       class = "latents_bad_outcome", call = NULL))
   }
+  # Fit and differentiate in a chart whose origin and units are determined
+  # by the outcome spread. A finite-difference step around a raw mean near
+  # 1e12 can round to zero even though the outcome varies by whole units.
+  outcome_center <- mean(values)
+  outcome_scale <- stats::sd(values)
+  values <- (values - outcome_center) / outcome_scale
   errors <- .multilpa_error_matrix(pieces)
   prior <- colMeans(pieces$posteriors)
   # Each unit's fixed weight on each class: the class's share times the
@@ -85,8 +91,15 @@
               log_likelihood = state$log_likelihood, converged = converged,
               iterations = iterations, weights = weights,
               at_floor = any(variances <= smallest * (1 + 1e-8)))
-  if (fit$at_floor) return(fit)
-  .multilpa_step_ml_polish(fit, values, variance)
+  if (!fit$at_floor) fit <- .multilpa_step_ml_polish(fit, values, variance)
+  # Keep the conditioned means for inference: subtracting the origin from
+  # already rounded reported means would throw away the precision just saved.
+  fit$outcome_coordinates <- list(center = outcome_center, scale = outcome_scale,
+                                  means = fit$means)
+  fit$means <- outcome_center + outcome_scale * fit$means
+  fit$variances <- outcome_scale^2 * fit$variances
+  fit$log_likelihood <- fit$log_likelihood - length(values) * log(outcome_scale)
+  fit
 }
 
 #' Newton steps from the EM estimate to the stationary point
@@ -261,6 +274,13 @@
 #' @return A units-by-classes matrix.
 #' @noRd
 .multilpa_step_ml_influence <- function(fit, values, variance) {
+  chart <- fit$outcome_coordinates
+  outcome_scale <- if (is.null(chart)) 1 else chart$scale
+  if (!is.null(chart)) {
+    values <- (values - chart$center) / outcome_scale
+    fit$means <- chart$means
+    fit$variances <- fit$variances / outcome_scale^2
+  }
   coordinates <- .multilpa_step_ml_coordinates(fit, variance)
   scale <- .multilpa_step_ml_scale(fit, variance)
   information <- .multilpa_step_ml_hessian(
@@ -270,14 +290,19 @@
   # Inverted on the coordinates' own scale, D (D H D)^-1 D: in raw units the
   # means' and log standard deviations' information differ by the outcome's
   # units squared, and at 1e8 that alone made an identified model singular.
-  inverse <- tryCatch(solve(information * tcrossprod(scale)) * tcrossprod(scale),
-                      error = function(condition) {
+  inverse <- tryCatch({
+    conditioned <- information * tcrossprod(scale)
+    # A genuine saddle or unidentified class must not produce uncertainty
+    # from an arbitrary invertible but nonpositive information matrix.
+    chol(conditioned)
+    solve(conditioned) * tcrossprod(scale)
+  }, error = function(condition) {
     stop(errorCondition(
       "The information of the step-three model is singular; the class means are not identified.",
       class = "latents_singular_information", call = NULL))
   })
   scores <- .multilpa_step_ml_scores(fit, values, variance)
-  (scores %*% inverse)[, seq_along(fit$means), drop = FALSE]
+  outcome_scale * (scores %*% inverse)[, seq_along(fit$means), drop = FALSE]
 }
 
 #' The ML three-step table of a distal outcome
@@ -306,7 +331,10 @@
   clustered <- .multilpa_step_clusters(.multilpa_step_ml_influence(fit, values, variance),
                                        pieces, vcov_type)
   if (identical(contrast, "pairs")) {
-    return(.multilpa_step_pairs(fit$means, clustered, level, "ml", quantile,
+    # The common origin cancels from contrasts; remove it before subtraction
+    # so reported rounding at a large origin cannot erase a small difference.
+    means <- fit$outcome_coordinates$means * fit$outcome_coordinates$scale
+    return(.multilpa_step_pairs(means, clustered, level, "ml", quantile,
                                 adjust, vcov_type))
   }
   errors <- sqrt(colSums(clustered^2))

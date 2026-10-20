@@ -217,6 +217,8 @@
       class = "latents_unconverged", call = NULL))
   }
   if (vcov_type != "observed") {
+    .multilpa_require_clusters(sum((x$sampling_weights %||% rep(1, nrow(scores))) > 0),
+                               ncol(scores), "A robust or OPG additive covariance")
     .inference_require_rank(scores, paste(
       "The %d group scores span %d of %d dimensions, too few to form a",
       "%s covariance."), formatted = TRUE, extra = list(vcov_type))
@@ -224,7 +226,8 @@
   meat <- crossprod(scores)
   covariance <- switch(vcov_type,
     observed = inverse,
-    robust = .inference_sandwich(inverse, meat, nrow(scores)),
+    robust = .inference_sandwich(inverse, meat,
+      sum((x$sampling_weights %||% rep(1, nrow(scores))) > 0)),
     opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   inference <- list(theta = theta, vcov = covariance, information = information,

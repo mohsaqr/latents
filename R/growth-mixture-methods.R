@@ -21,8 +21,9 @@
   # One weight per independent unit (person, or cluster); unweighted, one.
   weights <- spec$sampling_weights %||% 1
   scores <- .growth_scores(spec, stats, params)
+  n_units <- sum((spec$sampling_weights %||% rep(1, nrow(scores))) > 0)
   if (identical(vcov_type, "robust")) {
-    .multilpa_require_clusters(nrow(scores), length(theta),
+    .multilpa_require_clusters(n_units, length(theta),
                                "A robust growth covariance",
                                unit = "independent units")
     .inference_require_rank(scores * weights,
@@ -47,7 +48,7 @@
   if (identical(vcov_type, "robust")) {
     vcov[free, free] <- .inference_sandwich(
       inverse[free, free, drop = FALSE],
-      crossprod(scores[, free, drop = FALSE] * weights), nrow(scores))
+      crossprod(scores[, free, drop = FALSE] * weights), n_units)
   }
   dimnames(vcov) <- list(names(theta), names(theta))
   list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,

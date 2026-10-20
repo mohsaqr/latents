@@ -217,6 +217,10 @@
 #'   \item{`latents_no_lmr`}{`get_results(x, "lmr")` on a grid with no two
 #'     converged candidates one profile or one group class apart. Also of class
 #'     `latents_nothing_to_plot`.}
+#'   \item{`latents_invalid_lmr`}{The alternative of a nested LMR comparison
+#'     has a lower likelihood than the null beyond numerical roundoff. The
+#'     comparison table retains its row with unavailable statistics and the
+#'     reason in `note`; improve the alternative's fit before comparing.}
 #'   \item{`latents_no_tree`}{A tree would have fewer than two rows, or the
 #'     group level of a grid with one group class was asked for. Also of
 #'     class `latents_nothing_to_plot`; `get_results(x, "all")` leaves the

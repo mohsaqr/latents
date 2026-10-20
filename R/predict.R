@@ -86,7 +86,7 @@ predict.multilpa_transitions <- function(object, ...) {
   }
   if (!is.data.frame(newdata)) bad_data("`newdata` must be a data frame.")
   if (!is.null(object$local_dependence)) {
-    newdata <- .latents_join_pairs(newdata, object$local_dependence)
+    newdata <- .latents_join_pairs(newdata, object$local_dependence, rebuild_existing = TRUE)
   }
   categorical <- object$categorical %||% character()
   continuous <- .multilpa_continuous_names(object)

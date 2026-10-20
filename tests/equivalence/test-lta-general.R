@@ -275,9 +275,11 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
   m <- fit$measurement[[1L]]
   paths <- as.matrix(expand.grid(rep(list(1:2), occasions)))
   shares <- lapply(1:2, \(h) {
-    e <- exp(c(p$initial[1, 1, h], 0))
+    logits <- c(p$initial[1, 1, h], 0)
+    e <- exp(logits - max(logits))
     e / sum(e)
   })
+  expect_true(all(is.finite(unlist(shares))))
   move <- function(a, b) {
     mv <- stats::plogis(p$transition[1, 1, a, 1])
     if (a == b) 1 - mv else mv

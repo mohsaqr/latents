@@ -166,14 +166,23 @@
 #' not lose the pair, which is reported with `latents_partial_pair`.
 #' @param data A data frame.
 #' @param pairs From `.latents_parse_pairs()`.
+#' @param min_categories Minimum observed categories of each original item;
+#'   fitting requires two, prediction subsets may have none.
+#' @param rebuild_existing Regenerate an existing joint column from its source
+#'   items when a fitted model has already established their meaning. Initial
+#'   fitting leaves this false so existing caller columns remain protected.
 #' @return The data frame with one more column per pair.
 #' @noRd
-.latents_join_pairs <- function(data, pairs) {
+.latents_join_pairs <- function(data, pairs, min_categories = 0L,
+                                 rebuild_existing = FALSE) {
   if (!is.null(pairs$kind)) pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
   joined <- Reduce(function(frame, index) {
     pair <- pairs[index, ]
     has_items <- all(c(pair$item_1, pair$item_2) %in% names(frame))
-    if (pair$name %in% names(frame) && !has_items) return(frame)
+    prepared <- pair$name %in% names(frame) &&
+      identical(attr(frame[[pair$name]], "latents_pair"), c(pair$item_1, pair$item_2))
+    if (pair$name %in% names(frame) && !has_items &&
+        (!any(c(pair$item_1, pair$item_2) %in% names(frame)) || prepared)) return(frame)
     if (!has_items) {
       stop(errorCondition(sprintf(
         "`data` needs `%s` and `%s` for the pair \"%s\" of `local_dependence`.",
@@ -181,6 +190,8 @@
     }
     first <- frame[[pair$item_1]]
     second <- frame[[pair$item_2]]
+    first_levels <- .multilpa_categorical_levels(first, pair$item_1, min_categories)
+    second_levels <- .multilpa_categorical_levels(second, pair$item_2, min_categories)
     # A joint category is written "first:second", so a category that already
     # holds a colon makes two responses one label: ("x:y", "z") and
     # ("x", "y:z") would be counted as the same response.
@@ -195,6 +206,25 @@
         class = "latents_bad_data", call = NULL))
     }
     observed <- !is.na(first) & !is.na(second)
+    labels <- ifelse(observed, paste(as.character(first), as.character(second), sep = ":"),
+                     NA_character_)
+    # Base rbind() drops custom factor attributes but keeps the first frame's
+    # metadata. Trust that fallback only when the column still contains the
+    # joint responses of its source items; stale metadata cannot authorize
+    # replacing a newly assigned, unrelated column.
+    frame_pairs <- attr(frame, "latents_pairs")
+    prepared <- prepared || (pair$name %in% names(frame) &&
+      identical(frame_pairs[[pair$name]], c(pair$item_1, pair$item_2)) &&
+      is.factor(frame[[pair$name]]) &&
+      identical(as.character(frame[[pair$name]]), labels))
+    # Only columns produced by this preparation may be regenerated beside
+    # their source items. A caller column with the same name is never replaced.
+    if (pair$name %in% names(frame) && !prepared && !rebuild_existing) {
+      stop(errorCondition(sprintf(paste(
+        "The generated joint indicator `%s` conflicts with an existing column;",
+        "rename that column before using `local_dependence`."), pair$name),
+        class = "latents_bad_data", call = NULL))
+    }
     partial <- xor(is.na(first), is.na(second))
     if (any(partial)) {
       warning(warningCondition(sprintf(paste(
@@ -202,16 +232,14 @@
         "as missing in those rows."), sum(partial), pair$name),
         class = "latents_partial_pair", call = NULL))
     }
-    labels <- ifelse(observed, paste(as.character(first), as.character(second), sep = ":"),
-                     NA_character_)
     # Categories ordered by the first item's categories, then the second's.
-    order_of <- function(value) {
-      if (is.factor(value)) levels(droplevels(value)) else sort(unique(value[!is.na(value)]))
-    }
-    grid <- expand.grid(second = as.character(order_of(second)),
-                        first = as.character(order_of(first)), stringsAsFactors = FALSE)
+    grid <- expand.grid(second = as.character(second_levels),
+                        first = as.character(first_levels), stringsAsFactors = FALSE)
     combinations <- paste(grid$first, grid$second, sep = ":")
     frame[[pair$name]] <- factor(labels, levels = intersect(combinations, labels))
+    attr(frame[[pair$name]], "latents_pair") <- c(pair$item_1, pair$item_2)
+    frame_pairs[[pair$name]] <- c(pair$item_1, pair$item_2)
+    attr(frame, "latents_pairs") <- frame_pairs
     frame
   }, seq_len(nrow(pairs)), init = data)
   joined
@@ -239,6 +267,19 @@
   }
   items <- c(pairs$item_1, pairs$item_2)
   categorical <- arguments$categorical %||% character()
+  # Joining removes original item names and deduplicates the new name list;
+  # preserve the ordinary identity checks before either transformation.
+  if (anyNA(arguments$vars) || anyDuplicated(arguments$vars) ||
+      !all(arguments$vars %in% names(arguments$data)) ||
+      any(arguments$id %in% arguments$vars)) {
+    stop(errorCondition(
+      "Supply unique existing indicators and a distinct group column.",
+      class = "latents_bad_data", call = NULL))
+  }
+  if (anyDuplicated(categorical) || !all(categorical %in% arguments$vars)) {
+    stop(errorCondition("`categorical` must name distinct indicators listed in `vars`.",
+                        class = "latents_bad_categorical", call = NULL))
+  }
   absent <- setdiff(items, arguments$vars)
   if (length(absent) > 0L) {
     stop(errorCondition(sprintf(
@@ -264,7 +305,9 @@
   joined_pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
   continuous_pairs <- pairs[pairs$kind == "continuous", , drop = FALSE]
   arguments$local_dependence <- if (nrow(continuous_pairs) > 0L) continuous_pairs$name
-  arguments$data <- .latents_join_pairs(arguments$data, joined_pairs)
+  # Apply the same native-value and variation requirements as unpaired items.
+  # The join itself permits constant/single-row subsets used by prediction.
+  arguments$data <- .latents_join_pairs(arguments$data, joined_pairs, min_categories = 2L)
   # Each joint category's two levels, read from the data rather than parsed
   # back out of the label.
   categories <- lapply(stats::setNames(seq_len(nrow(joined_pairs)), joined_pairs$name),
