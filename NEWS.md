@@ -21,6 +21,8 @@
 * Structured covariance updates handle active variance floors with a
   feasible solver that checks optimality, avoiding numerical failures near
   a bound while preserving the covariance structure and EM monotonicity.
+* Socket-worker cleanup closes surviving and failed connections separately,
+  preserving the typed parallel-failure error when a worker dies.
 
 ### Paired indicators and weighted trees
 

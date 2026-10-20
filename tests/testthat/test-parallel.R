@@ -166,3 +166,45 @@ test_that("a fit refuses a `cores` that is not a whole number of at least 1", {
   expect_error(lca(student_esm, items, n_classes = 2, n_starts = 1, cores = 1.5),
                class = "latents_bad_argument")
 })
+
+test_that("socket cleanup cannot replace a worker failure or leak remaining connections", {
+  exercise <- function() {
+    connections <- lapply(1:2, function(i) rawConnection(raw(), "w"))
+    on.exit(invisible(lapply(connections, function(connection) {
+      tryCatch(close(connection), error = function(condition) NULL)
+    })), add = TRUE)
+    nodes <- structure(lapply(connections, function(connection) list(con = connection)),
+                       class = c("SOCKcluster", "cluster"))
+    testthat::local_mocked_bindings(
+      makePSOCKcluster = function(...) nodes,
+      parLapply = function(...) stop("error reading from connection"),
+      stopCluster = function(...) stop("error writing to connection during cleanup"),
+      .package = "parallel")
+    warnings <- character()
+    failure <- tryCatch(withCallingHandlers(
+      .latents_map_candidates(1:3, identity, cores = 2, backend = "socket"),
+      warning = function(condition) {
+        warnings <<- c(warnings, conditionMessage(condition))
+        invokeRestart("muffleWarning")
+      }), error = identity)
+    expect_s3_class(failure, "latents_parallel_failure")
+    expect_match(conditionMessage(failure), "error reading from connection")
+    expect_length(warnings, 0L)
+    invisible(lapply(connections, function(connection) {
+      expect_error(isOpen(connection), "invalid connection")
+    }))
+  }
+  exercise()
+})
+
+test_that("cleanup closes a live socket even when another node is already closed", {
+  skip_on_cran()
+  cluster <- parallel::makePSOCKcluster(2)
+  close(cluster[[1L]]$con)
+  expect_silent(.latents_stop_cluster(cluster))
+  invisible(lapply(cluster, function(node) {
+    expect_error(isOpen(node$con), "invalid connection")
+  }))
+  # Repeated cleanup of already closed nodes also remains harmless.
+  expect_silent(.latents_stop_cluster(cluster))
+})

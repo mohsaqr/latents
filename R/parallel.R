@@ -34,6 +34,25 @@
   !(identical(sysname, "Darwin") && grepl("Accelerate|vecLib", blas))
 }
 
+#' Stop every socket worker and close every owned connection
+#'
+#' A dead worker can make stopCluster fail while sending DONE. Clean nodes
+#' independently and always close their connections so a cleanup failure
+#' cannot replace the original worker condition or leave sockets for GC.
+#' @param cluster A socket cluster created by makePSOCKcluster().
+#' @return NULL, invisibly.
+#' @noRd
+.latents_stop_cluster <- function(cluster) {
+  stopifnot(is.list(cluster))
+  invisible(lapply(cluster, function(node) {
+    single <- structure(list(node), class = class(cluster))
+    tryCatch(parallel::stopCluster(single),
+      error = function(condition) NULL,
+      finally = tryCatch(close(node$con), error = function(condition) NULL))
+  }))
+  invisible(NULL)
+}
+
 #' Apply `fun` to every candidate, on one core or several
 #'
 #' With one core this is `lapply()`. With several, candidates are fitted by
@@ -74,7 +93,7 @@
     (identical(.Platform$OS.type, "windows") || !.latents_fork_safe()))
   results <- if (socket) {
     cluster <- parallel::makePSOCKcluster(cores)
-    on.exit(parallel::stopCluster(cluster), add = TRUE)
+    on.exit(.latents_stop_cluster(cluster), add = TRUE)
     # A socket worker that dies breaks its connection, and parLapply() stops
     # with that error rather than returning the other candidates.
     tryCatch(parallel::parLapply(cluster, indices, collected),
