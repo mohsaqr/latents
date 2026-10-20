@@ -16,6 +16,11 @@
 * VLMR calculations retain well-conditioned information coordinates and
   use an equivalent symmetric eigenvalue calculation. Imhof probabilities
   handle negative statistics and retain genuine small distribution weights.
+  Comparisons whose reference weights cannot be resolved numerically report
+  unavailable probabilities.
+* Structured covariance updates handle active variance floors with a
+  feasible solver that checks optimality, avoiding numerical failures near
+  a bound while preserving the covariance structure and EM monotonicity.
 
 ### Paired indicators and weighted trees
 

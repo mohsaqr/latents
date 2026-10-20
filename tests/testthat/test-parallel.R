@@ -130,7 +130,8 @@ test_that("a socket worker that dies is a parallel failure", {
   skip_on_cran()
   skip_if_not(requireNamespace("latents", quietly = TRUE))
   fun <- function(i) {
-    if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGKILL)
+    # SIGTERM is defined on Windows and Unix; SIGKILL is NA on Windows.
+    if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGTERM)
     i
   }
   expect_error(.latents_map_candidates(1:3, fun, cores = 2L, backend = "socket"),
@@ -151,8 +152,9 @@ test_that("one fit's starts on several cores give the same fit as one core", {
   profiles <- c("happy", "relaxed")
   serial_lpa <- lpa(student_esm, profiles, n_profiles = 2, n_starts = 5,
                     seed = 2)
+  # Two workers respect check limits; five starts keep the split uneven.
   spread_lpa <- lpa(student_esm, profiles, n_profiles = 2, n_starts = 5,
-                    seed = 2, cores = 3)
+                    seed = 2, cores = 2)
   expect_identical(spread_lpa$log_likelihood, serial_lpa$log_likelihood)
   expect_identical(as.data.frame(spread_lpa), as.data.frame(serial_lpa))
 })

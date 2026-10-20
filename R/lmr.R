@@ -59,16 +59,69 @@
     parts$information <- parts$information * tcrossprod(scale)
     parts
   }
+  # Preserve the exact empirical-Gram identity before rounding the chart.
+  # When supplied information is the computed S'S, an orthogonal score
+  # basis realizes its whitening without ill-conditioned normal equations.
+  alternative$score_gram <- identical(unname(alternative$information),
+                                       unname(crossprod(alternative$scores)))
+  null$score_gram <- identical(unname(null$information), unname(crossprod(null$scores)))
   alternative <- condition(alternative)
   null <- condition(null)
-  whiten <- function(parts) {
-    tryCatch(parts$scores %*% solve(chol(parts$information)),
-      error = function(condition) {
-        stop(errorCondition("The Vuong comparison information is singular or nonpositive.",
-                            class = "latents_singular_information", call = NULL))
-      })
+  unresolved <- function() {
+    stop(errorCondition(paste(
+      "The Vuong reference weights cannot be resolved reliably in these coordinates;",
+      "the comparison probability cannot be reported."),
+      class = "latents_inaccurate_probability", call = NULL))
   }
-  combined <- cbind(whiten(alternative), whiten(null))
+  whiten <- function(parts) {
+    tryCatch({
+      if (isTRUE(parts$score_gram)) {
+        decomposition <- svd(parts$scores, nv = 0L)
+        epsilon <- .Machine$double.eps
+        rank_error <- max(dim(parts$scores)) * epsilon * max(decomposition$d)
+        if (length(decomposition$d) < ncol(parts$scores) ||
+            min(decomposition$d) <= rank_error) unresolved()
+        span_error <- rank_error / min(decomposition$d)
+        return(list(scores = decomposition$u,
+                    weight_error = 2 * span_error / (1 - span_error)))
+      }
+      root <- chol(parts$information)
+      inverse <- backsolve(root, diag(ncol(root)))
+      scores <- t(backsolve(root, t(parts$scores), transpose = TRUE))
+      columns <- ncol(root)
+      epsilon <- .Machine$double.eps
+      gamma <- columns * epsilon / (1 - columns * epsilon)
+      chol_gamma <- (columns + 1) * epsilon / (1 - (columns + 1) * epsilon)
+      # Cholesky has componentwise backward error gamma[p+1] |R'| |R|.
+      # Include the preceding diagonal congruence's two rounded products,
+      # then propagate that information error through R^-1. Near-collinear
+      # charts amplify it even though the final score matrix has unit scale.
+      information_error <- chol_gamma * crossprod(abs(root)) +
+        (2 * epsilon / (1 - 2 * epsilon)) * abs(parts$information)
+      relative_error <- norm(crossprod(abs(inverse),
+        information_error %*% abs(inverse)), "2")
+      if (!is.finite(relative_error) || relative_error >= 1) {
+        stop("Information whitening cannot resolve the fitted coordinates.")
+      }
+      score_norm <- norm(scores, "2")
+      # Triangular solves and the initial score scaling have componentwise
+      # error bounds too. Bound the resulting perturbation of S S' by
+      # 2 ||S|| ||dS|| + ||dS||^2; Weyl then bounds every reference weight.
+      score_error <- gamma * norm(abs(scores) %*% abs(root) %*% abs(inverse), "2") +
+        epsilon * norm(abs(parts$scores) %*% abs(inverse), "2")
+      weight_error <- score_norm^2 * relative_error / (1 - relative_error) +
+        2 * score_norm * score_error + score_error^2
+      if (!is.finite(weight_error)) unresolved()
+      list(scores = scores, weight_error = weight_error)
+    }, error = function(condition) {
+      if (inherits(condition, "latents_inaccurate_probability")) stop(condition)
+      stop(errorCondition("The Vuong comparison information is singular or nonpositive.",
+                          class = "latents_singular_information", call = NULL))
+    })
+  }
+  alternative_whitened <- whiten(alternative)
+  null_whitened <- whiten(null)
+  combined <- cbind(alternative_whitened$scores, null_whitened$scores)
   signs <- c(rep(1, ncol(alternative$scores)), rep(-1, ncol(null$scores)))
   # W is similar to J S'S for the information-whitened combined scores S.
   # Its nonzero eigenvalues equal those of S J S'. With S = U D V', use
@@ -78,10 +131,16 @@
   decomposition <- svd(combined, nu = 0L)
   signed <- crossprod(decomposition$v, signs * decomposition$v) *
     tcrossprod(decomposition$d)
+  if (any(!is.finite(signed))) unresolved()
   weights <- eigen(signed, symmetric = TRUE, only.values = TRUE)$values
-  # This is the backward-error scale of the symmetric matrix construction,
-  # not a probability-independent relative cutoff in the Imhof helper.
+  # Only matrix-construction roundoff identifies numerical zeros. A larger
+  # whitening uncertainty does not establish zero: genuine small signed
+  # weights can change probabilities materially near a zero statistic.
   rounding <- 64 * .Machine$double.eps * ncol(combined) * max(decomposition$d)^2
+  uncertainty <- rounding + alternative_whitened$weight_error +
+    null_whitened$weight_error
+  if (!is.finite(uncertainty) || uncertainty >= max(abs(weights)) ||
+      any(abs(weights) > rounding & abs(weights) <= uncertainty)) unresolved()
   weights[abs(weights) <= rounding] <- 0
   c(weights, rep(0, ncol(combined) - length(weights)))
 }

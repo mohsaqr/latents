@@ -85,17 +85,17 @@ test_that("all covariance structures retain their defining constraints at a floo
   }))
 })
 
-test_that("structured floor-active profile models converge without an EM decrease", {
-  set.seed(7)
-  data <- data.frame(x = c(stats::rnorm(100, -10, 0.005), stats::rnorm(100, 10, 0.3)),
-                     y = c(stats::rnorm(100, 0, 1), stats::rnorm(100, 0, 0.3)))
-  invisible(lapply(c("EVI", "VEI", "EVV", "VEV", "VEE", "EVE", "VVE"), function(code) {
+invisible(lapply(c("EVI", "VEI", "EVV", "VEV", "VEE", "EVE", "VVE"), function(code) {
+  test_that(sprintf("floor-active %s profiles converge without an EM decrease", code), {
+    set.seed(7)
+    data <- data.frame(x = c(stats::rnorm(100, -10, 0.005), stats::rnorm(100, 10, 0.3)),
+                       y = c(stats::rnorm(100, 0, 1), stats::rnorm(100, 0, 0.3)))
     expect_warning(fit <- lpa(data, c("x", "y"), 2, model = code,
       min_variance = 0.05, n_starts = 1, seed = 1, tol = 1e-10), class = "latents_boundary")
     expect_true(fit$converged)
     expect_true(all(diff(fit$log_likelihood_history) >= -1e-8))
-  }))
-})
+  })
+}))
 
 test_that("constrained prior updates retain volume and shape at their own floors", {
   set.seed(20)
@@ -134,5 +134,50 @@ test_that("positive-definite starts outside the covariance family are not retain
       values[2, ] / volume[2], tolerance = 1e-8)
     if (substr(code, 3, 3) == "E") expect_equal(fitted[[1]] %*% fitted[[2]],
       fitted[[2]] %*% fitted[[1]], tolerance = 1e-8)
+  }))
+})
+
+test_that("active covariance floors are stable to harmless data rounding", {
+  set.seed(7)
+  data <- data.frame(x = c(stats::rnorm(100, -10, 0.005), stats::rnorm(100, 10, 0.3)),
+                     y = c(stats::rnorm(100, 0, 1), stats::rnorm(100, 0, 0.3)))
+  # The barrier solver attempted log(0) at this equivalent, rounded input.
+  rounded <- signif(data, 9)
+  expect_warning(fit <- lpa(rounded, c("x", "y"), 2, model = "EVE",
+    min_variance = 0.05, n_starts = 1, seed = 1, tol = 1e-10), class = "latents_boundary")
+  expect_true(fit$converged)
+  expect_true(all(diff(fit$log_likelihood_history) >= -1e-8))
+})
+
+test_that("the bounded covariance solver agrees with an analytic active EVI optimum", {
+  scatter <- matrix(c(0.0023, 115, 8, 9.6), 2, byrow = TRUE)
+  weights <- c(100, 100)
+  floor <- 0.05
+  # At this optimum the first class's first variance is at the floor. The
+  # other class is free; differentiate the one remaining volume coordinate.
+  root_product <- sqrt(prod(scatter[2, ]))
+  volume <- (root_product + sqrt(root_product^2 +
+    4 * sum(weights) * scatter[1, 2] * floor)) / (2 * sum(weights))
+  reference <- rbind(c(floor, volume^2 / floor), volume * scatter[2, ] / root_product)
+  result <- .multilpa_bounded_variances(scatter, weights, "EVI", floor)
+  expect_equal(result, reference, tolerance = 1e-10)
+})
+
+
+test_that("zero-scatter covariance floors handle dependent active constraints", {
+  invisible(lapply(c("EVI", "VEI"), function(code) {
+    result <- .multilpa_bounded_variances(matrix(0, 3, 4), c(1, 2, 3), code, 0.1)
+    expect_equal(result, matrix(0.1, 3, 4), tolerance = 1e-12)
+  }))
+})
+
+test_that("bounded covariance convergence requires genuinely binding active floors", {
+  reference <- matrix(c(1, 1, 50.5, 50.5), 2)
+  invisible(lapply(c(1e-12, 1e-8, 1e-5, 1e-4, 1e-3), function(small) {
+    scatter <- rbind(c(small, 1), c(10 * small, 100))
+    # Both first variances bind at one. Equal volume then ties the second
+    # variances to their pooled optimum; all KKT multipliers are positive.
+    result <- .multilpa_bounded_variances(scatter, c(1, 1), "EVI", 1)
+    expect_equal(result, reference, tolerance = 1e-10)
   }))
 })

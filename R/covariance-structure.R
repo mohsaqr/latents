@@ -800,30 +800,117 @@
     if (startsWith(structure, "E")) "EEI" else "VVI", min_variance))
   design <- .multilpa_eigenvalue_design(k, d, structure)
   lower <- log(min_variance)
-  # A spherical start is strictly inside every inequality. The barrier solver
-  # then minimizes one convex objective rather than alternating blocks that
-  # can become stuck when a volume and a shape bound are active together.
+  # A feasible spherical start lies inside every inequality. An active-set
+  # Newton solve reaches the floor directly: an interior barrier can round a
+  # positive slack to zero and then evaluate log(0) on its next outer step.
   n_volume <- if (startsWith(structure, "E")) 1L else k
   initial_volume <- if (n_volume == 1L) sum(scatter) / (sum(weights) * d) else
     rowSums(scatter) / (weights * d)
-  initial <- c(log(pmax(initial_volume, min_variance)) + 0.1,
-               numeric(ncol(design) - n_volume))
+  point <- c(log(pmax(initial_volume, min_variance)) + 0.1,
+             numeric(ncol(design) - n_volume))
   counts <- rep(weights, each = d)
   values <- as.vector(t(scatter))
   total <- sum(weights)
-  objective <- function(point) {
+  dimension <- ncol(design)
+  active <- integer()
+  iteration <- 0L
+  settled <- FALSE
+  while (iteration < 500L && !settled) {
+    iteration <- iteration + 1L
     logs <- as.vector(design %*% point)
-    sum(counts * logs + values * exp(-logs)) / total
+    terms <- values * exp(-logs)
+    slack <- logs - lower
+    binding_tolerance <- 64 * .Machine$double.eps * dimension *
+      max(1, abs(lower), max(abs(logs)))
+    # Retaining a nonbinding row would solve the wrong equality-constrained
+    # problem. Check its actual slack, rather than a difference of step lengths.
+    if (length(active) > 0L && any(abs(slack[active]) > binding_tolerance)) {
+      active <- active[abs(slack[active]) <= binding_tolerance]
+    }
+    gradient <- as.vector(crossprod(design, counts - terms)) / total
+    hessian <- crossprod(design, design * terms) / total
+    # Search along the null space of the currently active floor constraints.
+    basis <- if (length(active) > 0L) {
+      factor <- qr(t(design[active, , drop = FALSE]))
+      qr.Q(factor, complete = TRUE)[, seq_len(dimension) > length(active), drop = FALSE]
+    } else diag(dimension)
+    projected <- as.vector(crossprod(basis, gradient))
+    if (length(projected) == 0L ||
+        max(abs(projected)) < 1e-11 * (1 + max(abs(gradient)))) {
+      if (length(active) == 0L) {
+        settled <- TRUE
+        break
+      }
+      constraints <- design[active, , drop = FALSE]
+      multipliers <- as.vector(solve(tcrossprod(constraints), constraints %*% gradient))
+      # Certification includes primal feasibility and complementary slackness,
+      # as well as stationarity and the multipliers' signs. Positive multipliers
+      # alone cannot certify a constraint incorrectly frozen above its floor.
+      kkt_tolerance <- 1e-11 * (1 + max(abs(gradient)))
+      if (min(multipliers) >= -kkt_tolerance &&
+          all(slack >= -binding_tolerance) &&
+          max(abs(multipliers * slack[active])) <= kkt_tolerance) {
+        settled <- TRUE
+        break
+      }
+      release <- if (min(multipliers) < -kkt_tolerance) which.min(multipliers) else
+        which.max(abs(multipliers * slack[active]))
+      active <- active[-release]
+      next
+    }
+    reduced <- crossprod(basis, hessian %*% basis)
+    delta <- tryCatch({
+      factor <- chol(reduced)
+      -backsolve(factor, forwardsolve(t(factor), projected))
+    }, error = function(condition) -projected)
+    direction <- as.vector(basis %*% delta)
+    velocity <- as.vector(design %*% direction)
+    # A QR null-space product can leave rounding-sized velocities in rows
+    # dependent on the active constraints. They are algebraically zero and
+    # must not impose a zero step without adding an independent constraint.
+    velocity[abs(velocity) <= 64 * .Machine$double.eps * dimension *
+               max(abs(design)) * max(abs(direction))] <- 0
+    limited <- setdiff(which(velocity < 0), active)
+    bounds <- slack[limited] / (-velocity[limited])
+    alpha <- if (length(bounds) > 0L) min(1, max(0, min(bounds))) else 1
+    # Only the first limiting constraint is activated. An absolute tolerance
+    # on step lengths can falsely activate a distant floor when alpha is tiny.
+    # Simultaneous independent limits are added on subsequent zero-length steps.
+    at_boundary <- if (length(bounds) > 0L && min(bounds) <= 1)
+      limited[which.min(bounds)] else integer()
+    # Evaluate the objective difference without subtracting two almost equal
+    # totals. The linear term uses the gradient; expm1 retains the quadratic
+    # remainder when a final Newton move is smaller than the objective's ulp.
+    change <- function(alpha) {
+      movement <- alpha * velocity
+      sum(gradient * (alpha * direction)) +
+        sum(terms * (expm1(-movement) + movement)) / total
+    }
+    candidate <- point + alpha * direction
+    candidate_change <- change(alpha)
+    halvings <- 0L
+    # Only an actual decrease of the original objective is accepted; no
+    # barrier objective or relaxed EM monotonicity threshold is involved.
+    while ((!is.finite(candidate_change) || candidate_change > 0) && halvings < 60L) {
+      alpha <- alpha / 2
+      candidate <- point + alpha * direction
+      candidate_change <- change(alpha)
+      halvings <- halvings + 1L
+      at_boundary <- integer()
+    }
+    point <- candidate
+    if (length(at_boundary) > 0L) {
+      possible <- unique(c(active, at_boundary))
+      factor <- qr(t(design[possible, , drop = FALSE]))
+      active <- possible[factor$pivot[seq_len(factor$rank)]]
+    }
   }
-  gradient <- function(point) {
-    logs <- as.vector(design %*% point)
-    as.vector(crossprod(design, counts - values * exp(-logs))) / total
+  if (!settled) {
+    stop(errorCondition(
+      "The bounded covariance optimization did not satisfy its KKT conditions.",
+      class = "latents_no_converge", call = NULL))
   }
-  optimum <- stats::constrOptim(initial, objective, gradient, design,
-    rep(lower, k * d), mu = 1e-10,
-    control = list(reltol = 1e-12, maxit = 1000L),
-    outer.iterations = 100L, outer.eps = 1e-12)
-  logs <- as.vector(design %*% optimum$par)
+  logs <- as.vector(design %*% point)
   stopifnot("the bounded chart must remain feasible" =
     all(is.finite(logs)), all(logs >= lower - 1e-12))
   matrix(exp(logs), k, d, byrow = TRUE)

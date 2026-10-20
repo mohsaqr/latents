@@ -307,3 +307,67 @@ test_that("Imhof extreme weight ranges avoid overflow or fail with a typed reaso
   expect_error(.latents_imhof_upper(0, c(1e308, -1e-308)),
                 class = "latents_inaccurate_probability")
 })
+
+test_that("Vuong numerical zeros account for conditioned information whitening", {
+  # A near-collinear chart preserves the exact four-dimensional null span.
+  # Its cross-product information amplifies Cholesky roundoff; this fixture
+  # reproduces locally the platform-dependent extra weight seen on R 4.1.
+  set.seed(83)
+  scores <- matrix(stats::rnorm(400 * 5), 400, 5)
+  alternative <- list(scores = scores, information = crossprod(scores))
+  invisible(lapply(c(1e-2, 1e-3, 1e-4), function(separation) {
+    null_scores <- cbind(scores[, 1], scores[, 1] + separation * scores[, 2],
+                          scores[, 3:4])
+    null <- list(scores = null_scores, information = crossprod(null_scores))
+    lambda <- tryCatch(.latents_vuong_weights(alternative, null),
+                       latents_inaccurate_probability = identity)
+    if (inherits(lambda, "condition")) {
+      expect_s3_class(lambda, "latents_inaccurate_probability")
+      return(invisible(NULL))
+    }
+    expect_equal(sum(lambda != 0), 1)
+    expect_equal(lambda[lambda != 0], 1, tolerance = 1e-12)
+    expect_equal(.latents_imhof_upper(0, lambda), 1, tolerance = 1e-12)
+    expect_equal(.latents_imhof_upper(1e-12, lambda),
+                 stats::pchisq(1e-12, 1, lower.tail = FALSE), tolerance = 1e-10)
+  }))
+})
+
+test_that("uncertain genuine Vuong weights are refused rather than replaced by zeros", {
+  set.seed(83)
+  scores <- qr.Q(qr(matrix(stats::rnorm(400 * 5), 400, 5)))
+  alternative <- list(scores = scores, information = diag(5))
+  invisible(lapply(list(c(1e-4, 1e-8), c(1e-3, 1e-10)), function(case) {
+    transform <- diag(4)
+    transform[1, 2] <- 1
+    transform[2, 2] <- case[1]
+    delta <- case[2]
+    null <- list(scores = scores[, 1:4] %*% transform * sqrt(1 + delta),
+                 information = crossprod(transform))
+    # Exactly one +1 and four -delta weights: the upper tail at zero is
+    # pf(4 delta, 1, 4), below one by 1.5e-4 or 1.5e-5. Uncertain signs
+    # cannot justify silently reporting probability one.
+    expect_error(.latents_vuong_weights(alternative, null),
+                  class = "latents_inaccurate_probability")
+    plain <- list(scores = scores[, 1:4] * sqrt(1 + delta), information = diag(4))
+    lambda <- .latents_vuong_weights(alternative, plain)
+    expect_equal(sort(lambda), c(rep(-delta, 4), rep(0, 4), 1), tolerance = 1e-12)
+    expect_equal(.latents_imhof_upper(0, lambda),
+                 stats::pf(4 * delta, 1, 4, lower.tail = FALSE), tolerance = 1e-8)
+  }))
+})
+
+test_that("nonfinite or overwhelming Vuong uncertainty cannot erase finite weights", {
+  set.seed(83)
+  scores <- qr.Q(qr(matrix(stats::rnorm(80), 20, 4)))
+  transform <- diag(4)
+  transform[1, 2] <- 1
+  transform[2, 2] <- 1e-7
+  null <- list(scores = matrix(0, 20, 1), information = matrix(1))
+  invisible(lapply(c(8e153, 1.1e154), function(size) {
+    alternative <- list(scores = scores %*% transform * size,
+                         information = crossprod(transform))
+    expect_error(.latents_vuong_weights(alternative, null),
+                  class = "latents_inaccurate_probability")
+  }))
+})

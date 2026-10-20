@@ -56,6 +56,21 @@ jobs:
             ${{ matrix.config.ignore }}
           needs: check
 
+      - name: Install current package for regression workers
+        run: R CMD INSTALL .
+
+      - name: Check platform-sensitive regressions
+        run: |
+          pkgload::load_all(quiet = TRUE)
+          results <- as.data.frame(testthat::test_dir(
+            "tests/testthat", filter = "^(lmr|parallel|review-core-audit)$",
+            load_package = "none", reporter = "summary", stop_on_failure = TRUE))
+          stopifnot(!any(results$warning))
+        shell: Rscript {0}
+        env:
+          NOT_CRAN: true
+          _R_CHECK_LIMIT_CORES_: true
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           args: 'c("--no-manual", "--as-cran")'
