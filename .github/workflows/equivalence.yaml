@@ -47,5 +47,5 @@ jobs:
           cat(sprintf("%d cases, %d expectations\n", nrow(results), sum(results$nb)))
         shell: Rscript {0}
 
-      - name: Check retained Mplus inference and missing-data references
-        run: Rscript equivalence/run.R '^(mplus-(inference|robust|mixture-weights|lmr)|missing-patterns)$'
+      - name: Check documentation claims and retained inference references
+        run: Rscript equivalence/run.R '^(claims|mplus-(inference|robust|mixture-weights|lmr)|missing-patterns)$'
