@@ -58,6 +58,7 @@ jobs:
 
       - name: Install current package for regression workers
         run: R CMD INSTALL .
+        shell: bash
 
       - name: Check platform-sensitive regressions
         run: |
