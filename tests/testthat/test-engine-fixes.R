@@ -44,14 +44,35 @@ test_that("relabelling a noise fit keeps its noise units at profile 0", {
   expect_true(all(agreement > 0.99))
 })
 
+# Every binary state path occurs equally often at four occasions. The same
+# symmetric residual quantiles within each path keep all initial and transition
+# probabilities near one half, far from a platform-sensitive boundary optimum.
+fixes_transition_fit <- function() {
+  paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
+  people <- rep(seq_len(nrow(paths)), each = 10L)
+  residual <- rep(stats::qnorm((seq_len(10L) - 0.5) / 10), nrow(paths))
+  data <- data.frame(id = rep(seq_along(people), each = 4L),
+                     time = rep(seq_len(4L), length(people)),
+                     y = 0.1 * (as.vector(t(2 * paths[people, ] - 3)) +
+                       0.5 * rep(residual, each = 4L)))
+  lta(data, "y", "id", n_profiles = 2, time = "time", transitions = "occasion",
+      n_starts = 1, seed = 1)
+}
+
 test_that("transition parameter_inference() uses the caller's step in its table", {
   skip_on_cran()
-  fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
-             "student", n_profiles = 2, time = "sequence",
-             transitions = "occasion", n_starts = 1, seed = 1)
+  fit <- fixes_transition_fit()
   expect_s3_class(fit, "multilpa_lta")
+  expect_true(fit$converged)
+  expect_false(fit$boundary)
+  expect_false(fit$probability_boundary)
+  expect_lt(max(abs(stats::plogis(fit$initial_coefficients) - 0.5)), 0.25)
+  expect_lt(max(abs(stats::plogis(fit$transition_coefficients) - 0.5)), 0.25)
   coarse <- parameter_inference(fit, step = 1e-2)
   fine <- parameter_inference(fit, step = 1e-4)
+  # The units make 0.01 a meaningful perturbation of a 0.05 within-state SD;
+  # this checks real curvature sensitivity with a margin beyond rounding.
+  expect_gt(max(abs(coarse$standard_error - fine$standard_error)), 1e-8)
   covariance <- attr(coarse, "covariance_unconstrained")
   expect_equal(coarse$standard_error[coarse$block == "transition"],
                unname(sqrt(diag(covariance)))[startsWith(colnames(covariance),
@@ -63,9 +84,7 @@ test_that("transition parameter_inference() uses the caller's step in its table"
 
 test_that("a general transition fit refuses a single transition network", {
   skip_if_not_installed("tna")
-  fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
-             "student", n_profiles = 2, time = "sequence",
-             transitions = "occasion", n_starts = 1, seed = 1)
+  fit <- fixes_transition_fit()
   expect_error(get_tna(fit), class = "latents_unsupported_tna")
   expect_error(get_group_tna(fit), class = "latents_unsupported_tna")
 })

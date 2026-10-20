@@ -64,7 +64,7 @@ jobs:
         run: |
           pkgload::load_all(quiet = TRUE)
           results <- as.data.frame(testthat::test_dir(
-            "tests/testthat", filter = "^(lmr|parallel|review-core-audit)$",
+            "tests/testthat", filter = "^(engine-fixes|lmr|parallel|review-core-audit)$",
             load_package = "none", reporter = "summary", stop_on_failure = TRUE))
           stopifnot(!any(results$warning))
         shell: Rscript {0}
