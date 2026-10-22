@@ -119,7 +119,11 @@ candidates. `boundary = "exclude"` sets aside every start with a variance at
 its lower bound and retains the best of the remaining starts; the default,
 `"allow"`, retains the highest likelihood, as Mplus does. The option is
 advisable when many starts are used, and it has no effect on categorical
-indicators, which have no variances.
+indicators, which have no variances. A spurious profile need not reach the
+bound: a few nearly coincident observations can give it variances close to
+zero. A candidate with a profile that has fewer effective members than its
+own means and variances is therefore reported by a `latents_thin_profiles`
+warning, which the grid above raises once.
 
 ```{r starts-exclude, eval = FALSE}
 models <- enumerate_classes(course_engagement, activity, "student",

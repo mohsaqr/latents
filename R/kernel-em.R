@@ -115,23 +115,45 @@
 #' @param max_iter Maximum number of EM steps.
 #' @param tol Relative convergence tolerance.
 #' @param settings From `.latents_em_settings()`.
+#' @param pause Iteration count after which the run stops at the end of the
+#'   current step or cycle, resumable; `Inf` runs to the end. Whether a cycle
+#'   is accelerated is decided against `max_iter`, not `pause`, so a run
+#'   paused and resumed takes exactly the steps of one that was not.
+#' @param resume `NULL`, or the `checkpoint` of a paused run, which the run
+#'   continues (its E-step is recomputed from the state, which is what the run
+#'   computed there, except after a non-finite step, when it is carried).
 #' @return A list with `state`, `expectation`, `converged`, `iterations`,
 #'   `history` (the log likelihood at the start and after every step) and
-#'   `settled` (whether the last step settled the likelihood).
+#'   `settled` (whether the last step settled the likelihood); with a finite
+#'   `pause`, also `checkpoint`, everything a resumed run needs.
 #' @noRd
 .latents_em <- function(state, evaluate, maximize, max_iter, tol,
-                        settings = .latents_em_settings()) {
-  expectation <- evaluate(state)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  settled <- FALSE
-  stalled <- 0L
-  iteration <- 0L
+                        settings = .latents_em_settings(), pause = Inf,
+                        resume = NULL) {
+  if (is.null(resume)) {
+    expectation <- evaluate(state)
+    history <- expectation$log_likelihood
+    converged <- FALSE
+    settled <- FALSE
+    stalled <- 0L
+    iteration <- 0L
+    ended <- FALSE
+  } else {
+    state <- resume$state
+    expectation <- resume$expectation %||% evaluate(state)
+    history <- resume$history
+    converged <- resume$converged
+    settled <- resume$settled
+    stalled <- resume$stalled
+    iteration <- resume$iterations
+    ended <- resume$ended
+  }
   step <- function(point, point_expectation) {
     .latents_em_step(point, point_expectation, evaluate, maximize, settings)
   }
   # EM is a fixed-point iteration: every step starts from the last point.
-  while (iteration < max_iter && !converged && stalled < settings$max_stalled) {
+  while (!ended && iteration < max_iter && iteration < pause && !converged &&
+         stalled < settings$max_stalled) {
     accelerate <- !is.null(settings$accelerate) && max_iter - iteration >= 3L
     if (accelerate) {
       cycle <- .latents_squarem_cycle(step, state, expectation, evaluate,
@@ -141,6 +163,7 @@
       plain <- step(state, expectation)
       if (!plain$finite) {
         state <- plain$state
+        ended <- TRUE
         break
       }
       cycle <- list(state = plain$state, expectation = plain$expectation,
@@ -159,8 +182,17 @@
     state <- cycle$state
     expectation <- cycle$expectation
   }
-  list(state = state, expectation = expectation, converged = converged,
-       iterations = iteration, history = history, settled = settled)
+  fit <- list(state = state, expectation = expectation, converged = converged,
+              iterations = iteration, history = history, settled = settled)
+  if (is.finite(pause) || !is.null(resume)) {
+    fit$checkpoint <- list(state = state, history = history, converged = converged,
+                           settled = settled, stalled = stalled,
+                           iterations = iteration, ended = ended)
+    # A run ended by a non-finite step keeps the E-step before it, which
+    # evaluating its state again would not give.
+    if (ended) fit$checkpoint$expectation <- expectation
+  }
+  fit
 }
 
 #' One SQUAREM cycle over an engine's parameter state
@@ -252,14 +284,22 @@
 #'   iterations are spread over `cores`.
 #' @param cores Number of cores for the iterations, from
 #'   `.latents_check_cores()`; used only with `prepare`.
+#' @param screen `NULL` for the search of latents 0.96.1 and earlier, every
+#'   start run to the end; or, for the emEM search, a list of `n_pool`,
+#'   `iterations` and `protect` (see `.latents_run_screened()`), which needs
+#'   `prepare`.
 #' @return A list with `attempts`, `valid`, `scores`, `converged` and
-#'   `best_start`.
+#'   `best_start`; with `screen`, also `stage` and `screened_scores`.
 #' @noRd
 .latents_run_starts <- function(n_starts, run, select_start,
                                 score = function(attempt) {
                                   attempt$expectation$log_likelihood
                                 }, interior = NULL, prepare = NULL,
-                                cores = 1L) {
+                                cores = 1L, screen = NULL) {
+  if (!is.null(screen)) {
+    return(.latents_run_screened(n_starts, run, select_start, score, interior,
+                                 prepare, cores, screen))
+  }
   failure <- function(error) list(error = conditionMessage(error))
   attempts <- if (is.null(prepare)) {
     lapply(seq_len(n_starts), function(start_index) {
@@ -294,6 +334,119 @@
   list(attempts = attempts, valid = valid, scores = scores,
        converged = converged,
        best_start = .multilpa_select_start(scores, converged, select_start, flags))
+}
+
+#' Screen a pool of starts and run the best to the end (emEM)
+#'
+#' Biernacki, C., Celeux, G., & Govaert, G. (2003). Choosing starting values
+#' for the EM algorithm for getting the highest likelihood in multivariate
+#' Gaussian mixture models. Computational Statistics & Data Analysis, 41,
+#' 561-575.
+#'
+#' Every start of the pool is prepared in order on this process (so the
+#' random numbers are drawn as when they are prepared one by one), then run
+#' for `screen$iterations` EM iterations, paused at the end of the step or
+#' cycle that reaches them. The protected starts and then those with the
+#' highest screened likelihood (ties by pool order) are resumed to the end,
+#' `n_starts` in all; a resumed start takes exactly the steps it would have
+#' taken unscreened. The best is chosen among them by
+#' `.multilpa_select_start()`; the other starts stay in the record with their
+#' screened likelihood.
+#'
+#' @param n_starts Number of starts run to the end.
+#' @param run A function of the start index, its initial values, `pause` and
+#'   `resume`, returning an attempt that carries a `checkpoint` when paused.
+#' @param select_start,score,interior,prepare,cores As for
+#'   `.latents_run_starts()`.
+#' @param screen A list of `n_pool` (starts screened, at least `n_starts`),
+#'   `iterations` (the screening budget) and `protect` (pool indices that go
+#'   to the end whatever their screened likelihood, such as a supplied start).
+#' @return As `.latents_run_starts()`, with `attempts` over the whole pool, a
+#'   screened-only attempt carrying `screened = TRUE`, its `state`,
+#'   `converged`, `iterations` and `expectation$log_likelihood`; `stage`
+#'   (`"final"` or `"screened"`) and `screened_scores`.
+#' @noRd
+.latents_run_screened <- function(n_starts, run, select_start, score, interior,
+                                  prepare, cores, screen) {
+  stopifnot(
+    "screening needs `prepare`" = is.function(prepare),
+    "`screen$n_pool` must be at least `n_starts`" = screen$n_pool >= n_starts
+  )
+  failure <- function(error) list(error = conditionMessage(error))
+  pool <- seq_len(screen$n_pool)
+  initial <- lapply(pool, function(start_index) {
+    tryCatch(list(values = prepare(start_index)), error = failure)
+  })
+  # Only what ranking and resuming need comes back from a screened run, so a
+  # large pool does not hold every start's posteriors at once.
+  screened <- .latents_map_candidates(pool, function(start_index) {
+    prepared <- initial[[start_index]]
+    if (!is.null(prepared$error)) return(prepared)
+    attempt <- tryCatch(run(start_index, prepared$values, pause = screen$iterations),
+                        error = failure)
+    if (!is.null(attempt$error)) return(attempt)
+    list(screened = TRUE, state = attempt$checkpoint$state,
+         converged = isTRUE(attempt$converged), iterations = attempt$iterations,
+         expectation = list(log_likelihood = score(attempt)),
+         checkpoint = attempt$checkpoint)
+  }, cores)
+  screened_valid <- vapply(screened, function(attempt) is.null(attempt$error),
+                           logical(1))
+  screened_scores <- vapply(screened, function(attempt) {
+    if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
+  }, numeric(1))
+  usable <- screened_valid & is.finite(screened_scores)
+  if (!any(usable)) {
+    stop(errorCondition(sprintf(
+      "All %d starts failed: %s", screen$n_pool,
+      paste(unique(vapply(screened[!screened_valid], `[[`, character(1), "error")),
+            collapse = "; ")),
+      class = "latents_all_starts_failed", call = NULL))
+  }
+  protected <- intersect(screen$protect %||% integer(), pool[usable])
+  ranked <- setdiff(pool[usable][order(-screened_scores[usable], pool[usable])],
+                    protected)
+  finalists <- utils::head(c(protected, ranked), n_starts)
+  continued <- .latents_map_candidates(finalists, function(start_index) {
+    tryCatch(run(start_index, NULL, resume = screened[[start_index]]$checkpoint),
+             error = failure)
+  }, cores)
+  attempts <- lapply(screened, function(attempt) {
+    attempt$checkpoint <- NULL
+    attempt
+  })
+  attempts[finalists] <- lapply(continued, function(attempt) {
+    attempt$checkpoint <- NULL
+    attempt
+  })
+  stage <- ifelse(pool %in% finalists, "final", "screened")
+  valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
+  final_valid <- valid & stage == "final"
+  if (!any(final_valid)) {
+    stop(errorCondition(sprintf(
+      "All %d starts carried to the end failed: %s", length(finalists),
+      paste(unique(vapply(attempts[finalists], `[[`, character(1), "error")),
+            collapse = "; ")),
+      class = "latents_all_starts_failed", call = NULL))
+  }
+  scores <- vapply(seq_along(attempts), function(start_index) {
+    attempt <- attempts[[start_index]]
+    if (!valid[start_index]) -Inf else if (final_valid[start_index]) score(attempt) else
+      attempt$expectation$log_likelihood
+  }, numeric(1))
+  converged <- vapply(attempts, function(attempt) isTRUE(attempt$converged),
+                      logical(1))
+  # Only a start run to the end can be reported.
+  eligible_scores <- ifelse(final_valid, scores, -Inf)
+  flags <- if (!is.null(interior)) {
+    vapply(seq_along(attempts), function(start_index) {
+      final_valid[start_index] && isTRUE(interior(attempts[[start_index]]))
+    }, logical(1))
+  }
+  list(attempts = attempts, valid = valid, scores = scores,
+       converged = converged, stage = stage, screened_scores = screened_scores,
+       best_start = .multilpa_select_start(eligible_scores, converged & final_valid,
+                                           select_start, flags))
 }
 
 #' Quasi-Newton finish from an EM point

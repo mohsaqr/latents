@@ -187,7 +187,7 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
       converged = x$converged,
       boundary = any(x$between_zero) || any(x$within_floor),
       kkt = if (is.na(x$kkt)) NA else isTRUE(x$kkt),
-      n_starts = nrow(x$starts), n_best_replicated = x$n_best_replicated,
+      n_starts = x$n_starts %||% nrow(x$starts), n_best_replicated = x$n_best_replicated,
       stringsAsFactors = FALSE),
     starts = x$starts,
     recovery = .additive_recovery(x, data, truth))

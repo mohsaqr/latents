@@ -20,7 +20,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 .cross_level_arguments <- function() {
   c("data", "vars", "id", "n_profiles", "n_group_classes", "family",
     "variance_model", "between_variance", "n_starts", "max_iter", "tol",
-    "min_variance", "seed", "weights")
+    "min_variance", "seed", "weights", "search", "n_screen")
 }
 
 #' Class-conditional log densities of the group means, groups x classes
@@ -56,10 +56,11 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 #' @noRd
 .cross_level_initialize <- function(x, group_index, group_means, n_profiles,
                                     n_group_classes, variance_model,
-                                    between_variance, min_variance, start_index) {
+                                    between_variance, min_variance, start_index,
+                                    kind = "kmeans") {
   profile <- .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                                   variance_model, min_variance, start_index,
-                                  hierarchical = start_index == 1L)
+                                  hierarchical = start_index == 1L, kind = kind)
   spread <- apply(group_means, 2L, stats::sd)
   spread[!is.finite(spread) | spread <= 0] <- 1
   scaled <- sweep(group_means, 2L, spread, "/")
@@ -67,6 +68,9 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     rep(1L, nrow(group_means))
   } else if (start_index == 1L) {
     .multilpa_ward_assignments(scaled, n_group_classes)
+  } else if (identical(kind, "partition")) {
+    # An emEM pool start: the groups dealt into the classes at random.
+    sample(rep_len(seq_len(n_group_classes), nrow(scaled)))
   } else {
     centres <- scaled[sample.int(nrow(scaled), n_group_classes), , drop = FALSE]
     distance <- vapply(seq_len(n_group_classes), function(h) {
@@ -97,10 +101,13 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 }
 
 #' EM for the full cross-level model from one start
+#'
+#' `pause` and `resume` are as for `.latents_em()`.
 #' @noRd
 .cross_level_em <- function(x, group_index, group_means, parameters,
                             variance_model, between_variance, min_variance,
-                            max_iter, tol, sampling_weights = NULL) {
+                            max_iter, tol, sampling_weights = NULL, pause = Inf,
+                            resume = NULL) {
   evaluate <- function(point) {
     .multilpa_expectation(x, group_index, c(point, list(
       group_log_density = .cross_level_group_density(
@@ -115,9 +122,13 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     updated$between_variances <- between$variances
     updated
   }
-  fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol)
-  list(parameters = fit$state, expectation = fit$expectation, converged = fit$converged,
-       iterations = fit$iterations, history = fit$history)
+  fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol, pause = pause,
+                     resume = resume)
+  result <- list(parameters = fit$state, expectation = fit$expectation,
+                 converged = fit$converged, iterations = fit$iterations,
+                 history = fit$history)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Free parameters of a cross-level model
@@ -142,7 +153,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 .cross_level_fit <- function(data, vars, id, n_profiles, n_group_classes, family,
                              variance_model, between_variance, n_starts,
                              max_iter, tol, min_variance, seed, call,
-                             weights = NULL) {
+                             weights = NULL, search = "kmeans", n_screen = NULL) {
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
   invisible(lapply(names(counts), function(field) {
@@ -177,15 +188,21 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   group_means <- unname(stats$averages)
   .latents_local_seed(seed)
   fitted <- if (identical(family, "full_cross_level")) {
-    best <- .cross_level_select(.latents_run_starts(n_starts, function(start_index) {
-      start <- .cross_level_initialize(x, group_index, group_means, n_profiles,
-                                       n_group_classes, variance_model,
-                                       between_variance, min_variance,
-                                       start_index)
-      .cross_level_em(x, group_index, group_means, start, variance_model,
-                      between_variance, min_variance, max_iter, tol,
-                      sampling_weights)
-    }, "likelihood"), n_starts)
+    # Every start is prepared before any is run; EM draws no random numbers,
+    # so the draws are those of preparing and running each start in turn.
+    screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
+    best <- .cross_level_select(.latents_run_starts(n_starts, prepare = function(start_index) {
+      .cross_level_initialize(x, group_index, group_means, n_profiles,
+                              n_group_classes, variance_model,
+                              between_variance, min_variance, start_index,
+                              kind = .latents_start_kind(start_index, n_starts))
+    }, run = function(start_index, start, pause = Inf, resume = NULL) {
+      .cross_level_em(x, group_index, group_means, start %||% resume$state,
+                      variance_model, between_variance, min_variance, max_iter,
+                      tol, sampling_weights, pause = pause, resume = resume)
+    }, select_start = "likelihood", screen = screen), n_starts)
+    best$search_record <- .latents_search_record(search, n_starts, screen,
+                                                 "likelihood", "allow")
     # Weighted posteriors are counts; each unit is reported by its own.
     if (!is.null(sampling_weights)) {
       reported <- .multilpa_expectation(x, group_index, c(best$parameters, list(
@@ -200,11 +217,17 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     .cross_level_restricted(x, group_index, group_means, n_profiles,
                             n_group_classes, variance_model, between_variance,
                             n_starts, max_iter, tol, min_variance,
-                            sampling_weights)
+                            sampling_weights, search = search, n_screen = n_screen)
   }
   result <- .cross_level_result(fitted, family, stats, x, group_means, vars, id,
                                 n_profiles, n_group_classes, variance_model,
                                 between_variance, min_variance, call)
+  # The restricted model's two factor fits each run this search.
+  record <- fitted$search_record %||%
+    .latents_search_record(search, n_starts,
+                           .latents_search_screen(search, n_starts, n_screen, max_iter),
+                           "likelihood", "allow")
+  result[names(record)] <- record
   if (!is.null(sampling_weights)) {
     result$weights <- weights
     result$sampling_weights <- stats::setNames(sampling_weights, stats$ids)
@@ -218,6 +241,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 #' `latents_failed_starts` warning, as in every other family.
 #' @noRd
 .cross_level_select <- function(starts, n_starts) {
+  found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
@@ -227,13 +251,13 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; the start records keep their errors.",
-      sum(!valid), n_starts), class = "latents_failed_starts", call = NULL))
+      sum(!valid), length(attempts)), class = "latents_failed_starts", call = NULL))
   }
-  best$starts <- data.frame(
-    start = seq_len(n_starts), log_likelihood = ifelse(valid, scores, NA_real_),
+  best$starts <- .latents_search_columns(data.frame(
+    start = seq_along(attempts), log_likelihood = ifelse(valid, scores, NA_real_),
     converged = converged,
     error = vapply(attempts, function(a) a$error %||% NA_character_, character(1)),
-    selected = seq_len(n_starts) == best_start)
+    selected = seq_along(attempts) == best_start), found, n_starts)
   best
 }
 
@@ -246,7 +270,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 .cross_level_restricted <- function(x, group_index, group_means, n_profiles,
                                     n_group_classes, variance_model,
                                     between_variance, n_starts, max_iter, tol,
-                                    min_variance, sampling_weights = NULL) {
+                                    min_variance, sampling_weights = NULL,
+                                    search = "kmeans", n_screen = NULL) {
   # Under sampling weights the factorization still holds: a group's weight
   # multiplies its members' ratings and its own mean, so the rating part is
   # a row-weighted fit and the group part a group-weighted one.
@@ -259,7 +284,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
       multilpa(frame, indicators, NULL, n_profiles = k, variance_model = variance,
                n_starts = n_starts, max_iter = max_iter, tol = tol,
                min_variance = min_variance, acceleration = "none",
-               weights = if (is.null(unit_weights)) NULL else weight_column),
+               weights = if (is.null(unit_weights)) NULL else weight_column,
+               search = search, n_screen = n_screen),
       latents_single_level = function(notice) invokeRestart("muffleMessage"))
   }
   row_weights <- if (is.null(sampling_weights)) NULL else sampling_weights[group_index]
@@ -356,6 +382,9 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     warning(warningCondition("A variance reached min_variance; this is a bound-active fit.",
                              class = "latents_boundary", call = NULL))
   }
+  .latents_warn_thin_profiles(
+    colSums(subject_posteriors),
+    .latents_profile_parameters(length(vars), variance_model, "diagonal"))
   result
 }
 

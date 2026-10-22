@@ -61,7 +61,7 @@ test_that("candidates' warnings reach the caller in grid order, as on one core",
             "self_regulation", "test_anxiety")
   runs <- lapply(1:2, \(cores) collect_conditions(enumerate_lpa(
     srl, vars, n_profiles = 6:8, model = "VVI", n_starts = 3, seed = 1,
-    cores = cores)))
+    cores = cores, search = "kmeans")))
   expect_true(length(runs[[1]]$conditions) > 0L)
   expect_identical(runs[[2]]$conditions, runs[[1]]$conditions)
   expect_identical(as.data.frame(runs[[2]]$value)$warnings,

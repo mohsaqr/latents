@@ -81,10 +81,10 @@ test_that("a failed full cross-level start is surfaced, as in every other family
   local_mocked_bindings(.cross_level_initialize = function(x, group_index, group_means,
                                                            n_profiles, n_group_classes,
                                                            variance_model, between_variance,
-                                                           min_variance, start_index) {
+                                                           min_variance, start_index, ...) {
     if (start_index == 2L) stop("forced start failure")
     original(x, group_index, group_means, n_profiles, n_group_classes, variance_model,
-             between_variance, min_variance, start_index)
+             between_variance, min_variance, start_index, ...)
   })
   expect_warning(
     fit <- multilpa(data, c("y1", "y2"), "group", n_profiles = 2, n_group_classes = 2,

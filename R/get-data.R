@@ -107,7 +107,9 @@
 #'     without `time`.}
 #'   \item{`"starts"`}{One row per EM start: `start`, `log_likelihood`,
 #'     `converged`, `iterations`, `error` and, where the family records it,
-#'     `boundary`.}
+#'     `boundary`. Under `search = "emEM"`, one row per start of the pool,
+#'     with its `kind`, its `stage` (`"final"` when run to convergence,
+#'     `"screened"` otherwise) and its `screened_log_likelihood`.}
 #'   \item{`"data"`}{The data the model was fitted to, one row per observation
 #'     in input order: the identifier (except for a single-level fit), the
 #'     occasion where there is one, the sampling weights of a weighted fit (as

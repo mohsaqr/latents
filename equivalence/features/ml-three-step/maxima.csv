@@ -1,0 +1,68 @@
+"against","quantity","difference","comparisons","failed"
+"reference","90% CI (SE units)",3.17635060788581e-07,140,0
+"reference (sweep)","90% CI (SE units)",4.42152573807785e-07,238,0
+"modal method","ML mean - modal mean (SE units)",1.66534787132964e-14,2,0
+"lpa_k2_hi_01","SE (relative)",1.24211751995063e-12,2,0
+"lpa_k2_hi_01","SE x 1e4 (relative)",5.22670795533031e-12,2,0
+"Latent GOLD psuid","cluster mean SE (relative)",7.90509346870749e-09,6,0
+"Latent GOLD psuid","cluster pair Wald (relative)",1.25654055466515e-07,6,0
+"Latent GOLD default","contrast SE (relative)",8.33115241238858e-08,139,0
+"Latent GOLD random","contrast SE (relative)",4.6913375406632e-09,1,0
+"Latent GOLD default","contrast with class 1 (SE units)",5.52115754634056e-06,139,0
+"Latent GOLD random","contrast with class 1 (SE units)",5.38868872268778e-08,1,0
+"reference","effective n (relative)",5.65081093029107e-10,140,0
+"reference (sweep)","effective n (relative)",5.48207923500854e-10,238,0
+"Latent GOLD pipeline","end-to-end SE (relative)",6.6207338260682e-06,10,0
+"Latent GOLD pipeline","end-to-end mean (SE units)",1.85357713022897e-05,10,0
+"Latent GOLD pipeline","end-to-end variance (relative)",4.10636557446331e-06,10,0
+"Mplus","last-step proportions",3.37919333686099e-05,20,0
+"Mplus","latents SE without CR1 (relative)",0.000332811994860238,20,0
+"best known maximum","latents log likelihood shortfall",0.0365595079601917,12,1
+"Mplus","latents mean (SE units)",0.0101468520085208,20,0
+"Latent GOLD default","log likelihood",1.13504938781261e-09,139,0
+"Latent GOLD random","log likelihood",2.72848410531878e-12,1,0
+"reference","log likelihood",6.11180439591408e-10,140,0
+"reference (sweep)","log likelihood",4.36557456851006e-11,238,0
+"Latent GOLD best","log likelihood shortfall",1.13504938781261e-09,140,0
+"reference","log likelihood shortfall",6.11180439591408e-10,140,0
+"reference (sweep)","log likelihood shortfall",0.0365595079601917,239,1
+"Latent GOLD default","mean (SE units)",5.50889804635815e-06,139,0
+"Latent GOLD random","mean (SE units)",6.01608991937813e-08,1,0
+"reference","mean (SE units)",3.14834752612277e-07,140,0
+"reference (sweep)","mean (SE units)",4.39641456072455e-07,238,0
+"lpa_k2_hi_01","mean - 1e6 (SE units)",1.70893673461567e-11,2,0
+"Latent GOLD default","mean SE (relative)",1.06598372795474e-07,139,0
+"Latent GOLD random","mean SE (relative)",6.41053032879313e-09,1,0
+"reference","mean SE (relative)",3.63576241660206e-08,140,0
+"reference (sweep)","mean SE (relative)",3.79343878748429e-08,238,0
+"lpa_k2_hi_01","mean x 1e4 (SE units)",0,2,0
+"reference","pair SE (relative)",4.05182298823803e-09,140,0
+"reference (sweep)","pair SE (relative)",3.7255273421799e-08,238,0
+"Latent GOLD default","pair Wald (relative)",8.38773049877117e-07,139,0
+"Latent GOLD random","pair Wald (relative)",1.46277714475929e-08,1,0
+"reference","pair difference (SE units)",3.56206146185535e-07,140,0
+"reference (sweep)","pair difference (SE units)",5.74509307353062e-07,238,0
+"reference","pair p (BH) (in units of dz)",4.67866355917019e-08,140,0
+"reference (sweep)","pair p (BH) (in units of dz)",5.74976244109365e-07,238,0
+"reference","pair p-value (in units of dz)",4.67866355917019e-08,140,0
+"reference (sweep)","pair p-value (in units of dz)",5.74976244109365e-07,238,0
+"reference","pair statistic (relative)",4.67865818618139e-08,140,0
+"reference (sweep)","pair statistic (relative)",5.74976283057582e-07,238,0
+"Mplus","pair |z| = sqrt(chi-square)",0.0101678445552111,20,0
+"Latent GOLD pipeline","reference SE (relative)",6.11818873341718e-08,10,0
+"Mplus","reference SE without CR1 (relative)",0.000333370648748388,20,0
+"Latent GOLD pipeline","reference log likelihood",6.3664629124105e-12,10,0
+"Latent GOLD pipeline","reference mean (SE units)",1.36153420069453e-06,10,0
+"Mplus","reference mean (SE units)",0.0101524256935604,20,0
+"Latent GOLD standard","reference model SE (relative)",1.24279350255385e-07,139,0
+"Latent GOLD standard","reference model pair Wald (relative)",8.5227121662812e-07,139,0
+"Latent GOLD random starts","reference shortfall",1.54614099301398e-11,12,0
+"Latent GOLD robust","reference variance SE (relative)",1.73915739920538e-07,139,0
+"reference (sweep)","single-unit class: latents interval is NA",0,1,0
+"reference (sweep)","single-unit class: reference sandwich / model SE",3.45737861782247e-11,1,0
+"Latent GOLD step one","step-one log likelihood",4.07885545428144e-05,5,0
+"Mplus","step-one log likelihood",0.000381859050776256,10,0
+"Latent GOLD default","variance (relative)",2.22124318827177e-07,139,0
+"Latent GOLD random","variance (relative)",7.69462182859115e-08,1,0
+"reference","variance (relative)",1.33924866752011e-08,140,0
+"reference (sweep)","variance (relative)",4.5455963437746e-08,238,0

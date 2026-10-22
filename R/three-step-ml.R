@@ -45,10 +45,6 @@
   weights <- t(errors[, pieces$modal, drop = FALSE]) *
     matrix(prior, length(values), pieces$n_classes, byrow = TRUE)
   log_weights <- log(weights)
-  # The proportional (posterior-weighted) moments start EM, a non-random start
-  # as in Latent GOLD's step three.
-  totals <- colSums(pieces$posteriors)
-  means <- as.vector(crossprod(pieces$posteriors, values)) / totals
   smallest <- 1e-10 * stats::var(values)
   moments <- function(responsibilities, means) {
     squares <- (values - matrix(means, length(values), length(means), byrow = TRUE))^2
@@ -57,7 +53,6 @@
       rep(sum(by_class) / length(values), length(means))
     } else by_class / colSums(responsibilities)
   }
-  variances <- pmax(moments(pieces$posteriors, means), smallest)
   e_step <- function(means, variances) {
     log_density <- vapply(seq_along(means), function(class) {
       stats::dnorm(values, means[class], sqrt(variances[class]), log = TRUE)
@@ -68,29 +63,114 @@
     list(responsibilities = exp(joint - log_marginal),
          log_likelihood = sum(log_marginal))
   }
-  state <- e_step(means, variances)
-  converged <- FALSE
-  iterations <- 0L
-  # EM is iterative by nature: each step needs the previous one's estimates,
-  # so this loop cannot be vectorised.
-  while (iterations < max_iter) {
-    iterations <- iterations + 1L
-    responsibilities <- state$responsibilities
-    means <- as.vector(crossprod(responsibilities, values)) / colSums(responsibilities)
-    variances <- pmax(moments(responsibilities, means), smallest)
-    updated <- e_step(means, variances)
-    change <- abs(updated$log_likelihood - state$log_likelihood)
-    state <- updated
-    if (change <= tol * (1 + abs(state$log_likelihood))) {
-      converged <- TRUE
-      break
+  run <- function(means, variances) {
+    state <- e_step(means, variances)
+    converged <- FALSE
+    failed <- FALSE
+    iterations <- 0L
+    # EM is iterative by nature: each step needs the previous one's estimates,
+    # so this loop cannot be vectorised.
+    while (iterations < max_iter) {
+      iterations <- iterations + 1L
+      responsibilities <- state$responsibilities
+      # A start that leaves a class with no weight has no estimate for it;
+      # the start is dropped rather than carried on with an undefined mean.
+      if (!all(colSums(responsibilities) > 0)) {
+        failed <- TRUE
+        break
+      }
+      means <- as.vector(crossprod(responsibilities, values)) / colSums(responsibilities)
+      variances <- pmax(moments(responsibilities, means), smallest)
+      updated <- e_step(means, variances)
+      if (!is.finite(updated$log_likelihood)) {
+        failed <- TRUE
+        break
+      }
+      change <- abs(updated$log_likelihood - state$log_likelihood)
+      state <- updated
+      if (change <= tol * (1 + abs(state$log_likelihood))) {
+        converged <- TRUE
+        break
+      }
     }
+    list(means = unname(means), variances = unname(variances),
+         responsibilities = state$responsibilities,
+         log_likelihood = state$log_likelihood, converged = converged,
+         iterations = iterations, weights = weights, failed = failed,
+         at_floor = !failed && any(variances <= smallest * (1 + 1e-8)))
   }
-  fit <- list(means = unname(means), variances = unname(variances),
-              responsibilities = state$responsibilities,
-              log_likelihood = state$log_likelihood, converged = converged,
-              iterations = iterations, weights = weights,
-              at_floor = any(variances <= smallest * (1 + 1e-8)))
+  # The step-three likelihood can have several maxima (a heavy-tailed or
+  # skewed outcome lets one class absorb the tail), so EM runs from a fixed,
+  # non-random set of starts: the proportional (posterior-weighted) moments,
+  # Latent GOLD's start, first; then the modal-class means; then the class
+  # means at the outcome's quantiles in every order (every cyclic order, both
+  # ways, above five classes), from the outcome's own variance and from the
+  # proportional spread; then the seeded draws below.
+  proportional <- as.vector(crossprod(pieces$posteriors, values)) / colSums(pieces$posteriors)
+  spread <- pmax(moments(pieces$posteriors, proportional), smallest)
+  modal <- vapply(seq_len(pieces$n_classes), function(class) {
+    members <- pieces$modal == class
+    if (any(members)) mean(values[members]) else proportional[class]
+  }, numeric(1))
+  k <- pieces$n_classes
+  quantiles <- stats::quantile(values, (seq_len(k) - 0.5) / k, names = FALSE)
+  orders <- if (k <= 5L) .multilpa_permutations(k) else {
+    shifts <- t(vapply(seq_len(k) - 1L, function(shift) (seq_len(k) + shift - 1L) %% k + 1L,
+                       integer(k)))
+    rbind(shifts, shifts[, rev(seq_len(k)), drop = FALSE])
+  }
+  placed <- lapply(seq_len(nrow(orders)), function(row) quantiles[orders[row, ]])
+  # A heavy tail can be the likelihood's best class: each class in turn starts
+  # at the mean of the outcome's top and bottom 2%, the others proportional.
+  tails <- c(mean(values[values >= stats::quantile(values, 0.98)]),
+             mean(values[values <= stats::quantile(values, 0.02)]))
+  tailed <- do.call(c, lapply(tails, function(tail) lapply(seq_len(k), function(class) {
+    replace(proportional, class, tail)
+  })))
+  # Twenty more starts at random quantiles with random standard deviations
+  # (0.3 to 1 of the outcome's) reach basins the ordered placements miss.
+  # They are drawn from a fixed seed in a local stream, so the result is the
+  # same whatever the caller's seed and the caller's stream is untouched.
+  drawn <- (function() {
+    .latents_local_seed(20261021L)
+    lapply(seq_len(20L), function(draw) {
+      sds <- if (identical(variance, "equal")) rep(stats::runif(1L, 0.3, 1), k) else
+        stats::runif(k, 0.3, 1)
+      list(means = stats::quantile(values, stats::runif(k), names = FALSE),
+           variances = sds^2)
+    })
+  })()
+  # A start keeps only its estimates, not its observations-by-classes
+  # responsibilities: with five classes there are 272 starts. The winner's
+  # are recomputed below from its own estimates, by the same E-step.
+  slim <- function(means, variances) {
+    attempt <- run(means, variances)
+    attempt$responsibilities <- NULL
+    attempt
+  }
+  runs <- c(lapply(c(list(proportional, modal), tailed), slim, variances = spread),
+            lapply(placed, slim, variances = rep(1, k)),
+            lapply(placed, slim, variances = spread),
+            lapply(drawn, function(start) slim(start$means, start$variances)))
+  failed <- vapply(runs, `[[`, logical(1), "failed")
+  if (all(failed)) {
+    stop(errorCondition(paste(
+      "Every start of the step-three model left a class without weight; the",
+      "class means are not identified."),
+      class = "latents_singular_information", call = NULL))
+  }
+  scores <- vapply(runs, function(attempt) {
+    if (attempt$failed || attempt$at_floor) -Inf else attempt$log_likelihood
+  }, numeric(1))
+  # A later start replaces the first only when it is clearly higher, so a
+  # likelihood with one maximum keeps Latent GOLD's solution exactly. When
+  # every start ends at the variance floor, the first that ran is kept.
+  best <- if (all(is.infinite(scores))) which(!failed)[1L] else {
+    top <- max(scores)
+    which(scores >= top - 1e-10 * (1 + abs(top)))[1L]
+  }
+  fit <- runs[[best]]
+  fit$responsibilities <- e_step(fit$means, fit$variances)$responsibilities
   if (!fit$at_floor) fit <- .multilpa_step_ml_polish(fit, values, variance)
   # Keep the conditioned means for inference: subtracting the origin from
   # already rounded reported means would throw away the precision just saved.
@@ -330,6 +410,23 @@
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
   clustered <- .multilpa_step_clusters(.multilpa_step_ml_influence(fit, values, variance),
                                        pieces, vcov_type)
+  # A sandwich for a class carried by a single unit is built from that unit's
+  # score, which is zero at its own mean: it would report a standard error of
+  # 0 rather than none. The units carrying a class are counted by Kish's
+  # effective number, (sum r)^2 / sum r^2: 1 for one unit, 2 for two equal.
+  # The units are those the sandwich sums over: groups under "cluster".
+  responsibilities <- if (identical(vcov_type, "cluster")) {
+    rowsum(fit$responsibilities, pieces$group_index, reorder = FALSE)
+  } else fit$responsibilities
+  carriers <- colSums(responsibilities)^2 / colSums(responsibilities^2)
+  thin <- carriers < 1.5
+  if (any(thin)) {
+    warning(warningCondition(sprintf(paste(
+      "Class %s of the step-three model is carried by a single unit, so its",
+      "standard error cannot be estimated and is reported as NA."),
+      paste(which(thin), collapse = ", ")), class = "latents_small_classes", call = NULL))
+    clustered[, thin] <- NA_real_
+  }
   if (identical(contrast, "pairs")) {
     # The common origin cancels from contrasts; remove it before subtraction
     # so reported rounding at a large origin cannot erase a small difference.

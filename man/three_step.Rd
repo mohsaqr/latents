@@ -124,8 +124,15 @@ normal within each true class. The log likelihood
 the class means and variances by EM followed by Newton steps, with the
 class sizes \code{pi_t} fixed at the average posterior probabilities and the
 classification errors \code{D} fixed, as in Latent GOLD's step-three model for
-a dependent variable. The standard errors are the sandwich of that
-likelihood, clustered as for the other methods. Maximum likelihood
+a dependent variable. That likelihood can have several maxima (a skewed
+or heavy-tailed outcome lets a class absorb the tail), so EM runs from a
+fixed set of starts, Latent GOLD's proportional start among them, and
+keeps the highest. Twenty of the starts are random draws from a fixed
+internal seed, so the result does not depend on the random seed and the
+caller's random stream is left as it was. The standard errors are the
+sandwich of that likelihood, clustered as for the other methods; a
+class carried by a single unit has none (\code{NA}, with a
+\code{latents_small_classes} warning). Maximum likelihood
 relies on the normal distribution within classes: when the outcome is
 skewed, or its variance differs between classes while \code{variance = "equal"}, ML can shift the class means, and BCH is the more robust choice
 (Bakk and Vermunt 2016).

@@ -227,9 +227,14 @@
 }
 
 #' Refit a transition model's specification to (simulated) data
+#'
+#' `NULL` for `n_starts`, `max_iter` or `tol` takes the fit's own, with its
+#' search (see `.latents_refit_controls()`).
 #' @noRd
-.lta_refit <- function(fit, data, n_starts, max_iter, tol, seed = NULL) {
+.lta_refit <- function(fit, data, n_starts = NULL, max_iter = NULL, tol = NULL,
+                       seed = NULL) {
   a <- .lta_arguments(fit)
+  control <- .latents_refit_controls(fit, n_starts, max_iter, tol)
   lta(data, a$vars, a$id, n_profiles = a$n_profiles, time = a$time,
       n_group_classes = a$n_group_classes, variance_model = a$variance_model,
       categorical = a$categorical %||% character(), occasions = a$occasions,
@@ -240,9 +245,11 @@
       ordinal = a$ordinal %||% character(), count = a$count %||% character(),
       count_model = a$count_model %||% "poisson",
       count_dispersion = a$count_dispersion %||% "varying", weights = fit$weights,
-      n_starts = n_starts, max_iter = max_iter,
-      tol = tol, min_variance = a$min_variance, min_probability = a$min_probability,
-      seed = seed, drop_empty = a$drop_empty %||% TRUE)
+      n_starts = control$n_starts, max_iter = control$max_iter,
+      tol = control$tol, min_variance = a$min_variance,
+      min_probability = a$min_probability, seed = seed,
+      drop_empty = a$drop_empty %||% TRUE, search = control$search,
+      n_screen = control$n_screen, select_start = control$select_start)
 }
 
 #' Verify original indicators, occasions and covariate designs of an LTA fit
@@ -296,10 +303,12 @@
   positive_integer <- function(value) is.numeric(value) && length(value) == 1L &&
     is.finite(value) && value >= 1 && value <= .Machine$integer.max && value == floor(value)
   stopifnot("`iter` must be a positive integer" = positive_integer(iter),
-            "`n_starts` must be a positive integer" = positive_integer(n_starts),
-            "`max_iter` must be a nonnegative integer" = positive_integer(max_iter + 1),
-            "`tol` must be a positive finite number" = is.numeric(tol) &&
-              length(tol) == 1L && is.finite(tol) && tol > 0)
+            "`n_starts` must be a positive integer" =
+              is.null(n_starts) || positive_integer(n_starts),
+            "`max_iter` must be a nonnegative integer" =
+              is.null(max_iter) || positive_integer(max_iter + 1),
+            "`tol` must be a positive finite number" = is.null(tol) ||
+              (is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0))
   if (is.null(data)) {
     stop(errorCondition(paste(
       "bootstrap_lrt() for transition models needs `data`: the simulation keeps",
@@ -323,7 +332,10 @@
   .lta_general_view(null_model, data)
   .multilpa_check_seed(seed)
   .latents_local_seed(seed)
-  reversal_window <- 100 * tol * (1 + abs(null_model$log_likelihood))
+  # Each model is refitted as it was fitted (see `.latents_refit_controls()`).
+  refit_tol <- max(.latents_refit_controls(null_model, n_starts, max_iter, tol)$tol,
+                   .latents_refit_controls(alternative_model, n_starts, max_iter, tol)$tol)
+  reversal_window <- 100 * refit_tol * (1 + abs(null_model$log_likelihood))
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
   if (observed < -reversal_window) {
     stop(errorCondition(sprintf(paste(

@@ -106,16 +106,20 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   stopifnot("`iter` must be a single positive integer" =
               is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 1 &&
               iter == floor(iter) && iter <= .Machine$integer.max,
-            "`n_starts` must be a single positive integer" =
-              is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
+            "`n_starts` must be a single positive integer" = is.null(n_starts) ||
+              (is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
               n_starts >= 1 && n_starts == floor(n_starts) &&
-              n_starts <= .Machine$integer.max,
-            "`max_iter` must be a single positive integer" =
-              is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter) &&
+              n_starts <= .Machine$integer.max),
+            "`max_iter` must be a single positive integer" = is.null(max_iter) ||
+              (is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter) &&
               max_iter >= 1 && max_iter == floor(max_iter) &&
-              max_iter <= .Machine$integer.max,
-            "`tol` must be finite and positive" =
-              is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
+              max_iter <= .Machine$integer.max),
+            "`tol` must be finite and positive" = is.null(tol) ||
+              (is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0))
+  # Each model is refitted as it was fitted (see `.latents_refit_controls()`).
+  controls <- lapply(list(null_model, alternative_model), .latents_refit_controls,
+                     n_starts = n_starts, max_iter = max_iter, tol = tol)
+  tol <- max(controls[[1L]]$tol, controls[[2L]]$tol)
   .multilpa_check_seed(seed)
   .latents_local_seed(seed)
   # Convergence noise allowed below zero, as in the profile models.
@@ -129,16 +133,18 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       class = "latents_reversed_likelihood", call = NULL))
   }
   observed <- max(0, observed)
-  refit <- function(model, simulated) {
+  refit <- function(model, control, simulated) {
     multilpa(simulated, model$vars, model$id,
              n_group_classes = length(model$group_probabilities),
              family = model$family, between_variance = model$between_variance,
-             n_starts = n_starts, max_iter = max_iter, tol = tol,
-             min_variance = model$min_variance)
+             n_starts = control$n_starts, max_iter = control$max_iter,
+             tol = control$tol, min_variance = model$min_variance,
+             search = control$search, n_screen = control$n_screen)
   }
   replicates <- .latents_blrt_replicates(iter, function(i) {
     simulated <- .additive_simulate(null_model)
-    models <- lapply(list(null_model, alternative_model), refit, simulated)
+    models <- Map(refit, list(null_model, alternative_model), controls,
+                  list(simulated))
     statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
     list(statistic = statistic,
          valid = all(vapply(models, function(m) isTRUE(m$converged), logical(1))) &&

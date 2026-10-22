@@ -469,11 +469,15 @@
 }
 
 #' EM for the general transition model from one start
+#'
+#' `pause` and `resume` are as for `.latents_em()`; with either, the result
+#' also carries the `checkpoint`.
 #' @noRd
 .lta_em <- function(x, codes, layout, designs, parameters, occasion_of_row,
                     variance_model, min_variance, n_categories, min_probability,
                     max_iter, tol, covariance_model = "diagonal", structure = NULL,
-                    sampling_weights = NULL, extra = NULL) {
+                    sampling_weights = NULL, extra = NULL, pause = Inf,
+                    resume = NULL) {
   # The inner logit Newton steps of the transition M-step leave more rounding
   # in the likelihood than a closed-form step, hence the looser guard.
   fit <- .latents_em(
@@ -489,9 +493,13 @@
                         structure, extra)
     },
     max_iter = max_iter, tol = tol,
-    settings = .latents_em_settings(decrease_tolerance = 1e-8))
-  list(parameters = fit$state, expectation = fit$expectation, converged = fit$converged,
-       iterations = fit$iterations, history = fit$history)
+    settings = .latents_em_settings(decrease_tolerance = 1e-8),
+    pause = pause, resume = resume)
+  result <- list(parameters = fit$state, expectation = fit$expectation,
+                 converged = fit$converged, iterations = fit$iterations,
+                 history = fit$history)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Starting values: the homogeneous initializer, converted to logit
@@ -502,11 +510,11 @@
                             n_categories, min_probability, n_measurement,
                             order = 1L, mover_stayer = 0L,
                             covariance_model = "diagonal", structure = NULL,
-                            extra = NULL) {
+                            extra = NULL, kind = "kmeans") {
   start <- .multilpa_transition_initialize(x, group_index, n_profiles, n_types,
                                            variance_model, min_variance, start_index,
                                            covariance_model, codes, n_categories,
-                                           min_probability, extra)
+                                           min_probability, extra, kind = kind)
   if (!is.null(structure)) {
     start <- .multilpa_project_start(start, structure, nrow(x), min_variance)
   }
@@ -569,7 +577,8 @@
                              covariance_model = "diagonal", structure = NULL,
                              weights = NULL, ordinal = character(),
                              count = character(), count_model = "poisson",
-                             count_dispersion = "varying", drop_empty = TRUE) {
+                             count_dispersion = "varying", drop_empty = TRUE,
+                             search = "kmeans", n_screen = NULL) {
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
@@ -626,18 +635,26 @@
                sampling_weights = sampling_weights, extra_data = extra)
   # Each start runs to completion or is recorded as failed; the best is
   # chosen by the shared rule (see .latents_run_starts()).
-  starts <- .latents_run_starts(n_starts, function(start_index) {
-    start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
-                             n_group_classes, variance_model, min_variance,
-                             start_index, codes, n_categories, min_probability,
-                             n_measurement, order, as.integer(mover_stayer),
-                             covariance_model, structure, extra)
+  # Every start is prepared before any is run; EM draws no random numbers, so
+  # the draws are those of preparing and running each start in turn.
+  screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
+  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
+    .lta_initialize(x, groups$index, layout, designs, n_profiles,
+                    n_group_classes, variance_model, min_variance,
+                    start_index, codes, n_categories, min_probability,
+                    n_measurement, order, as.integer(mover_stayer),
+                    covariance_model, structure, extra,
+                    kind = .latents_start_kind(start_index, n_starts))
+  }, run = function(start_index, start, pause = Inf, resume = NULL) {
     # EM to a loose tolerance, then a quasi-Newton finish on the exact
     # likelihood: EM alone crawls when profiles are weakly separated.
-    em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
-                  min_variance, n_categories, min_probability, max_iter,
-                  max(tol, 1e-6), covariance_model, structure, sampling_weights,
-                  extra)
+    em <- .lta_em(x, codes, layout, designs, start %||% resume$state, occasion_of_row,
+                  variance_model, min_variance, n_categories, min_probability,
+                  max_iter, max(tol, 1e-6), covariance_model, structure,
+                  sampling_weights, extra, pause = pause, resume = resume)
+    # A screened start is ranked on its EM likelihood; the finish waits for
+    # the final stage.
+    if (is.finite(pause)) return(em)
     # The quasi-Newton finish works on diagonal measurement; a covariance
     # structure is maximized by EM alone, to the full tolerance.
     if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
@@ -657,7 +674,8 @@
          converged = isTRUE(finish$converged), iterations = em$iterations,
          history = c(em$history, expectation$log_likelihood),
          max_gradient = finish$gradient)
-  }, select_start)
+  }, select_start = select_start, screen = screen)
+  found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
@@ -678,7 +696,15 @@
                         variance_model, transitions, transition_covariates,
                         initial_covariates, measurement_model, min_variance,
                         min_probability, call, order, mover_stayer, missing,
-                        covariance_model, structure)
+                        covariance_model, structure,
+                        final_stage = .latents_final_stage(found))
+  result$starts <- .latents_search_columns(result$starts, found, n_starts)
+  record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
+  result[names(record)] <- record
+  result$max_iter <- as.integer(max_iter)
+  result$tol <- tol
+  result$arguments$search <- search
+  result$arguments$n_screen <- n_screen
   if (!is.null(sampling_weights)) {
     result$weights <- weights
     result$sampling_weights <- stats::setNames(sampling_weights, groups$ids)
@@ -749,7 +775,8 @@
                         transition_covariates, initial_covariates,
                         measurement_model, min_variance, min_probability, call,
                         order = 1L, mover_stayer = FALSE, missing = "error",
-                        covariance_model = "diagonal", structure = NULL) {
+                        covariance_model = "diagonal", structure = NULL,
+                        final_stage = rep(TRUE, length(attempts))) {
   profile_names <- paste0("profile_", seq_len(n_profiles))
   class_names <- c(paste0("group_class_", seq_len(n_group_classes - mover_stayer)),
                    if (mover_stayer) "stayers")
@@ -846,7 +873,7 @@
                         error = vapply(attempts, function(a) a$error %||% NA_character_,
                                        character(1)),
                         selected = seq_along(attempts) == best_start),
-    n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
+    n_best_replicated = sum(valid & final_stage & abs(scores - log_likelihood) <=
                               1e-6 * (1 + abs(log_likelihood))),
     min_variance = min_variance, min_probability = min_probability,
     # The specification, so the fit can be refitted (bootstrap) or nested.
@@ -882,5 +909,9 @@
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  .latents_warn_thin_profiles(
+    colSums(subject_posteriors),
+    .latents_profile_parameters(length(measurement$continuous), variance_model,
+                                covariance_model, structure))
   result
 }

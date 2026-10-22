@@ -51,11 +51,14 @@ test_that("rows with nothing observed change no estimate and no statistic", {
   skip_on_cran()
   setup <- informative_data()
   # Enough starts that both reach the global maximum: the two draw different
-  # random starts, because their rows differ.
+  # random starts, because their rows differ. Twenty kmeans starts do here;
+  # the maxima are close (-1499.13, -1499.27, -1499.54), and which one twenty
+  # emEM finals reach depends on the draws.
   fit <- function(data) multilpa(data, setup$activity, "student",
                                  n_profiles = 3, n_group_classes = 2,
                                  model = "VVI", missing = "fiml", n_starts = 20,
-                                 max_iter = 5000, seed = 1, tol = 1e-10)
+                                 max_iter = 5000, seed = 1, tol = 1e-10,
+                                 search = "kmeans")
   with_empty <- fit(setup$data)
   dropped <- fit(setup$data[setup$observed, ])
   expect_equal(with_empty$log_likelihood, dropped$log_likelihood, tolerance = 1e-6)

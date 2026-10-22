@@ -9,9 +9,9 @@ bootstrap_lrt(
   alternative_model,
   data = NULL,
   iter = 199L,
-  n_starts = 10L,
-  max_iter = 1000L,
-  tol = 1e-08,
+  n_starts = NULL,
+  max_iter = NULL,
+  tol = NULL,
   seed = NULL
 )
 }
@@ -28,11 +28,15 @@ model stores (from the alternative for covariate fits).}
 \item{iter}{Number of simulated datasets, at least 2. Default 199; use many
 for inference.}
 
-\item{n_starts}{Number of random starts for each simulated fit. Default 10.}
+\item{n_starts}{Number of starts for each simulated fit. \code{NULL} (the
+default) refits each model with the starts it was fitted with, by the same
+\code{search}; a number applies to both models.}
 
-\item{max_iter}{Maximum EM iterations for each simulated fit. Default 1000.}
+\item{max_iter}{Maximum EM iterations for each simulated fit; \code{NULL} (the
+default) takes each model's own.}
 
-\item{tol}{Relative likelihood convergence tolerance. Default \code{1e-8}.}
+\item{tol}{Relative likelihood convergence tolerance; \code{NULL} (the default)
+takes each model's own.}
 
 \item{seed}{Optional seed: a whole number \code{set.seed()} accepts. The
 caller's random-number state is restored on exit.}

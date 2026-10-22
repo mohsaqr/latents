@@ -1,7 +1,8 @@
 # `boundary = "exclude"`: starts with a variance at `min_variance` are set
 # aside. Two clusters and one distant observation, fitted with three profiles:
 # the highest likelihood isolates that observation in a profile of its own
-# with every variance at the bound, which "exclude" sets aside.
+# with every variance at the bound, which "exclude" sets aside. The tests use
+# the kmeans search, whose starts these data were chosen for.
 
 boundary_data <- function() {
   set.seed(3)
@@ -10,9 +11,10 @@ boundary_data <- function() {
              x = stats::rnorm(121))
 }
 
-boundary_fit <- function(data, ...) {
+boundary_fit <- function(data, ..., search = "kmeans") {
   withCallingHandlers(
-    lpa(data, c("y1", "y2"), n_profiles = 3, model = "VVI", n_starts = 5, seed = 1, ...),
+    lpa(data, c("y1", "y2"), n_profiles = 3, model = "VVI", n_starts = 5, seed = 1,
+        search = search, ...),
     latents_boundary = function(w) invokeRestart("muffleWarning"),
     latents_small_classes = function(w) invokeRestart("muffleWarning"))
 }
@@ -51,7 +53,7 @@ test_that("exclude reaches enumerate_lpa() and the covariate model", {
   data <- boundary_data()
   enumeration <- withCallingHandlers(
     enumerate_lpa(data, c("y1", "y2"), n_profiles = 2:3, model = "VVI", n_starts = 5,
-                  seed = 1, boundary = "exclude"),
+                  seed = 1, boundary = "exclude", search = "kmeans"),
     latents_boundary = function(w) invokeRestart("muffleWarning"),
     latents_small_classes = function(w) invokeRestart("muffleWarning"))
   three <- boundary_fit(data, boundary = "exclude")

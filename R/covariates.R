@@ -245,7 +245,8 @@
                                   count = character(), count_model = "poisson",
                                   count_dispersion = "varying",
                                   centering = "none", scaling = "none",
-                                  drop_empty = TRUE) {
+                                  drop_empty = TRUE, search = "kmeans",
+                                  n_screen = NULL) {
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector" = is.character(vars),
@@ -288,13 +289,13 @@
                                vars, id)
   # The base fit validates indicators/model sizes and supplies an initial mode.
   # It runs one start, so its estimation warnings (a variance at its bound, no
-  # convergence, failed starts, a class below one member) describe that start,
-  # not the model returned: the covariate model checks its own estimate for
-  # each of them below. Those classes alone are muffled; any other warning,
+  # convergence, failed starts, a class below one member, a profile with fewer
+  # members than its parameters) describe that start, not the model returned:
+  # the covariate model checks its own estimate for each of them below. Those classes alone are muffled; any other warning,
   # about the data for example, reaches the caller.
   base_estimation <- c("latents_boundary", "latents_unconverged",
                        "latents_failed_starts", "latents_all_starts_boundary",
-                       "latents_small_classes")
+                       "latents_small_classes", "latents_thin_profiles")
   base <- withCallingHandlers(multilpa(data, vars, id, n_profiles, n_group_classes,
                      variance_model = variance_model,
                      n_starts = 1L, max_iter = max_iter,
@@ -305,7 +306,7 @@
                      weights = weights, ordinal = ordinal, count = count,
                      count_model = count_model, count_dispersion = count_dispersion,
                      centering = centering, scaling = scaling,
-                     drop_empty = drop_empty),
+                     drop_empty = drop_empty, search = search),
     warning = function(condition) {
       if (inherits(condition, base_estimation)) invokeRestart("muffleWarning")
     })
@@ -342,19 +343,43 @@
                     n_group_classes,
                   n_group_covariates = length(group_covariates),
                   sampling_weights = sampling_weights)
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
+  # The emEM search screens a pool through the shared runner; the kmeans
+  # search runs its starts in turn, as it always has.
+  screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
+  found <- if (!is.null(screen)) {
+    .latents_run_starts(n_starts, prepare = function(start_index) {
+      .multilpa_cov_initial(start_index, x, group_index, n_profiles,
+                            n_group_classes, designs, base, control,
+                            kind = .latents_start_kind(start_index, n_starts))
+    }, run = function(start_index, initial, pause = Inf, resume = NULL) {
+      # The runner reads any `error` field as a failure.
+      ran <- .multilpa_cov_run(initial %||% resume$state, x, group_index, designs,
+                               control, pause = pause, resume = resume)
+      ran$error <- NULL
+      ran
+    }, select_start = select_start, screen = screen,
+    interior = if (identical(boundary, "exclude")) function(result) {
+      !.multilpa_covariance_boundary(result$parameters, min_variance)
+    })
+  }
+  attempts <- if (is.null(found)) lapply(seq_len(n_starts), function(start_index) {
     tryCatch(.multilpa_cov_start(start_index, x, group_index, n_profiles,
                                n_group_classes, designs, base, control),
              error = function(error) list(error = conditionMessage(error)))
-  })
+  }) else found$attempts
   starts <- do.call(rbind, lapply(seq_along(attempts), function(i) {
     result <- attempts[[i]]
     data.frame(start = i, log_likelihood = if (is.null(result$expectation)) -Inf else
                  result$expectation$log_likelihood,
                converged = isTRUE(result$converged),
                iterations = result$iterations %||% 0L,
-               error = result$error)
+               error = if (is.null(found)) result$error else
+                 result$error %||% NA_character_)
   }))
+  if (!is.null(found)) {
+    starts$log_likelihood <- found$scores
+    starts <- .latents_search_columns(starts, found, n_starts)
+  }
   if (!any(is.finite(starts$log_likelihood))) {
     stop(errorCondition(sprintf("All covariate starts failed: %s",
                                 paste(unique(starts$error), collapse = "; ")),
@@ -375,8 +400,10 @@
     !is.null(result$parameters) &&
       !.multilpa_covariance_boundary(result$parameters, min_variance)
   }, logical(1))
-  best_index <- .multilpa_select_start(starts$log_likelihood, starts$converged,
-                                       select_start, interior)
+  best_index <- if (is.null(found)) {
+    .multilpa_select_start(starts$log_likelihood, starts$converged,
+                           select_start, interior)
+  } else found$best_start
   best <- attempts[[best_index]]
   # Weighted posteriors are counts for the M-step; each unit is classified by
   # its own, unweighted posterior, and the likelihood stays the weighted one.
@@ -414,6 +441,11 @@
   result$scaling_factors <- base$scaling_factors
   ## Read by inference to rebuild the same design.
   result$profile_slopes <- profile_slopes
+  record <- .latents_search_record(search, n_starts, screen, select_start, boundary)
+  result[names(record)] <- record
+  # Read by bootstrap_lrt(), which refits with the fit's own stopping rule.
+  result$max_iter <- max_iter
+  result$tol <- tol
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   # Counted over the rows and groups the base fit counts (see `drop_empty`).
@@ -460,6 +492,10 @@
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  .latents_warn_thin_profiles(
+    result$effective_profile_counts,
+    .latents_profile_parameters(length(base$continuous), variance_model,
+                                covariance_model))
   if (result$extreme_logits) {
     warning(warningCondition(
       "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
@@ -799,6 +835,20 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @noRd
 .multilpa_cov_start <- function(start_index, x, group_index, n_profiles,
                               n_group_classes, designs, base, control) {
+  .multilpa_cov_run(.multilpa_cov_initial(start_index, x, group_index, n_profiles,
+                                          n_group_classes, designs, base, control),
+                    x, group_index, designs, control)
+}
+
+#' The initial state of one covariate EM start
+#'
+#' @param kind The kind of start, as for `.multilpa_initialize()`; start 1
+#'   always resumes from the base fit.
+#' @return A list of `parameters`, `beta` and `gamma`.
+#' @noRd
+.multilpa_cov_initial <- function(start_index, x, group_index, n_profiles,
+                                  n_group_classes, designs, base, control,
+                                  kind = "kmeans") {
   parameters <- if (start_index == 1L) {
     resumed <- list(means = sweep(unname(as.matrix(base$means)), 2L,
                                   designs$center, "-"),
@@ -828,7 +878,7 @@ nobs.multilpa_covariates <- function(object, ...) {
                        control$variance_model, control$min_variance, start_index,
                        control$covariance_model, designs$codes,
                        designs$n_categories, control$min_probability,
-                       hierarchical = FALSE, extra = designs$extra)
+                       hierarchical = FALSE, extra = designs$extra, kind = kind)
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /
@@ -838,6 +888,18 @@ nobs.multilpa_covariates <- function(object, ...) {
     matrix(log(parameters$group_probabilities[seq_len(n_group_classes - 1L)] /
                  parameters$group_probabilities[n_group_classes]), 1L),
     matrix(0, control$n_group_covariates, n_group_classes - 1L))
+  list(parameters = parameters, beta = beta, gamma = gamma)
+}
+
+#' Run covariate EM from an initial state
+#'
+#' @param state A list of `parameters`, `beta` and `gamma`.
+#' @param pause,resume As for `.latents_em()`.
+#' @return As `.multilpa_cov_start()`; with `pause` or `resume`, also the
+#'   `checkpoint`.
+#' @noRd
+.multilpa_cov_run <- function(state, x, group_index, designs, control,
+                              pause = Inf, resume = NULL) {
   evaluate <- function(state) {
     .multilpa_cov_expectation(x, group_index, state$parameters,
                               designs$profile_design, designs$w, state$beta,
@@ -869,16 +931,20 @@ nobs.multilpa_covariates <- function(object, ...) {
   ## unsolved for ever while the observed likelihood has stopped moving, and
   ## sweeping `max_iter` times against it costs a great deal and buys nothing.
   fit <- .latents_em(
-    list(parameters = parameters, beta = beta, gamma = gamma), evaluate, maximize,
+    state, evaluate, maximize,
     max_iter = control$max_iter, tol = control$tol,
     settings = .latents_em_settings(
       decrease_tolerance = 1e-9,
       decrease_condition = "Covariate EM decreased the observed log likelihood.",
-      max_stalled = 20L))
-  list(parameters = fit$state$parameters, expectation = fit$expectation,
-       beta = fit$state$beta, gamma = fit$state$gamma, iterations = fit$iterations,
-       converged = fit$converged, likelihood_settled = fit$settled,
-       history = fit$history, error = NA_character_)
+      max_stalled = 20L),
+    pause = pause, resume = resume)
+  result <- list(parameters = fit$state$parameters, expectation = fit$expectation,
+                 beta = fit$state$beta, gamma = fit$state$gamma,
+                 iterations = fit$iterations, converged = fit$converged,
+                 likelihood_settled = fit$settled, history = fit$history,
+                 error = NA_character_)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Assemble the covariate fit result

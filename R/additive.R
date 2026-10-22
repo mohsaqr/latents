@@ -314,7 +314,7 @@
 #' @return Group-class parameters with H x d `within`.
 #' @noRd
 .additive_initialize <- function(stats, n_classes, structure, min_variance,
-                                 start_index) {
+                                 start_index, kind = "kmeans") {
   standardize <- function(values) {
     spread <- apply(values, 2L, stats::sd)
     spread[!is.finite(spread) | spread <= 0] <- 1
@@ -337,6 +337,9 @@
     rep(1L, stats$n_groups)
   } else if (start_index == 1L) {
     .multilpa_ward_assignments(features, n_classes)
+  } else if (identical(kind, "partition")) {
+    # An emEM pool start: the groups dealt into the classes at random.
+    sample(rep_len(seq_len(n_classes), stats$n_groups))
   } else {
     centres <- features[sample.int(stats$n_groups, n_classes), , drop = FALSE]
     distance <- vapply(seq_len(n_classes), function(h) {
@@ -502,11 +505,14 @@
 #' @param zero H x d logical matrix of between variances held at zero; they
 #'   must be zero in `parameters`.
 #' @param accelerate Whether to run SQUAREM cycles (`FALSE` gives plain EM).
+#' @param pause,resume As for `.latents_em()`.
 #' @return A list with `parameters`, `expectation`, `converged`, `iterations`
-#'   and `history` (log likelihood after each step, the start first).
+#'   and `history` (log likelihood after each step, the start first); with
+#'   `pause` or `resume`, also the `checkpoint`.
 #' @noRd
 .additive_em <- function(stats, parameters, structure, min_variance,
-                         max_iter, tol, zero, accelerate = TRUE) {
+                         max_iter, tol, zero, accelerate = TRUE, pause = Inf,
+                         resume = NULL) {
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
   stopifnot("held between variances must be zero" =
               all(parameters$between[zero] == 0))
@@ -518,9 +524,13 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(
-      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero)))
-  list(parameters = fit$state, expectation = fit$expectation,
-       converged = fit$converged, iterations = fit$iterations, history = fit$history)
+      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero)),
+    pause = pause, resume = resume)
+  result <- list(parameters = fit$state, expectation = fit$expectation,
+                 converged = fit$converged, iterations = fit$iterations,
+                 history = fit$history)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Check and, where needed, reach a zero-between-variance maximum
@@ -603,7 +613,8 @@
 #' @noRd
 .additive_arguments <- function() {
   c("data", "vars", "id", "n_group_classes", "family", "between_variance",
-    "n_starts", "max_iter", "tol", "min_variance", "seed", "weights")
+    "n_starts", "max_iter", "tol", "min_variance", "seed", "weights",
+    "search", "n_screen")
 }
 
 #' Number of free rows (1 shared, or H) in a parameter block
@@ -647,7 +658,8 @@
 #' @noRd
 .additive_fit <- function(data, vars, id, n_group_classes, between_variance,
                           n_starts, max_iter, tol, min_variance, seed, call,
-                          family = "additive", weights = NULL) {
+                          family = "additive", weights = NULL, search = "kmeans",
+                          n_screen = NULL) {
   if (identical(family, "dispersion") && identical(between_variance, "varying")) {
     stop(errorCondition(paste(
       "The dispersion family holds between-group means and variances equal",
@@ -694,15 +706,23 @@
   none <- matrix(FALSE, n_group_classes, length(vars))
   # Each start runs to completion or is recorded as failed; the best is
   # chosen by the shared rule (see .latents_run_starts()).
-  starts <- .latents_run_starts(n_starts, function(start_index) {
-    initial <- .additive_initialize(stats, n_group_classes, structure,
-                                    min_variance, start_index)
-    fit <- .additive_em(stats, initial, structure, min_variance, max_iter,
-                        tol, none)
+  # Every start is prepared before any is run; EM draws no random numbers, so
+  # the draws are those of preparing and running each start in turn.
+  screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
+  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
+    .additive_initialize(stats, n_group_classes, structure, min_variance,
+                         start_index, kind = .latents_start_kind(start_index, n_starts))
+  }, run = function(start_index, initial, pause = Inf, resume = NULL) {
+    fit <- .additive_em(stats, initial %||% resume$state, structure, min_variance,
+                        max_iter, tol, none, pause = pause, resume = resume)
+    # A screened start is ranked on its EM likelihood; the polish waits for
+    # the final stage.
+    if (is.finite(pause)) return(c(fit, list(zero = none, kkt = NA)))
     if (max_iter > 0L) {
       .additive_polish(stats, fit, structure, min_variance, max_iter, tol)
     } else c(fit, list(zero = none, kkt = NA))
-  }, "likelihood")
+  }, select_start = "likelihood", screen = screen)
+  found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
@@ -747,7 +767,7 @@
   log_likelihood <- expectation$log_likelihood
   tolerance <- 1e-6 * (1 + abs(log_likelihood))
   starts <- data.frame(
-    start = seq_len(n_starts),
+    start = seq_along(attempts),
     log_likelihood = ifelse(valid, scores, NA_real_),
     converged = converged,
     iterations = vapply(attempts, function(attempt) {
@@ -758,7 +778,8 @@
     }, integer(1)),
     error = vapply(attempts, function(attempt) attempt$error %||% NA_character_,
                    character(1)),
-    selected = seq_len(n_starts) == best_start)
+    selected = seq_along(attempts) == best_start)
+  starts <- .latents_search_columns(starts, found, n_starts)
   small_classes <- any(colSums(expectation$posterior) < 1)
   result <- list(
     call = call, family = family, structure = structure,
@@ -787,7 +808,8 @@
     zero_within_scatter = stats$pooled_scatter <= 0,
     small_classes = small_classes,
     starts = starts, best_start = best_start, n_failed_starts = sum(!valid),
-    n_best_replicated = sum(valid & abs(scores - log_likelihood) <= tolerance),
+    n_best_replicated = sum(valid & .latents_final_stage(found) &
+                              abs(scores - log_likelihood) <= tolerance),
     replication_tolerance = tolerance,
     log_likelihood_history = best$history,
     min_variance = min_variance, tol = tol, max_iter = max_iter, seed = seed,
@@ -795,11 +817,13 @@
     sampling_weights = if (is.null(stats$sampling_weights)) NULL else
       stats::setNames(stats$sampling_weights, stats$ids),
     sufficient_statistics = stats)
+  record <- .latents_search_record(search, n_starts, screen, "likelihood", "allow")
+  result[names(record)] <- record
   class(result) <- "multilpa_additive"
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; the start records keep their errors.",
-      sum(!valid), n_starts), class = "latents_failed_starts", call = NULL))
+      sum(!valid), length(attempts)), class = "latents_failed_starts", call = NULL))
   }
   if (!result$converged && max_iter > 0L) {
     warning(warningCondition(
@@ -830,7 +854,9 @@ print.multilpa_additive <- function(x, ...) {
     .additive_family_label(x$family), x$between_variance,
     length(x$group_probabilities), x$n_groups, x$n_obs,
     length(x$vars), x$log_likelihood, x$n_parameters, x$bic,
-    if (x$converged) "yes" else "no", x$n_best_replicated, nrow(x$starts)))
+    if (x$converged) "yes" else "no", x$n_best_replicated,
+    # Out of the starts run to the end, not the screened pool.
+    x$n_starts %||% nrow(x$starts)))
   .latents_print_weights(x)
   if (any(x$between_zero) || any(x$within_floor)) {
     cat("Boundary fit: a variance is at zero or at min_variance.\n")

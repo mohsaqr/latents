@@ -48,7 +48,9 @@ multilpa(
   drop_empty = TRUE,
   cores = 1L,
   local_dependence = character(),
-  direct_effects = character()
+  direct_effects = character(),
+  search = c("kmeans", "emEM"),
+  n_screen = NULL
 )
 }
 \arguments{
@@ -481,11 +483,15 @@ enumerations and refits; it has no effect on data without such rows.}
 \item{cores}{Number of processor cores for the random starts (default 1).
 The starting values are drawn in order in the current process and only
 the EM iterations are distributed, so the result is identical to
-\code{cores = 1}. Workers are forked processes on macOS and Linux, and a
-socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as in
-\code{\link[=enumerate_classes]{enumerate_classes()}}; a worker that fails as a whole raises
-\code{latents_parallel_failure}. Models with membership covariates run their
-starts on one core.}
+\code{cores = 1}. Under \code{search = "emEM"} both the screening of the pool and
+the final runs are distributed; the screening is most of the time of an
+emEM fit, so a large model or data set gains most. Workers are forked
+processes on macOS and Linux, and a socket cluster on Windows and on
+macOS with Apple's Accelerate BLAS, as in \code{\link[=enumerate_classes]{enumerate_classes()}}; a worker
+that fails as a whole raises \code{latents_parallel_failure}. Models with
+membership covariates run their starts on one core. To fit many models,
+give \code{cores} to \code{\link[=enumerate_classes]{enumerate_classes()}} instead, which fits the candidates
+in parallel, each on one core.}
 
 \item{local_dependence}{Pairs of indicators that stay associated within
 each class, written \code{"item1:item2"} (several as a character vector).
@@ -535,6 +541,31 @@ those, a term that is not \code{"indicator ~ covariate"}, and an indicator
 that is not continuous raise \code{latents_bad_argument}, and a covariate
 that is absent, not numeric, missing or constant raises
 \code{latents_bad_data}. Default: none.}
+
+\item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+\code{n_starts} starts to convergence: Ward's clustering first, then k-means
+from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
+short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
+Celeux & Govaert, 2003); the pool begins with the kmeans search's own
+starts, drawn in the same order, followed by random partitions of the
+rows and random rows as class centres, and \code{get_results(fit, "starts")}
+gives every start of the pool with its \code{kind}, its \code{stage} and its
+likelihood after screening. Either search reports the start with the
+highest likelihood among those run to convergence (subject to
+\code{select_start} and \code{boundary}). With profile-specific variances that
+maximum can be spurious, a profile on a few nearly coincident points
+with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+harder search finds such maxima more often. They are reported, not set
+aside: a variance at \code{min_variance} as a boundary fit
+(\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
+and a profile with fewer members than its own means and variances by a
+\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
+either search.}
+
+\item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
+least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
+A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
+\code{latents_bad_argument}.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional

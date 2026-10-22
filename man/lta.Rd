@@ -35,7 +35,9 @@ lta(
   count = character(),
   count_model = c("poisson", "negative_binomial"),
   count_dispersion = c("varying", "equal"),
-  drop_empty = TRUE
+  drop_empty = TRUE,
+  search = c("kmeans", "emEM"),
+  n_screen = NULL
 )
 }
 \arguments{
@@ -207,6 +209,31 @@ of latents 0.9.37 and earlier), except in the individual sample size of a
 and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} do not compare fits made with different
 \code{drop_empty}. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}
+
+\item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+\code{n_starts} starts to convergence: Ward's clustering first, then k-means
+from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
+short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
+Celeux & Govaert, 2003); the pool begins with the kmeans search's own
+starts, drawn in the same order, followed by random partitions of the
+rows and random rows as class centres, and \code{get_results(fit, "starts")}
+gives every start of the pool with its \code{kind}, its \code{stage} and its
+likelihood after screening. Either search reports the start with the
+highest likelihood among those run to convergence (subject to
+\code{select_start} and \code{boundary}). With profile-specific variances that
+maximum can be spurious, a profile on a few nearly coincident points
+with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+harder search finds such maxima more often. They are reported, not set
+aside: a variance at \code{min_variance} as a boundary fit
+(\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
+and a profile with fewer members than its own means and variances by a
+\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
+either search.}
+
+\item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
+least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
+A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
+\code{latents_bad_argument}.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},

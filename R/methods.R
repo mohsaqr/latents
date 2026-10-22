@@ -68,8 +68,14 @@ print.multilpa <- function(x, rows = 20L, ...) {
   cat(sprintf("Log likelihood: %.6f | AIC: %.3f | %s: %.3f\n",
               x$log_likelihood, x$aic,
               if (isTRUE(x$single_level)) "BIC" else "BIC (groups)", x$bic))
-  cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",
-              x$converged, x$iterations, x$best_start, nrow(x$starts)))
+  if (identical(x$search, "emEM") && !is.null(x$n_screen)) {
+    cat(sprintf(paste("Converged: %s | iterations: %d | best start: %d",
+                      "(emEM: %d screened, %d run to the end)\n"),
+                x$converged, x$iterations, x$best_start, x$n_screen, x$n_starts))
+  } else {
+    cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",
+                x$converged, x$iterations, x$best_start, nrow(x$starts)))
+  }
   if (!is.null(x$n_informative) && x$n_informative < x$n_observations) {
     cat(sprintf("%d row(s) carry no observed indicator; the individual-level BIC uses %d.\n",
                 x$n_observations - x$n_informative, x$n_informative))
@@ -140,6 +146,8 @@ summary.multilpa <- function(object, ...) {
     starts = object$starts,
     best_start = object$best_start,
     n_best_replicated = object$n_best_replicated,
+    # The starts run to the end; under emEM the table also holds the screened.
+    n_starts = object$n_starts %||% nrow(object$starts),
     replication_tolerance = object$replication_tolerance)
   if (isTRUE(object$noise)) {
     result$noise <- TRUE
@@ -313,7 +321,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     converged = x$converged,
     boundary = x$boundary,
     extreme_logits = x$extreme_logits,
-    n_starts = nrow(x$starts),
+    n_starts = x$n_starts %||% nrow(x$starts),
     weights = .multilpa_one(x$weights, NA_character_),
     centering = x$centering %||% "none",
     scaling = x$scaling %||% "none",
@@ -356,7 +364,8 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   cat(sprintf("Log likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
               x$log_likelihood, x$aic, x$bic, x$bic_individual))
   cat(sprintf("Best likelihood replicated in %d/%d starts (absolute tolerance %.3g).\n",
-              x$n_best_replicated, nrow(x$starts), x$replication_tolerance))
+              x$n_best_replicated, x$n_starts %||% nrow(x$starts),
+              x$replication_tolerance))
   if (!x$converged) cat("WARNING: best start did not converge.\n")
   if (x$boundary) cat("WARNING: at least one variance is at min_variance.\n")
   if (x$small_classes) cat("WARNING: an effective class membership is below one.\n")

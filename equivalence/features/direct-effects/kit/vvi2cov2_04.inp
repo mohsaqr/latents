@@ -1,0 +1,33 @@
+TITLE: latents direct effects vvi2cov2_04;
+DATA: FILE = vvi2cov2_04.dat;
+VARIABLE:
+ NAMES = id z1 z2 y1 y2 y3 y4;
+ USEVARIABLES = y1 y2 y3 y4 z1 z2;
+ IDVARIABLE = id;
+ CLASSES = c(2);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ INFORMATION = OBSERVED;
+ STARTS = 400 80;
+ STITERATIONS = 40;
+ STSEED = 20261020;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ y3 ON z1 z2;
+ %c#1%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+ %c#2%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = vvi2cov2_04-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = vvi2cov2_04-results.dat;

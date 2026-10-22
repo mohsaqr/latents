@@ -1,0 +1,29 @@
+TITLE: latents ML three-step lpa_k2_hi_02;
+DATA: FILE = lpa_k2_hi_02.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3 y4 ydu yde;
+ USEVARIABLES = y1 y2 y3 y4;
+ IDVARIABLE = id;
+ CLASSES = c(2);
+ AUXILIARY = ydu (DU3STEP) yde (DE3STEP);
+ANALYSIS:
+ TYPE = MIXTURE;
+ STARTS = 200 40;
+ STITERATIONS = 40;
+ STSEED = 20261020;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+ %c#2%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+SAVEDATA:
+ FILE = lpa_k2_hi_02-post.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;

@@ -255,7 +255,9 @@ Raises \code{latents_no_time} for a fit made without \code{time}.}
 without \code{time}.}
 \item{\code{"starts"}}{One row per EM start: \code{start}, \code{log_likelihood},
 \code{converged}, \code{iterations}, \code{error} and, where the family records it,
-\code{boundary}.}
+\code{boundary}. Under \code{search = "emEM"}, one row per start of the pool,
+with its \code{kind}, its \code{stage} (\code{"final"} when run to convergence,
+\code{"screened"} otherwise) and its \code{screened_log_likelihood}.}
 \item{\code{"data"}}{The data the model was fitted to, one row per observation
 in input order: the identifier (except for a single-level fit), the
 occasion where there is one, the sampling weights of a weighted fit (as

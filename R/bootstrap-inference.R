@@ -46,7 +46,13 @@
                  weights = x$weights, ordinal = x$ordinal %||% character(),
                  count = x$count %||% character(),
                  count_model = x$extra_data$count_model %||% "poisson",
-                 count_dispersion = x$extra_data$count_dispersion %||% "varying")
+                 count_dispersion = x$extra_data$count_dispersion %||% "varying",
+                 # The search the fit was made with; a fit from before these
+                 # were recorded was made by the kmeans search and the
+                 # default selection.
+                 search = x$search %||% "kmeans",
+                 select_start = x$select_start %||% "likelihood",
+                 boundary = x$boundary_policy %||% "allow")
   c(shared, .multilpa_refit_measurement(x))
 }
 
@@ -101,7 +107,8 @@
        categorical = x$categorical %||% character(),
        min_variance = x$min_variance,
        min_probability = x$min_probability %||% 1e-10,
-       missing = x$missing %||% "error", time = x$time)
+       missing = x$missing %||% "error", time = x$time,
+       search = x$search %||% "kmeans")
 }
 
 #' Bootstrap replicates of the natural coefficients
@@ -125,9 +132,21 @@
     data, x$group_index, x$n_groups, x$id, iter,
     refit = function(resampled) {
       do.call(estimator, c(list(data = resampled), arguments,
-                           list(n_starts = n_starts, max_iter = max_iter, tol = tol)))
+                           list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+                                n_screen = .latents_refit_controls(
+                                  x, n_starts = n_starts)$n_screen)))
     },
     extract = function(fit) {
+      # A resample that misses a rare category refits that indicator with one
+      # category fewer; its parameters cannot be set beside the original's,
+      # so the replicate is dropped (and counted) rather than aligned.
+      missed <- names(x$categorical_levels)[!vapply(names(x$categorical_levels), function(item) {
+        identical(fit$categorical_levels[[item]], x$categorical_levels[[item]])
+      }, logical(1))]
+      if (length(missed) > 0L) {
+        return(sprintf("the resample does not contain every category of %s",
+                       paste(sprintf("\"%s\"", missed), collapse = ", ")))
+      }
       unname(.multilpa_coefficients(.multilpa_align_labels(fit, x), "natural"))
     },
     reference_names = names(.multilpa_coefficients(x, "natural")))

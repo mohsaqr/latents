@@ -171,7 +171,8 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     shared$start <- .multilpa_stage_start(x)
     shared$fixed <- x$fixed
   }
-  shared$n_starts <- as.integer(n_starts %||% max(nrow(x$starts), 1L))
+  shared$n_starts <- as.integer(n_starts %||% x$n_starts %||% max(nrow(x$starts), 1L))
+  shared$n_screen <- .latents_refit_controls(x, n_starts = shared$n_starts)$n_screen
   shared$max_iter <- max_iter %||% x$max_iter %||% 1000L
   shared$tol <- tol %||% x$tol %||% 1e-8
   list(
@@ -202,7 +203,7 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     } else fit$subject_profiles
   }
   reference <- modal(x)
-  starts <- as.integer(n_starts %||% max(nrow(x$starts), 1L))
+  starts <- as.integer(n_starts %||% x$n_starts %||% max(nrow(x$starts), 1L))
   list(
     refit = function(seed) {
       .lta_refit(x, data, starts, max_iter %||% 5000L, tol %||% 1e-10, seed = seed)

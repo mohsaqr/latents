@@ -12,7 +12,7 @@ test_that("failed starts are counted and do not hide a valid restart", {
                     group_probabilities = 1)
   expect_warning(
     fit <- multilpa(synthetic, c("x", "y"), "group", 1, 1,
-                      n_starts = 2, start = bad_start, seed = 42),
+                      n_starts = 2, start = bad_start, seed = 42, search = "kmeans"),
     "1 of 2 starts failed")
   expect_equal(fit$n_failed_starts, 1L)
   expect_match(fit$starts$error[1L], "densities vanished|overflowed")

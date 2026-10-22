@@ -344,13 +344,15 @@
 #' @param codes Optional categorical codes.
 #' @param n_categories Category counts per categorical indicator.
 #' @param min_probability Lower bound on every fitted probability.
-#' @return Parameters, the final expectation, convergence and history.
+#' @param pause,resume As for `.latents_em()`.
+#' @return Parameters, the final expectation, convergence and history; with
+#'   `pause` or `resume`, also the `checkpoint`.
 #' @noRd
 .multilpa_transition_em <- function(x, layout, parameters, variance_model,
                                     min_variance, max_iter, tol,
                                     covariance_model = "diagonal", codes = NULL,
                                     n_categories = NULL, min_probability = 1e-10,
-                                    structure = NULL) {
+                                    structure = NULL, pause = Inf, resume = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             min_variance > 0, variance_model %in% c("varying", "equal"))
   fit <- .latents_em(
@@ -363,9 +365,12 @@
         x, expectation, variance_model, min_variance, covariance_model, codes,
         n_categories, min_probability, structure, point)
     },
-    max_iter = max_iter, tol = tol)
-  list(parameters = fit$state, expectation = fit$expectation,
-       converged = fit$converged, iterations = fit$iterations, history = fit$history)
+    max_iter = max_iter, tol = tol, pause = pause, resume = resume)
+  result <- list(parameters = fit$state, expectation = fit$expectation,
+                 converged = fit$converged, iterations = fit$iterations,
+                 history = fit$history)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Initialize a latent transition model
@@ -386,6 +391,7 @@
 #' @param codes Optional categorical codes.
 #' @param n_categories Category counts per categorical indicator.
 #' @param min_probability Lower bound on every fitted probability.
+#' @param kind The kind of start, as for `.multilpa_initialize()`.
 #' @return Strictly positive initial parameters for EM.
 #' @noRd
 .multilpa_transition_initialize <- function(x, group_index, n_profiles, n_types,
@@ -393,13 +399,15 @@
                                             start_index,
                                             covariance_model = "diagonal",
                                             codes = NULL, n_categories = NULL,
-                                            min_probability = 1e-10, extra = NULL) {
+                                            min_probability = 1e-10, extra = NULL,
+                                            kind = "kmeans") {
   # The first start is Ward's hierarchical clustering, as in multilpa().
   parameters <- .multilpa_initialize(x, group_index, n_profiles, n_types,
                                      variance_model, min_variance, start_index,
                                      covariance_model, codes, n_categories,
                                      min_probability,
-                                     hierarchical = start_index == 1L, extra = extra)
+                                     hierarchical = start_index == 1L, extra = extra,
+                                     kind = kind)
   initial <- parameters$profile_probabilities
   persistence <- if (start_index == 1L) 0.7 else stats::runif(1L, 0.4, 0.9)
   transition <- array(vapply(seq_len(n_types), function(type) {
@@ -648,11 +656,13 @@ lta <- function(data, vars, id, n_profiles, time,
                             count = character(),
                             count_model = c("poisson", "negative_binomial"),
                             count_dispersion = c("varying", "equal"),
-                            drop_empty = TRUE) {
+                            drop_empty = TRUE, search = c("kmeans", "emEM"),
+                            n_screen = NULL) {
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
   .multilpa_check_drop_empty(drop_empty)
   select_start <- match.arg(select_start)
+  search <- match.arg(search)
   transitions <- match.arg(transitions)
   measurement_model <- match.arg(measurement)
   if (!is.numeric(order) || length(order) != 1L || !order %in% c(1, 2)) {
@@ -722,7 +732,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             measurement_model, select_start, call, as.integer(order),
                             mover_stayer, missing, covariance_model, structure,
                             weights, ordinal, count, count_model, count_dispersion,
-                            drop_empty = drop_empty))
+                            drop_empty = drop_empty, search = search,
+                            n_screen = n_screen))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(
@@ -767,18 +778,25 @@ lta <- function(data, vars, id, n_profiles, time,
   }
   # Each start runs to completion or is recorded as failed; the best is
   # chosen by the shared rule (see .latents_run_starts()).
-  starts <- .latents_run_starts(n_starts, function(start_index) {
+  # Every start is prepared before any is run; EM draws no random numbers, so
+  # the draws are those of preparing and running each start in turn.
+  screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
+  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
     initial <- .multilpa_transition_initialize(
       x, groups$index, n_profiles, n_group_classes, variance_model,
       min_variance, start_index, covariance_model, codes, n_categories,
-      min_probability)
+      min_probability, kind = .latents_start_kind(start_index, n_starts))
     if (!is.null(structure)) {
       initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
     }
-    .multilpa_transition_em(x, layout, initial, variance_model, min_variance,
-                            max_iter, tol, covariance_model, codes,
-                            n_categories, min_probability, structure)
-  }, select_start)
+    initial
+  }, run = function(start_index, initial, pause = Inf, resume = NULL) {
+    .multilpa_transition_em(x, layout, initial %||% resume$state, variance_model,
+                            min_variance, max_iter, tol, covariance_model, codes,
+                            n_categories, min_probability, structure,
+                            pause = pause, resume = resume)
+  }, select_start = select_start, screen = screen)
+  found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
@@ -827,6 +845,7 @@ lta <- function(data, vars, id, n_profiles, time,
                iterations = if (valid[start_index]) attempt$iterations else NA_integer_,
                error = if (valid[start_index]) NA_character_ else attempt$error)
   }))
+  starts <- .latents_search_columns(starts, found, n_starts)
   observed_per_row <- rowSums(!is.na(x)) +
     if (is.null(codes)) 0L else rowSums(!is.na(codes))
   n_informative <- sum(observed_per_row > 0L)
@@ -885,9 +904,12 @@ lta <- function(data, vars, id, n_profiles, time,
     small_classes = small_classes,
     effective_profile_counts = colSums(subject_posteriors[counted_rows, , drop = FALSE]),
     effective_group_counts = colSums(group_posteriors[counted_groups, , drop = FALSE]),
-    n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
+    n_best_replicated = sum(valid & .latents_final_stage(found) &
+                              abs(scores - log_likelihood) <=
                               1e-6 * (1 + abs(log_likelihood))),
-    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
+    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))),
+    .latents_search_record(search, n_starts, screen, select_start, "allow"),
+    list(max_iter = as.integer(max_iter), tol = tol))
   class(result) <- "multilpa_transitions"
   # Every qualification a caller might branch on carries its catalogued class,
   # so a simulation loop can muffle the ones it expects and let the rest through.
@@ -895,7 +917,7 @@ lta <- function(data, vars, id, n_profiles, time,
     warning(warningCondition(sprintf(
       paste("%d of %d starts failed; read their messages with",
             "get_results(fit, \"starts\")."),
-      sum(!valid), n_starts),
+      sum(!valid), length(attempts)),
       class = "latents_failed_starts", call = NULL))
   }
   if (!best$converged && max_iter > 0L) {
@@ -922,6 +944,10 @@ lta <- function(data, vars, id, n_profiles, time,
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  .latents_warn_thin_profiles(
+    colSums(subject_posteriors),
+    .latents_profile_parameters(length(continuous), variance_model, covariance_model,
+                                structure))
   result
 }
 
@@ -1085,6 +1111,8 @@ summary.multilpa_transitions <- function(object, ...) {
       class = "latents_incomplete_fit", call = NULL))
   }
   result <- object[intersect(fields, names(object))]
+  # The starts run to the end; under emEM the table also holds the screened.
+  result$n_starts <- object$n_starts %||% nrow(object$starts)
   # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
@@ -1117,7 +1145,7 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
   cat(sprintf("Log likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
               x$log_likelihood, x$aic, x$bic, x$bic_individual))
   cat(sprintf("Best likelihood replicated in %d/%d starts (absolute tolerance %.3g).\n",
-              x$n_best_replicated, nrow(x$starts), x$replication_tolerance))
+              x$n_best_replicated, x$n_starts, x$replication_tolerance))
   if (!x$converged) cat("WARNING: best start did not converge.\n")
   if (x$boundary) cat("WARNING: at least one variance is at min_variance.\n")
   if (any(x$empty_transition_rows)) {

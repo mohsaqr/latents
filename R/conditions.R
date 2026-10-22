@@ -268,7 +268,16 @@
 #'     `min_variance`, so the fit is bound-active and its standard errors are
 #'     not valid at that parameter.}
 #'   \item{`latents_small_classes`}{A profile or group class has an effective
-#'     membership below one observation.}
+#'     membership below one observation; or, in [three_step()] with `method =
+#'     "ml"`, a class is carried by a single unit, so its standard error is
+#'     reported as `NA`.}
+#'   \item{`latents_thin_profiles`}{A profile with variances of its own has
+#'     fewer effective members than its density has parameters (its means
+#'     plus its variances or covariances), so those variances are poorly
+#'     determined and the solution may be a spurious maximum (McLachlan &
+#'     Peel, 2000, section 3.10). The estimate is returned unchanged; the
+#'     message names the profiles and suggests fewer profiles or a model
+#'     whose profiles share their variances.}
 #'   \item{`latents_all_starts_boundary`}{`boundary = "exclude"` found every
 #'     start with a variance at `min_variance`, so none was set aside and the
 #'     best start across all of them is reported.}

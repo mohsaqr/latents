@@ -10,13 +10,14 @@
 # Warnings a small fixture legitimately produces: EM that has not converged in
 # the iteration budget, individual restarts that failed, a variance or
 # probability resting on its boundary, and classes too small to be well
-# separated.
+# separated or to determine their own variances.
 .multilpa_expected_warnings <- c(
   "latents_unconverged",
   "latents_failed_starts",
   "latents_failed_replicates",
   "latents_boundary",
   "latents_small_classes",
+  "latents_thin_profiles",
   # A deliberately small or separated fixture also reaches these two.
   "latents_extreme_coefficients",
   # Not a defect: a single-level fixture is a deliberate `id = NULL`.

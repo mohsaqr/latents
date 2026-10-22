@@ -1,3 +1,55 @@
+# latents (development version)
+
+### Start search
+
+* `search = "emEM"` (new, opt-in) finds starts by the emEM search
+  (Biernacki, Celeux & Govaert, 2003): a pool of `n_screen` starts (five
+  times `n_starts` by default) is screened by a short EM run each, and the
+  best `n_starts` are run to convergence. The pool begins with the default
+  search's own starts. `search = "kmeans"` remains the default and
+  reproduces the fits of 0.96.1, apart from the corrections listed below.
+  On the start-search benchmark (180 fits), emEM reached the best known
+  maximum in 136 fits and the default search in 130, but it reported a
+  spurious maximum in 25 fits against 12, and took three to five times as
+  long.
+* Either search reports the highest likelihood among the finished starts.
+  The new `latents_thin_profiles` warning fires when a profile with its own
+  variances has fewer effective members than its means and variances, the
+  sign of a spurious maximum (McLachlan & Peel, 2000, section 3.10), and
+  suggests fewer profiles or shared variances. The estimate is unchanged.
+* Under emEM, `get_results(fit, "starts")` lists every start of the pool,
+  with its `kind`, `stage` and likelihood after screening, and "Best
+  likelihood replicated" counts the starts that were run to convergence.
+* `bootstrap_lrt()` refits each model with the search, starts, stopping
+  rule, selection and boundary policy it was fitted with, by default
+  (`n_starts`, `max_iter` and `tol` now default to `NULL`). Staged and
+  covariate refits keep the pool size too.
+* `cores` distributes the emEM screening and the finished starts, with
+  identical results.
+
+### Corrections found by the feature equivalence suites
+
+* `three_step(method = "ml")` runs its EM from a fixed set of starts (Latent
+  GOLD's proportional start first, the modal means, quantile placements,
+  tail starts and twenty draws from a fixed internal seed) and keeps the
+  highest maximum. One start missed a higher regular maximum for skewed or
+  heavy-tailed outcomes. The result does not depend on, and does not move,
+  the caller's random seed.
+* `three_step(method = "ml")` reports `NA` standard errors, with a
+  `latents_small_classes` warning, for a class carried by a single unit
+  (by a single group under `vcov_type = "cluster"`); its sandwich was
+  exactly zero.
+* Covariate fits record their `max_iter` and `tol`, so a bootstrap refit
+  repeats them.
+* `direct_effects` values that are `NA`, not character, or end in an empty
+  term (`"y3 ~ z +"`) are refused as `latents_bad_argument`; a trailing `+`
+  was silently dropped.
+* Reported covariance matrices are exactly symmetric (they could differ by
+  one unit in the last place between the triangles).
+* Bootstrap inference drops, and counts, a resample that misses a category
+  of a categorical or joined item, instead of stopping with an internal
+  error.
+
 # latents 0.96.1
 
 ### Inference and numerical corrections

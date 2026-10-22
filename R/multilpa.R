@@ -168,10 +168,15 @@
                                variance_model, min_variance, start_index,
                                covariance_model = "diagonal", codes = NULL,
                                n_categories = NULL, min_probability = 1e-10,
-                               hierarchical = FALSE, extra = NULL) {
+                               hierarchical = FALSE, extra = NULL,
+                               kind = "kmeans") {
   stopifnot(is.matrix(x), length(group_index) == nrow(x),
             n_profiles >= 1L, n_types >= 1L, start_index >= 1L,
-            variance_model %in% c("varying", "equal"), min_variance > 0)
+            variance_model %in% c("varying", "equal"), min_variance > 0,
+            kind %in% c("kmeans", "partition", "centres"))
+  # The random kinds of the emEM pool describe each cluster by its own
+  # spread, as Ward's start does, and draw the group classes at random.
+  random_kind <- !identical(kind, "kmeans")
   if (ncol(x) > 0L && anyNA(x)) {
     initial_means <- colMeans(x, na.rm = TRUE)
     x <- matrix(vapply(seq_len(ncol(x)), function(indicator) {
@@ -195,8 +200,10 @@
     clustering_input <- if (is.null(codes)) standardized else
       cbind(standardized, .multilpa_categorical_design(codes, n_categories))
     clustering_input <- cbind(clustering_input, .latents_extra_clustering(extra))
-    if (hierarchical) {
-      assignments <- .multilpa_ward_assignments(clustering_input, n_profiles)
+    if (hierarchical || random_kind) {
+      assignments <- if (hierarchical) {
+        .multilpa_ward_assignments(clustering_input, n_profiles)
+      } else .multilpa_random_assignments(clustering_input, n_profiles, kind)
       centers <- t(vapply(seq_len(n_profiles), function(profile) {
         colMeans(clustering_input[assignments == profile, seq_len(ncol(x)),
                                   drop = FALSE])
@@ -223,7 +230,7 @@
     if (sum(rows) <= ncol(x) + 1L) return(NULL)
     stats::cov(x[rows, , drop = FALSE]) * (sum(rows) - 1) / sum(rows)
   }
-  spreads <- if (hierarchical && n_profiles > 1L && ncol(x) > 0L) {
+  spreads <- if ((hierarchical || random_kind) && n_profiles > 1L && ncol(x) > 0L) {
     lapply(seq_len(n_profiles), cluster_spread)
   } else NULL
   if (!is.null(spreads)) {
@@ -246,7 +253,7 @@
     (rowSums(group_counts) + 0.5 * n_profiles)
   if (n_types == 1L) {
     profile_probabilities <- matrix(colMeans(indicator), 1L)
-  } else if (start_index %% 2L == 1L &&
+  } else if (!random_kind && start_index %% 2L == 1L &&
              nrow(unique(group_composition)) >= n_types) {
     group_fit <- .multilpa_start_kmeans(group_composition, n_types)
     if (!is.null(group_fit$ifault) && group_fit$ifault != 0L) {
@@ -287,6 +294,35 @@
     result$variances <- matrix(result$variances, n_profiles, ncol(x))
   }
   result
+}
+
+#' Assign rows to clusters at random, for the emEM pool
+#'
+#' `"partition"` deals the rows into the clusters in a random order, so every
+#' cluster holds a share; `"centres"` draws distinct rows as the cluster
+#' centres and assigns every row to the nearest, each drawn row keeping its
+#' own cluster (so none is empty even when rows repeat).
+#'
+#' @param input Standardized numeric matrix, one row per observation.
+#' @param n_clusters Number of clusters.
+#' @param kind `"partition"` or `"centres"`.
+#' @return Integer cluster labels, one per row, every cluster non-empty.
+#' @noRd
+.multilpa_random_assignments <- function(input, n_clusters, kind) {
+  stopifnot("`input` must be a numeric matrix" = is.matrix(input),
+            "`n_clusters` must not exceed the rows" = n_clusters <= nrow(input),
+            "`kind` must be \"partition\" or \"centres\"" =
+              kind %in% c("partition", "centres"))
+  if (identical(kind, "partition")) {
+    return(sample(rep_len(seq_len(n_clusters), nrow(input))))
+  }
+  drawn <- sample.int(nrow(input), n_clusters)
+  distance <- vapply(drawn, function(row) {
+    colSums((t(input) - input[row, ])^2)
+  }, numeric(nrow(input)))
+  assignments <- max.col(-matrix(distance, nrow(input)), ties.method = "first")
+  assignments[drawn] <- seq_len(n_clusters)
+  assignments
 }
 
 #' Assign rows to clusters by Ward's hierarchical clustering
@@ -558,14 +594,18 @@
 #' @param covariance_pattern `NULL`, or a logical indicators-by-indicators
 #'   matrix marking the free covariance entries (the diagonal and the
 #'   `local_dependence` pairs); every other entry is held at zero.
-#' @return Final parameters, posterior calculation, and convergence history.
+#' @param pause,resume As for `.latents_em()`: pause after that many
+#'   iterations, or resume a paused run (then `parameters` is not used).
+#' @return Final parameters, posterior calculation, and convergence history;
+#'   with `pause` or `resume`, also the `checkpoint`.
 #' @noRd
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
                         held = NULL, structure = NULL, prior = NULL,
                         accelerate_em = TRUE, sampling_weights = NULL,
-                        extra = NULL, covariance_pattern = NULL) {
+                        extra = NULL, covariance_pattern = NULL, pause = Inf,
+                        resume = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
@@ -592,9 +632,13 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(guard_decrease = is.null(prior),
-                                    accelerate = accelerator))
-  list(parameters = fit$state, expectation = fit$expectation,
-       converged = fit$converged, iterations = fit$iterations, history = fit$history)
+                                    accelerate = accelerator),
+    pause = pause, resume = resume)
+  result <- list(parameters = fit$state, expectation = fit$expectation,
+                 converged = fit$converged, iterations = fit$iterations,
+                 history = fit$history)
+  if (!is.null(fit$checkpoint)) result$checkpoint <- fit$checkpoint
+  result
 }
 
 #' Validate and extract an optional time column
@@ -957,11 +1001,15 @@
 #' @param cores Number of processor cores for the random starts (default 1).
 #'   The starting values are drawn in order in the current process and only
 #'   the EM iterations are distributed, so the result is identical to
-#'   `cores = 1`. Workers are forked processes on macOS and Linux, and a
-#'   socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as in
-#'   [enumerate_classes()]; a worker that fails as a whole raises
-#'   `latents_parallel_failure`. Models with membership covariates run their
-#'   starts on one core.
+#'   `cores = 1`. Under `search = "emEM"` both the screening of the pool and
+#'   the final runs are distributed; the screening is most of the time of an
+#'   emEM fit, so a large model or data set gains most. Workers are forked
+#'   processes on macOS and Linux, and a socket cluster on Windows and on
+#'   macOS with Apple's Accelerate BLAS, as in [enumerate_classes()]; a worker
+#'   that fails as a whole raises `latents_parallel_failure`. Models with
+#'   membership covariates run their starts on one core. To fit many models,
+#'   give `cores` to [enumerate_classes()] instead, which fits the candidates
+#'   in parallel, each on one core.
 #' @param local_dependence Pairs of indicators that stay associated within
 #'   each class, written `"item1:item2"` (several as a character vector).
 #'   A pair of continuous indicators gets its own covariance in each class
@@ -1145,6 +1193,29 @@
 #' @param count_dispersion For `count_model = "negative_binomial"`: one
 #'   dispersion per profile (`"varying"`, the default) or one shared by every
 #'   profile (`"equal"`).
+#' @param search How the starts are found. `"kmeans"` (the default) runs
+#'   `n_starts` starts to convergence: Ward's clustering first, then k-means
+#'   from random centres. `"emEM"` screens a pool of `n_screen` starts by a
+#'   short EM run each and runs the best `n_starts` to convergence (Biernacki,
+#'   Celeux & Govaert, 2003); the pool begins with the kmeans search's own
+#'   starts, drawn in the same order, followed by random partitions of the
+#'   rows and random rows as class centres, and `get_results(fit, "starts")`
+#'   gives every start of the pool with its `kind`, its `stage` and its
+#'   likelihood after screening. Either search reports the start with the
+#'   highest likelihood among those run to convergence (subject to
+#'   `select_start` and `boundary`). With profile-specific variances that
+#'   maximum can be spurious, a profile on a few nearly coincident points
+#'   with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+#'   harder search finds such maxima more often. They are reported, not set
+#'   aside: a variance at `min_variance` as a boundary fit
+#'   (`latents_boundary`; `boundary = "exclude"` sets those starts aside),
+#'   and a profile with fewer members than its own means and variances by a
+#'   `latents_thin_profiles` warning. Global optimality is not guaranteed by
+#'   either search.
+#' @param n_screen For `search = "emEM"`, the number of starts screened, at
+#'   least `n_starts`. `NULL` (the default) screens five times `n_starts`.
+#'   A value with `search = "kmeans"`, or one below `n_starts`, raises
+#'   `latents_bad_argument`.
 #' @return A `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
@@ -1251,7 +1322,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        scaling = c("none", "person", "grand"),
                        drop_empty = TRUE, cores = 1L,
                        local_dependence = character(),
-                       direct_effects = character()) {
+                       direct_effects = character(),
+                       search = c("kmeans", "emEM"), n_screen = NULL) {
   # Read before any argument is reassigned: missing() is FALSE afterwards.
   covariance_model_given <- !missing(covariance_model)
   # Locally dependent categorical pairs are joined into one indicator each,
@@ -1282,7 +1354,8 @@ multilpa <- function(data, vars, id, n_profiles,
                             if (missing(between_variance)) "varying" else
                               match.arg(between_variance),
                             n_starts, max_iter, tol, min_variance, seed,
-                            match.call(), weights = weights))
+                            match.call(), weights = weights,
+                            search = match.arg(search), n_screen = n_screen))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles, so most arguments
@@ -1302,7 +1375,8 @@ multilpa <- function(data, vars, id, n_profiles,
                          if (missing(between_variance)) NULL else
                            match.arg(between_variance),
                          n_starts, max_iter, tol, min_variance, seed,
-                         match.call(), family = family, weights = weights))
+                         match.call(), family = family, weights = weights,
+                         search = match.arg(search), n_screen = n_screen))
   }
   if (!missing(between_variance)) {
     stop(errorCondition(paste(
@@ -1315,6 +1389,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # Read once here: `boundary` is reused below for the selected fit's flag.
   exclude_boundary <- identical(boundary, "exclude")
   acceleration <- match.arg(acceleration)
+  search <- match.arg(search)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
@@ -1481,7 +1556,8 @@ multilpa <- function(data, vars, id, n_profiles,
       call = call,
       weights = weights, ordinal = ordinal, count = count,
       count_model = count_model, count_dispersion = count_dispersion,
-      centering = centering, scaling = scaling, drop_empty = drop_empty)
+      centering = centering, scaling = scaling, drop_empty = drop_empty,
+      search = search, n_screen = n_screen)
     result$single_level <- single_level
     return(result)
   }
@@ -1609,17 +1685,25 @@ multilpa <- function(data, vars, id, n_profiles,
   # evaluated. Evaluate-only with a `start` therefore uses that start alone, and
   # `get_results(fit, "starts")` shows the single start that was run.
   if (max_iter == 0L && !is.null(start)) n_starts <- 1L
+  # Under emEM a pool is screened and the best `n_starts` are run to the end;
+  # the pool's first `n_starts` starts are the kmeans search's own, drawn in
+  # the same order, so emEM considers every start that search would run.
+  screen <- .latents_search_screen(search, n_starts, n_screen, max_iter,
+                                   supplied = !is.null(start))
+  start_kind <- function(start_index) .latents_start_kind(start_index, n_starts)
   # Each start runs to completion or is recorded as failed; the best is
   # chosen by the shared rule (see .latents_run_starts()).
   starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
     initial <- if (start_index == 1L && !is.null(start)) start else {
       # The first start is Ward's hierarchical clustering, deterministic
       # and good at profiles that differ in shape; the rest are k-means
-      # from random centres.
+      # from random centres, and in an emEM pool random partitions and
+      # random centres after those.
       .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                          variance_model, min_variance, start_index,
                          covariance_model, codes, n_categories, min_probability,
-                         hierarchical = start_index == 1L, extra = fitting_extra)
+                         hierarchical = start_index == 1L, extra = fitting_extra,
+                         kind = start_kind(start_index))
     }
     # Every restart begins from the held values, so a random start cannot
     # report a measurement solution that was neither estimated nor supplied.
@@ -1634,22 +1718,28 @@ multilpa <- function(data, vars, id, n_profiles,
         noise_log_density)
     }
     initial
-  }, run = function(start_index, initial) {
-    .multilpa_em(x, group_index, .latents_mask_covariances(initial, covariance_pattern),
+  }, run = function(start_index, initial, pause = Inf, resume = NULL) {
+    # A resumed start continues from its checkpoint, not from new values.
+    if (!is.null(resume)) initial <- resume$state else
+      initial <- .latents_mask_covariances(initial, covariance_pattern)
+    .multilpa_em(x, group_index, initial,
                variance_model, min_variance, max_iter,
                tol, covariance_model, codes, n_categories, min_probability,
                held, structure, prior_parameters,
                accelerate_em = identical(acceleration, "squarem"),
                sampling_weights = sampling_weights, extra = fitting_extra,
-               covariance_pattern = covariance_pattern)
+               covariance_pattern = covariance_pattern, pause = pause,
+               resume = resume)
   }, select_start = select_start, cores = cores,
   interior = if (exclude_boundary) function(attempt) {
     !.multilpa_covariance_boundary(attempt$parameters, min_variance)
-  })
+  }, screen = screen)
+  found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
   scores <- starts$scores
   best_start <- starts$best_start
+  final_stage <- .latents_final_stage(found)
   best <- attempts[[best_start]]
   parameters <- best$parameters
   # The weighted expectation carries weighted posteriors, which are counts for
@@ -1717,8 +1807,10 @@ multilpa <- function(data, vars, id, n_profiles,
                iterations = if (valid[start_index]) attempt$iterations else NA_integer_,
                error = if (valid[start_index]) NA_character_ else attempt$error,
                boundary = if (valid[start_index])
-                 .multilpa_covariance_boundary(attempt$parameters, min_variance) else NA)
+                 .multilpa_covariance_boundary(attempt$parameters %||% attempt$state,
+                                               min_variance) else NA)
   }))
+  starts <- .latents_search_columns(starts, found, n_starts, supplied = !is.null(start))
   # A row with no observed indicator contributes nothing to the likelihood and
   # nothing to any estimate, so it must not enlarge the sample size the
   # individual-level BIC penalizes against.
@@ -1804,9 +1896,12 @@ multilpa <- function(data, vars, id, n_profiles,
     n_failed_starts = sum(!valid), boundary = boundary, small_classes = small_classes,
     effective_profile_counts = effective_profile_counts,
     effective_group_counts = effective_group_counts,
-    n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
+    n_best_replicated = sum(valid & final_stage &
+                              abs(scores - log_likelihood) <=
                              1e-6 * (1 + abs(log_likelihood))),
-    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields)
+    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields,
+    .latents_search_record(search, n_starts, screen, select_start,
+                           if (exclude_boundary) "exclude" else "allow"))
   class(result) <- "multilpa"
   # Recorded only when used, so a fit without local dependence has exactly the
   # fields it always had.
@@ -1818,7 +1913,7 @@ multilpa <- function(data, vars, id, n_profiles,
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; see get_results(fit, \"starts\").",
-      sum(!valid), n_starts), class = "latents_failed_starts", call = NULL))
+      sum(!valid), length(attempts)), class = "latents_failed_starts", call = NULL))
   }
   # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
   # expected rather than an anomaly worth reporting.
@@ -1838,6 +1933,9 @@ multilpa <- function(data, vars, id, n_profiles,
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  .latents_warn_thin_profiles(
+    effective_profile_counts,
+    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure))
   .latents_warn_poisson_limit(result$count_dispersion)
   result
 }
@@ -2011,6 +2109,60 @@ multilpa <- function(data, vars, id, n_profiles,
     gaussian + categorical
 }
 
+#' The parameters of one profile's own Gaussian density
+#'
+#' Its means plus what its spread adds to the model: every variance or
+#' covariance when profiles vary, nothing when they share one, and the
+#' profile's share of a constrained structure (the parameters one more
+#' profile adds).
+#'
+#' @param n_continuous Number of continuous indicators.
+#' @param variance_model,covariance_model,structure As in [multilpa()].
+#' @return A single number; `0` when there are no continuous indicators or
+#'   the spread is shared by every profile, so no profile has a variance of
+#'   its own to collapse.
+#' @noRd
+.latents_profile_parameters <- function(n_continuous, variance_model,
+                                        covariance_model, structure = NULL) {
+  own_spread <- if (!is.null(structure)) {
+    .multilpa_structure_parameters(structure, 2L, n_continuous) -
+      .multilpa_structure_parameters(structure, 1L, n_continuous)
+  } else if (identical(variance_model, "varying")) {
+    if (identical(covariance_model, "full")) n_continuous * (n_continuous + 1) / 2 else
+      n_continuous
+  } else 0
+  if (n_continuous == 0L || own_spread == 0) 0 else n_continuous + own_spread
+}
+
+#' Warn when a profile has fewer members than its own parameters
+#'
+#' A profile with class-specific variances and fewer effective members than
+#' its density has parameters cannot determine those variances: its
+#' covariance is singular or close to it, the signature of a degenerate or
+#' spurious maximum (McLachlan & Peel, 2000, section 3.10). The estimate is
+#' left as it is and the warning names the profiles and the remedies.
+#'
+#' @param effective_counts Effective membership of each profile.
+#' @param n_parameters The output of `.latents_profile_parameters()`.
+#' @return The positions of the thin profiles, invisibly; a
+#'   `latents_thin_profiles` warning when there are any.
+#' @noRd
+.latents_warn_thin_profiles <- function(effective_counts, n_parameters) {
+  thin <- which(effective_counts < n_parameters)
+  if (n_parameters == 0 || length(effective_counts) < 2L || length(thin) == 0L) {
+    return(invisible(integer()))
+  }
+  warning(warningCondition(sprintf(paste(
+    "%s %s: %s members for %d means and variances%s; the solution may be",
+    "spurious. Fit fewer profiles or shared variances."),
+    if (length(thin) == 1L) "Profile" else "Profiles",
+    paste(thin, collapse = ", "),
+    paste(format(round(effective_counts[thin], 1), nsmall = 1), collapse = ", "),
+    as.integer(n_parameters), if (length(thin) == 1L) "" else " each"),
+    class = "latents_thin_profiles", call = NULL))
+  invisible(thin)
+}
+
 #' Hand a covariate request to the covariate estimator
 #'
 #' `multilpa()` is one verb over one model, and membership covariates are part
@@ -2046,7 +2198,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                       count = character(), count_model = "poisson",
                                       count_dispersion = "varying",
                                       centering = "none", scaling = "none",
-                                      drop_empty = TRUE) {
+                                      drop_empty = TRUE, search = "kmeans",
+                                      n_screen = NULL) {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -2072,7 +2225,8 @@ multilpa <- function(data, vars, id, n_profiles,
     boundary = boundary, call = call,
     weights = weights, ordinal = ordinal, count = count,
     count_model = count_model, count_dispersion = count_dispersion,
-    centering = centering, scaling = scaling, drop_empty = drop_empty)
+    centering = centering, scaling = scaling, drop_empty = drop_empty,
+    search = search, n_screen = n_screen)
 }
 
 #' One k-means run for a random start

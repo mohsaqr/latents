@@ -58,7 +58,10 @@
 .multilpa_bound_covariance <- function(covariance, min_variance) {
   stopifnot(is.matrix(covariance), is.numeric(covariance), min_variance > 0,
             nrow(covariance) == ncol(covariance), all(is.finite(covariance)))
-  decomposition <- eigen((covariance + t(covariance)) / 2, symmetric = TRUE)
+  # A weighted crossprod() can differ between its triangles in the last bit;
+  # the returned matrix is exactly symmetric either way.
+  covariance <- (covariance + t(covariance)) / 2
+  decomposition <- eigen(covariance, symmetric = TRUE)
   if (min(decomposition$values) >= min_variance) return(covariance)
   bounded <- sweep(decomposition$vectors, 2L,
                    pmax(decomposition$values, min_variance), "*") %*%

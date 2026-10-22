@@ -52,7 +52,9 @@ reports convergence of the best start, `boundary` whether a variance reached
 its lower bound, and `n_best_replicated` how many starts reached the best log
 likelihood. A variance at its lower bound in a profile of about one
 observation is a degenerate solution; fitting with `boundary = "exclude"`
-keeps the best start without one.
+keeps the best start without one. A profile with fewer effective members than
+its own means and variances raises a `latents_thin_profiles` warning: its
+variances are poorly determined, and the solution may be spurious.
 
 ```{r model}
 get_results(fit, "model")

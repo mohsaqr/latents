@@ -1203,9 +1203,13 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   model stores (from the alternative for covariate fits).
 #' @param iter Number of simulated datasets, at least 2. Default 199; use many
 #'   for inference.
-#' @param n_starts Number of random starts for each simulated fit. Default 10.
-#' @param max_iter Maximum EM iterations for each simulated fit. Default 1000.
-#' @param tol Relative likelihood convergence tolerance. Default `1e-8`.
+#' @param n_starts Number of starts for each simulated fit. `NULL` (the
+#'   default) refits each model with the starts it was fitted with, by the same
+#'   `search`; a number applies to both models.
+#' @param max_iter Maximum EM iterations for each simulated fit; `NULL` (the
+#'   default) takes each model's own.
+#' @param tol Relative likelihood convergence tolerance; `NULL` (the default)
+#'   takes each model's own.
 #' @param seed Optional seed: a whole number `set.seed()` accepts. The
 #'   caller's random-number state is restored on exit.
 #' @return An object of class `multilpa_bootstrap_lrt`, holding the observed
@@ -1233,8 +1237,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' comparison
 #' @export
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
-                                 iter = 199L, n_starts = 10L, max_iter = 1000L,
-                                 tol = 1e-8, seed = NULL) {
+                                 iter = 199L, n_starts = NULL, max_iter = NULL,
+                                 tol = NULL, seed = NULL) {
   if (.latents_is_weighted(null_model) || .latents_is_weighted(alternative_model)) {
     .latents_refuse_weights(paste(
       "`bootstrap_lrt()`: the parametric bootstrap draws samples from the",
@@ -1250,8 +1254,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       stop(errorCondition("bootstrap_lrt() compares two transition fits, or two of another family.",
                           class = "latents_bad_argument", call = NULL))
     }
-    return(.lta_bootstrap_lrt(null_model, alternative_model, data, iter, n_starts,
-                              max_iter, tol, seed, match.call()))
+    return(.lta_bootstrap_lrt(null_model, alternative_model, data, iter,
+                              n_starts, max_iter, tol, seed, match.call()))
   }
   if (inherits(null_model, "multilpa_additive") ||
       inherits(alternative_model, "multilpa_additive")) {
@@ -1282,11 +1286,20 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                        .multilpa_resolve_data(null_model, data))
   stopifnot(is.data.frame(data), is.numeric(iter), length(iter) == 1L,
             is.finite(iter), iter >= 2L, iter == as.integer(iter),
-            is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
-            n_starts >= 1, n_starts == as.integer(n_starts),
-            is.numeric(max_iter), length(max_iter) == 1L, is.finite(max_iter),
-            max_iter >= 1, max_iter == as.integer(max_iter),
-            is.numeric(tol), length(tol) == 1L, is.finite(tol), tol > 0)
+            is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
+              is.finite(n_starts) && n_starts >= 1 && n_starts == as.integer(n_starts)),
+            is.null(max_iter) || (is.numeric(max_iter) && length(max_iter) == 1L &&
+              is.finite(max_iter) && max_iter >= 1 && max_iter == as.integer(max_iter)),
+            is.null(tol) || (is.numeric(tol) && length(tol) == 1L && is.finite(tol) &&
+              tol > 0))
+  # Each model is refitted as it was fitted (its search, starts, stopping
+  # rule, acceleration, selection and boundary policy), so the reference
+  # distribution comes from the procedure that produced the statistic: a
+  # bootstrap that searched less hard than the observed fits rejected a true
+  # null at 0.15 instead of 0.05 (SEARCH-PLAN.md).
+  controls <- lapply(list(null = null_model, alternative = alternative_model),
+                     .latents_refit_controls, n_starts = n_starts,
+                     max_iter = max_iter, tol = tol)
   .multilpa_check_seed(seed)
   .latents_local_seed(seed)
   fields <- c("vars", "id", "group_values", "group_index", "variance_model",
@@ -1417,13 +1430,14 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   # boundary noise is 7.6e-05, seven times the old fixed -1e-5. The multiplier
   # allows for the several EM steps that noise accumulates over, and the window
   # tightens automatically when the caller tightens `tol`.
-  reversal_window <- 100 * tol * (1 + abs(null_model$log_likelihood))
+  reversal_window <- 100 * max(controls$null$tol, controls$alternative$tol) *
+    (1 + abs(null_model$log_likelihood))
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
   if (observed < -reversal_window) {
     stop(errorCondition(sprintf(
       paste("Alternative has lower likelihood by %.3g, beyond the %.3g that",
             "`tol = %.3g` can explain; improve its optimization first."),
-      -observed, reversal_window, tol),
+      -observed, reversal_window, max(controls$null$tol, controls$alternative$tol)),
       class = "latents_reversed_likelihood", call = NULL))
   }
   observed <- max(0, observed)
@@ -1433,7 +1447,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     if (fiml) {
       simulated <- .multilpa_carry_missingness(simulated, data, null_model$vars)
     }
-    models <- lapply(list(null_model, alternative_model), function(model) {
+    models <- Map(function(model, control) {
       ## The covariance and the measurement extensions come from the shared
       ## refit rule: refitting from `variance_model` and `covariance_model`
       ## alone returned a VEI replicate as VVI, two parameters wider, and
@@ -1446,7 +1460,10 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
              n_profiles = model$n_profiles,
              n_group_classes = model$n_group_classes),
         family,
-        list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+        list(n_starts = control$n_starts, max_iter = control$max_iter,
+             tol = control$tol, search = control$search,
+             n_screen = control$n_screen, acceleration = control$acceleration,
+             select_start = control$select_start, boundary = control$boundary,
              min_variance = model$min_variance,
              centering = model$centering %||% "none",
              scaling = model$scaling %||% "none",
@@ -1463,7 +1480,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
           profile_covariates = model$profile_covariates,
           group_covariates = model$group_covariates,
           profile_slopes = model$profile_slopes %||% "shared")))
-    })
+    }, list(null_model, alternative_model), controls)
     statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
     # The statistic reads only the maximized likelihoods. A covariate refit
     # whose likelihood has settled but whose membership logits still drift
@@ -1494,7 +1511,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
        null_group_classes = null_model$n_group_classes,
        alternative_profiles = alternative_model$n_profiles,
        alternative_group_classes = alternative_model$n_group_classes,
-       call = match.call())
+       call = match.call(),
+       refit_controls = .latents_refit_controls_frame(controls))
   class(result) <- "multilpa_bootstrap_lrt"
   result
 }

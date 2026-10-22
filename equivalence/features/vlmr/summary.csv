@@ -1,0 +1,25 @@
+"reference","pairs","quantity","max_difference"
+"Latent GOLD",148,"log likelihood (null, alternative)",4.91197106384789e-05
+"Latent GOLD",148,"LR",4.89032733383965e-05
+"Latent GOLD",148,"adjusted LR",0.0358129391318869
+"Latent GOLD",148,"VLMR p",0.104219809908342
+"Latent GOLD",148,"aLMR p",0.10589476702427
+"Latent GOLD",148,"reference mean",1.98685541424645
+"Latent GOLD",148,"reference sd",1.87320382886357
+"Mplus TECH11",157,"H0 log likelihood",161.529341092345
+"Mplus TECH11",157,"H1 log likelihood",10.5851196866652
+"Mplus TECH11",157,"LR",331.313497500531
+"Mplus TECH11",157,"adjusted LR",325.494146862944
+"Mplus TECH11",157,"VLMR p",0.648060067913166
+"Mplus TECH11",157,"aLMR p",0.655768984443254
+"Mplus TECH11",157,"reference mean",53.0923526568498
+"Mplus TECH11",157,"reference sd",68.4868999767698
+"independent R reference",241,"LR (relative)",2.7988305976264e-12
+"independent R reference",241,"weights (largest eigenvalue gap)",4.35828676392802e-06
+"independent R reference",241,"reference mean",6.75048820975022e-06
+"independent R reference",241,"reference sd",5.26914059673089e-06
+"independent R reference",241,"VLMR p vs CompQuadForm::imhof",7.43675636405428e-07
+"independent R reference",241,"VLMR p vs CompQuadForm::davies",7.43675917902475e-07
+"independent R reference",241,"aLMR p vs davies",7.59054832766282e-07
+"independent R reference",241,"VLMR p vs Monte Carlo (in binomial SEs)",2.41158322578842
+"independent R reference",241,"summed score at the estimate, per unit",1.85933335247629e-06

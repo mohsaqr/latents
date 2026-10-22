@@ -25,13 +25,18 @@
 #'   in the order given.
 #' @noRd
 .latents_parse_direct_effects <- function(direct_effects) {
-  stopifnot("`direct_effects` must be a character vector" =
-              is.character(direct_effects) && !anyNA(direct_effects))
-  pieces <- strsplit(direct_effects, "~", fixed = TRUE)
+  if (!is.character(direct_effects) || anyNA(direct_effects)) {
+    stop(errorCondition("`direct_effects` must be a character vector without missing values.",
+                        class = "latents_bad_argument", call = NULL))
+  }
+  # strsplit() drops a trailing empty field ("y ~ z +" would read as "y ~ z"),
+  # so a space is appended to keep it and have it refused as empty.
+  split <- function(text, separator) strsplit(paste0(text, " "), separator, fixed = TRUE)
+  pieces <- split(direct_effects, "~")
   malformed <- lengths(pieces) != 2L
   sides <- lapply(pieces[!malformed], trimws)
   indicators <- vapply(sides, `[[`, character(1), 1L)
-  covariates <- lapply(sides, function(side) trimws(strsplit(side[[2L]], "+", fixed = TRUE)[[1L]]))
+  covariates <- lapply(sides, function(side) trimws(split(side[[2L]], "+")[[1L]]))
   malformed[!malformed] <- !nzchar(indicators) |
     vapply(covariates, function(names) length(names) == 0L || !all(nzchar(names)), logical(1))
   if (any(malformed)) {

@@ -37,3 +37,4 @@
 ^pkgdown$
 ^tests/equivalence$
 ^tests/testthat/_problems$
+^SEARCH-PLAN\.md$

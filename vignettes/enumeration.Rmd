@@ -124,7 +124,11 @@ With many starts, a candidate with too many profiles can reach a solution in
 which one profile sits on a single observation with every variance at its
 lower bound; its likelihood is then set by `min_variance`, not by the data.
 `boundary = "exclude"` sets such starts aside (see *Checks of the
-estimation*). Large grids take time; `cores` fits the candidates in parallel
+estimation*). A profile with fewer members than its own means and variances
+is reported by a `latents_thin_profiles` warning, as in the grid below,
+because its solution may be spurious. `search = "emEM"` screens five times as
+many starts by short EM runs and continues the best; it reaches the highest
+maximum more often, and also spurious maxima more often. Large grids take time; `cores` fits the candidates in parallel
 and returns the same result as one core.
 
 ```{r enumerate}

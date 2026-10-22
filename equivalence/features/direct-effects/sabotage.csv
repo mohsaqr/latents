@@ -1,0 +1,6 @@
+"defect","target","failed","errors","passed","detected"
+"control",".latents_direct_shift",3,0,79,FALSE
+"half_shift",".latents_direct_shift",7,6,43,TRUE
+"unweighted_step",".latents_direct_maximize",4,0,78,TRUE
+"no_uncentering",".latents_uncenter_direct",8,1,71,TRUE
+"score_without_covariate",".latents_direct_scores",4,0,78,TRUE
