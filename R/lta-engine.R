@@ -504,17 +504,20 @@
 
 #' Starting values: the homogeneous initializer, converted to logit
 #' coefficients with zero covariate effects
+#' @param row_weights Optional sampling weights in observation order, as for
+#'   `.multilpa_initialize()`.
 #' @noRd
 .lta_initialize <- function(x, group_index, layout, designs, n_profiles, n_types,
                             variance_model, min_variance, start_index, codes,
                             n_categories, min_probability, n_measurement,
                             order = 1L, mover_stayer = 0L,
                             covariance_model = "diagonal", structure = NULL,
-                            extra = NULL, kind = "kmeans") {
+                            extra = NULL, kind = "kmeans", row_weights = NULL) {
   start <- .multilpa_transition_initialize(x, group_index, n_profiles, n_types,
                                            variance_model, min_variance, start_index,
                                            covariance_model, codes, n_categories,
-                                           min_probability, extra, kind = kind)
+                                           min_probability, extra, kind = kind,
+                                           row_weights = row_weights)
   if (!is.null(structure)) {
     start <- .multilpa_project_start(start, structure, nrow(x), min_variance)
   }
@@ -617,7 +620,7 @@
                           .lta_covariate_matrix(data, initial_covariates), transitions)
   n_measurement <- if (identical(measurement_model, "occasion")) layout$n_occasions else 1L
   .latents_local_seed(seed)
-  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
+  centers <- .multilpa_initialization_center(x, sampling_weights[groups$index])
   x <- sweep(x, 2L, centers, "-")
   categorical_names <- categorical
   if (!is.null(n_categories)) names(n_categories) <- categorical_names
@@ -644,7 +647,8 @@
                     start_index, codes, n_categories, min_probability,
                     n_measurement, order, as.integer(mover_stayer),
                     covariance_model, structure, extra,
-                    kind = .latents_start_kind(start_index, n_starts))
+                    kind = .latents_start_kind(start_index, n_starts),
+                    row_weights = sampling_weights[groups$index])
   }, run = function(start_index, start, pause = Inf, resume = NULL) {
     # EM to a loose tolerance, then a quasi-Newton finish on the exact
     # likelihood: EM alone crawls when profiles are weakly separated.
@@ -745,6 +749,30 @@
     result$bic_individual <- -2 * result$log_likelihood +
       log(result$n_observations) * result$n_parameters
   }
+  # This diagnostic concerns Gaussian measurement, so rows without any
+  # Gaussian observation cannot support its spread, regardless of drop_empty.
+  # Use the weighted E-step memberships that actually estimated each density;
+  # the reported posteriors have already been converted to probabilities.
+  gaussian_rows <- rowSums(!is.na(x)) > 0L
+  profile_parameters <- .latents_profile_parameters(
+    length(measurement$continuous), variance_model, covariance_model, structure)
+  invisible(lapply(seq_len(n_measurement), function(index) {
+    rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
+    .latents_warn_thin_profiles(
+      colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
+      profile_parameters,
+      context = if (n_measurement > 1L)
+        sprintf("at occasion %s", index) else NULL)
+  }))
+  result$gaussian_diagnostics <- do.call(rbind, lapply(seq_len(n_measurement), function(index) {
+    rows <- n_measurement == 1L | occasion_of_row == index
+    .latents_gaussian_diagnostics(
+      result$measurement[[index]], x[rows, , drop = FALSE],
+      result$subject_posteriors[rows, , drop = FALSE],
+      weights = if (is.null(sampling_weights)) NULL else sampling_weights[groups$index[rows]],
+      min_variance = min_variance,
+      context = if (n_measurement == 1L) "profiles" else sprintf("occasion %s", index))
+  }))
   result
 }
 
@@ -831,7 +859,7 @@
   probability_boundary <- .lta_probability_boundary(expectation, layout,
                                                     parameters$stayer)
   boundary <- probability_boundary || any(vapply(parameters$measurement, function(block) {
-    any(block$variances <= min_variance * (1 + 1e-8))
+    .multilpa_covariance_boundary(block, min_variance)
   }, logical(1)))
   result <- list(
     call = call, vars = vars, continuous = measurement$continuous,
@@ -899,7 +927,8 @@
       "A transition or initial probability is estimated at zero (a move or",
       "start that never occurs); this is a boundary fit and its standard",
       "errors are withheld.") else
-      "A variance reached min_variance; this is a bound-active fit.",
+      paste("A variance or covariance eigenvalue reached min_variance;",
+            "this is a bound-active fit."),
       class = "latents_boundary", call = NULL))
   }
   # As in the homogeneous engine: a class that has emptied (a stayer class no
@@ -909,9 +938,5 @@
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
-  .latents_warn_thin_profiles(
-    colSums(subject_posteriors),
-    .latents_profile_parameters(length(measurement$continuous), variance_model,
-                                covariance_model, structure))
   result
 }

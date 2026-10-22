@@ -10,7 +10,9 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     if (length(fit$categorical) > 0L) "responses",
     if (!is.null(fit$extra_data$ordinal)) "ordinal",
     if (!is.null(fit$extra_data$count)) "count_means",
-    "group_classes", "assignments", "fit", "starts")
+    "group_classes", "assignments", "fit", "starts",
+    if (!is.null(fit$gaussian_diagnostics) && nrow(fit$gaussian_diagnostics) > 0L)
+      "gaussian_diagnostics")
 }
 
 #' Coefficient table (log odds) with Wald columns when inference applies
@@ -201,6 +203,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   classes <- names(fit$group_probabilities)
   profiles <- paste0("profile_", seq_len(fit$n_profiles))
   switch(what,
+    gaussian_diagnostics = fit$gaussian_diagnostics,
     transitions = .lta_probability_table(fit, "transitions"),
     initial = .lta_probability_table(fit, "initial"),
     transition_coefficients = .lta_coefficient_table(fit, "transition", level, vcov_type),
@@ -306,6 +309,7 @@ print.multilpa_lta <- function(x, ...) {
               x$n_parameters, x$bic, if (x$converged) "yes" else "no"))
   .latents_print_extra(x)
   .latents_print_weights(x)
+  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   cat(paste("Tables: get_results(x, what = ), e.g. \"transitions\",",
             "\"transition_coefficients\", \"profiles\"; summary(x).\n"))
   invisible(x)

@@ -392,6 +392,8 @@
 #' @param n_categories Category counts per categorical indicator.
 #' @param min_probability Lower bound on every fitted probability.
 #' @param kind The kind of start, as for `.multilpa_initialize()`.
+#' @param row_weights Optional sampling weights in observation order, as for
+#'   `.multilpa_initialize()`.
 #' @return Strictly positive initial parameters for EM.
 #' @noRd
 .multilpa_transition_initialize <- function(x, group_index, n_profiles, n_types,
@@ -400,14 +402,14 @@
                                             covariance_model = "diagonal",
                                             codes = NULL, n_categories = NULL,
                                             min_probability = 1e-10, extra = NULL,
-                                            kind = "kmeans") {
+                                            kind = "kmeans", row_weights = NULL) {
   # The first start is Ward's hierarchical clustering, as in multilpa().
   parameters <- .multilpa_initialize(x, group_index, n_profiles, n_types,
                                      variance_model, min_variance, start_index,
                                      covariance_model, codes, n_categories,
                                      min_probability,
                                      hierarchical = start_index == 1L, extra = extra,
-                                     kind = kind)
+                                     kind = kind, row_weights = row_weights)
   initial <- parameters$profile_probabilities
   persistence <- if (start_index == 1L) 0.7 else stats::runif(1L, 0.4, 0.9)
   transition <- array(vapply(seq_len(n_types), function(type) {
@@ -945,9 +947,14 @@ lta <- function(data, vars, id, n_profiles, time,
       class = "latents_small_classes", call = NULL))
   }
   .latents_warn_thin_profiles(
-    colSums(subject_posteriors),
+    # Empty and categorical-only rows do not inform Gaussian measurement,
+    # even when drop_empty = FALSE includes them in classification counts.
+    colSums(subject_posteriors[rowSums(!is.na(x)) > 0L, , drop = FALSE]),
     .latents_profile_parameters(length(continuous), variance_model, covariance_model,
                                 structure))
+  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
+    parameters, x, result$subject_posteriors,
+    min_variance = min_variance)
   result
 }
 
@@ -1061,6 +1068,7 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
               x$log_likelihood, x$n_parameters, x$bic_groups))
   cat(sprintf("Converged: %s after %d iterations; best of %d starts\n",
               x$converged, x$iterations, nrow(x$starts)))
+  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   .multilpa_print_primary(x, rows = rows)
   invisible(x)
 }

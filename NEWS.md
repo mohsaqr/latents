@@ -1,22 +1,66 @@
 # latents (development version)
 
+### Review corrections
+
+* General latent transition fits detect covariance eigenvalues at the
+  variance floor, including occasion-specific measurement. Such fits are
+  marked as boundary solutions and refuse Wald inference.
+* Zero-weight units no longer determine the internal Gaussian origin,
+  imputation, clustering geometry or initial measurement parameters in
+  profile, membership-covariate and weighted transition fits. Excluded
+  outliers cannot consume an initial profile or erase supported-row
+  precision. Observation and group mappings are preserved.
+* Gaussian support warnings in ordinary and membership-covariate fits
+  exclude categorical-only and retained empty rows. Cross-level models
+  apply sampling weights and check both the individual and group Gaussian
+  components.
+* `get_results(fit, "gaussian_diagnostics")` exposes per-component Gaussian
+  membership mass, positive contributing rows, weight effective sample size,
+  standardized variances and covariance eigenvalues, and the absolute
+  boundary status. The narrowest standardized direction is also printed.
+  These are descriptive diagnostics, with no automatic spike cutoff or
+  change to start selection. Normalized membership mass is not an
+  independent sample count; thin-profile warnings are heuristics, not
+  proofs of singularity or nonidentification.
+* Bootstrap inference for `fit_staged()` repeats the measurement stage's
+  own search controls before refitting the group-class stage, preserving
+  an explicit emEM pool even when a single supplied start disables
+  screening at stage two.
+* `latents_thin_profiles` counts the free Gaussian measurement parameters:
+  covariances held at zero and held means are excluded, and held variances
+  do not trigger the warning.
+* In latent transition models, thin-profile warnings use weighted
+  memberships of rows with observed Gaussian indicators. Empty or
+  categorical-only rows cannot hide a thin Gaussian profile, even under
+  `drop_empty = FALSE`. Occasion-specific measurement is checked separately
+  at each occasion, which the warning identifies. Fitted estimates and
+  classification counts are unchanged.
+
 ### Start search
 
 * `search = "emEM"` (new, opt-in) finds starts by the emEM search
   (Biernacki, Celeux & Govaert, 2003): a pool of `n_screen` starts (five
   times `n_starts` by default) is screened by a short EM run each, and the
-  best `n_starts` are run to convergence. The pool begins with the default
+  `n_starts` finalists are run to convergence. A successful first start
+  (Ward or supplied) reserves one finalist slot; the others are ranked by
+  screening likelihood. With `n_starts = 1`, a valid Ward start is therefore
+  always finalized; a single supplied start skips screening. This existing
+  protection is now documented. The pool begins with the default
   search's own starts. `search = "kmeans"` remains the default and
   reproduces the fits of 0.96.1, apart from the corrections listed below.
-  On the start-search benchmark (180 fits), emEM reached the best known
-  maximum in 136 fits and the default search in 130, but it reported a
-  spurious maximum in 25 fits against 12, and took three to five times as
-  long.
+  On the start-search benchmark (180 fits), emEM attained the finite
+  above-cutoff reference in 136 fits and the default search in 130. The
+  benchmark's descriptive cutoff was 0.01 for the smallest standardized
+  variance or covariance eigenvalue; values below it do not prove false
+  classes. On the matched 80 heteroscedastic fits, both searches attained
+  that reference in 40 fits, while emEM returned 25 below-cutoff solutions
+  against 12 for the default search. Retained runs took about twice as long
+  by median time and 1.45 times as long in total.
 * Either search reports the highest likelihood among the finished starts.
   The new `latents_thin_profiles` warning fires when a profile with its own
-  variances has fewer effective members than its means and variances, the
-  sign of a spurious maximum (McLachlan & Peel, 2000, section 3.10), and
-  suggests fewer profiles or shared variances. The estimate is unchanged.
+  variances has Gaussian membership mass below its number of free Gaussian
+  parameters. It prompts inspection of covariance and support diagnostics.
+  The warning is heuristic and the estimate is unchanged.
 * Under emEM, `get_results(fit, "starts")` lists every start of the pool,
   with its `kind`, `stage` and likelihood after screening, and "Best
   likelihood replicated" counts the starts that were run to convergence.

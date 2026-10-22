@@ -20,6 +20,67 @@ test_that("a profile's own parameters are its means and what its spread adds", {
   expect_equal(.latents_profile_parameters(3L, "varying", "full", "EEE"), 0)
 })
 
+test_that("thin-profile counts respect covariance patterns and held blocks", {
+  pattern <- diag(5L) > 0
+  pattern[1L, 2L] <- pattern[2L, 1L] <- TRUE
+  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
+                                           covariance_pattern = pattern), 11)
+  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
+                                           covariance_pattern = pattern,
+                                           fixed = "means"), 6)
+  expect_equal(.latents_profile_parameters(5L, "equal", "full", "EEE",
+                                           covariance_pattern = pattern), 0)
+  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
+                                           fixed = "means"), 5)
+  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
+                                           fixed = "variances"), 0)
+  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
+                                           fixed = c("means", "variances")), 0)
+})
+
+#' A separated two-profile fixture with five Gaussian indicators
+#' @param n_small Number of rows in the smaller profile.
+#' @return An 80-row data frame with columns a through e.
+thin_constraint_data <- function(n_small = 13L) {
+  stopifnot(n_small > 0L, n_small < 80L)
+  set.seed(73)
+  data <- as.data.frame(matrix(stats::rnorm(80L * 5L), 80L, 5L))
+  names(data) <- letters[1:5]
+  data[seq_len(n_small), ] <- data[seq_len(n_small), ] + 10
+  data
+}
+
+test_that("a patterned fit warns only below its actual free density count", {
+  data <- thin_constraint_data()
+  expect_no_warning(fit <- lpa(data, names(data), 2L, local_dependence = "a:b",
+                               n_starts = 1L, seed = 1))
+  expect_equal(fit$n_parameters, 23)
+  expect_equal(unname(fit$effective_profile_counts), c(13, 67))
+  expect_no_warning(held <- lpa(data, names(data), 2L, local_dependence = "a:b",
+                                start = starting_values(fit), fixed = "means",
+                                n_starts = 1L, seed = 1))
+  expect_equal(held$n_parameters, 13)
+  smaller <- thin_constraint_data(9L)
+  expect_warning(lpa(smaller, names(smaller), 2L, local_dependence = "a:b",
+                      n_starts = 1L, seed = 1),
+                 regexp = "Gaussian membership mass for 11 free means and variances",
+                 class = "latents_thin_profiles")
+})
+
+test_that("holding variances disables the collapse warning with means fixed or free", {
+  data <- thin_constraint_data(3L)
+  start <- list(means = rbind(rep(10, 5), rep(0, 5)),
+                variances = matrix(1, 2, 5),
+                profile_probabilities = matrix(c(3, 77) / 80, 1),
+                group_probabilities = 1)
+  invisible(lapply(list("variances", c("means", "variances")), function(fixed) {
+    expect_no_warning(fit <- lpa(data, names(data), 2L, start = start,
+                                 fixed = fixed, n_starts = 1L, seed = 1))
+    expect_equal(unname(fit$effective_profile_counts), c(3, 77))
+    expect_identical(unname(fit$variances), start$variances)
+  }))
+})
+
 test_that("the warning names the thin profiles and stays silent otherwise", {
   expect_warning(thin <- .latents_warn_thin_profiles(c(40, 3.9, 12), 4),
                  class = "latents_thin_profiles")
@@ -29,7 +90,8 @@ test_that("the warning names the thin profiles and stays silent otherwise", {
   expect_no_warning(.latents_warn_thin_profiles(c(40, 30), 4))
   message <- tryCatch(.latents_warn_thin_profiles(c(5.1, 40, 3.2), 8),
                       latents_thin_profiles = conditionMessage)
-  expect_true(startsWith(message, "Profiles 1, 3: 5.1, 3.2 members for 8"))
+  expect_true(startsWith(message, "Profiles 1, 3: 5.1, 3.2 Gaussian membership mass for 8"))
+  expect_match(message, "not an identification test", fixed = TRUE)
 })
 
 # The emEM search reaches the spurious profile of these data (3.9 members);

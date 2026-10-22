@@ -71,11 +71,13 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread, as in mclust's initialization. The
+described by its own means and spread. The
 remaining starts are k-means from random centres. A supplied \code{start}
 replaces the first start, and the remaining starts are random. With
 \code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
-is.}
+is. Rows from zero-weight units do not supply initial clustering or
+measurement parameters. For \code{search = "emEM"}, this is the finalist
+budget, including the protected first start (see \code{search}).}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start
 (default 5000, higher than the 1000 of \code{\link[=multilpa]{multilpa()}} to match the tighter
@@ -213,8 +215,14 @@ enumerations and refits; it has no effect on data without such rows.}
 \item{search}{How the starts are found. \code{"kmeans"} (the default) runs
 \code{n_starts} starts to convergence: Ward's clustering first, then k-means
 from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
-short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
-Celeux & Govaert, 2003); the pool begins with the kmeans search's own
+short EM run each and runs \code{n_starts} finalists to convergence
+(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
+or supplied starting values) reserves one finalist slot if its screening
+succeeds; the remaining slots take the highest screening likelihoods.
+Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
+successfully, even if another screened start has a higher likelihood.
+With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
+The pool begins with the kmeans search's own
 starts, drawn in the same order, followed by random partitions of the
 rows and random rows as class centres, and \code{get_results(fit, "starts")}
 gives every start of the pool with its \code{kind}, its \code{stage} and its
@@ -226,12 +234,17 @@ with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
 harder search finds such maxima more often. They are reported, not set
 aside: a variance at \code{min_variance} as a boundary fit
 (\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
-and a profile with fewer members than its own means and variances by a
-\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
-either search.}
+and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
+warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
+covariance and support measures without an automatic spike cutoff or
+changing the selected start. Neither a warning's absence nor a repeated
+likelihood establishes a regular or globally optimal solution.}
 
 \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
 least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
+The protected first start counts toward the \code{n_starts} finalist budget;
+increasing \code{n_screen} does not add finalist slots. A single supplied
+start with \code{n_starts = 1} disables screening.
 A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
 \code{latents_bad_argument}.}
 }

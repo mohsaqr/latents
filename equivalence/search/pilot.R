@@ -64,14 +64,15 @@ simulate <- function(spec, seed) {
 
 # The diagnostics a spike shows: the smallest expected class size, and the
 # smallest class variance relative to the indicator's sample variance (on the
-# standardized scale for full covariances), as the emEM admissibility rule
-# measures it.
+# standardized scale for full covariances). These benchmark measurements do
+# not filter production solutions; current finalist tables may lack the metric.
 describe <- function(fit, data, vars, seconds, label) {
+  has_gaussian <- !identical(spec$family, "lca")
   if (inherits(fit, "error")) {
     return(list(row = data.frame(fit = label, log_likelihood = NA_real_, converged = NA,
                       boundary = NA, min_class = NA_real_, min_relative_variance = NA_real_,
                       replicated = NA_integer_, seconds = seconds,
-                      error = conditionMessage(fit)), finals = NULL))
+                      error = conditionMessage(fit), has_gaussian = has_gaussian), finals = NULL))
   }
   sizes <- colSums(fit$subject_posteriors)
   numeric_vars <- vars[vapply(data[vars], is.numeric, TRUE)]
@@ -81,19 +82,21 @@ describe <- function(fit, data, vars, seconds, label) {
   } else NA_real_
   starts <- get_results(fit, "starts")
   finals <- if ("stage" %in% names(starts)) {
-    # A categorical model has no variances, so its table has no such columns.
+    # Missing Gaussian finalist metrics are unmeasured, while an LCA metric
+    # is inapplicable. Preserve that distinction explicitly in saved records.
     if (!"min_relative_variance" %in% names(starts)) {
       starts$min_relative_variance <- NA_real_
       starts$admissible <- NA
     }
+    starts$has_gaussian <- has_gaussian
     subset(starts, stage == "final", select = c(start, kind, log_likelihood, converged,
-                                                min_relative_variance, admissible))
+                                                min_relative_variance, admissible, has_gaussian))
   }
   list(row = data.frame(fit = label, log_likelihood = fit$log_likelihood,
              converged = isTRUE(fit$converged), boundary = isTRUE(fit$boundary),
              min_class = min(sizes), min_relative_variance = ratio,
              replicated = fit$n_best_replicated %||% NA_integer_,
-             seconds = seconds, error = NA_character_),
+             seconds = seconds, error = NA_character_, has_gaussian = has_gaussian),
        finals = if (!is.null(finals)) cbind(fit = label, finals))
 }
 

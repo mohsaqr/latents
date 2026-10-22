@@ -162,6 +162,9 @@
 #' @param min_variance Variance lower bound.
 #' @param start_index Restart number.
 #' @param covariance_model Diagonal or full residual covariance.
+#' @param row_weights Optional sampling weights in observation order. Only
+#'   positive-weight rows supply starting values; their relative weights do
+#'   not change the existing initialization algorithm.
 #' @return Strictly positive initial mixture probabilities and Gaussian parameters.
 #' @noRd
 .multilpa_initialize <- function(x, group_index, n_profiles, n_types,
@@ -169,16 +172,41 @@
                                covariance_model = "diagonal", codes = NULL,
                                n_categories = NULL, min_probability = 1e-10,
                                hierarchical = FALSE, extra = NULL,
-                               kind = "kmeans") {
+                               kind = "kmeans", row_weights = NULL) {
   stopifnot(is.matrix(x), length(group_index) == nrow(x),
             n_profiles >= 1L, n_types >= 1L, start_index >= 1L,
             variance_model %in% c("varying", "equal"), min_variance > 0,
             kind %in% c("kmeans", "partition", "centres"))
+  stopifnot(is.null(row_weights) ||
+              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
+                 all(is.finite(row_weights)) && all(row_weights >= 0)))
+  if (!is.null(row_weights) && any(row_weights == 0)) {
+    # Initial states contain parameters only. Keep the full observation and
+    # group mapping for EM, but let excluded units influence none of the
+    # imputation, clustering, group compositions or measurement parameters.
+    rows <- row_weights > 0
+    x <- x[rows, , drop = FALSE]
+    group_index <- group_index[rows]
+    if (!is.null(codes)) codes <- codes[rows, , drop = FALSE]
+    extra <- .latents_extra_rows(extra, rows)
+    if (n_profiles > nrow(unique(cbind(x, codes, .latents_extra_matrix(extra))))) {
+      stop(errorCondition(paste(
+        "n_profiles cannot exceed the number of distinct observed indicator",
+        "rows with positive sampling weight."),
+        class = "latents_unidentified", call = NULL))
+    }
+  }
   # The random kinds of the emEM pool describe each cluster by its own
   # spread, as Ward's start does, and draw the group classes at random.
   random_kind <- !identical(kind, "kmeans")
   if (ncol(x) > 0L && anyNA(x)) {
     initial_means <- colMeans(x, na.rm = TRUE)
+    if (any(!is.finite(initial_means))) {
+      stop(errorCondition(paste(
+        "Every continuous indicator needs an observed row with positive",
+        "sampling weight for initialization."),
+        class = "latents_bad_data", call = NULL))
+    }
     x <- matrix(vapply(seq_len(ncol(x)), function(indicator) {
       value <- x[, indicator]
       value[is.na(value)] <- initial_means[indicator]
@@ -193,8 +221,10 @@
   } else {
     # Standardizing only for initialization stops a large-scale indicator from
     # determining all initial clusters; fitting remains in the original units.
+    scales <- sqrt(overall_variances)
+    if (!is.null(row_weights) && any(row_weights == 0)) scales[scales == 0] <- 1
     standardized <- sweep(sweep(x, 2L, overall_means, "-"),
-                          2L, sqrt(overall_variances), "/")
+                          2L, scales, "/")
     # Categorical indicators join the clustering as centered dummy columns, so
     # a mixed-mode model is initialized from all of its indicators at once.
     clustering_input <- if (is.null(codes)) standardized else
@@ -296,6 +326,27 @@
   result
 }
 
+#' Internal Gaussian origin from the rows that enter the objective
+#' @param x Continuous indicator matrix.
+#' @param row_weights Optional nonnegative weights in observation order.
+#' @return Observed column means among positive-weight rows.
+#' @noRd
+.multilpa_initialization_center <- function(x, row_weights = NULL) {
+  stopifnot(is.matrix(x), is.null(row_weights) ||
+              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
+                 all(is.finite(row_weights)) && all(row_weights >= 0)))
+  if (ncol(x) == 0L) return(numeric(0))
+  rows <- if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0
+  centers <- colMeans(x[rows, , drop = FALSE], na.rm = TRUE)
+  if (any(!is.finite(centers))) {
+    stop(errorCondition(paste(
+      "Every continuous indicator needs an observed row with positive",
+      "sampling weight for initialization."),
+      class = "latents_bad_data", call = NULL))
+  }
+  centers
+}
+
 #' Assign rows to clusters at random, for the emEM pool
 #'
 #' `"partition"` deals the rows into the clusters in a random order, so every
@@ -327,8 +378,7 @@
 
 #' Assign rows to clusters by Ward's hierarchical clustering
 #'
-#' The deterministic start mclust takes its name from (model-based
-#' hierarchical agglomeration), in its common Ward form. Agglomeration needs
+#' Ward's Euclidean agglomeration on standardized rows. Agglomeration needs
 #' every pairwise distance, so at most 2000 evenly spaced rows are clustered
 #' and every row is then assigned to the nearest cluster centre.
 #'
@@ -786,11 +836,13 @@
 #' @param n_starts Positive integer number of EM starts (default 10). The
 #'   first start is deterministic: Ward's hierarchical clustering of the
 #'   standardized indicators (on at most 2000 evenly spaced rows), each cluster
-#'   described by its own means and spread, as in mclust's initialization. The
+#'   described by its own means and spread. The
 #'   remaining starts are k-means from random centres. A supplied `start`
 #'   replaces the first start, and the remaining starts are random. With
 #'   `start` and `max_iter = 0`, exactly one start is run whatever `n_starts`
-#'   is.
+#'   is. Rows from zero-weight units do not supply initial clustering or
+#'   measurement parameters. For `search = "emEM"`, this is the finalist
+#'   budget, including the protected first start (see `search`).
 #' @param max_iter Nonnegative integer maximum number of EM updates per start
 #'   (default 1000). `max_iter = 0` performs no update: with `start`, the model
 #'   is evaluated at exactly those values, for example to score them with
@@ -1196,8 +1248,14 @@
 #' @param search How the starts are found. `"kmeans"` (the default) runs
 #'   `n_starts` starts to convergence: Ward's clustering first, then k-means
 #'   from random centres. `"emEM"` screens a pool of `n_screen` starts by a
-#'   short EM run each and runs the best `n_starts` to convergence (Biernacki,
-#'   Celeux & Govaert, 2003); the pool begins with the kmeans search's own
+#'   short EM run each and runs `n_starts` finalists to convergence
+#'   (Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
+#'   or supplied starting values) reserves one finalist slot if its screening
+#'   succeeds; the remaining slots take the highest screening likelihoods.
+#'   Thus `n_starts = 1` finalizes Ward's start whenever it screens
+#'   successfully, even if another screened start has a higher likelihood.
+#'   With a supplied start and `n_starts = 1`, screening is skipped entirely.
+#'   The pool begins with the kmeans search's own
 #'   starts, drawn in the same order, followed by random partitions of the
 #'   rows and random rows as class centres, and `get_results(fit, "starts")`
 #'   gives every start of the pool with its `kind`, its `stage` and its
@@ -1209,11 +1267,16 @@
 #'   harder search finds such maxima more often. They are reported, not set
 #'   aside: a variance at `min_variance` as a boundary fit
 #'   (`latents_boundary`; `boundary = "exclude"` sets those starts aside),
-#'   and a profile with fewer members than its own means and variances by a
-#'   `latents_thin_profiles` warning. Global optimality is not guaranteed by
-#'   either search.
+#'   and low Gaussian membership mass by a `latents_thin_profiles` heuristic
+#'   warning. `get_results(fit, "gaussian_diagnostics")` reports continuous
+#'   covariance and support measures without an automatic spike cutoff or
+#'   changing the selected start. Neither a warning's absence nor a repeated
+#'   likelihood establishes a regular or globally optimal solution.
 #' @param n_screen For `search = "emEM"`, the number of starts screened, at
 #'   least `n_starts`. `NULL` (the default) screens five times `n_starts`.
+#'   The protected first start counts toward the `n_starts` finalist budget;
+#'   increasing `n_screen` does not add finalist slots. A single supplied
+#'   start with `n_starts = 1` disables screening.
 #'   A value with `search = "kmeans"`, or one below `n_starts`, raises
 #'   `latents_bad_argument`.
 #' @return A `multilpa` object containing `means`, `variances`, optional
@@ -1642,7 +1705,7 @@ multilpa <- function(data, vars, id, n_profiles,
   .latents_local_seed(seed)
   # Center to reduce cancellation in weighted means when indicators have large
   # offsets. This is a translation, with no density Jacobian or scale change.
-  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
+  centers <- .multilpa_initialization_center(x, sampling_weights[group_index])
   x <- sweep(x, 2L, centers, "-")
   # Direct effects are fitted on centred covariates too: an intercept and the
   # effect of a covariate far from zero are nearly collinear, which makes the
@@ -1703,7 +1766,8 @@ multilpa <- function(data, vars, id, n_profiles,
                          variance_model, min_variance, start_index,
                          covariance_model, codes, n_categories, min_probability,
                          hierarchical = start_index == 1L, extra = fitting_extra,
-                         kind = start_kind(start_index))
+                         kind = start_kind(start_index),
+                         row_weights = sampling_weights[group_index])
     }
     # Every restart begins from the held values, so a random start cannot
     # report a measurement solution that was neither estimated nor supplied.
@@ -1933,9 +1997,19 @@ multilpa <- function(data, vars, id, n_profiles,
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  # Classification can include categorical-only or retained empty rows;
+  # those rows do not support a Gaussian measurement density.
+  gaussian_rows <- rowSums(!is.na(x)) > 0L
+  gaussian_counts <- colSums(weighted_expectation$subject_posteriors[
+    gaussian_rows, seq_len(n_profiles), drop = FALSE])
   .latents_warn_thin_profiles(
-    effective_profile_counts,
-    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure))
+    gaussian_counts,
+    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure,
+                                covariance_pattern = covariance_pattern, fixed = fixed))
+  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
+    parameters, x, subject_posteriors,
+    weights = if (is.null(sampling_weights)) NULL else sampling_weights[group_index],
+    min_variance = min_variance)
   .latents_warn_poisson_limit(result$count_dispersion)
   result
 }
@@ -2111,19 +2185,31 @@ multilpa <- function(data, vars, id, n_profiles,
 
 #' The parameters of one profile's own Gaussian density
 #'
-#' Its means plus what its spread adds to the model: every variance or
+#' Its free means plus what its spread adds to the model: every variance or
 #' covariance when profiles vary, nothing when they share one, and the
 #' profile's share of a constrained structure (the parameters one more
-#' profile adds).
+#' profile adds). Covariances held at zero by a pattern are excluded, as
+#' are held means; held variances cannot collapse during this fit.
 #'
 #' @param n_continuous Number of continuous indicators.
 #' @param variance_model,covariance_model,structure As in [multilpa()].
+#' @param covariance_pattern The free covariance entries, or `NULL`.
+#' @param fixed The expanded names of held measurement blocks.
 #' @return A single number; `0` when there are no continuous indicators or
-#'   the spread is shared by every profile, so no profile has a variance of
-#'   its own to collapse.
+#'   the spread is shared by every profile or held fixed, so no profile has
+#'   a free variance of its own to collapse.
 #' @noRd
 .latents_profile_parameters <- function(n_continuous, variance_model,
-                                        covariance_model, structure = NULL) {
+                                        covariance_model, structure = NULL,
+                                        covariance_pattern = NULL,
+                                        fixed = character()) {
+  stopifnot(is.numeric(n_continuous), length(n_continuous) == 1L,
+            is.finite(n_continuous), n_continuous >= 0,
+            is.character(fixed), !anyNA(fixed),
+            is.null(covariance_pattern) ||
+              (is.matrix(covariance_pattern) && is.logical(covariance_pattern) &&
+                 identical(dim(covariance_pattern), rep(as.integer(n_continuous), 2L))))
+  if (n_continuous == 0L || any(c("variances", "measurement") %in% fixed)) return(0)
   own_spread <- if (!is.null(structure)) {
     .multilpa_structure_parameters(structure, 2L, n_continuous) -
       .multilpa_structure_parameters(structure, 1L, n_continuous)
@@ -2131,32 +2217,47 @@ multilpa <- function(data, vars, id, n_profiles,
     if (identical(covariance_model, "full")) n_continuous * (n_continuous + 1) / 2 else
       n_continuous
   } else 0
-  if (n_continuous == 0L || own_spread == 0) 0 else n_continuous + own_spread
+  if (own_spread == 0) return(0)
+  if (!is.null(covariance_pattern)) {
+    own_spread <- own_spread - .latents_pattern_zeros(covariance_pattern)
+  }
+  own_spread + if ("means" %in% fixed) 0L else n_continuous
 }
 
 #' Warn when a profile has fewer members than its own parameters
 #'
-#' A profile with class-specific variances and fewer effective members than
-#' its density has parameters cannot determine those variances: its
-#' covariance is singular or close to it, the signature of a degenerate or
-#' spurious maximum (McLachlan & Peel, 2000, section 3.10). The estimate is
-#' left as it is and the warning names the profiles and the remedies.
+#' This is a conservative membership-versus-parameter heuristic for profiles
+#' with class-specific spread. It is not a rank or identification test:
+#' positive soft memberships can yield full-rank covariance at arbitrarily
+#' small total mass, and a larger profile can be nearly flat. Under sampling
+#' weights the membership is normalized mass, not an independent sample count.
+#' The estimate is unchanged; continuous covariance diagnostics are reported
+#' separately without using a rejection threshold.
 #'
 #' @param effective_counts Effective membership of each profile.
 #' @param n_parameters The output of `.latents_profile_parameters()`.
+#' @param context Optional text identifying a separately estimated measurement
+#'   block, such as `"at occasion 2"`.
 #' @return The positions of the thin profiles, invisibly; a
 #'   `latents_thin_profiles` warning when there are any.
 #' @noRd
-.latents_warn_thin_profiles <- function(effective_counts, n_parameters) {
+.latents_warn_thin_profiles <- function(effective_counts, n_parameters, context = NULL) {
+  stopifnot(is.numeric(effective_counts), is.numeric(n_parameters),
+            length(n_parameters) == 1L, is.finite(n_parameters), n_parameters >= 0,
+            is.null(context) ||
+              (is.character(context) && length(context) == 1L &&
+                 !is.na(context) && nzchar(context)))
   thin <- which(effective_counts < n_parameters)
   if (n_parameters == 0 || length(effective_counts) < 2L || length(thin) == 0L) {
     return(invisible(integer()))
   }
   warning(warningCondition(sprintf(paste(
-    "%s %s: %s members for %d means and variances%s; the solution may be",
-    "spurious. Fit fewer profiles or shared variances."),
+    "%s %s%s: %s Gaussian membership mass for %d free means and variances%s.",
+    "This is a conservative diagnostic, not an identification test;",
+    "inspect the Gaussian covariance diagnostics."),
     if (length(thin) == 1L) "Profile" else "Profiles",
     paste(thin, collapse = ", "),
+    if (is.null(context)) "" else paste0(" ", context),
     paste(format(round(effective_counts[thin], 1), nsmall = 1), collapse = ", "),
     as.integer(n_parameters), if (length(thin) == 1L) "" else " each"),
     class = "latents_thin_profiles", call = NULL))

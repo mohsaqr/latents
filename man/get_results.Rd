@@ -273,6 +273,25 @@ Fits with discrete group classes also offer:
 }
 Tables specific to one family or object:
 \describe{
+\item{\code{"gaussian_diagnostics"}}{Gaussian profile, membership-covariate,
+transition and cross-level fits that record these diagnostics. One row
+per Gaussian component and measurement context: \code{context}, \code{profile},
+\code{gaussian_mass}, \code{positive_rows}, \code{weight_effective_n},
+\code{min_variance_ratio}, \code{min_standardized_eigenvalue}, \code{boundary}.
+\code{gaussian_mass} sums posterior times normalized sampling weight over
+rows with at least one observed Gaussian indicator; \code{positive_rows}
+counts rows with positive contributions. \code{weight_effective_n} is the
+concentration measure \code{(sum(a)^2 / sum(a^2))} for those contributions,
+not an identification guarantee; Gaussian mass is not this effective
+sample size. \code{min_variance_ratio} is the smallest component variance
+divided by its observed sampling-weighted marginal variance on the
+fitted scale, including between-component variation.
+\code{min_standardized_eigenvalue} is the smallest eigenvalue of the
+component covariance after standardizing every indicator by its
+observed sampling-weighted marginal standard deviation. Missing reference
+variation gives \code{NA} ratios. \code{boundary} concerns the absolute variance
+or eigenvalue floor. These descriptive measures use no automatic spike
+cutoff and do not alter start selection.}
 \item{\code{"profile_probabilities"}, \code{"stages"}}{A \code{multilpa} fit.
 \code{"profile_probabilities"} has one row per group class and profile:
 \code{group_class}, \code{profile}, \code{probability}, \code{group_class_probability}.
@@ -300,7 +319,10 @@ likelihood, parameter count, every criterion under both sample-size
 conventions, both entropies, the average posterior probability (AvePP)
 summaries of each level (\code{avepp_min}, \code{avepp_max}, \code{avepp_mean},
 \code{avepp_below} and the same four prefixed \code{group_}) and the convergence,
-boundary, replication, warning and error diagnostics. Failed candidates
+boundary, replication, warning and error diagnostics, including
+\code{min_standardized_eigenvalue} and \code{min_gaussian_mass} where Gaussian
+diagnostics are available. These are descriptive summaries, without
+an automatic cutoff or change to candidate selection. Failed candidates
 are kept with \code{NA} estimates and their error text. It takes \code{cutoff}
 (default \code{0.8}): \code{avepp_below} and \code{group_avepp_below} count the classes
 whose AvePP is below it. A class with no modally assigned unit has no

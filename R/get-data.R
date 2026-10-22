@@ -125,6 +125,25 @@
 #' }
 #' Tables specific to one family or object:
 #' \describe{
+#'   \item{`"gaussian_diagnostics"`}{Gaussian profile, membership-covariate,
+#'     transition and cross-level fits that record these diagnostics. One row
+#'     per Gaussian component and measurement context: `context`, `profile`,
+#'     `gaussian_mass`, `positive_rows`, `weight_effective_n`,
+#'     `min_variance_ratio`, `min_standardized_eigenvalue`, `boundary`.
+#'     `gaussian_mass` sums posterior times normalized sampling weight over
+#'     rows with at least one observed Gaussian indicator; `positive_rows`
+#'     counts rows with positive contributions. `weight_effective_n` is the
+#'     concentration measure `(sum(a)^2 / sum(a^2))` for those contributions,
+#'     not an identification guarantee; Gaussian mass is not this effective
+#'     sample size. `min_variance_ratio` is the smallest component variance
+#'     divided by its observed sampling-weighted marginal variance on the
+#'     fitted scale, including between-component variation.
+#'     `min_standardized_eigenvalue` is the smallest eigenvalue of the
+#'     component covariance after standardizing every indicator by its
+#'     observed sampling-weighted marginal standard deviation. Missing reference
+#'     variation gives `NA` ratios. `boundary` concerns the absolute variance
+#'     or eigenvalue floor. These descriptive measures use no automatic spike
+#'     cutoff and do not alter start selection.}
 #'   \item{`"profile_probabilities"`, `"stages"`}{A `multilpa` fit.
 #'     `"profile_probabilities"` has one row per group class and profile:
 #'     `group_class`, `profile`, `probability`, `group_class_probability`.
@@ -152,7 +171,10 @@
 #'     conventions, both entropies, the average posterior probability (AvePP)
 #'     summaries of each level (`avepp_min`, `avepp_max`, `avepp_mean`,
 #'     `avepp_below` and the same four prefixed `group_`) and the convergence,
-#'     boundary, replication, warning and error diagnostics. Failed candidates
+#'     boundary, replication, warning and error diagnostics, including
+#'     `min_standardized_eigenvalue` and `min_gaussian_mass` where Gaussian
+#'     diagnostics are available. These are descriptive summaries, without
+#'     an automatic cutoff or change to candidate selection. Failed candidates
 #'     are kept with `NA` estimates and their error text. It takes `cutoff`
 #'     (default `0.8`): `avepp_below` and `group_avepp_below` count the classes
 #'     whose AvePP is below it. A class with no modally assigned unit has no
@@ -907,6 +929,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   if (.multilpa_any_summary(x)) return(.multilpa_stored_catalogue(x))
   stopifnot("`x` must be an object of this package" = .multilpa_any_fit(x))
   c(.multilpa_measurement_catalogue(),
+    if (!is.null(x$gaussian_diagnostics) && nrow(x$gaussian_diagnostics) > 0L)
+      list(gaussian_diagnostics = .multilpa_table(function(x) x$gaussian_diagnostics)),
     .latents_extra_catalogue(x),
     .multilpa_mixing_catalogue(x),
     .multilpa_unit_catalogue(x),

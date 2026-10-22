@@ -288,13 +288,19 @@ not valid at that parameter.}
 \item{\code{latents_small_classes}}{A profile or group class has an effective
 membership below one observation; or, in \code{\link[=three_step]{three_step()}} with \code{method = "ml"}, a class is carried by a single unit, so its standard error is
 reported as \code{NA}.}
-\item{\code{latents_thin_profiles}}{A profile with variances of its own has
-fewer effective members than its density has parameters (its means
-plus its variances or covariances), so those variances are poorly
-determined and the solution may be a spurious maximum (McLachlan &
-Peel, 2000, section 3.10). The estimate is returned unchanged; the
-message names the profiles and suggests fewer profiles or a model
-whose profiles share their variances.}
+\item{\code{latents_thin_profiles}}{A Gaussian component with free variances
+of its own has posterior membership mass below the number of free
+parameters in its Gaussian density. This is a heuristic prompt to
+inspect the solution, not a proof of singularity or nonidentification.
+Covariances held at zero and held means are excluded, and held
+variances do not trigger it. Memberships use normalized sampling
+weights and only rows with an observed Gaussian indicator; this mass
+is not an independent sample count or a weight effective sample size.
+Transition models check occasion-specific measurement separately;
+cross-level models check both Gaussian levels. The estimate is
+returned unchanged. See \code{get_results(fit, "gaussian_diagnostics")} for
+continuous covariance and support diagnostics; none supplies an
+automatic spike classification or an identification guarantee.}
 \item{\code{latents_all_starts_boundary}}{\code{boundary = "exclude"} found every
 start with a variance at \code{min_variance}, so none was set aside and the
 best start across all of them is reported.}

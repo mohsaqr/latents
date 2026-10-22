@@ -128,13 +128,34 @@
   estimator <- if (staged) fit_staged else multilpa
   arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
     .multilpa_refit_arguments(x)
+  controls <- .latents_refit_controls(x, n_starts = n_starts,
+                                     max_iter = max_iter, tol = tol)
+  if (staged) {
+    # The supplied-start second stage can record no screening even when the
+    # measurement searched an explicit pool. Replay that first stage's own
+    # controls, including a measurement supplied separately to fit_staged().
+    measurement_arguments <- .multilpa_refit_arguments(x$stage_one)
+    # A supplied measurement can use other identifier and time column names.
+    # One group class has unconditional measurement; replay it using the
+    # resample's columns, recreating any single-level observation identifier.
+    measurement_arguments["id"] <- list(
+      if (isTRUE(x$stage_one$single_level)) NULL else x$id)
+    measurement_arguments["time"] <- list(x$time)
+    measurement_controls <- .latents_refit_controls(
+      x$stage_one, n_starts = n_starts, max_iter = max_iter, tol = tol)
+    measurement_arguments <- c(
+      measurement_arguments[!names(measurement_arguments) %in%
+                              names(measurement_controls)],
+      measurement_controls)
+  }
   .latents_cluster_bootstrap(
     data, x$group_index, x$n_groups, x$id, iter,
     refit = function(resampled) {
-      do.call(estimator, c(list(data = resampled), arguments,
+      measurement <- if (staged) list(measurement = do.call(
+        multilpa, c(list(data = resampled), measurement_arguments))) else list()
+      do.call(estimator, c(list(data = resampled), arguments, measurement,
                            list(n_starts = n_starts, max_iter = max_iter, tol = tol,
-                                n_screen = .latents_refit_controls(
-                                  x, n_starts = n_starts)$n_screen)))
+                                n_screen = controls$n_screen)))
     },
     extract = function(fit) {
       # A resample that misses a rare category refits that indicator with one

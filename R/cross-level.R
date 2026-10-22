@@ -53,14 +53,31 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 
 #' Starting values for the full cross-level model from one partition of the
 #' groups (by their means), so both parts share the group-class labels
+#' @param sampling_weights Optional normalized weights in group order. Excluded
+#'   groups do not contribute to either level's initialization geometry.
 #' @noRd
 .cross_level_initialize <- function(x, group_index, group_means, n_profiles,
                                     n_group_classes, variance_model,
                                     between_variance, min_variance, start_index,
-                                    kind = "kmeans") {
+                                    kind = "kmeans", sampling_weights = NULL) {
+  stopifnot(is.null(sampling_weights) ||
+              (is.numeric(sampling_weights) &&
+                 length(sampling_weights) == nrow(group_means) &&
+                 all(is.finite(sampling_weights)) && all(sampling_weights >= 0)))
   profile <- .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                                   variance_model, min_variance, start_index,
-                                  hierarchical = start_index == 1L, kind = kind)
+                                  hierarchical = start_index == 1L, kind = kind,
+                                  row_weights = if (is.null(sampling_weights)) NULL else
+                                    sampling_weights[group_index])
+  if (!is.null(sampling_weights) && any(sampling_weights == 0)) {
+    # This subset is only for constructing starts. The EM still evaluates all
+    # original groups and returns every group's own reporting probabilities.
+    included_groups <- which(sampling_weights > 0)
+    included_rows <- sampling_weights[group_index] > 0
+    x <- x[included_rows, , drop = FALSE]
+    group_index <- match(group_index[included_rows], included_groups)
+    group_means <- group_means[included_groups, , drop = FALSE]
+  }
   spread <- apply(group_means, 2L, stats::sd)
   spread[!is.finite(spread) | spread <= 0] <- 1
   scaled <- sweep(group_means, 2L, spread, "/")
@@ -195,7 +212,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
       .cross_level_initialize(x, group_index, group_means, n_profiles,
                               n_group_classes, variance_model,
                               between_variance, min_variance, start_index,
-                              kind = .latents_start_kind(start_index, n_starts))
+                              kind = .latents_start_kind(start_index, n_starts),
+                              sampling_weights = sampling_weights)
     }, run = function(start_index, start, pause = Inf, resume = NULL) {
       .cross_level_em(x, group_index, group_means, start %||% resume$state,
                       variance_model, between_variance, min_variance, max_iter,
@@ -286,7 +304,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
                min_variance = min_variance, acceleration = "none",
                weights = if (is.null(unit_weights)) NULL else weight_column,
                search = search, n_screen = n_screen),
-      latents_single_level = function(notice) invokeRestart("muffleMessage"))
+      latents_single_level = function(notice) invokeRestart("muffleMessage"),
+      # Check both Gaussian levels once, with their level identified, when
+      # assembling the cross-level result below.
+      latents_thin_profiles = function(notice) invokeRestart("muffleWarning"))
   }
   row_weights <- if (is.null(sampling_weights)) NULL else sampling_weights[group_index]
   individual <- single(x, n_profiles, variance_model, row_weights)
@@ -382,15 +403,38 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     warning(warningCondition("A variance reached min_variance; this is a bound-active fit.",
                              class = "latents_boundary", call = NULL))
   }
+  # Reporting posteriors belong to each unit. For Gaussian support, restore
+  # the normalized sampling weights used by each density's M-step. The
+  # restricted rating factor normalizes its weights to the number of rows;
+  # the full model uses the common group-normalized weights at both levels.
+  group_weights <- stats$sampling_weights
+  row_weights <- if (is.null(group_weights)) NULL else group_weights[stats$index]
+  if (identical(family, "restricted_cross_level") && !is.null(row_weights)) {
+    row_weights <- row_weights * (nrow(x) / sum(row_weights))
+  }
   .latents_warn_thin_profiles(
-    colSums(subject_posteriors),
-    .latents_profile_parameters(length(vars), variance_model, "diagonal"))
+    colSums(subject_posteriors * (row_weights %||% 1)),
+    .latents_profile_parameters(length(vars), variance_model, "diagonal"),
+    context = "at the individual level")
+  .latents_warn_thin_profiles(
+    colSums(group_posteriors * (group_weights %||% 1)),
+    .latents_profile_parameters(length(vars), between_variance, "diagonal"),
+    context = "at the group level (group classes)")
+  result$gaussian_diagnostics <- rbind(
+    .latents_gaussian_diagnostics(
+      list(means = p$means, variances = p$variances), x,
+      subject_posteriors, row_weights, min_variance,
+      context = "individual profiles"),
+    .latents_gaussian_diagnostics(
+      list(means = p$between_means, variances = p$between_variances), group_means,
+      group_posteriors, group_weights, min_variance,
+      context = "group classes"))
   result
 }
 
 .cross_level_tables <- function() {
   c("profiles", "group_classes", "composition", "groups", "assignments", "fit",
-    "starts")
+    "starts", "gaussian_diagnostics")
 }
 
 #' @noRd
@@ -464,7 +508,8 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
                      aic = x$aic, bic = x$bic, bic_individual = x$bic_individual,
                      n_groups = x$n_groups, n_obs = x$n_obs, converged = x$converged,
                      boundary = x$boundary, stringsAsFactors = FALSE),
-    starts = x$starts)
+    starts = x$starts,
+    gaussian_diagnostics = x$gaussian_diagnostics)
 }
 
 #' @noRd
@@ -486,6 +531,7 @@ print.multilpa_cross_level <- function(x, ...) {
     label, nrow(x$profile_means), length(x$group_probabilities), x$n_groups,
     x$n_obs, x$log_likelihood, x$n_parameters, if (x$converged) "yes" else "no"))
   .latents_print_weights(x)
+  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   cat(paste("Tables: get_results(x, what = ), e.g. \"profiles\", \"composition\",",
             "\"group_classes\", \"groups\"; summary(x).\n"))
   invisible(x)

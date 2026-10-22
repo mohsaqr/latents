@@ -90,6 +90,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
   }
   if (x$boundary) cat("A variance is at its specified lower bound.\n")
   if (x$small_classes) cat("An effective class membership is below one.\n")
+  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   .multilpa_print_primary(x, rows = rows)
   invisible(x)
 }

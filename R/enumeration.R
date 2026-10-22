@@ -255,6 +255,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
           .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit)),
         converged = !is.null(fit) && fit$converged,
         boundary = if (is.null(fit)) NA else fit$boundary,
+        min_standardized_eigenvalue = .latents_gaussian_minimum(
+          fit, "min_standardized_eigenvalue"),
+        min_gaussian_mass = .latents_gaussian_minimum(fit, "gaussian_mass"),
         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
     list(fit = fit, row = row)

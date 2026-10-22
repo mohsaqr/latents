@@ -332,7 +332,8 @@
                                  categorical, min_probability, missing,
                                  profile_slopes, ordinal, count, count_model,
                                  count_dispersion, centering = centering,
-                                 group_index = group_index, scaling = scaling)
+                                 group_index = group_index, scaling = scaling,
+                                 row_weights = sampling_weights[group_index])
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
@@ -493,9 +494,14 @@
       class = "latents_small_classes", call = NULL))
   }
   .latents_warn_thin_profiles(
-    result$effective_profile_counts,
+    colSums(weighted_expectation$subject_posteriors[
+      rowSums(!is.na(x)) > 0L, , drop = FALSE]),
     .latents_profile_parameters(length(base$continuous), variance_model,
                                 covariance_model))
+  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
+    result, x, result$subject_posteriors,
+    weights = if (is.null(sampling_weights)) NULL else sampling_weights[group_index],
+    min_variance = min_variance)
   if (result$extreme_logits) {
     warning(warningCondition(
       "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
@@ -515,6 +521,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
   .latents_print_weights(x)
   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
               x$log_likelihood, x$aic, x$bic, x$converged))
+  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   .multilpa_print_primary(x, rows = rows)
   invisible(x)
 }
@@ -566,6 +573,7 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   if (model$extreme_logits) {
     cat("WARNING: extreme logit coefficients; check scaling, sparse classes and separation.\n")
   }
+  .latents_print_gaussian_diagnostics(x$tables$gaussian_diagnostics)
   .multilpa_print_tables(x$tables, rows = rows, digits = digits)
   .multilpa_print_table_footer(x$tables)
   invisible(x)
@@ -763,6 +771,8 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' classes. Either way the first block after the indicators holds the
 #' covariates themselves in group class 1's design.
 #'
+#' @param row_weights Optional sampling weights in observation order, used
+#'   only to omit excluded rows from the internal Gaussian origin.
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
 .multilpa_cov_designs <- function(data, vars, profile_covariates,
@@ -773,7 +783,7 @@ nobs.multilpa_covariates <- function(object, ...) {
                                 count = character(), count_model = "poisson",
                                 count_dispersion = "varying",
                                 centering = "none", group_index = NULL,
-                                scaling = "none") {
+                                scaling = "none", row_weights = NULL) {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability,
                                               other = c(ordinal, count))
@@ -791,7 +801,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   # The centre is only a location shift that is added back to the reported
   # means, so the observed values' mean serves; every indicator has some,
   # which the indicator check above guarantees.
-  center <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
+  center <- .multilpa_initialization_center(x, row_weights)
   z <- as.matrix(data[profile_covariates])
   w <- cbind(`(Intercept)` = 1,
              as.matrix(data[first_rows, group_covariates, drop = FALSE]))
@@ -878,7 +888,8 @@ nobs.multilpa_covariates <- function(object, ...) {
                        control$variance_model, control$min_variance, start_index,
                        control$covariance_model, designs$codes,
                        designs$n_categories, control$min_probability,
-                       hierarchical = FALSE, extra = designs$extra, kind = kind)
+                       hierarchical = FALSE, extra = designs$extra, kind = kind,
+                       row_weights = control$sampling_weights[group_index])
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /

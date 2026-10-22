@@ -472,8 +472,8 @@
   }
   if (isTRUE(fit$boundary)) {
     stop(errorCondition(paste(
-      "A variance sits at min_variance or a transition or initial probability",
-      "at zero; Wald inference does not apply."),
+      "A variance or covariance eigenvalue sits at min_variance, or a transition",
+      "or initial probability at zero; Wald inference does not apply."),
       class = "latents_boundary_fit", call = NULL))
   }
   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)

@@ -31,7 +31,8 @@ review_lta_fit <- function(..., gaps = FALSE,
     transition_covariates = transition_covariates, initial_covariates = "w",
     occasions = "grid",
     n_starts = 1L, max_iter = 0L, seed = 51L, ...),
-          c("latents_unconverged", "latents_boundary", "latents_small_classes"))
+          c("latents_unconverged", "latents_boundary", "latents_small_classes",
+            "latents_thin_profiles"))
 }
 
 review_lta_exact <- function(theta, fit) {
@@ -337,7 +338,8 @@ test_that("occasion covariance charts include mixed ordinal and count coordinate
     fit <- quietly(lta(data, c("y", "x", "c", "o", "k"), "id", 3L, time = "time",
       categorical = "c", ordinal = "o", count = "k", count_model = "negative_binomial",
       missing = "fiml", measurement = "occasion", model = model, n_starts = 1L,
-      max_iter = 0L, seed = 51L), c("latents_unconverged", "latents_boundary"))
+      max_iter = 0L, seed = 51L),
+      c("latents_unconverged", "latents_boundary", "latents_thin_profiles"))
     theta <- coef(fit)
     decoded <- .lta_unpack(theta, fit)
     expect_equal(length(theta), fit$n_parameters, info = model)
