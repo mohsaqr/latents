@@ -295,6 +295,9 @@ check_validation_api <- function(root = ".", paths = NULL) {
     # missing from this list would stop being checked without any error.
     paths <- list.files(file.path(root, c("equivalence", "validation")),
                         pattern = "[.]R$", recursive = TRUE, full.names = TRUE)
+    # R CMD check output (*.Rcheck) holds copies of the package's own tests,
+    # some of which pass a removed argument on purpose to test its refusal.
+    paths <- grep("[.]Rcheck/", paths, value = TRUE, invert = TRUE)
   }
   removed <- do.call(rbind, lapply(paths, .validation_removed_calls))
   used <- do.call(rbind, lapply(paths, .validation_call_arguments, verbs = verbs))

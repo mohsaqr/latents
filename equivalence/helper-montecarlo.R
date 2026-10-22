@@ -129,8 +129,9 @@ montecarlo_implied_means <- function(posteriors, values) {
 #' cluster whose workers load this source tree, so the tests always exercise
 #' the code under test. A worker that returns nothing stops the run.
 montecarlo_fit_all <- function(cases, n_starts = 20L) {
+  # At most two workers: eight froze the shared development machine.
   cores <- if (.Platform$OS.type == "windows") 1L else
-    max(1L, min(8L, parallel::detectCores() - 1L))
+    max(1L, min(2L, parallel::detectCores() - 1L))
   worker <- function(case, n_starts) suppressWarnings(montecarlo_fit(case, n_starts = n_starts))
   if (cores == 1L) return(lapply(cases, worker, n_starts = n_starts))
   fits <- if (latents:::.latents_fork_safe()) {

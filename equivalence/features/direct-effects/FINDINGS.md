@@ -33,6 +33,14 @@ their test now passes.
   copy with random-partition starts reached -3098.4868 from every seed; it
   also changes which start wins in other models, so it is recorded here
   instead.
+- Opt-in emEM (2026-10-22, `repro/heavy-02-emem.R`, `heavy-02-emem.rds`):
+  `search = "emEM"` reaches -3098.487 (Latent GOLD's and Mplus's value) in all
+  8 runs, from 200 starts x seeds 1-3 and from 10 starts x seeds 1-5; the
+  default search stays at -3106.986 in all 8. The winning finalists are
+  random-centre and random-partition starts; the solution is regular
+  (smallest standardized eigenvalue 0.153, no boundary, no warning). emEM
+  took 5-6 times as long (11 s against 2 s at 200 starts). The equivalence
+  test still runs the default search, so its assertion still fails.
 
 ## 2. A trailing `+` in a term is accepted silently (fixed)
 

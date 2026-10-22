@@ -57,6 +57,20 @@ test_that("check_validation_api accepts current calls and dots-forwarded ones", 
   expect_equal(nrow(check_validation_api(paths = current)), 0L)
 })
 
+test_that("check_validation_api skips R CMD check copies of the package tests", {
+  # Archived *.Rcheck trees under validation/ hold the package's own tests,
+  # which pass removed arguments on purpose; they stopped the harness.
+  tree <- file.path(scratch, "api-root")
+  check_copy <- file.path(tree, "validation", "old", "latents.Rcheck", "tests")
+  dir.create(check_copy, recursive = TRUE)
+  dir.create(file.path(tree, "equivalence"))
+  stale_call <- 'multilpa(students, indicators = "x", id = "school", n_profiles = 2)'
+  writeLines(stale_call, file.path(check_copy, "test-refusal.R"))
+  expect_equal(nrow(check_validation_api(root = tree)), 0L)
+  writeLines(stale_call, file.path(tree, "validation", "script.R"))
+  expect_equal(check_validation_api(root = tree)$argument, "indicators")
+})
+
 test_that("check_validation_api names a call to a removed verb", {
   # get_data() was renamed get_results() in 0.4.0 and seven scripts kept the
   # old name, unseen, because only still-exported verbs were being checked.

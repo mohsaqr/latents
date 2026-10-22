@@ -600,7 +600,7 @@ srl_bic <- with(subset(get_results(srl_models, "best"),
 eight_on_boundary <- with(subset(as.data.frame(srl_models),
                                  candidate == "profiles8"), boundary)
 warned <- with(subset(as.data.frame(srl_models), nzchar(warnings)), candidate)
-thin <- with(subset(as.data.frame(srl_models), grepl("members for", warnings)),
+thin <- with(subset(as.data.frame(srl_models), grepl("membership mass for", warnings)),
              candidate)
 stopifnot(srl_bic == "profiles6", isTRUE(eight_on_boundary),
           identical(warned, c("profiles6", "profiles7", "profiles8")),
