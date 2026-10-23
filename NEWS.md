@@ -1,22 +1,11 @@
 # latents (development version)
 
-### Default start search for shared-covariance models
+### Default start search
 
-* `search` now defaults to `NULL`, which uses `"emEM"` when every profile
-  shares one covariance matrix (EII, EEI, EEE) and `"kmeans"` otherwise.
-  With a shared covariance the likelihood is bounded, so a higher maximum
-  is a better estimate and never a collapsed profile. On the nine
-  equal-covariance candidates where the kmeans search stopped below the
-  maximum that Latent GOLD and Mplus both report, emEM reached it in all
-  nine. **Results of EII, EEI and EEE fits can change** where the kmeans
-  search had stopped at a lower maximum, and these fits take several times
-  as long. `search = "kmeans"` reproduces the previous fits of every model.
-  Profile-specific covariance models, categorical-only models, the
-  group-class families and `lta()` keep the kmeans search. Fits given a
-  `seed` draw their own random stream and are unchanged; fits without one
-  share R's stream, so an unseeded fit made after an EII, EEI or EEE fit
-  (for example a later candidate of an unseeded enumeration) can start from
-  different random values than before.
+* Models whose profiles share one covariance matrix (EII, EEI, EEE) now
+  default to `search = "emEM"`; all others keep `"kmeans"`. Their results
+  can change, usually to a higher maximum, and fitting takes about twice
+  as long. `search = "kmeans"` restores the previous fits.
 
 ### Review corrections
 
@@ -56,23 +45,23 @@
 
 ### Start search
 
-* `search = "emEM"` (new, opt-in) finds starts by the emEM search
+* `search = "emEM"` (new) finds starts by the emEM search
   (Biernacki, Celeux & Govaert, 2003): a pool of `n_screen` starts (five
   times `n_starts` by default) is screened by a short EM run each, and the
   `n_starts` finalists are run to convergence. A successful first start
   (Ward or supplied) reserves one finalist slot; the others are ranked by
   screening likelihood. With `n_starts = 1`, a valid Ward start is therefore
   always finalized; a single supplied start skips screening. This existing
-  protection is now documented. The pool begins with the default
-  search's own starts. `search = "kmeans"` remains the default and
-  reproduces the fits of 0.96.1, apart from the corrections listed below.
+  protection is now documented. The pool begins with the kmeans
+  search's own starts. `search = "kmeans"` reproduces the fits of 0.96.1,
+  apart from the corrections listed below.
   On the start-search benchmark (180 fits), emEM attained the finite
-  above-cutoff reference in 136 fits and the default search in 130. The
+  above-cutoff reference in 136 fits and the kmeans search in 130. The
   benchmark's descriptive cutoff was 0.01 for the smallest standardized
   variance or covariance eigenvalue; values below it do not prove false
   classes. On the matched 80 heteroscedastic fits, both searches attained
   that reference in 40 fits, while emEM returned 25 below-cutoff solutions
-  against 12 for the default search. Retained runs took about twice as long
+  against 12 for the kmeans search. Retained runs took about twice as long
   by median time and 1.45 times as long in total.
 * Either search reports the highest likelihood among the finished starts.
   The new `latents_thin_profiles` warning fires when a profile with its own
