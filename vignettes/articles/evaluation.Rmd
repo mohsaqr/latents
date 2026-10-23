@@ -54,7 +54,8 @@ likelihood. A variance at its lower bound in a profile of about one
 observation is a degenerate solution; fitting with `boundary = "exclude"`
 keeps the best start without one. A profile with fewer effective members than
 its own means and variances raises a `latents_thin_profiles` warning: its
-variances are poorly determined, and the solution may be spurious.
+variances are poorly determined, so inspect its covariance diagnostics before
+interpreting it.
 
 ```{r model}
 get_results(fit, "model")

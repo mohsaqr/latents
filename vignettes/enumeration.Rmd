@@ -125,11 +125,14 @@ which one profile sits on a single observation with every variance at its
 lower bound; its likelihood is then set by `min_variance`, not by the data.
 `boundary = "exclude"` sets such starts aside (see *Checks of the
 estimation*). A profile with fewer members than its own means and variances
-is reported by a `latents_thin_profiles` warning, as in the grid below,
-because its solution may be spurious. `search = "emEM"` screens five times as
-many starts by short EM runs and continues the best; it reaches the highest
-maximum more often, and also spurious maxima more often. Large grids take time; `cores` fits the candidates in parallel
-and returns the same result as one core.
+is reported by a `latents_thin_profiles` warning, as in the grid below; its
+means and variances rest on few observations. When every profile shares one
+covariance matrix (EII, EEI, EEE), the default search is emEM: it screens five
+times as many starts by short EM runs and continues the best. The other
+structures start from k-means, because with profile-specific variances emEM
+also reaches spurious maxima more often. `search = "emEM"` or `"kmeans"`
+overrides either default. Large grids take time; `cores` fits the candidates
+in parallel and returns the same result as one core.
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")

@@ -22,7 +22,7 @@ fit_staged(
   categorical = character(),
   min_probability = 1e-10,
   time = NULL,
-  search = c("kmeans", "emEM"),
+  search = NULL,
   n_screen = NULL
 )
 }
@@ -104,7 +104,14 @@ Values must be complete and unique within each group, and are ordered as
 not their numeric order (\code{"2"}, \code{"10"}) raise \code{latents_bad_time};
 zero-padded numbers and ISO dates are accepted.}
 
-\item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+\item{search}{How the starts are found: \code{NULL} (the default), \code{"kmeans"}
+or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one
+covariance matrix (EII, EEI, EEE with continuous indicators), where the
+likelihood is bounded and a higher maximum cannot be a collapsed profile,
+and \code{"kmeans"} otherwise, including categorical-only models and the
+group-class families. The search used is recorded on the fit, and
+\code{search = "kmeans"} reproduces the fits of latents 0.96.2 for every
+model. \code{"kmeans"} runs
 \code{n_starts} starts to convergence: Ward's clustering first, then k-means
 from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
 short EM run each and runs \code{n_starts} finalists to convergence

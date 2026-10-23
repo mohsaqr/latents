@@ -49,7 +49,7 @@ multilpa(
   cores = 1L,
   local_dependence = character(),
   direct_effects = character(),
-  search = c("kmeans", "emEM"),
+  search = NULL,
   n_screen = NULL
 )
 }
@@ -544,7 +544,14 @@ that is not continuous raise \code{latents_bad_argument}, and a covariate
 that is absent, not numeric, missing or constant raises
 \code{latents_bad_data}. Default: none.}
 
-\item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+\item{search}{How the starts are found: \code{NULL} (the default), \code{"kmeans"}
+or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one
+covariance matrix (EII, EEI, EEE with continuous indicators), where the
+likelihood is bounded and a higher maximum cannot be a collapsed profile,
+and \code{"kmeans"} otherwise, including categorical-only models and the
+group-class families. The search used is recorded on the fit, and
+\code{search = "kmeans"} reproduces the fits of latents 0.96.2 for every
+model. \code{"kmeans"} runs
 \code{n_starts} starts to convergence: Ward's clustering first, then k-means
 from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
 short EM run each and runs \code{n_starts} finalists to convergence

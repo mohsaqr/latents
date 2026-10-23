@@ -247,11 +247,11 @@ fit_staged <- function(data, vars, id, n_profiles,
                        seed = NULL, missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
-                       time = NULL, search = c("kmeans", "emEM"), n_screen = NULL) {
+                       time = NULL, search = NULL, n_screen = NULL) {
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
-  search <- match.arg(search)
+  search <- .latents_check_search(search)
   # The data contract itself is checked once, by multilpa(), which both stages
   # call; only what is specific to staging is checked here. `is.numeric` is
   # explicit because `"3" >= 2L` compares as strings and would pass silently.
@@ -321,9 +321,9 @@ fit_staged <- function(data, vars, id, n_profiles,
                  min_variance = min_variance, seed = seed, missing = missing,
                  covariance_model = covariance_model, categorical = categorical,
                  min_probability = min_probability, time = time)
-  # Passed on only when it is not the default, so each stage records the call
-  # it would have been given directly.
-  if (identical(search, "emEM")) shared$search <- search
+  # Passed on only when given, so each stage resolves the default search
+  # from its covariance structure as a direct multilpa() call would.
+  if (!is.null(search)) shared$search <- search
   if (!is.null(n_screen)) shared$n_screen <- n_screen
   if (is.null(measurement)) {
     measurement <- do.call(multilpa, c(shared, list(n_group_classes = 1L)))

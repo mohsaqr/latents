@@ -1,5 +1,23 @@
 # latents (development version)
 
+### Default start search for shared-covariance models
+
+* `search` now defaults to `NULL`, which uses `"emEM"` when every profile
+  shares one covariance matrix (EII, EEI, EEE) and `"kmeans"` otherwise.
+  With a shared covariance the likelihood is bounded, so a higher maximum
+  is a better estimate and never a collapsed profile. On the nine
+  equal-covariance candidates where the kmeans search stopped below the
+  maximum that Latent GOLD and Mplus both report, emEM reached it in all
+  nine. **Results of EII, EEI and EEE fits can change** where the kmeans
+  search had stopped at a lower maximum, and these fits take several times
+  as long. `search = "kmeans"` reproduces the previous fits of every model.
+  Profile-specific covariance models, categorical-only models, the
+  group-class families and `lta()` keep the kmeans search. Fits given a
+  `seed` draw their own random stream and are unchanged; fits without one
+  share R's stream, so an unseeded fit made after an EII, EEI or EEE fit
+  (for example a later candidate of an unseeded enumeration) can start from
+  different random values than before.
+
 ### Review corrections
 
 * General latent transition fits detect covariance eigenvalues at the

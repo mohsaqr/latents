@@ -489,6 +489,9 @@
 #' the cross-sectional counterpart.
 #'
 #' @inheritParams multilpa
+#' @param search How the starts are found: `"kmeans"` (the default) or
+#'   `"emEM"`, as described for [multilpa()]. Unlike [multilpa()], `lta()`
+#'   does not choose its default by the covariance structure.
 #' @param id Name of the observed group identifier column. Character, factor
 #'   and numeric identifiers are supported; missing identifiers are not.
 #'   Required; `id = NULL` is not accepted.

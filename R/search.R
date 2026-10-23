@@ -22,6 +22,44 @@
   list(pool_factor = 5L, iterations = 20L, protect_first = TRUE)
 }
 
+#' Validate a requested start search
+#'
+#' @param search `NULL` (the default, chosen from the covariance structure by
+#'   `.latents_default_search()`), `"kmeans"` or `"emEM"`.
+#' @return `search`, unchanged.
+#' @noRd
+.latents_check_search <- function(search) {
+  if (is.null(search)) return(NULL)
+  if (!is.character(search) || length(search) != 1L || is.na(search) ||
+      !search %in% c("kmeans", "emEM")) {
+    stop(errorCondition(paste(
+      "`search` must be \"kmeans\", \"emEM\" or NULL (the default, which",
+      "chooses by the covariance structure)."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  search
+}
+
+#' The default start search of a profile model
+#'
+#' When every profile shares one covariance matrix (EII, EEI, EEE), the
+#' likelihood is bounded: no profile can collapse onto a point without
+#' lowering the density of every other (McLachlan & Peel, 2000, section 3.8).
+#' A higher maximum is then a better estimate, never a degenerate one, so the
+#' screened emEM search, which reaches more of them, is the default. With
+#' profile-specific covariances a higher maximum can be such a collapse, and
+#' the kmeans search stays the default.
+#'
+#' @param structure The resolved covariance structure code.
+#' @param continuous The continuous indicators.
+#' @return `"emEM"` or `"kmeans"`.
+#' @noRd
+.latents_default_search <- function(structure, continuous) {
+  stopifnot(is.character(structure), length(structure) == 1L,
+            is.character(continuous))
+  if (length(continuous) > 0L && structure %in% c("EII", "EEI", "EEE")) "emEM" else "kmeans"
+}
+
 #' Validate `n_screen` and resolve the screening plan of a fit
 #'
 #' @param search `"kmeans"` or `"emEM"`.

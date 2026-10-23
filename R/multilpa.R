@@ -1245,7 +1245,14 @@
 #' @param count_dispersion For `count_model = "negative_binomial"`: one
 #'   dispersion per profile (`"varying"`, the default) or one shared by every
 #'   profile (`"equal"`).
-#' @param search How the starts are found. `"kmeans"` (the default) runs
+#' @param search How the starts are found: `NULL` (the default), `"kmeans"`
+#'   or `"emEM"`. `NULL` uses `"emEM"` when every profile shares one
+#'   covariance matrix (EII, EEI, EEE with continuous indicators), where the
+#'   likelihood is bounded and a higher maximum cannot be a collapsed profile,
+#'   and `"kmeans"` otherwise, including categorical-only models and the
+#'   group-class families. The search used is recorded on the fit, and
+#'   `search = "kmeans"` reproduces the fits of latents 0.96.2 for every
+#'   model. `"kmeans"` runs
 #'   `n_starts` starts to convergence: Ward's clustering first, then k-means
 #'   from random centres. `"emEM"` screens a pool of `n_screen` starts by a
 #'   short EM run each and runs `n_starts` finalists to convergence
@@ -1386,7 +1393,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        drop_empty = TRUE, cores = 1L,
                        local_dependence = character(),
                        direct_effects = character(),
-                       search = c("kmeans", "emEM"), n_screen = NULL) {
+                       search = NULL, n_screen = NULL) {
   # Read before any argument is reassigned: missing() is FALSE afterwards.
   covariance_model_given <- !missing(covariance_model)
   # Locally dependent categorical pairs are joined into one indicator each,
@@ -1418,7 +1425,8 @@ multilpa <- function(data, vars, id, n_profiles,
                               match.arg(between_variance),
                             n_starts, max_iter, tol, min_variance, seed,
                             match.call(), weights = weights,
-                            search = match.arg(search), n_screen = n_screen))
+                            search = .latents_check_search(search) %||% "kmeans",
+                            n_screen = n_screen))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles, so most arguments
@@ -1439,7 +1447,8 @@ multilpa <- function(data, vars, id, n_profiles,
                            match.arg(between_variance),
                          n_starts, max_iter, tol, min_variance, seed,
                          match.call(), family = family, weights = weights,
-                         search = match.arg(search), n_screen = n_screen))
+                         search = .latents_check_search(search) %||% "kmeans",
+                         n_screen = n_screen))
   }
   if (!missing(between_variance)) {
     stop(errorCondition(paste(
@@ -1452,7 +1461,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # Read once here: `boundary` is reused below for the selected fit's flag.
   exclude_boundary <- identical(boundary, "exclude")
   acceleration <- match.arg(acceleration)
-  search <- match.arg(search)
+  search <- .latents_check_search(search)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
@@ -1555,6 +1564,8 @@ multilpa <- function(data, vars, id, n_profiles,
   # parameters while fitting free per-profile variances.
   if (structure %in% c("EEI", "EEE")) variance_model <- "equal"
   if (structure %in% c("VVI", "VVV")) variance_model <- "varying"
+  search <- search %||%
+    .latents_default_search(structure, setdiff(vars, c(categorical, ordinal, count)))
   # Direct effects are checked here, before the covariate and transition
   # engines take over: those engines do not fit them.
   direct_terms <- NULL

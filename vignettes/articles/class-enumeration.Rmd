@@ -135,11 +135,13 @@ criteria, then depend on `min_variance` rather than on the data.
 reaching the bound, when a few nearly coincident observations give it
 variances close to zero (McLachlan and Peel, 2000, section 3.10). A profile
 with fewer effective members than its own means and variances is therefore
-reported by a `latents_thin_profiles` warning. The argument
-`search = "emEM"` screens five times `n_starts` starts by a short EM run each
-and continues the best `n_starts` to convergence (Biernacki, Celeux and
-Govaert, 2003); it reaches the highest maximum more often than the default
-search, and for the same reason also reaches spurious maxima more often.
+reported by a `latents_thin_profiles` warning. When every profile shares one
+covariance matrix (EII, EEI, EEE), the default search is emEM: it screens five
+times `n_starts` starts by a short EM run each and continues the best
+`n_starts` to convergence (Biernacki, Celeux and Govaert, 2003). The other
+structures start from k-means, because with profile-specific variances emEM
+also reaches spurious maxima more often. `search = "emEM"` or `"kmeans"`
+overrides either default.
 
 ```{r enumerate}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")

@@ -212,33 +212,9 @@ and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} do not compare fits made with 
 \code{drop_empty}. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}
 
-\item{search}{How the starts are found. \code{"kmeans"} (the default) runs
-\code{n_starts} starts to convergence: Ward's clustering first, then k-means
-from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
-short EM run each and runs \code{n_starts} finalists to convergence
-(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
-or supplied starting values) reserves one finalist slot if its screening
-succeeds; the remaining slots take the highest screening likelihoods.
-Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
-successfully, even if another screened start has a higher likelihood.
-With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
-The pool begins with the kmeans search's own
-starts, drawn in the same order, followed by random partitions of the
-rows and random rows as class centres, and \code{get_results(fit, "starts")}
-gives every start of the pool with its \code{kind}, its \code{stage} and its
-likelihood after screening. Either search reports the start with the
-highest likelihood among those run to convergence (subject to
-\code{select_start} and \code{boundary}). With profile-specific variances that
-maximum can be spurious, a profile on a few nearly coincident points
-with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
-harder search finds such maxima more often. They are reported, not set
-aside: a variance at \code{min_variance} as a boundary fit
-(\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
-and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
-warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
-covariance and support measures without an automatic spike cutoff or
-changing the selected start. Neither a warning's absence nor a repeated
-likelihood establishes a regular or globally optimal solution.}
+\item{search}{How the starts are found: \code{"kmeans"} (the default) or
+\code{"emEM"}, as described for \code{\link[=multilpa]{multilpa()}}. Unlike \code{\link[=multilpa]{multilpa()}}, \code{lta()}
+does not choose its default by the covariance structure.}
 
 \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
 least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
