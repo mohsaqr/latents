@@ -108,16 +108,11 @@ candidates
 #>             4 269.1581   270.3684       279.5788       355.4955      0.45237653
 #>             2 265.3100   265.9152       270.5204       270.5204              NA
 #>             5 271.1839   272.6968       284.2098       411.5897      0.08114782
-#>  group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
-#>             NA        NA        NA         NA          NA              NA
-#>             NA 0.6402627 0.8532616  0.7467621           1              NA
-#>             NA        NA        NA         NA          NA              NA
-#>             NA 0.6380900 0.6405463  0.6393181           2              NA
-#>  group_avepp_max group_avepp_mean group_avepp_below converged boundary
-#>               NA               NA                NA      TRUE    FALSE
-#>               NA               NA                NA      TRUE    FALSE
-#>               NA               NA                NA      TRUE    FALSE
-#>               NA               NA                NA      TRUE    FALSE
+#>  avepp_min avepp_max avepp_mean avepp_below converged boundary
+#>         NA        NA         NA          NA      TRUE    FALSE
+#>  0.6402627 0.8532616  0.7467621           1      TRUE    FALSE
+#>         NA        NA         NA          NA      TRUE    FALSE
+#>  0.6380900 0.6405463  0.6393181           2      TRUE    FALSE
 #>  n_best_replicated
 #>                  2
 #>                  2

@@ -85,46 +85,60 @@ summary(models)
 #>           0.4823    0.7057     0.8226           1      TRUE    FALSE
 #>           0.6618    0.7046     0.8632           1      TRUE    FALSE
 #>           0.7146    0.7144     0.8306           2      TRUE    FALSE
-#>           0.7427    0.5196     0.8051           2      TRUE    FALSE
+#>           0.7426    0.5196     0.8051           2      TRUE    FALSE
 #>           0.7471    0.6011     0.7794           4      TRUE    FALSE
 #> 
 #> -- best ------------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes model value
-#>        aic        <NA>  classes6          6               1  <NA> 15648
-#>        kic        <NA>  classes6          6               1  <NA> 15704
-#>        bic      groups  classes4          4               1  <NA> 15888
-#>        bic individuals  classes4          4               1  <NA> 15888
-#>      sabic      groups  classes4          4               1  <NA> 15777
-#>      sabic individuals  classes4          4               1  <NA> 15777
-#>       caic      groups  classes4          4               1  <NA> 15923
-#>       caic individuals  classes4          4               1  <NA> 15923
-#>        awe      groups  classes2          2               1  <NA> 16103
-#>        awe individuals  classes1          1               1  <NA> 16220
+#>  criterion  convention candidate n_profiles n_group_classes value
+#>        aic        <NA>  classes6          6               1 15648
+#>        kic        <NA>  classes6          6               1 15704
+#>        bic      groups  classes4          4               1 15888
+#>        bic individuals  classes4          4               1 15888
+#>      sabic      groups  classes4          4               1 15777
+#>      sabic individuals  classes4          4               1 15777
+#>       caic      groups  classes4          4               1 15923
+#>       caic individuals  classes4          4               1 15923
+#>        awe      groups  classes2          2               1 16103
+#>        awe individuals  classes1          1               1 16220
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention candidate n_profiles n_group_classes value
+#>        aic        <NA>  classes6          6               1 15648
+#>        kic        <NA>  classes6          6               1 15704
+#>        bic      groups  classes4          4               1 15888
+#>        bic individuals  classes4          4               1 15888
+#>      sabic      groups  classes4          4               1 15777
+#>      sabic individuals  classes4          4               1 15777
+#>       caic      groups  classes4          4               1 15923
+#>       caic individuals  classes4          4               1 15923
+#>        awe      groups  classes2          2               1 16103
+#>        awe individuals  classes1          1               1 16220
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
-#>  candidate n_profiles n_group_classes model       level class n_modal proportion_modal
-#>   classes2          2               1  <NA> individuals     1    1276          0.49419
-#>   classes2          2               1  <NA> individuals     2    1306          0.50581
-#>   classes3          3               1  <NA> individuals     1    1180          0.45701
-#>   classes3          3               1  <NA> individuals     2      98          0.03796
-#>   classes3          3               1  <NA> individuals     3    1304          0.50503
-#>   classes4          4               1  <NA> individuals     1    1258          0.48722
-#>   classes4          4               1  <NA> individuals     2      98          0.03796
-#>   classes4          4               1  <NA> individuals     3    1191          0.46127
-#>   classes4          4               1  <NA> individuals     4      35          0.01356
-#>   classes5          5               1  <NA> individuals     1     915          0.35438
+#>  candidate n_profiles n_group_classes       level class n_modal proportion_modal
+#>   classes2          2               1 individuals     1    1276          0.49419
+#>   classes2          2               1 individuals     2    1306          0.50581
+#>   classes3          3               1 individuals     1    1180          0.45701
+#>   classes3          3               1 individuals     2      98          0.03796
+#>   classes3          3               1 individuals     3    1304          0.50503
+#>   classes4          4               1 individuals     1    1258          0.48722
+#>   classes4          4               1 individuals     2      98          0.03796
+#>   classes4          4               1 individuals     3    1191          0.46127
+#>   classes4          4               1 individuals     4      35          0.01356
+#>   classes5          5               1 individuals     1     915          0.35438
 #>  estimated_n estimated_proportion average_posterior odds_correct_classification
 #>       979.41              0.37932            0.7057                       3.923
 #>      1602.59              0.62068            0.9395                       9.496
 #>      1490.65              0.57732            0.9329                      10.175
 #>        93.58              0.03624            0.9521                     527.981
 #>       997.77              0.38643            0.7046                       3.788
-#>      1466.06              0.56780            0.8871                       5.980
-#>        93.99              0.03640            0.9554                     566.490
-#>       989.57              0.38326            0.7144                       4.026
-#>        32.38              0.01254            0.7654                     256.847
-#>      1229.05              0.47601            0.9174                      12.231
+#>      1466.11              0.56782            0.8871                       5.981
+#>        93.99              0.03640            0.9554                     566.454
+#>       989.52              0.38324            0.7144                       4.026
+#>        32.38              0.01254            0.7654                     256.835
+#>      1229.10              0.47602            0.9174                      12.230
 #>  relative_entropy
 #>            0.4823
 #>            0.4823
@@ -135,17 +149,17 @@ summary(models)
 #>            0.7146
 #>            0.7146
 #>            0.7146
-#>            0.7427
+#>            0.7426
 #>    ... 10 more rows.  get_results(x, what = "classification")
 #> 
 #> -- deltas ----------------------------------------------------------
-#>  candidate n_profiles n_group_classes model  criterion value delta_profile from_profile
-#>   classes1          1               1  <NA> bic_groups 16133            NA         <NA>
-#>   classes2          2               1  <NA> bic_groups 15918        214.97     classes1
-#>   classes3          3               1  <NA> bic_groups 15901         17.20     classes2
-#>   classes4          4               1  <NA> bic_groups 15888         13.17     classes3
-#>   classes5          5               1  <NA> bic_groups 15935        -47.40     classes4
-#>   classes6          6               1  <NA> bic_groups 15959        -23.35     classes5
+#>  candidate n_profiles n_group_classes  criterion value delta_profile from_profile
+#>   classes1          1               1 bic_groups 16133            NA         <NA>
+#>   classes2          2               1 bic_groups 15918        214.97     classes1
+#>   classes3          3               1 bic_groups 15901         17.20     classes2
+#>   classes4          4               1 bic_groups 15888         13.17     classes3
+#>   classes5          5               1 bic_groups 15935        -47.40     classes4
+#>   classes6          6               1 bic_groups 15959        -23.35     classes5
 #>  delta_group_class from_group_class
 #>                 NA             <NA>
 #>                 NA             <NA>
@@ -172,8 +186,8 @@ summary(models)
 #>  tree individuals       classes2          2    0.62068     classes3        2  0.03624
 #>  tree individuals       classes2          1    0.37932     classes3        3  0.38643
 #>  tree individuals       classes2          2    0.62068     classes3        3  0.38643
-#>  tree individuals       classes3          1    0.57732     classes4        1  0.56780
-#>  tree individuals       classes3          2    0.03624     classes4        1  0.56780
+#>  tree individuals       classes3          1    0.57732     classes4        1  0.56782
+#>  tree individuals       classes3          2    0.03624     classes4        1  0.56782
 #>      mass share_of_from share_of_to
 #>  0.379322      0.379322    1.000000
 #>  0.620678      0.620678    1.000000
@@ -181,13 +195,13 @@ summary(models)
 #>  0.474587      0.764626    0.822046
 #>  0.033119      0.087311    0.913794
 #>  0.003124      0.005034    0.086206
-#>  0.243465      0.641844    0.630034
-#>  0.142967      0.230340    0.369966
-#>  0.442298      0.766117    0.778967
-#>  0.001456      0.040186    0.002565
+#>  0.243465      0.641844    0.630033
+#>  0.142967      0.230340    0.369967
+#>  0.442310      0.766138    0.778961
+#>  0.001457      0.040188    0.002565
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 
@@ -330,12 +344,12 @@ dependence the classes do not explain.
 
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
 #>     profile       indicator_1    indicator_2        kind observed expected residual
-#> 3 profile_2    listened_music        walking categorical   0.1099 2.00e-16   0.1099
-#> 4 profile_2    listened_music        reading categorical   0.0881 8.86e-17   0.0881
-#> 5 profile_2            sports        walking categorical   0.0879 4.24e-17   0.0879
-#> 6 profile_2    listened_music         sports categorical   0.0874 0.00e+00   0.0874
+#> 3 profile_2    listened_music        walking categorical   0.1099 2.03e-16   0.1099
+#> 4 profile_2    listened_music        reading categorical   0.0881 6.46e-17   0.0881
+#> 5 profile_2            sports        walking categorical   0.0879 3.48e-17   0.0879
+#> 6 profile_2    listened_music         sports categorical   0.0874 2.03e-16   0.0874
 #> 8 profile_2 time_with_friends        walking categorical   0.0762 1.71e-16   0.0762
-#> 9 profile_2   on_social_media listened_music categorical   0.0697 5.54e-17   0.0697
+#> 9 profile_2   on_social_media listened_music categorical   0.0697 1.83e-16   0.0697
 #>   effective_n statistic df  p_value p_adjusted
 #> 3        1490     17.99  1 2.22e-05   2.22e-05
 #> 4        1490     11.57  1 6.72e-04   6.72e-04

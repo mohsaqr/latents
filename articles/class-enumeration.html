@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -345,7 +345,7 @@ overrides either default.</p>
 <span><span class="co">#&gt;                  2</span></span>
 <span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt;                  1</span></span>
-<span><span class="co">#&gt; 3 candidate(s) did not converge; see as.data.frame(x).</span></span>
+<span><span class="co">#&gt; 3 candidate(s) failed to fit; the `error` column of as.data.frame(x) gives the reason.</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span></code></pre></div>
 <p>The result contains 24 candidates. Each is named by its numbers of
 profiles and group classes (<code>profiles4_groups3</code> denotes four
@@ -1633,13 +1633,13 @@ latent class model, and the candidates are named with
 <span>                                seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">lca_models</span></span>
 <span><span class="co">#&gt; Class enumeration: 6 candidate models (LCA)</span></span>
-<span><span class="co">#&gt;         candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups</span></span>
-<span><span class="co">#&gt;  classes2_groups1          2               1  &lt;NA&gt;          -7892           17 15819      15863</span></span>
-<span><span class="co">#&gt;  classes3_groups1          3               1  &lt;NA&gt;          -7848           26 15749      15817</span></span>
-<span><span class="co">#&gt;  classes4_groups1          4               1  &lt;NA&gt;          -7811           35 15692      15783</span></span>
-<span><span class="co">#&gt;  classes2_groups2          2               2  &lt;NA&gt;          -7740           19 15518      15567</span></span>
-<span><span class="co">#&gt;  classes3_groups2          3               2  &lt;NA&gt;          -7686           29 15429      15505</span></span>
-<span><span class="co">#&gt;  classes4_groups2          4               2  &lt;NA&gt;          -7634           39 15346      15447</span></span>
+<span><span class="co">#&gt;         candidate n_profiles n_group_classes log_likelihood n_parameters   aic bic_groups</span></span>
+<span><span class="co">#&gt;  classes2_groups1          2               1          -7892           17 15819      15863</span></span>
+<span><span class="co">#&gt;  classes3_groups1          3               1          -7848           26 15749      15817</span></span>
+<span><span class="co">#&gt;  classes4_groups1          4               1          -7811           35 15692      15783</span></span>
+<span><span class="co">#&gt;  classes2_groups2          2               2          -7740           19 15518      15567</span></span>
+<span><span class="co">#&gt;  classes3_groups2          3               2          -7686           29 15429      15505</span></span>
+<span><span class="co">#&gt;  classes4_groups2          4               2          -7634           39 15346      15447</span></span>
 <span><span class="co">#&gt;  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean</span></span>
 <span><span class="co">#&gt;           15918          17771           0.482            NA     0.706     0.940      0.823</span></span>
 <span><span class="co">#&gt;           15901          17820           0.662            NA     0.704     0.952      0.863</span></span>
@@ -1710,33 +1710,24 @@ are named by their numbers of profiles or classes alone.</p>
 <span><span class="co">#&gt;  profiles6          6               1   VVI           -611           65 1351       1592</span></span>
 <span><span class="co">#&gt;  profiles7          7               1   VVI           -591           76 1334       1615</span></span>
 <span><span class="co">#&gt;  profiles8          8               1   VVI           -559           87 1292       1615</span></span>
-<span><span class="co">#&gt;  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean</span></span>
-<span><span class="co">#&gt;            2552           2552              NA            NA        NA        NA         NA</span></span>
-<span><span class="co">#&gt;            1898           1940           0.899            NA     0.969     0.979      0.974</span></span>
-<span><span class="co">#&gt;            1654           1714           0.909            NA     0.936     0.975      0.959</span></span>
-<span><span class="co">#&gt;            1611           1728           0.859            NA     0.885     0.954      0.917</span></span>
-<span><span class="co">#&gt;            1597           1684           0.909            NA     0.921     0.949      0.938</span></span>
-<span><span class="co">#&gt;            1592           1708           0.892            NA     0.886     0.959      0.934</span></span>
-<span><span class="co">#&gt;            1615           1742           0.892            NA     0.892     0.953      0.928</span></span>
-<span><span class="co">#&gt;            1615           1743           0.897            NA     0.896     1.000      0.937</span></span>
-<span><span class="co">#&gt;  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary</span></span>
-<span><span class="co">#&gt;           NA              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE     TRUE</span></span>
-<span><span class="co">#&gt;  n_best_replicated</span></span>
-<span><span class="co">#&gt;                 10</span></span>
-<span><span class="co">#&gt;                 10</span></span>
-<span><span class="co">#&gt;                 10</span></span>
-<span><span class="co">#&gt;                  8</span></span>
-<span><span class="co">#&gt;                  7</span></span>
-<span><span class="co">#&gt;                  5</span></span>
-<span><span class="co">#&gt;                  1</span></span>
-<span><span class="co">#&gt;                  1</span></span>
+<span><span class="co">#&gt;  bic_individual icl_individual profile_entropy avepp_min avepp_max avepp_mean avepp_below converged</span></span>
+<span><span class="co">#&gt;            2552           2552              NA        NA        NA         NA          NA      TRUE</span></span>
+<span><span class="co">#&gt;            1898           1940           0.899     0.969     0.979      0.974           0      TRUE</span></span>
+<span><span class="co">#&gt;            1654           1714           0.909     0.936     0.975      0.959           0      TRUE</span></span>
+<span><span class="co">#&gt;            1611           1728           0.859     0.885     0.954      0.917           0      TRUE</span></span>
+<span><span class="co">#&gt;            1597           1684           0.909     0.921     0.949      0.938           0      TRUE</span></span>
+<span><span class="co">#&gt;            1592           1708           0.892     0.886     0.959      0.934           0      TRUE</span></span>
+<span><span class="co">#&gt;            1615           1742           0.892     0.892     0.953      0.928           0      TRUE</span></span>
+<span><span class="co">#&gt;            1615           1743           0.897     0.896     1.000      0.937           0      TRUE</span></span>
+<span><span class="co">#&gt;  boundary n_best_replicated</span></span>
+<span><span class="co">#&gt;     FALSE                10</span></span>
+<span><span class="co">#&gt;     FALSE                10</span></span>
+<span><span class="co">#&gt;     FALSE                10</span></span>
+<span><span class="co">#&gt;     FALSE                 8</span></span>
+<span><span class="co">#&gt;     FALSE                 7</span></span>
+<span><span class="co">#&gt;     FALSE                 5</span></span>
+<span><span class="co">#&gt;     FALSE                 1</span></span>
+<span><span class="co">#&gt;      TRUE                 1</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">srl_models</span>, <span class="st">"profiles5"</span>, <span class="st">"profiles6"</span>, <span class="st">"profiles7"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>
@@ -1799,27 +1790,20 @@ specified by its full name.</p>
 <span><span class="co">#&gt;  profiles2_EEE          2               1   EEE           -601           26 1254       1350</span></span>
 <span><span class="co">#&gt;  profiles3_EEE          3               1   EEE           -593           32 1250       1369</span></span>
 <span><span class="co">#&gt;  profiles4_EEE          4               1   EEE           -582           38 1240       1381</span></span>
-<span><span class="co">#&gt;  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean</span></span>
-<span><span class="co">#&gt;            1898           1940           0.899            NA     0.969     0.979      0.974</span></span>
-<span><span class="co">#&gt;            1654           1714           0.909            NA     0.936     0.975      0.959</span></span>
-<span><span class="co">#&gt;            1611           1728           0.859            NA     0.885     0.954      0.917</span></span>
-<span><span class="co">#&gt;            1350           1457           0.744            NA     0.880     0.954      0.917</span></span>
-<span><span class="co">#&gt;            1369           1609           0.635            NA     0.797     0.881      0.834</span></span>
-<span><span class="co">#&gt;            1381           1574           0.769            NA     0.818     0.918      0.878</span></span>
-<span><span class="co">#&gt;  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            1              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;  n_best_replicated</span></span>
-<span><span class="co">#&gt;                  5</span></span>
-<span><span class="co">#&gt;                  5</span></span>
-<span><span class="co">#&gt;                  3</span></span>
-<span><span class="co">#&gt;                  5</span></span>
-<span><span class="co">#&gt;                  2</span></span>
-<span><span class="co">#&gt;                  1</span></span>
+<span><span class="co">#&gt;  bic_individual icl_individual profile_entropy avepp_min avepp_max avepp_mean avepp_below converged</span></span>
+<span><span class="co">#&gt;            1898           1940           0.899     0.969     0.979      0.974           0      TRUE</span></span>
+<span><span class="co">#&gt;            1654           1714           0.909     0.936     0.975      0.959           0      TRUE</span></span>
+<span><span class="co">#&gt;            1611           1728           0.859     0.885     0.954      0.917           0      TRUE</span></span>
+<span><span class="co">#&gt;            1350           1457           0.744     0.880     0.954      0.917           0      TRUE</span></span>
+<span><span class="co">#&gt;            1369           1609           0.635     0.797     0.881      0.834           1      TRUE</span></span>
+<span><span class="co">#&gt;            1381           1574           0.769     0.818     0.918      0.878           0      TRUE</span></span>
+<span><span class="co">#&gt;  boundary n_best_replicated</span></span>
+<span><span class="co">#&gt;     FALSE                 5</span></span>
+<span><span class="co">#&gt;     FALSE                 5</span></span>
+<span><span class="co">#&gt;     FALSE                 3</span></span>
+<span><span class="co">#&gt;     FALSE                 5</span></span>
+<span><span class="co">#&gt;     FALSE                 2</span></span>
+<span><span class="co">#&gt;     FALSE                 1</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">crossed_models</span>, <span class="st">"profiles3_VVI"</span>, <span class="st">"profiles3_EEE"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>

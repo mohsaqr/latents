@@ -17,7 +17,7 @@ the n_profiles column."><meta property="og:image" content="https://pak.dynasite.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -158,29 +158,43 @@ indicators.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           0.9953    0.9983     0.9992           0      TRUE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- best ------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention candidate n_profiles n_group_classes model value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt;  classes2          2               1  &lt;NA&gt;  6552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt;  classes2          2               1  &lt;NA&gt;  6562</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups  classes1          1               1  &lt;NA&gt;  6584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals  classes1          1               1  &lt;NA&gt;  6584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups  classes2          2               1  &lt;NA&gt;  6571</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals  classes2          2               1  &lt;NA&gt;  6571</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups  classes1          1               1  &lt;NA&gt;  6587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals  classes1          1               1  &lt;NA&gt;  6587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups  classes1          1               1  &lt;NA&gt;  6616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals  classes1          1               1  &lt;NA&gt;  6616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention candidate n_profiles n_group_classes value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt;  classes2          2               1  6552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt;  classes2          2               1  6562</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups  classes1          1               1  6584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals  classes1          1               1  6584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups  classes2          2               1  6571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals  classes2          2               1  6571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups  classes1          1               1  6587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals  classes1          1               1  6587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups  classes1          1               1  6616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals  classes1          1               1  6616</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "best")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention candidate n_profiles n_group_classes value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt;  classes2          2               1  6552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt;  classes2          2               1  6562</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups  classes1          1               1  6584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals  classes1          1               1  6584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups  classes2          2               1  6571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals  classes2          2               1  6571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups  classes1          1               1  6587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals  classes1          1               1  6587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups  classes1          1               1  6616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals  classes1          1               1  6616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  candidate n_profiles n_group_classes model       level class n_modal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1  &lt;NA&gt; individuals     1    2582</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1  &lt;NA&gt; individuals     2       0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1  &lt;NA&gt; individuals     1    2054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1  &lt;NA&gt; individuals     2     185</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1  &lt;NA&gt; individuals     3     343</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  candidate n_profiles n_group_classes       level class n_modal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1 individuals     1    2582</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1 individuals     2       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1 individuals     1    2054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1 individuals     2     185</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1 individuals     3     343</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  proportion_modal estimated_n estimated_proportion average_posterior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1.00000      2322.1              0.89935            0.8993</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.00000       259.9              0.10065                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           1.00000      2322.1              0.89934            0.8993</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           0.00000       259.9              0.10066                NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           0.79551      2053.6              0.79535            0.9996</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           0.07165       185.4              0.07182            0.9997</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           0.13284       343.0              0.13283            0.9983</span>
@@ -188,14 +202,14 @@ indicators.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          1.0           0.7594</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                           NA           0.7594</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                        573.9           0.9953</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                      46383.8           0.9953</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      46383.9           0.9953</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       3920.3           0.9953</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- deltas ----------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  candidate n_profiles n_group_classes model  criterion value delta_profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes1          1               1  &lt;NA&gt; bic_groups  6584            NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1  &lt;NA&gt; bic_groups  6593        -9.597</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1  &lt;NA&gt; bic_groups  6624       -31.210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  candidate n_profiles n_group_classes  criterion value delta_profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes1          1               1 bic_groups  6584            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes2          2               1 bic_groups  6593        -9.597</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   classes3          3               1 bic_groups  6624       -31.210</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  from_profile delta_group_class from_group_class</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;NA&gt;                NA             &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      classes1                NA             &lt;NA&gt;</span>
@@ -223,16 +237,16 @@ indicators.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          1     0.8993     classes3        3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  tree individuals       classes2          2     0.1007     classes3        3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  to_share      mass share_of_from share_of_to</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.89935 8.993e-01     0.8993466   1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.10065 1.007e-01     0.1006534   1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 6.947e-01     0.7724755   0.8734857</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 1.006e-01     0.9996946   0.1265143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 7.181e-02     0.0798445   0.9997967</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 1.460e-05     0.0001451   0.0002033</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.328e-01     0.1476800   0.9998785</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.614e-05     0.0001603   0.0001215</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.89934 8.993e-01     0.8993419   1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.10066 1.007e-01     0.1006581   1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 6.947e-01     0.7724746   0.8734801</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.79535 1.006e-01     0.9996915   0.1265199</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 7.181e-02     0.0798446   0.9997929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.07182 1.488e-05     0.0001478   0.0002071</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.328e-01     0.1476807   0.9998782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.13283 1.618e-05     0.0001607   0.0001218</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 </code></pre></div>
     </div>

@@ -17,7 +17,7 @@ ggplot is returned invisibly.'><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,11 +85,11 @@ ggplot is returned invisibly.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'latents_family_enumeration'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bic"</span>, <span class="st">"aic"</span>, <span class="st">"bic_individual"</span><span class="op">)</span>,</span>
+<span>  criterion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bic"</span>, <span class="st">"aic"</span>, <span class="st">"bic_individual"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  criterion <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  what <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_additive'</span></span>
@@ -136,11 +136,11 @@ ggplot is returned invisibly.</p>
 <span><span class="co"># S3 method for class 'latents_transition_enumeration'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bic"</span>, <span class="st">"aic"</span>, <span class="st">"bic_individual"</span><span class="op">)</span>,</span>
+<span>  criterion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bic"</span>, <span class="st">"aic"</span>, <span class="st">"bic_individual"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  criterion <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  what <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_lta'</span></span>
@@ -253,23 +253,23 @@ ggplot is returned invisibly.</p>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"mode"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"mode"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_enumeration'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aic"</span>, <span class="st">"bic_groups"</span>, <span class="st">"bic_individual"</span>, <span class="st">"icl_individual"</span><span class="op">)</span>,</span>
-<span>  criterion <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"enumeration"</span>, <span class="st">"tree"</span><span class="op">)</span>,</span>
+<span>  criterion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aic"</span>, <span class="st">"bic_groups"</span>, <span class="st">"bic_individual"</span>, <span class="st">"icl_individual"</span><span class="op">)</span>,</span>
 <span>  combine <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mark_minimum <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
 <span>  cutoff <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span>  using <span class="op">=</span> <span class="st">"bic_groups"</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  using <span class="op">=</span> <span class="st">"bic_groups"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plot_enumeration</span><span class="op">(</span></span>
@@ -298,8 +298,8 @@ ggplot is returned invisibly.</p>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"mode"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"mode"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plot_views</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
@@ -307,11 +307,11 @@ ggplot is returned invisibly.</p>
 <span><span class="co"># S3 method for class 'latents_pooled'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span>, <span class="st">"group"</span>, <span class="st">"measurement"</span><span class="op">)</span>,</span>
+<span>  level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span>, <span class="st">"group"</span>, <span class="st">"measurement"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  level <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  what <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_transitions'</span></span>
@@ -326,8 +326,8 @@ ggplot is returned invisibly.</p>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  intervals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  intervals <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -352,6 +352,29 @@ other fitted models</em>. For <code>plot_enumeration()</code>, <code>plot_select
 <code><a href="enumerate_lca.html">enumerate_lca()</a></code> or <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code>; each refuses the views
 that grid does not offer (see above). Optionally a grid for
 <code>plot_views()</code>.</p></dd>
+
+
+<dt id="arg-criterion">criterion<a class="anchor" aria-label="anchor" href="#arg-criterion"></a></dt>
+<dd><p>The former name of <code>what</code> for enumeration criteria. On a
+profile grid it is used alone or with <code>what = "enumeration"</code>; transition
+and group-class family grids take <code>"bic"</code>, <code>"aic"</code> or
+<code>"bic_individual"</code> (or a unique abbreviation, such as <code>"bic_i"</code>), or any
+other view of the grid.</p></dd>
+
+
+<dt id="arg-main-subtitle">main, subtitle<a class="anchor" aria-label="anchor" href="#arg-main-subtitle"></a></dt>
+<dd><p>Title and subtitle. <code>NULL</code> (default) uses the view's
+own.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>With <code>what = "tree"</code> (on <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of an enumeration or on
+<code>plot_enumeration()</code>), the arguments of <code>plot_tree()</code>. On <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a
+transition or group-class family grid, also <code>combine</code>, <code>labels</code>,
+<code>mark_minimum</code>, <code>cutoff</code> and <code>using</code>, passed to <code>plot_enumeration()</code>.
+Otherwise not used. Profile, class and transition models and enumerations refuse
+unknown arguments with <code>latents_bad_argument</code>; the other methods ignore
+them with a <code>latents_unused_argument</code> warning (see <em>Errors</em>).</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
@@ -398,29 +421,6 @@ relative to the lowest), <code>"smallest"</code> (the smallest class share, with
 candidate). <code>"selection"</code> draws all four and <code>"diagnostics"</code>, as a
 list.</p></li>
 </ul></dd>
-
-
-<dt id="arg-main-subtitle">main, subtitle<a class="anchor" aria-label="anchor" href="#arg-main-subtitle"></a></dt>
-<dd><p>Title and subtitle. <code>NULL</code> (default) uses the view's
-own.</p></dd>
-
-
-<dt id="arg-criterion">criterion<a class="anchor" aria-label="anchor" href="#arg-criterion"></a></dt>
-<dd><p>The former name of <code>what</code> for enumeration criteria. On a
-profile grid it is used alone or with <code>what = "enumeration"</code>; transition
-and group-class family grids take <code>"bic"</code>, <code>"aic"</code> or
-<code>"bic_individual"</code> (or a unique abbreviation, such as <code>"bic_i"</code>), or any
-other view of the grid.</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>With <code>what = "tree"</code> (on <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of an enumeration or on
-<code>plot_enumeration()</code>), the arguments of <code>plot_tree()</code>. On <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a
-transition or group-class family grid, also <code>combine</code>, <code>labels</code>,
-<code>mark_minimum</code>, <code>cutoff</code> and <code>using</code>, passed to <code>plot_enumeration()</code>.
-Otherwise not used. Profile, class and transition models and enumerations refuse
-unknown arguments with <code>latents_bad_argument</code>; the other methods ignore
-them with a <code>latents_unused_argument</code> warning (see <em>Errors</em>).</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>

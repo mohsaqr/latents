@@ -260,7 +260,7 @@ models
 #>                  2
 #>                  1
 #>                  1
-#> 3 candidate(s) did not converge; see as.data.frame(x).
+#> 3 candidate(s) failed to fit; the `error` column of as.data.frame(x) gives the reason.
 #> No candidate is selected automatically. Compare one convention consistently.
 ```
 
@@ -1609,13 +1609,13 @@ lca_models <- enumerate_classes(student_esm, activities, "student",
                                 seed = 1)
 lca_models
 #> Class enumeration: 6 candidate models (LCA)
-#>         candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
-#>  classes2_groups1          2               1  <NA>          -7892           17 15819      15863
-#>  classes3_groups1          3               1  <NA>          -7848           26 15749      15817
-#>  classes4_groups1          4               1  <NA>          -7811           35 15692      15783
-#>  classes2_groups2          2               2  <NA>          -7740           19 15518      15567
-#>  classes3_groups2          3               2  <NA>          -7686           29 15429      15505
-#>  classes4_groups2          4               2  <NA>          -7634           39 15346      15447
+#>         candidate n_profiles n_group_classes log_likelihood n_parameters   aic bic_groups
+#>  classes2_groups1          2               1          -7892           17 15819      15863
+#>  classes3_groups1          3               1          -7848           26 15749      15817
+#>  classes4_groups1          4               1          -7811           35 15692      15783
+#>  classes2_groups2          2               2          -7740           19 15518      15567
+#>  classes3_groups2          3               2          -7686           29 15429      15505
+#>  classes4_groups2          4               2          -7634           39 15346      15447
 #>  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean
 #>           15918          17771           0.482            NA     0.706     0.940      0.823
 #>           15901          17820           0.662            NA     0.704     0.952      0.863
@@ -1695,33 +1695,24 @@ srl_models
 #>  profiles6          6               1   VVI           -611           65 1351       1592
 #>  profiles7          7               1   VVI           -591           76 1334       1615
 #>  profiles8          8               1   VVI           -559           87 1292       1615
-#>  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean
-#>            2552           2552              NA            NA        NA        NA         NA
-#>            1898           1940           0.899            NA     0.969     0.979      0.974
-#>            1654           1714           0.909            NA     0.936     0.975      0.959
-#>            1611           1728           0.859            NA     0.885     0.954      0.917
-#>            1597           1684           0.909            NA     0.921     0.949      0.938
-#>            1592           1708           0.892            NA     0.886     0.959      0.934
-#>            1615           1742           0.892            NA     0.892     0.953      0.928
-#>            1615           1743           0.897            NA     0.896     1.000      0.937
-#>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
-#>           NA              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE     TRUE
-#>  n_best_replicated
-#>                 10
-#>                 10
-#>                 10
-#>                  8
-#>                  7
-#>                  5
-#>                  1
-#>                  1
+#>  bic_individual icl_individual profile_entropy avepp_min avepp_max avepp_mean avepp_below converged
+#>            2552           2552              NA        NA        NA         NA          NA      TRUE
+#>            1898           1940           0.899     0.969     0.979      0.974           0      TRUE
+#>            1654           1714           0.909     0.936     0.975      0.959           0      TRUE
+#>            1611           1728           0.859     0.885     0.954      0.917           0      TRUE
+#>            1597           1684           0.909     0.921     0.949      0.938           0      TRUE
+#>            1592           1708           0.892     0.886     0.959      0.934           0      TRUE
+#>            1615           1742           0.892     0.892     0.953      0.928           0      TRUE
+#>            1615           1743           0.897     0.896     1.000      0.937           0      TRUE
+#>  boundary n_best_replicated
+#>     FALSE                10
+#>     FALSE                10
+#>     FALSE                10
+#>     FALSE                 8
+#>     FALSE                 7
+#>     FALSE                 5
+#>     FALSE                 1
+#>      TRUE                 1
 #> No candidate is selected automatically. Compare one convention consistently.
 compare_models(srl_models, "profiles5", "profiles6", "profiles7")
 #> Model comparison
@@ -1786,27 +1777,20 @@ crossed_models
 #>  profiles2_EEE          2               1   EEE           -601           26 1254       1350
 #>  profiles3_EEE          3               1   EEE           -593           32 1250       1369
 #>  profiles4_EEE          4               1   EEE           -582           38 1240       1381
-#>  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean
-#>            1898           1940           0.899            NA     0.969     0.979      0.974
-#>            1654           1714           0.909            NA     0.936     0.975      0.959
-#>            1611           1728           0.859            NA     0.885     0.954      0.917
-#>            1350           1457           0.744            NA     0.880     0.954      0.917
-#>            1369           1609           0.635            NA     0.797     0.881      0.834
-#>            1381           1574           0.769            NA     0.818     0.918      0.878
-#>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            1              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>  n_best_replicated
-#>                  5
-#>                  5
-#>                  3
-#>                  5
-#>                  2
-#>                  1
+#>  bic_individual icl_individual profile_entropy avepp_min avepp_max avepp_mean avepp_below converged
+#>            1898           1940           0.899     0.969     0.979      0.974           0      TRUE
+#>            1654           1714           0.909     0.936     0.975      0.959           0      TRUE
+#>            1611           1728           0.859     0.885     0.954      0.917           0      TRUE
+#>            1350           1457           0.744     0.880     0.954      0.917           0      TRUE
+#>            1369           1609           0.635     0.797     0.881      0.834           1      TRUE
+#>            1381           1574           0.769     0.818     0.918      0.878           0      TRUE
+#>  boundary n_best_replicated
+#>     FALSE                 5
+#>     FALSE                 5
+#>     FALSE                 3
+#>     FALSE                 5
+#>     FALSE                 2
+#>     FALSE                 1
 #> No candidate is selected automatically. Compare one convention consistently.
 compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
 #> Model comparison

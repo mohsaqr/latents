@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -202,6 +202,20 @@ candidates are:</p>
 <span><span class="co">#&gt;        awe individuals profiles1          1               1   EEE  1520</span></span>
 <span><span class="co">#&gt;    ... 4 more rows.  get_results(x, what = "best")</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- criteria --------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  criterion  convention candidate n_profiles n_group_classes model value</span></span>
+<span><span class="co">#&gt;        aic        &lt;NA&gt; profiles6          6               1   EEE  1226</span></span>
+<span><span class="co">#&gt;        kic        &lt;NA&gt; profiles6          6               1   EEE  1279</span></span>
+<span><span class="co">#&gt;        bic      groups profiles1          1               1   EEE  1345</span></span>
+<span><span class="co">#&gt;        bic individuals profiles1          1               1   EEE  1345</span></span>
+<span><span class="co">#&gt;      sabic      groups profiles6          6               1   EEE  1252</span></span>
+<span><span class="co">#&gt;      sabic individuals profiles6          6               1   EEE  1252</span></span>
+<span><span class="co">#&gt;       caic      groups profiles1          1               1   EEE  1365</span></span>
+<span><span class="co">#&gt;       caic individuals profiles1          1               1   EEE  1365</span></span>
+<span><span class="co">#&gt;        awe      groups profiles1          1               1   EEE  1520</span></span>
+<span><span class="co">#&gt;        awe individuals profiles1          1               1   EEE  1520</span></span>
+<span><span class="co">#&gt;    ... 4 more rows.  get_results(x, what = "criteria")</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- classification --------------------------------------------------</span></span>
 <span><span class="co">#&gt;  candidate n_profiles n_group_classes model       level class n_modal proportion_modal</span></span>
 <span><span class="co">#&gt;  profiles2          2               1   EEE individuals     1      95           0.3167</span></span>
@@ -287,7 +301,7 @@ candidates are:</p>
 <span><span class="co">#&gt;  0.07623       0.28446     0.27153</span></span>
 <span><span class="co">#&gt;    ... 60 more rows.  get_results(x, what = "tree")</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 6 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
+<span><span class="co">#&gt; 7 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
 <span><span class="co">#&gt; of them whole, and get_results(x, what = "all") returns every one.</span></span></code></pre></div>
 <p>The BIC is lowest for one profile, and the two-profile model is 4.7
 points higher; the information criteria therefore do not decide between

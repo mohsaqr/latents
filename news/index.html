@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,33 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.97.1" id="latents-0971">latents 0.97.1<a class="anchor" aria-label="anchor" href="#latents-0971"></a></h2>
+<div class="section level4">
+<h4 id="enumeration-on-several-cores-0-97-1">Enumeration on several cores<a class="anchor" aria-label="anchor" href="#enumeration-on-several-cores-0-97-1"></a></h4>
+<ul><li>With <code>seed</code> given, <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> prepares the candidates of a profile, latent class or transition grid on the workers. Previously all of them were prepared in one process before the workers started; for a large grid this took a long time on one core. Each candidate seeds its own starts, so results are identical to <code>cores = 1</code>. Unseeded grids are still prepared in grid order in the calling process.</li>
+<li>
+<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> gains a trailing <code>verbose</code> argument. The default, <code>cores &gt; 1</code>, reports the preparation, the fitting of the starts and the finished grid in at most four <code>latents_progress</code> messages, with the elapsed time. Group-class families are not reported.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="clearer-reports-0-97-1">Clearer reports<a class="anchor" aria-label="anchor" href="#clearer-reports-0-97-1"></a></h4>
+<ul><li>An enumeration’s print separates candidates that failed to fit from fitted candidates that did not converge. Before, both were reported as “did not converge”.</li>
+<li>A start whose k-means starting values stop at 100 iterations is recorded as a failed start, with that reason in <code>get_results(fit, "starts")</code>. R’s own k-means warning, which read as though the model had not converged, is no longer passed on.</li>
+<li>Printed enumeration tables omit the <code>model</code> column when it is empty in every row, as in a latent class grid. <code><a href="../reference/get_results.html">get_results()</a></code> keeps it.</li>
+<li>
+<code>odds_correct_classification</code> is <code>Inf</code> for a class classified perfectly (average posterior one to within rounding), instead of <code>NA</code> or a number such as 7e15.</li>
+<li>The knee documentation cites Satopaa et al. (2011).</li>
+</ul></div>
+<div class="section level4">
+<h4 id="review-corrections-0-97-1">Review corrections<a class="anchor" aria-label="anchor" href="#review-corrections-0-97-1"></a></h4>
+<ul><li>Plot methods take their 0.9.21 positional arguments again (for example <code>plot(grid, "aic")</code> for family and transition grids, whose <code>plot(grid)</code> still draws every criterion as a panel), and <code><a href="../reference/multilpa.html">multilpa()</a></code> keeps its released argument positions, with <code>boundary</code> last. The enumeration summary and <code><a href="../reference/get_results.html">get_results()</a></code> again provide <code>criteria</code> beside <code>best</code>. Released base-graphics style arguments to bootstrap-LRT and pooled plots are accepted with a <code>latents_unused_argument</code> warning; these plots are drawn with ggplot2 and returned.</li>
+<li>Joined local-dependence items keep their full grid of category combinations, each with an estimated probability, so unobserved combinations are part of the model.</li>
+<li>Direct-effect slopes are solved on the weighted design rather than its cross-product, which no longer appears singular when the covariates have full rank.</li>
+<li>The homogeneous transition recursion falls back to the log-space recursion when subnormal transition probabilities would overflow its scaled messages.</li>
+<li>For a model whose inference provides no per-unit scores, the Vuong-Lo-Mendell-Rubin test is reported as unavailable (a classed <code>latents_invalid_lmr</code> refusal, recorded in the <code>note</code> column) instead of failing with an unclassed error.</li>
+<li>Parallel workers use the parent’s random number generator kinds, are stopped when a call ends abnormally, and retry a lost task at most once. <code>options(warn = 2)</code> is honoured on every worker backend.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.97.0" id="latents-0970">latents 0.97.0<a class="anchor" aria-label="anchor" href="#latents-0970"></a></h2>
 <ul><li>

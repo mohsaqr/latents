@@ -19,7 +19,7 @@ unreplicated fits are reported, not silently selected."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,8 @@ unreplicated fits are reported, not silently selected.</p>
 <span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1L</span>,</span>
-<span>  type <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  type <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="va">cores</span> <span class="op">&gt;</span> <span class="fl">1L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -232,6 +233,14 @@ Both require <code>time = NULL</code>. <code>"lta"</code> requires <code>time</c
 measurement settings from <code>categorical</code>, as <code><a href="lta.html">lta()</a></code> does; it does not
 make numeric indicators categorical. An explicit type requires
 <code>family = "profiles"</code>; leave <code>type = NULL</code> for group-class families.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Whether to report progress: one message each when the
+candidates are prepared, when their starts are fitted, and when the grid
+is done, with the elapsed time. The default reports when <code>cores &gt; 1</code>,
+where a grid is usually long. Group-class families (<code>family</code>) are not
+reported.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -377,6 +386,31 @@ or the requested measurement distributions.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  285.7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "best")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention             candidate n_profiles n_group_classes model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt; profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt; profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups profiles2_groups1_VVI          2               1   VVI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals profiles1_groups1_EEI          1               1   EEI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  265.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  270.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  265.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  270.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  257.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  264.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  267.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  272.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  276.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  285.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              candidate n_profiles n_group_classes model       level class</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI          2               1   EEI individuals     1</span>
@@ -435,7 +469,7 @@ or the requested measurement distributions.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Numeric response codes, explicitly categorical:</span></span></span>
@@ -492,6 +526,20 @@ or the requested measurement distributions.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals profiles2_VVV          2               1   VVV 806.3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "best")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention     candidate n_profiles n_group_classes model value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt; profiles3_VVV          3               1   VVV 448.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt; profiles3_VVV          3               1   VVV 495.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups profiles2_VVV          2               1   VVV 574.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals profiles2_VVV          2               1   VVV 574.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups profiles3_VVV          3               1   VVV 441.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals profiles3_VVV          3               1   VVV 441.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups profiles2_VVV          2               1   VVV 603.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals profiles2_VVV          2               1   VVV 603.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups profiles2_VVV          2               1   VVV 806.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals profiles2_VVV          2               1   VVV 806.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles n_group_classes model       level class n_modal</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVV          2               1   VVV individuals     1      50</span>
@@ -516,16 +564,16 @@ or the requested measurement distributions.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            0.3267       49.44               0.3296            0.9822</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            0.3400       50.56               0.3371            0.9742</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  odds_correct_classification relative_entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.580e+05           0.9999</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           NA           0.9999</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.801e+16           0.9704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.300e+02           0.9704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.384e+02           0.9704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    3.297e+05           0.9999</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.477e+05           0.9999</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    6.775e+12           0.9616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    1.122e+02           0.9616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    7.441e+01           0.9616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    157977.78           0.9999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          Inf           0.9999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          Inf           0.9704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       129.96           0.9704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       138.39           0.9704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    329661.62           0.9999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    147652.77           0.9999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          Inf           0.9616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       112.24           0.9616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        74.41           0.9616</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- deltas ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles n_group_classes model  criterion value delta_profile</span>
@@ -585,7 +633,7 @@ or the requested measurement distributions.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    0.6667 6.667e-01     6.667e-01   1.000e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 6 more rows.  get_results(x, what = "tree")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 </code></pre></div>
     </div>

@@ -13,7 +13,7 @@ the object and are listed under Tables.'><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -223,7 +223,10 @@ class: <code>level</code>, <code>class</code>, <code>n_modal</code>, <code>propo
 <code>odds_correct_classification</code>. Takes <code>level</code>. Under sampling weights
 <code>estimated_n</code> and <code>estimated_proportion</code> (and hence the odds of correct
 classification) are weighted posterior totals; the modal and average
-posterior columns describe the units supplied.</p></dd>
+posterior columns describe the units supplied. The odds are <code>Inf</code> for a
+class classified perfectly (average posterior one to within rounding)
+and <code>NA</code> where they are undefined: a class with no modal members, or a
+single class, whose proportion is one.</p></dd>
 
 <dt><code>"average_posteriors"</code></dt>
 <dd><p>For the units modally assigned to each
@@ -391,8 +394,8 @@ per structure), <code>line</code>, <code>criterion</code>, <code>from</code>, <c
 last candidate of the line is left out), <code>stable</code> and <code>note</code>. The knee
 is the candidate furthest below the straight line from the first to the
 last candidate, measured perpendicular to it with both axes rescaled to
-0-1. This is a simplified rule inspired by Kneedle, without its
-smoothing or sensitivity thresholds, so a very small positive distance
+0-1. This is a simplified rule inspired by Kneedle (Satopaa et al.,
+2011), without its smoothing or sensitivity thresholds, so a very small positive distance
 can still name a knee. A line needs three candidates for a knee and four
 for <code>knee_without_largest</code> and <code>stable</code>; otherwise they are <code>NA</code> and
 <code>note</code> gives the reason.</p></dd>
@@ -746,7 +749,11 @@ models with categorical variables. <em>Political Analysis</em>, 12, 3–27.
 Nagin, D. S. (2005). <em>Group-Based Modeling of Development</em>. Harvard
 University Press.
 Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
-three-step approaches. <em>Political Analysis</em>, 18, 450–469.</p>
+three-step approaches. <em>Political Analysis</em>, 18, 450–469.
+Satopaa, V., Albrecht, J., Irwin, D., &amp; Raghavan, B. (2011). Finding a
+"kneedle" in a haystack: Detecting knee points in system behavior.
+<em>Proceedings of the 31st International Conference on Distributed
+Computing Systems Workshops</em>, 166–171.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

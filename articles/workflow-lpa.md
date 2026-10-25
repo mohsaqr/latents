@@ -116,6 +116,20 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>        awe individuals profiles1          1               1   EEE  1520
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention candidate n_profiles n_group_classes model value
+#>        aic        <NA> profiles6          6               1   EEE  1226
+#>        kic        <NA> profiles6          6               1   EEE  1279
+#>        bic      groups profiles1          1               1   EEE  1345
+#>        bic individuals profiles1          1               1   EEE  1345
+#>      sabic      groups profiles6          6               1   EEE  1252
+#>      sabic individuals profiles6          6               1   EEE  1252
+#>       caic      groups profiles1          1               1   EEE  1365
+#>       caic individuals profiles1          1               1   EEE  1365
+#>        awe      groups profiles1          1               1   EEE  1520
+#>        awe individuals profiles1          1               1   EEE  1520
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
 #>  candidate n_profiles n_group_classes model       level class n_modal proportion_modal
 #>  profiles2          2               1   EEE individuals     1      95           0.3167
@@ -201,7 +215,7 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  0.07623       0.28446     0.27153
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 

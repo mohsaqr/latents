@@ -94,29 +94,43 @@ summary(models)
 #>           0.9953    0.9983     0.9992           0      TRUE    FALSE
 #> 
 #> -- best ------------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes model value
-#>        aic        <NA>  classes2          2               1  <NA>  6552
-#>        kic        <NA>  classes2          2               1  <NA>  6562
-#>        bic      groups  classes1          1               1  <NA>  6584
-#>        bic individuals  classes1          1               1  <NA>  6584
-#>      sabic      groups  classes2          2               1  <NA>  6571
-#>      sabic individuals  classes2          2               1  <NA>  6571
-#>       caic      groups  classes1          1               1  <NA>  6587
-#>       caic individuals  classes1          1               1  <NA>  6587
-#>        awe      groups  classes1          1               1  <NA>  6616
-#>        awe individuals  classes1          1               1  <NA>  6616
+#>  criterion  convention candidate n_profiles n_group_classes value
+#>        aic        <NA>  classes2          2               1  6552
+#>        kic        <NA>  classes2          2               1  6562
+#>        bic      groups  classes1          1               1  6584
+#>        bic individuals  classes1          1               1  6584
+#>      sabic      groups  classes2          2               1  6571
+#>      sabic individuals  classes2          2               1  6571
+#>       caic      groups  classes1          1               1  6587
+#>       caic individuals  classes1          1               1  6587
+#>        awe      groups  classes1          1               1  6616
+#>        awe individuals  classes1          1               1  6616
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention candidate n_profiles n_group_classes value
+#>        aic        <NA>  classes2          2               1  6552
+#>        kic        <NA>  classes2          2               1  6562
+#>        bic      groups  classes1          1               1  6584
+#>        bic individuals  classes1          1               1  6584
+#>      sabic      groups  classes2          2               1  6571
+#>      sabic individuals  classes2          2               1  6571
+#>       caic      groups  classes1          1               1  6587
+#>       caic individuals  classes1          1               1  6587
+#>        awe      groups  classes1          1               1  6616
+#>        awe individuals  classes1          1               1  6616
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
-#>  candidate n_profiles n_group_classes model       level class n_modal
-#>   classes2          2               1  <NA> individuals     1    2582
-#>   classes2          2               1  <NA> individuals     2       0
-#>   classes3          3               1  <NA> individuals     1    2054
-#>   classes3          3               1  <NA> individuals     2     185
-#>   classes3          3               1  <NA> individuals     3     343
+#>  candidate n_profiles n_group_classes       level class n_modal
+#>   classes2          2               1 individuals     1    2582
+#>   classes2          2               1 individuals     2       0
+#>   classes3          3               1 individuals     1    2054
+#>   classes3          3               1 individuals     2     185
+#>   classes3          3               1 individuals     3     343
 #>  proportion_modal estimated_n estimated_proportion average_posterior
-#>           1.00000      2322.1              0.89935            0.8993
-#>           0.00000       259.9              0.10065                NA
+#>           1.00000      2322.1              0.89934            0.8993
+#>           0.00000       259.9              0.10066                NA
 #>           0.79551      2053.6              0.79535            0.9996
 #>           0.07165       185.4              0.07182            0.9997
 #>           0.13284       343.0              0.13283            0.9983
@@ -124,14 +138,14 @@ summary(models)
 #>                          1.0           0.7594
 #>                           NA           0.7594
 #>                        573.9           0.9953
-#>                      46383.8           0.9953
+#>                      46383.9           0.9953
 #>                       3920.3           0.9953
 #> 
 #> -- deltas ----------------------------------------------------------
-#>  candidate n_profiles n_group_classes model  criterion value delta_profile
-#>   classes1          1               1  <NA> bic_groups  6584            NA
-#>   classes2          2               1  <NA> bic_groups  6593        -9.597
-#>   classes3          3               1  <NA> bic_groups  6624       -31.210
+#>  candidate n_profiles n_group_classes  criterion value delta_profile
+#>   classes1          1               1 bic_groups  6584            NA
+#>   classes2          2               1 bic_groups  6593        -9.597
+#>   classes3          3               1 bic_groups  6624       -31.210
 #>  from_profile delta_group_class from_group_class
 #>          <NA>                NA             <NA>
 #>      classes1                NA             <NA>
@@ -159,15 +173,15 @@ summary(models)
 #>  tree individuals       classes2          1     0.8993     classes3        3
 #>  tree individuals       classes2          2     0.1007     classes3        3
 #>  to_share      mass share_of_from share_of_to
-#>   0.89935 8.993e-01     0.8993466   1.0000000
-#>   0.10065 1.007e-01     0.1006534   1.0000000
-#>   0.79535 6.947e-01     0.7724755   0.8734857
-#>   0.79535 1.006e-01     0.9996946   0.1265143
-#>   0.07182 7.181e-02     0.0798445   0.9997967
-#>   0.07182 1.460e-05     0.0001451   0.0002033
-#>   0.13283 1.328e-01     0.1476800   0.9998785
-#>   0.13283 1.614e-05     0.0001603   0.0001215
+#>   0.89934 8.993e-01     0.8993419   1.0000000
+#>   0.10066 1.007e-01     0.1006581   1.0000000
+#>   0.79535 6.947e-01     0.7724746   0.8734801
+#>   0.79535 1.006e-01     0.9996915   0.1265199
+#>   0.07182 7.181e-02     0.0798446   0.9997929
+#>   0.07182 1.488e-05     0.0001478   0.0002071
+#>   0.13283 1.328e-01     0.1476807   0.9998782
+#>   0.13283 1.618e-05     0.0001607   0.0001218
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

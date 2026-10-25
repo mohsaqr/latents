@@ -13,7 +13,7 @@ message text may change between versions."><meta property="og:image" content="ht
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -239,6 +239,13 @@ categorical has non-integer values or more than ten categories, so it
 may be continuous. Every distinct value is fitted as a category. The
 warning names the indicators (field <code>indicators</code>) and is given once per
 call, including an enumeration.</p></dd>
+
+<dt><code>latents_progress</code></dt>
+<dd><p>A message from <code><a href="enumerate_classes.html">enumerate_classes()</a></code> with
+<code>verbose = TRUE</code> (the default when <code>cores &gt; 1</code>): one as the candidates
+are prepared, one as their starts are fitted, and one when the grid is
+done. Muffle it with <code>suppressMessages(classes = "latents_progress")</code>
+or <code>verbose = FALSE</code>.</p></dd>
 
 <dt><code>latents_candidate_failed</code></dt>
 <dd><p>A candidate of an enumeration that was

@@ -188,6 +188,15 @@ Nothing; this page documents conditions rather than a function.
   value is fitted as a category. The warning names the indicators (field
   `indicators`) and is given once per call, including an enumeration.
 
+- `latents_progress`:
+
+  A message from
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  with `verbose = TRUE` (the default when `cores > 1`): one as the
+  candidates are prepared, one as their starts are fitted, and one when
+  the grid is done. Muffle it with
+  `suppressMessages(classes = "latents_progress")` or `verbose = FALSE`.
+
 - `latents_candidate_failed`:
 
   A candidate of an enumeration that was fitted as one worker task lost

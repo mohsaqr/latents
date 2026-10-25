@@ -24,7 +24,8 @@ enumerate_classes(
   time = NULL,
   ...,
   cores = 1L,
-  type = NULL
+  type = NULL,
+  verbose = cores > 1L
 )
 ```
 
@@ -179,6 +180,14 @@ enumerate_classes(
   requires `family = "profiles"`; leave `type = NULL` for group-class
   families.
 
+- verbose:
+
+  Whether to report progress: one message each when the candidates are
+  prepared, when their starts are fitted, and when the grid is done,
+  with the elapsed time. The default reports when `cores > 1`, where a
+  grid is usually long. Group-class families (`family`) are not
+  reported.
+
 ## Value
 
 An object of class `multilpa_enumeration` (or the transition or family
@@ -329,6 +338,31 @@ summary(candidates)
 #>  285.7
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention             candidate n_profiles n_group_classes model
+#>        aic        <NA> profiles1_groups1_EEI          1               1   EEI
+#>        kic        <NA> profiles1_groups1_EEI          1               1   EEI
+#>        bic      groups profiles1_groups1_EEI          1               1   EEI
+#>        bic individuals profiles1_groups1_EEI          1               1   EEI
+#>      sabic      groups profiles2_groups1_VVI          2               1   VVI
+#>      sabic individuals profiles1_groups1_EEI          1               1   EEI
+#>       caic      groups profiles1_groups1_EEI          1               1   EEI
+#>       caic individuals profiles1_groups1_EEI          1               1   EEI
+#>        awe      groups profiles1_groups1_EEI          1               1   EEI
+#>        awe individuals profiles1_groups1_EEI          1               1   EEI
+#>  value
+#>  265.3
+#>  270.3
+#>  265.9
+#>  270.5
+#>  257.7
+#>  264.2
+#>  267.9
+#>  272.5
+#>  276.5
+#>  285.7
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
 #>              candidate n_profiles n_group_classes model       level class
 #>  profiles2_groups1_EEI          2               1   EEI individuals     1
@@ -387,7 +421,7 @@ summary(candidates)
 #>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1
 #>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 
 # Numeric response codes, explicitly categorical:
@@ -444,6 +478,20 @@ summary(single)
 #>        awe individuals profiles2_VVV          2               1   VVV 806.3
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention     candidate n_profiles n_group_classes model value
+#>        aic        <NA> profiles3_VVV          3               1   VVV 448.4
+#>        kic        <NA> profiles3_VVV          3               1   VVV 495.4
+#>        bic      groups profiles2_VVV          2               1   VVV 574.0
+#>        bic individuals profiles2_VVV          2               1   VVV 574.0
+#>      sabic      groups profiles3_VVV          3               1   VVV 441.6
+#>      sabic individuals profiles3_VVV          3               1   VVV 441.6
+#>       caic      groups profiles2_VVV          2               1   VVV 603.0
+#>       caic individuals profiles2_VVV          2               1   VVV 603.0
+#>        awe      groups profiles2_VVV          2               1   VVV 806.3
+#>        awe individuals profiles2_VVV          2               1   VVV 806.3
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
 #>      candidate n_profiles n_group_classes model       level class n_modal
 #>  profiles2_VVV          2               1   VVV individuals     1      50
@@ -468,16 +516,16 @@ summary(single)
 #>            0.3267       49.44               0.3296            0.9822
 #>            0.3400       50.56               0.3371            0.9742
 #>  odds_correct_classification relative_entropy
-#>                    1.580e+05           0.9999
-#>                           NA           0.9999
-#>                    1.801e+16           0.9704
-#>                    1.300e+02           0.9704
-#>                    1.384e+02           0.9704
-#>                    3.297e+05           0.9999
-#>                    1.477e+05           0.9999
-#>                    6.775e+12           0.9616
-#>                    1.122e+02           0.9616
-#>                    7.441e+01           0.9616
+#>                    157977.78           0.9999
+#>                          Inf           0.9999
+#>                          Inf           0.9704
+#>                       129.96           0.9704
+#>                       138.39           0.9704
+#>                    329661.62           0.9999
+#>                    147652.77           0.9999
+#>                          Inf           0.9616
+#>                       112.24           0.9616
+#>                        74.41           0.9616
 #> 
 #> -- deltas ----------------------------------------------------------
 #>      candidate n_profiles n_group_classes model  criterion value delta_profile
@@ -537,6 +585,6 @@ summary(single)
 #>    0.6667 6.667e-01     6.667e-01   1.000e+00
 #>    ... 6 more rows.  get_results(x, what = "tree")
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

@@ -163,7 +163,10 @@ Every fitted model offers these:
   Under sampling weights `estimated_n` and `estimated_proportion` (and
   hence the odds of correct classification) are weighted posterior
   totals; the modal and average posterior columns describe the units
-  supplied.
+  supplied. The odds are `Inf` for a class classified perfectly (average
+  posterior one to within rounding) and `NA` where they are undefined: a
+  class with no modal members, or a single class, whose proportion is
+  one.
 
 - `"average_posteriors"`:
 
@@ -352,11 +355,11 @@ Tables specific to one family or object:
   is left out), `stable` and `note`. The knee is the candidate furthest
   below the straight line from the first to the last candidate, measured
   perpendicular to it with both axes rescaled to 0-1. This is a
-  simplified rule inspired by Kneedle, without its smoothing or
-  sensitivity thresholds, so a very small positive distance can still
-  name a knee. A line needs three candidates for a knee and four for
-  `knee_without_largest` and `stable`; otherwise they are `NA` and
-  `note` gives the reason.
+  simplified rule inspired by Kneedle (Satopaa et al., 2011), without
+  its smoothing or sensitivity thresholds, so a very small positive
+  distance can still name a knee. A line needs three candidates for a
+  knee and four for `knee_without_largest` and `stable`; otherwise they
+  are `NA` and `note` gives the reason.
 
 - `"local_dependence"`:
 
@@ -736,7 +739,10 @@ structure models with categorical variables. *Political Analysis*, 12,
 3–27. Nagin, D. S. (2005). *Group-Based Modeling of Development*.
 Harvard University Press. Vermunt, J. K. (2010). Latent class modeling
 with covariates: two improved three-step approaches. *Political
-Analysis*, 18, 450–469.
+Analysis*, 18, 450–469. Satopaa, V., Albrecht, J., Irwin, D., &
+Raghavan, B. (2011). Finding a "kneedle" in a haystack: Detecting knee
+points in system behavior. *Proceedings of the 31st International
+Conference on Distributed Computing Systems Workshops*, 166–171.
 
 ## See also
 

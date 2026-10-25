@@ -248,7 +248,7 @@ models
 #>                  2
 #>                  1
 #>                  1
-#> 3 candidate(s) did not converge; see as.data.frame(x).
+#> 3 candidate(s) failed to fit; the `error` column of as.data.frame(x) gives the reason.
 #> No candidate is selected automatically. Compare one convention consistently.
 ```
 

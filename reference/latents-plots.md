@@ -15,11 +15,11 @@ loops, and their ggplot is returned invisibly.
 # S3 method for class 'latents_family_enumeration'
 plot(
   x,
-  what = c("bic", "aic", "bic_individual"),
+  criterion = c("bic", "aic", "bic_individual"),
   main = NULL,
   subtitle = NULL,
-  criterion = NULL,
-  ...
+  ...,
+  what = NULL
 )
 
 # S3 method for class 'multilpa_additive'
@@ -66,11 +66,11 @@ plot(
 # S3 method for class 'latents_transition_enumeration'
 plot(
   x,
-  what = c("bic", "aic", "bic_individual"),
+  criterion = c("bic", "aic", "bic_individual"),
   main = NULL,
   subtitle = NULL,
-  criterion = NULL,
-  ...
+  ...,
+  what = NULL
 )
 
 # S3 method for class 'multilpa_lta'
@@ -183,23 +183,23 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  statistic = c("mean", "median", "mode"),
-  ...
+  ...,
+  statistic = c("mean", "median", "mode")
 )
 
 # S3 method for class 'multilpa_enumeration'
 plot(
   x,
-  what = c("aic", "bic_groups", "bic_individual", "icl_individual"),
-  criterion = NULL,
+  what = c("enumeration", "tree"),
+  criterion = c("aic", "bic_groups", "bic_individual", "icl_individual"),
   combine = TRUE,
   labels = TRUE,
   mark_minimum = TRUE,
   main = NULL,
   subtitle = NULL,
+  ...,
   cutoff = 0.8,
-  using = "bic_groups",
-  ...
+  using = "bic_groups"
 )
 
 plot_enumeration(
@@ -228,8 +228,8 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  statistic = c("mean", "median", "mode"),
-  ...
+  ...,
+  statistic = c("mean", "median", "mode")
 )
 
 plot_views(x = NULL)
@@ -237,11 +237,11 @@ plot_views(x = NULL)
 # S3 method for class 'latents_pooled'
 plot(
   x,
-  what = c("profile", "group", "measurement"),
+  level = c("profile", "group", "measurement"),
   main = NULL,
-  subtitle = NULL,
-  level = NULL,
-  ...
+  ...,
+  what = NULL,
+  subtitle = NULL
 )
 
 # S3 method for class 'multilpa_transitions'
@@ -256,8 +256,8 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  intervals = TRUE,
-  ...
+  ...,
+  intervals = TRUE
 )
 ```
 
@@ -296,6 +296,32 @@ plot(
   [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md);
   each refuses the views that grid does not offer (see above).
   Optionally a grid for `plot_views()`.
+
+- criterion:
+
+  The former name of `what` for enumeration criteria. On a profile grid
+  it is used alone or with `what = "enumeration"`; transition and
+  group-class family grids take `"bic"`, `"aic"` or `"bic_individual"`
+  (or a unique abbreviation, such as `"bic_i"`), or any other view of
+  the grid.
+
+- main, subtitle:
+
+  Title and subtitle. `NULL` (default) uses the view's own.
+
+- ...:
+
+  With `what = "tree"` (on
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of an
+  enumeration or on `plot_enumeration()`), the arguments of
+  `plot_tree()`. On
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a
+  transition or group-class family grid, also `combine`, `labels`,
+  `mark_minimum`, `cutoff` and `using`, passed to `plot_enumeration()`.
+  Otherwise not used. Profile, class and transition models and
+  enumerations refuse unknown arguments with `latents_bad_argument`; the
+  other methods ignore them with a `latents_unused_argument` warning
+  (see *Errors*).
 
 - what:
 
@@ -350,32 +376,6 @@ plot(
     share, with 5% dashed) or `"trust"` (convergence, boundary and
     replication of every candidate). `"selection"` draws all four and
     `"diagnostics"`, as a list.
-
-- main, subtitle:
-
-  Title and subtitle. `NULL` (default) uses the view's own.
-
-- criterion:
-
-  The former name of `what` for enumeration criteria. On a profile grid
-  it is used alone or with `what = "enumeration"`; transition and
-  group-class family grids take `"bic"`, `"aic"` or `"bic_individual"`
-  (or a unique abbreviation, such as `"bic_i"`), or any other view of
-  the grid.
-
-- ...:
-
-  With `what = "tree"` (on
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of an
-  enumeration or on `plot_enumeration()`), the arguments of
-  `plot_tree()`. On
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a
-  transition or group-class family grid, also `combine`, `labels`,
-  `mark_minimum`, `cutoff` and `using`, passed to `plot_enumeration()`.
-  Otherwise not used. Profile, class and transition models and
-  enumerations refuse unknown arguments with `latents_bad_argument`; the
-  other methods ignore them with a `latents_unused_argument` warning
-  (see *Errors*).
 
 - level:
 

@@ -19,7 +19,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,7 +113,6 @@ missing indicators are available.</p>
 <span>  orientation <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  select_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"likelihood"</span>, <span class="st">"converged"</span><span class="op">)</span>,</span>
-<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"allow"</span>, <span class="st">"exclude"</span><span class="op">)</span>,</span>
 <span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  noise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  acceleration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"squarem"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
@@ -131,7 +130,8 @@ missing indicators are available.</p>
 <span>  local_dependence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  direct_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  search <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_screen <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  n_screen <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"allow"</span>, <span class="st">"exclude"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -370,20 +370,6 @@ amount, as happens when a membership logit drifts along a flat ridge of
 the likelihood; only the converged start is a maximum on which
 <code><a href="parameter_inference.html">parameter_inference()</a></code> can be based. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and
 <code>get_results(fit, "starts")</code> show every start.</p></dd>
-
-
-<dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>
-<dd><p>Whether a start with a variance at <code>min_variance</code> (a
-covariance eigenvalue, under full covariance) may be reported. <code>"allow"</code>
-(the default) permits it, as Mplus does, with a <code>latents_boundary</code>
-warning. <code>"exclude"</code> sets such starts aside and applies <code>select_start</code> to
-the rest; for models without covariates, the <code>boundary</code> column of the
-starts table identifies them. When every start is at the bound, the best
-is reported with a <code>latents_all_starts_boundary</code> warning. A Gaussian
-profile can increase the likelihood without limit by shrinking around one
-observation, so the size of that gain is set by <code>min_variance</code> rather than
-by the data, and more starts make such a solution more likely to be found.
-Categorical indicators have no variances and are unaffected.</p></dd>
 
 
 <dt id="arg-prior">prior<a class="anchor" aria-label="anchor" href="#arg-prior"></a></dt>
@@ -737,6 +723,20 @@ increasing <code>n_screen</code> does not add finalist slots. A single supplied
 start with <code>n_starts = 1</code> disables screening.
 A value with <code>search = "kmeans"</code>, or one below <code>n_starts</code>, raises
 <code>latents_bad_argument</code>.</p></dd>
+
+
+<dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>
+<dd><p>Whether a start with a variance at <code>min_variance</code> (a
+covariance eigenvalue, under full covariance) may be reported. <code>"allow"</code>
+(the default) permits it, as Mplus does, with a <code>latents_boundary</code>
+warning. <code>"exclude"</code> sets such starts aside and applies <code>select_start</code> to
+the rest; for models without covariates, the <code>boundary</code> column of the
+starts table identifies them. When every start is at the bound, the best
+is reported with a <code>latents_all_starts_boundary</code> warning. A Gaussian
+profile can increase the likelihood without limit by shrinking around one
+observation, so the size of that gain is set by <code>min_variance</code> rather than
+by the data, and more starts make such a solution more likely to be found.
+Categorical indicators have no variances and are unaffected.</p></dd>
 
 </dl></div>
     <div class="section level2">

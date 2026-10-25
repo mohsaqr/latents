@@ -40,7 +40,6 @@ multilpa(
   orientation = NULL,
   model = NULL,
   select_start = c("likelihood", "converged"),
-  boundary = c("allow", "exclude"),
   prior = NULL,
   noise = FALSE,
   acceleration = c("squarem", "none"),
@@ -58,7 +57,8 @@ multilpa(
   local_dependence = character(),
   direct_effects = character(),
   search = NULL,
-  n_screen = NULL
+  n_screen = NULL,
+  boundary = c("allow", "exclude")
 )
 ```
 
@@ -322,21 +322,6 @@ multilpa(
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
   can be based. [`summary()`](https://rdrr.io/r/base/summary.html) and
   `get_results(fit, "starts")` show every start.
-
-- boundary:
-
-  Whether a start with a variance at `min_variance` (a covariance
-  eigenvalue, under full covariance) may be reported. `"allow"` (the
-  default) permits it, as Mplus does, with a `latents_boundary` warning.
-  `"exclude"` sets such starts aside and applies `select_start` to the
-  rest; for models without covariates, the `boundary` column of the
-  starts table identifies them. When every start is at the bound, the
-  best is reported with a `latents_all_starts_boundary` warning. A
-  Gaussian profile can increase the likelihood without limit by
-  shrinking around one observation, so the size of that gain is set by
-  `min_variance` rather than by the data, and more starts make such a
-  solution more likely to be found. Categorical indicators have no
-  variances and are unaffected.
 
 - prior:
 
@@ -746,6 +731,21 @@ multilpa(
   start with `n_starts = 1` disables screening. A value with
   `search = "kmeans"`, or one below `n_starts`, raises
   `latents_bad_argument`.
+
+- boundary:
+
+  Whether a start with a variance at `min_variance` (a covariance
+  eigenvalue, under full covariance) may be reported. `"allow"` (the
+  default) permits it, as Mplus does, with a `latents_boundary` warning.
+  `"exclude"` sets such starts aside and applies `select_start` to the
+  rest; for models without covariates, the `boundary` column of the
+  starts table identifies them. When every start is at the bound, the
+  best is reported with a `latents_all_starts_boundary` warning. A
+  Gaussian profile can increase the likelihood without limit by
+  shrinking around one observation, so the size of that gain is set by
+  `min_variance` rather than by the data, and more starts make such a
+  solution more likely to be found. Categorical indicators have no
+  variances and are unaffected.
 
 ## Value
 

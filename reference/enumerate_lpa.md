@@ -144,6 +144,20 @@ summary(models)
 #>        awe individuals profiles1_EEE          1               1   EEE  1520
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention     candidate n_profiles n_group_classes model value
+#>        aic        <NA> profiles3_VVV          3               1   VVV  1193
+#>        kic        <NA> profiles3_VVV          3               1   VVV  1258
+#>        bic      groups profiles1_EEE          1               1   EEE  1345
+#>        bic individuals profiles1_EEE          1               1   EEE  1345
+#>      sabic      groups profiles3_VVV          3               1   VVV  1226
+#>      sabic individuals profiles3_VVV          3               1   VVV  1226
+#>       caic      groups profiles1_EEE          1               1   EEE  1365
+#>       caic individuals profiles1_EEE          1               1   EEE  1365
+#>        awe      groups profiles1_EEE          1               1   EEE  1520
+#>        awe individuals profiles1_EEE          1               1   EEE  1520
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
 #> -- classification --------------------------------------------------
 #>      candidate n_profiles n_group_classes model       level class n_modal
 #>  profiles2_EEI          2               1   EEI individuals     1     131
@@ -259,7 +273,7 @@ summary(models)
 #>    0.5262 5.262e-01     5.262e-01   1.000e+00
 #>    ... 22 more rows.  get_results(x, what = "tree")
 #> 
-#> 6 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 plot(models)
 ```
