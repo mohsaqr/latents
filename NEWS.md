@@ -1,3 +1,60 @@
+# latents 0.97.1
+
+### Enumeration on several cores
+
+* With `seed` given, `enumerate_classes()` prepares the candidates of a
+  profile, latent class or transition grid on the workers. Previously all of
+  them were prepared in one process before the workers started; for a large
+  grid this took a long time on one core. Each candidate seeds its own starts,
+  so results are identical to `cores = 1`. Unseeded grids are still prepared
+  in grid order in the calling process.
+* `enumerate_classes()` gains a trailing `verbose` argument. The default,
+  `cores > 1`, reports the preparation, the fitting of the starts and the
+  finished grid in at most four `latents_progress` messages, with the elapsed
+  time. Group-class families are not reported.
+
+### Clearer reports
+
+* An enumeration's print separates candidates that failed to fit from fitted
+  candidates that did not converge. Before, both were reported as "did not
+  converge".
+* A start whose k-means starting values stop at 100 iterations is recorded as
+  a failed start, with that reason in `get_results(fit, "starts")`. R's own
+  k-means warning, which read as though the model had not converged, is no
+  longer passed on.
+* Printed enumeration tables omit the `model` column when it is empty in every
+  row, as in a latent class grid. `get_results()` keeps it.
+* `odds_correct_classification` is `Inf` for a class classified perfectly
+  (average posterior one to within rounding), instead of `NA` or a number
+  such as 7e15.
+* The knee documentation cites Satopaa et al. (2011).
+
+### Review corrections
+
+* Plot methods take their 0.9.21 positional arguments again (for example
+  `plot(grid, "aic")` for family and transition grids, whose `plot(grid)`
+  still draws every criterion as a panel), and `multilpa()` keeps its
+  released argument positions, with `boundary` last. The
+  enumeration summary and `get_results()` again provide `criteria` beside
+  `best`. Released base-graphics style arguments to bootstrap-LRT and pooled
+  plots are accepted with a `latents_unused_argument` warning; these plots are
+  drawn with ggplot2 and returned.
+* Joined local-dependence items keep their full grid of category
+  combinations, each with an estimated probability, so unobserved
+  combinations are part of the model.
+* Direct-effect slopes are solved on the weighted design rather than its
+  cross-product, which no longer appears singular when the covariates have
+  full rank.
+* The homogeneous transition recursion falls back to the log-space recursion
+  when subnormal transition probabilities would overflow its scaled messages.
+* For a model whose inference provides no per-unit scores, the
+  Vuong-Lo-Mendell-Rubin test is reported as unavailable (a classed
+  `latents_invalid_lmr` refusal, recorded in the `note` column) instead of
+  failing with an unclassed error.
+* Parallel workers use the parent's random number generator kinds, are
+  stopped when a call ends abnormally, and retry a lost task at most once.
+  `options(warn = 2)` is honoured on every worker backend.
+
 # latents 0.97.0
 
 * `enumerate_classes()` gains a trailing `type` argument to request `"lca"`,

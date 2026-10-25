@@ -6,7 +6,8 @@
 #' @param indicator Its column name, for errors.
 #' @param min_categories Minimum number of observed categories; fitting uses
 #'   two, while preparing prediction subsets uses zero.
-#' @return The observed categories, in their native type and declared order.
+#' @return The observed categories, in their native type and declared order;
+#'   joined local-dependence items retain their full category grid.
 #' @noRd
 .multilpa_categorical_levels <- function(value, indicator, min_categories = 2L) {
   if (!(is.factor(value) || is.numeric(value) || is.logical(value) ||
@@ -24,7 +25,10 @@
                         class = "latents_bad_categorical", call = NULL))
   }
   levels_observed <- if (is.factor(value)) {
-    levels(droplevels(value))
+    # The joined item's declared levels include unobserved combinations,
+    # each of which has an estimated probability at the model's floor.
+    if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) levels(value) else
+      levels(droplevels(value))
   } else sort(unique(value[!is.na(value)]))
   if (length(levels_observed) < min_categories) {
     stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),

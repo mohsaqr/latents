@@ -52,6 +52,24 @@
     errorCondition(message, class = "latents_candidate_failed", call = NULL)
 }
 
+#' Prepare one profile candidate for the shared pool
+#' @param task The candidate's forced arguments and call.
+#' @return Its plan; the arguments alone for a candidate using a separate
+#'   engine; or the candidate's error condition.
+#' @noRd
+.multilpa_setup_task <- function(task) {
+  tryCatch({
+    if (.multilpa_pool_fallback(task$arguments)) {
+      # These engines retain serial starts. Their whole candidate occupies
+      # one pool worker, alongside the ordinary candidates' individual starts.
+      list(arguments = task$arguments, call = task$call)
+    } else {
+      do.call(.multilpa_setup, c(task$arguments, list(.call = task$call)),
+              quote = TRUE)
+    }
+  }, error = .lta_candidate_error)
+}
+
 #' Build profile tasks, including serial-engine candidate fallbacks
 #' @param candidates Collected plans in grid order.
 #' @param phase Screening or final runs.
@@ -74,28 +92,39 @@
 #' @param calls Candidate calls to retain on the fits.
 #' @param costs Positive estimated costs in grid order.
 #' @param cores Total worker budget.
+#' @param verbose Whether to report each phase with a message.
 #' @return Collected fits or error conditions, one per grid row.
 #' @noRd
-.multilpa_enumerate_fits <- function(arguments, calls, costs, cores) {
+.multilpa_enumerate_fits <- function(arguments, calls, costs, cores,
+                                     verbose = FALSE) {
   force(arguments)
   force(calls)
   force(costs)
   force(cores)
   indices <- seq_along(arguments)
+  started <- proc.time()[["elapsed"]]
   worker_report <- .latents_worker_reporter()
   on.exit(worker_report$signal(), add = TRUE)
-  candidates <- lapply(indices, function(i) {
-    .latents_collect_conditions(function() tryCatch({
-      current <- arguments[[i]]
-      if (.multilpa_pool_fallback(current)) {
-        # These engines retain serial starts. Their whole candidate occupies
-        # one pool worker, alongside the ordinary candidates' individual starts.
-        list(arguments = current, call = calls[[i]])
-      } else do.call(.multilpa_setup, c(current, list(.call = calls[[i]])), quote = TRUE)
-    }, error = .lta_candidate_error))
-  })
+  .latents_pool_progress(verbose, "Preparing %s on %s.",
+                         .latents_count(length(indices), "candidate"),
+                         .latents_count(min(cores, length(indices)), "worker"))
+  candidates <- worker_report$collect(function() .latents_pool_setup(
+    lapply(indices, function(i) {
+      list(candidate = i, arguments = arguments[[i]], call = calls[[i]])
+    }),
+    .multilpa_setup_task, costs, cores,
+    # Candidates for a separate engine have no setup to distribute.
+    distribute = all(vapply(arguments, function(current) !is.null(current$seed),
+                            logical(1))) &&
+      !all(vapply(arguments, .multilpa_pool_fallback, logical(1)))))
+  screen_tasks <- .multilpa_start_tasks(candidates, "screen")
+  if (length(screen_tasks)) {
+    .latents_pool_progress(verbose, "Screening %s on %s.",
+                           .latents_count(length(screen_tasks), "start"),
+                           .latents_count(min(cores, length(screen_tasks)), "worker"))
+  }
   screened <- worker_report$collect(function() .latents_pool_phase(
-    .multilpa_start_tasks(candidates, "screen"), costs, cores, length(indices),
+    screen_tasks, costs, cores, length(indices),
     .multilpa_execute_start, .multilpa_pool_loss))
   ranked <- lapply(indices, function(i) {
     plan <- candidates[[i]]$value
@@ -105,9 +134,15 @@
                                 plan$n_starts, plan$screen)
     }, error = .lta_candidate_error))
   })
+  final_tasks <- .multilpa_start_tasks(candidates, "final", screened, ranked)
+  .latents_pool_progress(verbose, "Fitting %s on %s.",
+                         .latents_count(length(final_tasks), "start"),
+                         .latents_count(min(cores, max(1L, length(final_tasks))), "worker"))
   finished <- worker_report$collect(function() .latents_pool_phase(
-    .multilpa_start_tasks(candidates, "final", screened, ranked), costs, cores,
-    length(indices), .multilpa_execute_start, .multilpa_pool_loss))
+    final_tasks, costs, cores, length(indices), .multilpa_execute_start,
+    .multilpa_pool_loss))
+  on.exit(.latents_pool_progress(verbose, "Done in %s.", .latents_format_duration(
+    proc.time()[["elapsed"]] - started)), add = TRUE)
   lapply(indices, function(i) {
     plan <- candidates[[i]]$value
     final <- .latents_collect_conditions(function() tryCatch({

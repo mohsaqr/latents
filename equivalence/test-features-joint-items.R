@@ -5,7 +5,7 @@
 # reference written from the formula (features/joint-items/reference.R).
 # Design, conventions, tolerances and the measured differences:
 # features/joint-items/make-kit.R (design), compare.R (tolerances) and
-# report.csv (every compared quantity); the findings: findings/*.R there.
+# ji_table (every compared quantity); the findings: findings/*.R there.
 
 ji_env <- environment()
 invisible(lapply(c("helpers.R", "reference.R", "compare.R", "generators.R"), \(file)
@@ -18,8 +18,7 @@ ji_table <- do.call(rbind, lapply(ji_compared, `[[`, "rows"))
 ji_notes <- unlist(lapply(ji_compared, `[[`, "notes"))
 ji_polished <- ji_parallel(Map(list, ji_all_cases, ji_all_fits), \(x) ji_polish(x[[1]], x[[2]]))
 ji_gaps <- do.call(rbind, lapply(ji_polished, `[[`, "row"))
-# Every compared quantity, for reading without rerunning.
-utils::write.csv(ji_table, file.path(ji_root, "report.csv"), row.names = FALSE)
+# Keep every compared quantity in ji_table without rewriting stored reports.
 
 expect_within <- function(rows) {
   expect_gt(nrow(rows), 0L)
@@ -73,10 +72,10 @@ test_that("latents stops at the maximum it reports as converged", {
 
 test_that("the parameter counts agree under Latent GOLD's full-grid convention", {
   # Latent GOLD's `a <-> b | Cluster` keeps C1 C2 - 1 probabilities per class
-  # even for combinations never observed (they go to zero); latents' joint
-  # indicator has one category per observed combination. latents' count plus
-  # k x (unobserved combinations) is Latent GOLD's; Mplus, given the joined
-  # item, counts as latents does.
+  # even for combinations never observed (they go to zero), as does latents.
+  # The Mplus kit and poLCA receive only observed joined categories. Their
+  # reported counts are increased by k x (unobserved combinations), and their
+  # BIC by that count difference x log(N), before comparing full-grid models.
   expect_within(subset(ji_table, quantity == "n_parameters"))
   unobserved <- vapply(ji_all_cases, ji_unobserved_cells, numeric(1))
   expect_true(all(unobserved[grepl("^(sparse|perfect)_", names(unobserved))] > 0))
@@ -91,8 +90,14 @@ test_that("class sizes, item and joint probabilities agree with Latent GOLD", {
   expect_within(subset(ji_table, reference == "latentgold" &
                          quantity %in% c("class_sizes", "item_probabilities",
                                          "joint_probabilities")))
-  # Combinations latents never estimates are at zero in Latent GOLD too.
-  expect_within(subset(ji_table, quantity == "joint_unobserved_zero"))
+  # Unobserved cells printed by Latent GOLD are zero. Whether or not a
+  # reference prints them, latents must retain every one at its exact floor.
+  expect_within(subset(ji_table, quantity %in%
+                         c("joint_unobserved_zero", "joint_unobserved_floor")))
+  floor_rows <- subset(ji_table, quantity == "joint_unobserved_floor")
+  expected_cells <- sum(vapply(ji_all_cases,
+    \(case) case$spec$k * ji_unobserved_cells(case), numeric(1)))
+  expect_equal(sum(floor_rows$n), expected_cells)
 })
 
 test_that("posteriors agree row by row with Latent GOLD and Mplus", {
@@ -174,7 +179,7 @@ test_that("the two-level model with a joined pair is compared in full", {
   expect_setequal(unique(multilevel$quantity),
                   c("log_likelihood", "n_parameters", "bic_individual", "posteriors",
                     "class_sizes", "item_probabilities", "joint_probabilities",
-                    "joint_unobserved_zero"))
+                    "joint_unobserved_zero", "joint_unobserved_floor"))
   expect_within(multilevel)
 })
 
@@ -201,7 +206,7 @@ test_that("the independent reference is independent of latents", {
 
 test_that("the reference study: 140 more datasets against the independent EM", {
   study <- ji_reference_study()
-  utils::write.csv(study, file.path(ji_root, "study.csv"), row.names = FALSE)
+  # The study remains in memory; running tests must not rewrite its report.
   expect_identical(nrow(study), 140L)
   # (a) the reference likelihood at latents' estimates is latents' likelihood
   expect_true(all(study$relative_at_estimates < 1e-9),

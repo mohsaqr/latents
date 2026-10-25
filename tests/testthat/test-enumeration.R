@@ -789,7 +789,7 @@ test_that("deltas and knees read the candidates table in both directions", {
   expect_true(all(knees$knee_candidate %in% c(candidates$candidate, NA)))
   expect_true(all(knees$n_points >= 1L))
   expect_named(get_results(grid, "all"),
-               c("candidates", "best", "classification", "deltas", "knees",
+               c("candidates", "best", "criteria", "classification", "deltas", "knees",
                  "tree"))
 
   skip_if_not_installed("ggplot2")

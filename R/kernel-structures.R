@@ -448,14 +448,30 @@
     updated[!inside, ] <- previous[!inside, , drop = FALSE]
     updated
   }, later, init = first / scale[, 1L], accumulate = TRUE)
+  finite_backward <- TRUE
   beta <- Reduce(function(t, following) {
-    updated <- ((following * density[[t]]) %*% t(transition)) / scale[, t]
+    weighted <- following * density[[t]]
+    # The expected-count step divides this term before multiplying by the
+    # transition probabilities, so its ratio must also be representable.
+    finite_backward <<- finite_backward && all(is.finite(weighted / scale[, t]))
+    updated <- (weighted %*% t(transition)) / scale[, t]
     outside <- !layout$within[, t]
     updated[outside, ] <- following[outside, , drop = FALSE]
     updated
   }, later, init = matrix(1, n_groups, n_profiles), right = TRUE, accumulate = TRUE)
   if (!is.list(alpha)) alpha <- list(alpha)
   if (!is.list(beta)) beta <- list(beta)
+  # Subnormal transition probabilities can overflow the scaled backward
+  # messages. Passing occasion arrays selects the log-space recursion and
+  # its complete pair log probabilities in the expected-count step.
+  finite <- function(messages) all(vapply(messages, \(x) all(is.finite(x)), logical(1)))
+  if (!finite_backward || !finite(alpha) || !finite(beta) ||
+      any(!is.finite(scale)) || any(scale <= 0)) {
+    log_transition <- array(rep(log(transition), each = n_groups),
+                            c(n_groups, n_profiles, n_profiles))
+    return(.latents_forward_backward(emission, layout, log(initial),
+                                     rep(list(log_transition), length(later))))
+  }
   log_scale <- lapply(seq_len(n_occasions), function(t) log(scale[, t]))
   prefix <- Reduce(`+`, log_scale, accumulate = TRUE)
   if (!is.list(prefix)) prefix <- if (n_groups == 1L) as.list(prefix) else list(prefix)

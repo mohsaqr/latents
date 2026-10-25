@@ -59,7 +59,11 @@ ji_compare_case <- function(case, fit) {
   # Case weights: Latent GOLD sums raw weights (N = their sum); latents
   # rescales them to sum to the number of rows.
   scale <- if (is.null(spec$weights)) 1 else sum(case$data$w) / nrow(case$data)
+  # The kit codes Mplus's joined nominal items using observed combinations
+  # only. Each omitted cell accounts for one probability per class; latents
+  # and Latent GOLD both count those probabilities in their full grids.
   offset <- ji_unobserved_cells(case) * k
+  observed_levels <- ref_code(case$data, spec$vars, spec$pairs)$levels
   ll_tol <- ji_tol$lg_printed + scale * latents_ll
   higher <- fit$log_likelihood * scale - lg$log_likelihood > ll_tol
   if (higher) notes <- c(notes, sprintf("%s: Latent GOLD stopped lower (%.4f vs %.4f)",
@@ -67,12 +71,12 @@ ji_compare_case <- function(case, fit) {
                                         fit$log_likelihood * scale))
   add("latentgold", "log_likelihood", fit$log_likelihood * scale, lg$log_likelihood,
       if (higher) Inf else ll_tol)
-  add("latentgold", "n_parameters", fit$n_parameters + offset, lg$n_parameters, 0)
+  add("latentgold", "n_parameters", fit$n_parameters, lg$n_parameters, 0)
   # Latent GOLD's BIC counts every case (individuals in a two-level model, the
   # sum of the weights with case weights) and its full-grid parameters.
   if (is.null(spec$h)) {
-    expected_bic <- if (scale == 1) lg$bic - offset * log(lg$n_cases) else
-      -2 * lg$log_likelihood / scale + (lg$n_parameters - offset) * log(nrow(case$data))
+    expected_bic <- if (scale == 1) lg$bic else
+      -2 * lg$log_likelihood / scale + lg$n_parameters * log(nrow(case$data))
     add("latentgold", "bic", fit$bic, expected_bic,
         if (higher) Inf else 2 * (ji_tol$lg_printed + latents_ll) + ji_tol$lg_printed)
   } else {
@@ -92,14 +96,20 @@ ji_compare_case <- function(case, fit) {
         unlist(lapply(others, \(v) lg$estimated[[v]])),
         ji_tol$lg_estimate + ji_tol$latents_estimate)
     add("latentgold", "joint_probabilities",
-        unlist(lapply(names(mine$joint), \(p) mine$joint[[p]])),
-        unlist(lapply(names(mine$joint), \(p) lg$estimated[[p]][, colnames(mine$joint[[p]])])),
+        unlist(lapply(names(mine$joint), \(p)
+          mine$joint[[p]][, colnames(lg$estimated[[p]]), drop = FALSE])),
+        unlist(lapply(names(mine$joint), \(p) lg$estimated[[p]])),
         ji_tol$lg_estimate + ji_tol$latents_estimate)
-    # Combinations latents never estimates (unobserved) are zero in Latent GOLD.
-    unseen <- unlist(lapply(names(mine$joint), \(p)
-      lg$estimated[[p]][, setdiff(colnames(lg$estimated[[p]]), colnames(mine$joint[[p]]))]))
+    # Preserve the zero check on any unobserved cells Latent GOLD prints.
+    # Even when a reference omits a cell, latents must estimate it at the
+    # floor. Identify missing cells from the data, not table set differences,
+    # which would make the zero check vacuous now that latents has a full grid.
+    unseen <- ji_unobserved_probabilities(case, lg$estimated)
     add("latentgold", "joint_unobserved_zero", numeric(length(unseen)), unseen,
         ji_tol$lg_printed)
+    unseen <- ji_unobserved_probabilities(case, mine$joint)
+    add("latentgold", "joint_unobserved_floor", unseen,
+        rep(fit$min_probability, length(unseen)), 0)
   }
   if (isTRUE(spec$mplus)) {
     mp <- ji_mplus(case$name, k)
@@ -111,8 +121,10 @@ ji_compare_case <- function(case, fit) {
                                           mp$log_likelihood, fit$log_likelihood))
     add("mplus", "log_likelihood", fit$log_likelihood, mp$log_likelihood,
         if (higher) Inf else ll_tol)
-    add("mplus", "n_parameters", fit$n_parameters, mp$n_parameters, 0)
-    add("mplus", "bic", fit$bic, mp$bic,
+    # Translate Mplus's observed-grid count/BIC to the full-grid convention;
+    # the likelihood and all likelihood/posterior tolerances are unchanged.
+    add("mplus", "n_parameters", fit$n_parameters, mp$n_parameters + offset, 0)
+    add("mplus", "bic", fit$bic, mp$bic + offset * log(nrow(case$data)),
         if (higher) Inf else ji_mplus_rounding(mp$bic) + 2 * ll_tol)
     if (!higher) {
       posteriors <- mp$posteriors[at, , drop = FALSE]
@@ -129,13 +141,15 @@ ji_compare_case <- function(case, fit) {
         items <- strsplit(p, ":", fixed = TRUE)[[1L]]
         label <- paste(case$data[[items[1]]], case$data[[items[2]]], sep = ":")
         observed <- !is.na(case$data[[items[1]]]) & !is.na(case$data[[items[2]]])
-        vapply(colnames(mine$joint[[p]]), function(cell) {
+        vapply(observed_levels[[p]], function(cell) {
           colSums(posteriors[observed, , drop = FALSE] * weights[observed] *
                     (label[observed] == cell)) /
             colSums(posteriors[observed, , drop = FALSE] * weights[observed])
         }, numeric(k))
       }))
-      add("mplus", "joint_probabilities", unlist(lapply(mine$joint, identity)), implied,
+      add("mplus", "joint_probabilities",
+          unlist(lapply(names(mine$joint), \(p)
+            mine$joint[[p]][, observed_levels[[p]], drop = FALSE])), implied,
           ji_tol$mplus_estimate + ji_tol$latents_estimate)
     }
   }
@@ -229,6 +243,12 @@ ji_polca <- function(case, fit, polish = NULL, nrep = 10L) {
     fit$response_probabilities[[v]][order, coded$levels[[v]], drop = FALSE]))
   theirs <- unlist(lapply(polca$probs, identity))
   latents_ll <- ji_latents_loglik(fit$log_likelihood)
+  # ref_code supplies contiguous observed-category codes to poLCA, just as
+  # the stored Mplus kit does. Translate its count and BIC to the full grid;
+  # compare its probabilities only on those observed codes and separately
+  # require every omitted latents cell to be exactly at its probability floor.
+  offset <- ji_unobserved_cells(case) * spec$k
+  unseen <- ji_unobserved_probabilities(case, fit$response_probabilities)
   # poLCA's own distance from the maximum, for the README (not a tolerance).
   own <- if (!is.null(polish$polished)) {
     p <- polish$polished
@@ -239,6 +259,13 @@ ji_polca <- function(case, fit, polish = NULL, nrep = 10L) {
   }
   list(log_likelihood = polca$llik, own = own,
        rows = rbind(
+         ji_row(case$name, "polca", "n_parameters", fit$n_parameters,
+                polca$npar + offset, 0),
+         ji_row(case$name, "polca", "bic", fit$bic,
+                polca$bic + offset * log(nrow(case$data)),
+                2 * (latents_ll + ji_tol$polca_loglik)),
+         ji_row(case$name, "polca", "joint_unobserved_floor", unseen,
+                rep(fit$min_probability, length(unseen)), 0),
          ji_row(case$name, "polca", "log_likelihood", fit$log_likelihood, polca$llik,
                 latents_ll + ji_tol$polca_loglik),
          ji_row(case$name, "polca", "class_sizes", fit$profile_probabilities[1L, order],
@@ -304,8 +331,12 @@ ji_study_one <- function(row) {
                                           table$independent - matched$independent,
                                           table$ratio - matched$ratio))),
              joined_minus_plain = joined$log_likelihood - plain$log_likelihood,
+             # The independent EM uses observed cells (zero omitted mass).
+             # Its model count needs one parameter per omitted cell/class
+             # to match the full-grid model; its likelihood is unchanged.
              n_parameters_match = identical(as.integer(joined$n_parameters),
-                                            as.integer(ref_n_parameters(coded$levels, row$k))))
+               as.integer(ref_n_parameters(coded$levels, row$k) + row$k *
+                 ji_unobserved_cells(list(data = data, spec = list(pairs = pairs))))))
 }
 
 ji_reference_study <- function() {

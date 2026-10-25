@@ -1,6 +1,6 @@
 # Local dependence between two categorical indicators: the pair is modelled
 # jointly within each class. The two items become one categorical indicator
-# whose categories are their observed combinations, so each class has its own
+# whose categories are the full grid of their categories, so each class has its own
 # joint distribution of the pair, with no independence assumed between them.
 # For two nominal items this is the class-specific two-variable log-linear
 # association Latent GOLD fits with `item1 <-> item2 | Cluster`, which has the
@@ -236,7 +236,7 @@
     grid <- expand.grid(second = as.character(second_levels),
                         first = as.character(first_levels), stringsAsFactors = FALSE)
     combinations <- paste(grid$first, grid$second, sep = ":")
-    frame[[pair$name]] <- factor(labels, levels = intersect(combinations, labels))
+    frame[[pair$name]] <- factor(labels, levels = combinations)
     attr(frame[[pair$name]], "latents_pair") <- c(pair$item_1, pair$item_2)
     frame_pairs[[pair$name]] <- c(pair$item_1, pair$item_2)
     attr(frame, "latents_pairs") <- frame_pairs

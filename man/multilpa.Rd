@@ -32,7 +32,6 @@ multilpa(
   orientation = NULL,
   model = NULL,
   select_start = c("likelihood", "converged"),
-  boundary = c("allow", "exclude"),
   prior = NULL,
   noise = FALSE,
   acceleration = c("squarem", "none"),
@@ -50,7 +49,8 @@ multilpa(
   local_dependence = character(),
   direct_effects = character(),
   search = NULL,
-  n_screen = NULL
+  n_screen = NULL,
+  boundary = c("allow", "exclude")
 )
 }
 \arguments{
@@ -251,18 +251,6 @@ amount, as happens when a membership logit drifts along a flat ridge of
 the likelihood; only the converged start is a maximum on which
 \code{\link[=parameter_inference]{parameter_inference()}} can be based. \code{summary()} and
 \code{get_results(fit, "starts")} show every start.}
-
-\item{boundary}{Whether a start with a variance at \code{min_variance} (a
-covariance eigenvalue, under full covariance) may be reported. \code{"allow"}
-(the default) permits it, as Mplus does, with a \code{latents_boundary}
-warning. \code{"exclude"} sets such starts aside and applies \code{select_start} to
-the rest; for models without covariates, the \code{boundary} column of the
-starts table identifies them. When every start is at the bound, the best
-is reported with a \code{latents_all_starts_boundary} warning. A Gaussian
-profile can increase the likelihood without limit by shrinking around one
-observation, so the size of that gain is set by \code{min_variance} rather than
-by the data, and more starts make such a solution more likely to be found.
-Categorical indicators have no variances and are unaffected.}
 
 \item{prior}{\code{NULL} (the default) for maximum likelihood, or a
 \code{\link[=prior_control]{prior_control()}} object for maximum a posteriori estimation of the
@@ -591,6 +579,18 @@ increasing \code{n_screen} does not add finalist slots. A single supplied
 start with \code{n_starts = 1} disables screening.
 A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
 \code{latents_bad_argument}.}
+
+\item{boundary}{Whether a start with a variance at \code{min_variance} (a
+covariance eigenvalue, under full covariance) may be reported. \code{"allow"}
+(the default) permits it, as Mplus does, with a \code{latents_boundary}
+warning. \code{"exclude"} sets such starts aside and applies \code{select_start} to
+the rest; for models without covariates, the \code{boundary} column of the
+starts table identifies them. When every start is at the bound, the best
+is reported with a \code{latents_all_starts_boundary} warning. A Gaussian
+profile can increase the likelihood without limit by shrinking around one
+observation, so the size of that gain is set by \code{min_variance} rather than
+by the data, and more starts make such a solution more likely to be found.
+Categorical indicators have no variances and are unaffected.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional

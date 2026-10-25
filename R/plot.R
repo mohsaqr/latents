@@ -7,8 +7,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
                           data = NULL, scale = c("raw", "standardized"),
                           category = "last", labels = TRUE, intervals = TRUE,
                           cell_labels = TRUE, main = NULL, subtitle = NULL,
-                          statistic = c("mean", "median", "mode"),
-                          ...) {
+                          ..., statistic = c("mean", "median", "mode")) {
   stopifnot("`x` must be a `multilpa` fit" = inherits(x, "multilpa"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
@@ -207,19 +206,21 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 
 #' @rdname latents-plots
 #' @export
-plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
-                                               "bic_individual",
-                                               "icl_individual"),
-                                      criterion = NULL,
+plot.multilpa_enumeration <- function(x, what = c("enumeration", "tree"),
+                                      criterion = c("aic", "bic_groups",
+                                                    "bic_individual",
+                                                    "icl_individual"),
                                       combine = TRUE, labels = TRUE,
                                       mark_minimum = TRUE, main = NULL,
-                                      subtitle = NULL, cutoff = 0.8,
-                                      using = "bic_groups", ...) {
+                                      subtitle = NULL, ..., cutoff = 0.8,
+                                      using = "bic_groups") {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"))
   # The released view names were matched with match.arg(), so their unique
   # abbreviations remain valid alongside the new criterion names.
-  if (is.null(what)) what <- "enumeration"
+  if (is.null(what) || identical(what, c("enumeration", "tree"))) {
+    what <- "enumeration"
+  }
   legacy <- if (is.character(what) && length(what) == 1L && !is.na(what)) {
     pmatch(what, c("enumeration", "tree"))
   } else NA_integer_
@@ -234,7 +235,8 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
         "`from`, `to`, `level`, `combine`, `main` and `subtitle`."))
     # In 0.9.21 `criterion` always had a value and the tree did not use it.
     .latents_warn_unused_arguments(
-      if (is.null(criterion)) list() else list(criterion = criterion),
+      if (missing(criterion) || is.null(criterion)) list() else
+        list(criterion = criterion),
       "plot(what = \"tree\")", "The tree shows no criterion.")
     return(do.call(plot_tree, c(list(x), tree_arguments,
                                 list(combine = if (missing(combine)) FALSE else combine,
@@ -245,7 +247,8 @@ plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
   # 0.9.21 chose the view with `what = "enumeration"` and the criteria with
   # `criterion`; both spellings still draw the same plot.
   what <- .latents_former_argument(
-    what, !missing(what) && !identical(what, "enumeration"), criterion,
+    what, !missing(what) && !identical(what, "enumeration"),
+    if (missing(criterion)) NULL else criterion,
     c("what", "criterion"))
   if ("tree" %in% what) {
     stop(errorCondition(
@@ -482,7 +485,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
                                      category = "last", labels = TRUE,
                                      intervals = TRUE, cell_labels = TRUE,
                                      main = NULL, subtitle = NULL,
-                                     statistic = c("mean", "median", "mode"), ...) {
+                                     ..., statistic = c("mean", "median", "mode")) {
   stopifnot("`x` must be a fitted `multilpa_covariates` model" =
               inherits(x, "multilpa_covariates"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,

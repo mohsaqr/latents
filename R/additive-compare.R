@@ -311,12 +311,16 @@ summary.latents_family_enumeration <- function(object, ...) {
 
 #' @rdname latents-plots
 #' @export
-plot.latents_family_enumeration <- function(x, what = c("bic", "aic",
-                                                        "bic_individual"),
+plot.latents_family_enumeration <- function(x, criterion = c("bic", "aic",
+                                                             "bic_individual"),
                                             main = NULL, subtitle = NULL,
-                                            criterion = NULL, ...) {
+                                            ..., what = NULL) {
   stopifnot("`x` must be a `latents_family_enumeration` grid" =
               inherits(x, "latents_family_enumeration"))
-  .latents_plot_former_grid(x, what, !missing(what), criterion, main, subtitle,
+  .latents_plot_former_grid(x, what, !is.null(what),
+                            # Released position two; without it (or `what`) the
+                            # grid summary is drawn, every criterion a panel.
+                            if (missing(criterion)) NULL else criterion,
+                            main, subtitle,
                             list(...))
 }

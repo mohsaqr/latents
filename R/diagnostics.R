@@ -338,14 +338,20 @@
 #' Odds of correct classification
 #' @param average Average posterior probability in the assigned class.
 #' @param proportion Model-estimated class proportion.
-#' @return Odds ratio, or `NA_real_` where the ratio is undefined.
+#' @return Odds ratio; `Inf` for a class whose average posterior is one to
+#'   within rounding (perfect classification), and `NA_real_` where the ratio
+#'   is undefined (no modal members, or a class proportion of zero or one).
 #' @noRd
 .multilpa_odds_correct <- function(average, proportion) {
   stopifnot("`average` and `proportion` must have equal length" =
               length(average) == length(proportion))
-  defined <- !is.na(average) & average > 0 & average < 1 &
-    proportion > 0 & proportion < 1
+  sized <- !is.na(average) & !is.na(proportion) & proportion > 0 & proportion < 1
+  # Within rounding of one, 1 - average is floating-point noise, and dividing
+  # by it would report odds such as 7e15 that measure only that noise.
+  perfect <- sized & average >= 1 - sqrt(.Machine$double.eps)
+  defined <- sized & !perfect & average > 0
   odds <- rep(NA_real_, length(average))
+  odds[perfect] <- Inf
   odds[defined] <- (average[defined] / (1 - average[defined])) /
     (proportion[defined] / (1 - proportion[defined]))
   odds

@@ -80,6 +80,11 @@ utils::globalVariables("statistic")
 #'   models with membership covariates or joined categorical `local_dependence`
 #'   pairs instead occupy one worker per candidate in the same pool, with
 #'   serial starts. Group-class families also keep candidate-level parallelism.
+#' @param verbose Whether to report progress: one message each when the
+#'   candidates are prepared, when their starts are fitted, and when the grid
+#'   is done, with the elapsed time. The default reports when `cores > 1`,
+#'   where a grid is usually long. Group-class families (`family`) are not
+#'   reported.
 #' @param type Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL`
 #'   (the default) keeps the existing routing and measurement settings.
 #'   `"lca"` treats every indicator as categorical, as [multilca()] does:
@@ -159,7 +164,8 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
                               seed = NULL, family = "profiles",
                               between_variance = c("varying", "equal"),
-                              time = NULL, ..., cores = 1L, type = NULL) {
+                              time = NULL, ..., cores = 1L, type = NULL,
+                              verbose = cores > 1L) {
   data_expression <- substitute(data)
   # A socket worker receives the candidates' closure serialized; an unforced
   # `data` would travel as a promise naming the caller's variable, which the
@@ -167,6 +173,8 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   # before the workers start, so it is forced here for every path.
   force(data)
   cores <- .latents_check_cores(cores)
+  stopifnot("`verbose` must be TRUE or FALSE" =
+              is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
@@ -188,7 +196,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                           if (missing(n_profiles)) 2:4 else n_profiles,
                           if (missing(n_group_classes)) 1L else n_group_classes,
                           if (missing(model)) NULL else model, seed, list(...),
-                          match.call(), cores = cores))
+                          match.call(), cores = cores, verbose = verbose))
     result$type <- "lta"
     return(result)
   }
@@ -287,7 +295,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
     "multilpa", data_expression, arguments[[i]][setdiff(names(arguments[[i]]), "data")]))
   costs <- grid$n_group_classes * grid$n_profiles *
     .multilpa_pool_width(data, vars, extra)
-  fitted <- .multilpa_enumerate_fits(arguments, calls, costs, cores)
+  fitted <- .multilpa_enumerate_fits(arguments, calls, costs, cores, verbose)
   # The candidates' conditions come back deferred and are signalled here,
   # candidate by candidate.
   runs <- .latents_report_once(lapply(indices, function(i) {
@@ -640,6 +648,7 @@ summary.multilpa_enumeration <- function(object, ...) {
                  n_failed = sum(is.na(grid$log_likelihood)),
                  n_boundary = sum(grid$boundary %in% TRUE),
                  call = object$call)
+  result$criteria <- result$best
   # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
@@ -808,14 +817,21 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   cat(sprintf("Class enumeration: %d candidates, %d converged, %d failed to fit\n",
               x$n_candidates, x$n_converged, x$n_failed))
   identified <- c("n_profiles", "n_group_classes", "model")
-  present <- x$best[!is.na(x$best$n_profiles), identified, drop = FALSE]
+  best <- x$best %||% x$criteria
+  present <- best[!is.na(best$n_profiles), identified, drop = FALSE]
   disagreement <- unique(present)
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
               nrow(disagreement)))
   cat("No candidate is selected automatically. Choose one convention and keep it.\n")
-  tables <- x$tables
+  # An LCA grid has no covariance structure, so its `model` column is empty
+  # in every row; the printed tables leave it out (get_results() keeps it).
+  tables <- lapply(x$tables, function(table) {
+    if (is.data.frame(table) && "model" %in% names(table) && all(is.na(table$model))) {
+      table[setdiff(names(table), "model")]
+    } else table
+  })
   if (!is.null(tables$candidates)) {
-    full_width <- ncol(tables$candidates)
+    full_width <- ncol(x$tables$candidates)
     tables$candidates <- .multilpa_compact_candidates(tables$candidates)
     cat(sprintf(paste(
       "The candidates table shows %d of its %d columns;",

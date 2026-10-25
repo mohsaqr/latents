@@ -63,7 +63,7 @@
   counts <- vapply(logs, function(log) log$capped %||% 0L, integer(1))
   .multilpa_reset_structure_log()
   if (any(counts > 0L)) {
-    latest <- logs[[tail(which(counts > 0L), 1L)]]
+    latest <- logs[[utils::tail(which(counts > 0L), 1L)]]
     latest$capped <- sum(counts)
     invisible(list2env(latest, envir = .multilpa_structure_log))
   }
@@ -114,6 +114,15 @@
 .lta_start_tasks <- function(candidates, phase = c("screen", "final"),
                              screened = NULL, ranked = NULL) {
   .latents_start_tasks(candidates, match.arg(phase), screened, ranked)
+}
+
+#' Prepare one transition candidate for the shared pool
+#' @param task The candidate's forced `.lta_setup()` arguments.
+#' @return Its plan, or the candidate's error condition.
+#' @noRd
+.lta_setup_task <- function(task) {
+  tryCatch(do.call(.lta_setup, task$arguments, quote = TRUE),
+           error = .lta_candidate_error)
 }
 
 #' Run a transition phase in the shared worker pool

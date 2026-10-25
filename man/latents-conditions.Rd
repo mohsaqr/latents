@@ -118,6 +118,11 @@ categorical has non-integer values or more than ten categories, so it
 may be continuous. Every distinct value is fitted as a category. The
 warning names the indicators (field \code{indicators}) and is given once per
 call, including an enumeration.}
+\item{\code{latents_progress}}{A message from \code{\link[=enumerate_classes]{enumerate_classes()}} with
+\code{verbose = TRUE} (the default when \code{cores > 1}): one as the candidates
+are prepared, one as their starts are fitted, and one when the grid is
+done. Muffle it with \code{suppressMessages(classes = "latents_progress")}
+or \code{verbose = FALSE}.}
 \item{\code{latents_candidate_failed}}{A candidate of an enumeration that was
 fitted as one worker task lost that worker twice. It is recorded as the
 candidate's error, in its row of the grid, and the other candidates are

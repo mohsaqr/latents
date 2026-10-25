@@ -23,10 +23,17 @@
 #' @noRd
 .latents_vuong_parts <- function(fit) {
   inference <- parameter_inference(fit, vcov_type = "robust")
-  list(scores = attr(inference, "group_scores_conditioned") %||%
-         attr(inference, "group_scores"),
-       information = attr(inference, "hessian_conditioned") %||%
-         attr(inference, "hessian"),
+  scores <- attr(inference, "group_scores_conditioned") %||%
+    attr(inference, "group_scores")
+  information <- attr(inference, "hessian_conditioned") %||%
+    attr(inference, "hessian")
+  if (is.null(scores) || is.null(information)) {
+    stop(errorCondition(paste(
+      "The Vuong-Lo-Mendell-Rubin test is unavailable for this model:",
+      "parameter_inference() does not provide per-unit scores and observed information."),
+      class = "latents_invalid_lmr", call = NULL))
+  }
+  list(scores = scores, information = information,
        log_likelihood = fit$log_likelihood, n_parameters = fit$n_parameters,
        n_units = sum(.multilpa_inference_groups(fit)))
 }
@@ -365,6 +372,7 @@
           invokeRestart("muffleWarning")
         }),
       latents_boundary_fit = function(condition) condition,
+      latents_invalid_lmr = function(condition) condition,
       latents_singular_information = function(condition) condition,
       latents_unsupported_inference = function(condition) condition,
       latents_no_converge = function(condition) condition,

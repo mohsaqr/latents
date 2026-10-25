@@ -242,7 +242,8 @@
     } else {
       initial_fit <- .multilpa_start_kmeans(clustering_input, n_profiles)
       if (!is.null(initial_fit$ifault) && initial_fit$ifault != 0L) {
-        stop("Initial k-means did not converge.")
+        stop(paste("The k-means clustering that draws this start's initial values",
+                   "did not converge in 100 iterations; the start was skipped."))
       }
       assignments <- initial_fit$cluster
       centers <- initial_fit$centers[, seq_len(ncol(x)), drop = FALSE]
@@ -287,7 +288,8 @@
              nrow(unique(group_composition)) >= n_types) {
     group_fit <- .multilpa_start_kmeans(group_composition, n_types)
     if (!is.null(group_fit$ifault) && group_fit$ifault != 0L) {
-      stop("Initial group k-means did not converge.")
+      stop(paste("The k-means clustering that draws this start's initial group-class",
+                 "values did not converge in 100 iterations; the start was skipped."))
     }
     profile_probabilities <- group_fit$centers
   } else {
@@ -1383,7 +1385,6 @@ multilpa <- function(data, vars, id, n_profiles,
                        volume = NULL, shape = NULL, orientation = NULL,
                        model = NULL,
                        select_start = c("likelihood", "converged"),
-                       boundary = c("allow", "exclude"),
                        prior = NULL, noise = FALSE,
                        acceleration = c("squarem", "none"),
                        family = c("profiles", "additive", "dispersion",
@@ -1398,7 +1399,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        drop_empty = TRUE, cores = 1L,
                        local_dependence = character(),
                        direct_effects = character(),
-                       search = NULL, n_screen = NULL) {
+                       search = NULL, n_screen = NULL,
+                       boundary = c("allow", "exclude")) {
   # Forward only supplied arguments so setup retains every missing() check.
   fitting_call <- match.call()
   setup_call <- fitting_call
@@ -2196,7 +2198,13 @@ multilpa <- function(data, vars, id, n_profiles,
   withCallingHandlers(
     stats::kmeans(x, centers = centers, iter.max = 100L, algorithm = "Lloyd"),
     warning = function(condition) {
-      if (startsWith(conditionMessage(condition), "empty cluster")) {
+      # Lloyd's k-means warns when it stops at `iter.max` and also sets
+      # `ifault` to 2, which the caller turns into a failed start that the
+      # starts table records; the bare warning would only repeat it, worded as
+      # though the model had not converged.
+      message <- conditionMessage(condition)
+      if (startsWith(message, "empty cluster") ||
+          startsWith(message, "did not converge in")) {
         invokeRestart("muffleWarning")
       }
     })

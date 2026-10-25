@@ -64,6 +64,11 @@
   conditions <- list()
   value <- withCallingHandlers(fun(),
     warning = function(condition) {
+      # Muffling must not disable warning-to-error conversion inside the
+      # candidate's own error handler (including on a socket worker).
+      # Returning lets R perform its normal conversion at the signal site;
+      # throwing here would bypass handlers nested inside this collector.
+      if (isTRUE(getOption("warn") >= 2L)) return(invisible(NULL))
       conditions[[length(conditions) + 1L]] <<- condition
       invokeRestart("muffleWarning")
     },
@@ -72,6 +77,42 @@
       invokeRestart("muffleMessage")
     })
   list(value = value, conditions = conditions)
+}
+
+#' Give each worker task the parent's RNG kinds and warning policy
+#'
+#' Whole-candidate tasks seed themselves inside the fitting engine. Fresh
+#' socket workers otherwise seed with their own default RNG kinds. Restore
+#' the kinds and .Random.seed after each task, including errors and interrupts.
+#' As with .latents_local_seed(), base R does not expose the Box-Muller cache
+#' for restoration; set.seed() resets it before each seeded candidate.
+#' @param fun A function of one task.
+#' @return A task function with the parent's execution settings captured.
+#' @noRd
+.latents_worker_context <- function(fun) {
+  stopifnot("fun is a function" = is.function(fun))
+  force(fun)
+  rng_kind <- RNGkind()
+  warn <- getOption("warn")
+  function(task) {
+    old_kind <- RNGkind()
+    had_seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+    old_seed <- if (had_seed) get(".Random.seed", envir = globalenv())
+    old_warn <- getOption("warn")
+    on.exit({
+      suppressWarnings(do.call(RNGkind, as.list(old_kind))) # nolint: undesirable_function_linter.
+      if (had_seed) assign(".Random.seed", old_seed, envir = globalenv()) else
+        if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+          rm(".Random.seed", envir = globalenv())
+        }
+      options(warn = old_warn)
+    }, add = TRUE)
+    # Rounding is a supported sample kind but RNGkind warns when restoring
+    # it. The parent's already-selected kind needs no new qualification.
+    suppressWarnings(do.call(RNGkind, as.list(rng_kind))) # nolint: undesirable_function_linter.
+    options(warn = warn)
+    fun(task)
+  }
 }
 
 #' Wrap a task function without capturing its scheduler
@@ -122,13 +163,25 @@
       # mclapply(mc.cores = 1) runs in the parent. A retry must stay isolated
       # even with one worker, because the task may kill its process again.
       unavailable <- FALSE
+      run_task <- function(task) {
+        job <- NULL
+        finished <- FALSE
+        on.exit(if (!finished && !is.null(job)) suspendInterrupts({
+          tryCatch(tools::pskill(job$pid, tools::SIGKILL),
+            error = function(condition) NULL)
+          # A killed child need not deliver a result during cleanup.
+          suppressWarnings(tryCatch(parallel::mccollect(job, wait = FALSE), # nolint: undesirable_function_linter.
+            error = function(condition) NULL,
+            interrupt = function(condition) NULL))
+        }), add = TRUE)
+        job <- parallel::mcparallel(collected(task), mc.set.seed = TRUE)
+        result <- parallel::mccollect(job)
+        finished <- TRUE
+        if (is.null(result)) NULL else result[[1L]]
+      }
       lapply(indices, function(task) {
         if (unavailable) return(NULL)
-        tryCatch({
-          job <- parallel::mcparallel(collected(task), mc.set.seed = TRUE)
-          result <- parallel::mccollect(job)
-          if (is.null(result)) NULL else result[[1L]]
-        }, error = function(condition) {
+        tryCatch(run_task(task), error = function(condition) {
           if (!retry) stop(condition)
           unavailable <<- TRUE
           NULL
@@ -139,6 +192,32 @@
     if (grepl("did not deliver a result|scheduled cores.*error|parallel function calls?.*error",
               conditionMessage(condition))) invokeRestart("muffleWarning")
   })
+}
+
+#' Check Windows worker liveness without sending a signal
+#'
+#' Signal zero also calls TerminateProcess on Windows. A successful tasklist
+#' snapshot instead identifies exited workers when TerminateProcess fails.
+#' Failed or malformed snapshots leave liveness unknown, never retired.
+#' @param pids Owned worker process IDs.
+#' @return A logical vector, with NA when liveness cannot be checked.
+#' @noRd
+.latents_windows_alive <- function(pids) {
+  stopifnot("pids are numeric" = is.numeric(pids))
+  unknown <- rep(NA, length(pids))
+  # Nonzero exit status and malformed PIDs are diagnosed as unknown below.
+  listing <- suppressWarnings(tryCatch( # nolint: undesirable_function_linter.
+    system2("tasklist", c("/FO", "CSV", "/NH"), stdout = TRUE, stderr = FALSE),
+    error = function(condition) NULL))
+  if (!length(listing) || !is.null(attr(listing, "status")) &&
+      attr(listing, "status") != 0L) return(unknown)
+  processes <- tryCatch(utils::read.csv(text = listing, header = FALSE,
+    colClasses = "character", stringsAsFactors = FALSE),
+    error = function(condition) NULL)
+  if (is.null(processes) || ncol(processes) < 2L) return(unknown)
+  running <- suppressWarnings(as.integer(processes[[2L]])) # nolint: undesirable_function_linter.
+  if (anyNA(running) || !length(running)) return(unknown)
+  pids %in% running
 }
 
 #' Start socket workers and record the processes owned by this pool
@@ -187,7 +266,11 @@
   }
   terminated <- signal_workers(pids, tools::SIGTERM)
   .latents_stop_cluster(cluster)
-  if (identical(.Platform$OS.type, "windows")) return(all(terminated))
+  if (identical(.Platform$OS.type, "windows")) {
+    if (all(terminated)) return(TRUE)
+    alive <- .latents_windows_alive(pids[!terminated])
+    return(all(!is.na(alive) & !alive))
+  }
   # The short pause lets graceful termination release memory first. SIGKILL
   # then retires any busy survivor; a zombie must not block recovery forever.
   Sys.sleep(0.05)
@@ -209,7 +292,8 @@
 #' a connection. Bound each call to one task per worker: a death loses at most
 #' that chunk, while completed chunks remain available. Restart the cluster
 #' before the next chunk; even a repeatedly dying task cannot discard later
-#' chunks. Successful tasks within a failed chunk may consequently run again.
+#' chunks. A retry uses one-task calls from the outset: every task is attempted
+#' at most twice, and a repeatedly dying task cannot lose its retry's mates.
 #' @param indices Forced task payloads in dispatch order.
 #' @param collected The task collector.
 #' @param cores Worker limit for this pass.
@@ -217,10 +301,16 @@
 #' @return Collected task results; an unfinished chunk contains NULL results.
 #' @noRd
 .latents_socket_pass <- function(indices, collected, cores, retry = FALSE) {
+  if (retry) cores <- 1L
   cluster <- NULL
   attempted <- FALSE
   unavailable <- FALSE
-  on.exit(if (!is.null(cluster)) .latents_stop_cluster(cluster), add = TRUE)
+  finished <- FALSE
+  on.exit(if (!is.null(cluster)) suspendInterrupts({
+    if (finished) .latents_stop_cluster(cluster) else {
+      tryCatch(.latents_abort_cluster(cluster), error = function(condition) NULL)
+    }
+  }), add = TRUE)
   chunks <- split(seq_along(indices), ceiling(seq_along(indices) / cores))
   results <- lapply(chunks, function(positions) {
     if (unavailable) return(rep(list(NULL), length(positions)))
@@ -246,8 +336,7 @@
         retired <- .latents_abort_cluster(cluster)
         cluster <<- NULL
         if (!retired) {
-          .latents_warn_worker_lost(length(positions), 0L,
-                                    as.integer(ceiling(cores / 2)))
+          .latents_warn_worker_lost(length(positions), 0L, 1L)
           stop(errorCondition(paste(
             "Owned worker processes could not be stopped safely.",
             "No replacement workers were started; run again with fewer `cores`."),
@@ -257,19 +346,7 @@
       })
   })
   results <- unname(do.call(c, results))
-  # On the retry, a task that dies again takes its chunk mates with it. Run
-  # the unfinished tasks of a broken chunk one at a time, so that only a task
-  # that kills its own worker stays lost.
-  broken <- unlist(lapply(chunks, function(positions) {
-    if (length(positions) > 1L &&
-        all(vapply(results[positions], is.null, logical(1)))) positions
-  }), use.names = FALSE)
-  if (retry && !unavailable && length(broken) > 0L) {
-    if (!is.null(cluster)) .latents_stop_cluster(cluster)
-    cluster <- NULL
-    results[broken] <- .latents_socket_pass(indices[broken], collected, 1L,
-                                            retry = TRUE)
-  }
+  finished <- TRUE
   results
 }
 
@@ -300,8 +377,9 @@
 #' of `indices`, independently of dispatch or completion order. Conditions
 #' retain their classes and can instead be returned for later signalling.
 #'
-#' Missing worker results are retried once using half as many workers, rounded
-#' up. A classed warning reports process losses and recovery. Socket calls use
+#' Missing worker results are retried once using half as many fork workers,
+#' rounded up, or one socket worker to isolate repeated losses. A classed
+#' warning reports process losses and recovery. Socket calls use
 #' bounded chunks because the exported parallel API cannot retain results from
 #' within a call whose connection breaks; previously completed chunks survive.
 #' @param indices Task identifiers.
@@ -344,7 +422,8 @@
   }
   positions <- if (is.null(costs)) seq_along(indices) else
     order(-costs, seq_along(indices))
-  collected <- .latents_task_collector(fun)
+  collected <- .latents_task_collector(if (cores > 1L)
+    .latents_worker_context(fun) else fun)
   socket <- identical(backend, "socket") || (identical(backend, "auto") &&
     (identical(.Platform$OS.type, "windows") || !.latents_fork_safe()))
   workers <- min(cores, length(indices))
@@ -359,7 +438,7 @@
   is_lost <- function(result) is.null(result) || inherits(result, "try-error")
   lost <- vapply(results, is_lost, logical(1))
   if (any(lost)) {
-    retry_cores <- as.integer(ceiling(workers / 2))
+    retry_cores <- if (socket) 1L else as.integer(ceiling(workers / 2))
     retried <- run_pass(indices[positions[lost]], collected,
                         min(retry_cores, sum(lost)), retry = TRUE)
     results[lost] <- retried
@@ -380,7 +459,14 @@
   task_errors <- vapply(results, function(result) {
     inherits(result$value, "latents_task_error")
   }, logical(1))
-  if (any(task_errors)) stop(results[[which(task_errors)[1L]]]$value$condition)
+  if (any(task_errors)) {
+    # There will be no return value for deferred signalling. Deliver the
+    # completed tasks' qualifications before propagating the original error.
+    invisible(lapply(results, function(result) {
+      .latents_signal_conditions(result$conditions)
+    }))
+    stop(results[[which(task_errors)[1L]]]$value$condition)
+  }
   if (!signal) return(results)
   invisible(lapply(results, function(result) {
     .latents_signal_conditions(result$conditions)

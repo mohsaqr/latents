@@ -751,10 +751,22 @@ print.multilpa_enumeration <- function(x, ...) {
                          "converged", "boundary",
                          "n_best_replicated"),
                        names(table))
+  # A column with no value in any row (the covariance structure of an LCA
+  # grid) carries nothing to read.
+  columns <- columns[vapply(columns, function(column) !all(is.na(table[[column]])),
+                            logical(1))]
   print(table[, columns, drop = FALSE], row.names = FALSE, ...)
-  failures <- sum(!table$converged)
-  if (failures > 0L) {
-    cat(sprintf("%d candidate(s) did not converge; see as.data.frame(x).\n", failures))
+  # A candidate that produced no fit is reported apart from one that was
+  # fitted but stopped short of convergence: the remedies differ.
+  failed <- is.na(table$log_likelihood)
+  unconverged <- !failed & !(table$converged %in% TRUE)
+  if (any(failed)) {
+    cat(sprintf(paste("%d candidate(s) failed to fit; the `error` column of",
+                      "as.data.frame(x) gives the reason.\n"), sum(failed)))
+  }
+  if (any(unconverged)) {
+    cat(sprintf("%d candidate(s) were fitted but did not converge; see as.data.frame(x).\n",
+                sum(unconverged)))
   }
   cat("No candidate is selected automatically. Compare one convention consistently.\n")
   invisible(x)

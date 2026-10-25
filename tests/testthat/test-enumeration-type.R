@@ -39,7 +39,8 @@ enumeration_type_without_calls <- function(value) {
 test_that("enumeration appends type without moving existing formals", {
   expect_identical(names(formals(enumerate_classes)),
     c("data", "vars", "id", "n_profiles", "n_group_classes", "model",
-      "seed", "family", "between_variance", "time", "...", "cores", "type"))
+      "seed", "family", "between_variance", "time", "...", "cores", "type",
+      "verbose"))
   expect_null(formals(enumerate_classes)$type)
 })
 

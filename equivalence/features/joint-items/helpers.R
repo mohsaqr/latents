@@ -45,9 +45,12 @@ ji_fit <- function(case, n_starts = 15L, seeds = 1:2, local_dependence = TRUE, t
 #'
 #' Forked workers where they are safe; otherwise a socket cluster whose
 #' workers load this source tree and the joint-items files. A worker that
-#' fails stops the run with its message.
+#' fails stops the run with its message. Set `latents.joint_items.serial`
+#' to `TRUE` with `options()` to run without worker processes.
 ji_parallel <- function(x, fun, ...) {
-  results <- if (latents:::.latents_fork_safe()) {
+  results <- if (isTRUE(getOption("latents.joint_items.serial", FALSE))) {
+    lapply(x, fun, ...)
+  } else if (latents:::.latents_fork_safe()) {
     parallel::mclapply(x, fun, ..., mc.cores = 2L, mc.preschedule = FALSE)
   } else {
     cluster <- parallel::makePSOCKcluster(2L)
@@ -178,17 +181,11 @@ ji_latents <- function(fit, order = seq_len(fit$n_profiles)) {
   two <- !isTRUE(fit$single_level)
   sizes <- if (two) c(fit$group_probabilities %*% fit$profile_probabilities) else
     c(fit$profile_probabilities[1L, ])
-  table <- get_results(fit, "local_dependence")
-  joint <- lapply(split(table, table$pair), function(rows) {
-    labels <- unique(paste(rows$category_1, rows$category_2, sep = ":"))
-    out <- t(vapply(seq_len(fit$n_profiles), function(j) {
-      at <- rows$profile == j
-      stats::setNames(rows$probability[at], paste(rows$category_1, rows$category_2,
-                                                  sep = ":")[at])[labels]
-    }, numeric(length(labels))))
-    colnames(out) <- labels
-    out[order, , drop = FALSE]
-  })
+  # Response matrices retain the full grid's canonical labels. The public
+  # dependence table can label unobserved combinations NA:NA; its independent
+  # recomputation remains checked separately in ji_study_one().
+  joint <- lapply(fit$response_probabilities[fit$local_dependence$name],
+                   \(m) m[order, , drop = FALSE])
   items <- lapply(fit$response_probabilities[setdiff(names(fit$response_probabilities),
                                                      names(joint))],
                   \(m) m[order, , drop = FALSE])
@@ -200,16 +197,30 @@ ji_latents <- function(fit, order = seq_len(fit$n_profiles)) {
 #' Unobserved combinations of each pair's observed categories
 #'
 #' Latent GOLD's `a <-> b | Cluster` has C1 C2 - 1 free probabilities per
-#' class whether or not every combination is observed; latents' joint
-#' indicator has one category per observed combination.
+#' class whether or not every combination is observed, as does latents.
+#' Mplus and poLCA are given only the observed combinations in this kit.
 ji_unobserved_cells <- function(case) {
   sum(vapply(strsplit(case$spec$pairs, ":", fixed = TRUE), function(p) {
     a <- case$data[[p[1]]]
     b <- case$data[[p[2]]]
     both <- !is.na(a) & !is.na(b)
-    length(unique(a[both])) * length(unique(b[both])) -
+    length(unique(a[!is.na(a)])) * length(unique(b[!is.na(b)])) -
       nrow(unique(data.frame(a[both], b[both])))
   }, numeric(1)))
+}
+
+#' Extract a set of joint tables' probabilities for unobserved combinations
+#' @param case A kit case, including its original data and pair specification.
+#' @param probabilities Named joint probability matrices, with category labels.
+#' @return Probabilities of unobserved cells present in the supplied tables.
+ji_unobserved_probabilities <- function(case, probabilities) {
+  stopifnot("case and probability tables must be lists" =
+              is.list(case) && is.list(probabilities))
+  observed <- ref_code(case$data, case$spec$vars, case$spec$pairs)$levels
+  unlist(lapply(case$spec$pairs, function(pair) {
+    table <- probabilities[[pair]]
+    table[, setdiff(colnames(table), observed[[pair]]), drop = FALSE]
+  }), use.names = FALSE)
 }
 
 #' One comparison row

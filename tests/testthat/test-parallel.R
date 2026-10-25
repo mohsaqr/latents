@@ -18,7 +18,10 @@ collect_conditions <- function(expr) {
       invokeRestart("muffleWarning")
     },
     message = function(condition) {
-      seen <<- c(seen, paste("message:", conditionMessage(condition)))
+      # Progress messages name the worker count, which is what differs.
+      if (!inherits(condition, "latents_progress")) {
+        seen <<- c(seen, paste("message:", conditionMessage(condition)))
+      }
       invokeRestart("muffleMessage")
     })
   list(value = value, conditions = seen)
@@ -574,4 +577,31 @@ test_that("unretired socket workers prevent replacement and give a classed failu
   expect_s3_class(seen, "latents_worker_lost")
   expect_identical(creations, 1L)
   expect_match(conditionMessage(result), "could not be stopped safely", fixed = TRUE)
+})
+
+test_that("a seeded multilevel LCA grid prepared on workers is identical to one core", {
+  skip_on_cran()
+  skip_on_os("windows")
+  data <- subset(student_esm, student <= 40)
+  items <- c("time_with_friends", "on_social_media", "sports", "walking", "reading")
+  lca_grid <- function(...) {
+    enumerate_classes(data, items, "student", n_profiles = 2:3,
+                      n_group_classes = 1:2, type = "lca", n_starts = 3,
+                      seed = 1, ...)
+  }
+  one <- lca_grid()
+  progress <- character()
+  two <- withCallingHandlers(lca_grid(cores = 2),
+    latents_progress = function(condition) {
+      progress <<- c(progress, conditionMessage(condition))
+      invokeRestart("muffleMessage")
+    })
+  expect_identical(strip_calls(two), strip_calls(one))
+  expect_identical(as.data.frame(two), as.data.frame(one))
+  # Several cores report each phase once by default; nothing per start.
+  expect_length(progress, 3L)
+  expect_match(progress[1L], "^Preparing 4 candidates on 2 workers\\.")
+  expect_match(progress[2L], "^Fitting 12 starts on 2 workers\\.")
+  expect_match(progress[3L], "^Done in ")
+  expect_no_message(lca_grid(cores = 2, verbose = FALSE))
 })

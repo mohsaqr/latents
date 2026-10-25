@@ -70,7 +70,10 @@
 #'     `odds_correct_classification`. Takes `level`. Under sampling weights
 #'     `estimated_n` and `estimated_proportion` (and hence the odds of correct
 #'     classification) are weighted posterior totals; the modal and average
-#'     posterior columns describe the units supplied.}
+#'     posterior columns describe the units supplied. The odds are `Inf` for a
+#'     class classified perfectly (average posterior one to within rounding)
+#'     and `NA` where they are undefined: a class with no modal members, or a
+#'     single class, whose proportion is one.}
 #'   \item{`"average_posteriors"`}{For the units modally assigned to each
 #'     class, their mean posterior for every class: `level`, `assigned_class`,
 #'     `class`, `n_assigned`, `average_posterior`. Rows sum to one within each
@@ -208,8 +211,8 @@
 #'     last candidate of the line is left out), `stable` and `note`. The knee
 #'     is the candidate furthest below the straight line from the first to the
 #'     last candidate, measured perpendicular to it with both axes rescaled to
-#'     0-1. This is a simplified rule inspired by Kneedle, without its
-#'     smoothing or sensitivity thresholds, so a very small positive distance
+#'     0-1. This is a simplified rule inspired by Kneedle (Satopaa et al.,
+#'     2011), without its smoothing or sensitivity thresholds, so a very small positive distance
 #'     can still name a knee. A line needs three candidates for a knee and four
 #'     for `knee_without_largest` and `stable`; otherwise they are `NA` and
 #'     `note` gives the reason.}
@@ -516,6 +519,10 @@
 #'   University Press.
 #'   Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
 #'   three-step approaches. *Political Analysis*, 18, 450--469.
+#'   Satopaa, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
+#'   "kneedle" in a haystack: Detecting knee points in system behavior.
+#'   *Proceedings of the 31st International Conference on Distributed
+#'   Computing Systems Workshops*, 166--171.
 #' @return A base `data.frame` for a single `what`, whose columns are given
 #'   under *Tables*, or a named list of such data frames for `what = "all"`.
 #' @seealso [as.data.frame()], which returns the primary table alone,
@@ -884,6 +891,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
         function(x, cutoff = 0.8) .multilpa_enumeration_grid(x, cutoff),
         "cutoff"),
       best = .multilpa_table(
+        function(x) .multilpa_enumeration_minima(.multilpa_enumeration_grid(x))),
+      criteria = .multilpa_table(
         function(x) .multilpa_enumeration_minima(.multilpa_enumeration_grid(x))),
       classification = .multilpa_table(.multilpa_enumeration_classification),
       deltas = .multilpa_table(

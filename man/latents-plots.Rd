@@ -36,11 +36,11 @@
 \usage{
 \method{plot}{latents_family_enumeration}(
   x,
-  what = c("bic", "aic", "bic_individual"),
+  criterion = c("bic", "aic", "bic_individual"),
   main = NULL,
   subtitle = NULL,
-  criterion = NULL,
-  ...
+  ...,
+  what = NULL
 )
 
 \method{plot}{multilpa_additive}(
@@ -81,11 +81,11 @@
 
 \method{plot}{latents_transition_enumeration}(
   x,
-  what = c("bic", "aic", "bic_individual"),
+  criterion = c("bic", "aic", "bic_individual"),
   main = NULL,
   subtitle = NULL,
-  criterion = NULL,
-  ...
+  ...,
+  what = NULL
 )
 
 \method{plot}{multilpa_lta}(x, main = NULL, subtitle = NULL, ...)
@@ -194,22 +194,22 @@ plot_selection(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  statistic = c("mean", "median", "mode"),
-  ...
+  ...,
+  statistic = c("mean", "median", "mode")
 )
 
 \method{plot}{multilpa_enumeration}(
   x,
-  what = c("aic", "bic_groups", "bic_individual", "icl_individual"),
-  criterion = NULL,
+  what = c("enumeration", "tree"),
+  criterion = c("aic", "bic_groups", "bic_individual", "icl_individual"),
   combine = TRUE,
   labels = TRUE,
   mark_minimum = TRUE,
   main = NULL,
   subtitle = NULL,
+  ...,
   cutoff = 0.8,
-  using = "bic_groups",
-  ...
+  using = "bic_groups"
 )
 
 plot_enumeration(
@@ -237,19 +237,19 @@ plot_enumeration(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  statistic = c("mean", "median", "mode"),
-  ...
+  ...,
+  statistic = c("mean", "median", "mode")
 )
 
 plot_views(x = NULL)
 
 \method{plot}{latents_pooled}(
   x,
-  what = c("profile", "group", "measurement"),
+  level = c("profile", "group", "measurement"),
   main = NULL,
-  subtitle = NULL,
-  level = NULL,
-  ...
+  ...,
+  what = NULL,
+  subtitle = NULL
 )
 
 \method{plot}{multilpa_transitions}(
@@ -263,8 +263,8 @@ plot_views(x = NULL)
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  intervals = TRUE,
-  ...
+  ...,
+  intervals = TRUE
 )
 }
 \arguments{
@@ -284,6 +284,23 @@ other fitted models}. For \code{plot_enumeration()}, \code{plot_selection()} and
 \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}; each refuses the views
 that grid does not offer (see above). Optionally a grid for
 \code{plot_views()}.}
+
+\item{criterion}{The former name of \code{what} for enumeration criteria. On a
+profile grid it is used alone or with \code{what = "enumeration"}; transition
+and group-class family grids take \code{"bic"}, \code{"aic"} or
+\code{"bic_individual"} (or a unique abbreviation, such as \code{"bic_i"}), or any
+other view of the grid.}
+
+\item{main, subtitle}{Title and subtitle. \code{NULL} (default) uses the view's
+own.}
+
+\item{...}{With \code{what = "tree"} (on \code{plot()} of an enumeration or on
+\code{plot_enumeration()}), the arguments of \code{plot_tree()}. On \code{plot()} of a
+transition or group-class family grid, also \code{combine}, \code{labels},
+\code{mark_minimum}, \code{cutoff} and \code{using}, passed to \code{plot_enumeration()}.
+Otherwise not used. Profile, class and transition models and enumerations refuse
+unknown arguments with \code{latents_bad_argument}; the other methods ignore
+them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
 
 \item{what}{The view to draw. \code{"all"} draws every view of that function
 that the model supports, as a list, and names in a message any it cannot
@@ -333,23 +350,6 @@ relative to the lowest), \code{"smallest"} (the smallest class share, with
 candidate). \code{"selection"} draws all four and \code{"diagnostics"}, as a
 list.
 }}
-
-\item{main, subtitle}{Title and subtitle. \code{NULL} (default) uses the view's
-own.}
-
-\item{criterion}{The former name of \code{what} for enumeration criteria. On a
-profile grid it is used alone or with \code{what = "enumeration"}; transition
-and group-class family grids take \code{"bic"}, \code{"aic"} or
-\code{"bic_individual"} (or a unique abbreviation, such as \code{"bic_i"}), or any
-other view of the grid.}
-
-\item{...}{With \code{what = "tree"} (on \code{plot()} of an enumeration or on
-\code{plot_enumeration()}), the arguments of \code{plot_tree()}. On \code{plot()} of a
-transition or group-class family grid, also \code{combine}, \code{labels},
-\code{mark_minimum}, \code{cutoff} and \code{using}, passed to \code{plot_enumeration()}.
-Otherwise not used. Profile, class and transition models and enumerations refuse
-unknown arguments with \code{latents_bad_argument}; the other methods ignore
-them with a \code{latents_unused_argument} warning (see \emph{Errors}).}
 
 \item{level}{For \code{plot_tree()}, \code{"individuals"} (default; the cases
 divided into profiles or classes) or \code{"groups"} (the groups divided into

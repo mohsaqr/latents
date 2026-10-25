@@ -125,7 +125,14 @@
 .latents_plot_offered_views <- function(x) {
   if (inherits(x, "latents_mixture_regression")) return(.mixture_plot_views(x))
   method <- .multilpa_plot_method(x)
-  choices <- if (is.null(method)) NULL else formals(method)$what
+  arguments <- if (is.null(method)) list() else formals(method)
+  choices <- arguments$what
+  # Methods that keep their 0.9.21 argument order hold the views in the
+  # released argument (`level` for pooled fits, `criterion` for family and
+  # transition grids) and default `what` to NULL.
+  if ("what" %in% names(arguments) && is.null(choices)) {
+    choices <- arguments$level %||% arguments$criterion
+  }
   if (is.null(choices)) character() else setdiff(eval(choices), "all")
 }
 

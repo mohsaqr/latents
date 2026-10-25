@@ -300,7 +300,12 @@
     weight <- rowSums(precision)
     residual <- rowSums(precision * outer(x[observed, column], means[, column], "-"))
     design <- direct$covariates[observed, effects$covariate_column[rows], drop = FALSE]
-    as.vector(qr.solve(crossprod(design, design * weight), crossprod(design, residual)))
+    # Solve on the weighted design: its cross-product squares the condition
+    # number and can appear singular even when the covariates have full rank.
+    positive <- weight > 0
+    root_weight <- sqrt(weight[positive])
+    as.vector(qr.solve(design[positive, , drop = FALSE] * root_weight,
+                       residual[positive] / root_weight))
   })
   updated[unlist(lapply(indicators, function(column) which(effects$column == column)))] <-
     unlist(solved)

@@ -399,16 +399,16 @@ vcov.latents_pooled <- function(object, ...) {
 
 #' @rdname latents-plots
 #' @export
-plot.latents_pooled <- function(x, what = c("profile", "group", "measurement"),
-                                main = NULL, subtitle = NULL, level = NULL,
-                                ...) {
+plot.latents_pooled <- function(x, level = c("profile", "group", "measurement"),
+                                main = NULL, ..., what = NULL, subtitle = NULL) {
   stopifnot("`x` must be a `latents_pooled` result" = inherits(x, "latents_pooled"))
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Choose the parameters with `what`, and style the plot with ggplot2.")
-  what <- .latents_former_argument(what, !missing(what), level,
+  what <- .latents_former_argument(what, !is.null(what),
+                                   if (missing(level)) NULL else level,
                                    c("what", "level"))
-  what <- match.arg(what, c("profile", "group", "measurement"))
+  what <- match.arg(what %||% level, c("profile", "group", "measurement"))
   estimates <- x$estimates[x$estimates$level %in% what, , drop = FALSE]
   imputations <- x$imputations[x$imputations$level %in% what, , drop = FALSE]
   if (nrow(estimates) == 0L) {

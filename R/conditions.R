@@ -106,6 +106,11 @@
 #'     may be continuous. Every distinct value is fitted as a category. The
 #'     warning names the indicators (field `indicators`) and is given once per
 #'     call, including an enumeration.}
+#'   \item{`latents_progress`}{A message from [enumerate_classes()] with
+#'     `verbose = TRUE` (the default when `cores > 1`): one as the candidates
+#'     are prepared, one as their starts are fitted, and one when the grid is
+#'     done. Muffle it with `suppressMessages(classes = "latents_progress")`
+#'     or `verbose = FALSE`.}
 #'   \item{`latents_candidate_failed`}{A candidate of an enumeration that was
 #'     fitted as one worker task lost that worker twice. It is recorded as the
 #'     candidate's error, in its row of the grid, and the other candidates are

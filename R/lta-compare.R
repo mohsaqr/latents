@@ -388,7 +388,8 @@
 #' Enumerate transition models over numbers of profiles and group classes
 #' @noRd
 .lta_enumerate <- function(data, vars, id, time, n_profiles, n_group_classes,
-                           model, seed, extra, call, cores = 1L) {
+                           model, seed, extra, call, cores = 1L,
+                           verbose = FALSE) {
   # These arguments also travel in the candidate closure on socket workers.
   force(data)
   force(vars)
@@ -422,26 +423,36 @@
                       stringsAsFactors = FALSE)
   indices <- seq_len(nrow(grid))
   costs <- grid$n_group_classes * grid$n_profiles^2
-  # Setup and all random draws happen in the parent, in grid order. Only
-  # forced EM inputs and one start travel to a worker, never a finaliser.
-  candidates <- lapply(indices, function(i) {
-    .latents_collect_conditions(function() tryCatch({
-      fit_call <- .latents_candidate_call("lta", call$data, c(
-        list(vars = vars, id = id, time = time,
-             n_profiles = grid$n_profiles[i],
-             n_group_classes = grid$n_group_classes[i], seed = seed,
-             model = if (is.na(grid$model[i])) NULL else grid$model[i]), extra))
-      do.call(.lta_setup, c(
-        list(data = data, vars = vars, id = id, time = time,
-             n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
-             seed = seed, model = if (is.na(grid$model[i])) NULL else grid$model[i],
-             call = fit_call), extra), quote = TRUE)
-    }, error = .lta_candidate_error))
+  started <- proc.time()[["elapsed"]]
+  # Each candidate seeds its own draws, so its setup gives the same plan on a
+  # worker as here. Only forced EM inputs and one start travel to a worker
+  # for fitting, never a finaliser.
+  setup_tasks <- lapply(indices, function(i) {
+    model_i <- if (is.na(grid$model[i])) NULL else grid$model[i]
+    fit_call <- .latents_candidate_call("lta", call$data, c(
+      list(vars = vars, id = id, time = time, n_profiles = grid$n_profiles[i],
+           n_group_classes = grid$n_group_classes[i], seed = seed,
+           model = model_i), extra))
+    list(candidate = i, arguments = c(
+      list(data = data, vars = vars, id = id, time = time,
+           n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
+           seed = seed, model = model_i, call = fit_call), extra))
   })
+  .latents_pool_progress(verbose, "Preparing %s on %s.",
+                         .latents_count(length(indices), "candidate"),
+                         .latents_count(min(cores, length(indices)), "worker"))
+  candidates <- worker_report$collect(function() .latents_pool_setup(
+    setup_tasks, .lta_setup_task, costs, cores, distribute = !is.null(seed)))
   # emEM has two flat, dynamically balanced phases. The protected first
   # start and likelihood ranking use the same helpers as a direct lta fit.
+  screen_tasks <- .lta_start_tasks(candidates, "screen")
+  if (length(screen_tasks)) {
+    .latents_pool_progress(verbose, "Screening %s on %s.",
+                           .latents_count(length(screen_tasks), "start"),
+                           .latents_count(min(cores, length(screen_tasks)), "worker"))
+  }
   screened <- worker_report$collect(function() .lta_pool_phase(
-    .lta_start_tasks(candidates, "screen"), costs, cores, nrow(grid)))
+    screen_tasks, costs, cores, nrow(grid)))
   ranked <- lapply(indices, function(i) {
     plan <- candidates[[i]]$value
     .latents_collect_conditions(function() tryCatch({
@@ -450,8 +461,14 @@
                                 plan$n_starts, plan$screen)
     }, error = .lta_candidate_error))
   })
+  final_tasks <- .lta_start_tasks(candidates, "final", screened, ranked)
+  .latents_pool_progress(verbose, "Fitting %s on %s.",
+                         .latents_count(length(final_tasks), "start"),
+                         .latents_count(min(cores, max(1L, length(final_tasks))), "worker"))
   finished <- worker_report$collect(function() .lta_pool_phase(
-    .lta_start_tasks(candidates, "final", screened, ranked), costs, cores, nrow(grid)))
+    final_tasks, costs, cores, nrow(grid)))
+  on.exit(.latents_pool_progress(verbose, "Done in %s.", .latents_format_duration(
+    proc.time()[["elapsed"]] - started)), add = TRUE)
   runs <- lapply(indices, function(i) {
     plan <- candidates[[i]]$value
     final <- .latents_collect_conditions(function() tryCatch({
@@ -553,12 +570,16 @@ summary.latents_transition_enumeration <- function(object, ...) {
 
 #' @rdname latents-plots
 #' @export
-plot.latents_transition_enumeration <- function(x, what = c("bic", "aic",
-                                                            "bic_individual"),
+plot.latents_transition_enumeration <- function(x, criterion = c("bic", "aic",
+                                                                 "bic_individual"),
                                                 main = NULL, subtitle = NULL,
-                                                criterion = NULL, ...) {
+                                                ..., what = NULL) {
   stopifnot("`x` must be a `latents_transition_enumeration` grid" =
               inherits(x, "latents_transition_enumeration"))
-  .latents_plot_former_grid(x, what, !missing(what), criterion, main, subtitle,
+  .latents_plot_former_grid(x, what, !is.null(what),
+                            # Released position two; without it (or `what`) the
+                            # grid summary is drawn, every criterion a panel.
+                            if (missing(criterion)) NULL else criterion,
+                            main, subtitle,
                             list(...))
 }

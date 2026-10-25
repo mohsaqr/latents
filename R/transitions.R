@@ -1315,7 +1315,7 @@ plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
                                       scale = c("raw", "standardized"),
                                       category = "last", labels = TRUE,
                                       cell_labels = TRUE, main = NULL,
-                                      subtitle = NULL, intervals = TRUE, ...) {
+                                      subtitle = NULL, ..., intervals = TRUE) {
   stopifnot("`x` must be a fitted `multilpa_transitions` model" =
               inherits(x, "multilpa_transitions"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,

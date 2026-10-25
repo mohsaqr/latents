@@ -19,7 +19,11 @@ profile_pool_capture <- function(expr) {
       invokeRestart("muffleWarning")
     },
     message = function(condition) {
-      conditions[[length(conditions) + 1L]] <<- condition
+      # Progress messages report the worker count; they are not part of the
+      # qualifications compared between serial and parallel fits.
+      if (!inherits(condition, "latents_progress")) {
+        conditions[[length(conditions) + 1L]] <<- condition
+      }
       invokeRestart("muffleMessage")
     })
   list(value = value, conditions = conditions)
@@ -113,8 +117,9 @@ test_that("profile enumeration shares one unnested start pool per search phase",
       c(profile_pool_arguments(data, kind),
         list(n_profiles = 2:3, n_group_classes = 1:2, cores = 3L))))
     expect_true(all(is.na(result$value$table$error)))
+    # The four seeded setups share the pool first, one task per candidate.
     expect_identical(vapply(calls, function(call) length(call$tasks), integer(1)),
-                     if (kind == "EEE") c(16L, 8L) else 8L)
+                     if (kind == "EEE") c(4L, 16L, 8L) else c(4L, 8L))
     expect_true(all(vapply(calls, `[[`, numeric(1), "cores") <= 3L))
     invisible(lapply(calls, function(call) {
       expect_length(call$costs, length(call$tasks))
@@ -148,14 +153,15 @@ test_that("profile start dispatch is longest first without exceeding cores", {
     c(profile_pool_arguments(data, "categorical"),
       list(n_profiles = 2:3, n_group_classes = 1:2, cores = 3L))))
   expect_true(all(is.na(result$value$table$error)))
-  expect_length(requested, 1L)
-  expect_length(dispatched, 1L)
-  expected_order <- order(-requested[[1L]]$costs,
-                           seq_along(requested[[1L]]$costs))
-  expect_identical(dispatched[[1L]]$tasks,
-                   requested[[1L]]$tasks[expected_order])
-  expect_identical(dispatched[[1L]]$cores, 3L)
-  expect_false(dispatched[[1L]]$preschedule)
+  # One pool for the setups, then one for the starts; each longest first.
+  expect_length(requested, 2L)
+  expect_length(dispatched, 2L)
+  invisible(lapply(seq_along(requested), function(i) {
+    expected_order <- order(-requested[[i]]$costs, seq_along(requested[[i]]$costs))
+    expect_identical(dispatched[[i]]$tasks, requested[[i]]$tasks[expected_order])
+    expect_identical(dispatched[[i]]$cores, 3L)
+    expect_false(dispatched[[i]]$preschedule)
+  }))
 })
 
 test_that("serialized profile worker payloads own caller data and search controls", {
@@ -200,7 +206,9 @@ test_that("serialized profile worker payloads own caller data and search control
                      profile_pool_without_calls(expected[[i]]$value))
     expect_identical(result$conditions, expected[[i]]$conditions)
   }))
-  expect_identical(replayed, 4L)
+  # Three seeded setup pools, then the categorical and VVI start pools and
+  # the EEE screening and final pools.
+  expect_identical(replayed, 7L)
 })
 
 test_that("membership covariate grids retain candidate parallelism and serial starts", {

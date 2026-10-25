@@ -17,7 +17,11 @@ lta_parallel_conditions <- function(expr) {
       invokeRestart("muffleWarning")
     },
     message = function(condition) {
-      conditions <<- c(conditions, conditionMessage(condition))
+      # Progress messages report the worker count; they are not part of the
+      # qualifications compared between serial and parallel fits.
+      if (!inherits(condition, "latents_progress")) {
+        conditions <<- c(conditions, conditionMessage(condition))
+      }
       invokeRestart("muffleMessage")
     })
   list(value = value, conditions = conditions)
@@ -204,11 +208,12 @@ test_that("transition enumeration uses one unnested pool per search phase", {
       n_screen = if (search == "emEM") 4L else NULL,
       max_iter = 20L, seed = 12L, cores = 3L))
     expect_true(all(is.na(result$value$table$error)))
+    # The four seeded setups share the pool first, one task per candidate.
     expect_identical(vapply(calls, `[[`, integer(1), "tasks"),
-                     if (search == "emEM") c(16L, 8L) else 8L)
+                     if (search == "emEM") c(4L, 16L, 8L) else c(4L, 8L))
     expect_true(all(vapply(calls, `[[`, numeric(1), "cores") <= 3L))
     costs <- result$value$table$n_group_classes * result$value$table$n_profiles^2
-    expected <- if (search == "emEM") c(4L, 2L) else 2L
+    expected <- if (search == "emEM") c(1L, 4L, 2L) else c(1L, 2L)
     invisible(lapply(seq_along(calls), function(i) {
       expect_identical(sort(calls[[i]]$costs), sort(rep(costs, each = expected[i])))
     }))

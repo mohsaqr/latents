@@ -17,7 +17,8 @@ enumerate_classes(
   time = NULL,
   ...,
   cores = 1L,
-  type = NULL
+  type = NULL,
+  verbose = cores > 1L
 )
 }
 \arguments{
@@ -122,6 +123,12 @@ Both require \code{time = NULL}. \code{"lta"} requires \code{time} and takes its
 measurement settings from \code{categorical}, as \code{\link[=lta]{lta()}} does; it does not
 make numeric indicators categorical. An explicit type requires
 \code{family = "profiles"}; leave \code{type = NULL} for group-class families.}
+
+\item{verbose}{Whether to report progress: one message each when the
+candidates are prepared, when their starts are fitted, and when the grid
+is done, with the elapsed time. The default reports when \code{cores > 1},
+where a grid is usually long. Group-class families (\code{family}) are not
+reported.}
 }
 \value{
 An object of class \code{multilpa_enumeration} (or the transition or
