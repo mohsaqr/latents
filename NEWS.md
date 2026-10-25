@@ -1,4 +1,4 @@
-# latents (development version)
+# latents 0.97.0
 
 * `enumerate_classes()` gains a trailing `type` argument to request `"lca"`,
   `"lpa"` or `"lta"` explicitly. `"lca"` treats numeric response codes as
