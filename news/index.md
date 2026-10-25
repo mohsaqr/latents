@@ -1,5 +1,316 @@
 # Changelog
 
+## latents 0.97.0
+
+- [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  gains a trailing `type` argument to request `"lca"`, `"lpa"` or
+  `"lta"` explicitly. `"lca"` treats numeric response codes as
+  categorical; conflicting routing or measurement arguments are refused.
+  `type = NULL` keeps existing fitting behavior. The resolved type is
+  recorded on the enumeration and shown in its print header; tables are
+  unchanged.
+- A numeric indicator fitted as categorical that has non-integer values
+  or more than ten categories now raises a `latents_suspect_categorical`
+  warning, once per call: every distinct value is fitted as a category,
+  and a continuous indicator may call for a model with Gaussian
+  indicators.
+
+#### Faster latent transition models
+
+- Profile and latent class grids in
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  now share the worker pool across candidates and their starts,
+  including both emEM phases. Ordered starting values, selection and
+  finalisation stay in the parent, preserving seeded fits. Membership
+  covariates and joined categorical local-dependence models retain
+  serial starts as candidate tasks; group-class families retain
+  candidate-level parallelism.
+
+- Lost parallel worker results are retried once with fewer workers
+  instead of discarding the grid. Starts or candidates still lost are
+  recorded as failed, and one `latents_worker_lost` warning reports
+  losses and recovery. Socket dispatch retains completed chunks; tasks
+  within a broken chunk may be rerun.
+
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) gains
+  `cores` for parallel random starts, including emEM screening.
+  Transition grids in
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  dynamically schedule individual starts in one worker pool, longest
+  estimated first, without nested workers or waiting for candidate
+  batches. Both emEM screening and finalist runs use the pool. Seeded
+  results are identical to `cores = 1`.
+
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) gains
+  `acceleration`, defaulting to `"squarem"` as in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  Fits usually need several times fewer EM steps and can change
+  slightly, at the same or a higher maximum. `acceleration = "none"`
+  restores the previous fits.
+
+- The forward-backward recursion of homogeneous transition models runs
+  as matrix products, several times faster per EM step with identical
+  results.
+
+- [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  with `time` or a group-class `family` no longer fails every candidate
+  on socket workers (Windows, and macOS with Accelerate BLAS).
+
+#### Default start search
+
+- Models whose profiles share one covariance matrix (EII, EEI, EEE) now
+  default to `search = "emEM"`; all others keep `"kmeans"`. Their
+  results can change, usually to a higher maximum, and fitting takes
+  about twice as long. `search = "kmeans"` restores the previous fits.
+
+#### Review corrections
+
+- General latent transition fits detect covariance eigenvalues at the
+  variance floor, including occasion-specific measurement. Such fits are
+  marked as boundary solutions and refuse Wald inference.
+- Zero-weight units no longer determine the internal Gaussian origin,
+  imputation, clustering geometry or initial measurement parameters in
+  profile, membership-covariate and weighted transition fits. Excluded
+  outliers cannot consume an initial profile or erase supported-row
+  precision. Observation and group mappings are preserved.
+- Gaussian support warnings in ordinary and membership-covariate fits
+  exclude categorical-only and retained empty rows. Cross-level models
+  apply sampling weights and check both the individual and group
+  Gaussian components.
+- `get_results(fit, "gaussian_diagnostics")` exposes per-component
+  Gaussian membership mass, positive contributing rows, weight effective
+  sample size, standardized variances and covariance eigenvalues, and
+  the absolute boundary status. The narrowest standardized direction is
+  also printed. These are descriptive diagnostics, with no automatic
+  spike cutoff or change to start selection. Normalized membership mass
+  is not an independent sample count; thin-profile warnings are
+  heuristics, not proofs of singularity or nonidentification.
+- Bootstrap inference for
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+  repeats the measurement stage’s own search controls before refitting
+  the group-class stage, preserving an explicit emEM pool even when a
+  single supplied start disables screening at stage two.
+- `latents_thin_profiles` counts the free Gaussian measurement
+  parameters: covariances held at zero and held means are excluded, and
+  held variances do not trigger the warning.
+- In latent transition models, thin-profile warnings use weighted
+  memberships of rows with observed Gaussian indicators. Empty or
+  categorical-only rows cannot hide a thin Gaussian profile, even under
+  `drop_empty = FALSE`. Occasion-specific measurement is checked
+  separately at each occasion, which the warning identifies. Fitted
+  estimates and classification counts are unchanged.
+
+#### Start search
+
+- `search = "emEM"` (new) finds starts by the emEM search (Biernacki,
+  Celeux & Govaert, 2003): a pool of `n_screen` starts (five times
+  `n_starts` by default) is screened by a short EM run each, and the
+  `n_starts` finalists are run to convergence. A successful first start
+  (Ward or supplied) reserves one finalist slot; the others are ranked
+  by screening likelihood. With `n_starts = 1`, a valid Ward start is
+  therefore always finalized; a single supplied start skips screening.
+  This existing protection is now documented. The pool begins with the
+  kmeans search’s own starts. `search = "kmeans"` reproduces the fits of
+  0.96.1, apart from the corrections listed below. On the start-search
+  benchmark (180 fits), emEM attained the finite above-cutoff reference
+  in 136 fits and the kmeans search in 130. The benchmark’s descriptive
+  cutoff was 0.01 for the smallest standardized variance or covariance
+  eigenvalue; values below it do not prove false classes. On the matched
+  80 heteroscedastic fits, both searches attained that reference in 40
+  fits, while emEM returned 25 below-cutoff solutions against 12 for the
+  kmeans search. Retained runs took about twice as long by median time
+  and 1.45 times as long in total.
+- Either search reports the highest likelihood among the finished
+  starts. The new `latents_thin_profiles` warning fires when a profile
+  with its own variances has Gaussian membership mass below its number
+  of free Gaussian parameters. It prompts inspection of covariance and
+  support diagnostics. The warning is heuristic and the estimate is
+  unchanged.
+- Under emEM, `get_results(fit, "starts")` lists every start of the
+  pool, with its `kind`, `stage` and likelihood after screening, and
+  “Best likelihood replicated” counts the starts that were run to
+  convergence.
+- [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  refits each model with the search, starts, stopping rule, selection
+  and boundary policy it was fitted with, by default (`n_starts`,
+  `max_iter` and `tol` now default to `NULL`). Staged and covariate
+  refits keep the pool size too.
+- `cores` distributes the emEM screening and the finished starts, with
+  identical results.
+
+#### Corrections found by the feature equivalence suites
+
+- `three_step(method = "ml")` runs its EM from a fixed set of starts
+  (Latent GOLD’s proportional start first, the modal means, quantile
+  placements, tail starts and twenty draws from a fixed internal seed)
+  and keeps the highest maximum. One start missed a higher regular
+  maximum for skewed or heavy-tailed outcomes. The result does not
+  depend on, and does not move, the caller’s random seed.
+- `three_step(method = "ml")` reports `NA` standard errors, with a
+  `latents_small_classes` warning, for a class carried by a single unit
+  (by a single group under `vcov_type = "cluster"`); its sandwich was
+  exactly zero.
+- Covariate fits record their `max_iter` and `tol`, so a bootstrap refit
+  repeats them.
+- `direct_effects` values that are `NA`, not character, or end in an
+  empty term (`"y3 ~ z +"`) are refused as `latents_bad_argument`; a
+  trailing `+` was silently dropped.
+- Reported covariance matrices are exactly symmetric (they could differ
+  by one unit in the last place between the triangles).
+- Bootstrap inference drops, and counts, a resample that misses a
+  category of a categorical or joined item, instead of stopping with an
+  internal error.
+
+## latents 0.96.1
+
+#### Inference and numerical corrections
+
+- Entirely missing groups under `drop_empty = TRUE`, and zero-weight
+  units, no longer satisfy robust-inference minimum-unit checks or
+  inflate the number of independent units used for the CR1 correction.
+  The correction is consistent across profile, covariate, transition,
+  additive, regression and growth models where those units are
+  supported.
+- Direct-effect information is evaluated with centered covariates and
+  its full covariance transformed back to the reported origin.
+  Translating a predictor no longer causes a false singular-information
+  error.
+- ML three-step outcomes are fitted and differentiated in centered,
+  scaled coordinates, preserving standard errors when the outcome has a
+  large origin relative to its spread.
+- VLMR calculations retain well-conditioned information coordinates and
+  use an equivalent symmetric eigenvalue calculation. Imhof
+  probabilities handle negative statistics and retain genuine small
+  distribution weights. Comparisons whose reference weights cannot be
+  resolved numerically report unavailable probabilities.
+- Structured covariance updates handle active variance floors with a
+  feasible solver that checks optimality, avoiding numerical failures
+  near a bound while preserving the covariance structure and EM
+  monotonicity.
+- Socket-worker cleanup closes surviving and failed connections
+  separately, preserving the typed parallel-failure error when a worker
+  dies.
+
+#### Paired indicators and weighted trees
+
+- Pair preparation rejects generated names that conflict with existing
+  raw columns and applies native categorical validation before joining
+  labels. Distinct numeric categories cannot silently merge during pair
+  creation.
+- Regression and growth trees use the sampling weights of the units
+  their posteriors classify, including row, group and person adapters.
+- The independent mover-stayer equivalence reference uses stable
+  probability normalization, so large initial logits no longer overflow
+  its path sum.
+
+## latents 0.96.0
+
+#### Direct effects
+
+- `multilpa(direct_effects = "y ~ z")` lets a covariate move a
+  continuous indicator’s mean by the same amount in every profile
+  (differential item functioning), Latent GOLD’s `y <- 1 + Cluster + z`.
+  The effects are estimated with the profiles, by a conditional
+  maximization step in EM on centred covariates, have standard errors in
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  and are reported by `get_results(fit, "direct_effects")`.
+  [`predict()`](https://rdrr.io/r/stats/predict.html), refits, the
+  bivariate residuals and parametric draws use the covariates. Against
+  Latent GOLD 6.1 the log likelihood, BIC, effect, intercepts, variances
+  and their standard errors agree to every printed digit. Effects on
+  categorical indicators and effects that differ by profile are not yet
+  available.
+
+#### Compatibility
+
+- Every call that worked in 0.95.12 gives the same result: the new
+  arguments (`local_dependence`, `direct_effects`,
+  `three_step(variance = )`) come last with defaults that change
+  nothing, and `three_step(method = "m")` still means `"modal"`; `"ml"`
+  is taken by its full name.
+
+#### Local dependence
+
+- `local_dependence = "item1:item2"` in
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  and the enumeration functions models a pair of categorical indicators
+  jointly within each class, the class-specific association Latent GOLD
+  fits with `item1 <-> item2 | Cluster`; the other indicators stay
+  independent given the class. `get_results(fit, "local_dependence")`
+  gives each class’s joint probabilities beside their values under
+  independence. On simulated data the log likelihood, parameter count,
+  class sizes and item marginals agree with Latent GOLD 6.1 to every
+  printed digit.
+- A pair of continuous indicators, `local_dependence = "y1:y2"`, gets
+  its own covariance within each class while every other covariance
+  stays zero: between local independence (VVI) and a full covariance
+  (VVV). The log likelihood, parameter count, covariances and their
+  standard errors agree with Latent GOLD 6.1 (`y1 <-> y2 | Cluster`) to
+  every printed digit.
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  compares a model with paired items and one without, which are fitted
+  to the same data.
+
+#### Lo-Mendell-Rubin tests
+
+- `get_results(models, "lmr")` reports the Vuong-Lo-Mendell-Rubin (VLMR)
+  and adjusted Lo-Mendell-Rubin (aLMR) tests for every pair of converged
+  candidates of a grid that differ by one profile or one group class, as
+  Latent GOLD computes them: the likelihood-ratio statistic referred to
+  a weighted chi-square distribution whose weights are the eigenvalues
+  of Vuong’s matrix, with p-values by Imhof’s method. On two test cases
+  the statistics, the mean and standard deviation of the reference
+  distribution and the p-values agree with Latent GOLD 6.1 to every
+  printed digit.
+
+#### Maximum-likelihood three-step distal outcomes
+
+- `three_step(method = "ml")` estimates the class means of a distal
+  outcome by maximum likelihood, with the step-one classification errors
+  held fixed (Vermunt 2010; Bakk, Tekle and Vermunt 2013).
+  `variance = "varying"` (default) or `"equal"` sets the outcome’s
+  variances; the table adds the estimated `variance` of each class.
+  Standard errors are the clustered sandwich, and `contrast = "pairs"`
+  compares the classes, as for the other methods. BCH remains the
+  default, being more robust to non-normal outcomes (Bakk and Vermunt
+  2016).
+
+## latents 0.95.12
+
+#### Quieter and stricter checks
+
+- A covariate model no longer passes on the estimation warnings of the
+  one-start base fit it uses to check its input (a variance at its
+  bound, no convergence, failed starts): it checks its own estimate for
+  each of them, so one boundary gave two warnings and now gives one,
+  about the model returned. It now also warns, with
+  `latents_small_classes`, when one of its own classes has effective
+  membership below one.
+- A named plot function asked for one view
+  (`plot_profiles(fit, what = "heatmap", scale = "standardized")`) warns
+  with `latents_unused_argument` about an argument that view does not
+  use, instead of ignoring it without a word. `what = "all"` stays
+  silent, as each view takes its share.
+
+#### Faster standard errors
+
+- [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  computes the observed information of a profile, class, covariate or
+  transition model once per R session for that fit and its data, and
+  reuses it. The first call takes as long as before; later calls,
+  including those made by
+  [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  and
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  when they draw or tabulate intervals, skip the two score evaluations
+  per parameter. On a two-level model of 20,000 observations with 94
+  parameters, a repeated call took 0.23 s instead of 13 s. Results are
+  identical to a computation without reuse, and any change to the fit or
+  its data computes the information anew.
+
 ## latents 0.95.11
 
 #### Named plot functions on every fitted model
@@ -59,10 +370,11 @@
   ([`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)).
   Each grid offers the views its candidates carry. Transition grids draw
   every view, the tree included. Family grids draw their criteria and
-  classification quality against the number of group classes; their
-  candidates have no profiles, so the selection views and the tree are
-  not drawn. Regression grids draw criteria, classification quality and
-  the selection views, but not the tree.
+  classification quality against the number of group classes, and a tree
+  of their group classes for each family; their candidates have no
+  profiles, so the selection views are not drawn. Regression grids draw
+  every view, the tree of their classes included.
+  `get_results(x, "tree", ...)` returns the shared masses on every grid.
 - A view a grid does not offer is refused with the new condition
   `latents_unsupported_view` (also of class `latents_bad_argument`),
   whose message gives the reason and the views the grid offers. An

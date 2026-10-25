@@ -54,7 +54,11 @@ multilpa(
   count_dispersion = c("varying", "equal"),
   scaling = c("none", "person", "grand"),
   drop_empty = TRUE,
-  cores = 1L
+  cores = 1L,
+  local_dependence = character(),
+  direct_effects = character(),
+  search = NULL,
+  n_screen = NULL
 )
 ```
 
@@ -119,11 +123,13 @@ multilpa(
   Positive integer number of EM starts (default 10). The first start is
   deterministic: Ward's hierarchical clustering of the standardized
   indicators (on at most 2000 evenly spaced rows), each cluster
-  described by its own means and spread, as in mclust's initialization.
-  The remaining starts are k-means from random centres. A supplied
-  `start` replaces the first start, and the remaining starts are random.
-  With `start` and `max_iter = 0`, exactly one start is run whatever
-  `n_starts` is.
+  described by its own means and spread. The remaining starts are
+  k-means from random centres. A supplied `start` replaces the first
+  start, and the remaining starts are random. With `start` and
+  `max_iter = 0`, exactly one start is run whatever `n_starts` is. Rows
+  from zero-weight units do not supply initial clustering or measurement
+  parameters. For `search = "emEM"`, this is the finalist budget,
+  including the protected first start (see `search`).
 
 - max_iter:
 
@@ -619,12 +625,127 @@ multilpa(
   Number of processor cores for the random starts (default 1). The
   starting values are drawn in order in the current process and only the
   EM iterations are distributed, so the result is identical to
-  `cores = 1`. Workers are forked processes on macOS and Linux, and a
-  socket cluster on Windows and on macOS with Apple's Accelerate BLAS,
-  as in
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md);
-  a worker that fails as a whole raises `latents_parallel_failure`.
-  Models with membership covariates run their starts on one core.
+  `cores = 1`. Under `search = "emEM"` both the screening of the pool
+  and the final runs are distributed; the screening is most of the time
+  of an emEM fit, so a large model or data set gains most. Workers are
+  forked processes on macOS and Linux, and a socket cluster on Windows
+  and on macOS with Apple's Accelerate BLAS, as in
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  Lost worker results are retried once with half as many workers
+  (rounded up). One `latents_worker_lost` warning reports losses and
+  recovery; starts still lost are recorded as failed. Socket workers
+  retain completed chunks, but tasks within a failed chunk may also be
+  retried. Models with membership covariates run their starts on one
+  core. To fit many models, give `cores` to
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  which shares its worker pool across candidates and their starts for
+  models without membership covariates or joined categorical
+  `local_dependence` pairs. Other fitting engines use one task per
+  candidate.
+
+- local_dependence:
+
+  Pairs of indicators that stay associated within each class, written
+  `"item1:item2"` (several as a character vector). A pair of continuous
+  indicators gets its own covariance in each class (one shared
+  covariance with `variance_model = "equal"`), every other covariance
+  staying zero: the covariance Latent GOLD fits with
+  `item1 <-> item2 | Cluster`. It is not combined with
+  `covariance_model`, `model` or the structure arguments, covariates,
+  `time`, `prior`, `noise` or held variances. A pair of categorical
+  indicators is modelled jointly within each class. Each such pair
+  becomes one categorical indicator, named `"item1:item2"`, whose
+  categories are the observed combinations of the two items' categories,
+  so every class has its own joint distribution of the pair: the
+  class-specific association Latent GOLD fits with
+  `item1 <-> item2 | Cluster`. The other indicators stay independent
+  given the class. `get_results(fit, "local_dependence")` reports each
+  class's joint probabilities beside their values under independence;
+  [`predict()`](https://rdrr.io/r/stats/predict.html),
+  `parameter_inference(data = )` and the other functions that take
+  `data` join the pair in the caller's data. A row observing one item of
+  a pair and not the other treats the pair as missing, with a
+  `latents_partial_pair` warning. A pair of indicators that are not both
+  categorical, that names an indicator twice or that shares an indicator
+  with another pair raises `latents_bad_argument`; a categorical item of
+  a pair whose categories contain `":"` raises `latents_bad_data`.
+  Default: none.
+
+- direct_effects:
+
+  Direct effects of covariates on continuous indicators, written
+  `"indicator ~ covariate"` (several covariates joined with `+`, several
+  indicators as a character vector). The covariate moves the indicator's
+  mean by the same amount in every profile, `y = mean_k + b z + e`
+  (Bandeen-Roche et al., 1997), so a difference in the indicator that
+  the covariate explains is not read as a difference between profiles:
+  the direct effect Latent GOLD fits with `y <- 1 + Cluster + z`.
+  Covariates are numeric columns of `data`, observed in every row (code
+  a categorical covariate as indicator columns), and enter with their
+  values as given, so `means` are the profile means at a covariate value
+  of zero; centre a covariate first to read them at its mean. The
+  effects are estimated with the profiles (a conditional maximization
+  step in EM; Meng & Rubin, 1993), have standard errors in
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  (parameter `direct_effect`, term `"indicator:covariate"`), and are
+  reported by `get_results(fit, "direct_effects")`.
+  [`predict()`](https://rdrr.io/r/stats/predict.html) and the functions
+  that take `data` read the covariates from it. Direct effects need a
+  diagonal covariance (EEI or VVI) and are not combined with
+  `local_dependence` between continuous indicators,
+  `profile_covariates`, `group_covariates`, `time`, `prior`, `noise`,
+  `fixed`, `start`, `centering` or `scaling`; those, a term that is not
+  `"indicator ~ covariate"`, and an indicator that is not continuous
+  raise `latents_bad_argument`, and a covariate that is absent, not
+  numeric, missing or constant raises `latents_bad_data`. Default: none.
+
+- search:
+
+  How the starts are found: `NULL` (the default), `"kmeans"` or
+  `"emEM"`. `NULL` uses `"emEM"` when every profile shares one
+  covariance matrix (EII, EEI, EEE with continuous indicators), where
+  the likelihood is bounded and a higher maximum cannot be a collapsed
+  profile, and `"kmeans"` otherwise, including categorical-only models
+  and the group-class families. The search used is recorded on the fit,
+  and `search = "kmeans"` reproduces the fits of latents 0.96.2 for
+  every model. `"kmeans"` runs `n_starts` starts to convergence: Ward's
+  clustering first, then k-means from random centres. `"emEM"` screens a
+  pool of `n_screen` starts by a short EM run each and runs `n_starts`
+  finalists to convergence (Biernacki, Celeux & Govaert, 2003). The
+  first start (Ward's clustering, or supplied starting values) reserves
+  one finalist slot if its screening succeeds; the remaining slots take
+  the highest screening likelihoods. Thus `n_starts = 1` finalizes
+  Ward's start whenever it screens successfully, even if another
+  screened start has a higher likelihood. With a supplied start and
+  `n_starts = 1`, screening is skipped entirely. The pool begins with
+  the kmeans search's own starts, drawn in the same order, followed by
+  random partitions of the rows and random rows as class centres, and
+  `get_results(fit, "starts")` gives every start of the pool with its
+  `kind`, its `stage` and its likelihood after screening. Either search
+  reports the start with the highest likelihood among those run to
+  convergence (subject to `select_start` and `boundary`). With
+  profile-specific variances that maximum can be spurious, a profile on
+  a few nearly coincident points with a variance near zero (McLachlan &
+  Peel, 2000, section 3.10), and a harder search finds such maxima more
+  often. They are reported, not set aside: a variance at `min_variance`
+  as a boundary fit (`latents_boundary`; `boundary = "exclude"` sets
+  those starts aside), and low Gaussian membership mass by a
+  `latents_thin_profiles` heuristic warning.
+  `get_results(fit, "gaussian_diagnostics")` reports continuous
+  covariance and support measures without an automatic spike cutoff or
+  changing the selected start. Neither a warning's absence nor a
+  repeated likelihood establishes a regular or globally optimal
+  solution.
+
+- n_screen:
+
+  For `search = "emEM"`, the number of starts screened, at least
+  `n_starts`. `NULL` (the default) screens five times `n_starts`. The
+  protected first start counts toward the `n_starts` finalist budget;
+  increasing `n_screen` does not add finalist slots. A single supplied
+  start with `n_starts = 1` disables screening. A value with
+  `search = "kmeans"`, or one below `n_starts`, raises
+  `latents_bad_argument`.
 
 ## Value
 
@@ -677,6 +798,14 @@ Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.
+
+Bandeen-Roche, K., Miglioretti, D. L., Zeger, S. L., & Rathouz, P. J.
+(1997). Latent variable regression for multiple discrete outcomes.
+Journal of the American Statistical Association, 92(440), 1375–1386.
+
+Meng, X.-L., & Rubin, D. B. (1993). Maximum likelihood estimation via
+the ECM algorithm: A general framework. Biometrika, 80(2), 267–278.
+doi:10.1093/biomet/80.2.267.
 
 Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. Organizational Research
@@ -755,6 +884,14 @@ summary(fit)
 #>        1 forum_post    lectures     0.0000
 #>        1 attendance    lectures     0.0000
 #>    ... 40 more rows.  get_results(x, what = "covariances")
+#> 
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n
+#>  profiles profile_1         834.1          1422                852
+#>  profiles profile_2         587.9          1422                606
+#>  min_variance_ratio min_standardized_eigenvalue boundary
+#>              0.3930                      0.3930    FALSE
+#>              0.3715                      0.3715    FALSE
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
@@ -946,7 +1083,7 @@ summary(fit)
 #>        1   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 19 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 as.data.frame(fit)
 #>    profile  indicator       mean  variance standard_deviation

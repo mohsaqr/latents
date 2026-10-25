@@ -6,8 +6,10 @@ approach, and returns a `data.frame`. The measurement model is fitted
 first, units are assigned to classes, and the outcome is then related to
 the assignments with a correction for classification error, so the
 outcome does not influence the classes. `"bch"` weights give
-approximately unbiased class means; regressing on the modal class
-attenuates the differences (Vermunt 2010; Bakk and Vermunt 2016).
+approximately unbiased class means; `"ml"` estimates them by maximum
+likelihood with the classification errors held fixed; regressing on the
+modal class attenuates the differences (Vermunt 2010; Bakk, Tekle and
+Vermunt 2013; Bakk and Vermunt 2016).
 
 ## Usage
 
@@ -17,11 +19,12 @@ three_step(
   data,
   outcome,
   level = c("individuals", "groups"),
-  method = c("bch", "proportional", "modal"),
+  method = c("bch", "proportional", "modal", "ml"),
   ci_level = 0.95,
   contrast = c("none", "pairs"),
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
-  vcov_type = c("cluster", "independent")
+  vcov_type = c("cluster", "independent"),
+  variance = c("varying", "equal")
 )
 ```
 
@@ -64,7 +67,8 @@ three_step(
 
 - method:
 
-  `"bch"` (default) applies the Bolck-Croon-Hagenaars weights;
+  `"bch"` (default) applies the Bolck-Croon-Hagenaars weights; `"ml"`
+  fits the maximum-likelihood step-three model (see *Details*);
   `"proportional"` weights by the posterior probabilities (attenuated);
   `"modal"` uses the uncorrected modal assignment, for comparison.
 
@@ -95,15 +99,25 @@ three_step(
   with a single group). The choice is recorded in the result's
   `vcov_type` attribute.
 
+- variance:
+
+  For `method = "ml"`: `"varying"` (default) estimates a variance of the
+  outcome in each class, `"equal"` one variance shared by the classes.
+  Given with another method it raises `latents_bad_argument`.
+
 ## Value
 
 A base `data.frame`. For `contrast = "none"`, one row per class with the
 columns `level`, `method`, `class`, `estimate`, `standard_error`,
 `conf_low`, `conf_high` and `effective_n`; class means are not tested.
-For `contrast = "pairs"`, one row per pair of classes with the columns
-`level`, `method`, `class`, `reference_class`, `estimate` (the mean of
-`class` minus the mean of `reference_class`), `standard_error`,
-`statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`, as in
+For `method = "ml"`, a `variance` column (the outcome's estimated
+variance in the class) comes before `effective_n`, which is then the
+expected number of units in the class under the step-three model; the
+`variance` attribute records the choice. For `contrast = "pairs"`, one
+row per pair of classes with the columns `level`, `method`, `class`,
+`reference_class`, `estimate` (the mean of `class` minus the mean of
+`reference_class`), `standard_error`, `statistic`, `p_value`,
+`p_adjusted`, `conf_low` and `conf_high`, as in
 [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md). A
 contrast with zero standard error has `NA_real_` statistic and p-values.
 
@@ -131,6 +145,27 @@ single group and singular with as many groups as classes. Both cases are
 refused with `latents_too_few_groups`; `vcov_type = "independent"` gives
 the unclustered variance.
 
+With `method = "ml"` the assigned class is an indicator of the true
+class whose error probabilities are those of step one, and the outcome
+is normal within each true class. The log likelihood
+`sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)` is maximised
+over the class means and variances by EM followed by Newton steps, with
+the class sizes `pi_t` fixed at the average posterior probabilities and
+the classification errors `D` fixed, as in Latent GOLD's step-three
+model for a dependent variable. That likelihood can have several maxima
+(a skewed or heavy-tailed outcome lets a class absorb the tail), so EM
+runs from a fixed set of starts, Latent GOLD's proportional start among
+them, and keeps the highest. Twenty of the starts are random draws from
+a fixed internal seed, so the result does not depend on the random seed
+and the caller's random stream is left as it was. The standard errors
+are the sandwich of that likelihood, clustered as for the other methods;
+a class carried by a single unit has none (`NA`, with a
+`latents_small_classes` warning). Maximum likelihood relies on the
+normal distribution within classes: when the outcome is skewed, or its
+variance differs between classes while `variance = "equal"`, ML can
+shift the class means, and BCH is the more robust choice (Bakk and
+Vermunt 2016).
+
 The classification-error matrix is treated as known, so the intervals
 are too narrow. Over 60 replications of a two-profile design with 8%
 misclassification and a true class difference of 10, `"bch"` had a bias
@@ -142,9 +177,12 @@ replications; the intervals of the other two methods covered it in none.
 
 Vermunt, J. K. (2010). Latent class modeling with covariates: two
 improved three-step approaches. *Political Analysis*, 18, 450–469. Bakk,
-Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
-modeling with continuous distal outcomes. *Structural Equation
-Modeling*, 23, 20–31.
+Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the association
+between latent class membership and external variables using
+bias-adjusted three-step approaches. *Sociological Methodology*, 43,
+272–311. Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise
+latent class modeling with continuous distal outcomes. *Structural
+Equation Modeling*, 23, 20–31.
 
 ## Examples
 

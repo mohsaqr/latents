@@ -143,16 +143,26 @@ as.data.frame(candidates)
 #> 7     0.878     0.888      0.883           0           0.885           0.931            0.912
 #> 8     0.816     0.852      0.839           0           0.939           0.973            0.952
 #> 9     0.662     0.873      0.771           2           0.937           0.968            0.957
-#>   group_avepp_below converged boundary n_best_replicated warnings error
-#> 1                NA      TRUE    FALSE                 5           <NA>
-#> 2                NA      TRUE    FALSE                 2           <NA>
-#> 3                NA      TRUE    FALSE                 1           <NA>
-#> 4                 0      TRUE    FALSE                 4           <NA>
-#> 5                 0      TRUE    FALSE                 1           <NA>
-#> 6                 0      TRUE    FALSE                 1           <NA>
-#> 7                 0      TRUE    FALSE                 4           <NA>
-#> 8                 0      TRUE    FALSE                 1           <NA>
-#> 9                 0      TRUE    FALSE                 1           <NA>
+#>   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                NA      TRUE    FALSE                          NA                NA
+#> 2                NA      TRUE    FALSE                          NA                NA
+#> 3                NA      TRUE    FALSE                          NA                NA
+#> 4                 0      TRUE    FALSE                          NA                NA
+#> 5                 0      TRUE    FALSE                          NA                NA
+#> 6                 0      TRUE    FALSE                          NA                NA
+#> 7                 0      TRUE    FALSE                          NA                NA
+#> 8                 0      TRUE    FALSE                          NA                NA
+#> 9                 0      TRUE    FALSE                          NA                NA
+#>   n_best_replicated warnings error
+#> 1                 5           <NA>
+#> 2                 2           <NA>
+#> 3                 1           <NA>
+#> 4                 4           <NA>
+#> 5                 1           <NA>
+#> 6                 1           <NA>
+#> 7                 4           <NA>
+#> 8                 1           <NA>
+#> 9                 1           <NA>
 get_results(candidates, "best")
 #>    criterion  convention        candidate n_profiles n_group_classes model value
 #> 1        aic        <NA> classes4_groups3          4               3  <NA> 15183

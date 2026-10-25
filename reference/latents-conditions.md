@@ -166,10 +166,33 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_parallel_failure`:
 
-  With `cores` above one, a worker process failed as a whole (for
-  example by running out of memory), so some candidates of an
-  enumeration were lost. An estimation error of a single candidate is
-  recorded in the grid instead.
+  The worker cluster could not be started, or a broken cluster's
+  surviving processes could not be stopped safely. A process lost during
+  fitting is otherwise retried and reported with `latents_worker_lost`
+  instead.
+
+- `latents_worker_lost`:
+
+  One or more worker tasks returned no result, possibly because their
+  processes were killed for memory. Missing results are retried once
+  with fewer workers. The warning reports the numbers lost, recovered
+  and still failed, and suggests fewer `cores`. Persistent losses become
+  failed starts or candidate rows, retaining other results. A socket
+  connection failure makes its current bounded chunk uncertain; earlier
+  chunks are retained, and the uncertain chunk is retried.
+
+- `latents_suspect_categorical`:
+
+  A numeric indicator fitted as categorical has non-integer values or
+  more than ten categories, so it may be continuous. Every distinct
+  value is fitted as a category. The warning names the indicators (field
+  `indicators`) and is given once per call, including an enumeration.
+
+- `latents_candidate_failed`:
+
+  A candidate of an enumeration that was fitted as one worker task lost
+  that worker twice. It is recorded as the candidate's error, in its row
+  of the grid, and the other candidates are returned.
 
 - `latents_reversed_likelihood`:
 
@@ -379,6 +402,39 @@ analysis.
 
   The requested panel has no rows to draw.
 
+- `latents_inaccurate_probability`:
+
+  The numerical integral behind a Lo-Mendell-Rubin p-value did not
+  settle, so the p-value is not reported.
+
+- `latents_no_local_dependence`:
+
+  `get_results(fit, "local_dependence")` on a fit made without
+  `local_dependence`.
+
+- `latents_no_direct_effects`:
+
+  `get_results(fit, "direct_effects")` on a fit made without
+  `direct_effects`.
+
+- `latents_partial_pair`:
+
+  A warning: rows observe one item of a `local_dependence` pair and not
+  the other, so the pair is treated as missing in those rows.
+
+- `latents_no_lmr`:
+
+  `get_results(x, "lmr")` on a grid with no two converged candidates one
+  profile or one group class apart. Also of class
+  `latents_nothing_to_plot`.
+
+- `latents_invalid_lmr`:
+
+  The alternative of a nested LMR comparison has a lower likelihood than
+  the null beyond numerical roundoff. The comparison table retains its
+  row with unavailable statistics and the reason in `note`; improve the
+  alternative's fit before comparing.
+
 - `latents_no_tree`:
 
   A tree would have fewer than two rows, or the group level of a grid
@@ -477,7 +533,26 @@ These are raised when a result is returned but qualified.
 - `latents_small_classes`:
 
   A profile or group class has an effective membership below one
-  observation.
+  observation; or, in
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  with `method = "ml"`, a class is carried by a single unit, so its
+  standard error is reported as `NA`.
+
+- `latents_thin_profiles`:
+
+  A Gaussian component with free variances of its own has posterior
+  membership mass below the number of free parameters in its Gaussian
+  density. This is a heuristic prompt to inspect the solution, not a
+  proof of singularity or nonidentification. Covariances held at zero
+  and held means are excluded, and held variances do not trigger it.
+  Memberships use normalized sampling weights and only rows with an
+  observed Gaussian indicator; this mass is not an independent sample
+  count or a weight effective sample size. Transition models check
+  occasion-specific measurement separately; cross-level models check
+  both Gaussian levels. The estimate is returned unchanged. See
+  `get_results(fit, "gaussian_diagnostics")` for continuous covariance
+  and support diagnostics; none supplies an automatic spike
+  classification or an identification guarantee.
 
 - `latents_all_starts_boundary`:
 
@@ -594,6 +669,7 @@ example_data <- data.frame(
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#> Warning: Profile 1: 2.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 # A sequence verb on a fit made without `time` is catchable by class.
 tryCatch(get_results(fit, "sequences"),
          latents_no_time = function(condition) {

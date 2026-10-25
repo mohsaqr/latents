@@ -5,15 +5,19 @@ approach, and returns a data.frame. The measurement model is fitted
 first, units are assigned to classes, and the outcome is then related to
 the assignments with a correction for classification error, so the outcome
 does not influence the classes. "bch" weights give approximately
-unbiased class means; regressing on the modal class attenuates the
-differences (Vermunt 2010; Bakk and Vermunt 2016).'><meta property="og:description" content='Estimates the mean of an outcome in each latent class of a fitted model,
+unbiased class means; "ml" estimates them by maximum likelihood with the
+classification errors held fixed; regressing on the modal class attenuates
+the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
+Vermunt 2016).'><meta property="og:description" content='Estimates the mean of an outcome in each latent class of a fitted model,
 or the difference between every pair of classes, by the three-step
 approach, and returns a data.frame. The measurement model is fitted
 first, units are assigned to classes, and the outcome is then related to
 the assignments with a correction for classification error, so the outcome
 does not influence the classes. "bch" weights give approximately
-unbiased class means; regressing on the modal class attenuates the
-differences (Vermunt 2010; Bakk and Vermunt 2016).'><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
+unbiased class means; "ml" estimates them by maximum likelihood with the
+classification errors held fixed; regressing on the modal class attenuates
+the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
+Vermunt 2016).'><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -21,7 +25,7 @@ differences (Vermunt 2010; Bakk and Vermunt 2016).'><meta property="og:image" co
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,8 +86,10 @@ approach, and returns a <code>data.frame</code>. The measurement model is fitted
 first, units are assigned to classes, and the outcome is then related to
 the assignments with a correction for classification error, so the outcome
 does not influence the classes. <code>"bch"</code> weights give approximately
-unbiased class means; regressing on the modal class attenuates the
-differences (Vermunt 2010; Bakk and Vermunt 2016).</p>
+unbiased class means; <code>"ml"</code> estimates them by maximum likelihood with the
+classification errors held fixed; regressing on the modal class attenuates
+the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
+Vermunt 2016).</p>
     </div>
 
     <div class="section level2">
@@ -93,11 +99,12 @@ differences (Vermunt 2010; Bakk and Vermunt 2016).</p>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
 <span>  level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"individuals"</span>, <span class="st">"groups"</span><span class="op">)</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bch"</span>, <span class="st">"proportional"</span>, <span class="st">"modal"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bch"</span>, <span class="st">"proportional"</span>, <span class="st">"modal"</span>, <span class="st">"ml"</span><span class="op">)</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  contrast <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"pairs"</span><span class="op">)</span>,</span>
 <span>  adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BH"</span>, <span class="st">"holm"</span>, <span class="st">"hochberg"</span>, <span class="st">"hommel"</span>, <span class="st">"bonferroni"</span>, <span class="st">"BY"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"independent"</span><span class="op">)</span></span>
+<span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"independent"</span><span class="op">)</span>,</span>
+<span>  variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -139,6 +146,7 @@ related to its person classes, reported with <code>level = "persons"</code>;
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p><code>"bch"</code> (default) applies the Bolck-Croon-Hagenaars weights;
+<code>"ml"</code> fits the maximum-likelihood step-three model (see <em>Details</em>);
 <code>"proportional"</code> weights by the posterior probabilities (attenuated);
 <code>"modal"</code> uses the uncorrected modal assignment, for comparison.</p></dd>
 
@@ -169,13 +177,22 @@ which is appropriate only without nesting (for example a fit with a
 single group). The choice is recorded in the result's <code>vcov_type</code>
 attribute.</p></dd>
 
+
+<dt id="arg-variance">variance<a class="anchor" aria-label="anchor" href="#arg-variance"></a></dt>
+<dd><p>For <code>method = "ml"</code>: <code>"varying"</code> (default) estimates a
+variance of the outcome in each class, <code>"equal"</code> one variance shared by
+the classes. Given with another method it raises <code>latents_bad_argument</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A base <code>data.frame</code>. For <code>contrast = "none"</code>, one row per class
 with the columns <code>level</code>, <code>method</code>, <code>class</code>, <code>estimate</code>,
 <code>standard_error</code>, <code>conf_low</code>, <code>conf_high</code> and <code>effective_n</code>; class means
-are not tested. For <code>contrast = "pairs"</code>, one row per pair of classes
+are not tested. For <code>method = "ml"</code>, a <code>variance</code> column (the outcome's
+estimated variance in the class) comes before <code>effective_n</code>, which is
+then the expected number of units in the class under the step-three
+model; the <code>variance</code> attribute records the choice. For <code>contrast = "pairs"</code>, one row per pair of classes
 with the columns <code>level</code>, <code>method</code>, <code>class</code>, <code>reference_class</code>,
 <code>estimate</code> (the mean of <code>class</code> minus the mean of <code>reference_class</code>),
 <code>standard_error</code>, <code>statistic</code>, <code>p_value</code>, <code>p_adjusted</code>, <code>conf_low</code> and
@@ -201,6 +218,25 @@ variance has rank at most <code>G - 1</code>: it is zero with a single group and
 singular with as many groups as classes. Both cases are refused with
 <code>latents_too_few_groups</code>; <code>vcov_type = "independent"</code> gives the
 unclustered variance.</p>
+<p>With <code>method = "ml"</code> the assigned class is an indicator of the true
+class whose error probabilities are those of step one, and the outcome is
+normal within each true class. The log likelihood
+<code>sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)</code> is maximised over
+the class means and variances by EM followed by Newton steps, with the
+class sizes <code>pi_t</code> fixed at the average posterior probabilities and the
+classification errors <code>D</code> fixed, as in Latent GOLD's step-three model for
+a dependent variable. That likelihood can have several maxima (a skewed
+or heavy-tailed outcome lets a class absorb the tail), so EM runs from a
+fixed set of starts, Latent GOLD's proportional start among them, and
+keeps the highest. Twenty of the starts are random draws from a fixed
+internal seed, so the result does not depend on the random seed and the
+caller's random stream is left as it was. The standard errors are the
+sandwich of that likelihood, clustered as for the other methods; a
+class carried by a single unit has none (<code>NA</code>, with a
+<code>latents_small_classes</code> warning). Maximum likelihood
+relies on the normal distribution within classes: when the outcome is
+skewed, or its variance differs between classes while <code>variance = "equal"</code>, ML can shift the class means, and BCH is the more robust choice
+(Bakk and Vermunt 2016).</p>
 <p>The classification-error matrix is treated as known, so the intervals
 are too narrow. Over 60 replications of a two-profile design with 8%
 misclassification and a true class difference of 10, <code>"bch"</code> had a bias
@@ -212,6 +248,10 @@ replications; the intervals of the other two methods covered it in none.</p>
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Vermunt, J. K. (2010). Latent class modeling with covariates: two
 improved three-step approaches. <em>Political Analysis</em>, 18, 450–469.
+Bakk, Z., Tekle, F. B., &amp; Vermunt, J. K. (2013). Estimating the
+association between latent class membership and external variables
+using bias-adjusted three-step approaches. <em>Sociological Methodology</em>,
+43, 272–311.
 Bakk, Z., &amp; Vermunt, J. K. (2016). Robustness of stepwise latent class
 modeling with continuous distal outcomes. <em>Structural Equation Modeling</em>,
 23, 20–31.</p>

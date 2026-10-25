@@ -70,7 +70,7 @@ summary(models)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 4 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>  candidate n_profiles log_likelihood n_parameters   aic   bic icl_individual
@@ -318,6 +318,94 @@ diagnostics(fit)
 The relative entropy of 0.66 indicates a moderately clear
 classification.
 
+## Local dependence
+
+The latent class model assumes that the activities are independent
+within each class. The bivariate residual of a pair of activities
+compares their observed co-occurrence within a class with the
+co-occurrence the model implies, and a large value indicates a
+dependence the classes do not explain.
+
+``` r
+
+subset(get_results(fit, "residuals"), p_adjusted < 0.01)
+#>     profile       indicator_1    indicator_2        kind observed expected residual
+#> 3 profile_2    listened_music        walking categorical   0.1099 2.00e-16   0.1099
+#> 4 profile_2    listened_music        reading categorical   0.0881 8.86e-17   0.0881
+#> 5 profile_2            sports        walking categorical   0.0879 4.24e-17   0.0879
+#> 6 profile_2    listened_music         sports categorical   0.0874 0.00e+00   0.0874
+#> 8 profile_2 time_with_friends        walking categorical   0.0762 1.71e-16   0.0762
+#> 9 profile_2   on_social_media listened_music categorical   0.0697 5.54e-17   0.0697
+#>   effective_n statistic df  p_value p_adjusted
+#> 3        1490     17.99  1 2.22e-05   2.22e-05
+#> 4        1490     11.57  1 6.72e-04   6.72e-04
+#> 5        1490     11.52  1 6.88e-04   6.88e-04
+#> 6        1490     11.38  1 7.42e-04   7.42e-04
+#> 8        1490      8.65  1 3.27e-03   3.27e-03
+#> 9        1490      7.25  1 7.10e-03   7.10e-03
+```
+
+The largest residual is that of listening to music and walking in class
+2 (18). `local_dependence` names pairs of categorical indicators that
+are modelled jointly within each class: the pair then has its own joint
+distribution in every class, and the other activities remain independent
+given the class.
+
+``` r
+
+dependent <- lca(student_esm, activities, n_classes = 3,
+                 local_dependence = "listened_music:walking")
+get_results(dependent, "local_dependence")
+#>                      pair        kind profile         item_1 category_1  item_2
+#> 1  listened_music:walking categorical       1 listened_music         no walking
+#> 2  listened_music:walking categorical       1 listened_music         no walking
+#> 3  listened_music:walking categorical       1 listened_music        yes walking
+#> 4  listened_music:walking categorical       1 listened_music        yes walking
+#> 5  listened_music:walking categorical       2 listened_music         no walking
+#> 6  listened_music:walking categorical       2 listened_music         no walking
+#> 7  listened_music:walking categorical       2 listened_music        yes walking
+#> 8  listened_music:walking categorical       2 listened_music        yes walking
+#> 9  listened_music:walking categorical       3 listened_music         no walking
+#> 10 listened_music:walking categorical       3 listened_music         no walking
+#> 11 listened_music:walking categorical       3 listened_music        yes walking
+#> 12 listened_music:walking categorical       3 listened_music        yes walking
+#>    category_2 probability independent    ratio covariance correlation
+#> 1          no    7.66e-01    0.761631 1.01e+00         NA          NA
+#> 2         yes    2.19e-01    0.223282 9.79e-01         NA          NA
+#> 3          no    6.95e-03    0.011667 5.95e-01         NA          NA
+#> 4         yes    8.14e-03    0.003420 2.38e+00         NA          NA
+#> 5          no    9.37e-01    0.937528 9.99e-01         NA          NA
+#> 6         yes    4.74e-02    0.046664 1.02e+00         NA          NA
+#> 7          no    1.58e-02    0.015058 1.05e+00         NA          NA
+#> 8         yes    1.00e-10    0.000749 1.33e-07         NA          NA
+#> 9          no    7.20e-01    0.704341 1.02e+00         NA          NA
+#> 10        yes    3.85e-02    0.053912 7.14e-01         NA          NA
+#> 11         no    2.09e-01    0.224559 9.31e-01         NA          NA
+#> 12        yes    3.26e-02    0.017188 1.90e+00         NA          NA
+```
+
+The table gives each class’s joint probabilities of the pair beside the
+products of its marginal probabilities, which are the probabilities
+under independence, and their ratio. The two models describe the same
+data and are compared with
+[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md).
+
+``` r
+
+compare_models(independent = fit, dependent = dependent)
+#> Model comparison
+#> 
+#> Model        Classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8
+#> -----------  -------  --  --------  --------  ----  ------  --------  -------  ---------  -----
+#> independent        3  26  -7848.45  15901.17  0.00   0.560  17820.00     0.66       0.70      1
+#> dependent          3  29  -7836.91  15901.65  0.48   0.440  17801.94     0.67       0.70      1
+```
+
+The joint model raises the log likelihood by 11.5 at the cost of 3
+parameters, and BIC is lower for the independent model. The dependence
+is present in the data, and the three classes describe the activities
+about as well without modelling it.
+
 ## Classes and a distal outcome
 
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
@@ -358,12 +446,12 @@ two_level <- multilca(student_esm, activities, id = "student",
                       n_profiles = 3, n_group_classes = 2)
 get_results(two_level, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1      0.7290                    0.64
-#> 2           1       2      0.2495                    0.64
-#> 3           1       3      0.0215                    0.64
-#> 4           2       1      0.1059                    0.36
-#> 5           2       2      0.2256                    0.36
-#> 6           2       3      0.6685                    0.36
+#> 1           1       1      0.2258                    0.36
+#> 2           1       2      0.1056                    0.36
+#> 3           1       3      0.6686                    0.36
+#> 4           2       1      0.2500                    0.64
+#> 5           2       2      0.7285                    0.64
+#> 6           2       3      0.0215                    0.64
 ```
 
 The two-level model is presented in detail in

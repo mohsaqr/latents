@@ -32,7 +32,7 @@ as.data.frame(x, row.names = NULL, optional = FALSE, ...)
 # S3 method for class 'latents_regression_enumeration'
 get_results(
   x,
-  what = c("fit", "model"),
+  what = c("fit", "model", "tree"),
   n_classes = NULL,
   n_group_classes = 1L,
   ...

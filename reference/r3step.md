@@ -225,15 +225,15 @@ moves <- lta(course_engagement,
              id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 r3step(moves, course_engagement, transition_covariates = "sequence")
 #>        block      from        to        term     estimate standard_error
-#> 1    initial      <NA> profile_1 (Intercept)  0.547153583     0.20869295
-#> 2 transition profile_1 profile_2 (Intercept) -1.850702888     0.28098436
-#> 3 transition profile_1 profile_2    sequence -0.003170733     0.03170190
-#> 4 transition profile_2 profile_1 (Intercept) -1.630641206     0.30703086
-#> 5 transition profile_2 profile_1    sequence  0.011857195     0.03415177
-#>    statistic      p_value p_adjusted    conf_low   conf_high
-#> 1  2.6218116 8.746377e-03         NA  0.13812293  0.95618424
-#> 2 -6.5864980 4.503217e-11         NA -2.40142210 -1.29998367
-#> 3 -0.1000171 9.203307e-01  0.9203307 -0.06530532  0.05896385
-#> 4 -5.3110010 1.090247e-07         NA -2.23241063 -1.02887178
-#> 5  0.3471912 7.284476e-01  0.9203307 -0.05507904  0.07879343
+#> 1    initial      <NA> profile_1 (Intercept)  0.547155214     0.20869296
+#> 2 transition profile_1 profile_2 (Intercept) -1.850705801     0.28098481
+#> 3 transition profile_1 profile_2    sequence -0.003170648     0.03170193
+#> 4 transition profile_2 profile_1 (Intercept) -1.630640960     0.30703090
+#> 5 transition profile_2 profile_1    sequence  0.011857160     0.03415178
+#>    statistic      p_value p_adjusted   conf_low   conf_high
+#> 1  2.6218192 8.746182e-03         NA  0.1381245  0.95618591
+#> 2 -6.5864976 4.503228e-11         NA -2.4014259 -1.29998569
+#> 3 -0.1000143 9.203329e-01  0.9203329 -0.0653053  0.05896400
+#> 4 -5.3109995 1.090256e-07         NA -2.2324105 -1.02887145
+#> 5  0.3471901 7.284485e-01  0.9203329 -0.0550791  0.07879342
 ```

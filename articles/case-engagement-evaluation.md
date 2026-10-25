@@ -109,6 +109,7 @@ fit
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
 #> Converged: TRUE | iterations: 42 | best start: 1/10
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
 #> 
 #>  profile    browse  lectures forum_read forum_post attendance   count proportion
 #>        1  0.387017  0.185619   0.446387   0.337626   0.256357 478.027   0.336165
@@ -495,15 +496,24 @@ get_results(candidates, "candidates")
 #> 6      0.948115  0.649364  0.971863   0.844724           1        0.982278        0.990363
 #> 7      0.816138  0.974333  0.977839   0.976086           0        0.903069        0.959803
 #> 8      0.823956  0.649559  0.973628   0.840843           1        0.878069        0.955368
-#>   group_avepp_mean group_avepp_below converged boundary n_best_replicated warnings error
-#> 1         0.980500                 0      TRUE    FALSE                 6           <NA>
-#> 2         0.984693                 0      TRUE    FALSE                 6           <NA>
-#> 3         0.922506                 0      TRUE    FALSE                 6           <NA>
-#> 4         0.913150                 0      TRUE    FALSE                 6           <NA>
-#> 5         0.981946                 0      TRUE    FALSE                 6           <NA>
-#> 6         0.986321                 0      TRUE    FALSE                 3           <NA>
-#> 7         0.922502                 0      TRUE    FALSE                 6           <NA>
-#> 8         0.920425                 0      TRUE    FALSE                 5           <NA>
+#>   group_avepp_mean group_avepp_below converged boundary min_standardized_eigenvalue
+#> 1         0.980500                 0      TRUE    FALSE                   0.3714788
+#> 2         0.984693                 0      TRUE    FALSE                   0.1999744
+#> 3         0.922506                 0      TRUE    FALSE                   0.3748297
+#> 4         0.913150                 0      TRUE    FALSE                   0.2002771
+#> 5         0.981946                 0      TRUE    FALSE                   0.2710424
+#> 6         0.986321                 0      TRUE    FALSE                   0.0984473
+#> 7         0.922502                 0      TRUE    FALSE                   0.2720518
+#> 8         0.920425                 0      TRUE    FALSE                   0.1201822
+#>   min_gaussian_mass n_best_replicated warnings error
+#> 1           587.904                 6           <NA>
+#> 2           382.562                 6           <NA>
+#> 3           591.087                 6           <NA>
+#> 4           369.012                 6           <NA>
+#> 5           583.221                 6           <NA>
+#> 6           104.363                 3           <NA>
+#> 7           589.486                 6           <NA>
+#> 8           116.302                 5           <NA>
 ```
 
 Under the diagonal covariance specification, the lowest BIC is obtained

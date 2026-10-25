@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -152,7 +152,7 @@ and returns the results in one table.</p>
 <span><span class="co">#&gt; Class enumeration: 6 candidates, 6 converged, 0 failed to fit</span></span>
 <span><span class="co">#&gt; 4 distinct candidate(s) are minimal under some criterion.</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Choose one convention and keep it.</span></span>
-<span><span class="co">#&gt; The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.</span></span>
+<span><span class="co">#&gt; The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- candidates ------------------------------------------------------</span></span>
 <span><span class="co">#&gt;  candidate n_profiles log_likelihood n_parameters   aic   bic icl_individual</span></span>
@@ -379,6 +379,82 @@ confused with which.</p>
 classification.</p>
 </div>
 <div class="section level2">
+<h2 id="local-dependence">Local dependence<a class="anchor" aria-label="anchor" href="#local-dependence"></a>
+</h2>
+<p>The latent class model assumes that the activities are independent
+within each class. The bivariate residual of a pair of activities
+compares their observed co-occurrence within a class with the
+co-occurrence the model implies, and a large value indicates a
+dependence the classes do not explain.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"residuals"</span><span class="op">)</span>, <span class="va">p_adjusted</span> <span class="op">&lt;</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     profile       indicator_1    indicator_2        kind observed expected residual</span></span>
+<span><span class="co">#&gt; 3 profile_2    listened_music        walking categorical   0.1099 2.00e-16   0.1099</span></span>
+<span><span class="co">#&gt; 4 profile_2    listened_music        reading categorical   0.0881 8.86e-17   0.0881</span></span>
+<span><span class="co">#&gt; 5 profile_2            sports        walking categorical   0.0879 4.24e-17   0.0879</span></span>
+<span><span class="co">#&gt; 6 profile_2    listened_music         sports categorical   0.0874 0.00e+00   0.0874</span></span>
+<span><span class="co">#&gt; 8 profile_2 time_with_friends        walking categorical   0.0762 1.71e-16   0.0762</span></span>
+<span><span class="co">#&gt; 9 profile_2   on_social_media listened_music categorical   0.0697 5.54e-17   0.0697</span></span>
+<span><span class="co">#&gt;   effective_n statistic df  p_value p_adjusted</span></span>
+<span><span class="co">#&gt; 3        1490     17.99  1 2.22e-05   2.22e-05</span></span>
+<span><span class="co">#&gt; 4        1490     11.57  1 6.72e-04   6.72e-04</span></span>
+<span><span class="co">#&gt; 5        1490     11.52  1 6.88e-04   6.88e-04</span></span>
+<span><span class="co">#&gt; 6        1490     11.38  1 7.42e-04   7.42e-04</span></span>
+<span><span class="co">#&gt; 8        1490      8.65  1 3.27e-03   3.27e-03</span></span>
+<span><span class="co">#&gt; 9        1490      7.25  1 7.10e-03   7.10e-03</span></span></code></pre></div>
+<p>The largest residual is that of listening to music and walking in
+class 2 (18). <code>local_dependence</code> names pairs of categorical
+indicators that are modelled jointly within each class: the pair then
+has its own joint distribution in every class, and the other activities
+remain independent given the class.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dependent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lca.html">lca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, n_classes <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                 local_dependence <span class="op">=</span> <span class="st">"listened_music:walking"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">dependent</span>, <span class="st">"local_dependence"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                      pair        kind profile         item_1 category_1  item_2</span></span>
+<span><span class="co">#&gt; 1  listened_music:walking categorical       1 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 2  listened_music:walking categorical       1 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 3  listened_music:walking categorical       1 listened_music        yes walking</span></span>
+<span><span class="co">#&gt; 4  listened_music:walking categorical       1 listened_music        yes walking</span></span>
+<span><span class="co">#&gt; 5  listened_music:walking categorical       2 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 6  listened_music:walking categorical       2 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 7  listened_music:walking categorical       2 listened_music        yes walking</span></span>
+<span><span class="co">#&gt; 8  listened_music:walking categorical       2 listened_music        yes walking</span></span>
+<span><span class="co">#&gt; 9  listened_music:walking categorical       3 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 10 listened_music:walking categorical       3 listened_music         no walking</span></span>
+<span><span class="co">#&gt; 11 listened_music:walking categorical       3 listened_music        yes walking</span></span>
+<span><span class="co">#&gt; 12 listened_music:walking categorical       3 listened_music        yes walking</span></span>
+<span><span class="co">#&gt;    category_2 probability independent    ratio covariance correlation</span></span>
+<span><span class="co">#&gt; 1          no    7.66e-01    0.761631 1.01e+00         NA          NA</span></span>
+<span><span class="co">#&gt; 2         yes    2.19e-01    0.223282 9.79e-01         NA          NA</span></span>
+<span><span class="co">#&gt; 3          no    6.95e-03    0.011667 5.95e-01         NA          NA</span></span>
+<span><span class="co">#&gt; 4         yes    8.14e-03    0.003420 2.38e+00         NA          NA</span></span>
+<span><span class="co">#&gt; 5          no    9.37e-01    0.937528 9.99e-01         NA          NA</span></span>
+<span><span class="co">#&gt; 6         yes    4.74e-02    0.046664 1.02e+00         NA          NA</span></span>
+<span><span class="co">#&gt; 7          no    1.58e-02    0.015058 1.05e+00         NA          NA</span></span>
+<span><span class="co">#&gt; 8         yes    1.00e-10    0.000749 1.33e-07         NA          NA</span></span>
+<span><span class="co">#&gt; 9          no    7.20e-01    0.704341 1.02e+00         NA          NA</span></span>
+<span><span class="co">#&gt; 10        yes    3.85e-02    0.053912 7.14e-01         NA          NA</span></span>
+<span><span class="co">#&gt; 11         no    2.09e-01    0.224559 9.31e-01         NA          NA</span></span>
+<span><span class="co">#&gt; 12        yes    3.26e-02    0.017188 1.90e+00         NA          NA</span></span></code></pre></div>
+<p>The table gives each class’s joint probabilities of the pair beside
+the products of its marginal probabilities, which are the probabilities
+under independence, and their ratio. The two models describe the same
+data and are compared with <code><a href="../reference/compare_models.html">compare_models()</a></code>.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>independent <span class="op">=</span> <span class="va">fit</span>, dependent <span class="op">=</span> <span class="va">dependent</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Model comparison</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model        Classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
+<span><span class="co">#&gt; -----------  -------  --  --------  --------  ----  ------  --------  -------  ---------  -----</span></span>
+<span><span class="co">#&gt; independent        3  26  -7848.45  15901.17  0.00   0.560  17820.00     0.66       0.70      1</span></span>
+<span><span class="co">#&gt; dependent          3  29  -7836.91  15901.65  0.48   0.440  17801.94     0.67       0.70      1</span></span></code></pre></div>
+<p>The joint model raises the log likelihood by 11.5 at the cost of 3
+parameters, and BIC is lower for the independent model. The dependence
+is present in the data, and the three classes describe the activities
+about as well without modelling it.</p>
+</div>
+<div class="section level2">
 <h2 id="classes-and-a-distal-outcome">Classes and a distal outcome<a class="anchor" aria-label="anchor" href="#classes-and-a-distal-outcome"></a>
 </h2>
 <p><code><a href="../reference/three_step.html">three_step()</a></code> estimates the mean of an outcome within
@@ -386,7 +462,7 @@ each class. It uses the BCH method, which weights each observation by
 its posterior class probabilities and corrects for classification error
 (Bolck, Croon and Hagenaars, 2004). The outcome here is the happiness
 rating.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">happiness</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">student_esm</span>, outcome <span class="op">=</span> <span class="st">"happy"</span><span class="op">)</span></span>
 <span><span class="va">happiness</span></span>
 <span><span class="co">#&gt; Distal outcome by class (bch, 95% CI)</span></span>
@@ -409,17 +485,17 @@ independent. When the student identifier is supplied as <code>id</code>,
 reports are retained, and the students are in addition grouped into
 latent classes that differ in the proportion of their reports belonging
 to each class.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">two_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
 <span>                      n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">two_level</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1      0.7290                    0.64</span></span>
-<span><span class="co">#&gt; 2           1       2      0.2495                    0.64</span></span>
-<span><span class="co">#&gt; 3           1       3      0.0215                    0.64</span></span>
-<span><span class="co">#&gt; 4           2       1      0.1059                    0.36</span></span>
-<span><span class="co">#&gt; 5           2       2      0.2256                    0.36</span></span>
-<span><span class="co">#&gt; 6           2       3      0.6685                    0.36</span></span></code></pre></div>
+<span><span class="co">#&gt; 1           1       1      0.2258                    0.36</span></span>
+<span><span class="co">#&gt; 2           1       2      0.1056                    0.36</span></span>
+<span><span class="co">#&gt; 3           1       3      0.6686                    0.36</span></span>
+<span><span class="co">#&gt; 4           2       1      0.2500                    0.64</span></span>
+<span><span class="co">#&gt; 5           2       2      0.7285                    0.64</span></span>
+<span><span class="co">#&gt; 6           2       3      0.0215                    0.64</span></span></code></pre></div>
 <p>The two-level model is presented in detail in
 <code><a href="../articles/lca.html">vignette("lca")</a></code>.</p>
 </div>

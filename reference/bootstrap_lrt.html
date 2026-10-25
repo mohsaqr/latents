@@ -21,7 +21,7 @@ implementation of Mplus TECH14."><meta property="og:image" content="https://pak.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,9 +93,9 @@ implementation of Mplus TECH14.</p>
 <span>  <span class="va">alternative_model</span>,</span>
 <span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
-<span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
-<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
-<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  n_starts <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -125,15 +125,19 @@ for inference.</p></dd>
 
 
 <dt id="arg-n-starts">n_starts<a class="anchor" aria-label="anchor" href="#arg-n-starts"></a></dt>
-<dd><p>Number of random starts for each simulated fit. Default 10.</p></dd>
+<dd><p>Number of starts for each simulated fit. <code>NULL</code> (the
+default) refits each model with the starts it was fitted with, by the same
+<code>search</code>; a number applies to both models.</p></dd>
 
 
 <dt id="arg-max-iter">max_iter<a class="anchor" aria-label="anchor" href="#arg-max-iter"></a></dt>
-<dd><p>Maximum EM iterations for each simulated fit. Default 1000.</p></dd>
+<dd><p>Maximum EM iterations for each simulated fit; <code>NULL</code> (the
+default) takes each model's own.</p></dd>
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
-<dd><p>Relative likelihood convergence tolerance. Default <code>1e-8</code>.</p></dd>
+<dd><p>Relative likelihood convergence tolerance; <code>NULL</code> (the default)
+takes each model's own.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -194,6 +194,7 @@ evaluation steps.</p>
 <span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
 <span><span class="co">#&gt; Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 42 | best start: 1/10</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile    browse  lectures forum_read forum_post attendance   count proportion</span></span>
 <span><span class="co">#&gt;        1  0.387017  0.185619   0.446387   0.337626   0.256357 478.027   0.336165</span></span>
@@ -562,15 +563,24 @@ exists.</p>
 <span><span class="co">#&gt; 6      0.948115  0.649364  0.971863   0.844724           1        0.982278        0.990363</span></span>
 <span><span class="co">#&gt; 7      0.816138  0.974333  0.977839   0.976086           0        0.903069        0.959803</span></span>
 <span><span class="co">#&gt; 8      0.823956  0.649559  0.973628   0.840843           1        0.878069        0.955368</span></span>
-<span><span class="co">#&gt;   group_avepp_mean group_avepp_below converged boundary n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 1         0.980500                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2         0.984693                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3         0.922506                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4         0.913150                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5         0.981946                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6         0.986321                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7         0.922502                 0      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8         0.920425                 0      TRUE    FALSE                 5           &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;   group_avepp_mean group_avepp_below converged boundary min_standardized_eigenvalue</span></span>
+<span><span class="co">#&gt; 1         0.980500                 0      TRUE    FALSE                   0.3714788</span></span>
+<span><span class="co">#&gt; 2         0.984693                 0      TRUE    FALSE                   0.1999744</span></span>
+<span><span class="co">#&gt; 3         0.922506                 0      TRUE    FALSE                   0.3748297</span></span>
+<span><span class="co">#&gt; 4         0.913150                 0      TRUE    FALSE                   0.2002771</span></span>
+<span><span class="co">#&gt; 5         0.981946                 0      TRUE    FALSE                   0.2710424</span></span>
+<span><span class="co">#&gt; 6         0.986321                 0      TRUE    FALSE                   0.0984473</span></span>
+<span><span class="co">#&gt; 7         0.922502                 0      TRUE    FALSE                   0.2720518</span></span>
+<span><span class="co">#&gt; 8         0.920425                 0      TRUE    FALSE                   0.1201822</span></span>
+<span><span class="co">#&gt;   min_gaussian_mass n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 1           587.904                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2           382.562                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3           591.087                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4           369.012                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5           583.221                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6           104.363                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7           589.486                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8           116.302                 5           &lt;NA&gt;</span></span></code></pre></div>
 <p>Under the diagonal covariance specification, the lowest BIC is
 obtained for the model with three profiles and three student classes,
 with a BIC of 16874.1. When residual covariances are allowed to vary

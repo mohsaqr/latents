@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,6 +135,7 @@ not an indicator, so it can serve as an external variable.</p>
 <span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
 <span><span class="co">#&gt; Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 9 | best start: 1/3</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
 <span><span class="co">#&gt;        1  0.540    0.427      0.620      0.530      0.649   834      0.587</span></span>
@@ -185,10 +186,26 @@ profile means with a Benjamini-Hochberg adjusted p-value.</p>
 <span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
 <span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
 <span><span class="co">#&gt;     2   1       -0.54  [-0.64, -0.43]  &lt;.001   &lt;.001</span></span></code></pre></div>
+<p>Maximum likelihood is the other correction. With
+<code>method = "ml"</code>, the assigned profile becomes an indicator of
+the true profile whose classification errors are fixed at those of the
+measurement model, and the external variable is normal within each
+profile, with its own variance. The table adds that variance. When the
+variable is close to normal within profiles, ML gives smaller standard
+errors than BCH; when it is skewed, BCH is the more robust choice.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
+<span>           method <span class="op">=</span> <span class="st">"ml"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Distal outcome by class (ml, varying variances, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class   Mean          95% CI     SE  Variance  Effective n</span></span>
+<span><span class="co">#&gt; -----  -----  --------------  -----  --------  -----------</span></span>
+<span><span class="co">#&gt;     1   0.22  [ 0.15,  0.29]  0.035      0.94       834.09</span></span>
+<span><span class="co">#&gt;     2  -0.32  [-0.39, -0.24]  0.037      0.91       587.91</span></span></code></pre></div>
 <p>To see the effect of ignoring classification error, we call
 <code><a href="../reference/three_step.html">three_step()</a></code> with <code>method = "modal"</code>, which
 treats each case’s most probable profile as known.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           method <span class="op">=</span> <span class="st">"modal"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Distal outcome by class (modal, 95% CI)</span></span>
@@ -207,7 +224,7 @@ treats each case’s most probable profile as known.</p>
 coefficients, corrected for classification error.
 <code>vcov_type = "robust"</code>, the default, clusters the standard
 errors on groups.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>       vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic  p_value p_adjusted</span></span>
@@ -226,7 +243,7 @@ predictors of profile membership. <code>group_covariates</code> does the
 same for group-class membership and needs a variable that is constant
 within groups. Covariates must have no missing values; missing
 indicators are integrated out with <code>missing = "fiml"</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">one_step</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                              <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
@@ -236,6 +253,7 @@ indicators are integrated out with <code>missing = "fiml"</code>.</p>
 <span><span class="va">one_step</span></span>
 <span><span class="co">#&gt; Multilevel LPA with covariates: 2 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; Log likelihood -8422.837649; AIC 16893.675; BIC (groups) 16957.598; converged TRUE</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.3712 (profiles, profile_2); Gaussian mass: 587.7; weight effective n: 605.1.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
 <span><span class="co">#&gt;        1  0.540    0.429      0.619      0.530      0.648   834      0.587</span></span>
@@ -247,7 +265,7 @@ indicators are integrated out with <code>missing = "fiml"</code>.</p>
 <code><a href="../reference/get_results.html">get_results()</a></code> with <code>"coefficients"</code>, and for
 their standard errors and intervals,
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">one_step</span>, <span class="st">"coefficients"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     level       outcome           term parameter estimate</span></span>
 <span><span class="co">#&gt; 1 profile     profile_1  group_class_1     logit   -1.539</span></span>
@@ -307,6 +325,43 @@ their standard errors and intervals,
 <span><span class="co">#&gt; 24   5.64e-04   -1.197    -0.329</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="direct-effects-on-indicators">Direct effects on indicators<a class="anchor" aria-label="anchor" href="#direct-effects-on-indicators"></a>
+</h2>
+<p>A covariate can also act on an indicator rather than on membership:
+students with better previous grades may attend more within every
+profile. Left out of the model, such an effect is read as a difference
+between the profiles (differential item functioning). To estimate it, we
+call <code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>direct_effects</code>, one
+<code>"indicator ~ covariate"</code> term per effect. The covariate
+shifts the indicator’s mean by the same amount in every profile, and the
+profile means are then the means at a covariate value of zero, here the
+average standardized grade.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">direct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
+<span>                   vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
+<span>                            <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
+<span>                   id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                   direct_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"attendance ~ previous_grade"</span>,</span>
+<span>                                      <span class="st">"forum_post ~ previous_grade"</span><span class="op">)</span>,</span>
+<span>                   n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">direct</span>, <span class="st">"direct_effects"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    indicator      covariate estimate standard_error statistic p_value conf_low conf_high</span></span>
+<span><span class="co">#&gt; 1 attendance previous_grade  0.03626         0.0178     2.040  0.0414  0.00142    0.0711</span></span>
+<span><span class="co">#&gt; 2 forum_post previous_grade  0.00375         0.0209     0.179  0.8578 -0.03724    0.0447</span></span>
+<span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>without <span class="op">=</span> <span class="va">fit</span>, direct <span class="op">=</span> <span class="va">direct</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Model comparison</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model    Profiles  Group classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
+<span><span class="co">#&gt; -------  --------  -------------  --  --------  --------  ----  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
+<span><span class="co">#&gt; without         2              2  23  -8439.82  16986.89  0.00   0.930  17168.49     0.94       0.98      0           0.94             0.97</span></span>
+<span><span class="co">#&gt; direct          2              2  25  -8437.74  16992.07  5.17   0.070  17181.70     0.94       0.98      0           0.94             0.97</span></span></code></pre></div>
+<p>Attendance rises by 0.036 per unit of previous grade within each
+profile (95% interval 0.001 to 0.071), and forum posting by 0.004
+(interval -0.037 to 0.045). The effects are small against the profile
+differences, and BIC is lower without them (16986.9 against 16992.1), so
+the profiles do not owe their separation to previous grades.</p>
+</div>
+<div class="section level2">
 <h2 id="staged-estimation">Staged estimation<a class="anchor" aria-label="anchor" href="#staged-estimation"></a>
 </h2>
 <p>To hold the profiles fixed while the group classes are estimated, we
@@ -314,7 +369,7 @@ call <code><a href="../reference/fit_staged.html">fit_staged()</a></code> with t
 <code><a href="../reference/multilpa.html">multilpa()</a></code>. It first fits the profiles with one group
 class, then estimates the group classes with the profile means and
 variances held fixed.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">staged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_staged.html">fit_staged</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                              <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
@@ -327,6 +382,7 @@ variances held fixed.</p>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 9 | best start: 2/3</span></span>
 <span><span class="co">#&gt; Held fixed, not estimated here: means, variances (first stage)</span></span>
 <span><span class="co">#&gt; Parameters estimated here: 3; with the held measurement: 23</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.375 (profiles, profile_2); Gaussian mass: 588.5; weight effective n: 606.8.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
 <span><span class="co">#&gt;        1  0.537    0.430      0.618      0.533      0.653   834      0.586</span></span>
@@ -338,7 +394,7 @@ variances held fixed.</p>
 with <code>"stages"</code>. <code>parameters</code> counts the
 parameters estimated at a stage, and
 <code>parameters_with_measurement</code> adds those held fixed.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">staged</span>, <span class="st">"stages"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         stage group_classes            fixed log_likelihood parameters parameters_with_measurement</span></span>
 <span><span class="co">#&gt; 1 measurement             1             &lt;NA&gt;          -8615         21                          21</span></span>
@@ -352,11 +408,13 @@ parameters estimated at a stage, and
 </h2>
 <p>The calls below list other functions for external variables and fixed
 parameters. Each comment states what the call returns.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"classification_errors"</span>, level <span class="op">=</span> <span class="st">"groups"</span><span class="op">)</span>  <span class="co"># group-level errors</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"bch_weights"</span>, level <span class="op">=</span> <span class="st">"individuals"</span><span class="op">)</span>       <span class="co"># BCH weights per case</span></span>
 <span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           method <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span>        <span class="co"># weighting by posterior probabilities</span></span>
+<span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
+<span>           method <span class="op">=</span> <span class="st">"ml"</span>, variance <span class="op">=</span> <span class="st">"equal"</span><span class="op">)</span>  <span class="co"># ML with one shared variance</span></span>
 <span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           vcov_type <span class="op">=</span> <span class="st">"independent"</span><span class="op">)</span>      <span class="co"># standard errors without clustering</span></span>
 <span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
@@ -386,6 +444,8 @@ parameters. Each comment states what the call returns.</p>
 <li>Three-step methods assume classification errors are independent of
 the external variable given the true class, and treat the error matrix
 as known.</li>
+<li>The ML correction also assumes the external variable is normal
+within each class; BCH does not.</li>
 <li>One-step coefficients are conditional on the group class and can
 change the profiles, so they need not equal the three-step
 coefficients.</li>

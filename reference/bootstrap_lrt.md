@@ -17,9 +17,9 @@ bootstrap_lrt(
   alternative_model,
   data = NULL,
   iter = 199L,
-  n_starts = 10L,
-  max_iter = 1000L,
-  tol = 1e-08,
+  n_starts = NULL,
+  max_iter = NULL,
+  tol = NULL,
   seed = NULL
 )
 ```
@@ -49,15 +49,19 @@ bootstrap_lrt(
 
 - n_starts:
 
-  Number of random starts for each simulated fit. Default 10.
+  Number of starts for each simulated fit. `NULL` (the default) refits
+  each model with the starts it was fitted with, by the same `search`; a
+  number applies to both models.
 
 - max_iter:
 
-  Maximum EM iterations for each simulated fit. Default 1000.
+  Maximum EM iterations for each simulated fit; `NULL` (the default)
+  takes each model's own.
 
 - tol:
 
-  Relative likelihood convergence tolerance. Default `1e-8`.
+  Relative likelihood convergence tolerance; `NULL` (the default) takes
+  each model's own.
 
 - seed:
 

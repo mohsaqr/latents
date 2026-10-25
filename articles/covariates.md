@@ -40,6 +40,7 @@ fit
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892
 #> Converged: TRUE | iterations: 9 | best start: 1/3
+#> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.540    0.427      0.620      0.530      0.649   834      0.587
@@ -103,6 +104,26 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 #>     2   1       -0.54  [-0.64, -0.43]  <.001   <.001
 ```
 
+Maximum likelihood is the other correction. With `method = "ml"`, the
+assigned profile becomes an indicator of the true profile whose
+classification errors are fixed at those of the measurement model, and
+the external variable is normal within each profile, with its own
+variance. The table adds that variance. When the variable is close to
+normal within profiles, ML gives smaller standard errors than BCH; when
+it is skewed, BCH is the more robust choice.
+
+``` r
+
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "ml")
+#> Distal outcome by class (ml, varying variances, 95% CI)
+#> 
+#> Class   Mean          95% CI     SE  Variance  Effective n
+#> -----  -----  --------------  -----  --------  -----------
+#>     1   0.22  [ 0.15,  0.29]  0.035      0.94       834.09
+#>     2  -0.32  [-0.39, -0.24]  0.037      0.91       587.91
+```
+
 To see the effect of ignoring classification error, we call
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
 with `method = "modal"`, which treats each case’s most probable profile
@@ -161,6 +182,7 @@ one_step <- multilpa(course_engagement,
 one_step
 #> Multilevel LPA with covariates: 2 profiles, 2 group classes
 #> Log likelihood -8422.837649; AIC 16893.675; BIC (groups) 16957.598; converged TRUE
+#> Smallest standardized Gaussian eigenvalue: 0.3712 (profiles, profile_2); Gaussian mass: 587.7; weight effective n: 605.1.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.540    0.429      0.619      0.530      0.648   834      0.587
@@ -236,6 +258,47 @@ parameter_inference(one_step)
 #> 24   5.64e-04   -1.197    -0.329
 ```
 
+## Direct effects on indicators
+
+A covariate can also act on an indicator rather than on membership:
+students with better previous grades may attend more within every
+profile. Left out of the model, such an effect is read as a difference
+between the profiles (differential item functioning). To estimate it, we
+call
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+with `direct_effects`, one `"indicator ~ covariate"` term per effect.
+The covariate shifts the indicator’s mean by the same amount in every
+profile, and the profile means are then the means at a covariate value
+of zero, here the average standardized grade.
+
+``` r
+
+direct <- multilpa(course_engagement,
+                   vars = c("browse", "lectures", "forum_read",
+                            "forum_post", "attendance"),
+                   id = "student", n_profiles = 2, n_group_classes = 2,
+                   direct_effects = c("attendance ~ previous_grade",
+                                      "forum_post ~ previous_grade"),
+                   n_starts = 3, seed = 1)
+get_results(direct, "direct_effects")
+#>    indicator      covariate estimate standard_error statistic p_value conf_low conf_high
+#> 1 attendance previous_grade  0.03626         0.0178     2.040  0.0414  0.00142    0.0711
+#> 2 forum_post previous_grade  0.00375         0.0209     0.179  0.8578 -0.03724    0.0447
+compare_models(without = fit, direct = direct)
+#> Model comparison
+#> 
+#> Model    Profiles  Group classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
+#> -------  --------  -------------  --  --------  --------  ----  ------  --------  -------  ---------  -----  -------------  ---------------
+#> without         2              2  23  -8439.82  16986.89  0.00   0.930  17168.49     0.94       0.98      0           0.94             0.97
+#> direct          2              2  25  -8437.74  16992.07  5.17   0.070  17181.70     0.94       0.98      0           0.94             0.97
+```
+
+Attendance rises by 0.036 per unit of previous grade within each profile
+(95% interval 0.001 to 0.071), and forum posting by 0.004 (interval
+-0.037 to 0.045). The effects are small against the profile differences,
+and BIC is lower without them (16986.9 against 16992.1), so the profiles
+do not owe their separation to previous grades.
+
 ## Staged estimation
 
 To hold the profiles fixed while the group classes are estimated, we
@@ -260,6 +323,7 @@ staged
 #> Converged: TRUE | iterations: 9 | best start: 2/3
 #> Held fixed, not estimated here: means, variances (first stage)
 #> Parameters estimated here: 3; with the held measurement: 23
+#> Smallest standardized Gaussian eigenvalue: 0.375 (profiles, profile_2); Gaussian mass: 588.5; weight effective n: 606.8.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.537    0.430      0.618      0.533      0.653   834      0.586
@@ -297,6 +361,8 @@ get_results(fit, "bch_weights", level = "individuals")       # BCH weights per c
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "proportional")        # weighting by posterior probabilities
 three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "ml", variance = "equal")  # ML with one shared variance
+three_step(fit, data = course_engagement, outcome = "previous_grade",
            vcov_type = "independent")      # standard errors without clustering
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "observed")             # observed-information standard errors
@@ -324,6 +390,8 @@ parameter_inference(staged)                # standard errors of the estimated st
 - Three-step methods assume classification errors are independent of the
   external variable given the true class, and treat the error matrix as
   known.
+- The ML correction also assumes the external variable is normal within
+  each class; BCH does not.
 - One-step coefficients are conditional on the group class and can
   change the profiles, so they need not equal the three-step
   coefficients.

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,6 +61,121 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.97.0" id="latents-0970">latents 0.97.0<a class="anchor" aria-label="anchor" href="#latents-0970"></a></h2>
+<ul><li>
+<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> gains a trailing <code>type</code> argument to request <code>"lca"</code>, <code>"lpa"</code> or <code>"lta"</code> explicitly. <code>"lca"</code> treats numeric response codes as categorical; conflicting routing or measurement arguments are refused. <code>type = NULL</code> keeps existing fitting behavior. The resolved type is recorded on the enumeration and shown in its print header; tables are unchanged.</li>
+<li>A numeric indicator fitted as categorical that has non-integer values or more than ten categories now raises a <code>latents_suspect_categorical</code> warning, once per call: every distinct value is fitted as a category, and a continuous indicator may call for a model with Gaussian indicators.</li>
+</ul><div class="section level4">
+<h4 id="faster-latent-transition-models-0-97-0">Faster latent transition models<a class="anchor" aria-label="anchor" href="#faster-latent-transition-models-0-97-0"></a></h4>
+<ul><li><p>Profile and latent class grids in <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> now share the worker pool across candidates and their starts, including both emEM phases. Ordered starting values, selection and finalisation stay in the parent, preserving seeded fits. Membership covariates and joined categorical local-dependence models retain serial starts as candidate tasks; group-class families retain candidate-level parallelism.</p></li>
+<li><p>Lost parallel worker results are retried once with fewer workers instead of discarding the grid. Starts or candidates still lost are recorded as failed, and one <code>latents_worker_lost</code> warning reports losses and recovery. Socket dispatch retains completed chunks; tasks within a broken chunk may be rerun.</p></li>
+<li><p><code><a href="../reference/lta.html">lta()</a></code> gains <code>cores</code> for parallel random starts, including emEM screening. Transition grids in <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> dynamically schedule individual starts in one worker pool, longest estimated first, without nested workers or waiting for candidate batches. Both emEM screening and finalist runs use the pool. Seeded results are identical to <code>cores = 1</code>.</p></li>
+<li><p><code><a href="../reference/lta.html">lta()</a></code> gains <code>acceleration</code>, defaulting to <code>"squarem"</code> as in <code><a href="../reference/multilpa.html">multilpa()</a></code>. Fits usually need several times fewer EM steps and can change slightly, at the same or a higher maximum. <code>acceleration = "none"</code> restores the previous fits.</p></li>
+<li><p>The forward-backward recursion of homogeneous transition models runs as matrix products, several times faster per EM step with identical results.</p></li>
+<li><p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with <code>time</code> or a group-class <code>family</code> no longer fails every candidate on socket workers (Windows, and macOS with Accelerate BLAS).</p></li>
+</ul></div>
+<div class="section level4">
+<h4 id="default-start-search-0-97-0">Default start search<a class="anchor" aria-label="anchor" href="#default-start-search-0-97-0"></a></h4>
+<ul><li>Models whose profiles share one covariance matrix (EII, EEI, EEE) now default to <code>search = "emEM"</code>; all others keep <code>"kmeans"</code>. Their results can change, usually to a higher maximum, and fitting takes about twice as long. <code>search = "kmeans"</code> restores the previous fits.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="review-corrections-0-97-0">Review corrections<a class="anchor" aria-label="anchor" href="#review-corrections-0-97-0"></a></h4>
+<ul><li>General latent transition fits detect covariance eigenvalues at the variance floor, including occasion-specific measurement. Such fits are marked as boundary solutions and refuse Wald inference.</li>
+<li>Zero-weight units no longer determine the internal Gaussian origin, imputation, clustering geometry or initial measurement parameters in profile, membership-covariate and weighted transition fits. Excluded outliers cannot consume an initial profile or erase supported-row precision. Observation and group mappings are preserved.</li>
+<li>Gaussian support warnings in ordinary and membership-covariate fits exclude categorical-only and retained empty rows. Cross-level models apply sampling weights and check both the individual and group Gaussian components.</li>
+<li>
+<code>get_results(fit, "gaussian_diagnostics")</code> exposes per-component Gaussian membership mass, positive contributing rows, weight effective sample size, standardized variances and covariance eigenvalues, and the absolute boundary status. The narrowest standardized direction is also printed. These are descriptive diagnostics, with no automatic spike cutoff or change to start selection. Normalized membership mass is not an independent sample count; thin-profile warnings are heuristics, not proofs of singularity or nonidentification.</li>
+<li>Bootstrap inference for <code><a href="../reference/fit_staged.html">fit_staged()</a></code> repeats the measurement stage’s own search controls before refitting the group-class stage, preserving an explicit emEM pool even when a single supplied start disables screening at stage two.</li>
+<li>
+<code>latents_thin_profiles</code> counts the free Gaussian measurement parameters: covariances held at zero and held means are excluded, and held variances do not trigger the warning.</li>
+<li>In latent transition models, thin-profile warnings use weighted memberships of rows with observed Gaussian indicators. Empty or categorical-only rows cannot hide a thin Gaussian profile, even under <code>drop_empty = FALSE</code>. Occasion-specific measurement is checked separately at each occasion, which the warning identifies. Fitted estimates and classification counts are unchanged.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="start-search-0-97-0">Start search<a class="anchor" aria-label="anchor" href="#start-search-0-97-0"></a></h4>
+<ul><li>
+<code>search = "emEM"</code> (new) finds starts by the emEM search (Biernacki, Celeux &amp; Govaert, 2003): a pool of <code>n_screen</code> starts (five times <code>n_starts</code> by default) is screened by a short EM run each, and the <code>n_starts</code> finalists are run to convergence. A successful first start (Ward or supplied) reserves one finalist slot; the others are ranked by screening likelihood. With <code>n_starts = 1</code>, a valid Ward start is therefore always finalized; a single supplied start skips screening. This existing protection is now documented. The pool begins with the kmeans search’s own starts. <code>search = "kmeans"</code> reproduces the fits of 0.96.1, apart from the corrections listed below. On the start-search benchmark (180 fits), emEM attained the finite above-cutoff reference in 136 fits and the kmeans search in 130. The benchmark’s descriptive cutoff was 0.01 for the smallest standardized variance or covariance eigenvalue; values below it do not prove false classes. On the matched 80 heteroscedastic fits, both searches attained that reference in 40 fits, while emEM returned 25 below-cutoff solutions against 12 for the kmeans search. Retained runs took about twice as long by median time and 1.45 times as long in total.</li>
+<li>Either search reports the highest likelihood among the finished starts. The new <code>latents_thin_profiles</code> warning fires when a profile with its own variances has Gaussian membership mass below its number of free Gaussian parameters. It prompts inspection of covariance and support diagnostics. The warning is heuristic and the estimate is unchanged.</li>
+<li>Under emEM, <code>get_results(fit, "starts")</code> lists every start of the pool, with its <code>kind</code>, <code>stage</code> and likelihood after screening, and “Best likelihood replicated” counts the starts that were run to convergence.</li>
+<li>
+<code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> refits each model with the search, starts, stopping rule, selection and boundary policy it was fitted with, by default (<code>n_starts</code>, <code>max_iter</code> and <code>tol</code> now default to <code>NULL</code>). Staged and covariate refits keep the pool size too.</li>
+<li>
+<code>cores</code> distributes the emEM screening and the finished starts, with identical results.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="corrections-found-by-the-feature-equivalence-suites-0-97-0">Corrections found by the feature equivalence suites<a class="anchor" aria-label="anchor" href="#corrections-found-by-the-feature-equivalence-suites-0-97-0"></a></h4>
+<ul><li>
+<code>three_step(method = "ml")</code> runs its EM from a fixed set of starts (Latent GOLD’s proportional start first, the modal means, quantile placements, tail starts and twenty draws from a fixed internal seed) and keeps the highest maximum. One start missed a higher regular maximum for skewed or heavy-tailed outcomes. The result does not depend on, and does not move, the caller’s random seed.</li>
+<li>
+<code>three_step(method = "ml")</code> reports <code>NA</code> standard errors, with a <code>latents_small_classes</code> warning, for a class carried by a single unit (by a single group under <code>vcov_type = "cluster"</code>); its sandwich was exactly zero.</li>
+<li>Covariate fits record their <code>max_iter</code> and <code>tol</code>, so a bootstrap refit repeats them.</li>
+<li>
+<code>direct_effects</code> values that are <code>NA</code>, not character, or end in an empty term (<code>"y3 ~ z +"</code>) are refused as <code>latents_bad_argument</code>; a trailing <code>+</code> was silently dropped.</li>
+<li>Reported covariance matrices are exactly symmetric (they could differ by one unit in the last place between the triangles).</li>
+<li>Bootstrap inference drops, and counts, a resample that misses a category of a categorical or joined item, instead of stopping with an internal error.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.96.1" id="latents-0961">latents 0.96.1<a class="anchor" aria-label="anchor" href="#latents-0961"></a></h2>
+<div class="section level4">
+<h4 id="inference-and-numerical-corrections-0-96-1">Inference and numerical corrections<a class="anchor" aria-label="anchor" href="#inference-and-numerical-corrections-0-96-1"></a></h4>
+<ul><li>Entirely missing groups under <code>drop_empty = TRUE</code>, and zero-weight units, no longer satisfy robust-inference minimum-unit checks or inflate the number of independent units used for the CR1 correction. The correction is consistent across profile, covariate, transition, additive, regression and growth models where those units are supported.</li>
+<li>Direct-effect information is evaluated with centered covariates and its full covariance transformed back to the reported origin. Translating a predictor no longer causes a false singular-information error.</li>
+<li>ML three-step outcomes are fitted and differentiated in centered, scaled coordinates, preserving standard errors when the outcome has a large origin relative to its spread.</li>
+<li>VLMR calculations retain well-conditioned information coordinates and use an equivalent symmetric eigenvalue calculation. Imhof probabilities handle negative statistics and retain genuine small distribution weights. Comparisons whose reference weights cannot be resolved numerically report unavailable probabilities.</li>
+<li>Structured covariance updates handle active variance floors with a feasible solver that checks optimality, avoiding numerical failures near a bound while preserving the covariance structure and EM monotonicity.</li>
+<li>Socket-worker cleanup closes surviving and failed connections separately, preserving the typed parallel-failure error when a worker dies.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="paired-indicators-and-weighted-trees-0-96-1">Paired indicators and weighted trees<a class="anchor" aria-label="anchor" href="#paired-indicators-and-weighted-trees-0-96-1"></a></h4>
+<ul><li>Pair preparation rejects generated names that conflict with existing raw columns and applies native categorical validation before joining labels. Distinct numeric categories cannot silently merge during pair creation.</li>
+<li>Regression and growth trees use the sampling weights of the units their posteriors classify, including row, group and person adapters.</li>
+<li>The independent mover-stayer equivalence reference uses stable probability normalization, so large initial logits no longer overflow its path sum.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.96.0" id="latents-0960">latents 0.96.0<a class="anchor" aria-label="anchor" href="#latents-0960"></a></h2>
+<div class="section level4">
+<h4 id="direct-effects-0-96-0">Direct effects<a class="anchor" aria-label="anchor" href="#direct-effects-0-96-0"></a></h4>
+<ul><li>
+<code>multilpa(direct_effects = "y ~ z")</code> lets a covariate move a continuous indicator’s mean by the same amount in every profile (differential item functioning), Latent GOLD’s <code>y &lt;- 1 + Cluster + z</code>. The effects are estimated with the profiles, by a conditional maximization step in EM on centred covariates, have standard errors in <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>, and are reported by <code>get_results(fit, "direct_effects")</code>. <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, refits, the bivariate residuals and parametric draws use the covariates. Against Latent GOLD 6.1 the log likelihood, BIC, effect, intercepts, variances and their standard errors agree to every printed digit. Effects on categorical indicators and effects that differ by profile are not yet available.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="compatibility-0-96-0">Compatibility<a class="anchor" aria-label="anchor" href="#compatibility-0-96-0"></a></h4>
+<ul><li>Every call that worked in 0.95.12 gives the same result: the new arguments (<code>local_dependence</code>, <code>direct_effects</code>, <code>three_step(variance = )</code>) come last with defaults that change nothing, and <code>three_step(method = "m")</code> still means <code>"modal"</code>; <code>"ml"</code> is taken by its full name.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="local-dependence-0-96-0">Local dependence<a class="anchor" aria-label="anchor" href="#local-dependence-0-96-0"></a></h4>
+<ul><li>
+<code>local_dependence = "item1:item2"</code> in <code><a href="../reference/lca.html">lca()</a></code>, <code><a href="../reference/multilca.html">multilca()</a></code>, <code><a href="../reference/multilpa.html">multilpa()</a></code> and the enumeration functions models a pair of categorical indicators jointly within each class, the class-specific association Latent GOLD fits with <code>item1 &lt;-&gt; item2 | Cluster</code>; the other indicators stay independent given the class. <code>get_results(fit, "local_dependence")</code> gives each class’s joint probabilities beside their values under independence. On simulated data the log likelihood, parameter count, class sizes and item marginals agree with Latent GOLD 6.1 to every printed digit.</li>
+<li>A pair of continuous indicators, <code>local_dependence = "y1:y2"</code>, gets its own covariance within each class while every other covariance stays zero: between local independence (VVI) and a full covariance (VVV). The log likelihood, parameter count, covariances and their standard errors agree with Latent GOLD 6.1 (<code>y1 &lt;-&gt; y2 | Cluster</code>) to every printed digit.</li>
+<li>
+<code><a href="../reference/compare_models.html">compare_models()</a></code> compares a model with paired items and one without, which are fitted to the same data.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="lo-mendell-rubin-tests-0-96-0">Lo-Mendell-Rubin tests<a class="anchor" aria-label="anchor" href="#lo-mendell-rubin-tests-0-96-0"></a></h4>
+<ul><li>
+<code>get_results(models, "lmr")</code> reports the Vuong-Lo-Mendell-Rubin (VLMR) and adjusted Lo-Mendell-Rubin (aLMR) tests for every pair of converged candidates of a grid that differ by one profile or one group class, as Latent GOLD computes them: the likelihood-ratio statistic referred to a weighted chi-square distribution whose weights are the eigenvalues of Vuong’s matrix, with p-values by Imhof’s method. On two test cases the statistics, the mean and standard deviation of the reference distribution and the p-values agree with Latent GOLD 6.1 to every printed digit.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="maximum-likelihood-three-step-distal-outcomes-0-96-0">Maximum-likelihood three-step distal outcomes<a class="anchor" aria-label="anchor" href="#maximum-likelihood-three-step-distal-outcomes-0-96-0"></a></h4>
+<ul><li>
+<code>three_step(method = "ml")</code> estimates the class means of a distal outcome by maximum likelihood, with the step-one classification errors held fixed (Vermunt 2010; Bakk, Tekle and Vermunt 2013). <code>variance = "varying"</code> (default) or <code>"equal"</code> sets the outcome’s variances; the table adds the estimated <code>variance</code> of each class. Standard errors are the clustered sandwich, and <code>contrast = "pairs"</code> compares the classes, as for the other methods. BCH remains the default, being more robust to non-normal outcomes (Bakk and Vermunt 2016).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.12" id="latents-09512">latents 0.95.12<a class="anchor" aria-label="anchor" href="#latents-09512"></a></h2>
+<div class="section level4">
+<h4 id="quieter-and-stricter-checks-0-95-12">Quieter and stricter checks<a class="anchor" aria-label="anchor" href="#quieter-and-stricter-checks-0-95-12"></a></h4>
+<ul><li>A covariate model no longer passes on the estimation warnings of the one-start base fit it uses to check its input (a variance at its bound, no convergence, failed starts): it checks its own estimate for each of them, so one boundary gave two warnings and now gives one, about the model returned. It now also warns, with <code>latents_small_classes</code>, when one of its own classes has effective membership below one.</li>
+<li>A named plot function asked for one view (<code>plot_profiles(fit, what = "heatmap", scale = "standardized")</code>) warns with <code>latents_unused_argument</code> about an argument that view does not use, instead of ignoring it without a word. <code>what = "all"</code> stays silent, as each view takes its share.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="faster-standard-errors-0-95-12">Faster standard errors<a class="anchor" aria-label="anchor" href="#faster-standard-errors-0-95-12"></a></h4>
+<ul><li>
+<code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> computes the observed information of a profile, class, covariate or transition model once per R session for that fit and its data, and reuses it. The first call takes as long as before; later calls, including those made by <code><a href="../reference/latents-plots.html">plot_profiles()</a></code>, <code><a href="../reference/latents-plots.html">plot_responses()</a></code> and <code><a href="../reference/get_results.html">get_results()</a></code> when they draw or tabulate intervals, skip the two score evaluations per parameter. On a two-level model of 20,000 observations with 94 parameters, a repeated call took 0.23 s instead of 13 s. Results are identical to a computation without reuse, and any change to the fit or its data computes the information anew.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.95.11" id="latents-09511">latents 0.95.11<a class="anchor" aria-label="anchor" href="#latents-09511"></a></h2>
 <div class="section level4">
 <h4 id="named-plot-functions-on-every-fitted-model-0-95-11">Named plot functions on every fitted model<a class="anchor" aria-label="anchor" href="#named-plot-functions-on-every-fitted-model-0-95-11"></a></h4>
@@ -72,7 +187,7 @@
 <div class="section level4">
 <h4 id="one-contract-for-every-grid-0-95-11">One contract for every grid<a class="anchor" aria-label="anchor" href="#one-contract-for-every-grid-0-95-11"></a></h4>
 <ul><li>
-<code><a href="../reference/latents-plots.html">plot_enumeration()</a></code>, <code><a href="../reference/latents-plots.html">plot_selection()</a></code> and <code><a href="../reference/latents-plots.html">plot_tree()</a></code> take every grid the package makes: profile and class grids, transition grids (<code>enumerate_classes(time = )</code>), group-class family grids (<code>enumerate_classes(family = )</code>) and regression grids (<code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code>). Each grid offers the views its candidates carry. Transition grids draw every view, the tree included. Family grids draw their criteria and classification quality against the number of group classes; their candidates have no profiles, so the selection views and the tree are not drawn. Regression grids draw criteria, classification quality and the selection views, but not the tree.</li>
+<code><a href="../reference/latents-plots.html">plot_enumeration()</a></code>, <code><a href="../reference/latents-plots.html">plot_selection()</a></code> and <code><a href="../reference/latents-plots.html">plot_tree()</a></code> take every grid the package makes: profile and class grids, transition grids (<code>enumerate_classes(time = )</code>), group-class family grids (<code>enumerate_classes(family = )</code>) and regression grids (<code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code>). Each grid offers the views its candidates carry. Transition grids draw every view, the tree included. Family grids draw their criteria and classification quality against the number of group classes, and a tree of their group classes for each family; their candidates have no profiles, so the selection views are not drawn. Regression grids draw every view, the tree of their classes included. <code>get_results(x, "tree", ...)</code> returns the shared masses on every grid.</li>
 <li>A view a grid does not offer is refused with the new condition <code>latents_unsupported_view</code> (also of class <code>latents_bad_argument</code>), whose message gives the reason and the views the grid offers. An unknown criterion of a grid is now also of class <code>latents_bad_argument</code>.</li>
 <li>
 <code>plot_views(x)</code> of a grid lists every view of that grid, whether it is offered, and why not.</li>

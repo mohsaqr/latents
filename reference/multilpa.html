@@ -19,7 +19,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -127,7 +127,11 @@ missing indicators are available.</p>
 <span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  scaling <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"person"</span>, <span class="st">"grand"</span><span class="op">)</span>,</span>
 <span>  drop_empty <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  cores <span class="op">=</span> <span class="fl">1L</span></span>
+<span>  cores <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  local_dependence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  direct_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  search <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  n_screen <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -189,11 +193,13 @@ or covariance matrices) or <code>"equal"</code> (shared across profiles).</p></d
 <dd><p>Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread, as in mclust's initialization. The
+described by its own means and spread. The
 remaining starts are k-means from random centres. A supplied <code>start</code>
 replaces the first start, and the remaining starts are random. With
 <code>start</code> and <code>max_iter = 0</code>, exactly one start is run whatever <code>n_starts</code>
-is.</p></dd>
+is. Rows from zero-weight units do not supply initial clustering or
+measurement parameters. For <code>search = "emEM"</code>, this is the finalist
+budget, including the protected first start (see <code>search</code>).</p></dd>
 
 
 <dt id="arg-max-iter">max_iter<a class="anchor" aria-label="anchor" href="#arg-max-iter"></a></dt>
@@ -617,11 +623,120 @@ enumerations and refits; it has no effect on data without such rows.</p></dd>
 <dd><p>Number of processor cores for the random starts (default 1).
 The starting values are drawn in order in the current process and only
 the EM iterations are distributed, so the result is identical to
-<code>cores = 1</code>. Workers are forked processes on macOS and Linux, and a
-socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as in
-<code><a href="enumerate_classes.html">enumerate_classes()</a></code>; a worker that fails as a whole raises
-<code>latents_parallel_failure</code>. Models with membership covariates run their
-starts on one core.</p></dd>
+<code>cores = 1</code>. Under <code>search = "emEM"</code> both the screening of the pool and
+the final runs are distributed; the screening is most of the time of an
+emEM fit, so a large model or data set gains most. Workers are forked
+processes on macOS and Linux, and a socket cluster on Windows and on
+macOS with Apple's Accelerate BLAS, as in <code><a href="enumerate_classes.html">enumerate_classes()</a></code>. Lost
+worker results are retried once with half as many workers (rounded up).
+One <code>latents_worker_lost</code> warning reports losses and recovery; starts still
+lost are recorded as failed. Socket workers retain completed chunks, but
+tasks within a failed chunk may also be retried. Models with
+membership covariates run their starts on one core. To fit many models,
+give <code>cores</code> to <code><a href="enumerate_classes.html">enumerate_classes()</a></code>, which shares its worker pool
+across candidates and their starts for models without membership
+covariates or joined categorical <code>local_dependence</code> pairs. Other fitting
+engines use one task per candidate.</p></dd>
+
+
+<dt id="arg-local-dependence">local_dependence<a class="anchor" aria-label="anchor" href="#arg-local-dependence"></a></dt>
+<dd><p>Pairs of indicators that stay associated within
+each class, written <code>"item1:item2"</code> (several as a character vector).
+A pair of continuous indicators gets its own covariance in each class
+(one shared covariance with <code>variance_model = "equal"</code>), every other
+covariance staying zero: the covariance Latent GOLD fits with
+<code>item1 &lt;-&gt; item2 | Cluster</code>. It is not combined with <code>covariance_model</code>,
+<code>model</code> or the structure arguments, covariates, <code>time</code>, <code>prior</code>, <code>noise</code>
+or held variances. A pair of categorical indicators is modelled jointly
+within each class. Each such pair becomes one categorical indicator, named
+<code>"item1:item2"</code>, whose categories are the observed combinations of the
+two items' categories, so every class has its own joint distribution of
+the pair: the class-specific association Latent GOLD fits with
+<code>item1 &lt;-&gt; item2 | Cluster</code>. The other indicators stay independent given
+the class. <code>get_results(fit, "local_dependence")</code> reports each class's
+joint probabilities beside their values under independence; <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>,
+<code>parameter_inference(data = )</code> and the other functions that take <code>data</code>
+join the pair in the caller's data. A row observing one item of a pair
+and not the other treats the pair as missing, with a
+<code>latents_partial_pair</code> warning. A pair of indicators that are not both
+categorical, that names an indicator twice or that shares an indicator
+with another pair raises <code>latents_bad_argument</code>; a categorical item of a
+pair whose categories contain <code>":"</code> raises <code>latents_bad_data</code>. Default:
+none.</p></dd>
+
+
+<dt id="arg-direct-effects">direct_effects<a class="anchor" aria-label="anchor" href="#arg-direct-effects"></a></dt>
+<dd><p>Direct effects of covariates on continuous
+indicators, written <code>"indicator ~ covariate"</code> (several covariates joined
+with <code>+</code>, several indicators as a character vector). The covariate moves
+the indicator's mean by the same amount in every profile,
+<code>y = mean_k + b z + e</code> (Bandeen-Roche et al., 1997), so a difference in
+the indicator that the covariate explains is not read as a difference
+between profiles: the direct effect Latent GOLD fits with
+<code>y &lt;- 1 + Cluster + z</code>. Covariates are numeric columns of <code>data</code>,
+observed in every row (code a categorical covariate as indicator
+columns), and enter with their values as given, so <code>means</code> are the
+profile means at a covariate value of zero; centre a covariate first to
+read them at its mean. The effects are estimated with the profiles (a
+conditional maximization step in EM; Meng &amp; Rubin, 1993), have standard
+errors in <code><a href="parameter_inference.html">parameter_inference()</a></code> (parameter <code>direct_effect</code>, term
+<code>"indicator:covariate"</code>), and are reported by
+<code>get_results(fit, "direct_effects")</code>. <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and the functions that
+take <code>data</code> read the covariates from it. Direct effects need a diagonal
+covariance (EEI or VVI) and are not combined with <code>local_dependence</code>
+between continuous indicators, <code>profile_covariates</code>, <code>group_covariates</code>,
+<code>time</code>, <code>prior</code>, <code>noise</code>, <code>fixed</code>, <code>start</code>, <code>centering</code> or <code>scaling</code>;
+those, a term that is not <code>"indicator ~ covariate"</code>, and an indicator
+that is not continuous raise <code>latents_bad_argument</code>, and a covariate
+that is absent, not numeric, missing or constant raises
+<code>latents_bad_data</code>. Default: none.</p></dd>
+
+
+<dt id="arg-search">search<a class="anchor" aria-label="anchor" href="#arg-search"></a></dt>
+<dd><p>How the starts are found: <code>NULL</code> (the default), <code>"kmeans"</code>
+or <code>"emEM"</code>. <code>NULL</code> uses <code>"emEM"</code> when every profile shares one
+covariance matrix (EII, EEI, EEE with continuous indicators), where the
+likelihood is bounded and a higher maximum cannot be a collapsed profile,
+and <code>"kmeans"</code> otherwise, including categorical-only models and the
+group-class families. The search used is recorded on the fit, and
+<code>search = "kmeans"</code> reproduces the fits of latents 0.96.2 for every
+model. <code>"kmeans"</code> runs
+<code>n_starts</code> starts to convergence: Ward's clustering first, then k-means
+from random centres. <code>"emEM"</code> screens a pool of <code>n_screen</code> starts by a
+short EM run each and runs <code>n_starts</code> finalists to convergence
+(Biernacki, Celeux &amp; Govaert, 2003). The first start (Ward's clustering,
+or supplied starting values) reserves one finalist slot if its screening
+succeeds; the remaining slots take the highest screening likelihoods.
+Thus <code>n_starts = 1</code> finalizes Ward's start whenever it screens
+successfully, even if another screened start has a higher likelihood.
+With a supplied start and <code>n_starts = 1</code>, screening is skipped entirely.
+The pool begins with the kmeans search's own
+starts, drawn in the same order, followed by random partitions of the
+rows and random rows as class centres, and <code>get_results(fit, "starts")</code>
+gives every start of the pool with its <code>kind</code>, its <code>stage</code> and its
+likelihood after screening. Either search reports the start with the
+highest likelihood among those run to convergence (subject to
+<code>select_start</code> and <code>boundary</code>). With profile-specific variances that
+maximum can be spurious, a profile on a few nearly coincident points
+with a variance near zero (McLachlan &amp; Peel, 2000, section 3.10), and a
+harder search finds such maxima more often. They are reported, not set
+aside: a variance at <code>min_variance</code> as a boundary fit
+(<code>latents_boundary</code>; <code>boundary = "exclude"</code> sets those starts aside),
+and low Gaussian membership mass by a <code>latents_thin_profiles</code> heuristic
+warning. <code>get_results(fit, "gaussian_diagnostics")</code> reports continuous
+covariance and support measures without an automatic spike cutoff or
+changing the selected start. Neither a warning's absence nor a repeated
+likelihood establishes a regular or globally optimal solution.</p></dd>
+
+
+<dt id="arg-n-screen">n_screen<a class="anchor" aria-label="anchor" href="#arg-n-screen"></a></dt>
+<dd><p>For <code>search = "emEM"</code>, the number of starts screened, at
+least <code>n_starts</code>. <code>NULL</code> (the default) screens five times <code>n_starts</code>.
+The protected first start counts toward the <code>n_starts</code> finalist budget;
+increasing <code>n_screen</code> does not add finalist slots. A single supplied
+start with <code>n_starts = 1</code> disables screening.
+A value with <code>search = "kmeans"</code>, or one below <code>n_starts</code>, raises
+<code>latents_bad_argument</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -670,6 +785,12 @@ Sociological Methodology, 33, 213–239.
 doi:10.1111/j.0081-1750.2003.t01-1-00131.x.</p>
 <p>Banfield, J. D., &amp; Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.</p>
+<p>Bandeen-Roche, K., Miglioretti, D. L., Zeger, S. L., &amp; Rathouz, P. J.
+(1997). Latent variable regression for multiple discrete outcomes.
+Journal of the American Statistical Association, 92(440), 1375–1386.</p>
+<p>Meng, X.-L., &amp; Rubin, D. B. (1993). Maximum likelihood estimation via the
+ECM algorithm: A general framework. Biometrika, 80(2), 267–278.
+doi:10.1093/biomet/80.2.267.</p>
 <p>Houle, S. A., Morin, A. J. S., &amp; Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. Organizational Research Methods.
 doi:10.1177/10944281261469432.</p>
@@ -743,6 +864,14 @@ Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_post    lectures     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1 attendance    lectures     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 40 more rows.  get_results(x, what = "covariances")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- gaussian_diagnostics --------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   context   profile gaussian_mass positive_rows weight_effective_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles profile_1         834.1          1422                852</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles profile_2         587.9          1422                606</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  min_variance_ratio min_standardized_eigenvalue boundary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              0.3930                      0.3930    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              0.3715                      0.3715    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- profile_probabilities -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group_class profile probability group_class_probability</span>
@@ -934,7 +1063,7 @@ Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.26    -0.95      -0.51      -1.89      -1.45</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 1412 more rows.  get_results(x, what = "data")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile  indicator       mean  variance standard_deviation</span>

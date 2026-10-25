@@ -78,13 +78,13 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> Transition Probability Matrix :
 #> 
 #>           profile_1 profile_2
-#> profile_1 0.8805151 0.1194849
-#> profile_2 0.3951996 0.6048004
+#> profile_1 0.8805108 0.1194892
+#> profile_2 0.3951422 0.6048578
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#> 0.8083383 0.1916617 
+#> 0.8082999 0.1917001 
 #> 
 #> Group class 2 :
 #> State Labels : 
@@ -93,13 +93,13 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> 
 #> Transition Probability Matrix :
 #> 
-#>            profile_1 profile_2
-#> profile_1 0.70405918 0.2959408
-#> profile_2 0.05770587 0.9422941
+#>           profile_1 profile_2
+#> profile_1 0.7039794 0.2960206
+#> profile_2 0.0576845 0.9423155
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#> 0.2460338 0.7539662 
+#>  0.245968  0.754032 
 #> 
 ```

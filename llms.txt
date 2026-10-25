@@ -362,7 +362,11 @@ are inspected below; a converged fit alone does not establish that the
 best attainable likelihood has been found. With many starts, a profile
 can collapse on a single observation with its variances at the lower
 bound, a degenerate solution whose likelihood is set by `min_variance`;
-`boundary = "exclude"` sets such starts aside.
+`boundary = "exclude"` sets such starts aside. A profile with fewer
+effective members than its own means and variances is reported by a
+`latents_thin_profiles` warning: its means and variances rest on few
+observations, so inspect its covariance diagnostics before interpreting
+it.
 
 ## Inspecting and interpreting the estimated structure
 
@@ -1357,12 +1361,12 @@ of those tables can be inspected directly.
 
 names(get_results(fit, "all"))
 #>  [1] "profiles"              "responses"             "covariances"          
-#>  [4] "profile_probabilities" "counts"                "posteriors"           
-#>  [7] "group_posteriors"      "assignments"           "classification"       
-#> [10] "average_posteriors"    "classification_errors" "bch_weights"          
-#> [13] "entropy"               "residuals"             "information_criteria" 
-#> [16] "model"                 "stages"                "starts"               
-#> [19] "data"
+#>  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               
+#>  [7] "posteriors"            "group_posteriors"      "assignments"          
+#> [10] "classification"        "average_posteriors"    "classification_errors"
+#> [13] "bch_weights"           "entropy"               "residuals"            
+#> [16] "information_criteria"  "model"                 "stages"               
+#> [19] "starts"                "data"
 ```
 
 Result tables are returned as base R data frames.

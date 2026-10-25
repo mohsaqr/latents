@@ -118,6 +118,7 @@ fit
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
 #> Converged: TRUE | iterations: 42 | best start: 1/10
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
 #>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362
@@ -512,6 +513,7 @@ covariate_fit <- multilpa(
 covariate_fit
 #> Multilevel LPA with covariates: 3 profiles, 3 group classes
 #> Log likelihood -8331.180658; AIC 16742.361; BIC (groups) 16848.899; converged TRUE
+#> Smallest standardized Gaussian eigenvalue: 0.2004 (profiles, profile_3); Gaussian mass: 347.4; weight effective n: 450.6.
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
 #>        1  0.3881   0.2028     0.4610     0.3535     0.2771 498.3     0.3504
@@ -626,6 +628,7 @@ staged
 #> Converged: TRUE | iterations: 24 | best start: 2/6
 #> Held fixed, not estimated here: means, variances (first stage)
 #> Parameters estimated here: 8; with the held measurement: 38
+#> Smallest standardized Gaussian eigenvalue: 0.1932 (profiles, profile_1); Gaussian mass: 438; weight effective n: 572.7.
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
 #>        1  0.3247   0.1364     0.3717     0.2717     0.1972 438.0     0.3080

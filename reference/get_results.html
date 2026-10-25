@@ -13,7 +13,7 @@ the object and are listed under Tables.'><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -278,7 +278,9 @@ without <code>time</code>.</p></dd>
 <dt><code>"starts"</code></dt>
 <dd><p>One row per EM start: <code>start</code>, <code>log_likelihood</code>,
 <code>converged</code>, <code>iterations</code>, <code>error</code> and, where the family records it,
-<code>boundary</code>.</p></dd>
+<code>boundary</code>. Under <code>search = "emEM"</code>, one row per start of the pool,
+with its <code>kind</code>, its <code>stage</code> (<code>"final"</code> when run to convergence,
+<code>"screened"</code> otherwise) and its <code>screened_log_likelihood</code>.</p></dd>
 
 <dt><code>"data"</code></dt>
 <dd><p>The data the model was fitted to, one row per observation
@@ -295,7 +297,28 @@ included; <code><a href="three_step.html">three_step()</a></code> and <code><a h
 <code>modal</code>. Takes <code>format</code>.</p></dd>
 
 
-</dl><p>Tables specific to one family or object:</p><dl><dt><code>"profile_probabilities"</code>, <code>"stages"</code></dt>
+</dl><p>Tables specific to one family or object:</p><dl><dt><code>"gaussian_diagnostics"</code></dt>
+<dd><p>Gaussian profile, membership-covariate,
+transition and cross-level fits that record these diagnostics. One row
+per Gaussian component and measurement context: <code>context</code>, <code>profile</code>,
+<code>gaussian_mass</code>, <code>positive_rows</code>, <code>weight_effective_n</code>,
+<code>min_variance_ratio</code>, <code>min_standardized_eigenvalue</code>, <code>boundary</code>.
+<code>gaussian_mass</code> sums posterior times normalized sampling weight over
+rows with at least one observed Gaussian indicator; <code>positive_rows</code>
+counts rows with positive contributions. <code>weight_effective_n</code> is the
+concentration measure <code>(sum(a)^2 / sum(a^2))</code> for those contributions,
+not an identification guarantee; Gaussian mass is not this effective
+sample size. <code>min_variance_ratio</code> is the smallest component variance
+divided by its observed sampling-weighted marginal variance on the
+fitted scale, including between-component variation.
+<code>min_standardized_eigenvalue</code> is the smallest eigenvalue of the
+component covariance after standardizing every indicator by its
+observed sampling-weighted marginal standard deviation. Missing reference
+variation gives <code>NA</code> ratios. <code>boundary</code> concerns the absolute variance
+or eigenvalue floor. These descriptive measures use no automatic spike
+cutoff and do not alter start selection.</p></dd>
+
+<dt><code>"profile_probabilities"</code>, <code>"stages"</code></dt>
 <dd><p>A <code>multilpa</code> fit.
 <code>"profile_probabilities"</code> has one row per group class and profile:
 <code>group_class</code>, <code>profile</code>, <code>probability</code>, <code>group_class_probability</code>.
@@ -329,7 +352,10 @@ likelihood, parameter count, every criterion under both sample-size
 conventions, both entropies, the average posterior probability (AvePP)
 summaries of each level (<code>avepp_min</code>, <code>avepp_max</code>, <code>avepp_mean</code>,
 <code>avepp_below</code> and the same four prefixed <code>group_</code>) and the convergence,
-boundary, replication, warning and error diagnostics. Failed candidates
+boundary, replication, warning and error diagnostics, including
+<code>min_standardized_eigenvalue</code> and <code>min_gaussian_mass</code> where Gaussian
+diagnostics are available. These are descriptive summaries, without
+an automatic cutoff or change to candidate selection. Failed candidates
 are kept with <code>NA</code> estimates and their error text. It takes <code>cutoff</code>
 (default <code>0.8</code>): <code>avepp_below</code> and <code>group_avepp_below</code> count the classes
 whose AvePP is below it. A class with no modally assigned unit has no
@@ -371,10 +397,55 @@ can still name a knee. A line needs three candidates for a knee and four
 for <code>knee_without_largest</code> and <code>stable</code>; otherwise they are <code>NA</code> and
 <code>note</code> gives the reason.</p></dd>
 
+<dt><code>"local_dependence"</code></dt>
+<dd><p>For a fit with <code>local_dependence</code>: <code>pair</code>,
+<code>kind</code> (<code>"categorical"</code> or <code>"continuous"</code>), <code>profile</code>, <code>item_1</code>,
+<code>category_1</code>, <code>item_2</code>, <code>category_2</code>, <code>probability</code>, <code>independent</code>,
+<code>ratio</code>, <code>covariance</code> and <code>correlation</code>. A categorical pair has one row
+per profile and combination of the two items' categories: the fitted
+joint <code>probability</code>, the product of the two marginal probabilities
+(<code>independent</code>, the joint probability under independence within the
+profile) and their <code>ratio</code>; its covariance columns are <code>NA</code>. A
+continuous pair has one row per profile, with the pair's <code>covariance</code>
+and the <code>correlation</code> it implies; its category and probability
+columns are <code>NA</code>. A fit without pairs raises
+<code>latents_no_local_dependence</code>, and <code>what = "all"</code> leaves the table out.</p></dd>
+
+<dt><code>"direct_effects"</code></dt>
+<dd><p>For a fit with <code>direct_effects</code>, one row per
+effect: <code>indicator</code>, <code>covariate</code>, <code>estimate</code> (the change in the
+indicator's mean per unit of the covariate, the same in every profile),
+<code>standard_error</code>, <code>statistic</code>, <code>p_value</code>, <code>conf_low</code> and <code>conf_high</code>
+(Wald, from <code><a href="parameter_inference.html">parameter_inference()</a></code>). A fit without direct effects
+raises <code>latents_no_direct_effects</code>, and <code>what = "all"</code> leaves the table
+out.</p></dd>
+
+<dt><code>"lmr"</code></dt>
+<dd><p>The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted
+Lo-Mendell-Rubin (aLMR) tests of an enumeration grid (Vuong 1989; Lo,
+Mendell and Rubin 2001; Vermunt 2024), one row per pair of converged
+candidates that differ by one profile (<code>direction = "profiles"</code>) or one
+group class (<code>"group_classes"</code>) at the same structure: <code>direction</code>,
+<code>null_candidate</code>, <code>alternative_candidate</code>, <code>n_profiles</code>,
+<code>n_group_classes</code> and <code>model</code> of the alternative, <code>n_units</code> (the
+independent units scored: groups, or observations without groups),
+<code>parameters_added</code>, <code>lr</code> (twice the log-likelihood difference),
+<code>vlmr_p</code>, <code>adjusted_lr</code> (<code>lr / (1 + 1 / (parameters_added * log(n_units)))</code>),
+<code>almr_p</code>, <code>reference_mean</code> and <code>reference_sd</code> of the weighted
+chi-square reference distribution, whose weights are the eigenvalues of
+Vuong's matrix of the two models' scores and Hessians, and <code>note</code>. The
+p-values are computed by Imhof's method to about <code>1e-9</code>. A pair whose
+information matrix is singular, or whose candidate is on a boundary,
+keeps its row with <code>NA</code> statistics and the reason in <code>note</code>; warnings
+raised while scoring a candidate are recorded there too. Every
+candidate's information is computed, so the table is built only when
+asked for, and <code>what = "all"</code> leaves it out. A grid with no such pair
+raises <code>latents_no_lmr</code>.</p></dd>
+
 <dt><code>"tree"</code></dt>
-<dd><p>The flows of <code><a href="latents-plots.html">plot_tree()</a></code>, taking its arguments
-<code>n_group_classes</code>, <code>n_profiles</code>, <code>model</code>, <code>candidates</code>, <code>from</code>, <code>to</code>
-and <code>level</code>
+<dd><p>The flows of <code><a href="latents-plots.html">plot_tree()</a></code>, on every grid, taking its
+arguments <code>n_group_classes</code>, <code>n_profiles</code> (<code>n_classes</code> on a regression
+grid), <code>model</code>, <code>candidates</code>, <code>from</code>, <code>to</code> and <code>level</code>
 (default <code>"individuals"</code>). One row per pair of classes in consecutive
 rows of each tree: <code>tree</code> (the tree's name, as in the plot list),
 <code>level</code>, <code>from_candidate</code>, <code>from_class</code>, <code>from_share</code>, <code>to_candidate</code>,
@@ -727,12 +798,12 @@ classification tables gathered with a condensed reading.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2      groups         2     106    4.434664        0.9396428</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">get_results</span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "profiles"              "responses"             "covariances"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "profile_probabilities" "counts"                "posteriors"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "group_posteriors"      "assignments"           "classification"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "average_posteriors"    "classification_errors" "bch_weights"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "entropy"               "residuals"             "information_criteria" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "model"                 "stages"                "starts"               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "data"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "posteriors"            "group_posteriors"      "assignments"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "classification"        "average_posteriors"    "classification_errors"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "bch_weights"           "entropy"               "residuals"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "information_criteria"  "model"                 "stages"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "starts"                "data"                 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># `engagement` and `student_type` are the kinds each row was simulated from,</span></span></span>
 <span class="r-in"><span><span class="co"># which the model never saw. Both recovery checks are one call.</span></span></span>

@@ -583,15 +583,16 @@ Each kind offers the views its candidates carry:
 | criteria | 14 columns | aic, bic, bic_individual | aic, bic, bic_individual | aic, bic, bic_rows, sabic, icl |
 | entropy, avepp, diagnostics | yes | yes | group classes | yes |
 | deltas, heatmap, smallest, trust, selection | yes | yes | no | yes |
-| tree | yes | yes | no | no |
+| tree | yes | yes | group classes | yes |
 
 A family grid's candidates have group classes and no profiles, so its
-criteria and quality are drawn against the number of group classes, and
-the views laid out by profiles and group classes, and the tree, are not
-drawn. A regression grid's candidates are not named, so it has no tree;
-its smallest-class view reads the `smallest_share` of its table, and its
-trust view has no boundary column to read. A view a grid does not offer
-is refused with `latents_unsupported_view`.
+criteria and quality are drawn against the number of group classes, the
+views laid out by profiles and group classes are not drawn, and its tree
+divides the groups (`level = "groups"`, its default), one tree per
+family. A regression grid's tree divides the cases by their class
+posteriors; its smallest-class view reads the `smallest_share` of its
+table, and its trust view has no boundary column to read. A view a grid
+does not offer is refused with `latents_unsupported_view`.
 
 Each profile keeps the same order (largest first), Okabe-Ito colour and
 point shape in every view. The plots require ggplot2, which is a

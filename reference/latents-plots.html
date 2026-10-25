@@ -17,7 +17,7 @@ ggplot is returned invisibly.'><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -618,10 +618,11 @@ grids (<code>enumerate_classes(time = )</code>), group-class family grids
 (<code>enumerate_classes(family = )</code>) and regression grids
 (<code><a href="enumerate_regressions.html">enumerate_regressions()</a></code>). Each kind offers the views its candidates
 carry:</p><table class="table table"><tr><td>View</td><td>Profiles, classes</td><td>Transitions</td><td>Families</td><td>Regressions</td></tr><tr><td>criteria</td><td>14 columns</td><td>aic, bic, bic_individual</td><td>aic, bic,
-bic_individual</td><td>aic, bic, bic_rows, sabic, icl</td></tr><tr><td>entropy, avepp, diagnostics</td><td>yes</td><td>yes</td><td>group classes</td><td>yes</td></tr><tr><td>deltas, heatmap, smallest, trust, selection</td><td>yes</td><td>yes</td><td>no</td><td>yes</td></tr><tr><td>tree</td><td>yes</td><td>yes</td><td>no</td><td>no</td></tr></table><p>A family grid's candidates have group classes and no profiles, so its
-criteria and quality are drawn against the number of group classes, and
-the views laid out by profiles and group classes, and the tree, are not
-drawn. A regression grid's candidates are not named, so it has no tree; its
+bic_individual</td><td>aic, bic, bic_rows, sabic, icl</td></tr><tr><td>entropy, avepp, diagnostics</td><td>yes</td><td>yes</td><td>group classes</td><td>yes</td></tr><tr><td>deltas, heatmap, smallest, trust, selection</td><td>yes</td><td>yes</td><td>no</td><td>yes</td></tr><tr><td>tree</td><td>yes</td><td>yes</td><td>group classes</td><td>yes</td></tr></table><p>A family grid's candidates have group classes and no profiles, so its
+criteria and quality are drawn against the number of group classes, the
+views laid out by profiles and group classes are not drawn, and its tree
+divides the groups (<code>level = "groups"</code>, its default), one tree per family.
+A regression grid's tree divides the cases by their class posteriors; its
 smallest-class view reads the <code>smallest_share</code> of its table, and its trust
 view has no boundary column to read. A view a grid does not offer is
 refused with <code>latents_unsupported_view</code>.</p>

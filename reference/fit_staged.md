@@ -26,7 +26,9 @@ fit_staged(
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
-  time = NULL
+  time = NULL,
+  search = NULL,
+  n_screen = NULL
 )
 ```
 
@@ -62,9 +64,10 @@ fit_staged(
   class, or a fitted `multilpa` model to use as the first stage. Its
   profiles, indicators and measurement options must match the ones
   requested here, and it must have one group class. Fits made with
-  `weights`, `centering` or `scaling`, or with `ordinal` or `count`
-  indicators, are refused, as are covariance structures other than EEI,
-  VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
+  `weights`, `centering` or `scaling`, with `ordinal` or `count`
+  indicators, with `direct_effects` or with `local_dependence` between
+  continuous indicators, are refused, as are covariance structures other
+  than EEI, VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
 
 - variance_model:
 
@@ -144,6 +147,54 @@ fit_staged(
   stored as text whose alphabetical order is not their numeric order
   (`"2"`, `"10"`) raise `latents_bad_time`; zero-padded numbers and ISO
   dates are accepted.
+
+- search:
+
+  How the starts are found: `NULL` (the default), `"kmeans"` or
+  `"emEM"`. `NULL` uses `"emEM"` when every profile shares one
+  covariance matrix (EII, EEI, EEE with continuous indicators), where
+  the likelihood is bounded and a higher maximum cannot be a collapsed
+  profile, and `"kmeans"` otherwise, including categorical-only models
+  and the group-class families. The search used is recorded on the fit,
+  and `search = "kmeans"` reproduces the fits of latents 0.96.2 for
+  every model. `"kmeans"` runs `n_starts` starts to convergence: Ward's
+  clustering first, then k-means from random centres. `"emEM"` screens a
+  pool of `n_screen` starts by a short EM run each and runs `n_starts`
+  finalists to convergence (Biernacki, Celeux & Govaert, 2003). The
+  first start (Ward's clustering, or supplied starting values) reserves
+  one finalist slot if its screening succeeds; the remaining slots take
+  the highest screening likelihoods. Thus `n_starts = 1` finalizes
+  Ward's start whenever it screens successfully, even if another
+  screened start has a higher likelihood. With a supplied start and
+  `n_starts = 1`, screening is skipped entirely. The pool begins with
+  the kmeans search's own starts, drawn in the same order, followed by
+  random partitions of the rows and random rows as class centres, and
+  `get_results(fit, "starts")` gives every start of the pool with its
+  `kind`, its `stage` and its likelihood after screening. Either search
+  reports the start with the highest likelihood among those run to
+  convergence (subject to `select_start` and `boundary`). With
+  profile-specific variances that maximum can be spurious, a profile on
+  a few nearly coincident points with a variance near zero (McLachlan &
+  Peel, 2000, section 3.10), and a harder search finds such maxima more
+  often. They are reported, not set aside: a variance at `min_variance`
+  as a boundary fit (`latents_boundary`; `boundary = "exclude"` sets
+  those starts aside), and low Gaussian membership mass by a
+  `latents_thin_profiles` heuristic warning.
+  `get_results(fit, "gaussian_diagnostics")` reports continuous
+  covariance and support measures without an automatic spike cutoff or
+  changing the selected start. Neither a warning's absence nor a
+  repeated likelihood establishes a regular or globally optimal
+  solution.
+
+- n_screen:
+
+  For `search = "emEM"`, the number of starts screened, at least
+  `n_starts`. `NULL` (the default) screens five times `n_starts`. The
+  protected first start counts toward the `n_starts` finalist budget;
+  increasing `n_screen` does not add finalist slots. A single supplied
+  start with `n_starts = 1` disables screening. A value with
+  `search = "kmeans"`, or one below `n_starts`, raises
+  `latents_bad_argument`.
 
 ## Value
 

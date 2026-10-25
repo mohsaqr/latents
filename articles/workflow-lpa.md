@@ -58,6 +58,9 @@ estimates these four structures with every number of profiles requested.
 ``` r
 
 models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)
+#> Warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is
+#> a conservative diagnostic, not an identification test; inspect the Gaussian covariance
+#> diagnostics.
 plot_enumeration(models)
 ```
 
@@ -66,10 +69,14 @@ plot_enumeration(models)
 The choice of structure matters here because four of the five constructs
 are strongly correlated. The structures without covariances (`EEI`,
 `VVI`) can reproduce these correlations only by adding profiles, and
-their BIC continues to fall up to six profiles. The structures with
-covariances account for the correlations directly, and reach far lower
-BIC values with one or two profiles. The `EEE` structure attains the
-lowest values; its candidates are:
+their BIC continues to fall up to six profiles. The warnings printed
+during the enumeration report candidates with profile-specific variances
+that contain a profile too small to determine them
+(`latents_thin_profiles`); the `EEE` structure shares one covariance
+matrix and cannot have such a profile. The structures with covariances
+account for the correlations directly, and reach far lower BIC values
+with one or two profiles. The `EEE` structure attains the lowest values;
+its candidates are:
 
 ``` r
 
@@ -77,21 +84,21 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>  candidate n_profiles log_likelihood n_parameters  aic  bic icl_individual
 #>  profiles1          1         -615.7           20 1271 1345           1345
 #>  profiles2          2         -600.9           26 1254 1350           1457
 #>  profiles3          3         -593.1           32 1250 1369           1609
-#>  profiles4          4         -583.2           38 1242 1383           1574
+#>  profiles4          4         -582.1           38 1240 1381           1574
 #>  profiles5          5         -572.1           44 1232 1395           1642
 #>  profiles6          6         -562.8           50 1226 1411           1688
 #>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
 #>               NA        NA         NA          NA      TRUE    FALSE
 #>           0.7440    0.8801     0.9169           0      TRUE    FALSE
-#>           0.6347    0.7967     0.8340           1      TRUE    FALSE
-#>           0.7710    0.8295     0.8844           0      TRUE    FALSE
+#>           0.6347    0.7968     0.8340           1      TRUE    FALSE
+#>           0.7686    0.8180     0.8777           0      TRUE    FALSE
 #>           0.7440    0.8046     0.8427           0      TRUE    FALSE
 #>           0.7422    0.7602     0.8214           2      TRUE    FALSE
 #> 
@@ -116,32 +123,32 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  profiles3          3               1   EEE individuals     1     126           0.4200
 #>  profiles3          3               1   EEE individuals     2      82           0.2733
 #>  profiles3          3               1   EEE individuals     3      92           0.3067
-#>  profiles4          4               1   EEE individuals     1      90           0.3000
-#>  profiles4          4               1   EEE individuals     2      56           0.1867
-#>  profiles4          4               1   EEE individuals     3     148           0.4933
-#>  profiles4          4               1   EEE individuals     4       6           0.0200
+#>  profiles4          4               1   EEE individuals     1      91           0.3033
+#>  profiles4          4               1   EEE individuals     2      60           0.2000
+#>  profiles4          4               1   EEE individuals     3      33           0.1100
+#>  profiles4          4               1   EEE individuals     4     116           0.3867
 #>  profiles5          5               1   EEE individuals     1      64           0.2133
 #>  estimated_n estimated_proportion average_posterior odds_correct_classification
-#>       93.074              0.31025            0.8801                      16.315
-#>      206.926              0.68975            0.9538                       9.290
-#>      129.800              0.43267            0.8242                       6.148
-#>       80.377              0.26792            0.7967                      10.706
-#>       89.823              0.29941            0.8810                      17.327
-#>       89.271              0.29757            0.8944                      19.995
-#>       58.063              0.19354            0.8295                      20.268
-#>      143.901              0.47967            0.8646                       6.924
-#>        8.766              0.02922            0.9491                     619.605
-#>       68.241              0.22747            0.8764                      24.072
+#>        93.07               0.3102            0.8801                      16.315
+#>       206.93               0.6898            0.9538                       9.290
+#>       129.78               0.4326            0.8241                       6.146
+#>        80.40               0.2680            0.7968                      10.711
+#>        89.82               0.2994            0.8810                      17.327
+#>        84.23               0.2808            0.8180                      11.514
+#>        66.74               0.2225            0.8793                      25.452
+#>        33.29               0.1110            0.8961                      69.074
+#>       115.74               0.3858            0.9175                      17.714
+#>        68.24               0.2275            0.8764                      24.072
 #>  relative_entropy
 #>            0.7440
 #>            0.7440
 #>            0.6347
 #>            0.6347
 #>            0.6347
-#>            0.7710
-#>            0.7710
-#>            0.7710
-#>            0.7710
+#>            0.7686
+#>            0.7686
+#>            0.7686
+#>            0.7686
 #>            0.7440
 #>    ... 10 more rows.  get_results(x, what = "classification")
 #> 
@@ -150,8 +157,8 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  profiles1          1               1   EEE bic_groups  1345            NA         <NA>
 #>  profiles2          2               1   EEE bic_groups  1350        -4.704    profiles1
 #>  profiles3          3               1   EEE bic_groups  1369       -18.531    profiles2
-#>  profiles4          4               1   EEE bic_groups  1383       -14.532    profiles3
-#>  profiles5          5               1   EEE bic_groups  1395       -11.959    profiles4
+#>  profiles4          4               1   EEE bic_groups  1381       -12.349    profiles3
+#>  profiles5          5               1   EEE bic_groups  1395       -14.143    profiles4
 #>  profiles6          6               1   EEE bic_groups  1411       -15.520    profiles5
 #>  delta_group_class from_group_class
 #>                 NA             <NA>
@@ -173,25 +180,25 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  tree       level from_candidate from_class from_share to_candidate to_class to_share
 #>  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102
 #>  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898
-#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327
-#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327
-#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679
-#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679
+#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4326
+#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4326
+#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2680
+#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2680
 #>  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994
 #>  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994
-#>  tree individuals      profiles3          1     0.4327    profiles4        1   0.2976
-#>  tree individuals      profiles3          2     0.2679    profiles4        1   0.2976
-#>      mass share_of_from share_of_to
-#>  0.310248       0.31025     1.00000
-#>  0.689752       0.68975     1.00000
-#>  0.046280       0.14917     0.10696
-#>  0.386387       0.56018     0.89304
-#>  0.010081       0.03249     0.03763
-#>  0.257841       0.37382     0.96237
-#>  0.253888       0.81834     0.84796
-#>  0.045523       0.06600     0.15204
-#>  0.051486       0.11900     0.17302
-#>  0.007563       0.02823     0.02542
+#>  tree individuals      profiles3          1     0.4326    profiles4        1   0.2808
+#>  tree individuals      profiles3          2     0.2680    profiles4        1   0.2808
+#>     mass share_of_from share_of_to
+#>  0.31025       0.31025     1.00000
+#>  0.68975       0.68975     1.00000
+#>  0.04628       0.14915     0.10697
+#>  0.38632       0.56008     0.89303
+#>  0.01009       0.03251     0.03763
+#>  0.25791       0.37392     0.96237
+#>  0.25389       0.81834     0.84795
+#>  0.04552       0.06600     0.15205
+#>  0.17822       0.41199     0.63479
+#>  0.07623       0.28446     0.27153
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
 #> 6 tables above, truncated to fit. get_results(x, what = ) returns any
@@ -229,7 +236,8 @@ fit
 #> Latent profile analysis: 2 profiles
 #> 300 observations; equal full residual covariance (EEE)
 #> Log likelihood: -600.924999 | AIC: 1253.850 | BIC: 1350.148
-#> Converged: TRUE | iterations: 18 | best start: 1/10
+#> Converged: TRUE | iterations: 18 | best start: 1 (emEM: 50 screened, 10 run to the end)
+#> Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.
 #> 
 #>  profile cognitive_strategies intrinsic_value self_efficacy self_regulation test_anxiety
 #>        1                 5.22            5.52          5.39            5.11         3.85
@@ -409,6 +417,55 @@ sensitivity(fit)
 #> 9     9           -601      TRUE         18       1 TRUE         1
 #> 10   10           -601      TRUE         18       1 TRUE         1
 ```
+
+## Covariance between chosen indicators
+
+Between local independence within profiles (EEI) and a full covariance
+(EEE) lies a covariance for chosen pairs of indicators only.
+`local_dependence` names the pairs, and every other covariance within a
+profile stays zero. The bivariate residuals of the model without
+covariances indicate which pairs carry the dependence.
+
+``` r
+
+independent <- lpa(srl, indicators, n_profiles = 2, model = "EEI")
+head(subset(get_results(independent, "residuals"), statistic > 5))
+#>     profile          indicator_1     indicator_2     kind observed expected residual
+#> 1 profile_1 cognitive_strategies intrinsic_value gaussian    0.692        0    0.692
+#> 2 profile_1 cognitive_strategies self_regulation gaussian    0.687        0    0.687
+#> 3 profile_1 cognitive_strategies   self_efficacy gaussian    0.674        0    0.674
+#> 4 profile_1      intrinsic_value self_regulation gaussian    0.664        0    0.664
+#> 5 profile_1        self_efficacy self_regulation gaussian    0.644        0    0.644
+#> 6 profile_2 cognitive_strategies self_regulation gaussian    0.604        0    0.604
+#>   effective_n statistic df  p_value p_adjusted
+#> 1         130      9.62 NA 6.59e-22   6.59e-22
+#> 2         130      9.50 NA 2.03e-21   2.03e-21
+#> 3         130      9.23 NA 2.63e-20   2.63e-20
+#> 4         130      9.02 NA 1.80e-19   1.80e-19
+#> 5         130      8.63 NA 6.22e-18   6.22e-18
+#> 6         170      9.03 NA 1.77e-19   1.77e-19
+```
+
+``` r
+
+paired <- lpa(srl, indicators, n_profiles = 2, variance_model = "equal",
+              local_dependence = "cognitive_strategies:intrinsic_value")
+compare_models(independent = independent, paired = paired, full = fit)
+#> Model comparison
+#> 
+#> Model        Profiles   k   LogLik      BIC    ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8
+#> -----------  --------  --  -------  -------  ------  ------  -------  -------  ---------  -----
+#> independent         2  16  -906.73  1904.71  554.56   0.000  1948.82     0.89       0.97      0
+#> paired              2  17  -823.54  1744.04  393.90   0.000  1805.78     0.85       0.95      0
+#> full                2  26  -600.92  1350.15    0.00   1.000  1456.62     0.74       0.88      0
+```
+
+12 pairs of indicators have a residual above 5 in the model without
+covariances, so the dependence is not confined to one pair. The
+covariance of one pair lowers BIC from 1904.7 to 1744, and the full
+covariance lowers it to 1350.1. A covariance for chosen pairs suits a
+dependence between one or two pairs of indicators; when every pair is
+dependent, the full covariance is the model.
 
 ## Further analyses
 

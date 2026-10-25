@@ -15,7 +15,7 @@ profiles."><meta property="og:image" content="https://pak.dynasite.org/latents/l
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,7 +96,9 @@ profiles.</p>
 <span>  covariance_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"diagonal"</span>, <span class="st">"full"</span><span class="op">)</span>,</span>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_probability <span class="op">=</span> <span class="fl">1e-10</span>,</span>
-<span>  time <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  search <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  n_screen <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -133,9 +135,10 @@ second stage (default 2); must be at least two.</p></dd>
 one group class, or a fitted <code>multilpa</code> model to use as the first stage.
 Its profiles, indicators and measurement options must match the ones
 requested here, and it must have one group class. Fits made with
-<code>weights</code>, <code>centering</code> or <code>scaling</code>, or with <code>ordinal</code> or <code>count</code>
-indicators, are refused, as are covariance structures other than EEI,
-VVI, EEE and VVV. Every refusal raises <code>latents_bad_stage</code>.</p></dd>
+<code>weights</code>, <code>centering</code> or <code>scaling</code>, with <code>ordinal</code> or <code>count</code>
+indicators, with <code>direct_effects</code> or with <code>local_dependence</code> between
+continuous indicators, are refused, as are covariance structures other
+than EEI, VVI, EEE and VVV. Every refusal raises <code>latents_bad_stage</code>.</p></dd>
 
 
 <dt id="arg-variance-model">variance_model<a class="anchor" aria-label="anchor" href="#arg-variance-model"></a></dt>
@@ -212,6 +215,53 @@ Values must be complete and unique within each group, and are ordered as
 <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> orders them. Numbers stored as text whose alphabetical order is
 not their numeric order (<code>"2"</code>, <code>"10"</code>) raise <code>latents_bad_time</code>;
 zero-padded numbers and ISO dates are accepted.</p></dd>
+
+
+<dt id="arg-search">search<a class="anchor" aria-label="anchor" href="#arg-search"></a></dt>
+<dd><p>How the starts are found: <code>NULL</code> (the default), <code>"kmeans"</code>
+or <code>"emEM"</code>. <code>NULL</code> uses <code>"emEM"</code> when every profile shares one
+covariance matrix (EII, EEI, EEE with continuous indicators), where the
+likelihood is bounded and a higher maximum cannot be a collapsed profile,
+and <code>"kmeans"</code> otherwise, including categorical-only models and the
+group-class families. The search used is recorded on the fit, and
+<code>search = "kmeans"</code> reproduces the fits of latents 0.96.2 for every
+model. <code>"kmeans"</code> runs
+<code>n_starts</code> starts to convergence: Ward's clustering first, then k-means
+from random centres. <code>"emEM"</code> screens a pool of <code>n_screen</code> starts by a
+short EM run each and runs <code>n_starts</code> finalists to convergence
+(Biernacki, Celeux &amp; Govaert, 2003). The first start (Ward's clustering,
+or supplied starting values) reserves one finalist slot if its screening
+succeeds; the remaining slots take the highest screening likelihoods.
+Thus <code>n_starts = 1</code> finalizes Ward's start whenever it screens
+successfully, even if another screened start has a higher likelihood.
+With a supplied start and <code>n_starts = 1</code>, screening is skipped entirely.
+The pool begins with the kmeans search's own
+starts, drawn in the same order, followed by random partitions of the
+rows and random rows as class centres, and <code>get_results(fit, "starts")</code>
+gives every start of the pool with its <code>kind</code>, its <code>stage</code> and its
+likelihood after screening. Either search reports the start with the
+highest likelihood among those run to convergence (subject to
+<code>select_start</code> and <code>boundary</code>). With profile-specific variances that
+maximum can be spurious, a profile on a few nearly coincident points
+with a variance near zero (McLachlan &amp; Peel, 2000, section 3.10), and a
+harder search finds such maxima more often. They are reported, not set
+aside: a variance at <code>min_variance</code> as a boundary fit
+(<code>latents_boundary</code>; <code>boundary = "exclude"</code> sets those starts aside),
+and low Gaussian membership mass by a <code>latents_thin_profiles</code> heuristic
+warning. <code>get_results(fit, "gaussian_diagnostics")</code> reports continuous
+covariance and support measures without an automatic spike cutoff or
+changing the selected start. Neither a warning's absence nor a repeated
+likelihood establishes a regular or globally optimal solution.</p></dd>
+
+
+<dt id="arg-n-screen">n_screen<a class="anchor" aria-label="anchor" href="#arg-n-screen"></a></dt>
+<dd><p>For <code>search = "emEM"</code>, the number of starts screened, at
+least <code>n_starts</code>. <code>NULL</code> (the default) screens five times <code>n_starts</code>.
+The protected first start counts toward the <code>n_starts</code> finalist budget;
+increasing <code>n_screen</code> does not add finalist slots. A single supplied
+start with <code>n_starts = 1</code> disables screening.
+A value with <code>search = "kmeans"</code>, or one below <code>n_starts</code>, raises
+<code>latents_bad_argument</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

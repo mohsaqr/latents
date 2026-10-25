@@ -54,8 +54,10 @@ activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 models <- enumerate_classes(course_engagement, activity, "student",
                             n_profiles = 1:6, n_group_classes = 1:4,
                             model = "VVI", n_starts = 3, seed = 1)
+#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 models
-#> Class enumeration: 24 candidate models
+#> Class enumeration: 24 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
 #>  profiles1_groups1          1               1   VVI         -10007           10 20035      20062
 #>  profiles2_groups1          2               1   VVI          -8615           21 17272      17328
@@ -213,7 +215,11 @@ sets aside every start with a variance at its lower bound and retains
 the best of the remaining starts; the default, `"allow"`, retains the
 highest likelihood, as Mplus does. The option is advisable when many
 starts are used, and it has no effect on categorical indicators, which
-have no variances.
+have no variances. A spurious profile need not reach the bound: a few
+nearly coincident observations can give it variances close to zero. A
+candidate with a profile that has fewer effective members than its own
+means and variances is therefore reported by a `latents_thin_profiles`
+warning, which the grid above raises once.
 
 ``` r
 
@@ -485,31 +491,81 @@ as.data.frame(models)
 #> 22     0.801     0.853      0.837           0           0.867           0.903            0.885
 #> 23     0.786     0.853      0.820           1           0.882           0.926            0.904
 #> 24     0.654     0.847      0.783           3           0.898           0.940            0.916
-#>    group_avepp_below converged boundary n_best_replicated warnings
-#> 1                 NA      TRUE    FALSE                 3         
-#> 2                 NA      TRUE    FALSE                 3         
-#> 3                 NA      TRUE    FALSE                 3         
-#> 4                 NA      TRUE    FALSE                 3         
-#> 5                 NA      TRUE    FALSE                 1         
-#> 6                 NA      TRUE    FALSE                 1         
-#> 7                 NA     FALSE       NA                NA         
-#> 8                  0      TRUE    FALSE                 3         
-#> 9                  0      TRUE    FALSE                 3         
-#> 10                 0      TRUE    FALSE                 3         
-#> 11                 0      TRUE    FALSE                 2         
-#> 12                 0      TRUE    FALSE                 1         
-#> 13                NA     FALSE       NA                NA         
-#> 14                 0      TRUE    FALSE                 3         
-#> 15                 0      TRUE    FALSE                 3         
-#> 16                 0      TRUE    FALSE                 3         
-#> 17                 0      TRUE    FALSE                 2         
-#> 18                 0      TRUE    FALSE                 2         
-#> 19                NA     FALSE       NA                NA         
-#> 20                 0      TRUE    FALSE                 3         
-#> 21                 0      TRUE    FALSE                 3         
-#> 22                 0      TRUE    FALSE                 2         
-#> 23                 0      TRUE    FALSE                 1         
-#> 24                 0      TRUE    FALSE                 1         
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
+#> 2                 NA      TRUE    FALSE                      0.3750            589.08
+#> 3                 NA      TRUE    FALSE                      0.1932            418.21
+#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 5                 NA      TRUE    FALSE                      0.0036              4.89
+#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 7                 NA     FALSE       NA                          NA                NA
+#> 8                  0      TRUE    FALSE                      0.3715            587.90
+#> 9                  0      TRUE    FALSE                      0.2000            382.59
+#> 10                 0      TRUE    FALSE                      0.2003            178.19
+#> 11                 0      TRUE    FALSE                      0.0636             36.89
+#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 13                NA     FALSE       NA                          NA                NA
+#> 14                 0      TRUE    FALSE                      0.3748            591.09
+#> 15                 0      TRUE    FALSE                      0.2003            368.95
+#> 16                 0      TRUE    FALSE                      0.1950            202.20
+#> 17                 0      TRUE    FALSE                      0.1681            141.26
+#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 19                NA     FALSE       NA                          NA                NA
+#> 20                 0      TRUE    FALSE                      0.3747            592.09
+#> 21                 0      TRUE    FALSE                      0.2007            369.16
+#> 22                 0      TRUE    FALSE                      0.1967            201.57
+#> 23                 0      TRUE    FALSE                      0.0994             61.45
+#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#>    n_best_replicated
+#> 1                  3
+#> 2                  3
+#> 3                  3
+#> 4                  3
+#> 5                  1
+#> 6                  1
+#> 7                 NA
+#> 8                  3
+#> 9                  3
+#> 10                 3
+#> 11                 2
+#> 12                 1
+#> 13                NA
+#> 14                 3
+#> 15                 3
+#> 16                 3
+#> 17                 2
+#> 18                 2
+#> 19                NA
+#> 20                 3
+#> 21                 3
+#> 22                 2
+#> 23                 1
+#> 24                 1
+#>                                                                                                                                                                                warnings
+#> 1                                                                                                                                                                                      
+#> 2                                                                                                                                                                                      
+#> 3                                                                                                                                                                                      
+#> 4                                                                                                                                                                                      
+#> 5  Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 6                                                                                                                                                                                      
+#> 7                                                                                                                                                                                      
+#> 8                                                                                                                                                                                      
+#> 9                                                                                                                                                                                      
+#> 10                                                                                                                                                                                     
+#> 11                                                                                                                                                                                     
+#> 12                                                                                                                                                                                     
+#> 13                                                                                                                                                                                     
+#> 14                                                                                                                                                                                     
+#> 15                                                                                                                                                                                     
+#> 16                                                                                                                                                                                     
+#> 17                                                                                                                                                                                     
+#> 18                                                                                                                                                                                     
+#> 19                                                                                                                                                                                     
+#> 20                                                                                                                                                                                     
+#> 21                                                                                                                                                                                     
+#> 22                                                                                                                                                                                     
+#> 23                                                                                                                                                                                     
+#> 24                                                                                                                                                                                     
 #>                                                                                     error
 #> 1                                                                                    <NA>
 #> 2                                                                                    <NA>
@@ -1279,6 +1335,7 @@ chosen
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8307.154320 | AIC: 16716.309 | BIC (groups): 16852.144
 #> Converged: TRUE | iterations: 48 | best start: 3/3
+#> Smallest standardized Gaussian eigenvalue: 0.195 (profiles, profile_4); Gaussian mass: 330.8; weight effective n: 434.9.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.412    0.232      0.490      0.383      0.309   497      0.350
@@ -1323,6 +1380,61 @@ plot(test)
 ```
 
 ![](model-selection_files/figure-html/blrt-1.png)
+
+The Vuong-Lo-Mendell-Rubin test refers the same statistic to an
+asymptotic approximation of its distribution (Vuong, 1989; Lo, Mendell
+and Rubin, 2001): a weighted sum of chi-square variables with one degree
+of freedom, whose weights are the eigenvalues of a matrix formed from
+the scores and second derivatives of both models. The test requires no
+simulation. Its adjusted version (aLMR) divides the statistic by
+`1 + 1 / (d log n)`, with `d` the number of added parameters and `n` the
+number of independent units, and refers it to the same distribution.
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+with `"lmr"` reports both for every pair of converged candidates that
+differ by one profile or one group class. A pair whose information
+matrix is singular, here the candidates with five and six profiles, is
+kept with its reason in `note`.
+
+``` r
+
+subset(get_results(models, "lmr"), n_group_classes == 3)
+#>        direction    null_candidate alternative_candidate n_profiles n_group_classes model n_units
+#> 12 group_classes profiles2_groups2     profiles2_groups3          2               3   VVI     106
+#> 14 group_classes profiles3_groups2     profiles3_groups3          3               3   VVI     106
+#> 16 group_classes profiles4_groups2     profiles4_groups3          4               3   VVI     106
+#> 18 group_classes profiles5_groups2     profiles5_groups3          5               3   VVI      NA
+#> 19 group_classes profiles6_groups2     profiles6_groups3          6               3   VVI      NA
+#> 20      profiles profiles2_groups3     profiles3_groups3          3               3   VVI     106
+#> 22      profiles profiles3_groups3     profiles4_groups3          4               3   VVI     106
+#> 24      profiles profiles4_groups3     profiles5_groups3          5               3   VVI      NA
+#> 26      profiles profiles5_groups3     profiles6_groups3          6               3   VVI      NA
+#>    parameters_added    lr   vlmr_p adjusted_lr   almr_p reference_mean reference_sd
+#> 12                2  37.5 3.43e-07        33.9 1.32e-06           0.76         3.37
+#> 14                3  32.2 6.29e-05        30.0 1.21e-04           2.95         4.15
+#> 16                4  38.1 2.63e-04        36.1 4.06e-04           4.70         5.86
+#> 18               NA    NA       NA          NA       NA             NA           NA
+#> 19               NA    NA       NA          NA       NA             NA           NA
+#> 20               13 145.3 4.15e-13       142.9 6.80e-13          13.74         6.38
+#> 22               13  82.5 5.18e-05        81.2 6.12e-05          14.94         8.15
+#> 24               NA    NA       NA          NA       NA             NA           NA
+#> 26               NA    NA       NA          NA       NA             NA           NA
+#>                                                                                                                                                                                                                                                  note
+#> 12                                                                                                                                                                                                                                               <NA>
+#> 14                                                                                                                                                                                                                                               <NA>
+#> 16                                                                                                                                                                                                                                               <NA>
+#> 18 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+#> 19 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+#> 20                                                                                                                                                                                                                                               <NA>
+#> 22                                                                                                                                                                                                                                               <NA>
+#> 24                                                                                                                        alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+#> 26 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+```
+
+The regularity conditions of Vuong’s theorem do not hold for mixture
+models (Jeffries, 2003), and the test’s p-values are not uniformly
+distributed when the smaller model is true (Vermunt, 2024). It is one
+piece of evidence beside the criteria, the classification and the
+bootstrap.
 
 ## Putting the evidence together
 
@@ -1385,6 +1497,7 @@ that the reported decision can be reproduced from the reported evidence.
 | compare_models(models, “name”, …) | Chosen candidates side by side, with BIC weights |
 | get_candidate(models, “name”) | One fitted candidate |
 | bootstrap_lrt(smaller, larger, data, iter) | Bootstrap likelihood ratio test of k against k + 1 classes |
+| get_results(models, “lmr”) | VLMR and adjusted LMR tests of every pair of neighbouring candidates |
 
 ## References
 
@@ -1409,6 +1522,12 @@ Cavanaugh, J. E. (1999). A large-sample model selection criterion based
 on Kullback’s symmetric divergence. *Statistics and Probability
 Letters*, 42, 333–343.
 
+Jeffries, N. O. (2003). A note on ‘Testing the number of components in a
+normal mixture’. *Biometrika*, 90, 991–994.
+
+Lo, Y., Mendell, N. R., & Rubin, D. B. (2001). Testing the number of
+components in a normal mixture. *Biometrika*, 88, 767–778.
+
 McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
 statistic for the number of components in a normal mixture. *Applied
 Statistics*, 36, 318–324.
@@ -1431,6 +1550,14 @@ Statistics*, 6, 461–464.
 
 Sclove, S. L. (1987). Application of model-selection criteria to some
 problems in multivariate analysis. *Psychometrika*, 52, 333–343.
+
+Vermunt, J. K. (2024). The Vuong-Lo-Mendell-Rubin test for latent class
+and latent profile analysis: A note on the different implementations in
+Mplus and LatentGOLD. *Methodology*, 20(1), 72–83.
+<https://doi.org/10.5964/meth.12467>
+
+Vuong, Q. H. (1989). Likelihood ratio tests for model selection and
+non-nested hypotheses. *Econometrica*, 57, 307–333.
 
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using
 Akaike weights. *Psychonomic Bulletin & Review*, 11, 192–196.

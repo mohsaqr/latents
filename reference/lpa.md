@@ -86,7 +86,8 @@ fit
 #> Latent profile analysis: 2 profiles
 #> 300 observations; equal full residual covariance (EEE)
 #> Log likelihood: -600.924999 | AIC: 1253.850 | BIC: 1350.148
-#> Converged: TRUE | iterations: 18 | best start: 1/3
+#> Converged: TRUE | iterations: 18 | best start: 1 (emEM: 15 screened, 3 run to the end)
+#> Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.
 #> 
 #>  profile cognitive_strategies intrinsic_value self_efficacy self_regulation
 #>        1             5.215480        5.515915      5.392216        5.108061

@@ -87,6 +87,7 @@ get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
 #> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
 #>  profile          y   count proportion
 #>        1 -0.1928460 44.5831   0.445831
@@ -96,7 +97,7 @@ get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 # This grid crosses two structures, so the names carry them:
 candidates
-#> Class enumeration: 4 candidate models
+#> Class enumeration: 4 candidate models (LPA)
 #>              candidate n_profiles n_group_classes model log_likelihood
 #>  profiles1_groups1_EEI          1               1   EEI      -130.6550
 #>  profiles2_groups1_EEI          2               1   EEI      -130.5791
@@ -104,12 +105,12 @@ candidates
 #>  profiles2_groups1_VVI          2               1   VVI      -130.5920
 #>  n_parameters      aic bic_groups bic_individual icl_individual profile_entropy
 #>             2 265.3100   265.9152       270.5204       270.5204              NA
-#>             4 269.1581   270.3684       279.5788       355.6432      0.45131114
+#>             4 269.1581   270.3684       279.5788       355.4955      0.45237653
 #>             2 265.3100   265.9152       270.5204       270.5204              NA
 #>             5 271.1839   272.6968       284.2098       411.5897      0.08114782
 #>  group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
 #>             NA        NA        NA         NA          NA              NA
-#>             NA 0.6413011 0.8527078  0.7470045           1              NA
+#>             NA 0.6402627 0.8532616  0.7467621           1              NA
 #>             NA        NA        NA         NA          NA              NA
 #>             NA 0.6380900 0.6405463  0.6393181           2              NA
 #>  group_avepp_max group_avepp_mean group_avepp_below converged boundary
@@ -128,6 +129,7 @@ get_candidate(candidates, "profiles2_groups1_VVI")
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
 #> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
 #>  profile          y   count proportion
 #>        1 -0.1928460 44.5831   0.445831
@@ -142,6 +144,7 @@ get_candidate(compared, "profiles2_groups1_VVI")
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
 #> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
 #>  profile          y   count proportion
 #>        1 -0.1928460 44.5831   0.445831

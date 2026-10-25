@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -269,7 +269,7 @@ L_j = \sum_{h=1}^{H}\eta_h
 <p>The arguments <code>n_profiles</code> and <code>n_group_classes</code> specify <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math> and <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math>, respectively. Setting <code>n_group_classes = 1</code> reduces the model to a single-level profile analysis: there is then one common distribution over profiles, and no latent group-class heterogeneity.</p>
 <p>With <code>variance_model = "varying"</code>, each profile has its own indicator variances. With <code>variance_model = "equal"</code>, the variance of a given indicator is constrained to be equal across profiles, while different indicators can retain different variances. In the default diagonal model, both specifications set within-profile covariances to zero.</p>
 <p>Estimation uses the expectation-maximization algorithm. Its expectation step evaluates latent membership probabilities under the current parameters, and its maximization step updates parameters using those probabilities. Iteration continues until the convergence criterion is met or the iteration limit is reached.</p>
-<p>Because mixture likelihoods can have local maxima, estimation is repeated from multiple starting values. Here, <code>n_starts = 10</code> specifies ten starts and <code>seed = 1</code> makes the starting procedure reproducible for the same input and row order. Convergence and replication across starts are inspected below; a converged fit alone does not establish that the best attainable likelihood has been found. With many starts, a profile can collapse on a single observation with its variances at the lower bound, a degenerate solution whose likelihood is set by <code>min_variance</code>; <code>boundary = "exclude"</code> sets such starts aside.</p>
+<p>Because mixture likelihoods can have local maxima, estimation is repeated from multiple starting values. Here, <code>n_starts = 10</code> specifies ten starts and <code>seed = 1</code> makes the starting procedure reproducible for the same input and row order. Convergence and replication across starts are inspected below; a converged fit alone does not establish that the best attainable likelihood has been found. With many starts, a profile can collapse on a single observation with its variances at the lower bound, a degenerate solution whose likelihood is set by <code>min_variance</code>; <code>boundary = "exclude"</code> sets such starts aside. A profile with fewer effective members than its own means and variances is reported by a <code>latents_thin_profiles</code> warning: its means and variances rest on few observations, so inspect its covariance diagnostics before interpreting it.</p>
 </div>
 <div class="section level2">
 <h2 id="inspecting-and-interpreting-the-estimated-structure">Inspecting and interpreting the estimated structure<a class="anchor" aria-label="anchor" href="#inspecting-and-interpreting-the-estimated-structure"></a>
@@ -911,12 +911,12 @@ plot of chunk categorical
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"all"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "profiles"              "responses"             "covariances"          </span></span>
-<span><span class="co">#&gt;  [4] "profile_probabilities" "counts"                "posteriors"           </span></span>
-<span><span class="co">#&gt;  [7] "group_posteriors"      "assignments"           "classification"       </span></span>
-<span><span class="co">#&gt; [10] "average_posteriors"    "classification_errors" "bch_weights"          </span></span>
-<span><span class="co">#&gt; [13] "entropy"               "residuals"             "information_criteria" </span></span>
-<span><span class="co">#&gt; [16] "model"                 "stages"                "starts"               </span></span>
-<span><span class="co">#&gt; [19] "data"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               </span></span>
+<span><span class="co">#&gt;  [7] "posteriors"            "group_posteriors"      "assignments"          </span></span>
+<span><span class="co">#&gt; [10] "classification"        "average_posteriors"    "classification_errors"</span></span>
+<span><span class="co">#&gt; [13] "bch_weights"           "entropy"               "residuals"            </span></span>
+<span><span class="co">#&gt; [16] "information_criteria"  "model"                 "stages"               </span></span>
+<span><span class="co">#&gt; [19] "starts"                "data"</span></span></code></pre></div>
 <p>Result tables are returned as base R data frames. <code>get_results(fit, "all")</code> returns them as a named list, <code>summary(fit)</code> provides a printed overview, and <code>report(fit)</code> combines summaries, diagnostics, and plots. These interfaces support both detailed inspection and preparation of tables for reporting.</p>
 <p>A methodological report should identify the Level-1 observations and Level-2 units, describe indicator selection and scaling, state the measurement and covariance constraints, and explain treatment of missingness. The estimation account should specify candidate class counts, starting values, convergence criteria, and evidence that the selected likelihood was replicated.</p>
 <p>Interpretation should then distinguish the measurement profiles from the higher-level composition classes. Profile means or response probabilities establish the meaning of the observation-level classes; conditional profile probabilities establish the meaning of the group-level classes. Effective class sizes, posterior classification uncertainty, residual diagnostics, and the rationale for selecting the final model provide the evidence needed to assess that interpretation.</p>

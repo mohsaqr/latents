@@ -19,7 +19,7 @@ unreplicated fits are reported, not silently selected."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +97,8 @@ unreplicated fits are reported, not silently selected.</p>
 <span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  cores <span class="op">=</span> <span class="fl">1L</span></span>
+<span>  cores <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  type <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -199,15 +200,47 @@ forked processes on macOS and Linux, and by a socket cluster on Windows
 and on macOS when R uses Apple's Accelerate BLAS (socket workers load the
 installed package). Warnings and messages from the workers are passed on
 in grid order once all have finished. Without <code>seed</code>, the random starts
-differ between runs on any number of cores. A worker process that fails
-as a whole (for example, out of memory) raises
-<code>latents_parallel_failure</code>. Each core holds its own copy of the fits it
-computes; <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code> gives the number available.</p></dd>
+differ between runs on any number of cores. Lost worker results are retried
+once with half as many workers (rounded up). One <code>latents_worker_lost</code>
+warning reports how many tasks were lost and recovered, and suggests fewer
+cores. A task still lost becomes a failed start (for flat start grids) or
+a failed candidate; the other results are retained. On sockets, bounded
+chunks preserve earlier results when a connection breaks; completed tasks
+within the failed chunk may also be retried. Each core holds its own copy
+of the fits it computes; <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code> gives the number
+available.
+Transition grids (<code>time</code>) and profile grids (including categorical-only
+latent class models) distribute individual starts across one pool,
+longest estimated first, with at most <code>cores</code> workers and no nested
+workers. Both emEM screening and finalist runs use the pool; <code>search</code>
+keeps the same defaults as <code><a href="multilpa.html">multilpa()</a></code>. Setup, ordered starting values,
+start selection and finalisation stay in the current process. Profile
+models with membership covariates or joined categorical <code>local_dependence</code>
+pairs instead occupy one worker per candidate in the same pool, with
+serial starts. Group-class families also keep candidate-level parallelism.</p></dd>
+
+
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
+<dd><p>Optional model type: <code>"lca"</code>, <code>"lpa"</code> or <code>"lta"</code>. <code>NULL</code>
+(the default) keeps the existing routing and measurement settings.
+<code>"lca"</code> treats every indicator as categorical, as <code><a href="multilca.html">multilca()</a></code> does:
+indicators named in <code>ordinal</code> or <code>count</code> keep those distributions, and
+<code>categorical</code> adds to the set rather than replacing it. Numeric response
+codes are categorical with <code>type = "lca"</code>. <code>"lpa"</code> requires continuous
+indicators and refuses non-empty <code>categorical</code>, <code>ordinal</code> or <code>count</code>.
+Both require <code>time = NULL</code>. <code>"lta"</code> requires <code>time</code> and takes its
+measurement settings from <code>categorical</code>, as <code><a href="lta.html">lta()</a></code> does; it does not
+make numeric indicators categorical. An explicit type requires
+<code>family = "profiles"</code>; leave <code>type = NULL</code> for group-class families.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>multilpa_enumeration</code>. <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> gives
+    <p>An object of class <code>multilpa_enumeration</code> (or the transition or
+family enumeration described above). Its <code>type</code> records the resolved
+model: <code>"lca"</code>, <code>"lpa"</code> or <code>"lta"</code>, or <code>"mixed"</code>/<code>"family"</code> for
+those grids under <code>type = NULL</code>. The print header shows this type; table
+columns are unchanged. <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> gives
 one row per candidate, starting with its name (<code>"profiles3_groups2"</code>),
 with every criterion and diagnostic (including both entropies and, at
 each level, the smallest, largest and mean average posterior probability
@@ -235,7 +268,8 @@ when <code>id</code> is missing; when <code>between_variance</code> is given for
 family; when <code>n_profiles</code> or <code>model</code> is given for a group-class family,
 or <code>id</code> is <code>NULL</code>; when <code>time</code> is combined with a group-class family or
 with <code>between_variance</code>; and when <code>cores</code> is not a whole number of at
-least 1.</p>
+least 1; and when <code>type</code> is invalid or conflicts with <code>time</code>, <code>family</code>
+or the requested measurement distributions.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -267,17 +301,17 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4            5 271.1839 279.1839   272.6968       284.2098     257.7182</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   sabic_individual caic_groups caic_individual awe_groups awe_individual</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         264.2039    267.9152        272.5204   276.5204       285.7307</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         266.9458    274.3684        283.5788   291.5788       386.0639</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         266.9458    274.3684        283.5788   291.5788       385.9162</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3         264.2039    267.9152        272.5204   276.5204       285.7307</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4         268.4185    277.6968        289.2098   299.2098       449.6156</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   icl_groups icl_individual clc_groups clc_individual profile_entropy</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1   265.9152       270.5204   261.3100       261.3100              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   270.3684       355.6432   261.1581       337.2225      0.45131114</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   270.3684       355.4955   261.1581       337.0748      0.45237653</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3   265.9152       270.5204   261.3100       261.3100              NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4   272.6968       411.5897   261.1839       388.5639      0.08114782</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1            NA        NA        NA         NA          NA              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            NA 0.6413011 0.8527078  0.7470045           1              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            NA 0.6402627 0.8532616  0.7467621           1              NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3            NA        NA        NA         NA          NA              NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4            NA 0.6380900 0.6405463  0.6393181           2              NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_avepp_max group_avepp_mean group_avepp_below converged boundary</span>
@@ -285,16 +319,21 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2              NA               NA                NA      TRUE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3              NA               NA                NA      TRUE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4              NA               NA                NA      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_best_replicated warnings error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 2           &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 2           &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                 2           &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                 2           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   min_standardized_eigenvalue min_gaussian_mass n_best_replicated warnings</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   1.0000000         100.00000                 2         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   0.8403157          17.63499                 2         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   1.0000000         100.00000                 2         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   0.8201227          44.58310                 2         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  &lt;NA&gt;</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class enumeration: 4 candidates, 4 converged, 0 failed to fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 distinct candidate(s) are minimal under some criterion.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> No candidate is selected automatically. Choose one convention and keep it.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 15 of its 35 columns; get_results(x, what = "candidates") returns all of them.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 15 of its 37 columns; get_results(x, what = "candidates") returns all of them.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- candidates ------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              candidate n_profiles model log_likelihood n_parameters   aic</span>
@@ -304,7 +343,7 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI          2   VVI         -130.6            5 271.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       265.9          270.5          270.5              NA        NA         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       270.4          279.6          355.6         0.45131    0.6413     0.7470</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       270.4          279.6          355.5         0.45238    0.6403     0.7468</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       265.9          270.5          270.5              NA        NA         NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       272.7          284.2          411.6         0.08115    0.6381     0.6393</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  avepp_below converged boundary</span>
@@ -345,13 +384,13 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI          2               1   VVI individuals     1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI          2               1   VVI individuals     2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n_modal proportion_modal estimated_n estimated_proportion average_posterior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       94             0.94       82.31               0.8231            0.8527</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        6             0.06       17.69               0.1769            0.6413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        6             0.06       17.63               0.1763            0.6403</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       94             0.94       82.37               0.8237            0.8533</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       31             0.31       44.58               0.4458            0.6381</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       69             0.69       55.42               0.5542            0.6405</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  odds_correct_classification relative_entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                        1.244          0.45131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                        8.317          0.45131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        8.313          0.45238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        1.245          0.45238</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                        2.192          0.08115</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                        1.434          0.08115</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -391,13 +430,19 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   VVI individuals profiles1_groups1_VVI          1          1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   VVI individuals profiles1_groups1_VVI          1          1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           to_candidate to_class to_share   mass share_of_from share_of_to</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        1   0.8231 0.8231        0.8231           1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        2   0.1769 0.1769        0.1769           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        1   0.1763 0.1763        0.1763           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_EEI        2   0.8237 0.8237        0.8237           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Numeric response codes, explicitly categorical:</span></span></span>
+<span class="r-in"><span><span class="va">codes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>g <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, item <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">1</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">classes</span> <span class="op">&lt;-</span> <span class="fu">enumerate_classes</span><span class="op">(</span><span class="va">codes</span>, <span class="st">"item"</span>, <span class="st">"g"</span>, type <span class="op">=</span> <span class="st">"lca"</span>,</span></span>
+<span class="r-in"><span>                             n_profiles <span class="op">=</span> <span class="fl">1</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                             n_starts <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single level, crossing class counts with two named structures:</span></span></span>
 <span class="r-in"><span><span class="va">single</span> <span class="op">&lt;-</span> <span class="fu"><a href="enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">iris</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sepal.Length"</span>, <span class="st">"Sepal.Width"</span>,</span></span>
@@ -408,7 +453,7 @@ least 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class enumeration: 6 candidates, 6 converged, 0 failed to fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 distinct candidate(s) are minimal under some criterion.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> No candidate is selected automatically. Choose one convention and keep it.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 14 of its 35 columns; get_results(x, what = "candidates") returns all of them.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 14 of its 37 columns; get_results(x, what = "candidates") returns all of them.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- candidates ------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles model log_likelihood n_parameters   aic   bic</span>

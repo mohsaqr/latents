@@ -47,7 +47,11 @@ lta(
   count = character(),
   count_model = c("poisson", "negative_binomial"),
   count_dispersion = c("varying", "equal"),
-  drop_empty = TRUE
+  drop_empty = TRUE,
+  search = c("kmeans", "emEM"),
+  n_screen = NULL,
+  acceleration = c("squarem", "none"),
+  cores = 1L
 )
 ```
 
@@ -100,11 +104,13 @@ lta(
   Positive integer number of EM starts (default 10). The first start is
   deterministic: Ward's hierarchical clustering of the standardized
   indicators (on at most 2000 evenly spaced rows), each cluster
-  described by its own means and spread, as in mclust's initialization.
-  The remaining starts are k-means from random centres. A supplied
-  `start` replaces the first start, and the remaining starts are random.
-  With `start` and `max_iter = 0`, exactly one start is run whatever
-  `n_starts` is.
+  described by its own means and spread. The remaining starts are
+  k-means from random centres. A supplied `start` replaces the first
+  start, and the remaining starts are random. With `start` and
+  `max_iter = 0`, exactly one start is run whatever `n_starts` is. Rows
+  from zero-weight units do not supply initial clustering or measurement
+  parameters. For `search = "emEM"`, this is the finalist budget,
+  including the protected first start (see `search`).
 
 - max_iter:
 
@@ -293,6 +299,62 @@ lta(
   stored on the fit and passed on by enumerations and refits; it has no
   effect on data without such rows.
 
+- search:
+
+  How the starts are found: `"kmeans"` (the default) or `"emEM"`, as
+  described for
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  Unlike
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  `lta()` does not choose its default by the covariance structure.
+
+- n_screen:
+
+  For `search = "emEM"`, the number of starts screened, at least
+  `n_starts`. `NULL` (the default) screens five times `n_starts`. The
+  protected first start counts toward the `n_starts` finalist budget;
+  increasing `n_screen` does not add finalist slots. A single supplied
+  start with `n_starts = 1` disables screening. A value with
+  `search = "kmeans"`, or one below `n_starts`, raises
+  `latents_bad_argument`.
+
+- acceleration:
+
+  `"squarem"` (the default) accelerates EM with SQUAREM (Varadhan &
+  Roland, 2008), as
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  does: each cycle extrapolates along the last two EM steps, including
+  the initial and transition probabilities, and ends with an ordinary EM
+  step. An extrapolated point that would lower the likelihood, or that
+  leaves a probability non-positive or a row not summing to one, is
+  replaced by the plain EM point, so the iteration stays monotone.
+  Convergence is assessed over a whole cycle, so it is never looser than
+  plain EM's. Under the strict default `tol` plain EM can creep along a
+  flat likelihood for thousands of steps; SQUAREM usually stops in far
+  fewer, at the same or a slightly higher maximum. `"none"` runs plain
+  EM, which reproduces fits from versions before this argument existed.
+  `iterations` and `max_iter` count EM steps under either setting.
+
+- cores:
+
+  Number of processor cores for the random starts (default 1). The
+  starting values are drawn in order in the current process and only the
+  EM runs are distributed, so with `seed` given the result is identical
+  to `cores = 1`. Under `search = "emEM"` both screening and the final
+  runs are distributed. Workers are forked processes on macOS and Linux,
+  and a socket cluster on Windows and on macOS with Apple's Accelerate
+  BLAS, as in
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  Lost worker results are retried once with half as many workers
+  (rounded up), with one `latents_worker_lost` warning reporting losses
+  and recovery and suggesting fewer cores. A start still lost is
+  recorded as failed; the fit uses the remaining starts. If all starts
+  fail, the usual `latents_all_starts_failed` error is raised. Socket
+  workers use bounded chunks; completed tasks within a failed chunk may
+  also be retried. To fit many models, give `cores` to
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  which runs starts across candidates in one pool.
+
 ## Value
 
 A `multilpa_transitions` object containing `means`, `variances`,
@@ -347,6 +409,10 @@ read off that single expectation.
 Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
 transition analysis. Wiley.
 
+Varadhan, R., & Roland, C. (2008). Simple and globally convergent
+methods for accelerating the convergence of any EM algorithm.
+Scandinavian Journal of Statistics, 35, 335–353.
+
 Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 
@@ -372,10 +438,10 @@ fit <- lta(
 )
 get_results(fit, what = "transitions")
 #>   group_class from to probability expected_count stable estimated
-#> 1           1    1  1   0.8613981      670.56011   TRUE      TRUE
-#> 2           1    1  2   0.1386019      107.89512  FALSE      TRUE
-#> 3           1    2  1   0.1850265       99.46008  FALSE      TRUE
-#> 4           1    2  2   0.8149735      438.08469   TRUE      TRUE
+#> 1           1    1  1   0.8613986      670.56049   TRUE      TRUE
+#> 2           1    1  2   0.1386014      107.89506  FALSE      TRUE
+#> 3           1    2  1   0.1850266       99.46003  FALSE      TRUE
+#> 4           1    2  2   0.8149734      438.08441   TRUE      TRUE
 #>   group_class_probability
 #> 1                       1
 #> 2                       1
@@ -430,6 +496,14 @@ summary(fit)
 #>        1 attendance    lectures     0.0000
 #>    ... 40 more rows.  get_results(x, what = "covariances")
 #> 
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n
+#>  profiles profile_1         836.4          1422              847.0
+#>  profiles profile_2         585.6          1422              596.3
+#>  min_variance_ratio min_standardized_eigenvalue boundary
+#>              0.4007                      0.4007    FALSE
+#>              0.3664                      0.3664    FALSE
+#> 
 #> -- transitions -----------------------------------------------------
 #>  group_class from to probability expected_count stable estimated
 #>            1    1  1      0.8614         670.56   TRUE      TRUE
@@ -458,7 +532,7 @@ summary(fit)
 #>    1     1       1 1.000e+00  TRUE
 #>    2     1       1 9.971e-01  TRUE
 #>    3     1       1 1.387e-05 FALSE
-#>    4     1       1 8.981e-07 FALSE
+#>    4     1       1 8.982e-07 FALSE
 #>    5     1       1 1.263e-06 FALSE
 #>    6     1       1 4.927e-06 FALSE
 #>    7     1       1 4.797e-06 FALSE
@@ -495,9 +569,9 @@ summary(fit)
 #>        1       10   0.26    -0.95      -0.51      -1.89      -1.45       2
 #>  group_class uncertainty posterior_profile_1 posterior_profile_2
 #>            1   1.174e-05           1.000e+00           1.174e-05
-#>            1   2.865e-03           9.971e-01           2.865e-03
+#>            1   2.864e-03           9.971e-01           2.864e-03
 #>            1   1.387e-05           1.387e-05           1.000e+00
-#>            1   8.981e-07           8.981e-07           1.000e+00
+#>            1   8.982e-07           8.982e-07           1.000e+00
 #>            1   1.263e-06           1.263e-06           1.000e+00
 #>            1   4.927e-06           4.927e-06           1.000e+00
 #>            1   4.797e-06           4.797e-06           1.000e+00
@@ -518,18 +592,18 @@ summary(fit)
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
-#>  individuals              1     1        837           0.99153
-#>  individuals              1     2        837           0.00847
-#>  individuals              2     1        585           0.01101
-#>  individuals              2     2        585           0.98899
-#>       groups              1     1        106           1.00000
+#>  individuals              1     1        837          0.991531
+#>  individuals              1     2        837          0.008469
+#>  individuals              2     1        585          0.011015
+#>  individuals              2     2        585          0.988985
+#>       groups              1     1        106          1.000000
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
 #>  individuals          1              1    0.992296
 #>  individuals          1              2    0.007704
-#>  individuals          2              1    0.012105
-#>  individuals          2              2    0.987895
+#>  individuals          2              1    0.012104
+#>  individuals          2              2    0.987896
 #>       groups          1              1    1.000000
 #> 
 #> -- bch_weights -----------------------------------------------------
@@ -557,7 +631,7 @@ summary(fit)
 #>  profile_2  forum_read  attendance gaussian  0.23302        0  0.23302
 #>  profile_1  forum_read  attendance gaussian  0.21662        0  0.21662
 #>  profile_1  forum_post  attendance gaussian  0.20818        0  0.20818
-#>  profile_2      browse  attendance gaussian  0.19680        0  0.19680
+#>  profile_2      browse  attendance gaussian  0.19679        0  0.19679
 #>  profile_1      browse  attendance gaussian  0.16968        0  0.16968
 #>  profile_2    lectures  attendance gaussian  0.11963        0  0.11963
 #>  profile_2  forum_post  attendance gaussian  0.11548        0  0.11548
@@ -566,14 +640,14 @@ summary(fit)
 #>  effective_n statistic df   p_value p_adjusted
 #>        836.4     6.951 NA 3.638e-12  3.638e-12
 #>        585.6     5.730 NA 1.005e-08  1.005e-08
-#>        836.4     6.354 NA 2.097e-10  2.097e-10
+#>        836.4     6.354 NA 2.096e-10  2.096e-10
 #>        836.4     6.099 NA 1.068e-09  1.068e-09
 #>        585.6     4.813 NA 1.487e-06  1.487e-06
-#>        836.4     4.946 NA 7.574e-07  7.574e-07
+#>        836.4     4.946 NA 7.573e-07  7.573e-07
 #>        585.6     2.901 NA 3.714e-03  3.714e-03
 #>        585.6     2.800 NA 5.112e-03  5.112e-03
 #>        585.6     2.478 NA 1.322e-02  1.322e-02
-#>        585.6     1.678 NA 9.328e-02  9.328e-02
+#>        585.6     1.678 NA 9.329e-02  9.329e-02
 #>    ... 10 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
@@ -590,7 +664,7 @@ summary(fit)
 #>  scaling covariance_structure n_parameters n_parameters_with_measurement
 #>     none                 <NA>           23                            23
 #>  log_likelihood   aic bic_groups bic_individual converged iterations boundary
-#>           -8335 16717      16778          16838      TRUE          6    FALSE
+#>           -8335 16717      16778          16838      TRUE          9    FALSE
 #>  small_classes best_start n_best_replicated weights
 #>          FALSE          1                 2    <NA>
 #> 
@@ -630,8 +704,8 @@ summary(fit)
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error
-#>      1          -8335      TRUE          6  <NA>
-#>      2          -8335      TRUE          7  <NA>
+#>      1          -8335      TRUE          9  <NA>
+#>      2          -8335      TRUE          9  <NA>
 #> 
 #> -- data ------------------------------------------------------------
 #>  student sequence browse lectures forum_read forum_post attendance
@@ -647,6 +721,6 @@ summary(fit)
 #>        1       10   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 22 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 23 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

@@ -81,7 +81,7 @@ summary(models)
 #> Class enumeration: 3 candidates, 3 converged, 0 failed to fit
 #> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>  candidate n_profiles log_likelihood n_parameters  aic  bic icl_individual

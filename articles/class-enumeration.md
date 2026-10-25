@@ -138,6 +138,17 @@ one profile collapses on a single observation with every variance at its
 lower bound; its likelihood, and hence its criteria, then depend on
 `min_variance` rather than on the data. `boundary = "exclude"` sets such
 starts aside for every candidate (see *Diagnostics of the estimation*).
+A profile can also be spurious without reaching the bound, when a few
+nearly coincident observations give it variances close to zero
+(McLachlan and Peel, 2000, section 3.10). A profile with fewer effective
+members than its own means and variances is therefore reported by a
+`latents_thin_profiles` warning. When every profile shares one
+covariance matrix (EII, EEI, EEE), the default search is emEM: it
+screens five times `n_starts` starts by a short EM run each and
+continues the best `n_starts` to convergence (Biernacki, Celeux and
+Govaert, 2003). The other structures start from k-means, because with
+profile-specific variances emEM also reaches spurious maxima more often.
+`search = "emEM"` or `"kmeans"` overrides either default.
 
 ``` r
 
@@ -145,8 +156,10 @@ activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 models <- enumerate_classes(course_engagement, activity, "student",
                             n_profiles = 1:6, n_group_classes = 1:4,
                             model = "VVI", n_starts = 3, seed = 1)
+#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 models
-#> Class enumeration: 24 candidate models
+#> Class enumeration: 24 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
 #>  profiles1_groups1          1               1   VVI         -10007           10 20035      20062
 #>  profiles2_groups1          2               1   VVI          -8615           21 17272      17328
@@ -368,31 +381,81 @@ as.data.frame(models)
 #> 22     0.801     0.853      0.837           0           0.867           0.903            0.885
 #> 23     0.786     0.853      0.820           1           0.882           0.926            0.904
 #> 24     0.654     0.847      0.783           3           0.898           0.940            0.916
-#>    group_avepp_below converged boundary n_best_replicated warnings
-#> 1                 NA      TRUE    FALSE                 3         
-#> 2                 NA      TRUE    FALSE                 3         
-#> 3                 NA      TRUE    FALSE                 3         
-#> 4                 NA      TRUE    FALSE                 3         
-#> 5                 NA      TRUE    FALSE                 1         
-#> 6                 NA      TRUE    FALSE                 1         
-#> 7                 NA     FALSE       NA                NA         
-#> 8                  0      TRUE    FALSE                 3         
-#> 9                  0      TRUE    FALSE                 3         
-#> 10                 0      TRUE    FALSE                 3         
-#> 11                 0      TRUE    FALSE                 2         
-#> 12                 0      TRUE    FALSE                 1         
-#> 13                NA     FALSE       NA                NA         
-#> 14                 0      TRUE    FALSE                 3         
-#> 15                 0      TRUE    FALSE                 3         
-#> 16                 0      TRUE    FALSE                 3         
-#> 17                 0      TRUE    FALSE                 2         
-#> 18                 0      TRUE    FALSE                 2         
-#> 19                NA     FALSE       NA                NA         
-#> 20                 0      TRUE    FALSE                 3         
-#> 21                 0      TRUE    FALSE                 3         
-#> 22                 0      TRUE    FALSE                 2         
-#> 23                 0      TRUE    FALSE                 1         
-#> 24                 0      TRUE    FALSE                 1         
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
+#> 2                 NA      TRUE    FALSE                      0.3750            589.08
+#> 3                 NA      TRUE    FALSE                      0.1932            418.21
+#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 5                 NA      TRUE    FALSE                      0.0036              4.89
+#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 7                 NA     FALSE       NA                          NA                NA
+#> 8                  0      TRUE    FALSE                      0.3715            587.90
+#> 9                  0      TRUE    FALSE                      0.2000            382.59
+#> 10                 0      TRUE    FALSE                      0.2003            178.19
+#> 11                 0      TRUE    FALSE                      0.0636             36.89
+#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 13                NA     FALSE       NA                          NA                NA
+#> 14                 0      TRUE    FALSE                      0.3748            591.09
+#> 15                 0      TRUE    FALSE                      0.2003            368.95
+#> 16                 0      TRUE    FALSE                      0.1950            202.20
+#> 17                 0      TRUE    FALSE                      0.1681            141.26
+#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 19                NA     FALSE       NA                          NA                NA
+#> 20                 0      TRUE    FALSE                      0.3747            592.09
+#> 21                 0      TRUE    FALSE                      0.2007            369.16
+#> 22                 0      TRUE    FALSE                      0.1967            201.57
+#> 23                 0      TRUE    FALSE                      0.0994             61.45
+#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#>    n_best_replicated
+#> 1                  3
+#> 2                  3
+#> 3                  3
+#> 4                  3
+#> 5                  1
+#> 6                  1
+#> 7                 NA
+#> 8                  3
+#> 9                  3
+#> 10                 3
+#> 11                 2
+#> 12                 1
+#> 13                NA
+#> 14                 3
+#> 15                 3
+#> 16                 3
+#> 17                 2
+#> 18                 2
+#> 19                NA
+#> 20                 3
+#> 21                 3
+#> 22                 2
+#> 23                 1
+#> 24                 1
+#>                                                                                                                                                                                warnings
+#> 1                                                                                                                                                                                      
+#> 2                                                                                                                                                                                      
+#> 3                                                                                                                                                                                      
+#> 4                                                                                                                                                                                      
+#> 5  Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 6                                                                                                                                                                                      
+#> 7                                                                                                                                                                                      
+#> 8                                                                                                                                                                                      
+#> 9                                                                                                                                                                                      
+#> 10                                                                                                                                                                                     
+#> 11                                                                                                                                                                                     
+#> 12                                                                                                                                                                                     
+#> 13                                                                                                                                                                                     
+#> 14                                                                                                                                                                                     
+#> 15                                                                                                                                                                                     
+#> 16                                                                                                                                                                                     
+#> 17                                                                                                                                                                                     
+#> 18                                                                                                                                                                                     
+#> 19                                                                                                                                                                                     
+#> 20                                                                                                                                                                                     
+#> 21                                                                                                                                                                                     
+#> 22                                                                                                                                                                                     
+#> 23                                                                                                                                                                                     
+#> 24                                                                                                                                                                                     
 #>                                                                                     error
 #> 1                                                                                    <NA>
 #> 2                                                                                    <NA>
@@ -1117,6 +1180,7 @@ chosen
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8307.154320 | AIC: 16716.309 | BIC (groups): 16852.144
 #> Converged: TRUE | iterations: 48 | best start: 3/3
+#> Smallest standardized Gaussian eigenvalue: 0.195 (profiles, profile_4); Gaussian mass: 330.8; weight effective n: 434.9.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.412    0.232      0.490      0.383      0.309   497      0.350
@@ -1171,6 +1235,18 @@ summary(chosen)
 #>        1 forum_post    lectures     0.0000
 #>        1 attendance    lectures     0.0000
 #>    ... 90 more rows.  get_results(x, what = "covariances")
+#> 
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n min_variance_ratio
+#>  profiles profile_1         497.0          1422              619.0             0.2022
+#>  profiles profile_2         392.0          1422              493.2             0.2626
+#>  profiles profile_3         202.2          1422              290.4             0.2274
+#>  profiles profile_4         330.8          1422              434.9             0.1950
+#>  min_standardized_eigenvalue boundary
+#>                       0.2022    FALSE
+#>                       0.2626    FALSE
+#>                       0.2274    FALSE
+#>                       0.1950    FALSE
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
@@ -1379,7 +1455,7 @@ summary(chosen)
 #>        1   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 19 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 
@@ -1532,7 +1608,7 @@ lca_models <- enumerate_classes(student_esm, activities, "student",
                                 categorical = activities, n_starts = 5,
                                 seed = 1)
 lca_models
-#> Class enumeration: 6 candidate models
+#> Class enumeration: 6 candidate models (LCA)
 #>         candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
 #>  classes2_groups1          2               1  <NA>          -7892           17 15819      15863
 #>  classes3_groups1          3               1  <NA>          -7848           26 15749      15817
@@ -1599,10 +1675,17 @@ srl_models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
                                    "test_anxiety"),
                             n_profiles = 1:8, model = "VVI", n_starts = 10,
                             seed = 1)
+#> Warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> Warning: Profile 1: 9.7 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 #> Warning: A variance reached min_variance; this is a bound-active constrained fit.
 #> Warning: A profile or group class has effective membership below one.
+#> Warning: Profiles 3, 4: 1.0, 2.0 Gaussian membership mass for 10 free means and variances each.
+#> This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance
+#> diagnostics.
 srl_models
-#> Class enumeration: 8 candidate models
+#> Class enumeration: 8 candidate models (LPA)
 #>  candidate n_profiles n_group_classes model log_likelihood n_parameters  aic bic_groups
 #>  profiles1          1               1   VVI          -1247           10 2515       2552
 #>  profiles2          2               1   VVI           -889           21 1821       1898
@@ -1653,11 +1736,17 @@ plot_selection(srl_models, what = "deltas")
 
 ![](class-enumeration_files/figure-html/single-1.png)
 
-BIC is minimized by profiles6. The eight-profile candidate has a
-variance at its lower bound and a nearly empty profile, which marks the
-limit of what 300 observations can support. The two warnings issued
-during the enumeration originate from this candidate and are retained in
-the `warnings` column of the table.
+BIC is minimized by profiles6. The six- and seven-profile candidates
+each contain a profile of about ten observations, about 3% of the
+sample, too few to determine its own ten means and variances, and the
+enumeration reports this with a `latents_thin_profiles` warning; such a
+profile may be a spurious maximum, and the BIC choice should be weighed
+against the five-profile candidate, which
+[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+shows beside it. The eight-profile candidate has a variance at its lower
+bound and a nearly empty profile, which marks the limit of what 300
+observations can support. Every warning issued during the enumeration is
+retained in the `warnings` column of the table.
 
 ### Missing values and scaled indicators
 
@@ -1689,21 +1778,21 @@ crossed_models <- enumerate_lpa(srl, c("cognitive_strategies",
                                 n_profiles = 2:4, model = c("VVI", "EEE"),
                                 n_starts = 5, seed = 1)
 crossed_models
-#> Class enumeration: 6 candidate models
+#> Class enumeration: 6 candidate models (LPA)
 #>      candidate n_profiles n_group_classes model log_likelihood n_parameters  aic bic_groups
 #>  profiles2_VVI          2               1   VVI           -889           21 1821       1898
 #>  profiles3_VVI          3               1   VVI           -736           32 1535       1654
 #>  profiles4_VVI          4               1   VVI           -683           43 1451       1611
 #>  profiles2_EEE          2               1   EEE           -601           26 1254       1350
 #>  profiles3_EEE          3               1   EEE           -593           32 1250       1369
-#>  profiles4_EEE          4               1   EEE           -583           38 1242       1383
+#>  profiles4_EEE          4               1   EEE           -582           38 1240       1381
 #>  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean
 #>            1898           1940           0.899            NA     0.969     0.979      0.974
 #>            1654           1714           0.909            NA     0.936     0.975      0.959
 #>            1611           1728           0.859            NA     0.885     0.954      0.917
 #>            1350           1457           0.744            NA     0.880     0.954      0.917
-#>            1369           1596           0.656            NA     0.795     0.890      0.839
-#>            1383           1574           0.771            NA     0.829     0.949      0.884
+#>            1369           1609           0.635            NA     0.797     0.881      0.834
+#>            1381           1574           0.769            NA     0.818     0.918      0.878
 #>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
 #>            0              NA              NA               NA                NA      TRUE    FALSE
 #>            0              NA              NA               NA                NA      TRUE    FALSE
@@ -1716,16 +1805,16 @@ crossed_models
 #>                  5
 #>                  3
 #>                  5
-#>                  1
 #>                  2
+#>                  1
 #> No candidate is selected automatically. Compare one convention consistently.
 compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
 #> Model comparison
 #> 
 #> Model          Profiles   k   LogLik      BIC    ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8
 #> -------------  --------  --  -------  -------  ------  ------  -------  -------  ---------  -----
-#> profiles3_VVI         3  32  -735.74  1654.00  284.98   0.000  1714.03     0.91       0.94      0
-#> profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1
+#> profiles3_VVI         3  32  -735.74  1654.00  285.32   0.000  1714.03     0.91       0.94      0
+#> profiles3_EEE         3  32  -593.08  1368.68    0.00   1.000  1609.48     0.63       0.80      1
 ```
 
 ### Latent transition models
@@ -1742,13 +1831,13 @@ transition_models <- enumerate_classes(course_engagement, activity, "student",
                                        n_group_classes = 1, n_starts = 3,
                                        max_iter = 2000, seed = 1)
 transition_models
-#> Transition-model enumeration: 5 candidates
+#> Transition-model enumeration: 5 candidates (LTA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy
 #>  profiles2_groups1          2               1  <NA>          -8335           23 16778 16717  0.9611
 #>  profiles3_groups1          3               1  <NA>          -8262           38 16701 16600  0.8006
 #>  profiles4_groups1          4               1  <NA>          -8219           55 16695 16548  0.7352
 #>  profiles5_groups1          5               1  <NA>          -8195           74 16736 16538  0.7793
-#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7017
+#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7019
 #>  converged boundary
 #>       TRUE    FALSE
 #>       TRUE    FALSE
@@ -1762,10 +1851,10 @@ compare_models(transition_models)
 #> Model              Profiles   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8
 #> -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----
 #> profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0
-#> profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0
-#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0
-#> profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0
-#> profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18570.64     0.70       0.69      4
+#> profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.87     0.80       0.84      0
+#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.60     0.74       0.82      0
+#> profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.98     0.78       0.81      0
+#> profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18569.55     0.70       0.69      4
 ```
 
 ## Functions
@@ -1804,6 +1893,11 @@ non-Gaussian clustering. *Biometrics*, 49, 803–821.
 Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture
 model for clustering with the integrated completed likelihood. *IEEE
 Transactions on Pattern Analysis and Machine Intelligence*, 22, 719–725.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2003). Choosing starting
+values for the EM algorithm for getting the highest likelihood in
+multivariate Gaussian mixture models. *Computational Statistics & Data
+Analysis*, 41, 561–575.
 
 Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
 structure models with categorical variables: One-step versus three-step

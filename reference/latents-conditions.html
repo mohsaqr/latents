@@ -13,7 +13,7 @@ message text may change between versions."><meta property="og:image" content="ht
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -219,10 +219,32 @@ data, or differ in covariance structure, centering, scaling mode or
 <code>drop_empty</code> where the comparison requires them to match.</p></dd>
 
 <dt><code>latents_parallel_failure</code></dt>
-<dd><p>With <code>cores</code> above one, a worker
-process failed as a whole (for example by running out of memory), so
-some candidates of an enumeration were lost. An estimation error of a
-single candidate is recorded in the grid instead.</p></dd>
+<dd><p>The worker cluster could not be started,
+or a broken cluster's surviving processes could not be stopped safely.
+A process lost during fitting is otherwise retried and reported with
+<code>latents_worker_lost</code> instead.</p></dd>
+
+<dt><code>latents_worker_lost</code></dt>
+<dd><p>One or more worker tasks returned no result,
+possibly because their processes were killed for memory. Missing results
+are retried once with fewer workers. The warning reports the numbers
+lost, recovered and still failed, and suggests fewer <code>cores</code>. Persistent
+losses become failed starts or candidate rows, retaining other results.
+A socket connection failure makes its current bounded chunk uncertain;
+earlier chunks are retained, and the uncertain chunk is retried.</p></dd>
+
+<dt><code>latents_suspect_categorical</code></dt>
+<dd><p>A numeric indicator fitted as
+categorical has non-integer values or more than ten categories, so it
+may be continuous. Every distinct value is fitted as a category. The
+warning names the indicators (field <code>indicators</code>) and is given once per
+call, including an enumeration.</p></dd>
+
+<dt><code>latents_candidate_failed</code></dt>
+<dd><p>A candidate of an enumeration that was
+fitted as one worker task lost that worker twice. It is recorded as the
+candidate's error, in its row of the grid, and the other candidates are
+returned.</p></dd>
 
 <dt><code>latents_reversed_likelihood</code></dt>
 <dd><p>The model with more parameters has
@@ -392,6 +414,34 @@ describe: <code>vars</code> named none, or the frame has no numeric column outsi
 <dt><code>latents_nothing_to_plot</code></dt>
 <dd><p>The requested panel has no rows to draw.</p></dd>
 
+<dt><code>latents_inaccurate_probability</code></dt>
+<dd><p>The numerical integral behind a
+Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.</p></dd>
+
+<dt><code>latents_no_local_dependence</code></dt>
+<dd><p><code>get_results(fit, "local_dependence")</code>
+on a fit made without <code>local_dependence</code>.</p></dd>
+
+<dt><code>latents_no_direct_effects</code></dt>
+<dd><p><code>get_results(fit, "direct_effects")</code>
+on a fit made without <code>direct_effects</code>.</p></dd>
+
+<dt><code>latents_partial_pair</code></dt>
+<dd><p>A warning: rows observe one item of a
+<code>local_dependence</code> pair and not the other, so the pair is treated as
+missing in those rows.</p></dd>
+
+<dt><code>latents_no_lmr</code></dt>
+<dd><p><code>get_results(x, "lmr")</code> on a grid with no two
+converged candidates one profile or one group class apart. Also of class
+<code>latents_nothing_to_plot</code>.</p></dd>
+
+<dt><code>latents_invalid_lmr</code></dt>
+<dd><p>The alternative of a nested LMR comparison
+has a lower likelihood than the null beyond numerical roundoff. The
+comparison table retains its row with unavailable statistics and the
+reason in <code>note</code>; improve the alternative's fit before comparing.</p></dd>
+
 <dt><code>latents_no_tree</code></dt>
 <dd><p>A tree would have fewer than two rows, or the
 group level of a grid with one group class was asked for. Also of
@@ -469,7 +519,23 @@ not valid at that parameter.</p></dd>
 
 <dt><code>latents_small_classes</code></dt>
 <dd><p>A profile or group class has an effective
-membership below one observation.</p></dd>
+membership below one observation; or, in <code><a href="three_step.html">three_step()</a></code> with <code>method = "ml"</code>, a class is carried by a single unit, so its standard error is
+reported as <code>NA</code>.</p></dd>
+
+<dt><code>latents_thin_profiles</code></dt>
+<dd><p>A Gaussian component with free variances
+of its own has posterior membership mass below the number of free
+parameters in its Gaussian density. This is a heuristic prompt to
+inspect the solution, not a proof of singularity or nonidentification.
+Covariances held at zero and held means are excluded, and held
+variances do not trigger it. Memberships use normalized sampling
+weights and only rows with an observed Gaussian indicator; this mass
+is not an independent sample count or a weight effective sample size.
+Transition models check occasion-specific measurement separately;
+cross-level models check both Gaussian levels. The estimate is
+returned unchanged. See <code>get_results(fit, "gaussian_diagnostics")</code> for
+continuous covariance and support diagnostics; none supplies an
+automatic spike classification or an identification guarantee.</p></dd>
 
 <dt><code>latents_all_starts_boundary</code></dt>
 <dd><p><code>boundary = "exclude"</code> found every
@@ -571,6 +637,7 @@ condition instead.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"score_a"</span>, <span class="st">"score_b"</span><span class="op">)</span>, <span class="st">"school"</span>,</span></span>
 <span class="r-in"><span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Profile 1: 2.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span>
 <span class="r-in"><span><span class="co"># A sequence verb on a fit made without `time` is catchable by class.</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"sequences"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>         latents_no_time <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">condition</span><span class="op">)</span> <span class="op">{</span></span></span>

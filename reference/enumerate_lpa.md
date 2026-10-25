@@ -92,7 +92,7 @@ summary(models)
 #> Class enumeration: 12 candidates, 12 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 14 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 14 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>      candidate n_profiles model log_likelihood n_parameters  aic  bic
@@ -104,7 +104,7 @@ summary(models)
 #>  profiles3_VVI          3   VVI         -735.7           32 1535 1654
 #>  profiles1_EEE          1   EEE         -615.7           20 1271 1345
 #>  profiles2_EEE          2   EEE         -600.9           26 1254 1350
-#>  profiles3_EEE          3   EEE         -594.4           32 1253 1371
+#>  profiles3_EEE          3   EEE         -593.1           32 1250 1369
 #>  profiles1_VVV          1   VVV         -615.7           20 1271 1345
 #>  icl_individual profile_entropy avepp_min avepp_mean avepp_below converged
 #>            2552              NA        NA         NA          NA      TRUE
@@ -115,7 +115,7 @@ summary(models)
 #>            1714          0.9089    0.9356     0.9591           0      TRUE
 #>            1345              NA        NA         NA          NA      TRUE
 #>            1457          0.7440    0.8801     0.9169           0      TRUE
-#>            1606          0.6442    0.7797     0.8391           1      TRUE
+#>            1609          0.6347    0.7966     0.8340           1      TRUE
 #>            1345              NA        NA         NA          NA      TRUE
 #>  boundary
 #>     FALSE
@@ -190,7 +190,7 @@ summary(models)
 #>  profiles3_VVI          3               1   VVI bic_groups  1654       244.369
 #>  profiles1_EEE          1               1   EEE bic_groups  1345            NA
 #>  profiles2_EEE          2               1   EEE bic_groups  1350        -4.704
-#>  profiles3_EEE          3               1   EEE bic_groups  1371       -21.098
+#>  profiles3_EEE          3               1   EEE bic_groups  1369       -18.531
 #>  profiles1_VVV          1               1   VVV bic_groups  1345            NA
 #>   from_profile delta_group_class from_group_class
 #>           <NA>                NA             <NA>

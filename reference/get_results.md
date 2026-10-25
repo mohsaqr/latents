@@ -227,6 +227,9 @@ Every fitted model offers these:
 
   One row per EM start: `start`, `log_likelihood`, `converged`,
   `iterations`, `error` and, where the family records it, `boundary`.
+  Under `search = "emEM"`, one row per start of the pool, with its
+  `kind`, its `stage` (`"final"` when run to convergence, `"screened"`
+  otherwise) and its `screened_log_likelihood`.
 
 - `"data"`:
 
@@ -248,6 +251,28 @@ Fits with discrete group classes also offer:
   `log_likelihood`, `group_class`, `posterior`, `modal`. Takes `format`.
 
 Tables specific to one family or object:
+
+- `"gaussian_diagnostics"`:
+
+  Gaussian profile, membership-covariate, transition and cross-level
+  fits that record these diagnostics. One row per Gaussian component and
+  measurement context: `context`, `profile`, `gaussian_mass`,
+  `positive_rows`, `weight_effective_n`, `min_variance_ratio`,
+  `min_standardized_eigenvalue`, `boundary`. `gaussian_mass` sums
+  posterior times normalized sampling weight over rows with at least one
+  observed Gaussian indicator; `positive_rows` counts rows with positive
+  contributions. `weight_effective_n` is the concentration measure
+  `(sum(a)^2 / sum(a^2))` for those contributions, not an identification
+  guarantee; Gaussian mass is not this effective sample size.
+  `min_variance_ratio` is the smallest component variance divided by its
+  observed sampling-weighted marginal variance on the fitted scale,
+  including between-component variation. `min_standardized_eigenvalue`
+  is the smallest eigenvalue of the component covariance after
+  standardizing every indicator by its observed sampling-weighted
+  marginal standard deviation. Missing reference variation gives `NA`
+  ratios. `boundary` concerns the absolute variance or eigenvalue floor.
+  These descriptive measures use no automatic spike cutoff and do not
+  alter start selection.
 
 - `"profile_probabilities"`, `"stages"`:
 
@@ -287,22 +312,24 @@ Tables specific to one family or object:
   sample-size conventions, both entropies, the average posterior
   probability (AvePP) summaries of each level (`avepp_min`, `avepp_max`,
   `avepp_mean`, `avepp_below` and the same four prefixed `group_`) and
-  the convergence, boundary, replication, warning and error diagnostics.
-  Failed candidates are kept with `NA` estimates and their error text.
-  It takes `cutoff` (default `0.8`): `avepp_below` and
-  `group_avepp_below` count the classes whose AvePP is below it. A class
-  with no modally assigned unit has no AvePP; it is excluded from the
-  minimum, maximum and mean and counted as below the cutoff. A level
-  with one class has `NA` summaries. `"best"` has one row per
-  information criterion and sample-size convention: `criterion`,
-  `convention`, `candidate` (the converged candidate with the lowest
-  value), `n_profiles`, `n_group_classes`, `model` and `value`;
-  `what = "criteria"` is accepted as a deprecated name for it.
-  `"classification"` has one row per fitted candidate, level and class:
-  `candidate`, `n_profiles`, `n_group_classes`, `model`, then the
-  columns of a fit's `"classification"` table and that level's
-  `relative_entropy`. Failed candidates and single-class levels
-  contribute no rows.
+  the convergence, boundary, replication, warning and error diagnostics,
+  including `min_standardized_eigenvalue` and `min_gaussian_mass` where
+  Gaussian diagnostics are available. These are descriptive summaries,
+  without an automatic cutoff or change to candidate selection. Failed
+  candidates are kept with `NA` estimates and their error text. It takes
+  `cutoff` (default `0.8`): `avepp_below` and `group_avepp_below` count
+  the classes whose AvePP is below it. A class with no modally assigned
+  unit has no AvePP; it is excluded from the minimum, maximum and mean
+  and counted as below the cutoff. A level with one class has `NA`
+  summaries. `"best"` has one row per information criterion and
+  sample-size convention: `criterion`, `convention`, `candidate` (the
+  converged candidate with the lowest value), `n_profiles`,
+  `n_group_classes`, `model` and `value`; `what = "criteria"` is
+  accepted as a deprecated name for it. `"classification"` has one row
+  per fitted candidate, level and class: `candidate`, `n_profiles`,
+  `n_group_classes`, `model`, then the columns of a fit's
+  `"classification"` table and that level's `relative_entropy`. Failed
+  candidates and single-class levels contribute no rows.
 
 - `"deltas"`, `"knees"`:
 
@@ -331,25 +358,75 @@ Tables specific to one family or object:
   `knee_without_largest` and `stable`; otherwise they are `NA` and
   `note` gives the reason.
 
+- `"local_dependence"`:
+
+  For a fit with `local_dependence`: `pair`, `kind` (`"categorical"` or
+  `"continuous"`), `profile`, `item_1`, `category_1`, `item_2`,
+  `category_2`, `probability`, `independent`, `ratio`, `covariance` and
+  `correlation`. A categorical pair has one row per profile and
+  combination of the two items' categories: the fitted joint
+  `probability`, the product of the two marginal probabilities
+  (`independent`, the joint probability under independence within the
+  profile) and their `ratio`; its covariance columns are `NA`. A
+  continuous pair has one row per profile, with the pair's `covariance`
+  and the `correlation` it implies; its category and probability columns
+  are `NA`. A fit without pairs raises `latents_no_local_dependence`,
+  and `what = "all"` leaves the table out.
+
+- `"direct_effects"`:
+
+  For a fit with `direct_effects`, one row per effect: `indicator`,
+  `covariate`, `estimate` (the change in the indicator's mean per unit
+  of the covariate, the same in every profile), `standard_error`,
+  `statistic`, `p_value`, `conf_low` and `conf_high` (Wald, from
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)).
+  A fit without direct effects raises `latents_no_direct_effects`, and
+  `what = "all"` leaves the table out.
+
+- `"lmr"`:
+
+  The Vuong-Lo-Mendell-Rubin (VLMR) and adjusted Lo-Mendell-Rubin (aLMR)
+  tests of an enumeration grid (Vuong 1989; Lo, Mendell and Rubin 2001;
+  Vermunt 2024), one row per pair of converged candidates that differ by
+  one profile (`direction = "profiles"`) or one group class
+  (`"group_classes"`) at the same structure: `direction`,
+  `null_candidate`, `alternative_candidate`, `n_profiles`,
+  `n_group_classes` and `model` of the alternative, `n_units` (the
+  independent units scored: groups, or observations without groups),
+  `parameters_added`, `lr` (twice the log-likelihood difference),
+  `vlmr_p`, `adjusted_lr`
+  (`lr / (1 + 1 / (parameters_added * log(n_units)))`), `almr_p`,
+  `reference_mean` and `reference_sd` of the weighted chi-square
+  reference distribution, whose weights are the eigenvalues of Vuong's
+  matrix of the two models' scores and Hessians, and `note`. The
+  p-values are computed by Imhof's method to about `1e-9`. A pair whose
+  information matrix is singular, or whose candidate is on a boundary,
+  keeps its row with `NA` statistics and the reason in `note`; warnings
+  raised while scoring a candidate are recorded there too. Every
+  candidate's information is computed, so the table is built only when
+  asked for, and `what = "all"` leaves it out. A grid with no such pair
+  raises `latents_no_lmr`.
+
 - `"tree"`:
 
   The flows of
   [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
-  taking its arguments `n_group_classes`, `n_profiles`, `model`,
-  `candidates`, `from`, `to` and `level` (default `"individuals"`). One
-  row per pair of classes in consecutive rows of each tree: `tree` (the
-  tree's name, as in the plot list), `level`, `from_candidate`,
-  `from_class`, `from_share`, `to_candidate`, `to_class`, `to_share`,
-  `mass` (the share of all units the two classes share, the sum over
-  units of the product of their posterior probabilities, weighted by
-  sampling weights at the individual level), `share_of_from` and
-  `share_of_to` (`mass` as a part of each class). Every pair is listed,
-  including those that share no mass. Units are the rows and groups the
-  fit counts (see `drop_empty`), weighted by their sampling weights at
-  both levels. A grid with no tree raises `latents_no_tree`, a fit with
-  a noise component `latents_unsupported_noise`, and `what = "all"`
-  leaves the table out. The summary of a grid carries the default table
-  only, without these arguments.
+  on every grid, taking its arguments `n_group_classes`, `n_profiles`
+  (`n_classes` on a regression grid), `model`, `candidates`, `from`,
+  `to` and `level` (default `"individuals"`). One row per pair of
+  classes in consecutive rows of each tree: `tree` (the tree's name, as
+  in the plot list), `level`, `from_candidate`, `from_class`,
+  `from_share`, `to_candidate`, `to_class`, `to_share`, `mass` (the
+  share of all units the two classes share, the sum over units of the
+  product of their posterior probabilities, weighted by sampling weights
+  at the individual level), `share_of_from` and `share_of_to` (`mass` as
+  a part of each class). Every pair is listed, including those that
+  share no mass. Units are the rows and groups the fit counts (see
+  `drop_empty`), weighted by their sampling weights at both levels. A
+  grid with no tree raises `latents_no_tree`, a fit with a noise
+  component `latents_unsupported_noise`, and `what = "all"` leaves the
+  table out. The summary of a grid carries the default table only,
+  without these arguments.
 
 - `"comparison"`, `"classification"`:
 
@@ -714,12 +791,12 @@ get_results(fit, what = "entropy")
 #> 2      groups         2     106    4.434664        0.9396428
 names(get_results(fit, what = "all"))
 #>  [1] "profiles"              "responses"             "covariances"          
-#>  [4] "profile_probabilities" "counts"                "posteriors"           
-#>  [7] "group_posteriors"      "assignments"           "classification"       
-#> [10] "average_posteriors"    "classification_errors" "bch_weights"          
-#> [13] "entropy"               "residuals"             "information_criteria" 
-#> [16] "model"                 "stages"                "starts"               
-#> [19] "data"                 
+#>  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               
+#>  [7] "posteriors"            "group_posteriors"      "assignments"          
+#> [10] "classification"        "average_posteriors"    "classification_errors"
+#> [13] "bch_weights"           "entropy"               "residuals"            
+#> [16] "information_criteria"  "model"                 "stages"               
+#> [19] "starts"                "data"                 
 
 # `engagement` and `student_type` are the kinds each row was simulated from,
 # which the model never saw. Both recovery checks are one call.

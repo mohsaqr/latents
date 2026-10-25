@@ -23,7 +23,7 @@ the cross-sectional counterpart."><meta property="og:image" content="https://pak
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -122,7 +122,11 @@ the cross-sectional counterpart.</p>
 <span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  count_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"poisson"</span>, <span class="st">"negative_binomial"</span><span class="op">)</span>,</span>
 <span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
-<span>  drop_empty <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  drop_empty <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  search <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"kmeans"</span>, <span class="st">"emEM"</span><span class="op">)</span>,</span>
+<span>  n_screen <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  acceleration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"squarem"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">1L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -175,11 +179,13 @@ or covariance matrices) or <code>"equal"</code> (shared across profiles).</p></d
 <dd><p>Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread, as in mclust's initialization. The
+described by its own means and spread. The
 remaining starts are k-means from random centres. A supplied <code>start</code>
 replaces the first start, and the remaining starts are random. With
 <code>start</code> and <code>max_iter = 0</code>, exactly one start is run whatever <code>n_starts</code>
-is.</p></dd>
+is. Rows from zero-weight units do not supply initial clustering or
+measurement parameters. For <code>search = "emEM"</code>, this is the finalist
+budget, including the protected first start (see <code>search</code>).</p></dd>
 
 
 <dt id="arg-max-iter">max_iter<a class="anchor" aria-label="anchor" href="#arg-max-iter"></a></dt>
@@ -354,6 +360,55 @@ and <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> do not compare
 <code>drop_empty</code>. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.</p></dd>
 
+
+<dt id="arg-search">search<a class="anchor" aria-label="anchor" href="#arg-search"></a></dt>
+<dd><p>How the starts are found: <code>"kmeans"</code> (the default) or
+<code>"emEM"</code>, as described for <code><a href="multilpa.html">multilpa()</a></code>. Unlike <code><a href="multilpa.html">multilpa()</a></code>, <code>lta()</code>
+does not choose its default by the covariance structure.</p></dd>
+
+
+<dt id="arg-n-screen">n_screen<a class="anchor" aria-label="anchor" href="#arg-n-screen"></a></dt>
+<dd><p>For <code>search = "emEM"</code>, the number of starts screened, at
+least <code>n_starts</code>. <code>NULL</code> (the default) screens five times <code>n_starts</code>.
+The protected first start counts toward the <code>n_starts</code> finalist budget;
+increasing <code>n_screen</code> does not add finalist slots. A single supplied
+start with <code>n_starts = 1</code> disables screening.
+A value with <code>search = "kmeans"</code>, or one below <code>n_starts</code>, raises
+<code>latents_bad_argument</code>.</p></dd>
+
+
+<dt id="arg-acceleration">acceleration<a class="anchor" aria-label="anchor" href="#arg-acceleration"></a></dt>
+<dd><p><code>"squarem"</code> (the default) accelerates EM with SQUAREM
+(Varadhan &amp; Roland, 2008), as <code><a href="multilpa.html">multilpa()</a></code> does: each cycle extrapolates
+along the last two EM steps, including the initial and transition
+probabilities, and ends with an ordinary EM step. An extrapolated point
+that would lower the likelihood, or that leaves a probability
+non-positive or a row not summing to one, is replaced by the plain EM
+point, so the iteration stays monotone. Convergence is assessed over a
+whole cycle, so it is never looser than plain EM's. Under the strict
+default <code>tol</code> plain EM can creep along a flat likelihood for thousands of
+steps; SQUAREM usually stops in far fewer, at the same or a slightly
+higher maximum. <code>"none"</code> runs plain EM, which reproduces fits from
+versions before this argument existed. <code>iterations</code> and <code>max_iter</code> count
+EM steps under either setting.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Number of processor cores for the random starts (default 1).
+The starting values are drawn in order in the current process and only
+the EM runs are distributed, so with <code>seed</code> given the result is identical
+to <code>cores = 1</code>. Under <code>search = "emEM"</code> both screening and the final runs
+are distributed. Workers are forked processes on macOS and Linux, and a
+socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as
+in <code><a href="enumerate_classes.html">enumerate_classes()</a></code>. Lost worker results are retried once with half
+as many workers (rounded up), with one <code>latents_worker_lost</code> warning
+reporting losses and recovery and suggesting fewer cores. A start still
+lost is recorded as failed; the fit uses the remaining starts. If all
+starts fail, the usual <code>latents_all_starts_failed</code> error is raised.
+Socket workers use bounded chunks; completed tasks within a failed chunk
+may also be retried. To fit many models, give <code>cores</code> to
+<code><a href="enumerate_classes.html">enumerate_classes()</a></code>, which runs starts across candidates in one pool.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -402,6 +457,9 @@ read off that single expectation.</p>
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Collins, L. M., &amp; Lanza, S. T. (2010). Latent class and latent
 transition analysis. Wiley.</p>
+<p>Varadhan, R., &amp; Roland, C. (2008). Simple and globally convergent methods
+for accelerating the convergence of any EM algorithm. Scandinavian
+Journal of Statistics, 35, 335–353.</p>
 <p>Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.</p>
     </div>
@@ -424,10 +482,10 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"transitions"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_class from to probability expected_count stable estimated</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1    1  1   0.8613981      670.56011   TRUE      TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1    1  2   0.1386019      107.89512  FALSE      TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           1    2  1   0.1850265       99.46008  FALSE      TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           1    2  2   0.8149735      438.08469   TRUE      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1    1  1   0.8613986      670.56049   TRUE      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1    1  2   0.1386014      107.89506  FALSE      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           1    2  1   0.1850266       99.46003  FALSE      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           1    2  2   0.8149734      438.08441   TRUE      TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_class_probability</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                       1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                       1</span>
@@ -482,6 +540,14 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1 attendance    lectures     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 40 more rows.  get_results(x, what = "covariances")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- gaussian_diagnostics --------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   context   profile gaussian_mass positive_rows weight_effective_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles profile_1         836.4          1422              847.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles profile_2         585.6          1422              596.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  min_variance_ratio min_standardized_eigenvalue boundary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              0.4007                      0.4007    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              0.3664                      0.3664    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- transitions -----------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group_class from to probability expected_count stable estimated</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1    1  1      0.8614         670.56   TRUE      TRUE</span>
@@ -510,7 +576,7 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    1     1       1 1.000e+00  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    2     1       1 9.971e-01  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    3     1       1 1.387e-05 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1 8.981e-07 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1 8.982e-07 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    5     1       1 1.263e-06 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    6     1       1 4.927e-06 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    7     1       1 4.797e-06 FALSE</span>
@@ -547,9 +613,9 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1       10   0.26    -0.95      -0.51      -1.89      -1.45       2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group_class uncertainty posterior_profile_1 posterior_profile_2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1   1.174e-05           1.000e+00           1.174e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1   2.865e-03           9.971e-01           2.865e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1   2.864e-03           9.971e-01           2.864e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1   1.387e-05           1.387e-05           1.000e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1   8.981e-07           8.981e-07           1.000e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1   8.982e-07           8.982e-07           1.000e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1   1.263e-06           1.263e-06           1.000e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1   4.927e-06           4.927e-06           1.000e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1   4.797e-06           4.797e-06           1.000e+00</span>
@@ -570,18 +636,18 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- average_posteriors ----------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level assigned_class class n_assigned average_posterior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        837           0.99153</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        837           0.00847</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1        585           0.01101</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2        585           0.98899</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     1        106           1.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        837          0.991531</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        837          0.008469</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1        585          0.011015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2        585          0.988985</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     1        106          1.000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification_errors -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level true_class assigned_class probability</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              1    0.992296</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              2    0.007704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1    0.012105</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2    0.987895</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1    0.012104</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2    0.987896</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              1    1.000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- bch_weights -----------------------------------------------------</span>
@@ -609,7 +675,7 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2  forum_read  attendance gaussian  0.23302        0  0.23302</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1  forum_read  attendance gaussian  0.21662        0  0.21662</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1  forum_post  attendance gaussian  0.20818        0  0.20818</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2      browse  attendance gaussian  0.19680        0  0.19680</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2      browse  attendance gaussian  0.19679        0  0.19679</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1      browse  attendance gaussian  0.16968        0  0.16968</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2    lectures  attendance gaussian  0.11963        0  0.11963</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2  forum_post  attendance gaussian  0.11548        0  0.11548</span>
@@ -618,14 +684,14 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  effective_n statistic df   p_value p_adjusted</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     6.951 NA 3.638e-12  3.638e-12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     5.730 NA 1.005e-08  1.005e-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     6.354 NA 2.097e-10  2.097e-10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     6.354 NA 2.096e-10  2.096e-10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     6.099 NA 1.068e-09  1.068e-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     4.813 NA 1.487e-06  1.487e-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     4.946 NA 7.574e-07  7.574e-07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        836.4     4.946 NA 7.573e-07  7.573e-07</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     2.901 NA 3.714e-03  3.714e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     2.800 NA 5.112e-03  5.112e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     2.478 NA 1.322e-02  1.322e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     1.678 NA 9.328e-02  9.328e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        585.6     1.678 NA 9.329e-02  9.329e-02</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 10 more rows.  get_results(x, what = "residuals")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- information_criteria --------------------------------------------</span>
@@ -642,7 +708,7 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  scaling covariance_structure n_parameters n_parameters_with_measurement</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     none                 &lt;NA&gt;           23                            23</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  log_likelihood   aic bic_groups bic_individual converged iterations boundary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           -8335 16717      16778          16838      TRUE          6    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           -8335 16717      16778          16838      TRUE          9    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  small_classes best_start n_best_replicated weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          FALSE          1                 2    &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -682,8 +748,8 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- starts ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  start log_likelihood converged iterations error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      1          -8335      TRUE          6  &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      2          -8335      TRUE          7  &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      1          -8335      TRUE          9  &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      2          -8335      TRUE          9  &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- data ------------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  student sequence browse lectures forum_read forum_post attendance</span>
@@ -699,7 +765,7 @@ cross-sectional model this one shares its measurement parameters with.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1       10   0.26    -0.95      -0.51      -1.89      -1.45</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 1412 more rows.  get_results(x, what = "data")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 </code></pre></div>
     </div>

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -223,14 +223,28 @@ single observation with every variance at its lower bound; its
 likelihood, and hence its criteria, then depend on
 <code>min_variance</code> rather than on the data.
 <code>boundary = "exclude"</code> sets such starts aside for every
-candidate (see <em>Diagnostics of the estimation</em>).</p>
+candidate (see <em>Diagnostics of the estimation</em>). A profile can
+also be spurious without reaching the bound, when a few nearly
+coincident observations give it variances close to zero (McLachlan and
+Peel, 2000, section 3.10). A profile with fewer effective members than
+its own means and variances is therefore reported by a
+<code>latents_thin_profiles</code> warning. When every profile shares
+one covariance matrix (EII, EEI, EEE), the default search is emEM: it
+screens five times <code>n_starts</code> starts by a short EM run each
+and continues the best <code>n_starts</code> to convergence (Biernacki,
+Celeux and Govaert, 2003). The other structures start from k-means,
+because with profile-specific variances emEM also reaches spurious
+maxima more often. <code>search = "emEM"</code> or <code>"kmeans"</code>
+overrides either default.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
 <span>                            n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
 <span>                            model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a</span></span>
+<span><span class="co">#&gt; conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span></span>
 <span><span class="va">models</span></span>
-<span><span class="co">#&gt; Class enumeration: 24 candidate models</span></span>
+<span><span class="co">#&gt; Class enumeration: 24 candidate models (LPA)</span></span>
 <span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups</span></span>
 <span><span class="co">#&gt;  profiles1_groups1          1               1   VVI         -10007           10 20035      20062</span></span>
 <span><span class="co">#&gt;  profiles2_groups1          2               1   VVI          -8615           21 17272      17328</span></span>
@@ -449,31 +463,81 @@ estimation.</p>
 <span><span class="co">#&gt; 22     0.801     0.853      0.837           0           0.867           0.903            0.885</span></span>
 <span><span class="co">#&gt; 23     0.786     0.853      0.820           1           0.882           0.926            0.904</span></span>
 <span><span class="co">#&gt; 24     0.654     0.847      0.783           3           0.898           0.940            0.916</span></span>
-<span><span class="co">#&gt;    group_avepp_below converged boundary n_best_replicated warnings</span></span>
-<span><span class="co">#&gt; 1                 NA      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 2                 NA      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 3                 NA      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 4                 NA      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 5                 NA      TRUE    FALSE                 1         </span></span>
-<span><span class="co">#&gt; 6                 NA      TRUE    FALSE                 1         </span></span>
-<span><span class="co">#&gt; 7                 NA     FALSE       NA                NA         </span></span>
-<span><span class="co">#&gt; 8                  0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 9                  0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 10                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 11                 0      TRUE    FALSE                 2         </span></span>
-<span><span class="co">#&gt; 12                 0      TRUE    FALSE                 1         </span></span>
-<span><span class="co">#&gt; 13                NA     FALSE       NA                NA         </span></span>
-<span><span class="co">#&gt; 14                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 15                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 16                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 17                 0      TRUE    FALSE                 2         </span></span>
-<span><span class="co">#&gt; 18                 0      TRUE    FALSE                 2         </span></span>
-<span><span class="co">#&gt; 19                NA     FALSE       NA                NA         </span></span>
-<span><span class="co">#&gt; 20                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 21                 0      TRUE    FALSE                 3         </span></span>
-<span><span class="co">#&gt; 22                 0      TRUE    FALSE                 2         </span></span>
-<span><span class="co">#&gt; 23                 0      TRUE    FALSE                 1         </span></span>
-<span><span class="co">#&gt; 24                 0      TRUE    FALSE                 1         </span></span>
+<span><span class="co">#&gt;    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass</span></span>
+<span><span class="co">#&gt; 1                 NA      TRUE    FALSE                      1.0000           1422.00</span></span>
+<span><span class="co">#&gt; 2                 NA      TRUE    FALSE                      0.3750            589.08</span></span>
+<span><span class="co">#&gt; 3                 NA      TRUE    FALSE                      0.1932            418.21</span></span>
+<span><span class="co">#&gt; 4                 NA      TRUE    FALSE                      0.1893            172.20</span></span>
+<span><span class="co">#&gt; 5                 NA      TRUE    FALSE                      0.0036              4.89</span></span>
+<span><span class="co">#&gt; 6                 NA      TRUE    FALSE                      0.1556             95.07</span></span>
+<span><span class="co">#&gt; 7                 NA     FALSE       NA                          NA                NA</span></span>
+<span><span class="co">#&gt; 8                  0      TRUE    FALSE                      0.3715            587.90</span></span>
+<span><span class="co">#&gt; 9                  0      TRUE    FALSE                      0.2000            382.59</span></span>
+<span><span class="co">#&gt; 10                 0      TRUE    FALSE                      0.2003            178.19</span></span>
+<span><span class="co">#&gt; 11                 0      TRUE    FALSE                      0.0636             36.89</span></span>
+<span><span class="co">#&gt; 12                 0      TRUE    FALSE                      0.0849             40.93</span></span>
+<span><span class="co">#&gt; 13                NA     FALSE       NA                          NA                NA</span></span>
+<span><span class="co">#&gt; 14                 0      TRUE    FALSE                      0.3748            591.09</span></span>
+<span><span class="co">#&gt; 15                 0      TRUE    FALSE                      0.2003            368.95</span></span>
+<span><span class="co">#&gt; 16                 0      TRUE    FALSE                      0.1950            202.20</span></span>
+<span><span class="co">#&gt; 17                 0      TRUE    FALSE                      0.1681            141.26</span></span>
+<span><span class="co">#&gt; 18                 0      TRUE    FALSE                      0.1745            150.21</span></span>
+<span><span class="co">#&gt; 19                NA     FALSE       NA                          NA                NA</span></span>
+<span><span class="co">#&gt; 20                 0      TRUE    FALSE                      0.3747            592.09</span></span>
+<span><span class="co">#&gt; 21                 0      TRUE    FALSE                      0.2007            369.16</span></span>
+<span><span class="co">#&gt; 22                 0      TRUE    FALSE                      0.1967            201.57</span></span>
+<span><span class="co">#&gt; 23                 0      TRUE    FALSE                      0.0994             61.45</span></span>
+<span><span class="co">#&gt; 24                 0      TRUE    FALSE                      0.1224            114.80</span></span>
+<span><span class="co">#&gt;    n_best_replicated</span></span>
+<span><span class="co">#&gt; 1                  3</span></span>
+<span><span class="co">#&gt; 2                  3</span></span>
+<span><span class="co">#&gt; 3                  3</span></span>
+<span><span class="co">#&gt; 4                  3</span></span>
+<span><span class="co">#&gt; 5                  1</span></span>
+<span><span class="co">#&gt; 6                  1</span></span>
+<span><span class="co">#&gt; 7                 NA</span></span>
+<span><span class="co">#&gt; 8                  3</span></span>
+<span><span class="co">#&gt; 9                  3</span></span>
+<span><span class="co">#&gt; 10                 3</span></span>
+<span><span class="co">#&gt; 11                 2</span></span>
+<span><span class="co">#&gt; 12                 1</span></span>
+<span><span class="co">#&gt; 13                NA</span></span>
+<span><span class="co">#&gt; 14                 3</span></span>
+<span><span class="co">#&gt; 15                 3</span></span>
+<span><span class="co">#&gt; 16                 3</span></span>
+<span><span class="co">#&gt; 17                 2</span></span>
+<span><span class="co">#&gt; 18                 2</span></span>
+<span><span class="co">#&gt; 19                NA</span></span>
+<span><span class="co">#&gt; 20                 3</span></span>
+<span><span class="co">#&gt; 21                 3</span></span>
+<span><span class="co">#&gt; 22                 2</span></span>
+<span><span class="co">#&gt; 23                 1</span></span>
+<span><span class="co">#&gt; 24                 1</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                warnings</span></span>
+<span><span class="co">#&gt; 1                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 3                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 4                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 5  Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span></span>
+<span><span class="co">#&gt; 6                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 7                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 8                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 9                                                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; 10                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 11                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 12                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 13                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 14                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 15                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 16                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 17                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 18                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 19                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 20                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 21                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 22                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 23                                                                                                                                                                                     </span></span>
+<span><span class="co">#&gt; 24                                                                                                                                                                                     </span></span>
 <span><span class="co">#&gt;                                                                                     error</span></span>
 <span><span class="co">#&gt; 1                                                                                    &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 2                                                                                    &lt;NA&gt;</span></span>
@@ -1176,6 +1240,7 @@ minimizes BIC with students as the units. It is extracted by name with
 <span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
 <span><span class="co">#&gt; Log likelihood: -8307.154320 | AIC: 16716.309 | BIC (groups): 16852.144</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 48 | best start: 3/3</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.195 (profiles, profile_4); Gaussian mass: 330.8; weight effective n: 434.9.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
 <span><span class="co">#&gt;        1  0.412    0.232      0.490      0.383      0.309   497      0.350</span></span>
@@ -1226,6 +1291,18 @@ standard errors.</p>
 <span><span class="co">#&gt;        1 forum_post    lectures     0.0000</span></span>
 <span><span class="co">#&gt;        1 attendance    lectures     0.0000</span></span>
 <span><span class="co">#&gt;    ... 90 more rows.  get_results(x, what = "covariances")</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- gaussian_diagnostics --------------------------------------------</span></span>
+<span><span class="co">#&gt;   context   profile gaussian_mass positive_rows weight_effective_n min_variance_ratio</span></span>
+<span><span class="co">#&gt;  profiles profile_1         497.0          1422              619.0             0.2022</span></span>
+<span><span class="co">#&gt;  profiles profile_2         392.0          1422              493.2             0.2626</span></span>
+<span><span class="co">#&gt;  profiles profile_3         202.2          1422              290.4             0.2274</span></span>
+<span><span class="co">#&gt;  profiles profile_4         330.8          1422              434.9             0.1950</span></span>
+<span><span class="co">#&gt;  min_standardized_eigenvalue boundary</span></span>
+<span><span class="co">#&gt;                       0.2022    FALSE</span></span>
+<span><span class="co">#&gt;                       0.2626    FALSE</span></span>
+<span><span class="co">#&gt;                       0.2274    FALSE</span></span>
+<span><span class="co">#&gt;                       0.1950    FALSE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- profile_probabilities -------------------------------------------</span></span>
 <span><span class="co">#&gt;  group_class profile probability group_class_probability</span></span>
@@ -1434,7 +1511,7 @@ standard errors.</p>
 <span><span class="co">#&gt;        1   0.26    -0.95      -0.51      -1.89      -1.45</span></span>
 <span><span class="co">#&gt;    ... 1412 more rows.  get_results(x, what = "data")</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 19 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
+<span><span class="co">#&gt; 20 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
 <span><span class="co">#&gt; of them whole, and get_results(x, what = "all") returns every one.</span></span></code></pre></div>
 <p>The profiles are displayed as their means on the five indicators.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
@@ -1555,7 +1632,7 @@ latent class model, and the candidates are named with
 <span>                                categorical <span class="op">=</span> <span class="va">activities</span>, n_starts <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                                seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">lca_models</span></span>
-<span><span class="co">#&gt; Class enumeration: 6 candidate models</span></span>
+<span><span class="co">#&gt; Class enumeration: 6 candidate models (LCA)</span></span>
 <span><span class="co">#&gt;         candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups</span></span>
 <span><span class="co">#&gt;  classes2_groups1          2               1  &lt;NA&gt;          -7892           17 15819      15863</span></span>
 <span><span class="co">#&gt;  classes3_groups1          3               1  &lt;NA&gt;          -7848           26 15749      15817</span></span>
@@ -1613,10 +1690,17 @@ are named by their numbers of profiles or classes alone.</p>
 <span>                                   <span class="st">"test_anxiety"</span><span class="op">)</span>,</span>
 <span>                            n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>                            seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is a</span></span>
+<span><span class="co">#&gt; conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span></span>
+<span><span class="co">#&gt; Warning: Profile 1: 9.7 Gaussian membership mass for 10 free means and variances. This is a</span></span>
+<span><span class="co">#&gt; conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span></span>
 <span><span class="co">#&gt; Warning: A variance reached min_variance; this is a bound-active constrained fit.</span></span>
 <span><span class="co">#&gt; Warning: A profile or group class has effective membership below one.</span></span>
+<span><span class="co">#&gt; Warning: Profiles 3, 4: 1.0, 2.0 Gaussian membership mass for 10 free means and variances each.</span></span>
+<span><span class="co">#&gt; This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance</span></span>
+<span><span class="co">#&gt; diagnostics.</span></span>
 <span><span class="va">srl_models</span></span>
-<span><span class="co">#&gt; Class enumeration: 8 candidate models</span></span>
+<span><span class="co">#&gt; Class enumeration: 8 candidate models (LPA)</span></span>
 <span><span class="co">#&gt;  candidate n_profiles n_group_classes model log_likelihood n_parameters  aic bic_groups</span></span>
 <span><span class="co">#&gt;  profiles1          1               1   VVI          -1247           10 2515       2552</span></span>
 <span><span class="co">#&gt;  profiles2          2               1   VVI           -889           21 1821       1898</span></span>
@@ -1664,11 +1748,17 @@ are named by their numbers of profiles or classes alone.</p>
 <span><span class="co">#&gt; profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0</span></span>
 <span><span class="fu"><a href="../reference/latents-plots.html">plot_selection</a></span><span class="op">(</span><span class="va">srl_models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/single-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>BIC is minimized by profiles6. The eight-profile candidate has a
-variance at its lower bound and a nearly empty profile, which marks the
-limit of what 300 observations can support. The two warnings issued
-during the enumeration originate from this candidate and are retained in
-the <code>warnings</code> column of the table.</p>
+<p>BIC is minimized by profiles6. The six- and seven-profile candidates
+each contain a profile of about ten observations, about 3% of the
+sample, too few to determine its own ten means and variances, and the
+enumeration reports this with a <code>latents_thin_profiles</code>
+warning; such a profile may be a spurious maximum, and the BIC choice
+should be weighed against the five-profile candidate, which
+<code><a href="../reference/compare_models.html">compare_models()</a></code> shows beside it. The eight-profile
+candidate has a variance at its lower bound and a nearly empty profile,
+which marks the limit of what 300 observations can support. Every
+warning issued during the enumeration is retained in the
+<code>warnings</code> column of the table.</p>
 </div>
 <div class="section level3">
 <h3 id="missing-values-and-scaled-indicators">Missing values and scaled indicators<a class="anchor" aria-label="anchor" href="#missing-values-and-scaled-indicators"></a>
@@ -1701,21 +1791,21 @@ specified by its full name.</p>
 <span>                                n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VVI"</span>, <span class="st">"EEE"</span><span class="op">)</span>,</span>
 <span>                                n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">crossed_models</span></span>
-<span><span class="co">#&gt; Class enumeration: 6 candidate models</span></span>
+<span><span class="co">#&gt; Class enumeration: 6 candidate models (LPA)</span></span>
 <span><span class="co">#&gt;      candidate n_profiles n_group_classes model log_likelihood n_parameters  aic bic_groups</span></span>
 <span><span class="co">#&gt;  profiles2_VVI          2               1   VVI           -889           21 1821       1898</span></span>
 <span><span class="co">#&gt;  profiles3_VVI          3               1   VVI           -736           32 1535       1654</span></span>
 <span><span class="co">#&gt;  profiles4_VVI          4               1   VVI           -683           43 1451       1611</span></span>
 <span><span class="co">#&gt;  profiles2_EEE          2               1   EEE           -601           26 1254       1350</span></span>
 <span><span class="co">#&gt;  profiles3_EEE          3               1   EEE           -593           32 1250       1369</span></span>
-<span><span class="co">#&gt;  profiles4_EEE          4               1   EEE           -583           38 1242       1383</span></span>
+<span><span class="co">#&gt;  profiles4_EEE          4               1   EEE           -582           38 1240       1381</span></span>
 <span><span class="co">#&gt;  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean</span></span>
 <span><span class="co">#&gt;            1898           1940           0.899            NA     0.969     0.979      0.974</span></span>
 <span><span class="co">#&gt;            1654           1714           0.909            NA     0.936     0.975      0.959</span></span>
 <span><span class="co">#&gt;            1611           1728           0.859            NA     0.885     0.954      0.917</span></span>
 <span><span class="co">#&gt;            1350           1457           0.744            NA     0.880     0.954      0.917</span></span>
-<span><span class="co">#&gt;            1369           1596           0.656            NA     0.795     0.890      0.839</span></span>
-<span><span class="co">#&gt;            1383           1574           0.771            NA     0.829     0.949      0.884</span></span>
+<span><span class="co">#&gt;            1369           1609           0.635            NA     0.797     0.881      0.834</span></span>
+<span><span class="co">#&gt;            1381           1574           0.769            NA     0.818     0.918      0.878</span></span>
 <span><span class="co">#&gt;  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary</span></span>
 <span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
 <span><span class="co">#&gt;            0              NA              NA               NA                NA      TRUE    FALSE</span></span>
@@ -1728,16 +1818,16 @@ specified by its full name.</p>
 <span><span class="co">#&gt;                  5</span></span>
 <span><span class="co">#&gt;                  3</span></span>
 <span><span class="co">#&gt;                  5</span></span>
-<span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt;                  2</span></span>
+<span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">crossed_models</span>, <span class="st">"profiles3_VVI"</span>, <span class="st">"profiles3_EEE"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model          Profiles   k   LogLik      BIC    ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
 <span><span class="co">#&gt; -------------  --------  --  -------  -------  ------  ------  -------  -------  ---------  -----</span></span>
-<span><span class="co">#&gt; profiles3_VVI         3  32  -735.74  1654.00  284.98   0.000  1714.03     0.91       0.94      0</span></span>
-<span><span class="co">#&gt; profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1</span></span></code></pre></div>
+<span><span class="co">#&gt; profiles3_VVI         3  32  -735.74  1654.00  285.32   0.000  1714.03     0.91       0.94      0</span></span>
+<span><span class="co">#&gt; profiles3_EEE         3  32  -593.08  1368.68    0.00   1.000  1609.48     0.63       0.80      1</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="latent-transition-models">Latent transition models<a class="anchor" aria-label="anchor" href="#latent-transition-models"></a>
@@ -1753,13 +1843,13 @@ default 1,000 EM iterations to meet the convergence tolerance, so
 <span>                                       n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                                       max_iter <span class="op">=</span> <span class="fl">2000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">transition_models</span></span>
-<span><span class="co">#&gt; Transition-model enumeration: 5 candidates</span></span>
+<span><span class="co">#&gt; Transition-model enumeration: 5 candidates (LTA)</span></span>
 <span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy</span></span>
 <span><span class="co">#&gt;  profiles2_groups1          2               1  &lt;NA&gt;          -8335           23 16778 16717  0.9611</span></span>
 <span><span class="co">#&gt;  profiles3_groups1          3               1  &lt;NA&gt;          -8262           38 16701 16600  0.8006</span></span>
 <span><span class="co">#&gt;  profiles4_groups1          4               1  &lt;NA&gt;          -8219           55 16695 16548  0.7352</span></span>
 <span><span class="co">#&gt;  profiles5_groups1          5               1  &lt;NA&gt;          -8195           74 16736 16538  0.7793</span></span>
-<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7017</span></span>
+<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7019</span></span>
 <span><span class="co">#&gt;  converged boundary</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
@@ -1773,10 +1863,10 @@ default 1,000 EM iterations to meet the convergence tolerance, so
 <span><span class="co">#&gt; Model              Profiles   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
 <span><span class="co">#&gt; -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----</span></span>
 <span><span class="co">#&gt; profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0</span></span>
-<span><span class="co">#&gt; profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0</span></span>
-<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0</span></span>
-<span><span class="co">#&gt; profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0</span></span>
-<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18570.64     0.70       0.69      4</span></span></code></pre></div>
+<span><span class="co">#&gt; profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.87     0.80       0.84      0</span></span>
+<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.60     0.74       0.82      0</span></span>
+<span><span class="co">#&gt; profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.98     0.78       0.81      0</span></span>
+<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18569.55     0.70       0.69      4</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1901,6 +1991,10 @@ and non-Gaussian clustering. <em>Biometrics</em>, 49, 803–821.</p>
 mixture model for clustering with the integrated completed likelihood.
 <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>,
 22, 719–725.</p>
+<p>Biernacki, C., Celeux, G., &amp; Govaert, G. (2003). Choosing
+starting values for the EM algorithm for getting the highest likelihood
+in multivariate Gaussian mixture models. <em>Computational Statistics
+&amp; Data Analysis</em>, 41, 561–575.</p>
 <p>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004). Estimating latent
 structure models with categorical variables: One-step versus three-step
 estimators. <em>Political Analysis</em>, 12, 3–27.</p>

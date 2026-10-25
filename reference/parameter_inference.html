@@ -27,7 +27,7 @@ by the Wald path.'><meta property="og:image" content="https://pak.dynasite.org/l
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -416,6 +416,16 @@ the same table as <code>"error"</code>, and a fit with an active bound raises
 <code>latents_boundary_fit</code> under either.</p>
     </div>
     <div class="section level2">
+    <h2 id="computation">Computation<a class="anchor" aria-label="anchor" href="#computation"></a></h2>
+    <p>The observed information takes two evaluations of
+the score over all the data for each free parameter, which makes it the
+slowest part of Wald inference. For profile, class, covariate and
+transition models it is computed once per R session for a fit, its data
+and <code>step</code>, and reused by later calls, including those made by the plots
+that draw intervals and by <code><a href="get_results.html">get_results()</a></code>. Any change to the fit or its
+data computes it anew, and the result is the same either way.</p>
+    </div>
+    <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
 
 
@@ -581,6 +591,7 @@ how many.</p>
 <span class="r-in"><span><span class="co"># The bootstrap resamples schools and refits inside the same family.</span></span></span>
 <span class="r-in"><span><span class="fu">parameter_inference</span><span class="op">(</span><span class="va">shaped</span>, method <span class="op">=</span> <span class="st">"bootstrap"</span>, iter <span class="op">=</span> <span class="fl">10</span>, n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                    seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Profile 2: 3.0 Gaussian membership mass for 3 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          level       outcome          term   parameter    estimate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  measurement     profile_1       score_a        mean  0.25022879</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  measurement     profile_1       score_b        mean -0.06203038</span>

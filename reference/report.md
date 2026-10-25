@@ -132,6 +132,14 @@ report(fit, plots = FALSE)
 #>        1 attendance    lectures     0.0000
 #>    ... 40 more rows.  get_results(x, what = "covariances")
 #> 
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n
+#>  profiles profile_1         834.1          1422                852
+#>  profiles profile_2         587.9          1422                606
+#>  min_variance_ratio min_standardized_eigenvalue boundary
+#>              0.3930                      0.3930    FALSE
+#>              0.3715                      0.3715    FALSE
+#> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
 #>            1       1      0.7859                  0.6747
@@ -322,7 +330,7 @@ report(fit, plots = FALSE)
 #>        1   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 19 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 #> 
 #>     variable    n n_missing          mean        sd   min  max n_distinct

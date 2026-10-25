@@ -50,16 +50,16 @@ moves <- lta(course_engagement, vars, "student", n_profiles = 3,
              n_group_classes = 2, time = "sequence", n_starts = 10, seed = 1)
 get_results(moves, "starts")
 #>    start log_likelihood converged iterations error
-#> 1      1          -8243      TRUE        133  <NA>
-#> 2      2          -8243      TRUE        158  <NA>
-#> 3      3          -8243      TRUE        132  <NA>
-#> 4      4          -8243      TRUE        188  <NA>
-#> 5      5          -8243      TRUE        116  <NA>
-#> 6      6          -8243      TRUE        326  <NA>
-#> 7      7          -8243      TRUE        143  <NA>
-#> 8      8          -8243      TRUE        165  <NA>
-#> 9      9          -8243      TRUE        135  <NA>
-#> 10    10          -8243      TRUE        160  <NA>
+#> 1      1          -8243      TRUE         36  <NA>
+#> 2      2          -8243      TRUE         39  <NA>
+#> 3      3          -8243      TRUE         42  <NA>
+#> 4      4          -8243      TRUE         54  <NA>
+#> 5      5          -8243      TRUE         39  <NA>
+#> 6      6          -8243      TRUE         69  <NA>
+#> 7      7          -8243      TRUE         48  <NA>
+#> 8      8          -8243      TRUE         48  <NA>
+#> 9      9          -8243      TRUE         42  <NA>
+#> 10    10          -8243      TRUE         39  <NA>
 ```
 
 All ten starts converge to the same log likelihood, so the solution is
@@ -83,21 +83,21 @@ plot_profiles(moves)
 get_results(moves)
 #> No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
 #>    profile  indicator    mean variance standard_deviation mean_standard_error
-#> 1        1     browse -0.7760   0.5149             0.7175                  NA
-#> 2        1   lectures -0.6117   0.5417             0.7360                  NA
-#> 3        1 forum_read -0.8881   0.3540             0.5950                  NA
-#> 4        1 forum_post -0.7607   0.4149             0.6441                  NA
-#> 5        1 attendance -0.9293   0.3727             0.6105                  NA
-#> 6        2     browse  0.7058   0.5292             0.7274                  NA
-#> 7        2   lectures  0.7115   0.7967             0.8926                  NA
-#> 8        2 forum_read  0.8070   0.4653             0.6821                  NA
-#> 9        2 forum_post  0.7469   0.5767             0.7594                  NA
-#> 10       2 attendance  1.1240   0.2067             0.4546                  NA
-#> 11       3     browse  0.3959   0.6100             0.7810                  NA
-#> 12       3   lectures  0.1892   0.7592             0.8713                  NA
-#> 13       3 forum_read  0.4541   0.4578             0.6766                  NA
-#> 14       3 forum_post  0.3445   0.7146             0.8453                  NA
-#> 15       3 attendance  0.2538   0.2044             0.4521                  NA
+#> 1        1     browse  0.3959   0.6100             0.7810                  NA
+#> 2        1   lectures  0.1893   0.7592             0.8713                  NA
+#> 3        1 forum_read  0.4542   0.4578             0.6766                  NA
+#> 4        1 forum_post  0.3446   0.7146             0.8453                  NA
+#> 5        1 attendance  0.2539   0.2044             0.4521                  NA
+#> 6        2     browse -0.7760   0.5149             0.7175                  NA
+#> 7        2   lectures -0.6117   0.5417             0.7360                  NA
+#> 8        2 forum_read -0.8881   0.3540             0.5950                  NA
+#> 9        2 forum_post -0.7607   0.4149             0.6441                  NA
+#> 10       2 attendance -0.9293   0.3727             0.6105                  NA
+#> 11       3     browse  0.7058   0.5291             0.7274                  NA
+#> 12       3   lectures  0.7116   0.7967             0.8926                  NA
+#> 13       3 forum_read  0.8070   0.4653             0.6821                  NA
+#> 14       3 forum_post  0.7470   0.5766             0.7594                  NA
+#> 15       3 attendance  1.1241   0.2066             0.4546                  NA
 #>    variance_standard_error
 #> 1                       NA
 #> 2                       NA
@@ -144,12 +144,12 @@ class.
 
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1   2.037e-01    0.22973                  0.6996
-#> 2           1       2   4.437e-01    0.33313                  0.6996
-#> 3           1       3   3.526e-01    0.43713                  0.6996
-#> 4           2       1   7.623e-01    0.81929                  0.3004
-#> 5           2       2   2.377e-01    0.09657                  0.3004
-#> 6           2       3   6.814e-07    0.08414                  0.3004
+#> 1           1       1   3.527e-01    0.43724                  0.6997
+#> 2           1       2   2.037e-01    0.22974                  0.6997
+#> 3           1       3   4.436e-01    0.33301                  0.6997
+#> 4           2       1   1.179e-09    0.08414                  0.3003
+#> 5           2       2   7.623e-01    0.81932                  0.3003
+#> 6           2       3   2.377e-01    0.09654                  0.3003
 ```
 
 Student class 2, with 30.0% of students, starts in the lower-activity
@@ -177,24 +177,24 @@ estimated in this fit.
 
 get_results(moves, "transitions")
 #>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1     0.61456        127.937   TRUE      TRUE                  0.6996
-#> 2            1    1  2     0.17562         36.559  FALSE      TRUE                  0.6996
-#> 3            1    1  3     0.20982         43.680  FALSE      TRUE                  0.6996
-#> 4            1    2  1     0.12770         38.858  FALSE      TRUE                  0.6996
-#> 5            1    2  2     0.37733        114.816   TRUE      TRUE                  0.6996
-#> 6            1    2  3     0.49496        150.613  FALSE      TRUE                  0.6996
-#> 7            1    3  1     0.11407         46.483  FALSE      TRUE                  0.6996
-#> 8            1    3  2     0.36049        146.893  FALSE      TRUE                  0.6996
-#> 9            1    3  3     0.52544        214.119   TRUE      TRUE                  0.6996
-#> 10           2    1  1     0.93856        303.231   TRUE      TRUE                  0.3004
-#> 11           2    1  2     0.03126         10.101  FALSE      TRUE                  0.3004
-#> 12           2    1  3     0.03017          9.748  FALSE      TRUE                  0.3004
-#> 13           2    2  1     0.29609         11.618  FALSE      TRUE                  0.3004
-#> 14           2    2  2     0.48188         18.909   TRUE      TRUE                  0.3004
-#> 15           2    2  3     0.22203          8.712  FALSE      TRUE                  0.3004
-#> 16           2    3  1     0.33924         11.440  FALSE      TRUE                  0.3004
-#> 17           2    3  2     0.14060          4.741  FALSE      TRUE                  0.3004
-#> 18           2    3  3     0.52016         17.541   TRUE      TRUE                  0.3004
+#> 1            1    1  1     0.52559        214.237   TRUE      TRUE                  0.6997
+#> 2            1    1  2     0.11407         46.497  FALSE      TRUE                  0.6997
+#> 3            1    1  3     0.36034        146.877  FALSE      TRUE                  0.6997
+#> 4            1    2  1     0.20987         43.694  FALSE      TRUE                  0.6997
+#> 5            1    2  2     0.61458        127.949   TRUE      TRUE                  0.6997
+#> 6            1    2  3     0.17555         36.548  FALSE      TRUE                  0.6997
+#> 7            1    3  1     0.49508        150.595  FALSE      TRUE                  0.6997
+#> 8            1    3  2     0.12771         38.847  FALSE      TRUE                  0.6997
+#> 9            1    3  3     0.37722        114.743   TRUE      TRUE                  0.6997
+#> 10           2    1  1     0.52017         17.541   TRUE      TRUE                  0.3003
+#> 11           2    1  2     0.33936         11.444  FALSE      TRUE                  0.3003
+#> 12           2    1  3     0.14047          4.737  FALSE      TRUE                  0.3003
+#> 13           2    2  1     0.03017          9.748  FALSE      TRUE                  0.3003
+#> 14           2    2  2     0.93857        303.221   TRUE      TRUE                  0.3003
+#> 15           2    2  3     0.03126         10.099  FALSE      TRUE                  0.3003
+#> 16           2    3  1     0.22210          8.712  FALSE      TRUE                  0.3003
+#> 17           2    3  2     0.29606         11.613  FALSE      TRUE                  0.3003
+#> 18           2    3  3     0.48184         18.900   TRUE      TRUE                  0.3003
 ```
 
 The transition plot draws each class’s matrix as a heatmap, with the
@@ -260,8 +260,8 @@ end at different positions.
 
 get_results(moves, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
-#> 1 individuals         3    1422      309.45           0.8019
-#> 2      groups         2     106       16.31           0.7781
+#> 1 individuals         3    1422       309.4           0.8019
+#> 2      groups         2     106        16.3           0.7781
 ```
 
 Relative entropy is 0.802 for enrolments and 0.778 for students. The

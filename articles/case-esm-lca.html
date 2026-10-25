@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -247,16 +247,26 @@ fit. It does not choose a model.</p>
 <span><span class="co">#&gt; 7     0.878     0.888      0.883           0           0.885           0.931            0.912</span></span>
 <span><span class="co">#&gt; 8     0.816     0.852      0.839           0           0.939           0.973            0.952</span></span>
 <span><span class="co">#&gt; 9     0.662     0.873      0.771           2           0.937           0.968            0.957</span></span>
-<span><span class="co">#&gt;   group_avepp_below converged boundary n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 1                NA      TRUE    FALSE                 5           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2                NA      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3                NA      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4                 0      TRUE    FALSE                 4           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7                 0      TRUE    FALSE                 4           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 9                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass</span></span>
+<span><span class="co">#&gt; 1                NA      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 2                NA      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 3                NA      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 4                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 5                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 6                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 7                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 8                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt; 9                 0      TRUE    FALSE                          NA                NA</span></span>
+<span><span class="co">#&gt;   n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 1                 5           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                 4           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                 4           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                 1           &lt;NA&gt;</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"best"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    criterion  convention        candidate n_profiles n_group_classes model value</span></span>
 <span><span class="co">#&gt; 1        aic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15183</span></span>

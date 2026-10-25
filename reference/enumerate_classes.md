@@ -23,7 +23,8 @@ enumerate_classes(
   between_variance = c("varying", "equal"),
   time = NULL,
   ...,
-  cores = 1L
+  cores = 1L,
+  type = NULL
 )
 ```
 
@@ -139,15 +140,52 @@ enumerate_classes(
   workers load the installed package). Warnings and messages from the
   workers are passed on in grid order once all have finished. Without
   `seed`, the random starts differ between runs on any number of cores.
-  A worker process that fails as a whole (for example, out of memory)
-  raises `latents_parallel_failure`. Each core holds its own copy of the
+  Lost worker results are retried once with half as many workers
+  (rounded up). One `latents_worker_lost` warning reports how many tasks
+  were lost and recovered, and suggests fewer cores. A task still lost
+  becomes a failed start (for flat start grids) or a failed candidate;
+  the other results are retained. On sockets, bounded chunks preserve
+  earlier results when a connection breaks; completed tasks within the
+  failed chunk may also be retried. Each core holds its own copy of the
   fits it computes;
   [`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html)
-  gives the number available.
+  gives the number available. Transition grids (`time`) and profile
+  grids (including categorical-only latent class models) distribute
+  individual starts across one pool, longest estimated first, with at
+  most `cores` workers and no nested workers. Both emEM screening and
+  finalist runs use the pool; `search` keeps the same defaults as
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  Setup, ordered starting values, start selection and finalisation stay
+  in the current process. Profile models with membership covariates or
+  joined categorical `local_dependence` pairs instead occupy one worker
+  per candidate in the same pool, with serial starts. Group-class
+  families also keep candidate-level parallelism.
+
+- type:
+
+  Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL` (the default)
+  keeps the existing routing and measurement settings. `"lca"` treats
+  every indicator as categorical, as
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  does: indicators named in `ordinal` or `count` keep those
+  distributions, and `categorical` adds to the set rather than replacing
+  it. Numeric response codes are categorical with `type = "lca"`.
+  `"lpa"` requires continuous indicators and refuses non-empty
+  `categorical`, `ordinal` or `count`. Both require `time = NULL`.
+  `"lta"` requires `time` and takes its measurement settings from
+  `categorical`, as
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) does; it
+  does not make numeric indicators categorical. An explicit type
+  requires `family = "profiles"`; leave `type = NULL` for group-class
+  families.
 
 ## Value
 
-An object of class `multilpa_enumeration`.
+An object of class `multilpa_enumeration` (or the transition or family
+enumeration described above). Its `type` records the resolved model:
+`"lca"`, `"lpa"` or `"lta"`, or `"mixed"`/`"family"` for those grids
+under `type = NULL`. The print header shows this type; table columns are
+unchanged.
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives one
 row per candidate, starting with its name (`"profiles3_groups2"`), with
 every criterion and diagnostic (including both entropies and, at each
@@ -180,7 +218,8 @@ does not take; when `n_group_classes` other than 1 is given with
 the profile family; when `n_profiles` or `model` is given for a
 group-class family, or `id` is `NULL`; when `time` is combined with a
 group-class family or with `between_variance`; and when `cores` is not a
-whole number of at least 1.
+whole number of at least 1; and when `type` is invalid or conflicts with
+`time`, `family` or the requested measurement distributions.
 
 ## References
 
@@ -214,17 +253,17 @@ as.data.frame(candidates)
 #> 4            5 271.1839 279.1839   272.6968       284.2098     257.7182
 #>   sabic_individual caic_groups caic_individual awe_groups awe_individual
 #> 1         264.2039    267.9152        272.5204   276.5204       285.7307
-#> 2         266.9458    274.3684        283.5788   291.5788       386.0639
+#> 2         266.9458    274.3684        283.5788   291.5788       385.9162
 #> 3         264.2039    267.9152        272.5204   276.5204       285.7307
 #> 4         268.4185    277.6968        289.2098   299.2098       449.6156
 #>   icl_groups icl_individual clc_groups clc_individual profile_entropy
 #> 1   265.9152       270.5204   261.3100       261.3100              NA
-#> 2   270.3684       355.6432   261.1581       337.2225      0.45131114
+#> 2   270.3684       355.4955   261.1581       337.0748      0.45237653
 #> 3   265.9152       270.5204   261.3100       261.3100              NA
 #> 4   272.6968       411.5897   261.1839       388.5639      0.08114782
 #>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
 #> 1            NA        NA        NA         NA          NA              NA
-#> 2            NA 0.6413011 0.8527078  0.7470045           1              NA
+#> 2            NA 0.6402627 0.8532616  0.7467621           1              NA
 #> 3            NA        NA        NA         NA          NA              NA
 #> 4            NA 0.6380900 0.6405463  0.6393181           2              NA
 #>   group_avepp_max group_avepp_mean group_avepp_below converged boundary
@@ -232,16 +271,21 @@ as.data.frame(candidates)
 #> 2              NA               NA                NA      TRUE    FALSE
 #> 3              NA               NA                NA      TRUE    FALSE
 #> 4              NA               NA                NA      TRUE    FALSE
-#>   n_best_replicated warnings error
-#> 1                 2           <NA>
-#> 2                 2           <NA>
-#> 3                 2           <NA>
-#> 4                 2           <NA>
+#>   min_standardized_eigenvalue min_gaussian_mass n_best_replicated warnings
+#> 1                   1.0000000         100.00000                 2         
+#> 2                   0.8403157          17.63499                 2         
+#> 3                   1.0000000         100.00000                 2         
+#> 4                   0.8201227          44.58310                 2         
+#>   error
+#> 1  <NA>
+#> 2  <NA>
+#> 3  <NA>
+#> 4  <NA>
 summary(candidates)
 #> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
 #> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 15 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 15 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>              candidate n_profiles model log_likelihood n_parameters   aic
@@ -251,7 +295,7 @@ summary(candidates)
 #>  profiles2_groups1_VVI          2   VVI         -130.6            5 271.2
 #>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_mean
 #>       265.9          270.5          270.5              NA        NA         NA
-#>       270.4          279.6          355.6         0.45131    0.6413     0.7470
+#>       270.4          279.6          355.5         0.45238    0.6403     0.7468
 #>       265.9          270.5          270.5              NA        NA         NA
 #>       272.7          284.2          411.6         0.08115    0.6381     0.6393
 #>  avepp_below converged boundary
@@ -292,13 +336,13 @@ summary(candidates)
 #>  profiles2_groups1_VVI          2               1   VVI individuals     1
 #>  profiles2_groups1_VVI          2               1   VVI individuals     2
 #>  n_modal proportion_modal estimated_n estimated_proportion average_posterior
-#>       94             0.94       82.31               0.8231            0.8527
-#>        6             0.06       17.69               0.1769            0.6413
+#>        6             0.06       17.63               0.1763            0.6403
+#>       94             0.94       82.37               0.8237            0.8533
 #>       31             0.31       44.58               0.4458            0.6381
 #>       69             0.69       55.42               0.5542            0.6405
 #>  odds_correct_classification relative_entropy
-#>                        1.244          0.45131
-#>                        8.317          0.45131
+#>                        8.313          0.45238
+#>                        1.245          0.45238
 #>                        2.192          0.08115
 #>                        1.434          0.08115
 #> 
@@ -338,13 +382,19 @@ summary(candidates)
 #>   VVI individuals profiles1_groups1_VVI          1          1
 #>   VVI individuals profiles1_groups1_VVI          1          1
 #>           to_candidate to_class to_share   mass share_of_from share_of_to
-#>  profiles2_groups1_EEI        1   0.8231 0.8231        0.8231           1
-#>  profiles2_groups1_EEI        2   0.1769 0.1769        0.1769           1
+#>  profiles2_groups1_EEI        1   0.1763 0.1763        0.1763           1
+#>  profiles2_groups1_EEI        2   0.8237 0.8237        0.8237           1
 #>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1
 #>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1
 #> 
 #> 6 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
+
+# Numeric response codes, explicitly categorical:
+codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
+classes <- enumerate_classes(codes, "item", "g", type = "lca",
+                             n_profiles = 1, n_group_classes = 1,
+                             n_starts = 1, seed = 1)
 
 # Single level, crossing class counts with two named structures:
 single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
@@ -355,7 +405,7 @@ summary(single)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 14 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 14 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>      candidate n_profiles model log_likelihood n_parameters   aic   bic

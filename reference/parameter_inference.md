@@ -348,6 +348,18 @@ an active bound `boundary = "fix"` gives the same table as `"error"`,
 and a fit with an active bound raises `latents_boundary_fit` under
 either.
 
+## Computation
+
+The observed information takes two evaluations of the score over all the
+data for each free parameter, which makes it the slowest part of Wald
+inference. For profile, class, covariate and transition models it is
+computed once per R session for a fit, its data and `step`, and reused
+by later calls, including those made by the plots that draw intervals
+and by
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+Any change to the fit or its data computes it anew, and the result is
+the same either way.
+
 ## Conditions
 
 Errors: `latents_no_converge` for an unconverged fit;
@@ -515,6 +527,7 @@ parameter_inference(shaped)
 # The bootstrap resamples schools and refits inside the same family.
 parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
                     seed = 1)
+#> Warning: Profile 2: 3.0 Gaussian membership mass for 3 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 #>          level       outcome          term   parameter    estimate
 #> 1  measurement     profile_1       score_a        mean  0.25022879
 #> 2  measurement     profile_1       score_b        mean -0.06203038

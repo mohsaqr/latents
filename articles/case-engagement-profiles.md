@@ -261,6 +261,7 @@ fit
     #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
     #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
     #> Converged: TRUE | iterations: 42 | best start: 1/10
+    #> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
     #> 
     #>  profile  browse lectures forum_read forum_post attendance count proportion
     #>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362

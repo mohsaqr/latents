@@ -45,7 +45,10 @@ with `"model"`. `converged` reports convergence of the best start,
 `n_best_replicated` how many starts reached the best log likelihood. A
 variance at its lower bound in a profile of about one observation is a
 degenerate solution; fitting with `boundary = "exclude"` keeps the best
-start without one.
+start without one. A profile with fewer effective members than its own
+means and variances raises a `latents_thin_profiles` warning: its
+variances are poorly determined, so inspect its covariance diagnostics
+before interpreting it.
 
 ``` r
 
@@ -271,10 +274,10 @@ as.data.frame(candidates)
 #> 18 profiles4_groups3_VVI          4               3   VVI          -8307           51 16716 16770
 #> 19 profiles2_groups1_EEE          2               1   EEE          -8536           26 17125 17154
 #> 20 profiles3_groups1_EEE          3               1   EEE          -8514           32 17092 17127
-#> 21 profiles4_groups1_EEE          4               1   EEE          -8510           38 17096 17137
+#> 21 profiles4_groups1_EEE          4               1   EEE          -8504           38 17083 17124
 #> 22 profiles2_groups2_EEE          2               2   EEE          -8360           28 16775 16806
 #> 23 profiles3_groups2_EEE          3               2   EEE          -8332           35 16734 16772
-#> 24 profiles4_groups2_EEE          4               2   EEE          -8329           42 16742 16787
+#> 24 profiles4_groups2_EEE          4               2   EEE          -8318           42 16721 16766
 #> 25 profiles2_groups3_EEE          2               3   EEE          -8341           30 16742 16775
 #> 26 profiles3_groups3_EEE          3               3   EEE          -8314           38 16704 16745
 #> 27 profiles4_groups3_EEE          4               3   EEE          -8301           46 16693 16742
@@ -308,10 +311,10 @@ as.data.frame(candidates)
 #> 18      16852          16985        16691            16823       16903           17036      17284
 #> 19      17194          17262        17112            17179       17220           17288      17393
 #> 20      17177          17260        17076            17158       17209           17292      17422
-#> 21      17197          17296        17077            17175       17235           17334      17489
+#> 21      17185          17283        17065            17163       17223           17321      17476
 #> 22      16850          16922        16761            16833       16878           16950      17073
 #> 23      16827          16918        16717            16807       16862           16953      17103
-#> 24      16854          16963        16722            16830       16896           17005      17184
+#> 24      16832          16941        16700            16808       16874           16983      17161
 #> 25      16822          16900        16727            16804       16852           16930      17093
 #> 26      16806          16904        16686            16784       16844           16942      17134
 #> 27      16816          16935        16671            16789       16862           16981      17205
@@ -327,13 +330,13 @@ as.data.frame(candidates)
 #>    awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
 #> 1           17755      17384          17591      17309          17475           0.916            NA
 #> 2           18396      17278          18170      17175          18010           0.733            NA
-#> 3           18673      17220          18386      17089          18182           0.723            NA
+#> 3           18673      17220          18386      17089          18183           0.723            NA
 #> 4           17406      17052          17221      16968          17091           0.933         0.937
 #> 5           18076      16954          17820      16838          17638           0.741         0.944
 #> 6           18408      16897          18080      16748          17848           0.719         0.935
 #> 7           17397      17055          17192      16962          17047           0.936         0.820
 #> 8           18098      16973          17811      16843          17608           0.741         0.804
-#> 9           18432      16906          18063      16738          17801           0.720         0.831
+#> 9           18432      16906          18063      16738          17802           0.720         0.832
 #> 10          17753      17328          17537      17230          17385           0.922            NA
 #> 11          18345      17222          18017      17073          17785           0.772            NA
 #> 12          18800      17203          18359      17002          18047           0.735            NA
@@ -344,17 +347,17 @@ as.data.frame(candidates)
 #> 17          18012      16921          17622      16744          17346           0.792         0.797
 #> 18          18537      16893          18014      16656          17644           0.739         0.823
 #> 19          17793      17194          17526      17073          17338           0.866            NA
-#> 20          18572      17177          18244      17028          18012           0.685            NA
-#> 21          18881      17197          18491      17020          18215           0.697            NA
+#> 20          18572      17177          18244      17028          18011           0.685            NA
+#> 21          19017      17185          18627      17007          18352           0.659            NA
 #> 22          17407      16859          17120      16728          16917           0.900         0.940
 #> 23          18175      16835          17815      16672          17561           0.713         0.949
-#> 24          18556      16862          18125      16667          17820           0.705         0.945
+#> 24          18589      16839          18158      16643          17853           0.692         0.955
 #> 25          17396      16863          17089      16723          16871           0.904         0.821
 #> 26          18182      16843          17792      16666          17517           0.716         0.840
-#> 27          18590      16852          18118      16638          17784           0.700         0.844
+#> 27          18591      16852          18120      16638          17786           0.700         0.844
 #> 28          17945      17170          17524      16979          17226           0.875            NA
 #> 29          18666      17232          18030      16943          17580           0.796            NA
-#> 30          18860      17259          18009      16872          17406           0.864            NA
+#> 30          18861      17259          18009      16872          17407           0.864            NA
 #> 31          17564      16835          17123      16635          16811           0.906         0.942
 #> 32          18218      16894          17552      16590          17080           0.841         0.948
 #> 33          18808      16935          17915      16529          17284           0.807         0.947
@@ -364,13 +367,13 @@ as.data.frame(candidates)
 #>    avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
 #> 1      0.976     0.977      0.977           0              NA              NA               NA
 #> 2      0.795     0.961      0.860           1              NA              NA               NA
-#> 3      0.816     0.844      0.830           0              NA              NA               NA
+#> 3      0.817     0.843      0.830           0              NA              NA               NA
 #> 4      0.982     0.982      0.982           0           0.967           0.991            0.979
 #> 5      0.793     0.976      0.861           1           0.975           0.993            0.984
 #> 6      0.818     0.838      0.827           0           0.974           0.989            0.982
 #> 7      0.982     0.983      0.983           0           0.885           0.967            0.921
-#> 8      0.797     0.976      0.860           1           0.883           0.971            0.915
-#> 9      0.818     0.836      0.827           0           0.877           0.976            0.925
+#> 8      0.796     0.976      0.860           1           0.883           0.971            0.915
+#> 9      0.819     0.836      0.827           0           0.877           0.976            0.925
 #> 10     0.974     0.982      0.978           0              NA              NA               NA
 #> 11     0.832     0.964      0.886           0              NA              NA               NA
 #> 12     0.803     0.849      0.835           0              NA              NA               NA
@@ -382,59 +385,96 @@ as.data.frame(candidates)
 #> 18     0.801     0.854      0.836           0           0.874           0.981            0.923
 #> 19     0.961     0.967      0.964           0              NA              NA               NA
 #> 20     0.756     0.954      0.832           2              NA              NA               NA
-#> 21     0.557     0.906      0.761           2              NA              NA               NA
+#> 21     0.660     0.947      0.756           3              NA              NA               NA
 #> 22     0.972     0.975      0.974           0           0.968           0.992            0.980
 #> 23     0.749     0.970      0.842           1           0.983           0.990            0.987
-#> 24     0.588     0.889      0.771           2           0.984           0.988            0.986
+#> 24     0.672     0.971      0.771           3           0.988           0.992            0.990
 #> 25     0.975     0.975      0.975           0           0.904           0.951            0.923
 #> 26     0.750     0.969      0.842           1           0.856           0.960            0.921
-#> 27     0.653     0.971      0.771           3           0.841           0.971            0.920
+#> 27     0.649     0.971      0.770           3           0.841           0.971            0.920
 #> 28     0.959     0.971      0.965           0              NA              NA               NA
 #> 29     0.665     0.956      0.833           1              NA              NA               NA
-#> 30     0.630     0.943      0.829           1              NA              NA               NA
+#> 30     0.627     0.943      0.829           1              NA              NA               NA
 #> 31     0.973     0.978      0.976           0           0.971           0.993            0.982
 #> 32     0.649     0.972      0.845           1           0.982           0.990            0.986
 #> 33     0.785     0.973      0.854           1           0.962           0.995            0.979
 #> 34     0.974     0.978      0.976           0           0.903           0.960            0.923
 #> 35     0.649     0.973      0.841           1           0.878           0.955            0.920
 #> 36     0.650     0.977      0.798           2           0.904           0.975            0.932
-#>    group_avepp_below converged boundary n_best_replicated warnings error
-#> 1                 NA      TRUE    FALSE                 3           <NA>
-#> 2                 NA      TRUE    FALSE                 3           <NA>
-#> 3                 NA      TRUE    FALSE                 3           <NA>
-#> 4                  0      TRUE    FALSE                 3           <NA>
-#> 5                  0      TRUE    FALSE                 3           <NA>
-#> 6                  0      TRUE    FALSE                 3           <NA>
-#> 7                  0      TRUE    FALSE                 3           <NA>
-#> 8                  0      TRUE    FALSE                 3           <NA>
-#> 9                  0      TRUE    FALSE                 2           <NA>
-#> 10                NA      TRUE    FALSE                 3           <NA>
-#> 11                NA      TRUE    FALSE                 3           <NA>
-#> 12                NA      TRUE    FALSE                 3           <NA>
-#> 13                 0      TRUE    FALSE                 3           <NA>
-#> 14                 0      TRUE    FALSE                 3           <NA>
-#> 15                 0      TRUE    FALSE                 3           <NA>
-#> 16                 0      TRUE    FALSE                 3           <NA>
-#> 17                 0      TRUE    FALSE                 3           <NA>
-#> 18                 0      TRUE    FALSE                 3           <NA>
-#> 19                NA      TRUE    FALSE                 3           <NA>
-#> 20                NA      TRUE    FALSE                 3           <NA>
-#> 21                NA      TRUE    FALSE                 3           <NA>
-#> 22                 0      TRUE    FALSE                 3           <NA>
-#> 23                 0      TRUE    FALSE                 3           <NA>
-#> 24                 0      TRUE    FALSE                 3           <NA>
-#> 25                 0      TRUE    FALSE                 3           <NA>
-#> 26                 0      TRUE    FALSE                 3           <NA>
-#> 27                 0      TRUE    FALSE                 1           <NA>
-#> 28                NA      TRUE    FALSE                 3           <NA>
-#> 29                NA      TRUE    FALSE                 2           <NA>
-#> 30                NA      TRUE    FALSE                 1           <NA>
-#> 31                 0      TRUE    FALSE                 3           <NA>
-#> 32                 0      TRUE    FALSE                 1           <NA>
-#> 33                 0      TRUE    FALSE                 1           <NA>
-#> 34                 0      TRUE    FALSE                 3           <NA>
-#> 35                 0      TRUE    FALSE                 2           <NA>
-#> 36                 0      TRUE    FALSE                 1           <NA>
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                    0.381446             605.3
+#> 2                 NA      TRUE    FALSE                    0.293236             431.2
+#> 3                 NA      TRUE    FALSE                    0.202258             214.5
+#> 4                  0      TRUE    FALSE                    0.387254             600.8
+#> 5                  0      TRUE    FALSE                    0.308372             398.7
+#> 6                  0      TRUE    FALSE                    0.216623             233.4
+#> 7                  0      TRUE    FALSE                    0.387126             602.3
+#> 8                  0      TRUE    FALSE                    0.310170             391.8
+#> 9                  0      TRUE    FALSE                    0.216342             251.3
+#> 10                NA      TRUE    FALSE                    0.375010             589.1
+#> 11                NA      TRUE    FALSE                    0.193164             418.2
+#> 12                NA      TRUE    FALSE                    0.189287             172.2
+#> 13                 0      TRUE    FALSE                    0.371479             587.9
+#> 14                 0      TRUE    FALSE                    0.199966             382.6
+#> 15                 0      TRUE    FALSE                    0.200271             178.2
+#> 16                 0      TRUE    FALSE                    0.374829             591.1
+#> 17                 0      TRUE    FALSE                    0.200296             369.0
+#> 18                 0      TRUE    FALSE                    0.194977             202.2
+#> 19                NA      TRUE    FALSE                    0.278459             606.5
+#> 20                NA      TRUE    FALSE                    0.278644             400.6
+#> 21                NA      TRUE    FALSE                    0.278506             151.7
+#> 22                 0      TRUE    FALSE                    0.278272             599.7
+#> 23                 0      TRUE    FALSE                    0.276968             360.2
+#> 24                 0      TRUE    FALSE                    0.276249             122.1
+#> 25                 0      TRUE    FALSE                    0.278167             602.4
+#> 26                 0      TRUE    FALSE                    0.276967             353.3
+#> 27                 0      TRUE    FALSE                    0.275819             110.0
+#> 28                NA      TRUE    FALSE                    0.269614             577.4
+#> 29                NA      TRUE    FALSE                    0.120344             112.7
+#> 30                NA      TRUE    FALSE                    0.000279              26.5
+#> 31                 0      TRUE    FALSE                    0.271043             583.2
+#> 32                 0      TRUE    FALSE                    0.098399             104.3
+#> 33                 0      TRUE    FALSE                    0.001958              26.3
+#> 34                 0      TRUE    FALSE                    0.272051             589.5
+#> 35                 0      TRUE    FALSE                    0.120312             116.3
+#> 36                 0      TRUE    FALSE                    0.012291              48.4
+#>    n_best_replicated warnings error
+#> 1                  3           <NA>
+#> 2                  3           <NA>
+#> 3                  3           <NA>
+#> 4                  3           <NA>
+#> 5                  3           <NA>
+#> 6                  3           <NA>
+#> 7                  3           <NA>
+#> 8                  3           <NA>
+#> 9                  3           <NA>
+#> 10                 3           <NA>
+#> 11                 3           <NA>
+#> 12                 3           <NA>
+#> 13                 3           <NA>
+#> 14                 3           <NA>
+#> 15                 3           <NA>
+#> 16                 3           <NA>
+#> 17                 3           <NA>
+#> 18                 3           <NA>
+#> 19                 3           <NA>
+#> 20                 3           <NA>
+#> 21                 1           <NA>
+#> 22                 3           <NA>
+#> 23                 3           <NA>
+#> 24                 1           <NA>
+#> 25                 3           <NA>
+#> 26                 3           <NA>
+#> 27                 1           <NA>
+#> 28                 3           <NA>
+#> 29                 2           <NA>
+#> 30                 1           <NA>
+#> 31                 3           <NA>
+#> 32                 1           <NA>
+#> 33                 1           <NA>
+#> 34                 3           <NA>
+#> 35                 2           <NA>
+#> 36                 1           <NA>
 ```
 
 To find which candidate minimizes each criterion, we call
@@ -484,6 +524,7 @@ get_candidate(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8364.520142 | AIC: 16799.040 | BIC (groups): 16892.261
 #> Converged: TRUE | iterations: 30 | best start: 3/3
+#> Smallest standardized Gaussian eigenvalue: 0.2 (profiles, profile_1); Gaussian mass: 469.6; weight effective n: 597.6.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.376    0.166      0.434      0.321      0.239   470      0.330

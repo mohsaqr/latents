@@ -74,6 +74,7 @@ fit
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892
 #> Converged: TRUE | iterations: 9 | best start: 1/10
+#> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.540    0.427      0.620      0.530      0.649   834      0.587
@@ -362,6 +363,7 @@ weighted_fit
 #> Sampling weights `survey_weight` (pseudo maximum likelihood): Kish effective n 94.5 of 106 units
 #> Log likelihood: -8341.125778 | AIC: 16728.252 | BIC (groups): 16789.511
 #> Converged: TRUE | iterations: 9 | best start: 1/10
+#> Smallest standardized Gaussian eigenvalue: 0.3759 (profiles, profile_2); Gaussian mass: 714.8; weight effective n: 563.8.
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1  0.525    0.446      0.605      0.515      0.655   701      0.495
@@ -430,6 +432,14 @@ print(summary(fit), rows = 3)
 #>        1   lectures      browse     0.0000
 #>        1 forum_read      browse     0.0000
 #>    ... 47 more rows.  get_results(x, what = "covariances")
+#> 
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n min_variance_ratio
+#>  profiles profile_1         834.1          1422                852             0.3930
+#>  profiles profile_2         587.9          1422                606             0.3715
+#>  min_standardized_eigenvalue boundary
+#>                       0.3930    FALSE
+#>                       0.3715    FALSE
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
@@ -552,7 +562,7 @@ print(summary(fit), rows = 3)
 #>        1  -1.51    -0.51      -0.91      -0.80      -0.97
 #>    ... 1419 more rows.  get_results(x, what = "data")
 #> 
-#> 19 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 
