@@ -61,13 +61,14 @@
 #' cross-sectional E-step. The offset cancels from every posterior and is added
 #' back once to the log likelihood.
 #'
+#' @param validate Check inputs for direct calls; disabled inside validated fits.
 #' @param log_density Observation-by-profile matrix of measurement log densities.
 #' @param layout Sequence layout from `.multilpa_sequence_layout()`.
 #' @return A list with `log_density` (one groups-by-profiles matrix per
 #'   occasion, offset removed) and `offset` (one total per group).
 #' @noRd
-.multilpa_sequence_emission <- function(log_density, layout) {
-  stopifnot(is.matrix(log_density), is.list(layout))
+.multilpa_sequence_emission <- function(log_density, layout, validate = TRUE) {
+  if (validate) stopifnot(is.matrix(log_density), is.list(layout))
   n_groups <- nrow(layout$slot)
   n_profiles <- ncol(log_density)
   blocks <- lapply(seq_len(layout$n_occasions), function(occasion) {
@@ -96,28 +97,28 @@
 #'
 #' @param emission Offset-removed emission list from `.multilpa_sequence_emission()`.
 #' @param layout Sequence layout from `.multilpa_sequence_layout()`.
+#' @param validate Check inputs for direct calls; disabled inside validated fits.
 #' @param initial Initial profile probabilities for one group class.
 #' @param transition Profile transition matrix for one group class, rows from.
 #' @return A list with `alpha`, `beta` (one groups-by-profiles matrix per
 #'   occasion) and `log_scaled`, the offset-removed sequence log likelihoods.
 #' @noRd
-.multilpa_forward_backward <- function(emission, layout, initial, transition) {
-  stopifnot(is.list(emission), is.numeric(initial), is.matrix(transition),
-            nrow(transition) == length(initial),
-            ncol(transition) == length(initial),
-            all(initial > 0), all(transition > 0))
-  # The homogeneous chain is the shared Markov structure with one transition
-  # matrix repeated over groups and occasions.
+.multilpa_forward_backward <- function(emission, layout, initial, transition,
+                                        validate = TRUE) {
+  if (validate) stopifnot(
+    "`initial` and `transition` must be conformable positive probabilities" =
+      is.list(emission) && is.numeric(initial) && is.matrix(transition) &&
+      nrow(transition) == length(initial) && ncol(transition) == length(initial) &&
+      all(initial > 0) && all(transition > 0))
   n_groups <- nrow(layout$slot)
-  log_transition <- array(rep(log(transition), each = n_groups),
-                          c(n_groups, dim(transition)))
-  .latents_forward_backward(
-    emission, layout, matrix(log(initial), n_groups, length(initial), byrow = TRUE),
-    rep(list(log_transition), max(layout$n_occasions - 1L, 0L)))
+  .latents_scaled_forward_backward(
+    emission, layout, matrix(initial, n_groups, length(initial), byrow = TRUE),
+    transition)
 }
 
 #' Posterior occupancy and transition counts for one group class
 #'
+#' @param validate Check inputs for direct calls; disabled inside validated fits.
 #' @param pass Forward and backward recursions from `.multilpa_forward_backward()`.
 #' @param emission Offset-removed emission list.
 #' @param layout Sequence layout.
@@ -129,8 +130,8 @@
 #'   (expected from-to counts).
 #' @noRd
 .multilpa_sequence_moments <- function(pass, emission, layout, transition,
-                                       weights, n_observations) {
-  stopifnot(
+                                       weights, n_observations, validate = TRUE) {
+  if (validate) stopifnot(
     "`pass` must be the list `.multilpa_forward_backward()` returns" =
       is.list(pass) && all(c("alpha", "beta", "log_scaled") %in% names(pass)),
     "`weights` must give one group-class posterior per group" =
@@ -139,7 +140,9 @@
       is.matrix(transition) && is.numeric(transition) &&
       nrow(transition) == ncol(transition) && all(transition > 0))
   n_profiles <- ncol(transition)
-  occupancy <- lapply(seq_len(layout$n_occasions), function(occasion) {
+  occupancy <- if (!is.null(pass$scaled_alpha)) {
+    Map(function(a, b) a * b * weights, pass$scaled_alpha, pass$scaled_beta)
+  } else lapply(seq_len(layout$n_occasions), function(occasion) {
     exp(pass$alpha[[occasion]] + pass$beta[[occasion]] - pass$log_scaled) * weights
   })
   posterior <- matrix(0, n_observations, n_profiles)
@@ -152,36 +155,54 @@
   # Every input row occupies exactly one cell of the layout, so the placement
   # is an assignment rather than an accumulation.
   posterior[placed[, 1L], ] <- placed[, -1L, drop = FALSE]
-  # The expected count of a move is a sum of pair posteriors, and a pair
-  # posterior is a probability: its logarithm is never positive, so it
-  # exponentiates without overflow. Its three factors are not probabilities.
-  # On a long sequence the forward term is scaled far above one exactly where
-  # the backward term is far below it, so exponentiating them apart -- as this
-  # did until the complete pair log probability was formed first -- gave
-  # `Inf * 0` and returned NaN counts from a fit whose log likelihood, read off
-  # the scaled forward pass alone, was correct. No per-occasion maximum is
-  # subtracted because none is needed: the exponent is already bounded above by
-  # zero, and any rescaling that kept the three factors apart would carry the
-  # reciprocal of a transition probability and could overflow on its own.
-  n_groups <- nrow(layout$slot)
-  # One column per ordered pair of profiles, laid out column-major exactly as
-  # the transition matrix is, so that the groups are summed out in one pass.
-  origin <- rep(seq_len(n_profiles), times = n_profiles)
-  destination <- rep(seq_len(n_profiles), each = n_profiles)
-  log_transition <- rep(log(transition), each = n_groups)
   counts <- if (layout$n_occasions < 2L) {
     matrix(0, n_profiles, n_profiles)
-  } else Reduce(`+`, lapply(seq_len(layout$n_occasions)[-1L], function(occasion) {
-    active <- weights * layout$within[, occasion]
-    log_from <- pass$alpha[[occasion - 1L]] - pass$log_scaled
-    log_to <- pass$beta[[occasion]] + emission[[occasion]]
-    joint <- log_from[, origin, drop = FALSE] +
-      log_to[, destination, drop = FALSE] + log_transition
-    matrix(colSums(active * exp(joint)), n_profiles, n_profiles)
-  }))
+  } else if (!is.null(pass$scaled_alpha)) {
+    transition * Reduce(`+`, lapply(seq_len(layout$n_occasions)[-1L], function(t) {
+      active <- weights * layout$within[, t]
+      crossprod(pass$scaled_alpha[[t - 1L]] * active,
+                pass$scaled_beta[[t]] * pass$density[[t]] / pass$scale[, t])
+    }))
+  } else {
+    # Log-space callers (including the general engine) retain the complete
+    # pair log probability before exponentiating, avoiding Inf * 0.
+    n_groups <- nrow(layout$slot)
+    origin <- rep(seq_len(n_profiles), times = n_profiles)
+    destination <- rep(seq_len(n_profiles), each = n_profiles)
+    log_transition <- rep(log(transition), each = n_groups)
+    Reduce(`+`, lapply(seq_len(layout$n_occasions)[-1L], function(occasion) {
+      active <- weights * layout$within[, occasion]
+      log_from <- pass$alpha[[occasion - 1L]] - pass$log_scaled
+      log_to <- pass$beta[[occasion]] + emission[[occasion]]
+      joint <- log_from[, origin, drop = FALSE] +
+        log_to[, destination, drop = FALSE] + log_transition
+      matrix(colSums(active * exp(joint)), n_profiles, n_profiles)
+    }))
+  }
   list(posterior = posterior, initial = colSums(occupancy[[1L]]),
        transition = counts)
 }
+
+#' Check fixed transition inputs once before iterating
+#' @param x,layout,parameters Inputs to the homogeneous transition E-step.
+#' @noRd
+.multilpa_transition_validate <- function(x, layout, parameters) {
+  n_profiles <- nrow(parameters$means)
+  n_types <- length(parameters$group_probabilities)
+  stopifnot(
+    "`x` must be a numeric matrix without infinite values" =
+      is.matrix(x) && is.numeric(x) && !any(is.infinite(x)),
+    "`layout` must place every observation in a sequence" =
+      is.list(layout) && sum(!is.na(layout$slot)) == nrow(x) &&
+      identical(dim(layout$slot), dim(layout$within)),
+    "initial and transition probabilities must match the model dimensions" =
+      identical(dim(parameters$initial_probabilities), c(n_types, n_profiles)) &&
+      identical(dim(parameters$transition_probabilities),
+                c(n_profiles, n_profiles, n_types)),
+    "transition parameters must be finite with positive normalized probabilities" =
+      .multilpa_valid_parameters(parameters))
+}
+
 
 #' Profile prevalence implied by a transition expectation
 #'
@@ -219,21 +240,23 @@
 #' @param parameters Model parameters, including `initial_probabilities` and
 #'   `transition_probabilities`.
 #' @param codes Optional integer matrix of categorical indicator codes.
+#' @param validate Check inputs for direct calls; disabled inside validated fits.
 #' @return Log likelihood, posteriors and expected sequence counts.
 #' @noRd
-.multilpa_transition_expectation <- function(x, layout, parameters, codes = NULL) {
-  stopifnot(is.matrix(x), is.numeric(x), !any(is.infinite(x)), is.list(parameters))
+.multilpa_transition_expectation <- function(x, layout, parameters, codes = NULL,
+                                              validate = TRUE) {
+  if (validate) .multilpa_transition_validate(x, layout, parameters)
   n_profiles <- nrow(parameters$means)
   n_types <- length(parameters$group_probabilities)
   n_groups <- nrow(layout$slot)
   measurement <- .latents_measurement_log_density(x, parameters, codes, offset = FALSE)
   log_density <- measurement$log_density
-  emission <- .multilpa_sequence_emission(log_density, layout)
+  emission <- .multilpa_sequence_emission(log_density, layout, validate = FALSE)
   passes <- lapply(seq_len(n_types), function(type) {
     .multilpa_forward_backward(emission$log_density, layout,
                                parameters$initial_probabilities[type, ],
                                matrix(parameters$transition_probabilities[, , type],
-                                      n_profiles, n_profiles))
+                                      n_profiles, n_profiles), validate = FALSE)
   })
   group_scores <- matrix(vapply(passes, `[[`, numeric(n_groups), "log_scaled"),
                          n_groups, n_types)
@@ -245,7 +268,7 @@
     .multilpa_sequence_moments(passes[[type]], emission$log_density, layout,
                                matrix(parameters$transition_probabilities[, , type],
                                       n_profiles, n_profiles),
-                               group_posteriors[, type], nrow(x))
+                               group_posteriors[, type], nrow(x), validate = FALSE)
   })
   joint <- lapply(sequence, `[[`, "posterior")
   subject_posteriors <- Reduce(`+`, joint)
@@ -344,6 +367,7 @@
 #' @param codes Optional categorical codes.
 #' @param n_categories Category counts per categorical indicator.
 #' @param min_probability Lower bound on every fitted probability.
+#' @param acceleration SQUAREM or plain EM.
 #' @param pause,resume As for `.latents_em()`.
 #' @return Parameters, the final expectation, convergence and history; with
 #'   `pause` or `resume`, also the `checkpoint`.
@@ -352,20 +376,24 @@
                                     min_variance, max_iter, tol,
                                     covariance_model = "diagonal", codes = NULL,
                                     n_categories = NULL, min_probability = 1e-10,
-                                    structure = NULL, pause = Inf, resume = NULL) {
+                                    structure = NULL, pause = Inf, resume = NULL,
+                                    acceleration = "squarem") {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             min_variance > 0, variance_model %in% c("varying", "equal"))
+  .multilpa_transition_validate(x, layout, parameters)
+  accelerator <- .lta_accelerator(acceleration)
   fit <- .latents_em(
     parameters,
     evaluate = function(point) {
-      .multilpa_transition_expectation(x, layout, point, codes)
+      .multilpa_transition_expectation(x, layout, point, codes, validate = FALSE)
     },
     maximize = function(point, expectation) {
       .multilpa_transition_maximization(
         x, expectation, variance_model, min_variance, covariance_model, codes,
         n_categories, min_probability, structure, point)
     },
-    max_iter = max_iter, tol = tol, pause = pause, resume = resume)
+    max_iter = max_iter, tol = tol, pause = pause, resume = resume,
+    settings = .latents_em_settings(accelerate = accelerator))
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
                  history = fit$history)
@@ -492,6 +520,20 @@
 #' @param search How the starts are found: `"kmeans"` (the default) or
 #'   `"emEM"`, as described for [multilpa()]. Unlike [multilpa()], `lta()`
 #'   does not choose its default by the covariance structure.
+#' @param cores Number of processor cores for the random starts (default 1).
+#'   The starting values are drawn in order in the current process and only
+#'   the EM runs are distributed, so with `seed` given the result is identical
+#'   to `cores = 1`. Under `search = "emEM"` both screening and the final runs
+#'   are distributed. Workers are forked processes on macOS and Linux, and a
+#'   socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as
+#'   in [enumerate_classes()]. Lost worker results are retried once with half
+#'   as many workers (rounded up), with one `latents_worker_lost` warning
+#'   reporting losses and recovery and suggesting fewer cores. A start still
+#'   lost is recorded as failed; the fit uses the remaining starts. If all
+#'   starts fail, the usual `latents_all_starts_failed` error is raised.
+#'   Socket workers use bounded chunks; completed tasks within a failed chunk
+#'   may also be retried. To fit many models, give `cores` to
+#'   [enumerate_classes()], which runs starts across candidates in one pool.
 #' @param id Name of the observed group identifier column. Character, factor
 #'   and numeric identifiers are supported; missing identifiers are not.
 #'   Required; `id = NULL` is not accepted.
@@ -551,6 +593,19 @@
 #'   The group-class shares are re-estimated from posteriors one EM step
 #'   behind them; at `1e-8` the two differed by up to about `2e-4`, at `1e-10`
 #'   by about `2e-5`, for roughly 1.5 times the iterations.
+#' @param acceleration `"squarem"` (the default) accelerates EM with SQUAREM
+#'   (Varadhan & Roland, 2008), as [multilpa()] does: each cycle extrapolates
+#'   along the last two EM steps, including the initial and transition
+#'   probabilities, and ends with an ordinary EM step. An extrapolated point
+#'   that would lower the likelihood, or that leaves a probability
+#'   non-positive or a row not summing to one, is replaced by the plain EM
+#'   point, so the iteration stays monotone. Convergence is assessed over a
+#'   whole cycle, so it is never looser than plain EM's. Under the strict
+#'   default `tol` plain EM can creep along a flat likelihood for thousands of
+#'   steps; SQUAREM usually stops in far fewer, at the same or a slightly
+#'   higher maximum. `"none"` runs plain EM, which reproduces fits from
+#'   versions before this argument existed. `iterations` and `max_iter` count
+#'   EM steps under either setting.
 #' @param max_iter Nonnegative integer maximum number of EM updates per start
 #'   (default 5000, higher than the 1000 of [multilpa()] to match the tighter
 #'   `tol`). A fit that stops short warns with `latents_unconverged`.
@@ -625,6 +680,10 @@
 #' @references Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
 #'   transition analysis. Wiley.
 #'
+#'   Varadhan, R., & Roland, C. (2008). Simple and globally convergent methods
+#'   for accelerating the convergence of any EM algorithm. Scandinavian
+#'   Journal of Statistics, 35, 335--353.
+#'
 #'   Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 #'   Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 #' @seealso [get_results()] for the fitted transition probabilities and for the
@@ -662,7 +721,43 @@ lta <- function(data, vars, id, n_profiles, time,
                             count_model = c("poisson", "negative_binomial"),
                             count_dispersion = c("varying", "equal"),
                             drop_empty = TRUE, search = c("kmeans", "emEM"),
-                            n_screen = NULL) {
+                            n_screen = NULL,
+                            acceleration = c("squarem", "none"), cores = 1L) {
+  # Setup forces the public arguments and draws every start in its seed frame.
+  plan <- do.call(.lta_setup, c(as.list(environment()), list(call = match.call())),
+                  quote = TRUE)
+  .lta_run_plan(plan, cores)
+}
+
+#' Prepare a latent transition fit without running its starts
+#' @inheritParams lta
+#' @param call The public fitting call to retain on the result.
+#' @return A prepared start plan with a runner and a parent-side finaliser.
+#' @noRd
+.lta_setup <- function(data, vars, id, n_profiles, time,
+                            n_group_classes = 1L,
+                            variance_model = c("varying", "equal"),
+                            n_starts = 10L, max_iter = 5000L, tol = 1e-10,
+                            min_variance = 1e-6, seed = NULL,
+                            missing = c("error", "fiml"),
+                            covariance_model = c("diagonal", "full"),
+                            categorical = character(), min_probability = 1e-10,
+                            occasions = c("observed", "grid"),
+                            select_start = c("likelihood", "converged"),
+                            transitions = c("homogeneous", "occasion"),
+                            transition_covariates = character(),
+                            initial_covariates = character(),
+                            measurement = c("invariant", "occasion"),
+                            order = 1L, model = NULL, mover_stayer = FALSE,
+                            weights = NULL, ordinal = character(),
+                            count = character(),
+                            count_model = c("poisson", "negative_binomial"),
+                            count_dispersion = c("varying", "equal"),
+                            drop_empty = TRUE, search = c("kmeans", "emEM"),
+                            n_screen = NULL,
+                            acceleration = c("squarem", "none"), cores = 1L, call = NULL) {
+  cores <- .latents_check_cores(cores)
+  acceleration <- match.arg(acceleration)
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
   .multilpa_check_drop_empty(drop_empty)
@@ -690,7 +785,7 @@ lta <- function(data, vars, id, n_profiles, time,
               min_probability < 1,
             "`time` must be supplied; a transition model is defined by the ordering" =
               !is.null(time))
-  call <- match.call()
+  if (is.null(call)) call <- match.call()
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
@@ -713,7 +808,6 @@ lta <- function(data, vars, id, n_profiles, time,
     if (structure %in% c("EEI", "EEE")) variance_model <- "equal"
     if (structure %in% c("VVI", "VVV")) variance_model <- "varying"
     .multilpa_reset_structure_log()
-    on.exit(.multilpa_report_structure_log(), add = TRUE)
   }
   # The data contract is checked BEFORE the ordering column. Reversed, a missing
   # group column surfaced as an internal `split()` failure ("group length is 0
@@ -730,7 +824,7 @@ lta <- function(data, vars, id, n_profiles, time,
         "`n_profiles` must be at least two; a single profile has nothing to move between.",
         class = "latents_bad_transition", call = NULL))
     }
-    return(.lta_fit_general(data, vars, id, time, n_profiles, n_group_classes,
+    return(.lta_setup_general(data, vars, id, time, n_profiles, n_group_classes,
                             variance_model, n_starts, max_iter, tol, min_variance,
                             seed, categorical, min_probability, occasions,
                             transitions, transition_covariates, initial_covariates,
@@ -738,7 +832,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             mover_stayer, missing, covariance_model, structure,
                             weights, ordinal, count, count_model, count_dispersion,
                             drop_empty = drop_empty, search = search,
-                            n_screen = n_screen))
+                            n_screen = n_screen, acceleration = acceleration,
+                            cores = cores))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(
@@ -786,7 +881,7 @@ lta <- function(data, vars, id, n_profiles, time,
   # Every start is prepared before any is run; EM draws no random numbers, so
   # the draws are those of preparing and running each start in turn.
   screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
-  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
+  prepare <- function(start_index) {
     initial <- .multilpa_transition_initialize(
       x, groups$index, n_profiles, n_group_classes, variance_model,
       min_variance, start_index, covariance_model, codes, n_categories,
@@ -795,170 +890,200 @@ lta <- function(data, vars, id, n_profiles, time,
       initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
     }
     initial
-  }, run = function(start_index, initial, pause = Inf, resume = NULL) {
+  }
+  initial <- .latents_prepare_starts(
+    if (is.null(screen)) n_starts else screen$n_pool, prepare)
+  context <- as.list(environment())
+  context[c("prepare", "initial")] <- NULL
+  .lta_plan(context, initial, .lta_run_start, .lta_finalise,
+             c("x", "layout", "variance_model", "min_variance", "max_iter", "tol",
+               "covariance_model", "codes", "n_categories", "min_probability",
+               "structure", "acceleration"))
+}
+
+#' Run one homogeneous transition start
+#' @param start_index Original start index.
+#' @param initial Starting values, or NULL when resuming.
+#' @param pause,resume Screening budget and checkpoint.
+#' @param context Forced EM inputs from setup.
+#' @return One EM attempt.
+#' @noRd
+.lta_run_start <- function(start_index, initial, pause = Inf, resume = NULL, context) {
+  with(context, {
     .multilpa_transition_em(x, layout, initial %||% resume$state, variance_model,
                             min_variance, max_iter, tol, covariance_model, codes,
                             n_categories, min_probability, structure,
-                            pause = pause, resume = resume)
-  }, select_start = select_start, screen = screen)
-  found <- starts
-  attempts <- starts$attempts
-  valid <- starts$valid
-  scores <- starts$scores
-  best_start <- starts$best_start
-  best <- attempts[[best_start]]
-  parameters <- best$parameters
-  parameters$means <- sweep(parameters$means, 2L, centers, "+")
-  profile_names <- paste0("profile_", seq_len(n_profiles))
-  type_names <- paste0("group_class_", seq_len(n_group_classes))
-  parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
-                                           categorical, measurement$encoded$levels)
-  dimnames(parameters$initial_probabilities) <- list(type_names, profile_names)
-  # Taken from the expectation that is reported rather than from the M-step,
-  # which saw the previous one -- and which never runs at all when `max_iter`
-  # is zero, where reading the M-step's field left the assembly setting
-  # dimnames on NULL.
-  parameters$profile_prevalence <- matrix(
-    .multilpa_transition_prevalence(best$expectation),
-    n_group_classes, n_profiles, dimnames = list(type_names, profile_names))
-  dimnames(parameters$transition_probabilities) <-
-    list(profile_names, profile_names, type_names)
-  names(parameters$group_probabilities) <- type_names
-  subject_posteriors <- best$expectation$subject_posteriors
-  group_posteriors <- best$expectation$group_posteriors
-  dimnames(subject_posteriors) <- list(rownames(data), profile_names)
-  dimnames(group_posteriors) <- list(groups$ids, type_names)
-  n_parameters <- .multilpa_count_transition_parameters(
-    n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
-    covariance_model, structure)
-  log_likelihood <- best$expectation$log_likelihood
-  transition_counts <- array(
-    vapply(best$expectation$sequence, `[[`, numeric(n_profiles * n_profiles),
-           "transition"),
-    c(n_profiles, n_profiles, n_group_classes),
-    dimnames = list(profile_names, profile_names, type_names))
-  # EM leaves the parameters one M-step behind the final expectation, so the
-  # empty rows are re-read from the counts that are actually reported rather
-  # than from the ones the last update happened to see.
-  parameters$empty_transition_rows <- matrix(
-    apply(transition_counts, c(1L, 3L), sum) <= 0, n_profiles, n_group_classes,
-    dimnames = list(profile_names, type_names))
-  starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
-    attempt <- attempts[[start_index]]
-    data.frame(start = start_index, log_likelihood = scores[start_index],
-               converged = if (valid[start_index]) attempt$converged else FALSE,
-               iterations = if (valid[start_index]) attempt$iterations else NA_integer_,
-               error = if (valid[start_index]) NA_character_ else attempt$error)
-  }))
-  starts <- .latents_search_columns(starts, found, n_starts)
-  observed_per_row <- rowSums(!is.na(x)) +
-    if (is.null(codes)) 0L else rowSums(!is.na(codes))
-  n_informative <- sum(observed_per_row > 0L)
-  n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
-  # Under `drop_empty`, sizes and counts are of the classified rows and
-  # groups, as Mplus counts them; otherwise of every row and group (0.9.37).
-  counted_rows <- if (isTRUE(drop_empty)) observed_per_row > 0L else rep(TRUE, nrow(x))
-  counted_groups <- if (isTRUE(drop_empty))
-    seq_len(groups$n) %in% groups$index[observed_per_row > 0L] else rep(TRUE, groups$n)
-  group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else groups$n
-  boundary <- .multilpa_covariance_boundary(parameters, min_variance)
-  empty_rows <- any(parameters$empty_transition_rows)
-  small_classes <- any(colSums(subject_posteriors) < 1) ||
-    any(colSums(group_posteriors) < 1)
-  result <- c(parameters, list(
-    call = call, vars = vars, continuous = continuous,
-    continuous_types = vapply(data[continuous], typeof, character(1)),
-    categorical = categorical,
-    categorical_levels = measurement$encoded$levels,
-    categorical_values = .multilpa_categorical_values(
-      data, categorical, measurement$encoded),
-    min_probability = min_probability,
-    indicator_data = as.matrix(measurement$frame), categorical_data = codes,
-    id = id, group_ids = groups$ids, time = time, time_values = time_values,
-    group_values = groups$values, group_index = groups$index,
-    group_sizes = setNames(groups$sizes, groups$ids),
-    n_observations = nrow(x), n_informative = n_informative,
-    informative = observed_per_row > 0L,
-    n_informative_groups = n_informative_groups, drop_empty = drop_empty,
-    n_groups = groups$n, n_profiles = as.integer(n_profiles),
-    n_group_classes = as.integer(n_group_classes),
-    n_occasions = layout$n_occasions, occasions = occasions,
-    sequence_lengths = setNames(layout$span, groups$ids),
-    balanced = all(layout$span == layout$n_occasions) &&
-      !anyNA(layout$slot),
-    variance_model = variance_model, covariance_model = covariance_model,
-    covariance_structure = structure,
-    missing = missing, min_variance = min_variance,
-    standard_deviations = sqrt(parameters$variances),
-    measurement_model = if (is.null(codes)) "gaussian" else
-      if (ncol(x) == 0L) "categorical" else "mixed",
-    transition_counts = transition_counts,
-    subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,
-    subject_profiles = max.col(subject_posteriors, ties.method = "first"),
-    group_classes = max.col(group_posteriors, ties.method = "first"),
-    log_likelihood = log_likelihood,
-    group_log_likelihood = setNames(best$expectation$group_log_likelihood,
-                                    groups$ids),
-    n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(group_sample_size) * n_parameters,
-    bic_groups = -2 * log_likelihood + log(group_sample_size) * n_parameters,
-    bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
-    converged = best$converged, iterations = best$iterations,
-    log_likelihood_history = best$history, starts = starts,
-    best_start = best_start, n_failed_starts = sum(!valid), boundary = boundary,
-    small_classes = small_classes,
-    effective_profile_counts = colSums(subject_posteriors[counted_rows, , drop = FALSE]),
-    effective_group_counts = colSums(group_posteriors[counted_groups, , drop = FALSE]),
-    n_best_replicated = sum(valid & .latents_final_stage(found) &
-                              abs(scores - log_likelihood) <=
-                              1e-6 * (1 + abs(log_likelihood))),
-    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))),
-    .latents_search_record(search, n_starts, screen, select_start, "allow"),
-    list(max_iter = as.integer(max_iter), tol = tol))
-  class(result) <- "multilpa_transitions"
-  # Every qualification a caller might branch on carries its catalogued class,
-  # so a simulation loop can muffle the ones it expects and let the rest through.
-  if (any(!valid)) {
-    warning(warningCondition(sprintf(
-      paste("%d of %d starts failed; read their messages with",
-            "get_results(fit, \"starts\")."),
-      sum(!valid), length(attempts)),
-      class = "latents_failed_starts", call = NULL))
-  }
-  if (!best$converged && max_iter > 0L) {
-    warning(warningCondition(
-      "The best start did not converge; increase max_iter and inspect starts.",
-      class = "latents_unconverged", call = NULL))
-  }
-  if (boundary) {
-    warning(warningCondition(if (covariance_model == "full")
-      "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
-      "A variance reached min_variance; this is a bound-active constrained fit.",
-      class = "latents_boundary", call = NULL))
-  }
-  if (empty_rows) {
-    warning(warningCondition(paste(
-      "A profile is never occupied before a final occasion; its",
-      "transition row is uniform by construction, not estimated.",
-      "List the affected rows with",
-      "get_results(fit, \"transitions\", estimated = FALSE)."),
-      class = "latents_empty_transition_row", call = NULL))
-  }
-  if (small_classes) {
-    warning(warningCondition(
-      "A profile or group class has effective membership below one.",
-      class = "latents_small_classes", call = NULL))
-  }
-  .latents_warn_thin_profiles(
-    # Empty and categorical-only rows do not inform Gaussian measurement,
-    # even when drop_empty = FALSE includes them in classification counts.
-    colSums(subject_posteriors[rowSums(!is.na(x)) > 0L, , drop = FALSE]),
-    .latents_profile_parameters(length(continuous), variance_model, covariance_model,
-                                structure))
-  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
-    parameters, x, result$subject_posteriors,
-    min_variance = min_variance)
-  result
+                            pause = pause, resume = resume,
+                            acceleration = acceleration)
+  })
+}
+
+#' Finalise a homogeneous transition fit from its selected starts
+#' @param starts The shared start-selection result.
+#' @param context Forced setup inputs.
+#' @return A fitted multilpa_transitions object.
+#' @noRd
+.lta_finalise <- function(starts, context) {
+  with(context, {
+    found <- starts
+    attempts <- starts$attempts
+    valid <- starts$valid
+    scores <- starts$scores
+    best_start <- starts$best_start
+    best <- attempts[[best_start]]
+    parameters <- best$parameters
+    parameters$means <- sweep(parameters$means, 2L, centers, "+")
+    profile_names <- paste0("profile_", seq_len(n_profiles))
+    type_names <- paste0("group_class_", seq_len(n_group_classes))
+    parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
+                                             categorical, measurement$encoded$levels)
+    dimnames(parameters$initial_probabilities) <- list(type_names, profile_names)
+    # Taken from the expectation that is reported rather than from the M-step,
+    # which saw the previous one -- and which never runs at all when `max_iter`
+    # is zero, where reading the M-step's field left the assembly setting
+    # dimnames on NULL.
+    parameters$profile_prevalence <- matrix(
+      .multilpa_transition_prevalence(best$expectation),
+      n_group_classes, n_profiles, dimnames = list(type_names, profile_names))
+    dimnames(parameters$transition_probabilities) <-
+      list(profile_names, profile_names, type_names)
+    names(parameters$group_probabilities) <- type_names
+    subject_posteriors <- best$expectation$subject_posteriors
+    group_posteriors <- best$expectation$group_posteriors
+    dimnames(subject_posteriors) <- list(rownames(data), profile_names)
+    dimnames(group_posteriors) <- list(groups$ids, type_names)
+    n_parameters <- .multilpa_count_transition_parameters(
+      n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
+      covariance_model, structure)
+    log_likelihood <- best$expectation$log_likelihood
+    transition_counts <- array(
+      vapply(best$expectation$sequence, `[[`, numeric(n_profiles * n_profiles),
+             "transition"),
+      c(n_profiles, n_profiles, n_group_classes),
+      dimnames = list(profile_names, profile_names, type_names))
+    # EM leaves the parameters one M-step behind the final expectation, so the
+    # empty rows are re-read from the counts that are actually reported rather
+    # than from the ones the last update happened to see.
+    parameters$empty_transition_rows <- matrix(
+      apply(transition_counts, c(1L, 3L), sum) <= 0, n_profiles, n_group_classes,
+      dimnames = list(profile_names, type_names))
+    starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
+      attempt <- attempts[[start_index]]
+      data.frame(start = start_index, log_likelihood = scores[start_index],
+                 converged = if (valid[start_index]) attempt$converged else FALSE,
+                 iterations = if (valid[start_index]) attempt$iterations else NA_integer_,
+                 error = if (valid[start_index]) NA_character_ else attempt$error)
+    }))
+    starts <- .latents_search_columns(starts, found, n_starts)
+    observed_per_row <- rowSums(!is.na(x)) +
+      if (is.null(codes)) 0L else rowSums(!is.na(codes))
+    n_informative <- sum(observed_per_row > 0L)
+    n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
+    # Under `drop_empty`, sizes and counts are of the classified rows and
+    # groups, as Mplus counts them; otherwise of every row and group (0.9.37).
+    counted_rows <- if (isTRUE(drop_empty)) observed_per_row > 0L else rep(TRUE, nrow(x))
+    counted_groups <- if (isTRUE(drop_empty))
+      seq_len(groups$n) %in% groups$index[observed_per_row > 0L] else rep(TRUE, groups$n)
+    group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else groups$n
+    boundary <- .multilpa_covariance_boundary(parameters, min_variance)
+    empty_rows <- any(parameters$empty_transition_rows)
+    small_classes <- any(colSums(subject_posteriors) < 1) ||
+      any(colSums(group_posteriors) < 1)
+    result <- c(parameters, list(
+      call = call, vars = vars, continuous = continuous,
+      continuous_types = vapply(data[continuous], typeof, character(1)),
+      categorical = categorical,
+      categorical_levels = measurement$encoded$levels,
+      categorical_values = .multilpa_categorical_values(
+        data, categorical, measurement$encoded),
+      min_probability = min_probability,
+      indicator_data = as.matrix(measurement$frame), categorical_data = codes,
+      id = id, group_ids = groups$ids, time = time, time_values = time_values,
+      group_values = groups$values, group_index = groups$index,
+      group_sizes = setNames(groups$sizes, groups$ids),
+      n_observations = nrow(x), n_informative = n_informative,
+      informative = observed_per_row > 0L,
+      n_informative_groups = n_informative_groups, drop_empty = drop_empty,
+      n_groups = groups$n, n_profiles = as.integer(n_profiles),
+      n_group_classes = as.integer(n_group_classes),
+      n_occasions = layout$n_occasions, occasions = occasions,
+      sequence_lengths = setNames(layout$span, groups$ids),
+      balanced = all(layout$span == layout$n_occasions) &&
+        !anyNA(layout$slot),
+      variance_model = variance_model, covariance_model = covariance_model,
+      covariance_structure = structure,
+      missing = missing, min_variance = min_variance,
+      standard_deviations = sqrt(parameters$variances),
+      measurement_model = if (is.null(codes)) "gaussian" else
+        if (ncol(x) == 0L) "categorical" else "mixed",
+      transition_counts = transition_counts,
+      subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,
+      subject_profiles = max.col(subject_posteriors, ties.method = "first"),
+      group_classes = max.col(group_posteriors, ties.method = "first"),
+      log_likelihood = log_likelihood,
+      group_log_likelihood = setNames(best$expectation$group_log_likelihood,
+                                      groups$ids),
+      n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
+      bic = -2 * log_likelihood + log(group_sample_size) * n_parameters,
+      bic_groups = -2 * log_likelihood + log(group_sample_size) * n_parameters,
+      bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
+      converged = best$converged, iterations = best$iterations,
+      log_likelihood_history = best$history, starts = starts,
+      best_start = best_start, n_failed_starts = sum(!valid), boundary = boundary,
+      small_classes = small_classes,
+      effective_profile_counts = colSums(subject_posteriors[counted_rows, , drop = FALSE]),
+      effective_group_counts = colSums(group_posteriors[counted_groups, , drop = FALSE]),
+      n_best_replicated = sum(valid & .latents_final_stage(found) &
+                                abs(scores - log_likelihood) <=
+                                1e-6 * (1 + abs(log_likelihood))),
+      replication_tolerance = 1e-6 * (1 + abs(log_likelihood))),
+      .latents_search_record(search, n_starts, screen, select_start, "allow"),
+      list(max_iter = as.integer(max_iter), tol = tol, acceleration = acceleration))
+    class(result) <- "multilpa_transitions"
+    # Every qualification a caller might branch on carries its catalogued class,
+    # so a simulation loop can muffle the ones it expects and let the rest through.
+    if (any(!valid)) {
+      warning(warningCondition(sprintf(
+        paste("%d of %d starts failed; read their messages with",
+              "get_results(fit, \"starts\")."),
+        sum(!valid), length(attempts)),
+        class = "latents_failed_starts", call = NULL))
+    }
+    if (!best$converged && max_iter > 0L) {
+      warning(warningCondition(
+        "The best start did not converge; increase max_iter and inspect starts.",
+        class = "latents_unconverged", call = NULL))
+    }
+    if (boundary) {
+      warning(warningCondition(if (covariance_model == "full")
+        "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
+        "A variance reached min_variance; this is a bound-active constrained fit.",
+        class = "latents_boundary", call = NULL))
+    }
+    if (empty_rows) {
+      warning(warningCondition(paste(
+        "A profile is never occupied before a final occasion; its",
+        "transition row is uniform by construction, not estimated.",
+        "List the affected rows with",
+        "get_results(fit, \"transitions\", estimated = FALSE)."),
+        class = "latents_empty_transition_row", call = NULL))
+    }
+    if (small_classes) {
+      warning(warningCondition(
+        "A profile or group class has effective membership below one.",
+        class = "latents_small_classes", call = NULL))
+    }
+    .latents_warn_thin_profiles(
+      # Empty and categorical-only rows do not inform Gaussian measurement,
+      # even when drop_empty = FALSE includes them in classification counts.
+      colSums(subject_posteriors[rowSums(!is.na(x)) > 0L, , drop = FALSE]),
+      .latents_profile_parameters(length(continuous), variance_model, covariance_model,
+                                  structure))
+    result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
+      parameters, x, result$subject_posteriors,
+      min_variance = min_variance)
+    result
+  })
 }
 
 #' First-order transition probabilities between profiles

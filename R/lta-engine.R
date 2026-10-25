@@ -309,7 +309,7 @@
   log_density <- .lta_log_density(x, codes, parameters, occasion_of_row, extra)
   gaussian_moments <- attr(log_density, "moments")
   attr(log_density, "moments") <- NULL
-  emission <- .multilpa_sequence_emission(log_density, layout)
+  emission <- .multilpa_sequence_emission(log_density, layout, validate = FALSE)
   second <- !is.null(parameters$transition2)
   n_states <- nrow(parameters$measurement[[1L]]$means)
   # Emissions on the augmented pair states read the current profile.
@@ -477,7 +477,7 @@
                     variance_model, min_variance, n_categories, min_probability,
                     max_iter, tol, covariance_model = "diagonal", structure = NULL,
                     sampling_weights = NULL, extra = NULL, pause = Inf,
-                    resume = NULL) {
+                    resume = NULL, acceleration = "squarem") {
   # The inner logit Newton steps of the transition M-step leave more rounding
   # in the likelihood than a closed-form step, hence the looser guard.
   fit <- .latents_em(
@@ -493,7 +493,8 @@
                         structure, extra)
     },
     max_iter = max_iter, tol = tol,
-    settings = .latents_em_settings(decrease_tolerance = 1e-8),
+    settings = .latents_em_settings(
+      decrease_tolerance = 1e-8, accelerate = .lta_accelerator(acceleration, general = TRUE)),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -564,12 +565,9 @@
          stayer = c(rep(FALSE, n_types - mover_stayer), rep(TRUE, mover_stayer))))
 }
 
-#' Fit the general transition model
-#'
-#' Called by `lta()` when transitions vary by occasion or covariate, the
-#' initial distribution depends on covariates, or measurement varies by
-#' occasion.
-#' @return An object of class `multilpa_lta`.
+#' Fit through the general engine from its explicit internal arguments
+#' @inheritParams .lta_setup_general
+#' @return A fitted multilpa_lta object.
 #' @noRd
 .lta_fit_general <- function(data, vars, id, time, n_profiles, n_group_classes,
                              variance_model, n_starts, max_iter, tol, min_variance,
@@ -581,7 +579,31 @@
                              weights = NULL, ordinal = character(),
                              count = character(), count_model = "poisson",
                              count_dispersion = "varying", drop_empty = TRUE,
-                             search = "kmeans", n_screen = NULL) {
+                             search = "kmeans", n_screen = NULL,
+                             acceleration = "squarem", cores = 1L) {
+  plan <- do.call(.lta_setup_general, as.list(environment()), quote = TRUE)
+  .lta_run_plan(plan, cores)
+}
+
+#' Prepare the general transition model
+#'
+#' Called by `lta()` when transitions vary by occasion or covariate, the
+#' initial distribution depends on covariates, or measurement varies by
+#' occasion.
+#' @return A prepared start plan for the general transition engine.
+#' @noRd
+.lta_setup_general <- function(data, vars, id, time, n_profiles, n_group_classes,
+                             variance_model, n_starts, max_iter, tol, min_variance,
+                             seed, categorical, min_probability, occasions,
+                             transitions, transition_covariates, initial_covariates,
+                             measurement_model, select_start, call, order = 1L,
+                             mover_stayer = FALSE, missing = "error",
+                             covariance_model = "diagonal", structure = NULL,
+                             weights = NULL, ordinal = character(),
+                             count = character(), count_model = "poisson",
+                             count_dispersion = "varying", drop_empty = TRUE,
+                             search = "kmeans", n_screen = NULL,
+                             acceleration = "squarem", cores = 1L) {
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
@@ -641,7 +663,7 @@
   # Every start is prepared before any is run; EM draws no random numbers, so
   # the draws are those of preparing and running each start in turn.
   screen <- .latents_search_screen(search, n_starts, n_screen, max_iter)
-  starts <- .latents_run_starts(n_starts, prepare = function(start_index) {
+  prepare <- function(start_index) {
     .lta_initialize(x, groups$index, layout, designs, n_profiles,
                     n_group_classes, variance_model, min_variance,
                     start_index, codes, n_categories, min_probability,
@@ -649,13 +671,34 @@
                     covariance_model, structure, extra,
                     kind = .latents_start_kind(start_index, n_starts),
                     row_weights = sampling_weights[groups$index])
-  }, run = function(start_index, start, pause = Inf, resume = NULL) {
+  }
+  initial <- .latents_prepare_starts(
+    if (is.null(screen)) n_starts else screen$n_pool, prepare)
+  context <- as.list(environment())
+  context[c("prepare", "initial")] <- NULL
+  .lta_plan(context, initial, .lta_run_general_start, .lta_finalise_general,
+             c("x", "codes", "layout", "designs", "occasion_of_row",
+               "variance_model", "min_variance", "n_categories", "min_probability",
+               "max_iter", "tol", "covariance_model", "structure",
+               "sampling_weights", "extra", "acceleration", "spec"))
+}
+
+#' Run one general transition start, including its numerical finish
+#' @param start_index Original start index.
+#' @param start Starting values, or NULL when resuming.
+#' @param pause,resume Screening budget and checkpoint.
+#' @param context Forced EM and numerical-finish inputs from setup.
+#' @return One fitted or screened attempt.
+#' @noRd
+.lta_run_general_start <- function(start_index, start, pause = Inf, resume = NULL, context) {
+  with(context, {
     # EM to a loose tolerance, then a quasi-Newton finish on the exact
     # likelihood: EM alone crawls when profiles are weakly separated.
     em <- .lta_em(x, codes, layout, designs, start %||% resume$state, occasion_of_row,
                   variance_model, min_variance, n_categories, min_probability,
                   max_iter, max(tol, 1e-6), covariance_model, structure,
-                  sampling_weights, extra, pause = pause, resume = resume)
+                  sampling_weights, extra, pause = pause, resume = resume,
+                  acceleration = acceleration)
     # A screened start is ranked on its EM likelihood; the finish waits for
     # the final stage.
     if (is.finite(pause)) return(em)
@@ -666,7 +709,7 @@
         em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
                       variance_model, min_variance, n_categories, min_probability,
                       max_iter, tol, covariance_model, structure, sampling_weights,
-                      extra)
+                      extra, acceleration = acceleration)
       }
       return(em)
     }
@@ -678,102 +721,114 @@
          converged = isTRUE(finish$converged), iterations = em$iterations,
          history = c(em$history, expectation$log_likelihood),
          max_gradient = finish$gradient)
-  }, select_start = select_start, screen = screen)
-  found <- starts
-  attempts <- starts$attempts
-  valid <- starts$valid
-  scores <- starts$scores
-  converged <- starts$converged
-  best_start <- starts$best_start
-  best <- attempts[[best_start]]
-  # The weighted posteriors are counts; each person is classified by their
-  # own posterior, while the likelihood stays the weighted one.
-  weighted_expectation <- best$expectation
-  if (!is.null(sampling_weights)) {
-    best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
-                                         occasion_of_row, extra = extra)
-    best$expectation$log_likelihood <- weighted_expectation$log_likelihood
-  }
-  result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
-                        data, vars, id, time, groups, layout, designs, x, codes,
-                        measurement, occasion_of_row, n_profiles, n_group_classes,
-                        variance_model, transitions, transition_covariates,
-                        initial_covariates, measurement_model, min_variance,
-                        min_probability, call, order, mover_stayer, missing,
-                        covariance_model, structure,
-                        final_stage = .latents_final_stage(found))
-  result$starts <- .latents_search_columns(result$starts, found, n_starts)
-  record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
-  result[names(record)] <- record
-  result$max_iter <- as.integer(max_iter)
-  result$tol <- tol
-  result$arguments$search <- search
-  result$arguments$n_screen <- n_screen
-  if (!is.null(sampling_weights)) {
-    result$weights <- weights
-    result$sampling_weights <- stats::setNames(sampling_weights, groups$ids)
-    result$arguments$weights <- weights
-  }
-  result$ordinal <- ordinal
-  result$count <- count
-  result$arguments$ordinal <- ordinal
-  result$arguments$count <- count
-  result$arguments$count_model <- count_model
-  result$arguments$count_dispersion <- count_dispersion
-  if (!is.null(extra)) {
-    result$extra_data <- extra
-    profile_names <- paste0("profile_", seq_len(n_profiles))
-    result$measurement <- lapply(result$measurement, .latents_label_extra,
-                                 extra = extra, profile_names = profile_names)
-    result$n_parameters <- result$n_parameters + n_measurement *
-      .latents_extra_n_parameters(extra, n_profiles)
-    result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
-    # Ordinal and count columns can be the only ones a row observes.
-    result$informative <- result$informative |
-      rowSums(!is.na(.latents_extra_matrix(extra))) > 0L
-    result$n_informative <- sum(result$informative)
-    result$n_informative_groups <- length(unique(groups$index[result$informative]))
-    result$bic <- -2 * result$log_likelihood +
-      log(result$n_informative_groups) * result$n_parameters
-    result$bic_individual <- -2 * result$log_likelihood +
-      log(result$n_informative) * result$n_parameters
-    .latents_warn_poisson_limit(do.call(cbind, lapply(result$measurement,
-                                                      `[[`, "count_dispersion")))
-  }
-  result$drop_empty <- drop_empty
-  result$arguments$drop_empty <- drop_empty
-  if (isFALSE(drop_empty)) {
-    # The sample sizes of 0.9.37 and earlier: every row and every group.
-    result$n_informative <- result$n_observations
-    result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
-    result$bic_individual <- -2 * result$log_likelihood +
-      log(result$n_observations) * result$n_parameters
-  }
-  # This diagnostic concerns Gaussian measurement, so rows without any
-  # Gaussian observation cannot support its spread, regardless of drop_empty.
-  # Use the weighted E-step memberships that actually estimated each density;
-  # the reported posteriors have already been converted to probabilities.
-  gaussian_rows <- rowSums(!is.na(x)) > 0L
-  profile_parameters <- .latents_profile_parameters(
-    length(measurement$continuous), variance_model, covariance_model, structure)
-  invisible(lapply(seq_len(n_measurement), function(index) {
-    rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
-    .latents_warn_thin_profiles(
-      colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
-      profile_parameters,
-      context = if (n_measurement > 1L)
-        sprintf("at occasion %s", index) else NULL)
-  }))
-  result$gaussian_diagnostics <- do.call(rbind, lapply(seq_len(n_measurement), function(index) {
-    rows <- n_measurement == 1L | occasion_of_row == index
-    .latents_gaussian_diagnostics(
-      result$measurement[[index]], x[rows, , drop = FALSE],
-      result$subject_posteriors[rows, , drop = FALSE],
-      weights = if (is.null(sampling_weights)) NULL else sampling_weights[groups$index[rows]],
-      min_variance = min_variance,
-      context = if (n_measurement == 1L) "profiles" else sprintf("occasion %s", index))
-  }))
-  result
+  })
+}
+
+#' Finalise a general transition fit from its selected starts
+#' @param starts The shared start-selection result.
+#' @param context Forced setup inputs.
+#' @return A fitted multilpa_lta object.
+#' @noRd
+.lta_finalise_general <- function(starts, context) {
+  with(context, {
+    found <- starts
+    attempts <- starts$attempts
+    valid <- starts$valid
+    scores <- starts$scores
+    converged <- starts$converged
+    best_start <- starts$best_start
+    best <- attempts[[best_start]]
+    # The weighted posteriors are counts; each person is classified by their
+    # own posterior, while the likelihood stays the weighted one.
+    weighted_expectation <- best$expectation
+    if (!is.null(sampling_weights)) {
+      best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
+                                           occasion_of_row, extra = extra)
+      best$expectation$log_likelihood <- weighted_expectation$log_likelihood
+    }
+    result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
+                          data, vars, id, time, groups, layout, designs, x, codes,
+                          measurement, occasion_of_row, n_profiles, n_group_classes,
+                          variance_model, transitions, transition_covariates,
+                          initial_covariates, measurement_model, min_variance,
+                          min_probability, call, order, mover_stayer, missing,
+                          covariance_model, structure,
+                          final_stage = .latents_final_stage(found))
+    result$starts <- .latents_search_columns(result$starts, found, n_starts)
+    record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
+    result[names(record)] <- record
+    result$max_iter <- as.integer(max_iter)
+    result$tol <- tol
+    result$arguments$search <- search
+    result$arguments$n_screen <- n_screen
+    result$acceleration <- acceleration
+    result$arguments$acceleration <- acceleration
+    if (!is.null(sampling_weights)) {
+      result$weights <- weights
+      result$sampling_weights <- stats::setNames(sampling_weights, groups$ids)
+      result$arguments$weights <- weights
+    }
+    result$ordinal <- ordinal
+    result$count <- count
+    result$arguments$ordinal <- ordinal
+    result$arguments$count <- count
+    result$arguments$count_model <- count_model
+    result$arguments$count_dispersion <- count_dispersion
+    if (!is.null(extra)) {
+      result$extra_data <- extra
+      profile_names <- paste0("profile_", seq_len(n_profiles))
+      result$measurement <- lapply(result$measurement, .latents_label_extra,
+                                   extra = extra, profile_names = profile_names)
+      result$n_parameters <- result$n_parameters + n_measurement *
+        .latents_extra_n_parameters(extra, n_profiles)
+      result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
+      # Ordinal and count columns can be the only ones a row observes.
+      result$informative <- result$informative |
+        rowSums(!is.na(.latents_extra_matrix(extra))) > 0L
+      result$n_informative <- sum(result$informative)
+      result$n_informative_groups <- length(unique(groups$index[result$informative]))
+      result$bic <- -2 * result$log_likelihood +
+        log(result$n_informative_groups) * result$n_parameters
+      result$bic_individual <- -2 * result$log_likelihood +
+        log(result$n_informative) * result$n_parameters
+      .latents_warn_poisson_limit(do.call(cbind, lapply(result$measurement,
+                                                        `[[`, "count_dispersion")))
+    }
+    result$drop_empty <- drop_empty
+    result$arguments$drop_empty <- drop_empty
+    if (isFALSE(drop_empty)) {
+      # The sample sizes of 0.9.37 and earlier: every row and every group.
+      result$n_informative <- result$n_observations
+      result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
+      result$bic_individual <- -2 * result$log_likelihood +
+        log(result$n_observations) * result$n_parameters
+    }
+    # This diagnostic concerns Gaussian measurement, so rows without any
+    # Gaussian observation cannot support its spread, regardless of drop_empty.
+    # Use the weighted E-step memberships that actually estimated each density;
+    # the reported posteriors have already been converted to probabilities.
+    gaussian_rows <- rowSums(!is.na(x)) > 0L
+    profile_parameters <- .latents_profile_parameters(
+      length(measurement$continuous), variance_model, covariance_model, structure)
+    invisible(lapply(seq_len(n_measurement), function(index) {
+      rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
+      .latents_warn_thin_profiles(
+        colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
+        profile_parameters,
+        context = if (n_measurement > 1L)
+          sprintf("at occasion %s", index) else NULL)
+    }))
+    result$gaussian_diagnostics <- do.call(rbind, lapply(seq_len(n_measurement), function(index) {
+      rows <- n_measurement == 1L | occasion_of_row == index
+      .latents_gaussian_diagnostics(
+        result$measurement[[index]], x[rows, , drop = FALSE],
+        result$subject_posteriors[rows, , drop = FALSE],
+        weights = if (is.null(sampling_weights)) NULL else sampling_weights[groups$index[rows]],
+        min_variance = min_variance,
+        context = if (n_measurement == 1L) "profiles" else sprintf("occasion %s", index))
+    }))
+    result
+  })
 }
 
 #' Free parameters of the general transition model

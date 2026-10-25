@@ -12,17 +12,19 @@
 #' @noRd
 .multilpa_accelerated_blocks <- function() {
   c("means", "variances", "covariances", "profile_probabilities",
-    "group_probabilities", "response_probabilities", "ordinal_intercepts",
+    "group_probabilities", "initial_probabilities", "transition_probabilities",
+    "response_probabilities", "ordinal_intercepts",
     "ordinal_locations", "count_means", "count_dispersion", "direct_effects")
 }
 
 #' Flatten the updatable blocks of a parameter list
 #' @param parameters A parameter list.
+#' @param blocks Names of the blocks to flatten.
 #' @return A numeric vector, blocks in `.multilpa_accelerated_blocks()` order.
 #' @noRd
-.multilpa_flatten_parameters <- function(parameters) {
-  blocks <- parameters[intersect(.multilpa_accelerated_blocks(),
-                                 names(parameters))]
+.multilpa_flatten_parameters <- function(parameters,
+                                         blocks = .multilpa_accelerated_blocks()) {
+  blocks <- parameters[intersect(blocks, names(parameters))]
   unlist(blocks, use.names = FALSE)
 }
 
@@ -34,9 +36,11 @@
 #'
 #' @param template A parameter list with the target shapes.
 #' @param values A numeric vector of the flattened length.
+#' @param blocks Names of the blocks to restore.
 #' @return A parameter list.
 #' @noRd
-.multilpa_restore_parameters <- function(template, values) {
+.multilpa_restore_parameters <- function(template, values,
+                                         blocks = .multilpa_accelerated_blocks()) {
   position <- 0L
   fill <- function(block) {
     if (is.list(block)) return(lapply(block, fill))
@@ -45,7 +49,7 @@
     position <<- position + size
     block
   }
-  names_present <- intersect(.multilpa_accelerated_blocks(), names(template))
+  names_present <- intersect(blocks, names(template))
   template[names_present] <- lapply(template[names_present], fill)
   stopifnot("the flat vector must match the template's size" =
               position == length(values))
@@ -64,12 +68,29 @@
 .multilpa_valid_parameters <- function(parameters) {
   probabilities <- unlist(parameters[c("profile_probabilities",
                                        "group_probabilities",
+                                       "initial_probabilities",
+                                       "transition_probabilities",
                                        "response_probabilities")],
                           use.names = FALSE)
   if (any(!is.finite(probabilities)) || any(probabilities <= 0) ||
       any(probabilities > 1 + 1e-12)) {
     return(FALSE)
   }
+  normalized <- function(totals) all(is.finite(totals) & abs(totals - 1) <= 1e-8)
+  if (!is.null(parameters$profile_probabilities) &&
+      !normalized(rowSums(parameters$profile_probabilities))) return(FALSE)
+  if (!is.null(parameters$response_probabilities) &&
+      !all(vapply(parameters$response_probabilities, function(block) {
+        normalized(rowSums(block))
+      }, logical(1)))) return(FALSE)
+  if (!is.null(parameters$initial_probabilities) &&
+      !normalized(rowSums(parameters$initial_probabilities))) return(FALSE)
+  if (!is.null(parameters$transition_probabilities) &&
+      !normalized(apply(parameters$transition_probabilities, c(1L, 3L), sum))) {
+    return(FALSE)
+  }
+  if (!is.null(parameters$group_probabilities) &&
+      !normalized(sum(parameters$group_probabilities))) return(FALSE)
   if (length(c(parameters$count_means, parameters$count_dispersion)) > 0L &&
       (any(!is.finite(c(parameters$count_means, parameters$count_dispersion))) ||
        any(c(parameters$count_means, parameters$count_dispersion) <= 0))) {
@@ -86,4 +107,30 @@
     all(is.finite(block)) &&
       !inherits(tryCatch(chol(block), error = function(error) error), "error")
   }, logical(1)))
+}
+
+
+#' SQUAREM maps for homogeneous probabilities or general transition logits
+#'
+#' General states carry one measurement block per measurement occasion and
+#' unconstrained initial/transition logits. The fixed stayer mask is retained
+#' by restore and never extrapolated.
+#' @param acceleration SQUAREM or plain EM.
+#' @param general Whether the state uses logits and nested measurement blocks.
+#' @return NULL or the flatten, restore and valid functions for the EM kernel.
+#' @noRd
+.lta_accelerator <- function(acceleration, general = FALSE) {
+  if (identical(acceleration, "none")) return(NULL)
+  if (!general) return(list(flatten = .multilpa_flatten_parameters,
+                           restore = .multilpa_restore_parameters,
+                           valid = .multilpa_valid_parameters))
+  blocks <- c("measurement", "initial", "transition", "transition2",
+              "group_probabilities")
+  list(flatten = function(point) .multilpa_flatten_parameters(point, blocks),
+       restore = function(point, values) .multilpa_restore_parameters(point, values, blocks),
+       valid = function(point) {
+         all(is.finite(.multilpa_flatten_parameters(point, blocks))) &&
+           .multilpa_valid_parameters(list(group_probabilities = point$group_probabilities)) &&
+           all(vapply(point$measurement, .multilpa_valid_parameters, logical(1)))
+       })
 }

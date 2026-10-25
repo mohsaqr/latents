@@ -177,6 +177,14 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
 #' @noRd
 .additive_enumerate <- function(data, vars, id, family, n_group_classes,
                                 between_variance, seed, extra, call, cores = 1L) {
+  # Socket workers must receive values rather than promises naming arguments
+  # in enumerate_classes()'s calling frame.
+  force(data)
+  force(vars)
+  force(id)
+  force(seed)
+  force(extra)
+  force(call)
   families <- c("additive", "dispersion", "additive_dispersion")
   if (!is.character(family) || length(family) < 1L || anyNA(family) ||
       !all(family %in% families)) {
@@ -207,10 +215,10 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   })))
   grid <- grid[order(grid$n_group_classes, match(grid$family, families),
                      grid$between_variance != "varying"), , drop = FALSE]
-  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
+  fit_one <- function(i, loss = NULL) {
     warnings <- character()
-    error_text <- NA_character_
-    fit <- tryCatch(withCallingHandlers(do.call(multilpa, c(
+    error_text <- loss %||% NA_character_
+    fit <- if (!is.null(loss)) NULL else tryCatch(withCallingHandlers(do.call(multilpa, c(
       list(data = data, vars = vars, id = id,
            n_group_classes = grid$n_group_classes[i], family = grid$family[i],
            between_variance = grid$between_variance[i], seed = seed), extra)),
@@ -246,7 +254,9 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       warnings = paste(unique(warnings), collapse = "; "), error = error_text,
       stringsAsFactors = FALSE)
     list(fit = fit, row = row)
-  }, cores)
+  }
+  runs <- .latents_map_candidates(seq_len(nrow(grid)), fit_one, cores,
+    on_lost = function(i, message) fit_one(i, loss = message))
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
   result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),
@@ -283,7 +293,8 @@ as.data.frame.latents_family_enumeration <- function(x, row.names = NULL,
 #' @export
 print.latents_family_enumeration <- function(x, ...) {
   table <- .latents_named_table(x)
-  cat(sprintf("Group-class family enumeration: %d candidates\n", nrow(table)))
+  cat(sprintf("Group-class family enumeration: %d candidates%s\n", nrow(table),
+              .latents_enumeration_type_label(x)))
   print(table[, c("candidate", "model", "n_group_classes", "log_likelihood",
                   "n_parameters", "bic", "aic", "entropy", "min_effective_groups",
                   "converged", "boundary")], digits = 4, row.names = FALSE)

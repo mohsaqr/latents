@@ -376,10 +376,15 @@
 #'   occasion).
 #' @param layout Sequence layout.
 #' @param log_initial Groups x K log initial probabilities.
-#' @param log_transition List over occasions 2..T of groups x K x K arrays.
+#' @param log_transition A homogeneous K x K log-transition matrix, or a list
+#'   over occasions 2..T of groups x K x K arrays.
 #' @return A list with `alpha`, `beta` and `log_scaled`.
 #' @noRd
 .latents_forward_backward <- function(emission, layout, log_initial, log_transition) {
+  if (is.matrix(log_transition)) {
+    return(.latents_scaled_forward_backward(emission, layout, exp(log_initial),
+                                            exp(log_transition)))
+  }
   n_groups <- nrow(layout$slot)
   n_profiles <- ncol(log_initial)
   later <- seq_len(layout$n_occasions)[-1L]
@@ -410,6 +415,57 @@
   if (!is.list(beta)) beta <- list(beta)
   list(alpha = alpha, beta = beta,
        log_scaled = .latents_log_sum_exp(alpha[[layout$n_occasions]]))
+}
+
+
+#' Scaled-probability recursion for a homogeneous Markov chain
+#'
+#' Emission row maxima have already been removed. Normalizing at each
+#' occasion keeps the recursion finite even for very long sequences.
+#' Log-space messages remain available for inference and other consumers.
+#' @param emission,layout As for `.latents_forward_backward()`.
+#' @param initial Groups x K initial probabilities.
+#' @param transition Homogeneous K x K transition probabilities.
+#' @return Log-space messages and likelihoods, plus scaled messages,
+#'   emission probabilities and normalizers for the expected-count step.
+#' @noRd
+.latents_scaled_forward_backward <- function(emission, layout, initial, transition) {
+  n_groups <- nrow(layout$slot)
+  n_profiles <- ncol(initial)
+  n_occasions <- layout$n_occasions
+  later <- seq_len(n_occasions)[-1L]
+  density <- lapply(emission, exp)
+  scale <- matrix(1, n_groups, n_occasions)
+  first <- initial * density[[1L]]
+  scale[, 1L] <- rowSums(first)
+  alpha <- Reduce(function(previous, t) {
+    inside <- layout$within[, t]
+    updated <- (previous %*% transition) * density[[t]]
+    normalizer <- rowSums(updated)
+    normalizer[!inside] <- 1
+    scale[, t] <<- normalizer
+    updated <- updated / normalizer
+    updated[!inside, ] <- previous[!inside, , drop = FALSE]
+    updated
+  }, later, init = first / scale[, 1L], accumulate = TRUE)
+  beta <- Reduce(function(t, following) {
+    updated <- ((following * density[[t]]) %*% t(transition)) / scale[, t]
+    outside <- !layout$within[, t]
+    updated[outside, ] <- following[outside, , drop = FALSE]
+    updated
+  }, later, init = matrix(1, n_groups, n_profiles), right = TRUE, accumulate = TRUE)
+  if (!is.list(alpha)) alpha <- list(alpha)
+  if (!is.list(beta)) beta <- list(beta)
+  log_scale <- lapply(seq_len(n_occasions), function(t) log(scale[, t]))
+  prefix <- Reduce(`+`, log_scale, accumulate = TRUE)
+  if (!is.list(prefix)) prefix <- if (n_groups == 1L) as.list(prefix) else list(prefix)
+  suffix <- Reduce(`+`, log_scale[-1L], init = numeric(n_groups),
+                   right = TRUE, accumulate = TRUE)
+  if (!is.list(suffix)) suffix <- if (n_groups == 1L) as.list(suffix) else list(suffix)
+  list(alpha = Map(function(a, offset) log(a) + offset, alpha, prefix),
+       beta = Map(function(b, offset) log(b) + offset, beta, suffix),
+       log_scaled = rowSums(log(scale)), scaled_alpha = alpha,
+       scaled_beta = beta, density = density, scale = scale)
 }
 
 

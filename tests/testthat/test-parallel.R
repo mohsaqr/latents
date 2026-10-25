@@ -24,6 +24,17 @@ collect_conditions <- function(expr) {
   list(value = value, conditions = seen)
 }
 
+skip_if_socket_ports_unavailable <- function() {
+  # Probe the port PSOCK uses, so sandbox restrictions skip the live-socket
+  # tests while a worker startup regression still fails.
+  port <- get("defaultClusterOptions", envir = asNamespace("parallel"))$port
+  socket <- tryCatch(serverSocket(port), error = identity)
+  if (inherits(socket, "error")) {
+    skip(paste("Socket ports unavailable:", conditionMessage(socket)))
+  }
+  close(socket)
+}
+
 test_that("a profile grid on several cores is identical to one core", {
   skip_on_cran()
   skip_on_os("windows")
@@ -70,6 +81,7 @@ test_that("candidates' warnings reach the caller in grid order, as on one core",
 
 test_that("the socket backend returns values and conditions in order", {
   skip_on_cran()
+  skip_if_socket_ports_unavailable()
   skip_if_not(requireNamespace("latents", quietly = TRUE))
   fun <- function(i) {
     if (i == 2L) warning(warningCondition(paste("warned", i), class = "test_warning"))
@@ -113,7 +125,7 @@ test_that("forked workers are refused only on macOS with Accelerate's BLAS", {
   expect_true(.latents_fork_safe("/usr/lib/libopenblas.so", "Linux"))
 })
 
-test_that("a forked worker killed by a signal is a parallel failure, not a NULL candidate", {
+test_that("a forked worker killed by a signal becomes a failed candidate", {
   skip_on_cran()
   skip_on_os("windows")
   # The worker for candidate 2 ends itself as a segmentation fault would.
@@ -121,21 +133,27 @@ test_that("a forked worker killed by a signal is a parallel failure, not a NULL 
     if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGKILL)
     i
   }
-  expect_error(suppressWarnings(
-    .latents_map_candidates(1:3, fun, cores = 2L, backend = "fork")),
-    class = "latents_parallel_failure")
+  expect_warning(
+    result <- .latents_map_candidates(1:3, fun, cores = 2L, backend = "fork"),
+    class = "latents_worker_lost")
+  expect_identical(result[c(1L, 3L)], list(1L, 3L))
+  expect_match(result[[2L]]$error, "likely killed for memory", fixed = TRUE)
 })
 
-test_that("a socket worker that dies is a parallel failure", {
+test_that("a socket worker that dies becomes a failed candidate", {
   skip_on_cran()
+  skip_if_socket_ports_unavailable()
   skip_if_not(requireNamespace("latents", quietly = TRUE))
   fun <- function(i) {
     # SIGTERM is defined on Windows and Unix; SIGKILL is NA on Windows.
     if (i == 2L) tools::pskill(Sys.getpid(), tools::SIGTERM)
     i
   }
-  expect_error(.latents_map_candidates(1:3, fun, cores = 2L, backend = "socket"),
-               class = "latents_parallel_failure")
+  expect_warning(
+    result <- .latents_map_candidates(1:3, fun, cores = 2L, backend = "socket"),
+    class = "latents_worker_lost")
+  expect_identical(result[[3L]], 3L)
+  expect_match(result[[2L]]$error, "likely killed for memory", fixed = TRUE)
 })
 
 test_that("one fit's starts on several cores give the same fit as one core", {
@@ -176,8 +194,9 @@ test_that("socket cleanup cannot replace a worker failure or leak remaining conn
     nodes <- structure(lapply(connections, function(connection) list(con = connection)),
                        class = c("SOCKcluster", "cluster"))
     testthat::local_mocked_bindings(
-      makePSOCKcluster = function(...) nodes,
-      parLapply = function(...) stop("error reading from connection"),
+      clusterCall = function(cl, fun) rep(list(Sys.getpid()), length(cl)),
+    makePSOCKcluster = function(...) nodes,
+      parLapplyLB = function(...) stop("error reading from connection"),
       stopCluster = function(...) stop("error writing to connection during cleanup"),
       .package = "parallel")
     warnings <- character()
@@ -187,9 +206,11 @@ test_that("socket cleanup cannot replace a worker failure or leak remaining conn
         warnings <<- c(warnings, conditionMessage(condition))
         invokeRestart("muffleWarning")
       }), error = identity)
-    expect_s3_class(failure, "latents_parallel_failure")
-    expect_match(conditionMessage(failure), "error reading from connection")
-    expect_length(warnings, 0L)
+    expect_true(all(vapply(failure, function(result) {
+      grepl("likely killed for memory", result$error, fixed = TRUE)
+    }, logical(1))))
+    expect_length(warnings, 1L)
+    expect_match(warnings, "3 worker tasks were lost", fixed = TRUE)
     invisible(lapply(connections, function(connection) {
       expect_error(isOpen(connection), "invalid connection")
     }))
@@ -199,6 +220,7 @@ test_that("socket cleanup cannot replace a worker failure or leak remaining conn
 
 test_that("cleanup closes a live socket even when another node is already closed", {
   skip_on_cran()
+  skip_if_socket_ports_unavailable()
   cluster <- parallel::makePSOCKcluster(2)
   close(cluster[[1L]]$con)
   expect_silent(.latents_stop_cluster(cluster))
@@ -207,4 +229,349 @@ test_that("cleanup closes a live socket even when another node is already closed
   }))
   # Repeated cleanup of already closed nodes also remains harmless.
   expect_silent(.latents_stop_cluster(cluster))
+})
+
+test_that("every enumeration path sends its data, not the caller's variable, to workers", {
+  # A socket worker unserializes the candidates' closure in a session that
+  # lacks the caller's global variables; this replays exactly that.
+  original_mapper <- .latents_map_candidates
+  worker_view <- function(indices, fun, cores, signal = TRUE, ...) {
+    shipped <- unserialize(serialize(list(indices = indices, fun = fun), NULL))
+    rm(list = "worker_test_data", envir = globalenv())
+    original_mapper(shipped$indices, shipped$fun, cores = 1L, signal = signal)
+  }
+  local_mocked_bindings(.latents_map_candidates = worker_view)
+  grids <- list(
+    transition = quote(enumerate_classes(worker_test_data, c("browse", "lectures"),
+      "student", time = "sequence", n_profiles = 2, n_starts = 1, seed = 1, cores = 2)),
+    family = quote(enumerate_classes(worker_test_data, c("browse", "lectures"),
+      "student", family = "additive", n_group_classes = 1, n_starts = 1, seed = 1,
+      cores = 2)),
+    profiles = quote(enumerate_classes(worker_test_data, c("browse", "lectures"),
+      "student", n_profiles = 2, n_group_classes = 1, n_starts = 1, seed = 1, cores = 2)))
+  errors <- vapply(grids, function(grid) {
+    assign("worker_test_data", subset(course_engagement, student <= 30),
+           envir = globalenv())
+    on.exit(suppressWarnings(rm(list = "worker_test_data", envir = globalenv())))
+    table <- as.data.frame(suppressWarnings(eval(grid, globalenv())))
+    sum(!is.na(table$error))
+  }, integer(1))
+  expect_identical(errors, c(transition = 0L, family = 0L, profiles = 0L))
+})
+
+test_that("the shared pool dispatches longest tasks first within its worker budget", {
+  dispatched <- NULL
+  workers <- NULL
+  prescheduled <- NULL
+  local_mocked_bindings(
+    mclapply = function(X, FUN, mc.cores, mc.preschedule) {
+      dispatched <<- X
+      workers <<- mc.cores
+      prescheduled <<- mc.preschedule
+      lapply(X, FUN)
+    }, .package = "parallel")
+  result <- .latents_map_candidates(seq_len(5L), identity, cores = 3L,
+    backend = "fork", costs = c(1, 4, 2, 4, 3))
+  expect_identical(dispatched, c(2L, 4L, 5L, 3L, 1L))
+  expect_identical(workers, 3L)
+  expect_false(prescheduled)
+  expect_identical(result, as.list(seq_len(5L)))
+  .latents_map_candidates(seq_len(2L), identity, cores = 3L,
+                         backend = "fork", costs = c(1, 2))
+  expect_identical(workers, 2L)
+})
+
+test_that("collected task conditions retain their classes and original task order", {
+  callback <- function(i) {
+    warning(warningCondition(paste("warning", i), class = "pool_test_warning"))
+    message(structure(list(message = paste("message", i), call = NULL),
+      class = c("pool_test_message", "message", "condition")))
+    i
+  }
+  collected <- .latents_map_candidates(seq_len(3L), callback, cores = 1L,
+    costs = c(1, 3, 2), signal = FALSE)
+  expect_identical(lapply(collected, `[[`, "value"), as.list(seq_len(3L)))
+  expect_identical(vapply(collected, function(task) {
+    conditionMessage(task$conditions[[1L]])
+  }, character(1)), paste("warning", seq_len(3L)))
+  expect_s3_class(collected[[1L]]$conditions[[1L]], "pool_test_warning")
+  expect_s3_class(collected[[1L]]$conditions[[2L]], "pool_test_message")
+  replay <- collect_conditions(.latents_signal_conditions(
+    collected[[1L]]$conditions))
+  expect_identical(replay$conditions, c("warning: warning 1", "message: message 1"))
+  serial <- collect_conditions(.latents_map_candidates(seq_len(3L), callback,
+    cores = 1L, costs = c(1, 3, 2)))
+  expect_identical(serial$value, as.list(seq_len(3L)))
+  expect_identical(serial$conditions, as.vector(rbind(
+    paste("warning: warning", seq_len(3L)), paste("message: message", seq_len(3L)))))
+})
+
+test_that("the socket pool sends forced task inputs and dynamically balances them", {
+  global_names <- c("pool_indices", "pool_callback", "pool_cores", "pool_costs")
+  assign("pool_indices", seq_len(4L), envir = globalenv())
+  assign("pool_callback", function(i) i * 3L, envir = globalenv())
+  assign("pool_cores", 3L, envir = globalenv())
+  assign("pool_costs", c(1, 4, 2, 3), envir = globalenv())
+  on.exit(rm(list = intersect(global_names, ls(envir = globalenv())),
+             envir = globalenv()))
+  dispatched <- integer()
+  workers <- NULL
+  chunk <- NULL
+  local_mocked_bindings(
+    clusterCall = function(cl, fun) rep(list(Sys.getpid()), length(cl)),
+    makePSOCKcluster = function(cores) {
+      workers <<- cores
+      list()
+    },
+    parLapplyLB = function(cl, X, fun, chunk.size) {
+      dispatched <<- c(dispatched, X)
+      chunk <<- chunk.size
+      shipped <- unserialize(serialize(fun, NULL))
+      rm(list = intersect(global_names, ls(envir = globalenv())), envir = globalenv())
+      lapply(X, shipped)
+    }, .package = "parallel")
+  values <- .latents_map_candidates(pool_indices, pool_callback, pool_cores,
+    backend = "socket", costs = pool_costs, signal = FALSE)
+  expect_identical(dispatched, c(2L, 4L, 3L, 1L))
+  expect_identical(workers, 3L)
+  expect_identical(chunk, 1L)
+  expect_identical(lapply(values, `[[`, "value"), list(3L, 6L, 9L, 12L))
+  expect_true(all(vapply(values, function(task) length(task$conditions) == 0L,
+                        logical(1))))
+})
+
+
+test_that("a serialized task collector captures only its forced task function", {
+  collector <- .latents_task_collector(identity)
+  expect_identical(ls(envir = environment(collector), all.names = TRUE), "fun")
+  shipped <- unserialize(serialize(collector, NULL))
+  expect_identical(ls(envir = environment(shipped), all.names = TRUE), "fun")
+  expect_identical(shipped(list(value = 3L)),
+                   list(value = list(value = 3L), conditions = list()))
+})
+
+test_that("socket restart and retry startup failures retain completed chunks", {
+  creations <- 0L
+  dispatched <- list()
+  local_mocked_bindings(
+    clusterCall = function(cl, fun) rep(list(Sys.getpid()), length(cl)),
+    makePSOCKcluster = function(cores) {
+      creations <<- creations + 1L
+      if (creations > 1L) stop("cannot create another worker")
+      list()
+    },
+    parLapplyLB = function(cl, X, fun, chunk.size) {
+      dispatched[[length(dispatched) + 1L]] <<- X
+      if (3L %in% X) stop("error reading from connection")
+      lapply(X, fun)
+    }, .package = "parallel")
+  seen <- NULL
+  result <- withCallingHandlers(
+    .latents_map_candidates(seq_len(6L), identity, cores = 2L,
+                             backend = "socket"),
+    latents_worker_lost = function(condition) {
+      seen <<- condition
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(result[seq_len(2L)], list(1L, 2L))
+  expect_true(all(vapply(result[3:6], function(value) {
+    grepl("likely killed for memory", value$error, fixed = TRUE)
+  }, logical(1))))
+  expect_identical(dispatched, list(1:2, 3:4))
+  expect_identical(creations, 3L)
+  expect_identical(seen$lost, 4L)
+  expect_identical(seen$recovered, 0L)
+})
+
+test_that("initial socket startup failure remains a classed infrastructure error", {
+  local_mocked_bindings(
+    clusterCall = function(cl, fun) rep(list(Sys.getpid()), length(cl)),
+    makePSOCKcluster = function(...) stop("cannot create the first worker"),
+    .package = "parallel")
+  expect_error(.latents_map_candidates(1:2, identity, cores = 2L,
+                                        backend = "socket"),
+               class = "latents_parallel_failure")
+})
+
+test_that("a fork retry that cannot spawn retains earlier recovered tasks", {
+  creations <- 0L
+  local_mocked_bindings(
+    mcparallel = function(expr, ...) {
+      creations <<- creations + 1L
+      if (creations > 1L) stop("unable to fork")
+      list(value = force(expr))
+    },
+    mccollect = function(job) list(job$value),
+    .package = "parallel")
+  result <- .latents_fork_pass(seq_len(3L), .latents_task_collector(identity),
+                               cores = 1L, retry = TRUE)
+  expect_identical(result[[1L]], list(value = 1L, conditions = list()))
+  expect_identical(result[-1L], list(NULL, NULL))
+  expect_identical(creations, 2L)
+})
+
+test_that("a terminal loss callback error cannot hide the worker warning", {
+  local_mocked_bindings(
+    mclapply = function(X, ...) rep(list(NULL), length(X)),
+    mcparallel = function(...) stop("unable to fork"),
+    .package = "parallel")
+  seen <- NULL
+  result <- tryCatch(withCallingHandlers(
+    .latents_map_candidates(1:2, identity, cores = 2L, backend = "fork",
+      on_lost = function(task, message) {
+        stop(errorCondition("terminal callback failed", class = "callback_error"))
+      }),
+    latents_worker_lost = function(condition) {
+      seen <<- condition
+      invokeRestart("muffleWarning")
+    }), error = identity)
+  expect_s3_class(result, "callback_error")
+  expect_s3_class(seen, "latents_worker_lost")
+  expect_identical(seen$remaining, 2L)
+})
+
+test_that("socket chunk recovery retries only unfinished tasks on a fresh smaller cluster", {
+  creations <- integer()
+  dispatched <- list()
+  failed <- FALSE
+  local_mocked_bindings(
+    clusterCall = function(cl, fun) rep(list(Sys.getpid()), length(cl)),
+    makePSOCKcluster = function(cores) {
+      creations <<- c(creations, cores)
+      list()
+    },
+    parLapplyLB = function(cl, X, fun, chunk.size) {
+      dispatched[[length(dispatched) + 1L]] <<- X
+      if (3L %in% X && !failed) {
+        failed <<- TRUE
+        stop("error reading from connection")
+      }
+      lapply(X, unserialize(serialize(fun, NULL)))
+    }, .package = "parallel")
+  seen <- NULL
+  result <- withCallingHandlers(
+    .latents_map_candidates(seq_len(5L), identity, cores = 2L,
+                             backend = "socket"),
+    latents_worker_lost = function(condition) {
+      seen <<- condition
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(result, as.list(seq_len(5L)))
+  expect_identical(dispatched, list(1:2, 3:4, 5L, 3L, 4L))
+  expect_identical(creations, c(2L, 2L, 1L))
+  expect_identical(seen$lost, 2L)
+  expect_identical(seen$recovered, 2L)
+  expect_identical(seen$remaining, 0L)
+})
+
+test_that("an uncaught task R error retains its class and is never retried", {
+  attempts <- integer(3L)
+  worker_requests <- integer()
+  failure <- errorCondition("a genuine task error", class = "test_task_error")
+  local_mocked_bindings(
+    mclapply = function(X, FUN, mc.cores, mc.preschedule) {
+      worker_requests <<- c(worker_requests, mc.cores)
+      lapply(X, FUN)
+    }, .package = "parallel")
+  result <- tryCatch(.latents_map_candidates(seq_len(3L), function(task) {
+    attempts[task] <<- attempts[task] + 1L
+    if (task == 2L) stop(failure)
+    task
+  }, cores = 2L, backend = "fork"), error = identity)
+  expect_identical(result, failure)
+  expect_s3_class(result, "test_task_error")
+  expect_identical(attempts, rep(1L, 3L))
+  expect_identical(worker_requests, 2L)
+})
+
+test_that("broken socket workers are retired before replacement pools start", {
+  skip_on_os("windows")
+  active <- integer()
+  workers <- integer()
+  signals <- integer()
+  overlap <- FALSE
+  busy <- FALSE
+  failed <- FALSE
+  next_pid <- 100000L
+  local_mocked_bindings(.latents_stop_cluster = function(cluster) {
+    if (!busy) active <<- setdiff(active, attr(cluster, "latents_pids"))
+    invisible(NULL)
+  })
+  local_mocked_bindings(
+    makePSOCKcluster = function(cores) {
+      overlap <<- overlap || length(active) > 0L
+      workers <<- c(workers, cores)
+      pids <- next_pid + seq_len(cores)
+      next_pid <<- next_pid + cores
+      active <<- c(active, pids)
+      structure(rep(list(list()), cores), fake_pids = pids)
+    },
+    clusterCall = function(cl, fun) as.list(attr(cl, "fake_pids")),
+    parLapplyLB = function(cl, X, fun, chunk.size) {
+      if (!failed) {
+        failed <<- TRUE
+        busy <<- TRUE
+        stop("error reading from connection")
+      }
+      busy <<- FALSE
+      lapply(X, fun)
+    }, .package = "parallel")
+  local_mocked_bindings(pskill = function(pid, signal) {
+    signals <<- c(signals, signal)
+    expect_false(any(pid == Sys.getpid()))
+    if (signal == 0L) return(pid %in% active)
+    if (signal == tools::SIGKILL) active <<- setdiff(active, pid)
+    rep(TRUE, length(pid))
+  }, .package = "tools")
+  expect_warning(
+    result <- .latents_map_candidates(seq_len(3L), identity, cores = 2L,
+                                       backend = "socket"),
+    class = "latents_worker_lost")
+  expect_identical(result, as.list(seq_len(3L)))
+  expect_false(overlap)
+  expect_identical(workers, c(2L, 2L, 1L))
+  expect_true(all(workers > 0L & workers <= 2L))
+  expect_true(tools::SIGTERM %in% signals)
+  expect_true(tools::SIGKILL %in% signals)
+  expect_length(active, 0L)
+})
+
+test_that("socket PID registration failures close idle workers before failing", {
+  cleanups <- 0L
+  local_mocked_bindings(.latents_stop_cluster = function(cluster) {
+    cleanups <<- cleanups + 1L
+    invisible(NULL)
+  })
+  local_mocked_bindings(
+    makePSOCKcluster = function(cores) rep(list(list()), cores),
+    clusterCall = function(...) stop("cannot read worker PIDs"),
+    .package = "parallel")
+  expect_error(.latents_map_candidates(1:2, identity, cores = 2L,
+                                        backend = "socket"),
+               class = "latents_parallel_failure")
+  expect_identical(cleanups, 1L)
+})
+
+test_that("unretired socket workers prevent replacement and give a classed failure", {
+  creations <- 0L
+  seen <- NULL
+  local_mocked_bindings(.latents_abort_cluster = function(cluster) FALSE)
+  local_mocked_bindings(
+    makePSOCKcluster = function(cores) {
+      creations <<- creations + 1L
+      list()
+    },
+    clusterCall = function(cl, fun) list(),
+    parLapplyLB = function(...) stop("error reading from connection"),
+    .package = "parallel")
+  result <- tryCatch(withCallingHandlers(
+    .latents_map_candidates(1:3, identity, cores = 2L, backend = "socket"),
+    latents_worker_lost = function(condition) {
+      seen <<- condition
+      invokeRestart("muffleWarning")
+    }), error = identity)
+  expect_s3_class(result, "latents_parallel_failure")
+  expect_s3_class(seen, "latents_worker_lost")
+  expect_identical(creations, 1L)
+  expect_match(conditionMessage(result), "could not be stopped safely", fixed = TRUE)
 })

@@ -79,6 +79,68 @@
        n_categories = vapply(encoded, function(part) length(part$levels), integer(1)))
 }
 
+#' Warn when numeric categorical indicators look continuous
+#'
+#' Every distinct value of a categorical indicator is fitted as a category,
+#' so a continuous column declared categorical (directly, through
+#' `type = "lca"` or through [multilca()]) becomes many categories without
+#' any error. Numeric indicators with non-integer values or more than
+#' `max_categories` categories are reported in one classed warning.
+#' @param frame The categorical indicator columns.
+#' @param encoded The result of `.multilpa_encode_categorical()`, or `NULL`.
+#' @param max_categories Largest category count not reported.
+#' @return NULL, invisibly.
+#' @noRd
+.latents_warn_suspect_categorical <- function(frame, encoded, max_categories = 10L) {
+  if (is.null(encoded) || ncol(frame) == 0L) return(invisible(NULL))
+  findings <- vapply(names(frame), function(indicator) {
+    value <- frame[[indicator]]
+    if (!is.numeric(value)) return(NA_character_)
+    observed <- value[!is.na(value)]
+    n_categories <- encoded$n_categories[[indicator]]
+    if (any(abs(observed - round(observed)) > sqrt(.Machine$double.eps))) {
+      sprintf("`%s` has non-integer values (%d categories)", indicator, n_categories)
+    } else if (n_categories > max_categories) {
+      sprintf("`%s` has %d categories (%s to %s)", indicator, n_categories,
+              format(min(observed)), format(max(observed)))
+    } else NA_character_
+  }, character(1))
+  findings <- findings[!is.na(findings)]
+  if (length(findings) == 0L) return(invisible(NULL))
+  message <- if (length(findings) == 1L) {
+    sprintf(paste("Categorical indicator %s; each distinct value is fitted as a",
+                  "category. If it is continuous, a model with continuous (Gaussian)",
+                  "indicators, such as a latent profile model, may be more appropriate."),
+            findings)
+  } else {
+    sprintf(paste("%d categorical indicators may be continuous: %s. Each distinct",
+                  "value is fitted as a category. If they are continuous, a model with",
+                  "continuous (Gaussian) indicators, such as a latent profile model, may",
+                  "be more appropriate."),
+            length(findings), paste(findings, collapse = "; "))
+  }
+  warning(warningCondition(message, class = "latents_suspect_categorical",
+                           indicators = names(findings), call = NULL))
+  invisible(NULL)
+}
+
+#' Let a data warning through once while an enumeration fits its candidates
+#'
+#' Every candidate prepares the same indicators, so a warning about the data
+#' would otherwise be repeated once per candidate.
+#' @param expr The fitting call.
+#' @param class The class of the warning to report once.
+#' @return The value of `expr`.
+#' @noRd
+.latents_report_once <- function(expr, class = "latents_suspect_categorical") {
+  seen <- FALSE
+  withCallingHandlers(expr, warning = function(condition) {
+    if (!inherits(condition, class)) return(invisible(NULL))
+    if (seen) invokeRestart("muffleWarning")
+    seen <<- TRUE
+  })
+}
+
 #' One original, typed value for each encoded category
 #'
 #' Category labels alone do not reconstruct a numeric or ordered-factor

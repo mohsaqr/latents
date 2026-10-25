@@ -739,7 +739,8 @@ print.multilpa_enumeration <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"))
   table <- .multilpa_enumeration_grid(x)
-  cat(sprintf("Class enumeration: %d candidate models\n", nrow(table)))
+  cat(sprintf("Class enumeration: %d candidate models%s\n", nrow(table),
+              .latents_enumeration_type_label(x)))
   columns <- intersect(c("candidate", "n_profiles", "n_group_classes", "model",
                          "log_likelihood", "n_parameters", "aic", "bic_groups",
                          "bic_individual", "icl_individual", "profile_entropy",

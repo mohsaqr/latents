@@ -129,7 +129,8 @@ test_that("every condition class the package raises is in the catalogue", {
   objects <- c("latents_additive_data", "latents_family_enumeration",
                "latents_growth_mixture", "latents_mixture_regression",
                "latents_plots", "latents_pooled", "latents_prior",
-               "latents_regression_enumeration", "latents_transition_enumeration",
+               "latents_regression_enumeration", "latents_task_error",
+               "latents_transition_enumeration",
                "multilpa_covariates", "multilpa_enumeration", "multilpa_transitions")
   catalogue <- readLines(file.path(source_dir, "conditions.R"), warn = FALSE)
   documented <- unique(unlist(regmatches(catalogue, gregexpr(

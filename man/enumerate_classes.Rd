@@ -16,7 +16,8 @@ enumerate_classes(
   between_variance = c("varying", "equal"),
   time = NULL,
   ...,
-  cores = 1L
+  cores = 1L,
+  type = NULL
 )
 }
 \arguments{
@@ -91,13 +92,43 @@ forked processes on macOS and Linux, and by a socket cluster on Windows
 and on macOS when R uses Apple's Accelerate BLAS (socket workers load the
 installed package). Warnings and messages from the workers are passed on
 in grid order once all have finished. Without \code{seed}, the random starts
-differ between runs on any number of cores. A worker process that fails
-as a whole (for example, out of memory) raises
-\code{latents_parallel_failure}. Each core holds its own copy of the fits it
-computes; \code{parallel::detectCores()} gives the number available.}
+differ between runs on any number of cores. Lost worker results are retried
+once with half as many workers (rounded up). One \code{latents_worker_lost}
+warning reports how many tasks were lost and recovered, and suggests fewer
+cores. A task still lost becomes a failed start (for flat start grids) or
+a failed candidate; the other results are retained. On sockets, bounded
+chunks preserve earlier results when a connection breaks; completed tasks
+within the failed chunk may also be retried. Each core holds its own copy
+of the fits it computes; \code{parallel::detectCores()} gives the number
+available.
+Transition grids (\code{time}) and profile grids (including categorical-only
+latent class models) distribute individual starts across one pool,
+longest estimated first, with at most \code{cores} workers and no nested
+workers. Both emEM screening and finalist runs use the pool; \code{search}
+keeps the same defaults as \code{\link[=multilpa]{multilpa()}}. Setup, ordered starting values,
+start selection and finalisation stay in the current process. Profile
+models with membership covariates or joined categorical \code{local_dependence}
+pairs instead occupy one worker per candidate in the same pool, with
+serial starts. Group-class families also keep candidate-level parallelism.}
+
+\item{type}{Optional model type: \code{"lca"}, \code{"lpa"} or \code{"lta"}. \code{NULL}
+(the default) keeps the existing routing and measurement settings.
+\code{"lca"} treats every indicator as categorical, as \code{\link[=multilca]{multilca()}} does:
+indicators named in \code{ordinal} or \code{count} keep those distributions, and
+\code{categorical} adds to the set rather than replacing it. Numeric response
+codes are categorical with \code{type = "lca"}. \code{"lpa"} requires continuous
+indicators and refuses non-empty \code{categorical}, \code{ordinal} or \code{count}.
+Both require \code{time = NULL}. \code{"lta"} requires \code{time} and takes its
+measurement settings from \code{categorical}, as \code{\link[=lta]{lta()}} does; it does not
+make numeric indicators categorical. An explicit type requires
+\code{family = "profiles"}; leave \code{type = NULL} for group-class families.}
 }
 \value{
-An object of class \code{multilpa_enumeration}. \code{\link[=as.data.frame]{as.data.frame()}} gives
+An object of class \code{multilpa_enumeration} (or the transition or
+family enumeration described above). Its \code{type} records the resolved
+model: \code{"lca"}, \code{"lpa"} or \code{"lta"}, or \code{"mixed"}/\code{"family"} for
+those grids under \code{type = NULL}. The print header shows this type; table
+columns are unchanged. \code{\link[=as.data.frame]{as.data.frame()}} gives
 one row per candidate, starting with its name (\code{"profiles3_groups2"}),
 with every criterion and diagnostic (including both entropies and, at
 each level, the smallest, largest and mean average posterior probability
@@ -132,7 +163,8 @@ when \code{id} is missing; when \code{between_variance} is given for the profile
 family; when \code{n_profiles} or \code{model} is given for a group-class family,
 or \code{id} is \code{NULL}; when \code{time} is combined with a group-class family or
 with \code{between_variance}; and when \code{cores} is not a whole number of at
-least 1.
+least 1; and when \code{type} is invalid or conflicts with \code{time}, \code{family}
+or the requested measurement distributions.
 }
 
 \examples{
@@ -142,6 +174,12 @@ candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
                               n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(candidates)
 summary(candidates)
+
+# Numeric response codes, explicitly categorical:
+codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
+classes <- enumerate_classes(codes, "item", "g", type = "lca",
+                             n_profiles = 1, n_group_classes = 1,
+                             n_starts = 1, seed = 1)
 
 # Single level, crossing class counts with two named structures:
 single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",

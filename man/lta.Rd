@@ -37,7 +37,9 @@ lta(
   count_dispersion = c("varying", "equal"),
   drop_empty = TRUE,
   search = c("kmeans", "emEM"),
-  n_screen = NULL
+  n_screen = NULL,
+  acceleration = c("squarem", "none"),
+  cores = 1L
 )
 }
 \arguments{
@@ -223,6 +225,35 @@ increasing \code{n_screen} does not add finalist slots. A single supplied
 start with \code{n_starts = 1} disables screening.
 A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
 \code{latents_bad_argument}.}
+
+\item{acceleration}{\code{"squarem"} (the default) accelerates EM with SQUAREM
+(Varadhan & Roland, 2008), as \code{\link[=multilpa]{multilpa()}} does: each cycle extrapolates
+along the last two EM steps, including the initial and transition
+probabilities, and ends with an ordinary EM step. An extrapolated point
+that would lower the likelihood, or that leaves a probability
+non-positive or a row not summing to one, is replaced by the plain EM
+point, so the iteration stays monotone. Convergence is assessed over a
+whole cycle, so it is never looser than plain EM's. Under the strict
+default \code{tol} plain EM can creep along a flat likelihood for thousands of
+steps; SQUAREM usually stops in far fewer, at the same or a slightly
+higher maximum. \code{"none"} runs plain EM, which reproduces fits from
+versions before this argument existed. \code{iterations} and \code{max_iter} count
+EM steps under either setting.}
+
+\item{cores}{Number of processor cores for the random starts (default 1).
+The starting values are drawn in order in the current process and only
+the EM runs are distributed, so with \code{seed} given the result is identical
+to \code{cores = 1}. Under \code{search = "emEM"} both screening and the final runs
+are distributed. Workers are forked processes on macOS and Linux, and a
+socket cluster on Windows and on macOS with Apple's Accelerate BLAS, as
+in \code{\link[=enumerate_classes]{enumerate_classes()}}. Lost worker results are retried once with half
+as many workers (rounded up), with one \code{latents_worker_lost} warning
+reporting losses and recovery and suggesting fewer cores. A start still
+lost is recorded as failed; the fit uses the remaining starts. If all
+starts fail, the usual \code{latents_all_starts_failed} error is raised.
+Socket workers use bounded chunks; completed tasks within a failed chunk
+may also be retried. To fit many models, give \code{cores} to
+\code{\link[=enumerate_classes]{enumerate_classes()}}, which runs starts across candidates in one pool.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},
@@ -293,6 +324,10 @@ summary(fit)
 \references{
 Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
 transition analysis. Wiley.
+
+Varadhan, R., & Roland, C. (2008). Simple and globally convergent methods
+for accelerating the convergence of any EM algorithm. Scandinavian
+Journal of Statistics, 35, 335--353.
 
 Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.

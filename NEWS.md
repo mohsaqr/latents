@@ -1,5 +1,43 @@
 # latents (development version)
 
+* `enumerate_classes()` gains a trailing `type` argument to request `"lca"`,
+  `"lpa"` or `"lta"` explicitly. `"lca"` treats numeric response codes as
+  categorical; conflicting routing or measurement arguments are refused.
+  `type = NULL` keeps existing fitting behavior. The resolved type is recorded
+  on the enumeration and shown in its print header; tables are unchanged.
+* A numeric indicator fitted as categorical that has non-integer values or
+  more than ten categories now raises a `latents_suspect_categorical`
+  warning, once per call: every distinct value is fitted as a category, and
+  a continuous indicator may call for a model with Gaussian indicators.
+
+### Faster latent transition models
+
+* Profile and latent class grids in `enumerate_classes()` now share the
+  worker pool across candidates and their starts, including both emEM phases.
+  Ordered starting values, selection and finalisation stay in the parent,
+  preserving seeded fits. Membership covariates and joined categorical
+  local-dependence models retain serial starts as candidate tasks; group-class
+  families retain candidate-level parallelism.
+
+* Lost parallel worker results are retried once with fewer workers instead of
+  discarding the grid. Starts or candidates still lost are recorded as failed,
+  and one `latents_worker_lost` warning reports losses and recovery. Socket
+  dispatch retains completed chunks; tasks within a broken chunk may be rerun.
+* `lta()` gains `cores` for parallel random starts, including emEM
+  screening. Transition grids in `enumerate_classes()` dynamically schedule
+  individual starts in one worker pool, longest estimated first, without
+  nested workers or waiting for candidate batches. Both emEM screening and
+  finalist runs use the pool. Seeded results are identical to `cores = 1`.
+* `lta()` gains `acceleration`, defaulting to `"squarem"` as in
+  `multilpa()`. Fits usually need several times fewer EM steps and can
+  change slightly, at the same or a higher maximum.
+  `acceleration = "none"` restores the previous fits.
+* The forward-backward recursion of homogeneous transition models runs as
+  matrix products, several times faster per EM step with identical results.
+* `enumerate_classes()` with `time` or a group-class `family` no longer
+  fails every candidate on socket workers (Windows, and macOS with
+  Accelerate BLAS).
+
 ### Default start search
 
 * Models whose profiles share one covariance matrix (EII, EEI, EEE) now

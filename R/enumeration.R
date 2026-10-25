@@ -62,10 +62,35 @@ utils::globalVariables("statistic")
 #'   and on macOS when R uses Apple's Accelerate BLAS (socket workers load the
 #'   installed package). Warnings and messages from the workers are passed on
 #'   in grid order once all have finished. Without `seed`, the random starts
-#'   differ between runs on any number of cores. A worker process that fails
-#'   as a whole (for example, out of memory) raises
-#'   `latents_parallel_failure`. Each core holds its own copy of the fits it
-#'   computes; `parallel::detectCores()` gives the number available.
+#'   differ between runs on any number of cores. Lost worker results are retried
+#'   once with half as many workers (rounded up). One `latents_worker_lost`
+#'   warning reports how many tasks were lost and recovered, and suggests fewer
+#'   cores. A task still lost becomes a failed start (for flat start grids) or
+#'   a failed candidate; the other results are retained. On sockets, bounded
+#'   chunks preserve earlier results when a connection breaks; completed tasks
+#'   within the failed chunk may also be retried. Each core holds its own copy
+#'   of the fits it computes; `parallel::detectCores()` gives the number
+#'   available.
+#'   Transition grids (`time`) and profile grids (including categorical-only
+#'   latent class models) distribute individual starts across one pool,
+#'   longest estimated first, with at most `cores` workers and no nested
+#'   workers. Both emEM screening and finalist runs use the pool; `search`
+#'   keeps the same defaults as [multilpa()]. Setup, ordered starting values,
+#'   start selection and finalisation stay in the current process. Profile
+#'   models with membership covariates or joined categorical `local_dependence`
+#'   pairs instead occupy one worker per candidate in the same pool, with
+#'   serial starts. Group-class families also keep candidate-level parallelism.
+#' @param type Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL`
+#'   (the default) keeps the existing routing and measurement settings.
+#'   `"lca"` treats every indicator as categorical, as [multilca()] does:
+#'   indicators named in `ordinal` or `count` keep those distributions, and
+#'   `categorical` adds to the set rather than replacing it. Numeric response
+#'   codes are categorical with `type = "lca"`. `"lpa"` requires continuous
+#'   indicators and refuses non-empty `categorical`, `ordinal` or `count`.
+#'   Both require `time = NULL`. `"lta"` requires `time` and takes its
+#'   measurement settings from `categorical`, as [lta()] does; it does not
+#'   make numeric indicators categorical. An explicit type requires
+#'   `family = "profiles"`; leave `type = NULL` for group-class families.
 #' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`),
 #'   applied to every candidate, such as `n_starts` (random starts per
 #'   candidate), `max_iter`, `missing`, `categorical`, `centering`, `scaling`,
@@ -74,7 +99,11 @@ utils::globalVariables("statistic")
 #'   as `n_starts` grows). For example, `enumerate_classes(data, vars, id,
 #'   n_profiles = 2:6, n_starts = 20, seed = 1)`. Group-class families take
 #'   only `n_starts`, `max_iter`, `tol` and `min_variance`.
-#' @return An object of class `multilpa_enumeration`. [as.data.frame()] gives
+#' @return An object of class `multilpa_enumeration` (or the transition or
+#'   family enumeration described above). Its `type` records the resolved
+#'   model: `"lca"`, `"lpa"` or `"lta"`, or `"mixed"`/`"family"` for
+#'   those grids under `type = NULL`. The print header shows this type; table
+#'   columns are unchanged. [as.data.frame()] gives
 #'   one row per candidate, starting with its name (`"profiles3_groups2"`),
 #'   with every criterion and diagnostic (including both entropies and, at
 #'   each level, the smallest, largest and mean average posterior probability
@@ -100,7 +129,8 @@ utils::globalVariables("statistic")
 #'   family; when `n_profiles` or `model` is given for a group-class family,
 #'   or `id` is `NULL`; when `time` is combined with a group-class family or
 #'   with `between_variance`; and when `cores` is not a whole number of at
-#'   least 1.
+#'   least 1; and when `type` is invalid or conflicts with `time`, `family`
+#'   or the requested measurement distributions.
 #' @references
 #' Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
 #' *Pattern Recognition*, 28(5), 781--793.
@@ -111,6 +141,12 @@ utils::globalVariables("statistic")
 #'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(candidates)
 #' summary(candidates)
+#'
+#' # Numeric response codes, explicitly categorical:
+#' codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
+#' classes <- enumerate_classes(codes, "item", "g", type = "lca",
+#'                              n_profiles = 1, n_group_classes = 1,
+#'                              n_starts = 1, seed = 1)
 #'
 #' # Single level, crossing class counts with two named structures:
 #' single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
@@ -123,8 +159,13 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
                               seed = NULL, family = "profiles",
                               between_variance = c("varying", "equal"),
-                              time = NULL, ..., cores = 1L) {
+                              time = NULL, ..., cores = 1L, type = NULL) {
   data_expression <- substitute(data)
+  # A socket worker receives the candidates' closure serialized; an unforced
+  # `data` would travel as a promise naming the caller's variable, which the
+  # worker cannot find. The transition and family paths never touch `data`
+  # before the workers start, so it is forced here for every path.
+  force(data)
   cores <- .latents_check_cores(cores)
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
@@ -134,6 +175,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   # seed set.seed() would not take must be refused here, once, or it comes
   # back as a grid in which every candidate failed.
   .multilpa_check_seed(seed)
+  type <- .latents_check_enumeration_type(type, time, family)
   if (!is.null(time)) {
     # Transition models: profiles x group classes (x structures when `model`
     # names codes); every other lta() argument is held fixed through `...`.
@@ -142,11 +184,13 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         "Transition models (`time`) are enumerated for the profile family only.",
         class = "latents_bad_argument", call = NULL))
     }
-    return(.lta_enumerate(data, vars, id, time,
+    result <- .latents_report_once(.lta_enumerate(data, vars, id, time,
                           if (missing(n_profiles)) 2:4 else n_profiles,
                           if (missing(n_group_classes)) 1L else n_group_classes,
                           if (missing(model)) NULL else model, seed, list(...),
                           match.call(), cores = cores))
+    result$type <- "lta"
+    return(result)
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles and no covariance
@@ -157,9 +201,11 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         "`between_variance`; `n_profiles` and `model` belong to the profile model."),
         class = "latents_bad_argument", call = NULL))
     }
-    return(.additive_enumerate(data, vars, id, family, n_group_classes,
-                               between_variance, seed, list(...), match.call(),
-                               cores = cores))
+    result <- .latents_report_once(.additive_enumerate(data, vars, id, family,
+                                  n_group_classes, between_variance, seed, list(...),
+                                  match.call(), cores = cores))
+    result$type <- "family"
+    return(result)
   }
   if (!missing(between_variance)) {
     stop(errorCondition(
@@ -195,6 +241,22 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   # Every name this guard used to reject is now a formal, so R refuses the call
   # with "matched by multiple actual arguments" before `...` is assembled.
   extra <- list(...)
+  if (identical(type, "lca")) {
+    extra$categorical <- .latents_lca_categorical(vars, extra)
+  }
+  if (identical(type, "lpa")) {
+    conflicts <- c("categorical", "ordinal", "count")
+    conflicts <- conflicts[vapply(extra[conflicts], length, integer(1)) > 0L]
+    if (length(conflicts)) {
+      stop(errorCondition(sprintf(paste(
+        "`type = \"lpa\"` requires continuous indicators and conflicts with %s.",
+        "Remove those measurement arguments, or use `type = NULL` for a mixed model."),
+        paste(sprintf("`%s`", conflicts), collapse = ", ")),
+        class = "latents_bad_argument", call = NULL))
+    }
+    # Empty declarations carry no distribution under an all-continuous type.
+    extra[intersect(names(extra), c("categorical", "ordinal", "count"))] <- NULL
+  }
   # Anything `multilpa()` does not take would otherwise fail inside every
   # candidate and be recorded as a grid of failures; refuse it here instead.
   unknown_arguments <- setdiff(names(extra), names(formals(multilpa)))
@@ -214,29 +276,29 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                       model = .multilpa_enumeration_models(
                         model, model_given, vars, extra),
                       stringsAsFactors = FALSE)
-  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
-    warnings <- character()
-    error_text <- NA_character_
-    requested <- .multilpa_enumeration_arguments(grid$model[i], vars, extra)
-    fit <- tryCatch(withCallingHandlers(do.call(multilpa,
-      c(list(data = data, vars = vars, id = id,
-             n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed),
-        requested, extra)),
-      # The single-level notice is given once for the whole grid below,
-      # not once per candidate.
-      latents_single_level = function(notice) invokeRestart("muffleMessage"),
-      warning = function(warning) {
-        warnings <<- c(warnings, conditionMessage(warning))
-      }), error = function(error) {
-        error_text <<- conditionMessage(error)
-        NULL
-      })
-    if (!is.null(fit)) {
-      fit$call <- .latents_candidate_call("multilpa", data_expression, c(
-        list(vars = vars, id = id, n_profiles = grid$n_profiles[i],
-             n_group_classes = grid$n_group_classes[i], seed = seed),
-        requested, extra))
-    }
+  indices <- seq_len(nrow(grid))
+  requested <- lapply(grid$model, .multilpa_enumeration_arguments,
+                       vars = vars, extra = extra)
+  arguments <- lapply(indices, function(i) c(
+    list(data = data, vars = vars, id = id, n_profiles = grid$n_profiles[i],
+         n_group_classes = grid$n_group_classes[i], seed = seed),
+    requested[[i]], extra))
+  calls <- lapply(indices, function(i) .latents_candidate_call(
+    "multilpa", data_expression, arguments[[i]][setdiff(names(arguments[[i]]), "data")]))
+  costs <- grid$n_group_classes * grid$n_profiles *
+    .multilpa_pool_width(data, vars, extra)
+  fitted <- .multilpa_enumerate_fits(arguments, calls, costs, cores)
+  # The candidates' conditions come back deferred and are signalled here,
+  # candidate by candidate.
+  runs <- .latents_report_once(lapply(indices, function(i) {
+    conditions <- Filter(function(condition) !inherits(condition, "latents_single_level"),
+                          fitted[[i]]$conditions)
+    .latents_signal_conditions(conditions)
+    warnings <- vapply(Filter(function(condition) inherits(condition, "warning"),
+                               conditions), conditionMessage, character(1))
+    failed <- inherits(fitted[[i]]$value, "error")
+    fit <- if (failed) NULL else fitted[[i]]$value
+    error_text <- if (failed) conditionMessage(fitted[[i]]$value) else NA_character_
     row <- cbind(
       data.frame(n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
         # A latent class model has no covariance structure; naming one (the
@@ -261,7 +323,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
     list(fit = fit, row = row)
-  }, cores)
+  }))
   if (single_level) {
     .multilpa_single_level_notice(
       latent_class = all(vars %in% extra$categorical))
@@ -269,6 +331,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
   class(result) <- "multilpa_enumeration"
+  result$type <- type %||% .latents_enumeration_measurement_type(vars, extra)
   names(result$fits) <- .latents_candidate_names(result)
   result
 }

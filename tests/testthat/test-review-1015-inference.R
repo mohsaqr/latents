@@ -115,7 +115,7 @@ test_that("get_candidate() on a transition grid checks counts before matching", 
                           y = stats::rnorm(80, rep(c(-2, 2), 40)))
   grid <- quietly(enumerate_classes(sequences, "y", "student", time = "wave",
                                     n_profiles = 2:3, n_starts = 1, seed = 1,
-                                    max_iter = 50),
+                                    max_iter = 50, acceleration = "none"),
                   c("latents_unconverged", "latents_boundary", "latents_small_classes"))
   expect_s3_class(get_candidate(grid, 2), "multilpa_transitions")
   # Before the fix: "0 candidates have 2 profiles", with the 2-profile
@@ -143,7 +143,8 @@ test_that("an all-unconverged transition grid names no best candidate", {
   grid <- quietly(enumerate_classes(subset(course_engagement, student <= 30),
                                     c("browse", "lectures"), "student",
                                     time = "sequence", n_profiles = 2:3,
-                                    n_starts = 1, seed = 1, max_iter = 15))
+                                    n_starts = 1, seed = 1, max_iter = 15,
+                                    acceleration = "none"))
   expect_false(any(get_results(grid, "candidates")$converged))
   expect_error(get_results(grid, "best"), class = "latents_failed_candidate")
   expect_named(get_results(grid, "all"), "candidates")

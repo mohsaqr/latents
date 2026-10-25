@@ -246,8 +246,8 @@
   # The E-step at the extrapolated point can still fail numerically (every
   # component's density underflows); that point is then simply not taken.
   landed <- tryCatch(step(candidate, evaluate(candidate)),
-                     error = function(error) NULL)
-  if (is.null(landed) ||
+                     error = function(error) error)
+  if (inherits(landed, "error") ||
       !is.finite(landed$expectation$log_likelihood) ||
       landed$expectation$log_likelihood < second$expectation$log_likelihood) {
     return(plain)
@@ -283,11 +283,13 @@
 #'   prepared and run in turn (the iterations draw none); only the
 #'   iterations are spread over `cores`.
 #' @param cores Number of cores for the iterations, from
-#'   `.latents_check_cores()`; used only with `prepare`.
+#'   `.latents_check_cores()`; used with `prepare` or supplied `initial` values.
 #' @param screen `NULL` for the search of latents 0.96.1 and earlier, every
 #'   start run to the end; or, for the emEM search, a list of `n_pool`,
 #'   `iterations` and `protect` (see `.latents_run_screened()`), which needs
-#'   `prepare`.
+#'   `prepare` or already prepared `initial` values.
+#' @param initial `NULL`, or ordered wrapped values from
+#'   `.latents_prepare_starts()`, prepared in the caller's seed scope.
 #' @return A list with `attempts`, `valid`, `scores`, `converged` and
 #'   `best_start`; with `screen`, also `stage` and `screened_scores`.
 #' @noRd
@@ -295,32 +297,99 @@
                                 score = function(attempt) {
                                   attempt$expectation$log_likelihood
                                 }, interior = NULL, prepare = NULL,
-                                cores = 1L, screen = NULL) {
+                                cores = 1L, screen = NULL, initial = NULL) {
   if (!is.null(screen)) {
     return(.latents_run_screened(n_starts, run, select_start, score, interior,
-                                 prepare, cores, screen))
+                                 prepare, cores, screen, initial))
   }
-  failure <- function(error) list(error = conditionMessage(error))
-  attempts <- if (is.null(prepare)) {
+  force(run)
+  attempts <- if (is.null(prepare) && is.null(initial)) {
     lapply(seq_len(n_starts), function(start_index) {
-      tryCatch(run(start_index), error = failure)
+      tryCatch(run(start_index),
+               error = function(error) list(error = conditionMessage(error)))
     })
   } else {
-    initial <- lapply(seq_len(n_starts), function(start_index) {
-      tryCatch(list(values = prepare(start_index)), error = failure)
-    })
+    if (is.null(initial)) initial <- .latents_prepare_starts(n_starts, prepare)
     .latents_map_candidates(seq_len(n_starts), function(start_index) {
-      prepared <- initial[[start_index]]
-      if (!is.null(prepared$error)) return(prepared)
-      tryCatch(run(start_index, prepared$values), error = failure)
+      .latents_start_attempt(run, start_index, initial[[start_index]])
     }, cores)
   }
+  .latents_select_starts(attempts, select_start, score, interior)
+}
+
+#' Prepare starting values in their original random-number order
+#' @param n_starts Number of starts to prepare.
+#' @param prepare Function of a start index returning its initial values.
+#' @return One wrapped `values` or `error` entry per start, in start order.
+#' @noRd
+.latents_prepare_starts <- function(n_starts, prepare) {
+  stopifnot("`prepare` must be a function" = is.function(prepare))
+  lapply(seq_len(n_starts), function(start_index) {
+    tryCatch(list(values = prepare(start_index)),
+             error = function(error) list(error = conditionMessage(error)))
+  })
+}
+
+#' Run one prepared start or continue its checkpoint
+#' @param run Function of a start index and initial values; screening also
+#'   requires `pause` and `resume` arguments.
+#' @param start_index The start's original index.
+#' @param initial Wrapped initial values from `.latents_prepare_starts()`;
+#'   `NULL` when continuing a checkpoint.
+#' @param pause Screening iteration budget, or `Inf` for a complete run.
+#' @param resume Checkpoint to continue, or `NULL` for a new start.
+#' @return The attempt, or an `error` entry for an ordinary start failure.
+#' @noRd
+.latents_start_attempt <- function(run, start_index, initial, pause = Inf,
+                                   resume = NULL) {
+  stopifnot("`run` must be a function" = is.function(run))
+  if (!is.null(initial$error)) return(initial)
+  tryCatch({
+    if (!is.null(resume)) {
+      run(start_index, NULL, resume = resume)
+    } else if (is.finite(pause)) {
+      run(start_index, initial$values, pause = pause)
+    } else {
+      # Ordinary prepared runners need only accept the original two arguments.
+      run(start_index, initial$values)
+    }
+  }, error = function(error) {
+    if (inherits(error, "latents_parallel_failure")) stop(error)
+    list(error = conditionMessage(error))
+  })
+}
+
+#' Retain accumulated covariance qualifications when every start fails
+#' @param message The unchanged all-starts failure message.
+#' @param attempts Start attempts, including every completed search phase.
+#' @return A `latents_all_starts_failed` error condition, with structure logs
+#'   only when an attempt recorded them.
+#' @noRd
+.latents_start_failure <- function(message, attempts) {
+  condition <- errorCondition(message, class = "latents_all_starts_failed",
+                               call = NULL)
+  logs <- lapply(attempts, attr, which = "lta_structure_log")
+  if (any(!vapply(logs, is.null, logical(1)))) {
+    attr(condition, "lta_structure_logs") <- logs
+  }
+  condition
+}
+
+#' Select among complete start attempts
+#' @param attempts Complete attempts in their original start order.
+#' @param select_start,score,interior As for `.latents_run_starts()`.
+#' @return As `.latents_run_starts()` without screening fields.
+#' @noRd
+.latents_select_starts <- function(attempts, select_start,
+                                   score = function(attempt) {
+                                     attempt$expectation$log_likelihood
+                                   }, interior = NULL) {
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
   if (!any(valid)) {
-    stop(errorCondition(sprintf(
-      "All %d starts failed: %s", n_starts,
+    stop(.latents_start_failure(sprintf(
+      "All %d starts failed: %s", length(attempts),
       paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
+      attempts))
   }
   scores <- vapply(attempts, function(attempt) {
     if (is.null(attempt$error)) score(attempt) else -Inf
@@ -356,7 +425,7 @@
 #' @param n_starts Number of starts run to the end.
 #' @param run A function of the start index, its initial values, `pause` and
 #'   `resume`, returning an attempt that carries a `checkpoint` when paused.
-#' @param select_start,score,interior,prepare,cores As for
+#' @param select_start,score,interior,prepare,cores,initial As for
 #'   `.latents_run_starts()`.
 #' @param screen A list of `n_pool` (starts screened, at least `n_starts`),
 #'   `iterations` (the screening budget) and `protect` (pool indices that go
@@ -367,50 +436,108 @@
 #'   (`"final"` or `"screened"`) and `screened_scores`.
 #' @noRd
 .latents_run_screened <- function(n_starts, run, select_start, score, interior,
-                                  prepare, cores, screen) {
+                                  prepare, cores, screen, initial = NULL) {
   stopifnot(
-    "screening needs `prepare`" = is.function(prepare),
+    "screening needs `prepare` or `initial`" =
+      is.function(prepare) || is.list(initial),
     "`screen$n_pool` must be at least `n_starts`" = screen$n_pool >= n_starts
   )
-  failure <- function(error) list(error = conditionMessage(error))
+  force(run)
+  force(score)
+  force(screen)
+  worker_report <- .latents_worker_reporter()
+  on.exit(worker_report$signal(), add = TRUE)
   pool <- seq_len(screen$n_pool)
-  initial <- lapply(pool, function(start_index) {
-    tryCatch(list(values = prepare(start_index)), error = failure)
+  if (is.null(initial)) {
+    initial <- .latents_prepare_starts(screen$n_pool, prepare)
+  }
+  screened <- worker_report$collect(function() {
+    .latents_map_candidates(pool, function(start_index) {
+      .latents_screen_attempt(run, start_index, initial[[start_index]], screen,
+                              score)
+    }, cores)
   })
-  # Only what ranking and resuming need comes back from a screened run, so a
-  # large pool does not hold every start's posteriors at once.
-  screened <- .latents_map_candidates(pool, function(start_index) {
-    prepared <- initial[[start_index]]
-    if (!is.null(prepared$error)) return(prepared)
-    attempt <- tryCatch(run(start_index, prepared$values, pause = screen$iterations),
-                        error = failure)
-    if (!is.null(attempt$error)) return(attempt)
-    list(screened = TRUE, state = attempt$checkpoint$state,
-         converged = isTRUE(attempt$converged), iterations = attempt$iterations,
-         expectation = list(log_likelihood = score(attempt)),
-         checkpoint = attempt$checkpoint)
-  }, cores)
+  ranked <- .latents_rank_screened(screened, n_starts, screen)
+  finalists <- ranked$finalists
+  continued <- worker_report$collect(function() {
+    .latents_map_candidates(finalists, function(start_index) {
+      .latents_start_attempt(run, start_index, NULL,
+                             resume = screened[[start_index]]$checkpoint)
+    }, cores)
+  })
+  .latents_select_screened(screened, continued, finalists, ranked$screened_scores,
+                            select_start, score, interior)
+}
+
+#' Screen one prepared start and retain only its resumable state
+#' @param run,start_index,initial As for `.latents_start_attempt()`.
+#' @param screen Screening controls from `.latents_run_screened()`.
+#' @param score Function giving the likelihood of a successful attempt.
+#' @return A reduced screened attempt, or an `error` entry.
+#' @noRd
+.latents_screen_attempt <- function(run, start_index, initial, screen,
+                                    score = function(attempt) {
+                                      attempt$expectation$log_likelihood
+                                    }) {
+  attempt <- .latents_start_attempt(run, start_index, initial,
+                                    pause = screen$iterations)
+  if (!is.null(attempt$error)) return(attempt)
+  # Keep only what ranking and resuming need, rather than every posterior
+  # in a large screening pool.
+  result <- list(screened = TRUE, state = attempt$checkpoint$state,
+       converged = isTRUE(attempt$converged), iterations = attempt$iterations,
+       expectation = list(log_likelihood = score(attempt)),
+       checkpoint = attempt$checkpoint)
+  attr(result, "lta_structure_log") <- attr(attempt, "lta_structure_log")
+  result
+}
+
+#' Rank screened starts while retaining protected starts
+#' @param screened Reduced attempts from `.latents_screen_attempt()`.
+#' @param n_starts Number of finalists.
+#' @param screen Screening controls from `.latents_run_screened()`.
+#' @param score Function reading a reduced attempt's screened likelihood.
+#' @return The ordered `finalists` and all `screened_scores`.
+#' @noRd
+.latents_rank_screened <- function(screened, n_starts, screen,
+                                   score = function(attempt) {
+                                     attempt$expectation$log_likelihood
+                                   }) {
+  pool <- seq_along(screened)
   screened_valid <- vapply(screened, function(attempt) is.null(attempt$error),
                            logical(1))
   screened_scores <- vapply(screened, function(attempt) {
-    if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
+    if (is.null(attempt$error)) score(attempt) else -Inf
   }, numeric(1))
   usable <- screened_valid & is.finite(screened_scores)
   if (!any(usable)) {
-    stop(errorCondition(sprintf(
+    stop(.latents_start_failure(sprintf(
       "All %d starts failed: %s", screen$n_pool,
       paste(unique(vapply(screened[!screened_valid], `[[`, character(1), "error")),
             collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
+      screened))
   }
   protected <- intersect(screen$protect %||% integer(), pool[usable])
   ranked <- setdiff(pool[usable][order(-screened_scores[usable], pool[usable])],
                     protected)
   finalists <- utils::head(c(protected, ranked), n_starts)
-  continued <- .latents_map_candidates(finalists, function(start_index) {
-    tryCatch(run(start_index, NULL, resume = screened[[start_index]]$checkpoint),
-             error = failure)
-  }, cores)
+  list(finalists = finalists, screened_scores = screened_scores)
+}
+
+#' Merge finalist continuations and select the best complete start
+#' @param screened Reduced attempts in original pool order.
+#' @param continued Complete attempts in `finalists` order.
+#' @param finalists Indices of starts carried to completion.
+#' @param screened_scores Screened likelihoods in original pool order.
+#' @param select_start,score,interior As for `.latents_run_starts()`.
+#' @return As `.latents_run_starts()` with screening fields.
+#' @noRd
+.latents_select_screened <- function(screened, continued, finalists,
+                                     screened_scores, select_start,
+                                     score = function(attempt) {
+                                       attempt$expectation$log_likelihood
+                                     }, interior = NULL) {
+  pool <- seq_along(screened)
   attempts <- lapply(screened, function(attempt) {
     attempt$checkpoint <- NULL
     attempt
@@ -423,11 +550,11 @@
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
   final_valid <- valid & stage == "final"
   if (!any(final_valid)) {
-    stop(errorCondition(sprintf(
+    stop(.latents_start_failure(sprintf(
       "All %d starts carried to the end failed: %s", length(finalists),
       paste(unique(vapply(attempts[finalists], `[[`, character(1), "error")),
             collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
+      c(screened, continued)))
   }
   scores <- vapply(seq_along(attempts), function(start_index) {
     attempt <- attempts[[start_index]]
@@ -443,10 +570,15 @@
       final_valid[start_index] && isTRUE(interior(attempts[[start_index]]))
     }, logical(1))
   }
-  list(attempts = attempts, valid = valid, scores = scores,
-       converged = converged, stage = stage, screened_scores = screened_scores,
-       best_start = .multilpa_select_start(eligible_scores, converged & final_valid,
-                                           select_start, flags))
+  result <- list(attempts = attempts, valid = valid, scores = scores,
+                 converged = converged, stage = stage, screened_scores = screened_scores,
+                 best_start = .multilpa_select_start(eligible_scores, converged & final_valid,
+                                                     select_start, flags))
+  # A finalist replaces its screened attempt, but both phases contributed
+  # covariance M-steps to the fit's qualification. Keep those counts separately.
+  logs <- lapply(c(screened, continued), attr, which = "lta_structure_log")
+  if (any(!vapply(logs, is.null, logical(1)))) attr(result, "lta_structure_logs") <- logs
+  result
 }
 
 #' Quasi-Newton finish from an EM point

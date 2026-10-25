@@ -33,11 +33,12 @@ test_that("a family grid passes its candidates' warnings on", {
   expect_true("latents_unconverged" %in% classes)
 })
 
-test_that("lta() converges by default where the tighter tolerance needs over 1000 updates", {
+test_that("lta() retains enough default iterations for unaccelerated EM", {
   skip_on_cran()
-  # A three-profile model of two indicators takes about 1,500 updates at tol = 1e-10.
+  # Ordinary EM takes over 1,000 updates here; its budget remains sufficient
+  # even though the default SQUAREM accelerator now needs fewer updates.
   fit <- lta(course_engagement, c("browse", "lectures"), "student", time = "sequence",
-             n_profiles = 3, n_starts = 1, seed = 1)
+             n_profiles = 3, n_starts = 1, seed = 1, acceleration = "none")
   expect_true(fit$converged)
   expect_gt(fit$iterations, 1000)
   expect_identical(formals(lta)$max_iter, 5000L)

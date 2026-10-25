@@ -16,7 +16,8 @@
        missing = fit$missing, covariance_model = fit$covariance_model,
        model = fit$covariance_structure,
        min_variance = fit$min_variance, min_probability = fit$min_probability,
-       drop_empty = fit$drop_empty %||% TRUE)
+       drop_empty = fit$drop_empty %||% TRUE,
+       acceleration = fit$acceleration %||% "squarem")
 }
 
 #' A transition fit in the general engine's parameterization
@@ -249,7 +250,8 @@
       tol = control$tol, min_variance = a$min_variance,
       min_probability = a$min_probability, seed = seed,
       drop_empty = a$drop_empty %||% TRUE, search = control$search,
-      n_screen = control$n_screen, select_start = control$select_start)
+      n_screen = control$n_screen, select_start = control$select_start,
+      acceleration = a$acceleration %||% "squarem")
 }
 
 #' Verify original indicators, occasions and covariate designs of an LTA fit
@@ -387,6 +389,20 @@
 #' @noRd
 .lta_enumerate <- function(data, vars, id, time, n_profiles, n_group_classes,
                            model, seed, extra, call, cores = 1L) {
+  # These arguments also travel in the candidate closure on socket workers.
+  force(data)
+  force(vars)
+  force(id)
+  force(time)
+  force(n_profiles)
+  force(n_group_classes)
+  force(model)
+  force(seed)
+  force(extra)
+  force(call)
+  force(cores)
+  worker_report <- .latents_worker_reporter()
+  on.exit(worker_report$signal(), add = TRUE)
   unknown <- setdiff(names(extra), setdiff(names(formals(lta)),
                                            c("data", "vars", "id", "time", "n_profiles",
                                              "n_group_classes", "seed", "model")))
@@ -404,29 +420,68 @@
   grid <- expand.grid(n_profiles = unique(n_profiles),
                       n_group_classes = unique(n_group_classes), model = models,
                       stringsAsFactors = FALSE)
-  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
-    warnings <- character()
-    error_text <- NA_character_
-    fit <- tryCatch(withCallingHandlers(do.call(lta, c(
-      list(data = data, vars = vars, id = id, time = time,
-           n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
-           seed = seed, model = if (is.na(grid$model[i])) NULL else grid$model[i]),
-      extra)),
-      warning = function(warning) {
-        # Recorded per candidate and passed on, as the profile grid does.
-        warnings <<- c(warnings, conditionMessage(warning))
-      }), error = function(error) {
-        error_text <<- conditionMessage(error)
-        NULL
-      })
-    if (!is.null(fit)) {
-      fit$call <- .latents_candidate_call("lta", call$data, c(
+  indices <- seq_len(nrow(grid))
+  costs <- grid$n_group_classes * grid$n_profiles^2
+  # Setup and all random draws happen in the parent, in grid order. Only
+  # forced EM inputs and one start travel to a worker, never a finaliser.
+  candidates <- lapply(indices, function(i) {
+    .latents_collect_conditions(function() tryCatch({
+      fit_call <- .latents_candidate_call("lta", call$data, c(
         list(vars = vars, id = id, time = time,
              n_profiles = grid$n_profiles[i],
              n_group_classes = grid$n_group_classes[i], seed = seed,
-             model = if (is.na(grid$model[i])) NULL else grid$model[i]),
-        extra))
-    }
+             model = if (is.na(grid$model[i])) NULL else grid$model[i]), extra))
+      do.call(.lta_setup, c(
+        list(data = data, vars = vars, id = id, time = time,
+             n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
+             seed = seed, model = if (is.na(grid$model[i])) NULL else grid$model[i],
+             call = fit_call), extra), quote = TRUE)
+    }, error = .lta_candidate_error))
+  })
+  # emEM has two flat, dynamically balanced phases. The protected first
+  # start and likelihood ranking use the same helpers as a direct lta fit.
+  screened <- worker_report$collect(function() .lta_pool_phase(
+    .lta_start_tasks(candidates, "screen"), costs, cores, nrow(grid)))
+  ranked <- lapply(indices, function(i) {
+    plan <- candidates[[i]]$value
+    .latents_collect_conditions(function() tryCatch({
+      if (inherits(plan, "error") || is.null(plan$screen)) NULL else
+        .latents_rank_screened(lapply(screened[[i]], `[[`, "value"),
+                                plan$n_starts, plan$screen)
+    }, error = .lta_candidate_error))
+  })
+  finished <- worker_report$collect(function() .lta_pool_phase(
+    .lta_start_tasks(candidates, "final", screened, ranked), costs, cores, nrow(grid)))
+  runs <- lapply(indices, function(i) {
+    plan <- candidates[[i]]$value
+    final <- .latents_collect_conditions(function() tryCatch({
+      if (inherits(plan, "error")) stop(plan)
+      if (inherits(ranked[[i]]$value, "error")) stop(ranked[[i]]$value)
+      attempts <- lapply(finished[[i]], `[[`, "value")
+      found <- if (is.null(plan$screen)) {
+        .latents_select_starts(attempts, plan$select_start)
+      } else {
+        .latents_select_screened(lapply(screened[[i]], `[[`, "value"),
+                                  attempts, ranked[[i]]$value$finalists,
+                                  ranked[[i]]$value$screened_scores,
+                                  plan$select_start)
+      }
+      .lta_finish_plan(plan, found)
+    }, error = function(error) {
+      if (!inherits(plan, "error")) .lta_report_failed_plan(plan, error)
+      .lta_candidate_error(error)
+    }))
+    conditions <- c(candidates[[i]]$conditions,
+                    unlist(lapply(screened[[i]], `[[`, "conditions"), recursive = FALSE),
+                    ranked[[i]]$conditions,
+                    unlist(lapply(finished[[i]], `[[`, "conditions"), recursive = FALSE),
+                    final$conditions)
+    .latents_signal_conditions(conditions)
+    warnings <- vapply(Filter(function(condition) inherits(condition, "warning"),
+                               conditions), conditionMessage, character(1))
+    failed <- inherits(final$value, "error")
+    fit <- if (failed) NULL else final$value
+    error_text <- if (failed) conditionMessage(final$value) else NA_character_
     entropy <- if (is.null(fit)) NA_real_ else
       .multilpa_relative_entropy(.multilpa_classified_posteriors(fit))
     row <- data.frame(
@@ -444,7 +499,7 @@
       warnings = paste(unique(warnings), collapse = "; "), error = error_text,
       stringsAsFactors = FALSE)
     list(fit = fit, row = row)
-  }, cores)
+  })
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
   result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),
@@ -479,7 +534,8 @@ as.data.frame.latents_transition_enumeration <- function(x, row.names = NULL,
 #' @export
 print.latents_transition_enumeration <- function(x, ...) {
   table <- .latents_named_table(x)
-  cat(sprintf("Transition-model enumeration: %d candidates\n", nrow(table)))
+  cat(sprintf("Transition-model enumeration: %d candidates%s\n", nrow(table),
+              .latents_enumeration_type_label(x)))
   print(table[, c("candidate", "n_profiles", "n_group_classes", "model",
                   "log_likelihood", "n_parameters", "bic", "aic", "entropy",
                   "converged", "boundary")],

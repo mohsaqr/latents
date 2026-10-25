@@ -489,11 +489,16 @@ the EM iterations are distributed, so the result is identical to
 the final runs are distributed; the screening is most of the time of an
 emEM fit, so a large model or data set gains most. Workers are forked
 processes on macOS and Linux, and a socket cluster on Windows and on
-macOS with Apple's Accelerate BLAS, as in \code{\link[=enumerate_classes]{enumerate_classes()}}; a worker
-that fails as a whole raises \code{latents_parallel_failure}. Models with
+macOS with Apple's Accelerate BLAS, as in \code{\link[=enumerate_classes]{enumerate_classes()}}. Lost
+worker results are retried once with half as many workers (rounded up).
+One \code{latents_worker_lost} warning reports losses and recovery; starts still
+lost are recorded as failed. Socket workers retain completed chunks, but
+tasks within a failed chunk may also be retried. Models with
 membership covariates run their starts on one core. To fit many models,
-give \code{cores} to \code{\link[=enumerate_classes]{enumerate_classes()}} instead, which fits the candidates
-in parallel, each on one core.}
+give \code{cores} to \code{\link[=enumerate_classes]{enumerate_classes()}}, which shares its worker pool
+across candidates and their starts for models without membership
+covariates or joined categorical \code{local_dependence} pairs. Other fitting
+engines use one task per candidate.}
 
 \item{local_dependence}{Pairs of indicators that stay associated within
 each class, written \code{"item1:item2"} (several as a character vector).

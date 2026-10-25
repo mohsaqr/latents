@@ -43,7 +43,7 @@
 #' @return NULL, invisibly.
 #' @noRd
 .latents_stop_cluster <- function(cluster) {
-  stopifnot(is.list(cluster))
+  stopifnot("cluster is a list" = is.list(cluster))
   invisible(lapply(cluster, function(node) {
     single <- structure(list(node), class = class(cluster))
     tryCatch(parallel::stopCluster(single),
@@ -53,82 +53,337 @@
   invisible(NULL)
 }
 
-#' Apply `fun` to every candidate, on one core or several
+#' Collect warnings and messages without changing their classes
 #'
-#' With one core this is `lapply()`. With several, candidates are fitted by
-#' forked processes (`parallel::mclapply()`) where the platform allows it,
-#' and by a socket cluster on Windows and on macOS with Accelerate's BLAS,
-#' which forked processes cannot use (`.latents_fork_safe()`). A worker's warnings and messages would
-#' otherwise be lost or interleaved, so they are collected in the worker and
-#' signalled again here, candidate by candidate in the order of the grid, as
-#' the conditions themselves, classes included.
+#' @param fun A zero-argument callback whose conditions should be collected.
+#' @return A list with the callback's `value` and its ordered `conditions`.
+#' @noRd
+.latents_collect_conditions <- function(fun) {
+  stopifnot("fun is a function" = is.function(fun))
+  force(fun)
+  conditions <- list()
+  value <- withCallingHandlers(fun(),
+    warning = function(condition) {
+      conditions[[length(conditions) + 1L]] <<- condition
+      invokeRestart("muffleWarning")
+    },
+    message = function(condition) {
+      conditions[[length(conditions) + 1L]] <<- condition
+      invokeRestart("muffleMessage")
+    })
+  list(value = value, conditions = conditions)
+}
+
+#' Wrap a task function without capturing its scheduler
 #'
-#' @param indices The candidates' row numbers.
-#' @param fun A function of one row number returning that candidate's result.
+#' @param fun A function of one task.
+#' @return A function returning each task's value and collected conditions.
+#' @noRd
+.latents_task_collector <- function(fun) {
+  stopifnot("fun is a function" = is.function(fun))
+  force(fun)
+  function(i) .latents_collect_conditions(function() {
+    tryCatch(fun(i), error = function(condition) {
+      structure(list(condition = condition), class = "latents_task_error")
+    })
+  })
+}
+
+#' Signal collected warnings and messages in their original order
+#'
+#' @param conditions A list of warning and message conditions.
+#' @return NULL, invisibly.
+#' @noRd
+.latents_signal_conditions <- function(conditions) {
+  stopifnot("conditions is a list" = is.list(conditions))
+  invisible(lapply(conditions, function(condition) {
+    if (inherits(condition, "warning")) warning(condition) else message(condition)
+  }))
+  invisible(NULL)
+}
+
+#' Run one fork pass, including isolated one-worker retries
+#' @param indices Forced task payloads in dispatch order.
+#' @param collected The task collector.
+#' @param cores Worker limit for this pass.
+#' @param retry Whether this is the retry, so a spawn failure remains a loss.
+#' @return Collected task results; missing worker results remain NULL/try-error.
+#' @noRd
+.latents_fork_pass <- function(indices, collected, cores, retry = FALSE) {
+  withCallingHandlers({
+    if (cores > 1L) {
+      tryCatch(parallel::mclapply(indices, collected, mc.cores = cores,
+                                  mc.preschedule = FALSE),
+        error = function(condition) {
+          if (!retry) stop(condition)
+          rep(list(NULL), length(indices))
+        })
+    } else {
+      # mclapply(mc.cores = 1) runs in the parent. A retry must stay isolated
+      # even with one worker, because the task may kill its process again.
+      unavailable <- FALSE
+      lapply(indices, function(task) {
+        if (unavailable) return(NULL)
+        tryCatch({
+          job <- parallel::mcparallel(collected(task), mc.set.seed = TRUE)
+          result <- parallel::mccollect(job)
+          if (is.null(result)) NULL else result[[1L]]
+        }, error = function(condition) {
+          if (!retry) stop(condition)
+          unavailable <<- TRUE
+          NULL
+        })
+      })
+    }
+  }, warning = function(condition) {
+    if (grepl("did not deliver a result|scheduled cores.*error|parallel function calls?.*error",
+              conditionMessage(condition))) invokeRestart("muffleWarning")
+  })
+}
+
+#' Start socket workers and record the processes owned by this pool
+#' @param cores Number of workers.
+#' @return A socket cluster with its worker process IDs attached.
+#' @noRd
+.latents_make_cluster <- function(cores) {
+  cluster <- parallel::makePSOCKcluster(cores)
+  registered <- FALSE
+  on.exit(if (!registered) .latents_stop_cluster(cluster), add = TRUE)
+  pids <- unlist(parallel::clusterCall(cluster, Sys.getpid), use.names = FALSE)
+  if (is.null(pids)) pids <- integer()
+  stopifnot("one positive worker PID per socket node" =
+              is.numeric(pids) && length(pids) == length(cluster) &&
+              all(is.finite(pids) & pids > 0 & pids == as.integer(pids)))
+  attr(cluster, "latents_pids") <- as.integer(pids[pids != Sys.getpid()])
+  registered <- TRUE
+  cluster
+}
+
+#' Retire owned socket workers before replacing a broken cluster
+#'
+#' stopCluster queues DONE behind an EM task already running on a surviving
+#' worker. Terminate those processes first, so replacement workers cannot
+#' overlap the abandoned computations. A zombie may still have a PID after
+#' SIGKILL, but cannot execute another task. On Windows pskill uses the
+#' TerminateProcess API for every signal. If termination cannot be confirmed,
+#' callers raise a classed infrastructure error without starting replacements.
+#' @param cluster A cluster whose owned process IDs have been registered.
+#' @return Whether every owned worker has exited or received a fatal signal.
+#' @noRd
+.latents_abort_cluster <- function(cluster) {
+  pids <- attr(cluster, "latents_pids")
+  if (is.null(pids)) {
+    .latents_stop_cluster(cluster)
+    return(FALSE)
+  }
+  pids <- pids[pids != Sys.getpid()]
+  if (!length(pids)) {
+    .latents_stop_cluster(cluster)
+    return(TRUE)
+  }
+  signal_workers <- function(pids, signal) {
+    tryCatch(tools::pskill(pids, signal),
+      error = function(condition) rep(FALSE, length(pids)))
+  }
+  terminated <- signal_workers(pids, tools::SIGTERM)
+  .latents_stop_cluster(cluster)
+  if (identical(.Platform$OS.type, "windows")) return(all(terminated))
+  # The short pause lets graceful termination release memory first. SIGKILL
+  # then retires any busy survivor; a zombie must not block recovery forever.
+  Sys.sleep(0.05)
+  alive <- tryCatch(tools::pskill(pids, 0L),
+    error = function(condition) rep(NA, length(pids)))
+  pending <- is.na(alive) | alive
+  if (!any(pending)) return(TRUE)
+  killed <- signal_workers(pids[pending], tools::SIGKILL)
+  if (all(killed)) return(TRUE)
+  remaining <- pids[pending][!killed]
+  alive <- tryCatch(tools::pskill(remaining, 0L),
+    error = function(condition) rep(NA, length(remaining)))
+  all(!is.na(alive) & !alive)
+}
+
+#' Run bounded socket chunks while retaining completed chunks
+#'
+#' The exported parallel API returns no partial results when parLapplyLB loses
+#' a connection. Bound each call to one task per worker: a death loses at most
+#' that chunk, while completed chunks remain available. Restart the cluster
+#' before the next chunk; even a repeatedly dying task cannot discard later
+#' chunks. Successful tasks within a failed chunk may consequently run again.
+#' @param indices Forced task payloads in dispatch order.
+#' @param collected The task collector.
+#' @param cores Worker limit for this pass.
+#' @param retry Whether this is a retry whose startup failure remains a loss.
+#' @return Collected task results; an unfinished chunk contains NULL results.
+#' @noRd
+.latents_socket_pass <- function(indices, collected, cores, retry = FALSE) {
+  cluster <- NULL
+  attempted <- FALSE
+  unavailable <- FALSE
+  on.exit(if (!is.null(cluster)) .latents_stop_cluster(cluster), add = TRUE)
+  chunks <- split(seq_along(indices), ceiling(seq_along(indices) / cores))
+  results <- lapply(chunks, function(positions) {
+    if (unavailable) return(rep(list(NULL), length(positions)))
+    if (is.null(cluster)) {
+      cluster <<- tryCatch(.latents_make_cluster(cores),
+        error = function(condition) {
+          if (retry || attempted) {
+            unavailable <<- TRUE
+            return(NULL)
+          }
+          stop(errorCondition(sprintf("Could not start the worker cluster (%s).",
+            conditionMessage(condition)), class = "latents_parallel_failure",
+            call = NULL))
+        })
+      if (is.null(cluster)) return(rep(list(NULL), length(positions)))
+    }
+    attempted <<- TRUE
+    tryCatch(parallel::parLapplyLB(cluster, indices[positions], collected,
+                                  chunk.size = 1L),
+      error = function(condition) {
+        if (!grepl("connection|unserialize|serialize|socket|node.*(died|terminated)",
+                   conditionMessage(condition), ignore.case = TRUE)) stop(condition)
+        retired <- .latents_abort_cluster(cluster)
+        cluster <<- NULL
+        if (!retired) {
+          .latents_warn_worker_lost(length(positions), 0L,
+                                    as.integer(ceiling(cores / 2)))
+          stop(errorCondition(paste(
+            "Owned worker processes could not be stopped safely.",
+            "No replacement workers were started; run again with fewer `cores`."),
+            class = "latents_parallel_failure", call = NULL))
+        }
+        rep(list(NULL), length(positions))
+      })
+  })
+  results <- unname(do.call(c, results))
+  # On the retry, a task that dies again takes its chunk mates with it. Run
+  # the unfinished tasks of a broken chunk one at a time, so that only a task
+  # that kills its own worker stays lost.
+  broken <- unlist(lapply(chunks, function(positions) {
+    if (length(positions) > 1L &&
+        all(vapply(results[positions], is.null, logical(1)))) positions
+  }), use.names = FALSE)
+  if (retry && !unavailable && length(broken) > 0L) {
+    if (!is.null(cluster)) .latents_stop_cluster(cluster)
+    cluster <- NULL
+    results[broken] <- .latents_socket_pass(indices[broken], collected, 1L,
+                                            retry = TRUE)
+  }
+  results
+}
+
+#' Report worker losses from one pool or several phases
+#' @param lost Number of tasks whose first worker result was missing.
+#' @param recovered Number recovered by the retry.
+#' @param retry_cores Worker limit used for the retry.
+#' @return NULL, invisibly.
+#' @noRd
+.latents_warn_worker_lost <- function(lost, recovered, retry_cores) {
+  remaining <- lost - recovered
+  warning(warningCondition(sprintf(paste(
+    "%d worker tasks were lost; the retry recovered %d and %d remain failed.",
+    "Worker processes may have been killed for memory. Try fewer `cores`."),
+    lost, recovered, remaining), class = "latents_worker_lost",
+    lost = as.integer(lost), recovered = as.integer(recovered),
+    remaining = as.integer(remaining), retry_cores = as.integer(retry_cores),
+    call = NULL))
+  invisible(NULL)
+}
+
+#' Apply `fun` to candidates or starts in a shared worker pool
+#'
+#' With several cores, tasks use dynamically assigned forked processes where
+#' the platform allows them, or a load-balanced socket cluster on Windows and
+#' on macOS with Accelerate's BLAS (`.latents_fork_safe()`). Optional costs send
+#' the longest estimated tasks first. Results and conditions retain the order
+#' of `indices`, independently of dispatch or completion order. Conditions
+#' retain their classes and can instead be returned for later signalling.
+#'
+#' Missing worker results are retried once using half as many workers, rounded
+#' up. A classed warning reports process losses and recovery. Socket calls use
+#' bounded chunks because the exported parallel API cannot retain results from
+#' within a call whose connection breaks; previously completed chunks survive.
+#' @param indices Task identifiers.
+#' @param fun A function of one identifier returning that task's result.
 #'   It catches each candidate's own errors.
 #' @param cores Number of cores, from `.latents_check_cores()`.
 #' @param backend `"auto"`; `"socket"` or `"fork"` to force one backend
 #'   (used by the tests).
-#' @return A list, one element per candidate, in the order of `indices`.
+#' @param costs NULL or positive finite estimated costs aligned with `indices`.
+#' @param signal Whether to signal collected conditions in the parent.
+#' @param on_lost NULL or a function of a task and a message, returning its
+#'   terminal failure value when its retry also loses its worker.
+#' @return A list in the order of `indices`. With `signal = FALSE`, each element
+#'   contains `value` and `conditions`; otherwise each is the task's value.
 #' @noRd
 .latents_map_candidates <- function(indices, fun, cores,
-                                    backend = c("auto", "socket", "fork")) {
+                                    backend = c("auto", "socket", "fork"),
+                                    costs = NULL, signal = TRUE,
+                                    on_lost = NULL) {
+  # Socket workers must receive values, never promises naming caller globals.
+  force(indices)
+  force(fun)
+  force(cores)
+  force(costs)
+  force(signal)
+  force(on_lost)
   backend <- match.arg(backend)
-  if (cores <= 1L || length(indices) < 2L) return(lapply(indices, fun))
-  cores <- min(cores, length(indices))
-  collected <- function(i) {
-    conditions <- list()
-    value <- withCallingHandlers(fun(i),
-      warning = function(condition) {
-        conditions[[length(conditions) + 1L]] <<- condition
-        invokeRestart("muffleWarning")
-      },
-      message = function(condition) {
-        conditions[[length(conditions) + 1L]] <<- condition
-        invokeRestart("muffleMessage")
-      })
-    list(value = value, conditions = conditions)
+  stopifnot("signal is one non-missing logical value" =
+              is.logical(signal) && length(signal) == 1L && !is.na(signal),
+            "on_lost is NULL or a function" =
+              is.null(on_lost) || is.function(on_lost))
+  if (!is.null(costs)) {
+    stopifnot("one positive finite cost per task" =
+                is.numeric(costs) && length(costs) == length(indices) &&
+                all(is.finite(costs) & costs > 0))
   }
+  if (length(indices) == 0L) return(list())
+  if (signal && is.null(costs) && cores <= 1L) {
+    return(lapply(indices, fun))
+  }
+  positions <- if (is.null(costs)) seq_along(indices) else
+    order(-costs, seq_along(indices))
+  collected <- .latents_task_collector(fun)
   socket <- identical(backend, "socket") || (identical(backend, "auto") &&
     (identical(.Platform$OS.type, "windows") || !.latents_fork_safe()))
-  results <- if (socket) {
-    cluster <- parallel::makePSOCKcluster(cores)
-    on.exit(.latents_stop_cluster(cluster), add = TRUE)
-    # A socket worker that dies breaks its connection, and parLapply() stops
-    # with that error rather than returning the other candidates.
-    tryCatch(parallel::parLapply(cluster, indices, collected),
-      error = function(condition) {
-        if (!grepl("connection", conditionMessage(condition), fixed = TRUE)) stop(condition)
-        stop(errorCondition(sprintf(paste(
-          "A worker process failed and the candidates were lost (%s).",
-          "Run again with fewer `cores`, or `cores = 1`."),
-          conditionMessage(condition)),
-          class = "latents_parallel_failure", call = NULL))
-      })
+  workers <- min(cores, length(indices))
+  run_pass <- if (socket) .latents_socket_pass else .latents_fork_pass
+  results <- if (cores <= 1L) {
+    lapply(indices[positions], collected)
   } else {
-    parallel::mclapply(indices, collected, mc.cores = cores,
-                       mc.preschedule = FALSE)
+    run_pass(indices[positions], collected, workers)
   }
-  # A worker that failed returns an error object, and one killed by a signal
-  # (out of memory, a segmentation fault) returns NULL with only a warning;
-  # `collected()` itself never returns NULL. Either is a failure of the run,
-  # not of the candidate.
-  lost <- vapply(results, is.null, logical(1))
-  failed <- lost | vapply(results, inherits, logical(1), "try-error")
-  if (any(failed)) {
-    first <- which(failed)[1L]
-    reason <- if (lost[first]) "the process ended without returning a result" else
-      trimws(as.character(results[[first]]))
-    stop(errorCondition(sprintf(paste(
-      "%d of %d candidates were lost because their worker process failed",
-      "(%s). Run again with fewer `cores`, or `cores = 1`."),
-      sum(failed), length(results), reason),
-      class = "latents_parallel_failure", call = NULL))
+  # The collector always returns a list, including when fun returns NULL.
+  # Only missing processes (NULL/try-error) are eligible for another attempt.
+  is_lost <- function(result) is.null(result) || inherits(result, "try-error")
+  lost <- vapply(results, is_lost, logical(1))
+  if (any(lost)) {
+    retry_cores <- as.integer(ceiling(workers / 2))
+    retried <- run_pass(indices[positions[lost]], collected,
+                        min(retry_cores, sum(lost)), retry = TRUE)
+    results[lost] <- retried
+    still_lost <- vapply(results, is_lost, logical(1))
+    recovered <- sum(lost) - sum(still_lost)
+    .latents_warn_worker_lost(sum(lost), recovered, retry_cores)
+    if (any(still_lost)) {
+      loss_message <- paste("The worker process ended without returning a result,",
+                            "likely killed for memory. Try fewer `cores`.")
+      results[still_lost] <- lapply(indices[positions[still_lost]], function(task) {
+        value <- if (is.null(on_lost)) list(error = loss_message) else
+          on_lost(task, loss_message)
+        list(value = value, conditions = list())
+      })
+    }
   }
+  results <- results[order(positions)]
+  task_errors <- vapply(results, function(result) {
+    inherits(result$value, "latents_task_error")
+  }, logical(1))
+  if (any(task_errors)) stop(results[[which(task_errors)[1L]]]$value$condition)
+  if (!signal) return(results)
   invisible(lapply(results, function(result) {
-    lapply(result$conditions, function(condition) {
-      if (inherits(condition, "warning")) warning(condition) else message(condition)
-    })
+    .latents_signal_conditions(result$conditions)
   }))
   lapply(results, `[[`, "value")
 }

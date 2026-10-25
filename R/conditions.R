@@ -90,10 +90,26 @@
 #'   \item{`latents_incomparable_models`}{Two models were fitted to different
 #'     data, or differ in covariance structure, centering, scaling mode or
 #'     `drop_empty` where the comparison requires them to match.}
-#'   \item{`latents_parallel_failure`}{With `cores` above one, a worker
-#'     process failed as a whole (for example by running out of memory), so
-#'     some candidates of an enumeration were lost. An estimation error of a
-#'     single candidate is recorded in the grid instead.}
+#'   \item{`latents_parallel_failure`}{The worker cluster could not be started,
+#'     or a broken cluster's surviving processes could not be stopped safely.
+#'     A process lost during fitting is otherwise retried and reported with
+#'     `latents_worker_lost` instead.}
+#'   \item{`latents_worker_lost`}{One or more worker tasks returned no result,
+#'     possibly because their processes were killed for memory. Missing results
+#'     are retried once with fewer workers. The warning reports the numbers
+#'     lost, recovered and still failed, and suggests fewer `cores`. Persistent
+#'     losses become failed starts or candidate rows, retaining other results.
+#'     A socket connection failure makes its current bounded chunk uncertain;
+#'     earlier chunks are retained, and the uncertain chunk is retried.}
+#'   \item{`latents_suspect_categorical`}{A numeric indicator fitted as
+#'     categorical has non-integer values or more than ten categories, so it
+#'     may be continuous. Every distinct value is fitted as a category. The
+#'     warning names the indicators (field `indicators`) and is given once per
+#'     call, including an enumeration.}
+#'   \item{`latents_candidate_failed`}{A candidate of an enumeration that was
+#'     fitted as one worker task lost that worker twice. It is recorded as the
+#'     candidate's error, in its row of the grid, and the other candidates are
+#'     returned.}
 #'   \item{`latents_reversed_likelihood`}{The model with more parameters has
 #'     the lower likelihood, so at least one fit is at a local optimum.}
 #'   \item{`latents_bad_outcome`}{A distal outcome given to [three_step()] is
