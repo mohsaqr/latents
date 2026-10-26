@@ -207,12 +207,13 @@ test_that("lpa type retains the existing refusal of factor indicators", {
   arguments <- list(data = data, vars = c("x", "y"), id = "person",
                     n_profiles = 2L, n_group_classes = 1L, model = "VVI",
                     n_starts = 1L, max_iter = 10L, seed = 34L)
-  inferred <- enumeration_type_capture(do.call(enumerate_classes, arguments))
-  forced <- enumeration_type_capture(do.call(enumerate_classes,
-    c(arguments, list(type = "lpa"))))
-  expect_identical(enumeration_type_without_calls(forced$value),
-                   enumeration_type_without_calls(inferred$value))
-  expect_identical(forced$conditions, inferred$conditions)
-  expect_null(forced$value$fits[[1L]])
-  expect_match(forced$value$table$error, "[Nn]umeric|[Cc]ontinuous|[Ff]actor")
+  # Every candidate fails for this one reason in the data, so the enumeration
+  # refuses it as multilpa() does (review 2026-10-26), rather than returning a
+  # grid of failed cells; forcing the type changes nothing.
+  inferred <- expect_error(do.call(enumerate_classes, arguments),
+                           class = "latents_bad_data")
+  forced <- expect_error(do.call(enumerate_classes, c(arguments, list(type = "lpa"))),
+                         class = "latents_bad_data")
+  expect_identical(conditionMessage(forced), conditionMessage(inferred))
+  expect_match(conditionMessage(forced), "[Nn]umeric|[Cc]ontinuous|[Ff]actor")
 })

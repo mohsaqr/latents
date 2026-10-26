@@ -385,7 +385,8 @@
   }
   result <- list(statistic = observed, p_value = tally$p_value,
                  monte_carlo_se = tally$monte_carlo_se,
-                 iter = iter, n_valid = tally$n_valid, replicates = replicates,
+                 iter = iter, n_valid = tally$n_valid, n_invalid = tally$n_invalid,
+                 replicates = replicates,
                  fixed = character(),
                  null_profiles = .lta_arguments(null_model)$n_profiles,
                  null_group_classes = .lta_arguments(null_model)$n_group_classes,
@@ -511,8 +512,9 @@
     failed <- inherits(final$value, "error")
     fit <- if (failed) NULL else final$value
     error_text <- if (failed) conditionMessage(final$value) else NA_character_
+    # Weighted for a weighted fit, as every other classification estimate is.
     entropy <- if (is.null(fit)) NA_real_ else
-      .multilpa_relative_entropy(.multilpa_classified_posteriors(fit))
+      .multilpa_level_relative_entropy(fit, "individuals")
     row <- data.frame(
       n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
       model = grid$model[i],

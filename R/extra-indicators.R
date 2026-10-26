@@ -34,13 +34,7 @@
                                    count = character(), missing = "error") {
   if (length(ordinal) == 0L && length(count) == 0L) return(NULL)
   levels_of <- function(value) {
-    if (is.factor(value)) return(levels(value))
-    native <- sort(unique(value))
-    labels <- as.character(native)
-    if (anyDuplicated(labels)) {
-      labels <- format(native, digits = 17, scientific = FALSE, trim = TRUE)
-    }
-    labels
+    if (is.factor(value)) levels(value) else .latents_ordinal_labels(sort(unique(value)))
   }
   ordinal_levels <- stats::setNames(lapply(ordinal, function(name) {
     value <- data[[name]]
@@ -133,6 +127,22 @@
   }), ordinal)
   if (any(!vapply(native, is.null, logical(1)))) result$ordinal_values <- native
   result
+}
+
+#' Category labels of a numeric ordinal indicator's sorted native values
+#'
+#' The usual text of each value, or, when two values print alike (whole
+#' numbers beyond 1e15), seventeen significant digits, which tell any two
+#' doubles apart.
+#' @param native Sorted distinct values.
+#' @return A character vector, one distinct label per value.
+#' @noRd
+.latents_ordinal_labels <- function(native) {
+  labels <- as.character(native)
+  if (anyDuplicated(labels)) {
+    labels <- format(native, digits = 17, scientific = FALSE, trim = TRUE)
+  }
+  labels
 }
 
 #' The names of a fit's ordinal and count indicators
@@ -229,7 +239,8 @@
   shifts <- lapply(blocks, function(block) .multilpa_row_max(block$log_density))
   offsets <- Map(function(block, shift) block$offset + shift, blocks, shifts)
   if (any(!is.finite(unlist(offsets)))) {
-    stop("All component densities vanished, or a density overflowed.")
+    stop(errorCondition("All component densities vanished, or a density overflowed.",
+                        class = "latents_vanished_density", call = NULL))
   }
   centered <- Map(function(block, shift) sweep(block$log_density, 1L, shift, "-"),
                   blocks, shifts)
@@ -524,13 +535,18 @@
 #' @noRd
 .latents_extra_coordinates <- function(parameters, extra, n_profiles, scale) {
   if (is.null(extra)) return(stats::setNames(numeric(0), character(0)))
-  names_of <- .latents_extra_names(extra)
+  ## Every label is escaped for the `kind[...]` grammar, as the categorical
+  ## responses are, so a comma or colon in an indicator name or an ordinal
+  ## level cannot split it (review 2026-10-26, INF-4).
+  escape <- .latents_parameter_component
+  names_of <- lapply(.latents_extra_names(extra), escape)
   ordinal <- lapply(seq_along(names_of$ordinal), function(j) {
     indicator <- names_of$ordinal[[j]]
     intercepts <- unname(parameters$ordinal_intercepts[[j]])
     locations <- unname(parameters$ordinal_locations[, j])[seq_len(n_profiles - 1L)]
     c(stats::setNames(intercepts, sprintf("ordinal_intercept[shared,%s,%s]", indicator,
-                                          extra$ordinal_levels[[j]][-1L])),
+                                          escape(as.character(
+                                            extra$ordinal_levels[[j]][-1L])))),
       stats::setNames(locations, sprintf("ordinal_location[%d,%s]",
                                          seq_len(n_profiles - 1L), indicator)))
   })
@@ -556,7 +572,8 @@
   effects <- extra$direct$effects
   direct <- if (is.null(effects)) NULL else
     stats::setNames(unname(parameters$direct_effects),
-                    sprintf("direct_effect[shared,%s,%s]", effects$indicator, effects$covariate))
+                    sprintf("direct_effect[shared,%s,%s]", escape(effects$indicator),
+                            escape(effects$covariate)))
   unlist(c(ordinal, count, list(direct)))
 }
 
@@ -710,7 +727,7 @@
                stringsAsFactors = FALSE)
   }))
   if (isTRUE(standard_errors)) {
-    errors <- .multilpa_table_errors(x, data)
+    errors <- .multilpa_table_errors(x, data, boundary = "fix")
     frame$location_standard_error <- if (is.null(errors)) NA_real_ else
       .multilpa_match_error(errors, "ordinal_location", frame$profile, frame$indicator)
   }
@@ -744,7 +761,7 @@
   negative_binomial <- !is.null(x$count_dispersion)
   if (negative_binomial) frame$dispersion <- as.vector(x$count_dispersion)
   if (!isTRUE(standard_errors)) return(frame)
-  errors <- .multilpa_table_errors(x, data)
+  errors <- .multilpa_table_errors(x, data, boundary = "fix")
   frame$standard_error <- if (is.null(errors)) NA_real_ else
     .multilpa_match_error(errors, "count_mean", frame$profile, frame$indicator)
   if (negative_binomial) {
@@ -915,7 +932,8 @@
     categories <- extra$ordinal_levels[[j]][-1L]
     located <- profiles[-length(profiles)]
     rbind(row(rep("shared", length(categories)),
-              sprintf("%s:%s", indicator, categories), "ordinal_intercept"),
+              .latents_term(rep(indicator, length(categories)), categories),
+              "ordinal_intercept"),
           row(located, rep(indicator, length(located)), "ordinal_location"))
   })
   dispersion_outcomes <- if (identical(extra$count_dispersion, "equal")) "shared" else
@@ -929,7 +947,7 @@
   })
   effects <- extra$direct$effects
   direct <- if (!is.null(effects)) {
-    row(rep("shared", nrow(effects)), paste(effects$indicator, effects$covariate, sep = ":"),
+    row(rep("shared", nrow(effects)), .latents_term(effects$indicator, effects$covariate),
         "direct_effect")
   }
   do.call(rbind, c(list(empty), ordinal, count, list(direct)))
@@ -981,7 +999,15 @@
 #' @return `drawn` in `column`'s type.
 #' @noRd
 .latents_as_column_type <- function(drawn, column) {
-  if (is.factor(drawn) && is.numeric(column)) return(as.numeric(as.character(drawn)))
+  if (is.factor(drawn) && is.numeric(column)) {
+    # A seventeen-digit label of a huge whole number need not parse back to
+    # the value it labels (R's text-to-number conversion is not exact there),
+    # so each label maps back through the column's own values.
+    native <- sort(unique(column))
+    at <- match(as.character(drawn), .latents_ordinal_labels(native))
+    if (anyNA(at[!is.na(drawn)])) return(as.numeric(as.character(drawn)))
+    return(as.numeric(native[at]))
+  }
   if (is.factor(drawn) && is.factor(column)) {
     return(factor(as.character(drawn), levels = levels(column),
                   ordered = is.ordered(column)))
@@ -1231,6 +1257,16 @@
 #' limit, Karush-Kuhn-Tucker), so the dispersion is set to the floor and the
 #' mean to its Poisson maximum, the weighted mean count.
 #'
+#' A non-positive score at zero makes the boundary a local maximum only. For
+#' one profile's own dispersion it is also the global one (the weighted
+#' Anscombe condition), but a dispersion shared by several profiles sums
+#' their profile likelihoods, which can be bimodal: an overdispersed profile
+#' and an under-dispersed one leave the floor a local maximum below an
+#' interior one. So, as in the mixture-regression M-step (review 2026-10-26,
+#' MR-F4), a dispersion moves to the floor only when that does not lower its
+#' objective -- the profile's own, or the sum over profiles when shared
+#' (review 2026-10-26 round 2, C2-1).
+#'
 #' @param point A list with `means` and `dispersion`, one value per profile.
 #' @param y Observed counts; `weight` their n x C posterior weights.
 #' @param shared Whether one dispersion is shared by every profile.
@@ -1241,8 +1277,21 @@
   score_at_zero <- colSums(weight * (outer(y, poisson_means, "-")^2 - y)) / 2
   boundary <- if (shared) rep(sum(score_at_zero) <= 0, length(poisson_means)) else
     score_at_zero <= 0
-  point$dispersion[boundary] <- .latents_min_dispersion
-  point$means[boundary] <- pmax(poisson_means[boundary], 1e-10)
+  if (!any(boundary)) return(point)
+  candidate <- point
+  candidate$dispersion[boundary] <- .latents_min_dispersion
+  candidate$means[boundary] <- pmax(poisson_means[boundary], 1e-10)
+  objective <- function(at) {
+    by_profile <- colSums(weight * vapply(seq_along(at$means), function(profile) {
+      stats::dnbinom(y, size = 1 / at$dispersion[profile], mu = at$means[profile],
+                     log = TRUE)
+    }, numeric(length(y))))
+    if (shared) rep(sum(by_profile), length(by_profile)) else by_profile
+  }
+  reached <- objective(point)
+  keep <- boundary & objective(candidate) - reached >= -1e-12 * (1 + abs(reached))
+  point$dispersion[keep] <- candidate$dispersion[keep]
+  point$means[keep] <- candidate$means[keep]
   point
 }
 

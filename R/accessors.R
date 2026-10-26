@@ -211,7 +211,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     stats::setNames(lapply(colnames(x$categorical_data), function(name) {
       original_values <- x$categorical_values[[name]]
       if (!is.null(original_values)) {
-        return(original_values[x$categorical_data[, name]])
+        # Half-observed rows of a joined pair keep their observed item.
+        return(.latents_restore_partial(original_values[x$categorical_data[, name]],
+                                        x$categorical_data, name))
       }
       # Fits saved before typed category values were retained still expose
       # their labels, even though their original storage class is unknown.
@@ -299,6 +301,72 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   identical(as.numeric(supplied[observed]), serialized)
 }
 
+#' Recognize a CSV round trip of indicator values the fit only reconstructs
+#'
+#' A centred or scaled fit stores the transformed values, and adding the
+#' person offset back rounds once more, so for a value near zero the
+#' reconstruction can differ from the original in its fifteenth significant
+#' digit and its CSV text no longer matches. Each supplied value is accepted
+#' when it lies within the two known errors of the original: half a unit in
+#' the fifteenth significant digit (the precision `write.csv()` keeps) and the
+#' rounding of the reconstruction `r = c s + o`, at most `4 eps (|r| + |o|)`.
+#' This is an alignment check only; objective-data checks stay exact.
+#'
+#' @param x A fitted model of this package.
+#' @param name One continuous indicator.
+#' @param supplied,reconstructed The supplied column and the reconstruction.
+#' @return One logical value.
+#' @noRd
+.multilpa_reconstructed_csv_values <- function(x, name, supplied, reconstructed) {
+  offsets <- x$centering_offsets
+  if (is.null(offsets) && is.null(x$scaling_factors)) return(FALSE)
+  if (!is.numeric(supplied) || length(supplied) != length(reconstructed) ||
+      !identical(unname(is.na(supplied)), unname(is.na(reconstructed)))) return(FALSE)
+  offset <- if (is.null(offsets)) rep(0, length(reconstructed)) else
+    if (nrow(offsets) == 1L) rep(offsets[1L, name], length(reconstructed)) else
+      offsets[x$group_index, name]
+  observed <- !is.na(reconstructed)
+  value <- abs(reconstructed[observed])
+  digit <- 10^(floor(log10(pmax(value, .Machine$double.xmin))) - 14)
+  bound <- 0.5 * digit + 4 * .Machine$double.eps * (value + abs(offset[observed]))
+  all(abs(supplied[observed] - reconstructed[observed]) <= bound)
+}
+
+#' Does a supplied column reproduce one of the fit's continuous indicators?
+#'
+#' The one identity rule for a supplied indicator column, shared by the
+#' row-order check and by the verbs that evaluate the likelihood on `data`
+#' (`parameter_inference()` and its bootstrap), so a frame one verb accepts is
+#' accepted by all (review 2026-10-26 round 2, INF-3). A column reproduces the
+#' indicator when the fit's own transform maps it exactly onto the stored
+#' fitting values, when it is the exact or `write.csv()`-serialized original,
+#' or, for a centred or scaled fit, when it lies within the precision of that
+#' serialization of the reconstructed original
+#' (`.multilpa_reconstructed_csv_values()`). A value changed by more than half
+#' a unit in its fifteenth significant digit is not reproduced. A verb that
+#' accepts the column evaluates the likelihood on the stored values, so
+#' accepting a serialized copy changes no number.
+#'
+#' @param x A fitted model of this package with `indicator_data`.
+#' @param name One continuous indicator.
+#' @param supplied The supplied column.
+#' @param reconstructed `.multilpa_uncentered_indicators(x)`, passed in so a
+#'   caller checking several columns reconstructs once.
+#' @return A single logical.
+#' @noRd
+.multilpa_indicator_reproduced <- function(x, name, supplied,
+                                           reconstructed = .multilpa_uncentered_indicators(x)) {
+  if (!is.numeric(supplied) || length(supplied) != nrow(x$indicator_data)) return(FALSE)
+  # Reapply the recorded transform: undoing it can introduce a rounding
+  # difference even for the original data. Forward transforms compare the
+  # same arithmetic to the stored fitting matrix, with exact value checks.
+  transformed <- .multilpa_center_like(x, matrix(supplied, ncol = 1L,
+                                                 dimnames = list(NULL, name)))
+  .multilpa_same_values(transformed[, name], x$indicator_data[, name]) ||
+    .multilpa_alignment_values(supplied, reconstructed[, name]) ||
+    .multilpa_reconstructed_csv_values(x, name, supplied, reconstructed[, name])
+}
+
 #' Refuse data with a different number of rows from the fit
 #'
 #' Every verb that reads `data` alongside a fit's posteriors pairs them row by
@@ -353,15 +421,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   continuous <- intersect(colnames(x$indicator_data), names(data))
   reconstructed <- .multilpa_uncentered_indicators(x)
   lapply(continuous, function(name) {
-    if (!is.numeric(data[[name]])) return(record(name, FALSE))
-    # Reapply the recorded transform: undoing it can introduce a rounding
-    # difference even for the original data. Forward transforms compare the
-    # same arithmetic to the stored fitting matrix, with exact value checks.
-    supplied <- matrix(data[[name]], ncol = 1L,
-                        dimnames = list(NULL, name))
-    supplied <- .multilpa_center_like(x, supplied)
-    record(name, .multilpa_same_values(supplied[, name], x$indicator_data[, name]) ||
-             .multilpa_alignment_values(data[[name]], reconstructed[, name]))
+    record(name, .multilpa_indicator_reproduced(x, name, data[[name]], reconstructed))
   })
   categorical <- intersect(colnames(x$categorical_data), names(data))
   lapply(categorical, function(name) {
@@ -494,7 +554,11 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     frame$variance_standard_error <- numeric()
     return(frame)
   }
-  errors <- .multilpa_table_errors(x, data)
+  # A response probability on its bound is held there and everything else
+  # is reported conditionally on it, as the response table does; refusing
+  # the whole table left the means without errors whenever one class never
+  # used one category (review 2026-10-26 round 2, INF2-3).
+  errors <- .multilpa_table_errors(x, data, boundary = "fix")
   if (is.null(errors)) {
     frame$mean_standard_error <- NA_real_
     frame$variance_standard_error <- NA_real_
@@ -590,15 +654,25 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 }
 
 #' Look up one measurement standard error per requested cell
+#'
+#' The term is spelled here the way every inference table spells it: a single
+#' label is its own text, and a pair (`category` given) is joined by
+#' `.latents_term()`, the helper the producers use.
 #' @param errors Measurement rows of an inference table.
 #' @param parameter Which kind of parameter to take.
-#' @param profile Integer profile indices wanted, one per output row.
-#' @param term Term labels wanted, one per output row.
+#' @param profile Profile indices (or `"shared"`) wanted, one per output row.
+#' @param term Labels wanted, one per output row: the indicator.
+#' @param category `NULL` for a single-label term, or the second label of a
+#'   paired term (a category, or the indicator again for a variance on the
+#'   diagonal of a covariance), one per output row.
 #' @return A numeric vector, `NA_real_` where the fit reports no such parameter.
 #' @noRd
-.multilpa_match_error <- function(errors, parameter, profile, term) {
+.multilpa_match_error <- function(errors, parameter, profile, term, category = NULL) {
+  stopifnot("`category` must be NULL or one label per `term`" =
+              is.null(category) || length(category) == length(term))
   wanted <- errors[errors$parameter == parameter, , drop = FALSE]
   if (nrow(wanted) == 0L) return(rep(NA_real_, length(profile)))
+  if (!is.null(category)) term <- .latents_term(term, category)
   key <- paste(sub("^profile_", "", wanted$outcome), wanted$term, sep = "\r")
   wanted$standard_error[match(paste(profile, term, sep = "\r"), key)]
 }
@@ -608,25 +682,22 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' A variance is reported under different labels depending on the structure:
 #' as `variance` when the covariance is diagonal, as the diagonal `a:a` of the
 #' covariance when it is full, and with outcome `shared` when it is equal
-#' across profiles. All three are the variance the profile table reports.
+#' across profiles. All three are the variance the profile table reports. The
+#' diagonal term is built, not found by splitting a term at `:`, so an
+#' indicator whose name holds a colon is still found (review 2026-10-26, INF-4).
 #' @param errors Measurement rows of an inference table.
 #' @param profile,indicator One value per output row.
 #' @return A numeric vector, `NA_real_` where no error is reported.
 #' @noRd
 .multilpa_variance_error <- function(errors, profile, indicator) {
-  diagonal <- errors$parameter == "covariance" &
-    vapply(strsplit(errors$term, ":", fixed = TRUE), function(pair) {
-      length(pair) == 2L && identical(pair[1L], pair[2L])
-    }, logical(1))
-  wanted <- errors[errors$parameter == "variance" | diagonal, , drop = FALSE]
-  if (nrow(wanted) == 0L) return(rep(NA_real_, length(profile)))
-  term <- sub(":.*$", "", wanted$term)
-  owner <- sub("^profile_", "", wanted$outcome)
-  specific <- match(paste(profile, indicator, sep = "\r"),
-                    paste(owner, term, sep = "\r"))
-  shared <- match(indicator, term[owner == "shared"])
-  shared_errors <- wanted$standard_error[owner == "shared"]
-  ifelse(is.na(specific), shared_errors[shared], wanted$standard_error[specific])
+  owned_by <- function(owner) {
+    variance <- .multilpa_match_error(errors, "variance", owner, indicator)
+    diagonal <- .multilpa_match_error(errors, "covariance", owner, indicator,
+                                      category = indicator)
+    ifelse(is.na(variance), diagonal, variance)
+  }
+  specific <- owned_by(profile)
+  ifelse(is.na(specific), owned_by(rep("shared", length(profile))), specific)
 }
 
 #' Categorical response probabilities as a tidy table
@@ -669,8 +740,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     return(frame)
   }
   frame$probability_standard_error <- .multilpa_match_error(errors, "response",
-    frame$profile, paste(.latents_parameter_component(frame$indicator),
-                         .latents_parameter_component(frame$category), sep = ":"))
+    frame$profile, frame$indicator, category = frame$category)
   frame
 }
 

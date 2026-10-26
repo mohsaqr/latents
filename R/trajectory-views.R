@@ -155,8 +155,14 @@
       class = "latents_bad_inference_data", call = NULL))
   }
   if (!is.null(spec$weights)) {
+    # A weight column that cannot be read says why; that reason is kept.
     supplied <- tryCatch(.mixture_weight_spec(spec, data, spec$weights)$sampling_weights,
-                          error = function(condition) FALSE)
+                          error = function(condition) {
+      stop(errorCondition(sprintf(
+        "`data` must contain the sampling weights used to fit the trajectory model: %s",
+        conditionMessage(condition)), class = "latents_bad_inference_data",
+        call = NULL))
+    })
     if (!is.numeric(supplied) ||
         !isTRUE(all.equal(supplied, spec$sampling_weights,
                            tolerance = 16 * .Machine$double.eps))) {

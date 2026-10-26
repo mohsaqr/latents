@@ -241,7 +241,7 @@
                                   group_covariates = character(),
                                   variance_model = c("varying", "equal"),
                                   n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                                  min_variance = 1e-6, seed = NULL,
+                                  min_variance = NULL, seed = NULL,
                                   time = NULL,
                                   covariance_model = c("diagonal", "full"),
                                   categorical = character(),
@@ -315,10 +315,17 @@
                      weights = weights, ordinal = ordinal, count = count,
                      count_model = count_model, count_dispersion = count_dispersion,
                      centering = centering, scaling = scaling,
-                     drop_empty = drop_empty, search = search),
+                     # One start either way: Ward's, run to the end. The
+                     # kmeans search draws no pool for it, so the covariate
+                     # pool below draws its random starts in the order the
+                     # kmeans search does (review 2026-10-26 round 2, ST-2).
+                     drop_empty = drop_empty, search = "kmeans"),
     warning = function(condition) {
       if (inherits(condition, base_estimation)) invokeRestart("muffleWarning")
     })
+  # The base fit resolved a `NULL` bound from the fitted indicators; the
+  # covariate model uses the same number (review 2026-10-26 round 2, K2-2).
+  min_variance <- base$min_variance
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -453,8 +460,22 @@
   result$profile_slopes <- profile_slopes
   record <- .latents_search_record(search, n_starts, screen, select_start, boundary)
   result[names(record)] <- record
+  # The replication count multilpa() reports, by the same rule: starts run to
+  # the end whose likelihood is within 1e-6 (1 + |L|) of the reported one
+  # (review 2026-10-26 round 2, RP-1).
+  final <- if (is.null(starts$stage)) rep(TRUE, nrow(starts)) else
+    starts$stage == "final"
+  tolerance <- 1e-6 * (1 + abs(result$log_likelihood))
+  result$n_best_replicated <- sum(final & is.finite(starts$log_likelihood) &
+    abs(starts$log_likelihood - result$log_likelihood) <= tolerance)
+  result$replication_tolerance <- tolerance
   # Read by bootstrap_lrt(), which refits with the fit's own stopping rule.
   result$max_iter <- max_iter
+  # Each row's classification entropy within its group class, from which the
+  # entropy ICL, AWE and CLC charge is summed (review 2026-10-26 round 2, S-1).
+  result$classification_entropy_rows <- if (is.null(best$expectation$joint)) NULL else
+    .latents_row_conditional_entropy(best$expectation$joint,
+                                     best$expectation$group_posteriors, group_index)
   result$tol <- tol
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
@@ -791,8 +812,9 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' classes. Either way the first block after the indicators holds the
 #' covariates themselves in group class 1's design.
 #'
-#' @param row_weights Optional sampling weights in observation order, used
-#'   only to omit excluded rows from the internal Gaussian origin.
+#' @param row_weights Optional sampling weights in observation order. Rows of
+#'   weight zero are left out of the internal Gaussian origin, the rank checks
+#'   and the centring and scaling (offsets, scales and their checks).
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
 .multilpa_cov_designs <- function(data, vars, profile_covariates,
@@ -806,16 +828,23 @@ nobs.multilpa_covariates <- function(object, ...) {
                                 scaling = "none", row_weights = NULL) {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability,
-                                              other = c(ordinal, count))
+                                              other = c(ordinal, count),
+                                              weights = row_weights)
   x <- measurement$x
   if (!identical(centering, "none") || !identical(scaling, "none")) {
     stopifnot(length(group_index) == nrow(x))
+    # The groups of positive weight, as multilpa() passes them: a group of
+    # weight zero neither sets a grand offset or scale nor has its own
+    # degenerate scale refused (review 2026-10-26 round 2, ZW-3).
+    carrying <- if (is.null(row_weights)) NULL else
+      row_weights[match(seq_len(max(group_index)), group_index)] > 0
     centred <- .multilpa_center_indicators(x, group_index, max(group_index),
-                                           centering, scaling)$x
+                                           centering, scaling,
+                                           carrying = carrying)$x
     ## Judged on the raw values, as multilpa() does, so the verdict does not
     ## depend on the units the indicators were recorded in.
     .multilpa_check_centered(centred, centering, raw = x,
-                             group_index = group_index)
+                             group_index = group_index, carrying = carrying)
     x <- centred
   }
   # The centre is only a location shift that is added back to the reported
@@ -970,7 +999,12 @@ nobs.multilpa_covariates <- function(object, ...) {
     settings = .latents_em_settings(
       decrease_tolerance = 1e-9,
       decrease_condition = "Covariate EM decreased the observed log likelihood.",
-      max_stalled = 20L),
+      max_stalled = 20L,
+      # A unit-free stop (review 2026-10-26 round 2, K2-6).
+      stop_scale = .latents_observed_values(
+        x, designs$codes, .latents_extra_matrix(designs$extra),
+        row_weights = if (is.null(control$sampling_weights)) NULL else
+          control$sampling_weights[group_index])),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state$parameters, expectation = fit$expectation,
                  beta = fit$state$beta, gamma = fit$state$gamma,
@@ -1028,9 +1062,10 @@ nobs.multilpa_covariates <- function(object, ...) {
   # The individual sample size counts rows with an observed indicator, as the
   # base fit and its criteria table do; a row with none adds no information.
   # `drop_empty = FALSE` keeps the count of 0.9.37, every row of `data`.
+  # Under either `drop_empty` the individual sample size of a multilpa() fit
+  # excludes rows that observe nothing and rows of weight zero (CV-1).
   result$bic_individual <- -2 * result$log_likelihood +
-    log(if (isFALSE(base$drop_empty)) nrow(data) else base$n_informative %||% nrow(data)) *
-      result$n_parameters
+    log(base$n_informative %||% nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
   result$informative <- base$informative

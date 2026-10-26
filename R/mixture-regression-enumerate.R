@@ -8,9 +8,22 @@
 #' likelihood-ratio test of `k - 1` against `k` classes, at the same number of
 #' group classes (McLachlan 1987; Nylund, Asparouhov and Muthen 2007):
 #' outcomes are simulated from the `k - 1` class fit, both models are refitted
-#' to every replicate, and the p-value is `(1 + b) / (1 + B)`, where `b`
-#' counts replicate statistics at least as large as the observed one and `B`
-#' is the number of replicates requested.
+#' to every replicate, and the p-value is `(1 + b) / (1 + V)`, where `b`
+#' counts valid replicate statistics at least as large as the observed one and
+#' `V` is the number of valid replicates.
+#'
+#' A replicate is invalid when a refit fails, does not converge, warns of
+#' separation or a degenerate random-effect covariance, or gives a statistic
+#' below zero beyond rounding. Under the null hypothesis the extra class of the
+#' `k`-class refit is spurious, and a spurious class with membership
+#' covariates is expected to drift towards a separating or slowly converging
+#' solution: an invalid replicate is a property of the null distribution, not
+#' a failure of the test. The p-value is therefore computed over the valid
+#' replicates, their count and the invalid count are reported, and
+#' `latents_failed_replicates` is warned naming the count; the p-value is `NA`
+#' only when fewer than half of the requested replicates are valid. Excluding
+#' invalid replicates conditions the null distribution on a valid refit, so a
+#' large invalid share is worth reporting with the result.
 #'
 #' @inheritParams mixture_regression
 #' @param n_classes Positive integer class counts to fit. Default `1:4`.
@@ -29,11 +42,12 @@
 #'   `smallest_share`, `converged`, `n_best_replicated`, `note` (why a model
 #'   could not be fitted), `best_bic` (`TRUE` for the minimum-BIC row), and,
 #'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value`,
-#'   `blrt_replicates` (the successful replicates) and `blrt_flagged` (the
-#'   failed, unconverged, separated or reversed-likelihood replicates). The
-#'   test columns are `NA` where the `k - 1` or `k` class model is missing
-#'   or failed, and the p-value is `NA` if any requested replicate fails
-#'   validation.
+#'   `blrt_replicates` (the valid replicates), `blrt_n_invalid` (the failed,
+#'   unconverged, separated or reversed-likelihood replicates) and
+#'   `blrt_flagged` (the same count, under its earlier name). The test
+#'   columns are `NA` where the `k - 1` or `k` class model is missing or
+#'   failed, and the p-value is `NA` when the observed fits fail validation or
+#'   fewer than half of the requested replicates are valid.
 #'   `get_results(x, "model", n_classes = , n_group_classes = )` returns one
 #'   fitted model. `summary()` returns the same table as [as.data.frame()].
 #'   `plot()` draws AIC, BIC, SABIC and ICL across the classes (see
@@ -49,8 +63,10 @@
 #'   test whose outcome is not a plain column name, and from `get_results()`
 #'   for a model that is not in the grid or could not be fitted.
 #'   `latents_unsupported_weights` for a bootstrap test with sampling
-#'   weights. `latents_failed_replicates` is warned, and the p-value is `NA`,
-#'   when the observed fits or any replicate fail validation.
+#'   weights. `latents_failed_replicates` is warned, naming the count, when
+#'   some replicates are invalid (the p-value then uses the valid ones), and
+#'   when the observed fits fail validation or fewer than half of the
+#'   replicates are valid (the p-value is then `NA`).
 #' @references
 #' McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
 #' statistic for the number of components in a normal mixture. *Applied
@@ -179,7 +195,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
 #' @noRd
 .mixture_blrt <- function(fits, grid, row, replicates, starts, arguments) {
   empty <- data.frame(blrt_statistic = NA_real_, blrt_p_value = NA_real_,
-                      blrt_replicates = NA_integer_, blrt_flagged = NA_integer_)
+                      blrt_replicates = NA_integer_, blrt_n_invalid = NA_integer_,
+                      blrt_flagged = NA_integer_)
   k <- grid$n_classes[row]
   h <- grid$n_group_classes[row]
   smaller <- which(grid$n_classes == k - 1L & grid$n_group_classes == h)
@@ -213,9 +230,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
   }
   observed <- max(0, observed)
   # Replicate refits routinely meet unconverged or degenerate starts. Those
-  # warnings are counted per replicate and reported in `blrt_flagged`, not
-  # repeated hundreds of times on the console.
-  flagged <- 0L
+  # warnings mark the replicate invalid and are counted in `blrt_n_invalid`,
+  # not repeated hundreds of times on the console.
   statistics <- vapply(seq_len(replicates), function(b) {
     simulated <- base_data
     simulated[[response]] <- if (inherits(null_fit, "latents_growth_mixture")) {
@@ -247,17 +263,29 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
       !isTRUE(null_refit$converged) || !isTRUE(alternative_refit$converged)
     statistic <- if (invalid) NA_real_ else
       2 * (alternative_refit$log_likelihood - null_refit$log_likelihood)
-    if (!is.finite(statistic) || statistic < -tolerance) {
-      flagged <<- flagged + 1L
-      return(NA_real_)
-    }
+    if (!is.finite(statistic) || statistic < -tolerance) return(NA_real_)
     max(0, statistic)
   }, numeric(1))
-  tally <- .latents_blrt_p_value(
-    data.frame(statistic = statistics, valid = is.finite(statistics)),
-    observed, replicates)
-  data.frame(blrt_statistic = observed, blrt_p_value = tally$p_value,
-             blrt_replicates = tally$n_valid, blrt_flagged = flagged)
+  # An invalid replicate is part of the null distribution's behaviour (a
+  # spurious class separating or stalling), so the p-value is taken over the
+  # valid replicates, and withheld only when fewer than half are valid.
+  valid <- is.finite(statistics)
+  n_valid <- sum(valid)
+  n_invalid <- replicates - n_valid
+  enough <- 2L * n_valid >= replicates && n_valid > 0L
+  p_value <- if (enough) (1 + sum(statistics[valid] >= observed)) / (1 + n_valid) else
+    NA_real_
+  if (n_invalid > 0L) {
+    warning(warningCondition(sprintf(paste(
+      "%d of %d bootstrap replicates were invalid (a refit failed, did not",
+      "converge or separated)%s"), n_invalid, replicates,
+      if (enough) sprintf("; the p-value uses the %d valid replicates.", n_valid) else
+        "; fewer than half are valid, so blrt_p_value is NA."),
+      class = "latents_failed_replicates", call = NULL))
+  }
+  data.frame(blrt_statistic = observed, blrt_p_value = p_value,
+             blrt_replicates = n_valid, blrt_n_invalid = n_invalid,
+             blrt_flagged = n_invalid)
 }
 
 #' @rdname enumerate_regressions
@@ -336,7 +364,8 @@ print.latents_regression_enumeration <- function(x, digits = 4L, ...) {
   shown <- x$table[intersect(c("n_classes", "n_group_classes",
                                "log_likelihood", "n_parameters", "bic",
                                "icl", "entropy", "smallest_share",
-                               "converged", "blrt_p_value", "best_bic"),
+                               "converged", "blrt_p_value", "blrt_n_invalid",
+                               "best_bic"),
                              names(x$table))]
   print(shown, digits = digits, row.names = FALSE)
   cat("\nOne model: get_results(x, \"model\", n_classes = ).\n")

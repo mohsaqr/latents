@@ -318,8 +318,8 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
   statistics <- c("min", "max", "mean", "below")
   rows <- lapply(seq_along(fits), function(i) {
     fit <- fits[[i]]
-    level_summary <- function(posteriors, prefix) {
-      values <- .multilpa_avepp_summary(posteriors, cutoff)
+    level_summary <- function(level, prefix) {
+      values <- .multilpa_level_avepp(fit, level, cutoff)
       columns <- as.data.frame(as.list(stats::setNames(values,
                                                        paste0(prefix, statistics))))
       columns[[paste0(prefix, "below")]] <- as.integer(values[["below"]])
@@ -345,11 +345,10 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
                  n_parameters = as.integer(fit$n_parameters),
                  log_likelihood = fit$log_likelihood, stringsAsFactors = FALSE),
       .multilpa_enumeration_indices(diagnostic),
-      data.frame(profile_entropy = .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
-                 group_entropy = if (is.null(fit$group_posteriors)) NA_real_ else
-                   .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit))),
-      level_summary(.multilpa_classified_posteriors(fit), "avepp_"),
-      level_summary(.multilpa_classified_group_posteriors(fit), "group_avepp_"),
+      data.frame(profile_entropy = .multilpa_level_relative_entropy(fit, "individuals"),
+                 group_entropy = .multilpa_level_relative_entropy(fit, "groups")),
+      level_summary("individuals", "avepp_"),
+      level_summary("groups", "group_avepp_"),
       data.frame(smallest_share = if (length(shares) == 0L) NA_real_ else min(shares),
                  converged = isTRUE(fit$converged),
                  n_best_replicated = fit$n_best_replicated %||% NA_integer_))
@@ -524,18 +523,55 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
     .multilpa_uncentered_indicators(fit)
   # Engines use different storage types for an absent Gaussian block.
   if (!is.null(raw) && ncol(raw) == 0L) raw <- NULL
-  # Categorical responses as their labels, item by item: a model that pairs
-  # two items jointly is fitted to the same data as one that does not.
+  # Row names label the caller's frame, not the data, and the engines keep
+  # them on some stored matrices and not on others: an exact comparison of
+  # the values must not fail on the labels alone.
+  if (!is.null(raw)) rownames(raw) <- NULL
+  centered <- if (general) fit$x else NULL
+  if (!is.null(centered)) rownames(centered) <- NULL
+  # Discrete responses as their labels, item by item, whatever model they
+  # entered: a model that pairs two items jointly, or treats an item as
+  # ordinal rather than nominal, is fitted to the same data as one that does
+  # not. Counts stay apart, because a count model is not one of the discrete
+  # response models these compare.
+  responses <- .latents_comparison_responses(fit)
   list(vars = fit$original_vars %||% fit$vars,
        id = if (isTRUE(fit$single_level)) NULL else fit$id,
        groups = as.character(fit$group_values %||% fit$group_ids),
        group_index = fit$group_index, indicators = raw,
        indicator_centers = if (general) fit$centers else NULL,
-       centered_indicators = if (general) fit$x else NULL,
-       categorical = .latents_categorical_labels(fit),
-       extra = .latents_draw_extra_columns(fit$extra_data),
+       centered_indicators = centered,
+       discrete = responses$discrete, count = responses$count,
        weights = unname(fit$sampling_weights), time = fit$time_values,
        centering = fit$centering %||% "none",
        scaling = fit$scaling %||% "none",
        drop_empty = fit$drop_empty %||% TRUE)
+}
+
+#' The discrete and count responses of a fit, as the comparison sees them
+#'
+#' Nominal (`categorical`) and ordinal items are the same observed responses
+#' modelled two ways, so both are reduced to one character vector of labels
+#' per item, in item-name order. Counts are kept as numbers in their own slot.
+#'
+#' @param fit A fitted profile, class or transition model.
+#' @return A list with `discrete` (a named list of character vectors) and
+#'   `count` (a named list of numeric vectors), each `NULL` when the fit has
+#'   none.
+#' @noRd
+.latents_comparison_responses <- function(fit) {
+  categorical <- .latents_categorical_labels(fit)
+  nominal <- if (is.null(categorical)) list() else
+    stats::setNames(lapply(seq_len(ncol(categorical)), function(column) {
+      unname(as.character(categorical[, column]))
+    }), colnames(categorical))
+  extra <- .latents_draw_extra_columns(fit$extra_data)
+  ordinal <- lapply(Filter(is.factor, extra), as.character)
+  count <- Filter(Negate(is.factor), extra)
+  discrete <- c(nominal, ordinal)
+  stopifnot("an item is either nominal or ordinal, not both" =
+              !anyDuplicated(names(discrete)))
+  list(discrete = if (length(discrete) == 0L) NULL else
+         discrete[order(names(discrete), method = "radix")],
+       count = if (length(count) == 0L) NULL else count)
 }

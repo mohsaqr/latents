@@ -57,8 +57,9 @@ Tests a model against one with one more individual profile or one more
 group class. Indicators are simulated from the null model with the observed
 group sizes, both models are refitted to every simulated dataset, and the
 observed likelihood-ratio statistic is compared with the simulated ones.
-The p-value is \code{(1 + b) / (iter + 1)}, where \code{b} counts simulated
-statistics at least as large as the observed one; no chi-square reference
+The p-value is \code{(1 + b) / (V + 1)}, where \code{b} counts valid simulated
+statistics at least as large as the observed one and \code{V} is the number of
+valid replicates (\code{iter} when all are valid); no chi-square reference
 distribution is used. This is a native parametric bootstrap, not an
 implementation of Mplus TECH14.
 }
@@ -68,9 +69,20 @@ class, with the observations, group layout, covariance structure,
 centering and scaling, missing-data handling and \code{drop_empty} the same.
 Grand-mean centering is repeated in every simulated refit. Person-centred
 or person-scaled fits are refused, because the model specifies no
-distribution for the group baselines that transformation removes. If any
-replicate fails validation (fails, does not converge, or has a reversed
-likelihood), the p-value is \code{NA}; no replicate is dropped.
+distribution for the group baselines that transformation removes.
+
+A replicate is invalid when a refit fails, does not converge, or has a
+reversed likelihood. Under the null hypothesis the alternative's extra
+class is spurious, and a spurious class is expected to drift to a boundary,
+an empty or separated solution, or a slowly converging one; an invalid
+replicate is therefore a property of the null distribution, not a failure
+of the test. The p-value is computed over the valid replicates, the result
+reports \code{n_valid} and \code{n_invalid} (also in \code{print()} and
+\code{\link[=as.data.frame]{as.data.frame()}}), \code{latents_failed_replicates} is warned naming the
+count, and the p-value is \code{NA} only when fewer than half of the replicates
+are valid. Leaving invalid replicates out conditions the reference
+distribution on a valid refit, so a large invalid share should be reported
+with the result.
 
 Fits made with \code{missing = "fiml"} are supported when both models were:
 every replicate is given the observed data's missing cells before it is
@@ -130,7 +142,8 @@ alternative's log likelihood is below the null's by more than \code{tol} can
 explain; \code{latents_bad_argument} for an invalid \code{seed}, or for a
 transition fit paired with a fit of another family.
 \code{latents_failed_replicates} is a warning, given when some replicate
-fails validation; the p-value is then \code{NA}.
+is invalid (it names the count); the p-value is then computed over the
+valid replicates, and is \code{NA} only when fewer than half are valid.
 }
 
 \examples{

@@ -186,7 +186,9 @@ test_that("a mixed fit puts both kinds of pair on one scale", {
                   n_group_classes = 1, categorical = c("u1", "u2", "u3"),
                   n_starts = 1, seed = 3)
   residuals <- get_results(fit, "residuals", data = data)
-  expect_setequal(unique(residuals$kind), c("gaussian", "categorical"))
+  # Since round 2 of the 2026-10-26 review every pair has a row: the mixed
+  # Gaussian-categorical pairs report an association without a test.
+  expect_setequal(unique(residuals$kind), c("gaussian", "categorical", "mixed"))
   # `residual` is observed minus expected for every kind, not only one.
   expect_equal(residuals$residual, residuals$observed - residuals$expected)
   # Both associations live on the correlation scale, so the ranking across
@@ -220,9 +222,12 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   expect_true(all(is.na(subset(residuals, kind == "gaussian")$df)))
   # A chi-square does, and every categorical row reports it.
   expect_false(any(is.na(subset(residuals, kind == "categorical")$df)))
-  # `statistic` and `p_value`, unlike `df`, apply to both kinds.
-  expect_false(any(is.na(residuals$statistic)))
-  expect_false(any(is.na(residuals$p_value)))
+  # `statistic` and `p_value`, unlike `df`, apply to both tested kinds; a
+  # mixed pair has an association but no test.
+  tested <- subset(residuals, kind %in% c("gaussian", "categorical"))
+  expect_false(any(is.na(tested$statistic)))
+  expect_false(any(is.na(tested$p_value)))
+  expect_true(all(is.na(subset(residuals, kind == "mixed")$statistic)))
   # The empty table declares the same column types as a populated one.
   single <- multilpa(data, "a", "school", n_profiles = 2, n_group_classes = 1,
                      n_starts = 1, seed = 1)

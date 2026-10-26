@@ -35,6 +35,14 @@
 #'   steps in a row may settle the likelihood without settling the inner solve
 #'   before the run stops unconverged; `Inf` when the maximization has no inner
 #'   solve.
+#' @param stop_scale The number of observed values the likelihood sums over
+#'   (rows of positive weight times their observed indicators), or `NULL`.
+#'   With it, a step or cycle has settled when its gain is at most
+#'   `tol * max(1, stop_scale)`: a change in log likelihood does not depend on
+#'   the units of the data, so neither does this rule. Without it, the older
+#'   rule `tol * (1 + |log L|)` applies, which a change of units moves, because
+#'   rescaling the data by `c` shifts `log L` by `-n d log c` (review
+#'   2026-10-26 round 2, K2-6).
 #' @return A list of settings.
 #' @noRd
 .latents_em_settings <- function(decrease_tolerance = 1e-10,
@@ -42,7 +50,8 @@
                                  guard_decrease = TRUE,
                                  stop_on_nonfinite = FALSE,
                                  accelerate = NULL,
-                                 max_stalled = Inf) {
+                                 max_stalled = Inf,
+                                 stop_scale = NULL) {
   stopifnot(
     "`decrease_tolerance` must be a single positive number" =
       is.numeric(decrease_tolerance) && length(decrease_tolerance) == 1L &&
@@ -52,13 +61,50 @@
     "`accelerate` must be NULL or a list of flatten, restore and valid" =
       is.null(accelerate) ||
       (is.list(accelerate) && all(c("flatten", "restore", "valid") %in%
-                                    names(accelerate)))
+                                    names(accelerate))),
+    "`stop_scale` must be NULL or a single non-negative number" =
+      is.null(stop_scale) || (is.numeric(stop_scale) && length(stop_scale) == 1L &&
+                                is.finite(stop_scale) && stop_scale >= 0)
   )
   list(decrease_tolerance = decrease_tolerance,
        decrease_condition = decrease_condition,
        guard_decrease = isTRUE(guard_decrease),
        stop_on_nonfinite = isTRUE(stop_on_nonfinite),
-       accelerate = accelerate, max_stalled = max_stalled)
+       accelerate = accelerate, max_stalled = max_stalled,
+       stop_scale = stop_scale)
+}
+
+#' The number of observed values a likelihood sums over
+#'
+#' The scale of the unit-free EM stopping rule (`stop_scale` of
+#' `.latents_em_settings()`): every non-missing cell of the indicator blocks,
+#' in rows of positive sampling weight.
+#'
+#' @param ... Matrices with one row per row of data (continuous indicators,
+#'   categorical codes, ordinal and count data); `NULL` entries are skipped.
+#' @param row_weights `NULL`, or one sampling weight per row.
+#' @return A single non-negative number.
+#' @noRd
+.latents_observed_values <- function(..., row_weights = NULL) {
+  blocks <- Filter(Negate(is.null), list(...))
+  if (length(blocks) == 0L) return(0)
+  counts <- Reduce(`+`, lapply(blocks, function(block) {
+    rowSums(!is.na(as.matrix(block)))
+  }))
+  if (!is.null(row_weights)) counts <- counts[which(row_weights > 0)]
+  as.numeric(sum(counts))
+}
+
+#' The likelihood change below which an EM step has settled
+#' @param settings From `.latents_em_settings()`.
+#' @param tol Relative convergence tolerance.
+#' @param log_likelihood The log likelihood the step started from, used only
+#'   by the older rule when the engine supplied no `stop_scale`.
+#' @return A single non-negative number.
+#' @noRd
+.latents_em_threshold <- function(settings, tol, log_likelihood) {
+  if (is.null(settings$stop_scale)) return(tol * (1 + abs(log_likelihood)))
+  tol * max(1, settings$stop_scale)
 }
 
 #' Raise an engine's decrease condition
@@ -102,10 +148,14 @@
 #' Run EM from one starting state
 #'
 #' Plain EM steps, or SQUAREM cycles when the settings carry an accelerator
-#' and at least three steps of the budget remain. Convergence is the relative
-#' gain over one step or cycle, `|gain| <= tol * (1 + |log L|)`; a
-#' maximization that reports `attr(state, "solved")` must also have settled
-#' its inner solve.
+#' and at least three steps of the budget remain. Convergence is a small gain
+#' over one step or cycle, `|gain| <= tol * max(1, stop_scale)` (or the older
+#' `tol * (1 + |log L|)` for an engine without `stop_scale`; see
+#' `.latents_em_settings()`); a maximization that reports
+#' `attr(state, "solved")` must also have settled its inner solve. The
+#' iteration count is the number of M-steps whose result the run kept: two
+#' for a SQUAREM cycle that falls back to plain EM, three for one that
+#' extrapolates.
 #'
 #' @param state Starting parameter state.
 #' @param evaluate E-step: a function of a state returning a list with
@@ -158,7 +208,8 @@
     if (accelerate) {
       cycle <- .latents_squarem_cycle(step, state, expectation, evaluate,
                                       settings$accelerate)
-      evaluations <- 3L
+      # The M-steps whose result the path kept (review 2026-10-26, K2-7).
+      evaluations <- length(cycle$history)
     } else {
       plain <- step(state, expectation)
       if (!plain$finite) {
@@ -173,7 +224,8 @@
     # Over a SQUAREM cycle the gain is at least one plain step's gain, so an
     # accelerated fit never stops earlier than plain EM would.
     gain <- cycle$expectation$log_likelihood - expectation$log_likelihood
-    settled <- abs(gain) <= tol * (1 + abs(expectation$log_likelihood))
+    settled <- abs(gain) <= .latents_em_threshold(settings, tol,
+                                                  expectation$log_likelihood)
     solved <- attr(cycle$state, "solved") %||% TRUE
     converged <- settled && isTRUE(solved)
     stalled <- if (settled && !isTRUE(solved)) stalled + 1L else 0L
@@ -213,8 +265,9 @@
 #' @param expectation Its E-step.
 #' @param evaluate E-step function.
 #' @param accelerator A list of `flatten`, `restore` and `valid`.
-#' @return A list with `state`, `expectation`, `history` (three likelihoods)
-#'   and `accelerated`.
+#' @return A list with `state`, `expectation`, `history` (the likelihood after
+#'   each M-step the cycle kept: two when it falls back to plain EM, three when
+#'   the extrapolated step is taken) and `accelerated`.
 #' @noRd
 .latents_squarem_cycle <- function(step, state, expectation, evaluate,
                                    accelerator) {
@@ -225,7 +278,6 @@
   v <- accelerator$flatten(second$state) - theta0 - 2 * r
   plain <- list(state = second$state, expectation = second$expectation,
                 history = c(first$expectation$log_likelihood,
-                            second$expectation$log_likelihood,
                             second$expectation$log_likelihood),
                 accelerated = FALSE)
   norm_v <- sqrt(sum(v^2))

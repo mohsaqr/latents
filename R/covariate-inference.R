@@ -387,8 +387,13 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       "express, so `method = \"wald\"` covers every model this verb can fit."),
       class = "latents_unsupported_inference", call = NULL))
   }
+  # missing() is FALSE once vcov_type is reassigned, so it is read first. A
+  # person-centred or person-scaled fit has sandwich errors only, as the
+  # covariate-free fit has (review 2026-10-26 round 2, INF2-2).
+  vcov_defaulted <- missing(vcov_type)
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
-                                      missing(vcov_type))
+                                      vcov_defaulted)
+  vcov_type <- .multilpa_transformed_vcov(x, vcov_type, vcov_defaulted)
   adjust <- match.arg(adjust)
   boundary <- match.arg(boundary)
   covariance <- .multilpa_cov_covariance(x, data, step, vcov_type, boundary)
@@ -477,7 +482,10 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     profile_slopes = object$profile_slopes %||% "shared",
     ordinal = object$ordinal %||% character(), count = object$count %||% character(),
     centering = object$centering %||% "none", group_index = object$group_index,
-    scaling = object$scaling %||% "none")
+    scaling = object$scaling %||% "none",
+    # The fit's own weights, so a zero-weight group is judged as the fit
+    # judged it (ZW-3).
+    row_weights = unname(object$sampling_weights)[object$group_index])
   codes <- designs$codes
   if (!identical(designs$extra$ordinal_levels, object$extra_data$ordinal_levels) ||
       !identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||
@@ -586,9 +594,14 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   free_covariance <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
     scores <- .multilpa_cov_group_scores(theta, x, object, codes) %*% moves
-    .inference_require_rank(scores[
-      .multilpa_inference_groups(object, observed_only = TRUE), , drop = FALSE],
-      "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
+    # Only OPG inverts the outer product of the scores; the sandwich never
+    # does, and a deficient rank there is an exact constraint of the estimates
+    # (person centring), whose zero variance is right (INF2-2).
+    if (identical(vcov_type, "opg")) {
+      .inference_require_rank(scores[
+        .multilpa_inference_groups(object, observed_only = TRUE), , drop = FALSE],
+        "The contributing group scores are rank deficient; OPG inference is unavailable.")
+    }
     cross <- .multilpa_cross_product(scores)
     free_covariance <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
@@ -596,6 +609,24 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
                                 sum(.multilpa_inference_groups(object)))
   }
   covariance <- moves %*% free_covariance %*% t(moves)
+  ## A grand mean or standard deviation the indicators were transformed with
+  ## is estimated from the same data; its variability is added through the
+  ## stacked estimating equations, as for the covariate-free fit (review
+  ## 2026-10-26 round 2, INF2-1). The bread is the inverse the model's own
+  ## covariance was formed with, in the same coordinates.
+  if (ncol(x) > 0L) {
+    bread <- if (identical(vcov_type, "opg")) free_covariance else information$inverse
+    on_model_scale <- function(transformed) sweep(transformed, 2L, object$center, "-")
+    covariance <- .multilpa_transform_covariance(
+      object, covariance, moves %*% bread %*% t(moves), seq_along(theta), codes,
+      robust = identical(vcov_type, "robust"),
+      score_of = function(transformed) {
+        colSums(.multilpa_cov_group_scores(theta, on_model_scale(transformed), object, codes))
+      },
+      group_scores_of = function(transformed) {
+        .multilpa_cov_group_scores(theta, on_model_scale(transformed), object, codes)
+      })
+  }
   ## The covariance is of the estimated coordinates, so it is named for them;
   ## vcov() maps it to natural units and renames it there.
   estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
@@ -623,10 +654,11 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
                                      scale = c("natural", "unconstrained"),
                                      boundary = c("error", "fix"), ...) {
   scale <- match.arg(scale)
+  vcov_defaulted <- missing(vcov_type)
+  type <- .latents_weighted_vcov(.latents_is_weighted(object), match.arg(vcov_type),
+                                 vcov_defaulted)
   covariance <- .multilpa_cov_covariance(
-    object, data, step,
-    .latents_weighted_vcov(.latents_is_weighted(object), match.arg(vcov_type),
-                           missing(vcov_type)),
+    object, data, step, .multilpa_transformed_vcov(object, type, vcov_defaulted),
     match.arg(boundary))
   if (identical(scale, "unconstrained")) {
     ## The kind in the name has to name the scale, or a log variance is served
@@ -657,9 +689,8 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @noRd
 .multilpa_cov_estimation_labels <- function(object) {
   labels <- .multilpa_cov_labels(object, response = "free")
-  on_diagonal <- vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
-    length(pair) == 2L && identical(pair[[1L]], pair[[2L]])
-  }, logical(1))
+  continuous <- .multilpa_continuous_names(object)
+  on_diagonal <- labels$term %in% .latents_term(continuous, continuous)
   labels$parameter <- ifelse(
     labels$parameter == "variance", "log_variance",
     ifelse(labels$parameter == "covariance",
@@ -700,19 +731,16 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     conf_high = estimate + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE
   )
+  continuous <- .multilpa_continuous_names(object)
   bounds <- .multilpa_wald_bounds(
     result$estimate, result$standard_error,
-    .multilpa_interval_kind(result$parameter, result$term,
-                            .multilpa_continuous_names(object)), quantile)
+    .multilpa_interval_kind(result$parameter, result$term, continuous), quantile)
   result$conf_low <- bounds$low
   result$conf_high <- bounds$high
   ## A Wald test of a variance against zero is meaningless; the interval is not.
   ## The same applies to a covariance on the diagonal, which is a variance; an
   ## off-diagonal covariance is a real hypothesis and keeps its test.
-  on_diagonal <- is_covariance &
-    vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
-      length(pair) == 2L && identical(pair[1L], pair[2L])
-    }, logical(1))
+  on_diagonal <- is_covariance & labels$term %in% .latents_term(continuous, continuous)
   result$statistic[is_variance | on_diagonal | is_response] <- NA_real_
   result$p_value[is_variance | on_diagonal | is_response] <- NA_real_
   ## A probability held at its bound was not estimated in this inference, so
@@ -955,7 +983,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   spread <- if (.multilpa_cov_is_full(object)) {
     positions <- which(lower.tri(matrix(0, length(continuous), length(continuous)),
                                  diag = TRUE), arr.ind = TRUE)
-    pairs <- sprintf("%s:%s", continuous[positions[, 1L]], continuous[positions[, 2L]])
+    pairs <- .latents_term(continuous[positions[, 1L]], continuous[positions[, 2L]])
     block(pairs, variance_rows, "measurement", "covariance")
   } else block(continuous, variance_rows, "measurement", "variance")
   blocks <- object$response_probabilities %||% list()
@@ -964,7 +992,10 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     lapply(names(blocks), function(indicator) {
       categories <- colnames(blocks[[indicator]])
       if (identical(response, "free")) categories <- categories[-length(categories)]
-      block(sprintf("%s:%s", indicator, categories), profiles, "measurement",
+      # Spelled by the helper the profile models' labels, the accessors and
+      # the plots use, so a covariate fit's terms are found by all of them.
+      block(.latents_term(rep(indicator, length(categories)), categories),
+            profiles, "measurement",
             if (identical(response, "free")) "response_logit" else "response")
     })))
   extra <- .latents_extra_labels(object, profiles, free = identical(response, "free"))

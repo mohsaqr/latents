@@ -158,6 +158,11 @@
       (if (is.null(codes)) 0L else rowSums(!is.na(codes))) +
       if (is.null(.latents_extra_matrix(extra))) 0L else
         rowSums(!is.na(.latents_extra_matrix(extra)))
+    # A unit of sampling weight zero contributes nothing either, so its rows
+    # are not classified and do not count in any sample size (ML-1).
+    if (!is.null(sampling_weights)) {
+      observed_per_row[sampling_weights[group_index] <= 0] <- 0L
+    }
     # Reported by print() and summary() rather than warned about: resampling verbs
     # refit the same data many times, and a warning would fire once per replicate.
     n_informative <- sum(observed_per_row > 0L)
@@ -181,7 +186,10 @@
       colSums(group_posteriors[counted_groups, , drop = FALSE]) else
         setNames(colSums(weighted_expectation$group_posteriors[counted_groups, , drop = FALSE]),
                  type_names)
-    group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else n_groups
+    # `drop_empty = FALSE` counts every group but those of weight zero, which
+    # are in no sample size under either convention (ZW-5).
+    group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else
+      if (is.null(sampling_weights)) n_groups else sum(sampling_weights > 0)
     small_classes <- any(effective_profile_counts < 1) ||
       any(effective_group_counts < 1)
     result <- c(parameters, list(
@@ -243,6 +251,12 @@
       .latents_search_record(search, n_starts, screen, select_start,
                              if (exclude_boundary) "exclude" else "allow"))
     class(result) <- "multilpa"
+    # Each row's classification entropy within its group class, from which the
+    # entropy ICL, AWE and CLC charge is summed (review 2026-10-26 round 2,
+    # S-1). Taken from the unweighted expectation, as the posteriors are.
+    result$classification_entropy_rows <- if (is.null(best$expectation$joint)) NULL else
+      .latents_row_conditional_entropy(best$expectation$joint,
+                                       best$expectation$group_posteriors, group_index)
     # Recorded only when used, so a fit without local dependence has exactly the
     # fields it always had.
     if (!is.null(covariance_pattern)) {

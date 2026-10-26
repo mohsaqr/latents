@@ -14,7 +14,10 @@ test_that("shared Gaussian covariance models still diagnose a covariance floor",
     model = "EEI", n_starts = 1, seed = 1), class = "latents_boundary")
   expect_true(fit$converged)
   expect_true(fit$boundary)
-  expect_equal(as.numeric(fit$variances), rep(1e-6, 2))
+  # The default bound is a millionth of the indicator's variance, 1.2 here
+  # (review 2026-10-26 round 2, K2-2); it was an absolute 1e-6.
+  expect_equal(fit$min_variance, 1e-6 * stats::var(rep(c(-1, 1), each = 3)))
+  expect_equal(as.numeric(fit$variances), rep(fit$min_variance, 2))
   expect_error(parameter_inference(fit), class = "latents_boundary_fit")
 })
 
@@ -39,6 +42,9 @@ test_that("trust plots distinguish unavailable replication evidence", {
   grid <- enumerate_classes(data, "y", id = NULL, n_profiles = 2,
                              n_group_classes = 1, profile_covariates = "z",
                              n_starts = 1, seed = 1)
+  # Covariate fits now record replication (RP-1); the unavailable state is
+  # what an older saved grid carries, so it is set on the table directly.
+  grid$table$n_best_replicated <- NA_integer_
   frame <- .gg_selection_trust(grid, NULL, NULL)$data
   unknown <- is.na(grid$table$n_best_replicated) & grid$table$converged &
     !grid$table$boundary & is.finite(grid$table$log_likelihood)

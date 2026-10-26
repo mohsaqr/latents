@@ -11,17 +11,95 @@ Rscript equivalence/harness/run.R              # every suite
 Rscript equivalence/harness/run.R glca mclust  # named suites only
 ```
 
-It writes four generated files, so no number in the documentation is
+It writes six generated files, so no number in the documentation is
 transcribed by hand:
 
 | File | Contents |
 |---|---|
 | `report.csv` | One row per compared quantity: reference value, the value multilpa produced, the difference, the tolerance, and the multilpa version the row was produced under. |
 | `suites.csv` | One row per suite: whether it ran, was skipped or failed, with the reason, how many warnings it raised, and how long it took. |
-| `REPORT.md` | The summary table. |
+| `coverage.csv` | One row per output column of every fit a suite compared: how many values the fit reported, how many were compared, and, for anything not compared, the reason. |
+| `known-open-status.csv` | The register of open defects (`known-open.csv`), with how many disagreements each explains in this run. |
+| `REPORT.md` | The summary tables, output coverage and known open defects. |
 | `SESSION.txt` | The full `sessionInfo()` the run was produced under. |
 
-The run exits non-zero when any quantity disagrees or any suite fails.
+The run exits non-zero when a suite fails, a quantity disagrees without a
+registered open defect to explain it, an output is neither compared nor
+exempted, or a register entry no longer matches anything.
+
+## Every output, not one or two measures
+
+Until 2026-10-26 each suite chose by hand what to compare, and the choices were
+narrow: the depmixS4 suite compared the first indicator's means and the
+transition matrix, mclust the means and mixing proportions, poLCA ran without
+standard errors. No suite compared posteriors, classifications, the
+classification error matrix or the BCH weights. That is how a defect in the
+error matrix (rows with nothing observed were counted; fixed 2026-10-26) went
+unnoticed. `outputs.R` makes the comparison complete and its completeness visible.
+
+- **The inventory comes from the package.** `fit_outputs()` reads every table
+  of `get_results(fit, "all")` and lists each value column with its number of
+  cells. A column added to the package later appears in the inventory without
+  anyone listing it.
+- **Derived tables are rebuilt from the reference.** `harness_reference()`
+  holds another program's estimates and posteriors in one shape.
+  `reference_tables()` rebuilds every table from them, writing each derived
+  table from its definition in harness code: counts, classification, average
+  posteriors, odds of correct classification, the error matrix, BCH weights,
+  entropy, all sixteen information criteria, bivariate residuals and Gaussian
+  diagnostics. Every comparison of a derived table therefore tests the
+  package's posteriors and the package's formula at once. ICL, AWE and CLC
+  charge the complete-data entropy, `H(group classes) + sum_i E_C[H(X_i | C,
+  y_i)]`, under both conventions (a transition model keeps each level's own);
+  a two-level reference supplies the rows' within-class entropies as
+  `harness_reference(row_conditional_entropy = )`, computed from its own
+  estimates (`two_level_row_conditional_entropy()` in
+  `two-level-lca-reference.R`). A reference with several group classes that
+  lacks them has the three criteria exempted by name, never filled in.
+- **One row per column, every cell checked.** `compare_tables()` joins on key
+  columns and `compare_block()` compares every cell of a column. Missing values
+  must be missing in both, and infinite values infinite with the same sign. The
+  row shows the worst cell and `n_values`, so ten thousand posteriors take one
+  row of `report.csv` and are still all checked.
+- **Nothing is left out without a reason.** `output_ledger()` gives every
+  output column one status:
+  - `compared`: all its values were compared;
+  - `partial`: some were;
+  - `exempt`: a reason is recorded, either a default one for things that are
+    not estimates (`data`, the random-start trace, iteration counts) or the
+    suite's own;
+  - `not covered`: neither, which fails the run.
+
+  An exemption for an output the fit does not report, or a comparison naming
+  one, is refused, so the ledger cannot go stale.
+- **Standard errors have an independent reference.** Where the reference
+  program reports none, or reports a different estimator, the suite takes a
+  numerical Hessian (numDeriv) of a likelihood written from scratch in base R,
+  at the reference's estimates, in the natural free parameters. The mclust
+  suite is the worked example.
+- **References are refined, not tolerances loosened.** mclust and depmixS4 stop
+  on a relative change in the log-likelihood. Where the surface is flat, that
+  leaves their estimates short of the fixed point. Each suite continues the
+  program's own EM to the fixed point before comparing. A tolerance that is
+  wider than the default says why next to it: OCC, for example, divides by
+  1 - AvePP.
+
+Two suites ask a different question from "does another program agree":
+
+| Suite | What it checks |
+|---|---|
+| `invariance` | A transformation whose effect on every output is known exactly is applied, the model refitted, and every output table compared with the original's carried through by hand: rows permuted; groups, categories and indicators renamed to labels containing `: , [ ]`; y -> a + c y at moderate and extreme c (the variance floor carried into the new units); every unit duplicated (estimates fixed, SEs / sqrt 2, likelihood and counts doubled); zero-weight units added; a predictor's origin moved by 2000. |
+| `refusals` | One degenerate input through every entry point (`multilpa`, `lpa`, `lca`, `lta`, the enumerations, `mixture_regression`) must give one classed answer. An unclassed error, another class or a silent fit fails. |
+
+### Known open defects
+
+`known-open.csv` lists defects the harness finds that await a decision, each
+with a suite, a pattern on the quantity, and the decision needed. A matching
+disagreement is reported under its id in `REPORT.md` instead of failing the
+run, so an open item does not turn every run red and hide the next new
+failure. An entry that no longer explains any disagreement fails the run: the
+defect was fixed, or the check that found it is gone, and the entry has to be
+removed or corrected.
 
 ### What the harness refuses to let you miss
 
@@ -96,11 +174,14 @@ together with a `compare.R` that checks the package against each.
 | Suite | Reference | What only this source establishes |
 |---|---|---|
 | `published` | Linzer & Lewis (2011), Agresti & Lang (1993), Zhou & Lange (2010), Goodman (2002), Dayton (1998), McCutcheon (1987) | Agreement with numbers the field already accepted, rather than with another implementation. Includes a published *pair* of likelihood modes, which tests the optimizer rather than the likelihood. |
-| `mplus-twolevel-lca` | Mplus 8.8, User's Guide example 10.7 | The only public, fully specified two-level model with latent classes at **both** levels and printed output for all 99 parameters. |
-| `glca` | glca 1.4.2 | An independent implementation of the same Vermunt (2003) nonparametric model, on real data **with missing responses**. |
-| `multilevlca` | multilevLCA 2.1.6 and Lyrvall et al. (2025) | A third independent two-level implementation, plus peer-reviewed published values on CRAN-bundled public data. Fixes the correspondence between its `BIClow`/`BIChigh` and multilpa's two sample-size conventions. |
-| `polca` | poLCA 1.6.0.1 | The single-level categorical limit across five datasets, and a likelihood written here from the definition as a third opinion. |
+| `mplus-twolevel-lca` | Mplus 8.8, User's Guide example 10.7 | The only public, fully specified two-level model with latent classes at **both** levels and printed output for all 99 parameters. Mplus stops on a log-likelihood change of 0.001 (TECH8 shows it still gaining 0.00096 per step), so printed values are compared at Mplus's own estimates, with half-unit plus estimate-rounding bounds, and the converged fit against those estimates carried to the maximum by Newton steps on a from-scratch likelihood. Mplus's MLR errors check that likelihood's sandwich; the package's robust errors add the CR1 factor sqrt(G/(G-1)). |
+| `glca` | glca 1.4.2 | An independent implementation of the same Vermunt (2003) nonparametric model, on real data **with missing responses**. glca's own (outer-product) errors are not a reference: its scores are wrong in groups with a missing response (summing to 2.69 at its maximum), and on gss08 its generalised inverse returns zeros. Errors are checked against a from-scratch numDeriv information instead. |
+| `multilevlca` | multilevLCA 2.1.6 and Lyrvall et al. (2025) | A third independent two-level implementation, plus peer-reviewed published values on CRAN-bundled public data. Fixes the correspondence between its `BIClow`/`BIChigh` and multilpa's two sample-size conventions. Its errors are an individual-level outer product with no package counterpart, so they are not compared. Its reference is run 2,000 EM steps past its own stopping rule, which halts on a likelihood ridge while the group probabilities still move. |
+| `polca` | poLCA 1.6.0.1 | The single-level categorical limit across five datasets, and a likelihood written here from the definition as a third opinion. poLCA's errors are outer-product (BHHH, read from `poLCA.se`) and are compared with `vcov_type = "opg"`; the observed-information column is compared with a numDeriv Hessian of the textbook likelihood in baseline-category logits. |
 | `mclust` | mclust 6.1.2 and Scrucca et al. (2023) | The Gaussian limit across the four basic covariance structures in this harness. The parent folder's `test-mclust.R` and `test-structure-inference.R` cover all 14 fitted structures. |
+| `depmixs4` | depmixS4 1.5.1 | Latent transitions: forward-backward posteriors, two-slice transition counts and per-sequence likelihoods. Standard errors use depmixS4's constrained inverse with numDeriv in place of its `fdHess`, which is 1-15% off on these fits (0.287 against 0.072 for a mean near zero). |
+| `invariance`, `refusals` | The package against itself under known transformations, and its entry points against each other | Equivariance and refusal parity, which no external program can establish. |
+| `hard-mclust`, `hard-polca`, `hard-depmixs4` | The same three references on data built to be difficult | Each case makes two claims. (A) Started at the reference's mode, the package reproduces every output there. (B) The package's own search reaches at least the reference's maximum. The fixtures cover near-empty and rare classes, heavy overlap, r = 0.99, variance ratios of 100, a 1e6 offset, units of 1e-4 and 1e5, 40 rows for 62 parameters, ties, sparse and floored categories, 6 to 8 categories, near-saturated models, reversed categories, near-absorbing and structurally zero transitions, two-occasion and unequal sequences, and an extra state. On hard data the references needed more care than the package: mclust's and depmixS4's EM stop short of their fixed points; the numerical Hessian's 10% first step leaves the parameter space; mclust refuses a covariance with condition number 1.7e18; depmixS4 hits `maxit` without a warning. In five cases the package found a higher maximum than the reference, which the reference's own EM then confirmed. |
 
 ## Three claims that a converged-to-converged comparison cannot separate
 

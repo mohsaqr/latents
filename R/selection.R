@@ -407,7 +407,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
     ggplot2::geom_text(ggplot2::aes(label = tile_label), size = 3.2) +
     ggplot2::scale_fill_manual(values = c("best replicated" = "#009E73",
                                           "best found once" = "#F0E442",
-                                          "replication unavailable" = "#BDBDBD",
+                                          "replication unavailable" = "#56B4E9",
                                           "on a boundary" = "#E69F00",
                                           "not converged" = "#D55E00",
                                           "not fitted" = "#999999"),

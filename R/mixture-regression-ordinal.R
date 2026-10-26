@@ -341,8 +341,22 @@
       information <- rbind(cbind(information, cross), cbind(t(cross), common_block))
     }
     # As for the GLM families: a ridge far below the data scale keeps an
-    # empty class solvable without moving a well-determined solution.
-    ridge <- 1e-10 * (1 + max(abs(diag(information))))
+    # empty class solvable without moving a well-determined solution. When
+    # predictor units make the diagonal span many orders of magnitude, that
+    # ridge would swamp the thresholds' curvature, so the system is solved in
+    # information-standardized coordinates instead.
+    diagonal <- diag(information)
+    ridge <- 1e-10 * (1 + max(abs(diagonal)))
+    if (any(ridge > 1e-7 * pmax(diagonal, .Machine$double.xmin))) {
+      scale <- sqrt(pmax(diagonal, .Machine$double.xmin))
+      standardized <- information / tcrossprod(scale)
+      direction <- tryCatch(.mixture_solve(standardized, gradient / scale),
+                            error = function(condition) {
+        .mixture_solve(standardized + diag(1e-10, nrow(information)),
+                       gradient / scale)
+      })
+      return(as.vector(direction / scale))
+    }
     .mixture_solve(information + diag(ridge, nrow(information)), gradient)
   }
   current <- objective(params)
@@ -375,6 +389,17 @@
   }, logical(1)))
   params
 }
+
+#' The log threshold gap below which two thresholds coincide
+#'
+#' A gap of exp(-15), 3e-7, is reached only by a class to which the posterior
+#' gives no row of the category between them: the gap's maximum is then zero,
+#' on the boundary, and the log gap only drifts towards minus infinity. Such a
+#' coordinate is held (`.mixture_boundary_coordinates()`), its error and those
+#' of the thresholds that depend on it are `NA`, and `latents_boundary` is
+#' warned (review 2026-10-26, round 2, N5).
+#' @noRd
+.ordinal_min_log_gap <- -15
 
 #' Jacobian of one class's natural thresholds in their packed coordinates
 #'
@@ -543,8 +568,14 @@
                           ".", labels)
     natural <- drop(.ordinal_natural(inference$theta[coordinates], m))
     jacobian <- .ordinal_threshold_jacobian(natural)
-    std_error <- .inference_delta_se(
-      jacobian, inference$vcov[coordinates, coordinates, drop = FALSE], "rowsums")
+    covariance <- inference$vcov[coordinates, coordinates, drop = FALSE]
+    # A threshold that depends on a held (boundary) gap has no error.
+    std_error <- vapply(seq_len(m), function(j) {
+      used <- which(jacobian[j, ] != 0)
+      if (anyNA(covariance[used, used])) return(NA_real_)
+      .inference_delta_se(jacobian[j, used, drop = FALSE],
+                          covariance[used, used, drop = FALSE], "rowsums")
+    }, numeric(1))
     cbind(data.frame(class = class, term = paste0("threshold:", labels)),
           .inference_wald(natural, std_error, level))
   }))

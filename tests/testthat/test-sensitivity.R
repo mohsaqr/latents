@@ -132,15 +132,20 @@ test_that("a categorical refit preserves declared factor coding", {
 })
 
 test_that("optimum counts basins, not distinct doubles", {
-  # Hand-computed against the definition: sorted downwards, a new optimum begins
-  # where the drop exceeds the tolerance. Values within tolerance of each other
-  # are one basin even when they are not equal, which is why `==` would be wrong.
+  # Hand-computed against the definition: sorted downwards, each optimum is
+  # anchored at its best value and a new one begins more than the tolerance
+  # below the anchor. Values within tolerance of the anchor are one basin even
+  # when they are not equal, which is why `==` would be wrong.
   index <- latents:::.multilpa_optimum_index
   expect_identical(index(c(-100, -100, -100), tolerance = 1e-4),
                    c(1L, 1L, 1L))
-  # A chain each within tolerance of the last is one basin, not three.
-  expect_identical(index(c(-100, -100.00005, -100.0001), tolerance = 1e-4),
+  expect_identical(index(c(-100, -100.00005, -100.00009), tolerance = 1e-4),
                    c(1L, 1L, 1L))
+  # A chain of small steps does not stretch a basin past the tolerance
+  # (review 2026-10-26 round 2, INF2-5): -100.00015 is 1.5e-4 below the
+  # anchor, so it starts the second optimum.
+  expect_identical(index(c(-100, -100.00008, -100.00015), tolerance = 1e-4),
+                   c(1L, 1L, 2L))
   # Ordering is by likelihood, not by position: the best value gets 1.
   expect_identical(index(c(-105, -100, -110), tolerance = 1e-4),
                    c(2L, 1L, 3L))
@@ -244,4 +249,41 @@ test_that("a partially fixed fit is not silently refitted as a joint model", {
                             start = starting_values(initial), fixed = "means"))
   expect_error(sensitivity(held, seeds = 1:2),
                class = "latents_unsupported_sensitivity")
+})
+
+test_that("cores is validated and appended after every existing argument", {
+  fit <- quietly(separated_fit())
+  expect_identical(utils::tail(names(formals(sensitivity)), 1L), "cores")
+  expect_error(sensitivity(fit, seeds = 1:2, cores = 0), class = "latents_bad_argument")
+  expect_error(sensitivity(fit, seeds = 1:2, cores = 1.5), class = "latents_bad_argument")
+})
+
+test_that("the seeds reach the parallel map with the cores asked for, in order", {
+  fit <- quietly(separated_fit())
+  seen <- NULL
+  serial <- .latents_map_candidates
+  # The refits map their own starts too; the first call is sensitivity()'s.
+  local_mocked_bindings(.latents_map_candidates = function(indices, fun, cores, ...) {
+    if (is.null(seen)) seen <<- list(indices = indices, cores = cores)
+    serial(indices, fun, 1L, ...)
+  })
+  table <- sensitivity(fit, seeds = c(5L, 2L, 9L), n_starts = 2L, cores = 3L)
+  expect_identical(seen$indices, c(5L, 2L, 9L))
+  expect_identical(seen$cores, 3L)
+  expect_identical(table$seed, c(5L, 2L, 9L))
+})
+
+test_that("parallel seeds give the serial table for every refitted family", {
+  skip_on_cran()
+  skip_on_os("windows")
+  skip_if(!.latents_fork_safe(), "This BLAS cannot run safely in forked workers")
+  fit <- quietly(separated_fit())
+  serial <- quietly(sensitivity(fit, seeds = 1:4, n_starts = 2L))
+  parallel <- quietly(sensitivity(fit, seeds = 1:4, n_starts = 2L, cores = 2L))
+  expect_identical(parallel, serial)
+  growth <- quietly(mixture_regression(score ~ wave, data = subset(growth_scores, student <= 40),
+                                       n_classes = 2, id = "student", class_level = "group",
+                                       random = ~ 1, n_starts = 1, seed = 1))
+  expect_identical(quietly(sensitivity(growth, seeds = 1:3, cores = 2L)),
+                   quietly(sensitivity(growth, seeds = 1:3)))
 })

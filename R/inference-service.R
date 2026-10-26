@@ -40,21 +40,46 @@
 #' @param theta The packed estimate (named).
 #' @param step Relative step.
 #' @param scheme `"central"` (two points) or `"five_point"` (fourth order).
-#' @param h_rule `"max1"`, `"plus1"` or `"absolute"`.
+#' @param h_rule `"max1"`, `"plus1"`, `"absolute"` or `"scaled"`. The first two
+#'   scale the step with the parameter's value, so they depend on its origin:
+#'   an intercept of -9000, which a predictor shifted by 2000 produces, was
+#'   differenced with a step of 0.09. `"scaled"` takes `step` times the
+#'   coordinate's own `scale`, which a caller sets to a standard-error scale
+#'   and which moves with any change of units or origin, but never more than
+#'   `step * (1 + |theta|)`: a nearly unidentified coordinate has a huge
+#'   standard-error scale, and a log-scale threshold gap at -8 with a scale of
+#'   815 was otherwise differenced with a step of 0.8, across a visible part
+#'   of its curvature (6% off a numerical Hessian).
+#' @param scale For `h_rule = "scaled"`: one positive scale per coordinate;
+#'   a non-finite or non-positive entry (a coordinate whose unit scores are
+#'   all zero) falls back to the fixed width `1e-5 * (1 + |theta|)`, not to
+#'   `step` times it: `step` is a fraction of a standard error and has no
+#'   meaning without one.
 #' @return A symmetric matrix named by `theta`.
 #' @noRd
 .inference_score_information <- function(total_score, theta, step,
                                          scheme = c("central", "five_point"),
-                                         h_rule = c("plus1", "max1", "absolute")) {
+                                         h_rule = c("plus1", "max1", "absolute",
+                                                    "scaled"),
+                                         scale = NULL) {
   scheme <- match.arg(scheme)
   h_rule <- match.arg(h_rule)
-  width <- function(value) {
+  stopifnot("`scale` must give one value per coordinate for h_rule = \"scaled\"" =
+              !identical(h_rule, "scaled") ||
+                (is.numeric(scale) && length(scale) == length(theta)))
+  width_at <- function(j) {
+    value <- theta[[j]]
+    if (identical(h_rule, "scaled")) {
+      usable <- is.finite(scale[[j]]) && scale[[j]] > 0
+      return(if (usable) step * min(scale[[j]], 1 + abs(value)) else
+        1e-5 * (1 + abs(value)))
+    }
     switch(h_rule, plus1 = step * (1 + abs(value)),
            max1 = step * max(1, abs(value)), absolute = step)
   }
   if (identical(scheme, "central")) {
     columns <- lapply(seq_along(theta), function(j) {
-      h <- width(theta[j])
+      h <- width_at(j)
       up <- theta
       down <- theta
       up[j] <- up[j] + h
@@ -65,7 +90,7 @@
     information <- -(hessian + t(hessian)) / 2
   } else {
     columns <- vapply(seq_along(theta), function(k) {
-      h <- width(theta[k])
+      h <- width_at(k)
       at <- function(multiple) {
         point <- theta
         point[k] <- point[k] + multiple * h
@@ -256,12 +281,28 @@
 #' @param transform A function of the packed vector.
 #' @param theta The packed estimate.
 #' @param step Relative step: `h = step * (1 + |theta_j|)`.
+#' @param scale `NULL`, or one positive scale per coordinate (a standard
+#'   error). With it, `h = scaled_step * min(scale_j, 1 + |theta_j|)`; a
+#'   non-finite or non-positive entry uses the unscaled step.
+#' @param scaled_step The fraction of the scale stepped. The truncation error
+#'   of a central difference is about `h^2 f''' / 6`, the rounding error about
+#'   `eps |f| / h`: at a hundred-thousandth of a standard error both sit near
+#'   1e-11 for an exponential transform. A thousandth let truncation reach
+#'   7e-7 (exp at a standard error of 2); a millionth let rounding reach 3e-9.
 #' @return A matrix, derived quantities by packed parameters.
 #' @noRd
-.inference_numeric_jacobian <- function(transform, theta, step = 1e-6) {
+.inference_numeric_jacobian <- function(transform, theta, step = 1e-6, scale = NULL,
+                                        scaled_step = 1e-5) {
+  stopifnot("`scale` must be NULL or one value per coordinate" =
+              is.null(scale) || (is.numeric(scale) && length(scale) == length(theta)))
   estimate <- transform(theta)
   jacobian <- do.call(cbind, lapply(seq_along(theta), function(j) {
-    h <- step * (1 + abs(theta[j]))
+    # With a scale (a standard error), the step moves with the coordinate's
+    # units and origin, capped as in .inference_score_information(); without
+    # one, or where it is unusable, it is relative to 1 + |theta|.
+    usable <- !is.null(scale) && is.finite(scale[[j]]) && scale[[j]] > 0
+    h <- if (usable) scaled_step * min(scale[[j]], 1 + abs(theta[[j]])) else
+      step * (1 + abs(theta[j]))
     up <- theta
     down <- theta
     up[j] <- up[j] + h
@@ -545,12 +586,14 @@
 
 #' Which scale a parameter's interval is formed on
 #' @param parameter,term The tidy label columns.
-#' @param continuous The continuous indicator names.
+#' @param continuous The continuous indicator names, as the data spell them;
+#'   the diagonal term `a:a` is built by `.latents_term()`, the helper every
+#'   label producer uses.
 #' @return `"probability"`, `"positive"` or `"real"`, per row.
 #' @noRd
 .multilpa_interval_kind <- function(parameter, term, continuous) {
   on_diagonal <- parameter == "covariance" &
-    term %in% paste(continuous, continuous, sep = ":")
+    term %in% .latents_term(continuous, continuous)
   ifelse(parameter %in% c("probability", "response", "initial_probability",
                           "transition_probability"), "probability",
          ifelse(parameter %in% c("variance", "count_mean", "count_dispersion") |
@@ -579,5 +622,206 @@
               setequal(names(result), ordered))
   result <- result[, ordered, drop = FALSE]
   attr(result, "adjust") <- adjust
+  result
+}
+
+#' Covariance types a fit on person-transformed indicators supports
+#'
+#' Person centring (and person scaling) replaces each unit's rows by their
+#' deviations from that unit's own mean (or divides them by its own standard
+#' deviation). The rows a unit contributes then sum to zero and depend on the
+#' unit's latent mix, so the likelihood the model maximizes treats as
+#' independent draws values that are not, and the inverse observed
+#' information understates the variance: in a Monte Carlo study (300 data
+#' sets, 40 units of 6) its standard errors of the profile means were 0.78 to
+#' 0.93 of the empirical spread (review 2026-10-26 round 2, INF2-2). Each
+#' unit's transformed rows are a function of that unit's data alone, so the
+#' cluster-robust sandwich over units is valid (0.91 to 1.01 in the same
+#' study); the outer product of the scores is not a variance either. A
+#' person-transformed fit therefore defaults to `"robust"` and refuses the
+#' other types.
+#'
+#' @param object A fitted model with `centering` and `scaling`.
+#' @param vcov_type The requested type, already matched.
+#' @param defaulted Whether the caller left `vcov_type` at its default.
+#' @return The type to use; raises `latents_unsupported_inference` for
+#'   `"observed"` or `"opg"` asked of a person-transformed fit.
+#' @noRd
+.multilpa_transformed_vcov <- function(object, vcov_type, defaulted) {
+  person <- identical(object$centering %||% "none", "person") ||
+    identical(object$scaling %||% "none", "person")
+  if (!person || identical(vcov_type, "robust")) return(vcov_type)
+  if (defaulted) return("robust")
+  stop(errorCondition(sprintf(paste(
+    "`vcov_type = \"%s\"` treats a unit's person-centred or person-scaled rows",
+    "as independent observations, which they are not, and understates the",
+    "standard errors. Use `vcov_type = \"robust\"` (the default for these",
+    "fits) or `method = \"bootstrap\"`."), vcov_type),
+    class = "latents_unsupported_inference", call = NULL))
+}
+
+#' The grand transform of the indicators, as estimated quantities
+#'
+#' `centering = "grand"` subtracts the sample mean of each indicator and
+#' `scaling = "grand"` divides by its sample standard deviation. Both are
+#' estimates, computed from the same data the model is fitted to, so a
+#' reported mean `mu_k - xbar` varies with `xbar` as well as with `mu_k`.
+#' Each is written as an estimating equation summed over units, over the
+#' observed cells of the units that carry weight (the rows that set them):
+#' `sum_i (x_ij - m_j) = 0` for the mean and
+#' `sum_i ((x_ij - m_j)^2 - s_j^2 (n_j - 1) / n_j) = 0` for the standard
+#' deviation (denominator `n_j - 1`, as `.multilpa_indicator_scales()` uses).
+#' A person transform is a function of each unit's own data and needs no
+#' equation; it is held at its stored value.
+#'
+#' @param object A fitted `multilpa` model with stored `indicator_data`.
+#' @return `NULL` when the fit has no grand transform; otherwise a list with
+#'   `eta` (the means, then the standard deviations, of the indicators the
+#'   transform estimated), `steps` (a differencing width per entry),
+#'   `transform` (a function of `eta` returning the transformed indicator
+#'   matrix), `contributions` (units by entries of `eta`, at the estimate) and
+#'   `slope` (the diagonal of minus the derivative of the summed equations).
+#' @noRd
+.multilpa_grand_transform <- function(object) {
+  centering <- object$centering %||% "none"
+  scaling <- object$scaling %||% "none"
+  grand_mean <- identical(centering, "grand") || identical(scaling, "grand")
+  if (!grand_mean || is.null(object$indicator_data) ||
+      ncol(object$indicator_data) == 0L) return(NULL)
+  raw <- .multilpa_uncentered_indicators(object)
+  n_groups <- object$n_groups
+  carrying <- if (is.null(object$sampling_weights)) rep(TRUE, nrow(raw)) else
+    (object$sampling_weights > 0)[object$group_index]
+  observed <- !is.na(raw) & carrying
+  counts <- colSums(observed)
+  means <- if (identical(centering, "grand")) object$centering_offsets[1L, ] else
+    colSums(ifelse(observed, raw, 0)) / counts
+  deviations <- ifelse(observed, sweep(raw, 2L, means, "-"), 0)
+  spread <- sqrt(colSums(deviations^2) / pmax(counts - 1, 1))
+  scaled <- identical(scaling, "grand")
+  n_columns <- ncol(raw)
+  eta <- c(means, if (scaled) object$scaling_factors[1L, ])
+  offsets_for <- function(eta) {
+    switch(centering,
+      grand = matrix(eta[seq_len(n_columns)], nrow(raw), n_columns, byrow = TRUE),
+      person = object$centering_offsets[object$group_index, , drop = FALSE],
+      none = matrix(0, nrow(raw), n_columns))
+  }
+  scales_for <- function(eta) {
+    switch(scaling,
+      grand = matrix(eta[n_columns + seq_len(n_columns)], nrow(raw), n_columns,
+                     byrow = TRUE),
+      person = object$scaling_factors[object$group_index, , drop = FALSE],
+      none = matrix(1, nrow(raw), n_columns))
+  }
+  transform <- function(eta) {
+    value <- (raw - offsets_for(eta)) / scales_for(eta)
+    dimnames(value) <- dimnames(object$indicator_data)
+    value
+  }
+  mean_terms <- rowsum(deviations, object$group_index, reorder = TRUE)
+  contributions <- if (!scaled) mean_terms else {
+    standard <- eta[n_columns + seq_len(n_columns)]
+    square_terms <- deviations^2 -
+      observed * matrix(standard^2 * (counts - 1) / counts, nrow(raw), n_columns,
+                        byrow = TRUE)
+    cbind(mean_terms, rowsum(square_terms, object$group_index, reorder = TRUE))
+  }
+  contributions <- matrix(contributions, n_groups, length(eta))
+  list(eta = unname(eta),
+       steps = 1e-4 * unname(c(spread, if (scaled) spread)),
+       transform = transform, contributions = contributions,
+       slope = unname(c(counts, if (scaled) 2 * eta[n_columns + seq_len(n_columns)] *
+                                              (counts - 1))))
+}
+
+#' Add the variability of an estimated grand transform to a covariance
+#'
+#' The model's parameters and the grand transform are estimated jointly, as a
+#' stacked system of estimating equations: the model's score, and the mean and
+#' standard-deviation equations of `.multilpa_grand_transform()`. To first
+#' order `theta_hat - theta = bread S + L E`, with `S` the summed unit scores,
+#' `E` the summed transform equations, and `L = bread C diag(1 / slope)`, where
+#' `C` is the derivative of the summed score with respect to the transform
+#' (taken by central differences of the analytic score on re-transformed data).
+#' The covariance of the model alone, `covariance`, is kept for the `S` term --
+#' the inverse information, the sandwich or the OPG inverse, as asked -- and the
+#' terms in `E` are added from the unit contributions:
+#' `covariance + c (bread B_SE L' + L B_ES bread) + c L B_EE L'`, with
+#' `c = G / (G - 1)` the CR1 factor when the model's covariance is the robust
+#' sandwich, which carries it too, and `c = 1` otherwise (Stefanski and Boos,
+#' 2002). The factor must match: a transform the estimates absorb exactly,
+#' such as the mean and variance of one z-scored indicator in one profile,
+#' then gets a variance of zero, as it should, rather than `(1 - c)` times its
+#' model variance, which is negative. Without the added terms a grand-centred mean had the standard error
+#' of the uncentred mean, 0.69 to 0.95 of its empirical spread in a Monte Carlo
+#' study (review 2026-10-26 round 2, INF2-1).
+#'
+#' @param object A fitted `multilpa` model.
+#' @param covariance The covariance of the free unconstrained coordinates.
+#' @param bread The inverse information those coordinates were inverted with
+#'   (the OPG inverse for `vcov_type = "opg"`).
+#' @param free Positions of the free coordinates in the unconstrained vector.
+#' @param codes The categorical codes of the fit.
+#' @param robust Whether `covariance` is the CR1 sandwich.
+#' @param score_of,group_scores_of `NULL` for a profile model, or, for a
+#'   family with its own parameter vector (the covariate fits), functions of a
+#'   transformed indicator matrix returning the summed score and the
+#'   units-by-coordinates score matrix in the coordinates of `covariance`.
+#' @return `covariance`, with the transform's contribution added when the fit
+#'   has a grand transform. A variance that comes out negative beyond rounding
+#'   (more than 1e-8 of the model's own) raises
+#'   `latents_singular_information`; one within rounding of zero is zero.
+#' @references Stefanski, L. A., & Boos, D. D. (2002). The calculus of
+#'   M-estimation. *The American Statistician*, 56, 29--38.
+#' @noRd
+.multilpa_transform_covariance <- function(object, covariance, bread, free,
+                                           codes = NULL, robust = FALSE,
+                                           score_of = NULL, group_scores_of = NULL) {
+  nuisance <- .multilpa_grand_transform(object)
+  if (is.null(nuisance)) return(covariance)
+  if (is.null(score_of) || is.null(group_scores_of)) {
+    theta <- unname(.multilpa_coefficients(object, "unconstrained"))
+  }
+  score_of <- score_of %||% function(transformed) {
+    -.multilpa_score(theta, transformed, object, codes)[free]
+  }
+  group_scores_of <- group_scores_of %||% function(transformed) {
+    .multilpa_group_scores(theta, transformed, object, codes)[, free, drop = FALSE]
+  }
+  total_score <- function(eta) score_of(nuisance$transform(eta))
+  derivative <- do.call(cbind, lapply(seq_along(nuisance$eta), function(j) {
+    h <- nuisance$steps[[j]]
+    up <- nuisance$eta
+    down <- nuisance$eta
+    up[j] <- up[j] + h
+    down[j] <- down[j] - h
+    (total_score(up) - total_score(down)) / (2 * h)
+  }))
+  scores <- group_scores_of(object$indicator_data)
+  influence <- bread %*% sweep(matrix(derivative, nrow(bread)), 2L,
+                               nuisance$slope, "/")
+  factor <- if (isTRUE(robust)) {
+    .inference_cluster_factor(sum(.multilpa_inference_groups(object)))
+  } else 1
+  cross <- bread %*% crossprod(scores, nuisance$contributions) %*% t(influence)
+  added <- factor * (cross + t(cross) +
+                       influence %*% crossprod(nuisance$contributions) %*% t(influence))
+  result <- covariance + added
+  result <- (result + t(result)) / 2
+  # The terms added for the transform mix the model's information with
+  # empirical moments; a variance negative beyond rounding would be read as a
+  # zero standard error, so it is refused rather than floored. One within
+  # rounding of zero is an estimate the transform fixes exactly.
+  variances <- diag(result)
+  rounding <- 1e-8 * pmax(abs(diag(covariance)), .Machine$double.eps)
+  if (any(!is.finite(variances)) || any(variances < -rounding)) {
+    stop(errorCondition(paste(
+      "The covariance with the estimated centring or scaling added is not",
+      "positive; use `vcov_type = \"robust\"` or `method = \"bootstrap\"`."),
+      class = "latents_singular_information", call = NULL))
+  }
+  diag(result) <- pmax(variances, 0)
+  dimnames(result) <- dimnames(covariance)
   result
 }

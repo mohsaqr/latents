@@ -157,17 +157,28 @@ test_that("prediction joins the pair in new data", {
   unseen <- data[1L, ]
   unseen$a <- 4L
   expect_error(predict(fit, unseen, type = "posterior"), class = "latents_bad_data")
-  # A row observing one item of the pair loses the pair (missing = "fiml").
+  # A row observing one item of the pair contributes that item, the pair's
+  # other item summed out (review 2026-10-26 round 2, C2-2). The old
+  # expectation here -- a latents_partial_pair warning, and the row
+  # predicting exactly like one with the pair missing -- was the bias itself.
   gappy <- data
   gappy$b[1:4] <- NA
   fiml <- NULL
-  expect_warning(fiml <- joint_items_fit(gappy, missing = "fiml"), class = "latents_partial_pair")
+  expect_no_warning(fiml <- joint_items_fit(gappy, missing = "fiml"),
+                    class = "latents_partial_pair")
   partial <- data[1:2, ]
   partial$a[1] <- NA
-  expect_warning(prediction <- predict(fiml, partial, type = "posterior"),
-                 class = "latents_partial_pair")
+  prediction <- predict(fiml, partial, type = "posterior")
+  joint <- fiml$response_probabilities[["a:b"]]
+  second <- sub("^[^:]*:", "", fiml$categorical_levels[["a:b"]])
+  item <- \(name) fiml$response_probabilities[[name]][, as.character(partial[[name]][1])]
+  shares <- colMeans(fiml$subject_posteriors)
+  kernel <- shares * rowSums(joint[, second == as.character(partial$b[1]), drop = FALSE]) *
+    item("c") * item("e") * item("f")
+  expect_equal(unname(unlist(prediction[1, c("probability_profile_1", "probability_profile_2")])),
+               unname(kernel / sum(kernel)), tolerance = 1e-10)
   without_pair <- quietly(predict(fiml, transform(partial, a = NA, b = NA), type = "posterior"))
-  expect_equal(prediction[1, ], without_pair[1, ], ignore_attr = TRUE)
+  expect_false(isTRUE(all.equal(prediction[1, ], without_pair[1, ], check.attributes = FALSE)))
 })
 
 test_that("refits, enumeration, sensitivity and comparison keep the pair", {

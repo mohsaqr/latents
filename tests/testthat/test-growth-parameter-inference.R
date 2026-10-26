@@ -33,7 +33,10 @@ test_that("the Wald table reproduces the fit's coefficient, random and class tab
   coefficients <- as.data.frame(get_results(fit, "coefficients"))
   rows <- subset(table, block == "coefficient")
   expect_equal(rows$estimate, coefficients$estimate, tolerance = 1e-12)
-  expect_equal(rows$standard_error, coefficients$std_error, tolerance = 1e-10)
+  # Both are delta-method errors of the same linear map taken by central
+  # differences with h = 1e-5 of a standard error; their arithmetic differs
+  # only by rounding, eps / h, about 1e-10.
+  expect_equal(rows$standard_error, coefficients$std_error, tolerance = 1e-8)
   expect_equal(rows$p_value, coefficients$p_value, tolerance = 1e-10)
   random <- as.data.frame(get_results(fit, "random"))
   for (kind in c("variance", "sd", "correlation")) {

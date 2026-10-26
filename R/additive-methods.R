@@ -92,7 +92,10 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
   }
   group_truth <- as.character(values)[match(seq_len(supplied$n_groups),
                                             supplied$index)]
-  assigned <- names(x$group_probabilities)[x$group_assignments]
+  # Groups of weight zero are not in the sample (ADD2-2).
+  used <- .additive_used_groups(x)
+  assigned <- names(x$group_probabilities)[x$group_assignments][used]
+  group_truth <- group_truth[used]
   counts <- as.data.frame(table(assigned = assigned, truth = group_truth),
                           stringsAsFactors = FALSE, responseName = "n")
   counts$share <- counts$n / as.vector(table(assigned)[counts$assigned])
@@ -110,6 +113,12 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
   ids <- rownames(posterior)
   assigned <- x$group_assignments
   modal_posterior <- posterior[cbind(seq_along(assigned), assigned)]
+  # Groups of weight zero still have a posterior and an assignment (the
+  # per-group tables keep them), but they are in no count, entropy or
+  # classification table (review 2026-10-26 round 2, ADD2-2).
+  used <- .additive_used_groups(x)
+  used_posterior <- posterior[used, , drop = FALSE]
+  used_assigned <- assigned[used]
   id_frame <- stats::setNames(data.frame(ids, stringsAsFactors = FALSE), x$id)
   switch(what,
     parameters = .additive_parameters_or_notice(x, level, vcov_type, adjust),
@@ -118,9 +127,11 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
       weight = unname(x$group_probabilities),
       # Effective counts are weighted, like the class weights they sum to.
       count = unname(colSums(posterior * (x$sampling_weights %||% 1))),
-      n_assigned = tabulate(assigned, length(class_names)),
+      n_assigned = tabulate(used_assigned, length(class_names)),
       mean_posterior = vapply(seq_along(class_names), function(h) {
-        if (any(assigned == h)) mean(posterior[assigned == h, h]) else NA_real_
+        if (any(used_assigned == h)) {
+          mean(used_posterior[used_assigned == h, h])
+        } else NA_real_
       }, numeric(1)),
       effective_groups = .additive_effective_or_na(x),
       stringsAsFactors = FALSE),
@@ -171,17 +182,21 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
         assigned = class_names[cells$assigned],
         group_class = class_names[cells$group_class],
         mean_posterior = mapply(function(a, h) {
-          if (any(assigned == a)) mean(posterior[assigned == a, h]) else NA_real_
+          if (any(used_assigned == a)) {
+            mean(used_posterior[used_assigned == a, h])
+          } else NA_real_
         }, cells$assigned, cells$group_class),
-        n_assigned = tabulate(assigned, length(class_names))[cells$assigned],
+        n_assigned = tabulate(used_assigned, length(class_names))[cells$assigned],
         stringsAsFactors = FALSE)
     },
     fit = data.frame(
       family = x$family, between_variance = x$between_variance,
       n_group_classes = length(class_names), log_likelihood = x$log_likelihood,
       n_parameters = x$n_parameters, aic = x$aic, bic = x$bic,
-      bic_individual = x$bic_individual, n_groups = x$n_groups,
-      n_obs = x$n_obs, entropy = .additive_entropy(posterior),
+      bic_individual = x$bic_individual,
+      n_groups = x$n_used_groups %||% x$n_groups,
+      n_obs = x$sufficient_statistics$n_used_obs %||% x$n_obs,
+      entropy = .additive_entropy(used_posterior),
       smallest_class = min(x$group_probabilities),
       min_effective_groups = min(.additive_effective_or_na(x)),
       converged = x$converged,
@@ -277,12 +292,14 @@ confint.multilpa_additive <- function(object, parm, level = 0.95,
 #' @export
 logLik.multilpa_additive <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = object$n_groups, class = "logLik")
+            nobs = nobs(object), class = "logLik")
 }
 
 #' @noRd
 #' @export
-nobs.multilpa_additive <- function(object, ...) object$n_groups
+# Groups of weight zero are not observations, as `nobs.glm` counts only
+# non-zero weights; `n_used_groups` is absent from fits made before 0.97.2.
+nobs.multilpa_additive <- function(object, ...) object$n_used_groups %||% object$n_groups
 
 #' @rdname parameter_inference
 #' @param ... Further arguments; unused by most methods.
@@ -304,10 +321,16 @@ parameter_inference.multilpa_additive <- function(
   if (!is.null(data)) {
     supplied <- .additive_prepare(data, x$vars, x$id, x$weights)
     stored <- x$sufficient_statistics
+    # The sufficient statistics do not depend on the order of a group's rows,
+    # but their floating-point sums do, by a few ulps; an exact comparison
+    # refused the same data with rows reordered within groups (ADD-A2,
+    # 2026-10-26). A changed or swapped value moves a mean by far more.
     if (!identical(supplied$ids, stored$ids) ||
         !identical(supplied$sizes, stored$sizes) ||
-        !isTRUE(all.equal(supplied$averages, stored$averages, tolerance = 0)) ||
-        !isTRUE(all.equal(supplied$scatter, stored$scatter, tolerance = 0)) ||
+        !isTRUE(all.equal(supplied$averages, stored$averages,
+                          tolerance = .additive_identity_tolerance)) ||
+        !isTRUE(all.equal(supplied$scatter, stored$scatter,
+                          tolerance = .additive_identity_tolerance)) ||
         !isTRUE(all.equal(supplied$sampling_weights, stored$sampling_weights,
                           tolerance = 1e-12))) {
       stop(errorCondition("`data` does not reproduce the data this fit was made from.",

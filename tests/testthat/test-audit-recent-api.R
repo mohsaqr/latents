@@ -42,14 +42,15 @@ test_that("homogeneous and general transitions compare through grids and direct 
   expect_error(compare_models(general, changed), class = "latents_incomparable_models")
 })
 
-test_that("membership covariate enumeration carries missing replication counts", {
+test_that("membership covariate enumeration carries replication counts", {
   d <- audit_api_frame()
   models <- quietly(enumerate_lpa(d, c("y", "z"), n_profiles = 2:3,
                                   profile_covariates = "covariate", model = "VVI",
                                   n_starts = 1, seed = 1, max_iter = 60))
   candidates <- get_results(models)
   expect_identical(nrow(candidates), 2L)
-  expect_true(all(is.na(candidates$n_best_replicated)))
+  # Covariate fits record replication since round 2 of 2026-10-26 (RP-1).
+  expect_true(all(candidates$n_best_replicated >= 1L))
   expect_identical(candidates$model, rep("VVI", 2))
   compared <- compare_models(a = get_candidate(models, 2), b = get_candidate(models, 3))
   expect_equal(compared$bic_groups, candidates$bic_groups)

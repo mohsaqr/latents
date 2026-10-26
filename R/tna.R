@@ -260,13 +260,25 @@ get_group_tna.multilpa_covariates <- get_group_tna.multilpa
 
 #' Each group's modal profiles in time order, one row per group
 #'
+#' Only classified rows enter (`get_results(x, "sequences")` leaves the others
+#' out): a row with no observed indicator has the class
+#' prior for its posterior, so its modal profile is not an observed state. It
+#' is left out, as an unclassified row is left out of the classification
+#' statistics and the three-step assignments
+#' (`.multilpa_informative_rows()`), rather than marked `NA`: a sequence here
+#' already runs from one observed row to the next, so an empty row is treated
+#' exactly as an absent one, and the network does not depend on which of the
+#' two the data used. A group with no classified row has no sequence.
+#' `drop_empty = FALSE` keeps every row, as before.
+#'
 #' @param x A fitted model made with `time =`.
-#' @return A list with `states`, a data frame with one row per group and one
-#'   column per position (`T1`, `T2`, ...), holding `profile_k` labels and `NA`
-#'   after a group's last observation; and `group_class`, each group's modal
-#'   group class, in the same row order.
+#' @return A list with `states`, a data frame with one row per group with a
+#'   classified row and one column per position (`T1`, `T2`, ...), holding
+#'   `profile_k` labels and `NA` after a group's last classified row; and
+#'   `group_class`, each group's modal group class, in the same row order.
 #' @noRd
 .multilpa_modal_sequences <- function(x) {
+  # The sequence table already leaves the unclassified rows out.
   sequences <- get_results(x, "sequences")
   sequences <- sequences[order(sequences$group, sequences$time), , drop = FALSE]
   ids <- unique(sequences$group)

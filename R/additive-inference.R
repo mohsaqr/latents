@@ -198,6 +198,11 @@
       "sits at min_variance; the parameter is on the edge of its space and Wald",
       "inference does not apply."), class = "latents_boundary_fit", call = NULL))
   }
+  if (isTRUE(x$collapsed_classes)) {
+    stop(errorCondition(paste(
+      "Group classes have collapsed onto identical parameters, so their weights",
+      "are not identified."), class = "latents_boundary_fit", call = NULL))
+  }
   if (any(x$group_probabilities <= 1e-6) || isTRUE(x$small_classes)) {
     stop(errorCondition(
       "A group class has (nearly) no membership, so its parameters are not identified.",
@@ -254,6 +259,15 @@
   inference
 }
 
+#' Number of groups in the sample: those of positive sampling weight
+#'
+#' The complete-data variance of a class weight is `w (1 - w) / J` over the
+#' groups the likelihood sees; a group of weight zero is not one of them
+#' (review 2026-10-26 round 2, ADD2-1). Fits made before 0.97.2 lack
+#' `n_used_groups` and had no such groups counted apart.
+#' @noRd
+.additive_sample_groups <- function(x) x$n_used_groups %||% x$n_groups
+
 #' Effective groups below which Wald intervals are flagged
 #'
 #' Chosen by the rule declared in validation/additive-diagnostic-protocol.md
@@ -277,7 +291,7 @@
     # say whether the class is small or poorly separated.
     detail <- sprintf("%s: %.1f effective of %.1f expected groups, %.0f%% of the information kept",
                       effective$group_class[weak], effective$effective_groups[weak],
-                      x$n_groups * effective$weight[weak],
+                      .additive_sample_groups(x) * effective$weight[weak],
                       100 * effective$information_ratio[weak])
     warning(warningCondition(sprintf(paste(
       "Group classes supported by fewer than %d effective groups (%s). A small",
@@ -489,7 +503,8 @@
     group_class = class_names, weight = weight,
     effective_groups = ifelse(defined, weight^2 * (1 - weight) / variance, NA_real_),
     information_ratio = ifelse(defined,
-                               weight * (1 - weight) / (x$n_groups * variance),
+                               weight * (1 - weight) /
+                                 (.additive_sample_groups(x) * variance),
                                NA_real_),
     stringsAsFactors = FALSE)
 }

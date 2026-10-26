@@ -82,6 +82,12 @@
     paste0("occasion_", seq_along(fit$measurement))
   shared <- identical(fit$variance_model, "equal")
   categorical <- fit$categorical
+  ## One rule for every label (`.latents_term_component()`): a term naming one
+  ## label -- the indicator of a mean or a log variance -- is that label's own
+  ## text, and a term pairing two -- a covariance entry, from
+  ## `.lta_covariance_names()` -- is spelled by `.latents_term()`. So `y:2`
+  ## has the mean term `y:2` and the diagonal term `y%3A2:y%3A2`, exactly as
+  ## `coef()` of the profile and transition models spells them.
   measurement <- unlist(lapply(seq_along(blocks), function(index) {
     b <- blocks[index]
     c(if (length(fit$continuous) > 0L) c(
@@ -478,32 +484,99 @@
   }
   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
   names(theta) <- .lta_names(fit)
+  # Only the identified coordinates are differenced and inverted: a flat or
+  # product-only logit, or the measurement block of an empty occasion, would
+  # make the information singular for every coefficient (R2-LTA-2). The
+  # others get NA rows and columns.
+  identified <- .lta_identified_coordinates(fit)
   n_units <- sum(.multilpa_inference_groups(fit))
   if (vcov_type != "observed") {
     .multilpa_require_clusters(sum(.multilpa_inference_groups(fit, observed_only = TRUE)),
-                               length(theta),
+                               sum(identified),
                                "A robust or OPG transition covariance")
   }
-  scores <- .lta_group_scores(theta, fit)
-  total <- function(v) colSums(.lta_group_scores(v, fit))
-  # Fourth-order differences of the analytic score with h = step * max(1, |theta|),
+  # The information is differenced, inverted and judged for singularity in the
+  # chart the fit was searched in, with covariates centred and scaled
+  # (`.lta_design_chart()`): in the supplied units a covariate held at 1e8 makes
+  # the information nearly singular and the differences meaningless. The
+  # results are mapped back exactly: theta = J phi, so the covariance is
+  # J V J', the information A' I A and the scores S A, with A = J^-1 (LTA-F5).
+  # J moves an intercept by its covariates' slopes and nothing else, and a
+  # covariate column is uncounted only with its whole block, so the identified
+  # block of J is closed: J and J^-1 restrict to it exactly.
+  chart <- .lta_design_chart(fit$designs, fit$layout)
+  internal <- fit
+  internal$designs <- .lta_chart_designs(fit$designs, chart)
+  phi <- .lta_pack(.lta_map_coefficients(.lta_parameters(fit), chart, "to_chart"),
+                   fit$variance_model, fit$extra_data)
+  to_raw <- .lta_chart_jacobian(fit, chart, length(theta), "to_raw")
+  to_chart <- .lta_chart_jacobian(fit, chart, length(theta), "to_chart")
+  all_scores <- .lta_group_scores(phi, internal)
+  chart_scores <- all_scores[, identified, drop = FALSE]
+  total <- function(v) colSums(.lta_group_scores(replace(phi, identified, v),
+                                                 internal))[identified]
+  # Fourth-order differences of the analytic score with h = step * max(1, |phi|),
   # and the "min <= 1e-10 max" refusal: the arithmetic this engine has always
   # reported, now from the shared service.
-  information <- .inference_score_information(total, theta, step,
-                                              scheme = "five_point", h_rule = "max1")
-  inverse <- .inference_invert(information, "min_le_eps_max")
-  meat <- crossprod(scores)
+  chart_information <- .inference_score_information(total, phi[identified], step,
+                                                    scheme = "five_point", h_rule = "max1")
+  inverse <- .inference_invert(chart_information, "min_le_eps_max")
+  meat <- crossprod(chart_scores)
   if (vcov_type != "observed") {
-    .inference_require_rank(scores[
+    .inference_require_rank(chart_scores[
       .multilpa_inference_groups(fit, observed_only = TRUE), , drop = FALSE],
       "Too few groups for a robust or OPG covariance.")
   }
-  covariance <- switch(vcov_type, observed = inverse,
-                       robust = .inference_sandwich(inverse, meat, n_units),
-                       opg = chol2inv(chol(meat)))
-  dimnames(covariance) <- dimnames(information)
+  chart_covariance <- switch(vcov_type, observed = inverse,
+                             robust = .inference_sandwich(inverse, meat, n_units),
+                             opg = chol2inv(chol(meat)))
+  kept_raw <- to_raw[identified, identified, drop = FALSE]
+  kept_chart <- to_chart[identified, identified, drop = FALSE]
+  covariance <- information <- matrix(NA_real_, length(theta), length(theta))
+  covariance[identified, identified] <- kept_raw %*% chart_covariance %*% t(kept_raw)
+  information[identified, identified] <- crossprod(kept_chart,
+                                                   chart_information %*% kept_chart)
+  # A flat coordinate's score is zero in every group.
+  scores <- all_scores %*% to_chart
+  dimnames(information) <- dimnames(covariance) <- list(names(theta), names(theta))
+  colnames(scores) <- colnames(all_scores)
   list(theta = theta, vcov = covariance, information = information,
-       group_scores = scores, gradient = colSums(scores), vcov_type = vcov_type)
+       group_scores = scores, gradient = colSums(scores), vcov_type = vcov_type,
+       identified = stats::setNames(identified, names(theta)))
+}
+
+#' Which estimation-scale coordinates of a general transition fit are identified
+#'
+#' The logits of `.lta_identified_columns()` and the measurement blocks of
+#' occasions at which something is observed; the group-class and initial
+#' logits always are. The rest are counted in neither `n_parameters` nor the
+#' information, and their standard errors are `NA`.
+#'
+#' @param fit A `multilpa_lta` fit.
+#' @return A logical vector in `.lta_names()` order.
+#' @noRd
+.lta_identified_coordinates <- function(fit) {
+  names_all <- .lta_names(fit)
+  occupied <- fit$occupied %||% rep(TRUE, fit$layout$n_occasions)
+  terms <- colnames(fit$designs$transition[[1L]])
+  counted <- .lta_identified_columns(terms, fit$layout$n_occasions,
+                                     fit$transitions %||% "homogeneous",
+                                     fit$order %||% 1L, occupied)
+  # Names are kind.owner.outcome.term; the owner of a measurement coordinate
+  # is its block ("all" or "occasion_t"), of a logit its group class.
+  pieces <- strsplit(names_all, ".", fixed = TRUE)
+  kind <- vapply(pieces, `[`, character(1), 1L)
+  owner <- vapply(pieces, function(p) if (length(p) >= 2L) p[[2L]] else "", character(1))
+  term <- vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1))
+  identified <- rep(TRUE, length(names_all))
+  by_occasion <- !kind %in% c("initial", "transition", "transition2") &
+    grepl("^occasion_[0-9]+$", owner)
+  identified[by_occasion] <- occupied[as.integer(sub("^occasion_", "", owner[by_occasion]))]
+  first <- kind == "transition"
+  second <- kind == "transition2"
+  identified[first] <- term[first] %in% terms[counted$first]
+  identified[second] <- term[second] %in% terms[counted$second]
+  identified
 }
 
 #' The fit's parameters on the centred scale the engine works on

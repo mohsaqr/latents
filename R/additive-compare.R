@@ -69,10 +69,16 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       "or two profile fits, not one of each."),
       class = "latents_bad_argument", call = NULL))
   }
+  # The sufficient statistics do not depend on the order of a group's rows,
+  # but their floating-point sums do, by a few ulps; an exact comparison
+  # refused the same data with rows reordered within groups (ADD-A2,
+  # 2026-10-26). A changed or swapped value moves a mean by far more.
   same_statistics <- function(left, right) {
     identical(left$ids, right$ids) && identical(left$sizes, right$sizes) &&
-      isTRUE(all.equal(left$averages, right$averages, tolerance = 0)) &&
-      isTRUE(all.equal(left$scatter, right$scatter, tolerance = 0))
+      isTRUE(all.equal(left$averages, right$averages,
+                       tolerance = .additive_identity_tolerance)) &&
+      isTRUE(all.equal(left$scatter, right$scatter,
+                       tolerance = .additive_identity_tolerance))
   }
   same_data <- identical(null_model$vars, alternative_model$vars) &&
     identical(null_model$id, alternative_model$id) &&
@@ -105,8 +111,10 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
     stop(errorCondition("Both fits must have converged.",
                         class = "latents_no_converge", call = NULL))
   }
-  stopifnot("`iter` must be a single positive integer" =
-              is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 1 &&
+  # At least two replicates, as bootstrap_lrt() documents and the profile
+  # models require (review 2026-10-26 round 2, ADD2-7).
+  stopifnot("`iter` must be a single integer of at least 2" =
+              is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 2 &&
               iter == floor(iter) && iter <= .Machine$integer.max,
             "`n_starts` must be a single positive integer" = is.null(n_starts) ||
               (is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
@@ -161,7 +169,8 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   tally <- .latents_blrt_p_value(replicates, observed, iter)
   result <- list(statistic = observed, p_value = tally$p_value,
        monte_carlo_se = tally$monte_carlo_se,
-       iter = iter, n_valid = tally$n_valid, replicates = replicates,
+       iter = iter, n_valid = tally$n_valid, n_invalid = tally$n_invalid,
+       replicates = replicates,
        fixed = character(),
        null_profiles = NA_integer_,
        null_group_classes = length(null_model$group_probabilities),

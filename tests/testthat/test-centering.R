@@ -108,9 +108,17 @@ test_that("the diagnostics work on the scale the model was fitted on", {
 })
 
 test_that("inference works on a centred fit and reports the centred scale", {
-  fit <- centred_fit(n_profiles = 2)
+  # A person-centred fit has sandwich errors only (review 2026-10-26 round 2,
+  # INF2-2), which need more units than the 21 parameters: 20 students are
+  # refused, 40 are enough.
+  expect_error(parameter_inference(centred_fit(n_profiles = 2)),
+               class = "latents_too_few_groups")
+  fit <- multilpa(subset(course_engagement, student <= 40), activity, "student",
+                  n_profiles = 2, n_group_classes = 1, n_starts = 1, seed = 1,
+                  centering = "person")
   inference <- parameter_inference(fit)
   expect_s3_class(inference, "data.frame")
+  expect_identical(attr(inference, "vcov_type"), "robust")
   # The means are deviations, so they straddle zero rather than sitting at the
   # raw indicator level.
   measurement <- subset(inference, level == "measurement" & parameter == "mean")

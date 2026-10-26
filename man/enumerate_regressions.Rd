@@ -77,11 +77,12 @@ model, with columns \code{n_classes}, \code{n_group_classes}, \code{log_likeliho
 \code{smallest_share}, \code{converged}, \code{n_best_replicated}, \code{note} (why a model
 could not be fitted), \code{best_bic} (\code{TRUE} for the minimum-BIC row), and,
 with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value},
-\code{blrt_replicates} (the successful replicates) and \code{blrt_flagged} (the
-failed, unconverged, separated or reversed-likelihood replicates). The
-test columns are \code{NA} where the \code{k - 1} or \code{k} class model is missing
-or failed, and the p-value is \code{NA} if any requested replicate fails
-validation.
+\code{blrt_replicates} (the valid replicates), \code{blrt_n_invalid} (the failed,
+unconverged, separated or reversed-likelihood replicates) and
+\code{blrt_flagged} (the same count, under its earlier name). The test
+columns are \code{NA} where the \code{k - 1} or \code{k} class model is missing or
+failed, and the p-value is \code{NA} when the observed fits fail validation or
+fewer than half of the requested replicates are valid.
 \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one
 fitted model. \code{summary()} returns the same table as \code{\link[=as.data.frame]{as.data.frame()}}.
 \code{plot()} draws AIC, BIC, SABIC and ICL across the classes (see
@@ -95,9 +96,23 @@ fit statistics in one table. Optionally adds a parametric bootstrap
 likelihood-ratio test of \code{k - 1} against \code{k} classes, at the same number of
 group classes (McLachlan 1987; Nylund, Asparouhov and Muthen 2007):
 outcomes are simulated from the \code{k - 1} class fit, both models are refitted
-to every replicate, and the p-value is \code{(1 + b) / (1 + B)}, where \code{b}
-counts replicate statistics at least as large as the observed one and \code{B}
-is the number of replicates requested.
+to every replicate, and the p-value is \code{(1 + b) / (1 + V)}, where \code{b}
+counts valid replicate statistics at least as large as the observed one and
+\code{V} is the number of valid replicates.
+}
+\details{
+A replicate is invalid when a refit fails, does not converge, warns of
+separation or a degenerate random-effect covariance, or gives a statistic
+below zero beyond rounding. Under the null hypothesis the extra class of the
+\code{k}-class refit is spurious, and a spurious class with membership
+covariates is expected to drift towards a separating or slowly converging
+solution: an invalid replicate is a property of the null distribution, not
+a failure of the test. The p-value is therefore computed over the valid
+replicates, their count and the invalid count are reported, and
+\code{latents_failed_replicates} is warned naming the count; the p-value is \code{NA}
+only when fewer than half of the requested replicates are valid. Excluding
+invalid replicates conditions the null distribution on a valid refit, so a
+large invalid share is worth reporting with the result.
 }
 \section{Conditions}{
 
@@ -110,8 +125,10 @@ checks. \code{latents_bad_argument} for an invalid \code{seed}, for \code{n_clas
 test whose outcome is not a plain column name, and from \code{get_results()}
 for a model that is not in the grid or could not be fitted.
 \code{latents_unsupported_weights} for a bootstrap test with sampling
-weights. \code{latents_failed_replicates} is warned, and the p-value is \code{NA},
-when the observed fits or any replicate fail validation.
+weights. \code{latents_failed_replicates} is warned, naming the count, when
+some replicates are invalid (the p-value then uses the valid ones), and
+when the observed fits fail validation or fewer than half of the
+replicates are valid (the p-value is then \code{NA}).
 }
 
 \examples{

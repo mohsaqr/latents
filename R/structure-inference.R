@@ -178,7 +178,10 @@
 #'   `chart` and `anchor`.
 #' @noRd
 .multilpa_chart_encode <- function(object) {
-  continuous <- .multilpa_continuous_names(object)
+  ## The names are used only to label the coordinates, in the `kind[...]`
+  ## grammar, where every label is escaped so a comma or colon in an indicator
+  ## name cannot split it (review 2026-10-26, INF-4).
+  continuous <- .latents_parameter_component(.multilpa_continuous_names(object))
   k <- object$n_profiles
   d <- length(continuous)
   chart <- .multilpa_chart(object$covariance_structure, k, d)

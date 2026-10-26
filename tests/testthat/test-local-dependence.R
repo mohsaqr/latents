@@ -114,12 +114,15 @@ test_that("pairs that cannot be modelled are refused by class", {
                        c = factor(rep(0:1, 30)))
   expect_error(lca(colons, c("a", "b", "c"), 1, local_dependence = "a:b", n_starts = 1,
                    seed = 1), class = "latents_bad_data")
-  # Rows observing one item of the pair lose the pair, and say so.
+  # Rows observing one item of the pair keep that item (review 2026-10-26
+  # round 2, C2-2); the old expectation here, a latents_partial_pair warning
+  # that the pair was dropped, was the bias itself.
   gappy <- data
   gappy$b[1:5] <- NA
-  expect_warning(lca(gappy, c("a", "b", "c", "e"), 2, n_starts = 1, seed = 1,
-                     missing = "fiml", local_dependence = "a:b"),
-                 class = "latents_partial_pair")
+  expect_no_warning(gappy_fit <- lca(gappy, c("a", "b", "c", "e"), 2, n_starts = 1, seed = 1,
+                                     missing = "fiml", local_dependence = "a:b"),
+                    class = "latents_partial_pair")
+  expect_false(is.null(attr(gappy_fit$categorical_data, "latents_partial")))
 })
 
 correlated_pair <- function(seed = 9, n = 1200) {

@@ -209,13 +209,75 @@
 }
 
 #' A Cholesky factor that tolerates a covariance on its boundary
+#'
+#' Exact (no jitter) when the covariance's correlation matrix is safely
+#' positive definite. Otherwise each diagonal entry gains 1e-12 of itself,
+#' a jitter relative to each variance rather than to the largest: with a
+#' calendar-year random slope the intercept variance is 1.6e6 and the
+#' smallest eigenvalue 4.9e-7, so 1e-12 of the largest variance was three
+#' times that eigenvalue and broke EM (review round 2, GR2-2). An absolute
+#' floor (1e-12) swamped a covariance in small units (G1).
+#'
 #' @param covariance A symmetric positive semi-definite matrix.
-#' @return A lower-triangular `L` with `L %*% t(L)` equal to `covariance` up
-#'   to a jitter of 1e-12 times its scale on a singular direction.
+#' @return A lower-triangular `L` with `L %*% t(L)` equal to `covariance`, up
+#'   to that jitter on a (numerically) singular one.
 #' @noRd
 .growth_factor <- function(covariance) {
-  jitter <- 1e-12 * max(1, max(abs(diag(covariance))))
+  variances <- diag(covariance)
+  if (all(variances > 0)) {
+    spread <- sqrt(variances)
+    correlation <- covariance / outer(spread, spread)
+    smallest <- min(eigen(correlation, symmetric = TRUE, only.values = TRUE)$values)
+    if (smallest > 1e-10) return(t(chol(covariance)))
+    return(t(chol(covariance + diag(1e-12 * variances, nrow(covariance)))))
+  }
+  scale <- max(abs(variances))
+  jitter <- 1e-12 * (if (scale > 0) scale else 1)
   t(chol(covariance + diag(jitter, nrow(covariance))))
+}
+
+#' Floor each random effect's conditional variance
+#'
+#' The squared Cholesky diagonal of a covariance is each random effect's
+#' variance given the ones before it. EM and the quasi-Newton finish both
+#' bound it below by `min_variance` (in standard coordinates), so the two
+#' stages maximize over the same parameter set (review round 2, GR2-8);
+#' flooring the variances alone let EM reach conditional variances the finish
+#' then moved onto its bound. A floored conditional variance implies a
+#' floored variance.
+#'
+#' @param covariance A positive definite matrix.
+#' @param floor The variance floor.
+#' @return The covariance with every squared Cholesky diagonal at least `floor`.
+#' @noRd
+.growth_floor_covariance <- function(covariance, floor) {
+  factor <- .growth_factor(covariance)
+  low <- diag(factor) < sqrt(floor)
+  if (!any(low)) return(covariance)
+  diag(factor)[low] <- sqrt(floor)
+  tcrossprod(factor)
+}
+
+#' Class posteriors and likelihood of a growth mixture from its log densities
+#'
+#' @param spec The growth specification.
+#' @param params Parameters carrying the membership coefficients.
+#' @param log_density Persons by classes.
+#' @return A list with `log_likelihood` (sampling-weighted when the fit is),
+#'   `unit_log_likelihood`, `tau` (weighted posteriors), `posterior`,
+#'   `structure` and `log_density`.
+#' @noRd
+.growth_structure_terms <- function(spec, params, log_density) {
+  structure <- .growth_structure(spec)
+  persons <- .mixture_structure_expectation(structure, params, log_density)
+  weighted <- if (is.null(structure$sampling_weights)) persons else
+    .mixture_weigh(structure, persons)
+  # `structure` keeps the (weighted) structure E-step the membership M-step
+  # and scores read: posteriors joint with each group class for two levels.
+  list(log_likelihood = weighted$log_likelihood,
+       unit_log_likelihood = persons$unit_log_likelihood,
+       tau = weighted$tau, posterior = persons$tau, structure = weighted,
+       log_density = log_density)
 }
 
 #' E-step of the growth mixture model
@@ -238,19 +300,10 @@
     })
   log_density <- vapply(terms, `[[`, numeric(length(stats$n)), "log_density") |>
     matrix(length(stats$n), spec$n_classes)
-  structure <- .growth_structure(spec)
-  persons <- .mixture_structure_expectation(structure, params, log_density)
-  weighted <- if (is.null(structure$sampling_weights)) persons else
-    .mixture_weigh(structure, persons)
-  # `structure` keeps the (weighted) structure E-step the membership M-step
-  # and scores read: posteriors joint with each group class for two levels.
-  list(log_likelihood = weighted$log_likelihood,
-       unit_log_likelihood = persons$unit_log_likelihood,
-       tau = weighted$tau, posterior = persons$tau, structure = weighted,
-       log_density = log_density,
-       means = lapply(terms, `[[`, "mean"),
-       covariances = lapply(terms, `[[`, "covariance"),
-       dense = if (.growth_is_correlated(spec)) terms)
+  c(.growth_structure_terms(spec, params, log_density),
+    list(means = lapply(terms, `[[`, "mean"),
+         covariances = lapply(terms, `[[`, "covariance"),
+         dense = if (.growth_is_correlated(spec)) terms))
 }
 
 #' M-step of the growth mixture model (one conditional maximization each)
@@ -371,10 +424,8 @@
       params$random_scale <- sqrt(pmax(updated / updated[n_classes], 1e-12))
       list(shared_matrix * updated[n_classes])
     })
-  params$random_covariance <- lapply(params$random_covariance, function(covariance) {
-    diag(covariance) <- pmax(diag(covariance), spec$min_variance)
-    covariance
-  })
+  params$random_covariance <- lapply(params$random_covariance,
+                                     .growth_floor_covariance, floor = spec$min_variance)
   .mixture_update_mixing(.growth_structure(spec), params, expectation$structure)
 }
 
@@ -425,7 +476,11 @@
                      function(point, expectation) {
                        .growth_maximization(spec, stats, point, expectation)
                      },
-                     max_iter, tol, .mixture_em_settings())
+                     max_iter, tol,
+                     # A unit-free stop (review 2026-10-26 round 2, K2-6): the
+                     # measurements of the persons of positive weight.
+                     .mixture_em_settings(stop_scale = sum(stats$n[
+                       which((spec$sampling_weights %||% rep(1, length(stats$n))) > 0)])))
   params <- fit$state
   expectation <- fit$expectation
   sizes <- colSums(expectation$posterior)

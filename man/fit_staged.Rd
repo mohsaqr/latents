@@ -15,7 +15,7 @@ fit_staged(
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  min_variance = 1e-06,
+  min_variance = NULL,
   seed = NULL,
   missing = c("error", "fiml"),
   covariance_model = c("diagonal", "full"),
@@ -61,13 +61,21 @@ is evaluated at exactly those values, for example to score them with
 \code{logLik()}; without \code{start}, the random initializations are evaluated and
 the one with the highest log likelihood is returned.}
 
-\item{tol}{Positive relative log-likelihood tolerance (default \code{1e-8}).
-Convergence requires an absolute change no greater than
-\verb{tol * (1 + abs(previous log likelihood))}.}
+\item{tol}{Positive convergence tolerance (default \code{1e-8}). EM has
+converged when one step (or SQUAREM cycle) changes the log likelihood by
+no more than \code{tol} times the number of observed indicator values (each
+non-missing cell of a row of positive weight, at least one). A change in
+log likelihood does not depend on the units of the data, so neither does
+this rule; latents 0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}, which a change of units moved.}
 
-\item{min_variance}{Positive lower bound on each variance, or on each
-covariance eigenvalue under full covariance, in squared input units
-(default \code{1e-6}); the fit is then constrained maximum likelihood.
+\item{min_variance}{Lower bound on each variance, or on each covariance
+eigenvalue under full covariance; the fit is then constrained maximum
+likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
+sample variance of the continuous indicators (observed values in rows of
+positive weight, on the scale fitted, after any centring and scaling), so
+that the bound moves with the units of the data. A number is an absolute
+bound in squared indicator units (the default of 0.97.1 and earlier was
+\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
 Estimates at the bound are reported and raise a warning.}
 
 \item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,

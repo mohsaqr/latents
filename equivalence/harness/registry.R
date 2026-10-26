@@ -59,10 +59,15 @@
 #' @param scale `"absolute"` compares `|reference - obtained|`; `"relative"`
 #'   divides that difference by `max(|reference|, 1)`, for quantities whose
 #'   magnitude makes an absolute tolerance meaningless.
+#' @param output The output each quantity compares, as `table$column` (see
+#'   [fit_outputs()]), or `NA` for a quantity that is not one of the fit's
+#'   reported values (a likelihood scored at another program's estimates, say).
 #' @return A `data.frame` with one row per quantity and columns `quantity`,
-#'   `reference`, `obtained`, `difference`, `tolerance`, `agrees`.
+#'   `reference`, `obtained`, `difference`, `tolerance`, `agrees`, `output`
+#'   and `n_values` (one).
 compare_values <- function(quantity, reference, obtained, tolerance,
-                           scale = c("absolute", "relative")) {
+                           scale = c("absolute", "relative"),
+                           output = NA_character_) {
   scale <- match.arg(scale)
   stopifnot(
     "`quantity` must be character" = is.character(quantity),
@@ -80,7 +85,7 @@ compare_values <- function(quantity, reference, obtained, tolerance,
              difference = difference, tolerance = tolerance,
              agrees = is.finite(reference) & is.finite(obtained) &
                is.finite(difference) & difference <= tolerance,
-             stringsAsFactors = FALSE)
+             output = output, n_values = 1L, stringsAsFactors = FALSE)
 }
 
 #' Compare against a value read from published digits
@@ -101,9 +106,11 @@ compare_values <- function(quantity, reference, obtained, tolerance,
 #' @param obtained Numeric vector of values multilpa produced.
 #' @param digits Number of decimals each reference was printed to, recycled
 #'   across quantities.
+#' @param output The output each quantity compares, as for [compare_values()].
 #' @return A `data.frame` shaped like [compare_values()], whose `difference` is
 #'   in units of the half-unit rounding bound and whose `tolerance` is 1.
-compare_printed <- function(quantity, reference, obtained, digits) {
+compare_printed <- function(quantity, reference, obtained, digits,
+                            output = NA_character_) {
   stopifnot(
     "`digits` must be a nonnegative whole number" =
       is.numeric(digits) && length(digits) > 0L && all(is.finite(digits)) &&
@@ -116,7 +123,7 @@ compare_printed <- function(quantity, reference, obtained, digits) {
              difference = abs(reference - obtained) / bound,
              tolerance = 1, agrees = is.finite(reference) & is.finite(obtained) &
                abs(reference - obtained) <= bound,
-             stringsAsFactors = FALSE)
+             output = output, n_values = 1L, stringsAsFactors = FALSE)
 }
 
 # ---------------------------------------------------------------------------
@@ -410,7 +417,15 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   row.names(comparisons) <- NULL
   status <- do.call(rbind, lapply(outcomes, `[[`, "status"))
   row.names(status) <- NULL
-  structure(list(comparisons = comparisons, suites = status,
+  # Only a suite that ran can show whether a registered defect still holds.
+  marked <- .mark_known_open(comparisons, .known_open(root),
+                             status$suite[status$status == "ran"])
+  comparisons <- marked$comparisons
+  ledgers <- do.call(rbind, lapply(outcomes, `[[`, "ledger"))
+  if (is.null(ledgers)) ledgers <- .empty_ledger()
+  row.names(ledgers) <- NULL
+  structure(list(comparisons = comparisons, suites = status, coverage = ledgers,
+                 known_open = marked$register,
                  session = .equivalence_session(status, opened, .source_state(root),
                                                 coverage)),
             class = "multilpa_equivalence")
@@ -422,7 +437,73 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   data.frame(suite = character(), source = character(), precision = character(),
              dataset = character(), quantity = character(), reference = numeric(),
              obtained = numeric(), difference = numeric(), tolerance = numeric(),
-             agrees = logical(), seconds = numeric(), stringsAsFactors = FALSE)
+             agrees = logical(), output = character(), n_values = integer(),
+             seconds = numeric(), known_open = character(), stringsAsFactors = FALSE)
+}
+
+#' The register of defects the harness is known to find
+#'
+#' Each entry names a suite and a pattern on the compared quantity. A
+#' disagreement matching an entry is reported under the defect's id instead of
+#' failing the run, so an open item awaiting a decision does not turn every run
+#' red and bury the next new failure. An entry that no longer matches any
+#' disagreement fails the run instead: the defect is fixed, or the check that
+#' found it is gone, and either way the register must be corrected.
+#'
+#' @param root Project root directory.
+#' @return A `data.frame` with columns `id`, `suite`, `pattern`, `defect` and
+#'   `decision`; zero rows when there is no register.
+.known_open <- function(root = ".") {
+  path <- file.path(root, "equivalence", "harness", "known-open.csv")
+  if (!file.exists(path)) {
+    return(data.frame(id = character(), suite = character(), pattern = character(),
+                      defect = character(), decision = character(),
+                      stringsAsFactors = FALSE))
+  }
+  # A register with every defect fixed is a header alone, which read.csv
+  # would type as logical columns.
+  register <- utils::read.csv(path, stringsAsFactors = FALSE,
+                              colClasses = "character")
+  stopifnot("the known-open register needs id, suite, pattern, defect and decision" =
+              all(c("id", "suite", "pattern", "defect", "decision") %in% names(register)),
+            "every known-open id must be unique" = !anyDuplicated(register$id))
+  register
+}
+
+#' Mark disagreements that a registered open defect explains
+#' @param comparisons The comparison frame of a run.
+#' @param register The frame from [.known_open()].
+#' @param suites The suites this run included; entries for others are not
+#'   judged, because a partial run cannot show whether they still hold.
+#' @return A list with `comparisons` (gaining a `known_open` column: the
+#'   defect id, or `NA`) and `register` (gaining `matched`, the number of
+#'   disagreements each entry explains, and `status`: `open`, `stale` or
+#'   `not run`).
+.mark_known_open <- function(comparisons, register, suites) {
+  # One column per entry: which disagreements it explains.
+  # An entry may name several suites, separated by `|`, when one defect shows
+  # up in more than one place.
+  suites_of <- lapply(strsplit(register$suite, "|", fixed = TRUE), trimws)
+  hits <- vapply(seq_len(nrow(register)), function(entry) {
+    !comparisons$agrees & comparisons$suite %in% suites_of[[entry]] &
+      grepl(register$pattern[[entry]], comparisons$quantity)
+  }, logical(nrow(comparisons)))
+  hits <- matrix(hits, nrow = nrow(comparisons), ncol = nrow(register))
+  first <- if (ncol(hits) == 0L) integer(nrow(hits)) else max.col(hits, ties.method = "first")
+  comparisons$known_open <- ifelse(rowSums(hits) > 0L, register$id[first], NA_character_)
+  register$matched <- as.integer(colSums(hits))
+  ran <- vapply(suites_of, function(named) all(named %in% suites), logical(1))
+  register$status <- ifelse(!ran, "not run",
+                            ifelse(register$matched > 0L, "open", "stale"))
+  list(comparisons = comparisons, register = register)
+}
+
+#' The columns every coverage ledger carries
+#' @return A zero-row `data.frame` with the ledger columns.
+.empty_ledger <- function() {
+  data.frame(suite = character(), fit = character(), output = character(),
+             n_produced = integer(), n_compared = integer(), status = character(),
+             reason = character(), stringsAsFactors = FALSE)
 }
 
 #' Run one suite and record what happened to it
@@ -435,15 +516,16 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
 #'
 #' @param name Suite name.
 #' @param files Named character vector of suite file paths.
-#' @return A list with `comparisons` (possibly `NULL`) and `status`, a one-row
-#'   `data.frame`.
+#' @return A list with `comparisons` (possibly `NULL`), `ledger` (the suite's
+#'   output coverage, `NULL` for a suite that keeps none) and `status`, a
+#'   one-row `data.frame`.
 .run_one_suite <- function(name, files) {
   message(sprintf("running suite: %s", name))
   warnings_seen <- character()
   started <- proc.time()[["elapsed"]]
   outcome <- withCallingHandlers(
     tryCatch(
-      list(state = "ran", value = .evaluate_suite(name, files[[name]]), reason = NA_character_),
+      c(list(state = "ran", reason = NA_character_), .evaluate_suite(name, files[[name]])),
       multilpa_suite_skipped = function(condition) {
         list(state = "skipped", value = NULL, reason = conditionMessage(condition))
       },
@@ -468,15 +550,20 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   }
   comparisons <- if (is.null(outcome$value)) NULL else
     data.frame(outcome$value, seconds = elapsed, stringsAsFactors = FALSE)
+  ledger <- if (is.null(outcome$ledger)) NULL else
+    data.frame(suite = name, outcome$ledger, stringsAsFactors = FALSE)
+  not_covered <- if (is.null(ledger)) NA_integer_ else sum(ledger$status == "not covered")
   status <- data.frame(
     suite = name, status = outcome$state,
     compared = if (is.null(comparisons)) 0L else nrow(comparisons),
     agreed = if (is.null(comparisons)) 0L else sum(comparisons$agrees),
+    values = if (is.null(comparisons)) 0L else sum(comparisons$n_values),
+    outputs_not_covered = not_covered,
     warnings = length(warnings_seen), seconds = elapsed,
     reason = outcome$reason %||% NA_character_,
     first_warning = if (length(warnings_seen) == 0L) NA_character_ else warnings_seen[[1L]],
     stringsAsFactors = FALSE)
-  list(comparisons = comparisons, status = status)
+  list(comparisons = comparisons, ledger = ledger, status = status)
 }
 
 # The package Depends on R (>= 4.1.0), where base `%||%` does not exist yet.
@@ -485,8 +572,8 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
 #' Source a suite file and call its entry point
 #' @param name Suite name.
 #' @param path Path to the suite file.
-#' @return The suite's comparison frame, with `suite`, `source`, `precision`
-#'   and `dataset` columns filled in.
+#' @return A list with `value`, the suite's comparison frame with `suite`,
+#'   `source`, `precision` and `dataset` columns filled in, and `ledger`.
 .evaluate_suite <- function(name, path) {
   environment_for_suite <- new.env(parent = globalenv())
   sys.source(path, envir = environment_for_suite)
@@ -495,9 +582,14 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
     stop(errorCondition(sprintf("%s does not define %s()", path, entry_name),
                         class = "multilpa_bad_suite", call = NULL))
   }
-  result <- get(entry_name, envir = environment_for_suite)()
+  returned <- get(entry_name, envir = environment_for_suite)()
+  # A suite returns its comparisons, or a `harness_case` that also carries the
+  # ledger accounting for every output of every fit it compared.
+  ledger <- if (inherits(returned, "harness_case")) returned$ledger else NULL
+  result <- if (inherits(returned, "harness_case")) returned$comparisons else returned
   stopifnot("a suite must return a data.frame with a `source` column" =
               is.data.frame(result) && nrow(result) > 0L && "source" %in% names(result))
+  result <- .with_output_columns(result)
   # Suite annotations cannot turn a comparison beyond its tolerance green.
   result$agrees <- result$agrees %in% TRUE & is.finite(result$reference) &
     is.finite(result$obtained) & is.finite(result$difference) &
@@ -505,11 +597,12 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
     result$difference <= result$tolerance
   if (is.null(result$dataset)) result$dataset <- NA_character_
   if (is.null(result$precision)) result$precision <- "machine"
-  data.frame(suite = name, source = result$source, precision = result$precision,
-             dataset = result$dataset,
-             result[, c("quantity", "reference", "obtained", "difference",
-                        "tolerance", "agrees")],
-             stringsAsFactors = FALSE)
+  list(value = data.frame(suite = name, source = result$source,
+                          precision = result$precision, dataset = result$dataset,
+                          result[, c("quantity", "reference", "obtained", "difference",
+                                     "tolerance", "agrees", "output", "n_values")],
+                          stringsAsFactors = FALSE),
+       ledger = ledger)
 }
 
 #' Record the versions a run was produced under
@@ -582,17 +675,23 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
 #' @param optional Passed through for consistency with the generic; ignored.
 #' @param what Which table: `"comparisons"` is one row per compared quantity,
 #'   `"suites"` one row per suite with its status and reason, `"session"` the
-#'   versions the run was produced under, and `"summary"` the by-source
-#'   summary.
+#'   versions the run was produced under, `"summary"` the by-source
+#'   summary, and `"coverage"` one row per output column of every compared
+#'   fit, with how many of its values were compared or why none were, and
+#'   `"known_open"` the register of open defects with how many disagreements
+#'   each explains.
 #' @param ... Unused.
 #' @return A `data.frame`.
 as.data.frame.multilpa_equivalence <- function(x, row.names = NULL, optional = FALSE,
                                                what = c("comparisons", "suites",
-                                                        "session", "summary"), ...) {
+                                                        "session", "summary",
+                                                        "coverage", "known_open"), ...) {
   what <- match.arg(what)
   switch(what,
          comparisons = x$comparisons,
          suites = x$suites,
+         coverage = x$coverage %||% .empty_ledger(),
+         known_open = x$known_open,
          session = x$session,
          summary = equivalence_summary(x))
 }
@@ -629,10 +728,16 @@ equivalence_provenance <- function(run, component = "multilpa") {
 print.multilpa_equivalence <- function(x, ...) {
   cat(sprintf("Equivalence run against multilpa %s under %s\n",
               equivalence_provenance(x, "multilpa"), R.version.string))
-  print(x$suites[, c("suite", "status", "compared", "agreed", "warnings", "seconds")])
-  cat(sprintf("\n%d quantities compared, %d agreed, %d disagreed\n",
-              nrow(x$comparisons), sum(x$comparisons$agrees),
-              sum(!x$comparisons$agrees)))
+  print(x$suites[, c("suite", "status", "compared", "agreed", "values",
+                     "outputs_not_covered", "warnings", "seconds")])
+  cat(sprintf("\n%d quantities (%d values) compared, %d agreed, %d disagreed\n",
+              nrow(x$comparisons), sum(x$comparisons$n_values),
+              sum(x$comparisons$agrees), sum(!x$comparisons$agrees)))
+  uncovered <- subset(x$coverage %||% .empty_ledger(), status == "not covered")
+  if (nrow(uncovered) > 0L) {
+    cat(sprintf("\n%d output column(s) neither compared nor exempted:\n", nrow(uncovered)))
+    print(uncovered[c("suite", "fit", "output", "n_produced")])
+  }
   skipped <- x$suites[x$suites$status != "ran", , drop = FALSE]
   if (nrow(skipped) > 0L) {
     cat("\nSuites not run:\n")
@@ -783,6 +888,62 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
 # Writing the report
 # ---------------------------------------------------------------------------
 
+#' The coverage section of the report: every output of every compared fit
+#' @param run The run.
+#' @param row_text Row formatter.
+#' @return Markdown lines.
+.coverage_markdown <- function(run, row_text) {
+  ledger <- run$coverage %||% .empty_ledger()
+  keeping <- unique(ledger$suite)
+  without <- setdiff(run$suites$suite[run$suites$status == "ran"], keeping)
+  by_suite <- lapply(keeping, function(name) {
+    part <- ledger[ledger$suite == name, , drop = FALSE]
+    produced <- sum(part$n_produced[part$status != "exempt"])
+    row_text(c(name, length(unique(part$fit)), nrow(part),
+               sum(part$status == "compared"), sum(part$status == "partial"),
+               sum(part$status == "exempt"), sum(part$status == "not covered"),
+               # A column compared twice (printed and at machine precision)
+               # still has only its own values to cover.
+               sprintf("%.1f%%", 100 * sum(pmin(part$n_compared, part$n_produced)[
+                 part$status != "exempt"]) / max(produced, 1))))
+  })
+  uncovered <- ledger[ledger$status == "not covered", , drop = FALSE]
+  c("", "## Output coverage", "",
+    "Every output column of every fit a suite compared, read from the package's own",
+    "catalogue (`get_results(fit, \"all\")`), must be compared or exempted with a",
+    "reason. The share is of the values not exempted. Full detail: `coverage.csv`.",
+    "",
+    row_text(c("Suite", "Fits", "Output columns", "Compared", "Partial", "Exempt",
+               "Not covered", "Values compared")),
+    row_text(rep("---", 8L)),
+    unlist(by_suite),
+    if (length(without) > 0L) c("", sprintf(
+      "Suites that keep no ledger, because they check printed or derived values rather than a fit's outputs: %s.",
+      paste(without, collapse = ", "))),
+    if (nrow(uncovered) > 0L) c("", "**Not covered:**", "",
+      sprintf("- %s / %s: %s", uncovered$suite, uncovered$fit, uncovered$output)))
+}
+
+#' The known-open section of the report
+#' @param run The run.
+#' @param known Disagreements explained by a registered defect.
+#' @param row_text Row formatter.
+#' @return Markdown lines.
+.known_open_markdown <- function(run, known, row_text) {
+  register <- run$known_open
+  if (is.null(register) || nrow(register) == 0L) return(character())
+  c("", "## Known open defects", "",
+    "Disagreements explained by a defect in `known-open.csv`, which awaits a decision.",
+    "They do not fail the run; an entry that explains nothing does.", "",
+    row_text(c("Id", "Suite", "Disagreements", "Status", "Defect", "Decision needed")),
+    row_text(rep("---", 6L)),
+    vapply(seq_len(nrow(register)), function(row) {
+      row_text(c(register$id[[row]], register$suite[[row]], register$matched[[row]],
+                 register$status[[row]], register$defect[[row]],
+                 register$decision[[row]]))
+    }, character(1)))
+}
+
 #' Render an equivalence run as markdown
 #'
 #' @param run The object returned by [run_equivalence()].
@@ -826,8 +987,9 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
               equivalence_provenance(run, "R/ fingerprint at end"))
     },
     "",
-    sprintf("**%d quantities compared across %d sources; %d agreed within tolerance.**",
-            nrow(report), length(unique(report$source)), sum(report$agrees)),
+    sprintf("**%d quantities (%s individual values) compared across %d sources; %d agreed within tolerance.**",
+            nrow(report), format(sum(report$n_values), big.mark = ","),
+            length(unique(report$source)), sum(report$agrees)),
     "",
     sprintf("Largest fraction of the stated tolerance against a reference computed here at full double precision: **%.3g**.",
             max(c((report$difference / report$tolerance)[report$precision == "machine"], 0))),
@@ -865,9 +1027,13 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
                sprintf("%.2e", summary_table$worst_tolerance_fraction[[row]]),
                sprintf("%.2e", summary_table$loosest_tolerance[[row]])))
   }, character(1))
-  failures <- report[!report$agrees, , drop = FALSE]
+  known <- report[!report$agrees & !is.na(report$known_open), , drop = FALSE]
+  failures <- report[!report$agrees & is.na(report$known_open), , drop = FALSE]
+  coverage_lines <- .coverage_markdown(run, row_text)
+  known_lines <- .known_open_markdown(run, known, row_text)
   tail_lines <- if (nrow(failures) == 0L) {
-    c("", "Every compared quantity agreed within its stated tolerance.")
+    c("", "Every compared quantity agreed within its stated tolerance, apart from",
+      "the registered open defects above.")
   } else {
     c("", "## Disagreements", "",
       row_text(c("Suite", "Quantity", "Reference", "Obtained", "Difference",
@@ -888,7 +1054,11 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
       row_text(c(run$session$component[[row]], run$session$value[[row]]))
     }, character(1)),
     "", "The full `sessionInfo()` is in `SESSION.txt`.")
-  c(header, body, tail_lines, session_lines, "",
+  c(header, body, coverage_lines, known_lines, tail_lines, session_lines, "",
     "Per-quantity detail, including every tolerance, is in `report.csv`;",
     "per-suite status, including anything skipped, is in `suites.csv`.")
 }
+
+# The output inventory, the reference tables and the coverage ledger. Every
+# entry point (run.R, test-harness.R) runs from the project root.
+source(file.path("equivalence", "harness", "outputs.R"))

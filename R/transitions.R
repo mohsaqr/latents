@@ -82,7 +82,8 @@
   })
   offsets <- lapply(blocks, function(block) .multilpa_row_max(block))
   if (any(!is.finite(unlist(offsets, use.names = FALSE)))) {
-    stop("All component densities vanished, or a density overflowed.")
+    stop(errorCondition("All component densities vanished, or a density overflowed.",
+                        class = "latents_vanished_density", call = NULL))
   }
   list(log_density = Map(function(block, offset) block - offset, blocks, offsets),
        offset = Reduce(`+`, offsets))
@@ -393,7 +394,9 @@
         n_categories, min_probability, structure, point)
     },
     max_iter = max_iter, tol = tol, pause = pause, resume = resume,
-    settings = .latents_em_settings(accelerate = accelerator))
+    # A unit-free stop (review 2026-10-26 round 2, K2-6).
+    settings = .latents_em_settings(accelerate = accelerator,
+                                    stop_scale = .latents_observed_values(x, codes)))
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
                  history = fit$history)
@@ -571,7 +574,14 @@
 #'   first position in the data.
 #' @param transitions `"homogeneous"` (the default) uses one transition matrix
 #'   for every occasion; `"occasion"` estimates a separate one for each move
-#'   (occasion 1 to 2, 2 to 3, ...).
+#'   (occasion 1 to 2, 2 to 3, ...). A move into an occasion at which no row
+#'   observes an indicator (`missing = "fiml"`) is not identified: after the
+#'   last observed occasion it does not enter the likelihood, and before
+#'   that occasion it enters only through its product with the move out. Its logits are
+#'   then reported with `estimated = FALSE` and no standard error, and are not
+#'   counted in `n_parameters`, AIC or BIC; likewise the second-order logits
+#'   when nothing is observed from occasion 3 on, and the measurement block
+#'   of an empty occasion under `measurement = "occasion"`.
 #' @param transition_covariates Names of columns whose values shift the
 #'   transition probabilities through a multinomial logit per origin profile:
 #'   the log odds of moving to each other profile rather than staying. A
@@ -587,9 +597,12 @@
 #' @param measurement `"invariant"` (the default) keeps the profiles' means,
 #'   variances and response probabilities equal across occasions;
 #'   `"occasion"` estimates them separately at each occasion.
-#' @param tol Positive relative log-likelihood tolerance (default `1e-10`,
-#'   tighter than the `1e-8` of [multilpa()]). Convergence requires an
-#'   absolute change no greater than `tol * (1 + abs(previous log likelihood))`.
+#' @param tol Positive convergence tolerance (default `1e-10`, tighter than
+#'   the `1e-8` of [multilpa()]). EM has converged when one step (or SQUAREM
+#'   cycle) changes the log likelihood by no more than `tol` times the number
+#'   of observed indicator values (non-missing cells in rows of positive
+#'   weight), a rule that does not depend on the units of the data; latents
+#'   0.97.1 and earlier used `tol * (1 + abs(previous log likelihood))`.
 #'   The group-class shares are re-estimated from posteriors one EM step
 #'   behind them; at `1e-8` the two differed by up to about `2e-4`, at `1e-10`
 #'   by about `2e-5`, for roughly 1.5 times the iterations.
@@ -705,7 +718,7 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
                             n_starts = 10L, max_iter = 5000L, tol = 1e-10,
-                            min_variance = 1e-6, seed = NULL,
+                            min_variance = NULL, seed = NULL,
                             missing = c("error", "fiml"),
                             covariance_model = c("diagonal", "full"),
                             categorical = character(), min_probability = 1e-10,
@@ -738,7 +751,7 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
                             n_starts = 10L, max_iter = 5000L, tol = 1e-10,
-                            min_variance = 1e-6, seed = NULL,
+                            min_variance = NULL, seed = NULL,
                             missing = c("error", "fiml"),
                             covariance_model = c("diagonal", "full"),
                             categorical = character(), min_probability = 1e-10,
@@ -846,12 +859,23 @@ lta <- function(data, vars, id, n_profiles, time,
   codes <- measurement$codes
   n_categories <- measurement$n_categories
   x <- measurement$x
+  # `NULL`: a millionth of the smallest indicator variance (review 2026-10-26
+  # round 2, K2-2).
+  min_variance <- .latents_resolve_min_variance(min_variance, x)
   groups <- .multilpa_prepare_groups(data[[id]])
   layout <- .multilpa_sequence_layout(groups$index, time_values, groups$n, occasions)
   if (layout$n_occasions < 2L) {
     stop(errorCondition(
       "No group is observed at two occasions, so no transition can be estimated.",
       class = "latents_bad_transition", call = NULL))
+  }
+  # With nothing observed after the first occasion the likelihood is flat in
+  # the transition matrix, which would be reported at its start values. The
+  # general engine refuses the same data the same way (R2-LTA-4).
+  if (!any(.lta_occupied_occasions(layout, x, codes, NULL)[-1L])) {
+    stop(errorCondition(paste(
+      "No occasion after the first has an observed indicator, so no transition",
+      "can be estimated."), class = "latents_bad_transition", call = NULL))
   }
   distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
     nrow(unique(cbind(x, codes)))

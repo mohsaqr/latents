@@ -5,7 +5,11 @@
 #'
 #' The observed information is the numerical Jacobian of the analytic total
 #' score; `"robust"` is the person-level sandwich, the only valid choice
-#' under sampling weights.
+#' under sampling weights. A fit made in standard coordinates (every fit since
+#' review round 2) is differentiated there, where the problem is
+#' well-conditioned whatever the units and origins of the data, and carried
+#' to the reported coordinates by the Jacobian of the exact map:
+#' `V = J V* J'` and `I = J^-T I* J^-1` ([.growth_standard_jacobian()]).
 #'
 #' @param fit A `latents_growth_mixture` fit.
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
@@ -14,9 +18,31 @@
 #' @noRd
 .growth_inference <- function(fit, vcov_type = c("observed", "robust", "opg")) {
   vcov_type <- match.arg(vcov_type)
-  spec <- fit$spec
-  stats <- fit$stats
-  params <- fit$params
+  if (is.null(fit$standard)) {
+    return(.growth_inference_at(fit$spec, fit$stats, fit$params,
+                                fit$residual_boundary, vcov_type))
+  }
+  view <- .growth_standard_view(fit)
+  inner <- .growth_inference_at(view$spec, view$stats, view$params,
+                                fit$residual_boundary, vcov_type)
+  theta <- .growth_pack(fit$spec, fit$params)
+  jacobian <- .growth_standard_jacobian(fit$spec, view$spec, fit$params, view$params,
+                                        fit$standard)
+  inverse <- solve(jacobian)
+  vcov <- jacobian %*% inner$vcov %*% t(jacobian)
+  information <- t(inverse) %*% inner$information %*% inverse
+  dimnames(vcov) <- dimnames(information) <- list(names(theta), names(theta))
+  list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,
+       score_norm = max(abs(crossprod(inverse, inner$total_score))))
+}
+
+#' Covariance of growth mixture estimates at one parametrization
+#' @param spec,stats,params The specification, statistics and parameters.
+#' @param held Coordinates held on a bound (no variance).
+#' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
+#' @return As [.growth_inference()], plus `total_score`.
+#' @noRd
+.growth_inference_at <- function(spec, stats, params, held, vcov_type) {
   theta <- .growth_pack(spec, params)
   # One weight per independent unit (person, or cluster); unweighted, one.
   weights <- spec$sampling_weights %||% 1
@@ -33,15 +59,20 @@
     colSums(.growth_scores(spec, stats, .growth_unpack(spec, v, params)) * weights)
   }
   # Weighted OPG, or central differences of the weighted total score with
-  # h = 1e-5 * (1 + |theta|) (the service's "central"/"plus1" variant).
+  # each coordinate's step a thousandth of its own standard-error scale (the
+  # outer-product diagonal), capped at a thousandth of 1 + |theta|. A step of
+  # 1e-5 (1 + |theta|) was as large as the coefficients of an outcome in
+  # units of 1e-5, and one standard error came out 4.4 times too large
+  # (review 2026-10-26, G2; the regression mixtures' MR-F6).
   information <- if (identical(vcov_type, "opg")) crossprod(scores * sqrt(weights)) else
-    .inference_score_information(total, theta, 1e-5, scheme = "central",
-                                 h_rule = "plus1")
+    .inference_score_information(total, theta, 1e-3, scheme = "central",
+                                 h_rule = "scaled",
+                                 scale = 1 / sqrt(colSums((scores * sqrt(weights))^2)))
   dimnames(information) <- list(names(theta), names(theta))
   # Coordinates a correlated fit left on a floor, a bound or a flat ridge are
   # held there: the others' covariance is that of the free block, and the
   # held ones get zero variance (their own rows are reported without one).
-  free <- !names(theta) %in% (fit$residual_boundary %||% character())
+  free <- !names(theta) %in% (held %||% character())
   inverse <- matrix(0, length(theta), length(theta))
   inverse[free, free] <- .mixture_invert(information[free, free, drop = FALSE])
   vcov <- inverse
@@ -51,8 +82,92 @@
       crossprod(scores[, free, drop = FALSE] * weights), n_units)
   }
   dimnames(vcov) <- list(names(theta), names(theta))
+  total_score <- colSums(scores * weights)
   list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,
-       score_norm = max(abs(colSums(scores * weights))))
+       score_norm = max(abs(total_score)), total_score = total_score)
+}
+
+#' Jacobian of the estimation vector in the data's coordinates with respect
+#' to the one in standard coordinates
+#'
+#' Block diagonal. The coefficients map linearly
+#' ([.growth_unstandardize_coefficients()]); log residual standard
+#' deviations, log proportional scales, the residual process's log rate and
+#' log standard deviation and the membership logits move by constants or not
+#' at all; each log-Cholesky chart maps through `G = N G* N'`. For the chart,
+#' a change `dL*` gives `dG* = dL* L*' + L* dL*'`, `dG = N dG* N'`, and the
+#' Cholesky differential `dL = L Phi(L^-1 dG L^-T)`, with `Phi` the lower
+#' triangle and half the diagonal (Murray 2016, "Differentiation of the
+#' Cholesky decomposition").
+#'
+#' @param spec,standard_spec The specification in data and standard
+#'   coordinates.
+#' @param params,standard_params The parameters in both.
+#' @param standard The transform.
+#' @return A square matrix, rows the data's coordinates, columns the standard
+#'   ones, both in [.growth_names()] order.
+#' @noRd
+.growth_standard_jacobian <- function(spec, standard_spec, params, standard_params,
+                                      standard) {
+  names_theta <- .growth_names(spec)
+  jacobian <- diag(length(names_theta))
+  # Coefficients: the map is affine, so its columns are the images of the
+  # unit vectors less the image of zero.
+  n_x <- ncol(spec$x)
+  n_classes <- spec$n_classes
+  n_common <- ncol(spec$z)
+  n_coefficients <- n_x * n_classes + n_common
+  linear <- function(v) {
+    mapped <- .growth_unstandardize_coefficients(
+      matrix(v[seq_len(n_x * n_classes)], n_x, n_classes),
+      v[n_x * n_classes + seq_len(n_common)], colnames(spec$x), colnames(spec$z),
+      standard)
+    c(mapped$beta, mapped$common)
+  }
+  origin <- linear(numeric(n_coefficients))
+  jacobian[seq_len(n_coefficients), seq_len(n_coefficients)] <-
+    vapply(seq_len(n_coefficients), function(j) {
+      linear(replace(numeric(n_coefficients), j, 1)) - origin
+    }, numeric(n_coefficients))
+  # Each log-Cholesky chart.
+  n_random <- ncol(spec$random_design)
+  map <- .growth_random_map(colnames(spec$random_design), standard)
+  diagonal_only <- isTRUE(spec$random_diagonal) || n_random == 1L
+  pairs <- which(lower.tri(diag(n_random)), arr.ind = TRUE)
+  chart_at <- function(m) {
+    first <- match(TRUE, startsWith(names_theta, "random.")) - 1L
+    per_matrix <- if (diagonal_only) n_random else n_random * (n_random + 1L) / 2L
+    first + (m - 1L) * per_matrix + seq_len(per_matrix)
+  }
+  invisible(lapply(seq_along(params$random_covariance), function(m) {
+    standard_factor <- .growth_factor(standard_params$random_covariance[[m]])
+    factor <- .growth_factor(params$random_covariance[[m]])
+    inverse_factor <- forwardsolve(factor, diag(n_random))
+    directions <- c(lapply(seq_len(n_random), function(j) {
+      d <- matrix(0, n_random, n_random)
+      d[j, j] <- standard_factor[j, j]
+      d
+    }), if (!diagonal_only) lapply(seq_len(nrow(pairs)), function(p) {
+      d <- matrix(0, n_random, n_random)
+      d[pairs[p, 1L], pairs[p, 2L]] <- 1
+      d
+    }))
+    block <- vapply(directions, function(d_standard) {
+      d_covariance <- map %*% (d_standard %*% t(standard_factor) +
+                                 standard_factor %*% t(d_standard)) %*% t(map)
+      inner <- inverse_factor %*% d_covariance %*% t(inverse_factor)
+      phi <- inner
+      phi[upper.tri(phi)] <- 0
+      diag(phi) <- diag(phi) / 2
+      d_factor <- factor %*% phi
+      c(diag(d_factor) / diag(factor),
+        if (!diagonal_only) d_factor[lower.tri(d_factor)])
+    }, numeric(length(directions)))
+    at <- chart_at(m)
+    jacobian[at, at] <<- block
+  }))
+  dimnames(jacobian) <- list(names_theta, names_theta)
+  jacobian
 }
 
 #' The inference of a growth fit at a requested covariance type
@@ -184,6 +299,8 @@
   posterior <- x$expectation$posterior
   weights <- spec$sampling_weights %||% rep(1, nrow(posterior))
   modal <- max.col(posterior, ties.method = "first")
+  # Persons of weight zero are in no classification count (ML-1, GR2-5).
+  kept <- .growth_weighted_persons(x)$kept
   shares <- do.call(rbind, lapply(seq_along(classes), function(k) {
     .growth_delta_table(inference, function(v) {
       prior <- .growth_class_prior(spec, .growth_unpack(spec, v, template))
@@ -196,12 +313,13 @@
     }, "log", level)
   }))
   average <- vapply(seq_along(classes), function(k) {
-    if (!any(modal == k)) NA_real_ else mean(posterior[modal == k, k])
+    members <- kept & modal == k
+    if (!any(members)) NA_real_ else mean(posterior[members, k])
   }, numeric(1))
   data.frame(class = classes, share = shares$estimate, share_std_error = shares$std_error,
              share_conf_low = shares$conf_low, share_conf_high = shares$conf_high,
              expected_persons = colSums(posterior * weights),
-             assigned_persons = tabulate(modal, length(classes)),
+             assigned_persons = tabulate(modal[kept], length(classes)),
              average_posterior = average, residual_sd = sigma$estimate,
              residual_sd_std_error = sigma$std_error, stringsAsFactors = FALSE)
 }
@@ -273,7 +391,7 @@
 #' models compute it; only the log likelihood is the weighted one.
 #' @noRd
 .growth_entropy_sum <- function(x) {
-  posterior <- x$expectation$posterior
+  posterior <- x$expectation$posterior[.growth_weighted_persons(x)$kept, , drop = FALSE]
   -sum(posterior[posterior > 0] * log(posterior[posterior > 0]))
 }
 
@@ -282,6 +400,9 @@
 .growth_fit_table <- function(x) {
   spec <- x$spec
   n_persons <- length(x$stats$n)
+  # The criteria count the persons and rows that carry weight (ML-1); the
+  # table's `n_persons` and `n_observations` still count the data.
+  used <- .growth_weighted_persons(x)
   k <- x$n_parameters
   log_likelihood <- x$log_likelihood
   if (!is.null(spec$cluster)) return(.growth_cluster_fit_table(x))
@@ -291,17 +412,46 @@
     random_diagonal = isTRUE(spec$random_diagonal), residual_variance = spec$variance,
     n_parameters = k, log_likelihood = log_likelihood,
     aic = -2 * log_likelihood + 2 * k,
-    bic = -2 * log_likelihood + log(n_persons) * k,
-    bic_rows = -2 * log_likelihood + log(spec$n) * k,
-    sabic = -2 * log_likelihood + log((n_persons + 2) / 24) * k,
-    icl = -2 * log_likelihood + log(n_persons) * k + 2 * .growth_entropy_sum(x),
-    entropy = .growth_entropy(x$expectation$posterior),
+    bic = -2 * log_likelihood + log(used$persons) * k,
+    bic_rows = -2 * log_likelihood + log(used$rows) * k,
+    sabic = -2 * log_likelihood + log((used$persons + 2) / 24) * k,
+    icl = -2 * log_likelihood + log(used$persons) * k + 2 * .growth_entropy_sum(x),
+    entropy = .growth_entropy(x$expectation$posterior[used$kept, , drop = FALSE]),
     smallest_share = min(colSums(x$expectation$posterior *
                                    (spec$sampling_weights %||% 1)) /
                            sum(spec$sampling_weights %||% rep(1, n_persons))),
     random_boundary = isTRUE(x$random_boundary),
     converged = isTRUE(x$converged), n_best_replicated = x$n_best_replicated,
     weights = x$weights %||% NA_character_, stringsAsFactors = FALSE)
+}
+
+#' Entropy of the joint classification of a multilevel growth mixture
+#'
+#' The posterior of a cluster's group class and its persons' classes is
+#' `rho_h prod_i p(k_i | h, y_i)`, whose entropy is
+#' `H(rho) + sum_h rho_h sum_i H(p(. | h, y_i))`. ICL charges this joint
+#' entropy (Biernacki, Celeux and Govaert 2000, on the complete data of both
+#' levels). Adding the persons' marginal entropies to `H(rho)` instead
+#' overstated it (26.87 for 25.16; review round 2, GR2-6).
+#'
+#' @param x A multilevel growth mixture fit.
+#' @return The entropy, summed over clusters.
+#' @noRd
+.growth_joint_entropy <- function(x) {
+  structure <- x$expectation$structure
+  rho <- structure$rho
+  cluster <- x$spec$cluster_index
+  entropy <- function(p) -sum(p[p > 0] * log(p[p > 0]))
+  # tau_by_group_class[[h]] is rho_h p(k | h, y_i); dividing by rho_h gives
+  # the conditional posterior.
+  within <- vapply(seq_len(ncol(rho)), function(h) {
+    joint <- structure$tau_by_group_class[[h]]
+    weight <- rho[cluster, h]
+    used <- weight > 0
+    conditional <- joint[used, , drop = FALSE] / weight[used]
+    sum(weight[used] * rowSums(ifelse(conditional > 0, -conditional * log(conditional), 0)))
+  }, numeric(1))
+  entropy(rho) + sum(within)
 }
 
 #' Fit of a multilevel growth mixture
@@ -318,7 +468,6 @@
   k <- x$n_parameters
   log_likelihood <- x$log_likelihood
   rho <- x$expectation$structure$rho
-  group_entropy <- -sum(rho[rho > 0] * log(rho[rho > 0]))
   bic <- -2 * log_likelihood + log(n_clusters) * k
   data.frame(
     n_classes = spec$n_classes, n_group_classes = spec$n_cluster_classes,
@@ -330,7 +479,7 @@
     bic_persons = -2 * log_likelihood + log(n_persons) * k,
     bic_rows = -2 * log_likelihood + log(spec$n) * k,
     sabic = -2 * log_likelihood + log((n_clusters + 2) / 24) * k,
-    icl = bic + 2 * (.growth_entropy_sum(x) + group_entropy),
+    icl = bic + 2 * .growth_joint_entropy(x),
     entropy = .growth_entropy(x$expectation$posterior),
     group_entropy = .growth_entropy(rho),
     smallest_share = min(colMeans(x$expectation$posterior)),
@@ -802,5 +951,18 @@ logLik.latents_growth_mixture <- function(object, ...) {
 #' @noRd
 #' @export
 nobs.latents_growth_mixture <- function(object, ...) {
-  object$spec$n_clusters %||% length(object$stats$n)
+  # Persons of weight zero are not observations (ML-1), as for regressions.
+  object$spec$n_clusters %||% .growth_weighted_persons(object)$persons
+}
+
+#' The persons and rows that carry sampling weight
+#' @param x A growth mixture fit.
+#' @return A list with `persons`, `rows` (counts) and `kept` (one logical per
+#'   person).
+#' @noRd
+.growth_weighted_persons <- function(x) {
+  sizes <- x$stats$n
+  kept <- if (is.null(x$spec$sampling_weights)) rep(TRUE, length(sizes)) else
+    x$spec$sampling_weights > 0
+  list(persons = sum(kept), rows = sum(sizes[kept]), kept = kept)
 }

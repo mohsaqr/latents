@@ -146,19 +146,18 @@ test_that("excluded groups cannot conceal constant or insufficient positive supp
   data$w <- 1
   data$w[data$g == 40L] <- 0
   data$a[data$g == 40L] <- 1e4
-  captured <- cross_level_capture_warnings(
-    data, c("a", "b"), "g", 2L, 1L, family = "full_cross_level", weights = "w",
-    n_starts = 1L, seed = 1, max_iter = 300L)
-  expect_true(captured$fit$converged)
-  expect_true(captured$fit$boundary)
-  expect_equal(unname(captured$fit$profile_means[, "a"]), c(0, 0))
-  expect_equal(unname(captured$fit$profile_variances[, "a"]), rep(1e-6, 2L))
+  # `a` is constant in every group that carries weight; only the zero-weight
+  # group varies. Since round 2 of the 2026-10-26 review (ADD2-3) that is
+  # refused as the same data without the zero-weight group is, instead of
+  # fitting at the variance floor with a boundary warning.
+  expect_error(multilpa(data, c("a", "b"), "g", 2L, 1L, family = "full_cross_level",
+                        weights = "w", n_starts = 1L, seed = 1, max_iter = 300L),
+               class = "latents_bad_data")
   data <- data.frame(g = rep(1:3, each = 2L),
                      a = c(0, 0, 0, 0, 3, 4),
                      b = c(0, 0, 0, 0, 3, 4), w = c(1, 1, 1, 1, 0, 0))
   expect_error(multilpa(data, c("a", "b"), "g", 2L, 1L,
                         family = "full_cross_level", weights = "w",
                         n_starts = 1L, seed = 1),
-                "distinct observed indicator.*positive sampling weight",
-                class = "latents_all_starts_failed")
+               class = "latents_bad_data")
 })

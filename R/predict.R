@@ -112,7 +112,12 @@ predict.multilpa_transitions <- function(object, ...) {
     matrix(vapply(categorical, function(indicator) {
       value <- newdata[[indicator]]
       code <- match(as.character(value), object$categorical_levels[[indicator]])
-      unseen <- !is.na(value) & is.na(code)
+      # A half-observed pair row ("a::", ":::b") is a set of joint categories,
+      # recorded by `.multilpa_attach_partial()` below, not an unseen one.
+      half <- !is.na(value) & .latents_partial_levels(c(
+        object$categorical_levels[[indicator]], as.character(value)))[
+          -seq_along(object$categorical_levels[[indicator]])]
+      unseen <- !is.na(value) & is.na(code) & !half
       if (any(unseen)) {
         bad_data(sprintf(paste(
           "`%s` has the categor%s %s, which the fit never saw, so it has no",
@@ -123,6 +128,10 @@ predict.multilpa_transitions <- function(object, ...) {
       }
       code
     }, integer(n)), nrow = n, dimnames = list(NULL, categorical))
+  }
+  if (!is.null(codes)) {
+    codes <- .multilpa_attach_partial(codes, newdata[categorical],
+                                      object$categorical_levels[categorical])
   }
   extra <- .latents_prepare_extra_like(object, newdata)
   if (identical(object$missing %||% "error", "error") &&

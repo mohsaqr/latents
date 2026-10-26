@@ -162,8 +162,8 @@
 #' Each joint value is the two items' values joined by a colon, missing when
 #' either item is. A frame that already holds a joint indicator (the frame a
 #' fit stores, or one this function has joined) is left as it is, so joining
-#' is idempotent. Rows where one item of a pair is observed and the other is
-#' not lose the pair, which is reported with `latents_partial_pair`.
+#' is idempotent. A row where one item of a pair is observed and the other is
+#' not keeps the observed item, labelled by `.latents_partial_label()`.
 #' @param data A data frame.
 #' @param pairs From `.latents_parse_pairs()`.
 #' @param min_categories Minimum observed categories of each original item;
@@ -225,24 +225,140 @@
         "rename that column before using `local_dependence`."), pair$name),
         class = "latents_bad_data", call = NULL))
     }
-    partial <- xor(is.na(first), is.na(second))
-    if (any(partial)) {
-      warning(warningCondition(sprintf(paste(
-        "%d rows observe only one item of the pair \"%s\"; the pair is treated",
-        "as missing in those rows."), sum(partial), pair$name),
-        class = "latents_partial_pair", call = NULL))
-    }
-    # Categories ordered by the first item's categories, then the second's.
+    # A row observing one item of the pair keeps that item: it is labelled
+    # "a::" (first item only) or ":::b" (second item only), and the
+    # categorical engine sums the missing item out of the pair's joint
+    # distribution, which is the observed-data likelihood under MAR (review
+    # 2026-10-26 round 2, C2-2). Two or more colons never occur in a joint
+    # category, because the items' own categories hold none.
+    first_only <- !is.na(first) & is.na(second)
+    second_only <- is.na(first) & !is.na(second)
+    labels[first_only] <- .latents_partial_label(first[first_only], "first")
+    labels[second_only] <- .latents_partial_label(second[second_only], "second")
+    # Categories ordered by the first item's categories, then the second's;
+    # the labels of half-observed rows follow, first item's then second's.
     grid <- expand.grid(second = as.character(second_levels),
                         first = as.character(first_levels), stringsAsFactors = FALSE)
     combinations <- paste(grid$first, grid$second, sep = ":")
-    frame[[pair$name]] <- factor(labels, levels = combinations)
+    halves <- c(.latents_partial_label(first_levels, "first"),
+                .latents_partial_label(second_levels, "second"))
+    frame[[pair$name]] <- factor(labels, levels = c(combinations, halves))
     attr(frame[[pair$name]], "latents_pair") <- c(pair$item_1, pair$item_2)
     frame_pairs[[pair$name]] <- c(pair$item_1, pair$item_2)
     attr(frame, "latents_pairs") <- frame_pairs
     frame
   }, seq_len(nrow(pairs)), init = data)
   joined
+}
+
+#' The label of a half-observed pair row
+#'
+#' `"a::"` when only the first item is observed (its category `a`), `":::b"`
+#' when only the second is (category `b`). A joint category holds exactly one
+#' colon, so these labels cannot be mistaken for one, nor for each other even
+#' when a category is the empty string.
+#' @param value Categories of the observed item.
+#' @param item `"first"` or `"second"`.
+#' @return A character vector.
+#' @noRd
+.latents_partial_label <- function(value, item = c("first", "second")) {
+  item <- match.arg(item)
+  value <- as.character(value)
+  if (identical(item, "first")) paste0(value, "::") else paste0(":::", value)
+}
+
+#' Which category labels of a joint item mark half-observed rows
+#'
+#' A label is a half-observed marker only when the labels around it have the
+#' joint item's shape: every other label holds exactly one colon (two items'
+#' categories), and the marker's category is one of the matching item's
+#' categories in those labels. A column that is not a joined pair never has
+#' that shape, so its labels are all ordinary categories.
+#' @param labels Category labels (factor levels).
+#' @return A logical vector, `TRUE` for a half-observed marker.
+#' @noRd
+.latents_partial_levels <- function(labels) {
+  labels <- as.character(labels)
+  distinct <- unique(labels[!is.na(labels)])
+  .latents_partial_distinct(distinct)[match(labels, distinct)] %in% TRUE
+}
+
+#' `.latents_partial_levels()` on distinct, non-missing labels
+#' @noRd
+.latents_partial_distinct <- function(labels) {
+  marked <- grepl("::", labels, fixed = TRUE)
+  if (!any(marked)) return(marked)
+  joint <- labels[!marked]
+  colons <- lengths(regmatches(joint, gregexpr(":", joint, fixed = TRUE)))
+  if (length(joint) == 0L || any(colons != 1L)) return(rep(FALSE, length(labels)))
+  first_halves <- sub(":.*$", "", joint)
+  second_halves <- sub("^[^:]*:", "", joint)
+  second_only <- marked & startsWith(labels, ":::")
+  category <- ifelse(second_only, substring(labels, 4L), sub("::$", "", labels))
+  valid <- !grepl(":", category, fixed = TRUE) &
+    ifelse(second_only, category %in% second_halves, category %in% first_halves)
+  if (!all(valid[marked])) return(rep(FALSE, length(labels)))
+  marked
+}
+
+#' Half-observed rows of a joint item, as sets of joint categories
+#'
+#' @param value The joint column (labels, `NA` where the pair is unobserved).
+#' @param grid The joint categories, in code order.
+#' @return `NULL` when no row is half observed; otherwise a list with `index`
+#'   (one integer per row: the row's set, `NA` for every other row), `labels`
+#'   (the marker of each set, `"a::"` or `":::b"`) and `sets` (for each set
+#'   the codes of the joint categories that agree with the observed item).
+#' @noRd
+.latents_partial_map <- function(value, grid) {
+  value <- as.character(value)
+  levels_seen <- unique(value[!is.na(value)])
+  marked <- .latents_partial_levels(c(grid, levels_seen))[-seq_along(grid)]
+  labels <- levels_seen[marked]
+  if (length(labels) == 0L) return(NULL)
+  # Deterministic set order: first-item markers, then second-item ones, each
+  # in the order of the grid's own categories.
+  first_halves <- sub(":.*$", "", grid)
+  second_halves <- sub("^[^:]*:", "", grid)
+  second_only <- startsWith(labels, ":::")
+  category <- ifelse(second_only, substring(labels, 4L), sub("::$", "", labels))
+  rank <- ifelse(second_only, length(grid) + match(category, second_halves),
+                 match(category, first_halves))
+  ordering <- order(rank, labels)
+  labels <- labels[ordering]
+  second_only <- second_only[ordering]
+  category <- category[ordering]
+  sets <- lapply(seq_along(labels), function(set) {
+    which(if (second_only[[set]]) second_halves == category[[set]] else
+      first_halves == category[[set]])
+  })
+  list(index = match(value, labels), labels = labels, sets = sets)
+}
+
+#' Put the markers of half-observed pair rows back into a rebuilt column
+#'
+#' A fit's code matrix holds `NA` for a row that observes one item of a
+#' joined pair, with the row's marker in its `"latents_partial"` attribute.
+#' Data rebuilt from the codes write the marker back, so a refit sees the
+#' observed item as the fit did.
+#' @param value The column rebuilt from the codes.
+#' @param codes The fit's code matrix.
+#' @param name The column's name.
+#' @return `value`, with the markers in the half-observed rows.
+#' @noRd
+.latents_restore_partial <- function(value, codes, name) {
+  map <- attr(codes, "latents_partial", exact = TRUE)[[name]]
+  if (is.null(map)) return(value)
+  half <- !is.na(map$index)
+  if (!is.factor(value)) {
+    value <- as.character(value)
+    value[half] <- map$labels[map$index[half]]
+    return(value)
+  }
+  restored <- factor(as.character(value),
+                     levels = union(levels(value), map$labels))
+  restored[half] <- map$labels[map$index[half]]
+  restored
 }
 
 #' Fit a model whose `local_dependence` pairs are joined first
@@ -346,7 +462,9 @@
   codes <- fit$categorical_data %||% fit$codes
   if (is.null(codes) || ncol(codes) == 0L) return(NULL)
   labels <- lapply(colnames(codes), function(name) {
-    fit$categorical_levels[[name]][codes[, name]]
+    # A half-observed pair row comes back as its marker, which the stored
+    # categories split into the observed item and a missing one.
+    .latents_restore_partial(fit$categorical_levels[[name]][codes[, name]], codes, name)
   })
   names(labels) <- colnames(codes)
   pairs <- fit$local_dependence
@@ -410,6 +528,15 @@
     at <- match(labels, categories$label)
     first_items <- categories$level_1[at]
     second_items <- categories$level_2[at]
+    # A combination nobody gave is still a category of the joint item, at the
+    # probability floor, but it is absent from the categories read from the
+    # data. Its label is "first:second", and a category holding ":" is refused
+    # when the pair is joined, so the label's two halves are its two levels.
+    unseen <- is.na(at)
+    if (any(unseen)) {
+      first_items[unseen] <- sub(":.*$", "", labels[unseen])
+      second_items[unseen] <- sub("^[^:]*:", "", labels[unseen])
+    }
     do.call(rbind, lapply(seq_len(nrow(probabilities)), function(profile) {
       joint <- probabilities[profile, ]
       marginal_1 <- tapply(joint, first_items, sum)[first_items]

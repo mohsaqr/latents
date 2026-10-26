@@ -254,24 +254,38 @@
         .multilpa_classified_posteriors(fit)
     })
   }
-  entropy_of <- function(posteriors) {
-    vapply(posteriors, function(p) {
-      if (is.null(p)) NA_real_ else .multilpa_relative_entropy(p)
-    }, numeric(1))
+  # Under sampling weights a profile, class or transition fit's entropy and
+  # AvePP are weighted as its own tables weight them (review 2026-10-26
+  # round 2, S-3, S-4); a regression fit's posteriors are read unweighted.
+  level_weights <- function(level) {
+    lapply(fits, function(fit) {
+      if (is.null(fit) || inherits(fit, "condition") ||
+          identical(kind, "regressions")) return(NULL)
+      posteriors <- .multilpa_level_posteriors(fit, level)
+      if (is.null(posteriors)) NULL else
+        .multilpa_level_weights(fit, level, nrow(posteriors))
+    })
   }
-  lowest_avepp <- function(posteriors) {
-    vapply(posteriors, function(p) {
-      .multilpa_avepp_summary(p, cutoff)[["min"]]
-    }, numeric(1))
+  entropy_of <- function(posteriors, weights) {
+    unlist(Map(function(p, w) {
+      if (is.null(p)) NA_real_ else .multilpa_relative_entropy(p, w)
+    }, posteriors, weights), use.names = FALSE) %||% numeric()
+  }
+  lowest_avepp <- function(posteriors, weights) {
+    unlist(Map(function(p, w) {
+      .multilpa_avepp_summary(p, cutoff, w)[["min"]]
+    }, posteriors, weights), use.names = FALSE) %||% numeric()
   }
   individuals <- posteriors_of("individuals")
   groups <- posteriors_of("groups")
+  group_weights <- level_weights("groups")
   # The tables already carry the entropy their own fits report: a family
   # grid's is its group classes', the others' their individuals'.
   grid$profile_entropy <- switch(kind, families = NA_real_, grid$entropy)
-  grid$group_entropy <- switch(kind, families = grid$entropy, entropy_of(groups))
-  grid$avepp_min <- lowest_avepp(individuals)
-  grid$group_avepp_min <- lowest_avepp(groups)
+  grid$group_entropy <- switch(kind, families = grid$entropy,
+                               entropy_of(groups, group_weights))
+  grid$avepp_min <- lowest_avepp(individuals, level_weights("individuals"))
+  grid$group_avepp_min <- lowest_avepp(groups, group_weights)
   grid
 }
 

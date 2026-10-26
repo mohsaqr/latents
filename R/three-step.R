@@ -1,20 +1,41 @@
 #' Posteriors and modal assignments at a chosen level
+#'
+#' Only the classified units: rows with at least one observed indicator, and
+#' groups with at least one such row, as for entropy, the average posteriors
+#' and the information criteria. A row with nothing observed has the class
+#' prior for its posterior, so counting it in the classification error matrix
+#' charges the larger class with errors no observation made, and carrying it
+#' into a three-step model relates its outcome to a class it was never
+#' assigned by its data. `drop_empty = FALSE` keeps every unit, as before.
+#'
 #' @param object A fitted model of this package.
 #' @param level `"individuals"` or `"groups"`.
-#' @return A list with `posteriors`, `modal`, `units` and `group_index`.
+#' @return A list with `posteriors`, `modal`, `units` (row numbers or group
+#'   identifiers), `group_index` (the clusters, numbered densely in order of
+#'   first appearance), `n_classes` and `kept`, the positions of the kept
+#'   units among all rows or all groups, which a caller uses to subset any
+#'   per-unit data it pairs with them, and `weights`, the kept units' sampling
+#'   weights (`NULL` for an unweighted fit).
 #' @noRd
 .multilpa_level_assignments <- function(object, level) {
   stopifnot("`object` must be a fitted model of this package" =
               .multilpa_any_fit(object))
   level <- match.arg(level, c("individuals", "groups"))
   if (identical(level, "individuals")) {
-    list(posteriors = object$subject_posteriors, modal = object$subject_profiles,
-         units = seq_len(object$n_observations), group_index = object$group_index,
-         n_classes = object$n_profiles)
+    kept <- which(.multilpa_informative_rows(object))
+    clusters <- object$group_index[kept]
+    list(posteriors = object$subject_posteriors[kept, , drop = FALSE],
+         modal = object$subject_profiles[kept], units = kept,
+         group_index = match(clusters, unique(clusters)),
+         n_classes = object$n_profiles, kept = kept,
+         weights = .multilpa_level_weights(object, "individuals", length(kept)))
   } else {
-    list(posteriors = object$group_posteriors, modal = object$group_classes,
-         units = object$group_values, group_index = seq_along(object$group_classes),
-         n_classes = object$n_group_classes)
+    kept <- which(.multilpa_informative_groups(object))
+    list(posteriors = object$group_posteriors[kept, , drop = FALSE],
+         modal = object$group_classes[kept], units = object$group_values[kept],
+         group_index = seq_along(kept), n_classes = object$n_group_classes,
+         kept = kept,
+         weights = .multilpa_level_weights(object, "groups", length(kept)))
   }
 }
 
@@ -76,16 +97,22 @@
 }
 
 #' The classification error matrix, rows indexed by the true class
+#'
+#' `D[t, s] = sum_i w_i p_it 1(W_i = s) / sum_i w_i p_it` (Vermunt 2010), with
+#' `w_i` the unit's sampling weight (1 without weights), so under weights it
+#' is the population's error matrix (review 2026-10-26 round 2, S-4).
+#'
 #' @param pieces The list from `.multilpa_level_assignments()`.
 #' @return A square matrix whose rows sum to one.
 #' @noRd
 .multilpa_error_matrix <- function(pieces) {
   classes <- seq_len(pieces$n_classes)
-  totals <- colSums(pieces$posteriors)
+  weighted <- pieces$posteriors * (pieces$weights %||% 1)
+  totals <- colSums(weighted)
   ## vapply() drops to a vector when there is only one class, so the shape is
   ## forced; a one-class model is degenerate but must not error here.
   result <- matrix(vapply(classes, function(assigned) {
-    colSums(pieces$posteriors * (pieces$modal == assigned)) / totals
+    colSums(weighted * (pieces$modal == assigned)) / totals
   }, numeric(pieces$n_classes)), nrow = pieces$n_classes,
   dimnames = list(paste0("true_", classes), paste0("assigned_", classes)))
   result
@@ -358,7 +385,8 @@ three_step <- function(x, data, outcome,
     pieces <- .multilpa_level_assignments(x, level)
     .multilpa_check_row_count(x, data)
     .multilpa_check_alignment(x, data)
-    values <- .multilpa_outcome_values(x, data, outcome, level)
+    # Only the classified units enter step three, as they do the error matrix.
+    values <- .multilpa_outcome_values(x, data, outcome, level)[pieces$kept]
   }
   if (identical(method, "ml")) {
     return(.multilpa_three_step_ml(pieces, values, level, variance, ci_level,
@@ -760,7 +788,8 @@ r3step <- function(x, data, covariates = character(),
     .multilpa_check_row_count(x, data)
     .multilpa_check_alignment(x, data)
     .r3step_require_classes(pieces)
-    design <- .multilpa_r3step_design(x, data, covariates, level)
+    design <- .multilpa_r3step_design(x, data, covariates, level)[pieces$kept, ,
+                                                                   drop = FALSE]
   }
   .r3step_require_classes(pieces)
   errors <- .multilpa_error_matrix(pieces)
@@ -944,13 +973,39 @@ r3step <- function(x, data, covariates = character(),
   design
 }
 
+#' Wald standard errors of a membership regression, refusing negative variances
+#'
+#' A negative diagonal says the information is not positive definite there:
+#' that coefficient has no Wald standard error, which used to be reported as
+#' 0. It is `NA`, with a `latents_singular_information` warning. Shared by the
+#' pooled regression and the one with group-class intercepts.
+#'
+#' @param covariance The coefficients' covariance matrix.
+#' @return One standard error per coefficient, `NA` where the variance is
+#'   negative or not finite.
+#' @noRd
+.multilpa_r3step_standard_errors <- function(covariance) {
+  variances <- diag(covariance)
+  if (any(is.finite(variances) & variances < 0)) {
+    warning(warningCondition(paste(
+      "The covariance of the membership regression is not positive definite:",
+      "some coefficients are not identified at this estimate, and their",
+      "standard errors are NA."), class = "latents_singular_information",
+      call = NULL))
+  }
+  valid <- is.finite(variances) & variances >= 0
+  errors <- rep(NA_real_, length(variances))
+  errors[valid] <- sqrt(variances[valid])
+  errors
+}
+
 #' Assemble the R3STEP coefficient table
 #' @return One row per non-reference class and term.
 #' @noRd
 .multilpa_r3step_frame <- function(estimates, covariance, terms, n_free,
                                    n_classes, level, ci_level, vcov_type,
                                    adjust) {
-  errors <- sqrt(pmax(diag(covariance), 0))
+  errors <- .multilpa_r3step_standard_errors(covariance)
   statistic <- rep(NA_real_, length(errors))
   valid <- is.finite(errors) & errors > 0
   statistic[valid] <- estimates[valid] / errors[valid]
@@ -1144,7 +1199,7 @@ r3step <- function(x, data, covariates = character(),
 .multilpa_r3step_group_frame <- function(estimates, covariance, terms, n_free,
                                          n_group_classes, n_classes, ci_level,
                                          vcov_type, adjust, log_likelihood) {
-  errors_se <- sqrt(pmax(diag(covariance), 0))
+  errors_se <- .multilpa_r3step_standard_errors(covariance)
   ## Alpha is group classes by free classes and beta covariates by free
   ## classes, both stored column-major, so `expand.grid()` with the row index
   ## varying fastest labels them in the order they are packed.

@@ -296,6 +296,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   costs <- grid$n_group_classes * grid$n_profiles *
     .multilpa_pool_width(data, vars, extra)
   fitted <- .multilpa_enumerate_fits(arguments, calls, costs, cores, verbose)
+  .latents_refuse_shared_data_error(lapply(fitted, `[[`, "value"))
   # The candidates' conditions come back deferred and are signalled here,
   # candidate by candidate.
   runs <- .latents_report_once(lapply(indices, function(i) {
@@ -320,9 +321,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       .multilpa_enumeration_indices(fit),
       data.frame(
         profile_entropy = if (is.null(fit)) NA_real_ else
-          .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
+          .multilpa_level_relative_entropy(fit, "individuals"),
         group_entropy = if (is.null(fit)) NA_real_ else
-          .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit)),
+          .multilpa_level_relative_entropy(fit, "groups"),
         converged = !is.null(fit) && fit$converged,
         boundary = if (is.null(fit)) NA else fit$boundary,
         min_standardized_eigenvalue = .latents_gaussian_minimum(
@@ -712,10 +713,10 @@ summary.multilpa_enumeration <- function(object, ...) {
   # Names an earlier development build stored in the table.
   stale <- c("profile_min_average_posterior", "group_min_average_posterior")
   grid <- x$table[setdiff(names(x$table), c(added, stale))]
-  level_summary <- function(posteriors_of, prefix) {
+  level_summary <- function(level, prefix) {
     rows <- vapply(unname(x$fits), function(fit) {
       if (is.null(fit)) rep(NA_real_, 4L) else
-        .multilpa_avepp_summary(posteriors_of(fit), cutoff)
+        .multilpa_level_avepp(fit, level, cutoff)
     }, numeric(4L))
     columns <- as.data.frame(t(rows))
     names(columns) <- paste0(prefix, statistics)
@@ -723,8 +724,8 @@ summary.multilpa_enumeration <- function(object, ...) {
     columns
   }
   columns <- cbind(
-    level_summary(.multilpa_classified_posteriors, "avepp_"),
-    level_summary(.multilpa_classified_group_posteriors, "group_avepp_"))
+    level_summary("individuals", "avepp_"),
+    level_summary("groups", "group_avepp_"))
   at <- match("group_entropy", names(grid))
   .latents_named_table(x, cbind(grid[seq_len(at)], columns,
                                 grid[setdiff(seq_along(grid), seq_len(at))]))
@@ -742,13 +743,15 @@ summary.multilpa_enumeration <- function(object, ...) {
 #'
 #' @param probabilities Posterior probability matrix, or `NULL`.
 #' @param cutoff The AvePP below which a class is counted.
+#' @param weights `NULL`, or one sampling weight per row: the AvePP is then
+#'   the weighted mean, as in the `"classification"` table.
 #' @return A numeric vector: `min`, `max`, `mean`, `below`.
 #' @noRd
-.multilpa_avepp_summary <- function(probabilities, cutoff) {
+.multilpa_avepp_summary <- function(probabilities, cutoff, weights = NULL) {
   if (is.null(probabilities) || ncol(probabilities) < 2L) {
     return(c(min = NA_real_, max = NA_real_, mean = NA_real_, below = NA_real_))
   }
-  avepp <- diag(.multilpa_average_posterior_matrix(probabilities))
+  avepp <- diag(.multilpa_average_posterior_matrix(probabilities, weights))
   assigned <- avepp[!is.na(avepp)]
   c(min = min(assigned), max = max(assigned), mean = mean(assigned),
     below = sum(is.na(avepp) | avepp < cutoff))
@@ -1205,8 +1208,9 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' group class. Indicators are simulated from the null model with the observed
 #' group sizes, both models are refitted to every simulated dataset, and the
 #' observed likelihood-ratio statistic is compared with the simulated ones.
-#' The p-value is `(1 + b) / (iter + 1)`, where `b` counts simulated
-#' statistics at least as large as the observed one; no chi-square reference
+#' The p-value is `(1 + b) / (V + 1)`, where `b` counts valid simulated
+#' statistics at least as large as the observed one and `V` is the number of
+#' valid replicates (`iter` when all are valid); no chi-square reference
 #' distribution is used. This is a native parametric bootstrap, not an
 #' implementation of Mplus TECH14.
 #'
@@ -1215,9 +1219,20 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' centering and scaling, missing-data handling and `drop_empty` the same.
 #' Grand-mean centering is repeated in every simulated refit. Person-centred
 #' or person-scaled fits are refused, because the model specifies no
-#' distribution for the group baselines that transformation removes. If any
-#' replicate fails validation (fails, does not converge, or has a reversed
-#' likelihood), the p-value is `NA`; no replicate is dropped.
+#' distribution for the group baselines that transformation removes.
+#'
+#' A replicate is invalid when a refit fails, does not converge, or has a
+#' reversed likelihood. Under the null hypothesis the alternative's extra
+#' class is spurious, and a spurious class is expected to drift to a boundary,
+#' an empty or separated solution, or a slowly converging one; an invalid
+#' replicate is therefore a property of the null distribution, not a failure
+#' of the test. The p-value is computed over the valid replicates, the result
+#' reports `n_valid` and `n_invalid` (also in `print()` and
+#' [as.data.frame()]), `latents_failed_replicates` is warned naming the
+#' count, and the p-value is `NA` only when fewer than half of the replicates
+#' are valid. Leaving invalid replicates out conditions the reference
+#' distribution on a valid refit, so a large invalid share should be reported
+#' with the result.
 #'
 #' Fits made with `missing = "fiml"` are supported when both models were:
 #' every replicate is given the observed data's missing cells before it is
@@ -1276,7 +1291,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   explain; `latents_bad_argument` for an invalid `seed`, or for a
 #'   transition fit paired with a fit of another family.
 #'   `latents_failed_replicates` is a warning, given when some replicate
-#'   fails validation; the p-value is then `NA`.
+#'   is invalid (it names the count); the p-value is then computed over the
+#'   valid replicates, and is `NA` only when fewer than half are valid.
 #' @param null_model The smaller model: a converged [multilpa()] fit, with or
 #'   without membership covariates.
 #' @param alternative_model The larger model, fitted to the same data.
@@ -1587,7 +1603,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   tally <- .latents_blrt_p_value(replicates, observed, iter)
   result <- list(statistic = observed, p_value = tally$p_value,
        monte_carlo_se = tally$monte_carlo_se,
-       iter = iter, n_valid = tally$n_valid, replicates = replicates,
+       iter = iter, n_valid = tally$n_valid, n_invalid = tally$n_invalid,
+       replicates = replicates,
        fixed = constraint$fixed,
        null_profiles = null_model$n_profiles,
        null_group_classes = null_model$n_group_classes,
@@ -1621,17 +1638,22 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
               model(x$alternative_profiles, x$alternative_group_classes,
                     x$alternative_family)))
   cat(sprintf("Observed statistic: %.6f\n", x$statistic))
-  cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
+  n_invalid <- x$n_invalid %||% (x$iter - x$n_valid)
+  cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates (%d invalid)\n",
               format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),
-              x$n_valid, x$iter))
+              x$n_valid, x$iter, n_invalid))
   if (length(x$fixed %||% character()) > 0L) {
     cat(sprintf(paste("Every fit held %s fixed at one measurement solution,",
                       "so the p-value is conditional on it.\n"),
                 paste(x$fixed, collapse = ", ")))
   }
   if (is.na(x$p_value)) {
-    cat(paste("The p-value is withheld because not every replicate was valid;",
-              "get_results(x, \"replicates\") lists them.\n"))
+    cat(paste("The p-value is withheld because fewer than half of the replicates",
+              "were valid; get_results(x, \"replicates\") lists them.\n"))
+  } else if (n_invalid > 0L) {
+    cat(paste("Invalid replicates (a spurious class failing to converge or",
+              "reaching a boundary is expected under the null) are left out of",
+              "the p-value; get_results(x, \"replicates\") lists them.\n"))
   }
   invisible(x)
 }
@@ -1666,6 +1688,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              statistic = x$statistic, p_value = x$p_value,
              monte_carlo_se = x$monte_carlo_se,
              iter = x$iter, n_valid = x$n_valid,
+             n_invalid = x$n_invalid %||% (x$iter - x$n_valid),
              # Named rather than flagged, because which blocks were held is what
              # the conditional p-value is conditional on.
              fixed = if (length(x$fixed %||% character()) == 0L) NA_character_
@@ -1788,4 +1811,34 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     "sabic_individual", "caic_groups", "caic_individual", "awe_groups",
     "awe_individual", "icl_groups", "icl_individual", "clc_groups",
     "clc_individual")
+}
+
+#' Raise a data error that failed every candidate of an enumeration
+#'
+#' A defect in the data (a column that does not exist, an indicator that is
+#' constant or entirely missing) fails every candidate for one reason that no
+#' choice of model can change. `multilpa()` refuses such data with a classed
+#' error; an enumeration used to return a grid of failed cells instead, with
+#' no condition, so a misspelled column cost every fit and came back as a
+#' table of `NA`s. Failures that differ between candidates, or that concern
+#' the model rather than the data, stay in the grid as before.
+#'
+#' @param values Each candidate's result: a fit or an error condition.
+#' @return `NULL`, invisibly, unless every candidate failed with the same data
+#'   error, which is then signalled.
+#' @noRd
+.latents_refuse_shared_data_error <- function(values) {
+  failures <- Filter(function(value) inherits(value, "error"), values)
+  if (length(failures) == 0L || length(failures) < length(values)) {
+    return(invisible(NULL))
+  }
+  first <- failures[[1L]]
+  data_errors <- c("latents_bad_data", "latents_bad_categorical",
+                   "latents_missing_data")
+  shared <- inherits(first, data_errors) && all(vapply(failures, function(value) {
+    identical(class(value), class(first)) &&
+      identical(conditionMessage(value), conditionMessage(first))
+  }, logical(1)))
+  if (shared) stop(first)
+  invisible(NULL)
 }

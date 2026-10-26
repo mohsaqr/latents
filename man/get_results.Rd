@@ -222,41 +222,55 @@ table instead (see \emph{Recovery}).}
 class: \code{level}, \code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
 \code{estimated_proportion}, \code{average_posterior},
 \code{odds_correct_classification}. Takes \code{level}. Under sampling weights
-\code{estimated_n} and \code{estimated_proportion} (and hence the odds of correct
-classification) are weighted posterior totals; the modal and average
-posterior columns describe the units supplied. The odds are \code{Inf} for a
+every column that estimates the population is weighted:
+\code{estimated_n} and \code{estimated_proportion} are weighted posterior totals
+and \code{average_posterior} a weighted mean, so the odds of correct
+classification compare the two on the same population; \code{n_modal} and
+\code{proportion_modal} stay counts of the units supplied. The odds are \code{Inf} for a
 class classified perfectly (average posterior one to within rounding)
 and \code{NA} where they are undefined: a class with no modal members, or a
 single class, whose proportion is one.}
 \item{\code{"average_posteriors"}}{For the units modally assigned to each
 class, their mean posterior for every class: \code{level}, \code{assigned_class},
 \code{class}, \code{n_assigned}, \code{average_posterior}. Rows sum to one within each
-assigned class. This conditions on the assigned class, whereas
+assigned class. Under sampling weights \code{average_posterior} is the
+weighted mean and \code{n_assigned} stays a count. This conditions on the assigned class, whereas
 \code{"classification_errors"} conditions on the true class. Takes \code{level}.}
 \item{\code{"classification_errors"}}{The probability that a unit in one true
 class is assigned to another: \code{level}, \code{true_class}, \code{assigned_class},
 \code{probability}, summing to one within each \code{true_class}. Takes \code{level}.
+It is \verb{sum_i w_i p_it 1(W_i = s) / sum_i w_i p_it} for true class \code{t}
+and assigned class \code{s} (Vermunt 2010), with \code{w_i} the unit's sampling
+weight under sampling weights and 1 otherwise, so a weighted fit reports
+the population's error rates.
 On a membership-covariate fit this is a marginal summary over the fitted
 units, not conditional on the covariates. A fit with a noise component
 raises \code{latents_unsupported_noise}, as \code{\link[=three_step]{three_step()}} does, and \code{"all"}
 and \code{summary()} omit the table.}
 \item{\code{"bch_weights"}}{The BCH inverse-error weights, one row per unit and
 class: \code{level}, \code{unit}, \code{assigned_class}, \code{class}, \code{weight}. Takes
-\code{level}; a weighted regression should use one level, not \code{"both"}. On a
+\code{level}; a weighted regression should use one level, not \code{"both"}.
+They invert the \code{"classification_errors"} matrix, weighted as it is. On a
 membership-covariate fit the weights invert the marginal error matrix
 and are not a conditional three-step correction. Not available for a fit
 with a noise component, as for \code{"classification_errors"}.}
 \item{\code{"entropy"}}{One row per level: \code{level}, \code{n_classes}, \code{n_units},
-\code{entropy_sum}, \code{relative_entropy}.}
-\item{\code{"residuals"}}{Bivariate residuals for every indicator pair, testing
-within-profile independence: \code{profile}, \code{indicator_1}, \code{indicator_2},
-\code{kind}, \code{observed}, \code{expected}, \code{residual}, \code{effective_n}, \code{statistic},
-\code{df}, \code{p_value}, \code{p_adjusted}. Takes \code{data}, \code{by} and \code{adjust}.}
+\code{entropy_sum}, \code{relative_entropy}. Under sampling weights
+\code{entropy_sum} is \verb{sum_i w_i e_i} and \code{relative_entropy}
+\verb{1 - sum_i w_i e_i / (sum_i w_i log K)}; \code{n_units} stays a count.}
+\item{\code{"residuals"}}{Bivariate residuals for every pair of indicators,
+checking within-profile independence: \code{profile}, \code{indicator_1},
+\code{indicator_2}, \code{kind} (\code{"gaussian"}, \code{"categorical"}, \code{"mixed"} or
+\code{"count"}), \code{observed}, \code{expected}, \code{residual}, \code{effective_n},
+\code{statistic}, \code{df}, \code{p_value}, \code{p_adjusted}. Takes \code{data}, \code{by} and
+\code{adjust}. See \emph{Bivariate residuals} for what each kind computes.}
 \item{\code{"information_criteria"}}{Every information criterion the package
 computes (see \emph{Information criteria}). Takes \code{format} and
 \code{definitions}.}
 \item{\code{"sequences"}}{The assignments in occasion order, one row per
-observation: \code{group}, \code{group_class}, \code{time}, \code{profile}. Takes \code{format}.
+classified observation (a row with nothing observed is left out, or
+kept under \code{drop_empty = FALSE}): \code{group}, \code{group_class}, \code{time},
+\code{profile}. Takes \code{format}.
 Raises \code{latents_no_time} for a fit made without \code{time}.}
 \item{\code{"sequence_summary"}}{One row per group class: \code{group_class},
 \code{groups}, \code{observations}, \code{mean_length}, \code{median_length}, \code{shortest},
@@ -289,7 +303,8 @@ per Gaussian component and measurement context: \code{context}, \code{profile},
 \code{min_variance_ratio}, \code{min_standardized_eigenvalue}, \code{boundary}.
 \code{gaussian_mass} sums posterior times normalized sampling weight over
 rows with at least one observed Gaussian indicator; \code{positive_rows}
-counts rows with positive contributions. \code{weight_effective_n} is the
+counts those rows (the same for every component, since a Gaussian
+density is positive everywhere). \code{weight_effective_n} is the
 concentration measure \code{(sum(a)^2 / sum(a^2))} for those contributions,
 not an identification guarantee; Gaussian mass is not this effective
 sample size. \code{min_variance_ratio} is the smallest component variance
@@ -374,7 +389,9 @@ for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} 
 \code{kind} (\code{"categorical"} or \code{"continuous"}), \code{profile}, \code{item_1},
 \code{category_1}, \code{item_2}, \code{category_2}, \code{probability}, \code{independent},
 \code{ratio}, \code{covariance} and \code{correlation}. A categorical pair has one row
-per profile and combination of the two items' categories: the fitted
+per profile and combination of the two items' categories (every
+combination, including any nobody gave, which sits at the
+\code{min_probability} floor and counts as a parameter): the fitted
 joint \code{probability}, the product of the two marginal probabilities
 (\code{independent}, the joint probability under independence within the
 profile) and their \code{ratio}; its covariance columns are \code{NA}. A
@@ -607,28 +624,57 @@ relabelling, not failure.
 
 \section{Information criteria}{
  Let \code{q} be the number of free parameters,
-\code{n} the chosen sample size, and \code{EN} the classification entropy of the
-level matching that convention. The criteria are \code{deviance = -2L},
+\code{n} the chosen sample size, and \code{EN} the entropy of the complete-data
+classification (defined below). The criteria are \code{deviance = -2L},
 \verb{aic = -2L + 2q}, \verb{bic = -2L + q log(n)},
 \verb{sabic = -2L + q log((n + 2) / 24)}, \code{caic = -2L + q (log(n) + 1)},
 \verb{awe = -2(L - EN) + 2q (1.5 + log(n))}, \verb{icl = -2L + q log(n) + 2 EN},
 \code{kic = -2L + 3(q + 1)}, and \verb{clc = -2L + 2 EN}. \code{clc}, like \code{icl} and
 \code{awe}, uses the entropy sum; \code{tidyLPA} reports a \code{CLC} based on relative
-entropy, and the two values are not comparable.
+entropy, and the two values are not comparable. The \code{kic} form is
+Cavanaugh's (1999) criterion as \code{tidyLPA} computes it (Rosenberg et al.
+2018), with \code{q} the number of free parameters; Cavanaugh's general form
+\verb{-2L + 3q} is 3 smaller for every model, so differences between models
+and the model with the smallest value are the same under both.
+
+\code{EN} is the soft entropy of the complete-data classification, the
+entropy term of the classification log likelihood \verb{log L_c = log L - EN}
+of ICL (Biernacki, Celeux and Govaert 2000), AWE (Banfield and Raftery
+1993) and CLC (Biernacki and Govaert 1997). The latent classification of
+a two-level model is the group class of every group and the profile of
+every row, so \verb{EN = sum_j H(C_j | y_j) + sum_j sum_h P(C_j = h | y_j) sum_i H(X_ij | C_j = h, y_ij)}: the group-class entropy plus each row's
+profile entropy within its group class. With one group class, and in
+every single-level model, it is the entropy of the profile posteriors.
+It is the soft form, the posterior expectation of \verb{-log P(classes | y)}
+(McLachlan and Peel 2000, section 6.10.3), not the entropy of the modal
+(hard) assignment that Biernacki, Celeux and Govaert (2000) also discuss.
+A fit with several group classes saved by latents 0.97.1 or earlier
+lacks the rows' within-class entropies, and its \code{awe}, \code{icl} and \code{clc}
+are \code{NA}; refit it to obtain them.
 
 Every criterion that depends on a sample size is reported under both
-multilevel conventions, \code{"groups"} and \code{"individuals"}, using group-level
-posteriors under the first and individual-level posteriors under the
-second. Use one convention consistently across compared candidates.
-\code{deviance}, \code{aic} and \code{kic} carry \code{convention = NA_character_}. \code{clc}
-depends on no sample size, but its convention selects which level's
-classification entropy it penalises, so it is reported once per
-convention. Individual sample sizes exclude rows with no observed
-indicators, and group sample sizes exclude groups in which every row has
-none (\code{n_informative_groups}); the classification statistics of each
-level exclude the same rows and groups, as in Mplus. Where the group
-classification entropy is undefined, group-level \code{awe}, \code{icl} and \code{clc}
-are \code{NA}.
+multilevel conventions: \code{"groups"} with \code{n} the number of groups and
+\code{"individuals"} with \code{n} the number of rows. \code{EN} is the same under both,
+so the conventions differ only in \code{n}, and in a single-level model they
+coincide. Use one convention consistently across compared candidates.
+\code{deviance}, \code{aic} and \code{kic} carry \code{convention = NA_character_}; \code{clc},
+which uses no sample size, is the same in both rows. A transition model
+(\code{\link[=lta]{lta()}}) keeps one entropy per level instead: its profiles form a Markov
+chain within a person, whose path entropy is not the sum of the
+occasions' entropies, so its \code{"groups"} criteria charge the group-class
+entropy and its \code{"individuals"} criteria the occasions' profile entropy,
+and \code{get_results(x, "information_criteria", format = "long", definitions = TRUE)} says so. Individual sample sizes exclude rows with
+no observed indicators, and group sample sizes exclude groups in which
+every row has none (\code{n_informative_groups}); the entropy and the
+classification statistics exclude the same rows and groups, as in Mplus.
+Units of sampling weight zero are in no sample size and no entropy, under
+either \code{drop_empty}. For a fit with sampling weights, \code{L} is the pseudo
+log likelihood and \code{EN} the sampling-weighted entropy, each unit's terms
+multiplied by its weight, so that integer weights give the entropy of the
+data with each unit repeated that many times. The \code{"entropy"} table,
+\code{relative_entropy}, the average posteriors, the odds of correct
+classification, the classification errors and the BCH weights are
+weighted the same way; modal counts stay counts.
 }
 
 \section{Classification quality}{
@@ -644,9 +690,13 @@ single-class solution always reports \code{NA_real_}. \code{average_posterior} i
 \code{NA_real_} for a class with no modal members. \code{n_modal} and
 \code{estimated_n} differ whenever entropy is below one.
 
-\code{relative_entropy} is \verb{1 - EN / (n log K)}, between zero and one, higher
-meaning sharper classification; \code{entropy_sum} is the raw \code{EN} used by the
-entropy-penalised criteria, lower meaning sharper. \code{relative_entropy} is
+\code{relative_entropy} is \verb{1 - EN_level / (n log K)} (Ramaswamy et al.
+1993), between zero and one, higher meaning sharper classification, with
+\code{EN_level} the level's own entropy sum, reported as \code{entropy_sum}, lower
+meaning sharper. With one group class the individual level's
+\code{entropy_sum} is the \code{EN} of the information criteria; with several, that
+\code{EN} adds the group-class entropy to the profile entropy within each
+group class (see \emph{Information criteria}). \code{relative_entropy} is
 \code{NA_real_} for a level with a single class.
 
 A fit with individual profiles but no discrete group classes reports
@@ -655,13 +705,53 @@ individuals only for \code{level = "both"} and raises
 }
 
 \section{Bivariate residuals}{
- \code{"residuals"} tests, pair by pair, the
+ \code{"residuals"} checks, pair by pair, the
 assumption that indicators are independent within a profile, weighting
-each observation by its posterior. \code{data} must be in the order the model
-was fitted in; the alignment is checked. A large residual indicates
-local dependence between two indicators, which otherwise tends to be
-absorbed by an extra profile. The p-values are approximate, and
-\code{p_adjusted} applies the correction named by \code{adjust} across the pairs.
+each observation by its posterior (times its sampling weight). Every pair
+of indicators has a row (per profile under \code{by = "profile"}, once under
+\code{by = "overall"}). \code{data} must be in the order the model was fitted in;
+the alignment is checked. A large residual indicates local dependence
+between two indicators, which otherwise tends to be absorbed by an extra
+profile. What each \code{kind} computes:
+\itemize{
+\item \code{"gaussian"}, two Gaussian indicators: \code{observed} is the
+posterior-weighted correlation of the residuals from the profile's
+means (pooled over the profiles under \code{"overall"}), \code{expected} the
+correlation the fitted covariance implies (zero for a diagonal one).
+\code{statistic} is the difference of their Fisher z transforms times
+\code{sqrt(effective_n - 3)}, referred to the standard normal (Fisher,
+1921), two-sided, \code{df} is \code{NA}. Under a correctly specified model its
+size is close to nominal: 4.8\% (\code{"profile"}) and 5.8\% (\code{"overall"})
+at 5\% in 200 simulated two-profile data sets of 500 rows.
+\item \code{"categorical"}, two categorical or ordinal indicators (an ordinal
+indicator's categories are its levels): \code{statistic} is the Pearson
+X^2 of the posterior-weighted two-way table against the table the
+model implies, which is Latent GOLD's bivariate residual times its
+\code{df}, and \code{p_value} refers it to chi-square with \code{df = (R - 1)(C - 1)}.
+\code{observed} and \code{expected} are the two tables' Cramer's V (Cramer,
+1946), zero for the model's table within a profile. The chi-square
+reference ignores that the model's table is estimated from the same
+data, which makes the test very conservative (Oberski, van Kollenburg
+& Vermunt, 2013): under a correctly specified model it rejected 0.25\%
+(\code{"profile"}) and 0.08\% (\code{"overall"}) of pairs at nominal 5\% in 200
+simulated latent class data sets of 500 rows. A small \code{p_value} is
+evidence of dependence; a large one is not evidence of independence,
+so read \code{residual} and \code{statistic} rather than filtering on \code{p_value}.
+\item \code{"mixed"} (a Gaussian and a categorical or ordinal indicator) and
+\code{"count"} (any pair with a count indicator): \code{observed} is the
+posterior-weighted correlation of the two indicators' values within the
+profile, centred on the profile's weighted means (pooled over the
+profiles under \code{"overall"}); a categorical or ordinal indicator enters
+as its category number in category order, which for a nominal
+indicator with more than two categories depends on that order.
+\code{expected} is zero, the correlation of independent indicators, and
+\code{statistic}, \code{df} and \code{p_value} are \code{NA}: no reference distribution is
+computed for these pairs.
+}
+
+A half-observed row of a joined \code{local_dependence} pair enters that
+pair's tables only where both items are observed. \code{p_adjusted} applies
+the correction named by \code{adjust} across the pairs that have a p-value.
 A fit with sampling weights uses them in the descriptive associations
 and \code{effective_n}; design-based inference is not implemented, so
 \code{statistic}, \code{df}, \code{p_value} and \code{p_adjusted} are \code{NA} for weighted fits.
@@ -685,6 +775,10 @@ get_results(fit, what = "assignments", data = course_engagement,
          truth = c("engagement", "student_type"))
 }
 \references{
+Fisher, R. A. (1921). On the "probable error" of a coefficient
+of correlation deduced from a small sample. \emph{Metron}, 1, 3--32.
+Cramer, H. (1946). \emph{Mathematical Methods of Statistics}. Princeton
+University Press.
 Schwarz, G. (1978). Estimating the dimension of a model.
 \emph{Annals of Statistics}, 6, 461--464.
 Sclove, S. L. (1987). Application of model-selection criteria to some
@@ -699,6 +793,14 @@ to choose the number of clusters. \emph{Computing Science and Statistics}, 29,
 Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
 Kullback's symmetric divergence. \emph{Statistics and Probability Letters}, 42,
 333--343.
+Rosenberg, J. M., Beymer, P. N., Anderson, D. J., Van Lissa, C. J., &
+Schmidt, J. A. (2018). tidyLPA: An R package to easily carry out latent
+profile analysis (LPA) using open-source or commercial software.
+\emph{Journal of Open Source Software}, 3(30), 978.
+McLachlan, G., & Peel, D. (2000). \emph{Finite Mixture Models}. Wiley.
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T.
+(1993). An empirical pooling approach for estimating marketing mix
+elasticities with PIMS data. \emph{Marketing Science}, 12, 103--124.
 Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
 for clustering with the integrated completed likelihood. \emph{IEEE
 Transactions on Pattern Analysis and Machine Intelligence}, 22, 719--725.
@@ -712,6 +814,10 @@ Satopaa, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
 "kneedle" in a haystack: Detecting knee points in system behavior.
 \emph{Proceedings of the 31st International Conference on Distributed
 Computing Systems Workshops}, 166--171.
+Oberski, D. L., van Kollenburg, G. H., & Vermunt, J. K. (2013). A Monte
+Carlo evaluation of three methods to detect local dependence in binary
+data latent class models. \emph{Advances in Data Analysis and
+Classification}, 7, 267--279.
 }
 \seealso{
 \code{\link[=as.data.frame]{as.data.frame()}}, which returns the primary table alone,

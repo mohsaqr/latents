@@ -133,9 +133,20 @@ correctly specified, not the assumption that groups are independent.
 \code{"opg"} inverts the outer product of the per-group scores (the BHHH
 estimator), as \code{glca} reports; it agrees with \code{"observed"} in large
 samples and can differ in small ones, where \code{"observed"} is usually more
-reliable. \code{"robust"} and \code{"opg"} need more groups than parameters. For a
+reliable. \code{"robust"} and \code{"opg"} need more groups than parameters; \code{"opg"}
+also needs group scores of full rank, since it inverts their outer
+product, while the sandwich does not. For a
 fit with sampling weights the default is \code{"robust"}, and any other value
-raises \code{latents_unsupported_weights}. \code{vcov_type} and \code{step} are not used
+raises \code{latents_unsupported_weights}. For a fit with \code{centering = "person"} or \code{scaling = "person"} the default is also \code{"robust"}, and
+\code{"observed"} or \code{"opg"} raise \code{latents_unsupported_inference}: a unit's
+transformed rows are not independent observations, and the inverse
+information understated their errors (by up to 22\% in a simulation),
+while the sandwich over units is valid. Under \code{centering = "grand"} or
+\code{scaling = "grand"} the sample means and standard deviations the
+indicators were transformed with are estimated jointly with the model,
+as estimating equations, and their variability is added to every
+covariance type: a centred mean \code{mu_k - xbar} has the standard error of
+that difference, not that of \code{mu_k}. \code{vcov_type} and \code{step} are not used
 by \code{method = "bootstrap"}.}
 
 \item{adjust}{Multiplicity correction applied to \code{p_value} to give
@@ -306,8 +317,13 @@ For a general transition fit (an \code{\link[=lta]{lta()}} fit with covariate,
 occasion-varying or second-order transitions), the table has one row per
 transition, initial and second-order logit: \code{block}, \code{group_class},
 \code{from}, \code{to}, \code{term}, \code{estimate}, \code{standard_error}, \code{statistic},
-\code{p_value}, \code{p_adjusted}, \code{conf_low}, \code{conf_high} (and \code{previous} for a
-second-order fit). \code{method = "bootstrap"} resamples persons, refits, and
+\code{p_value}, \code{p_adjusted}, \code{conf_low}, \code{conf_high}, \code{estimated} (and
+\code{previous} for a second-order fit). \code{estimated} is \code{FALSE} for a logit
+the likelihood does not identify: a move into an occasion at which no
+row observes an indicator, under \code{transitions = "occasion"} (or every
+second-order logit when nothing is observed from occasion 3 on). Such a
+logit is not counted in \code{n_parameters}, AIC or BIC, and its standard
+error and test are \code{NA}. \code{method = "bootstrap"} resamples persons, refits, and
 matches every replicate's profiles (on the measurement) and group classes
 to the original's, rebasing the initial logits when the reference profile
 moves; it needs \code{data}, and works where Wald inference is refused (for

@@ -90,8 +90,10 @@
   # A coordinate the correlated fit left on its floor or bound has no Wald or
   # bootstrap distribution worth reporting, as a degenerate covariance has not.
   on_bound <- x$residual_boundary %||% character()
-  residual_held <- labels$block == "residual_sd" &
-    any(startsWith(on_bound, "log_sigma.")) |
+  # Only the floored class's own residual-SD row (GR2-7).
+  sigma_name <- ifelse(labels$class == "all", "log_sigma.shared",
+                       paste0("log_sigma.", labels$class))
+  residual_held <- labels$block == "residual_sd" & sigma_name %in% on_bound |
     labels$block == "residual_process" &
     sprintf("residual_correlation.log_%s", labels$term) %in% on_bound
   list(labels = labels, scales = unname(scales),
@@ -154,8 +156,7 @@
 #' @noRd
 .growth_match_classes <- function(x, refit) {
   persons <- .growth_new_spec(refit, x$spec$model_data, TRUE)
-  posterior <- .growth_expectation(persons, .growth_statistics(persons),
-                                   refit$params)$posterior
+  posterior <- .growth_fitted_expectation(refit, persons)$posterior
   list(order = .multilpa_match_order(t(x$expectation$posterior), t(posterior)),
        posterior = posterior)
 }

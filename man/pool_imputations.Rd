@@ -31,7 +31,9 @@ the mice package, which is completed here.}
 \item{vcov_type}{\code{"observed"} (default), \code{"robust"} or \code{"opg"}, as in
 \code{\link[=parameter_inference]{parameter_inference()}}, applied to every imputation's fit. For fits
 with sampling weights the default is \code{"robust"}, and the other types are
-refused with \code{latents_unsupported_weights}.}
+refused with \code{latents_unsupported_weights}; for fits with person
+centring or scaling the default is \code{"robust"} too, and the other types
+are refused with \code{latents_unsupported_inference}.}
 
 \item{adjust}{Multiplicity correction applied to the pooled p-values to
 give \code{p_adjusted}, as in \code{\link[=parameter_inference]{parameter_inference()}}: \code{"none"} (default) or

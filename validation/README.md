@@ -9,6 +9,7 @@ control.
 | Path | What it is | Run from the project root |
 |---|---|---|
 | `MATH_AUDIT.md` | The mathematical audit: numerical fixes, independent regression checks and what they established. | — |
+| `review-2026-10-26/` | Review of commit 8ac3576 and a nine-area algorithm audit. The README groups the defects by kind (invalid input accepted, valid input refused, silently wrong answers); `REPORT.md` has the details. `round-2/` is the second pass over every formula after the fixes (68 findings, all but five fixed; its README explains the three kinds). | — |
 | `ADDITIVE_MODEL_DESIGN.md`, `additive-design-check.R` | Proposed raw-rating additive model and validation gates; checks exact likelihood, intercept moments, interior EM, and balanced one-class boundary/interior MLEs. The estimator now ships as `multilpa(family = "additive")` (experimental). | `Rscript validation/additive-design-check.R` |
 | `ADDITIVE_SIMULATION.md`, `additive-simulation.R`, `additive-simulation-*.csv/.txt` | Predeclared 11-cell simulation of `multilpa(family = "additive")`, 1000 datasets per cell: recovery, SE calibration and coverage (observed and robust), refusals; registry written before running. | `Rscript validation/additive-simulation.R full` (~27 min on 9 cores) |
 | `simulab-recovery/` | A Monte Carlo recovery study. It measures bias and coverage against the generating values, not agreement with a fixed number. | `Rscript validation/simulab-recovery/recovery-study.R` |

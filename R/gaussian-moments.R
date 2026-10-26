@@ -183,3 +183,47 @@
       min_variance * (1 + 1e-8)
   }, logical(1)))
 }
+
+#' The default variance bound: a millionth of the smallest indicator variance
+#'
+#' `min_variance = NULL` asks for a bound in the units of the data, so that a
+#' fit does not change when the indicators are recorded in other units. It is
+#' `1e-6` times the smallest sample variance (denominator `n - 1`) of the
+#' continuous indicators, over their observed values in rows of positive
+#' sampling weight, on the scale the model is fitted on (after any centring
+#' and scaling). A number keeps its meaning: an absolute bound in squared
+#' units (review 2026-10-26 round 2, K2-2).
+#'
+#' @param min_variance `NULL`, or the caller's positive number.
+#' @param x Observation-by-indicator matrix the measurement model sees,
+#'   possibly with `NA`; it may have zero columns.
+#' @param row_weights `NULL`, or one sampling weight per row; rows of weight
+#'   zero do not enter.
+#' @return A single positive number.
+#' @noRd
+.latents_resolve_min_variance <- function(min_variance, x, row_weights = NULL) {
+  if (!is.null(min_variance)) return(min_variance)
+  stopifnot("`x` must be a numeric matrix" = is.matrix(x) &&
+              (is.numeric(x) || ncol(x) == 0L),
+            "`row_weights` must have one value per row" =
+              is.null(row_weights) || length(row_weights) == nrow(x))
+  # No continuous indicator: the bound is never applied.
+  if (ncol(x) == 0L) return(1e-6)
+  rows <- if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0
+  variances <- vapply(seq_len(ncol(x)), function(column) {
+    values <- x[rows, column]
+    values <- values[!is.na(values)]
+    if (length(values) < 2L) return(NA_real_)
+    # Measured from an observed value and in units of the largest deviation,
+    # so that neither a large origin nor a large scale costs precision.
+    deviations <- values - values[1L]
+    peak <- max(abs(deviations))
+    if (!(peak > 0)) return(NA_real_)
+    stats::var(deviations / peak) * peak^2
+  }, numeric(1))
+  usable <- variances[is.finite(variances) & variances > 0]
+  # Spreads too small to square (below about 1e-154) leave the smallest
+  # positive bound, so that no variance the data can show is bounded away.
+  if (length(usable) == 0L) return(.Machine$double.xmin)
+  max(1e-6 * min(usable), .Machine$double.xmin)
+}

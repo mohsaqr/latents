@@ -47,8 +47,25 @@
 #'   the destination occasion, zero past a group's last occasion, where no
 #'   move is made; `.lta_check_covariate_gaps()` refuses skipped positions
 #'   inside a span) and the column names.
+#' @param order Transition order. With order 2 the first-order logits govern
+#'   only the move into occasion 2 and the second-order logits the later moves,
+#'   each on its own subset of columns, so each block is checked for rank on
+#'   its own rows and columns.
+#' @param used `NULL` (every row), or the rows the likelihood reads, from
+#'   `.lta_used_rows()`: `initial` (one logical per group) and `moves`
+#'   (groups by occasions). The rank is judged on those rows only, so a
+#'   covariate that varies only in rows the likelihood never reads (a unit of
+#'   weight zero, a move after a group's last observed occasion) is refused
+#'   as the constant it is where it counts (R2-LTA-5).
+#' @details A rank-deficient initial or transition design is refused with
+#'   `latents_bad_covariate`, as `r3step()` refuses one: the logits of an
+#'   aliased column are not identified (any split between the aliased columns
+#'   fits equally well), yet they would be reported as estimates and counted
+#'   as free parameters in AIC and BIC.
 #' @noRd
-.lta_designs <- function(layout, covariate_rows, initial_rows, transitions) {
+.lta_designs <- function(layout, covariate_rows, initial_rows, transitions,
+                         order = 1L, used = NULL) {
+  stopifnot("`order` must be 1 or 2" = length(order) == 1L && order %in% c(1, 2))
   n_groups <- nrow(layout$slot)
   first_row <- layout$slot[cbind(seq_len(n_groups), 1L)]
   initial <- cbind(matrix(1, n_groups, 1L, dimnames = list(NULL, "(Intercept)")),
@@ -68,7 +85,270 @@
     values[observed, ] <- covariate_rows[rows[observed], , drop = FALSE]
     cbind(intercepts, values)
   })
+  used <- used %||% list(initial = rep(TRUE, n_groups), moves = layout$within)
+  if (any(used$initial)) {
+    .lta_check_design_rank(initial[used$initial, , drop = FALSE],
+                           "initial-state design (`initial_covariates`)", 1L)
+  }
+  .lta_check_transition_rank(layout, transition, order, used$moves)
   list(initial = initial, transition = transition)
+}
+
+#' Number of leading intercept columns of a transition design
+#' @param terms Transition design column names.
+#' @param n_occasions Occasions of the layout.
+#' @return 1 for `"(Intercept)"`, otherwise one occasion intercept per move.
+#' @noRd
+.lta_n_intercepts <- function(terms, n_occasions) {
+  if (identical(terms[1L], "(Intercept)")) 1L else as.integer(n_occasions - 1L)
+}
+
+#' The centring and scaling of each logit design's covariate columns
+#'
+#' The logit models are fitted on covariates centred at their mean and divided
+#' by their standard deviation over the rows the likelihood reads (each group's
+#' first occasion for the initial design, the moves made for the transition
+#' designs). The leading intercept columns span the constant on every row (one
+#' intercept, or occasion indicators of which exactly one is 1), so the
+#' centred design spans the same models and the map between the two
+#' coefficient charts is exact and linear:
+#' raw slope = chart slope / scale, raw intercept = chart intercept -
+#' sum(centre / scale * chart slope). Without it a covariate held at 1e8 is
+#' almost collinear with the intercept for the quasi-Newton finish, which then
+#' stops at a lower likelihood and reports convergence.
+#'
+#' @param designs Raw designs from `.lta_designs()`.
+#' @param layout Sequence layout.
+#' @return A list with `initial` and `transition`, each holding
+#'   `n_intercepts`, `centre` and `scale` (one per covariate column).
+#' @noRd
+.lta_design_chart <- function(designs, layout) {
+  part <- function(design, n_intercepts) {
+    covariates <- design[, seq_len(ncol(design)) > n_intercepts, drop = FALSE]
+    centre <- colMeans(covariates)
+    spread <- sqrt(colMeans(sweep(covariates, 2L, centre, "-")^2))
+    # A column with no spread was refused by the rank check; a unit scale
+    # keeps the map defined should one reach here by another route.
+    list(n_intercepts = n_intercepts, centre = centre,
+         scale = ifelse(is.finite(spread) & spread > 0, spread, 1))
+  }
+  moves <- do.call(rbind, lapply(seq_along(designs$transition), function(index) {
+    designs$transition[[index]][layout$within[, index + 1L], , drop = FALSE]
+  }))
+  list(initial = part(designs$initial, 1L),
+       transition = part(moves, .lta_n_intercepts(colnames(moves), layout$n_occasions)))
+}
+
+#' Designs in the fitting chart: covariate columns centred and scaled
+#' @param designs Raw designs.
+#' @param chart From `.lta_design_chart()`.
+#' @return Designs of the same shape and column names.
+#' @noRd
+.lta_chart_designs <- function(designs, chart) {
+  standardise <- function(design, part) {
+    covariates <- seq_len(ncol(design)) > part$n_intercepts
+    design[, covariates] <- sweep(sweep(design[, covariates, drop = FALSE], 2L,
+                                        part$centre, "-"), 2L, part$scale, "/")
+    design
+  }
+  list(initial = standardise(designs$initial, chart$initial),
+       transition = lapply(designs$transition, standardise, part = chart$transition))
+}
+
+#' The linear map between coefficient charts of one design
+#' @param part One element of `.lta_design_chart()`.
+#' @param direction `"to_raw"` (chart to supplied units) or `"to_chart"`.
+#' @return A square matrix M with coefficients_out = M coefficients_in, over
+#'   all columns of the design.
+#' @noRd
+.lta_chart_matrix <- function(part, direction = c("to_raw", "to_chart")) {
+  direction <- match.arg(direction)
+  n_covariates <- length(part$centre)
+  n_columns <- part$n_intercepts + n_covariates
+  map <- diag(n_columns)
+  if (n_covariates == 0L) return(map)
+  covariates <- part$n_intercepts + seq_len(n_covariates)
+  intercepts <- seq_len(part$n_intercepts)
+  if (identical(direction, "to_raw")) {
+    map[cbind(covariates, covariates)] <- 1 / part$scale
+    map[intercepts, covariates] <- matrix(-part$centre / part$scale,
+                                          part$n_intercepts, n_covariates, byrow = TRUE)
+  } else {
+    map[cbind(covariates, covariates)] <- part$scale
+    map[intercepts, covariates] <- matrix(part$centre, part$n_intercepts,
+                                          n_covariates, byrow = TRUE)
+  }
+  map
+}
+
+#' Map the initial and transition coefficients between charts
+#'
+#' The same matrix applies to every class, profile and origin, over the first
+#' (design-column) dimension. A column a block does not use (an occasion
+#' intercept outside a second-order block) is moved with the rest, and moved
+#' back exactly, without entering any likelihood.
+#'
+#' @param parameters A parameter list with `initial`, `transition` and
+#'   optionally `transition2` coefficient arrays.
+#' @param chart From `.lta_design_chart()`.
+#' @param direction `"to_raw"` or `"to_chart"`.
+#' @return `parameters` with those arrays mapped; dimnames and attributes kept.
+#' @noRd
+.lta_map_coefficients <- function(parameters, chart, direction = c("to_raw", "to_chart")) {
+  direction <- match.arg(direction)
+  apply_map <- function(coefficients, part) {
+    if (is.null(coefficients)) return(NULL)
+    map <- .lta_chart_matrix(part, direction)
+    stopifnot("coefficient rows must match the design columns" =
+                dim(coefficients)[1L] == nrow(map))
+    mapped <- map %*% matrix(coefficients, nrow(map))
+    attributes(mapped) <- attributes(coefficients)
+    mapped
+  }
+  parameters$initial <- apply_map(parameters$initial, chart$initial)
+  parameters$transition <- apply_map(parameters$transition, chart$transition)
+  if (!is.null(parameters$transition2)) {
+    parameters$transition2 <- apply_map(parameters$transition2, chart$transition)
+  }
+  parameters
+}
+
+#' Jacobian of the estimation-scale vector from the fitting chart to the raw one
+#'
+#' theta_raw = J theta_chart, with J the identity on every coordinate but the
+#' initial and transition logits, whose blocks are the free-column submatrix
+#' of `.lta_chart_matrix()` (every covariate column is free, so a free
+#' intercept depends only on itself and the covariates).
+#'
+#' @param fit A fit or its specification (raw designs, `layout`, `order`,
+#'   `n_profiles`, `n_group_classes`, `stayer`).
+#' @param chart From `.lta_design_chart()`.
+#' @param n_theta Length of the estimation-scale vector.
+#' @param direction `"to_raw"` gives J, `"to_chart"` its inverse.
+#' @return An `n_theta` x `n_theta` matrix.
+#' @noRd
+.lta_chart_jacobian <- function(fit, chart, n_theta, direction = c("to_raw", "to_chart")) {
+  direction <- match.arg(direction)
+  n_profiles <- fit$n_profiles
+  n_classes <- fit$n_group_classes
+  n_movers <- sum(!(fit$stayer %||% rep(FALSE, n_classes)))
+  terms <- colnames(fit$designs$transition[[1L]])
+  second <- (fit$order %||% 1L) >= 2L
+  n_intercepts <- fit$layout$n_occasions - 1L
+  first <- .lta_transition_columns(terms, second, 1L, n_intercepts)
+  later <- .lta_transition_columns(terms, second, 2L, n_intercepts)
+  transition_map <- .lta_chart_matrix(chart$transition, direction)
+  blocks <- c(
+    rep(list(.lta_chart_matrix(chart$initial, direction)), n_classes * (n_profiles - 1L)),
+    rep(list(transition_map[first, first, drop = FALSE]),
+        n_movers * n_profiles * (n_profiles - 1L)),
+    if (second) rep(list(transition_map[later, later, drop = FALSE]),
+                    n_movers * n_profiles^2 * (n_profiles - 1L)))
+  sizes <- vapply(blocks, nrow, integer(1))
+  offset <- n_theta - sum(sizes)
+  stopifnot("the logit blocks must fit in the estimation vector" = offset >= 0L)
+  jacobian <- diag(n_theta)
+  starts <- offset + cumsum(c(0L, sizes[-length(sizes)]))
+  # Fills disjoint diagonal blocks of one matrix in place.
+  invisible(lapply(seq_along(blocks), function(index) {
+    rows <- starts[index] + seq_len(sizes[index])
+    jacobian[rows, rows] <<- blocks[[index]]
+  }))
+  jacobian
+}
+
+#' Refuse rank-deficient transition designs
+#'
+#' Only the moves the likelihood reads are checked: past a group's last
+#' occasion its design rows are zero placeholders, and a move after a group's
+#' last observed occasion, or of a unit of weight zero, does not enter the
+#' likelihood. An occasion intercept none of those moves uses is flat and not
+#' counted (`.lta_identified_columns()`), so it is left out rather than read
+#' as an aliased column.
+#'
+#' @param layout Sequence layout.
+#' @param transition The list of per-occasion transition designs.
+#' @param order Transition order.
+#' @param moves_used Groups by occasions: which moves enter the likelihood.
+#' @return `NULL`, invisibly; raises `latents_bad_covariate`.
+#' @noRd
+.lta_check_transition_rank <- function(layout, transition, order,
+                                       moves_used = layout$within) {
+  terms <- colnames(transition[[1L]])
+  moves <- lapply(seq_along(transition), function(index) {
+    transition[[index]][moves_used[, index + 1L], , drop = FALSE]
+  })
+  check <- function(design, what, n_intercepts) {
+    if (nrow(design) == 0L) return(invisible(NULL))
+    live <- seq_len(ncol(design)) > n_intercepts | colSums(design != 0) > 0
+    .lta_check_design_rank(design[, live, drop = FALSE], what,
+                           sum(live[seq_len(n_intercepts)]))
+  }
+  # The intercept columns lead: one "(Intercept)", or one indicator per
+  # occasion, which sum to one on every move row.
+  n_intercepts <- if (identical(terms[1L], "(Intercept)")) 1L else layout$n_occasions - 1L
+  if (order < 2L) {
+    check(do.call(rbind, moves),
+          "transition design (`transitions`, `transition_covariates`)", n_intercepts)
+    return(invisible(NULL))
+  }
+  # With occasion intercepts, the first block keeps only occasion_2 and the
+  # second block the other n_occasions - 2.
+  occasion <- n_intercepts > 1L
+  first <- .lta_transition_columns(terms, TRUE, 1L, layout$n_occasions - 1L)
+  check(moves[[1L]][, first, drop = FALSE],
+        "first-order transition design (the move into occasion 2)", 1L)
+  second <- .lta_transition_columns(terms, TRUE, 2L, layout$n_occasions - 1L)
+  check(do.call(rbind, moves[-1L])[, second, drop = FALSE],
+        "second-order transition design (the moves after occasion 2)",
+        if (occasion) n_intercepts - 1L else 1L)
+  invisible(NULL)
+}
+
+#' Refuse a rank-deficient logit design, naming it and its aliased columns
+#'
+#' The rule of `.multilpa_r3step_check_rank()`: columns are put on a common
+#' scale first, so a covariate held in large or small units is judged by its
+#' pattern, not by its magnitude, and the QR rank (default tolerance) is
+#' compared with the number of columns. The covariate columns are centred
+#' before that: the leading intercept columns span the constant vector (one
+#' intercept, or occasion indicators that sum to one on every row), so
+#' centring leaves the column space and the rank unchanged, and it keeps a
+#' covariate held at a large origin (`w + 1e8`) from looking like the
+#' intercept to the QR tolerance.
+#'
+#' @param design A design matrix with named columns, intercept columns first.
+#' @param what The design's name, for the message.
+#' @param n_intercepts Number of leading intercept columns.
+#' @return `design`, invisibly; raises `latents_bad_covariate`.
+#' @noRd
+.lta_check_design_rank <- function(design, what, n_intercepts) {
+  stopifnot("`design` must be a numeric matrix" = is.matrix(design) && is.numeric(design),
+            "`what` must be a single string" = is.character(what) && length(what) == 1L,
+            "`n_intercepts` must lie between 1 and the column count" =
+              length(n_intercepts) == 1L && n_intercepts >= 1L &&
+              n_intercepts <= ncol(design))
+  covariates <- seq_len(ncol(design)) > n_intercepts
+  centred <- design
+  centred[, covariates] <- sweep(design[, covariates, drop = FALSE], 2L,
+                                 colMeans(design[, covariates, drop = FALSE]), "-")
+  decomposition <- qr(sweep(centred, 2L, .multilpa_design_scale(centred), "/"))
+  if (decomposition$rank < ncol(design)) {
+    aliased <- colnames(design)[decomposition$pivot[-seq_len(decomposition$rank)]]
+    # Occasion intercepts are generated, so a covariate aliased with them is
+    # one that takes a single value at each occasion (the occasion number).
+    hint <- if (any(grepl("^occasion_[0-9]+$", colnames(design)))) paste(
+      " With transitions = \"occasion\", a covariate that is constant within",
+      "each occasion is collinear with the occasion intercepts.") else ""
+    stop(errorCondition(sprintf(paste0(
+      "The %s is rank deficient (rank %d of %d columns): %s cannot be told ",
+      "apart from the other columns, so its logits are not identified. Remove ",
+      "constant or collinear covariates.%s"),
+      what, decomposition$rank, ncol(design),
+      paste(sprintf("`%s`", aliased), collapse = ", "), hint),
+      class = "latents_bad_covariate", call = NULL))
+  }
+  invisible(design)
 }
 
 #' Refuse transition covariates at grid positions a group skipped
@@ -468,6 +748,22 @@
          stayer = parameters$stayer))
 }
 
+#' Each row's sequence weight, from the occasion layout
+#' @param layout The sequence layout (`slot`: sequences by occasions of row
+#'   indices).
+#' @param sampling_weights `NULL`, or one weight per sequence.
+#' @param n_rows Number of rows.
+#' @return `NULL` without weights; otherwise one weight per row, `0` for a row
+#'   the layout does not place.
+#' @noRd
+.lta_row_weights <- function(layout, sampling_weights, n_rows) {
+  if (is.null(sampling_weights)) return(NULL)
+  placed <- !is.na(layout$slot)
+  weights <- numeric(n_rows)
+  weights[layout$slot[placed]] <- sampling_weights[row(layout$slot)[placed]]
+  weights
+}
+
 #' EM for the general transition model from one start
 #'
 #' `pause` and `resume` are as for `.latents_em()`; with either, the result
@@ -494,7 +790,12 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(
-      decrease_tolerance = 1e-8, accelerate = .lta_accelerator(acceleration, general = TRUE)),
+      decrease_tolerance = 1e-8, accelerate = .lta_accelerator(acceleration, general = TRUE),
+      # A unit-free stop (review 2026-10-26 round 2, K2-6): the observed values
+      # of the rows whose sequence has positive weight.
+      stop_scale = .latents_observed_values(
+        x, codes, .latents_extra_matrix(extra),
+        row_weights = .lta_row_weights(layout, sampling_weights, nrow(x)))),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -607,9 +908,12 @@
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
+  # The indicator checks (constancy, an observed value per indicator) judge
+  # only the rows of positive sampling weight, as in multilpa() (ML-2).
   measurement <- .multilpa_prepare_indicators(data, vars, categorical, missing,
                                               min_probability,
-                                              other = c(ordinal, count))
+                                              other = c(ordinal, count),
+                                              weights = weights)
   extra <- .latents_set_count_model(
     .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
   x <- measurement$x
@@ -627,19 +931,63 @@
     stop(errorCondition("Second-order transitions require at least three occasions.",
                         class = "latents_bad_transition", call = NULL))
   }
-  distinct_rows <- nrow(unique(cbind(x, codes, extra$ordinal, extra$count)))
-  if (n_profiles > distinct_rows || n_group_classes > groups$n) {
+  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
+  # Identification is judged on the groups that enter the likelihood: a group
+  # of weight zero supplies neither a distinct row nor a group for a class to
+  # hold (ML-2, as multilpa()'s `carrying`).
+  carrying <- if (is.null(sampling_weights)) rep(TRUE, groups$n) else sampling_weights > 0
+  # `NULL`: a millionth of the smallest indicator variance over the rows of
+  # positive weight (review 2026-10-26 round 2, K2-2).
+  min_variance <- .latents_resolve_min_variance(
+    min_variance, x,
+    if (is.null(sampling_weights)) NULL else sampling_weights[groups$index])
+  distinct_rows <- nrow(unique(cbind(x, codes, extra$ordinal, extra$count)[
+    carrying[groups$index], , drop = FALSE]))
+  if (n_profiles > distinct_rows || n_group_classes > sum(carrying)) {
     stop(errorCondition(paste(
       "Profiles cannot exceed the distinct observed indicator rows, and group",
-      "classes (including stayers) cannot exceed the number of groups."),
+      "classes (including stayers) cannot exceed the number of groups, both",
+      "counted over the groups of positive weight."),
       class = "latents_unidentified", call = NULL))
   }
   .lta_check_covariate_gaps(layout, groups, time_values, transition_covariates)
-  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
+  occupied <- .lta_occupied_occasions(layout, x, codes, extra,
+                                      if (is.null(sampling_weights)) NULL else
+                                        sampling_weights[groups$index])
+  if (!any(occupied[-1L])) {
+    stop(errorCondition(paste(
+      "No occasion after the first has an observed indicator, so no transition",
+      "can be estimated."), class = "latents_bad_transition", call = NULL))
+  }
+  # An empty occasion before the last observed one is not flat (unlike a
+  # trailing one): with occasion-specific transitions its moves in and out
+  # enter only through their product, so their logits are not separately
+  # identified. The fit is still well defined, so this warns, not refuses;
+  # the logits of the move into it are not counted (.lta_identified_columns()).
+  inner_empty <- which(!occupied & seq_along(occupied) < max(which(occupied)))
+  if (identical(transitions, "occasion") && length(inner_empty) > 0L) {
+    warning(warningCondition(sprintf(paste(
+      "No row observes an indicator at occasion %s, which later occasions",
+      "follow. With transitions = \"occasion\", the moves into and out of an",
+      "empty occasion enter the likelihood only through their product, so only",
+      "the product is identified: the logits of the move into it are not",
+      "counted in n_parameters, AIC or BIC and have no standard error, and",
+      "those of the move out of it are reported given them."),
+      paste(inner_empty, collapse = ", ")),
+      class = "latents_unidentified_occasion", call = NULL))
+  }
   occasion_of_row <- integer(nrow(x))
   occasion_of_row[layout$slot[!is.na(layout$slot)]] <- col(layout$slot)[!is.na(layout$slot)]
-  designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
-                          .lta_covariate_matrix(data, initial_covariates), transitions)
+  raw_designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
+                              .lta_covariate_matrix(data, initial_covariates), transitions,
+                              order = order,
+                              used = .lta_used_rows(layout, x, codes, extra,
+                                                    sampling_weights))
+  # EM and the quasi-Newton finish run on centred and scaled covariates, so the
+  # search depends neither on a covariate's units nor on its origin (LTA-F5);
+  # the coefficients are mapped back to the supplied units at the end.
+  chart <- .lta_design_chart(raw_designs, layout)
+  designs <- .lta_chart_designs(raw_designs, chart)
   n_measurement <- if (identical(measurement_model, "occasion")) layout$n_occasions else 1L
   .latents_local_seed(seed)
   centers <- .multilpa_initialization_center(x, sampling_weights[groups$index])
@@ -746,6 +1094,10 @@
                                            occasion_of_row, extra = extra)
       best$expectation$log_likelihood <- weighted_expectation$log_likelihood
     }
+    # From the fitting chart to the units the covariates arrived in: the same
+    # model, so the expectation and the likelihood carry over unchanged.
+    best$parameters <- .lta_map_coefficients(best$parameters, chart, "to_raw")
+    designs <- raw_designs
     result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
                           data, vars, id, time, groups, layout, designs, x, codes,
                           measurement, occasion_of_row, n_profiles, n_group_classes,
@@ -753,7 +1105,8 @@
                           initial_covariates, measurement_model, min_variance,
                           min_probability, call, order, mover_stayer, missing,
                           covariance_model, structure,
-                          final_stage = .latents_final_stage(found))
+                          final_stage = .latents_final_stage(found),
+                          sampling_weights = sampling_weights, occupied = occupied)
     result$starts <- .latents_search_columns(result$starts, found, n_starts)
     record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
     result[names(record)] <- record
@@ -779,12 +1132,16 @@
       profile_names <- paste0("profile_", seq_len(n_profiles))
       result$measurement <- lapply(result$measurement, .latents_label_extra,
                                    extra = extra, profile_names = profile_names)
-      result$n_parameters <- result$n_parameters + n_measurement *
+      result$n_parameters <- result$n_parameters +
+        .lta_identified_blocks(n_measurement, occupied) *
         .latents_extra_n_parameters(extra, n_profiles)
       result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
-      # Ordinal and count columns can be the only ones a row observes.
-      result$informative <- result$informative |
-        rowSums(!is.na(.latents_extra_matrix(extra))) > 0L
+      # Ordinal and count columns can be the only ones a row observes; a unit
+      # of weight zero still observes nothing that counts (ML-1).
+      positive <- if (is.null(sampling_weights)) TRUE else
+        sampling_weights[groups$index] > 0
+      result$informative <- (result$informative |
+        rowSums(!is.na(.latents_extra_matrix(extra))) > 0L) & positive
       result$n_informative <- sum(result$informative)
       result$n_informative_groups <- length(unique(groups$index[result$informative]))
       result$bic <- -2 * result$log_likelihood +
@@ -797,11 +1154,14 @@
     result$drop_empty <- drop_empty
     result$arguments$drop_empty <- drop_empty
     if (isFALSE(drop_empty)) {
-      # The sample sizes of 0.9.37 and earlier: every row and every group.
-      result$n_informative <- result$n_observations
-      result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
+      # The sample sizes of 0.9.37 and earlier: every row and every group,
+      # except those of a unit of weight zero, which is in no count under
+      # either convention (ML-1; the units `nobs()` and `BIC()` count).
+      result$n_informative <- sum(.multilpa_carrying_rows(result, result$n_observations))
+      result$bic <- -2 * result$log_likelihood +
+        log(.multilpa_group_sample_size(result)) * result$n_parameters
       result$bic_individual <- -2 * result$log_likelihood +
-        log(result$n_observations) * result$n_parameters
+        log(result$n_informative) * result$n_parameters
     }
     # This diagnostic concerns Gaussian measurement, so rows without any
     # Gaussian observation cannot support its spread, regardless of drop_empty.
@@ -829,6 +1189,134 @@
     }))
     result
   })
+}
+
+#' The design rows the likelihood reads
+#'
+#' A group's initial design row enters the likelihood when the group has
+#' positive sampling weight and observes something; its move into occasion t
+#' when, in addition, the move lies inside its span and the group observes
+#' something at t or later. Past a group's last observed occasion every
+#' transition row sums to one in the forward recursion, so those moves are
+#' flat, as are all rows of a unit of weight zero (ML-2, R2-LTA-5).
+#'
+#' @param layout Sequence layout.
+#' @param x,codes Continuous and categorical indicators, one row per
+#'   observation.
+#' @param extra Prepared ordinal and count indicators, or `NULL`.
+#' @param unit_weights Sampling weight of each group, or `NULL`.
+#' @return A list with `initial` (one logical per group) and `moves` (a
+#'   logical groups-by-occasions matrix).
+#' @noRd
+.lta_used_rows <- function(layout, x, codes, extra, unit_weights = NULL) {
+  observed <- rowSums(!is.na(cbind(x, codes, .latents_extra_matrix(extra)))) > 0L
+  slots <- layout$slot
+  present <- !is.na(slots)
+  seen <- matrix(FALSE, nrow(slots), ncol(slots))
+  seen[present] <- observed[slots[present]]
+  last <- max.col(seen * rep(seq_len(ncol(slots)), each = nrow(slots)), "last")
+  last[rowSums(seen) == 0L] <- 0L
+  positive <- if (is.null(unit_weights)) rep(TRUE, nrow(slots)) else unit_weights > 0
+  list(initial = positive & last > 0L,
+       moves = layout$within & outer(last, seq_len(ncol(slots)), ">=") & positive)
+}
+
+#' Which occasions have at least one observed indicator
+#'
+#' An occasion counts when some group's row at that position of its sequence
+#' observes an indicator (continuous, categorical, ordinal or count) and
+#' carries positive sampling weight; this is the row rule of `n_informative`.
+#'
+#' @param layout Sequence layout.
+#' @param x,codes Continuous and categorical indicators, one row per
+#'   observation.
+#' @param extra Prepared ordinal and count indicators, or `NULL`.
+#' @param row_weights Sampling weight of each row, or `NULL`.
+#' @return A logical vector, one per occasion of the layout.
+#' @noRd
+.lta_occupied_occasions <- function(layout, x, codes, extra, row_weights = NULL) {
+  observed <- rowSums(!is.na(cbind(x, codes, .latents_extra_matrix(extra)))) > 0L
+  if (!is.null(row_weights)) observed <- observed & row_weights > 0
+  vapply(seq_len(layout$n_occasions), function(t) {
+    rows <- layout$slot[, t]
+    any(observed[rows[!is.na(rows)]])
+  }, logical(1))
+}
+
+#' Transition design columns whose logits are identified
+#'
+#' AIC, BIC and `n_parameters` count only these columns, and Wald inference
+#' is computed over them alone (`.lta_identified_coordinates()`).
+#'
+#' With `transitions = "occasion"`, the intercept `occasion_t` enters only the
+#' move into occasion t, and the move into an occasion at which no row
+#' observes an indicator is not counted:
+#'
+#' * past the last observed occasion the forward recursion sums each
+#'   transition row to one, so the move into t never enters any group's
+#'   likelihood: its intercepts are flat and keep their start values;
+#' * an empty occasion followed by an observed one enters only through the
+#'   product of the moves into and out of it (a run of r empty occasions
+#'   joins r + 1 transition matrices of which only the product, K (K - 1)
+#'   logits, is identified), so the moves into the empty occasions are not
+#'   counted and the move out of the run carries the product;
+#' * when occasion 1 itself is empty, the moves up to the first observed
+#'   occasion f join the initial distribution, of which only the distribution
+#'   at f is identified, so they are not counted.
+#'
+#' With `order = 2` the second-order logits govern the moves into occasions 3
+#' and later; when nothing is observed from occasion 3 on, every one of them
+#' is flat and the whole block (covariate columns included) is not counted.
+#' Covariate columns are shared across moves and stay counted otherwise.
+#'
+#' The two interior rules (an empty occasion followed by an observed one, and
+#' an empty first occasion) are applied to first-order chains only. Under
+#' second order the state two steps back still enters the move out of the
+#' run, so more directions are identified than the product rule says (a
+#' numerical Hessian had rank 20 where the rule counted 19); there every
+#' logit of those moves stays counted and the count is an upper bound, which
+#' the `latents_unidentified_occasion` warning states. Moves past the last
+#' observed occasion are flat under either order.
+#'
+#' @param terms Transition design column names.
+#' @param n_occasions Occasions of the layout.
+#' @param transitions `"homogeneous"` or `"occasion"`.
+#' @param order Transition order.
+#' @param occupied Logical, one per occasion, from `.lta_occupied_occasions()`.
+#' @return A list with `first` and `second`, the counted column indices of the
+#'   first- and second-order blocks.
+#' @noRd
+.lta_identified_columns <- function(terms, n_occasions, transitions, order, occupied) {
+  stopifnot("`occupied` must have one value per occasion" =
+              is.logical(occupied) && length(occupied) == n_occasions && any(occupied))
+  n_intercepts <- n_occasions - 1L
+  # Intercept column j is the move into occasion j + 1.
+  destination <- seq_len(n_intercepts) + 1L
+  last_observed <- max(which(occupied))
+  uncounted <- if (identical(transitions, "occasion") && order < 2L) {
+    which(!occupied[destination] | destination <= min(which(occupied)))
+  } else if (identical(transitions, "occasion")) {
+    which(destination > last_observed)
+  } else integer(0)
+  second <- if (order >= 2L && max(which(occupied)) < 3L) integer(0) else
+    setdiff(.lta_transition_columns(terms, order >= 2L, 2L, n_intercepts), uncounted)
+  list(first = setdiff(.lta_transition_columns(terms, order >= 2L, 1L, n_intercepts),
+                       uncounted),
+       second = second)
+}
+
+#' Measurement blocks the likelihood depends on
+#'
+#' Under occasion-specific measurement, every row of an occasion with no
+#' observed indicator has log density 0 whatever that occasion's means,
+#' variances or response probabilities, so its block is flat and not counted.
+#'
+#' @param n_measurement Measurement blocks (1, or one per occasion).
+#' @param occupied Logical, one per occasion.
+#' @return The number of counted measurement blocks.
+#' @noRd
+.lta_identified_blocks <- function(n_measurement, occupied) {
+  if (n_measurement == 1L) 1L else sum(occupied)
 }
 
 #' Free parameters of the general transition model
@@ -859,7 +1347,9 @@
                         measurement_model, min_variance, min_probability, call,
                         order = 1L, mover_stayer = FALSE, missing = "error",
                         covariance_model = "diagonal", structure = NULL,
-                        final_stage = rep(TRUE, length(attempts))) {
+                        final_stage = rep(TRUE, length(attempts)),
+                        sampling_weights = NULL, occupied = NULL) {
+  occupied <- occupied %||% rep(TRUE, layout$n_occasions)
   profile_names <- paste0("profile_", seq_len(n_profiles))
   class_names <- c(paste0("group_class_", seq_len(n_group_classes - mover_stayer)),
                    if (mover_stayer) "stayers")
@@ -873,17 +1363,15 @@
     block
   })
   expectation <- best$expectation
+  free <- .lta_identified_columns(colnames(designs$transition[[1L]]), layout$n_occasions,
+                                  transitions, order, occupied)
   n_parameters <- .lta_count_parameters(n_profiles, n_group_classes, ncol(x),
                                         measurement$n_categories, variance_model,
-                                        length(parameters$measurement),
-                                        ncol(designs$initial),
-                                        length(.lta_transition_columns(
-                                          colnames(designs$transition[[1L]]), order >= 2L,
-                                          n_occasion_intercepts = layout$n_occasions - 1L)), order,
+                                        .lta_identified_blocks(length(parameters$measurement),
+                                                               occupied),
+                                        ncol(designs$initial), length(free$first), order,
                                         as.integer(mover_stayer), covariance_model,
-                                        structure, length(.lta_transition_columns(
-                                          colnames(designs$transition[[1L]]), order >= 2L, 2L,
-                                          layout$n_occasions - 1L)))
+                                        structure, length(free$second))
   log_likelihood <- expectation$log_likelihood
   subject_posteriors <- expectation$subject_posteriors
   group_posteriors <- expectation$group_posteriors
@@ -891,6 +1379,11 @@
   # not enlarge the individual sample size or count as classified.
   observed_per_row <- rowSums(!is.na(x)) +
     if (is.null(codes)) 0L else rowSums(!is.na(codes))
+  # A unit of sampling weight zero contributes nothing either, so its rows are
+  # not classified and do not count in any sample size (ML-1).
+  if (!is.null(sampling_weights)) {
+    observed_per_row[sampling_weights[groups$index] <= 0] <- 0L
+  }
   n_informative <- sum(observed_per_row > 0L)
   n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
   dimnames(subject_posteriors) <- list(NULL, profile_names)
@@ -950,6 +1443,9 @@
     converged = isTRUE(best$converged), iterations = best$iterations,
     log_likelihood_history = best$history, boundary = boundary,
     probability_boundary = probability_boundary,
+    # Which occasions observe anything: they decide which logits and
+    # measurement blocks are identified (.lta_identified_coordinates()).
+    occupied = occupied,
     starts = data.frame(start = seq_along(attempts),
                         log_likelihood = ifelse(valid, scores, NA_real_),
                         converged = converged,

@@ -253,10 +253,13 @@ test_that("the likelihood-ratio replicate loop records warnings and errors", {
   expect_identical(table$warnings[c(1L, 3L)], rep("start did not converge", 2L))
   expect_warning(.latents_blrt_replicates(1L, replicate, muffle_warnings = FALSE),
                  "start did not converge")
+  # One invalid replicate of three: the p-value is taken over the two valid
+  # ones (statistics 0 and 3; review 2026-10-26, round 2).
   expect_warning(tally <- .latents_blrt_p_value(table, 1, 3L),
                  class = "latents_failed_replicates")
-  expect_true(is.na(tally$p_value))
+  expect_identical(tally$p_value, 2 / 3)
   expect_identical(tally$n_valid, 2L)
+  expect_identical(tally$n_invalid, 1L)
   valid <- table[c(1L, 3L), ]
   tally <- .latents_blrt_p_value(valid, 1, 2L)
   expect_identical(tally$p_value, 2 / 3)

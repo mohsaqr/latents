@@ -137,8 +137,10 @@ test_that("insufficient positive-weight indicator support fails clearly", {
   data <- data.frame(y = c(NA_real_, NA_real_, 2, 3), z = 0:3, w = c(1, 1, 0, 0))
   expect_error(quietly(lpa(data, c("y", "z"), 1, weights = "w", missing = "fiml")),
                 "observed row with positive", class = "latents_bad_data")
+  # The rows that carry weight hold one value, which is refused as the same
+  # data without its zero-weight row is (ML-2, review 2026-10-26); it used to
+  # reach the starts and fail there.
   data <- data.frame(y = c(1, 1, 4), w = c(1, 1, 0))
   expect_error(quietly(lpa(data, "y", 2, weights = "w", n_starts = 1)),
-                "distinct observed indicator.*positive sampling weight",
-                class = "latents_all_starts_failed")
+               class = "latents_bad_data")
 })

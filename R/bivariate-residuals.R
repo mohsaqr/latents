@@ -21,8 +21,9 @@
   adjust <- match.arg(adjust)
   continuous <- .multilpa_continuous_names(x)
   categorical <- x$categorical %||% character()
+  extra_names <- .latents_extra_names(x$extra_data)
   stopifnot("`data` must contain the fitted indicators" =
-              all(c(continuous, categorical) %in% names(data)))
+              all(c(continuous, categorical, unlist(extra_names)) %in% names(data)))
   stopifnot("Gaussian indicators must be numeric and finite when observed" =
     all(vapply(data[continuous], function(value)
       is.numeric(value) && all(is.na(value) | is.finite(value)), logical(1))))
@@ -38,11 +39,18 @@
   sampling <- .multilpa_level_weights(x, "individuals", x$n_observations)
   if (!is.null(sampling)) weights <- lapply(weights, `*`, sampling)
 
+  # Categorical and ordinal indicators are both tables of categories; every
+  # pair of them gets the Pearson table. Pairs with a count, or of a Gaussian
+  # and a discrete indicator, get a residual correlation without a test
+  # (review 2026-10-26 round 2, C2-3), so no pair of indicators is left out.
+  discrete <- .multilpa_discrete_items(x, data)
+  values <- .multilpa_pair_values(x, data, continuous, discrete)
   rows <- lapply(names(weights), function(label) {
     weight <- weights[[label]]
     rbind(
       .multilpa_gaussian_residuals(x, data, continuous, weight, label, by),
-      .multilpa_categorical_residuals(x, data, categorical, weight, label))
+      .multilpa_categorical_residuals(x, discrete, weight, label),
+      .multilpa_mixed_residuals(x, values, weight, label, by))
   })
   result <- do.call(rbind, rows)
   if (is.null(result) || nrow(result) == 0L) {
@@ -146,29 +154,65 @@
   do.call(rbind, rows)
 }
 
-#' Bivariate-residual chi-square for each categorical pair
-#' @return One row per categorical pair, or `NULL` when there are fewer than two.
+#' The discrete indicators of a fit as category codes and class tables
+#'
+#' Categorical indicators with their response probabilities, then ordinal
+#' indicators with the category probabilities of their adjacent-category
+#' model; both are read from `data` by their category labels. A half-observed
+#' pair row of a joined `local_dependence` item has no joint category and is
+#' left out of that item's tables.
+#' @param x A fitted model.
+#' @param data The data, in fitting order.
+#' @return A named list, one entry per discrete indicator: `codes` (one
+#'   integer per row, `NA` when unobserved) and `probabilities` (profiles by
+#'   categories).
 #' @noRd
-.multilpa_categorical_residuals <- function(object, data, categorical, weight,
-                                            label) {
-  if (length(categorical) < 2L) return(NULL)
-  blocks <- object$response_probabilities
+.multilpa_discrete_items <- function(x, data) {
+  categorical <- x$categorical %||% character()
+  nominal <- lapply(stats::setNames(categorical, categorical), function(name) {
+    value <- data[[name]]
+    levels_for <- x$categorical_levels[[name]]
+    codes <- match(as.character(value), levels_for)
+    half <- .latents_partial_levels(c(levels_for, as.character(value)))[-seq_along(levels_for)]
+    stopifnot("Categorical indicators contain levels absent from the fit" =
+                !any(is.na(codes) & !is.na(value) & !half))
+    list(codes = codes, probabilities = x$response_probabilities[[name]])
+  })
+  extra <- x$extra_data
+  ordinal_names <- colnames(extra$ordinal) %||% character()
+  ordinal <- if (length(ordinal_names) == 0L) list() else {
+    prepared <- .latents_prepare_extra_like(x, data)
+    stats::setNames(lapply(seq_along(ordinal_names), function(j) {
+      list(codes = prepared$ordinal[, j],
+           probabilities = exp(.latents_ordinal_log_probabilities(
+             x$ordinal_intercepts[[j]], x$ordinal_locations[, j])))
+    }), ordinal_names)
+  }
+  c(nominal, ordinal)
+}
+
+#' Bivariate-residual chi-square for each pair of discrete indicators
+#' @param discrete From `.multilpa_discrete_items()`.
+#' @return One row per pair, or `NULL` when there are fewer than two.
+#' @noRd
+.multilpa_categorical_residuals <- function(object, discrete, weight, label) {
+  if (length(discrete) < 2L) return(NULL)
+  names_of <- names(discrete)
   posteriors <- object$subject_posteriors
   sampling <- .multilpa_level_weights(object, "individuals", object$n_observations)
   if (!is.null(sampling)) posteriors <- posteriors * sampling
-  pairs <- utils::combn(seq_along(categorical), 2L)
+  pairs <- utils::combn(seq_along(names_of), 2L)
   rows <- lapply(seq_len(ncol(pairs)), function(index) {
-    first <- categorical[pairs[1L, index]]
-    second <- categorical[pairs[2L, index]]
-    codes_1 <- match(as.character(data[[first]]), object$categorical_levels[[first]])
-    codes_2 <- match(as.character(data[[second]]), object$categorical_levels[[second]])
-    stopifnot("Categorical indicators contain levels absent from the fit" =
-      !any(is.na(codes_1) & !is.na(data[[first]])) &&
-      !any(is.na(codes_2) & !is.na(data[[second]])))
+    first <- names_of[pairs[1L, index]]
+    second <- names_of[pairs[2L, index]]
+    codes_1 <- discrete[[first]]$codes
+    codes_2 <- discrete[[second]]$codes
+    block_1 <- discrete[[first]]$probabilities
+    block_2 <- discrete[[second]]$probabilities
     complete <- !is.na(codes_1) & !is.na(codes_2)
     pair_weight <- weight[complete]
-    category_1 <- factor(codes_1[complete], seq_along(object$categorical_levels[[first]]))
-    category_2 <- factor(codes_2[complete], seq_along(object$categorical_levels[[second]]))
+    category_1 <- factor(codes_1[complete], seq_len(ncol(block_1)))
+    category_2 <- factor(codes_2[complete], seq_len(ncol(block_2)))
     observed <- as.matrix(stats::xtabs(pair_weight ~ category_1 + category_2))
     ## Conditional tables use the profile's own product distribution. The
     ## pooled table mixes those products with the complete-pair class counts.
@@ -177,7 +221,7 @@
       replace(numeric(object$n_profiles), profile, sum(pair_weight))
     }
     expected <- Reduce(`+`, lapply(seq_len(object$n_profiles), function(k)
-      counts[k] * outer(blocks[[first]][k, ], blocks[[second]][k, ])))
+      counts[k] * outer(block_1[k, ], block_2[k, ])))
     positive <- expected > 0
     statistic <- if (!is.null(sampling) || sum(pair_weight) <= 0) NA_real_ else
       if (any(!positive & observed > 0)) Inf else
@@ -197,6 +241,86 @@
       effective_n = sum(pair_weight), statistic = statistic,
       df = if (is.null(sampling)) as.integer(degrees) else NA_integer_,
       p_value = stats::pchisq(statistic, degrees, lower.tail = FALSE),
+      row.names = NULL, stringsAsFactors = FALSE)
+  })
+  do.call(rbind, rows)
+}
+
+#' Numeric values of every indicator, for the residual correlations
+#'
+#' Gaussian indicators on the scale the model was fitted on, with direct
+#' effects removed, as for the Gaussian pairs; discrete indicators as their
+#' category codes (1 to K, in category order); counts as counts.
+#' @param x A fitted model.
+#' @param data The data, in fitting order.
+#' @param continuous The Gaussian indicators.
+#' @param discrete From `.multilpa_discrete_items()`.
+#' @return A list with `values` (a rows-by-indicators numeric matrix, `NA`
+#'   where unobserved) and `kind` (`"gaussian"`, `"discrete"` or `"count"`
+#'   per column).
+#' @noRd
+.multilpa_pair_values <- function(x, data, continuous, discrete) {
+  gaussian <- if (length(continuous) == 0L) NULL else
+    .latents_direct_shift(.multilpa_center_like(x, as.matrix(data[continuous])),
+                          x$extra_data, x)
+  count_names <- colnames(x$extra_data$count) %||% character()
+  counts <- if (length(count_names) == 0L) NULL else
+    .latents_prepare_extra_like(x, data)$count
+  coded <- if (length(discrete) == 0L) NULL else
+    matrix(as.numeric(unlist(lapply(discrete, `[[`, "codes"), use.names = FALSE)),
+           nrow(data), length(discrete), dimnames = list(NULL, names(discrete)))
+  values <- cbind(gaussian, coded, counts)
+  kind <- c(rep("gaussian", length(continuous)), rep("discrete", length(discrete)),
+            rep("count", length(count_names)))
+  names(kind) <- c(continuous, names(discrete), count_names)
+  # The fit's own indicator order, so a pair reads the way the model names it.
+  order_of <- order(match(names(kind), x$vars))
+  list(values = values[, order_of, drop = FALSE], kind = kind[order_of])
+}
+
+#' Residual correlation for each pair that has neither a table nor a normal model
+#'
+#' A pair with a count indicator, or of a Gaussian and a discrete indicator,
+#' is assessed by the posterior-weighted correlation of the two indicators'
+#' values within the profile (pooled over the profiles under `"overall"`),
+#' centred on each profile's weighted means. The model makes the indicators
+#' independent within a profile, so the model-implied correlation is zero.
+#' No reference distribution is attached: `statistic`, `df` and `p_value`
+#' are `NA`.
+#' @param values From `.multilpa_pair_values()`.
+#' @return One row per such pair, or `NULL` when there is none.
+#' @noRd
+.multilpa_mixed_residuals <- function(object, values, weight, label, by) {
+  kind <- values$kind
+  if (length(kind) < 2L) return(NULL)
+  pairs <- utils::combn(seq_along(kind), 2L)
+  tested <- (kind[pairs[1L, ]] == "gaussian" & kind[pairs[2L, ]] == "gaussian") |
+    (kind[pairs[1L, ]] == "discrete" & kind[pairs[2L, ]] == "discrete")
+  pairs <- pairs[, !tested, drop = FALSE]
+  if (ncol(pairs) == 0L) return(NULL)
+  sampling <- .multilpa_level_weights(object, "individuals", object$n_observations)
+  profiles <- if (identical(by, "profile"))
+    as.integer(sub("^profile_", "", label)) else seq_len(object$n_profiles)
+  rows <- lapply(seq_len(ncol(pairs)), function(index) {
+    pair <- pairs[, index]
+    v <- values$values[, pair, drop = FALSE]
+    complete <- stats::complete.cases(v)
+    v <- v[complete, , drop = FALSE]
+    scatter <- Reduce(`+`, lapply(profiles, function(profile) {
+      w <- object$subject_posteriors[complete, profile]
+      if (!is.null(sampling)) w <- w * sampling[complete]
+      if (sum(w) <= 0) return(matrix(0, 2L, 2L))
+      centred <- sweep(v, 2L, colSums(v * w) / sum(w), "-")
+      crossprod(centred * w, centred)
+    }))
+    observed <- if (all(diag(scatter) > 0))
+      scatter[1L, 2L] / sqrt(prod(diag(scatter))) else NA_real_
+    data.frame(profile = label, indicator_1 = colnames(values$values)[pair[1L]],
+      indicator_2 = colnames(values$values)[pair[2L]],
+      kind = if (any(kind[pair] == "count")) "count" else "mixed",
+      observed = observed, expected = 0, residual = observed,
+      effective_n = sum(weight[complete]), statistic = NA_real_,
+      df = NA_integer_, p_value = NA_real_,
       row.names = NULL, stringsAsFactors = FALSE)
   })
   do.call(rbind, rows)

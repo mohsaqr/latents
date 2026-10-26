@@ -30,20 +30,18 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   expect_true(is.na(kic$n))
   expect_equal(kic$value, -2 * log_likelihood + 3 * (q + 1))
 
-  # CLC uses no sample size, but its convention picks the level whose
-  # classification uncertainty it penalizes, so there is one row per level.
+  # CLC uses no sample size, and since round 2 of the 2026-10-26 review both
+  # conventions charge the same complete-data classification entropy, so its
+  # two rows carry the same value.
   clc <- criteria[criteria$criterion == "clc", ]
   expect_identical(nrow(clc), 2L)
   expect_identical(clc$convention, c("groups", "individuals"))
-  entropies <- c(.multilpa_entropy_sum(fit$group_posteriors),
-                 .multilpa_entropy_sum(fit$subject_posteriors))
-  expect_equal(clc$value, -2 * log_likelihood + 2 * entropies)
-  # It must not vary with n, unlike every other row that carries a convention.
-  expect_equal(clc$value[1L] - clc$value[2L], 2 * (entropies[1L] - entropies[2L]))
+  entropy <- .multilpa_complete_entropy(fit)
+  expect_equal(clc$value, rep(-2 * log_likelihood + 2 * entropy, 2L))
   # The formula is documentation, so it is off by default and arrives on request.
   annotated <- subset(get_results(fit, "information_criteria", format = "long", definitions = TRUE),
                       criterion == "clc")
-  expect_identical(annotated$definition, rep("-2L + 2 EN", 2L))
+  expect_true(all(startsWith(annotated$definition, "-2L + 2 EN")))
   expect_false("definition" %in% names(criteria))
 })
 

@@ -118,6 +118,22 @@
   observed <- if (is.null(x)) matrix(TRUE, nrow(values), ncol(values)) else
     !is.na(x[, effects$column, drop = FALSE])
   observed <- observed & weights > 0
+  # Only those rows identify the effect. A covariate with one value there is
+  # collinear with the class means: its centred column is rounding noise, and
+  # solving on it returns an arbitrary effect and arbitrary uncentred means.
+  constant <- vapply(seq_len(ncol(values)), function(column) {
+    length(unique(values[observed[, column], column])) < 2L
+  }, logical(1))
+  if (any(constant)) {
+    stop(errorCondition(sprintf(paste(
+      "The direct effect%s %s cannot be told apart from the class means: the",
+      "covariate takes one value only in the rows that observe the indicator",
+      "(with a positive weight)."),
+      if (sum(constant) > 1L) "s" else "",
+      paste(sprintf("\"%s ~ %s\"", effects$indicator[constant],
+                    effects$covariate[constant]), collapse = ", ")),
+      class = "latents_bad_data", call = NULL))
+  }
   centers <- vapply(seq_len(ncol(values)), function(column) {
     rows <- observed[, column]
     stats::weighted.mean(values[rows, column], weights[rows])
@@ -366,8 +382,10 @@
     stop(errorCondition("This fit has no direct effects; fit them with `direct_effects`.",
                         class = "latents_no_direct_effects", call = NULL))
   }
-  errors <- .multilpa_table_errors(x, data)
-  term <- paste(effects$indicator, effects$covariate, sep = ":")
+  errors <- .multilpa_table_errors(x, data, boundary = "fix")
+  # Spelled by the helper the inference table's producers use, so a colon in
+  # an indicator or covariate name does not lose the match (review 2026-10-26).
+  term <- .latents_term(effects$indicator, effects$covariate)
   wanted <- if (is.null(errors)) NULL else
     errors[errors$parameter == "direct_effect", , drop = FALSE]
   matched <- if (is.null(wanted)) rep(NA_integer_, length(term)) else match(term, wanted$term)

@@ -15,7 +15,21 @@
     stop(errorCondition("`cores` must be a single whole number of at least 1.",
                         class = "latents_bad_argument", call = NULL))
   }
-  as.integer(cores)
+  cores <- as.integer(cores)
+  # More workers than the machine has cores gains nothing and, as socket
+  # workers (Windows, or macOS with Accelerate), each is a full R process
+  # holding the package and a copy of the data: `cores = 24` on a ten-core
+  # Mac started 24 of them and exhausted memory (2026-10-26).
+  available <- tryCatch(parallel::detectCores(), error = function(condition) NA_integer_)
+  if (is.finite(available) && available >= 1L && cores > available) {
+    warning(warningCondition(sprintf(paste(
+      "`cores = %d` exceeds the %d cores this machine has; %d workers are",
+      "used. Each socket worker is a separate R process."),
+      cores, available, available), class = "latents_too_many_cores",
+      call = NULL))
+    cores <- as.integer(available)
+  }
+  cores
 }
 
 #' Whether forked workers can use this R's linear algebra

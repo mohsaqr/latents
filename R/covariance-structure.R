@@ -192,13 +192,16 @@
 #'
 #' @param diagonals One row of scatter diagonals per profile.
 #' @param n The total effective membership.
-#' @param min_variance The variance lower bound, which also keeps the geometric
-#'   mean away from zero.
+#' @param min_variance The variance lower bound. It is not applied to the
+#'   scatter: the caller sends only scatter whose every `diagonals / weights`
+#'   exceeds it, so the diagonals are positive, and a profile with effective
+#'   membership below one can have a diagonal below the bound while its
+#'   variance is above it. Flooring that diagonal moved the maximizer.
 #' @return A matrix of variances.
 #' @noRd
 .multilpa_evi_variances <- function(diagonals, n, min_variance) {
   d <- ncol(diagonals)
-  bounded <- pmax(diagonals, min_variance)
+  bounded <- pmax(diagonals, .Machine$double.xmin)
   # In logs: a product of d terms underflows long before any one of them does.
   log_determinant <- rowSums(log(bounded)) / d
   shapes <- bounded / exp(log_determinant)
@@ -214,7 +217,9 @@
 #'
 #' @param diagonals One row of scatter diagonals per profile.
 #' @param weights The effective membership of each profile.
-#' @param min_variance The variance lower bound.
+#' @param min_variance The variance lower bound. The iteration does not apply
+#'   it: the caller checks the result against it and solves the bounded
+#'   problem when it binds.
 #' @param max_iter The iteration cap.
 #' @param tol Relative convergence tolerance on the shape.
 #' @return A matrix of variances.
@@ -222,9 +227,15 @@
 .multilpa_vei_variances <- function(diagonals, weights, min_variance, max_iter,
                                     tol) {
   d <- ncol(diagonals)
-  bounded <- pmax(diagonals, min_variance)
+  # Positive by the caller's guard; see `.multilpa_evi_variances()`.
+  bounded <- pmax(diagonals, .Machine$double.xmin)
   normalise <- function(shape) shape / exp(sum(log(shape)) / d)
-  shape <- normalise(pmax(colSums(bounded), min_variance))
+  # The shape sums `colSums(W_k / lambda_k)` have no units (a count times a
+  # determinant-one shape), so the variance bound, in squared data units,
+  # cannot be compared with them: with indicators whose scales differ by 1e9
+  # it bound here while every variance was far above it, and moved the fixed
+  # point (review 2026-10-26 round 2, K2-1). They only need to stay positive.
+  shape <- normalise(pmax(colSums(bounded), .Machine$double.xmin))
   converged <- FALSE
   # A fixed point: each step is a maximiser given the other half, so the
   # objective cannot decrease, and each step needs the one before it. That is
@@ -232,7 +243,7 @@
   # "cannot decrease" is not "arrives in finite time".
   for (iteration in seq_len(max_iter)) {
     volumes <- rowSums(sweep(bounded, 2L, shape, "/")) / (weights * d)
-    updated <- normalise(pmax(colSums(bounded / volumes), min_variance))
+    updated <- normalise(pmax(colSums(bounded / volumes), .Machine$double.xmin))
     converged <- max(abs(updated - shape)) <= tol * max(1, max(abs(shape)))
     shape <- updated
     if (converged) break
@@ -586,7 +597,10 @@
       diag(crossprod(orientation, block %*% orientation))
     })
     shapes <- lapply(seq_len(k), function(profile) {
-      values <- pmax(rotated[[profile]], .Machine$double.eps)
+      # Positive only: an absolute `.Machine$double.eps` is in squared data
+      # units times counts, and bound for data in units of 1e-9 (review
+      # 2026-10-26 round 2, K2-4).
+      values <- pmax(rotated[[profile]], .Machine$double.xmin)
       values / exp(sum(log(values)) / d)
     })
     volumes <- if (equal_volume) {

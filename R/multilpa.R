@@ -8,7 +8,8 @@
             !anyNA(log_values))
   row_max <- .multilpa_row_max(log_values)
   if (any(!is.finite(row_max))) {
-    stop("All component densities vanished, or a density overflowed.")
+    stop(errorCondition("All component densities vanished, or a density overflowed.",
+                        class = "latents_vanished_density", call = NULL))
   }
   row_max + log(rowSums(exp(sweep(log_values, 1L, row_max, "-"))))
 }
@@ -284,6 +285,12 @@
     (rowSums(group_counts) + 0.5 * n_profiles)
   if (n_types == 1L) {
     profile_probabilities <- matrix(colMeans(indicator), 1L)
+  } else if (hierarchical) {
+    # Ward's start is deterministic at both levels: its group classes are
+    # Ward's clusters of the group compositions, not k-means from random
+    # centres, so start 1 is the same whatever the seed (review 2026-10-26
+    # round 2, ST-1).
+    profile_probabilities <- .multilpa_group_class_seed(group_composition, n_types)
   } else if (!random_kind && start_index %% 2L == 1L &&
              nrow(unique(group_composition)) >= n_types) {
     group_fit <- .multilpa_start_kmeans(group_composition, n_types)
@@ -326,6 +333,37 @@
     result$variances <- matrix(result$variances, n_profiles, ncol(x))
   }
   result
+}
+
+#' Deterministic group-class starting values from group compositions
+#'
+#' Ward's clustering of the groups' profile compositions, each group class
+#' starting at its cluster's mean composition. With fewer distinct
+#' compositions than group classes, each class tilts the overall composition
+#' towards one profile by a different amount, so the classes still start
+#' apart.
+#'
+#' @param group_composition Groups-by-profiles matrix of smoothed profile
+#'   shares, rows summing to one.
+#' @param n_types Number of group classes, at least two.
+#' @return A group-classes-by-profiles matrix of positive shares.
+#' @noRd
+.multilpa_group_class_seed <- function(group_composition, n_types) {
+  stopifnot("`group_composition` must be a numeric matrix" =
+              is.matrix(group_composition) && is.numeric(group_composition),
+            "`n_types` must be at least two" = n_types >= 2L)
+  n_profiles <- ncol(group_composition)
+  if (nrow(unique(group_composition)) >= n_types) {
+    labels <- .multilpa_ward_assignments(group_composition, n_types)
+    return(rowsum(group_composition, labels, reorder = TRUE) /
+             as.vector(tabulate(labels, n_types)))
+  }
+  overall <- colMeans(group_composition)
+  t(vapply(seq_len(n_types), function(group_class) {
+    tilt <- group_class / (n_types + 1)
+    target <- (group_class - 1L) %% n_profiles + 1L
+    (1 - tilt) * overall + tilt * as.numeric(seq_len(n_profiles) == target)
+  }, numeric(n_profiles)))
 }
 
 #' Internal Gaussian origin from the rows that enter the objective
@@ -683,8 +721,14 @@
                              covariance_pattern = covariance_pattern)
     },
     max_iter = max_iter, tol = tol,
-    settings = .latents_em_settings(guard_decrease = is.null(prior),
-                                    accelerate = accelerator),
+    settings = .latents_em_settings(
+      guard_decrease = is.null(prior), accelerate = accelerator,
+      # A unit-free stop: the change in log likelihood against the number of
+      # observed values (review 2026-10-26 round 2, K2-6).
+      stop_scale = .latents_observed_values(
+        x, codes, .latents_extra_matrix(extra),
+        row_weights = if (is.null(sampling_weights)) NULL else
+          sampling_weights[group_index])),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -838,7 +882,8 @@
 #' @param n_starts Positive integer number of EM starts (default 10). The
 #'   first start is deterministic: Ward's hierarchical clustering of the
 #'   standardized indicators (on at most 2000 evenly spaced rows), each cluster
-#'   described by its own means and spread. The
+#'   described by its own means and spread, and, with more than one group
+#'   class, Ward's clustering of the groups' profile compositions. The
 #'   remaining starts are k-means from random centres. A supplied `start`
 #'   replaces the first start, and the remaining starts are random. With
 #'   `start` and `max_iter = 0`, exactly one start is run whatever `n_starts`
@@ -850,12 +895,21 @@
 #'   is evaluated at exactly those values, for example to score them with
 #'   `logLik()`; without `start`, the random initializations are evaluated and
 #'   the one with the highest log likelihood is returned.
-#' @param tol Positive relative log-likelihood tolerance (default `1e-8`).
-#'   Convergence requires an absolute change no greater than
-#'   `tol * (1 + abs(previous log likelihood))`.
-#' @param min_variance Positive lower bound on each variance, or on each
-#'   covariance eigenvalue under full covariance, in squared input units
-#'   (default `1e-6`); the fit is then constrained maximum likelihood.
+#' @param tol Positive convergence tolerance (default `1e-8`). EM has
+#'   converged when one step (or SQUAREM cycle) changes the log likelihood by
+#'   no more than `tol` times the number of observed indicator values (each
+#'   non-missing cell of a row of positive weight, at least one). A change in
+#'   log likelihood does not depend on the units of the data, so neither does
+#'   this rule; latents 0.97.1 and earlier used `tol * (1 + abs(previous log
+#'   likelihood))`, which a change of units moved.
+#' @param min_variance Lower bound on each variance, or on each covariance
+#'   eigenvalue under full covariance; the fit is then constrained maximum
+#'   likelihood. `NULL` (the default) sets it to `1e-6` times the smallest
+#'   sample variance of the continuous indicators (observed values in rows of
+#'   positive weight, on the scale fitted, after any centring and scaling), so
+#'   that the bound moves with the units of the data. A number is an absolute
+#'   bound in squared indicator units (the default of 0.97.1 and earlier was
+#'   `1e-6`). The bound used is stored as `min_variance` on the fit.
 #'   Estimates at the bound are reported and raise a warning.
 #' @param seed Optional random seed: any whole number `set.seed()` accepts,
 #'   including negative ones. When supplied, the caller's random-number state
@@ -1034,10 +1088,17 @@
 #'   the same centring and scaling are comparable. A standard deviation that is
 #'   zero or undefined (under `"person"`, a unit observed once on an indicator
 #'   or always giving the same value) raises `latents_bad_data`. Under
-#'   structures that give each indicator its own variance (`EEI`, `VVI`,
-#'   `EEE`, `VVV`, `EVI`, `VEI`), grand scaling changes only the units of the
-#'   estimates; under the spherical `EII` and `VII`, which impose one variance
-#'   on every indicator, it changes the solution.
+#'   `EEI`, `VEI`, `EVI`, `VVI`, `EEE`, `VEE`, `EVV` and `VVV`, whose family
+#'   is unchanged when each indicator is rescaled, grand scaling changes only
+#'   the units of the estimates. Under the spherical `EII` and `VII`, which
+#'   impose one variance on every indicator, and under `EEV`, `VEV`, `EVE` and
+#'   `VVE`, which share eigenvalues or eigenvectors across profiles (neither
+#'   survives rescaling the indicators by different factors), it changes the
+#'   solution. Under `centering = "person"` with `scaling = "person"`, a group
+#'   with only two observations of an indicator becomes exactly
+#'   `-1/sqrt(2)` and `1/sqrt(2)` on it: such groups raise
+#'   `latents_atomic_groups`, and when every group is like that the fit is
+#'   refused with `latents_bad_data`.
 #' @param drop_empty `TRUE` (the default) or `FALSE`: how the reported
 #'   statistics treat rows whose every indicator is missing, and groups
 #'   consisting only of such rows. These contribute nothing to the likelihood,
@@ -1048,7 +1109,9 @@
 #'   tables and diagnostic plots, and from the effective class counts. With
 #'   `FALSE` every row and group is counted in those statistics (the results
 #'   of latents 0.9.37 and earlier), except in the individual sample size of a
-#'   `multilpa()` fit, which excludes such rows either way. [compare_models()]
+#'   `multilpa()` fit, which excludes such rows either way. Units of sampling
+#'   weight zero are excluded from every count and entropy term under either
+#'   setting. [compare_models()]
 #'   and [bootstrap_lrt()] do not compare fits made with different
 #'   `drop_empty`. The setting is stored on the fit and passed on by
 #'   enumerations and refits; it has no effect on data without such rows.
@@ -1078,20 +1141,23 @@
 #'   `model` or the structure arguments, covariates, `time`, `prior`, `noise`
 #'   or held variances. A pair of categorical indicators is modelled jointly
 #'   within each class. Each such pair becomes one categorical indicator, named
-#'   `"item1:item2"`, whose categories are the observed combinations of the
-#'   two items' categories, so every class has its own joint distribution of
+#'   `"item1:item2"`, whose categories are every combination of the two items'
+#'   categories (the full grid: a combination nobody gave is estimated on the
+#'   `min_probability` floor and counted as a parameter, so each class has
+#'   `K1 K2 - 1` of them), so every class has its own joint distribution of
 #'   the pair: the class-specific association Latent GOLD fits with
 #'   `item1 <-> item2 | Cluster`. The other indicators stay independent given
 #'   the class. `get_results(fit, "local_dependence")` reports each class's
 #'   joint probabilities beside their values under independence; `predict()`,
 #'   `parameter_inference(data = )` and the other functions that take `data`
-#'   join the pair in the caller's data. A row observing one item of a pair
-#'   and not the other treats the pair as missing, with a
-#'   `latents_partial_pair` warning. A pair of indicators that are not both
-#'   categorical, that names an indicator twice or that shares an indicator
-#'   with another pair raises `latents_bad_argument`; a categorical item of a
-#'   pair whose categories contain `":"` raises `latents_bad_data`. Default:
-#'   none.
+#'   join the pair in the caller's data. Under `missing = "fiml"` a row
+#'   observing one item of a pair and not the other contributes the observed
+#'   item, the pair's joint distribution summed over the missing one, which is
+#'   the observed-data likelihood under MAR. A pair that mixes a categorical
+#'   and a continuous indicator, that names an indicator twice or that shares
+#'   an indicator with another pair raises `latents_bad_argument`; a
+#'   categorical item of a pair whose categories contain `":"` raises
+#'   `latents_bad_data`. Default: none.
 #' @param direct_effects Direct effects of covariates on continuous
 #'   indicators, written `"indicator ~ covariate"` (several covariates joined
 #'   with `+`, several indicators as a character vector). The covariate moves
@@ -1160,7 +1226,11 @@
 #'
 #'   These families take only `data`, `vars`, `id`, `n_group_classes`,
 #'   `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance`,
-#'   `seed` and `weights`; any other argument raises `latents_bad_argument`.
+#'   `seed`, `weights`, `search` and `n_screen`; any other argument raises
+#'   `latents_bad_argument`. Groups of sampling weight zero are not part of the
+#'   sample: the identification checks, starting values, counts, entropy and
+#'   classification tables use only the groups of positive weight, though
+#'   every group still receives a posterior.
 #'   Indicators must be complete and continuous, and at least one group must
 #'   have more than one row (`latents_unidentified` otherwise). Between
 #'   variances estimated at zero are reached by a boundary maximization with a
@@ -1212,9 +1282,12 @@
 #'   within its group (`latents_bad_weights` otherwise); within-unit weights
 #'   are not supported. The fit maximizes the pseudo log likelihood
 #'   `sum_j w_j log L_j` (Skinner, 1989) with the weights scaled to sum to the
-#'   number of units, as Mplus does, so integer weights give the fit to the
-#'   data with each unit repeated that many times and the criteria stay on the
-#'   sample's scale. Standard errors are sandwich estimates:
+#'   number of units of positive weight, as Mplus scales to the sample size,
+#'   so integer weights give the fit to the data with each unit repeated that
+#'   many times and the criteria stay on the sample's scale. A unit of weight
+#'   zero is not part of the sample: it changes no estimate, likelihood,
+#'   sample size, entropy or criterion, sets neither the grand offset nor the
+#'   grand scale of `centering`/`scaling = "grand"`, and is not classified. Standard errors are sandwich estimates:
 #'   `parameter_inference()` defaults to `vcov_type = "robust"` and refuses
 #'   `"observed"` and `"opg"` (`latents_unsupported_weights`), and
 #'   `method = "bootstrap"` resamples the units with their weights.
@@ -1377,7 +1450,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        group_covariates = character(),
                        variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                       min_variance = 1e-6, seed = NULL, start = NULL,
+                       min_variance = NULL, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
                        profile_slopes = c("shared", "group_class"),
                        covariance_model = c("diagonal", "full"),
@@ -1424,7 +1497,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        group_covariates = character(),
                        variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                       min_variance = 1e-6, seed = NULL, start = NULL,
+                       min_variance = NULL, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
                        profile_slopes = c("shared", "group_class"),
                        covariance_model = c("diagonal", "full"),
@@ -1702,7 +1775,8 @@ multilpa <- function(data, vars, id, n_profiles,
   time_values <- .multilpa_time_values(data, time, id, vars)
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                             missing, min_probability,
-                                            other = c(ordinal, count))
+                                            other = c(ordinal, count),
+                                            weights = weights)
   extra <- .latents_set_count_model(
     .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
   if (!is.null(direct_terms)) {
@@ -1721,30 +1795,48 @@ multilpa <- function(data, vars, id, n_profiles,
   group_ids <- groups$ids
   n_groups <- groups$n
   sampling_weights <- .latents_sampling_weights(data, weights, group_index, n_groups)
+  # The groups that enter the likelihood. A group of weight zero is neither
+  # counted nor classified, so no data check may lean on it (review
+  # 2026-10-26, ML-2).
+  carrying <- if (is.null(sampling_weights)) rep(TRUE, n_groups) else
+    sampling_weights > 0
   # Centring happens here, between validating the indicators and fitting them,
   # so the measurement model sees deviations and every verb downstream can put
   # a supplied frame on the same scale from the offsets kept on the fit.
   centred <- .multilpa_center_indicators(x, group_index, n_groups, centering,
-                                         scaling)
+                                         scaling, carrying = carrying)
   if ((!identical(centering, "none") || !identical(scaling, "none")) &&
       ncol(x) > 0L) {
     .multilpa_check_centered(centred$x, centering, raw = x,
-                             group_index = group_index)
+                             group_index = group_index, carrying = carrying)
+    .multilpa_check_atomic_groups(x, group_index, centering, scaling,
+                                  carrying = carrying)
     x <- centred$x
     indicator_frame <- as.data.frame(x)
   }
+  # The default variance bound is relative to the indicators as they are
+  # fitted, once, here (review 2026-10-26 round 2, K2-2).
+  min_variance <- .latents_resolve_min_variance(
+    min_variance, x,
+    if (is.null(sampling_weights)) NULL else sampling_weights[group_index])
   group_sizes <- groups$sizes
-  distinct_rows <- nrow(unique(cbind(x, codes, .latents_extra_matrix(extra))))
+  # Identification is judged on the carrying groups: a group of weight zero
+  # can supply neither a distinct row nor a group for a group class to hold.
+  carried_rows <- carrying[group_index]
+  distinct_rows <- nrow(unique(cbind(x, codes, .latents_extra_matrix(extra))[
+    carried_rows, , drop = FALSE]))
   if (n_profiles > distinct_rows) {
     stop(errorCondition(
       "n_profiles cannot exceed the number of distinct observed indicator rows.",
       class = "latents_unidentified", call = NULL))
   }
-  if (n_group_classes > n_groups) {
-    stop(errorCondition("n_group_classes cannot exceed the number of groups.",
-                        class = "latents_unidentified", call = NULL))
+  if (n_group_classes > sum(carrying)) {
+    stop(errorCondition(
+      "n_group_classes cannot exceed the number of groups (of positive weight).",
+      class = "latents_unidentified", call = NULL))
   }
-  if (n_group_classes > 1L && (n_profiles == 1L || all(group_sizes == 1L))) {
+  if (n_group_classes > 1L &&
+      (n_profiles == 1L || all(group_sizes[carrying] == 1L))) {
     stop(errorCondition(
       "Multiple group classes are not identifiable with one profile or only singleton groups.",
       class = "latents_unidentified", call = NULL))
@@ -1901,9 +1993,12 @@ multilpa <- function(data, vars, id, n_profiles,
     stop(errorCondition("max_iter must be a nonnegative integer.",
                         class = "latents_bad_argument", call = NULL))
   }
+  # `min_variance = NULL` is resolved from the indicators once they are
+  # prepared (`.latents_resolve_min_variance()`).
   if (!is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
-      !is.numeric(min_variance) || length(min_variance) != 1L ||
-      !is.finite(min_variance) || min_variance <= 0) {
+      (!is.null(min_variance) && (!is.numeric(min_variance) ||
+        length(min_variance) != 1L || !is.finite(min_variance) ||
+        min_variance <= 0))) {
     stop(errorCondition("tol and min_variance must be finite positive numbers.",
                         class = "latents_bad_argument", call = NULL))
   }
@@ -1921,14 +2016,27 @@ multilpa <- function(data, vars, id, n_profiles,
 #' encoded categorical codes, which may be `NULL`. Every measurement-side
 #' contract is checked here so the fitting path can assume clean input.
 #'
+#' The checks that ask whether an indicator carries information -- observed
+#' at all, more than one value, two or more categories -- are made on the rows
+#' of positive sampling weight only. A unit of weight zero is absent from the
+#' fit (it is neither counted nor classified), so it must not be able to rescue
+#' an indicator that is constant among the units that are: dropping those rows
+#' and keeping them give the same refusal (review 2026-10-26, ML-2). The
+#' checks that protect the arithmetic (finite values, numeric type) still see
+#' every row.
+#'
+#' @param weights `NULL`, or the name of the sampling-weight column of `data`.
 #' @return A list with `continuous`, `frame`, `x`, `encoded`, `codes` and
 #'   `n_categories`.
 #' @noRd
 .multilpa_prepare_indicators <- function(data, vars, categorical, missing,
-                                       min_probability, other = character()) {
+                                       min_probability, other = character(),
+                                       weights = NULL) {
   continuous <- setdiff(vars, c(categorical, other))
+  contributing <- .multilpa_contributing_rows(data, weights)
   encoded <- if (length(categorical) > 0L) {
-    .multilpa_encode_categorical(data[, categorical, drop = FALSE])
+    .multilpa_encode_categorical(data[, categorical, drop = FALSE],
+                                 contributing = contributing)
   } else NULL
   .latents_warn_suspect_categorical(data[, categorical, drop = FALSE], encoded)
   codes <- encoded$codes
@@ -1956,17 +2064,57 @@ multilpa <- function(data, vars, id, n_profiles,
     stop(errorCondition("Indicators contain missing or non-finite values.",
                         class = "latents_bad_data", call = NULL))
   }
-  if (any(colSums(!is.na(x)) == 0L)) {
-    stop(errorCondition("Every indicator must have observed values.",
-                        class = "latents_bad_data", call = NULL))
+  carried <- x[contributing, , drop = FALSE]
+  if (any(colSums(!is.na(carried)) == 0L)) {
+    stop(errorCondition(
+      "Every indicator needs an observed row with positive sampling weight.",
+      class = "latents_bad_data", call = NULL))
   }
-  if (any(vapply(frame, function(value) length(unique(value[!is.na(value)])) < 2L,
-                 logical(1)))) {
-    stop(errorCondition("Constant indicators cannot identify Gaussian profiles.",
-                        class = "latents_bad_data", call = NULL))
+  # Constancy is decided exactly, from the range of the observed values, as
+  # the centring checks decide it (see .multilpa_indicator_scales()).
+  constant <- vapply(seq_len(ncol(carried)), function(column) {
+    values <- carried[!is.na(carried[, column]), column]
+    max(values) == min(values)
+  }, logical(1))
+  if (any(constant)) {
+    stop(errorCondition(sprintf(paste(
+      "Constant indicators cannot identify Gaussian profiles: %s takes one",
+      "value in every row of positive weight."),
+      paste(sprintf("`%s`", continuous[constant]), collapse = ", ")),
+      class = "latents_bad_data", call = NULL))
   }
   list(continuous = continuous, frame = frame, x = x, encoded = encoded,
        codes = codes, n_categories = n_categories, other = other)
+}
+
+#' Which rows carry sampling weight
+#'
+#' The data checks of a fit judge the rows that enter the likelihood, and a row
+#' of weight zero does not. The weights themselves are validated later, by
+#' `.latents_sampling_weights()`; a column that would fail there (missing,
+#' not numeric, negative, all zero) leaves every row in, so the data checks
+#' behave as unweighted ones and that refusal is still the one reported.
+#'
+#' @param data The data frame of the fit.
+#' @param weights `NULL`, or the name of the sampling-weight column.
+#' @return A logical vector with one element per row of `data`.
+#' @noRd
+.multilpa_contributing_rows <- function(data, weights = NULL) {
+  stopifnot("`data` must be a data frame" = is.data.frame(data))
+  every <- rep(TRUE, nrow(data))
+  if (is.null(weights)) return(every)
+  # Either the name of the weight column, or (the covariate engine, which has
+  # already resolved them) one weight per row.
+  values <- if (is.numeric(weights) && length(weights) == nrow(data)) weights else {
+    if (!is.character(weights) || length(weights) != 1L || is.na(weights) ||
+        !weights %in% names(data)) return(every)
+    data[[weights]]
+  }
+  if (!is.numeric(values) || !is.null(dim(values)) || anyNA(values) ||
+      any(!is.finite(values)) || any(values < 0) || !any(values > 0)) {
+    return(every)
+  }
+  values > 0
 }
 
 #' Index the observed groups in first-occurrence order

@@ -198,11 +198,11 @@
   scores
 }
 
-#' Bounds of the correlated growth coordinates
+#' Bounds of the growth coordinates
 #'
-#' Variances are floored as in the uncorrelated engine: the residual
-#' variance, the process variance and each random-effect variance (through
-#' its log-Cholesky diagonal) at `min_variance`. The process rate is kept
+#' The same floors as EM's M-step (GR2-8): the residual variance, the process
+#' variance and each random effect's conditional variance (its squared
+#' log-Cholesky diagonal) at `min_variance`, in standard coordinates. The process rate is kept
 #' within a factor of 10^4 of the reciprocal median time gap, beyond which an
 #' autoregressive process cannot be told from white noise (fast) or from a
 #' random intercept (slow).
@@ -283,7 +283,7 @@
   best <- finishes[[which.max(vapply(finishes, `[[`, numeric(1), "value"))]]
   # L-BFGS-B stops on its relative tolerance a little short of the maximum,
   # as EM does: Newton steps on the analytic score finish it.
-  newton <- .growth_correlated_newton(spec, stats, best$params, weights, bounds)
+  newton <- .growth_newton_finish(spec, stats, best$params, weights, bounds)
   expectation <- .growth_expectation(spec, stats, newton$params)
   if (length(newton$at_bound) > 0L) {
     warning(warningCondition(sprintf(paste(
@@ -319,8 +319,9 @@
   fit
 }
 
-#' Newton steps on the correlated growth likelihood
+#' Newton steps on the growth likelihood
 #'
+#' The last stage of every growth fit, with or without correlated residuals.
 #' The information is the central-difference Jacobian of the analytic total
 #' score, restricted to the coordinates not on a bound; each step is halved
 #' until the likelihood does not decrease, and clipped to the bounds.
@@ -331,8 +332,8 @@
 #' @return A list with `params`, `iterations`, `converged`, `displacement`
 #'   and `at_bound` (the coordinates left on a bound).
 #' @noRd
-.growth_correlated_newton <- function(spec, stats, params, weights, bounds,
-                                      max_steps = 25L) {
+.growth_newton_finish <- function(spec, stats, params, weights, bounds,
+                                 max_steps = 25L) {
   log_likelihood <- function(v) {
     tryCatch(.growth_expectation(spec, stats, .growth_unpack(spec, v, params))$log_likelihood,
              latents_singular_covariance = function(condition) -Inf)

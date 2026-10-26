@@ -140,6 +140,12 @@ test_that("assignment alignment recognizes R's own CSV encoding at rounding ties
   read_back <- utils::read.csv(text = paste(csv, collapse = "\n"))
   expect_identical(get_results(fit, "assignments", data = read_back)$profile,
                    fit$subject_profiles)
+  # The CSV copy reproduces the fit, so the Wald path accepts it too and
+  # evaluates the stored values: the same errors as without `data` (review
+  # 2026-10-26 round 2, INF-3). A changed value is still refused.
+  expect_equal(parameter_inference(fit, read_back)$standard_error,
+               parameter_inference(fit)$standard_error)
+  read_back$a[1] <- read_back$a[1] + 1e-6
   expect_error(parameter_inference(fit, read_back), class = "latents_bad_inference_data")
 })
 

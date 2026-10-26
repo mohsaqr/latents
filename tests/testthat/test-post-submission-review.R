@@ -23,8 +23,15 @@ test_that("count regression densities stay accurate for large counts and Poisson
     spec <- list(y = y, x = matrix(1, length(y), 1), z = matrix(0, length(y), 0),
                  offset = log(mu), family = family, log_normalizer = -lgamma(y + 1))
     params <- list(beta = matrix(0, 1, 1), common = numeric(), sigma2 = alpha)
+    # dnbinom() itself carries rounding noise of about 2e-9 at size 1e8
+    # (review 2026-10-26, round 2, N4). The reference is the exact finite form
+    # log f = sum_{j < y} log1p(j alpha) + y log mu - (y + 1 / alpha)
+    # log1p(alpha mu) - log y!, in which no large terms cancel.
     expected <- if (family == "poisson") stats::dpois(y, mu, log = TRUE) else
-      stats::dnbinom(y, mu = mu, size = 1 / alpha, log = TRUE)
+      vapply(seq_along(y), function(i) {
+        sum(log1p(seq_len(y[i]) * alpha - alpha)) + y[i] * log(mu[i]) -
+          (y[i] + 1 / alpha) * log1p(alpha * mu[i]) - lgamma(y[i] + 1)
+      }, numeric(1))
     expect_equal(drop(latents:::.mixture_log_density(spec, params)), expected,
                  tolerance = 1e-12)
   }

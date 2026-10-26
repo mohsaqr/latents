@@ -84,6 +84,9 @@
   unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
     spec$row_weights
   weighted_tau <- if (is.null(unit_weights)) unit_tau else unit_tau * unit_weights
+  # A unit of weight zero is not in the sample (ML-1): it is assigned to no
+  # class (review 2026-10-26, round 2, N7).
+  if (!is.null(unit_weights)) unit_tau <- unit_tau[unit_weights > 0, , drop = FALSE]
   modal <- max.col(unit_tau, ties.method = "first")
   class_names <- paste0("class_", seq_len(spec$n_classes))
   table <- data.frame(
@@ -213,14 +216,20 @@
     observation = x$expectation$tau,
     group = x$expectation$group_tau,
     "two-level" = x$expectation$tau)
-  n_units <- if (identical(spec$nesting, "observation")) spec$n else spec$n_groups
+  sample <- .mixture_weighted_sample(spec)
+  n_units <- sample$units
   k <- x$n_parameters
   log_lik <- x$log_likelihood
   # ICL's entropy term sums every unit's own (unweighted) posteriors, also for
   # a sampling-weighted fit, as the profile and class models do; only the log
-  # likelihood is the weighted pseudo-likelihood.
-  entropy_sum <- -sum(unit_posterior[unit_posterior > 0] *
-                        log(unit_posterior[unit_posterior > 0]))
+  # likelihood is the weighted pseudo-likelihood. A unit of weight zero is not
+  # part of the sample, so it is left out, as it is from the sample size.
+  # The posterior's rows are the units, except in the two-level nesting, whose
+  # row posteriors are taken over the rows that carry weight.
+  kept <- if (nrow(unit_posterior) == length(sample$unit_kept)) sample$unit_kept else
+    (spec$row_weights %||% rep(1, nrow(unit_posterior))) > 0
+  classified <- unit_posterior[kept, , drop = FALSE]
+  entropy_sum <- -sum(classified[classified > 0] * log(classified[classified > 0]))
   bic <- -2 * log_lik + k * log(n_units)
   unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
     spec$row_weights
@@ -233,10 +242,10 @@
     log_likelihood = log_lik, n_parameters = k,
     aic = -2 * log_lik + 2 * k,
     bic = bic,
-    bic_rows = -2 * log_lik + k * log(spec$n),
+    bic_rows = -2 * log_lik + k * log(sample$rows),
     sabic = -2 * log_lik + k * log((n_units + 2) / 24),
     icl = bic + 2 * entropy_sum,
-    entropy = .mixture_relative_entropy(unit_posterior),
+    entropy = .mixture_relative_entropy(classified),
     group_entropy = if (identical(spec$nesting, "two-level"))
       .mixture_relative_entropy(x$expectation$rho) else NA_real_,
     smallest_share = min(colSums(weighted_posterior) / sum(weighted_posterior)),
@@ -310,6 +319,10 @@
   spec <- x$spec
   posterior <- if (identical(spec$nesting, "group")) x$expectation$group_tau else
     x$expectation$tau
+  unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
+    spec$row_weights
+  # Units of weight zero are not in the sample (ML-1, round 2 N7).
+  if (!is.null(unit_weights)) posterior <- posterior[unit_weights > 0, , drop = FALSE]
   assigned <- max.col(posterior, ties.method = "first")
   k <- spec$n_classes
   sizes <- tabulate(assigned, k)
@@ -624,15 +637,35 @@ confint.latents_mixture_regression <- function(object, parm, level = 0.95, ...) 
 #' @noRd
 #' @export
 logLik.latents_mixture_regression <- function(object, ...) {
-  units <- if (identical(object$spec$nesting, "observation")) object$spec$n else
-    object$spec$n_groups
-  structure(object$log_likelihood, df = object$n_parameters, nobs = units,
-            class = "logLik")
+  structure(object$log_likelihood, df = object$n_parameters,
+            nobs = .mixture_weighted_sample(object$spec)$units, class = "logLik")
+}
+
+#' The units and rows that carry sampling weight
+#'
+#' A unit of weight zero contributes nothing to the pseudo likelihood, so it is
+#' in no sample size, criterion or entropy (review 2026-10-26, ML-1), as
+#' `nobs.glm` counts only non-zero weights. The data counts
+#' (`n_observations`, `n_groups`) still count it.
+#'
+#' @param spec A regression mixture specification.
+#' @return A list with `units` and `rows` (counts) and `unit_kept` (one
+#'   logical per unit of the likelihood: a row in the observation nesting, a
+#'   group otherwise).
+#' @noRd
+.mixture_weighted_sample <- function(spec) {
+  n_units <- if (identical(spec$nesting, "observation")) spec$n else spec$n_groups
+  row_kept <- if (is.null(spec$row_weights)) rep(TRUE, spec$n) else spec$row_weights > 0
+  # The observation nesting's units are its rows, with or without `id`: the
+  # weights are then given per `id` group but carried by each row (review
+  # 2026-10-26, round 2, N3).
+  unit_kept <- if (identical(spec$nesting, "observation")) row_kept else
+    if (is.null(spec$sampling_weights)) rep(TRUE, n_units) else spec$sampling_weights > 0
+  list(units = sum(unit_kept), rows = sum(row_kept), unit_kept = unit_kept)
 }
 
 #' @noRd
 #' @export
 nobs.latents_mixture_regression <- function(object, ...) {
-  if (identical(object$spec$nesting, "observation")) object$spec$n else
-    object$spec$n_groups
+  .mixture_weighted_sample(object$spec)$units
 }

@@ -11,7 +11,8 @@ sensitivity(
   n_starts = NULL,
   max_iter = NULL,
   tol = NULL,
-  tolerance = NULL
+  tolerance = NULL,
+  cores = 1L
 )
 }
 \arguments{
@@ -45,9 +46,19 @@ used.}
 \item{max_iter, tol}{Passed to each refit. Default to the reference fit's
 (for an \code{\link[=lta]{lta()}} fit, to the defaults of \code{\link[=lta]{lta()}}).}
 
-\item{tolerance}{Two log likelihoods within this of each other count as
-the same optimum. Defaults to the reference fit's replication tolerance
-(for a growth mixture, \code{1e-6 * (1 + abs(logLik))}).}
+\item{tolerance}{How far below an optimum's best log likelihood a refit may
+lie and still count as reaching that optimum: each optimum is anchored at
+its best value and spans at most \code{tolerance}. Defaults to the reference
+fit's replication tolerance (for a growth mixture,
+\code{1e-6 * (1 + abs(logLik))}).}
+
+\item{cores}{Number of processor cores (default 1). The seeds are refitted
+in parallel, one seed per worker at a time, each refit on one core. Every
+refit sets its own seed, so the result is identical to \code{cores = 1}.
+Workers are forked processes on macOS and Linux, and a socket cluster on
+Windows and on macOS with Apple's Accelerate BLAS, as in \code{\link[=multilpa]{multilpa()}};
+socket workers load the installed copy of the package. More cores than
+seeds are not used.}
 }
 \value{
 A base \code{data.frame}, one row per seed, with columns \code{seed},

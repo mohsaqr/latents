@@ -66,6 +66,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   table$conf_low <- table$estimate - z * table$standard_error
   table$conf_high <- table$estimate + z * table$standard_error
   table$odds_ratio <- exp(table$estimate)
+  # A logit the likelihood does not identify (a move into an occasion with
+  # nothing observed, see .lta_identified_columns()) is reported, with no
+  # standard error, but flagged rather than passed off as an estimate.
+  table$estimated <- unname(.lta_identified_coordinates(fit)[selected])
   rownames(table) <- NULL
   table
 }
@@ -358,8 +362,13 @@ nobs.multilpa_lta <- function(object, ...) .multilpa_group_sample_size(object)
 #'   occasion-varying or second-order transitions), the table has one row per
 #'   transition, initial and second-order logit: `block`, `group_class`,
 #'   `from`, `to`, `term`, `estimate`, `standard_error`, `statistic`,
-#'   `p_value`, `p_adjusted`, `conf_low`, `conf_high` (and `previous` for a
-#'   second-order fit). `method = "bootstrap"` resamples persons, refits, and
+#'   `p_value`, `p_adjusted`, `conf_low`, `conf_high`, `estimated` (and
+#'   `previous` for a second-order fit). `estimated` is `FALSE` for a logit
+#'   the likelihood does not identify: a move into an occasion at which no
+#'   row observes an indicator, under `transitions = "occasion"` (or every
+#'   second-order logit when nothing is observed from occasion 3 on). Such a
+#'   logit is not counted in `n_parameters`, AIC or BIC, and its standard
+#'   error and test are `NA`. `method = "bootstrap"` resamples persons, refits, and
 #'   matches every replicate's profiles (on the measurement) and group classes
 #'   to the original's, rebasing the initial logits when the reference profile
 #'   moves; it needs `data`, and works where Wald inference is refused (for
@@ -396,13 +405,13 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
   table <- rbind(
     cbind(block = "transition", .lta_coefficient_table(x, "transition", level, vcov_type, inference)[,
       c("group_class", "from", "to", "term", "estimate", "standard_error",
-        "statistic", "p_value", "conf_low", "conf_high")]),
+        "statistic", "p_value", "conf_low", "conf_high", "estimated")]),
     cbind(block = "initial", transform(
       .lta_coefficient_table(x, "initial", level, vcov_type, inference),
       from = NA_character_,
       to = profile)[, c("group_class", "from", "to", "term", "estimate",
                         "standard_error", "statistic", "p_value", "conf_low",
-                        "conf_high")]))
+                        "conf_high", "estimated")]))
   if ((x$order %||% 1L) >= 2L) {
     table$previous <- NA_character_
     second <- .lta_coefficient_table(x, "transition2", level, vcov_type, inference)

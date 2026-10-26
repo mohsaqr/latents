@@ -214,6 +214,21 @@
 #' @param design Numeric design matrix.
 #' @param counts Non-negative matrix, one column per outcome category.
 #' @param start Full coefficient matrix (first column zero).
+#' When the design's columns differ greatly in their curvature -- a covariate
+#' far from its origin (a calendar year) or in large units -- the Newton
+#' ridge, a fixed fraction of the largest curvature, swamped the
+#' intercept-slope direction: one M-step from zero stopped 45 log-likelihood
+#' units short with a covariate at 2010, and EM crept to a "converged" point
+#' short of the maximum (review 2026-10-26, round 2, N1). The search then runs
+#' in the orthonormal basis of the design's QR decomposition, design = Q R,
+#' with coefficients R beta, and maps back exactly; ordinary designs keep the
+#' original arithmetic.
+#'
+#' `separation` is read on the fitted log probabilities, which do not depend on
+#' the covariates' units or origin: a category whose probability falls below
+#' exp(-30) on some unit with counts (N2). Raw coefficients did depend on
+#' them: a covariate with mean 30 gave an intercept of 44 and a false flag.
+#'
 #' @param max_newton Maximum Newton iterations.
 #' @return A list with the full `coefficients` matrix and `separation`.
 #' @noRd
@@ -223,6 +238,35 @@
   if (n_categories == 1L || r == 0L) {
     return(list(coefficients = start, separation = FALSE))
   }
+  totals <- rowSums(counts)
+  supported <- totals > 0
+  separated <- function(coefficients) {
+    any(.mixture_log_softmax(design[supported, , drop = FALSE], coefficients) < -30)
+  }
+  curvature <- colSums(design^2 * totals)
+  if (any(1e-10 * (1 + max(curvature)) > 1e-7 * pmax(curvature, .Machine$double.xmin))) {
+    decomposition <- qr(design)
+    if (decomposition$rank == r && identical(decomposition$pivot, seq_len(r))) {
+      upper <- qr.R(decomposition)
+      inner <- .mixture_multinomial_newton(qr.Q(decomposition), counts,
+                                           upper %*% start, max_newton)
+      coefficients <- backsolve(upper, inner)
+      coefficients[, 1L] <- 0
+      dimnames(coefficients) <- dimnames(start)
+      return(list(coefficients = coefficients, separation = separated(coefficients)))
+    }
+  }
+  coefficients <- .mixture_multinomial_newton(design, counts, start, max_newton)
+  list(coefficients = coefficients, separation = separated(coefficients))
+}
+
+#' Newton-Raphson of `.mixture_multinomial()` in a given design basis
+#' @inheritParams .mixture_multinomial
+#' @return The full coefficient matrix.
+#' @noRd
+.mixture_multinomial_newton <- function(design, counts, start, max_newton) {
+  n_categories <- ncol(counts)
+  r <- ncol(design)
   totals <- rowSums(counts)
   free <- seq.int(2L, n_categories)
   objective <- function(coefficients) {
@@ -272,7 +316,7 @@
     current <- value
     if (gain <= 1e-12 * (1 + abs(current)) || iteration >= max_newton) break
   }
-  list(coefficients = coefficients, separation = any(abs(coefficients) > 30))
+  coefficients
 }
 
 #' M-step for the mixing probabilities

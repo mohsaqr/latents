@@ -448,7 +448,7 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
                                      "initial_probability",
                                      "transition_probability") |
     (result$parameter == "covariance" &
-       result$term %in% paste(continuous, continuous, sep = ":"))
+       result$term %in% .latents_term(continuous, continuous))
   result$statistic[bounded] <- NA_real_
   result$p_value[bounded] <- NA_real_
   result <- .multilpa_adjust_p(result, adjust)

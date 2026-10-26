@@ -16,7 +16,7 @@ multilpa(
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  min_variance = 1e-06,
+  min_variance = NULL,
   seed = NULL,
   start = NULL,
   missing = c("error", "fiml"),
@@ -94,7 +94,8 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread. The
+described by its own means and spread, and, with more than one group
+class, Ward's clustering of the groups' profile compositions. The
 remaining starts are k-means from random centres. A supplied \code{start}
 replaces the first start, and the remaining starts are random. With
 \code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
@@ -108,13 +109,21 @@ is evaluated at exactly those values, for example to score them with
 \code{logLik()}; without \code{start}, the random initializations are evaluated and
 the one with the highest log likelihood is returned.}
 
-\item{tol}{Positive relative log-likelihood tolerance (default \code{1e-8}).
-Convergence requires an absolute change no greater than
-\verb{tol * (1 + abs(previous log likelihood))}.}
+\item{tol}{Positive convergence tolerance (default \code{1e-8}). EM has
+converged when one step (or SQUAREM cycle) changes the log likelihood by
+no more than \code{tol} times the number of observed indicator values (each
+non-missing cell of a row of positive weight, at least one). A change in
+log likelihood does not depend on the units of the data, so neither does
+this rule; latents 0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}, which a change of units moved.}
 
-\item{min_variance}{Positive lower bound on each variance, or on each
-covariance eigenvalue under full covariance, in squared input units
-(default \code{1e-6}); the fit is then constrained maximum likelihood.
+\item{min_variance}{Lower bound on each variance, or on each covariance
+eigenvalue under full covariance; the fit is then constrained maximum
+likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
+sample variance of the continuous indicators (observed values in rows of
+positive weight, on the scale fitted, after any centring and scaling), so
+that the bound moves with the units of the data. A number is an absolute
+bound in squared indicator units (the default of 0.97.1 and earlier was
+\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
 Estimates at the bound are reported and raise a warning.}
 
 \item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
@@ -334,7 +343,11 @@ within-group variances.
 
 These families take only \code{data}, \code{vars}, \code{id}, \code{n_group_classes},
 \code{between_variance}, \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance},
-\code{seed} and \code{weights}; any other argument raises \code{latents_bad_argument}.
+\code{seed}, \code{weights}, \code{search} and \code{n_screen}; any other argument raises
+\code{latents_bad_argument}. Groups of sampling weight zero are not part of the
+sample: the identification checks, starting values, counts, entropy and
+classification tables use only the groups of positive weight, though
+every group still receives a posterior.
 Indicators must be complete and continuous, and at least one group must
 have more than one row (\code{latents_unidentified} otherwise). Between
 variances estimated at zero are reached by a boundary maximization with a
@@ -388,9 +401,12 @@ fit, each row of a single-level one. A two-level weight must be constant
 within its group (\code{latents_bad_weights} otherwise); within-unit weights
 are not supported. The fit maximizes the pseudo log likelihood
 \verb{sum_j w_j log L_j} (Skinner, 1989) with the weights scaled to sum to the
-number of units, as Mplus does, so integer weights give the fit to the
-data with each unit repeated that many times and the criteria stay on the
-sample's scale. Standard errors are sandwich estimates:
+number of units of positive weight, as Mplus scales to the sample size,
+so integer weights give the fit to the data with each unit repeated that
+many times and the criteria stay on the sample's scale. A unit of weight
+zero is not part of the sample: it changes no estimate, likelihood,
+sample size, entropy or criterion, sets neither the grand offset nor the
+grand scale of \code{centering}/\code{scaling = "grand"}, and is not classified. Standard errors are sandwich estimates:
 \code{parameter_inference()} defaults to \code{vcov_type = "robust"} and refuses
 \code{"observed"} and \code{"opg"} (\code{latents_unsupported_weights}), and
 \code{method = "bootstrap"} resamples the units with their weights.
@@ -450,10 +466,17 @@ information criterion are those of the scaled values, so only fits with
 the same centring and scaling are comparable. A standard deviation that is
 zero or undefined (under \code{"person"}, a unit observed once on an indicator
 or always giving the same value) raises \code{latents_bad_data}. Under
-structures that give each indicator its own variance (\code{EEI}, \code{VVI},
-\code{EEE}, \code{VVV}, \code{EVI}, \code{VEI}), grand scaling changes only the units of the
-estimates; under the spherical \code{EII} and \code{VII}, which impose one variance
-on every indicator, it changes the solution.}
+\code{EEI}, \code{VEI}, \code{EVI}, \code{VVI}, \code{EEE}, \code{VEE}, \code{EVV} and \code{VVV}, whose family
+is unchanged when each indicator is rescaled, grand scaling changes only
+the units of the estimates. Under the spherical \code{EII} and \code{VII}, which
+impose one variance on every indicator, and under \code{EEV}, \code{VEV}, \code{EVE} and
+\code{VVE}, which share eigenvalues or eigenvectors across profiles (neither
+survives rescaling the indicators by different factors), it changes the
+solution. Under \code{centering = "person"} with \code{scaling = "person"}, a group
+with only two observations of an indicator becomes exactly
+\code{-1/sqrt(2)} and \code{1/sqrt(2)} on it: such groups raise
+\code{latents_atomic_groups}, and when every group is like that the fit is
+refused with \code{latents_bad_data}.}
 
 \item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: how the reported
 statistics treat rows whose every indicator is missing, and groups
@@ -465,7 +488,9 @@ AvePP and the entropy term of ICL, AWE and CLC, from the classification
 tables and diagnostic plots, and from the effective class counts. With
 \code{FALSE} every row and group is counted in those statistics (the results
 of latents 0.9.37 and earlier), except in the individual sample size of a
-\code{multilpa()} fit, which excludes such rows either way. \code{\link[=compare_models]{compare_models()}}
+\code{multilpa()} fit, which excludes such rows either way. Units of sampling
+weight zero are excluded from every count and entropy term under either
+setting. \code{\link[=compare_models]{compare_models()}}
 and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} do not compare fits made with different
 \code{drop_empty}. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}
@@ -497,20 +522,23 @@ covariance staying zero: the covariance Latent GOLD fits with
 \code{model} or the structure arguments, covariates, \code{time}, \code{prior}, \code{noise}
 or held variances. A pair of categorical indicators is modelled jointly
 within each class. Each such pair becomes one categorical indicator, named
-\code{"item1:item2"}, whose categories are the observed combinations of the
-two items' categories, so every class has its own joint distribution of
+\code{"item1:item2"}, whose categories are every combination of the two items'
+categories (the full grid: a combination nobody gave is estimated on the
+\code{min_probability} floor and counted as a parameter, so each class has
+\verb{K1 K2 - 1} of them), so every class has its own joint distribution of
 the pair: the class-specific association Latent GOLD fits with
 \verb{item1 <-> item2 | Cluster}. The other indicators stay independent given
 the class. \code{get_results(fit, "local_dependence")} reports each class's
 joint probabilities beside their values under independence; \code{predict()},
 \code{parameter_inference(data = )} and the other functions that take \code{data}
-join the pair in the caller's data. A row observing one item of a pair
-and not the other treats the pair as missing, with a
-\code{latents_partial_pair} warning. A pair of indicators that are not both
-categorical, that names an indicator twice or that shares an indicator
-with another pair raises \code{latents_bad_argument}; a categorical item of a
-pair whose categories contain \code{":"} raises \code{latents_bad_data}. Default:
-none.}
+join the pair in the caller's data. Under \code{missing = "fiml"} a row
+observing one item of a pair and not the other contributes the observed
+item, the pair's joint distribution summed over the missing one, which is
+the observed-data likelihood under MAR. A pair that mixes a categorical
+and a continuous indicator, that names an indicator twice or that shares
+an indicator with another pair raises \code{latents_bad_argument}; a
+categorical item of a pair whose categories contain \code{":"} raises
+\code{latents_bad_data}. Default: none.}
 
 \item{direct_effects}{Direct effects of covariates on continuous
 indicators, written \code{"indicator ~ covariate"} (several covariates joined

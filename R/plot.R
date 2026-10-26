@@ -437,11 +437,13 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
 #' A single-level grid has one unit per observation, so every criterion's
 #' group-level and individual-level versions are the same numbers; drawing both
 #' repeats a panel. Such a pair is kept once under the criterion's plain name.
-#' A grid whose every candidate has one group class classifies nothing at the
-#' group level, so the group version of a classification criterion (AWE, ICL,
-#' CLC) is its penalty alone, and ICL over groups equals BIC over groups. When
-#' both versions are asked for, only the individual one is kept, under the
-#' criterion's plain name.
+#' A grid whose every candidate has one group class has no group-class
+#' entropy, so its classification criteria (AWE, ICL, CLC) charge the profile
+#' entropy under both conventions (review 2026-10-26 round 2, S-1): CLC is the
+#' same number under both, and AWE and ICL differ only by the sample size in
+#' their penalty, as BIC does. When both versions are asked for, only the
+#' individual one is kept, under the criterion's plain name, so the
+#' classification criteria are drawn once.
 #' @param grid The enumeration table.
 #' @param criterion Requested criterion columns.
 #' @return The criteria to draw, named by their display titles.

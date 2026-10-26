@@ -176,8 +176,13 @@
       score[k + 1L] <- score[k + 1L] * exp(2 * point[k + 1L] - 2 * decoded[k + 1L])
       score
     }
-    optimized <- lapply(placed, function(means) tryCatch({
+    # Each rejection below is an explicit test; no error is expected from
+    # these steps, so none is caught and an unexpected one surfaces.
+    optimized <- lapply(placed, function(means) {
       start <- c(means, log(1 - smallest) / 2)
+      # BFGS refuses a non-finite starting value; such a placement offers no
+      # candidate, as an EM start that loses a class is dropped.
+      if (!is.finite(objective(start))) return(NULL)
       found <- stats::optim(start, objective, gradient, method = "BFGS",
                             control = list(maxit = max_iter, reltol = 1e-15))
       if (!identical(found$convergence, 0L) || !is.finite(found$value) ||
@@ -194,9 +199,18 @@
       information <- .multilpa_step_ml_hessian(function(theta) {
         -colSums(.multilpa_step_ml_scores(candidate, values, variance, theta))
       }, point, scale)
-      chol(information * tcrossprod(scale))
+      conditioned <- information * tcrossprod(scale)
+      if (any(!is.finite(conditioned))) return(NULL)
+      # On a finite symmetric matrix chol() fails only when it is not
+      # positive definite (a saddle or an unidentified class): the one
+      # rejection this handler stands for.
+      definite <- tryCatch({
+        chol(conditioned)
+        TRUE
+      }, error = function(condition) FALSE)
+      if (!definite) return(NULL)
       slim(candidate$means, candidate$variances)
-    }, error = function(condition) NULL))
+    })
     # Appending preserves the original EM winner whenever the likelihoods
     # are tied under the existing selection rule below.
     runs <- c(runs, Filter(Negate(is.null), optimized))

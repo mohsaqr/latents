@@ -107,14 +107,16 @@ test_that("what = \"all\" draws every information criterion once", {
   two_level <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
                                 n_group_classes = 1:2, n_starts = 1, seed = 3)
   every <- expect_plot(plot_enumeration(two_level, what = "all"))
-  # A two-level grid differs at the two levels for every criterion, so each
-  # column of the grid gets its own panel.
-  expect_identical(nlevels(every$data$title),
-                   length(.multilpa_enumeration_criteria()))
+  # A two-level grid differs at the two levels for every criterion that uses
+  # a sample size, so each such column gets its own panel. CLC uses none and
+  # charges the same complete-data entropy under both conventions (review
+  # 2026-10-26 round 2, S-1), so it is drawn once.
+  drawn <- setdiff(.multilpa_enumeration_criteria(), "clc_individual")
+  expect_identical(nlevels(every$data$title), length(drawn))
   expect_equal(plot(two_level, what = "all")$data, every$data)
   separate <- plot_enumeration(two_level, what = "all", combine = FALSE)
   expect_s3_class(separate, "latents_plots")
-  expect_named(separate, .multilpa_enumeration_criteria())
+  expect_named(separate, drawn)
   # Single level: a criterion whose two versions coincide is drawn once.
   single <- enumerate_lpa(dat, c("a", "b"), n_profiles = 1:2, n_starts = 1,
                           seed = 3)
@@ -332,10 +334,11 @@ test_that("a grid without group classes draws each criterion once, by its plain 
   single <- quietly(enumerate_lpa(engagement_small, c("browse", "lectures"),
                                   n_profiles = 1:3, model = "VVI", n_starts = 1,
                                   seed = 1))
-  # With one group class the group level classifies nothing: ICL over groups
-  # is BIC over groups, so its panel would repeat BIC's.
+  # Both conventions charge the same complete-data entropy and, in a
+  # single-level grid, the same sample size, so ICL over groups is ICL over
+  # individuals and one panel suffices.
   table <- as.data.frame(single)
-  expect_equal(table$icl_groups, table$bic_groups)
+  expect_equal(table$icl_groups, table$icl_individual)
   panels <- function(plot) {
     layout <- ggplot2::ggplot_build(plot)$layout$layout
     as.character(layout[[setdiff(names(layout), c("PANEL", "ROW", "COL",
@@ -344,7 +347,8 @@ test_that("a grid without group classes draws each criterion once, by its plain 
   expect_identical(panels(plot_enumeration(single, what = "all")),
                    c("AIC", "KIC", "BIC", "SABIC", "CAIC", "AWE", "ICL", "CLC"))
   expect_identical(panels(plot_enumeration(single)), c("AIC", "BIC", "ICL"))
-  # Asked for by name, the group version is drawn and says so.
+  # Asked for by name, the group version is the same numbers, drawn under
+  # the plain name.
   expect_identical(plot_enumeration(single, what = "icl_groups")$labels$title,
-                   "ICL (groups) by candidate model")
+                   "ICL by candidate model")
 })

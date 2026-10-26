@@ -82,7 +82,8 @@
   if (offset) {
     row_offset <- .multilpa_row_max(log_density)
     if (any(!is.finite(row_offset))) {
-      stop("All component densities vanished, or a density overflowed.")
+      stop(errorCondition("All component densities vanished, or a density overflowed.",
+                        class = "latents_vanished_density", call = NULL))
     }
     log_density <- sweep(log_density, 1L, row_offset, "-")
   }
@@ -109,7 +110,8 @@
     # bounded log probabilities do not need this second centering step.
     final_offset <- .multilpa_row_max(log_density)
     if (any(!is.finite(final_offset))) {
-      stop("All component densities vanished, or a density overflowed.")
+      stop(errorCondition("All component densities vanished, or a density overflowed.",
+                        class = "latents_vanished_density", call = NULL))
     }
     log_density <- sweep(log_density, 1L, final_offset, "-")
     row_offset <- row_offset + final_offset

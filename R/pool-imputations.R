@@ -64,7 +64,9 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #' @param vcov_type `"observed"` (default), `"robust"` or `"opg"`, as in
 #'   [parameter_inference()], applied to every imputation's fit. For fits
 #'   with sampling weights the default is `"robust"`, and the other types are
-#'   refused with `latents_unsupported_weights`.
+#'   refused with `latents_unsupported_weights`; for fits with person
+#'   centring or scaling the default is `"robust"` too, and the other types
+#'   are refused with `latents_unsupported_inference`.
 #' @param adjust Multiplicity correction applied to the pooled p-values to
 #'   give `p_adjusted`, as in [parameter_inference()]: `"none"` (default) or
 #'   a method of [stats::p.adjust()]. The per-imputation tables are computed
@@ -133,6 +135,9 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
   reference <- fits[[1L]]
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(reference), vcov_type,
                                       vcov_defaulted)
+  # A person-centred or person-scaled fit, like a weighted one, has sandwich
+  # errors only (`.multilpa_transformed_vcov()`).
+  vcov_type <- .multilpa_transformed_vcov(reference, vcov_type, vcov_defaulted)
   alignments <- lapply(fits, .multilpa_pool_align, reference = reference)
   aligned <- lapply(alignments, `[[`, "fit")
   tables <- lapply(seq_along(aligned), function(index) {

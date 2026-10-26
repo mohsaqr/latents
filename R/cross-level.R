@@ -44,8 +44,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   spread <- matrix(vapply(seq_len(ncol(posterior)), function(h) {
     colSums(posterior[, h] * sweep(group_means, 2L, means[h, ])^2)
   }, numeric(ncol(group_means))), nrow = ncol(posterior), byrow = TRUE)
+  # The shared variance divides by the posterior total, which under sampling
+  # weights is the weighted count of the groups of positive weight; dividing
+  # by every group let a zero-weight group shrink it (review 2026-10-26 round
+  # 2, CL-2).
   variances <- if (identical(between_variance, "equal")) {
-    matrix(colSums(spread) / nrow(group_means), ncol(posterior),
+    matrix(colSums(spread) / sum(counts), ncol(posterior),
            ncol(group_means), byrow = TRUE)
   } else spread / counts
   list(means = unname(means), variances = unname(pmax(variances, min_variance)))
@@ -139,8 +143,15 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     updated$between_variances <- between$variances
     updated
   }
-  fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol, pause = pause,
-                     resume = resume)
+  # A unit-free stop (review 2026-10-26 round 2, K2-6): the observed values
+  # of the rows and of the group means that carry positive weight.
+  stop_scale <- .latents_observed_values(
+    x, row_weights = if (is.null(sampling_weights)) NULL else
+      sampling_weights[group_index]) +
+    .latents_observed_values(group_means, row_weights = sampling_weights)
+  fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol,
+                     settings = .latents_em_settings(stop_scale = stop_scale),
+                     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
                  history = fit$history)
@@ -184,8 +195,9 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   if (!is.numeric(max_iter) || length(max_iter) != 1L || !is.finite(max_iter) ||
       max_iter < 0 || max_iter != floor(max_iter) || max_iter > .Machine$integer.max ||
       !is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
-      !is.numeric(min_variance) || length(min_variance) != 1L ||
-      !is.finite(min_variance) || min_variance <= 0) {
+      (!is.null(min_variance) && (!is.numeric(min_variance) ||
+        length(min_variance) != 1L || !is.finite(min_variance) ||
+        min_variance <= 0))) {
     stop(errorCondition("max_iter, tol and min_variance must be valid numbers.",
                         class = "latents_bad_argument", call = NULL))
   }
@@ -203,6 +215,11 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
               length(vars), dimnames = list(NULL, vars))
   group_index <- stats$index
   group_means <- unname(stats$averages)
+  # `NULL`: a millionth of the smallest indicator variance (review 2026-10-26
+  # round 2, K2-2).
+  min_variance <- .latents_resolve_min_variance(
+    min_variance, x,
+    if (is.null(sampling_weights)) NULL else sampling_weights[group_index])
   .latents_local_seed(seed)
   fitted <- if (identical(family, "full_cross_level")) {
     # Every start is prepared before any is run; EM draws no random numbers,
@@ -266,6 +283,11 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   converged <- starts$converged
   best_start <- starts$best_start
   best <- attempts[[best_start]]
+  # The replication count of every other family: starts run to the end whose
+  # likelihood is within 1e-6 (1 + |L|) of the reported one (RP-1).
+  reported <- scores[best_start]
+  best$n_best_replicated <- sum(valid & .latents_final_stage(found) &
+                                  abs(scores - reported) <= 1e-6 * (1 + abs(reported)))
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; the start records keep their errors.",
@@ -313,8 +335,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   individual <- single(x, n_profiles, variance_model, row_weights)
   groups <- single(group_means, n_group_classes, between_variance, sampling_weights)
   # Each part's pseudo likelihood is scaled to its own unit count; put the
-  # rating part back on the groups' weight scale before adding the two.
-  individual_scale <- if (is.null(row_weights)) 1 else sum(row_weights) / length(row_weights)
+  # rating part back on the groups' weight scale before adding the two. The
+  # rating fit normalizes its row weights to the rows of positive weight
+  # (R/weights.R), so that is the count undone here (CL-1: dividing by every
+  # row raised the likelihood by 89.8 with five zero-weight groups).
+  individual_scale <- if (is.null(row_weights)) 1 else
+    sum(row_weights) / sum(row_weights > 0)
   group_posterior <- unname(groups$subject_posteriors)
   subject <- unname(individual$subject_posteriors)
   parameters <- list(
@@ -334,6 +360,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
                           subject_posteriors = subject),
        converged = isTRUE(individual$converged) && isTRUE(groups$converged),
        iterations = NA_integer_, history = NA_real_,
+       # The two factors are searched separately, so the joint maximum is
+       # replicated at least as often as its less replicated factor.
+       n_best_replicated = min(individual$n_best_replicated,
+                               groups$n_best_replicated),
        starts = data.frame(part = c("individual profiles", "group classes"),
                            log_likelihood = c(individual$log_likelihood,
                                               groups$log_likelihood),
@@ -381,11 +411,14 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     group_posteriors = group_posteriors, subject_posteriors = subject_posteriors,
     log_likelihood = log_likelihood, n_parameters = n_parameters,
     aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + n_parameters * log(stats$n_groups),
-    bic_individual = -2 * log_likelihood + n_parameters * log(nrow(x)),
+    # A unit of sampling weight zero is in no sample size (ML-1, CL-3).
+    bic = -2 * log_likelihood + n_parameters * log(stats$n_used_groups),
+    bic_individual = -2 * log_likelihood + n_parameters * log(stats$n_used_obs),
     n_groups = stats$n_groups, n_obs = nrow(x),
+    n_used_groups = stats$n_used_groups, n_used_obs = stats$n_used_obs,
     group_sizes = stats::setNames(stats$sizes, stats$ids),
     converged = isTRUE(fitted$converged), iterations = fitted$iterations,
+    n_best_replicated = fitted$n_best_replicated,
     log_likelihood_history = fitted$history, boundary = boundary,
     starts = fitted$starts, sufficient_statistics = stats,
     min_variance = min_variance,
@@ -410,7 +443,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   group_weights <- stats$sampling_weights
   row_weights <- if (is.null(group_weights)) NULL else group_weights[stats$index]
   if (identical(family, "restricted_cross_level") && !is.null(row_weights)) {
-    row_weights <- row_weights * (nrow(x) / sum(row_weights))
+    row_weights <- row_weights * (sum(row_weights > 0) / sum(row_weights))
   }
   .latents_warn_thin_profiles(
     colSums(subject_posteriors * (row_weights %||% 1)),
@@ -548,12 +581,14 @@ summary.multilpa_cross_level <- function(object, ...) {
 #' @export
 logLik.multilpa_cross_level <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = object$n_groups, class = "logLik")
+            nobs = object$n_used_groups %||% object$n_groups, class = "logLik")
 }
 
 #' @noRd
 #' @export
-nobs.multilpa_cross_level <- function(object, ...) object$n_groups
+nobs.multilpa_cross_level <- function(object, ...) {
+  object$n_used_groups %||% object$n_groups
+}
 
 #' @rdname parameter_inference
 #' @export

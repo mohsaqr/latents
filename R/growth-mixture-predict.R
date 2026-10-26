@@ -116,8 +116,10 @@ predict.latents_growth_mixture <- function(object, newdata = NULL,
                       prior = as.vector(priors), fitted = as.vector(means),
                       stringsAsFactors = FALSE))
   }
+  # New persons are classified in the fit's standard coordinates and carried
+  # back, as the fitted persons were.
   expectation <- if (is.null(newdata)) object$expectation else
-    .growth_expectation(spec, .growth_statistics(spec), params)
+    .growth_fitted_expectation(object, spec)
   if (identical(type, "posterior")) {
     refit <- object
     refit$spec <- spec

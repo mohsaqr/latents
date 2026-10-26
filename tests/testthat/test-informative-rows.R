@@ -34,11 +34,12 @@ test_that("classification quality is taken over rows with an observed indicator"
   expect_identical(sum(classification$n_modal), sum(setup$observed))
   avepp <- diag(.multilpa_average_posterior_matrix(informative))
   expect_equal(classification$average_posterior, unname(avepp), tolerance = 1e-12)
-  # The ICL charge is the entropy of the same rows its sample size counts.
+  # The ICL charge is the complete-data entropy of the same rows its sample
+  # size counts (group classes and profiles; round 2 of 2026-10-26).
   criteria <- get_results(fit, "information_criteria", format = "wide")
   expected_icl <- -2 * fit$log_likelihood +
     log(sum(setup$observed)) * fit$n_parameters +
-    2 * .multilpa_entropy_sum(informative)
+    2 * .multilpa_complete_entropy(fit)
   expect_equal(criteria$icl_individual, expected_icl, tolerance = 1e-10)
   # Class counts are of the classified rows (drop_empty = TRUE, as Mplus).
   expect_equal(sum(fit$effective_profile_counts), sum(setup$observed),

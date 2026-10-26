@@ -71,8 +71,14 @@ cluster-robust contributions sum to zero at the estimate and so span at
 most one dimension fewer than the number of groups.}
 \item{\code{latents_inseparable_classes}}{The classes are not separated well
 enough for the requested three-step correction.}
+\item{\code{latents_too_many_cores}}{\code{cores} exceeds the machine's core count;
+the fit uses the machine's count instead.}
 \item{\code{latents_no_converge}}{A fit required by the request did not
 converge.}
+\item{\code{latents_vanished_density}}{Every component density is zero, or one
+overflowed, at a point EM reached: the start is recorded as failed
+(\code{get_results(x, "starts")}), and a fit whose every start fails
+raises \code{latents_all_starts_failed}.}
 \item{\code{latents_boundary_fit}}{A variance or response probability is at
 its bound, a mixing probability is zero, or a membership logit
 coefficient diverges (separation). The parameter is on the edge of its
@@ -248,9 +254,9 @@ Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
 on a fit made without \code{local_dependence}.}
 \item{\code{latents_no_direct_effects}}{\code{get_results(fit, "direct_effects")}
 on a fit made without \code{direct_effects}.}
-\item{\code{latents_partial_pair}}{A warning: rows observe one item of a
-\code{local_dependence} pair and not the other, so the pair is treated as
-missing in those rows.}
+\item{\code{latents_partial_pair}}{No longer raised after version 0.97.1: a row
+observing one item of a \code{local_dependence} pair now contributes that
+item, the pair's other item summed out, instead of losing the pair.}
 \item{\code{latents_no_lmr}}{\code{get_results(x, "lmr")} on a grid with no two
 converged candidates one profile or one group class apart. Also of class
 \code{latents_nothing_to_plot}.}
@@ -306,6 +312,13 @@ reported.}
 \item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, is at
 \code{min_variance}, so the fit is bound-active and its standard errors are
 not valid at that parameter.}
+\item{\code{latents_atomic_groups}}{Under \code{centering = "person"} with
+\code{scaling = "person"}, some groups have fewer than three observations of
+an indicator. Standardizing two values within a group makes them
+exactly \code{-1/sqrt(2)} and \code{1/sqrt(2)}, so those rows carry only a sign
+pattern, and a profile can collapse onto them. The message gives the
+share of rows in such groups. When every group is like that, the fit is
+refused with \code{latents_bad_data} instead.}
 \item{\code{latents_small_classes}}{A profile or group class has an effective
 membership below one observation; or, in \code{\link[=three_step]{three_step()}} with \code{method = "ml"}, a class is carried by a single unit, so its standard error is
 reported as \code{NA}.}
@@ -352,6 +365,15 @@ scaling, a sparse class or separation rather than by the data.}
 a final occasion, so its transition row is uniform by construction
 rather than estimated; \code{get_results(fit, "transitions", estimated = FALSE)} lists such rows. The transition-network handoff also warns when
 it includes such a row.}
+\item{\code{latents_unidentified_occasion}}{An \code{\link[=lta]{lta()}} fit with
+\code{transitions = "occasion"} has an occasion at which no row observes an
+indicator, followed by an occasion that does. The moves into and out of
+the empty occasion (or, for an empty first occasion, the initial
+distribution and the first move) enter the likelihood only through
+their product, so their logits are not separately identified: the
+estimates are one of many equally good splits and their standard errors
+are not meaningful, and the parameter count includes them. Occasions
+after the last observed one are not counted and do not warn.}
 \item{\code{latents_unverified_alignment}}{A supplied \code{data} frame has too
 little fitted information to verify row order (for example only a
 repeated group identifier). The result assumes the rows are in fitting

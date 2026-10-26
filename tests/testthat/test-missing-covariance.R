@@ -111,7 +111,7 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
   expect_true(fit$starts$boundary)
   data$x <- NA_real_
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
-                          missing = "fiml", n_starts = 1), "observed values")
+                          missing = "fiml", n_starts = 1), class = "latents_bad_data")
   data$x <- c(Inf, rep(NA_real_, 19))
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
                           missing = "fiml", n_starts = 1), "non-finite")

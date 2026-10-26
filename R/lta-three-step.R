@@ -141,7 +141,12 @@
   values <- design[rows, -1L, drop = FALSE]
   centre <- colMeans(values)
   spread <- sqrt(colMeans(sweep(values, 2L, centre)^2))
-  if (any(!is.finite(spread)) || any(spread <= 0)) {
+  # Constancy is decided exactly from the range: the mean of identical
+  # values can round (nine values of 0.1 leave a spread near 1e-17), and a
+  # threshold relative to the centre would refuse a varying covariate held
+  # at a large offset. The range of identical doubles is exactly zero.
+  constant <- apply(values, 2L, function(column) max(column) - min(column) == 0)
+  if (any(!is.finite(spread)) || any(spread <= 0) || any(constant)) {
     stop(errorCondition(
       "A covariate is constant over the occasions it applies to; remove it.",
       class = "latents_bad_covariate", call = NULL))

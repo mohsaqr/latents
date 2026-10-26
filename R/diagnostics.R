@@ -1,40 +1,71 @@
 #' Classification entropy sum
 #' @param probabilities Posterior probability matrix, rows summing to one.
-#' @return Sum of `-p log p` over every cell, the classification entropy.
+#' @param weights `NULL`, or one sampling weight per row.
+#' @return Sum of `-p log p` over every cell, the classification entropy;
+#'   with `weights`, each row's entropy multiplied by its weight.
 #' @noRd
-.multilpa_entropy_sum <- function(probabilities) {
+.multilpa_entropy_sum <- function(probabilities, weights = NULL) {
   stopifnot("`probabilities` must be a numeric matrix" =
-              is.matrix(probabilities) && is.numeric(probabilities))
-  positive <- probabilities > 0
-  -sum(probabilities[positive] * log(probabilities[positive]))
+              is.matrix(probabilities) && is.numeric(probabilities),
+            "`weights` must be NULL or one finite weight per row" =
+              is.null(weights) || (is.numeric(weights) &&
+                                     length(weights) == nrow(probabilities) &&
+                                     all(is.finite(weights))))
+  cells <- ifelse(probabilities > 0, probabilities * log(probabilities), 0)
+  if (is.null(weights)) return(-sum(cells))
+  -sum(weights * rowSums(cells))
 }
 
 #' Relative classification entropy
+#'
+#' `1 - EN / (n log K)` (Ramaswamy et al. 1993). Under sampling weights `EN`
+#' is the weighted entropy sum and `n` the sum of the weights, so the value is
+#' that of the population the weights describe (review 2026-10-26 round 2,
+#' S-4).
+#'
 #' @param probabilities Posterior probability matrix, rows summing to one.
+#' @param weights `NULL`, or one sampling weight per row.
 #' @return Entropy on the zero-to-one scale, or `NA_real_` for a single class.
 #' @noRd
-.multilpa_relative_entropy <- function(probabilities) {
+.multilpa_relative_entropy <- function(probabilities, weights = NULL) {
   stopifnot("`probabilities` must be a numeric matrix" =
               is.matrix(probabilities) && is.numeric(probabilities))
   if (ncol(probabilities) == 1L) return(NA_real_)
-  1 - .multilpa_entropy_sum(probabilities) /
-    (nrow(probabilities) * log(ncol(probabilities)))
+  total <- if (is.null(weights)) nrow(probabilities) else sum(weights)
+  1 - .multilpa_entropy_sum(probabilities, weights) /
+    (total * log(ncol(probabilities)))
 }
 
 #' The formula behind each criterion, keyed by its name
+#'
+#' `EN` in the entropy-charged criteria is the soft entropy of the
+#' complete-data classification: of the group classes and the profiles
+#' together, the same under both sample-size conventions. A transition model
+#' keeps one entropy per level (its profiles form a Markov chain within a
+#' person), and its definitions say so.
+#'
 #' @param criterion Character vector of criterion names.
+#' @param transition `TRUE` for a transition model.
 #' @return Character vector of formulas, the same length as `criterion`.
 #' @noRd
-.multilpa_criterion_definitions <- function(criterion) {
+.multilpa_criterion_definitions <- function(criterion, transition = FALSE) {
+  entropy <- if (isTRUE(transition)) {
+    paste("; EN = soft classification entropy of this convention's level",
+          "(group classes for groups, occasions' profiles for individuals)")
+  } else {
+    paste("; EN = soft entropy of the complete-data classification (group",
+          "classes and profiles), the same under both conventions",
+          "(Biernacki, Celeux & Govaert 2000)")
+  }
   definitions <- c(deviance = "-2L",
                    aic = "-2L + 2q",
-                   kic = "-2L + 3(q + 1)",
+                   kic = "-2L + 3(q + 1) (Cavanaugh 1999, as tidyLPA computes it)",
                    bic = "-2L + q log(n)",
                    sabic = "-2L + q log((n + 2) / 24)",
                    caic = "-2L + q (log(n) + 1)",
-                   awe = "-2(L - EN) + 2q (1.5 + log(n))",
-                   icl = "-2L + q log(n) + 2 EN",
-                   clc = "-2L + 2 EN")
+                   awe = paste0("-2(L - EN) + 2q (1.5 + log(n))", entropy),
+                   icl = paste0("-2L + q log(n) + 2 EN", entropy),
+                   clc = paste0("-2L + 2 EN", entropy))
   stopifnot("Every criterion must have a definition" =
               all(criterion %in% names(definitions)))
   unname(definitions[criterion])
@@ -71,9 +102,27 @@
     convention = c("groups", "individuals"),
     n = c(.multilpa_group_sample_size(x),
           x$n_informative %||% x$n_observations))
-  entropies <- c(groups = if (is.null(x$group_posteriors)) NA_real_ else
-                   .multilpa_entropy_sum(.multilpa_classified_group_posteriors(x)),
-                 individuals = .multilpa_entropy_sum(.multilpa_classified_posteriors(x)))
+  # The entropy charge of ICL, AWE and CLC is that of the same likelihood the
+  # deviance is: under sampling weights the weighted sum, which equals the
+  # entropy of the data with every unit repeated by its weight (review
+  # 2026-10-26 round 2, EN-1). It is the entropy of the complete-data
+  # classification, group classes and profiles together, so the two
+  # conventions differ only in `n` (round 2, S-1). A transition model keeps
+  # one entropy per level: its profiles are a Markov chain within a person,
+  # whose path entropy is not the sum of the occasions' entropies.
+  transition <- inherits(x, "multilpa_transitions")
+  level_entropy <- function(level, posteriors) {
+    if (is.null(posteriors)) return(NA_real_)
+    .multilpa_entropy_sum(posteriors,
+                          .multilpa_level_weights(x, level, nrow(posteriors)))
+  }
+  entropies <- if (transition) {
+    c(groups = level_entropy("groups", .multilpa_classified_group_posteriors(x)),
+      individuals = level_entropy("individuals", .multilpa_classified_posteriors(x)))
+  } else {
+    complete <- .multilpa_complete_entropy(x)
+    c(groups = complete, individuals = complete)
+  }
   scale_free <- data.frame(
     criterion = c("deviance", "aic", "kic"),
     convention = NA_character_, n = NA_integer_,
@@ -87,9 +136,9 @@
                    caic = q * (log(n) + 1),
                    awe = 2 * q * (1.5 + log(n)) + 2 * entropy_sum,
                    icl = q * log(n) + 2 * entropy_sum,
-                   # The only criterion here that does not use the sample size.
-                   # Its convention still matters, because it decides which
-                   # level's classification uncertainty is being penalized.
+                   # The only criterion here that does not use the sample size:
+                   # the same under both conventions, except for a transition
+                   # model, whose convention picks the level's entropy.
                    clc = 2 * entropy_sum)
     data.frame(criterion = names(penalties), convention = convention, n = n,
                penalty = unname(penalties))
@@ -104,7 +153,8 @@
   row.names(result) <- NULL
   if (identical(format, "wide")) return(.multilpa_criteria_wide(result, x))
   if (isTRUE(definitions)) {
-    result$definition <- .multilpa_criterion_definitions(result$criterion)
+    result$definition <- .multilpa_criterion_definitions(result$criterion,
+                                                         transition)
   }
   result
 }
@@ -244,34 +294,47 @@
   level <- match.arg(level)
   posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
-    .multilpa_average_posterior_rows(posteriors[[which_level]], which_level)
+    .multilpa_average_posterior_rows(
+      posteriors[[which_level]], which_level,
+      .multilpa_level_weights(x, which_level, nrow(posteriors[[which_level]])))
   }))
   row.names(result) <- NULL
   result
 }
 
 #' Mean posterior of every class within each modal assignment group
+#'
+#' Under sampling weights the mean is weighted, so the average posterior is
+#' the population's, as the class shares it is compared with are (review
+#' 2026-10-26 round 2, S-3).
+#'
 #' @param probabilities Posterior probability matrix.
+#' @param weights `NULL`, or one sampling weight per row.
 #' @return A square matrix, rows indexed by assigned class, columns by class.
 #' @noRd
-.multilpa_average_posterior_matrix <- function(probabilities) {
+.multilpa_average_posterior_matrix <- function(probabilities, weights = NULL) {
   stopifnot("`probabilities` must be a numeric matrix" =
-              is.matrix(probabilities) && is.numeric(probabilities))
+              is.matrix(probabilities) && is.numeric(probabilities),
+            "`weights` must be NULL or one weight per row" =
+              is.null(weights) || length(weights) == nrow(probabilities))
   n_classes <- ncol(probabilities)
   assigned <- max.col(probabilities, ties.method = "first")
+  row_weights <- weights %||% rep(1, nrow(probabilities))
   t(vapply(seq_len(n_classes), function(class) {
     rows <- assigned == class
-    if (!any(rows)) rep(NA_real_, n_classes) else
-      colMeans(probabilities[rows, , drop = FALSE])
+    total <- sum(row_weights[rows])
+    if (!any(rows) || total <= 0) rep(NA_real_, n_classes) else
+      colSums(probabilities[rows, , drop = FALSE] * row_weights[rows]) / total
   }, numeric(n_classes)))
 }
 
 #' One row per class of classification diagnostics for one level
 #'
-#' Modal counts and average posteriors describe the rows supplied; the
-#' estimated class sizes and shares (and so the odds of correct
-#' classification) are the model's, which under sampling weights are the
-#' weighted posterior totals.
+#' Modal counts are counts of the rows supplied. Under sampling weights every
+#' other column estimates the population: the class sizes and shares are the
+#' weighted posterior totals and the average posteriors are weighted means, so
+#' the odds of correct classification compare the two on the same population
+#' (review 2026-10-26 round 2, S-3).
 #'
 #' @param probabilities Posterior probability matrix.
 #' @param level Label recorded in the `level` column.
@@ -279,7 +342,7 @@
 #' @return A tidy `data.frame`, one row per class.
 #' @noRd
 .multilpa_classification_summary <- function(probabilities, level, weights = NULL) {
-  average <- .multilpa_average_posterior_matrix(probabilities)
+  average <- .multilpa_average_posterior_matrix(probabilities, weights)
   n_classes <- ncol(probabilities)
   classes <- seq_len(n_classes)
   assigned <- max.col(probabilities, ties.method = "first")
@@ -302,10 +365,12 @@
 #' One row per assigned class and class of average posteriors for one level
 #' @param probabilities Posterior probability matrix.
 #' @param level Label recorded in the `level` column.
+#' @param weights `NULL`, or one sampling weight per row; `n_assigned` stays a
+#'   count.
 #' @return A tidy `data.frame`, one row per assigned class and class.
 #' @noRd
-.multilpa_average_posterior_rows <- function(probabilities, level) {
-  average <- .multilpa_average_posterior_matrix(probabilities)
+.multilpa_average_posterior_rows <- function(probabilities, level, weights = NULL) {
+  average <- .multilpa_average_posterior_matrix(probabilities, weights)
   n_classes <- ncol(probabilities)
   classes <- seq_len(n_classes)
   assigned <- max.col(probabilities, ties.method = "first")
@@ -372,10 +437,13 @@
   posteriors <- Filter(Negate(is.null), posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {
     probabilities <- posteriors[[level]]
+    # Under sampling weights both are the population's (round 2, S-4);
+    # `n_units` stays a count.
+    weights <- .multilpa_level_weights(x, level, nrow(probabilities))
     data.frame(level = level, n_classes = ncol(probabilities),
                n_units = nrow(probabilities),
-               entropy_sum = .multilpa_entropy_sum(probabilities),
-               relative_entropy = .multilpa_relative_entropy(probabilities))
+               entropy_sum = .multilpa_entropy_sum(probabilities, weights),
+               relative_entropy = .multilpa_relative_entropy(probabilities, weights))
   }))
   row.names(result) <- NULL
   result

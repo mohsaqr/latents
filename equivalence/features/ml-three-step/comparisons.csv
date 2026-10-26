@@ -5798,7 +5798,18 @@
 "sweep_108","varying","reference (sweep)","pair statistic (relative)",5.93675616017289e-11,1e-05
 "sweep_108","varying","reference (sweep)","pair p-value (in units of dz)",5.9367562841266e-11,1e-05
 "sweep_108","varying","reference (sweep)","pair p (BH) (in units of dz)",8.39461894505146e-12,1e-05
-"sweep_108","equal","reference (sweep)","log likelihood shortfall",0.0365595079601917,1e-06
+"sweep_108","equal","reference (sweep)","log likelihood shortfall",0,1e-06
+"sweep_108","equal","reference (sweep)","log likelihood",9.09494701772928e-13,1e-06
+"sweep_108","equal","reference (sweep)","mean (SE units)",2.55997440015518e-10,1e-06
+"sweep_108","equal","reference (sweep)","mean SE (relative)",7.91521403774732e-10,1e-06
+"sweep_108","equal","reference (sweep)","90% CI (SE units)",1.38552008975976e-09,1e-06
+"sweep_108","equal","reference (sweep)","variance (relative)",6.09978734189554e-12,1e-06
+"sweep_108","equal","reference (sweep)","effective n (relative)",3.41489059252353e-11,1e-06
+"sweep_108","equal","reference (sweep)","pair difference (SE units)",2.95774233259361e-10,1e-06
+"sweep_108","equal","reference (sweep)","pair SE (relative)",7.91709808822816e-10,1e-06
+"sweep_108","equal","reference (sweep)","pair statistic (relative)",8.13030685259467e-10,1e-05
+"sweep_108","equal","reference (sweep)","pair p-value (in units of dz)",8.13030685567188e-10,1e-05
+"sweep_108","equal","reference (sweep)","pair p (BH) (in units of dz)",1.27051916629252e-10,1e-05
 "sweep_109","varying","reference (sweep)","log likelihood shortfall",1.09139364212751e-11,1e-06
 "sweep_109","varying","reference (sweep)","log likelihood",1.09139364212751e-11,1e-06
 "sweep_109","varying","reference (sweep)","mean (SE units)",4.39641456072455e-07,1e-06
@@ -6110,7 +6121,7 @@
 "sweep_108","varying","Latent GOLD random starts","reference shortfall",1.54614099301398e-11,1e-06
 "sweep_108","varying","best known maximum","latents log likelihood shortfall",1.18234311230481e-11,1e-06
 "sweep_108","equal","Latent GOLD random starts","reference shortfall",0,1e-06
-"sweep_108","equal","best known maximum","latents log likelihood shortfall",0.0365595079601917,1e-06
+"sweep_108","equal","best known maximum","latents log likelihood shortfall",0,1e-06
 "lpa_k2_hi_01","-","Latent GOLD step one","step-one log likelihood",7.5037901297037e-06,1e-04
 "lpa_k2_hi_01","varying","Latent GOLD pipeline","reference log likelihood",0,1e-06
 "lpa_k2_hi_01","varying","Latent GOLD pipeline","reference mean (SE units)",7.68234023498857e-08,1e-05

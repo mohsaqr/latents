@@ -84,14 +84,46 @@
     binomial = y * eta - spec$trials * .mixture_log1pexp(eta) +
       spec$log_normalizer,
     poisson = matrix(stats::dpois(y, exp(eta), log = TRUE), nrow(eta), ncol(eta)),
-    negative_binomial = {
-      # NB2 with size r = 1 / alpha: log Gamma(y + r) - log Gamma(r)
-      # + r log(r / (r + mu)) + y log(mu / (r + mu)) - log y!.
-      size <- matrix(1 / params$sigma2, nrow(eta), ncol(eta), byrow = TRUE)
-      matrix(stats::dnbinom(y, size = size, mu = exp(eta), log = TRUE),
-             nrow(eta), ncol(eta))
-    },
+    negative_binomial = .mixture_negative_binomial_log_density(
+      y, exp(eta), matrix(params$sigma2, nrow(eta), ncol(eta), byrow = TRUE)),
     ordinal = .ordinal_log_density(spec, params, eta))
+}
+
+#' Negative-binomial (NB2) log density, accurate near the Poisson limit
+#'
+#' With size r = 1 / alpha, log Gamma(y + r) - log Gamma(r) + r log(r / (r +
+#' mu)) + y log(mu / (r + mu)) - log y!. Where alpha max(y, mu) < 1e-3 that
+#' difference of large gamma terms carries rounding noise of about 1e-9 per
+#' row (1e-7 over a few hundred rows at alpha = 1e-8), larger than the change
+#' the dispersion step must resolve there; the Poisson log density plus the
+#' fourth-order expansion of the NB-to-Poisson log ratio in alpha (whose
+#' derivatives `.latents_negative_binomial_dispersion_derivatives()` uses) is
+#' exact to about 4e-16 instead (review 2026-10-26, round 2, N4).
+#'
+#' @param y Counts, one per row.
+#' @param mu Means, rows by classes.
+#' @param alpha Dispersions, rows by classes.
+#' @return A rows-by-classes matrix of log densities.
+#' @noRd
+.mixture_negative_binomial_log_density <- function(y, mu, alpha) {
+  count <- matrix(y, nrow(mu), ncol(mu))
+  out <- matrix(stats::dnbinom(count, size = 1 / alpha, mu = mu, log = TRUE),
+                nrow(mu), ncol(mu))
+  small <- alpha * pmax(count, mu) < 1e-3
+  if (any(small)) {
+    k <- count[small]
+    m <- mu[small]
+    a <- alpha[small]
+    sums <- list(k * (k - 1) / 2, k * (k - 1) * (2 * k - 1) / 6,
+                 (k * (k - 1) / 2)^2,
+                 k * (k - 1) * (2 * k - 1) * (3 * k^2 - 3 * k - 1) / 30)
+    ratio <- Reduce(`+`, lapply(seq_len(4L), function(order) {
+      (-1)^(order + 1) * a^order *
+        ((sums[[order]] - k * m^order) / order + m^(order + 1) / (order + 1))
+    }))
+    out[small] <- stats::dpois(k, m, log = TRUE) + ratio
+  }
+  out
 }
 
 #' E-step: likelihood and posterior class probabilities
@@ -207,10 +239,16 @@
     supported <- rowSums(tau) > 0
     center <- function(design) {
       if (ncol(design) == 0L) return(numeric())
-      means <- colMeans(design[supported, , drop = FALSE])
-      spread <- apply(abs(sweep(design[supported, , drop = FALSE], 2L, means, "-")),
-                        2L, max)
-      means[spread == 0 | abs(means) <= 1e4 * spread] <- 0
+      rows <- design[supported, , drop = FALSE]
+      means <- colMeans(rows)
+      spread <- apply(abs(sweep(rows, 2L, means, "-")), 2L, max)
+      # Constancy is read on the raw values: the rounded mean of an exactly
+      # constant column (three 0.1s) leaves a spread of one ulp, and centring
+      # would turn an aliased constant into a column of rounding noise.
+      constant <- apply(rows, 2L, function(column) {
+        length(column) == 0L || max(column) == min(column)
+      })
+      means[constant | abs(means) <= 1e4 * spread] <- 0
       means
     }
     x_center <- center(spec$x)
@@ -226,18 +264,30 @@
     # Absolute weighted QR avoids repeatedly rounding a very large raw
     # intercept in successive Newton increments. The class variance is a
     # common scalar in each independent least-squares problem and cancels.
-    coefficients <- lapply(seq_len(n_classes), function(class) {
-      weight <- sqrt(tau[, class] / max(tau[, class]))
+    # An empty or rank-deficient class has no unique least-squares solution;
+    # it is left to the ridge-stabilized Newton step below.
+    systems <- lapply(seq_len(n_classes), function(class) {
+      largest <- max(tau[, class])
+      if (!(largest > 0)) return(NULL)
+      weight <- sqrt(tau[, class] / largest)
       design <- spec$x * weight
       scale <- sqrt(colSums(design^2))
-      coefficient <- qr.solve(sweep(design, 2L, scale, "/"),
-                              (spec$y - spec$offset) * weight, tol = 1e-12) / scale
-      coefficient[intercept] <- coefficient[intercept] - sum(x_center * coefficient)
-      coefficient
+      if (!all(scale > 0)) return(NULL)
+      decomposition <- qr(sweep(design, 2L, scale, "/"), tol = 1e-12)
+      if (decomposition$rank < p) return(NULL)
+      list(decomposition = decomposition, weight = weight, scale = scale)
     })
-    params$beta[,] <- do.call(cbind, coefficients)
-    params$separation <- FALSE
-    return(params)
+    if (!any(vapply(systems, is.null, logical(1)))) {
+      coefficients <- lapply(systems, function(system) {
+        coefficient <- qr.coef(system$decomposition,
+                               (spec$y - spec$offset) * system$weight) / system$scale
+        coefficient[intercept] <- coefficient[intercept] - sum(x_center * coefficient)
+        coefficient
+      })
+      params$beta[,] <- do.call(cbind, coefficients)
+      params$separation <- FALSE
+      return(params)
+    }
   }
   pack <- function(beta, common) c(as.vector(beta), common)
   unpack <- function(theta, pars) {
@@ -353,8 +403,8 @@
 #' means held: the curvature's sign is reflected so every step ascends, and a
 #' step is halved until the posterior-weighted log likelihood does not fall.
 #' Where the overdispersion score at alpha = 0, sum tau ((y - mu)^2 - y) / 2,
-#' is not positive the maximum is the Poisson limit (Karush-Kuhn-Tucker), and
-#' the dispersion is set to its floor.
+#' is not positive the Poisson limit is a local maximum (Karush-Kuhn-Tucker),
+#' and the dispersion is set to its floor unless the Newton point is higher.
 #'
 #' @param spec The model specification.
 #' @param params The parameter list (`sigma2` holds the dispersions).
@@ -404,9 +454,25 @@
     current <- value
     iteration <- iteration + 1L
   }
-  # The Poisson limit is a boundary maximum EM approaches only slowly.
+  # The Poisson limit is a boundary maximum EM approaches only slowly. A
+  # non-positive score at zero makes it a local maximum only: the profile in
+  # alpha can rise again to a higher interior maximum, so a class moves to the
+  # floor only when that does not lower its own objective.
   score_at_zero <- colSums(tau * ((spec$y - mu)^2 - spec$y)) / 2
   boundary <- if (shared) sum(score_at_zero) <= 0 else score_at_zero <= 0
+  if (any(boundary)) {
+    class_objective <- function(values) {
+      point <- params
+      point$sigma2 <- expand(values)
+      by_class <- colSums(tau * .mixture_log_density(spec, point))
+      if (shared) sum(by_class) else by_class
+    }
+    at_floor <- log_alpha
+    at_floor[boundary] <- floor
+    reached <- class_objective(log_alpha)
+    gain <- class_objective(at_floor) - reached
+    boundary <- boundary & gain >= -1e-12 * (1 + abs(reached))
+  }
   log_alpha[boundary] <- floor
   params$sigma2 <- expand(log_alpha)
   params
@@ -428,9 +494,9 @@
 #' a non-finite likelihood (a separating logit) ends the run, and a decrease
 #' is a classed defect.
 #' @noRd
-.mixture_em_settings <- function() {
+.mixture_em_settings <- function(stop_scale = NULL) {
   .latents_em_settings(decrease_tolerance = 1e-7, decrease_condition = "classed",
-                       stop_on_nonfinite = TRUE)
+                       stop_on_nonfinite = TRUE, stop_scale = stop_scale)
 }
 
 #' Run EM from a starting point
@@ -447,7 +513,11 @@
                      function(point, expectation) {
                        .mixture_maximization(spec, point, expectation)
                      },
-                     max_iter, tol, .mixture_em_settings())
+                     max_iter, tol,
+                     # A unit-free stop (review 2026-10-26 round 2, K2-6): one
+                     # outcome per row of positive weight.
+                     .mixture_em_settings(stop_scale = if (is.null(spec$row_weights))
+                       length(spec$y) else sum(spec$row_weights > 0)))
   params <- fit$state
   expectation <- fit$expectation
   converged <- fit$converged

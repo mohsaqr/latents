@@ -38,9 +38,18 @@
 #'   used.
 #' @param max_iter,tol Passed to each refit. Default to the reference fit's
 #'   (for an [lta()] fit, to the defaults of [lta()]).
-#' @param tolerance Two log likelihoods within this of each other count as
-#'   the same optimum. Defaults to the reference fit's replication tolerance
-#'   (for a growth mixture, `1e-6 * (1 + abs(logLik))`).
+#' @param tolerance How far below an optimum's best log likelihood a refit may
+#'   lie and still count as reaching that optimum: each optimum is anchored at
+#'   its best value and spans at most `tolerance`. Defaults to the reference
+#'   fit's replication tolerance (for a growth mixture,
+#'   `1e-6 * (1 + abs(logLik))`).
+#' @param cores Number of processor cores (default 1). The seeds are refitted
+#'   in parallel, one seed per worker at a time, each refit on one core. Every
+#'   refit sets its own seed, so the result is identical to `cores = 1`.
+#'   Workers are forked processes on macOS and Linux, and a socket cluster on
+#'   Windows and on macOS with Apple's Accelerate BLAS, as in [multilpa()];
+#'   socket workers load the installed copy of the package. More cores than
+#'   seeds are not used.
 #' @return A base `data.frame`, one row per seed, with columns `seed`,
 #'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
 #'   maximum found across the seeds, 2 for the next distinct one, and so on),
@@ -71,7 +80,9 @@
 #' sensitivity(growth, seeds = 1:2)
 #' @export
 sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
-                        max_iter = NULL, tol = NULL, tolerance = NULL) {
+                        max_iter = NULL, tol = NULL, tolerance = NULL,
+                        cores = 1L) {
+  cores <- .latents_check_cores(cores)
   # Named families first: a covariate fit is class `multilpa`, so the general
   # path below would accept it and then refit it as the wrong model.
   if (inherits(x, "multilpa_covariates")) {
@@ -117,9 +128,12 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     .sensitivity_profiles(x, data, n_starts, max_iter, tol)
   }
 
-  refits <- lapply(seeds, function(seed) {
+  # Seeds, not starts, are spread over the workers: every family refits this
+  # way (a growth mixture's refit takes no `cores`), each refit seeds itself,
+  # and the results come back in the order of `seeds` whoever ran them.
+  refits <- .latents_map_candidates(seeds, function(seed) {
     tryCatch(family$refit(seed), error = function(condition) condition)
-  })
+  }, cores)
   failed <- vapply(refits, inherits, logical(1), "condition")
   if (any(failed)) {
     warning(warningCondition(
@@ -248,13 +262,18 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
 
 #' Number the distinct maxima a set of log likelihoods reached
 #'
-#' Sorted from the best downwards, a new optimum begins wherever the drop from
-#' the previous one exceeds `tolerance`. Comparing the likelihoods pairwise
-#' would not do: `==` on doubles is never right here, and a chain of values each
-#' within tolerance of the last is one basin, not several.
+#' Sorted from the best downwards, each optimum is anchored at its best value,
+#' and a new optimum begins at the first value more than `tolerance` below the
+#' current anchor; that value becomes the next anchor. Every optimum therefore
+#' spans at most `tolerance`, so two values more than `tolerance` apart are
+#' never one optimum. Chaining from neighbour to neighbour did not have that
+#' property: thirty values 0.9e-4 apart, spanning 2.6e-3, were one optimum at a
+#' tolerance of 1e-4 (review 2026-10-26 round 2, INF2-5). The rule is the one
+#' the equivalence harness uses (`seed_stability()`), read from the top.
 #'
 #' @param likelihood Maximised log likelihoods, possibly with `NA`.
-#' @param tolerance Two values within this count as the same optimum.
+#' @param tolerance How far below an optimum's best value a log likelihood may
+#'   lie and still count as that optimum.
 #' @return An integer vector the same length as `likelihood`; `1` is the best
 #'   maximum, and a failed fit is `NA`.
 #' @noRd
@@ -266,6 +285,15 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
   if (length(observed) == 0L) return(index)
   ranked <- observed[order(likelihood[observed], decreasing = TRUE)]
   values <- likelihood[ranked]
-  index[ranked] <- cumsum(c(1L, as.integer(diff(values) < -tolerance)))
+  # The running state is (anchor, count); `accumulate` keeps the count each
+  # value was given. Reduce() over nothing returns `init` bare, not in a list.
+  if (length(values) == 1L) {
+    index[ranked] <- 1L
+    return(index)
+  }
+  counts <- Reduce(function(state, value) {
+    if (state[[1L]] - value > tolerance) c(value, state[[2L]] + 1) else state
+  }, values[-1L], init = c(values[[1L]], 1), accumulate = TRUE)
+  index[ranked] <- as.integer(vapply(counts, `[[`, numeric(1), 2L))
   index
 }

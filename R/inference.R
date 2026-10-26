@@ -11,6 +11,55 @@
   }, names(substitutions), init = x)
 }
 
+#' Undo `.latents_parameter_component()`
+#'
+#' Every `%` in an escaped component starts one of its three-character codes,
+#' so each code is found where it was written; `%25` is decoded last, so a
+#' label that itself reads like a code (`"a%3Ab"`, escaped `"a%253Ab"`) comes
+#' back unchanged.
+#' @param x Escaped components.
+#' @return The original labels.
+#' @noRd
+.latents_parameter_decode <- function(x) {
+  stopifnot("`x` must be character" = is.character(x))
+  codes <- c("%3A" = ":", "%2C" = ",", "%5B" = "[", "%5D" = "]",
+             "%0D" = "\r", "%25" = "%")
+  Reduce(function(value, code) gsub(code, codes[[code]], value, fixed = TRUE),
+         names(codes), init = x)
+}
+
+#' One label as it is written inside a paired term
+#'
+#' The rule for every label a user reads in a `term` column or a coefficient
+#' name: it is the label's own text. The single exception is a term that pairs
+#' two labels -- a covariance `a:b`, a category `indicator:category`, a direct
+#' effect `indicator:covariate`. There the pair is split at its one bare `:`, so
+#' a `:` inside either label is written `%3A`, and `%` itself `%25`; otherwise
+#' indicator `"a:b"` with category `"c"` and indicator `"a"` with category
+#' `"b:c"` would share the term `a:b:c`. Commas and brackets are only delimiters
+#' of the internal `kind[...]` grammar (`.latents_parameter_component()`), never
+#' of a term, so they keep their own text.
+#' @param x Character labels.
+#' @return `x` with `%` and `:` escaped; other labels unchanged.
+#' @noRd
+.latents_term_component <- function(x) {
+  stopifnot("`x` must be character" = is.character(x))
+  gsub(":", "%3A", gsub("%", "%25", x, fixed = TRUE), fixed = TRUE)
+}
+
+#' The term that pairs two labels
+#'
+#' The one spelling of a paired term, used by every family that labels a
+#' parameter and by every accessor and plot that looks one up, so a producer
+#' and its consumers cannot drift apart.
+#' @param first,second Character labels, recycled against each other.
+#' @return A character vector of terms `first:second`.
+#' @noRd
+.latents_term <- function(first, second) {
+  paste(.latents_term_component(as.character(first)),
+        .latents_term_component(as.character(second)), sep = ":")
+}
+
 #' Serialise a tidy parameter decomposition into one name per parameter
 #'
 #' Every class in this package decomposes a parameter the same way --
@@ -75,7 +124,10 @@
   n_types <- object$n_group_classes
   ## Only the Gaussian indicators carry means and variances; a mixed or
   ## all-categorical fit has fewer of these than it has indicators.
-  continuous <- .multilpa_continuous_names(object)
+  ## Indicator names are escaped like every other label in the `kind[...]`
+  ## grammar, so a comma or colon in a name cannot split it (review 2026-10-26,
+  ## INF-4); `.multilpa_tidy_labels()` gives the text back.
+  continuous <- .latents_parameter_component(.multilpa_continuous_names(object))
   n_indicators <- length(continuous)
   mean_names <- as.vector(t(outer(seq_len(n_profiles), continuous,
     function(profile, indicator) sprintf("mean[%s,%s]", profile, indicator))))
@@ -200,10 +252,10 @@
     values <- if (scale == "natural") covariance else t(chol(covariance))
     if (scale == "unconstrained") diag(values) <- log(diag(values))
     prefix <- if (scale == "natural") "covariance" else "cholesky"
+    names <- .latents_parameter_component(.multilpa_continuous_names(object))
     labels <- sprintf("%s[%s,%s,%s]", prefix,
       if (shared) "shared" else profile,
-      .multilpa_continuous_names(object)[positions[, 1L]],
-      .multilpa_continuous_names(object)[positions[, 2L]])
+      names[positions[, 1L]], names[positions[, 2L]])
     if (scale == "unconstrained") {
       labels[positions[, 1L] == positions[, 2L]] <- sub("^cholesky", "log_cholesky",
         labels[positions[, 1L] == positions[, 2L]])
@@ -421,11 +473,28 @@
     code <- codes[, indicator]
     observed <- !is.na(code)
     free <- seq_len(ncol(block) - 1L)
+    # A half-observed pair row observes a set of joint categories; its
+    # complete-data indicator is replaced by its expectation given the set,
+    # the joint probability renormalized within the set (review 2026-10-26
+    # round 2, C2-2).
+    partial <- .multilpa_partial_of(codes, indicator)
+    half <- if (is.null(partial)) NULL else which(!is.na(partial$index))
+    sets <- if (is.null(partial)) NULL else .multilpa_partial_sets(partial, ncol(block))
     columns <- lapply(seq_len(nrow(block)), function(profile) {
       weight <- posteriors[, profile]
+      within_set <- if (is.null(partial)) NULL else {
+        conditional <- sweep(sets, 2L, block[profile, ], "*")
+        (conditional / rowSums(conditional))[partial$index[half], , drop = FALSE]
+      }
       vapply(free, function(category) {
         indicator_value <- as.numeric(observed & code == category)
-        weight * (indicator_value - observed * block[profile, category])
+        if (is.null(partial)) {
+          return(weight * (indicator_value - observed * block[profile, category]))
+        }
+        indicator_value[half] <- within_set[, category]
+        seen <- observed
+        seen[half] <- TRUE
+        weight * (indicator_value - seen * block[profile, category])
       }, numeric(length(code)))
     })
     do.call(cbind, columns)
@@ -650,9 +719,21 @@
 #'   `"opg"` inverts the outer product of the per-group scores (the BHHH
 #'   estimator), as `glca` reports; it agrees with `"observed"` in large
 #'   samples and can differ in small ones, where `"observed"` is usually more
-#'   reliable. `"robust"` and `"opg"` need more groups than parameters. For a
+#'   reliable. `"robust"` and `"opg"` need more groups than parameters; `"opg"`
+#'   also needs group scores of full rank, since it inverts their outer
+#'   product, while the sandwich does not. For a
 #'   fit with sampling weights the default is `"robust"`, and any other value
-#'   raises `latents_unsupported_weights`. `vcov_type` and `step` are not used
+#'   raises `latents_unsupported_weights`. For a fit with `centering =
+#'   "person"` or `scaling = "person"` the default is also `"robust"`, and
+#'   `"observed"` or `"opg"` raise `latents_unsupported_inference`: a unit's
+#'   transformed rows are not independent observations, and the inverse
+#'   information understated their errors (by up to 22% in a simulation),
+#'   while the sandwich over units is valid. Under `centering = "grand"` or
+#'   `scaling = "grand"` the sample means and standard deviations the
+#'   indicators were transformed with are estimated jointly with the model,
+#'   as estimating equations, and their variability is added to every
+#'   covariance type: a centred mean `mu_k - xbar` has the standard error of
+#'   that difference, not that of `mu_k`. `vcov_type` and `step` are not used
 #'   by `method = "bootstrap"`.
 #' @param adjust Multiplicity correction applied to `p_value` to give
 #'   `p_adjusted`: `"none"` (default) or one of the [stats::p.adjust()]
@@ -819,8 +900,9 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   stopifnot(is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
+  vcov_defaulted <- missing(vcov_type)
   vcov_type <- .latents_weighted_vcov(!is.null(x$sampling_weights),
-                                      match.arg(vcov_type), missing(vcov_type))
+                                      match.arg(vcov_type), vcov_defaulted)
   adjust <- match.arg(adjust)
   method <- match.arg(method)
   # A seed set.seed() would not take is refused on either path, so the
@@ -845,6 +927,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
                                          as.integer(n_starts),
                                          as.integer(max_iter), tol, adjust))
   }
+  vcov_type <- .multilpa_transformed_vcov(x, vcov_type, vcov_defaulted)
   .multilpa_check_regularity(x, vcov_type, boundary)
   .multilpa_check_structure_inference(x)
   if (!is.null(x$prior)) {
@@ -974,9 +1057,17 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     group_scores <- .multilpa_group_scores(restore(centered_theta), observed,
                                            centered_object, codes)[, free, drop = FALSE]
     group_scores_conditioned <- sweep(group_scores, 2L, parameter_scale, "*")
-    .inference_require_rank(group_scores_conditioned[
-      .multilpa_inference_groups(x, observed_only = TRUE), , drop = FALSE],
-      "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
+    # Only the OPG estimator inverts the outer product of the scores. The
+    # sandwich never does: a deficient rank there is an exact constraint the
+    # estimates obey (person centring makes the profile-weighted means sum to
+    # zero within every unit), whose zero variance is the right answer, and
+    # the rule of more groups than parameters (.multilpa_check_regularity())
+    # already guards against too few units (review 2026-10-26 round 2, INF2-2).
+    if (identical(vcov_type, "opg")) {
+      .inference_require_rank(group_scores_conditioned[
+        .multilpa_inference_groups(x, observed_only = TRUE), , drop = FALSE],
+        "The contributing group scores are rank deficient; OPG inference is unavailable.")
+    }
     scaled_cross <- .multilpa_cross_product(group_scores_conditioned)
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
@@ -987,6 +1078,15 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   }
   centered_covariance <- scaled_inverse * tcrossprod(parameter_scale)
   covariance_unconstrained <- back_transform %*% centered_covariance %*% t(back_transform)
+  # A grand mean or standard deviation the indicators were transformed with
+  # is an estimate too; its variability is added through the stacked
+  # estimating equations (review 2026-10-26 round 2, INF2-1). The bread is the
+  # inverse the model's own covariance was formed with.
+  bread <- if (identical(vcov_type, "opg")) scaled_inverse else information$inverse
+  covariance_unconstrained <- .multilpa_transform_covariance(
+    x, covariance_unconstrained,
+    back_transform %*% (bread * tcrossprod(parameter_scale)) %*% t(back_transform),
+    free, codes, robust = identical(vcov_type, "robust"))
   hessian <- t(forward_transform) %*% hessian %*% forward_transform
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
   ## The natural coordinates of a held block depend only on the held
@@ -1040,7 +1140,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   bounded <- result$parameter %in% c("variance", "probability", "response",
                                       "count_mean", "count_dispersion") |
     (result$parameter == "covariance" &
-       result$term %in% paste(continuous, continuous, sep = ":"))
+       result$term %in% .latents_term(continuous, continuous))
   result$statistic[bounded] <- NA_real_
   result$p_value[bounded] <- NA_real_
   result <- .multilpa_adjust_p(result, adjust)
@@ -1063,11 +1163,24 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
 #' Response probabilities sitting on their lower bound
 #'
 #' A probability held at `min_probability` has a logit on the edge of the
-#' space, where the likelihood is flat and the information singular. The free
-#' logit of a category is on the bound when that category's probability is, or
-#' when the reference (last) category's is, since every logit of that row is then
-#' measured against a vanishing denominator; in the second case every
-#' probability of the row is on the bound too.
+#' space, where the likelihood is flat and the information singular. A row's
+#' logits are measured against its last category, `log(p_c / p_last)`.
+#'
+#' - A category on the floor is held, with its logit.
+#' - When the last category is on the floor, every logit is near `log(1 / floor)`
+#'   and the likelihood is flat in one direction only: the common shift that
+#'   moves `p_last` alone. The differences between the logits, which are the
+#'   ratios of the interior probabilities, stay identified. So one logit is
+#'   held, that of the row's largest category, which fixes `log(p_last / p_max)`
+#'   and leaves the others free. This is the bound category measured against an
+#'   off-bound one. Holding the whole row instead withheld the errors of
+#'   interior probabilities (0.943 and 0.057 on gss82) and made every other
+#'   error conditional on them and too small (class shares 0.0396 against
+#'   0.0521; review 2026-10-26, INF-6).
+#' - A category whose every other category is on the floor sits on the upper
+#'   bound, one minus the floors, and is held too. In a binary item that is the
+#'   complement of a floored probability, which otherwise had an error of
+#'   exactly zero when it was the last category (INF-7).
 #'
 #' @param object A fitted model with `response_probabilities`.
 #' @return A list of two character vectors of parameter names, `natural`
@@ -1081,15 +1194,18 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     block <- blocks[[indicator]]
     categories <- colnames(block)
     at <- block <= floor
-    held <- at | at[, ncol(block)]
+    others_at <- rowSums(at) - at
+    held <- at | others_at == ncol(block) - 1L
+    largest <- col(block) == max.col(block, ties.method = "first")
+    held_logit <- (at | (at[, ncol(block)] & largest))[, -ncol(block), drop = FALSE]
+    ## Spelled as coef() spells the same parameter, by the same helper.
     spell <- function(positions, kind) {
-      sprintf("measurement.%s.profile_%d.%s:%s", kind, positions[, 1L],
-              .latents_parameter_component(indicator),
-              .latents_parameter_component(categories[positions[, 2L]]))
+      sprintf("measurement.%s.profile_%d.%s", kind, positions[, 1L],
+              .latents_term(rep(indicator, nrow(positions)),
+                            categories[positions[, 2L]]))
     }
     list(natural = spell(which(held, arr.ind = TRUE), "response"),
-         unconstrained = spell(which(held[, -ncol(block), drop = FALSE],
-                                     arr.ind = TRUE), "response_logit"))
+         unconstrained = spell(which(held_logit, arr.ind = TRUE), "response_logit"))
   })
   list(natural = unlist(lapply(pieces, `[[`, "natural")) %||% character(),
        unconstrained = unlist(lapply(pieces, `[[`, "unconstrained")) %||% character())
@@ -1307,13 +1423,25 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   ## a numeric matrix, so an all-categorical fit needs the mode forced.
   x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
     .multilpa_center_like(object, as.matrix(data[, continuous, drop = FALSE]))
-  # A model frame reconstructed from centered/scaled rows can round once on
-  # the inverse transform. Recognize that exact reconstruction as well as the
-  # original forward-transformed input, and use the stored fitting values.
-  if (!is.null(object$indicator_data) && length(continuous) > 0L &&
-      isTRUE(all.equal(unname(as.matrix(data[, continuous, drop = FALSE])),
-                        unname(.multilpa_uncentered_indicators(object)),
-                        tolerance = 0))) {
+  # A supplied column is the fitted indicator when it passes the identity
+  # rule every verb uses (`.multilpa_indicator_reproduced()`): exactly, as
+  # the fit's own transform of it, or as a write.csv() round trip of the
+  # original or of its reconstruction. The stored fitting values are then
+  # used, so the numbers do not depend on which copy was supplied; a changed
+  # value is refused (review 2026-10-26 round 2, INF-3).
+  if (!is.null(object$indicator_data) && length(continuous) > 0L) {
+    reconstructed <- .multilpa_uncentered_indicators(object)
+    reproduced <- vapply(continuous, function(name) {
+      .multilpa_indicator_reproduced(object, name, data[[name]], reconstructed)
+    }, logical(1))
+    if (!all(reproduced)) {
+      stop(errorCondition(sprintf(paste(
+        "data must reproduce the original indicator data, including row order;",
+        "%s differ%s from the fit."),
+        paste(sprintf("`%s`", continuous[!reproduced]), collapse = ", "),
+        if (sum(!reproduced) == 1L) "s" else ""),
+        class = "latents_bad_inference_data", call = NULL))
+    }
     x <- object$indicator_data
   }
   if (any(is.infinite(x)) || any(is.nan(x)) ||
@@ -1352,7 +1480,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
         class = "latents_bad_inference_data", call = NULL))
     }
     direct <- object$extra_data$direct
-    if (!is.null(direct) && !identical(
+    stored_covariates <- direct$covariates
+    # The covariates are compared as the row-order check compares them: exactly
+    # or as their write.csv() serialization (INF-3).
+    serialized <- !is.null(direct) &&
+      all(colnames(stored_covariates) %in% names(data)) &&
+      all(vapply(colnames(stored_covariates), function(name) {
+        .multilpa_alignment_values(data[[name]], stored_covariates[, name])
+      }, logical(1)))
+    if (!is.null(direct) && !serialized && !identical(
       unname(.latents_direct_like(direct, data)$covariates), unname(direct$covariates))) {
       stop(errorCondition(
         "data must reproduce the original direct-effect covariates and row order.",
@@ -1421,6 +1557,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' caller never has to parse a label to learn which level a parameter belongs
 #' to, which is the whole point of a tidy result.
 #'
+#' Labels inside the brackets are escaped (`.latents_parameter_component()`);
+#' the `term` column gives them back as their own text, except that a term
+#' pairing two labels escapes `:` and `%` within each (`.latents_term()`).
+#' Coefficient names are serialised from these columns, so `coef()`, `vcov()`,
+#' `confint()` and the inference table all spell a label one way.
+#'
 #' @param names Character vector of generated parameter names.
 #' @param object The fit, supplying the profile and group-class counts.
 #' @return A data frame with `level`, `outcome`, `term` and `parameter`, one row
@@ -1445,6 +1587,8 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   class_label <- function(value) paste0("group_class_", value)
   measurement <- prefix %in% .multilpa_measurement_kinds
   within_profile <- prefix %in% c("profile_probability", "profile_logit")
+  ## The components are escaped for this grammar; a term shows the labels'
+  ## own text, escaping only what a paired term needs (`.latents_term()`).
   data.frame(
     level = ifelse(measurement, "measurement",
                    ifelse(within_profile, "profile", "group")),
@@ -1452,8 +1596,9 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                      ifelse(within_profile,
                             profile_label(second), class_label(first))),
     term = ifelse(prefix %in% .multilpa_paired_kinds,
-                  paste(second, third, sep = ":"),
-                  ifelse(measurement, second,
+                  .latents_term(.latents_parameter_decode(second),
+                                .latents_parameter_decode(third)),
+                  ifelse(measurement, .latents_parameter_decode(second),
                          ifelse(within_profile,
                                 class_label(first), NA_character_))),
     parameter = ifelse(prefix %in% c("profile_probability", "group_probability"),

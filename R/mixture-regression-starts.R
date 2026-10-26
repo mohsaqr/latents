@@ -217,6 +217,20 @@
       "`family = \"poisson\"` may suit those data."),
       class = "latents_boundary", call = NULL))
   }
+  if (identical(spec$family, "ordinal")) {
+    gaps <- log(diff(params$thresholds))
+    held <- which(gaps < .ordinal_min_log_gap, arr.ind = TRUE)
+    if (length(held) > 0L) {
+      held <- matrix(held, ncol = 2L)
+      warning(warningCondition(sprintf(paste(
+        "An ordinal threshold gap is estimated at zero (%s): that class gives",
+        "no row the category between the two thresholds. This is a boundary",
+        "fit; the gap and the thresholds above it have no standard error."),
+        paste(sprintf("class_%d, category %s", held[, 2L],
+                      spec$category_levels[held[, 1L] + 1L]), collapse = "; ")),
+        class = "latents_boundary", call = NULL))
+    }
+  }
   best_value <- log_likelihood[best]
   completed <- vapply(results, function(r) identical(r$stage, "completed"),
                       logical(1))

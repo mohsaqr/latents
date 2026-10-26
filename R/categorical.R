@@ -6,10 +6,16 @@
 #' @param indicator Its column name, for errors.
 #' @param min_categories Minimum number of observed categories; fitting uses
 #'   two, while preparing prediction subsets uses zero.
+#' @param contributing `NULL`, or one logical per element of `value`: `FALSE`
+#'   for a row of sampling weight zero. The categories are still read off
+#'   every row, so each row has a code, but `min_categories` is counted on the
+#'   contributing rows only: a row that enters no likelihood cannot supply the
+#'   second category of an indicator (review 2026-10-26, ML-2).
 #' @return The observed categories, in their native type and declared order;
 #'   joined local-dependence items retain their full category grid.
 #' @noRd
-.multilpa_categorical_levels <- function(value, indicator, min_categories = 2L) {
+.multilpa_categorical_levels <- function(value, indicator, min_categories = 2L,
+                                         contributing = NULL) {
   if (!(is.factor(value) || is.numeric(value) || is.logical(value) ||
         is.character(value))) {
     stop(errorCondition(sprintf(
@@ -26,13 +32,33 @@
   }
   levels_observed <- if (is.factor(value)) {
     # The joined item's declared levels include unobserved combinations,
-    # each of which has an estimated probability at the model's floor.
-    if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) levels(value) else
+    # each of which has an estimated probability at the model's floor. Its
+    # markers of half-observed rows ("a::", ":::b") are not categories: such
+    # a row is a set of joint categories (`.latents_partial_map()`).
+    declared <- if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) levels(value) else
       levels(droplevels(value))
+    declared[!.latents_partial_levels(declared)]
   } else sort(unique(value[!is.na(value)]))
   if (length(levels_observed) < min_categories) {
     stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
                         class = "latents_bad_categorical", call = NULL))
+  }
+  # A joined item keeps its full grid whatever was observed, so only a plain
+  # indicator is counted again on the rows that carry weight.
+  if (!is.null(contributing) && !all(contributing) &&
+      length(attr(value, "latents_pair", exact = TRUE)) != 2L) {
+    stopifnot("`contributing` must hold one logical per value" =
+                is.logical(contributing) && !anyNA(contributing) &&
+                length(contributing) == length(value))
+    carried <- value[contributing & !is.na(value)]
+    n_carried <- if (is.factor(carried)) nlevels(droplevels(carried)) else
+      length(unique(carried))
+    if (n_carried < min_categories) {
+      stop(errorCondition(sprintf(paste(
+        "Categorical indicator `%s` has fewer than two observed categories in",
+        "the rows of positive weight."), indicator),
+        class = "latents_bad_categorical", call = NULL))
+    }
   }
   # Categories are reported, aligned and mapped back to values by their
   # labels, so two distinct values with one label (0.3 and 0.1 + 0.2 both
@@ -59,16 +85,22 @@
 #' row order.
 #'
 #' @param frame A data frame of categorical indicator columns.
+#' @param contributing `NULL`, or one logical per row, `FALSE` for a row of
+#'   sampling weight zero; passed to `.multilpa_categorical_levels()`.
 #' @return A list with `codes` (an integer matrix of the same shape, `NA`
 #'   preserved), `levels` (a list of the observed values per indicator, in code
-#'   order), and `n_categories` (an integer vector of category counts).
+#'   order), and `n_categories` (an integer vector of category counts). When a
+#'   joined `local_dependence` item has rows observing one of its two items,
+#'   those rows are `NA` in `codes`, which carries the attribute
+#'   `"latents_partial"` (see `.multilpa_attach_partial()`).
 #' @noRd
-.multilpa_encode_categorical <- function(frame) {
+.multilpa_encode_categorical <- function(frame, contributing = NULL) {
   stopifnot("`frame` must be a data frame" = is.data.frame(frame),
             "`frame` must have at least one column" = ncol(frame) >= 1L)
   encoded <- lapply(names(frame), function(indicator) {
     value <- frame[[indicator]]
-    levels_observed <- .multilpa_categorical_levels(value, indicator)
+    levels_observed <- .multilpa_categorical_levels(value, indicator,
+                                                    contributing = contributing)
     code <- if (is.factor(value)) {
       match(as.character(value), levels_observed)
     } else match(value, levels_observed)
@@ -78,9 +110,59 @@
   codes <- matrix(unlist(lapply(encoded, `[[`, "code"), use.names = FALSE),
                   nrow = nrow(frame), ncol = ncol(frame),
                   dimnames = list(NULL, names(frame)))
+  codes <- .multilpa_attach_partial(codes, frame,
+                                    lapply(encoded, `[[`, "levels"))
   list(codes = codes,
        levels = lapply(encoded, `[[`, "levels"),
        n_categories = vapply(encoded, function(part) length(part$levels), integer(1)))
+}
+
+#' Record the half-observed rows of joined pair items on a code matrix
+#'
+#' A row observing one item of a `local_dependence` pair is not missing: it
+#' observes the set of joint categories that agree with that item, and its
+#' likelihood is the sum of their probabilities. Its code stays `NA`, so every
+#' consumer that reads codes as categories sees no category, and the sets
+#' travel as the attribute `"latents_partial"`: a list with one entry per
+#' column, `NULL` or a `.latents_partial_map()` result. The attribute is set
+#' only when some row is half observed, so other code matrices are unchanged.
+#'
+#' @param codes The integer code matrix.
+#' @param frame The columns the codes were read from (a data frame or list).
+#' @param levels The categories of each column, in code order.
+#' @return `codes`, with the attribute when a joined item has such rows.
+#' @noRd
+.multilpa_attach_partial <- function(codes, frame, levels) {
+  maps <- lapply(seq_len(ncol(codes)), function(column) {
+    value <- frame[[column]]
+    if (!is.factor(value)) return(NULL)
+    .latents_partial_map(value, as.character(levels[[column]]))
+  })
+  if (all(vapply(maps, is.null, logical(1)))) return(codes)
+  names(maps) <- colnames(codes)
+  attr(codes, "latents_partial") <- maps
+  codes
+}
+
+#' The half-observed set map of one column of a code matrix
+#' @param codes A code matrix, possibly carrying `"latents_partial"`.
+#' @param column The column position.
+#' @return `NULL`, or the column's `.latents_partial_map()` result.
+#' @noRd
+.multilpa_partial_of <- function(codes, column) {
+  maps <- attr(codes, "latents_partial", exact = TRUE)
+  if (is.null(maps)) NULL else maps[[column]]
+}
+
+#' Rows-by-sets membership of a half-observed set map
+#' @param map A `.latents_partial_map()` result.
+#' @param n_categories The joint item's number of categories.
+#' @return A sets-by-categories 0/1 matrix.
+#' @noRd
+.multilpa_partial_sets <- function(map, n_categories) {
+  t(vapply(map$sets, function(set) {
+    as.numeric(seq_len(n_categories) %in% set)
+  }, numeric(n_categories)))
 }
 
 #' Warn when numeric categorical indicators look continuous
@@ -190,6 +272,15 @@
     observed <- !is.na(code)
     contribution <- matrix(0, nrow(codes), n_profiles)
     contribution[observed, ] <- log_probabilities[code[observed], , drop = FALSE]
+    # A half-observed pair row contributes the probability of its observed
+    # item: the sum of the joint probabilities that agree with it.
+    partial <- .multilpa_partial_of(codes, indicator)
+    if (!is.null(partial)) {
+      sets <- .multilpa_partial_sets(partial, ncol(response_probabilities[[indicator]]))
+      set_log <- log(tcrossprod(sets, response_probabilities[[indicator]]))
+      half <- !is.na(partial$index)
+      contribution[half, ] <- set_log[partial$index[half], , drop = FALSE]
+    }
     contribution
   })
   Reduce(`+`, contributions)
@@ -222,6 +313,11 @@
     categories <- seq_len(n_categories[[indicator]])
     membership <- outer(code[observed], categories, "==")
     counts <- crossprod(posteriors[observed, , drop = FALSE], membership)
+    partial <- .multilpa_partial_of(codes, indicator)
+    if (!is.null(partial)) {
+      return(.multilpa_partial_maximize(counts, partial, posteriors,
+                                        length(categories), min_probability))
+    }
     totals <- rowSums(counts)
     if (any(totals <= 0)) {
       stop(errorCondition("A profile has no observed responses for an indicator.",
@@ -232,6 +328,68 @@
     t(apply(counts, 1L, .multilpa_bound_probabilities,
             min_probability = min_probability))
   })
+}
+
+#' M-step of a joined pair item with half-observed rows
+#'
+#' Each profile maximizes `sum_j n_j log p_j + sum_s m_s log(sum_{j in S_s}
+#' p_j)` over the bounded simplex, where `n` are the posterior-weighted counts
+#' of fully observed rows and `m_s` those of the rows observing set `S_s` (one
+#' item of the pair). The objective is concave -- a sum of logarithms of
+#' linear functions of `p` -- and the bounded simplex is convex, so the
+#' maximum is global. It has no closed form when both items have
+#' half-observed rows, so it is reached by an inner EM over the missing item:
+#' each step spreads `m_s` over `S_s` in proportion to the current `p` and
+#' solves the bounded multinomial exactly, which raises the objective
+#' (a minorize-maximize step). It stops when no probability moves by more than
+#' `tolerance` (1e-13, below the rounding of probabilities of order one), and
+#' after `max_steps` steps at most, with a `latents_no_converge` warning.
+#'
+#' @param counts Profiles-by-categories counts of the fully observed rows.
+#' @param partial The column's `.latents_partial_map()` result.
+#' @param posteriors Observations-by-profiles posterior weights.
+#' @param n_categories The number of joint categories.
+#' @param min_probability Lower bound on every probability.
+#' @param tolerance,max_steps Stopping rule of the inner EM.
+#' @return A profiles-by-categories probability matrix.
+#' @noRd
+.multilpa_partial_maximize <- function(counts, partial, posteriors, n_categories,
+                                       min_probability, tolerance = 1e-13,
+                                       max_steps = 10000L) {
+  half <- !is.na(partial$index)
+  sets <- .multilpa_partial_sets(partial, n_categories)
+  set_membership <- outer(partial$index[half], seq_len(nrow(sets)), "==") * 1
+  # Profiles-by-sets weights of the half-observed rows.
+  set_counts <- crossprod(posteriors[half, , drop = FALSE], set_membership)
+  if (any(rowSums(counts) + rowSums(set_counts) <= 0)) {
+    stop(errorCondition("A profile has no observed responses for an indicator.",
+                        class = "latents_empty_profile", call = NULL))
+  }
+  bound <- function(expected) {
+    t(apply(expected, 1L, .multilpa_bound_probabilities,
+            min_probability = min_probability))
+  }
+  spread <- function(probability) {
+    counts + (set_counts / tcrossprod(probability, sets)) %*% sets * probability
+  }
+  # Start inside the simplex: each set's weight spread evenly over its cells.
+  probability <- bound(counts + sweep(set_counts, 2L, rowSums(sets), "/") %*% sets)
+  step <- 0L
+  moved <- Inf
+  # Each inner EM step depends on the previous one; nothing to vectorize.
+  while (moved > tolerance && step < max_steps) {
+    updated <- bound(spread(probability))
+    moved <- max(abs(updated - probability))
+    probability <- updated
+    step <- step + 1L
+  }
+  if (moved > tolerance) {
+    warning(warningCondition(sprintf(paste(
+      "The joint distribution of a local-dependence pair with half-observed",
+      "rows did not converge in %d inner EM steps (largest change %.2g)."),
+      max_steps, moved), class = "latents_no_converge", call = NULL))
+  }
+  probability
 }
 
 #' Exact bounded multinomial maximum-likelihood shares

@@ -4,16 +4,19 @@
 #' the groups of a two-level fit, the rows of a single-level one, the persons
 #' of a transition fit. A weight that varies inside a unit would be a
 #' within-unit weight, which needs a different estimator, so it is refused.
-#' The weights are scaled to sum to the number of units, as Mplus does, so the
-#' pseudo log likelihood and the information criteria stay on the sample's
-#' scale.
+#' The weights are scaled to sum to the number of units with a positive
+#' weight, as Mplus scales to the sample size, so the pseudo log likelihood and
+#' the information criteria stay on the sample's scale. A unit of weight zero
+#' contributes nothing and is not part of that sample: counting it inflated
+#' every other weight, so adding four zero-weight groups to fifteen scaled the
+#' log likelihood by 19/15 (review 2026-10-26, ML-1).
 #'
 #' @param data The data frame of the fit.
 #' @param weights `NULL`, or the name of a numeric column of `data`.
 #' @param group_index Integer unit of each row, `1..n_groups`.
 #' @param n_groups Number of units.
 #' @return `NULL` for no weights, otherwise a numeric vector of length
-#'   `n_groups` that sums to `n_groups`.
+#'   `n_groups` that sums to the number of units with a positive weight.
 #' @noRd
 .latents_sampling_weights <- function(data, weights, group_index, n_groups) {
   if (is.null(weights)) return(NULL)
@@ -52,7 +55,7 @@
   # Normalize before summing or multiplying: finite raw weights can overflow
   # both operations even though their relative weights are well defined.
   relative <- unit / max(unit)
-  relative * (n_groups / sum(relative))
+  relative * (sum(relative > 0) / sum(relative))
 }
 
 #' Refuse an option that sampling weights do not support
@@ -110,8 +113,12 @@
 .latents_print_weights <- function(x) {
   if (!.latents_is_weighted(x)) return(invisible(NULL))
   weights <- x$sampling_weights
+  # The units of positive weight are the sample; zero-weight units are named
+  # apart (DOC-1).
+  zero <- sum(weights <= 0)
   cat(sprintf(paste("Sampling weights `%s` (pseudo maximum likelihood): Kish",
-                    "effective n %.1f of %d units\n"),
-              x$weights, sum(weights)^2 / sum(weights^2), length(weights)))
+                    "effective n %.1f of %d units%s\n"),
+              x$weights, sum(weights)^2 / sum(weights^2), sum(weights > 0),
+              if (zero > 0L) sprintf(" (%d more of weight zero)", zero) else ""))
   invisible(NULL)
 }

@@ -61,8 +61,14 @@
 #'     most one dimension fewer than the number of groups.}
 #'   \item{`latents_inseparable_classes`}{The classes are not separated well
 #'     enough for the requested three-step correction.}
+#'   \item{`latents_too_many_cores`}{`cores` exceeds the machine's core count;
+#'     the fit uses the machine's count instead.}
 #'   \item{`latents_no_converge`}{A fit required by the request did not
 #'     converge.}
+#'   \item{`latents_vanished_density`}{Every component density is zero, or one
+#'     overflowed, at a point EM reached: the start is recorded as failed
+#'     (`get_results(x, "starts")`), and a fit whose every start fails
+#'     raises `latents_all_starts_failed`.}
 #'   \item{`latents_boundary_fit`}{A variance or response probability is at
 #'     its bound, a mixing probability is zero, or a membership logit
 #'     coefficient diverges (separation). The parameter is on the edge of its
@@ -232,9 +238,9 @@
 #'     on a fit made without `local_dependence`.}
 #'   \item{`latents_no_direct_effects`}{`get_results(fit, "direct_effects")`
 #'     on a fit made without `direct_effects`.}
-#'   \item{`latents_partial_pair`}{A warning: rows observe one item of a
-#'     `local_dependence` pair and not the other, so the pair is treated as
-#'     missing in those rows.}
+#'   \item{`latents_partial_pair`}{No longer raised after version 0.97.1: a row
+#'     observing one item of a `local_dependence` pair now contributes that
+#'     item, the pair's other item summed out, instead of losing the pair.}
 #'   \item{`latents_no_lmr`}{`get_results(x, "lmr")` on a grid with no two
 #'     converged candidates one profile or one group class apart. Also of class
 #'     `latents_nothing_to_plot`.}
@@ -288,6 +294,13 @@
 #'   \item{`latents_boundary`}{A variance, or a covariance eigenvalue, is at
 #'     `min_variance`, so the fit is bound-active and its standard errors are
 #'     not valid at that parameter.}
+#'   \item{`latents_atomic_groups`}{Under `centering = "person"` with
+#'     `scaling = "person"`, some groups have fewer than three observations of
+#'     an indicator. Standardizing two values within a group makes them
+#'     exactly `-1/sqrt(2)` and `1/sqrt(2)`, so those rows carry only a sign
+#'     pattern, and a profile can collapse onto them. The message gives the
+#'     share of rows in such groups. When every group is like that, the fit is
+#'     refused with `latents_bad_data` instead.}
 #'   \item{`latents_small_classes`}{A profile or group class has an effective
 #'     membership below one observation; or, in [three_step()] with `method =
 #'     "ml"`, a class is carried by a single unit, so its standard error is
@@ -336,6 +349,15 @@
 #'     rather than estimated; `get_results(fit, "transitions", estimated =
 #'     FALSE)` lists such rows. The transition-network handoff also warns when
 #'     it includes such a row.}
+#'   \item{`latents_unidentified_occasion`}{An [lta()] fit with
+#'     `transitions = "occasion"` has an occasion at which no row observes an
+#'     indicator, followed by an occasion that does. The moves into and out of
+#'     the empty occasion (or, for an empty first occasion, the initial
+#'     distribution and the first move) enter the likelihood only through
+#'     their product, so their logits are not separately identified: the
+#'     estimates are one of many equally good splits and their standard errors
+#'     are not meaningful, and the parameter count includes them. Occasions
+#'     after the last observed one are not counted and do not warn.}
 #'   \item{`latents_unverified_alignment`}{A supplied `data` frame has too
 #'     little fitted information to verify row order (for example only a
 #'     repeated group identifier). The result assumes the rows are in fitting

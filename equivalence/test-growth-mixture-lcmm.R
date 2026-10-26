@@ -66,7 +66,12 @@ hlme_from_params <- function(fit, model) {
   label_of <- function(term) if (identical(term, "(Intercept)")) "intercept" else term
   logits <- params$gamma - params$gamma[, n_classes]
   terms <- colnames(spec$w)
-  values <- vapply(names(best), function(name) {
+  # By position: hlme names the class-1 membership intercept and the class-1
+  # fixed intercept alike ("intercept class1"), so a lookup by name gave the
+  # fixed intercept the membership logit. The first N[1] entries are the
+  # membership logits.
+  values <- vapply(seq_along(best), function(position) {
+    name <- names(best)[[position]]
     parts <- regmatches(name, regexec("^(.*) class([0-9]+)$", name))[[1L]]
     if (identical(name, "stderr")) return(sqrt(params$sigma2[1L]))
     if (startsWith(name, "varcov")) {
@@ -82,8 +87,7 @@ hlme_from_params <- function(fit, model) {
       term <- parts[2L]
       k <- as.integer(parts[3L])
       membership_term <- which(vapply(terms, label_of, character(1)) == term)
-      if (length(membership_term) == 1L && k < n_classes &&
-          match(name, names(best)) <= model$N[1L]) {
+      if (length(membership_term) == 1L && k < n_classes && position <= model$N[1L]) {
         return(logits[membership_term, k])
       }
       specific <- rownames(params$beta)[vapply(rownames(params$beta), label_of,
@@ -92,7 +96,7 @@ hlme_from_params <- function(fit, model) {
     }
     unname(params$common[[name]])
   }, numeric(1))
-  values
+  stats::setNames(values, names(best))
 }
 
 latents_at <- function(fit, params) {

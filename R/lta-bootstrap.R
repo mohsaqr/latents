@@ -62,6 +62,11 @@
   table$p_adjusted <- NA_real_
   table$conf_low <- quantiles[1L, ]
   table$conf_high <- quantiles[2L, ]
+  # A logit the likelihood does not identify keeps its start value in every
+  # replicate; its spread is not a standard error.
+  if (!is.null(table$estimated)) {
+    table[!table$estimated, c("standard_error", "conf_low", "conf_high")] <- NA_real_
+  }
   covariance <- stats::cov(kept)
   dimnames(covariance) <- list(table$name, table$name)
   columns <- setdiff(names(table), "name")
@@ -103,7 +108,9 @@
     term = vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1)),
     estimate = unname(estimates), standard_error = NA_real_, statistic = NA_real_,
     p_value = NA_real_, p_adjusted = NA_real_, conf_low = NA_real_,
-    conf_high = NA_real_, name = names(estimates), stringsAsFactors = FALSE)
+    conf_high = NA_real_,
+    estimated = unname(.lta_identified_coordinates(x)[match(names(estimates), .lta_names(x))]),
+    name = names(estimates), stringsAsFactors = FALSE)
   if (any(second)) {
     frame$previous <- ifelse(second, vapply(moves, `[`, character(1), 1L), NA_character_)
   }

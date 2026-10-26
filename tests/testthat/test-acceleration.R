@@ -175,7 +175,10 @@ test_that("an extrapolation that lowers the likelihood falls back to plain EM", 
                                             evaluate, accelerator)
   expect_false(cycle$accelerated)
   expect_equal(drop(cycle$state$means), 2.1)
-  expect_equal(cycle$history, c(1, 2.1, 2.1))
+  # The history holds the M-steps the cycle kept: the two plain ones. It used
+  # to repeat the second, so `iterations` counted three steps for two
+  # (review 2026-10-26 round 2, K2-7).
+  expect_equal(cycle$history, c(1, 2.1))
   # Where the landing point is better, it is taken.
   generous <- function(theta) theta
   evaluate_up <- function(point) list(log_likelihood = generous(drop(point$means)))

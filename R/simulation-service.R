@@ -111,9 +111,11 @@
 #'
 #' Each replicate draws the groups with replacement, refits, and reads the
 #' estimates in the original fit's labels; a refit that fails, does not
-#' converge or cannot be matched is a row of `NA` with its reason. One
-#' replicate's draw, refit and alignment happen together, so replicate `i`
-#' sees the same stream whatever the refit consumes.
+#' converge or cannot be matched is a row of `NA` with its reason. Every
+#' replicate's groups are drawn before the first refit, so replicate `i`
+#' resamples the same groups whatever the refits consume from the stream: a
+#' refit that draws starting values, or one that stops early, cannot shift the
+#' resamples after it (review 2026-10-26 round 2, INF2-6).
 #'
 #' @param data The fitting data.
 #' @param group_index The group of each row (integers `1..n_groups`).
@@ -131,9 +133,9 @@
 .latents_cluster_bootstrap <- function(data, group_index, n_groups, id, iter,
                                        refit, extract, reference_names) {
   rows_by_group <- split(seq_len(nrow(data)), group_index)
+  draws <- lapply(seq_len(iter), function(i) sample.int(n_groups, n_groups, replace = TRUE))
   replicates <- lapply(seq_len(iter), function(i) {
-    drawn <- sample.int(n_groups, n_groups, replace = TRUE)
-    resampled <- .multilpa_resample_groups(data, rows_by_group, id, drawn)
+    resampled <- .multilpa_resample_groups(data, rows_by_group, id, draws[[i]])
     failure <- function(message) {
       list(estimate = rep(NA_real_, length(reference_names)), message = message)
     }
@@ -197,27 +199,44 @@
 
 #' The bootstrap likelihood-ratio p-value from its replicates
 #'
-#' The p-value counts the observed statistic among the replicates,
-#' `(1 + #{T* >= T}) / (iter + 1)`, and is reported only when every replicate
-#' is valid: dropping the failed ones would condition the reference
-#' distribution on the fits that happened to succeed.
+#' The p-value counts the observed statistic among the valid replicates,
+#' `(1 + #{T* >= T}) / (V + 1)` with `V` valid replicates. A replicate is
+#' invalid when a refit fails, does not converge or reverses the likelihood.
+#' Under the null hypothesis the alternative's extra class is spurious, and a
+#' spurious class is expected to drift to a boundary, a separated or empty
+#' solution, or a slowly converging one: an invalid replicate is a property of
+#' the null distribution rather than a failure of the test. The invalid
+#' replicates are counted (`n_invalid`) and warned about, and the p-value is
+#' withheld only when fewer than half of the replicates are valid, where
+#' conditioning the reference distribution on a valid refit could move it
+#' materially (review 2026-10-26, round 2).
 #'
 #' @param replicates The replicate table.
 #' @param observed The observed statistic.
 #' @param iter Number of replicates.
-#' @return A list with `p_value`, `monte_carlo_se` and `n_valid`; warns
-#'   (`latents_failed_replicates`) when the p-value is withheld.
+#' @return A list with `p_value`, `monte_carlo_se`, `n_valid` and
+#'   `n_invalid`; warns (`latents_failed_replicates`, naming the count) when
+#'   any replicate is invalid.
 #' @noRd
 .latents_blrt_p_value <- function(replicates, observed, iter) {
-  valid <- all(replicates$valid)
-  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (iter + 1) else NA_real_
-  if (!valid) {
-    warning(warningCondition(paste(
-      "Some bootstrap fits failed validation, so p_value is NA.",
-      "summary() reports every replicate; improve fitting and rerun."),
+  valid <- replicates$valid %in% TRUE
+  n_valid <- sum(valid)
+  n_invalid <- as.integer(iter) - n_valid
+  enough <- n_valid > 0L && 2L * n_valid >= iter
+  p_value <- if (enough) {
+    (1 + sum(replicates$statistic[valid] >= observed)) / (n_valid + 1)
+  } else NA_real_
+  if (n_invalid > 0L) {
+    warning(warningCondition(sprintf(paste(
+      "%d of %d bootstrap replicates were invalid (a refit failed, did not",
+      "converge or reversed the likelihood)%s summary() reports every",
+      "replicate."), n_invalid, as.integer(iter),
+      if (enough) sprintf("; the p-value uses the %d valid replicates.", n_valid) else
+        "; fewer than half are valid, so p_value is NA."),
       class = "latents_failed_replicates"))
   }
   list(p_value = p_value,
-       monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
-       n_valid = sum(replicates$valid))
+       monte_carlo_se = if (enough) sqrt(p_value * (1 - p_value) / (n_valid + 1)) else
+         NA_real_,
+       n_valid = n_valid, n_invalid = n_invalid)
 }

@@ -44,7 +44,7 @@ mplus_avepp_matrix_after <- function(lines, from, k) {
   rows <- numeric_rows[numeric_rows > start][seq_len(k + 1L)]
   values <- do.call(rbind, lapply(lines[rows[-1L]], \(line)
     as.numeric(strsplit(trimws(line), "\\s+")[[1L]])[-1L]))
-  stopifnot("the AvePP table is not k by k" = identical(dim(values), c(k, k)))
+  stopifnot("the AvePP table is not k by k" = identical(dim(values), as.integer(c(k, k))))
   values
 }
 

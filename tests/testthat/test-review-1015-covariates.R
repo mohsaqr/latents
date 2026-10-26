@@ -219,9 +219,14 @@ test_that("person centring in the covariate model does not depend on units", {
   # Before the repair this was refused with latents_bad_data ("Centring left
   # `y1`, `y2` constant").
   tiny <- fit_scaled(1e-9)
-  # Agreement is to the EM stopping tolerance, not to rounding.
-  expect_equal(tiny$profile_coefficients["x", 1L],
-               ordinary$profile_coefficients["x", 1L], tolerance = 1e-3)
+  # Agreement is to the EM stopping tolerance, not to rounding. Both starts
+  # reach this maximum, with the profiles in opposite orders, so which order is
+  # reported turns on the last digits of two equal likelihoods; with two
+  # profiles a relabelling flips the coefficient's sign, which is compared
+  # without it (review 2026-10-26 round 2: after the unit-free EM stop the
+  # two scales reported opposite orders, 0.7763 and -0.7763).
+  expect_equal(abs(tiny$profile_coefficients["x", 1L]),
+               abs(ordinary$profile_coefficients["x", 1L]), tolerance = 1e-3)
   expect_equal(tiny$log_likelihood,
                ordinary$log_likelihood + 2 * 320 * log(1e9), tolerance = 1e-8)
 })

@@ -119,10 +119,17 @@ test_that("a single-level ordinal mixture with too few covariate patterns is ref
                                   n_classes = 2, n_starts = 1, seed = 1),
                class = "latents_not_identified")
   # A continuous predictor, or several outcomes per class assignment, identifies it.
-  expect_s3_class(mixture_regression(grade ~ hours, graded, family = "ordinal",
-                                     n_classes = 2, n_starts = 1, seed = 1,
-                                     vcov_type = "none"),
-                  "latents_mixture_regression")
+  # Here class 2 has no member in the top grade, so its top threshold diverges
+  # and the separation warning is genuine. A diverging threshold is wherever
+  # EM stops: about 30 on the logit scale at the default `tol`, on either side
+  # of the warning's cut-off of 30 (29.7 after the unit-free EM stop of review
+  # 2026-10-26 round 2, K2-6), and 38.5 at `tol = 1e-9`, which is used here.
+  expect_warning(continuous <- mixture_regression(grade ~ hours, graded,
+                                                  family = "ordinal", n_classes = 2,
+                                                  n_starts = 1, seed = 1,
+                                                  vcov_type = "none", tol = 1e-9),
+                 class = "latents_separation")
+  expect_s3_class(continuous, "latents_mixture_regression")
   expect_s3_class(mixture_regression(grade ~ strategy, graded, family = "ordinal",
                                      n_classes = 2, id = "student",
                                      class_level = "group", n_starts = 1, seed = 1,

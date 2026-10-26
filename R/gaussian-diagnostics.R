@@ -68,7 +68,11 @@
       min(eigen(standardized, symmetric = TRUE, only.values = TRUE)$values)
     } else NA_real_
     data.frame(context = context, profile = labels[profile],
-      gaussian_mass = sum(contribution), positive_rows = sum(positive),
+      # A Gaussian density is positive everywhere, so every row with a value
+      # and a positive weight has a positive posterior in every component; a
+      # count of posteriors that did not underflow (87 of 300 for a component
+      # with SD 0.01) measured floating point, not support (GD-1, 2026-10-26).
+      gaussian_mass = sum(contribution), positive_rows = sum(gaussian_rows & weights > 0),
       weight_effective_n = effective_n,
       min_variance_ratio = if (all(is.finite(overall)))
         min(variances[profile, ] / overall) else NA_real_,

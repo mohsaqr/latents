@@ -15,7 +15,7 @@ lta(
   n_starts = 10L,
   max_iter = 5000L,
   tol = 1e-10,
-  min_variance = 1e-06,
+  min_variance = NULL,
   seed = NULL,
   missing = c("error", "fiml"),
   covariance_model = c("diagonal", "full"),
@@ -73,7 +73,8 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread. The
+described by its own means and spread, and, with more than one group
+class, Ward's clustering of the groups' profile compositions. The
 remaining starts are k-means from random centres. A supplied \code{start}
 replaces the first start, and the remaining starts are random. With
 \code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
@@ -86,16 +87,24 @@ budget, including the protected first start (see \code{search}).}
 \code{tol}). A fit that stops short warns with \code{latents_unconverged}.
 \code{max_iter = 0} updates nothing and evaluates the starting values.}
 
-\item{tol}{Positive relative log-likelihood tolerance (default \code{1e-10},
-tighter than the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}). Convergence requires an
-absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.
+\item{tol}{Positive convergence tolerance (default \code{1e-10}, tighter than
+the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}). EM has converged when one step (or SQUAREM
+cycle) changes the log likelihood by no more than \code{tol} times the number
+of observed indicator values (non-missing cells in rows of positive
+weight), a rule that does not depend on the units of the data; latents
+0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}.
 The group-class shares are re-estimated from posteriors one EM step
 behind them; at \code{1e-8} the two differed by up to about \code{2e-4}, at \code{1e-10}
 by about \code{2e-5}, for roughly 1.5 times the iterations.}
 
-\item{min_variance}{Positive lower bound on each variance, or on each
-covariance eigenvalue under full covariance, in squared input units
-(default \code{1e-6}); the fit is then constrained maximum likelihood.
+\item{min_variance}{Lower bound on each variance, or on each covariance
+eigenvalue under full covariance; the fit is then constrained maximum
+likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
+sample variance of the continuous indicators (observed values in rows of
+positive weight, on the scale fitted, after any centring and scaling), so
+that the bound moves with the units of the data. A number is an absolute
+bound in squared indicator units (the default of 0.97.1 and earlier was
+\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
 Estimates at the bound are reported and raise a warning.}
 
 \item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
@@ -147,7 +156,14 @@ every start.}
 
 \item{transitions}{\code{"homogeneous"} (the default) uses one transition matrix
 for every occasion; \code{"occasion"} estimates a separate one for each move
-(occasion 1 to 2, 2 to 3, ...).}
+(occasion 1 to 2, 2 to 3, ...). A move into an occasion at which no row
+observes an indicator (\code{missing = "fiml"}) is not identified: after the
+last observed occasion it does not enter the likelihood, and before
+that occasion it enters only through its product with the move out. Its logits are
+then reported with \code{estimated = FALSE} and no standard error, and are not
+counted in \code{n_parameters}, AIC or BIC; likewise the second-order logits
+when nothing is observed from occasion 3 on, and the measurement block
+of an empty occasion under \code{measurement = "occasion"}.}
 
 \item{transition_covariates}{Names of columns whose values shift the
 transition probabilities through a multinomial logit per origin profile:
@@ -209,7 +225,9 @@ AvePP and the entropy term of ICL, AWE and CLC, from the classification
 tables and diagnostic plots, and from the effective class counts. With
 \code{FALSE} every row and group is counted in those statistics (the results
 of latents 0.9.37 and earlier), except in the individual sample size of a
-\code{multilpa()} fit, which excludes such rows either way. \code{\link[=compare_models]{compare_models()}}
+\code{multilpa()} fit, which excludes such rows either way. Units of sampling
+weight zero are excluded from every count and entropy term under either
+setting. \code{\link[=compare_models]{compare_models()}}
 and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} do not compare fits made with different
 \code{drop_empty}. The setting is stored on the fit and passed on by
 enumerations and refits; it has no effect on data without such rows.}

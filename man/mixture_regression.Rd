@@ -79,12 +79,18 @@ convergence.}
 
 \item{max_iter}{Maximum EM iterations per start (default 1000).}
 
-\item{tol}{Relative convergence tolerance on the log likelihood (default
-\code{1e-8}).}
+\item{tol}{Convergence tolerance (default \code{1e-8}): EM has converged when
+one step changes the log likelihood by no more than \code{tol} times the
+number of rows of positive weight, a rule that does not depend on the
+units of the outcome (latents 0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}).}
 
 \item{min_variance}{Floor for a Gaussian residual variance, relative to the
 outcome's variance (default \code{1e-6}). Starts in which a class reaches the
-floor (fits too few rows exactly) are set aside.}
+floor (fits too few rows exactly) are set aside. In a growth mixture the
+same floor bounds each random effect's conditional variance, applied in
+the standardized coordinates the model is fitted in (outcome and
+predictors centred and scaled), so it does not depend on the units of the
+time variable.}
 
 \item{seed}{\code{NULL} (default) advances the caller's random stream. An integer
 seed restores the caller's \code{.Random.seed} afterwards. R does not store a
@@ -282,7 +288,9 @@ log means that may signal separation;
 \code{latents_failed_starts} (warning) when some growth-mixture starts could
 not be built (they are marked \code{"failed"} in the starts table);
 \code{latents_boundary} (warning) for a negative-binomial dispersion at the
-Poisson limit; \code{latents_random_boundary} (warning) for a degenerate
+Poisson limit, or an ordinal threshold gap at zero (a class that gives
+no row some middle category; that gap and the thresholds above it have
+no standard error); \code{latents_random_boundary} (warning) for a degenerate
 random-effect covariance; \code{latents_singular_information} (warning) when
 some standard errors cannot be computed.
 }

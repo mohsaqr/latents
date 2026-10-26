@@ -228,7 +228,7 @@ over all units and classes of the posterior probabilities `p`:
 | Criterion | Formula | Penalty depends on | Reference |
 |---|---|---|---|
 | `aic` | `-2L + 2q` | parameters only | Akaike (1974) |
-| `kic` | `-2L + 3(q + 1)` | parameters only | Cavanaugh (1999) |
+| `kic` | `-2L + 3(q + 1)` | parameters only | Cavanaugh (1999), in the form tidyLPA computes; his general `-2L + 3q` differs by a constant 3 |
 | `bic` | `-2L + q log(n)` | sample size | Schwarz (1978) |
 | `sabic` | `-2L + q log((n + 2) / 24)` | sample size | Sclove (1987) |
 | `caic` | `-2L + q (log(n) + 1)` | sample size | Bozdogan (1987) |
@@ -256,19 +256,22 @@ In a two-level model the sample size may be defined as the number of groups
 (here, `r n_students` students) or the number of observations (here,
 `r format(n_enrolments, big.mark = ",")` enrolments). latents reports every
 sample-size-dependent criterion under both conventions: columns ending in
-`_groups` use the number of groups and the posterior probabilities of the
-group classes for `EN`, and columns ending in `_individual` use the number of
-observations and the posterior probabilities of the profiles. Neither
-constitutes a uniquely correct multilevel BIC; each is a stated convention,
-and an analysis adopts one and applies it to every candidate. AIC and KIC do
-not depend on the sample size.
+`_groups` use the number of groups and columns ending in `_individual` the
+number of observations. Neither constitutes a uniquely correct multilevel
+BIC; each is a stated convention, and an analysis adopts one and applies it to
+every candidate. AIC and KIC do not depend on the sample size.
 
-In a single-level model the two sample sizes coincide, and BIC, SABIC and CAIC
-are identical under both conventions. The entropy-based criteria are not: their
-`_groups` columns use the classification of the group classes, of which a
-single-level model has only one, so they carry no classification penalty and
-ICL reduces to BIC. For single-level models, the `_individual` columns of ICL,
-AWE and CLC should therefore be used.
+The entropy `EN` of ICL, AWE and CLC is the same under both conventions: the
+soft entropy of the complete-data classification, which in a two-level model
+is the group class of every student together with the profile of every
+enrolment. It is the entropy of the group-class posteriors plus, within each
+group class, the entropy of the profile posteriors (Biernacki, Celeux and
+Govaert 2000). With one group class it is the entropy of the profile
+posteriors. The two conventions therefore differ only in `n`, and in a
+single-level model, where the two sample sizes coincide, every criterion is
+identical under both. A transition model from `lta()` is the exception: its
+profiles form a Markov chain within a person, and its criteria charge one
+level's entropy per convention.
 
 ### The table of every candidate
 

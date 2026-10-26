@@ -208,12 +208,24 @@
 .growth_trajectory_seed <- function(spec) {
   # Shared (`common`) terms are left out of a start; EM estimates them.
   y <- spec$y - spec$offset
-  pooled <- qr.coef(qr(spec$x), y)
+  # Each person's level is read at the first value of every predictor (the
+  # baseline), not at its mean: levels at the mean can coincide for classes
+  # that differ in slope, and then carry only noise into the grouping. The
+  # origin at the minimum keeps the start free of the predictors' units and
+  # origin (review round 2: centring at the mean lost a slope-defined class
+  # split, 11 log-likelihood units below the truth-started fit).
+  design <- spec$x
+  if ("(Intercept)" %in% colnames(design)) {
+    shifted <- colnames(design) != "(Intercept)"
+    design[, shifted] <- sweep(design[, shifted, drop = FALSE], 2L,
+                               apply(design[, shifted, drop = FALSE], 2L, min))
+  }
+  pooled <- qr.coef(qr(design), y)
   pooled[is.na(pooled)] <- 0
   rows <- split(seq_len(spec$n), spec$group_index)
   coefficients <- t(vapply(rows, function(at) {
-    if (length(at) <= ncol(spec$x)) return(pooled)
-    fitted <- qr.coef(qr(spec$x[at, , drop = FALSE]), y[at])
+    if (length(at) <= ncol(design)) return(pooled)
+    fitted <- qr.coef(qr(design[at, , drop = FALSE]), y[at])
     ifelse(is.na(fitted), pooled, fitted)
   }, numeric(ncol(spec$x)))) |> matrix(length(rows), ncol(spec$x))
   spread <- apply(coefficients, 2L, stats::sd)
@@ -281,17 +293,381 @@
     continued$stage <- "completed"
     continued
   })
+  weights <- spec$sampling_weights %||% 1
   results <- lapply(results, function(result) {
     if (!is.null(result$failed) || !identical(result$stage, "completed") ||
         isTRUE(result$degenerate)) return(result)
     finish <- .growth_quasi_newton(spec, stats, result$params, tol)
-    result$params <- finish$params
-    result$expectation <- .growth_expectation(spec, stats, finish$params)
-    result$converged <- isTRUE(result$converged) && finish$converged
+    # Newton steps on the analytic score finish what L-BFGS-B leaves, and
+    # convergence is judged in standard errors (as for correlated residuals):
+    # L-BFGS-B's relative stop left fits 0.1-0.35 standard errors short while
+    # reporting convergence (review round 2, GR2-4).
+    bounds <- .growth_correlated_bounds(spec, .growth_pack(spec, finish$params), 1)
+    polished <- .growth_newton_finish(spec, stats, finish$params, weights, bounds)
+    result$params <- polished$params
+    result$expectation <- .growth_expectation(spec, stats, polished$params)
+    # Where the information gives no standard-error scale (it is singular,
+    # or the random-effect covariance is degenerate and has no Wald errors),
+    # convergence is the quasi-Newton finish's own.
+    judged <- is.finite(polished$displacement) &&
+      length(.growth_degenerate_covariances(spec, polished$params)) == 0L
+    result$converged <- isTRUE(result$converged) &&
+      (if (judged) polished$converged else finish$converged)
     result$history <- c(result$history, result$expectation$log_likelihood)
     result
   })
   .growth_select(spec, stats, results, select_start)
+}
+
+#' Put a growth mixture on standard coordinates for fitting
+#'
+#' The fit is not free of the units of the data on its own. EM stops on a
+#' change in the log likelihood, which shifts by `-N log s` when the outcome's
+#' units change; the quasi-Newton finish works in raw coefficients and
+#' covariance factors; and the variance floor, the Cholesky jitter and the
+#' degeneracy rule compare random-effect variances whose units are those of
+#' the random design. At `y * 1e-5` a fit stopped 0.06 standard errors short
+#' (review 2026-10-26, G2); with time in days instead of years a random-slope
+#' variance was pinned at the floor, 11.3 log-likelihood units low and
+#' reported converged; with time as a calendar year EM stopped with "likelihood
+#' decreased" (round 2, GR2-1 to GR2-4).
+#'
+#' The model is therefore fitted on standard coordinates and mapped back
+#' exactly by [.growth_unstandardize_fit()]: the outcome becomes
+#' `(y - offset - center) / scale`, and every column of the class-specific,
+#' common and random designs except an intercept is centred and divided by its
+#' standard deviation. A column is centred only where an intercept absorbs the
+#' centre: class-specific columns when the class design has an intercept,
+#' common columns when either design has one, random columns when the random
+#' design has an intercept and the covariance is not restricted to be
+#' diagonal (centring would mix a diagonal covariance). An uncentred column is
+#' divided by its root mean square. The variance floor is carried into the
+#' outcome's standard units, so it applies to the residual variance and to
+#' each random effect's conditional variance in these coordinates.
+#'
+#' @param spec The growth-mixture specification.
+#' @return A list with the standardized `spec` and the transform: `center`,
+#'   `scale` and `center_on` (`"beta"`, `"common"` or `"none"`) of the
+#'   outcome, and `x_center`, `x_spread`, `z_center`, `z_spread`,
+#'   `random_center`, `random_spread` of the design columns.
+#' @noRd
+.growth_standardize <- function(spec) {
+  response <- spec$y - spec$offset
+  x_intercept <- "(Intercept)" %in% colnames(spec$x)
+  z_intercept <- "(Intercept)" %in% colnames(spec$z)
+  center_on <- if (x_intercept) "beta" else if (z_intercept) "common" else "none"
+  center <- if (identical(center_on, "none")) 0 else mean(response)
+  scale <- stats::sd(response)
+  # A constant outcome is refused before this; a single row has no spread.
+  if (!is.finite(scale) || scale <= 0) scale <- 1
+  columns <- function(design, centre) {
+    if (ncol(design) == 0L) return(list(center = numeric(), spread = numeric()))
+    pieces <- lapply(seq_len(ncol(design)), function(j) {
+      values <- design[, j]
+      constant <- max(values) == min(values)
+      if (identical(colnames(design)[j], "(Intercept)") || constant) return(c(0, 1))
+      if (centre) c(mean(values), stats::sd(values)) else c(0, sqrt(mean(values^2)))
+    })
+    list(center = vapply(pieces, `[`, numeric(1), 1L),
+         spread = vapply(pieces, `[`, numeric(1), 2L))
+  }
+  random_intercept <- "(Intercept)" %in% colnames(spec$random_design)
+  x_columns <- columns(spec$x, x_intercept)
+  z_columns <- columns(spec$z, x_intercept || z_intercept)
+  random_columns <- columns(spec$random_design,
+                            random_intercept && !isTRUE(spec$random_diagonal))
+  standard <- list(center = center, scale = scale, center_on = center_on,
+                   x_center = x_columns$center, x_spread = x_columns$spread,
+                   z_center = z_columns$center, z_spread = z_columns$spread,
+                   random_center = random_columns$center,
+                   random_spread = random_columns$spread)
+  c(list(spec = .growth_apply_standard(spec, standard)), standard)
+}
+
+#' Apply a stored standard transform to a growth specification
+#'
+#' Used for the fitted data and for new persons (prediction), so both are in
+#' the coordinates of the fitted standard parameters.
+#'
+#' @param spec A growth specification in the data's units.
+#' @param standard The transform from [.growth_standardize()].
+#' @return The specification in standard coordinates.
+#' @noRd
+.growth_apply_standard <- function(spec, standard) {
+  recode <- function(design, center, spread) {
+    if (ncol(design) == 0L) return(design)
+    design[] <- (design - rep(center, each = nrow(design))) /
+      rep(spread, each = nrow(design))
+    design
+  }
+  standardized <- spec
+  standardized$y <- (spec$y - standard$center) / standard$scale
+  standardized$offset <- spec$offset / standard$scale
+  standardized$min_variance <- spec$min_variance / standard$scale^2
+  standardized$x <- recode(spec$x, standard$x_center %||% numeric(ncol(spec$x)),
+                           standard$x_spread %||% rep(1, ncol(spec$x)))
+  standardized$z <- recode(spec$z, standard$z_center %||% numeric(ncol(spec$z)),
+                           standard$z_spread %||% rep(1, ncol(spec$z)))
+  standardized$random_design <- recode(
+    spec$random_design,
+    standard$random_center %||% numeric(ncol(spec$random_design)),
+    standard$random_spread %||% rep(1, ncol(spec$random_design)))
+  standardized
+}
+
+#' The map of the random effects from standard to original coordinates
+#'
+#' With `Z = Z* M` (M carries the random design's centres and spreads) and the
+#' outcome divided by `scale`, `Z b = scale Z* b*`, so `b = N b*` with
+#' `N = scale M^-1` and `G = N G* N'`.
+#'
+#' @param names The random design's column names.
+#' @param standard The transform from [.growth_standardize()].
+#' @return The q x q matrix `N`.
+#' @noRd
+.growth_random_map <- function(names, standard) {
+  n_random <- length(names)
+  spread <- standard$random_spread %||% rep(1, n_random)
+  center <- standard$random_center %||% numeric(n_random)
+  m <- diag(spread, n_random)
+  intercept <- match("(Intercept)", names)
+  if (!is.na(intercept)) m[intercept, -intercept] <- center[-intercept]
+  standard$scale * solve(m)
+}
+
+#' Map class-specific and common coefficients to original coordinates
+#'
+#' A centred column's centre times its coefficient moves into the intercept
+#' that absorbs it (each class's own, or the common one).
+#'
+#' @param beta Class-specific coefficients (columns of x by classes).
+#' @param common Common coefficients.
+#' @param x_names,z_names The design column names.
+#' @param standard The transform from [.growth_standardize()].
+#' @return A list with `beta` and `common` in the data's units.
+#' @noRd
+.growth_unstandardize_coefficients <- function(beta, common, x_names, z_names, standard) {
+  scale <- standard$scale
+  x_center <- standard$x_center %||% numeric(length(x_names))
+  x_spread <- standard$x_spread %||% rep(1, length(x_names))
+  z_center <- standard$z_center %||% numeric(length(z_names))
+  z_spread <- standard$z_spread %||% rep(1, length(z_names))
+  slopes <- beta / x_spread
+  common_slopes <- common / z_spread
+  # What the centred common columns contribute at the origin of the data.
+  common_shift <- sum(z_center * common_slopes)
+  out_beta <- scale * slopes
+  out_common <- scale * common_slopes
+  x_intercept <- match("(Intercept)", x_names)
+  z_intercept <- match("(Intercept)", z_names)
+  if (!is.na(x_intercept)) {
+    shift <- colSums(x_center * slopes) + common_shift
+    out_beta[x_intercept, ] <- scale * (beta[x_intercept, ] - shift) +
+      (if (identical(standard$center_on, "beta")) standard$center else 0)
+  } else if (!is.na(z_intercept)) {
+    out_common[z_intercept] <- scale * (common[z_intercept] - common_shift) +
+      (if (identical(standard$center_on, "common")) standard$center else 0)
+  }
+  list(beta = out_beta, common = out_common)
+}
+
+#' Map growth-mixture parameters from standard coordinates to the data's
+#'
+#' Coefficients by [.growth_unstandardize_coefficients()], each random-effect
+#' covariance as `N G* N'` ([.growth_random_map()]), residual variances by
+#' `scale^2` and a residual process's standard deviation by `scale`; class
+#' shares, rates and the proportional-covariance ratios are unchanged.
+#'
+#' @param params A parameter list in standard coordinates.
+#' @param standard The list from [.growth_standardize()].
+#' @param spec The specification in the data's units (for the column names).
+#' @return The parameter list in the data's units.
+#' @noRd
+.growth_unstandardize_params <- function(params, standard, spec) {
+  coefficients <- .growth_unstandardize_coefficients(
+    params$beta, params$common, colnames(spec$x), colnames(spec$z), standard)
+  params$beta[] <- coefficients$beta
+  params$common[] <- coefficients$common
+  params$sigma2 <- params$sigma2 * standard$scale^2
+  map <- .growth_random_map(colnames(spec$random_design), standard)
+  params$random_covariance <- lapply(params$random_covariance, function(covariance) {
+    mapped <- map %*% covariance %*% t(map)
+    (mapped + t(mapped)) / 2
+  })
+  if (!is.null(params$correlation) && "sd" %in% names(params$correlation)) {
+    params$correlation[["sd"]] <- params$correlation[["sd"]] * standard$scale
+  }
+  params
+}
+
+#' Each person's pattern of random-effect posterior covariance
+#' @param spec A growth specification.
+#' @param stats Its statistics.
+#' @return One pattern index per person, indexing `expectation$covariances`.
+#' @noRd
+.growth_person_patterns <- function(spec, stats) {
+  if (!.growth_is_correlated(spec)) return(stats$pattern)
+  pattern <- integer(length(stats$n))
+  invisible(lapply(seq_along(stats$dense), function(g) {
+    pattern[stats$dense[[g]]$members] <<- g
+  }))
+  pattern
+}
+
+#' Carry an E-step from standard coordinates to the data's
+#'
+#' Each person's class log densities move by `-n_i log scale`, which leaves
+#' the posteriors unchanged; the random-effect posterior means and
+#' covariances map by `N` ([.growth_random_map()]). Computing the E-step in
+#' standard coordinates keeps it accurate when the data's coordinates are
+#' ill-conditioned (a calendar-year random slope).
+#'
+#' @param spec,stats The specification and statistics in the data's units.
+#' @param params The parameters in the data's units (membership logits).
+#' @param standard_spec,standard_stats The same in standard coordinates.
+#' @param expectation The E-step in standard coordinates.
+#' @param standard The transform.
+#' @return The E-step in the data's units (without the dense terms).
+#' @noRd
+.growth_map_expectation <- function(spec, stats, params, standard_spec, standard_stats,
+                                    expectation, standard) {
+  log_density <- expectation$log_density - stats$n * log(standard$scale)
+  out <- .growth_structure_terms(spec, params, log_density)
+  map <- .growth_random_map(colnames(spec$random_design), standard)
+  out$means <- lapply(expectation$means, function(means) means %*% t(map))
+  # Persons sharing a pattern in the data's units share it in standard ones
+  # (each is a function of Z'Z or of the times and design rows).
+  original <- .growth_person_patterns(spec, stats)
+  standard_pattern <- .growth_person_patterns(standard_spec, standard_stats)
+  representative <- standard_pattern[match(seq_len(max(original)), original)]
+  out$covariances <- lapply(expectation$covariances, function(covariances) {
+    array(vapply(representative, function(g) {
+      map %*% matrix(covariances[, , g], dim(covariances)[1L]) %*% t(map)
+    }, matrix(0, nrow(map), nrow(map))), c(nrow(map), nrow(map), length(representative)))
+  })
+  out$dense <- NULL
+  out
+}
+
+#' Return a growth mixture fitted in standard coordinates to the data's units
+#'
+#' The parameters are mapped back exactly and the E-step is carried over
+#' ([.growth_map_expectation()]). The log likelihood differs from the
+#' standard-scale one by a constant, `-(sum of row weights) log scale`, so each
+#' start's value and the iteration history move by the same shift and keep
+#' their order. The standard parameters and transform are kept in
+#' `fit$standard`, where inference and prediction are computed.
+#'
+#' @param fit The fit made on `standard$spec`.
+#' @param spec The original specification (with any residual-process fields).
+#' @param standard The list from [.growth_standardize()].
+#' @return The fit in the data's units.
+#' @noRd
+.growth_unstandardize_fit <- function(fit, spec, standard) {
+  params <- .growth_unstandardize_params(fit$params, standard, spec)
+  stats <- .growth_statistics(spec)
+  expectation <- .growth_map_expectation(spec, stats, params, fit$spec, fit$stats,
+                                         fit$expectation, standard)
+  shift <- expectation$log_likelihood - fit$expectation$log_likelihood
+  fit$standard <- c(standard[setdiff(names(standard), "spec")],
+                    list(params = fit$params))
+  fit$spec <- spec
+  fit$stats <- stats
+  fit$params <- params
+  fit$expectation <- expectation
+  fit$log_likelihood <- expectation$log_likelihood
+  fit$history <- fit$history + shift
+  fit$starts$log_likelihood <- fit$starts$log_likelihood + shift
+  fit
+}
+
+#' Map growth-mixture parameters from the data's coordinates to standard ones
+#'
+#' The exact inverse of [.growth_unstandardize_params()], for parameters that
+#' were set in the data's units (by a caller, or a fit made before the
+#' standard coordinates existed).
+#'
+#' @param params A parameter list in the data's units.
+#' @param standard The transform.
+#' @param spec The specification in the data's units.
+#' @return The parameter list in standard coordinates.
+#' @noRd
+.growth_standardize_params <- function(params, standard, spec) {
+  n_x <- ncol(spec$x)
+  n_classes <- ncol(params$beta)
+  n_common <- length(params$common)
+  size <- n_x * n_classes + n_common
+  image <- function(v) {
+    mapped <- .growth_unstandardize_coefficients(
+      matrix(v[seq_len(n_x * n_classes)], n_x, n_classes),
+      v[n_x * n_classes + seq_len(n_common)], colnames(spec$x), colnames(spec$z),
+      standard)
+    c(mapped$beta, mapped$common)
+  }
+  origin <- image(numeric(size))
+  linear <- vapply(seq_len(size), function(j) image(replace(numeric(size), j, 1)) - origin,
+                   numeric(size))
+  solved <- solve(matrix(linear, size, size), c(params$beta, params$common) - origin)
+  params$beta[] <- solved[seq_len(n_x * n_classes)]
+  params$common[] <- solved[n_x * n_classes + seq_len(n_common)]
+  params$sigma2 <- params$sigma2 / standard$scale^2
+  inverse <- solve(.growth_random_map(colnames(spec$random_design), standard))
+  params$random_covariance <- lapply(params$random_covariance, function(covariance) {
+    mapped <- inverse %*% covariance %*% t(inverse)
+    (mapped + t(mapped)) / 2
+  })
+  if (!is.null(params$correlation) && "sd" %in% names(params$correlation)) {
+    params$correlation[["sd"]] <- params$correlation[["sd"]] / standard$scale
+  }
+  params
+}
+
+#' A fit's parameters in its standard coordinates
+#'
+#' The stored standard parameters when the fit's own parameters are their
+#' image (as fitted); otherwise, when `params` was set afterwards, the exact
+#' inverse map of `params`, so the two never disagree.
+#'
+#' @param fit A `latents_growth_mixture` fit with `standard`.
+#' @return A parameter list in standard coordinates.
+#' @noRd
+.growth_standard_params <- function(fit) {
+  standard <- fit$standard
+  stored <- standard$params
+  image <- .growth_pack(fit$spec, .growth_unstandardize_params(stored, standard, fit$spec))
+  current <- .growth_pack(fit$spec, fit$params)
+  same <- all(abs(image - current) <= 1e-12 * pmax(abs(image), abs(current), 1))
+  if (same) stored else .growth_standardize_params(fit$params, standard, fit$spec)
+}
+
+#' The E-step of a fitted growth mixture on a specification in data units
+#'
+#' Computed in the fit's standard coordinates and carried back, so an
+#' ill-conditioned design (a calendar-year random slope) loses no accuracy.
+#'
+#' @param object A `latents_growth_mixture` fit.
+#' @param spec A specification in the data's units (the fit's, or new persons').
+#' @param stats Its statistics.
+#' @return The E-step in the data's units.
+#' @noRd
+.growth_fitted_expectation <- function(object, spec, stats = .growth_statistics(spec)) {
+  standard <- object$standard
+  if (is.null(standard)) return(.growth_expectation(spec, stats, object$params))
+  standard_spec <- .growth_apply_standard(spec, standard)
+  standard_stats <- .growth_statistics(standard_spec)
+  expectation <- .growth_expectation(standard_spec, standard_stats,
+                                     .growth_standard_params(object))
+  .growth_map_expectation(spec, stats, object$params, standard_spec, standard_stats,
+                          expectation, standard)
+}
+
+#' The fit's standard coordinates: specification, statistics and parameters
+#' @param fit A `latents_growth_mixture` fit with `standard`.
+#' @return A list with `spec`, `stats` and `params`.
+#' @noRd
+.growth_standard_view <- function(fit) {
+  spec <- .growth_apply_standard(fit$spec, fit$standard)
+  list(spec = spec, stats = .growth_statistics(spec), params = .growth_standard_params(fit))
 }
 
 #' Choose among growth-mixture starts and assemble the fit
@@ -376,23 +752,35 @@
 
 #' Classes whose random-effect covariance is on its boundary
 #'
-#' A variance at its floor, a correlation within 0.005 of +-1, or a smallest
-#' eigenvalue below 1e-6 of the largest: the likelihood is flat there and
-#' Wald errors of that covariance are not meaningful.
+#' Judged on the free matrices (one per class, or the shared one, which for a
+#' proportional covariance is the last class's) in the standard coordinates
+#' the model is fitted in ([.growth_standardize()]), where the random design's
+#' columns have unit spread: a random effect's conditional variance (its
+#' squared Cholesky diagonal) at the floor, a correlation within 0.005 of
+#' +-1, or a smallest eigenvalue below 1e-6 of the largest, of the covariance
+#' or of its correlation matrix. The likelihood is flat there and Wald errors
+#' of that covariance are not meaningful. On a covariance in the data's own
+#' units the eigenvalue rule compared variances in different units: a random
+#' slope with time in hours was flagged (review round 2, GR2-3).
 #'
+#' @param spec The specification in standard coordinates.
+#' @param params The parameters in standard coordinates.
 #' @return The names of the degenerate classes (`"all classes"` when one
 #'   shared matrix is degenerate); empty when none is.
 #' @noRd
 .growth_degenerate_covariances <- function(spec, params) {
-  covariances <- .growth_covariances(spec, params)
-  degenerate <- vapply(covariances, function(covariance) {
+  degenerate <- vapply(params$random_covariance, function(covariance) {
     variances <- diag(covariance)
-    at_floor <- any(variances <= spec$min_variance * (1 + 1e-6))
+    conditional <- diag(.growth_factor(covariance))^2
+    at_floor <- any(conditional <= spec$min_variance * (1 + 1e-6))
     correlation <- covariance / sqrt(outer(variances, variances))
     collinear <- nrow(covariance) > 1L &&
       any(abs(correlation[upper.tri(correlation)]) > 0.995)
-    values <- eigen(covariance, symmetric = TRUE, only.values = TRUE)$values
-    at_floor || collinear || min(values) <= 1e-6 * max(values)
+    ratio <- function(m) {
+      values <- eigen(m, symmetric = TRUE, only.values = TRUE)$values
+      min(values) <= 1e-6 * max(values)
+    }
+    at_floor || collinear || ratio(covariance) || ratio(correlation)
   }, logical(1))
   if (!any(degenerate)) return(character())
   if (identical(spec$random_covariance, "varying")) {

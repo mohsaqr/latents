@@ -138,6 +138,12 @@ The latent class model assumes that the activities are independent within
 each class. The bivariate residual of a pair of activities compares their
 observed co-occurrence within a class with the co-occurrence the model
 implies, and a large value indicates a dependence the classes do not explain.
+The p-value refers this Pearson statistic to a chi-square distribution that
+ignores the estimation of the model's table, which makes it very conservative:
+in simulated data from a correctly specified latent class model it rejected
+0.25% of pairs per class, and 0.08% pooled, at a nominal 5%. A pair that
+passes the filter below is therefore strong evidence of dependence, but a pair
+that does not pass it is not evidence of independence.
 
 ```{r residuals}
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)

@@ -243,7 +243,7 @@
 fit_staged <- function(data, vars, id, n_profiles,
                        n_group_classes = 2L, measurement = NULL,
                        variance_model = c("varying", "equal"), n_starts = 10L,
-                       max_iter = 1000L, tol = 1e-8, min_variance = 1e-6,
+                       max_iter = 1000L, tol = 1e-8, min_variance = NULL,
                        seed = NULL, missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,

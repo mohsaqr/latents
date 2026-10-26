@@ -747,8 +747,7 @@ utils::globalVariables(c(
   # The whiskers are the inference table's own bounds, which a probability
   # takes on the logit scale, so the plot and parameter_inference() agree.
   bounds <- .gg_match_bounds(errors, "response", frame$profile,
-    sprintf("%s:%s", .latents_parameter_component(vars[frame$position]),
-            .latents_parameter_component(category_labels[frame$position])))
+    .latents_term(vars[frame$position], category_labels[frame$position]))
   frame$lower <- bounds$lower
   frame$upper <- bounds$upper
   frame$profile_label <- key$label[frame$profile]
@@ -888,16 +887,39 @@ utils::globalVariables(c(
   }
   time_values <- sort(unique(x$time_values))
   n_groups <- nrow(codes)
+  # An occasion the data holds but that observes nothing is not classified
+  # (its posterior is the prior), so it has no profile; it is drawn as a grey
+  # "Nothing observed" cell with a dash, which also tells it from the grey
+  # noise cells when both occur. An occasion absent from the data stays blank.
+  unobserved <- !.multilpa_informative_rows(x)
+  empty <- cbind(row = match(x$group_values[x$group_index[unobserved]],
+                             layout$group[ordering]),
+                 column = match(x$time_values[unobserved], time_values))
+  empty <- empty[stats::complete.cases(empty), , drop = FALSE]
+  empty_label <- "Nothing observed"
+  if (nrow(empty) > 0L) {
+    key$label <- as.character(key$label)
+    key <- rbind(key, data.frame(profile = NA_integer_, rank = nrow(key) + 1L,
+                                 share = NA_real_, count = NA_real_,
+                                 label = empty_label, colour = .gg_reserved_grey,
+                                 shape = 3L))
+    key$label <- factor(key$label, levels = key$label)
+  }
   cells <- expand.grid(row = seq_len(n_groups), column = seq_len(ncol(codes)))
   cells$profile <- codes[cbind(cells$row, cells$column)]
-  cells <- cells[!is.na(cells$profile), , drop = FALSE]
+  cells$empty <- FALSE
+  cells$empty[match(paste(empty[, "row"], empty[, "column"]),
+                    paste(cells$row, cells$column))] <- TRUE
+  cells <- cells[!is.na(cells$profile) | cells$empty, , drop = FALSE]
   cells$class_label <- factor(sprintf("Class %d", classes[cells$row]),
                               levels = sprintf("Class %d", sort(unique(classes))))
   profile_at <- match(cells$profile, key$profile)
-  cells$profile_label <- factor(as.character(key$label[profile_at]),
-                                levels = levels(key$label))
-  cells$cell_text <- as.character(cells$profile)
-  cells$text_colour <- .gg_ink(key$colour[profile_at])
+  cells$profile_label <- factor(
+    ifelse(cells$empty, empty_label, as.character(key$label[profile_at])),
+    levels = levels(key$label))
+  cells$cell_text <- ifelse(cells$empty, "\u2013", as.character(cells$profile))
+  cells$text_colour <- ifelse(cells$empty, .gg_ink(.gg_reserved_grey),
+                              .gg_ink(key$colour[profile_at]))
   # A digit fits a cell only while the grid stays sparse enough to hold one.
   stamp <- isTRUE(cell_labels) && n_groups <= 60L && ncol(codes) <= 40L
   plot <- ggplot2::ggplot(cells, ggplot2::aes(column, row,
@@ -910,6 +932,13 @@ utils::globalVariables(c(
     plot <- plot + ggplot2::geom_text(
       ggplot2::aes(label = cell_text, colour = text_colour), size = 2.6) +
       ggplot2::scale_colour_identity()
+  } else if (any(cells$empty)) {
+    # The dash is the mark that tells an empty occasion from a noise cell,
+    # so it stays when the profile digits are not drawn.
+    plot <- plot + ggplot2::geom_text(
+      data = cells[cells$empty, , drop = FALSE],
+      ggplot2::aes(label = cell_text), colour = .gg_ink(.gg_reserved_grey),
+      size = 2.6)
   }
   if (length(unique(classes)) > 1L && isTRUE(labels)) {
     plot <- plot + ggplot2::facet_grid(rows = ggplot2::vars(class_label),
@@ -1203,7 +1232,12 @@ utils::globalVariables(c(
   }
   key <- unit$key
   class_title <- .gg_capitalize(unit$class_word)
-  averages <- .multilpa_average_posterior_matrix(posteriors)
+  # Weighted as the "average_posteriors" table is: under sampling weights the
+  # population's average posterior; the assigned counts stay counts.
+  weights <- if (.multilpa_any_fit(x)) {
+    .multilpa_level_weights(x, level, nrow(posteriors))
+  }
+  averages <- .multilpa_average_posterior_matrix(posteriors, weights)
   k <- ncol(averages)
   assigned <- tabulate(max.col(posteriors, ties.method = "first"), k)
   display <- order(key$rank)

@@ -32,8 +32,13 @@ test_that("information criteria match their documented formulas", {
   log_likelihood <- fit$log_likelihood
   n_individuals <- fit$n_observations
   n_groups <- fit$n_groups
-  entropy_individuals <- .multilpa_entropy_sum(fit$subject_posteriors)
-  entropy_groups <- .multilpa_entropy_sum(fit$group_posteriors)
+  # ICL, AWE and CLC charge the entropy of the complete-data classification,
+  # group classes and profiles together, under both conventions (review
+  # 2026-10-26 round 2, S-1; checked against an independent computation in
+  # test-review-1026-selection-r2.R).
+  entropy_individuals <- .multilpa_entropy_sum(fit$group_posteriors) +
+    sum(fit$classification_entropy_rows)
+  entropy_groups <- entropy_individuals
   # The table reports the deviance, not the log likelihood, so that every row
   # of `value` points the same way; logLik() still carries L itself.
   expect_equal(pick("deviance", NA_character_), -2 * log_likelihood)

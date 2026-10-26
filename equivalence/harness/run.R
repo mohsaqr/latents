@@ -10,8 +10,13 @@
 # are generated, so no value in the documentation is transcribed by hand and no
 # report can be attributed to a version it was not produced under.
 #
-# The script exits non-zero when any quantity disagreed or any suite failed, so
-# that a stale harness cannot pass quietly in CI.
+# Also writes coverage.csv (every output column of every compared fit, with how
+# many values were compared or why none were) and known-open-status.csv.
+#
+# The script exits non-zero when a suite failed, a quantity disagreed without a
+# registered open defect to explain it, an output was neither compared nor
+# exempted, or a known-open entry no longer matches anything, so that a stale
+# harness cannot pass quietly in CI.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 source(file.path("equivalence", "harness", "registry.R"))
 
@@ -45,14 +50,28 @@ comparisons$multilpa_version <- equivalence_provenance(run, "multilpa")
 utils::write.csv(comparisons, file.path(directory, "report.csv"), row.names = FALSE)
 utils::write.csv(as.data.frame(run, what = "suites"),
                  file.path(directory, "suites.csv"), row.names = FALSE)
+coverage <- as.data.frame(run, what = "coverage")
+utils::write.csv(coverage, file.path(directory, "coverage.csv"), row.names = FALSE)
+register <- as.data.frame(run, what = "known_open")
+utils::write.csv(register, file.path(directory, "known-open-status.csv"), row.names = FALSE)
 
-cat(sprintf("\n%d quantities compared, %d agreed, %d disagreed, worst difference %.3e\n",
-            nrow(comparisons), sum(comparisons$agrees), sum(!comparisons$agrees),
-            max(c(comparisons$difference, 0))))
-if (!all(comparisons$agrees)) {
-  cat("\nDisagreements:\n")
-  print(subset(comparisons, !agrees,
-               select = c(suite, quantity, reference, obtained, difference, tolerance)))
+new_failures <- subset(comparisons, !agrees & is.na(known_open))
+cat(sprintf("\n%d quantities (%d values) compared, %d agreed, %d disagreed (%d explained by a known open defect)\n",
+            nrow(comparisons), sum(comparisons$n_values), sum(comparisons$agrees),
+            sum(!comparisons$agrees), sum(!comparisons$agrees & !is.na(comparisons$known_open))))
+if (nrow(new_failures) > 0L) {
+  cat("\nDisagreements not explained by a known open defect:\n")
+  print(new_failures[c("suite", "quantity", "reference", "obtained", "difference", "tolerance")])
+}
+uncovered <- subset(coverage, status == "not covered")
+if (nrow(uncovered) > 0L) {
+  cat("\nOutputs neither compared nor exempted:\n")
+  print(uncovered[c("suite", "fit", "output", "n_produced")])
+}
+stale <- subset(register, status == "stale")
+if (nrow(stale) > 0L) {
+  cat("\nKnown-open entries that no longer match a disagreement (fixed? remove them):\n")
+  print(stale[c("id", "suite", "pattern")])
 }
 
 writeLines(.equivalence_markdown(run), file.path(directory, "REPORT.md"))
@@ -62,9 +81,14 @@ writeLines(c(sprintf("multilpa %s", equivalence_provenance(run, "multilpa")),
              "", utils::capture.output(utils::sessionInfo())),
            file.path(directory, "SESSION.txt"))
 
-cat(sprintf("\nwrote %s, %s, %s and %s\n",
-            file.path(directory, "report.csv"), file.path(directory, "suites.csv"),
-            file.path(directory, "REPORT.md"), file.path(directory, "SESSION.txt")))
+cat(sprintf("\nwrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in %s\n",
+            directory))
 
 suites <- as.data.frame(run, what = "suites")
-if (any(suites$status == "failed") || !all(comparisons$agrees)) quit(status = 1L, save = "no")
+# A known open defect does not fail the run; a new disagreement, a failed
+# suite, an output nobody accounted for, or a register entry that no longer
+# matches anything does.
+if (any(suites$status == "failed") || nrow(new_failures) > 0L ||
+    nrow(uncovered) > 0L || nrow(stale) > 0L) {
+  quit(status = 1L, save = "no")
+}

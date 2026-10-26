@@ -88,6 +88,14 @@
     profile = x$subject_profiles,
     row.names = NULL, stringsAsFactors = FALSE
   )
+  # A row with no observed indicator is unclassified: its modal profile comes
+  # from the prior (or, in a transition model, from its neighbours), not from
+  # anything observed at that occasion. It is left out, as it is left out of
+  # the classification statistics and the three-step assignments; in the
+  # wide form its cell is then `NA`. `drop_empty = FALSE` keeps every row.
+  informative <- .multilpa_informative_rows(x)
+  stopifnot("one informative flag per row" = length(informative) == nrow(long))
+  long <- long[informative, , drop = FALSE]
   long <- long[order(long$group, long$time), , drop = FALSE]
   row.names(long) <- NULL
   if (identical(format, "long")) return(long)

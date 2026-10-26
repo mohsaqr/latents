@@ -130,11 +130,18 @@
 #'   50 EM iterations; the better half (at least two) continue to
 #'   convergence.
 #' @param max_iter Maximum EM iterations per start (default 1000).
-#' @param tol Relative convergence tolerance on the log likelihood (default
-#'   `1e-8`).
+#' @param tol Convergence tolerance (default `1e-8`): EM has converged when
+#'   one step changes the log likelihood by no more than `tol` times the
+#'   number of rows of positive weight, a rule that does not depend on the
+#'   units of the outcome (latents 0.97.1 and earlier used `tol * (1 +
+#'   abs(previous log likelihood))`).
 #' @param min_variance Floor for a Gaussian residual variance, relative to the
 #'   outcome's variance (default `1e-6`). Starts in which a class reaches the
-#'   floor (fits too few rows exactly) are set aside.
+#'   floor (fits too few rows exactly) are set aside. In a growth mixture the
+#'   same floor bounds each random effect's conditional variance, applied in
+#'   the standardized coordinates the model is fitted in (outcome and
+#'   predictors centred and scaled), so it does not depend on the units of the
+#'   time variable.
 #' @param seed `NULL` (default) advances the caller's random stream. An integer
 #'   seed restores the caller's `.Random.seed` afterwards. R does not store a
 #'   cached Box-Muller normal draw
@@ -214,7 +221,9 @@
 #'   `latents_failed_starts` (warning) when some growth-mixture starts could
 #'   not be built (they are marked `"failed"` in the starts table);
 #'   `latents_boundary` (warning) for a negative-binomial dispersion at the
-#'   Poisson limit; `latents_random_boundary` (warning) for a degenerate
+#'   Poisson limit, or an ordinal threshold gap at zero (a class that gives
+#'   no row some middle category; that gap and the thresholds above it have
+#'   no standard error); `latents_random_boundary` (warning) for a degenerate
 #'   random-effect covariance; `latents_singular_information` (warning) when
 #'   some standard errors cannot be computed.
 #'
@@ -374,8 +383,11 @@ mixture_regression <- function(formula, data, n_classes,
   if (!is.null(random)) {
     spec$random_covariance <- random_covariance
     spec$random_diagonal <- random_diagonal
+    # Fitted on a standardized outcome and mapped back exactly, so the search
+    # and its stopping rules do not depend on the outcome's units (G2).
+    standard <- .growth_standardize(spec)
     fit <- .mixture_with_seed(seed, .growth_fit(
-      spec, as.integer(n_starts), as.integer(max_iter), tol, select_start))
+      standard$spec, as.integer(n_starts), as.integer(max_iter), tol, select_start))
     if (!identical(residual_correlation, "none")) {
       # The model without the process places the classes; the process is then
       # estimated with everything else (growth-mixture-correlated.R).
@@ -384,12 +396,15 @@ mixture_regression <- function(formula, data, n_classes,
         stop(errorCondition("`residual_time` must be finite on every fitted row.",
                             class = "latents_bad_data", call = NULL))
       }
-      spec$residual_correlation <- residual_correlation
-      spec$residual_time <- residual_time
-      spec$residual_times <- times
+      process <- list(residual_correlation = residual_correlation,
+                      residual_time = residual_time, residual_times = times)
+      spec[names(process)] <- process
       spec$model_data[[residual_time]] <- times
-      fit <- .growth_correlated_refit(spec, fit, as.integer(max_iter), tol)
+      standard$spec[names(process)] <- process
+      standard$spec$model_data[[residual_time]] <- times
+      fit <- .growth_correlated_refit(standard$spec, fit, as.integer(max_iter), tol)
     }
+    fit <- .growth_unstandardize_fit(fit, spec, standard)
     fit$call <- match.call()
     fit$settings <- list(n_starts = as.integer(n_starts),
                          max_iter = as.integer(max_iter), tol = tol,
@@ -588,6 +603,18 @@ mixture_regression <- function(formula, data, n_classes,
                         class = "latents_bad_data", call = NULL))
   }
   response <- .mixture_response(stats::model.response(frame), family)
+  # A Gaussian outcome with no variation leaves every class a residual variance
+  # of zero whatever the model, so no start can succeed; say that, rather than
+  # that the starts degenerated, which advised fewer classes or more starts.
+  # The range is tested exactly, as for constant indicators: repeated 0.1 has
+  # a computed standard deviation of 1.4e-17, not zero.
+  if (identical(family, "gaussian") && length(response$y) > 0L &&
+      max(response$y) == min(response$y)) {
+    stop(errorCondition(sprintf(paste(
+      "The outcome takes the same value (%s) in every row, so there is no",
+      "variation for a Gaussian mixture regression to model."),
+      format(response$y[[1L]])), class = "latents_bad_data", call = NULL))
+  }
   ordinal <- identical(family, "ordinal")
   if (ordinal && !isTRUE(attr(model_terms, "intercept") == 1L)) {
     bad_argument(paste("An ordinal regression's thresholds take the intercept's",
@@ -642,11 +669,13 @@ mixture_regression <- function(formula, data, n_classes,
     .ordinal_check_identified(length(response$levels), n_classes, nesting,
                               length(varying_names) + length(common_names))
   }
-  units <- switch(nesting, observation = n, n_groups)
+  # Classes sit on rows except under `class_level = "group"`; group classes
+  # (two-level) sit on groups and are checked below.
+  units <- if (identical(nesting, "group")) n_groups else n
   if (units <= n_classes) {
     stop(errorCondition(sprintf(paste(
       "%d %s cannot support %d classes."), units,
-      if (identical(nesting, "observation")) "rows" else "groups", n_classes),
+      if (identical(nesting, "group")) "groups" else "rows", n_classes),
       class = "latents_bad_data", call = NULL))
   }
   if (identical(nesting, "two-level") && n_groups <= n_group_classes) {

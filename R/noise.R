@@ -168,18 +168,50 @@
 .multilpa_informative_rows <- function(x) {
   n_rows <- NROW(x$subject_posteriors)
   # `drop_empty = FALSE` keeps the convention of 0.9.37 and earlier, in which
-  # every row was counted.
-  if (isFALSE(x$drop_empty)) return(rep(TRUE, n_rows))
+  # every row was counted, except a row of a zero-weight unit, which is in no
+  # count under either convention (review 2026-10-26 round 2, ZW-5).
+  if (isFALSE(x$drop_empty)) return(.multilpa_carrying_rows(x, n_rows))
   x$informative %||% rep(TRUE, n_rows)
+}
+
+#' Which rows belong to a unit of positive sampling weight
+#'
+#' @param x A fitted model of this package.
+#' @param n_rows Rows of its observation-level posterior matrix.
+#' @return A logical vector, one per row; all `TRUE` for an unweighted fit or
+#'   one whose rows cannot be matched to its units.
+#' @noRd
+.multilpa_carrying_rows <- function(x, n_rows) {
+  units <- unname(x$sampling_weights)
+  if (is.null(units)) return(rep(TRUE, n_rows))
+  per_row <- if (!is.null(x$group_index) && length(x$group_index) == n_rows) {
+    units[x$group_index]
+  } else if (length(units) == n_rows) units else return(rep(TRUE, n_rows))
+  per_row > 0
+}
+
+#' Which groups have positive sampling weight
+#' @param x A fitted model of this package.
+#' @param n_groups Rows of its group-level posterior matrix.
+#' @return A logical vector, one per group; all `TRUE` for an unweighted fit.
+#' @noRd
+.multilpa_carrying_groups <- function(x, n_groups) {
+  units <- unname(x$sampling_weights)
+  if (is.null(units) || length(units) != n_groups) return(rep(TRUE, n_groups))
+  units > 0
 }
 
 #' The group sample size of the group-convention criteria
 #' @param x A fitted model of this package.
 #' @return The number of groups with an observed row, or every group under
-#'   `drop_empty = FALSE` and for fits that did not record it.
+#'   `drop_empty = FALSE` and for fits that did not record it; a group of
+#'   sampling weight zero is counted under neither convention (ZW-5).
 #' @noRd
 .multilpa_group_sample_size <- function(x) {
-  if (isFALSE(x$drop_empty)) return(x$n_groups)
+  if (isFALSE(x$drop_empty)) {
+    return(if (is.null(x$sampling_weights)) x$n_groups else
+      sum(x$sampling_weights > 0))
+  }
   x$n_informative_groups %||% x$n_groups
 }
 
@@ -207,7 +239,7 @@
 .multilpa_informative_groups <- function(x) {
   if (is.null(x$group_posteriors)) return(NULL)
   n_groups <- nrow(x$group_posteriors)
-  if (isFALSE(x$drop_empty)) return(rep(TRUE, n_groups))
+  if (isFALSE(x$drop_empty)) return(.multilpa_carrying_groups(x, n_groups))
   informative <- .multilpa_informative_rows(x)
   if (all(informative) || is.null(x$group_index)) return(rep(TRUE, n_groups))
   observed <- rowsum(informative * 1, x$group_index, reorder = TRUE)
@@ -228,10 +260,12 @@
 
 #' The class posteriors of the observations that were classified
 #'
-#' Entropy, average posterior probability and the entropy charge of ICL, AWE
-#' and CLC describe how well observed values separate the classes, so they are
-#' taken over the rows with at least one observed indicator. Class sizes are
-#' estimates of the population and keep every row.
+#' Entropy, average posterior probability, the entropy charge of ICL, AWE
+#' and CLC, the class counts, the classification error matrix and the BCH
+#' weights all describe how observed values separate the classes, so they are
+#' taken over the rows with at least one observed indicator. Leaving the empty
+#' rows out does not move an estimated class share: an empty row's posterior is
+#' the class prior, so at the maximum the shares are the same over either set.
 #'
 #' @param x A fitted model of this package.
 #' @return `.multilpa_class_posteriors()` restricted to informative rows.

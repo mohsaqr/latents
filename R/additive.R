@@ -12,6 +12,37 @@
 #' it. The exact likelihood depends on the data only through these, the group
 #' sizes and nothing else.
 #'
+#' How far two computations of the same sufficient statistics may differ
+#'
+#' Relative, as `all.equal()` reads it: 64 units in the last place, which a
+#' different summation order within a group cannot exceed on the group sizes
+#' the model takes, and which no change of a rating by one unit in its last
+#' printed digit stays within.
+#' @noRd
+.additive_identity_tolerance <- 64 * .Machine$double.eps
+
+#' Groups that belong to the sample: those of positive sampling weight
+#'
+#' A group of weight zero contributes nothing to the likelihood and is in no
+#' count, entropy, classification table, starting value, refusal or warning;
+#' it still receives a posterior, as any group would.
+#' @param stats Result of `.additive_prepare()`, or a fit (which carries
+#'   `sampling_weights` and `n_groups`).
+#' @return A logical vector, one value per group.
+#' @noRd
+.additive_used_groups <- function(stats) {
+  (stats$sampling_weights %||% rep(1, stats$n_groups)) > 0
+}
+
+#' Reduce raw ratings to the additive model's sufficient statistics
+#'
+#' Validates the raw-rating contract of the first increment (complete numeric
+#' indicators, a known group identifier, replication within at least one
+#' group) and returns, per group and indicator, the mean and the scatter about
+#' it. The exact likelihood depends on the data only through these, the group
+#' sizes and nothing else. Identification is checked on the groups of
+#' positive sampling weight, the only ones the likelihood sees.
+#'
 #' @param data A data frame, one row per observation.
 #' @param vars Names of the continuous indicator columns.
 #' @param id Name of the group identifier column.
@@ -21,14 +52,20 @@
 #'   first-occurrence order), `index` (group of each row), `sizes` (n_j),
 #'   `n_groups` (J), `n_obs` (N), `vars`, `averages` and `scatter` (J x d
 #'   matrices, rows named by group), `pooled_scatter` (sum over groups of
-#'   the scatter, one value per indicator), `sampling_weights` (one per group,
-#'   scaled to sum to J, or `NULL`) and `weighted_n_obs` (sum of the group
-#'   weights times sizes, or `NULL`).
+#'   the scatter, one value per indicator), `zero_within_scatter` (logical per
+#'   indicator: every positive-weight group's ratings are identical),
+#'   `sampling_weights` (one per group, scaled to sum to the number of groups
+#'   of positive weight, or `NULL`), `weighted_n_obs` (sum of the group
+#'   weights times sizes, or `NULL`), `weighted_n_groups` (sum of the
+#'   weights; J without weights), and `n_used_groups` and `n_used_obs` (the
+#'   groups of positive weight and their rows; J and N without weights).
 #' @section Conditions:
 #' `latents_bad_data` for a malformed frame, a non-numeric, missing,
-#' non-finite or constant indicator, or a missing group identifier.
-#' `latents_unidentified` when every group is a singleton, because the within
-#' and between variances are then observed only through their sum.
+#' non-finite or constant indicator (constant over the positive-weight
+#' groups), or a missing group identifier.
+#' `latents_unidentified` when every positive-weight group is a singleton,
+#' because the within and between variances are then observed only through
+#' their sum. `latents_bad_weights` from `.latents_sampling_weights()`.
 #' @noRd
 .additive_prepare <- function(data, vars, id, weights = NULL) {
   if (!is.data.frame(data) || !is.character(vars) || !is.character(id) ||
@@ -54,16 +91,25 @@
       "Indicators contain missing or non-finite values; the additive model requires complete ratings.",
       class = "latents_bad_data", call = NULL))
   }
+  groups <- .multilpa_prepare_groups(data[[id]])
+  # Sampling weights, one per group, travel with the statistics: every
+  # posterior-weighted sum the M-step and the scores form is weighted by them.
+  # They are read first because a group of weight zero is not part of the
+  # sample, so the identification checks below look only at the others
+  # (review 2026-10-26 round 2, ADD2-3).
+  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
+  used <- (sampling_weights %||% rep(1, groups$n)) > 0
+  used_rows <- used[groups$index]
   if (any(vapply(seq_along(vars), function(r) {
-    length(unique(x[, r])) < 2L
+    length(unique(x[used_rows, r])) < 2L
   }, logical(1)))) {
     stop(errorCondition("Constant indicators cannot identify group intercepts.",
                         class = "latents_bad_data", call = NULL))
   }
-  groups <- .multilpa_prepare_groups(data[[id]])
-  if (all(groups$sizes == 1L)) {
+  if (all(groups$sizes[used] == 1L)) {
     stop(errorCondition(paste(
-      "Every group has one observation, so within- and between-group variances",
+      if (all(used)) "Every group has one observation, so within- and between-group variances"
+      else "Every group of positive weight has one observation, so within- and between-group variances",
       "are observed only through their sum. Supply groups with repeated ratings."),
       class = "latents_unidentified", call = NULL))
   }
@@ -72,6 +118,13 @@
   scatter <- rowsum((x - averages[groups$index, , drop = FALSE])^2,
                     groups$index, reorder = TRUE)
   dimnames(averages) <- dimnames(scatter) <- list(groups$ids, vars)
+  # Exact test on the ratings themselves: a constant group whose mean is not
+  # representable (three ratings of 0.1) leaves a scatter of order 1e-32, so
+  # `pooled_scatter <= 0` misses it. One distinct value per group means none.
+  zero_within_scatter <- vapply(seq_along(vars), function(r) {
+    nrow(unique(cbind(groups$index, x[, r])[used_rows, , drop = FALSE])) == sum(used)
+  }, logical(1))
+  names(zero_within_scatter) <- vars
   stopifnot(
     "one sufficient-statistic row per group" =
       nrow(averages) == groups$n && nrow(scatter) == groups$n,
@@ -79,17 +132,25 @@
       all(is.finite(scatter)) && all(scatter >= 0),
     "group sizes must sum to the number of rows" = sum(sizes) == nrow(data)
   )
-  # Sampling weights, one per group, travel with the statistics: every
-  # posterior-weighted sum the M-step and the scores form is weighted by them.
-  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   structure(list(
     ids = groups$ids, index = groups$index, sizes = sizes,
     n_groups = groups$n, n_obs = nrow(data), vars = vars,
     averages = averages, scatter = scatter,
     pooled_scatter = colSums(scatter),
+    zero_within_scatter = zero_within_scatter,
     sampling_weights = sampling_weights,
     weighted_n_obs = if (is.null(sampling_weights)) NULL else
-      sum(sampling_weights * sizes)
+      sum(sampling_weights * sizes),
+    # The weights sum to the groups of positive weight, not to every group: a
+    # group of weight zero is not part of the sample (review 2026-10-26, ML-1).
+    # Weighted sums are divided by this total, and the criteria count only the
+    # groups and rows that carry weight.
+    weighted_n_groups = if (is.null(sampling_weights)) groups$n else
+      sum(sampling_weights),
+    n_used_groups = if (is.null(sampling_weights)) groups$n else
+      sum(sampling_weights > 0),
+    n_used_obs = if (is.null(sampling_weights)) nrow(data) else
+      sum(sizes[sampling_weights > 0])
   ), class = "latents_additive_data")
 }
 
@@ -315,6 +376,19 @@
 #' @noRd
 .additive_initialize <- function(stats, n_classes, structure, min_variance,
                                  start_index, kind = "kmeans") {
+  # Starts are built from the groups of positive weight alone, so a group of
+  # weight zero cannot move the partition, and with it the maximum the start
+  # reaches (review 2026-10-26 round 2, ADD2-4). Without such groups the
+  # statistics, and the random draws, are those of every group.
+  used <- .additive_used_groups(stats)
+  if (!all(used)) {
+    stats$averages <- stats$averages[used, , drop = FALSE]
+    stats$scatter <- stats$scatter[used, , drop = FALSE]
+    stats$sizes <- stats$sizes[used]
+    stats$n_groups <- sum(used)
+    stats$n_obs <- sum(stats$sizes)
+    stats$pooled_scatter <- colSums(stats$scatter)
+  }
   standardize <- function(values) {
     spread <- apply(values, 2L, stats::sd)
     spread[!is.finite(spread) | spread <= 0] <- 1
@@ -408,7 +482,8 @@
 .additive_maximization <- function(stats, expectation, parameters, structure,
                                    min_variance, zero) {
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
-  # Weighted posteriors are weighted counts; the weights sum to the groups.
+  # Weighted posteriors are weighted counts; the weights sum to the groups of
+  # positive weight.
   posterior <- expectation$posterior * (stats$sampling_weights %||% 1)
   n_classes <- ncol(posterior)
   n_indicators <- length(stats$vars)
@@ -438,7 +513,7 @@
     ifelse(zero[h, ], 0, value)
   }, numeric(n_indicators)), nrow = n_classes, byrow = TRUE)
   between <- if (identical(structure$between, "equal")) {
-    matrix(colSums(spread) / stats$n_groups, n_classes, n_indicators,
+    matrix(colSums(spread) / stats$weighted_n_groups, n_classes, n_indicators,
            byrow = TRUE)
   } else spread / counts
   residual <- matrix(vapply(seq_len(n_classes), function(h) {
@@ -459,7 +534,7 @@
            n_classes, n_indicators, byrow = TRUE)
   }
   list(means = means, between = between, within = pmax(within, min_variance),
-       weights = counts / stats$n_groups)
+       weights = counts / stats$weighted_n_groups)
 }
 
 #' What SQUAREM needs from a group-class parameter list
@@ -524,7 +599,11 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(
-      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero)),
+      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero),
+      # A unit-free stop (review 2026-10-26 round 2, K2-6): every rating of a
+      # group of positive weight (the additive model has complete ratings).
+      stop_scale = length(stats$vars) *
+        sum(stats$sizes[(stats$sampling_weights %||% rep(1, stats$n_groups)) > 0])),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -609,6 +688,41 @@
   if (isTRUE(boundary$kkt) && better && any(boundary$zero)) boundary else interior
 }
 
+#' Pairs of group classes whose parameters coincide
+#'
+#' Two classes collapse when every class-specific parameter agrees to
+#' `tolerance`: within and between variances relative to the larger of the
+#' pair, means relative to the indicator's scale `sqrt(W + T)` (averaged over
+#' classes), so the rule does not depend on the origin or units of the
+#' ratings. Their weights are then not identified (review 2026-10-26 round 2,
+#' ADD2-5).
+#' @param parameters Group-class parameters with H x d `means`, `between` and
+#'   `within`, rows named by class.
+#' @param tolerance Relative tolerance.
+#' @return A character vector, one `"a = b"` label per collapsed pair; empty
+#'   when none (always for one class).
+#' @noRd
+.additive_collapsed_classes <- function(parameters, tolerance = 1e-8) {
+  n_classes <- nrow(parameters$means)
+  if (n_classes < 2L) return(character())
+  scale <- sqrt(colMeans(parameters$within) + colMeans(parameters$between))
+  pairs <- utils::combn(n_classes, 2L)
+  close <- function(block, k, l, reference) {
+    all(abs(block[k, ] - block[l, ]) <= tolerance * reference)
+  }
+  same <- vapply(seq_len(ncol(pairs)), function(p) {
+    k <- pairs[1L, p]
+    l <- pairs[2L, p]
+    close(parameters$means, k, l, scale) &&
+      close(parameters$within, k, l,
+            pmax(parameters$within[k, ], parameters$within[l, ])) &&
+      close(parameters$between, k, l,
+            pmax(parameters$between[k, ], parameters$between[l, ]))
+  }, logical(1))
+  labels <- rownames(parameters$means) %||% paste0("group_class_", seq_len(n_classes))
+  sprintf("%s = %s", labels[pairs[1L, same]], labels[pairs[2L, same]])
+}
+
 #' Arguments `multilpa()` accepts for a group-class family
 #' @noRd
 .additive_arguments <- function() {
@@ -686,8 +800,9 @@
                         class = "latents_bad_argument", call = NULL))
   }
   if (!is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
-      !is.numeric(min_variance) || length(min_variance) != 1L ||
-      !is.finite(min_variance) || min_variance <= 0) {
+      (!is.null(min_variance) && (!is.numeric(min_variance) ||
+        length(min_variance) != 1L || !is.finite(min_variance) ||
+        min_variance <= 0))) {
     stop(errorCondition("tol and min_variance must be finite positive numbers.",
                         class = "latents_bad_argument", call = NULL))
   }
@@ -696,10 +811,18 @@
   n_starts <- as.integer(n_starts)
   max_iter <- as.integer(max_iter)
   stats <- .additive_prepare(data, vars, id, weights)
-  if (n_group_classes > stats$n_groups) {
+  # `NULL`: a millionth of the smallest indicator variance, over the rows of
+  # positive weight (review 2026-10-26 round 2, K2-2).
+  min_variance <- .latents_resolve_min_variance(
+    min_variance,
+    matrix(as.numeric(as.matrix(data[, vars, drop = FALSE])), nrow(data), length(vars)),
+    if (is.null(stats$sampling_weights)) NULL else stats$sampling_weights[stats$index])
+  # Groups of weight zero are not in the sample (ADD2-3).
+  if (n_group_classes > stats$n_used_groups) {
     stop(errorCondition(sprintf(
-      "%d group classes cannot be estimated from %d groups.",
-      n_group_classes, stats$n_groups),
+      "%d group classes cannot be estimated from %d groups%s.",
+      n_group_classes, stats$n_used_groups,
+      if (stats$n_used_groups < stats$n_groups) " of positive weight" else ""),
       class = "latents_unidentified", call = NULL))
   }
   .latents_local_seed(seed)
@@ -730,7 +853,13 @@
   best_start <- starts$best_start
   best <- attempts[[best_start]]
   # An interior solution is finished by Newton steps (see .additive_newton());
-  # a boundary solution is left as the KKT pass returned it.
+  # a boundary solution is left as the KKT pass returned it, so its free
+  # coordinates stop where EM's relative-likelihood rule (`tol`) stops them.
+  # Measured on a one-class balanced fit with one between variance at zero,
+  # against the closed-form maximum: 1.1e-6 in log likelihood, at most 0.0015
+  # standard errors in any estimate (review 2026-10-26 round 2, ADD2-6). The
+  # same order as every reference program that stops on the likelihood, and
+  # boundary fits carry no Wald inference, so they are not polished further.
   newton <- list(steps = 0L, decrement = NA_real_)
   if (max_iter > 0L && isTRUE(best$converged) && !any(best$zero) &&
       all(best$parameters$within > min_variance * (1 + sqrt(.Machine$double.eps)))) {
@@ -780,7 +909,10 @@
                    character(1)),
     selected = seq_along(attempts) == best_start)
   starts <- .latents_search_columns(starts, found, n_starts)
-  small_classes <- any(colSums(expectation$posterior) < 1)
+  # Effective membership counts the groups of positive weight only (ADD2-2).
+  small_classes <- any(colSums(expectation$posterior[
+    .additive_used_groups(stats), , drop = FALSE]) < 1)
+  collapsed <- .additive_collapsed_classes(parameters)
   result <- list(
     call = call, family = family, structure = structure,
     between_variance = between_variance, vars = vars, id = id,
@@ -797,16 +929,18 @@
     intercept_means = expectation$intercept_mean,
     intercept_variances = expectation$intercept_variance,
     n_groups = stats$n_groups, n_obs = stats$n_obs,
+    n_used_groups = stats$n_used_groups %||% stats$n_groups,
     group_sizes = stats::setNames(stats$sizes, stats$ids),
     n_parameters = n_parameters,
     aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + n_parameters * log(stats$n_groups),
-    bic_individual = -2 * log_likelihood + n_parameters * log(stats$n_obs),
+    bic = -2 * log_likelihood + n_parameters * log(stats$n_used_groups %||% stats$n_groups),
+    bic_individual = -2 * log_likelihood +
+      n_parameters * log(stats$n_used_obs %||% stats$n_obs),
     converged = isTRUE(best$converged), iterations = best$iterations,
     newton_steps = newton$steps, newton_decrement = newton$decrement,
     between_zero = best$zero, kkt = best$kkt, within_floor = within_floor,
-    zero_within_scatter = stats$pooled_scatter <= 0,
-    small_classes = small_classes,
+    zero_within_scatter = stats$zero_within_scatter,
+    small_classes = small_classes, collapsed_classes = length(collapsed) > 0L,
     starts = starts, best_start = best_start, n_failed_starts = sum(!valid),
     n_best_replicated = sum(valid & .latents_final_stage(found) &
                               abs(scores - log_likelihood) <= tolerance),
@@ -840,6 +974,14 @@
     warning(warningCondition("A group class has effective membership below one.",
                              class = "latents_small_classes", call = NULL))
   }
+  if (length(collapsed) > 0L) {
+    warning(warningCondition(sprintf(paste(
+      "Group classes have collapsed onto identical parameters (%s, equal to",
+      "1e-8 relative): the fit has fewer distinct classes than requested and",
+      "the weights of the collapsed classes are not identified. Fit fewer",
+      "group classes."), paste(collapsed, collapse = "; ")),
+      class = "latents_weak_class", call = NULL))
+  }
   result
 }
 
@@ -852,7 +994,9 @@ print.multilpa_additive <- function(x, ...) {
     "log-likelihood %.3f, %d parameters, BIC (groups) %.3f\n",
     "converged: %s; best start replicated %d of %d\n"),
     .additive_family_label(x$family), x$between_variance,
-    length(x$group_probabilities), x$n_groups, x$n_obs,
+    # Groups of weight zero are not in the sample (ADD2-2).
+    length(x$group_probabilities), x$n_used_groups %||% x$n_groups,
+    x$sufficient_statistics$n_used_obs %||% x$n_obs,
     length(x$vars), x$log_likelihood, x$n_parameters, x$bic,
     if (x$converged) "yes" else "no", x$n_best_replicated,
     # Out of the starts run to the end, not the screened pool.
