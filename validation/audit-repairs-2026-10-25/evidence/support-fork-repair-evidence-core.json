@@ -1,0 +1,100 @@
+{
+  "issue_family": "VALIDATION_FORK_SAFETY",
+  "status": "Owned supporting files frozen; no further edits planned.",
+  "scope": {
+    "supporting_scripts": 4,
+    "guarded_mclapply_calls": 5,
+    "new_EQ_only_pure_test": "equivalence/test-supporting-fork-preflight.R",
+    "common_guard_reused": "validation/fork-runtime.R",
+    "R_tests_man_untouched": true
+  },
+  "policy": "Refuse requested multicore fork on Windows or Apple Accelerate/vecLib; preserve safe-runtime original core expression, scientific AST, budgets, seeds and mc.preschedule. No silent serial conversion.",
+  "early_refusal": "ML3 kit fixed-two-core preflight precedes unlink; CLI search scripts preflight before output directory creation.",
+  "test_summary": {
+    "cases": 4,
+    "passed": 40,
+    "failed": 0,
+    "error": 0,
+    "warning": 0,
+    "skipped": 0
+  },
+  "scientific_AST_proof": {
+    "issue": "VALIDATION_FORK_SAFETY",
+    "files": 4,
+    "direct_calls": 5,
+    "method": "Exact R language-object identity after removing only new guard-loading and early-refusal expressions and unwrapping only guarded core arguments. No study or kit evaluation.",
+    "records": [
+      {
+        "file": "equivalence/features/ml-three-step/make-kit.R",
+        "full_scientific_AST_exact_identity": true,
+        "guarded_mclapply_calls": 2,
+        "additional_early_preflights": 1,
+        "calls": [
+          {
+            "original_core_expression": "2L",
+            "original_call": "parallel::mclapply(cases, function(case) {\n    fit <- suppressWarnings(ml3_fit(case))\n    inputs <- ml3_level_inputs(fit, case)\n    list(posteriors = inputs$posteriors, modal = inputs$modal, values = inputs$values, ids = inputs$ids, clusters = inputs$clusters, step1_log_likelihood = fit$log_likelihood, entropy = ml3_entropy(inputs$posteriors), modal_counts = tabulate(inputs$modal, ncol(inputs$posteriors)))\n}, mc.cores = 2L, mc.preschedule = FALSE)",
+            "all_other_arguments_exact_AST_identity": true
+          },
+          {
+            "original_core_expression": "2L",
+            "original_call": "parallel::mclapply(sweep, function(case) {\n    fit <- suppressWarnings(ml3_fit(case))\n    list(posteriors = unname(fit$subject_posteriors), modal = fit$subject_profiles, step1_log_likelihood = fit$log_likelihood, entropy = ml3_entropy(fit$subject_posteriors), modal_counts = tabulate(fit$subject_profiles, case$spec$k))\n}, mc.cores = 2L, mc.preschedule = FALSE)",
+            "all_other_arguments_exact_AST_identity": true
+          }
+        ]
+      },
+      {
+        "file": "equivalence/search/blrt-emem.R",
+        "full_scientific_AST_exact_identity": true,
+        "guarded_mclapply_calls": 1,
+        "additional_early_preflights": 1,
+        "calls": [
+          {
+            "original_core_expression": "cores",
+            "original_call": "mclapply(replicates, run_one, mc.cores = cores, mc.preschedule = FALSE)",
+            "all_other_arguments_exact_AST_identity": true
+          }
+        ]
+      },
+      {
+        "file": "equivalence/search/pilot.R",
+        "full_scientific_AST_exact_identity": true,
+        "guarded_mclapply_calls": 1,
+        "additional_early_preflights": 1,
+        "calls": [
+          {
+            "original_core_expression": "cores",
+            "original_call": "mclapply(replicates, run_one, mc.cores = cores, mc.preschedule = FALSE)",
+            "all_other_arguments_exact_AST_identity": true
+          }
+        ]
+      },
+      {
+        "file": "equivalence/montecarlo/audit-maxima.R",
+        "full_scientific_AST_exact_identity": true,
+        "guarded_mclapply_calls": 1,
+        "additional_early_preflights": 0,
+        "calls": [
+          {
+            "original_core_expression": "cores",
+            "original_call": "parallel::mclapply(seq_len(nrow(grid)), function(i) {\n    fit <- suppressWarnings(montecarlo_fit(cases[[grid$case[i]]], seed = grid$seed[i], n_starts = grid$n_starts[i]))\n    fit$log_likelihood\n}, mc.cores = cores, mc.preschedule = FALSE)",
+            "all_other_arguments_exact_AST_identity": true
+          }
+        ]
+      }
+    ]
+  },
+  "source_sha256": {
+    "equivalence/features/ml-three-step/make-kit.R": "b12a37eee53aaebc24a68bf13958b20a640e4be83299c43a66449a985d38b2d0",
+    "equivalence/search/blrt-emem.R": "a55fc4de129d21e455160f482391b544ed9749c7025a379a2d7eaa2c2cf3a8cd",
+    "equivalence/search/pilot.R": "005bbd0ecf233a0cb75530b8b50c1323ce88f03cf04ee1afa82819d268b3871b",
+    "equivalence/montecarlo/audit-maxima.R": "d111cd4c5cc2f53d0f327e2e8012a0c3c2ca5c109ddb34413264f62ec3e34a0b",
+    "equivalence/test-supporting-fork-preflight.R": "0d68e8263d1ab5fba60a6e10aa67918a542bd7ca396304a77204c72c4c7e3f4f"
+  },
+  "before_after_sources_and_hashes": "support-fork-source-diffs-core.json",
+  "limits": [
+    "No historical kit, calibration study, fitting loop, fork or external executable was run.",
+    "AST and mock-runtime tests establish protocol preservation and guard behavior, not Monte Carlo calibration.",
+    "These are supporting/equivalence changes; the 99 production R files and frozen source unit files are unchanged."
+  ],
+  "configured_new_test_lints": 0
+}

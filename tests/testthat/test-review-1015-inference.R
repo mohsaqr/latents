@@ -78,10 +78,11 @@ test_that("bootstrap_lrt() matches groups by value, not by storage type", {
   as_double$school <- as.numeric(as_double$school)
   # Before the fix: latents_bad_inference_data, while parameter_inference()
   # accepted the same frame.
-  supplied <- bootstrap_lrt(smaller, larger, data = as_double, iter = 2L,
-                            n_starts = 1L, max_iter = 2000L, tol = 1e-6, seed = 1)
-  stored <- bootstrap_lrt(smaller, larger, iter = 2L, n_starts = 1L,
-                          max_iter = 2000L, tol = 1e-6, seed = 1)
+  expect_warning(supplied <- bootstrap_lrt(smaller, larger, data = as_double, iter = 2L,
+    n_starts = 1L, max_iter = 2000L, tol = 1e-6, seed = 1),
+    class = "latents_thin_profiles")
+  expect_warning(stored <- bootstrap_lrt(smaller, larger, iter = 2L, n_starts = 1L,
+    max_iter = 2000L, tol = 1e-6, seed = 1), class = "latents_thin_profiles")
   expect_equal(as.data.frame(supplied), as.data.frame(stored))
   # A real reordering of the groups is still refused.
   shuffled <- data

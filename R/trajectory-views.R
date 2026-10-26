@@ -146,10 +146,24 @@
   spec <- x$spec
   if (!is.data.frame(data) || !spec$id %in% names(data) ||
       nrow(data) < max(spec$kept_rows) ||
-      !.multilpa_same_values(data[[spec$id]][spec$kept_rows], spec$model_data[[spec$id]])) {
+      !all(names(spec$model_data) %in% names(data)) ||
+      !all(vapply(names(spec$model_data), function(name) {
+        .multilpa_same_values(data[[name]][spec$kept_rows], spec$model_data[[name]])
+      }, logical(1)))) {
     stop(errorCondition(
       "`data` must be the data frame the trajectory model was fitted to.",
       class = "latents_bad_inference_data", call = NULL))
+  }
+  if (!is.null(spec$weights)) {
+    supplied <- tryCatch(.mixture_weight_spec(spec, data, spec$weights)$sampling_weights,
+                          error = function(condition) FALSE)
+    if (!is.numeric(supplied) ||
+        !isTRUE(all.equal(supplied, spec$sampling_weights,
+                           tolerance = 16 * .Machine$double.eps))) {
+      stop(errorCondition(
+        "`data` must contain the sampling weights used to fit the trajectory model.",
+        class = "latents_bad_inference_data", call = NULL))
+    }
   }
   invisible(NULL)
 }

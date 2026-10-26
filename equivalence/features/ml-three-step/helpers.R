@@ -28,6 +28,23 @@ ml3_fit <- function(case) {
   fit
 }
 
+#' Map fixed-seed cases without forking an unsafe BLAS runtime
+#'
+#' `ml3_fit()` sets its own seed for each case. Serial execution therefore
+#' preserves the fitting stream and is also available explicitly through
+#' `options(latents.ml_three_step.serial = TRUE)` for reproducibility.
+#' @param cases A list of cases.
+#' @param fun A function of one case.
+#' @return A list in input order.
+ml3_map_cases <- function(cases, fun) {
+  if (isTRUE(getOption("latents.ml_three_step.serial", FALSE)) ||
+      identical(.Platform$OS.type, "windows") || !latents:::.latents_fork_safe()) {
+    lapply(cases, fun)
+  } else {
+    parallel::mclapply(cases, fun, mc.cores = 2L, mc.preschedule = FALSE)
+  }
+}
+
 #' Posteriors, modal classes, clusters and outcome at the analysed level
 ml3_level_inputs <- function(fit, case) {
   if (identical(case$level, "groups")) {

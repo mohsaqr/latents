@@ -12,6 +12,7 @@
 # study is run at two group counts. Coverage is of the nominal 95% Wald
 # interval under the observed information and under the cluster-robust
 # sandwich.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20260927)
@@ -64,7 +65,7 @@ replicate_once <- function(replication, n_groups) {
 results <- do.call(rbind, lapply(c(60L, 120L), function(n_groups) {
   do.call(rbind, parallel::mclapply(seq_len(replications), replicate_once,
                                     n_groups = n_groups, mc.set.seed = TRUE,
-                                    mc.cores = max(1L, parallel::detectCores() - 2L)))
+                                    mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 2L))))
 }))
 # One row per group count and parameter, ordered by both.
 summarise_coverage <- function(results) {

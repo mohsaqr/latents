@@ -203,9 +203,9 @@
   if (isTRUE(params$separation) || isTRUE(params$membership_separation) ||
       isTRUE(params$group_separation)) {
     warning(warningCondition(paste(
-      "A coefficient exceeded 30 on the logit or log scale: a class",
-      "separates perfectly on some predictor, and that coefficient and its",
-      "standard error are not reliable."),
+      "A fitted logit or log mean is extreme: a class may be separating",
+      "on some predictor. Check its fitted probabilities and the reliability",
+      "of its coefficients and standard errors."),
       class = "latents_separation", call = NULL))
   }
   if (identical(spec$family, "negative_binomial") &&

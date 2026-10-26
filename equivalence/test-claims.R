@@ -1,7 +1,9 @@
-# The claims registry (CLAIMS.csv): every sentence in the documentation that
-# says this package agrees with another program or a published result, with
+# The claims registry (CLAIMS.csv): listed documentation statements that
+# describe agreement with another program or a published result, with
 # the test that backs it. A claim whose wording changes, or whose test is
 # renamed or removed, fails here, so the registry cannot drift from either.
+# This checks registered text and test presence; it neither discovers omitted
+# claims nor establishes that a named test substantively proves its claim.
 # A test file named with a path is read from the project root (tests outside
 # this folder); a bare name is a file in this folder.
 

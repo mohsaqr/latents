@@ -1,0 +1,108 @@
+{
+  "review": "independent extension repair review by inference agent",
+  "status": "passed_final_source_and_targeted_independent_checks",
+  "files": [
+    "R/mixture-regression-engine.R",
+    "R/mixture-regression.R",
+    "R/mixture-regression-ordinal.R",
+    "R/mixture-regression-starts.R",
+    "R/growth-mixture-engine.R",
+    "R/growth-mixture-correlated.R",
+    "R/growth-mixture-predict.R",
+    "R/mixture-regression-predict.R",
+    "R/growth-mixture-plot.R",
+    "R/trajectory-views.R",
+    "R/plot-gg.R",
+    "R/simulation-service.R"
+  ],
+  "source_sha256": {
+    "R/mixture-regression-engine.R": "67efa96c0dab9e5d414ec213eb5ae91a8fcba7e38c9cef8a444572daab1629f7",
+    "R/mixture-regression.R": "5d26340e919bd336ec722c8bcc3d561a92b4497089133fae324471c517515e77",
+    "R/mixture-regression-ordinal.R": "87b5c372f80471f6cec03355da80faca33b84880ade8962f2c608a372f61ee8e",
+    "R/mixture-regression-starts.R": "7274e90dd75b74d0a233c663894833d868bc97acc4584ba7921fc62b672521c9",
+    "R/growth-mixture-engine.R": "af7a482c3249e27f8686230fe0fcc70e28a4b82ef31c3d307990c09e4a915581",
+    "R/growth-mixture-correlated.R": "b2fa1ba6c52a655d08b0092e7a64317c2bef02f42afcb0e96ab6e3bfb939eb8a",
+    "R/growth-mixture-predict.R": "a65ff36430d43541c53b44b6e1b860691e01685a8fbc1f7f36adda9514dfa5aa",
+    "R/mixture-regression-predict.R": "627143d2168170fb70bae316ae441d9de17ad25df472ff09d4c6781d4d664d79",
+    "R/growth-mixture-plot.R": "65a3538ab37c07722149c59d3a25454a2cc93d29a20225d920fc567ee20ee42f",
+    "R/trajectory-views.R": "254a195ba024d186459469d7c2f8d95b48ce4f0ce99aa03bebed1a55760987aa",
+    "R/plot-gg.R": "6d8ad758d9e79e7f8e4eb080668e6f8f4b25d9bf66587b4522290a3c59927cef",
+    "R/simulation-service.R": "0f139bb2d0575088ada94020a430926ff1310a829629cdfa5d791e2493a58db7"
+  },
+  "source_findings": [
+    "Information-standardized Newton direction I=S R S, d=S^-1 R^-1 S^-1 g is algebraically correct; raw ridge retained for ordinary units. Zero-weight predictor rows now excluded from separation flags after independent-review suggestion.",
+    "Gram/dense covariance caches use injective hexadecimal numeric keys for finite designs; dimension fixed by fitted random-design width. Near matrices are no longer rounded together.",
+    "Random-factor predictions and spread curves use fitted contrasts/xlevels and preserve ordered status; fitted random terms/predvars now preserve transformed-term training basis.",
+    "Regression fitted plots appropriately require only regression design, avoiding artificial group membership variation on plotting grids.",
+    "Brownian residual prediction explicitly rejects negative time; native-ID facet factors distinguish identities instead of printed labels.",
+    "Trajectory identity compares every stored fitted model column exactly through shared same-values helper; normalized weight identity is separately validated; bootstrap injects stored weights.",
+    "Categorical plot intervals use same escaped component grammar as inference and structurally match outcome/term; ordinary terms unchanged.",
+    "Simulation code changes document existing Box-Muller cache limitation without changing RNGkind or draw arithmetic."
+  ],
+  "known_answer_and_negative_checks": [
+    {
+      "check": "Gaussian1class predictor unit invariance",
+      "data": "set.seed(9001);d<-data.frame(x=rnorm(200));d$y<-2+.4*d$x+rnorm(200,sd=.7)",
+      "baseline_beta": [
+        2.0386183,
+        0.3827314
+      ],
+      "baseline_LL": -214.4654,
+      "unit_scales": [
+        1e-06,
+        1000000.0
+      ],
+      "observed": "Coefficients rescale correctly, likelihood preserved."
+    },
+    {
+      "check": "Gaussian1class origin1e8 counterexample",
+      "observed_slope": 0.308017,
+      "expected_slope": 0.3827314,
+      "observed_LL": -215.4906,
+      "expected_LL": -214.4654,
+      "cause": "Diagonal normalization leaves near-collinear intercept and shifted predictor; fallback ridge changes objective. Owner notified with request test origins1e10/1e12 too."
+    },
+    {
+      "check": "Transformed random design retains fitted poly basis",
+      "reproducer": "tr<-data.frame(time=0:9);r<-~poly(time,2);s<-list(random=r,random_design=model.matrix(r,tr),model_data=tr);nd<-data.frame(time=c(.5,2.5,4.5,6.5)); .growth_random_design(s,nd) versus cbind(1,predict(poly(tr$time,2),nd$time))",
+      "max_error": 0.6849575,
+      "cause": "Recomputed random model frame from formula loses training poly coefficients; owner notified to preserve fitted terms/predvars."
+    },
+    {
+      "check": "Ordered-factor random contrasts under changed options",
+      "training": "data.frame(time=0:5,arm=ordered(rep(c(\"a\",\"b\",\"c\"),each=2)))",
+      "formula": "~1+time+arm",
+      "changed_options": [
+        "contr.sum",
+        "contr.treatment"
+      ],
+      "result": "Exact numeric fitted-row design and same column names preserved."
+    },
+    {
+      "check": "Missing random-design predictor and unknown factor level",
+      "results": [
+        "latents_bad_data",
+        "latents_bad_data"
+      ]
+    },
+    {
+      "check": "Near Gram patterns",
+      "values": [
+        1,
+        1.0000000000001
+      ],
+      "result": "Two distinct pattern IDs preserved."
+    }
+  ],
+  "limitations": [
+    "Finite targeted source and numeric checks, not a general coverage/global-optimization proof.",
+    "At predictor origin1e12, raw intercept storage leaves unavoidable common fitted-value rounding max1.17e-5 in tested Gaussian case, LLdelta2.72e-8; slopes remain accurate to1.7e-16.",
+    "Prior counterexample records retained as before-state evidence; final after JSON confirms corrections."
+  ],
+  "final_after_evidence": "/private/tmp/latents-fix-20261025/independent-extension-after.json",
+  "resolved_counterexamples": {
+    "Gaussian_large_origin": "Owner centered regression chart before crossproducts; independent1e8/1e10/1e12 Gaussian slopes match centered lm <=1.7e-16. Common-coefficient Gaussian/Poisson checks match centered reference LL <=7.3e-12.",
+    "transformed_random_terms": "Fitted random_terms predvars preserved; independent poly fitted-basis maxerror0.",
+    "trajectory_normalized_weights": "Now validates supplied normalized unit weights against stored specification; supplied-data contract strengthened while bootstrap remains tied to stored weights."
+  }
+}

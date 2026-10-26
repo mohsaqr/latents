@@ -88,9 +88,10 @@
 #' Refuse an ordinal mixture that its data cannot identify
 #'
 #' With one outcome per class assignment (rows as the classified units), a
-#' mixture of two-category outcomes is a mixture of Bernoullis, itself a
-#' Bernoulli (Follmann and Lambert 1991), so the same rule as for
-#' `family = "binomial"` applies; and with no predictors at all a mixture of
+#' mixture of two-category outcomes follows this package's support restriction
+#' for `family = "binomial"`. Identifiability with covariates depends on the
+#' design and constraints; the Bernoulli-mixture identity at one predictor
+#' value does not settle it. With no predictors at all a mixture of
 #' categorical distributions is again one categorical distribution, whatever
 #' the number of categories. Otherwise the classes are identified by how the
 #' predictors shift the category probabilities, which needs continuous
@@ -108,11 +109,10 @@
   if (n_classes < 2L || identical(nesting, "group")) return(invisible(NULL))
   if (n_categories == 2L) {
     stop(errorCondition(paste(
-      "A two-category ordinal outcome is binary, and a mixture of binary",
-      "outcomes with one outcome per class assignment is not identified (a",
-      "mixture of Bernoulli distributions is itself a Bernoulli; Follmann and",
-      "Lambert 1991). With two categories the ordinal model is the logistic",
-      "mixture of `family = \"binomial\"`; give each class assignment several",
+      "A two-category ordinal mixture with one outcome per class assignment",
+      "is not supported. Its identification depends on the predictor design",
+      "and model constraints. With two categories the ordinal model is the",
+      "logistic mixture of `family = \"binomial\"`; give each class assignment several",
       "outcomes with `id` and `class_level = \"group\"`."),
       class = "latents_not_identified", call = NULL))
   }
@@ -366,10 +366,13 @@
     current <- value
     if (gain <= 1e-12 * (1 + abs(current)) || iteration >= max_newton) break
   }
-  # A threshold beyond 30 on the logit scale is a category the class almost
-  # never (or almost always) reaches: separation, as for a GLM coefficient.
-  params$separation <- any(abs(params$beta) > 30) ||
-    (q > 0L && any(abs(params$common) > 30)) || any(abs(params$thresholds) > 30)
+  # Threshold-minus-predictor logits retain their meaning when a predictor's
+  # units change; raw slope magnitudes do not.
+  eta <- .mixture_linear_predictors(spec, params)
+  supported <- (spec$row_weights %||% rep(1, spec$n)) > 0
+  params$separation <- any(vapply(seq_len(spec$n_classes), function(class) {
+    any(abs(outer(params$thresholds[, class], eta[supported, class], "-")) > 30)
+  }, logical(1)))
   params
 }
 

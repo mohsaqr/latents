@@ -1,3 +1,16 @@
+#' Escape delimiters within one component of a paired parameter term
+#' @param x Character indicator or category labels.
+#' @return Labels with reserved delimiters escaped; ordinary labels unchanged.
+#' @noRd
+.latents_parameter_component <- function(x) {
+  stopifnot(is.character(x))
+  substitutions <- c("%" = "%25", ":" = "%3A", "," = "%2C",
+                     "[" = "%5B", "]" = "%5D", "\r" = "%0D")
+  Reduce(function(value, delimiter) {
+    gsub(delimiter, substitutions[[delimiter]], value, fixed = TRUE)
+  }, names(substitutions), init = x)
+}
+
 #' Serialise a tidy parameter decomposition into one name per parameter
 #'
 #' Every class in this package decomposes a parameter the same way --
@@ -130,7 +143,8 @@
       log(block[, keep, drop = FALSE]) - log(block[, ncol(block)])
     labels <- as.vector(t(outer(seq_len(nrow(block)), categories[keep],
       function(profile, category) sprintf("%s[%s,%s,%s]", prefix, profile,
-                                          indicator, category))))
+                                          .latents_parameter_component(indicator),
+                                          .latents_parameter_component(category)))))
     stats::setNames(as.vector(t(values)), labels)
   }), use.names = TRUE)
 }
@@ -667,8 +681,10 @@
 #'   [multilpa()].
 #' @param seed Optional seed for the resampling: a whole number accepted by
 #'   `set.seed()`; any other value raises `latents_bad_argument` on either
-#'   path. The Wald path uses no random numbers. The caller's random state is
-#'   restored on exit.
+#'   path. The Wald path uses no random numbers. A supplied integer seed restores
+#'   the caller's `.Random.seed` on exit; `NULL` uses its current stream.
+#'   R does not expose the Box-Muller cached normal
+#'   variate, so that cache cannot be restored; see [base::Random].
 #' @param boundary Handling of categorical response probabilities at their
 #'   lower bound, `min_probability`, where the information is singular.
 #'   `"error"` (default) raises `latents_boundary_fit`. `"fix"` holds those
@@ -1068,7 +1084,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     held <- at | at[, ncol(block)]
     spell <- function(positions, kind) {
       sprintf("measurement.%s.profile_%d.%s:%s", kind, positions[, 1L],
-              indicator, categories[positions[, 2L]])
+              .latents_parameter_component(indicator),
+              .latents_parameter_component(categories[positions[, 2L]]))
     }
     list(natural = spell(which(held, arr.ind = TRUE), "response"),
          unconstrained = spell(which(held[, -ncol(block), drop = FALSE],
@@ -1290,6 +1307,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   ## a numeric matrix, so an all-categorical fit needs the mode forced.
   x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
     .multilpa_center_like(object, as.matrix(data[, continuous, drop = FALSE]))
+  # A model frame reconstructed from centered/scaled rows can round once on
+  # the inverse transform. Recognize that exact reconstruction as well as the
+  # original forward-transformed input, and use the stored fitting values.
+  if (!is.null(object$indicator_data) && length(continuous) > 0L &&
+      isTRUE(all.equal(unname(as.matrix(data[, continuous, drop = FALSE])),
+                        unname(.multilpa_uncentered_indicators(object)),
+                        tolerance = 0))) {
+    x <- object$indicator_data
+  }
   if (any(is.infinite(x)) || any(is.nan(x)) ||
       (anyNA(x) && !identical(object$missing, "fiml"))) {
     stop(errorCondition(
@@ -1297,7 +1323,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       class = "latents_bad_inference_data", call = NULL))
   }
   if (!is.null(object$indicator_data) && ncol(x) > 0L &&
-      !isTRUE(all.equal(x, object$indicator_data, tolerance = 1e-12))) {
+      !isTRUE(all.equal(x, object$indicator_data, tolerance = 0))) {
     stop(errorCondition(
       "data must reproduce the original indicator data, including row order and names.",
       class = "latents_bad_inference_data", call = NULL))

@@ -10,6 +10,7 @@
 # Run from the project root:
 #   Rscript validation/montecarlo-recovery.R
 
+source(file.path("validation", "fork-runtime.R"))
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 cases <- readRDS(file.path("equivalence", "montecarlo", "kit", "cases.rds"))
 source(file.path("equivalence", "helper-montecarlo.R"))
@@ -86,7 +87,7 @@ recover_one <- function(name) {
              max_abs_mean_error = if (all(is.na(mean_error))) NA_real_ else max(abs(mean_error)))
 }
 
-rows <- do.call(rbind, parallel::mclapply(names(cases), recover_one, mc.cores = cores,
+rows <- do.call(rbind, parallel::mclapply(names(cases), recover_one, mc.cores = .validation_fork_cores(cores),
                                           mc.preschedule = FALSE))
 by_config <- aggregate(cbind(accuracy, mean_bias, mean_rmse, max_abs_mean_error,
                              probability_bias, probability_rmse) ~ config,

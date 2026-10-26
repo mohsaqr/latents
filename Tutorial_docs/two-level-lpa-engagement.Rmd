@@ -1,7 +1,7 @@
 ---
 title: "Two levels of engagement: enrolments, the students who mix them, and the order they came in"
-author: "multilpa"
-date: "2026-09-20"
+author: "latents"
+date: "2026-10-25"
 output:
   html_document:
     toc: true
@@ -22,7 +22,7 @@ set.seed(2026)
 
 ## Where this sits
 
-The README fits `multilpa()` to show the syntax. `vignette("multilpa")` walks
+The README fits `multilpa()` to show the syntax. `vignette("lpa", package = "latents")` walks
 the argument for the second level from a standing start. Neither is the thing an
 analyst actually arrives wanting: one model, taken end to end, with every claim
 followed by the check that would have caught it if it were wrong.
@@ -43,7 +43,7 @@ Every number below is computed by this document when it renders, from data that
 ship with the package. Nothing here depends on a file you do not have.
 
 ```{r library}
-library(multilpa)
+library(latents)
 ```
 
 One dataset carries the whole tutorial.
@@ -54,8 +54,9 @@ str(course_engagement)
 
 Each row is one student's enrolment in one course: 1422 enrolments belonging to
 106 students, ordered within each student by `sequence`, across 32 courses. The
-five activity indicators are `log1p` counts — page views, lecture videos, forum
-posts read and written, and days the student was active.
+five activity indicators are simulated continuous scores representing activity
+on a log-count scale, then standardized within course and rounded. The
+generator does not create raw counts or apply `log1p`.
 
 Three columns are not indicators and are worth separating now, because each gets
 its own section.
@@ -95,16 +96,16 @@ levels, which is the one check no amount of fit statistics can substitute for.
 | `descriptives()` | is there any between-group variance to model |
 | `multilpa()` | estimate the two-level model |
 | `summary()` | the whole fit on one screen, restarts included |
-| `get_data(what = "information_criteria")` | what the parameters cost, under both sample-size conventions |
-| `get_data()` | any part of the fit, as a tidy table |
+| `get_results(what = "information_criteria")` | what the parameters cost, under both sample-size conventions |
+| `get_results()` | any part of the fit, as a tidy table |
 | `plot()` | the measurement model, the class mixes, the diagnostics |
-| `get_data(what = "assignments")` | every observation beside a column of your own |
-| `lmr_lrt()` | whether the larger model is worth its parameters |
-| `get_data(what = "sequences" / "sequence_summary")` | the assignments in occasion order |
-| `fit_transitions()` / `get_data(what = "transitions")` | movement between profiles over the sequence |
+| `get_results(what = "assignments")` | every observation beside a column of your own |
+| `compare_models()` | compare fit criteria and supported likelihood-ratio summaries |
+| `get_results(what = "sequences" / "sequence_summary")` | the assignments in occasion order |
+| `lta()` / `get_results(what = "transitions")` | movement between profiles over the sequence |
 | `r3step()` | a covariate related to membership, after the model is fixed |
 | `multilpa()` | the same covariate, inside the model |
-| `get_data(what = "residuals")` | whether the independence assumption holds |
+| `get_results(what = "residuals")` | whether the independence assumption holds |
 | `diagnostics()` | entropy and classification quality in one call |
 | `parameter_inference()` | standard errors, with the qualification attached |
 
@@ -184,7 +185,7 @@ neither profile nor student class has an effective membership below one, so
 nothing has collapsed.
 
 ```{r criteria}
-get_data(fit, "information_criteria")
+get_results(fit, "information_criteria")
 ```
 
 The criteria are reported under both sample-size conventions because, for a
@@ -205,7 +206,7 @@ summary(three)
 ```
 
 ```{r three-criteria}
-get_data(three, "information_criteria")
+get_results(three, "information_criteria")
 ```
 
 This is not the comfortable outcome, and it is worth saying so before explaining
@@ -269,13 +270,13 @@ or when there are more of them than a line plot can label.
 
 ### Did it find what made the data?
 
-This is the check simulated data exist for. `get_data(what = "assignments")`
+This is the check simulated data exist for. `get_results(what = "assignments")`
 puts each
 enrolment's estimated profile in the same row as the column that generated it,
 so nothing has to be lined up by hand:
 
 ```{r recovery}
-recovery <- get_data(fit, "assignments", data = course_engagement)
+recovery <- get_results(fit, "assignments", data = course_engagement)
 
 xtabs(~ profile + engagement, data = recovery)
 ```
@@ -298,7 +299,7 @@ the estimator does what it says, which is the only thing a simulation can
 establish.
 
 Verbs that bring in a column the model never saw get their own function with its
-own documented arguments, rather than another `get_data(what = )` value.
+own documented arguments, rather than another `get_results(what = )` value.
 The verb owns the alignment: a frame with the wrong number of rows is
 refused, a frame whose indicator values disagree row by row with what the fit
 holds is refused, and a column its output would overwrite is an error rather
@@ -311,7 +312,7 @@ where the enrolments belonging to one student are tied together, and a student
 class is defined by nothing except the mix of profiles its enrolments produce.
 
 ```{r probabilities-table}
-get_data(fit, "profile_probabilities")
+get_results(fit, "profile_probabilities")
 ```
 
 ```{r probabilities-plot}
@@ -368,14 +369,14 @@ flat <- multilpa(course_engagement, vars = activity, id = "student",
                  n_profiles = 2, n_group_classes = 1, time = "sequence",
                  n_starts = 20, seed = 2026)
 
-get_data(flat, "profile_probabilities")
+get_results(flat, "profile_probabilities")
 ```
 
 One row per profile, one number each, and no way to ask the question. The
 two-class model also fits better by a wide margin:
 
 ```{r flat-criteria}
-get_data(flat, "information_criteria")
+get_results(flat, "information_criteria")
 ```
 
 Every criterion, under both conventions, prefers the two-class model over this
@@ -384,16 +385,15 @@ produced, and the contrast is the point: the criteria agree when the extra
 structure is real and argue when it is standing in for something else.
 
 ```{r compare}
-lmr_lrt(flat, fit)
+compare_models(flat, fit)
 ```
 
-The statistic is reported without a p-value on purpose. The
-Vermunt–Lo–Mendell–Rubin reference distribution is not implemented here, and a
-chi-square approximation to it is not a substitute, so the column is `NA` rather
-than misleading. The statistic and its adjusted version are large against two
-degrees of freedom, which is a reason to take the second level seriously; it is
-not a test, and this document does not report it as one. The criteria above are
-the verdict this document rests on.
+The comparison reports both models' information criteria. A class-count
+likelihood-ratio statistic does not have the ordinary chi-square reference
+because the null lies on a mixture boundary. For supported comparisons,
+`get_results(compare_models(...), "lmr")` reports the Vuong–Lo–Mendell–Rubin
+approximation; `bootstrap_lrt()` provides a simulated reference distribution.
+The criteria above provide descriptive evidence for comparing these models.
 
 ### The raw data agree, without being asked to
 
@@ -412,7 +412,7 @@ students no longer differ. The model was never shown this calculation; it is the
 data agreeing with the model on a quantity the model did not fit.
 
 ```{r group-posteriors}
-head(get_data(fit, "group_posteriors"))
+head(get_results(fit, "group_posteriors"))
 ```
 
 One row per student per class, with the student's own contribution to the
@@ -427,7 +427,7 @@ ignored it. This section reads it back, and then spends the same parameters on a
 model that uses it.
 
 ```{r sequence-summary}
-get_data(fit, "sequence_summary")
+get_results(fit, "sequence_summary")
 ```
 
 Every student contributes between ten and fifteen enrolments with no gaps, so
@@ -435,7 +435,7 @@ nothing in what follows is about attrition — the panel is ragged, not
 incomplete.
 
 ```{r sequences}
-head(get_data(fit, "sequences", format = "wide"), 8)
+head(get_results(fit, "sequences", format = "wide"), 8)
 ```
 
 ```{r sequences-plot, fig.width = 8, fig.height = 9}
@@ -452,16 +452,16 @@ the gap the next model closes.
 
 ### The model that uses order
 
-`fit_transitions()` estimates first-order transition probabilities between
+`lta()` estimates first-order transition probabilities between
 profiles across the occasions, by a forward–backward EM algorithm. On these data
 it costs **exactly the same number of parameters** as the mixture above.
 
 ```{r transitions}
-moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+moves <- lta(course_engagement, vars = activity, id = "student",
                          time = "sequence", n_profiles = 2,
                          n_starts = 20, seed = 2026)
 
-get_data(moves, "transitions")
+get_results(moves, "transitions")
 ```
 
 The `stable` column marks the diagonal — staying in the same profile from one
@@ -473,7 +473,7 @@ Now compare the two models on the criteria. Same data, same indicators, same
 number of parameters; the only difference is whether the ordering is used:
 
 ```{r moves-criteria}
-get_data(moves, "information_criteria")
+get_results(moves, "information_criteria")
 ```
 
 The ordered model reaches a higher likelihood for the same twenty-three
@@ -487,7 +487,7 @@ The improvement is not only in the likelihood. Run section 3's recovery check
 against the ordered model's assignments:
 
 ```{r transitions-recovery}
-recovery_moves <- get_data(moves, "assignments", data = course_engagement)
+recovery_moves <- get_results(moves, "assignments", data = course_engagement)
 
 xtabs(~ profile + engagement, data = recovery_moves)
 ```
@@ -506,7 +506,7 @@ A latent transition model can carry a second level of its own, letting different
 kinds of student have different transition matrices. Ask for one:
 
 ```{r transitions-two}
-moves_two <- fit_transitions(course_engagement, vars = activity, id = "student",
+moves_two <- lta(course_engagement, vars = activity, id = "student",
                              time = "sequence", n_profiles = 2,
                              n_group_classes = 2, n_starts = 20, seed = 2026)
 
@@ -514,7 +514,7 @@ summary(moves_two)
 ```
 
 ```{r transitions-two-transitions}
-get_data(moves_two, "transitions")
+get_results(moves_two, "transitions")
 ```
 
 Two very different regimes, and nothing here is on a boundary: no persistence is
@@ -527,12 +527,12 @@ which:
 
 ```{r transitions-two-recovery}
 xtabs(~ group_class + student_type,
-      data = unique(subset(get_data(moves_two, "assignments", data = course_engagement),
+      data = unique(subset(get_results(moves_two, "assignments", data = course_engagement),
                            select = c(student, student_type, group_class))))
 ```
 
 ```{r transitions-two-criteria}
-get_data(moves_two, "information_criteria")
+get_results(moves_two, "information_criteria")
 ```
 
 The verdict is mostly but not unanimously for the second level. AIC, KIC, BIC,
@@ -577,7 +577,7 @@ cov_fit <- multilpa(course_engagement, vars = activity, id = "student",
                           profile_covariates = "previous_grade",
                           time = "sequence", n_starts = 20, seed = 2026)
 
-get_data(cov_fit, "coefficients")
+get_results(cov_fit, "coefficients")
 ```
 
 Here is the label switching section 3 promised: in this fit `profile_1` is the
@@ -604,7 +604,7 @@ subset(parameter_inference(cov_fit), level != "measurement")
 ```
 
 ```{r covariates-criteria}
-get_data(cov_fit, "information_criteria")
+get_results(cov_fit, "information_criteria")
 ```
 
 Against section 2's table, one extra parameter buys an improvement on every
@@ -641,7 +641,7 @@ cov_flat <- multilpa(course_engagement, vars = activity, id = "student",
                            profile_covariates = "previous_grade",
                            time = "sequence", n_starts = 20, seed = 2026)
 
-get_data(cov_flat, "coefficients")
+get_results(cov_flat, "coefficients")
 
 head(as.data.frame(cov_flat), 5)
 ```
@@ -672,10 +672,10 @@ every within-profile covariance at zero.
 Nothing in the fit reports whether that constraint is reasonable. A model can be
 badly wrong in exactly this way and still converge from every start, replicate
 cleanly, and return a respectable entropy — sections 2 to 6 are the
-demonstration. `get_data(what = "residuals")` is the check.
+demonstration. `get_results(what = "residuals")` is the check.
 
 ```{r residuals}
-get_data(fit, "residuals")
+get_results(fit, "residuals")
 ```
 
 One row per pair of indicators per profile, worst first. `observed` is the
@@ -684,20 +684,20 @@ covariance model implies for it, and `residual` is the gap. Both are on the
 correlation scale, so the rows are comparable.
 
 This convicts. The largest gap is
-`r with(head(get_data(fit, "residuals"), 1), round(abs(residual), 3))`,
-**`r nrow(subset(get_data(fit, "residuals"), p_value < 0.05))`** of the
-**`r nrow(get_data(fit, "residuals"))`** pairs fall below the conventional level,
+`r with(head(get_results(fit, "residuals"), 1), round(abs(residual), 3))`,
+**`r nrow(subset(get_results(fit, "residuals"), p_value < 0.05))`** of the
+**`r nrow(get_results(fit, "residuals"))`** pairs fall below the conventional level,
 and the smallest p-values are not marginal — they are the kind that survive any
 correction you care to apply to twenty tests. This is not one unlucky pair in a
 family of comparisons. It is a structural feature of the data.
 
 And it names its own cause.
-**`r nrow(subset(get_data(fit, "residuals"), p_value < 0.05 & indicator_2 == "attendance"))`**
+**`r nrow(subset(get_results(fit, "residuals"), p_value < 0.05 & indicator_2 == "attendance"))`**
 of the significant pairs involve `attendance`, in both profiles, always
 positive. Pooling the profiles says the same thing more starkly:
 
 ```{r residuals-overall}
-get_data(fit, "residuals", by = "overall")
+get_results(fit, "residuals", by = "overall")
 ```
 
 Every pair involving `attendance` is significant; no pair among the four click
@@ -719,7 +719,7 @@ full <- multilpa(course_engagement, vars = activity, id = "student",
                  n_profiles = 2, n_group_classes = 2, time = "sequence",
                  n_starts = 20, covariance_model = "full", seed = 2026)
 
-get_data(full, "information_criteria")
+get_results(full, "information_criteria")
 ```
 
 Twenty extra parameters, and the log-likelihood improves by more than a hundred
@@ -730,12 +730,12 @@ the set and it also charges for classification entropy, which — as the next
 table shows — the unconstrained model spends.
 
 ```{r full-residuals}
-head(get_data(full, "residuals"), 4)
+head(get_results(full, "residuals"), 4)
 ```
 
 The residuals are gone: `expected` now tracks `observed` to four decimal places,
-and **`r nrow(subset(get_data(full, "residuals"), p_value < 0.05))`** of the
-`r nrow(get_data(full, "residuals"))` pairs is significant. The fix works, and it
+and **`r nrow(subset(get_results(full, "residuals"), p_value < 0.05))`** of the
+`r nrow(get_results(full, "residuals"))` pairs is significant. The fix works, and it
 works on the quantity the diagnostic was measuring rather than on some proxy for
 it.
 
@@ -750,7 +750,7 @@ Before rewriting six sections, check what actually changed.
 ```{r full-profiles}
 as.data.frame(full)
 
-get_data(full, "profile_probabilities")
+get_results(full, "profile_probabilities")
 ```
 
 The profiles are section 3's profiles, every mean within about a hundredth, and
@@ -761,9 +761,9 @@ profile in each kind — is unchanged.
 
 ```{r full-recovery}
 xtabs(~ profile + engagement,
-      data = get_data(full, "assignments", data = course_engagement))
+      data = get_results(full, "assignments", data = course_engagement))
 
-get_data(full, "entropy")
+get_results(full, "entropy")
 ```
 
 Recovery is fractionally *worse* than the diagonal model's, and the relative
@@ -792,7 +792,7 @@ summary(three_full)
 ```
 
 ```{r three-full-criteria}
-get_data(three_full, "information_criteria")
+get_results(three_full, "information_criteria")
 ```
 
 Everything that was clean about section 2's three-profile fit is now broken. The
@@ -836,13 +836,13 @@ reader who ran only this one verb.
 ### Entropy and classification quality
 
 ```{r entropy}
-get_data(fit, "entropy")
+get_results(fit, "entropy")
 ```
 
 Relative entropy is
-`r with(subset(get_data(fit, "entropy"), level == "individuals"), round(relative_entropy, 3))`
+`r with(subset(get_results(fit, "entropy"), level == "individuals"), round(relative_entropy, 3))`
 for enrolments and
-`r with(subset(get_data(fit, "entropy"), level == "groups"), round(relative_entropy, 3))`
+`r with(subset(get_results(fit, "entropy"), level == "groups"), round(relative_entropy, 3))`
 for students. Both are high enough that the modal assignments mean something,
 and the ordering between them is the interesting part: the students separate
 slightly *more* sharply than the individual enrolments do.
@@ -863,7 +863,7 @@ entropy of the two and is the worse model. A confident classifier and a correct
 one are different things.
 
 ```{r classification}
-get_data(fit, "classification", level = "both")
+get_results(fit, "classification", level = "both")
 ```
 
 The average posterior is near one at both levels, and the odds of correct
@@ -875,7 +875,7 @@ model separates poorly these two diverge, because the modal count claims a
 certainty the posteriors do not support.
 
 ```{r classification-errors}
-get_data(fit, "classification_errors", level = "individuals")
+get_results(fit, "classification_errors", level = "individuals")
 ```
 
 The same thing as a confusion matrix implied by the posteriors: how often an
@@ -918,7 +918,7 @@ loose <- multilpa(course_engagement, vars = activity, id = "student",
 head(parameter_inference(loose), 6)
 ```
 
-That warning is `multilpa_unconverged`, and it is worth believing rather than
+That warning is `latents_unconverged`, and it is worth believing rather than
 muffling. A loose tolerance is set for the *likelihood*, and the likelihood is
 flat near its maximum: stopping when it stops improving can leave the parameters
 at a point where the score is still appreciably far from zero. That residual
@@ -955,7 +955,7 @@ three-profile model replicated from twenty starts out of twenty, sat on no
 boundary, and beat two profiles on almost every information criterion — and it
 was an artefact of an assumption nobody had checked. The restart column, the
 boundary flag and the criteria are all necessary and none of them is sufficient.
-Run `get_data(what = "residuals")` before you believe a class count.
+Run `get_results(what = "residuals")` before you believe a class count.
 
 **The labels are arbitrary.** Section 6 produced one fit whose `profile_1` is
 the opposite of section 3's and then a second that switched back, and in both
@@ -994,7 +994,7 @@ about the estimator.
 Use `n_group_classes = 1` when the grouping exists only as a nuisance — the
 model then reduces to an ordinary latent profile analysis that still respects
 the clustering. Raise it above one when the question is about the units rather
-than the observations, as in sections 2 to 4. Use `fit_transitions()` when the
+than the observations, as in sections 2 to 4. Use `lta()` when the
 occasions are ordered and the question is about movement, as in section 5. Use
 `r3step()` when a covariate must not be allowed to reshape the measurement
 model, and `multilpa()` when you want the covariate estimated jointly and

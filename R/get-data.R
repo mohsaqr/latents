@@ -10,6 +10,12 @@
 #' `vcov_type` where the model has standard errors), and `as.data.frame()`,
 #' which returns its primary table, the same as `get_results(x)`.
 #'
+#' Tables joining caller-supplied columns to fitted rows check their alignment.
+#' Numeric columns may also match R's canonical CSV serialization, provided
+#' that serialization does not merge distinct values. This row-alignment check
+#' differs from the stricter fitted-data checks used for inference and model
+#' comparison; supplying unrelated columns alone cannot verify row order.
+#'
 #' @param x A fitted model of this package, an enumeration grid, a model
 #'   comparison, a bootstrap comparison, a starting-value set, a
 #'   classification-diagnostics object, or the summary of any of them.
@@ -471,7 +477,8 @@
 #'   proportion. Values near one indicate classification no better than the
 #'   class proportions alone; values of five or more are conventionally taken
 #'   as adequate separation. It is `NA_real_` when `average_posterior` is
-#'   missing, or when it or `estimated_proportion` is zero or one, so a
+#'   missing or zero, or when `estimated_proportion` is zero or one. A perfect
+#'   `average_posterior` of one gives `Inf` at an interior estimated proportion; a
 #'   single-class solution always reports `NA_real_`. `average_posterior` is
 #'   `NA_real_` for a class with no modal members. `n_modal` and
 #'   `estimated_n` differ whenever entropy is below one.

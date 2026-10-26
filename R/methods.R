@@ -381,7 +381,7 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
 logLik.multilpa <- function(object, ...) {
   stopifnot(inherits(object, "multilpa"))
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = object$n_groups, class = "logLik")
+            nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
 #' @rdname latents-model-methods
@@ -389,5 +389,5 @@ logLik.multilpa <- function(object, ...) {
 #' @importFrom stats nobs
 nobs.multilpa <- function(object, ...) {
   stopifnot(inherits(object, "multilpa"))
-  object$n_groups
+  .multilpa_group_sample_size(object)
 }

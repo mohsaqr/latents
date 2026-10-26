@@ -3,10 +3,11 @@
 #' Computes the likelihood-ratio statistic comparing two fitted models and the
 #' Lo-Mendell-Rubin small-sample adjustment of it. **No p-value is returned.**
 #' The reference distribution of this statistic under a class-count null is not
-#' chi-square, and the package does not reproduce the Vuong-Lo-Mendell-Rubin
-#' reference distribution, so reporting a chi-square tail probability here would
-#' be wrong rather than approximate. Use [bootstrap_lrt()] for a
-#' calibrated p-value.
+#' chi-square. This deferred function computes only the adjusted statistic;
+#' it does not compute the Vuong-Lo-Mendell-Rubin reference distribution.
+#' The shipped package provides that distribution for supported model
+#' comparisons through `get_results(compare_models(...), "lmr")`.
+#' [bootstrap_lrt()] provides a parametric-bootstrap alternative.
 #'
 #' @param null_model The smaller fitted `multilpa` model.
 #' @param alternative_model The larger fitted `multilpa` model, with strictly more
@@ -105,7 +106,9 @@ lmr_lrt <- function(null_model, alternative_model,
   fields <- c("n_observations", "n_groups", "vars", "id", "group_values",
               "group_index", "continuous", "categorical", "categorical_levels",
               "indicator_data", "categorical_data", "variance_model",
-              "covariance_model", "min_variance", "min_probability")
+              "covariance_model", "min_variance", "min_probability", "extra_data",
+              "weights", "sampling_weights", "centering", "scaling", "drop_empty",
+              "volume", "shape", "orientation", "prior", "noise")
   same <- all(vapply(fields, function(field)
     identical(null_model[[field]], alternative_model[[field]]), logical(1)))
   if (!same) {

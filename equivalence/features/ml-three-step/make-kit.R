@@ -12,6 +12,8 @@
 # the posteriors written for Latent GOLD (latents' own, full precision).
 # Rerunning rewrites the same files.
 
+source(file.path("validation", "fork-runtime.R"))
+invisible(.validation_fork_cores(2L))
 stopifnot("simulab is needed to build the kit" = requireNamespace("simulab", quietly = TRUE))
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 sys.source(file.path("equivalence", "features", "ml-three-step", "helpers.R"),
@@ -224,7 +226,7 @@ fitted <- parallel::mclapply(cases, \(case) {
        ids = inputs$ids, clusters = inputs$clusters,
        step1_log_likelihood = fit$log_likelihood, entropy = ml3_entropy(inputs$posteriors),
        modal_counts = tabulate(inputs$modal, ncol(inputs$posteriors)))
-}, mc.cores = 2L, mc.preschedule = FALSE)
+}, mc.cores = .validation_fork_cores(2L), mc.preschedule = FALSE)
 lost <- vapply(fitted, \(f) !is.list(f), logical(1))
 stopifnot("every case must fit" = !any(lost))
 cases <- Map(\(case, f) c(case, f), cases, fitted)
@@ -284,7 +286,7 @@ sweep_fitted <- parallel::mclapply(sweep, \(case) {
        step1_log_likelihood = fit$log_likelihood,
        entropy = ml3_entropy(fit$subject_posteriors),
        modal_counts = tabulate(fit$subject_profiles, case$spec$k))
-}, mc.cores = 2L, mc.preschedule = FALSE)
+}, mc.cores = .validation_fork_cores(2L), mc.preschedule = FALSE)
 stopifnot("every sweep case must fit" = all(vapply(sweep_fitted, is.list, logical(1))))
 sweep <- Map(\(case, f) c(case, f), sweep, sweep_fitted)
 

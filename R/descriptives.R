@@ -299,15 +299,17 @@ descriptives.multilpa_covariates <- descriptives.multilpa
 #' @return A single number, or `NA_real_` where the design cannot support one.
 #' @noRd
 .multilpa_icc <- function(values, groups) {
-  sizes <- tabulate(match(groups, unique(groups)))
+  index <- match(groups, unique(groups))
+  sizes <- tabulate(index)
   k <- length(sizes)
   n <- length(values)
   if (k < 2L || n <= k) return(NA_real_)
   grand_mean <- mean(values)
-  group_means <- vapply(split(values, groups), mean, numeric(1))
-  between <- sum(sizes * (group_means[match(unique(groups), names(group_means))] -
-                            grand_mean)^2) / (k - 1L)
-  within <- sum((values - group_means[match(groups, names(group_means))])^2) / (n - k)
+  # Integer indices preserve native identifiers that have identical printed
+  # labels (for example 0.3 and 0.1 + 0.2).
+  group_means <- vapply(split(values, index), mean, numeric(1))
+  between <- sum(sizes * (group_means - grand_mean)^2) / (k - 1L)
+  within <- sum((values - group_means[index])^2) / (n - k)
   if (!is.finite(between) || !is.finite(within)) return(NA_real_)
   n0 <- (n - sum(sizes^2) / n) / (k - 1L)
   denominator <- between + (n0 - 1) * within

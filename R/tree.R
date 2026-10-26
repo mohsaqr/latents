@@ -294,6 +294,17 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
   table <- .latents_grid_table(x)
   if (is.null(table$n_profiles)) table$n_profiles <- NA_integer_
   if (is.null(table$model)) table$model <- NA_character_
+  # A mover/stayer fit adds a stayer to the requested mover classes. Trees
+  # divide the fitted posterior columns, so their counts include that class.
+  fits <- .subset2(x, "fits")
+  stayer <- vapply(fits, function(fit) {
+    !is.null(fit) && !inherits(fit, "condition") && isTRUE(fit$mover_stayer)
+  }, logical(1))
+  if (any(stayer)) {
+    table$n_group_classes[stayer] <- vapply(fits[stayer], function(fit) {
+      ncol(fit$group_posteriors)
+    }, integer(1))
+  }
   table
 }
 

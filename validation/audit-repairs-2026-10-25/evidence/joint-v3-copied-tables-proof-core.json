@@ -1,0 +1,17 @@
+{
+  "source": "Copied output CSVs from the596validation-only joint-items affected-family run; no models rerun by this check.",
+  "retained_external_rows": 792,
+  "verified_polca_rows": 343,
+  "all_within_unchanged_tolerances": true,
+  "original_polca_rows": 343,
+  "original_polca_failure_rows": 5,
+  "original_failure_cases": [
+    "twopair_mod_05"
+  ],
+  "same_seed_nrep_tol_cases": 49,
+  "attempt_records": 980,
+  "verified_cap_hit_cases": 0,
+  "independent_polish_cases": 52,
+  "independent_reference_study_datasets": 140,
+  "whole_main_external_batch_pending": true
+}

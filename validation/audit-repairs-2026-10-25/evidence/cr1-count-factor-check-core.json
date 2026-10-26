@@ -1,0 +1,50 @@
+{
+  "claim_scope": "Supplied HTML section6.3, using its displayed G/(G-1) CR1 factor.",
+  "assumptions": [
+    "Same parameter coordinates, units, A and B in both covariance calculations.",
+    "Added groups have exactly zero scores and do not alter A or B.",
+    "Finite independent-group counts G >= Gstar >= 2; nonzero finite old SE."
+  ],
+  "derivation": "corrected_SE/old_SE = sqrt((Gstar/(Gstar-1))/(G/(G-1))) = sqrt(Gstar*(G-1)/(G*(Gstar-1))).",
+  "bound": "1 <= corrected_SE/old_SE < sqrt(2) for finite counts; sqrt(2) is the supremum as Gstar=2 and G grows.",
+  "justification": "g/(g-1) decreases from2 toward1 for g>=2; therefore1<=factor(Gstar)/factor(G)<2.",
+  "grid_points_checked": 94050,
+  "grid_minimum_ratio": 1,
+  "grid_maximum_ratio": 1.4135062787267696,
+  "examples": [
+    {
+      "informative": 60,
+      "counted": 100,
+      "corrected_to_old_SE_ratio": 1.0033841044270877
+    },
+    {
+      "informative": 2,
+      "counted": 100,
+      "corrected_to_old_SE_ratio": 1.407124727947029
+    },
+    {
+      "informative": 2,
+      "counted": 1000000000000,
+      "corrected_to_old_SE_ratio": 1.414213562372388
+    },
+    {
+      "informative": 20,
+      "counted": 20,
+      "corrected_to_old_SE_ratio": 1
+    }
+  ],
+  "conclusion": "The CR1 count multiplier alone cannot explain orders-of-magnitude SE deflation or an SE near1e-17 starting from an ordinary-scale SE.",
+  "limits": [
+    "This is a conditional formula check, not attribution of actual package failures.",
+    "Changes to information, scores, constraints, rank, parameter units or other finite-sample factors require separate analysis.",
+    "Existing nobs and R3STEP empty-person repairs are distinct and are not undone or reinterpreted by this bound."
+  ],
+  "no_production_changes": true,
+  "no_fits_or_studies_executed": true,
+  "check_script": "/private/tmp/latents-fix-20261025/cr1-count-factor-check-core.R",
+  "grid_ranges": {
+    "informative_groups": "2:100",
+    "counted_groups": "2:1000",
+    "restriction": "counted>=informative"
+  }
+}

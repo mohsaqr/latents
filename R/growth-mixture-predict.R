@@ -18,15 +18,7 @@
 .growth_new_spec <- function(object, newdata, with_response) {
   spec <- object$spec
   new <- .mixture_prediction_data(.mixture_new_spec(object, newdata, with_response))
-  random_frame <- .mixture_prediction_data(
-    stats::model.frame(spec$random, newdata, na.action = stats::na.fail))
-  new$random_design <- stats::model.matrix(spec$random, random_frame)
-  if (!identical(colnames(new$random_design), colnames(spec$random_design)) ||
-      any(!is.finite(new$random_design))) {
-    stop(errorCondition(paste(
-      "The random-effects design of `newdata` must be finite and have the",
-      "fitted columns."), class = "latents_bad_data", call = NULL))
-  }
+  new$random_design <- .growth_random_design(spec, newdata)
   new$sampling_weights <- NULL
   new$row_weights <- NULL
   if (.growth_is_correlated(spec)) {
@@ -35,6 +27,11 @@
       stop(errorCondition(sprintf(
         "`newdata` needs the residual time column `%s`, finite on every row.",
         spec$residual_time), class = "latents_bad_data", call = NULL))
+    }
+    if (identical(spec$residual_correlation, "brownian") && any(times < 0)) {
+      stop(errorCondition(
+        "Brownian residual times in `newdata` must be nonnegative.",
+        class = "latents_bad_data", call = NULL))
     }
     new$residual_times <- times
   }
@@ -55,6 +52,30 @@
       spec$n_cluster_classes, check_count = FALSE))
   }
   new
+}
+
+#' Random-effects design of new rows in the fitted coding
+#' @param spec The fitted growth specification.
+#' @param newdata Rows on which to evaluate the random formula.
+#' @return A finite matrix with the fitted columns and contrasts.
+#' @noRd
+.growth_random_design <- function(spec, newdata) {
+  random_terms <- spec$random_terms %||%
+    stats::terms(stats::model.frame(spec$random, spec$model_data))
+  xlevels <- spec$random_xlevels %||% stats::.getXlevels(
+    random_terms, stats::model.frame(random_terms, spec$model_data))
+  random_frame <- .mixture_prediction_data(
+    stats::model.frame(random_terms, newdata, xlev = xlevels,
+                       na.action = stats::na.fail))
+  design <- stats::model.matrix(random_terms, random_frame,
+    contrasts.arg = attr(spec$random_design, "contrasts"))
+  if (!identical(colnames(design), colnames(spec$random_design)) ||
+      any(!is.finite(design))) {
+    stop(errorCondition(paste(
+      "The random-effects design of `newdata` must be finite and have the",
+      "fitted columns."), class = "latents_bad_data", call = NULL))
+  }
+  design
 }
 
 #' Each row's mean under every class (persons' random effects at zero)

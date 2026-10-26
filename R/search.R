@@ -42,11 +42,12 @@
 
 #' The default start search of a profile model
 #'
-#' When every profile shares one covariance matrix (EII, EEI, EEE), the
-#' likelihood is bounded: no profile can collapse onto a point without
-#' lowering the density of every other (McLachlan & Peel, 2000, section 3.8).
-#' A higher maximum is then a better estimate, never a degenerate one, so the
-#' screened emEM search, which reaches more of them, is the default. With
+#' Sharing a covariance matrix (EII, EEI, EEE) removes the isolated-component
+#' collapse mechanism of profile-specific covariance models (McLachlan & Peel,
+#' 2000, section 3.8). The screened emEM search is the default for these models.
+#' Degenerate data or excessive class counts can still put a shared covariance
+#' on its floor, so boundary checks remain necessary; a higher likelihood does
+#' not guarantee a substantively better classification. With
 #' profile-specific covariances a higher maximum can be such a collapse, and
 #' the kmeans search stays the default.
 #'

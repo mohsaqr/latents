@@ -1,0 +1,1094 @@
+{
+  "created_UTC": "2026-10-25T23:26:52.193806+00:00",
+  "scope": "Portable copies of source-review ledgers, targeted agent repair evidence, independent reviews, and the final production snapshot manifest.",
+  "status": "complete_with_scoped_verification",
+  "original_audit_HEAD": "24773e6954bb7723aa75a34484a8e4638c32f1f6",
+  "final_production_snapshot_manifest_entries": 587,
+  "files": [
+    {
+      "file": "complete-function-review.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/complete-function-review.json",
+      "sha256": "b59cd832a0daa891bd70c8abad7f07acaf3874bd5f418657785267b0a146a760",
+      "bytes": 7628374,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "ledger-validation.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/ledger-validation.json",
+      "sha256": "844dc907c3ca9fd99b22a3a660856f540350b8520b84d9cdde8e7e9d1c256221",
+      "bytes": 829,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "unique-audit-scripts-review.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/unique-audit-scripts-review.json",
+      "sha256": "e49c128fdbc9fe13e2824a1d589bec95da038dda98da05eaf1cf6cb4d870de73",
+      "bytes": 855176,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "external-equivalence-review.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/external-equivalence-review.json",
+      "sha256": "d743fbcfd1d687b94ce24d5acf9f08bd80c8a426982ec49a0eb54fce097fcc8a",
+      "bytes": 979925,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "function-inventory.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/function-inventory.json",
+      "sha256": "6536303d3b9c86cdfe98e297dcf9994fef6675fc32227854289d13e38817a66b",
+      "bytes": 2106000,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "future-validation-review.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/future-validation-review.json",
+      "sha256": "dd31bc2a99d0ef19d01cc706652cc560ec5f774a76caae529731aa5236792098",
+      "bytes": 1210858,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "untracked-validation-classification.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/untracked-validation-classification.json",
+      "sha256": "76d1197e205db6d8aa85b90d9f4f29ada1a6810fac6c46930f26e8baea3cce47",
+      "bytes": 2034300,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "all-guide-review.json",
+      "source_path": "/private/tmp/latents-readonly-full-f6nw0493/all-guide-review.json",
+      "sha256": "41525afcacfb40a2fd492849220baca9c98f01b2ae39205915bbe7c31d0ecc20",
+      "bytes": 15800,
+      "purpose": "Original read-only source review; its own evidence limits and historical scope remain in force.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "after-function-audit-core-v2.json",
+      "source_path": "/private/tmp/latents-fix-20261025/after-function-audit-core-v2.json",
+      "sha256": "0ba62f46dd0ea058cc271e3827bc99b30d55328ad38dcdc1b008808a78831374",
+      "bytes": 14511263,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "after-function-audit-core-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/after-function-audit-core-summary.json",
+      "sha256": "bf60bc8ade140dfe0216cec7826683ce1497ec140fbbcd07902e6fa1f03a9029",
+      "bytes": 18085,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "after-supporting-validation-fork-review-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/after-supporting-validation-fork-review-core.json",
+      "sha256": "4cdc7a8ed1a46c888019cc9ac6a42ce02b998e926a63464c35029719421f60f9",
+      "bytes": 15487,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "report-claims-review-evidence-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/report-claims-review-evidence-core.json",
+      "sha256": "54f9c38dd586d76c452b9aeb7aca2460f7eaa8fad0fddb97aa09f98305dd1633",
+      "bytes": 843,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "report-condition-counterexample.json",
+      "source_path": "/private/tmp/latents-fix-20261025/report-condition-counterexample.json",
+      "sha256": "97a3f3b8b6bbaccf497cf30fd3e688b36ddd0ecf5b9d226b24b44a91351d092f",
+      "bytes": 88,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "categorical-arithmetic-proof-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/categorical-arithmetic-proof-core.json",
+      "sha256": "2e63b93e0f01bbacf67a7b5c2338640589cba1631c9db9e544379ba39cd62dee",
+      "bytes": 5151,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "direct-effects-validation-protocol-evidence-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json",
+      "sha256": "872d25765998c39f028a9593358746a7aff3fb59d505476e784c4989a19f453d",
+      "bytes": 16976,
+      "purpose": "Post-repair source review, targeted repair evidence, or claim-review support; does not establish final global verification.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "core-repair-evidence.json",
+      "source_path": "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+      "sha256": "dba2a6f04849de741577bf19320c870f4ee608748caf0da4c1075cd260c5d9d0",
+      "bytes": 6591,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "extensions-repair-evidence.json",
+      "source_path": "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+      "sha256": "cbaf5bc0450376bb2fd2e434f0f6091259ea3404c3db891a44fa741242cbf728",
+      "bytes": 13176,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "inference-repair-evidence.json",
+      "source_path": "/private/tmp/latents-fix-20261025/inference-repair-evidence.json",
+      "sha256": "82a2ea10b26d2dcfc0a468d1492a8a3e9c1760e57b8755e4518f28a2a9634f3b",
+      "bytes": 7931,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "ml3-optimizer-repair-evidence.json",
+      "source_path": "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json",
+      "sha256": "f243b8df5eb582f16d7a3782afac757437520ccb3cc07c8e17fc29eea8c5288c",
+      "bytes": 5273,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "nb-alignment-repair-evidence-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/nb-alignment-repair-evidence-core.json",
+      "sha256": "16e2d1fbb9a46016e0ef2ae051824506799e0e66468e24ec6285dafae0921f64",
+      "bytes": 3820,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "validation-fork-repair-evidence-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json",
+      "sha256": "45dcfd84c54166e8d399eb2664354354a770aa168e1477b84feae269232c060e",
+      "bytes": 104951,
+      "purpose": "Agent repair summary; targeted results and limitations are preserved from its recorded source/run.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-compatibility-v2-root.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-compatibility-v2-root.json",
+      "sha256": "8551b036cdb938d247f42936391bb50404ecd224d86874a79cadc8de5f18c582",
+      "bytes": 156,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-extension-after.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-extension-after.json",
+      "sha256": "e9ff341bec93fb05ea70a98895c91fa989c9f6217698b694cd57e0358e22dc3c",
+      "bytes": 901,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-extension-review.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-extension-review.json",
+      "sha256": "8570dbca6e6d6b82a8e7c4d1f015e4916ec24477d839269b9194bf170746ae6e",
+      "bytes": 6330,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-inference-review-core-before.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-inference-review-core-before.json",
+      "sha256": "8d8fa59d1635c39e4533b3337c80b52c8f805611517fe87f2acb02f565c7b25e",
+      "bytes": 5226,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-inference-review-core-weights-before.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-inference-review-core-weights-before.json",
+      "sha256": "4de2080ad75f006230c4a85405354d8b0ea5ebc7de8e5dff2a4f97403abc1006",
+      "bytes": 592,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-inference-review-core-weights.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-inference-review-core-weights.json",
+      "sha256": "37de0d35de0663654c2edf680be7ac2c0315ebc848d26ef0d9b4f0e3314ceb00",
+      "bytes": 323,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-inference-review-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-inference-review-core.json",
+      "sha256": "8ba6f9daaf4b1888bb62f924ffe946fcea4d181731e023f457d7473915cc1186",
+      "bytes": 6440,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-inference-review-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-inference-review-extensions.json",
+      "sha256": "898c50c93234e3e1e05ad538274da49433b94cdd64a40f53095f54f21460d8ef",
+      "bytes": 759,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-nb-boundary-review.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-nb-boundary-review.json",
+      "sha256": "482b9de2b961176b82fede834f2f94944d5a64d37662ccc7ea9ebb47c98516f6",
+      "bytes": 481,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-root-review-extensions-probes.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-root-review-extensions-probes.json",
+      "sha256": "b21cbf47d478cdce1e4f27c38da11e3f9749c8020f7b62f3ac9e4eddffb9738b",
+      "bytes": 415,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-root-review-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-root-review-extensions.json",
+      "sha256": "eb891f4d3caec1b9a7214656cc5d64516a5501000a3409d6af41d4b703564ea7",
+      "bytes": 7936,
+      "purpose": "Independent targeted review summary; before/after and source-specific limitations retained.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "production-source-manifest-587.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-source-2-manifest.json",
+      "sha256": "24d6b3cfaddddd77295387cc51bd9c5b84e3ec539d8d2228f03c37f072db55f5",
+      "bytes": 63271,
+      "purpose": "Frozen production snapshot manifest at copy time; later equivalence protocol updates do not change the certified 99-R source identity.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "verification-final-manifest.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-final-manifest.json",
+      "purpose": "Final592-entry source manifest; distinct from the retained587-entry production freeze.",
+      "sha256": "240db2261a721a7cf0c9c0f0d8274bf8a667cc3e5294f2a8b4ea788ec3ce31d5",
+      "bytes": 63871,
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "independent-validation-protocol-review-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-validation-protocol-review-inference.json",
+      "purpose": "Independent review of final external-validation protocols and their stated limitations.",
+      "sha256": "7ffbf73ab869371b0715b7f4d3cae7cca115c6ca271aca35674b3d6d1457aa74",
+      "bytes": 3188,
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "equivalence-validation-source-freeze-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/equivalence-validation-source-freeze-extensions.json",
+      "purpose": "Final immutable equivalence-protocol source hashes; resolves final-comment/source-provenance identity separately from earlier targeted run summaries.",
+      "sha256": "7e865d75aca46cf29f969a9dd8edd318c174a9b3297a119dfb15bcf17c4d5cba",
+      "bytes": 2080,
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "verification-status-v2.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-status-v2.json",
+      "purpose": "Historical interim receipt, preserved unchanged. Current complete status is verification-final-status.json.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "c41d7c02fb9363ef5aa7eb265e23986223711f2c826b6dd4dbdab8d0e87b5ecb",
+      "bytes": 4122,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "combined-unit-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/combined-unit-v2-summary.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "964298ae0dbb0cc5d8ff81501cc4309cb23c3b71907c62c29f730309ae342366",
+      "bytes": 275,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "full-unit-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/full-unit-v2-summary.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "4dff6977633df0ee4f0630ebb14d96739782501a0f34436cd000297403396113",
+      "bytes": 292,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "fork-verification-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/fork-verification-v2-summary.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "01559d4b7126e1abebbb1c47d96c0b79a673ee7695ddbb937984511f62d319b6",
+      "bytes": 233,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "guide-verification-v2-results.json",
+      "source_path": "/private/tmp/latents-fix-20261025/guide-verification-v2-results.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "5fb4d5cdf9e0e6c5bedf2ab622f73674de26c55eb3bb900037bf5aab45c66261",
+      "bytes": 6096,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "harness-selftest-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/harness-selftest-v2-summary.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "084e0d68d609f614d5c2071b003645161e1dc14fcda6d6b291abdd1c0dced983",
+      "bytes": 165,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "preflight-final-families-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/preflight-final-families-inference.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "77165d37dcfb6b8777d76a51d6b107fbfb92a90b0b3351cd24e6d9e259cbef2d",
+      "bytes": 1318,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "preserved-preexisting-artifacts-v2.json",
+      "source_path": "/private/tmp/latents-fix-20261025/preserved-preexisting-artifacts-v2.json",
+      "purpose": "Completed verification-gate summary copied from the final source run; the receipt explicitly leaves final external equivalence pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "6c1411a4db3e6cfe00a855ae626e6a6e3d52fda4c45099bb3b4705e734f06b90",
+      "bytes": 532,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "native-check-final.log",
+      "source_path": "/private/tmp/latents-fix-20261025/native-installed/latents.Rcheck/00check.log",
+      "purpose": "Final native R CMD check log, including installed tests; environment/check limitations are stated in the copied verification receipt.",
+      "kind": "log",
+      "media_type": "text/plain",
+      "sha256": "0d91299ccb02b02f60873a1a09109a7ff0b71804c59ce6ae5f6914f1e2bfff9f",
+      "bytes": 3322,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "final-package-lint-complete.log",
+      "source_path": "/private/tmp/latents-fix-20261025/final-package-lint-complete.log",
+      "purpose": "Final configured package lint output.",
+      "kind": "log",
+      "media_type": "text/plain",
+      "sha256": "1d670927d1333b233cea04397076e6a9d4a87f4983ebc7a0ba98796798d9acf1",
+      "bytes": 20,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "support-fork-repair-evidence-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/support-fork-repair-evidence-core.json",
+      "sha256": "49aa7a44d47e885f392a128282de48609e80b2491cda15b6041c7f98e8293a43",
+      "bytes": 5157,
+      "purpose": "Later EQ/support-only fork safety extension: exact scientific AST/call preservation and pure mock-runtime tests; no historical study or kit execution. R/tests/man remain frozen.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "support-fork-protocol-proof-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/support-fork-protocol-proof-core.json",
+      "sha256": "e9e9c099f54c6dfc4398497fdad9f68806773038cd0f3c0bc9bee672f2a0b64b",
+      "bytes": 3116,
+      "purpose": "Later EQ/support-only fork safety extension: exact scientific AST/call preservation and pure mock-runtime tests; no historical study or kit execution. R/tests/man remain frozen.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "support-fork-source-diffs-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/support-fork-source-diffs-core.json",
+      "sha256": "c0de479c5088a229b08d7502b01d46e68e8be975bfca344d2a5b10d981dcf909",
+      "bytes": 31042,
+      "purpose": "Later EQ/support-only fork safety extension: exact scientific AST/call preservation and pure mock-runtime tests; no historical study or kit execution. R/tests/man remain frozen.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "support-fork-pure-tests-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/support-fork-pure-tests-core.json",
+      "sha256": "3d6d8bc84ce00c288090b1cde6263d4449fddb48ed6f6f4dc04930fbdbc52bc3",
+      "bytes": 1389,
+      "purpose": "Later EQ/support-only fork safety extension: exact scientific AST/call preservation and pure mock-runtime tests; no historical study or kit execution. R/tests/man remain frozen.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "verification-toplevel-phase-manifest.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-toplevel-phase-manifest.json",
+      "purpose": "594-entry top-level-phase source/fork safety proof; production gate provenance remains592 and original freeze587. Final external runtime remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "ee44ea43ea085c5ccc4d1b9f68419adb97cf61448c95ee8984a82bc8b32c1dfb",
+      "bytes": 64094,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "toplevel-phase-freeze-receipt.json",
+      "source_path": "/private/tmp/latents-fix-20261025/toplevel-phase-freeze-receipt.json",
+      "purpose": "594-entry top-level-phase source/fork safety proof; production gate provenance remains592 and original freeze587. Final external runtime remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "8b45a83ea8ededac0906a90abb74dac58c98d7fc306c71c9a98ca9bb08e9175e",
+      "bytes": 487,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "toplevel-phase-source-proof-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/toplevel-phase-source-proof-core.json",
+      "purpose": "594-entry top-level-phase source/fork safety proof; production gate provenance remains592 and original freeze587. Final external runtime remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "b05e1b89ed97921462f640078333e24b037232963c697ca77d75e8529410d99d",
+      "bytes": 1797,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "vlmr-runtime-source-freeze-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/vlmr-runtime-source-freeze-extensions.json",
+      "purpose": "594-entry top-level-phase source/fork safety proof; production gate provenance remains592 and original freeze587. Final external runtime remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "f1f6395068a6ac717137157d325896287a5b705cd3ca5079de36b66fb09f5305",
+      "bytes": 1185,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "vlmr-runtime-overlay-receipt.json",
+      "source_path": "/private/tmp/latents-fix-20261025/vlmr-runtime-overlay-receipt.json",
+      "purpose": "594-entry top-level-phase source/fork safety proof; production gate provenance remains592 and original freeze587. Final external runtime remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "314e8240cbc3ce687fec033ce691833b699a5acfd99f53058ef34f77d51b51e7",
+      "bytes": 483,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "development-equivalence-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/development-equivalence-v2-summary.json",
+      "sha256": "2652c0d0862123872013077452f23fcdb83024a3a8ce8db440f516a72cf00466",
+      "bytes": 139,
+      "purpose": "Completed final development/harness phase; quantity-specific tolerances, retained commercial references, full top-level kits still pending.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "external-harness-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/external-harness-v2-summary.json",
+      "sha256": "a8682d1783d56bd0a5b337a3b18c7c844598526715bb09cef831f50c11fb480f",
+      "bytes": 334,
+      "purpose": "Completed final development/harness phase; quantity-specific tolerances, retained commercial references, full top-level kits still pending.",
+      "copy_byte_identical": true,
+      "kind": "json",
+      "media_type": "application/json"
+    },
+    {
+      "file": "external-harness-v2-comparisons.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-harness-v2/report.csv",
+      "sha256": "281ceca8730a73a1e5e5017ae6f1a658dfddc72688372a4b93cd924571d85281",
+      "bytes": 173425,
+      "purpose": "Completed final development/harness phase; quantity-specific tolerances, retained commercial references, full top-level kits still pending.",
+      "copy_byte_identical": true,
+      "kind": "csv",
+      "media_type": "text/csv"
+    },
+    {
+      "file": "external-harness-v2-suites.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-harness-v2/suites.csv",
+      "sha256": "57de10f38ce3e5d42438ff70f384cb9a74878bb74434355ebf276932e2e3ade5",
+      "bytes": 390,
+      "purpose": "Completed final development/harness phase; quantity-specific tolerances, retained commercial references, full top-level kits still pending.",
+      "copy_byte_identical": true,
+      "kind": "csv",
+      "media_type": "text/csv"
+    },
+    {
+      "file": "verification-joint-v3-manifest.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-joint-v3-manifest.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "1aaa1c473cd03856b312ab00cfeab91d694cf158bd9bfbe08c454a55cf39ad02",
+      "bytes": 64337,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-v3-freeze-receipt.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-v3-freeze-receipt.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "bb58de58bfbcef072b7a1690ba7025884ea9835e5a5a97ad55f0f544d486ef30",
+      "bytes": 729,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-v3-source-proof-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-v3-source-proof-core.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "67335481dac6a312cf37ae57d5efefa51a5727456f1c2e26e4187a0a26ddeab1",
+      "bytes": 815,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-reference-optimizer-source-freeze-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-reference-optimizer-source-freeze-extensions.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "15148259763a5f8f9db20a21fe5e93663b66992e60d73835de02643f5aa7ddec",
+      "bytes": 2294,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "independent-joint-reference-review-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-joint-reference-review-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "739d0a9733e953570087fd8459e64e9c86595def309bcb536fd3e9da7aabfdb2",
+      "bytes": 1769,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "polca-protocol-source-freeze-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/polca-protocol-source-freeze-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "fd315e59a4718b7915ce112765999ec41b752f69347fac6da35b0d8f42772a9a",
+      "bytes": 1178,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "independent-polca-protocol-review-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-polca-protocol-review-extensions.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "a34fbb98e58d067114cc2fee715483477517444ddcee86e5e5acdfbae359a2c8",
+      "bytes": 1929,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "polca-cap-diagnosis-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/polca-cap-diagnosis-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "cb445560b578b046d4eef752958b79c64337dbb06a0edf2f05791a63a76ad6ec",
+      "bytes": 6380,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "polca-approved-protocol-replay-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/polca-approved-protocol-replay-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "20a2a1c95da7bc767d89514c5af1b7fdb3b0710c60c954af7bf12f3e30598c49",
+      "bytes": 4001,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "polca-scientific-certificate-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/polca-scientific-certificate-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "54c7b11daf1beff6643cd8e2044bb31ecd2991b99363d7723919cf9aa17a3ddc",
+      "bytes": 886,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "polca-protocol-tests-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/polca-protocol-tests-inference.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "3479d132d1bc830a1e99b62857435fc438c590a6218beadca17173ace3af9a2a",
+      "bytes": 80,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-negative-polish-diagnosis-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-negative-polish-diagnosis-extensions.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "b159af68f298baa0d2722e235e73fb646bb4ff6c47b98fea78f2a95e09c55080",
+      "bytes": 1283,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-negative-polish-repaired-extensions.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-negative-polish-repaired-extensions.json",
+      "purpose": "596-entry validation-only joint-items reference/comparator overlay. Focused checks and independent review are not the pending whole affected-run result.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "e50adb0976d1034fba8477337c0d51807b6b6faa2760c3f9343991e6a52d8c97",
+      "bytes": 1929,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-items-negative-polish-failure-v2/manifest.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/manifest.json",
+      "purpose": "Original pre-repair failing CSV hashes and paths, preserved unchanged.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "ccc3c525c9b13340e3dad58f019d618877a905fab8cc4984ec09d97fee998706",
+      "bytes": 682,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-items-negative-polish-failure-v2/strict-polish-gaps.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/strict-polish-gaps.csv",
+      "purpose": "Preserved pre-repair failure/diagnostic table; not current passing evidence. Byte identity checked against original failure hash manifest.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "cb1b54384f9865fc73bfb3db05ac384fe49d4b6e206144253bc0f8d95ce2ec8f",
+      "bytes": 7568,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-items-negative-polish-failure-v2/comparison.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/comparison.csv",
+      "purpose": "Preserved pre-repair failure/diagnostic table; not current passing evidence. Byte identity checked against original failure hash manifest.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "f0e712578f202377b3c4bf12ad0c4c5083176f4c5f67bc04fb41d24938a78072",
+      "bytes": 55138,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-items-negative-polish-failure-v2/original-seed-diagnostics.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/original-seed-diagnostics.csv",
+      "purpose": "Preserved pre-repair failure/diagnostic table; not current passing evidence. Byte identity checked against original failure hash manifest.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "f6437ec26e77da2c6e0fbeb1ca62ff703060963cd0b6c1b43ffd1df89bf9072f",
+      "bytes": 21993,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-v3-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-v3-summary.json",
+      "purpose": "Completed596joint-item affected-family run or independent copied-table check; does not certify the still-running main594whole batch.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "eeddac57f5df8068c8270d32e57d4e97f55ff6d91391fb2efe78576d2eae5796",
+      "bytes": 421,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-v3-comparison-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-v3-comparison-summary.json",
+      "purpose": "Completed596joint-item affected-family run or independent copied-table check; does not certify the still-running main594whole batch.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "94aa1b3910b93f8778e6b6dcb2887823fa5e8497b56419779002846a7c755d3c",
+      "bytes": 819,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "joint-v3-copied-tables-proof-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/joint-v3-copied-tables-proof-core.json",
+      "purpose": "Completed596joint-item affected-family run or independent copied-table check; does not certify the still-running main594whole batch.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "2d537dca7d27fd22f02cf9a96b8f3d241b7a139b033142fc0f55edce9279b653",
+      "bytes": 572,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/comparison.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/comparison.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "f0e712578f202377b3c4bf12ad0c4c5083176f4c5f67bc04fb41d24938a78072",
+      "bytes": 55138,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/original-seed-diagnostics.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/original-seed-diagnostics.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "e20ac9283309a219b35ebf2afe6d1f613b9cfa6b91eab97b153850e480463a1c",
+      "bytes": 21884,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/polca-attempts.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/polca-attempts.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "804c4bee64b9cb32f04df147a83333a95f283a1090a4fa9099b31da44c62bfb1",
+      "bytes": 75821,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/polca-cap-diagnostics.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/polca-cap-diagnostics.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "f747576644be1efc6f1d96f79fa91d7f65e78c4e9242f5a11e22517215062652",
+      "bytes": 7849,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/polca-comparison.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/polca-comparison.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "5b4503f3023beab0ba192b760f159cb8ee9afe05d7ec08c89be29a774d53e370",
+      "bytes": 22233,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/polca-original-cap-comparison.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/polca-original-cap-comparison.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "baa3a44b6b2f0af49e28541a221860c9ce8dedc3686d0cf55cc34fdea289465b",
+      "bytes": 22231,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/reference-study.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/reference-study.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "00e11c4f806a64a838df93aa12563cf93033a7f012f5a28cc217bee7f48cf4c8",
+      "bytes": 38639,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-validation-artifacts-joint-v3/joint-items/strict-polish-gaps.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/external-validation-artifacts-joint-v3/joint-items/strict-polish-gaps.csv",
+      "purpose": "Complete affected-family output table. Original20k-cap comparisons/attempts remain alongside fixed200k verification outputs; tolerances unchanged.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "0d5d512d35fd3d9abe7618d7d439e8b61165732dbafa388f79785753fe04ee67",
+      "bytes": 7353,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "ml3-final-comparison-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/ml3-final-comparison-summary.json",
+      "purpose": "Completed ML3 phase within main594 run:2014reportedpasses,193measurementrefits,6328finite quantity comparisons within declared tolerances. Whole main batch remains pending.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "b2c96be6b15693e648f2b5808827d30877a57e2bf17be240e4fc80d20f0a2ace",
+      "bytes": 482,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "completed-ml3-phase/comparisons.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-source-2/equivalence/features/ml-three-step/comparisons.csv",
+      "purpose": "Completed ML3 phase within main594 run:2014reportedpasses,193measurementrefits,6328finite quantity comparisons within declared tolerances. Whole main batch remains pending.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "35228789679afd2eeac6625738a3c91add755f7aafcd0915f32c6dbe1dba3521",
+      "bytes": 581096,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "completed-ml3-phase/maxima.csv",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-source-2/equivalence/features/ml-three-step/maxima.csv",
+      "purpose": "Completed ML3 phase within main594 run:2014reportedpasses,193measurementrefits,6328finite quantity comparisons within declared tolerances. Whole main batch remains pending.",
+      "kind": "csv",
+      "media_type": "text/csv",
+      "sha256": "19ed00f79f2ca929b2573814aaebf96b3c161fb570197ac4ced9f57815e33a51",
+      "bytes": 4732,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "cr1-count-factor-check-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/cr1-count-factor-check-core.json",
+      "purpose": "Conditional closed-form review of supplied report section6.3; fixed A/B and units, finite G>=Gstar>=2. No package fits/studies or attribution of actual failures.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "bdf8229946ec23025dc7fbc60098be9809f97d65cfeaaec1bbed5c22dd768625",
+      "bytes": 2037,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "final-external-verification-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/final-external-verification-summary.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "8999905c8aec43fb5fcbfb907532636bc30844a62118a5b953ce35b412334e3d",
+      "bytes": 1023,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "external-equivalence-v2-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/external-equivalence-v2-summary.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "3a2b8c136fc54adcdab6ee34beb6b781d7266345a866a4b263572d1ac53f8def",
+      "bytes": 142,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "final-external-warning-summary.json",
+      "source_path": "/private/tmp/latents-fix-20261025/final-external-warning-summary.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "808e2a9516ed0ec6b4a2a9959f907063cb067f7a6eff598d0b14b3756c902e40",
+      "bytes": 261,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "preserved-preexisting-artifacts-final.json",
+      "source_path": "/private/tmp/latents-fix-20261025/preserved-preexisting-artifacts-final.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "6c1411a4db3e6cfe00a855ae626e6a6e3d52fda4c45099bb3b4705e734f06b90",
+      "bytes": 532,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "verification-final-status.json",
+      "source_path": "/private/tmp/latents-fix-20261025/verification-final-status.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "09c8af8ae26b17d718bc20a36cebd7104ba6e8d5b2a17b1e7b148d18b9c325dc",
+      "bytes": 7850,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "independent-final-verification-inference.json",
+      "source_path": "/private/tmp/latents-fix-20261025/independent-final-verification-inference.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "7fda2439f3b647e267c8643aa24bb31cf1b0358a594767697afaab0d5328c73b",
+      "bytes": 4074,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "main594-finished-log-provenance-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/main594-finished-log-provenance-core.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "ccf0c9a518df1e882650d1894b6c14167ec8dbd14fbd5ee615d51d744f1876a1",
+      "bytes": 667,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "growth-blrt99-pre-repair-provenance-core.json",
+      "source_path": "/private/tmp/latents-fix-20261025/growth-blrt99-pre-repair-provenance-core.json",
+      "purpose": "Final scoped verification receipt, independent consolidation/source review, preserved original failure provenance, or explicitly historical BLRT99evidence. Scope and limits are retained in each receipt.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "e04a76289cef9a0024c8d2face9d5283cb88097eba2210818af87c3625ec40c2",
+      "bytes": 727,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "main594-finished-log-tail.log",
+      "source_path": "/private/tmp/latents-fix-20261025/main594-finished-log-tail.log",
+      "purpose": "Exact last80lines of completed original50file main log, including old JI failure output. Full source-log SHA/line range recorded in matching provenance JSON; final consolidation replaces complete affected files.",
+      "kind": "log",
+      "media_type": "text/plain",
+      "sha256": "a78ecfc030371a38877653b5526518d3acbd1fb9381ede688c75c5b245adfab8",
+      "bytes": 7723,
+      "copy_byte_identical": true
+    },
+    {
+      "file": "issues-final.json",
+      "source_path": "/Users/mohammedsaqr/Documents/Github/latents/validation/audit-repairs-2026-10-25/issues.json",
+      "purpose": "Root final53issue-group closure ledger with documented remaining limits; source original retained unchanged.",
+      "kind": "json",
+      "media_type": "application/json",
+      "sha256": "ac0a3de19f9476d0258e6d216bc7755f6c3eebd5b3ca18b3d0e5a89bb3912711",
+      "bytes": 34742,
+      "copy_byte_identical": true
+    }
+  ],
+  "limits": [
+    "Original JSON bytes and their historical claims/limits are preserved; original absolute raw-output paths can remain temporary.",
+    "No installed libraries, package binaries, RDS fixtures, or raw log collections were copied.",
+    "A static reference to a test is not runtime branch coverage or a universal mathematical proof.",
+    "Copying a historical or before-repair result does not make it current final verification evidence.",
+    "Final52file consolidation is original whole main batch plus complete affected-family rerun, not a new single run of all52files after overlay.",
+    "All29external warning-journal events are classified thinGaussian support; development has1additional such warning.",
+    "Historical interim receipts are retained; verification-final-status.json is the current complete receipt.",
+    "Only three explicitly requested small logs are copied: native check, lint, and original main finished tail. Giant rawlogs remain temporary.",
+    "Finite verification does not certify global optima, all default search results, bitwise CRAN compatibility, or a fresh post-repair99replicate growth BLRT run."
+  ],
+  "updated_UTC": "2026-10-26T06:39:27.012110+00:00",
+  "final_source_manifest_entries": 592,
+  "final_source_manifest_sha256": "240db2261a721a7cf0c9c0f0d8274bf8a667cc3e5294f2a8b4ea788ec3ce31d5",
+  "production_freeze_to_final_continuity": {
+    "protected_R_tests_man_vignettes_entries": 384,
+    "unchanged_hashes": true,
+    "earlier_production_freeze_entries": 587,
+    "final_source_entries": 592
+  },
+  "final_equivalence_freeze_hashes_match_final_manifest": true,
+  "runtime_receipt": "verification-final-status.json",
+  "copied_file_kinds": {
+    "json": 83,
+    "log": 3,
+    "csv": 15
+  },
+  "later_supporting_protocol_extension": "21 raw research runners/23 mclapply calls preflight-guarded;2 explicitly seeded ML3/VLMR helper dispatchers serial-safe. No historical studies/kits rerun. All384R/test/man/vignette hashes unchanged.",
+  "top_level_phase_source_manifest_entries": 594,
+  "top_level_phase_source_manifest_sha256": "ee44ea43ea085c5ccc4d1b9f68419adb97cf61448c95ee8984a82bc8b32c1dfb",
+  "joint_validation_overlay": {
+    "entries": 596,
+    "manifest_sha256": "1aaa1c473cd03856b312ab00cfeab91d694cf158bd9bfbe08c454a55cf39ad02",
+    "stage": "verification-source-joint-v3",
+    "main594_stage_unchanged": true,
+    "protected384_unchanged": true,
+    "scope": "Full affected4-file joint-items rerun passed164assertions. Final consolidated52-file result retains originalmain50-file2findings and replaces complete affected files."
+  },
+  "joint_validation_overlay_completed_runtime": {
+    "files": 4,
+    "cases": 25,
+    "assertions": 164,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 0,
+    "skips": 0,
+    "main_whole_batch_pending": false
+  },
+  "completed_ML3_runtime_phase": {
+    "summary": "ml3-final-comparison-summary.json",
+    "phase": "completed ML3 file within main594 run",
+    "reported_passing_assertions": 2014,
+    "measurement_refits": 193,
+    "finite_comparison_quantity_rows": 6328,
+    "outside_declared_tolerance": 0,
+    "limits": "Completed phase included in the final52file consolidation, with no universal/global-optimum guarantee."
+  },
+  "historical_interim_runtime_receipts": [
+    "verification-status-v2.json"
+  ],
+  "final_external_verification": {
+    "files": 52,
+    "cases": 400,
+    "passed": 21159,
+    "failed": 0,
+    "error": 0,
+    "skipped": 0,
+    "in_case_warnings": 4,
+    "setup_warnings": 25,
+    "all29warnings_thin_Gaussian_support": true,
+    "development_additional_known_warning": 1,
+    "whole_file_replacement_review": "independent-final-verification-inference.json"
+  },
+  "completed_UTC": "2026-10-26T06:34:19.689412+00:00",
+  "root_final_issue_ledger": "issues-final.json"
+}

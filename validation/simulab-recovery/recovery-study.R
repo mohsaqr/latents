@@ -78,8 +78,21 @@ tolerance <- 0.1
 ## with rows and columns in a stated order rather than whatever order the
 ## accessor happened to emit.
 .as_parameter_matrix <- function(table, value, row, column, columns) {
+  stopifnot("parameter cells must be a data frame" = is.data.frame(table),
+            "parameter fields must name table columns" =
+              all(c(value, row, column) %in% names(table)),
+            "requested columns must be distinct" =
+              is.character(columns) && length(columns) > 0L && !anyNA(columns) &&
+                !anyDuplicated(columns))
+  keys <- table[c(row, column)]
+  stopifnot("the accessor must supply exactly one value per cell" =
+              nrow(table) > 0L && !anyNA(keys) && !anyDuplicated(keys) &&
+                setequal(as.character(table[[column]]), columns) &&
+                nrow(table) == length(unique(table[[row]])) * length(columns),
+            "parameter estimates must be finite numbers" =
+              is.numeric(table[[value]]) && all(is.finite(table[[value]])))
   wide <- stats::xtabs(stats::reformulate(c(row, column), response = value),
-                       data = table)
+                       data = table, drop.unused.levels = TRUE)
   result <- matrix(wide[, columns], nrow = nrow(wide),
                    dimnames = list(NULL, columns))
   stopifnot("the accessor must supply one value per cell" = !anyNA(result))

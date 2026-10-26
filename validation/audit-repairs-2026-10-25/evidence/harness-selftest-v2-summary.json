@@ -1,0 +1,6 @@
+{
+  "status": "passed",
+  "assertions": 56,
+  "source": "equivalence/harness/test-harness.R",
+  "log": "/private/tmp/latents-fix-20261025/harness-selftest-v2.log"
+}

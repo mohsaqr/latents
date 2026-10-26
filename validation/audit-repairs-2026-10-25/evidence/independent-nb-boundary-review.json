@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "zero_signature": [
+    [0, 0, 0.8],
+    [0, 0, 0.2]
+  ],
+  "partial_signature": [
+    [0, 0, 0.8],
+    [0.5941, 1.0986, 0.2]
+  ],
+  "partial_swap": [2, 1],
+  "positive_dispersion_swap": [2, 1],
+  "poisson_arithmetic_identical": true,
+  "public_zero_count_guard": "Count indicator `c` is zero throughout; a Poisson mean is not identified.",
+  "scope": "Independent helper boundaries and public zero-column guard; no refitted mixed-class boundary claim"
+}

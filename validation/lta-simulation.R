@@ -6,6 +6,7 @@
 # Run from the project root: Rscript validation/lta-simulation.R
 # Outputs: lta-simulation-{replicates,summary}.csv, lta-simulation.txt
 
+source(file.path("validation", "fork-runtime.R"))
 devtools::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 out_dir <- "validation"
@@ -189,7 +190,7 @@ replicates <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), function(k)
                conditions = paste("error:", conditionMessage(error)),
                stringsAsFactors = FALSE)
   })
-}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE))
+}, mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 1L)), mc.set.seed = TRUE))
 elapsed <- as.numeric(difftime(Sys.time(), started, units = "mins"))
 utils::write.csv(replicates, file.path(out_dir, "lta-simulation-replicates.csv"),
                  row.names = FALSE)

@@ -1,0 +1,190 @@
+{
+  "case": "twopair_mod_05",
+  "production_log_likelihood": -2916.7570119426182,
+  "independent_log_likelihood": -2916.7570116798379,
+  "runs": [
+    {
+      "maxiter": 20000,
+      "seed": 20266025,
+      "nrep": 10,
+      "tol": 9.9999999999999998e-13,
+      "selected_numiter": 20000,
+      "attempt_iterations": [20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000],
+      "attempt_log_likelihoods": [-2916.7570569993004, -2916.757057265605, -2916.7570587820492, -2916.7570593430146, -2916.7570685785313, -2916.7570579070975, -2916.7570720922622, -2916.7570695296622, -2916.7570490118028, -2916.7570601147977],
+      "log_likelihood": -2916.7570490118028,
+      "remaining_gap_to_independent": 3.733196490429691e-05,
+      "winning_final_gains": [5.659330781782046e-09, 5.7052602642215788e-09, 5.6647877499926835e-09, 5.6938915804494172e-09, 5.6738826970104128e-09, 5.6811586546245962e-09, 5.6616045185364783e-09, 5.683887138729915e-09, 5.6884346122387797e-09, 5.6575117923785001e-09],
+      "comparison": [
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "n_parameters",
+          "n": 1,
+          "difference": 0,
+          "tolerance": 0
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "bic",
+          "n": 1,
+          "difference": 7.4138369200227316e-05,
+          "tolerance": 6.0355140238852365e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "joint_unobserved_floor",
+          "n": 0,
+          "difference": 0,
+          "tolerance": 0
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "log_likelihood",
+          "n": 1,
+          "difference": 3.7069184600113658e-05,
+          "tolerance": 3.0177570119426182e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "class_sizes",
+          "n": 3,
+          "difference": 0.00032176829801872087,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "probabilities",
+          "n": 36,
+          "difference": 0.0010811495570127727,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "posteriors",
+          "n": 2400,
+          "difference": 0.0025792868440822382,
+          "tolerance": 0.00060000000000000006
+        }
+      ],
+      "failed_rows": [
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "bic",
+          "n": 1,
+          "difference": 7.4138369200227316e-05,
+          "tolerance": 6.0355140238852365e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "log_likelihood",
+          "n": 1,
+          "difference": 3.7069184600113658e-05,
+          "tolerance": 3.0177570119426182e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "class_sizes",
+          "n": 3,
+          "difference": 0.00032176829801872087,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "probabilities",
+          "n": 36,
+          "difference": 0.0010811495570127727,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "posteriors",
+          "n": 2400,
+          "difference": 0.0025792868440822382,
+          "tolerance": 0.00060000000000000006
+        }
+      ]
+    },
+    {
+      "maxiter": 200000,
+      "seed": 20266025,
+      "nrep": 10,
+      "tol": 9.9999999999999998e-13,
+      "selected_numiter": 56767,
+      "attempt_iterations": [54540, 55585, 56767, 55938, 56406, 55831, 57705, 57292, 54898, 55534],
+      "attempt_log_likelihoods": [-2916.7570117711521, -2916.7570117295563, -2916.7570116947718, -2916.7570117271298, -2916.757011754019, -2916.7570117236473, -2916.7570117180176, -2916.7570117230839, -2916.7570117067612, -2916.7570117471832],
+      "log_likelihood": -2916.7570116947718,
+      "remaining_gap_to_independent": 1.4933903003111482e-08,
+      "winning_final_gains": [2.8194335754960775e-11, 1.3642420526593924e-11, 4.3655745685100555e-11, 4.2291503632441163e-11, 1.8189894035458565e-11, 4.7293724492192268e-11, 3.0013325158506632e-11, 4.8203219193965197e-11, 4.0927261579781771e-11, 9.0949470177292824e-13],
+      "comparison": [
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "n_parameters",
+          "n": 1,
+          "difference": 0,
+          "tolerance": 0
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "bic",
+          "n": 1,
+          "difference": 4.9569280236028135e-07,
+          "tolerance": 6.0355140238852365e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "joint_unobserved_floor",
+          "n": 0,
+          "difference": 0,
+          "tolerance": 0
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "log_likelihood",
+          "n": 1,
+          "difference": 2.4784640118014067e-07,
+          "tolerance": 3.0177570119426182e-06
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "class_sizes",
+          "n": 3,
+          "difference": 2.1961512683410511e-06,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "probabilities",
+          "n": 36,
+          "difference": 7.3875253787568768e-06,
+          "tolerance": 0.00013000000000000002
+        },
+        {
+          "case": "twopair_mod_05",
+          "reference": "polca",
+          "quantity": "posteriors",
+          "n": 2400,
+          "difference": 1.7602323859194655e-05,
+          "tolerance": 0.00060000000000000006
+        }
+      ],
+      "failed_rows": []
+    }
+  ]
+}

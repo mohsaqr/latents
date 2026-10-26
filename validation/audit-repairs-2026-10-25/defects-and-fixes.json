@@ -1,0 +1,793 @@
+{
+  "title": "What was wrong and what was fixed",
+  "date": "2026-10-26",
+  "scope": "latents working-tree audit repairs; starting HEAD24773e6/version0.97.1",
+  "issue_groups": 53,
+  "report_entries": 41,
+  "entries": [
+    {
+      "section": "code",
+      "ids": [
+        "CORE_ZERO_WEIGHT_MEMBERSHIP"
+      ],
+      "title": "Excluded rows changed membership estimates",
+      "problem": "An extreme predictor in a zero-weight row could affect initialization and conditioning, changing a fit even though the row contributed no likelihood.",
+      "fix": "Use contributing rows for centers, rank and separation checks and membership initialization.",
+      "verification": "Changing the excluded predictor from 0 to 10¹² now leaves the likelihood, posteriors and robust standard errors identical. The retained likelihood is −586.844083; the faulty fit had fallen to about −730.5432.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        },
+        {
+          "label": "Regression tests",
+          "href": "../../tests/testthat/test-audit-core-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "CORE_COUNT_OFFSET",
+        "LTA_OCCASION_HUGE_OFFSET"
+      ],
+      "title": "Large count values lost likelihood information",
+      "problem": "Large common log-density offsets and nearly equal count means could erase class differences. The occasion-specific LTA prior path could lose information too.",
+      "fix": "Preserve relative log densities and calculate close mean ratios stably; center measurement contributions before adding the pooled prior in both LTA engines.",
+      "verification": "One posterior changed from the incorrect (0.5, 0.5) to (0.7665746545, 0.2334253455), matching the independent calculation. Near-equal-mean and LTA prior regressions pass.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        },
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "CORE_ORDINAL_LABEL_COLLISION"
+      ],
+      "title": "Distinct ordinal categories collapsed",
+      "problem": "Formatting numeric codes as text merged values such as 1,000,000,000,000,000 and 1,000,000,000,000,001.",
+      "fix": "Retain native numeric category values, use unambiguous labels and use the native map in prediction and data comparison.",
+      "verification": "The reproduced model retains three distinct categories and matches the independently calculated likelihood exactly.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "CORE_SCALING_ORIGIN"
+      ],
+      "title": "Large origins were mistaken for constant data",
+      "problem": "A large common origin could make genuinely varying observations fail spread checks.",
+      "fix": "Remove the constancy cutoff tied to the raw origin and retain the centered standard-deviation calculation.",
+      "verification": "The reproduced case now returns SD 0.9340709706, equal to the independent calculation, instead of latents_bad_data.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "ROOT_WEIGHT_CONSTANCY_SCALE"
+      ],
+      "title": "Weight checks depended on measurement units",
+      "problem": "Nonconstant weights scaled down to tiny numbers could pass checks that rejected the same relative weights at ordinary scale.",
+      "fix": "Compare weight variation using a relative constancy check, retaining the existing safe normalization.",
+      "verification": "The same invalid weight pattern is rejected at scales from approximately 10⁻³⁰⁰ to 10³⁰⁰.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        },
+        {
+          "label": "Weight implementation",
+          "href": "../../R/weights.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "REGRESSION_POSTERIOR_NORMALIZATION"
+      ],
+      "title": "Extreme responses produced incorrect posteriors",
+      "problem": "Underflow in regression and growth calculations could produce probabilities that did not sum to one or lost the intended prior proportions.",
+      "fix": "Use stable shared normalization of log weights and preserve relative contributions.",
+      "verification": "The direct normalization example now returns the expected (0.8, 0.2), replacing the faulty (1, 0.1353) values. Public crossing-mean tests retain each fitted model’s prior proportions.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        },
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "SERVICE_VARIANCE_ALIGNMENT"
+      ],
+      "title": "Class matching ignored covariance and dispersion",
+      "problem": "Classes with similar means but different spreads could be matched by prevalence, mixing narrow and wide classes during pooling. Negative-binomial dispersion was absent from the candidate signature.",
+      "fix": "Include Gaussian spread/correlation and negative-binomial variance features in a shared reference scale. Keep count features finite at zero variance.",
+      "verification": "One pooling example changed from variances (12.38, 13.52) to (0.9403591, 24.9588584), preserving the narrow/wide classes. NB public-fit, zero-boundary and unchanged-Poisson checks pass.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "NB alignment evidence",
+          "href": "evidence/nb-alignment-repair-evidence-core.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "CAT_KEYS"
+      ],
+      "title": "Category names collided in inference tables",
+      "problem": "Reserved characters in variable/category names could create identical term keys, attaching the wrong standard errors or confidence intervals to results and plots.",
+      "fix": "Encode reserved components consistently and match intervals using full parameter and class identity.",
+      "verification": "A reproduced pair of standard errors now correctly differs: 0.04 versus 0.04898979487. Collision and plotting regression checks pass.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "Inference regressions",
+          "href": "../../tests/testthat/test-audit-inference-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "ADD_ORIGIN"
+      ],
+      "title": "Additive inference was sensitive to coordinates",
+      "problem": "Rescaling outcomes or moving their origin could falsely make information appear singular or distort the transformation of uncertainty.",
+      "fix": "Construct and solve the information problem in conditioned coordinates, then transform estimates and covariance back consistently.",
+      "verification": "A 10⁶ unit multiplier now gives the corresponding scaling of mean and variance standard errors instead of a false singular-information refusal.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "DATA_ID",
+        "LTA_WEIGHT_IDENTITY",
+        "TRAJECTORY_DATA_IDENTITY"
+      ],
+      "title": "Supplied data were not checked consistently",
+      "problem": "Tolerant comparisons could accept changed outcomes at a large origin; some valid representations were rejected. Trajectory checks could omit fitted columns or weights.",
+      "fix": "Keep strict objective-data checks, verify valid forward transformations, compare normalized weights, and validate every fitted trajectory column. Assignment-only matching recognizes actual base-R CSV serialization and rejects collisions.",
+      "verification": "Original data, valid chart representations and uniform weight multipliers are accepted; changed outcomes and collapsed categories are rejected. Extra unrelated distal columns remain allowed.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        },
+        {
+          "label": "Data and trajectory tests",
+          "href": "../../tests/testthat/test-audit-extension-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "START_D1"
+      ],
+      "title": "Univariate covariance starts had the wrong shape",
+      "problem": "A full-covariance start for two profiles and one indicator could be reconstructed as one profile and two indicators.",
+      "fix": "Preserve profile-by-indicator dimensions when rebuilding one-dimensional covariance tables.",
+      "verification": "The reproduced result is now a 2 × 1 table, retaining variances 0.9782054 and 0.6983753.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "BIC_EMPTY"
+      ],
+      "title": "Sample-size accessors disagreed with the fitting policy",
+      "problem": "Some accessors and model families reported sample counts inconsistent with the fitted empty-unit policy and information-criterion convention.",
+      "fix": "Honor the fitted drop_empty policy: TRUE uses informative units, while FALSE intentionally counts retained units, across the repaired profile, covariate and LTA accessors.",
+      "verification": "Tests verify both policies, including the intended 60-versus-80 count in the reproduced case, and match the accessor count to the fitted convention.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "LTA_R3STEP_MISSING"
+      ],
+      "title": "Missing occasions became apparent class evidence",
+      "problem": "An entirely unobserved occasion could contribute its prior modal class to R3STEP as if a class assignment had been observed.",
+      "fix": "Use a missing modal assignment and neutral emission, excluding the occasion from classification-error and pooled-prior calculations.",
+      "verification": "A 66-empty-row example agrees with the version with those occasions removed: likelihood gap about 3.2 × 10⁻¹².",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "LTA_R3STEP_TRANSLATION"
+      ],
+      "title": "Large covariate offsets broke LTA R3STEP",
+      "problem": "A predictor shifted by 10⁸ could be called constant, and an unnecessary conversion between bases could fail as singular.",
+      "fix": "Check actual positive spread and use a valid centered-coordinate initialization directly.",
+      "verification": "Large-offset and ordinary-coordinate regression checks pass without false constancy or singularity errors.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "LTA_NESTING_BOUNDS",
+        "ADDITIVE_BLRT_DATA_BOUNDS"
+      ],
+      "title": "Likelihood-ratio comparisons could mix different objectives",
+      "problem": "Comparisons did not consistently enforce actual data identity, weight compatibility and matching variance/probability bounds.",
+      "fix": "Check the data and objective-defining controls before declaring models nested or comparable.",
+      "verification": "Regression tests reject mismatched data and incompatible bounds while accepting valid nested comparisons.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "Reporting and comparison tests",
+          "href": "../../tests/testthat/test-audit-reporting-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "R3STEP_EMPTY_GROUP_CR1"
+      ],
+      "title": "Empty persons changed robust R3STEP uncertainty",
+      "problem": "Retained empty persons could enter basis, rank and finite-sample calculations despite contributing no measurement information.",
+      "fix": "Use measurement-contributing persons for the repaired objective, score, rank and CR1 calculations.",
+      "verification": "After adding 40 empty persons, all four checked standard-error ratios are exactly one.",
+      "links": [
+        {
+          "label": "Inference before/after evidence",
+          "href": "evidence/inference-repair-evidence.json"
+        },
+        {
+          "label": "Independent repair checks",
+          "href": "evidence/independent-inference-review-core.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "REGRESSION_PREDICTOR_UNITS",
+        "REGRESSION_PREDICTOR_ORIGIN"
+      ],
+      "title": "Regression fitting depended on units and origin",
+      "problem": "Large predictor units could change the Gaussian MLE through the numerical solver; large origins could destabilize information and predictions.",
+      "fix": "Use centered/scaled design charts, stable weighted solves and consistent maps to natural coefficients and predictions.",
+      "verification": "The Gaussian example matches glm: likelihood −125.9003875122574 and slope 2.0367617905 × 10⁻¹⁰. Additional origin tests reach 10¹²; finite-double cancellation at that scale remains documented.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "BINOMIAL_SEPARATION_UNITS"
+      ],
+      "title": "Slope size was confused with separation",
+      "problem": "Rescaling a predictor could trigger a separation warning even when fitted logits represented an ordinary finite model. Ordinal checks had a related raw-slope sensitivity.",
+      "fix": "Base the diagnostic on fitted logits and the conditioned design rather than raw coefficient units.",
+      "verification": "The reproduced binomial model matches glm and is correctly classified as nonseparated; ordinal rescaling tests also pass.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "BROWNIAN_NEGATIVE_TIME"
+      ],
+      "title": "Brownian predictions accepted invalid times",
+      "problem": "Negative process times could reach prediction covariance calculations outside the Brownian model domain.",
+      "fix": "Validate process times before constructing predictions.",
+      "verification": "Negative times now raise an informative refusal; valid prediction cases pass.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "GROWTH_PATTERN_CACHE"
+      ],
+      "title": "Growth caching merged different covariance designs",
+      "problem": "Rounded Gram-matrix cache keys could make distinct designs reuse one covariance calculation.",
+      "fix": "Use exact design/Gram identity for cache reuse.",
+      "verification": "A regression test with distinct matrices that previously shared a rounded key now keeps them separate.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "RANDOM_POLYNOMIAL_BLUEPRINT",
+        "ORDERED_RANDOM_CONTRASTS"
+      ],
+      "title": "Growth predictions rebuilt a different design",
+      "problem": "Transformed random effects such as poly(time, 2), or ordered-factor contrasts, could be recomputed with a different basis on new data.",
+      "fix": "Retain fitted terms/prediction variables, factor levels and contrasts and reuse the training blueprint.",
+      "verification": "The polynomial-basis check has zero design error. Ordered-factor prediction and spread tests pass.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "FITTED_PLOT_GROUP_PREDICTOR"
+      ],
+      "title": "Plot grids violated predictor structure",
+      "problem": "A class-curve grid could vary a membership or group-constant predictor in a way inconsistent with the fitted design.",
+      "fix": "Build grids that respect the predictor level and use valid fitted design information.",
+      "verification": "Regression tests and rendered plot previews cover class curves with membership predictors.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "SERVICE_NUMERIC_ID_ICC",
+        "SERVICE_NUMERIC_ID_TNA",
+        "NUMERIC_ID_FACETS"
+      ],
+      "title": "Distinct numeric IDs were merged for grouping or display",
+      "problem": "Values such as 0.3 and 0.1 + 0.2 have different native values but the same short printed label. Text-based grouping could merge their clusters, sequences or facets.",
+      "fix": "Use native-value group indices and preserve distinct facets; refuse ambiguous identity reconstructions where necessary.",
+      "verification": "ICC, sequence and facet regressions distinguish the units. An independent ICC example is 149/152.",
+      "links": [
+        {
+          "label": "Reporting tests",
+          "href": "../../tests/testthat/test-audit-reporting-repairs.R"
+        },
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "TRUST_UNKNOWN_REPLICATION"
+      ],
+      "title": "Unavailable replication evidence looked reassuring",
+      "problem": "A candidate without a known repeated-maximum count could receive a reassuring visual status.",
+      "fix": "Show “replication unavailable” explicitly and explain that repeated maxima do not prove a global optimum.",
+      "verification": "Reporting tests and the rendered trust-plot preview verify the unavailable state.",
+      "links": [
+        {
+          "label": "Selection implementation",
+          "href": "../../R/selection.R"
+        },
+        {
+          "label": "Reporting tests",
+          "href": "../../tests/testthat/test-audit-reporting-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "TREE_MOVER_STAYER_COUNTS"
+      ],
+      "title": "Mover/stayer trees counted the wrong group classes",
+      "problem": "Tree construction could rely on the nominal group-class field and omit the additional stayer posterior column.",
+      "fix": "Count the actual group posterior columns and carry the correct class labels into the tree.",
+      "verification": "A mover/stayer enumeration now produces the expected group-level tree; reporting regressions pass.",
+      "links": [
+        {
+          "label": "Tree implementation",
+          "href": "../../R/tree.R"
+        },
+        {
+          "label": "Reporting tests",
+          "href": "../../tests/testthat/test-audit-reporting-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "FAMILY_EMEM_FORWARDING"
+      ],
+      "title": "Family enumeration lost requested search controls",
+      "problem": "Additive-family enumeration could fail to forward search and screening controls to its fits.",
+      "fix": "Forward the declared search method and screening budget consistently.",
+      "verification": "Regression checks verify requested controls reach the fitting path.",
+      "links": [
+        {
+          "label": "Enumeration implementation",
+          "href": "../../R/additive-compare.R"
+        },
+        {
+          "label": "Reporting tests",
+          "href": "../../tests/testthat/test-audit-reporting-repairs.R"
+        }
+      ]
+    },
+    {
+      "section": "code",
+      "ids": [
+        "ML3_EQUAL_VARIANCE_OPTIMIZER"
+      ],
+      "title": "ML three-step estimation missed a higher regular solution",
+      "problem": "The equal-variance step-three optimizer stopped at likelihood −7316.54473287439 while an independently verified regular point reached −7316.50817336643.",
+      "fix": "Add guarded BFGS candidates from existing starts in a bounded, standardized variance chart, with score, convergence and information checks. Retain the original tie policy.",
+      "verification": "The maximum public mean difference is 2.56 × 10⁻¹⁰ standard-error units; the maximum relative standard-error difference is 7.92 × 10⁻¹⁰. The full ML3 file passed 2,014 assertions and 6,328 comparison rows.",
+      "links": [
+        {
+          "label": "Optimizer before/after evidence",
+          "href": "evidence/ml3-optimizer-repair-evidence.json"
+        },
+        {
+          "label": "Completed ML3 comparisons",
+          "href": "evidence/ml3-final-comparison-summary.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "VALIDATION_STANDALONE_OPERATOR",
+        "VALIDATION_PARAMETER_CELLS"
+      ],
+      "title": "Supporting scripts could fail or silently reshape incomplete results",
+      "problem": "A standalone runner used an unavailable helper before loading it; a recovery pivot could accept missing or duplicate parameter cells.",
+      "fix": "Resolve the CLI stage using base R before loading helpers, and require a complete, unique, finite parameter grid.",
+      "verification": "CLI and recovery regressions preserve structural zeros and reject absent or duplicated cells.",
+      "links": [
+        {
+          "label": "Core before/after evidence",
+          "href": "evidence/core-repair-evidence.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "HARNESS_STABILITY_BIN_CONVERGENCE"
+      ],
+      "title": "Stability reporting could group results incorrectly",
+      "problem": "Rounded bins could separate equivalent likelihoods or merge values outside the intended tolerance; convergence was not a separate required result.",
+      "fix": "Group by bounded likelihood distance, validate seed inputs and report converged-fit counts explicitly.",
+      "verification": "Harness self-tests pass; the final eight-suite harness compares 1,021 quantities with all agreed.",
+      "links": [
+        {
+          "label": "Harness implementation",
+          "href": "../../equivalence/harness/registry.R"
+        },
+        {
+          "label": "Harness self-test result",
+          "href": "evidence/harness-selftest-v2-summary.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "HARNESS_FINITE_AGREEMENT_GATES",
+        "HARNESS_MIXED_PRECISION_REPORT"
+      ],
+      "title": "Comparison gates and summaries could overstate agreement",
+      "problem": "Nonfinite values, invalid tolerances or supplied agreement flags could yield misleading outcomes. Mixed quantities were presented as if all used printed rounding units.",
+      "fix": "Require valid finite comparisons, recompute agreement, and report each difference relative to its own tolerance and precision convention.",
+      "verification": "Negative-control self-tests pass; every final harness value, difference and tolerance is finite, and every tolerance is positive.",
+      "links": [
+        {
+          "label": "Harness summary",
+          "href": "evidence/external-harness-v2-summary.json"
+        },
+        {
+          "label": "Harness self-tests",
+          "href": "../../equivalence/harness/test-harness.R"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "EXTERNAL_RUNNER_PROVENANCE_PORTABILITY"
+      ],
+      "title": "External runners could accept stale or unsuccessful output",
+      "problem": "Shell entry/export behavior could fail when invoked through sh. Some collection paths could accept incomplete or stale program outputs.",
+      "fix": "Re-enter Bash where needed, preserve arguments safely, require normal Mplus termination and fresh fitted Latent GOLD listings/posteriors, and clear stale outputs.",
+      "verification": "Four Python fault/success tests use fake executables to verify the runner contracts; this does not claim fresh proprietary-engine fits.",
+      "links": [
+        {
+          "label": "Runner contract tests",
+          "href": "test-external-runners.py"
+        },
+        {
+          "label": "Final verification receipt",
+          "href": "evidence/verification-final-status.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "VALIDATION_FORK_SAFETY"
+      ],
+      "title": "Research code bypassed fork safety checks",
+      "problem": "Direct mclapply calls in research scripts could run on unsafe Apple Accelerate or Windows configurations; a kit generator could otherwise delete retained inputs before failing.",
+      "fix": "Check the runtime before forking in 21 raw runners with 23 fork calls. The kit preflight runs before deletion, and the repaired search CLIs check before creating output directories. Fixed-seed ML3/VLMR helpers use tested serial dispatch on unsafe runtimes.",
+      "verification": "Scientific-code comparisons show unchanged budgets, seeds and worker calculations. Runtime/protocol tests pass; historical studies and kits were not regenerated.",
+      "links": [
+        {
+          "label": "Supporting-runner proof",
+          "href": "evidence/support-fork-repair-evidence-core.json"
+        },
+        {
+          "label": "Validation-runner proof",
+          "href": "evidence/validation-fork-repair-evidence-core.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "INSTALLED_SOURCE_TEST_PORTABILITY"
+      ],
+      "title": "An inspection test assumed installed packages included source files",
+      "problem": "An installed package has an R directory without necessarily containing the original conditions.R source file.",
+      "fix": "Check for the actual source file before performing the source-inspection test.",
+      "verification": "The native installed-package check passes; source-only checks are explicitly skipped in that context and run in the source suite.",
+      "links": [
+        {
+          "label": "Native check log",
+          "href": "evidence/native-check-final.log"
+        },
+        {
+          "label": "Accessor test",
+          "href": "../../tests/testthat/test-review-1015-accessors.R"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "DEFERRED_RANDOM_INTERCEPT_ADAPTERS",
+        "DEFERRED_LMR_DATA_IDENTITY"
+      ],
+      "title": "Deferred features used retired services or weak data matching",
+      "problem": "The experimental random-intercept module depended on obsolete reporting/graphics helpers. The deferred LMR wrapper did not fully check data and objective compatibility.",
+      "fix": "Adapt reporting and plots to current services, register the deferred methods in-session, and strengthen data/weight/transformation checks.",
+      "verification": "All 78 deferred-module assertions pass. The deferred LMR prototype still deliberately has no p-value.",
+      "links": [
+        {
+          "label": "Deferred repair tests",
+          "href": "../../future/tests/test-audit-deferred-repairs.R"
+        },
+        {
+          "label": "Final verification receipt",
+          "href": "evidence/verification-final-status.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "REFERENCE_EM_BEST_STATE"
+      ],
+      "title": "The independent reference returned a worse last iterate",
+      "problem": "For huge_01, the reference EM accepted a tiny negative change as convergence and returned a likelihood 2.85 × 10⁻⁹ below its starting point.",
+      "fix": "Retain the complete best state, including the start; continue negative steps and converge only on a finite nonnegative gain below the unchanged tolerance. Record termination separately.",
+      "verification": "The exact case reaches zero gain at iteration 253. All 52 polish cases and the full four-file joint-item rerun pass.",
+      "links": [
+        {
+          "label": "Independent reference review",
+          "href": "evidence/independent-joint-reference-review-inference.json"
+        },
+        {
+          "label": "Full affected rerun",
+          "href": "evidence/joint-v3-summary.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "POLCA_VERIFICATION_ITERATION_BUDGET"
+      ],
+      "title": "The poLCA comparator exhausted its iteration budget",
+      "problem": "All ten starts for twopair_mod_05 reached 20,000 iterations before meeting the requested tolerance, leaving five comparison rows outside tolerance.",
+      "fix": "Uniformly retain the original 20,000-cap run and add a 200,000-cap verification run for all 49 eligible cases, using the same seeds, starts and tolerance.",
+      "verification": "The difficult case converges at iteration 56,767. All 343 verification rows pass; the five original failures remain recorded. No verified case hits the larger cap.",
+      "links": [
+        {
+          "label": "Budget diagnosis",
+          "href": "evidence/polca-cap-diagnosis-inference.json"
+        },
+        {
+          "label": "Full comparison checks",
+          "href": "evidence/joint-v3-comparison-summary.json"
+        }
+      ]
+    },
+    {
+      "section": "validation",
+      "ids": [
+        "EXTERNAL_DECLARED_SEARCH_PROTOCOL"
+      ],
+      "title": "Default-search misses were confused with numerical equivalence",
+      "problem": "A direct-effects default search missed a higher regular likelihood by 8.499224. A joint-item fit met its per-step tolerance while still having about 1.2767 × 10⁻⁴ remaining likelihood gain.",
+      "fix": "Declare uniform comparison recipes: both kmeans and emEM for the direct-effects cases, and strict own-parameter resumes for joint items. Preserve the original fits and gaps separately.",
+      "verification": "All 5,727 direct-effects retained-reference rows pass. The joint-item verification covers 792 retained external rows, 343 poLCA rows and a 140-dataset independent study. The production defaults still have the documented limitations.",
+      "links": [
+        {
+          "label": "Joint comparison summary",
+          "href": "evidence/joint-v3-comparison-summary.json"
+        },
+        {
+          "label": "Default-search diagnostics",
+          "href": "evidence/direct-effects-validation-protocol-evidence-extensions.json"
+        }
+      ]
+    },
+    {
+      "section": "documentation",
+      "ids": [
+        "GUIDE_PROSE_CORRECTIONS",
+        "ARCHIVED_TUTORIAL_API"
+      ],
+      "title": "Guides contained misleading descriptions and retired calls",
+      "problem": "Examples and prose misdescribed BCH weighting, thin-class heuristics, MAR implications, class matching and other conventions. An archived tutorial used retired API calls.",
+      "fix": "Correct the explanations and assumptions, update the tutorial to current calls and data semantics, and regenerate the affected help pages.",
+      "verification": "All 20 guides render, workflow-number tests pass, and the archived tutorial was rendered successfully during the repair verification.",
+      "links": [
+        {
+          "label": "Guide results",
+          "href": "evidence/guide-verification-v2-results.json"
+        },
+        {
+          "label": "Corrected tutorial",
+          "href": "../../Tutorial_docs/two-level-lpa-engagement.Rmd"
+        }
+      ]
+    },
+    {
+      "section": "documentation",
+      "ids": [
+        "EXTERNAL_CERTIFICATION_CLAIMS"
+      ],
+      "title": "The supplied report overstated what was established",
+      "problem": "Its counts, additive/ordinal descriptions and VLMR sign convention contained errors; its universal compatibility, numerical and equivalence certifications lacked the necessary scope and execution evidence.",
+      "fix": "Write a claim-by-claim correction with source links, exact inventory counts and a dated verification ledger. Keep the original report unchanged.",
+      "verification": "The corrected review links the source and preserved evidence, distinguishing executed checks, source review, historical results and remaining limits.",
+      "links": [
+        {
+          "label": "Claim-by-claim review",
+          "href": "report-claims-review.html"
+        },
+        {
+          "label": "Evidence manifest",
+          "href": "evidence/evidence-manifest.json"
+        }
+      ]
+    },
+    {
+      "section": "documentation",
+      "ids": [
+        "BOX_MULLER_CONTRACT"
+      ],
+      "title": "RNG restoration was promised too broadly",
+      "problem": "A NULL seed intentionally advances the caller stream; base R does not expose the cached Box–Muller normal value, so restoring .Random.seed cannot restore that hidden cache.",
+      "fix": "Qualify the exposed-state and explicit-seed contract in the documentation, without changing RNG kind to hide the limitation.",
+      "verification": "Seed-scope and reproducibility checks pass. Hidden-cache restoration remains a documented platform limitation.",
+      "links": [
+        {
+          "label": "Regression and growth evidence",
+          "href": "evidence/extensions-repair-evidence.json"
+        },
+        {
+          "label": "Recorded lessons",
+          "href": "audit-learnings.md"
+        }
+      ]
+    },
+    {
+      "section": "documentation",
+      "ids": [
+        "SHARED_COVARIANCE_DEGENERACY_CLAIM"
+      ],
+      "title": "Shared covariance was described as universally safe from degeneracy",
+      "problem": "Sharing a covariance prevents an isolated component from collapsing independently, but atomic or over-extracted data can still drive the shared covariance to its floor.",
+      "fix": "Correct the search rationale and model documentation; retain boundary diagnostics and inference refusals.",
+      "verification": "A reproduced atomic-data example reaches the shared variance floor. The report now treats finite search, boundaries and global optimality as explicit limitations.",
+      "links": [
+        {
+          "label": "Search rationale",
+          "href": "../../R/search.R"
+        },
+        {
+          "label": "Model documentation",
+          "href": "../../R/multilpa.R"
+        }
+      ]
+    }
+  ]
+}

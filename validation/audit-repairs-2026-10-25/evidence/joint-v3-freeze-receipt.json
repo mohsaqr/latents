@@ -1,0 +1,17 @@
+{
+  "time_utc": "2026-10-26T00:28:16.377807+00:00",
+  "stage": "/private/tmp/latents-fix-20261025/verification-source-joint-v3",
+  "entries": 596,
+  "sha256": "1aaa1c473cd03856b312ab00cfeab91d694cf158bd9bfbe08c454a55cf39ad02",
+  "changed_validation_files": [
+    "equivalence/features/joint-items/reference.R",
+    "equivalence/test-joint-items-reference-optimizer.R",
+    "equivalence/features/joint-items/compare.R",
+    "equivalence/test-features-joint-items.R",
+    "equivalence/test-joint-items-polca-protocol.R",
+    "equivalence/features/joint-items/FINDINGS.md"
+  ],
+  "protected_R_tests_man_vignettes_unchanged": 384,
+  "all_stage_workspace_manifest_hashes_match": true,
+  "original_fullbatch_stage2_unmodified": true
+}

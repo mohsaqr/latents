@@ -8,6 +8,7 @@
 # group-level membership covariate), refitted, and every estimate compared
 # with its generating value: bias, and the coverage of the nominal 95%
 # Wald interval under the observed-information and robust covariances.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20260927)
@@ -59,7 +60,7 @@ one_replication <- function(seed) {
 }
 
 rows <- do.call(rbind, parallel::mclapply(seeds, one_replication,
-                                          mc.cores = 4L, mc.set.seed = TRUE))
+                                          mc.cores = .validation_fork_cores(4L), mc.set.seed = TRUE))
 z <- stats::qnorm(0.975)
 rows$covered_observed <- abs(rows$estimate - rows$truth) <= z * rows$se_observed
 rows$covered_robust <- abs(rows$estimate - rows$truth) <= z * rows$se_robust

@@ -1,0 +1,99 @@
+{
+  "status": "passed",
+  "checks": {
+    "complete_rerun_frame_matches_raw_test_results": true,
+    "replacement_is_exactly_two_complete_files": true,
+    "exact_full_row_merge_including_expectation_objects_and_timing": true,
+    "only_known_failed_family_replaced": true,
+    "no_test_case_key_duplicates": true,
+    "file_and_case_union_complete": true,
+    "full_rerun_clean": true,
+    "actual_expectation_objects_no_hidden_failure_error_or_skip": true,
+    "published_summary_exactly_recomputed": true,
+    "all_journal_warnings_are_canonical_thin_gaussian_support": true,
+    "setup_warnings_accounted_separately": true,
+    "all_in_case_warnings_preserved_in_final_objects": true,
+    "journal_contains_only_documented_two_old_JI_failures_and_thin_warnings": true
+  },
+  "recomputed": {
+    "original_main_files": 50,
+    "original_main_cases": 395,
+    "original_main_passed": 21105,
+    "original_main_failed": 2,
+    "complete_rerun_files": 4,
+    "complete_rerun_cases": 25,
+    "complete_rerun_passed": 164,
+    "final_files": 52,
+    "final_cases": 400,
+    "final_totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 4,
+      "passed": 21159
+    },
+    "actual_expectation_classes": {
+      "expectation_success": 21159,
+      "expectation_warning": 4
+    }
+  },
+  "replaced_complete_files": [
+    "test-features-joint-items.R",
+    "test-joint-items-verification-protocol.R"
+  ],
+  "new_regression_files": [
+    "test-joint-items-polca-protocol.R",
+    "test-joint-items-reference-optimizer.R"
+  ],
+  "warnings": {
+    "journal_total": 29,
+    "all_canonical_thin_support": true,
+    "in_case": 4,
+    "during_VLMR_setup": 25,
+    "zero_warnings_in_complete_affected_family_rerun": true
+  },
+  "dependency_scope": {
+    "changed_reference": "equivalence/features/joint-items/reference.R",
+    "changed_comparator": "equivalence/features/joint-items/compare.R",
+    "active_importers": [
+      "test-features-joint-items.R",
+      "test-joint-items-reference-optimizer.R",
+      "test-joint-items-polca-protocol.R"
+    ],
+    "adjacent_complete_rerun": "test-joint-items-verification-protocol.R",
+    "unaffected": "Other ref_em definitions are separate family reference files/environments; main results retained only for files outside complete affected-family rerun."
+  },
+  "limitations": [
+    "Final combined result is whole main batch plus complete affected-family rerun, not a fresh single run of all52 files after overlay.",
+    "29 warnings are retained and disclosed;4 are represented inside test cases and25 occurred during VLMR file setup.",
+    "No test, fit, production source or repository mutation performed by this independent final audit."
+  ],
+  "source_checks": {
+    "main_all594_snapshot_hashes_match": true,
+    "final_all596_workspace_hashes_match": true,
+    "final_all596_stage3_hashes_match": true,
+    "exact_two_new_regressions_no_removed_files": true,
+    "only_four_declared_JI_overlay_files_changed": true,
+    "all384_protected_entries_and99_R_files_unchanged": true
+  },
+  "source_provenance": {
+    "main_manifest_files": 594,
+    "final_manifest_files": 596,
+    "protected_unchanged_files": 384,
+    "production_R_files_unchanged": 99,
+    "main_manifest_sha256": "ee44ea43ea085c5ccc4d1b9f68419adb97cf61448c95ee8984a82bc8b32c1dfb",
+    "final_manifest_sha256": "1aaa1c473cd03856b312ab00cfeab91d694cf158bd9bfbe08c454a55cf39ad02",
+    "changed_overlay_files": [
+      "equivalence/features/joint-items/FINDINGS.md",
+      "equivalence/features/joint-items/compare.R",
+      "equivalence/features/joint-items/reference.R",
+      "equivalence/test-features-joint-items.R"
+    ],
+    "added_regression_files": [
+      "equivalence/test-joint-items-polca-protocol.R",
+      "equivalence/test-joint-items-reference-optimizer.R"
+    ],
+    "removed_files": []
+  },
+  "comparison_precision": "Complete result frames, expectation objects and timing fields compared with all.equal(tolerance=0, check.attributes=TRUE), allowing separately deserialized source-file environments to compare by contents."
+}

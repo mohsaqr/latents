@@ -13,6 +13,7 @@
 #   covariate: the same measurement on complete data, with profile membership
 #              depending on a row covariate (logit slope 1.2); the bootstrap
 #              holds the covariate at its observed values.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20260928)
@@ -68,7 +69,7 @@ summarise_size <- function(results) {
 results <- do.call(rbind, lapply(c("fiml", "covariate"), function(arm) {
   do.call(rbind, parallel::mclapply(seq_len(datasets), replicate_once, arm = arm,
                                     mc.set.seed = TRUE,
-                                    mc.cores = max(1L, parallel::detectCores() - 2L)))
+                                    mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 2L))))
 }))
 summary_table <- summarise_size(results)
 print(summary_table, digits = 3, row.names = FALSE)

@@ -70,7 +70,9 @@ probability; their posterior-weighted mean is \code{lcmm::predictRE()}).}
 \item{nsim}{Number of simulated outcome vectors.}
 
 \item{seed}{\code{NULL} uses and advances the caller's random stream. An integer
-makes simulation reproducible and restores the caller's random state.}
+makes simulation reproducible and restores the caller's \code{.Random.seed}.
+R does not store the cached Box-Muller normal draw in \code{.Random.seed}, so
+the next normal draw is not preserved when that generator has a cached draw.}
 
 \item{trials}{For binomial mixture-regression predictions, the number of
 trials: one non-negative whole number, a vector with one value per row,

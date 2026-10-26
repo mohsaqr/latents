@@ -1,0 +1,14 @@
+{
+  "duplicates": {
+    "error": "`seeds` must be at least three distinct finite whole-number seeds"
+  },
+  "nonfinite": {
+    "error": "`seeds` must be at least three distinct finite whole-number seeds"
+  },
+  "missing": {
+    "error": "`seeds` must be at least three distinct finite whole-number seeds"
+  },
+  "fractional": {
+    "error": "`seeds` must be at least three distinct finite whole-number seeds"
+  }
+}

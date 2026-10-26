@@ -1,0 +1,38 @@
+{
+  "expected": 1300,
+  "reviewed": 1300,
+  "missing": [],
+  "issues": [],
+  "source_hashes_verified": 1300,
+  "ledgers": [
+    {
+      "file": "core-function-review.json",
+      "functions": 323
+    },
+    {
+      "file": "extensions-function-review.json",
+      "functions": 276
+    },
+    {
+      "file": "inference-function-review.json",
+      "functions": 244
+    },
+    {
+      "file": "plot-prediction-function-review.json",
+      "functions": 129
+    },
+    {
+      "file": "results-function-review.json",
+      "functions": 162
+    },
+    {
+      "file": "selection-function-review.json",
+      "functions": 111
+    },
+    {
+      "file": "service-function-review.json",
+      "functions": 55
+    }
+  ],
+  "note": "Source-review coverage is distinct from runtime branch coverage and independent numerical correctness."
+}

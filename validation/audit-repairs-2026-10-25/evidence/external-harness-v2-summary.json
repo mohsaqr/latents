@@ -1,0 +1,11 @@
+{
+  "suites": 8,
+  "compared": 1021,
+  "agreed": 1021,
+  "disagreed": 0,
+  "all_reference_obtained_difference_tolerance_finite": true,
+  "all_tolerances_positive": true,
+  "warnings": 0,
+  "skipped_suites": 0,
+  "limits": "Quantity-specific comparison tolerances; retained commercial references, not fresh proprietary engine runs."
+}

@@ -39,8 +39,32 @@
 #' @return An `n x K` matrix.
 #' @noRd
 .mixture_linear_predictors <- function(spec, params) {
-  eta <- spec$x %*% params$beta
-  if (ncol(spec$z) > 0L) eta <- eta + drop(spec$z %*% params$common)
+  design <- spec$x
+  common_design <- spec$z
+  coefficients <- params$beta
+  intercept <- match("(Intercept)", colnames(design), nomatch = 0L)
+  if (intercept > 0L && nrow(design) > 0L &&
+      (any(abs(design) > 1e6) || any(abs(common_design) > 1e6))) {
+    center <- function(matrix) {
+      if (ncol(matrix) == 0L) return(numeric())
+      means <- colMeans(matrix)
+      spread <- apply(abs(sweep(matrix, 2L, means, "-")), 2L, max)
+      means[abs(means) <= 1e6 | abs(means) <= 1e4 * spread] <- 0
+      means
+    }
+    x_center <- center(design)
+    z_center <- center(common_design)
+    if (any(c(x_center, z_center) != 0)) {
+      # Avoid a different large-intercept cancellation on every row. Any
+      # unavoidable rounding of the raw intercept remains one common shift.
+      coefficients[intercept, ] <- coefficients[intercept, ] +
+        as.vector(crossprod(x_center, coefficients)) + sum(z_center * params$common)
+      design <- sweep(design, 2L, x_center, "-")
+      if (ncol(common_design) > 0L) common_design <- sweep(common_design, 2L, z_center, "-")
+    }
+  }
+  eta <- design %*% coefficients
+  if (ncol(common_design) > 0L) eta <- eta + drop(common_design %*% params$common)
   eta + spec$offset
 }
 
@@ -176,6 +200,45 @@
   n_classes <- spec$n_classes
   p <- ncol(spec$x)
   q <- ncol(spec$z)
+  intercept <- match("(Intercept)", colnames(spec$x), nomatch = 0L)
+  x_center <- numeric(p)
+  z_center <- numeric(q)
+  if (intercept > 0L) {
+    supported <- rowSums(tau) > 0
+    center <- function(design) {
+      if (ncol(design) == 0L) return(numeric())
+      means <- colMeans(design[supported, , drop = FALSE])
+      spread <- apply(abs(sweep(design[supported, , drop = FALSE], 2L, means, "-")),
+                        2L, max)
+      means[spread == 0 | abs(means) <= 1e4 * spread] <- 0
+      means
+    }
+    x_center <- center(spec$x)
+    z_center <- center(spec$z)
+    # An intercept absorbs these shifts exactly. Construct cross-products in
+    # this chart before they can lose the small variance around a large origin.
+    params$beta[intercept, ] <- params$beta[intercept, ] +
+      as.vector(crossprod(x_center, params$beta)) + sum(z_center * params$common)
+    spec$x <- sweep(spec$x, 2L, x_center, "-")
+    if (q > 0L) spec$z <- sweep(spec$z, 2L, z_center, "-")
+  }
+  if (identical(spec$family, "gaussian") && q == 0L && any(x_center != 0)) {
+    # Absolute weighted QR avoids repeatedly rounding a very large raw
+    # intercept in successive Newton increments. The class variance is a
+    # common scalar in each independent least-squares problem and cancels.
+    coefficients <- lapply(seq_len(n_classes), function(class) {
+      weight <- sqrt(tau[, class] / max(tau[, class]))
+      design <- spec$x * weight
+      scale <- sqrt(colSums(design^2))
+      coefficient <- qr.solve(sweep(design, 2L, scale, "/"),
+                              (spec$y - spec$offset) * weight, tol = 1e-12) / scale
+      coefficient[intercept] <- coefficient[intercept] - sum(x_center * coefficient)
+      coefficient
+    })
+    params$beta[,] <- do.call(cbind, coefficients)
+    params$separation <- FALSE
+    return(params)
+  }
   pack <- function(beta, common) c(as.vector(beta), common)
   unpack <- function(theta, pars) {
     pars$beta <- matrix(theta[seq_len(p * n_classes)], p, n_classes,
@@ -205,9 +268,22 @@
       information <- rbind(cbind(information, cross),
                            cbind(t(cross), common_block))
     }
-    # A ridge far below the data scale keeps an empty class solvable without
-    # moving a well-determined solution.
-    ridge <- 1e-10 * (1 + max(abs(diag(information))))
+    # Solve in information-standardized coordinates when predictor units
+    # differ greatly. A ridge based on the largest raw diagonal can otherwise
+    # overwhelm the intercept (and turn an ordinary Gaussian MLE into a ridge
+    # estimate). Keep the ordinary-scale path's arithmetic unchanged.
+    diagonal <- diag(information)
+    ridge <- 1e-10 * (1 + max(abs(diagonal)))
+    if (any(ridge > 1e-7 * pmax(diagonal, .Machine$double.xmin))) {
+      scale <- sqrt(pmax(diagonal, .Machine$double.xmin))
+      standardized <- information / tcrossprod(scale)
+      direction <- tryCatch(.mixture_solve(standardized, gradient / scale),
+                            error = function(condition) {
+        .mixture_solve(standardized + diag(1e-10, nrow(information)),
+                       gradient / scale)
+      })
+      return(as.vector(direction / scale))
+    }
     .mixture_solve(information + diag(ridge, nrow(information)), gradient)
   }
   current <- objective(params)
@@ -233,10 +309,15 @@
     if (identical(spec$family, "gaussian") && isTRUE(all.equal(step, 1))) break
     if (gain <= 1e-12 * (1 + abs(current)) || iteration >= max_newton) break
   }
-  # Divergence is a property of the logit and log links; a Gaussian
-  # coefficient of any size is on the outcome's own scale.
+  # A raw slope changes with predictor units. Detect extreme fitted linear
+  # predictors, which are invariant to that change of coordinates.
+  supported <- (spec$row_weights %||% rep(1, spec$n)) > 0
   params$separation <- !identical(spec$family, "gaussian") &&
-    (any(abs(params$beta) > 30) || (q > 0L && any(abs(params$common) > 30)))
+    any(abs(.mixture_linear_predictors(spec, params)[supported, , drop = FALSE]) > 30)
+  if (intercept > 0L) {
+    params$beta[intercept, ] <- params$beta[intercept, ] -
+      as.vector(crossprod(x_center, params$beta)) - sum(z_center * params$common)
+  }
   params
 }
 

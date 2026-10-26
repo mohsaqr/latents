@@ -1,0 +1,16 @@
+{
+  "overlay_phase": 596,
+  "manifest_file": "/private/tmp/latents-fix-20261025/verification-joint-v3-manifest.json",
+  "manifest_sha256": "1aaa1c473cd03856b312ab00cfeab91d694cf158bd9bfbe08c454a55cf39ad02",
+  "stage": "/private/tmp/latents-fix-20261025/verification-source-joint-v3",
+  "all_overlay_workspace_stage_hashes_match": true,
+  "main_fullbatch_stage594_checked_and_unmodified": true,
+  "protected_R_test_man_vignette_entries_unchanged": 384,
+  "production_R_files_unchanged": 99,
+  "provenance_preserved": {
+    "original_production_freeze": 587,
+    "completed_gates": 592,
+    "main_fullbatch_phase": 594
+  },
+  "scope": "Validation-only independent-reference optimizer/comparator overlay; not a whole-batch runtime pass. Main594 batch exposed2 pre-repair JI findings. Affected overlay rerun pending."
+}

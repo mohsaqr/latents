@@ -149,16 +149,28 @@
 .additive_information <- function(stats, theta, structure, class_names,
                                   vars, step) {
   n_classes <- length(class_names)
+  parameters <- .additive_unpack(theta, n_classes, length(vars), structure)
+  # Differentiate in a centered chart and in the indicator's own units.
+  # A step proportional to a raw mean confounds the origin with curvature.
+  centers <- colMeans(stats$averages)
+  stats$averages <- sweep(stats$averages, 2L, centers, "-")
+  parameters$means <- sweep(parameters$means, 2L, centers, "-")
+  centered <- .additive_pack(parameters, structure, class_names, vars)
+  parameter_scale <- rep(1, length(theta))
+  mean_width <- length(.additive_block_pack(parameters$means, structure$means))
+  parameter_scale[seq_len(mean_width)] <- rep(
+    sqrt(colMeans(parameters$within) + colMeans(parameters$between)),
+    length.out = mean_width)
   total <- function(point) {
-    colSums(.additive_group_scores(
-      stats, .additive_unpack(point, n_classes, length(vars), structure),
-      structure, class_names, vars))
+    colSums(.additive_group_scores(stats,
+      .additive_unpack(centered + point * parameter_scale,
+                       n_classes, length(vars), structure),
+      structure, class_names, vars)) * parameter_scale
   }
-  # The shared five-point score differences with h = step * max(1, |theta|):
-  # -(c + t(c)) / 2 equals the former -((c + t(c)) / 2) exactly, since
-  # negation and halving are exact.
-  .inference_score_information(total, theta, step, scheme = "five_point",
-                               h_rule = "max1")
+  information <- .inference_score_information(total, stats::setNames(
+    numeric(length(theta)), names(theta)), step, scheme = "five_point",
+    h_rule = "absolute")
+  information / tcrossprod(parameter_scale)
 }
 
 #' Estimation-scale covariance of an additive fit, or a classed refusal
@@ -204,8 +216,11 @@
                                        class_names, x$vars, step)
   # The ratio rule (and a non-positive smallest eigenvalue) refuses with the
   # ratio in the message; the ratio is also reported with the inference.
-  inverse <- .inference_invert(information, "ratio_le_eps")
-  eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
+  parameter_scale <- 1 / sqrt(pmax(abs(diag(information)), .Machine$double.xmin))
+  conditioned <- information * tcrossprod(parameter_scale)
+  inverse <- .inference_invert(conditioned, "ratio_le_eps") *
+    tcrossprod(parameter_scale)
+  eigenvalues <- eigen(conditioned, symmetric = TRUE, only.values = TRUE)$values
   condition_ratio <- min(eigenvalues) / max(eigenvalues)
   dimnames(inverse) <- dimnames(information)
   gradient <- colSums(scores)
@@ -219,7 +234,7 @@
   if (vcov_type != "observed") {
     .multilpa_require_clusters(sum((x$sampling_weights %||% rep(1, nrow(scores))) > 0),
                                ncol(scores), "A robust or OPG additive covariance")
-    .inference_require_rank(scores, paste(
+    .inference_require_rank(sweep(scores, 2L, parameter_scale, "*"), paste(
       "The %d group scores span %d of %d dimensions, too few to form a",
       "%s covariance."), formatted = TRUE, extra = list(vcov_type))
   }
@@ -228,7 +243,8 @@
     observed = inverse,
     robust = .inference_sandwich(inverse, meat,
       sum((x$sampling_weights %||% rep(1, nrow(scores))) > 0)),
-    opg = chol2inv(chol(meat)))
+    opg = chol2inv(chol(meat * tcrossprod(parameter_scale))) *
+      tcrossprod(parameter_scale))
   dimnames(covariance) <- dimnames(information)
   inference <- list(theta = theta, vcov = covariance, information = information,
                     gradient = gradient, group_scores = scores,
@@ -412,13 +428,16 @@
     # Polishing stops, keeping the last accepted point, unless the information
     # is finite and numerically positive definite (then chol() succeeds).
     if (!all(is.finite(information))) break
-    eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
+    parameter_scale <- 1 / sqrt(pmax(abs(diag(information)), .Machine$double.xmin))
+    conditioned <- information * tcrossprod(parameter_scale)
+    eigenvalues <- eigen(conditioned, symmetric = TRUE, only.values = TRUE)$values
     if (min(eigenvalues) <=
           100 * nrow(information) * .Machine$double.eps * max(eigenvalues)) {
       break
     }
-    factor <- chol(information)
-    direction <- backsolve(factor, forwardsolve(t(factor), gradient))
+    factor <- chol(conditioned)
+    direction <- parameter_scale * backsolve(factor,
+      forwardsolve(t(factor), gradient * parameter_scale))
     decrement <- sqrt(max(0, sum(gradient * direction)))
     if (decrement < 1e-8 || steps >= max_steps) break
     scale <- 1

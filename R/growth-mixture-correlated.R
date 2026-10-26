@@ -49,7 +49,7 @@
 #' @noRd
 .growth_dense_patterns <- function(spec, rows) {
   keys <- vapply(rows, function(r) {
-    paste(format(c(spec$residual_times[r], spec$random_design[r, ]), digits = 17),
+    paste(sprintf("%a", c(spec$residual_times[r], spec$random_design[r, ])),
           collapse = "\r")
   }, character(1))
   groups <- split(seq_along(rows), factor(keys, levels = unique(keys)))

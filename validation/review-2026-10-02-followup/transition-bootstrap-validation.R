@@ -7,6 +7,7 @@
 # Truth is a fitted model; datasets are simulated from it on a fixed design.
 # Run from the repository root:
 #   Rscript validation/review-2026-10-02-followup/transition-bootstrap-validation.R
+source(file.path("validation", "fork-runtime.R"))
 devtools::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20261002)
@@ -85,9 +86,9 @@ size_one <- function(i) {
 
 started <- Sys.time()
 coverage <- do.call(rbind, parallel::mclapply(seq_len(n_datasets), coverage_one,
-                                              mc.cores = cores, mc.set.seed = TRUE))
+                                              mc.cores = .validation_fork_cores(cores), mc.set.seed = TRUE))
 size <- if (run_size) do.call(rbind, parallel::mclapply(seq_len(n_datasets), size_one,
-                                          mc.cores = cores, mc.set.seed = TRUE)) else NULL
+                                          mc.cores = .validation_fork_cores(cores), mc.set.seed = TRUE)) else NULL
 elapsed <- as.numeric(difftime(Sys.time(), started, units = "mins"))
 utils::write.csv(coverage, file.path(out_dir, sprintf(
   "transition-bootstrap-coverage%s.csv", suffix)), row.names = FALSE)

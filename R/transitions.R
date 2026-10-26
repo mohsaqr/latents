@@ -1206,14 +1206,14 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
 logLik.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = object$n_groups, class = "logLik")
+            nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
 #' @rdname latents-model-methods
 #' @export
 nobs.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
-  object$n_groups
+  .multilpa_group_sample_size(object)
 }
 
 #' @noRd

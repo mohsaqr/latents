@@ -61,8 +61,7 @@ ml3_assert <- function() {
 }
 
 ml3_fit_all <- function(cases) {
-  fits <- parallel::mclapply(cases, \(case) suppressWarnings(ml3_fit(case)), mc.cores = 2L,
-                             mc.preschedule = FALSE)
+  fits <- ml3_map_cases(cases, \(case) suppressWarnings(ml3_fit(case)))
   lost <- vapply(fits, \(fit) !inherits(fit, "multilpa"), logical(1))
   if (any(lost)) stop(sprintf("fits lost: %s", paste(names(fits)[lost], collapse = ", ")),
                       call. = FALSE)

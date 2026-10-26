@@ -156,9 +156,12 @@ are shown one at a time.
 plot_tree(models)
 ```
 
-A class in a later tree takes the colour of the class of the first tree with
-which it shares the most posterior mass, at the same number of classes, so a
-colour marks corresponding classes across the trees. `combine = TRUE` plots
+A later tree matches its classes to those of the first tree using a one-to-one
+assignment of posterior overlap at the same number of classes. The assignment
+maximizes total overlap for square matches up to eight classes; larger or
+rectangular matches use a greedy assignment. A class can therefore be matched
+to something other than its own largest-overlap class. Colours mark these
+assigned correspondences. `combine = TRUE` plots
 every tree as a panel of one figure.
 
 ## Comparing solutions at one level

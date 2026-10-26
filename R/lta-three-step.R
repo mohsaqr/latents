@@ -65,16 +65,23 @@
   designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
                           initial_rows, "homogeneous")
   posteriors <- .lta_occasion_posteriors(x)
-  pieces <- list(posteriors = posteriors,
-                 modal = max.col(posteriors, ties.method = "first"),
+  observed <- rowSums(!is.na(data[a$vars])) > 0L
+  modal <- max.col(posteriors, ties.method = "first")
+  pieces <- list(posteriors = posteriors[observed, , drop = FALSE],
+                 modal = modal[observed],
                  n_classes = ncol(posteriors))
   errors <- .multilpa_error_matrix(pieces)
   # Each occasion's indicator is its assigned profile, observed with the
   # step-two error rates: the log density under profile k is log D[k, m].
-  log_density <- log(pmax(t(errors)[pieces$modal, , drop = FALSE], 1e-300))
+  log_density <- log(pmax(t(errors)[modal, , drop = FALSE], 1e-300))
+  # An occasion with no measured response is a missing emission, exactly as
+  # an absent grid slot. Its prior modal class is not an observed assignment.
+  log_density[!observed, ] <- 0
+  modal[!observed] <- NA_integer_
   list(layout = layout, designs = designs,
        emission = .multilpa_sequence_emission(log_density, layout),
-       errors = errors, modal = pieces$modal, n_profiles = ncol(posteriors),
+       errors = errors, modal = modal, n_profiles = ncol(posteriors),
+       informative_groups = seq_len(groups$n) %in% groups$index[observed],
        n_observations = nrow(posteriors))
 }
 
@@ -97,12 +104,26 @@
   general <- inherits(x, "multilpa_lta")
   posteriors <- if (general) x$expectation$subject_posteriors else x$subject_posteriors
   log_density <- if (general) {
-    .lta_log_density(x$x, x$codes, .lta_parameters(x), x$occasion_of_row, x$extra_data)
+    parameters <- .lta_parameters(x)
+    centered <- matrix(0, nrow(posteriors), ncol(posteriors))
+    invisible(lapply(seq_along(parameters$measurement), function(b) {
+      rows <- if (length(parameters$measurement) == 1L) seq_len(nrow(posteriors)) else
+        which(x$occasion_of_row == b)
+      if (!length(rows)) return(NULL)
+      centered[rows, ] <<- .latents_measurement_log_density(
+        x$x[rows, , drop = FALSE], parameters$measurement[[b]],
+        if (is.null(x$codes)) NULL else x$codes[rows, , drop = FALSE],
+        if (is.null(x$extra_data)) NULL else .latents_extra_rows(x$extra_data, rows),
+        n_profiles = ncol(posteriors))$log_density
+    }))
+    centered
   } else {
     .latents_measurement_log_density(x$indicator_data, x, x$categorical_data,
-                                     extra = x$extra_data, offset = FALSE)$log_density
+                                     extra = x$extra_data)$log_density
   }
-  joint <- sweep(log_density, 2L, log(colMeans(posteriors)), "+")
+  observed <- x$informative %||% rep(TRUE, nrow(posteriors))
+  joint <- sweep(log_density, 2L,
+                  log(colMeans(posteriors[observed, , drop = FALSE])), "+")
   joint <- exp(joint - .multilpa_row_max(joint))
   joint / rowSums(joint)
 }
@@ -120,8 +141,7 @@
   values <- design[rows, -1L, drop = FALSE]
   centre <- colMeans(values)
   spread <- sqrt(colMeans(sweep(values, 2L, centre)^2))
-  if (any(!is.finite(spread)) || any(spread <= sqrt(.Machine$double.eps) *
-                                       pmax(1, abs(centre)))) {
+  if (any(!is.finite(spread)) || any(spread <= 0)) {
     stop(errorCondition(
       "A covariate is constant over the occasions it applies to; remove it.",
       class = "latents_bad_covariate", call = NULL))
@@ -189,9 +209,12 @@
   designs <- inputs$designs
   layout <- inputs$layout
   k_profiles <- inputs$n_profiles
-  inside <- lapply(seq_along(designs$transition), function(t) layout$within[, t + 1L])
+  contributing <- inputs$informative_groups %||% rep(TRUE, nrow(layout$slot))
+  inside <- lapply(seq_along(designs$transition), function(t) {
+    layout$within[, t + 1L] & contributing
+  })
   stacked <- do.call(rbind, designs$transition)
-  initial_basis <- .lta_three_step_basis(designs$initial)
+  initial_basis <- .lta_three_step_basis(designs$initial, which(contributing))
   transition_basis <- .lta_three_step_basis(stacked, unlist(inside))
   standardized <- inputs
   standardized$designs <- list(
@@ -224,12 +247,19 @@
   natural_basis <- rbind(
     cbind(initial_block, matrix(0, nrow(initial_block), ncol(transition_block))),
     cbind(matrix(0, nrow(transition_block), ncol(initial_block)), transition_block))
-  start <- solve(natural_basis, c(as.vector(initial_start), as.vector(transition_start)))
-  objective <- function(theta) -sum(.lta_three_step_evaluate(theta, standardized)$log_likelihood)
-  gradient <- function(theta) -colSums(.lta_three_step_evaluate(theta, standardized)$scores)
+  # Every starting slope is zero, so intercept-only starts are identical in
+  # the natural and standardized charts. Inverting the basis would falsely
+  # reject a perfectly variable covariate with a large offset.
+  start <- c(as.vector(initial_start), as.vector(transition_start))
+  objective <- function(theta) -sum(
+    .lta_three_step_evaluate(theta, standardized)$log_likelihood[contributing])
+  total <- function(theta) colSums(
+    .lta_three_step_evaluate(theta, standardized)$scores[contributing, , drop = FALSE])
+  gradient <- function(theta) -total(theta)
   fitted <- stats::optim(start, objective, gradient, method = "BFGS",
                          control = list(maxit = 2000L, reltol = 1e-14))
-  scores <- .lta_three_step_evaluate(fitted$par, standardized)$scores
+  scores <- .lta_three_step_evaluate(fitted$par, standardized)$scores[
+    contributing, , drop = FALSE]
   if (!identical(fitted$convergence, 0L) ||
       max(abs(colSums(scores))) > 1e-3 * max(1, sqrt(nrow(scores)))) {
     stop(errorCondition(sprintf(paste(
@@ -237,7 +267,6 @@
       "score %.3g)."), fitted$convergence, max(abs(colSums(scores)))),
       class = "latents_no_converge", call = NULL))
   }
-  total <- function(theta) colSums(.lta_three_step_evaluate(theta, standardized)$scores)
   information <- .inference_score_information(total, fitted$par, 1e-5, scheme = "central",
                                               h_rule = "plus1")
   inverse <- .mixture_invert(information)
@@ -273,7 +302,7 @@
       (ncol(inputs$designs$initial) + inputs$n_profiles *
          ncol(inputs$designs$transition[[1L]]))
     .multilpa_require_clusters(
-      nrow(inputs$layout$slot), n_coefficients,
+      sum(inputs$informative_groups), n_coefficients,
       what = "A cluster-robust covariance for the step-three transition model",
       alternative = paste("`vcov_type = \"observed\"` uses the model-based",
                           "information instead."))

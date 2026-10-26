@@ -359,8 +359,10 @@
 #'   `conf_low` and `conf_high` their percentile interval, and `statistic`,
 #'   `p_value` and `p_adjusted` are `NA`.
 #' @param iter,n_starts,max_iter,tol,seed Number of bootstrap resamples, the
-#'   controls of each refit, and an optional seed (the caller's random state
-#'   is restored).
+#'   controls of each refit, and an optional seed. A supplied integer seed restores
+#'   the caller's `.Random.seed`; `NULL` uses its current stream.
+#'   The Box-Muller cached normal variate is not exposed by R
+#'   and cannot be restored. See [base::Random].
 #' @param boundary Accepted for consistency with the generic. Transition
 #'   inference holds no parameter at a bound: without an active bound
 #'   `"fix"` gives the same table as `"error"`, and a fit with an active bound

@@ -4,8 +4,9 @@
 # (see `future/README.md`), but the comparisons that validated them are the
 # evidence needed to bring them back, so they must keep running. The deferred
 # file is evaluated in an environment whose parent is the package namespace:
-# its functions see every internal helper exactly as they did when shipped,
-# and nothing is added to the package itself.
+# its functions see the current internal helpers. Its S3 methods are registered
+# for the current session so generic calls can find methods enclosed here;
+# no source, exports or installed package files are changed.
 #
 # Source this after `pkgload::load_all(".")`, then e.g.
 #   lmr_lrt <- deferred_verb("lmr.R", "lmr_lrt")
@@ -29,6 +30,15 @@ deferred_verb <- function(file, name, root = ".") {
   }
   environment <- new.env(parent = asNamespace("latents"))
   sys.source(path, envir = environment, keep.source = FALSE)
+  generics <- c("as.data.frame", "parameter_inference", "get_results", "print",
+                 "summary", "plot", "coef", "vcov", "confint", "logLik", "nobs")
+  invisible(lapply(ls(environment, all.names = TRUE), function(method) {
+    generic <- generics[startsWith(method, paste0(generics, "."))]
+    if (length(generic) == 1L && is.function(environment[[method]])) {
+      registerS3method(generic, substring(method, nchar(generic) + 2L),
+                       environment[[method]], envir = asNamespace("latents"))
+    }
+  }))
   if (!exists(name, envir = environment, inherits = FALSE)) {
     stop(errorCondition(sprintf("`%s` does not define `%s()`.", path, name),
                         class = "multilpa_missing_deferred", call = NULL))

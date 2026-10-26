@@ -1,0 +1,15 @@
+{
+  "files": 4,
+  "cases": 25,
+  "totals": {
+    "failed": 0,
+    "skipped": 0,
+    "error": 0,
+    "warning": 0,
+    "passed": 164
+  },
+  "seconds": 618.258,
+  "filter": "^((features-joint-items)|(joint-items-.*))$",
+  "source_manifest": "verification-joint-v3-manifest.json",
+  "purpose": "Full affected-family rerun plus new optimizer/protocol regressions; original whole-batch failure evidence retained separately"
+}

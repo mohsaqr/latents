@@ -1,0 +1,211 @@
+{
+  "additive_weight_units": {
+    "normalized_weight_max_difference": 1.7763568394002505e-15,
+    "inference": {
+      "status": "returned",
+      "value": [
+        {
+          "level": "between",
+          "group_class": "group_class_1",
+          "indicator": "y",
+          "parameter": "mean",
+          "estimate": 0.27557811706600405,
+          "standard_error": 0.3288880387013981,
+          "statistic": 0.83790860304349701,
+          "p_value": 0.40208203666808134,
+          "p_adjusted": 0.40208203666808134,
+          "conf_low": -0.3690305937347515,
+          "conf_high": 0.92018682786675954
+        },
+        {
+          "level": "within",
+          "group_class": "shared",
+          "indicator": "y",
+          "parameter": "variance",
+          "estimate": 1.0159726680482741,
+          "standard_error": 0.07872556202477704,
+          "conf_low": 0.8728190705183323,
+          "conf_high": 1.1826053039928952
+        },
+        {
+          "level": "between",
+          "group_class": "group_class_1",
+          "indicator": "y",
+          "parameter": "variance",
+          "estimate": 3.8616772189147031,
+          "standard_error": 0.74076625227546133,
+          "conf_low": 2.6515158634910216,
+          "conf_high": 5.624160559782859
+        },
+        {
+          "level": "group_class",
+          "group_class": "group_class_1",
+          "parameter": "weight",
+          "estimate": 1,
+          "standard_error": 0,
+          "conf_low": 1,
+          "conf_high": 1
+        }
+      ]
+    },
+    "original_inference": {
+      "status": "returned",
+      "value": [
+        {
+          "level": "between",
+          "group_class": "group_class_1",
+          "indicator": "y",
+          "parameter": "mean",
+          "estimate": 0.27557811706600405,
+          "standard_error": 0.3288880387013981,
+          "statistic": 0.83790860304349701,
+          "p_value": 0.40208203666808134,
+          "p_adjusted": 0.40208203666808134,
+          "conf_low": -0.3690305937347515,
+          "conf_high": 0.92018682786675954
+        },
+        {
+          "level": "within",
+          "group_class": "shared",
+          "indicator": "y",
+          "parameter": "variance",
+          "estimate": 1.0159726680482741,
+          "standard_error": 0.07872556202477704,
+          "conf_low": 0.8728190705183323,
+          "conf_high": 1.1826053039928952
+        },
+        {
+          "level": "between",
+          "group_class": "group_class_1",
+          "indicator": "y",
+          "parameter": "variance",
+          "estimate": 3.8616772189147031,
+          "standard_error": 0.74076625227546133,
+          "conf_low": 2.6515158634910216,
+          "conf_high": 5.624160559782859
+        },
+        {
+          "level": "group_class",
+          "group_class": "group_class_1",
+          "parameter": "weight",
+          "estimate": 1,
+          "standard_error": 0,
+          "conf_low": 1,
+          "conf_high": 1
+        }
+      ]
+    }
+  },
+  "LTA_occasion_common_density": {
+    "actual": [
+      [0.80000000000000004, 0.20000000000000001]
+    ],
+    "independent_target": [
+      [0.80000000000000004, 0.20000000000000001]
+    ]
+  },
+  "LTA_r3step_empty_persons": {
+    "base_ll": -329.07197515519113,
+    "padded_ll": -329.07197515519124,
+    "base": [
+      {
+        "block": "initial",
+        "to": "profile_1",
+        "term": "(Intercept)",
+        "estimate": -0.0050232864533827897,
+        "standard_error": 0.26140529015705782,
+        "statistic": -0.019216468229715983,
+        "p_value": 0.98466842028100598,
+        "conf_low": -0.51736824052945862,
+        "conf_high": 0.50732166762269304
+      },
+      {
+        "block": "initial",
+        "to": "profile_1",
+        "term": "z",
+        "estimate": 0.16297213690932721,
+        "standard_error": 0.22818875298711214,
+        "statistic": 0.71419881469150104,
+        "p_value": 0.47510424972880555,
+        "p_adjusted": 0.47510424972880555,
+        "conf_low": -0.2842696006225191,
+        "conf_high": 0.61021387444117359
+      },
+      {
+        "block": "transition",
+        "from": "profile_1",
+        "to": "profile_2",
+        "term": "(Intercept)",
+        "estimate": 0.021978906578803737,
+        "standard_error": 0.19772923944058174,
+        "statistic": 0.11115658281489758,
+        "p_value": 0.91149218009810873,
+        "conf_low": -0.36556328141523309,
+        "conf_high": 0.40952109457284058
+      },
+      {
+        "block": "transition",
+        "from": "profile_2",
+        "to": "profile_1",
+        "term": "(Intercept)",
+        "estimate": 0.11247798328724574,
+        "standard_error": 0.20353037982532668,
+        "statistic": 0.55263486160531072,
+        "p_value": 0.58051346532788362,
+        "conf_low": -0.28643423093015202,
+        "conf_high": 0.51139019750464354
+      }
+    ],
+    "padded": [
+      {
+        "block": "initial",
+        "to": "profile_1",
+        "term": "(Intercept)",
+        "estimate": -0.0050232864533827897,
+        "standard_error": 0.26140529015705782,
+        "statistic": -0.019216468229715983,
+        "p_value": 0.98466842028100598,
+        "conf_low": -0.51736824052945862,
+        "conf_high": 0.50732166762269304
+      },
+      {
+        "block": "initial",
+        "to": "profile_1",
+        "term": "z",
+        "estimate": 0.16297213690932721,
+        "standard_error": 0.22818875298711214,
+        "statistic": 0.71419881469150104,
+        "p_value": 0.47510424972880555,
+        "p_adjusted": 0.47510424972880555,
+        "conf_low": -0.2842696006225191,
+        "conf_high": 0.61021387444117359
+      },
+      {
+        "block": "transition",
+        "from": "profile_1",
+        "to": "profile_2",
+        "term": "(Intercept)",
+        "estimate": 0.021978906578803737,
+        "standard_error": 0.19772923944058174,
+        "statistic": 0.11115658281489758,
+        "p_value": 0.91149218009810873,
+        "conf_low": -0.36556328141523309,
+        "conf_high": 0.40952109457284058
+      },
+      {
+        "block": "transition",
+        "from": "profile_2",
+        "to": "profile_1",
+        "term": "(Intercept)",
+        "estimate": 0.11247798328724574,
+        "standard_error": 0.20353037982532668,
+        "statistic": 0.55263486160531072,
+        "p_value": 0.58051346532788362,
+        "conf_low": -0.28643423093015202,
+        "conf_high": 0.51139019750464354
+      }
+    ],
+    "SE_ratio": [1, 1, 1, 1],
+    "raw_group_CR1_ratio": 0.99662730911108055
+  }
+}

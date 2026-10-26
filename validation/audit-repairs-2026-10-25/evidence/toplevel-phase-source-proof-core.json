@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "manifest_file": "/private/tmp/latents-fix-20261025/verification-toplevel-phase-manifest.json",
+    "manifest_sha256": "ee44ea43ea085c5ccc4d1b9f68419adb97cf61448c95ee8984a82bc8b32c1dfb",
+    "checked_entries": 594,
+    "all_entries_match": true,
+    "all_workspace_and_snapshot_entries_match": true,
+    "protected_production_files_unchanged": 384,
+    "staged_before_toplevel_start": true,
+    "interpretation": "Exact top-level-phase source identity; final external-equivalence runtime result remains pending."
+  },
+  "production_freeze_entries": 587,
+  "completed_gate_entries": 592,
+  "top_level_entries": 594,
+  "protected_entries_unchanged": 384,
+  "supporting_fork_runtime_review": {
+    "raw_research_runner_files": 21,
+    "guarded_raw_mclapply_calls": 23,
+    "composition": "17 validation runners/18 calls plus4 supporting EQ runners/5 calls. Explicit unsafe-runtime refusal preserves requested study streams/budgets.",
+    "serial_safe_fixed_seed_dispatchers": [
+      "ml3_map_cases",
+      "vlmr_map_cases"
+    ],
+    "helper_scope": "These2 helpers map explicitly seeded cases and use tested serial dispatch on unsafe forks; raw research runners refuse unsafe multicore rather than silently changing streams.",
+    "supporting_pure_tests": {
+      "cases": 4,
+      "passed": 40,
+      "failures": 0,
+      "errors": 0,
+      "warnings": 0,
+      "skips": 0
+    },
+    "vlmr_overlay_tests": {
+      "cases": 3,
+      "passed": 14,
+      "failures": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    "historical_studies_or_kits_rerun": false,
+    "evidence": [
+      "support-fork-repair-evidence-core.json",
+      "support-fork-protocol-proof-core.json",
+      "vlmr-runtime-source-freeze-extensions.json",
+      "vlmr-runtime-overlay-receipt.json"
+    ]
+  }
+}

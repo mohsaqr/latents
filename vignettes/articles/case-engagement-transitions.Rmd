@@ -76,9 +76,9 @@ plot_profiles(moves)
 get_results(moves)
 ```
 
-Profile 1 is the lowest on every indicator, profile 2 the highest, and profile
-3 lies between them; their attendance means are -0.929, 1.124 and 0.254. The
-profiles are therefore lower, higher and intermediate activity. The heatmap
+The profiles describe lower, intermediate and higher activity. Their attendance
+means are approximately -0.929, 0.254 and 1.124 in that order; the table above
+gives the corresponding profile labels for this fitted solution. The heatmap
 shows the same means as standard deviations from each indicator's grand mean.
 
 ```{r heatmap}

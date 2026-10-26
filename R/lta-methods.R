@@ -345,13 +345,14 @@ vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...
 #' @noRd
 #' @export
 logLik.multilpa_lta <- function(object, ...) {
-  structure(object$log_likelihood, df = object$n_parameters, nobs = object$n_groups,
+  structure(object$log_likelihood, df = object$n_parameters,
+            nobs = .multilpa_group_sample_size(object),
             class = "logLik")
 }
 
 #' @noRd
 #' @export
-nobs.multilpa_lta <- function(object, ...) object$n_groups
+nobs.multilpa_lta <- function(object, ...) .multilpa_group_sample_size(object)
 
 #' @details For a general transition fit (an [lta()] fit with covariate,
 #'   occasion-varying or second-order transitions), the table has one row per

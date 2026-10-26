@@ -6,39 +6,107 @@
 ji_root <- file.path("features", "joint-items")
 ji_cases <- function() readRDS(file.path(ji_root, "kit", "cases.rds"))
 
-#' Fit one case as the references were asked to fit it
-#'
-#' Two seeds of `n_starts` random starts each; the better fit is returned,
-#' with the maximum of each seed (`ji_seed_maxima`) and every warning raised,
-#' by class (`ji_warnings`), recorded on it.
-ji_fit <- function(case, n_starts = 15L, seeds = 1:2, local_dependence = TRUE, tol = 1e-10,
-                   max_iter = 5000) {
+#' Explicit precision controls for independent numerical verification
+#' @param tol,max_iter Original fitting controls.
+#' @return Supplied-start controls, never looser than the original controls.
+ji_verification_controls <- function(tol = 1e-10, max_iter = 5000L) {
+  list(n_starts = 1L, tol = min(tol, 1e-13), max_iter = max(max_iter, 5000L))
+}
+
+#' Fit one seed with the declared controls
+#' @param case Kit case.
+#' @param seed,n_starts,tol,max_iter Fitting controls.
+#' @param local_dependence Whether to join the case's pairs.
+#' @param start Optional supplied parameters.
+#' @return A fitted model, without diagnostic bookkeeping.
+ji_fit_once <- function(case, seed, n_starts, tol, max_iter,
+                        local_dependence = TRUE, start = NULL) {
   spec <- case$spec
-  common <- list(n_starts = n_starts, tol = tol, max_iter = max_iter,
+  common <- list(n_starts = n_starts, tol = tol, max_iter = max_iter, seed = seed,
                  missing = if (isTRUE(spec$missing)) "fiml" else "error",
                  local_dependence = if (local_dependence) spec$pairs else character(),
-                 weights = spec$weights)
+                 weights = spec$weights, start = start)
   common <- Filter(Negate(is.null), common)
+  if (is.null(spec$h)) {
+    do.call(lca, c(list(case$data, spec$vars, spec$k), common))
+  } else {
+    do.call(multilca, c(list(case$data, spec$vars, spec$id, n_profiles = spec$k,
+                             n_group_classes = spec$h), common))
+  }
+}
+
+#' Resume only the fit's own selected parameters, without reference inputs
+#' @param case,fit The case and its original fitted model.
+#' @param seed,tol,max_iter Original fitting controls.
+#' @param local_dependence Whether the original fit joined the case's pairs.
+#' @return The fit after a strict supplied-start verification run.
+ji_refine <- function(case, fit, seed, tol = 1e-10, max_iter = 5000L,
+                      local_dependence = TRUE) {
+  controls <- ji_verification_controls(tol, max_iter)
+  ji_fit_once(case, seed, controls$n_starts, controls$tol, controls$max_iter,
+              local_dependence, starting_values(fit))
+}
+
+#' Fit every original seed, then strictly verify each selected fit
+#'
+#' Production convergence is a per-step gain condition, not a bound on the
+#' remaining objective gap. The external comparison uses the declared strict
+#' resume recipe and still checks its gap against the independent reference.
+#' Every original fit and its original controls remain available separately.
+ji_fit <- function(case, n_starts = 15L, seeds = 1:2, local_dependence = TRUE, tol = 1e-10,
+                   max_iter = 5000) {
   caught <- character()
-  one <- function(seed) {
-    withCallingHandlers({
-      if (is.null(spec$h)) {
-        do.call(lca, c(list(case$data, spec$vars, spec$k, seed = seed), common))
-      } else {
-        do.call(multilca, c(list(case$data, spec$vars, spec$id, n_profiles = spec$k,
-                                 n_group_classes = spec$h, seed = seed), common))
-      }
-    }, warning = function(w) {
+  capture <- function(expression) {
+    withCallingHandlers(expression, warning = function(w) {
       caught <<- c(caught, class(w)[1L])
       invokeRestart("muffleWarning")
     }, message = function(m) invokeRestart("muffleMessage"))
   }
-  fits <- lapply(seeds, one)
+  original <- lapply(seeds, function(seed) capture(
+    ji_fit_once(case, seed, n_starts, tol, max_iter, local_dependence)))
+  fits <- Map(function(seed, fit) capture(
+    ji_refine(case, fit, seed, tol, max_iter, local_dependence)), seeds, original)
   maxima <- vapply(fits, `[[`, numeric(1), "log_likelihood")
   best <- fits[[which.max(maxima)]]
   best$ji_seed_maxima <- maxima
+  best$ji_original_fits <- original
+  best$ji_verified_fits <- fits
+  best$ji_seeds <- seeds
+  best$ji_original_controls <- list(n_starts = n_starts, tol = tol, max_iter = max_iter)
+  best$ji_verification_controls <- ji_verification_controls(tol, max_iter)
   best$ji_warnings <- unique(caught)
   best
+}
+
+#' Original and verified seed fits against the selected fit's reference polish
+#' @param case,fit The kit case and its configured fit.
+#' @param polish The independent polish from `ji_polish()` (tighter production
+#'   reference for the two-level cases, which have no independent group EM).
+#' @return One diagnostic row per original seed; no default reliability claim.
+ji_verification_diagnostics <- function(case, fit, polish) {
+  reference <- polish$reference
+  gap <- function(candidate) {
+    montecarlo_relabel(candidate$subject_posteriors, reference$posteriors)$gap
+  }
+  do.call(rbind, lapply(seq_along(fit$ji_seeds), function(index) {
+    original <- fit$ji_original_fits[[index]]
+    verified <- fit$ji_verified_fits[[index]]
+    data.frame(case = case$name, seed = fit$ji_seeds[index],
+      original_n_starts = fit$ji_original_controls$n_starts,
+      original_tol = fit$ji_original_controls$tol,
+      original_max_iter = fit$ji_original_controls$max_iter,
+      original_log_likelihood = original$log_likelihood,
+      original_converged = original$converged,
+      original_gap_to_reference = reference$log_likelihood - original$log_likelihood,
+      original_posterior_gap = gap(original),
+      verification_n_starts = fit$ji_verification_controls$n_starts,
+      verification_tol = fit$ji_verification_controls$tol,
+      verification_max_iter = fit$ji_verification_controls$max_iter,
+      verification_log_likelihood = verified$log_likelihood,
+      verification_converged = verified$converged,
+      verification_gap_to_reference = reference$log_likelihood - verified$log_likelihood,
+      verification_posterior_gap = gap(verified), reference_method = reference$method)
+  }))
 }
 
 #' Apply a function over a list on two cores (the machine is shared)

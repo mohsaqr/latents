@@ -1,0 +1,41 @@
+{
+  "status": "FINAL IMMUTABLE independent JI EM optimizer overlay",
+  "generated_at": "2026-10-26T00:19:12.921397+00:00",
+  "files": {
+    "equivalence/features/joint-items/reference.R": "8fcd751e89ff60d9670ef103c104dfea3d316a219b40f746538af1b4e66bd77b",
+    "equivalence/test-joint-items-reference-optimizer.R": "fd9583603503f6e57e88c0ded5ebf1cb9309ab9e9404f82ee06b19ddc7ed59c7"
+  },
+  "source_boundary": "Only reference optimizer bookkeeping, nonfinite failure guard, and stop qualification changed. Likelihood/Mstep/weights/initialstarts/seeds/tol unchanged. Scientific comparisons and1e-9 absolute lowergap oracle untouched. No production R/tests/man edits.",
+  "controls": "Continue negative steps; converge only on nonnegative gain below existing tol; retain coherent complete best visited state including initial. Return observed iterations/converged and termination_log_likelihood/termination_gain separately from best_iteration.",
+  "tests": {
+    "cases": 2,
+    "passed": 27,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 0,
+    "lint": "both files clean",
+    "rds": "/private/tmp/latents-fix-20261025/joint-reference-optimizer-tests-extensions.rds"
+  },
+  "real_case": {
+    "case": "huge_01",
+    "original_ll": -111023.89461376258,
+    "original_first_negative_gain": -2.852175384759903e-09,
+    "best_iteration": 77,
+    "best_ll": -111023.89461375188,
+    "termination_iteration": 253,
+    "termination_gain": 0,
+    "termination_ll": -111023.8946137616,
+    "repaired_gap": 1.0695657692849636e-08,
+    "relative_gap": 9.633567075256479e-14,
+    "direct_at_estimates_relative_error": 0,
+    "posteriors_at_estimates_error": 7.771561172376096e-16
+  },
+  "evidence": [
+    "/private/tmp/latents-fix-20261025/joint-negative-polish-diagnosis-extensions.json",
+    "/private/tmp/latents-fix-20261025/joint-nonnegative-stop-probe-extensions.json",
+    "/private/tmp/latents-fix-20261025/joint-negative-polish-repaired-extensions.json",
+    "/private/tmp/latents-fix-20261025/joint-reference-optimizer-tests-extensions.log"
+  ],
+  "preserved_failure": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/manifest.json",
+  "limit": "Parent owns fullJI file rerun; isolated reproduction verifies one specific failure, not whole external equivalence study."
+}

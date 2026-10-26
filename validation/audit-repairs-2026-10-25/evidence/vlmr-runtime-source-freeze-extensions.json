@@ -1,0 +1,20 @@
+{
+  "status": "final immutable VLMR-only runtime overlay",
+  "generated_at": "2026-10-25T23:44:39.873988+00:00",
+  "files": {
+    "equivalence/features/vlmr/helpers.R": "e73968e5ce953d6cd8db79c6405a5ea4b8727c03e67269f079abb7c172d1fc28",
+    "equivalence/test-vlmr-runtime.R": "91624d2c055e9eab516221e80993645e770a54dee667787d44e4b4a980b584b8"
+  },
+  "other_frozen_15_files_unchanged": true,
+  "tests": {
+    "cases": 3,
+    "passed": 14,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 0,
+    "path": "/private/tmp/latents-fix-20261025/vlmr-runtime-tests-extensions.rds"
+  },
+  "proof": "Actual synthetic EEI two-class enumeration and independent VLMR reference with 200 Monte Carlo draws identical across serial and mocked safe-fork dispatch; caller RNG identical; LR at own estimates agrees to <1e-9. Unsafe fork never launched.",
+  "source_boundary": "Existing functions unchanged except dispatcher call in vlmr_compute_all; statistical worker body, fitting controls, reference and explicit seeds unchanged.",
+  "runtime": "Serial if explicit latents.vlmr.serial TRUE, Windows, or !latents:::.latents_fork_safe(); safe platforms retain supplied cores and mc.preschedule FALSE."
+}

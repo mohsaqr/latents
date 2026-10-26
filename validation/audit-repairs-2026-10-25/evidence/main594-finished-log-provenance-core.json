@@ -1,0 +1,10 @@
+{
+  "source_log": "/private/tmp/latents-fix-20261025/equivalence-verification-v2.log",
+  "source_full_sha256": "922da7ef9a4812d5ebfd581b6d155835d96a9d42fc39230c1d49c6a39e5b198f",
+  "source_lines": 369,
+  "copied_last_lines": 80,
+  "tail_sha256": "a78ecfc030371a38877653b5526518d3acbd1fb9381ede688c75c5b245adfab8",
+  "status": "Original50-file main594run completed with2pre-repair JI failed assertions. Original results preserved, and final52-file consolidation replaces both entire affected files with the complete4-file164assertion v3run.",
+  "final_summary": "final-external-verification-summary.json",
+  "original_summary": "external-equivalence-v2-summary.json"
+}

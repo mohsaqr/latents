@@ -311,8 +311,78 @@ print.multilpa_random_intercept <- function(x, rows = 20L, ...) {
   cat(sprintf("Random-intercept LPA: %d profiles, %d people, %d groups\n", x$n_profiles, x$n_observations, x$n_groups))
   cat(sprintf("Log likelihood: %.6f; random-intercept SD: %.6f\n", x$log_likelihood, x$random_sd))
   cat(sprintf("Integration: %s; likelihood check difference: %.3g\n", x$integration, x$quadrature_log_likelihood_difference))
-  .multilpa_print_primary(x, rows = rows)
+  .multilpa_print_tables(list(profiles = get_results(x)), rows = rows)
   invisible(x)
+}
+
+#' Model and quadrature diagnostics of a deferred random-intercept fit
+#' @param x A deferred random-intercept fit.
+#' @return A one-row data frame.
+#' @noRd
+.multilpa_intercept_fit_frame <- function(x) {
+  data.frame(n_profiles = x$n_profiles, n_observations = x$n_observations,
+    n_groups = x$n_groups, n_parameters = x$n_parameters,
+    log_likelihood = x$log_likelihood, aic = x$aic, bic_groups = x$bic,
+    bic_individual = x$bic_individual, converged = x$converged, boundary = x$boundary,
+    random_intercept_sd = x$random_sd, integration = x$integration,
+    quadrature_nodes = x$quadrature_nodes,
+    quadrature_log_likelihood_difference = x$quadrature_log_likelihood_difference,
+    quadrature_check_passed = x$quadrature_check_passed)
+}
+
+#' Tables of a deferred random-intercept fit
+#' @param x A deferred random-intercept fit.
+#' @param what A table name or `"all"`.
+#' @param ... Must be empty.
+#' @return A data frame or named list of data frames.
+#' @noRd
+get_results.multilpa_random_intercept <- function(x, what = NULL, ...) {  # nolint: object_name_linter. Deferred S3 method.
+  stopifnot(inherits(x, "multilpa_random_intercept"))
+  .multilpa_reject_extra_arguments(list(...), "get_results()",
+                                  "The deferred model's tables take no extra arguments.")
+  posteriors <- data.frame(row = rep(seq_len(x$n_observations), each = x$n_profiles),
+    profile = rep(seq_len(x$n_profiles), times = x$n_observations),
+    posterior = as.vector(t(x$subject_posteriors)))
+  assignments <- data.frame(x$indicator_data, profile = x$subject_profiles,
+    uncertainty = 1 - apply(x$subject_posteriors, 1L, max))
+  assignments[[x$id]] <- x$group_values[x$group_index]
+  tables <- list(profiles = .multilpa_profile_frame(x),
+    random_intercepts = data.frame(group = x$group_values,
+      mean = x$random_intercept_mean, sd = x$random_intercept_sd),
+    profile_probabilities = data.frame(profile = seq_len(x$n_profiles),
+      probability = x$profile_probabilities),
+    counts = data.frame(level = "individuals", class = seq_len(x$n_profiles),
+      effective_count = x$effective_profile_counts,
+      effective_proportion = x$effective_profile_counts / x$n_observations),
+    model = .multilpa_intercept_fit_frame(x), posteriors = posteriors,
+    assignments = assignments, starts = x$starts)
+  tables$information_criteria <- tables$model
+  what <- .multilpa_match_table(what, names(tables))
+  if (identical(what, "all")) tables else tables[[what]]
+}
+
+#' Read a stored deferred-model summary table
+#' @param x A deferred random-intercept summary.
+#' @param what A table name or `"all"`.
+#' @param ... Must be empty.
+#' @return A data frame or named list of data frames.
+#' @noRd
+get_results.summary_multilpa_random_intercept <- function(x, what = NULL, ...) {  # nolint: object_name_linter. Deferred S3 method.
+  .multilpa_reject_extra_arguments(list(...), "get_results()", "Use a stored table name.")
+  what <- .multilpa_match_table(what, names(x$tables))
+  if (identical(what, "all")) x$tables else x$tables[[what]]
+}
+
+#' Coerce a deferred random-intercept fit to its measurement table
+#' @param x A deferred random-intercept fit.
+#' @param row.names Row names for the returned table.
+#' @param optional Unused generic argument.
+#' @param ... Must be empty.
+#' @return A data frame.
+#' @noRd
+as.data.frame.multilpa_random_intercept <- function(x, row.names = NULL,
+                                                   optional = FALSE, ...) {
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' Summarize a continuous group random-intercept fit
@@ -461,9 +531,9 @@ as.data.frame.summary_multilpa_random_intercept <- function(x, row.names = NULL,
 #' @param main,subtitle Panel title and secondary line, or `NULL` for defaults.
 #' @param palette,symbols,linetypes Series aesthetics, or `NULL` for the
 #'   package defaults.
-#' @param style A list of visual constants, as built by `.multilpa_style()`.
-#' @param ... Further named visual constants, merged into `style`.
-#' @return The fitted model, invisibly. Called for the side effect of drawing.
+#' @param style Unused legacy style list; style the returned ggplot object.
+#' @param ... Must be empty.
+#' @return A ggplot object, invisibly; `what = "all"` returns a named plot list.
 #' @examples
 #' set.seed(8)
 #' example_data <- data.frame(group = rep(seq_len(12), each = 5),
@@ -476,85 +546,96 @@ as.data.frame.summary_multilpa_random_intercept <- function(x, row.names = NULL,
 #' @export
 plot.multilpa_random_intercept <- function(x, what = c("profiles",
                                                        "random_intercepts",
-                                                       "entropy", "posteriors",
-                                                       "all"),
+                                                       "entropy", "posteriors", "all"),
                                            scale = c("raw", "standardized"),
                                            labels = TRUE, main = NULL,
                                            subtitle = NULL, palette = NULL,
                                            symbols = NULL, linetypes = NULL,
-                                           style = .multilpa_style(), ...) {
-  stopifnot("`x` must be a fitted `multilpa_random_intercept` model" =
-              inherits(x, "multilpa_random_intercept"),
-            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels))
+                                           style = NULL, ...) {
+  stopifnot(inherits(x, "multilpa_random_intercept"),
+            isTRUE(labels) || isFALSE(labels))
+  .gg_require()
   what <- match.arg(what)
-  if (identical(what, "all")) {
-    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
-  }
   scale <- match.arg(scale)
-  style <- utils::modifyList(style, list(...))
-  previous <- graphics::par(no.readonly = TRUE)
-  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
-  graphics::par(xpd = NA)
-  if (identical(what, "profiles")) {
-    ## The shared measurement panel reads `n_group_classes` only to build a
-    ## default subtitle. This family has a continuous group effect instead of
-    ## discrete classes, so the adapter supplies that field and this method
-    ## always replaces the subtitle it would produce.
-    panel_input <- x
-    panel_input$n_group_classes <- 1L
-    .multilpa_plot_profiles(panel_input, scale, labels, main,
-      if (is.null(subtitle)) sprintf(
-        "%d profiles; continuous group random intercept (SD %.3g); %s scale",
-        x$n_profiles, x$random_sd,
-        if (identical(scale, "standardized")) "standardized" else "input")
-      else subtitle,
-      palette, symbols, linetypes, style)
-  } else if (identical(what, "random_intercepts")) {
-    .multilpa_plot_random_intercepts(x, main, subtitle, palette, style)
-  } else {
-    ## The case-level diagnostics read only the posteriors and the effective
-    ## profile counts, which this family carries like every other, so they are
-    ## drawn by the shared helper rather than reimplemented here. It refuses a
-    ## single-profile fit, where there is nothing to separate.
-    .multilpa_plot_case_diagnostic(x, what, main, subtitle, palette, style)
+  .multilpa_reject_extra_arguments(list(...), "plot()", "Style the returned ggplot object.")
+  if (!is.null(style)) {
+    .multilpa_notice("`style` is unused; style the returned ggplot object.",
+                     class = "latents_unused_argument")
   }
-  invisible(x)
+  if (identical(what, "all")) {
+    views <- c("profiles", "random_intercepts",
+                if (x$n_profiles > 1L) c("entropy", "posteriors"))
+    return(.gg_plots(stats::setNames(lapply(views, function(view) {
+      plot.multilpa_random_intercept(x, view, scale, labels, main, subtitle,
+                                     palette, symbols, linetypes)
+    }), views)))
+  }
+  if (identical(what, "random_intercepts")) {
+    return(.gg_draw_on_call(.multilpa_plot_random_intercepts(
+      x, main, subtitle, palette, style)))
+  }
+  if (identical(what, "profiles")) {
+    frame <- get_results(x)
+    if (identical(scale, "standardized")) {
+      centre <- colMeans(x$indicator_data)
+      spread <- apply(x$indicator_data, 2L, stats::sd)
+      frame$mean <- (frame$mean - centre[frame$indicator]) / spread[frame$indicator]
+    }
+    frame$indicator <- factor(frame$indicator, levels = x$vars)
+    frame$profile <- factor(frame$profile)
+    plot <- ggplot2::ggplot(frame, ggplot2::aes(indicator, mean, colour = profile,
+                                               shape = profile, linetype = profile,
+                                               group = profile)) +
+      ggplot2::geom_point(size = 2)
+    if (length(x$vars) > 1L) plot <- plot + ggplot2::geom_line()
+    if (!is.null(palette)) plot <- plot + ggplot2::scale_colour_manual(values = palette)
+    if (!is.null(symbols)) plot <- plot + ggplot2::scale_shape_manual(values = symbols)
+    if (!is.null(linetypes)) plot <- plot + ggplot2::scale_linetype_manual(values = linetypes)
+    if (labels) {
+      ends <- frame[frame$indicator == utils::tail(levels(frame$indicator), 1L), , drop = FALSE]
+      plot <- plot + ggplot2::geom_text(data = ends,
+        ggplot2::aes(label = paste("Profile", profile)), nudge_x = 0.1, hjust = 0,
+        show.legend = FALSE) +
+        ggplot2::guides(colour = "none", shape = "none", linetype = "none")
+    }
+    plot <- plot + ggplot2::labs(x = NULL, y = "Profile mean",
+      title = main %||% "Random-intercept profile means", subtitle = subtitle)
+  } else {
+    if (x$n_profiles < 2L) {
+      stop(errorCondition("A single profile has no classification uncertainty to compare.",
+                           class = "multilpa_nothing_to_plot", call = NULL))
+    }
+    p <- x$subject_posteriors
+    value <- if (identical(what, "posteriors")) apply(p, 1L, max) else
+      rowSums(ifelse(p > 0, -p * log(p), 0)) / log(x$n_profiles)
+    frame <- data.frame(row = seq_along(value), value = value)
+    plot <- ggplot2::ggplot(frame, ggplot2::aes(row, value)) +
+      ggplot2::geom_point(alpha = 0.5) +
+      ggplot2::labs(x = "Observation", y = if (what == "posteriors")
+        "Assigned-profile posterior" else "Relative entropy",
+        title = main %||% "Random-intercept classification", subtitle = subtitle)
+  }
+  .gg_draw_on_call(plot + .gg_theme())
 }
 
-#' Draw the posterior group intercepts
-#' @param x A fitted `multilpa_random_intercept` model.
-#' @param main,subtitle Panel title and secondary line.
-#' @param palette Series aesthetics, or `NULL` for defaults.
-#' @param style Visual constants.
-#' @return `NULL`, invisibly.
+#' Draw deferred posterior group intercepts without removed base-graphics helpers
+#' @param x A deferred random-intercept fit.
+#' @param main,subtitle Plot titles.
+#' @param palette Optional colours.
+#' @param style Unused legacy argument.
+#' @return A ggplot object.
 #' @noRd
 .multilpa_plot_random_intercepts <- function(x, main, subtitle, palette, style) {
   frame <- get_results(x, "random_intercepts")
-  order_by_mean <- order(frame$mean, frame$group)
-  centre <- frame$mean[order_by_mean]
-  spread <- frame$sd[order_by_mean]
-  colours <- if (is.null(palette)) .multilpa_palette(2L) else
-    rep(palette, length.out = 2L)
-  positions <- seq_along(centre)
-  span <- range(c(centre - spread, centre + spread, 0))
-  padding <- 0.12 * max(diff(span), .Machine$double.eps)
-  graphics::par(mar = style$margins)
-  .multilpa_panel(xlim = c(0.4, length(centre) + 0.6),
-    ylim = c(span[1L] - padding, span[2L] + padding),
-    xlab = "Group, ordered by posterior mean intercept",
-    ylab = "Posterior group intercept",
-    main = if (is.null(main)) "Posterior group random intercepts" else main,
-    subtitle = if (is.null(subtitle)) sprintf(
-      "%d groups; estimated intercept SD %.3g; bars are +/- one posterior SD",
-      length(centre), x$random_sd) else subtitle,
-    x_at = positions, x_labels = as.character(frame$group[order_by_mean]),
-    style = style)
-  graphics::abline(h = 0, col = style$muted_colour, lwd = 1, lty = 3L)
-  graphics::segments(positions, centre - spread, positions, centre + spread,
-                     col = colours[1L], lwd = style$line_width)
-  graphics::points(positions, centre, pch = 21L, bg = colours[1L],
-                   col = style$panel_fill, cex = style$point_size, lwd = 1.4)
-  invisible(NULL)
+  frame <- frame[order(frame$mean, frame$group), , drop = FALSE]
+  frame$position <- seq_len(nrow(frame))
+  ggplot2::ggplot(frame, ggplot2::aes(position, mean)) +
+    ggplot2::geom_hline(yintercept = 0, linetype = "dotted") +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+    ggplot2::geom_point(colour = if (is.null(palette)) .gg_class_palette[1L] else palette[1L]) +
+    ggplot2::labs(x = "Group, ordered by posterior mean intercept",
+      y = "Posterior group intercept", title = main %||% "Posterior group random intercepts",
+      subtitle = subtitle %||% "Bars: plus/minus one posterior standard deviation") + .gg_theme()
 }
 
 #' Free parameters of a random-intercept fit
@@ -665,7 +746,7 @@ vcov.multilpa_random_intercept <- function(object, ...) {
 #' @rdname vcov.multilpa_random_intercept
 #' @param data Ignored; present for compatibility with the generic.
 #' @export
-parameter_inference.multilpa_random_intercept <- function(x, data = NULL, ...) {
+parameter_inference.multilpa_random_intercept <- function(x, data = NULL, ...) {  # nolint: object_name_linter. Deferred S3 method.
   vcov(x)
 }
 
@@ -713,7 +794,7 @@ logLik.multilpa_random_intercept <- function(object, ...) {
 #'                                          seed = 1)
 #' nobs(random_intercept)
 #' @export
-nobs.multilpa_random_intercept <- function(object, ...) {
+nobs.multilpa_random_intercept <- function(object, ...) {  # nolint: object_name_linter. Deferred S3 method.
   stopifnot(inherits(object, "multilpa_random_intercept"))
   object$n_groups
 }

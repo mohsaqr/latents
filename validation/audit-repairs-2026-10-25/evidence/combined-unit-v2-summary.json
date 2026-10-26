@@ -1,0 +1,10 @@
+{
+  "full_source_cases": 1527,
+  "source_passed": 10794,
+  "fork_subset_cases": 34,
+  "fork_passed": 338,
+  "source_skipped": 15,
+  "all_skips_executed_under_reference_BLAS": true,
+  "additional_assertions_in_formerly_skipped_cases": 154,
+  "unique_case_assertions": 10948
+}

@@ -1,0 +1,21 @@
+{
+  "date_utc": "2026-10-26T08:14:21.094382+00:00",
+  "purpose": "Publication-only trailing-whitespace cleanup in one regression fixture; original audit evidence preserved.",
+  "file": "equivalence/test-joint-items-reference-optimizer.R",
+  "verified_before_sha256": "fd9583603503f6e57e88c0ded5ebf1cb9309ab9e9404f82ee06b19ddc7ed59c7",
+  "publication_sha256": "b3e61f717f419fb3f1a8c05845f5aeb382b8ddfca4b4d6f5d853ea841c63760c",
+  "R_parse_keep_source_FALSE_identical": true,
+  "independent_AST_review": "Core audit reviewer confirmed equality to the immutable stage3 source.",
+  "fresh_focused_regression": {
+    "passed": 27,
+    "failed": 0,
+    "error": 0,
+    "warning": 0,
+    "skipped": 0
+  },
+  "original_manifest": "evidence/verification-joint-v3-manifest.json",
+  "publication_manifest": "publication-source-manifest.json",
+  "production_R_testthat_man_vignette_bytes_unchanged": true,
+  "raw_evidence_logs_preserved_verbatim": true,
+  "whitespace_check_scope": "All staged files except the three immutable evidence logs; two trailing-space lines in the preserved finished log are intentional raw output."
+}

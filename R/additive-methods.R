@@ -302,12 +302,14 @@ parameter_inference.multilpa_additive <- function(
       class = "latents_unsupported_inference", call = NULL))
   }
   if (!is.null(data)) {
-    supplied <- .additive_prepare(data, x$vars, x$id)
+    supplied <- .additive_prepare(data, x$vars, x$id, x$weights)
     stored <- x$sufficient_statistics
     if (!identical(supplied$ids, stored$ids) ||
         !identical(supplied$sizes, stored$sizes) ||
-        !isTRUE(all.equal(supplied$averages, stored$averages)) ||
-        !isTRUE(all.equal(supplied$scatter, stored$scatter))) {
+        !isTRUE(all.equal(supplied$averages, stored$averages, tolerance = 0)) ||
+        !isTRUE(all.equal(supplied$scatter, stored$scatter, tolerance = 0)) ||
+        !isTRUE(all.equal(supplied$sampling_weights, stored$sampling_weights,
+                          tolerance = 1e-12))) {
       stop(errorCondition("`data` does not reproduce the data this fit was made from.",
                           class = "latents_bad_inference_data", call = NULL))
     }

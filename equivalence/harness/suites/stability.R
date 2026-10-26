@@ -8,11 +8,12 @@
 # This suite refits three of the models the other suites rely on -- one
 # single-level categorical, one Gaussian, one two-level -- under six seeds
 # each, at the same start count the corresponding suite uses, and reports two
-# quantities per model:
+# quantities per model, plus an explicit convergence count:
 #
 #   * the spread of the maximised log-likelihood across the six seeds, which is
 #     zero when every seed reaches the same mode;
 #   * the number of distinct optima reached, which is one when it does.
+#   * the number of fits marked converged, which must equal the seed count.
 #
 # A failure here is not a disagreement with another program. It says the
 # corresponding equivalence row was obtained from a multi-start scheme that

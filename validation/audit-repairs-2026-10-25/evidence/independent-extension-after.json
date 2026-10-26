@@ -1,0 +1,35 @@
+{
+  "origins": [
+    [
+      {
+        "origin": 100000000,
+        "slope_error": -5.5511151231257827e-17,
+        "LL_error": -5.6843418860808015e-14,
+        "fitted_max_error": 1.5291439225961767e-09,
+        "_row": "centered"
+      }
+    ],
+    [
+      {
+        "origin": 10000000000,
+        "slope_error": 1.6653345369377348e-16,
+        "LL_error": -1.7053025658242404e-12,
+        "fitted_max_error": 9.3014373092614733e-08,
+        "_row": "centered"
+      }
+    ],
+    [
+      {
+        "origin": 1000000000000,
+        "slope_error": -1.1102230246251565e-16,
+        "LL_error": -2.7222768039791845e-08,
+        "fitted_max_error": 1.166633454108279e-05,
+        "_row": "centered"
+      }
+    ]
+  ],
+  "poly_error": 0,
+  "common_gaussian_LL_error": -7.2191141953226179e-12,
+  "common_poisson_LL_error": -7.1054273576010019e-13,
+  "common_poisson_fitted_error": 2.0051982030366844e-07
+}

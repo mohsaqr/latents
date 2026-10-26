@@ -1,0 +1,27 @@
+{
+  "status": "frozen",
+  "owned_files_sha256": {
+    "equivalence/features/joint-items/compare.R": "b857a07748fe8a3afee0409e75315e79d506f5c5da0b4bd248036eb40fd518a1",
+    "equivalence/test-features-joint-items.R": "f5a161579b3dc8e893748fa10fc5943318eb55caf96e1de91ea5d17664e1a092",
+    "equivalence/test-joint-items-polca-protocol.R": "cd15528b6b49d0f5e38eaf59be24c3a3bf8ded0c6dbf2698f6026e62f7e5b5a9",
+    "equivalence/features/joint-items/FINDINGS.md": "3ad519210716886fbd925db44fbc8f31a4f345a9aa528010ede9b2fe45333818"
+  },
+  "tests": {
+    "focused_expectations": 22,
+    "failed": 0,
+    "error": 0,
+    "warnings": 0,
+    "skips": 0
+  },
+  "cached_actual_replay_checks": 9,
+  "scientific_AST_checks": 6,
+  "independent_reference_optimizer_checks": 11,
+  "evidence": [
+    "polca-cap-diagnosis-inference.json",
+    "polca-protocol-tests-inference.json",
+    "polca-approved-protocol-replay-inference.json",
+    "polca-scientific-certificate-inference.json",
+    "independent-joint-reference-review-inference.json"
+  ],
+  "limitations": "No full49casefit rerun; parentwillrun fullJI file and allnewfocused/protocol tests. ProductionR/tests/man untouched by this overlay."
+}

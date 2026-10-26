@@ -1254,12 +1254,14 @@
 #'   profile (`"equal"`).
 #' @param search How the starts are found: `NULL` (the default), `"kmeans"`
 #'   or `"emEM"`. `NULL` uses `"emEM"` when every profile shares one
-#'   covariance matrix (EII, EEI, EEE with continuous indicators), where the
-#'   likelihood is bounded and a higher maximum cannot be a collapsed profile,
-#'   and `"kmeans"` otherwise, including categorical-only models and the
+#'   covariance matrix (EII, EEI, EEE with continuous indicators), which removes
+#'   the isolated-profile covariance-collapse mechanism. Shared covariances can
+#'   still hit their floor on degenerate or over-extracted data; inspect the
+#'   boundary diagnostics. It uses
+#'   `"kmeans"` otherwise, including categorical-only models and the
 #'   group-class families. The search used is recorded on the fit, and
-#'   `search = "kmeans"` reproduces the fits of latents 0.96.2 for every
-#'   model. `"kmeans"` runs
+#'   `search = "kmeans"` retains the start-search policy of latents 0.96.2.
+#'   `"kmeans"` runs
 #'   `n_starts` starts to convergence: Ward's clustering first, then k-means
 #'   from random centres. `"emEM"` screens a pool of `n_screen` starts by a
 #'   short EM run each and runs `n_starts` finalists to convergence

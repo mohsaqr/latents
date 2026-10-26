@@ -269,7 +269,8 @@ get_group_tna.multilpa_covariates <- get_group_tna.multilpa
 .multilpa_modal_sequences <- function(x) {
   sequences <- get_results(x, "sequences")
   sequences <- sequences[order(sequences$group, sequences$time), , drop = FALSE]
-  groups <- factor(sequences$group, levels = unique(sequences$group))
+  ids <- unique(sequences$group)
+  groups <- factor(match(sequences$group, ids), levels = seq_along(ids))
   by_group <- split(sprintf("profile_%d", sequences$profile), groups)
   width <- max(lengths(by_group))
   states <- as.data.frame(
@@ -278,7 +279,7 @@ get_group_tna.multilpa_covariates <- get_group_tna.multilpa
     })), stringsAsFactors = FALSE)
   names(states) <- paste0("T", seq_len(width))
   rownames(states) <- NULL
-  first <- match(levels(groups), as.character(sequences$group))
+  first <- match(ids, sequences$group)
   stopifnot("one row per group" = nrow(states) == nlevels(groups))
   list(states = states, group_class = sequences$group_class[first])
 }

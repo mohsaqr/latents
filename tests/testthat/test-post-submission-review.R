@@ -251,6 +251,9 @@ test_that("random-effect spread varies only the chosen time predictor", {
   spec <- list(model_data = data.frame(time = c(0, 2), off = c(10, 20)),
                id = "id", random = ~ time + off, random_covariance = "equal",
                n_classes = 1L)
+  # Public growth fits have always stored the fitted random-design columns.
+  # Omit only the newer terms blueprint to exercise saved-fit compatibility.
+  spec$random_design <- stats::model.matrix(spec$random, spec$model_data)
   fit <- list(spec = spec, params = list(random_covariance = list(diag(3))))
   bands <- data.frame(trajectory_time = c(10, 20), class = "class_1", estimate = 0)
   spread <- latents:::.growth_spread(fit, bands, "off", 0.8)

@@ -73,10 +73,13 @@ the two implementations, so these differences are the real equivalence
 evidence and they run at 1e-6 or below.
 
 `printed` means the reference was read from published digits -- a journal table,
-an Mplus `.out`, a package vignette. The printed precision bounds how closely
-*any* implementation can agree, so these differences measure the reference, not
-the package. The largest of them is Agresti & Lang's G-squared, printed to one
-decimal, where a gap of up to 0.05 is arithmetically unavoidable.
+an Mplus `.out`, a package vignette. Rounding limits the available precision,
+but a discrepancy can also reflect optimization or model differences. Rows
+built by `compare_printed()` express their gap in half-unit rounding bounds;
+other rows, including the Mplus comparisons, use explicit absolute or relative
+tolerances. Reference origin and difference scale are separate concepts.
+The generated summary compares the gap divided by its stated tolerance, so
+one is the acceptance boundary regardless of the row's scale.
 
 Pooling the two is how a table ends up reporting 2e-02 for mclust. That figure
 was the mclust vignette's BIC of -2314.316, which mclust reproduces at its own

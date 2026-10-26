@@ -71,9 +71,11 @@ The choice of structure matters here because four of the five constructs are
 strongly correlated. The structures without covariances (`EEI`, `VVI`) can
 reproduce these correlations only by adding profiles, and their BIC continues
 to fall up to six profiles. The warnings printed during the enumeration
-report candidates with profile-specific variances that contain a profile too
-small to determine them (`latents_thin_profiles`); the `EEE` structure shares
-one covariance matrix and cannot have such a profile. The structures with
+report candidates with low Gaussian membership mass relative to the number of
+profile-specific means and variances (`latents_thin_profiles`). This is a
+conservative support diagnostic, not an identification test; inspect the
+covariance diagnostics as well. The `EEE` structure shares one covariance
+matrix and does not receive this profile-specific warning. The structures with
 covariances account for the correlations directly, and reach far lower BIC values with one or two
 profiles. The `EEE` structure attains the lowest values; its candidates are:
 

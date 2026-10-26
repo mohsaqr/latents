@@ -2,7 +2,8 @@
 # bootstrap and the bootstrap likelihood-ratio replicate loop.
 #
 # Every verb that draws random numbers takes a `seed`, sets it, and gives the
-# caller's random state back on exit; every engine that simulates draws
+# caller's .Random.seed back on exit (subject to the Box-Muller cache limit
+# below); every engine that simulates draws
 # classes and categories by inverse CDF; the bootstrap verbs resample groups
 # and refit, or simulate and refit. Each engine had its own copy of these.
 # They live here once, with the arithmetic and the order of the draws exactly
@@ -17,7 +18,8 @@
 #' Set a seed for the calling function and restore the random state on its
 #' exit
 #'
-#' Seeded verbs must not leave the caller's random stream changed: a user who
+#' For the default normal generator, seeded verbs leave the caller's random
+#' stream unchanged: a user who
 #' sets a seed, fits a model with its own `seed`, and then draws again should
 #' get the draw they would have got without the fit. The previous
 #' `.Random.seed` is restored when the *calling* function exits, normally or
@@ -25,6 +27,11 @@
 #' so a fresh session stays fresh. Registering the restore on the caller's
 #' frame (rather than wrapping its body) lets a call site be one line placed
 #' exactly where its own block used to set the seed.
+#'
+#' Base R does not expose the cached normal variate of the Box-Muller
+#' generator in `.Random.seed`. Its uniform seed is restored here, but an
+#' outstanding cached normal cannot be preserved across `set.seed()`. The
+#' caller's RNG kinds are never changed to work around that limitation.
 #'
 #' The seed is not validated here: each verb validates it with
 #' `.multilpa_check_seed()` where it always has, so the refusal comes at the

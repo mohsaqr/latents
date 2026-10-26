@@ -9,6 +9,7 @@
 # with probability `share`. Profiles are aligned to the generating labels by
 # the first indicator's mean. Coverage is of the nominal 95% Wald interval
 # under the observed information.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20260927)
@@ -56,7 +57,7 @@ replicate_once <- function(replication, share) {
 results <- do.call(rbind, lapply(c(0, 0.2), function(share) {
   do.call(rbind, parallel::mclapply(seq_len(replications), replicate_once,
                                     share = share, mc.set.seed = TRUE,
-                                    mc.cores = max(1L, parallel::detectCores() - 2L)))
+                                    mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 2L))))
 }))
 summary_table <- do.call(rbind, lapply(split(results, results$share), function(part) {
   data.frame(share = part$share[1L], usable = nrow(part),

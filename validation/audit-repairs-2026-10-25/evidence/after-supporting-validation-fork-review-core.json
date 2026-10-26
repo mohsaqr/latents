@@ -1,0 +1,314 @@
+{
+  "status": "after_repair_supporting_source_review_complete",
+  "issue": "VALIDATION_FORK_SAFETY",
+  "baseline_review": "/private/tmp/latents-readonly-full-f6nw0493/future-validation-review.json",
+  "new_helper": {
+    "file": "validation/fork-runtime.R",
+    "function": ".validation_fork_cores",
+    "source_sha256": "531227fdd5887fac10581f926c474c711a5b80f088836b4b8899744f6980c99b",
+    "purpose": "Check requested fork runtime before mclapply can create workers.",
+    "inputs": "Positive whole cores; OS/sysname/BLAS default to current runtime and are injectable for pure tests.",
+    "outputs": "Exactly the requested cores object on safe runtime or explicit serial request.",
+    "conditions": "latents_validation_unsafe_fork for cores>1 on Windows or Darwin Accelerate/vecLib; invalid cores fail an explicit assertion.",
+    "protocol": "No RNG draw, no default core/backend changes, no new worker mechanism.",
+    "contract": "Adjacent roxygen parameter/return documentation inspected.",
+    "new_source_not_git_added": true
+  },
+  "changed_runner_review": [
+    {
+      "file": "validation/additive-diagnostic.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) {\n    diagnose_one(jobs$cell[k], jobs$replicate[k])\n}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE)",
+          "original_cores": "max(1L, parallel::detectCores() - 1L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/additive-simulation.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) {\n    tryCatch(run_one(jobs$cell[k], jobs$replicate[k]), error = function(error) {\n        failure_row(data.frame(cell = jobs$cell[k], replicate = jobs$replicate[k], seed = NA_real_, stringsAsFactors = FALSE), \"script_error\", conditionMessage(error))\n    })\n}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE)",
+          "original_cores": "max(1L, parallel::detectCores() - 1L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/bootstrap-lrt-size.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(datasets), replicate_once, arm = arm, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/covariate-missing-coverage.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(replications), replicate_once, share = share, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/covariate-slopes-coverage.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(replications), replicate_once, n_groups = n_groups, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/families-simulation.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) {\n    tryCatch(run_one(jobs$cell[k], jobs$replicate[k]), error = function(error) {\n        data.frame(cell = jobs$cell[k], replicate = jobs$replicate[k], seed = NA_real_, parameter_id = NA_character_, truth = NA_real_, estimate = NA_real_, se_observed = NA_real_, se_robust = NA_real_, low_observed = NA_real_, high_observed = NA_real_, low_robust = NA_real_, high_robust = NA_real_, converged = NA, boundary = NA, conditions = paste(\"error:\", conditionMessage(error)), stringsAsFactors = FALSE)\n    })\n}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE)",
+          "original_cores": "max(1L, parallel::detectCores() - 1L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/growth-simulation.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(n_datasets), function(i) one_replicate(cell_name, i), mc.cores = n_cores, mc.set.seed = TRUE)",
+          "original_cores": "n_cores",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": "GROWTH_SIM_CORES=1"
+    },
+    {
+      "file": "validation/lta-simulation.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) {\n    tryCatch(run_one(jobs$cell[k], jobs$replicate[k]), error = function(error) {\n        data.frame(cell = jobs$cell[k], replicate = jobs$replicate[k], block = NA_character_, key = NA_character_, truth = NA_real_, estimate = NA_real_, se_observed = NA_real_, low_observed = NA_real_, high_observed = NA_real_, se_robust = NA_real_, low_robust = NA_real_, high_robust = NA_real_, converged = NA, boundary = NA, conditions = paste(\"error:\", conditionMessage(error)), stringsAsFactors = FALSE)\n    })\n}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE)",
+          "original_cores": "max(1L, parallel::detectCores() - 1L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/mixture-regression-recovery.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seeds, one_replication, mc.cores = 4L, mc.set.seed = TRUE)",
+          "original_cores": "4L",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/montecarlo-recovery.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(names(cases), recover_one, mc.cores = cores, mc.preschedule = FALSE)",
+          "original_cores": "cores",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/pool-imputations-coverage.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(replications), replicate_once, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/review-2026-10-02-followup/simulation-repro-additive.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L)",
+          "original_cores": "4L",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/review-2026-10-02-followup/simulation-repro-families.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L)",
+          "original_cores": "4L",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/review-2026-10-02-followup/simulation-repro-lta.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(nrow(jobs)), function(k) env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L)",
+          "original_cores": "4L",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/review-2026-10-02-followup/transition-bootstrap-validation.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 2,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(n_datasets), coverage_one, mc.cores = cores, mc.set.seed = TRUE)",
+          "original_cores": "cores",
+          "all_other_arguments_exact_AST_identity": true
+        },
+        {
+          "original_call": "parallel::mclapply(seq_len(n_datasets), size_one, mc.cores = cores, mc.set.seed = TRUE)",
+          "original_cores": "cores",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/staged-bootstrap-coverage.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(replications), replicate_once, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    },
+    {
+      "file": "validation/transition-inference-coverage.R",
+      "guard_sources": 1,
+      "full_AST_unchanged_after_removing_guard_only": true,
+      "mclapply_calls": 1,
+      "calls": [
+        {
+          "original_call": "parallel::mclapply(seq_len(replications), replicate_once, mc.set.seed = TRUE, mc.cores = max(1L, parallel::detectCores() - 2L))",
+          "original_cores": "max(1L, parallel::detectCores() - 2L)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ],
+      "prior_runtime_guard": false,
+      "prior_explicit_serial_configuration": null
+    }
+  ],
+  "pure_tests": {
+    "cases": 3,
+    "passed": 89,
+    "failed": 0,
+    "error": 0,
+    "warning": 0,
+    "skipped": 0
+  },
+  "test_file": "tests/testthat/test-audit-validation-fork-safety.R",
+  "test_sha256": "8f6c2e64281b53317f1dc96c70cf8a5bdd1936068ce0d0eacd4f07b11edd2317",
+  "all_17_repaired_runner_sha256": {
+    "validation/additive-diagnostic.R": "29f998c5e16c926a89d9f5251630b2228fe293f9c9723c5defccd98127780f54",
+    "validation/additive-simulation.R": "766da8226772e8e151cc4e15c25e9dfa40cc12335fbde0c0e562b647d8d0023f",
+    "validation/bootstrap-lrt-size.R": "30e6d4a8e94451df53d2fe7e07cdf38a216e2c0d7e2416c7a7378a8ad6122fc3",
+    "validation/covariate-missing-coverage.R": "fc2d9c6b4c8fee63799e47d5dac680ea20ae140dfb89610b3ae29f56c09d135b",
+    "validation/covariate-slopes-coverage.R": "1459d55cfd3646be12e58048eb80d53e03b7de1224e2bf408820333a27e594d4",
+    "validation/families-simulation.R": "1c2f520b5724c22d58b7184ffb0398e111b2f481145250fb22010791800fdf50",
+    "validation/growth-simulation.R": "f3d6c37ebe7103dd7892d9385f2fb8c5d758d47e21841bb2f48d2e0262459d95",
+    "validation/lta-simulation.R": "a9d6ff820d2a6870276f3927ec7daa507b15adcffbd13733ddec05669d0e2daa",
+    "validation/mixture-regression-recovery.R": "f5d7e2486996783210af9c464945e22d8e30d6294865963e31fa17feea4da8d3",
+    "validation/montecarlo-recovery.R": "3c1a5a610e55f18bd710cf478e2f6114549f590e81a1f2b22e209cc1fc4335da",
+    "validation/pool-imputations-coverage.R": "a4f344d68c9e65c836a74f72d20989c0f6fdaceeaa90db8256874838bd6de4cf",
+    "validation/review-2026-10-02-followup/simulation-repro-additive.R": "fe2837993bace334bea6041fe589c2f65a7c6d7be918b0b37675eb795eea4ba6",
+    "validation/review-2026-10-02-followup/simulation-repro-families.R": "ff2805dc99ae9b4b921143afa2b28fc48c2cc392bdfb8badbb80dd013999eb4a",
+    "validation/review-2026-10-02-followup/simulation-repro-lta.R": "7b3879f7854a4520922740c90c27cc95a487438333d4e4dfbe18ebaec07f3fdb",
+    "validation/review-2026-10-02-followup/transition-bootstrap-validation.R": "03cc971a6a1f11b37e04b8f2e2c9649b49b05e2459926e4cef61a6a79aa23282",
+    "validation/staged-bootstrap-coverage.R": "6701ea8e8d092994582d1b64190f2be5b84e74f955040cf4ad31923ff1fd5691",
+    "validation/transition-inference-coverage.R": "0b6d6c54dca02bbdf4aba698dc3f25f1290f324f0ae2e815b3ea1cf669eccb7a"
+  },
+  "semantics": "After removing only the new source and mc.cores wrappers, all17complete ASTs exactly match the pre-guard versions. Safe-runtime scientific computation, budgets, randomization statements and allothermclapplyarguments unchanged.",
+  "evidence_limits": [
+    "No historical study, calibration replication or actual fork was launched in this verification.",
+    "Pure tests cover mocked unsafe/safe runtime cases, explicit serial requests, type/argument preservation and unchanged exposed RNG state.",
+    "Prior support review remains historical to its recorded source; this after-repair supplement records the changed/new supporting code."
+  ]
+}

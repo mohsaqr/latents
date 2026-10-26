@@ -19,6 +19,7 @@
 # A linear imputation model can miss the latent structure, but this comparison
 # alone does not isolate the cause of a coverage difference. Profiles
 # are aligned to the generating labels by the first indicator's mean.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 stopifnot("this study needs the mice package" = requireNamespace("mice", quietly = TRUE))
 RNGkind("L'Ecuyer-CMRG")
@@ -105,7 +106,7 @@ summarise_recovery <- function(results) {
 
 results <- do.call(rbind, parallel::mclapply(
   seq_len(replications), replicate_once, mc.set.seed = TRUE,
-  mc.cores = max(1L, parallel::detectCores() - 2L)))
+  mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 2L))))
 summary_table <- summarise_recovery(results)
 print(summary_table, digits = 3, row.names = FALSE)
 utils::write.csv(summary_table, "validation/pool-imputations-coverage.csv",

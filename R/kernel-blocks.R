@@ -42,11 +42,11 @@
 #'
 #' The Gaussian block uses the conditional moments when indicators are
 #' missing or covariances are full (the M-step then reuses those moments),
-#' and the diagonal closed form otherwise. With `offset`, each row's largest
-#' Gaussian log density is removed before the other blocks are added: a very
-#' small density (log f = -5e15) would otherwise round away the priors and the
-#' small categorical contributions, and the offset is added back to the
-#' likelihood by the structure.
+#' and the diagonal closed form otherwise. With `offset`, common contributions
+#' are removed before summing measurement blocks and adding mixing priors:
+#' a very small density (log f = -5e15) would otherwise round away those priors
+#' and smaller indicator contributions. The structure adds the offsets back
+#' to the likelihood.
 #'
 #' @param x Observation-by-indicator matrix of continuous indicators, `NA`
 #'   where unobserved; it may have zero columns.
@@ -56,7 +56,7 @@
 #' @param extra Optional ordinal and count data.
 #' @param noise_log_density Optional constant log density of a uniform noise
 #'   component, appended as the last column before the offset.
-#' @param offset Whether to remove the row maximum of the Gaussian block.
+#' @param offset Whether to remove common row contributions of the blocks.
 #' @param n_profiles Number of profiles (from `means` by default).
 #' @param constant Passed to `.latents_gaussian_log_density()`.
 #' @return A list with `log_density` (rows by profiles, offset removed),
@@ -93,8 +93,26 @@
       .multilpa_categorical_log_density(codes, parameters$response_probabilities)
   }
   if (!is.null(extra)) {
-    log_density <- log_density +
-      .latents_extra_log_density(extra, parameters, nrow(x), n_profiles)
+    extra_density <- .latents_extra_log_density(extra, parameters, nrow(x),
+                                                n_profiles, offset = offset)
+    if (offset) {
+      log_density <- log_density + extra_density$log_density
+      row_offset <- row_offset + extra_density$offset
+    } else log_density <- log_density + extra_density
+  }
+  has_extra_density <- !is.null(extra) &&
+    ((ncol(extra$ordinal) %||% 0L) + (ncol(extra$count) %||% 0L) > 0L)
+  if (offset && has_extra_density) {
+    # Different blocks can favor different profiles. Their sum can again
+    # contain a large common contribution, removed before any mixing prior.
+    # Ordinary categorical densities retain their original arithmetic: their
+    # bounded log probabilities do not need this second centering step.
+    final_offset <- .multilpa_row_max(log_density)
+    if (any(!is.finite(final_offset))) {
+      stop("All component densities vanished, or a density overflowed.")
+    }
+    log_density <- sweep(log_density, 1L, final_offset, "-")
+    row_offset <- row_offset + final_offset
   }
   list(log_density = log_density, offset = row_offset, moments = gaussian$moments)
 }

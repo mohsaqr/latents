@@ -1,0 +1,252 @@
+{
+  "status": "complete_with_scoped_verification",
+  "source_manifest": "/private/tmp/latents-fix-20261025/verification-final-manifest.json",
+  "full_unit": {
+    "files": 180,
+    "cases": 1527,
+    "totals": {
+      "failed": 0,
+      "skipped": 15,
+      "error": 0,
+      "warning": 0,
+      "passed": 10794
+    },
+    "seconds": 883.716,
+    "blas": "/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib"
+  },
+  "combined_unit": {
+    "full_source_cases": 1527,
+    "source_passed": 10794,
+    "fork_subset_cases": 34,
+    "fork_passed": 338,
+    "source_skipped": 15,
+    "all_skips_executed_under_reference_BLAS": true,
+    "additional_assertions_in_formerly_skipped_cases": 154,
+    "unique_case_assertions": 10948
+  },
+  "fork_subset": {
+    "files": 3,
+    "cases": 34,
+    "totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 338
+    },
+    "blas": "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib"
+  },
+  "guides": {
+    "rendered": 20,
+    "failed": 0,
+    "source_copies_byte_identical": true,
+    "R_warnings": 0,
+    "eval_false_chunks_preserved": true
+  },
+  "native_check": {
+    "status": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "includes_installed_tests": true,
+    "installed_tests_passed": 7026,
+    "installed_tests_skipped": 300,
+    "flags": [
+      "--as-cran",
+      "--no-manual"
+    ],
+    "environment_overrides": {
+      "_R_CHECK_SYSTEM_CLOCK_": "FALSE",
+      "_R_CHECK_CRAN_INCOMING_REMOTE_": "false",
+      "_R_CHECK_FORCE_SUGGESTS_": "false"
+    },
+    "limits": "External system-clock/CRAN remote checks disabled; all source unit cases separately executed across matched BLAS and safe fork runs."
+  },
+  "deferred_tests": {
+    "passed": 78,
+    "failures": 0,
+    "errors": 0,
+    "warnings": 0,
+    "skips": 0
+  },
+  "harness_self_tests": {
+    "status": "passed",
+    "assertions": 56,
+    "source": "equivalence/harness/test-harness.R",
+    "log": "/private/tmp/latents-fix-20261025/harness-selftest-v2.log"
+  },
+  "external_runner_contracts": {
+    "tests": 4,
+    "passed": 4,
+    "uses_fake_executables": true
+  },
+  "package_lint": {
+    "findings": 0,
+    "log": "/private/tmp/latents-fix-20261025/final-package-lint-complete.log"
+  },
+  "diagnostic_preflight": {
+    "kind": "diagnostic preflight, not replacement for full final batch",
+    "source": "/private/tmp/latents-fix-20261025/verification-source-2",
+    "files": [
+      "test-growth-correlated-lcmm.R",
+      "test-growth-mixture-lcmm.R",
+      "test-growth-predict-lcmm.R",
+      "test-jstats-lta.R",
+      "test-mixture-regression-flexmix.R",
+      "test-mplus-mixture-weights.R"
+    ],
+    "cases": 30,
+    "totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 158
+    },
+    "by_file": {
+      "test-growth-correlated-lcmm.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 18
+      },
+      "test-growth-mixture-lcmm.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 25
+      },
+      "test-growth-predict-lcmm.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 21
+      },
+      "test-jstats-lta.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 57
+      },
+      "test-mixture-regression-flexmix.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 28
+      },
+      "test-mplus-mixture-weights.R": {
+        "failed": 0,
+        "skipped": 0,
+        "error": 0,
+        "warning": 0,
+        "passed": 9
+      }
+    }
+  },
+  "claude": {
+    "installed": true,
+    "logged_in": false,
+    "verification_executed": false
+  },
+  "external_equivalence_final": {
+    "status": "passed_after_full_affected_family_rerun",
+    "files": 52,
+    "cases": 400,
+    "totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 4,
+      "passed": 21159
+    },
+    "original_main_files": 50,
+    "original_main_cases": 395,
+    "original_main_failed_assertions": 2,
+    "replaced_complete_files": [
+      "test-features-joint-items.R",
+      "test-joint-items-verification-protocol.R"
+    ],
+    "rerun_files": [
+      "test-features-joint-items.R",
+      "test-joint-items-polca-protocol.R",
+      "test-joint-items-reference-optimizer.R",
+      "test-joint-items-verification-protocol.R"
+    ],
+    "new_regression_files": [
+      "test-joint-items-polca-protocol.R",
+      "test-joint-items-reference-optimizer.R"
+    ],
+    "source_main": "verification-toplevel-phase-manifest.json",
+    "source_validation_overlay": "verification-joint-v3-manifest.json",
+    "limits": "Entire affected files replaced by complete rerun results, never just failed assertions; unchanged remaining files retain original full-batch results. Production R/tests/man/vignettes unchanged."
+  },
+  "completed_utc": "2026-10-26T06:34:19.689412+00:00",
+  "external_warning_details": {
+    "warning_journal_count": 29,
+    "all_thin_gaussian_support": true,
+    "warning_contexts": {
+      "features-direct-effects": 2,
+      "features-vlmr": 25,
+      "numerical-equivalence": 2
+    },
+    "warnings_inside_test_cases": 4,
+    "warnings_during_file_setup": 25
+  },
+  "external_harness_final": {
+    "suites": 8,
+    "compared": 1021,
+    "agreed": 1021,
+    "disagreed": 0,
+    "all_reference_obtained_difference_tolerance_finite": true,
+    "all_tolerances_positive": true,
+    "warnings": 0,
+    "skipped_suites": 0,
+    "limits": "Quantity-specific comparison tolerances; retained commercial references, not fresh proprietary engine runs."
+  },
+  "development_equivalence_final": {
+    "files": 29,
+    "cases": 64,
+    "totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 1,
+      "passed": 405
+    }
+  },
+  "joint_item_full_affected_rerun": {
+    "files": 4,
+    "cases": 25,
+    "totals": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 164
+    },
+    "seconds": 618.258,
+    "filter": "^((features-joint-items)|(joint-items-.*))$",
+    "source_manifest": "verification-joint-v3-manifest.json",
+    "purpose": "Full affected-family rerun plus new optimizer/protocol regressions; original whole-batch failure evidence retained separately"
+  },
+  "source_manifests": {
+    "completed_production_gates": "verification-final-manifest.json",
+    "main_comparison_batch": "verification-toplevel-phase-manifest.json",
+    "validation_only_overlay": "verification-joint-v3-manifest.json"
+  },
+  "protected_production_test_man_vignette_entries_unchanged": 384,
+  "limitations": [
+    "Finite search and per-step convergence do not establish a global maximum. Original default-search and stopping diagnostics are retained.",
+    "Commercial comparison programs were not freshly rerun; retained Mplus/Latent GOLD outputs were compared under declared per-quantity tolerances.",
+    "The full50file main batch originally had2joint-item findings. Complete affected files were rerun after validation-only fixes; original failures remain preserved.",
+    "All29main-journal warnings are thin Gaussian support diagnostics (4inside test cases,25during VLMRsetup); development equivalence has1additional such warning.",
+    "The earlier exact99-bootstrap growth-guide check is pre-repair evidence; final rendering preserves evalFALSEchunks.",
+    "Historical supporting studies were source/protocol reviewed rather than all regenerated; live Windows/Linux execution is not certified.",
+    "Explicit seed restoration does not restore R's hidden Box-Muller cache."
+  ]
+}

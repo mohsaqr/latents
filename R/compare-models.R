@@ -143,7 +143,7 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
          response = spec$response_name)
   }
   reference <- signature(fits[[1L]])
-  same <- vapply(fits, function(fit) isTRUE(all.equal(signature(fit), reference)),
+  same <- vapply(fits, function(fit) .latents_same_comparison_data(signature(fit), reference),
                  logical(1))
   if (!all(same)) {
     stop(errorCondition(sprintf(paste(
@@ -306,7 +306,7 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
   # with the same indicator values.
   signature <- .latents_comparison_signature
   reference <- signature(fits[[1L]])
-  same <- vapply(fits, function(fit) isTRUE(all.equal(signature(fit), reference)),
+  same <- vapply(fits, function(fit) .latents_same_comparison_data(signature(fit), reference),
                  logical(1))
   if (!all(same)) {
     stop(errorCondition(sprintf(paste(
@@ -488,6 +488,34 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
     fit$variance_model %||% "varying", fit$covariance_model %||% "diagonal")
 }
 
+#' Compare data signatures, allowing only weight-normalization roundoff
+#' @param candidate,reference Lists with fitting data and normalized weights.
+#' @return One logical value; outcomes and other data must agree exactly.
+#' @noRd
+.latents_same_comparison_data <- function(candidate, reference) {
+  stopifnot(is.list(candidate), is.list(reference))
+  weights <- isTRUE(all.equal(candidate$weights, reference$weights, tolerance = 1e-12))
+  indicators <- isTRUE(all.equal(candidate$indicators, reference$indicators, tolerance = 0))
+  forward_matches <- function(centered, raw) {
+    !is.null(centered$indicator_centers) && is.matrix(raw$indicators) &&
+      identical(dim(raw$indicators), dim(centered$centered_indicators)) &&
+      ncol(raw$indicators) == length(centered$indicator_centers) &&
+      isTRUE(all.equal(sweep(raw$indicators, 2L, centered$indicator_centers, "-"),
+                         centered$centered_indicators, tolerance = 0))
+  }
+  if (!indicators) {
+    # The general LTA engine stores centered rows; adding its centers back
+    # may round. Prove identity by the exact original forward subtraction,
+    # rather than granting a numeric tolerance to outcomes at large origins.
+    indicators <- forward_matches(candidate, reference) || forward_matches(reference, candidate)
+  }
+  candidate$weights <- NULL
+  reference$weights <- NULL
+  candidate[c("indicators", "indicator_centers", "centered_indicators")] <- NULL
+  reference[c("indicators", "indicator_centers", "centered_indicators")] <- NULL
+  weights && indicators && isTRUE(all.equal(candidate, reference, tolerance = 0))
+}
+
 #' Original observations, their coding and the transformation the model used
 #' @noRd
 .latents_comparison_signature <- function(fit) {
@@ -502,6 +530,8 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
        id = if (isTRUE(fit$single_level)) NULL else fit$id,
        groups = as.character(fit$group_values %||% fit$group_ids),
        group_index = fit$group_index, indicators = raw,
+       indicator_centers = if (general) fit$centers else NULL,
+       centered_indicators = if (general) fit$x else NULL,
        categorical = .latents_categorical_labels(fit),
        extra = .latents_draw_extra_columns(fit$extra_data),
        weights = unname(fit$sampling_weights), time = fit$time_values,

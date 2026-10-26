@@ -11,6 +11,7 @@
 # so the staged estimator is consistent and both intervals aim at the same
 # values. Profiles are aligned by the first indicator's mean, group classes by
 # their probability of profile 1.
+source(file.path("validation", "fork-runtime.R"))
 pkgload::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20260927)
@@ -86,7 +87,7 @@ summarise_coverage <- function(results) {
 
 results <- do.call(rbind, parallel::mclapply(
   seq_len(replications), replicate_once, mc.set.seed = TRUE,
-  mc.cores = max(1L, parallel::detectCores() - 2L)))
+  mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 2L))))
 summary_table <- summarise_coverage(results)
 print(summary_table, digits = 3, row.names = FALSE)
 utils::write.csv(summary_table, "validation/staged-bootstrap-coverage.csv",

@@ -174,19 +174,49 @@ test_that("compare_printed measures the gap against the printed precision", {
 test_that("seed_stability reports the spread and the number of optima", {
   # A deterministic stand-in for a fit: the same optimum under every seed.
   stable <- seed_stability("a stable model",
-                           \(seed) structure(-100, class = "logLik"),
+                           \(seed) structure(-100, class = "logLik", converged = TRUE),
                            seeds = c(1L, 2L, 3L, 4L), tolerance = 1e-5)
-  expect_equal(nrow(stable), 2L)
+  expect_equal(nrow(stable), 3L)
   expect_true(all(stable$agrees))
-  expect_equal(stable$obtained, c(0, 1))
+  expect_equal(stable$obtained, c(0, 1, 4))
 
   # Two of four seeds land on an inferior mode: both rows must fail.
   unstable <- seed_stability("an unstable model",
                              \(seed) structure(if (seed %% 2L == 0L) -100 else -101,
-                                               class = "logLik"),
+                                               class = "logLik", converged = TRUE),
                              seeds = c(1L, 2L, 3L, 4L), tolerance = 1e-5)
-  expect_false(any(unstable$agrees))
-  expect_equal(unstable$obtained, c(1, 2))
+  expect_false(any(unstable$agrees[1:2]))
+  expect_true(unstable$agrees[3L])
+  expect_equal(unstable$obtained, c(1, 2, 4))
+})
+
+test_that("stability is independent of rounding bins and requires convergence", {
+  stable <- seed_stability("bin edge", function(seed) {
+    structure(-1e-5 * (100.5 + c(-0.01, 0.01, 0)[seed]),
+              class = "logLik", converged = TRUE)
+  }, 1:3, tolerance = 1e-5)
+  expect_true(all(stable$agrees))
+  expect_equal(stable$obtained, c(2e-7, 1, 3), tolerance = 1e-12)
+  failed <- seed_stability("unconverged", function(seed) {
+    structure(-100, class = "logLik", converged = FALSE)
+  }, 1:3)
+  expect_false(failed$agrees[3L])
+  expect_equal(failed$obtained[3L], 0)
+  fit <- function(seed) structure(-100, class = "logLik", converged = TRUE)
+  expect_error(seed_stability("repeated", fit, c(1, 1, 1)), "distinct")
+  expect_error(seed_stability("infinite", fit, c(1, 2, Inf)), "finite")
+  expect_error(seed_stability("missing", fit, c(1, 2, NA_real_)), "finite")
+  expect_error(seed_stability("fractional", fit, c(1, 2, 0.5)), "whole")
+})
+
+test_that("nonfinite tolerances and forged agreement cannot pass", {
+  expect_error(compare_values("infinite", 0, Inf, tolerance = Inf))
+  expect_false(compare_values("nonfinite", 0, Inf, tolerance = 1)$agrees)
+  path <- file.path(scratch, "forged.R")
+  writeLines(c('suite_forged <- function() {',
+               ' x <- compare_values("wrong", 0, 10, tolerance=1e-5)',
+               ' x$agrees <- TRUE; x$source <- "fake"; x', '}'), path)
+  expect_false(.evaluate_suite("forged", path)$agrees)
 })
 
 # --------------------------------------------------------------------------

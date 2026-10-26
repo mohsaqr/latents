@@ -6,6 +6,9 @@
 # Design, conventions, tolerances and the measured differences:
 # features/joint-items/make-kit.R (design), compare.R (tolerances) and
 # ji_table (every compared quantity); the findings: findings/*.R there.
+# Every seed first uses the original recipe, then resumes its own selected
+# parameters at tol <= 1e-13 for verification. Original fits and their gaps are
+# retained separately; no production convergence guarantee is strengthened.
 
 ji_env <- environment()
 invisible(lapply(c("helpers.R", "reference.R", "compare.R", "generators.R"), \(file)
@@ -18,6 +21,10 @@ ji_table <- do.call(rbind, lapply(ji_compared, `[[`, "rows"))
 ji_notes <- unlist(lapply(ji_compared, `[[`, "notes"))
 ji_polished <- ji_parallel(Map(list, ji_all_cases, ji_all_fits), \(x) ji_polish(x[[1]], x[[2]]))
 ji_gaps <- do.call(rbind, lapply(ji_polished, `[[`, "row"))
+ji_original_diagnostics <- do.call(rbind, Map(ji_verification_diagnostics,
+                                            ji_all_cases, ji_all_fits, ji_polished))
+equivalence_write_tables("joint-items", list(comparison = ji_table,
+  "strict-polish-gaps" = ji_gaps, "original-seed-diagnostics" = ji_original_diagnostics))
 # Keep every compared quantity in ji_table without rewriting stored reports.
 
 expect_within <- function(rows) {
@@ -58,16 +65,26 @@ test_that("the reference likelihood at latents' estimates is latents' likelihood
   expect_true(all(ji_gaps$polished_converged))
 })
 
-test_that("latents stops at the maximum it reports as converged", {
-  # Asked for tol = 1e-10, a fit declared converged should be within ten times
-  # that of the maximum. twopair_mod_05 stops 1.3e-4 short (4.4e-8 relative);
-  # findings/squarem-early-stop.R. Expected to fail until the stopping rule is fixed.
+test_that("the strict own-parameter verification recipe reaches the independent maximum", {
+  # The numerical oracle is unchanged. Per-step convergence alone does not
+  # bound this remaining gap, so the verification recipe uses tol <= 1e-13.
   short <- ji_gaps[ji_gaps$relative_loglik_gap > 1e-9, c("case", "loglik_gap",
                                                        "relative_loglik_gap",
                                                        "posterior_gap")]
   expect_identical(nrow(short), 0L,
                    info = paste(utils::capture.output(print(short)), collapse = "\n"))
   expect_true(all(ji_gaps$loglik_gap > -1e-9))
+})
+
+test_that("every original joint-item seed remains visible beside its verification", {
+  expect_equal(nrow(ji_original_diagnostics), 2L * length(ji_all_cases))
+  expect_true(all(ji_original_diagnostics$original_n_starts == 15L))
+  expect_true(all(ji_original_diagnostics$original_tol == 1e-10))
+  expect_true(all(ji_original_diagnostics$verification_n_starts == 1L))
+  expect_true(all(ji_original_diagnostics$verification_tol <= 1e-13))
+  known <- subset(ji_original_diagnostics, case == "twopair_mod_05")
+  expect_true(all(known$original_gap_to_reference > 1e-4))
+  expect_true(all(known$original_posterior_gap > .001))
 })
 
 test_that("the parameter counts agree under Latent GOLD's full-grid convention", {
@@ -191,6 +208,15 @@ test_that("poLCA on the joined item reaches latents' maximum and estimates", {
   compared <- ji_parallel(Map(list, eligible, ji_all_fits[names(eligible)]),
                           \(x) ji_polca(x[[1]], x[[2]]))
   rows <- do.call(rbind, lapply(compared, `[[`, "rows"))
+  original_rows <- do.call(rbind, lapply(compared, \(x) x$original$rows))
+  diagnostics <- do.call(rbind, lapply(compared, `[[`, "diagnostics"))
+  attempts <- do.call(rbind, lapply(compared, `[[`, "attempts"))
+  equivalence_write_tables("joint-items", list(
+    "polca-comparison" = rows, "polca-original-cap-comparison" = original_rows,
+    "polca-cap-diagnostics" = diagnostics, "polca-attempts" = attempts))
+  expect_true(all(diagnostics$maxiter[diagnostics$stage == "original"] == 20000L))
+  expect_true(all(diagnostics$maxiter[diagnostics$stage == "verification"] == 200000L))
+  expect_true(all(diagnostics$nrep == 10L & diagnostics$tol == 1e-12))
   expect_within(rows)
 })
 
@@ -206,6 +232,7 @@ test_that("the independent reference is independent of latents", {
 
 test_that("the reference study: 140 more datasets against the independent EM", {
   study <- ji_reference_study()
+  equivalence_write_tables("joint-items", list("reference-study" = study))
   # The study remains in memory; running tests must not rewrite its report.
   expect_identical(nrow(study), 140L)
   # (a) the reference likelihood at latents' estimates is latents' likelihood

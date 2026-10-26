@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "verification-source-2/equivalence/features/joint-items/compare.R frozen pre-cap overlay",
+  "checks": {
+    "comparison_remainder_exact_AST": true,
+    "public_helper_formals_unchanged": true,
+    "tolerance_table_unchanged": true,
+    "relative_objective_oracle_unchanged": true,
+    "other_existing_scientific_functions_unchanged": true,
+    "uniform_controls": true
+  },
+  "declared_differences": ["Stock poLCA called twice for every eligible case: maxiter20000 original and200000 verification.", "Each call resets samecase seed; nrep10/tol1e-12/data/model unchanged.", "Comparison uses verification; original fullfit/rows/attempts/numiter and bothcontrols retained.", "Oneclass stock poLCA has no randomattempts; diagnostics explicitly mark closedform rather than inventing starts.", "Optional runner exports additional diagnostic tables."]
+}

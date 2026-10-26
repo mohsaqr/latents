@@ -49,8 +49,10 @@ test; \code{0} (the default) skips it. Not available with sampling weights.}
 
 \item{bootstrap_starts}{Random starts for each bootstrap refit. Default 3.}
 
-\item{seed}{\code{NULL} (default) or an integer seed. The caller's random state
-is restored afterwards.}
+\item{seed}{\code{NULL} (default) advances the caller's random stream. An integer
+seed restores the caller's \code{.Random.seed} afterwards. R does not store a
+cached Box-Muller normal draw
+in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
 
 \item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family},
 \code{id}, \code{class_level}, \code{common}, \code{membership} or \code{variance}. \code{n_classes},

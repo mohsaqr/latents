@@ -9,9 +9,13 @@
 # Outputs (validation/): additive-simulation-<stage>-replicates.csv,
 # additive-simulation-<stage>-summary.csv, additive-simulation-<stage>.txt.
 
-stage <- commandArgs(trailingOnly = TRUE)[1L] %||% "pilot"
-stopifnot("stage must be `pilot` or `full`" = stage %in% c("pilot", "full"))
+arguments <- commandArgs(trailingOnly = TRUE)
+stopifnot("supply at most one stage: `pilot` or `full`" = length(arguments) <= 1L)
+stage <- if (length(arguments)) arguments[[1L]] else "pilot"
+stopifnot("stage must be `pilot` or `full`" =
+            !is.na(stage) && stage %in% c("pilot", "full"))
 n_datasets <- if (identical(stage, "pilot")) 100L else 1000L
+source(file.path("validation", "fork-runtime.R"))
 source(file.path("validation", "additive-simulation-setup.R"))
 
 # ---- Run ----------------------------------------------------------------------------
@@ -25,7 +29,7 @@ replicates <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), function(k)
                            seed = NA_real_, stringsAsFactors = FALSE),
                 "script_error", conditionMessage(error))
   })
-}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE))
+}, mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 1L)), mc.set.seed = TRUE))
 elapsed <- as.numeric(difftime(Sys.time(), started, units = "mins"))
 utils::write.csv(replicates, file.path(out_dir, sprintf(
   "additive-simulation-%s-replicates.csv", stage)), row.names = FALSE)

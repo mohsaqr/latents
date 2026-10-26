@@ -60,8 +60,10 @@ replicate's profiles and group classes to the original's;
 \code{p_value} and \code{p_adjusted} are \code{NA}.}
 
 \item{iter, n_starts, max_iter, tol, seed}{Number of bootstrap resamples, the
-controls of each refit, and an optional seed (the caller's random state
-is restored).}
+controls of each refit, and an optional seed. A supplied integer seed restores
+the caller's \code{.Random.seed}; \code{NULL} uses its current stream.
+The Box-Muller cached normal variate is not exposed by R
+and cannot be restored. See \link[base:Random]{base::Random}.}
 
 \item{boundary}{Accepted for consistency with the generic. Transition
 inference holds no parameter at a bound: without an active bound

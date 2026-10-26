@@ -146,8 +146,11 @@ within-person fluctuation rather than between-person level.
 
 Under covariance structures that estimate a separate variance for each
 indicator (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand-mean scaling is a
-reparameterization: it alters the units of the estimates but leaves class
-membership, entropy and AvePP unchanged. The spherical structures `EII` and
+reparameterization of the unconstrained likelihood. Corresponding optima have
+the same class membership, entropy and AvePP when bounds and priors transform
+consistently. The package's absolute variance floor is expressed in the fitted
+units, so an active floor can change classification after rescaling; numerical
+search can also reach different local optima. The spherical structures `EII` and
 `VII` constrain all indicators to a common variance, so that an unscaled
 indicator with a large range would dominate the classification; under these
 structures the indicators should be standardized beforehand.
@@ -169,7 +172,9 @@ scaling, as is the case within a single grid.
 
 With `missing = "fiml"`, the likelihood of each observation is evaluated over
 its observed indicators, without imputation; under the missing-at-random
-assumption this yields unbiased estimates. An observation with all indicators
+assumption and a correctly specified, identifiable model, this supports
+consistent estimation; it does not guarantee finite-sample unbiasedness.
+An observation with all indicators
 missing contributes nothing to the likelihood, and its posterior probability
 equals the prior implied by its group; it is therefore not classified.
 Following Mplus, such observations are excluded from the sample size of the
@@ -233,9 +238,10 @@ over all units and classes of the posterior probabilities `p`:
 
 Smaller values indicate a better trade-off between fit and complexity. The
 penalty per parameter is 2 for AIC, 3 for KIC, `log((n + 2) / 24)` for
-SABIC, `log(n)` for BIC and `log(n) + 1` for CAIC; for samples beyond a few
-dozen units, AIC is therefore the most lenient and CAIC the most conservative,
-and heavier penalties favour fewer classes. ICL and AWE additionally penalize
+SABIC, `log(n)` for BIC and `log(n) + 1` for CAIC. SABIC has a smaller
+per-parameter penalty than AIC until `n` exceeds `24 * exp(2) - 2`
+(approximately 175.34); compare the actual penalties at the relevant sample
+size. Heavier penalties favour fewer classes. ICL and AWE additionally penalize
 classification uncertainty, since overlapping classes increase `EN`; they
 consequently favour fewer and better-separated classes than BIC. CLC carries
 no per-parameter penalty, only the entropy term, and may favour many classes
@@ -517,8 +523,9 @@ together with low entropy.
 The two levels of a two-level model are classified on the basis of different
 amounts of information. A group's class is inferred from all of its
 observations jointly, whereas an observation's profile is inferred from its
-own responses alone; group classes are consequently classified with
-considerably greater certainty. For a single candidate, `plot_diagnostics()`
+own responses and the group's inferred class, which also uses the other
+observations in that group. Certainty at either level depends on the fitted
+separation and available information. For a single candidate, `plot_diagnostics()`
 displays both levels:
 
 ```{r group-certainty}

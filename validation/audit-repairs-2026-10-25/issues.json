@@ -1,0 +1,777 @@
+{
+  "objective": "Complete audit, fix confirmed issues, independently reverify, write final handoff.",
+  "baseline": "a10a919 (submission snapshot 0.9.21; not an independently verified CRAN archive boundary)",
+  "starting_head": "24773e6954bb7723aa75a34484a8e4638c32f1f6",
+  "before_evidence": "/private/tmp/latents-readonly-full-f6nw0493",
+  "repair_evidence": "/private/tmp/latents-fix-20261025",
+  "read_only_restriction_superseded_by_user": true,
+  "claude_status": "Fresh finalauthcheck:CLI2.1.310 loggedIn=false, soClaude verification unavailable; independent agent/numerical reviews completed.",
+  "issues": [
+    {
+      "id": "CORE_ZERO_WEIGHT_MEMBERSHIP",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "CORE_COUNT_OFFSET",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "CORE_ORDINAL_LABEL_COLLISION",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "CORE_SCALING_ORIGIN",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ROOT_WEIGHT_CONSTANCY_SCALE",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "REGRESSION_POSTERIOR_NORMALIZATION",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "VALIDATION_STANDALONE_OPERATOR",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "VALIDATION_PARAMETER_CELLS",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "SERVICE_VARIANCE_ALIGNMENT",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/nb-alignment-repair-evidence-core.json",
+        "/private/tmp/latents-fix-20261025/independent-nb-boundary-review.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "CAT_KEYS",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ADD_ORIGIN",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "DATA_ID",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "START_D1",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "BIC_EMPTY",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "LTA_R3STEP_MISSING",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "LTA_R3STEP_TRANSLATION",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "LTA_NESTING_BOUNDS",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "LTA_WEIGHT_IDENTITY",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "REGRESSION_PREDICTOR_UNITS",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "BINOMIAL_SEPARATION_UNITS",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "BROWNIAN_NEGATIVE_TIME",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "GROWTH_PATTERN_CACHE",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "FITTED_PLOT_GROUP_PREDICTOR",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ORDERED_RANDOM_CONTRASTS",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "NUMERIC_ID_FACETS",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "TRAJECTORY_DATA_IDENTITY",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "BOX_MULLER_CONTRACT",
+      "owner": "extensions",
+      "status": "documented_platform_limit_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "SERVICE_NUMERIC_ID_ICC",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "SERVICE_NUMERIC_ID_TNA",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "TRUST_UNKNOWN_REPLICATION",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "TREE_MOVER_STAYER_COUNTS",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "FAMILY_EMEM_FORWARDING",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ADDITIVE_BLRT_DATA_BOUNDS",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "HARNESS_STABILITY_BIN_CONVERGENCE",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "HARNESS_FINITE_AGREEMENT_GATES",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "HARNESS_MIXED_PRECISION_REPORT",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "INSTALLED_SOURCE_TEST_PORTABILITY",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "GUIDE_PROSE_CORRECTIONS",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ARCHIVED_TUTORIAL_API",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "DEFERRED_RANDOM_INTERCEPT_ADAPTERS",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "DEFERRED_LMR_DATA_IDENTITY",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "EXTERNAL_RUNNER_PROVENANCE_PORTABILITY",
+      "owner": "root",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "EXTERNAL_CERTIFICATION_CLAIMS",
+      "owner": "root",
+      "status": "corrected_with_scoped_evidence_verified",
+      "completion_evidence": [
+        "validation/audit-repairs-2026-10-25/report-claims-review.html",
+        "validation/audit-repairs-2026-10-25/evidence/evidence-manifest.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "REGRESSION_PREDICTOR_ORIGIN",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "RANDOM_POLYNOMIAL_BLUEPRINT",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "LTA_OCCASION_HUGE_OFFSET",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "R3STEP_EMPTY_GROUP_CR1",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "VALIDATION_FORK_SAFETY",
+      "owner": "core",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/core-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/validation-fork-repair-evidence-core.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "ML3_EQUAL_VARIANCE_OPTIMIZER",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/inference-v2-compatibility-tests.json",
+        "/private/tmp/latents-fix-20261025/ml3-optimizer-repair-evidence.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "EXTERNAL_DECLARED_SEARCH_PROTOCOL",
+      "owner": "extensions",
+      "status": "verified_protocol_with_documented_default_limits",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/extensions-repair-evidence.json",
+        "/private/tmp/latents-fix-20261025/direct-effects-validation-protocol-evidence-extensions.json"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "SHARED_COVARIANCE_DEGENERACY_CLAIM",
+      "owner": "root",
+      "status": "corrected_documentation_verified",
+      "completion_evidence": [
+        "/private/tmp/latents-fix-20261025/reporting-tests-v2.rds",
+        "/private/tmp/latents-fix-20261025/runner-tests.log",
+        "/private/tmp/latents-fix-20261025/full-lints.rds"
+      ],
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "REFERENCE_EM_BEST_STATE",
+      "owner": "extensions",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/joint-v3-summary.json",
+        "validation/audit-repairs-2026-10-25/evidence/joint-v3-comparison-summary.json"
+      ],
+      "finding": "huge_01 independent polish returned a lower terminal iterate (-2.852e-9); repaired coherent best-state retention and nonnegative convergence stopping, unchanged numerical oracles.",
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    },
+    {
+      "id": "POLCA_VERIFICATION_ITERATION_BUDGET",
+      "owner": "inference",
+      "status": "repaired_and_verified",
+      "completion_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/joint-v3-summary.json",
+        "validation/audit-repairs-2026-10-25/evidence/joint-v3-comparison-summary.json"
+      ],
+      "finding": "twopair_mod_05 all10poLCA starts hit20000iterations, finalgain~5.7e-9 above requested1e-12; comparisonLL shortfall3.707e-5. Same-seed/start/tolerance cap200000 probe running.",
+      "final_verification_evidence": [
+        "validation/audit-repairs-2026-10-25/evidence/verification-final-status.json",
+        "validation/audit-repairs-2026-10-25/evidence/final-external-verification-summary.json"
+      ]
+    }
+  ],
+  "scope_limits": [
+    "A passing comparison checks its stated model, data, tolerance and reference only.",
+    "Document known R Box-Muller hidden-state limitation; do not promise a preservation mechanism absent from R public API.",
+    "Default multi-start optimization can reach local maxima; preserve supported default search policy and distinguish that limitation from incorrect likelihood arithmetic.",
+    "Retained proprietary external outputs are historical evidence; do not label fresh proprietary execution unless actually rerun."
+  ],
+  "completion": {
+    "full_unit_suite": null,
+    "equivalence": null,
+    "native_check": null,
+    "independent_review": null,
+    "handoff": null
+  },
+  "independent_review_findings": "Fresh cross-review found additional origin, prediction-basis and empty-group issues; broad final verification must wait for their repair.",
+  "verification_rounds": [
+    {
+      "name": "frozen_v1",
+      "source": "/private/tmp/latents-fix-20261025/verification-source",
+      "manifest": "/private/tmp/latents-fix-20261025/verification-source-manifest.json",
+      "status": "unit_finished_external_running",
+      "known_failures": [
+        "CSV roundtrip assignment alignment (repaired)",
+        "homogeneous/general LTA same-data comparison (repaired)",
+        "joint categorical term assertion uses former ambiguous grammar (updated)",
+        "incomplete private growth fixture missing fitted design (updated)",
+        "parent/reference vs worker/Accelerate one-ULP mismatch (matching-runtime diagnosis490passes)"
+      ],
+      "response": "Repair current source; preserve V1 snapshot and results; rerun final verification on V2.",
+      "unit": {
+        "files": 177,
+        "cases": 1510,
+        "passed": 10767,
+        "failed": 2,
+        "errors": 3,
+        "warnings": 0,
+        "skipped": 2
+      },
+      "external_harness": {
+        "compared": 1021,
+        "agreed": 1021,
+        "disagreed": 0
+      },
+      "external_scope": "Full top-level external suite still collecting; failures are not suppressed."
+    }
+  ],
+  "limits_note": "The issue count groups software repairs, reporting corrections and verification-protocol corrections; it is not a count of independent numerical defects.",
+  "final_verification_status": "Completed:1527unitcases10948distinct assertions;52comparativefiles400cases21159passesaftercompleteaffected-file rerun; no remainingfailures/errors/skips in comparativeledger. Expectedthin-supportwarnings retained and separatelycounted. NativecheckStatusOK;20guides;1021harnesscomparisonsallagree.",
+  "status": "complete_with_documented_limits",
+  "issue_group_count": 53,
+  "count_interpretation": "Repair/documentation/verification groups, not a count of distinct numerical defects.",
+  "remaining_known_limits": [
+    "Finite search and per-step convergence do not establish a global maximum. Original default-search and stopping diagnostics are retained.",
+    "Commercial comparison programs were not freshly rerun; retained Mplus/Latent GOLD outputs were compared under declared per-quantity tolerances.",
+    "The full50file main batch originally had2joint-item findings. Complete affected files were rerun after validation-only fixes; original failures remain preserved.",
+    "All29main-journal warnings are thin Gaussian support diagnostics (4inside test cases,25during VLMRsetup); development equivalence has1additional such warning.",
+    "The earlier exact99-bootstrap growth-guide check is pre-repair evidence; final rendering preserves evalFALSEchunks.",
+    "Historical supporting studies were source/protocol reviewed rather than all regenerated; live Windows/Linux execution is not certified.",
+    "Explicit seed restoration does not restore R's hidden Box-Muller cache."
+  ]
+}

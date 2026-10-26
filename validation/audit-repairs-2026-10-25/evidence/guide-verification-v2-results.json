@@ -1,0 +1,182 @@
+{
+  "articles/additive.Rmd": {
+    "guide": "articles/additive.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/additive/additive.html",
+    "error": null,
+    "seconds": 13.733,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/case-engagement-covariates.Rmd": {
+    "guide": "articles/case-engagement-covariates.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/case-engagement-covariates/case-engagement-covariates.html",
+    "error": null,
+    "seconds": 11.15,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/case-engagement-evaluation.Rmd": {
+    "guide": "articles/case-engagement-evaluation.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/case-engagement-evaluation/case-engagement-evaluation.html",
+    "error": null,
+    "seconds": 9.213,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/case-engagement-profiles.Rmd": {
+    "guide": "articles/case-engagement-profiles.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/case-engagement-profiles/case-engagement-profiles.html",
+    "error": null,
+    "seconds": 2.239,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/case-engagement-transitions.Rmd": {
+    "guide": "articles/case-engagement-transitions.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/case-engagement-transitions/case-engagement-transitions.html",
+    "error": null,
+    "seconds": 4.348,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/case-esm-lca.Rmd": {
+    "guide": "articles/case-esm-lca.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/case-esm-lca/case-esm-lca.html",
+    "error": null,
+    "seconds": 26.178,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/class-enumeration.Rmd": {
+    "guide": "articles/class-enumeration.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/class-enumeration/class-enumeration.html",
+    "error": null,
+    "seconds": 60.237,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/covariates.Rmd": {
+    "guide": "articles/covariates.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/covariates/covariates.html",
+    "error": null,
+    "seconds": 2.2,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/evaluation.Rmd": {
+    "guide": "articles/evaluation.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/evaluation/evaluation.html",
+    "error": null,
+    "seconds": 26.347,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/growth-mixture.Rmd": {
+    "guide": "articles/growth-mixture.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/growth-mixture/growth-mixture.html",
+    "error": null,
+    "seconds": 64.255,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/mixture-regression.Rmd": {
+    "guide": "articles/mixture-regression.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/mixture-regression/mixture-regression.html",
+    "error": null,
+    "seconds": 6.774,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/model-selection.Rmd": {
+    "guide": "articles/model-selection.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/model-selection/model-selection.html",
+    "error": null,
+    "seconds": 39.479,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/trajectory-classes.Rmd": {
+    "guide": "articles/trajectory-classes.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/trajectory-classes/trajectory-classes.html",
+    "error": null,
+    "seconds": 6.727,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/tree-plot.Rmd": {
+    "guide": "articles/tree-plot.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/tree-plot/tree-plot.html",
+    "error": null,
+    "seconds": 42.485,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/workflow-lca.Rmd": {
+    "guide": "articles/workflow-lca.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/workflow-lca/workflow-lca.html",
+    "error": null,
+    "seconds": 42.101,
+    "warnings": [],
+    "source_identical": true
+  },
+  "articles/workflow-lpa.Rmd": {
+    "guide": "articles/workflow-lpa.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/articles/workflow-lpa/workflow-lpa.html",
+    "error": null,
+    "seconds": 246.803,
+    "warnings": [],
+    "source_identical": true
+  },
+  "enumeration.Rmd": {
+    "guide": "enumeration.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/enumeration/enumeration.html",
+    "error": null,
+    "seconds": 19.529,
+    "warnings": [],
+    "source_identical": true
+  },
+  "lca.Rmd": {
+    "guide": "lca.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/lca/lca.html",
+    "error": null,
+    "seconds": 2.54,
+    "warnings": [],
+    "source_identical": true
+  },
+  "lpa.Rmd": {
+    "guide": "lpa.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/lpa/lpa.html",
+    "error": null,
+    "seconds": 1.465,
+    "warnings": [],
+    "source_identical": true
+  },
+  "lta.Rmd": {
+    "guide": "lta.Rmd",
+    "status": "rendered",
+    "html": "/private/tmp/latents-fix-20261025/guide-renders-v2/lta/lta.html",
+    "error": null,
+    "seconds": 11.472,
+    "warnings": [],
+    "source_identical": true
+  }
+}

@@ -131,11 +131,13 @@ students
 get_results(students, "membership")
 ```
 
-A mixture of logistic regressions with a single binary outcome per class
-assignment is not identified — any mixture of Bernoulli distributions is a
-Bernoulli distribution (Follmann and Lambert 1991) — so `mixture_regression()` refuses
+A mixture of Bernoulli distributions at a fixed covariate value is itself
+Bernoulli, so identification needs additional structure. Covariate-dependent
+logistic mixtures can be identifiable under suitable restrictions and covariate
+support (Follmann and Lambert 1991). The implementation conservatively refuses
 `family = "binomial"` with one trial per row unless the class is shared by a
-group:
+group; this is its supported-model policy, not a universal nonidentification
+theorem:
 
 ```{r not-identified, error = TRUE}
 mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
@@ -228,9 +230,11 @@ The single-level and group-level models match `flexmix` (Leisch 2004): the
 same likelihood at the same parameters, and the same binomial and Poisson
 estimates. `flexmix` divides the Gaussian residual sum of squares by
 `n - p`, so its Gaussian estimates are not quite the maximum-likelihood ones
-and `mixture_regression()` reaches a slightly higher likelihood. `flexmix` has no
-two-level model, no analytic standard errors (it refits with `optim()`), and
-no bootstrap likelihood-ratio test.
+and `mixture_regression()` can reach a slightly higher likelihood. The models
+compared here use `flexmix` for single-level or shared-class grouped mixtures,
+which differ from a two-level latent group-class model. `flexmix` provides
+bootstrap likelihood-ratio tests through `LR_test()` and coefficient inference
+through its refitting facilities.
 
 ## References
 

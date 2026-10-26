@@ -43,8 +43,15 @@
 #' @return `coef()`: a named numeric vector. `vcov()`: a named symmetric matrix
 #'   over the same parameters. `confint()`: a matrix with one row per parameter
 #'   and the lower and upper bounds as columns. `logLik()`: a `"logLik"` object
-#'   with `df` and `nobs` attributes. `nobs()`: the number of groups, the
-#'   independent units of the likelihood.
+#'   with `df` and `nobs` attributes. `nobs()`: the number of independent groups
+#'   counted by the fitted BIC. With `drop_empty = TRUE`, groups without any
+#'   observed indicator are excluded; with `drop_empty = FALSE`, they are counted.
+#'   For a single-level fit these groups are its individual observations.
+#' @details Categorical parameter names escape reserved characters within
+#'   indicator and category components (`%`, `:`, `,`, `[` and `]`) using percent
+#'   codes. This keeps distinct parameters distinct when their original labels
+#'   contain delimiters. Ordinary names are unchanged; use `names(coef(object))`
+#'   or numeric positions when selecting parameters for `confint()`.
 #' @seealso [parameter_inference()] for the tidy table of estimates, standard
 #'   errors and intervals.
 #' @examples

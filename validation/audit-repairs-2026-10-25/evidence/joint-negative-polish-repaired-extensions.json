@@ -1,0 +1,69 @@
+{
+  "status": "coherent best visited state; stops only on nonnegative gain below unchanged tolerance",
+  "repaired": [
+    {
+      "case": "huge_01",
+      "log_likelihood": -111023.89461376258,
+      "relative_at_estimates": 0,
+      "posteriors_at_estimates": 7.7715611723760958e-16,
+      "loglik_gap": 1.0695657692849636e-08,
+      "relative_loglik_gap": 9.633567075256479e-14,
+      "parameter_gap": 4.2043293219107269e-07,
+      "posterior_gap": 1.5374412075108701e-06,
+      "polished_converged": true
+    }
+  ],
+  "original_failure": {
+    "polish": [
+      {
+        "case": "huge_01",
+        "log_likelihood": -111023.89461376258,
+        "relative_at_estimates": 0,
+        "posteriors_at_estimates": 7.7715611723760958e-16,
+        "loglik_gap": -2.852175384759903e-09,
+        "relative_loglik_gap": -2.5689512200683947e-14,
+        "parameter_gap": 2.2527561871488189e-08,
+        "posterior_gap": 8.7308149709919292e-08,
+        "polished_converged": true
+      }
+    ],
+    "trace": [
+      {
+        "iteration": 1,
+        "log_likelihood": -111023.89461376258,
+        "gain": {}
+      },
+      {
+        "iteration": 2,
+        "log_likelihood": -111023.89461376543,
+        "gain": -2.852175384759903e-09
+      },
+      {
+        "iteration": 3,
+        "log_likelihood": -111023.89461376276,
+        "gain": 2.6630004867911339e-09
+      },
+      {
+        "iteration": 4,
+        "log_likelihood": -111023.89461376089,
+        "gain": 1.8771970644593239e-09
+      },
+      {
+        "iteration": 5,
+        "log_likelihood": -111023.89461376632,
+        "gain": -5.4278643801808357e-09
+      },
+      {
+        "iteration": 6,
+        "log_likelihood": -111023.89461376134,
+        "gain": 4.9767550081014633e-09
+      },
+      {
+        "iteration": 7,
+        "log_likelihood": -111023.89461376499,
+        "gain": -3.6525307223200798e-09
+      }
+    ],
+    "initial_reference_minus_production": 0
+  }
+}

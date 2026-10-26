@@ -112,7 +112,7 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
   variables <- setdiff(all.vars(x$spec$random), x$spec$id)
   rows <- if (length(variables) == 0L) data.frame(row = seq_along(grid)) else
     .mixture_typical_rows(x$spec$model_data[unique(c(time, variables))], time, grid)
-  random_design <- stats::model.matrix(x$spec$random, rows)
+  random_design <- .growth_random_design(x$spec, rows)
   covariances <- .growth_covariances(x$spec, x$params)
   z <- stats::qnorm(1 - (1 - spread) / 2)
   do.call(rbind, lapply(seq_along(covariances), function(k) {
@@ -245,8 +245,19 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
   }
   rows$class_label <- key$label[match(rows$class, key$class)]
   probability <- assignments$probability[match(rows$person, assignments[[x$spec$id]])]
-  rows$person_label <- factor(sprintf("%s %s \u00b7 %s, p = %.2f", x$spec$id, rows$person,
-                                      sub("class_", "class ", rows$class), probability))
+  people <- unique(rows$person)
+  first <- match(people, rows$person)
+  ids <- as.character(people)
+  if (is.numeric(people) && anyDuplicated(ids)) {
+    ids <- format(people, digits = 17, trim = TRUE)
+  }
+  labels <- sprintf("%s %s \u00b7 %s, p = %.2f", x$spec$id, ids,
+                    sub("class_", "class ", rows$class[first]), probability[first])
+  # Facets follow native IDs, not their rounded printed representation.
+  labels <- make.unique(labels)
+  ordering <- order(labels)
+  rows$person_label <- factor(match(rows$person, people), levels = ordering,
+                               labels = labels[ordering])
   rows <- rows[order(rows$person, rows$trajectory_time), , drop = FALSE]
   ggplot2::ggplot(rows, ggplot2::aes(trajectory_time, colour = class_label)) +
     ggplot2::geom_line(ggplot2::aes(y = class_mean), linetype = "dashed", linewidth = 0.6) +

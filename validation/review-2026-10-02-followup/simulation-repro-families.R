@@ -1,9 +1,10 @@
 # Re-run sampled replicates of the families simulation; compare to stored. Run from the repository root.
+source(file.path("validation", "fork-runtime.R"))
 reps <- c(1L, 2L, 3L, 500L)
 compare <- function(env, stored_file, key = "parameter_id") {
   jobs <- expand.grid(cell = names(env$cells), replicate = reps, stringsAsFactors = FALSE)
   new <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), \(k)
-    env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L))
+    env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = .validation_fork_cores(4L)))
   old <- read.csv(stored_file, stringsAsFactors = FALSE)
   m <- merge(old, new, by = c("cell", "replicate", key), suffixes = c(".old", ".new"))
   d <- abs(m$estimate.old - m$estimate.new)

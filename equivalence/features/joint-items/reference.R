@@ -80,11 +80,14 @@ ref_n_parameters <- function(levels, k) {
 #' @param k Number of classes.
 #' @param n_starts Random starts (random posteriors, Dirichlet(1)).
 #' @param seed Seed of the starts; the global stream is restored.
-#' @param tol Stop when the log likelihood rises less than `tol` (absolute).
+#' @param tol Stop when a nonnegative log likelihood gain is less than `tol`
+#'   (absolute). Negative numerical steps do not establish convergence.
 #' @param weights Optional case weights (used as given).
 #' @param start Optional list(priors, probabilities) used as the only start.
-#' @return list(log_likelihood, priors, probabilities, posteriors, iterations,
-#'   converged, all = the maximum of every start).
+#' @return The best complete state visited, including the initial parameters:
+#'   log_likelihood, priors, probabilities, posteriors, best_iteration;
+#'   iterations/converged and termination_log_likelihood/termination_gain
+#'   describe the observed stopping point. `all` holds each start's best value.
 ref_em <- function(codes, levels, k, n_starts = 20L, seed = 1L, tol = 1e-12,
                    max_iter = 20000L, weights = NULL, start = NULL) {
   weights <- weights %||% rep(1, nrow(codes))
@@ -107,16 +110,27 @@ ref_em <- function(codes, levels, k, n_starts = 20L, seed = 1L, tol = 1e-12,
   run <- function(parameters) {
     history <- -Inf
     iteration <- 1L
+    best <- NULL
     # EM is iterative by nature; a bounded loop over its steps.
     repeat {
       joint <- ref_log_joint(codes, parameters$priors, parameters$probabilities)
       marginal <- ref_log_sum_exp(joint)
       ll <- sum(weights * marginal)
       tau <- exp(joint - marginal)
-      done <- iteration > 1L && (ll - history) < tol
+      if (!is.finite(ll) || any(!is.finite(tau))) {
+        stop("Independent EM produced non-finite likelihood or posteriors.", call. = FALSE)
+      }
+      # Finite arithmetic can lower the objective at a stationary point.
+      # Retain parameters, objective and posteriors together, including start.
+      if (is.null(best) || ll > best$log_likelihood) {
+        best <- c(parameters, list(log_likelihood = ll, posteriors = tau,
+                                   best_iteration = iteration))
+      }
+      done <- iteration > 1L && ll >= history && (ll - history) < tol
       if (done || iteration >= max_iter) {
-        return(c(parameters, list(log_likelihood = ll, posteriors = tau,
-                                  iterations = iteration, converged = done)))
+        return(c(best, list(iterations = iteration, converged = done,
+                            termination_log_likelihood = ll,
+                            termination_gain = ll - history)))
       }
       history <- ll
       parameters <- m_step(tau)

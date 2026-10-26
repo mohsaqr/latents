@@ -249,8 +249,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 
 #' Do two vectors hold the same values in the same positions
 #'
-#' Numbers are compared to tolerance rather than bit for bit, so a frame that
-#' has been written out and read back still aligns; everything else is compared
+#' Numbers are compared exactly after normalizing their storage mode, so a
+#' large origin cannot hide a changed observation; everything else is compared
 #' as text, which is what makes an identifier stored as a factor and supplied as
 #' a character vector the same identifier.
 #'
@@ -265,9 +265,38 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   observed <- !absent
   if (is.numeric(stored) && is.numeric(supplied)) {
     return(isTRUE(all.equal(as.numeric(supplied[observed]),
-                            as.numeric(stored[observed]))))
+                            as.numeric(stored[observed]), tolerance = 0)))
+  }
+  if (xor(is.numeric(stored), is.numeric(supplied))) {
+    numeric_values <- if (is.numeric(stored)) stored[observed] else supplied[observed]
+    # Native numeric IDs can differ below their default printed precision.
+    # A conversion that merges two IDs cannot establish row/group identity.
+    if (anyDuplicated(as.character(unique(numeric_values)))) return(FALSE)
   }
   identical(as.character(supplied[observed]), as.character(stored[observed]))
+}
+
+#' Recognize exact values or their ordinary CSV serialization for alignment
+#' @param supplied,stored Columns compared only to establish their row order.
+#' @return One logical value. Objective-data checks use the exact helper.
+#' @noRd
+.multilpa_alignment_values <- function(supplied, stored) {
+  if (.multilpa_same_values(supplied, stored)) return(TRUE)
+  if (!is.numeric(supplied) || !is.numeric(stored) || length(supplied) != length(stored) ||
+      !identical(unname(is.na(supplied)), unname(is.na(stored)))) return(FALSE)
+  observed <- !is.na(stored)
+  original <- as.numeric(stored[observed])
+  # Use R's actual decimal encoding: at rounding ties it can differ from
+  # libc's sprintf(). This fallback recognizes a write.csv() round trip
+  # without a relative band that grows with the indicator's origin.
+  encoded <- character()
+  connection <- textConnection("encoded", "w", local = TRUE)
+  tryCatch(utils::write.table(data.frame(value = original), connection,
+                              row.names = FALSE, col.names = FALSE, quote = FALSE),
+            finally = close(connection))
+  serialized <- as.numeric(encoded)
+  if (anyDuplicated(serialized[!duplicated(original)])) return(FALSE)
+  identical(as.numeric(supplied[observed]), serialized)
 }
 
 #' Refuse data with a different number of rows from the fit
@@ -319,12 +348,21 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     record(x$id, identical(as.integer(supplied_index), as.integer(x$group_index)))
   }
   if (!is.null(x$time) && x$time %in% names(data) && !is.null(x$time_values)) {
-    record(x$time, .multilpa_same_values(data[[x$time]], x$time_values))
+    record(x$time, .multilpa_alignment_values(data[[x$time]], x$time_values))
   }
-  raw <- .multilpa_uncentered_indicators(x)
-  continuous <- intersect(colnames(raw), names(data))
-  lapply(continuous, function(name)
-    record(name, .multilpa_same_values(data[[name]], raw[, name])))
+  continuous <- intersect(colnames(x$indicator_data), names(data))
+  reconstructed <- .multilpa_uncentered_indicators(x)
+  lapply(continuous, function(name) {
+    if (!is.numeric(data[[name]])) return(record(name, FALSE))
+    # Reapply the recorded transform: undoing it can introduce a rounding
+    # difference even for the original data. Forward transforms compare the
+    # same arithmetic to the stored fitting matrix, with exact value checks.
+    supplied <- matrix(data[[name]], ncol = 1L,
+                        dimnames = list(NULL, name))
+    supplied <- .multilpa_center_like(x, supplied)
+    record(name, .multilpa_same_values(supplied[, name], x$indicator_data[, name]) ||
+             .multilpa_alignment_values(data[[name]], reconstructed[, name]))
+  })
   categorical <- intersect(colnames(x$categorical_data), names(data))
   lapply(categorical, function(name) {
     levels_for <- x$categorical_levels[[name]]
@@ -334,12 +372,17 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   })
   covariates <- x$extra_data$direct$covariates
   lapply(intersect(colnames(covariates), names(data)), function(name)
-    record(name, .multilpa_same_values(data[[name]], covariates[, name])))
+    record(name, .multilpa_alignment_values(data[[name]], covariates[, name])))
   extra_names <- intersect(c(x$ordinal, x$count), names(data))
   if (length(extra_names) > 0L) {
     original <- .latents_draw_extra_columns(x$extra_data)
     lapply(extra_names, function(name) {
-      record(name, .multilpa_same_values(data[[name]], original[[name]]))
+      stored <- original[[name]]
+      native <- x$extra_data$ordinal_values[[name]]
+      if (is.numeric(data[[name]]) && !is.null(native)) {
+        stored <- native[x$extra_data$ordinal[, name]]
+      }
+      record(name, .multilpa_alignment_values(data[[name]], stored))
     })
   }
   if (length(disagreeing) > 0L) {
@@ -626,7 +669,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     return(frame)
   }
   frame$probability_standard_error <- .multilpa_match_error(errors, "response",
-    frame$profile, paste(frame$indicator, frame$category, sep = ":"))
+    frame$profile, paste(.latents_parameter_component(frame$indicator),
+                         .latents_parameter_component(frame$category), sep = ":"))
   frame
 }
 
@@ -955,9 +999,11 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
 .multilpa_start_variances <- function(x) {
   if (!is.null(x$variances)) return(as.matrix(x$variances))
   n_indicators <- dim(x$covariances)[1L]
-  t(vapply(seq_len(dim(x$covariances)[3L]), function(profile) {
+  values <- vapply(seq_len(dim(x$covariances)[3L]), function(profile) {
     diag(matrix(x$covariances[, , profile], n_indicators, n_indicators))
-  }, numeric(n_indicators)))
+  }, numeric(n_indicators))
+  matrix(values, nrow = dim(x$covariances)[3L], ncol = n_indicators,
+         byrow = TRUE)
 }
 
 #' The categorical block of a starting-value set as a tidy table

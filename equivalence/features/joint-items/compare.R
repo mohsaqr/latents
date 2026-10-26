@@ -18,13 +18,16 @@
 #   decimals) were at most 5.0e-5 away (MCONVERGENCE 1e-6): 6e-5.
 # - poLCA (tol 1e-12) was within 1.8e-8 of the maximum in log likelihood,
 #   2.2e-5 in its probabilities and 6.7e-5 in its posteriors: 1e-7, 3e-5, 1e-4.
-# - latents stops at a relative change of 1e-10 per step. Its log likelihood
-#   may be 1e-9 (1 + |LL|) below the maximum, ten times that change (the
-#   measured worst, outside the one finding, was 5.3e-10); its probabilities
+# - The original latents recipe stopped at a relative change of 1e-10 per
+#   step. This is not a bound on the remaining objective gap. The independent
+#   numerical oracle allows 1e-9 (1 + |LL|); the original measured worst,
+#   outside the one finding, was 5.3e-10 relative. Its probabilities
 #   were at most 8.7e-5 and its posteriors 4.1e-4 from the maximum (EM moves
 #   slowly along flat directions of the likelihood): 1e-4 and 5e-4. The one
-#   case beyond these, twopair_mod_05, is a finding (findings/); its
-#   comparisons are expected to fail.
+#   case beyond these, twopair_mod_05, is a finding (findings/): the original
+#   recipe failed the comparisons. The current declared strict own-parameter
+#   resume is checked against the same unchanged oracles. Original fits and
+#   their gaps remain separate diagnostics.
 
 ji_tol <- list(lg_printed = 5e-5, lg_estimate = 6e-5, lg_posterior = 6e-5,
                mplus_loglik = 1e-6, mplus_estimate = 6e-5, mplus_posterior = 6e-5,
@@ -180,7 +183,9 @@ ji_polish <- function(case, fit) {
                 sizes = max(abs(sizes(tight, order) - sizes(fit))),
                 items = probability_gap(setdiff(fit$vars, pairs)), joint = probability_gap(pairs),
                 posteriors = max(abs(tight$subject_posteriors[, order] - fit$subject_posteriors)))
-    return(list(row = NULL, gap = gap, polished = NULL))
+    return(list(row = NULL, gap = gap, polished = NULL,
+                reference = list(log_likelihood = tight$log_likelihood,
+                  posteriors = tight$subject_posteriors, method = "tighter production refit")))
   }
   spec <- case$spec
   coded <- ref_code(case$data, spec$vars, spec$pairs)
@@ -217,12 +222,40 @@ ji_polish <- function(case, fit) {
                     parameter_gap = max(unlist(gap[c("sizes", "items", "joint")])),
                     posterior_gap = gap$posteriors, polished_converged = polished$converged)
   list(row = row, gap = gap,
+       reference = list(log_likelihood = polished$log_likelihood,
+                         posteriors = polished$posteriors, method = "independent categorical EM"),
        polished = list(log_likelihood = polished$log_likelihood, priors = polished$priors,
                        probabilities = polished$probabilities,
                        posteriors = polished$posteriors))
 }
 
+#' Uniform poLCA precision budgets, independent of reference results
+#' @param nrep Number of random starts in both runs.
+#' @return One row for the original and verification iteration budgets.
+ji_polca_controls <- function(nrep = 10L) {
+  data.frame(stage = c("original", "verification"),
+             maxiter = c(20000L, 200000L), nrep = nrep, tol = 1e-12,
+             stringsAsFactors = FALSE)
+}
+
+#' One stock poLCA run, initialized from the declared case seed
+#' @param formula,frame The joined categorical data.
+#' @param k Number of classes.
+#' @param seed,nrep,maxiter,tol Explicit fitting controls.
+#' @return The unmodified poLCA fit; the caller preserves the RNG state.
+ji_polca_fit <- function(formula, frame, k, seed, nrep, maxiter, tol) {
+  set.seed(seed)
+  invisible(utils::capture.output(polca <- poLCA::poLCA(
+    formula, frame, nclass = k, maxiter = maxiter, tol = tol, na.rm = FALSE,
+    nrep = nrep, verbose = FALSE, calc.se = FALSE)))
+  polca
+}
+
 #' poLCA on the data with the pair replaced by the reference's own joined item
+#'
+#' Both declared budgets use the same case seed, starts and absolute tolerance.
+#' The verification fit supplies the comparison, while the complete original
+#' fit, its comparisons and its iteration-cap diagnostics remain available.
 ji_polca <- function(case, fit, polish = NULL, nrep = 10L) {
   spec <- case$spec
   coded <- ref_code(case$data, spec$vars, spec$pairs)
@@ -233,10 +266,45 @@ ji_polca <- function(case, fit, polish = NULL, nrep = 10L) {
     saved <- get(".Random.seed", globalenv())
     on.exit(assign(".Random.seed", saved, globalenv()), add = TRUE)
   }
-  set.seed(case$seed)
-  captured <- utils::capture.output(polca <- poLCA::poLCA(
-    formula, frame, nclass = spec$k, maxiter = 20000, tol = 1e-12, na.rm = FALSE,
-    nrep = nrep, verbose = FALSE, calc.se = FALSE))
+  controls <- ji_polca_controls(nrep)
+  controls$seed <- case$seed
+  fits <- lapply(seq_len(nrow(controls)), function(index) {
+    control <- controls[index, ]
+    ji_polca_fit(formula, frame, spec$k, control$seed, control$nrep,
+                  control$maxiter, control$tol)
+  })
+  names(fits) <- controls$stage
+  compared <- lapply(fits, function(polca) ji_polca_rows(case, fit, polca, polish))
+  result <- compared$verification
+  result$original <- compared$original
+  result$fits <- fits
+  result$controls <- controls
+  result$diagnostics <- cbind(case = case$name, controls,
+    log_likelihood = vapply(fits, `[[`, numeric(1), "llik"),
+    numiter = vapply(fits, `[[`, numeric(1), "numiter"))
+  result$diagnostics$iteration_cap_reached <-
+    result$diagnostics$numiter >= result$diagnostics$maxiter
+  result$attempts <- do.call(rbind, lapply(seq_along(fits), function(index) {
+    values <- fits[[index]]$attempts
+    closed_form <- length(values) == 0L
+    if (closed_form) values <- fits[[index]]$llik
+    data.frame(case = case$name, stage = controls$stage[index],
+      seed = controls$seed[index], maxiter = controls$maxiter[index],
+      nrep = controls$nrep[index], tol = controls$tol[index],
+      attempt = if (closed_form) NA_integer_ else seq_along(values),
+      closed_form = closed_form, log_likelihood = values)
+  }))
+  result
+}
+
+#' Compare a poLCA fit using the unchanged numerical oracles
+#' @param case,fit The case and production fit.
+#' @param polca A stock poLCA fit at either declared budget.
+#' @param polish Optional independent EM reference for diagnostic distances.
+#' @return The original comparison rows and independent-distance diagnostics.
+ji_polca_rows <- function(case, fit, polca, polish = NULL) {
+  spec <- case$spec
+  coded <- ref_code(case$data, spec$vars, spec$pairs)
   relabel <- montecarlo_relabel(fit$subject_posteriors, polca$posterior)
   order <- relabel$order
   mine <- unlist(lapply(colnames(coded$codes), \(v)
@@ -302,9 +370,14 @@ ji_study_one <- function(row) {
   vars <- names(data)
   pairs <- strsplit(row$pairs, ",", fixed = TRUE)[[1L]]
   quiet <- function(expr) withCallingHandlers(expr, message = \(m) invokeRestart("muffleMessage"))
-  joined <- quiet(lca(data, vars, row$k, local_dependence = pairs, n_starts = 8L, seed = 1L,
-                      tol = 1e-10, max_iter = 5000))
-  plain <- quiet(lca(data, vars, row$k, n_starts = 8L, seed = 1L, tol = 1e-10, max_iter = 5000))
+  original_joined <- quiet(lca(data, vars, row$k, local_dependence = pairs,
+                              n_starts = 8L, seed = 1L, tol = 1e-10, max_iter = 5000))
+  original_plain <- quiet(lca(data, vars, row$k, n_starts = 8L, seed = 1L,
+                             tol = 1e-10, max_iter = 5000))
+  case <- list(name = sprintf("%s_%d", row$config, row$seed), data = data,
+               spec = list(vars = vars, k = row$k, pairs = pairs))
+  joined <- quiet(ji_refine(case, original_joined, seed = 1L))
+  plain <- quiet(ji_refine(case, original_plain, seed = 1L, local_dependence = FALSE))
   coded <- ref_code(data, vars, pairs)
   priors <- c(joined$profile_probabilities[1L, ])
   probabilities <- lapply(colnames(coded$codes),
@@ -324,6 +397,25 @@ ji_study_one <- function(row) {
               !anyNA(matched$probability))
   data.frame(config = row$config, n = row$n, seed = row$seed,
              log_likelihood = joined$log_likelihood,
+             original_joined_log_likelihood = original_joined$log_likelihood,
+             original_plain_log_likelihood = original_plain$log_likelihood,
+             original_converged = original_joined$converged,
+             original_plain_converged = original_plain$converged,
+             original_seed = 1L, original_n_starts = 8L,
+             original_tol = 1e-10, original_max_iter = 5000L,
+             verification_tol = 1e-13, verification_max_iter = 5000L,
+             verification_converged = joined$converged,
+             verification_plain_converged = plain$converged,
+             original_joined_gain_to_verification = joined$log_likelihood -
+               original_joined$log_likelihood,
+             original_plain_gain_to_verification = plain$log_likelihood -
+               original_plain$log_likelihood,
+             original_plain_posterior_gap_to_verification = montecarlo_relabel(
+               original_plain$subject_posteriors, plain$subject_posteriors)$gap,
+             original_gap_to_reference = reference$log_likelihood -
+               original_joined$log_likelihood,
+             original_posterior_gap = montecarlo_relabel(
+               original_joined$subject_posteriors, reference$posteriors)$gap,
              relative_at_estimates = abs(at_estimates - joined$log_likelihood) /
                abs(joined$log_likelihood),
              latents_minus_reference = joined$log_likelihood - reference$log_likelihood,

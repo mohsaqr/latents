@@ -247,9 +247,14 @@
 #'   a dependent variable. That likelihood can have several maxima (a skewed
 #'   or heavy-tailed outcome lets a class absorb the tail), so EM runs from a
 #'   fixed set of starts, Latent GOLD's proportional start among them, and
-#'   keeps the highest. Twenty of the starts are random draws from a fixed
+#'   keeps the highest. Equal-variance fits also try bounded BFGS from the
+#'   existing quantile-based placements, accepting converged candidates with
+#'   a settled score and a positive-definite information matrix. These finite
+#'   searches do not guarantee the global maximum. Twenty of the starts are
+#'   random draws from a fixed
 #'   internal seed, so the result does not depend on the random seed and the
-#'   caller's random stream is left as it was. The standard errors are the
+#'   caller's `.Random.seed` is restored. R's hidden Box-Muller normal cache
+#'   cannot be restored; see [base::Random]. The standard errors are the
 #'   sandwich of that likelihood, clustered as for the other methods; a
 #'   class carried by a single unit has none (`NA`, with a
 #'   `latents_small_classes` warning). Maximum likelihood

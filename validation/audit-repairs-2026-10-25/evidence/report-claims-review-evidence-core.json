@@ -1,0 +1,24 @@
+{
+  "a10a919": {
+    "R_files": 76,
+    "R_lines_including_comments_blanks": 36279,
+    "test_that_test_dash_R_files": 103,
+    "export_directives": 28,
+    "S3_directives": 160
+  },
+  "24773e6": {
+    "R_files": 99,
+    "R_lines_including_comments_blanks": 48481,
+    "test_that_test_dash_R_files": 173,
+    "export_directives": 38,
+    "S3_directives": 172
+  },
+  "original_report": {
+    "path": "/Users/mohammedsaqr/Downloads/EXTENSIVE_CODEBASE_ANALYSIS.html",
+    "sha256": "9f1d9d7797192a9cf91e9febc08ee3141cd5285700f8c7ef4c00dee26edf0815",
+    "html_bytes": 70111,
+    "entire_extracted_text_characters": 34380,
+    "entire_report_read": true
+  },
+  "limits": "Committed source counts, not executable LOC or executed test expectations. Working repairs and final staged verification in progress; no all-pass/frozen-code certification."
+}

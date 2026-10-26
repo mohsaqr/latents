@@ -104,8 +104,10 @@ raises \code{latents_bad_argument}.}
 \code{coef()}: a named numeric vector. \code{vcov()}: a named symmetric matrix
 over the same parameters. \code{confint()}: a matrix with one row per parameter
 and the lower and upper bounds as columns. \code{logLik()}: a \code{"logLik"} object
-with \code{df} and \code{nobs} attributes. \code{nobs()}: the number of groups, the
-independent units of the likelihood.
+with \code{df} and \code{nobs} attributes. \code{nobs()}: the number of independent groups
+counted by the fitted BIC. With \code{drop_empty = TRUE}, groups without any
+observed indicator are excluded; with \code{drop_empty = FALSE}, they are counted.
+For a single-level fit these groups are its individual observations.
 }
 \description{
 \code{coef()}, \code{vcov()}, \code{confint()}, \code{logLik()} and \code{nobs()} for multilevel
@@ -113,6 +115,13 @@ profile and class models (\code{\link[=multilpa]{multilpa()}}), covariate models
 models and, for \code{vcov()}, pooled imputations. Mixture regressions, growth
 mixtures and the additive, cross-level and general transition families
 document the same methods with their \code{\link[=get_results]{get_results()}} page.
+}
+\details{
+Categorical parameter names escape reserved characters within
+indicator and category components (\verb{\%}, \code{:}, \verb{,}, \code{[} and \verb{]}) using percent
+codes. This keeps distinct parameters distinct when their original labels
+contain delimiters. Ordinary names are unchanged; use \code{names(coef(object))}
+or numeric positions when selecting parameters for \code{confint()}.
 }
 \examples{
 fit <- multilpa(course_engagement, c("browse", "lectures", "forum_read"),

@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "checks": {
+    "likelihood_and_coding_unchanged": true,
+    "optimizer_inputs_and_default_tolerance_unchanged": true,
+    "mstep_formula_unchanged": true,
+    "random_start_generation_and_selection_unchanged": true,
+    "real_huge_incumbent_never_below_initial": true,
+    "real_huge_likelihood_coherence": true,
+    "real_huge_posterior_coherence": true,
+    "real_huge_termination_record_separate": true,
+    "ordinary_gains_and_coherence": true,
+    "iteration_limit_preserves_initial_and_not_converged": true,
+    "meaningful_decrease_not_marked_converged": true
+  },
+  "real_huge": {
+    "initial_log_likelihood": -111023.89461376258,
+    "best_log_likelihood": -111023.89461375188,
+    "termination_log_likelihood": -111023.8946137616,
+    "termination_gain": 0,
+    "converged": true
+  },
+  "meaningful_forced_decrease": {
+    "converged": false,
+    "termination_gain": -10
+  },
+  "scope": "Pure source comparisons, stored real huge-case point, ordinary independent synthetic EM and isolated status-gate injection; no production fits or full studies rerun.",
+  "active_affected_files": ["equivalence/test-features-joint-items.R", "equivalence/test-joint-items-reference-optimizer.R"],
+  "adjacent_protocol_file": "equivalence/test-joint-items-verification-protocol.R",
+  "dependencies": {
+    "calls": ["equivalence/features/joint-items/compare.R:201 ji_polish", "equivalence/features/joint-items/compare.R:325 ji_study_one"],
+    "worker": "equivalence/features/joint-items/helpers.R:136 loads same reference for socket workers",
+    "unaffected_same_names": "Direct-effects and pair-covariance ref_em definitions are separate reference files/environments; ML3/VLMR independent references do not import joint-items reference."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "files": 50,
+  "cases": 395,
+  "totals": {
+    "failed": 2,
+    "skipped": 0,
+    "error": 0,
+    "warning": 4,
+    "passed": 21105
+  }
+}

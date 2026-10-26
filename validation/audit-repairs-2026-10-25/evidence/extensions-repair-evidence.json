@@ -1,0 +1,410 @@
+{
+  "focused": {
+    "cases": 16,
+    "counts": {
+      "failed": 0,
+      "error": 0,
+      "warning": 0,
+      "skipped": 0,
+      "passed": 67
+    }
+  },
+  "focused_cases": [
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "Gaussian regression MLE is stable under extreme predictor units",
+      "nb": 4,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.14400000000000002,
+      "system": 0.0059999999999999915,
+      "real": 0.15999999999999992,
+      "passed": 4
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "binomial separation warning does not depend on predictor units",
+      "nb": 7,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.18999999999999995,
+      "system": 0.0030000000000000027,
+      "real": 0.19799999999999995,
+      "passed": 7
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "Gaussian regression information is stable around a large predictor origin",
+      "nb": 13,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.03200000000000003,
+      "system": 0.0050000000000000044,
+      "real": 0.04400000000000004,
+      "passed": 13
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "extreme-response regression posteriors retain the prior at crossing means",
+      "nb": 3,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.028000000000000025,
+      "system": 0.0030000000000000027,
+      "real": 0.03400000000000003,
+      "passed": 3
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "growth covariance caching does not merge distinct Gram matrices",
+      "nb": 3,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.03799999999999992,
+      "system": 0.001999999999999988,
+      "real": 0.040999999999999925,
+      "passed": 3
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "extreme-response growth posteriors retain the prior at crossing means",
+      "nb": 2,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.41300000000000003,
+      "system": 0.0050000000000000044,
+      "real": 0.42300000000000004,
+      "passed": 2
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "Brownian predictions refuse negative process times",
+      "nb": 4,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.23199999999999998,
+      "system": 0.0040000000000000036,
+      "real": 0.238,
+      "passed": 4
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "fitted class curves can vary a person-level membership predictor",
+      "nb": 3,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.44699999999999984,
+      "system": 0.031,
+      "real": 0.5240000000000002,
+      "passed": 3
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "ordered random-effect contrasts are retained in spread and new predictions",
+      "nb": 5,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.09600000000000009,
+      "system": 0.006000000000000005,
+      "real": 0.10599999999999987,
+      "passed": 5
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "native numeric person IDs with identical display remain separate facets",
+      "nb": 3,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.1160000000000001,
+      "system": 0.0040000000000000036,
+      "real": 0.12199999999999989,
+      "passed": 3
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "trajectory data validation checks fitted values and permits extra distal columns",
+      "nb": 5,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.10899999999999999,
+      "system": 0.0030000000000000027,
+      "real": 0.11400000000000032,
+      "passed": 5
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "transformed random designs use their training prediction basis",
+      "nb": 1,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.002000000000000224,
+      "system": 0.0010000000000000009,
+      "real": 0.0040000000000000036,
+      "passed": 1
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "plot interval matching separates term identity from profile identity",
+      "nb": 2,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.0030000000000001137,
+      "system": 0.0010000000000000009,
+      "real": 0.0050000000000003375,
+      "passed": 2
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "categorical response plots use collision-safe inference intervals",
+      "nb": 4,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.383,
+      "system": 0.005999999999999978,
+      "real": 0.395,
+      "passed": 4
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "seed scoping preserves the public RNG state without changing the normal kind",
+      "nb": 4,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.017999999999999794,
+      "system": 0.0020000000000000018,
+      "real": 0.02400000000000002,
+      "passed": 4
+    },
+    {
+      "file": "test-audit-extension-repairs.R",
+      "context": "audit-extension-repairs",
+      "test": "ordinal separation diagnostics use logits rather than raw slopes",
+      "nb": 4,
+      "failed": 0,
+      "skipped": false,
+      "error": false,
+      "warning": 0,
+      "user": 0.06600000000000028,
+      "system": 0.0010000000000000009,
+      "real": 0.06999999999999984,
+      "passed": 4
+    }
+  ],
+  "existing": {
+    "test-growth-predict.R": {
+      "cases": 6,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 21
+      }
+    },
+    "test-mixture-regression-prediction-design.R": {
+      "cases": 3,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 12
+      }
+    },
+    "test-ordinal-regression.R": {
+      "cases": 6,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 38
+      }
+    },
+    "test-growth-r3step.R": {
+      "cases": 4,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 16
+      }
+    },
+    "test-review-1015-regression.R": {
+      "cases": 11,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 30
+      }
+    },
+    "test-mixture-regression-labels.R": {
+      "cases": 3,
+      "counts": {
+        "failed": 0,
+        "error": 0,
+        "warning": 0,
+        "skipped": 0,
+        "passed": 7
+      }
+    }
+  },
+  "gaussian": {
+    "loglik": -125.90038751225741,
+    "reference_glm_loglik": -125.90038751225745,
+    "coefficients": [
+      0.9374682594827086,
+      2.0367617905464827e-10
+    ],
+    "reference_glm_coefficients": [
+      0.9374682594827091,
+      2.0367617905464824e-10
+    ],
+    "converged": true
+  },
+  "binomial": {
+    "loglik": -126.72913746838053,
+    "reference_glm_loglik": -126.72913746838054,
+    "coefficients": [
+      0.4317155724559607,
+      71.92381659349843
+    ],
+    "separation": false
+  },
+  "lint_files": 13,
+  "lint_findings": 0,
+  "html": "/private/tmp/latents-fix-20261025/extension-plots.html",
+  "independent_inference_review": {
+    "additive": [
+      {
+        "type": "observed",
+        "max_se_absolute_delta": 4.5872083909159755e-11
+      },
+      {
+        "type": "robust",
+        "max_se_absolute_delta": 4.132871822548623e-11
+      },
+      {
+        "type": "opg",
+        "max_se_absolute_delta": 1.2713596841962271e-10
+      }
+    ],
+    "categorical_reserved_indicator_count": 8,
+    "categorical_reserved_category_count": 6,
+    "categorical_max_se_absolute_delta": 4.522594104772182e-12,
+    "source_review": "Conditioned-information Jacobian/back-transform, covariance/OPG/Newton scaling and percent escaping reviewed; no blocking math defect identified in reviewed changes.",
+    "limits": "Finite one-class synthetic probes, not global proof. Existing multicomponent tests owned by inference agent."
+  },
+  "RNG_contract": "Base R ?Random explicitly documents that .Random.seed does not save Box-Muller cached normal state. Public simulate test preserves exposed .Random.seed/RNGkind and seeded reproducibility; no RNGkind switch is used; cache restoration promise qualified.",
+  "baseline": "Earlier read-only baseline reproductions retained in /tmp/latents-readonly-full-f6nw0493; not rerun against a detached baseline here.",
+  "source_sha256": {
+    "R/mixture-regression-engine.R": "67efa96c0dab9e5d414ec213eb5ae91a8fcba7e38c9cef8a444572daab1629f7",
+    "R/growth-mixture-engine.R": "af7a482c3249e27f8686230fe0fcc70e28a4b82ef31c3d307990c09e4a915581",
+    "R/growth-mixture-correlated.R": "b2fa1ba6c52a655d08b0092e7a64317c2bef02f42afcb0e96ab6e3bfb939eb8a",
+    "R/growth-mixture-predict.R": "a65ff36430d43541c53b44b6e1b860691e01685a8fbc1f7f36adda9514dfa5aa",
+    "R/mixture-regression.R": "5d26340e919bd336ec722c8bcc3d561a92b4497089133fae324471c517515e77",
+    "R/mixture-regression-starts.R": "7274e90dd75b74d0a233c663894833d868bc97acc4584ba7921fc62b672521c9",
+    "R/growth-mixture-plot.R": "65a3538ab37c07722149c59d3a25454a2cc93d29a20225d920fc567ee20ee42f",
+    "R/mixture-regression-predict.R": "627143d2168170fb70bae316ae441d9de17ad25df472ff09d4c6781d4d664d79",
+    "R/mixture-regression-ordinal.R": "87b5c372f80471f6cec03355da80faca33b84880ade8962f2c608a372f61ee8e",
+    "R/trajectory-views.R": "254a195ba024d186459469d7c2f8d95b48ce4f0ce99aa03bebed1a55760987aa",
+    "R/plot-gg.R": "6d8ad758d9e79e7f8e4eb080668e6f8f4b25d9bf66587b4522290a3c59927cef",
+    "R/simulation-service.R": "0f139bb2d0575088ada94020a430926ff1310a829629cdfa5d791e2493a58db7",
+    "tests/testthat/test-audit-extension-repairs.R": "c8e472cd6ac1657d9d6d0043c01858d0cffea874682d0657090c50664ff5512d",
+    "tests/testthat/test-post-submission-review.R": "528159e3039c9d8acf1b301a9c929a885a983b7c946cd3f1745a861cc31b9db2"
+  },
+  "gaussian_large_origins": [
+    [
+      100000000,
+      1,
+      -214.46545000523886,
+      -214.46545000523875,
+      0.38273141769424834,
+      0.3827314176942484,
+      1.5291439225961767e-09
+    ],
+    [
+      10000000000,
+      1,
+      -214.46545073142647,
+      -214.4654507314247,
+      0.38273137953116226,
+      0.3827313795311621,
+      9.301436754149961e-08
+    ],
+    [
+      1000000000000,
+      1,
+      -214.46529218789394,
+      -214.46529216067125,
+      0.38273057217317136,
+      0.38273057217317147,
+      1.166633454152688e-05
+    ]
+  ],
+  "independent_inference_review_artifact": "/private/tmp/latents-fix-20261025/independent-inference-review-extensions.json",
+  "additional_repair_notes": [
+    "Large predictor origins center the chart before information construction; Gaussian q0 charts use absolute weighted QR, and extreme-origin fitted predictors are evaluated after removing their common origin. Original raw intercept double storage limits absolute fitted precision at1e12.",
+    "Random prediction/spread now retain fitted terms/predvars as well as factor levels/contrasts, including poly(time,2).",
+    "Trajectory supplied-data identity checks all fitted columns plus normalized supplied sampling weights, allowing uniform multiplier equivalence within16machine eps."
+  ],
+  "fixture_followup": {
+    "file": "tests/testthat/test-post-submission-review.R",
+    "change": "Populate synthetic growth spread spec with model.matrix fitted random_design; intentionally omit newer random_terms to test legacy saved-fit blueprint reconstruction. No production fallback added.",
+    "passed": 60,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 0,
+    "skips": 0,
+    "log": "/private/tmp/latents-fix-20261025/extensions-post-submission-fixture.log",
+    "lint": "No lints found."
+  }
+}

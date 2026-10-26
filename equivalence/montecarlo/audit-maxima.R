@@ -9,6 +9,8 @@
 # Run from the project root:
 #   Rscript equivalence/montecarlo/audit-maxima.R
 
+source(file.path("validation", "fork-runtime.R"))
+
 #' Fit every case from several seeds and starts, against the references
 #' @return One row per case, seed and number of starts.
 audit_maxima <- function(seeds = 1:5, starts = c(10L, 20L)) {
@@ -20,7 +22,7 @@ audit_maxima <- function(seeds = 1:5, starts = c(10L, 20L)) {
     fit <- suppressWarnings(montecarlo_fit(cases[[grid$case[i]]], seed = grid$seed[i],
                                            n_starts = grid$n_starts[i]))
     fit$log_likelihood
-  }, mc.cores = cores, mc.preschedule = FALSE))
+  }, mc.cores = .validation_fork_cores(cores), mc.preschedule = FALSE))
   references <- vapply(names(cases), function(name)
     max(montecarlo_mplus(name, cases[[name]])$log_likelihood,
         montecarlo_latentgold(name, cases[[name]])$log_likelihood), numeric(1))

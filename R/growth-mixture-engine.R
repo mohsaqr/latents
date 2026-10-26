@@ -64,7 +64,10 @@
 .growth_patterns <- function(stats) {
   n_random <- dim(stats$zz)[1L]
   flat <- matrix(stats$zz, n_random^2, length(stats$n))
-  key <- apply(signif(flat, 12), 2L, paste, collapse = "\r")
+  # Hexadecimal floating-point strings distinguish every stored value.
+  # Rounding a Gram matrix can merge genuinely different designs whose small
+  # difference becomes material at a large random-effect variance.
+  key <- apply(flat, 2L, function(values) paste(sprintf("%a", values), collapse = "\r"))
   first <- !duplicated(key)
   stats$pattern <- match(key, key[first])
   stats$pattern_zz <- array(flat[, first, drop = FALSE],

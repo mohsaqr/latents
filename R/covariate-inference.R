@@ -430,7 +430,9 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   }
   .multilpa_check_regularity(object, vcov_type, boundary)
   if (.multilpa_cov_extreme(object$profile_coefficients, object$group_coefficients,
-                            object$profile_design, object$group_design)) {
+                            object$profile_design, object$group_design,
+                            profile_weights = object$sampling_weights[object$group_index],
+                            group_weights = object$sampling_weights)) {
     stop(errorCondition(paste(
       "Wald inference is unavailable: a membership logit coefficient is heading",
       "to infinity (separation or an empty class), so its standard error and",
@@ -552,10 +554,18 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   profile_at <- membership + seq_along(object$profile_coefficients)
   group_at <- membership + length(object$profile_coefficients) +
     seq_along(object$group_coefficients)
+  profile_design <- do.call(rbind, object$profile_design)
+  group_design <- object$group_design
+  if (!is.null(object$sampling_weights)) {
+    active <- object$sampling_weights > 0
+    profile_design <- profile_design[
+      rep(active[object$group_index], length(object$profile_design)), , drop = FALSE]
+    group_design <- group_design[active, , drop = FALSE]
+  }
   transform[profile_at, profile_at] <- coefficient_block(
-    do.call(rbind, object$profile_design), ncol(object$profile_coefficients))
+    profile_design, ncol(object$profile_coefficients))
   transform[group_at, group_at] <- coefficient_block(
-    object$group_design, ncol(object$group_coefficients))
+    group_design, ncol(object$group_coefficients))
   ## Coordinates held at their bound (`boundary = "fix"`) are constants of the
   ## conditional likelihood: the information is taken over the rest, and the
   ## held rows and columns of the covariance stay zero. They are response

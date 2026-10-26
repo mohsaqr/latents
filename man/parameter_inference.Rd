@@ -171,8 +171,10 @@ Default \code{199}; a 95\% percentile interval is more stable with 999 or more.}
 
 \item{seed}{Optional seed for the resampling: a whole number accepted by
 \code{set.seed()}; any other value raises \code{latents_bad_argument} on either
-path. The Wald path uses no random numbers. The caller's random state is
-restored on exit.}
+path. The Wald path uses no random numbers. A supplied integer seed restores
+the caller's \code{.Random.seed} on exit; \code{NULL} uses its current stream.
+R does not expose the Box-Muller cached normal
+variate, so that cache cannot be restored; see \link[base:Random]{base::Random}.}
 
 \item{boundary}{Handling of categorical response probabilities at their
 lower bound, \code{min_probability}, where the information is singular.

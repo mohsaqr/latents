@@ -16,6 +16,23 @@ equivalence_fixture <- function(...) {
   found
 }
 
+# Save fresh diagnostics only when the verification runner declares an output
+# directory. Normal tests never rewrite retained reference reports.
+equivalence_write_tables <- function(family, tables) {
+  output <- getOption("latents.equivalence.output_dir", NULL)
+  if (is.null(output)) return(invisible(NULL))
+  stopifnot(is.character(output), length(output) == 1L, !is.na(output), nzchar(output),
+            is.character(family), length(family) == 1L, nzchar(family),
+            is.list(tables), !is.null(names(tables)),
+            all(vapply(tables, is.data.frame, logical(1))))
+  directory <- file.path(output, family)
+  dir.create(directory, recursive = TRUE, showWarnings = FALSE)
+  invisible(lapply(names(tables), function(name) {
+    utils::write.csv(tables[[name]], file.path(directory, paste0(name, ".csv")),
+                     row.names = FALSE)
+  }))
+}
+
 # testthat runs every file with this folder as the working directory, so
 # paths are relative to equivalence/. The in-house exhaustive-enumeration
 # reference is shared with the in-package equivalence tests, so it is read

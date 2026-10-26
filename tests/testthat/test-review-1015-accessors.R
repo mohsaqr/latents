@@ -118,7 +118,8 @@ test_that("predict() refuses covariate and transition fits by class", {
 
 test_that("every condition class the package raises is in the catalogue", {
   source_dir <- test_path("..", "..", "R")
-  skip_if_not(dir.exists(source_dir), "package sources are not available")
+  skip_if_not(file.exists(file.path(source_dir, "conditions.R")),
+              "package sources are not available")
   sources <- unlist(lapply(list.files(source_dir, "[.]R$", full.names = TRUE),
                            readLines, warn = FALSE))
   raised <- unlist(regmatches(sources, gregexpr(

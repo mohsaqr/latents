@@ -6,6 +6,7 @@
 #   Rscript validation/additive-diagnostic.R
 # Outputs: additive-diagnostic-datasets.csv, additive-diagnostic.txt.
 
+source(file.path("validation", "fork-runtime.R"))
 source(file.path("validation", "additive-simulation-setup.R"))
 n_datasets <- 1000L
 
@@ -41,7 +42,7 @@ jobs <- unique(subset(stored, fitted & inference == "available",
                       c("cell", "replicate")))
 diagnostics <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), function(k) {
   diagnose_one(jobs$cell[k], jobs$replicate[k])
-}, mc.cores = max(1L, parallel::detectCores() - 1L), mc.set.seed = TRUE))
+}, mc.cores = .validation_fork_cores(max(1L, parallel::detectCores() - 1L)), mc.set.seed = TRUE))
 elapsed <- as.numeric(difftime(Sys.time(), started, units = "mins"))
 
 # Coverage of class means and weights per dataset, from the stored records.

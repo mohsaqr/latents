@@ -1,5 +1,6 @@
 # Re-run a sample of archived LTA simulation replicates with the current code
 # and compare to the stored values. Run from the repository root.
+source(file.path("validation", "fork-runtime.R"))
 src <- readLines("validation/lta-simulation.R")
 src <- src[seq_len(grep("^started <- Sys.time", src) - 1L)]
 env <- new.env()
@@ -7,7 +8,7 @@ eval(parse(text = src), envir = env)
 reps <- as.integer(strsplit(Sys.getenv("REPS", "1,2,3,250,500,750,1000"), ",")[[1]])
 jobs <- expand.grid(cell = names(env$cells), replicate = reps, stringsAsFactors = FALSE)
 new <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), \(k)
-  env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L))
+  env$run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = .validation_fork_cores(4L)))
 old <- read.csv("validation/lta-simulation-replicates.csv", stringsAsFactors = FALSE)
 m <- merge(old, new, by = c("cell", "replicate", "key"), suffixes = c(".old", ".new"))
 cols <- c("estimate", "se_observed", "se_robust", "low_observed", "high_observed")

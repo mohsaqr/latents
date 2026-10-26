@@ -87,14 +87,18 @@
 #' reference before they can be compared. The signature is what the matching
 #' reads: per measurement block, the class means, each categorical indicator's
 #' response probabilities, the ordinal category probabilities and the count
-#' means, side by side, and optionally a mixing column.
+#' means and negative-binomial spread features, side by side, and optionally
+#' a mixing column.
 #'
 #' Every column is put in units where a difference of one is a large
 #' difference. Means are divided by the indicator's own within-class standard
 #' deviation, taken from `scales` so that the two signatures are measured the
 #' same way; probabilities are already on that scale and are left alone; count
 #' means are divided by their standard deviation under the reference's count
-#' model. Standardizing a column by its spread *across classes* instead is
+#' model. Negative-binomial variances also contribute log1p ratios to that same
+#' reference variance, so equal-mean classes can be distinguished by spread
+#' while zero-mean distributions keep finite signatures.
+#' Standardizing a column by its spread *across classes* instead is
 #' what an earlier version did, and it is wrong: two classes that happen to be
 #' mixed half and half give that column a spread near zero, and dividing by it
 #' turns a difference of 0.02 in a mixing proportion into the term that decides
@@ -108,8 +112,8 @@
 #'
 #' @param blocks A list of measurement blocks, each a list with any of
 #'   `means`, `response_probabilities`, `ordinal_intercepts`,
-#'   `ordinal_locations`, `count_means` (a fitted profile model is such a
-#'   block).
+#'   `ordinal_locations`, `count_means`, `count_dispersion` (a fitted profile
+#'   model is such a block).
 #' @param scales The reference's blocks, in the same order, carrying the
 #'   `variances`, `count_means`, `count_dispersion` and `n_profiles` the
 #'   columns are scaled by.
@@ -130,6 +134,22 @@
       spread <- sqrt(colMeans(scale$variances))
       spread[!is.finite(spread) | spread <= 0] <- 1
       parts$means <- sweep(unname(block$means), 2L, spread, "/")
+      # Equal means do not make two Gaussian profiles equivalent: their
+      # dispersion can identify them. Log variance ratios are unit invariant.
+      parts$spread <- log(sweep(unname(block$variances), 2L,
+                                spread^2, "/"))
+      if (!is.null(block$covariances)) {
+        dimension <- ncol(block$means)
+        lower <- lower.tri(matrix(0, dimension, dimension))
+        if (any(lower)) {
+          correlations <- vapply(seq_len(nrow(block$means)), function(k) {
+            covariance <- matrix(block$covariances[, , k], dimension, dimension)
+            stats::cov2cor(covariance)[lower]
+          }, numeric(sum(lower)))
+          parts$correlation <- matrix(correlations, nrow(block$means),
+                                      sum(lower), byrow = TRUE)
+        }
+      }
     }
     if (length(block$response_probabilities) > 0L) {
       parts$response <- do.call(cbind, lapply(block$response_probabilities, unname))
@@ -140,7 +160,7 @@
   do.call(cbind, features)
 }
 
-#' Ordinal probabilities and standardized count means for label matching
+#' Ordinal probabilities, count means and NB spreads for label matching
 #' @param x,reference Fitted models with the same extra indicators.
 #' @return A list of profiles-by-features matrices.
 #' @noRd
@@ -157,13 +177,21 @@
     if (length(reference$count_dispersion) > 0L) {
       dispersion <- reference$count_dispersion
       if (nrow(dispersion) == 1L) {
-        dispersion <- dispersion[rep(1L, reference$n_profiles), , drop = FALSE]
+        dispersion <- dispersion[rep(1L, nrow(reference$count_means)), , drop = FALSE]
       }
       variance <- variance + dispersion * reference$count_means^2
     }
     spread <- sqrt(colMeans(variance))
     spread[!is.finite(spread) | spread <= 0] <- 1
     blocks$count <- sweep(unname(x$count_means), 2L, spread, "/")
+    if (length(x$count_dispersion) > 0L) {
+      dispersion <- x$count_dispersion
+      if (nrow(dispersion) == 1L) {
+        dispersion <- dispersion[rep(1L, nrow(x$count_means)), , drop = FALSE]
+      }
+      variance <- x$count_means + dispersion * x$count_means^2
+      blocks$count_spread <- log1p(sweep(unname(variance), 2L, spread^2, "/"))
+    }
   }
   blocks
 }

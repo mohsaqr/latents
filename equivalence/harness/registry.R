@@ -71,13 +71,16 @@ compare_values <- function(quantity, reference, obtained, tolerance,
     "`reference` and `obtained` must have one value per quantity" =
       length(reference) == length(quantity) && length(obtained) == length(quantity),
     "`tolerance` must be stated explicitly and be positive" =
-      !missing(tolerance) && is.numeric(tolerance) && all(tolerance > 0)
+      !missing(tolerance) && is.numeric(tolerance) && length(tolerance) > 0L &&
+        all(is.finite(tolerance) & tolerance > 0)
   )
   divisor <- if (identical(scale, "relative")) pmax(abs(reference), 1) else 1
   difference <- abs(reference - obtained) / divisor
   data.frame(quantity = quantity, reference = reference, obtained = obtained,
              difference = difference, tolerance = tolerance,
-             agrees = difference <= tolerance, stringsAsFactors = FALSE)
+             agrees = is.finite(reference) & is.finite(obtained) &
+               is.finite(difference) & difference <= tolerance,
+             stringsAsFactors = FALSE)
 }
 
 #' Compare against a value read from published digits
@@ -103,13 +106,16 @@ compare_values <- function(quantity, reference, obtained, tolerance,
 compare_printed <- function(quantity, reference, obtained, digits) {
   stopifnot(
     "`digits` must be a nonnegative whole number" =
-      is.numeric(digits) && all(digits >= 0) && all(digits == floor(digits)),
+      is.numeric(digits) && length(digits) > 0L && all(is.finite(digits)) &&
+        all(digits >= 0) && all(digits == floor(digits)),
     "`reference` and `obtained` must have one value per quantity" =
       length(reference) == length(quantity) && length(obtained) == length(quantity))
   bound <- 0.5 * 10^(-digits)
+  stopifnot("the printed precision must be representable" = all(bound > 0))
   data.frame(quantity = quantity, reference = reference, obtained = obtained,
              difference = abs(reference - obtained) / bound,
-             tolerance = 1, agrees = abs(reference - obtained) <= bound,
+             tolerance = 1, agrees = is.finite(reference) & is.finite(obtained) &
+               abs(reference - obtained) <= bound,
              stringsAsFactors = FALSE)
 }
 
@@ -474,7 +480,7 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
 }
 
 # The package Depends on R (>= 4.1.0), where base `%||%` does not exist yet.
-`%||%` <- function(x, y) if (is.null(x)) y else x
+`%||%` <- function(x, y) if (is.null(x)) y else x  # nolint: object_name_linter. Infix operator.
 
 #' Source a suite file and call its entry point
 #' @param name Suite name.
@@ -491,7 +497,12 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   }
   result <- get(entry_name, envir = environment_for_suite)()
   stopifnot("a suite must return a data.frame with a `source` column" =
-              is.data.frame(result) && "source" %in% names(result))
+              is.data.frame(result) && nrow(result) > 0L && "source" %in% names(result))
+  # Suite annotations cannot turn a comparison beyond its tolerance green.
+  result$agrees <- result$agrees %in% TRUE & is.finite(result$reference) &
+    is.finite(result$obtained) & is.finite(result$difference) &
+    result$difference >= 0 & is.finite(result$tolerance) & result$tolerance > 0 &
+    result$difference <= result$tolerance
   if (is.null(result$dataset)) result$dataset <- NA_character_
   if (is.null(result$precision)) result$precision <- "machine"
   data.frame(suite = name, source = result$source, precision = result$precision,
@@ -645,7 +656,8 @@ equivalence_summary <- function(report) {
     return(data.frame(suite = character(), source = character(),
                       precision = character(), compared = integer(),
                       agreed = integer(), worst_difference = numeric(),
-                      loosest_tolerance = numeric(), stringsAsFactors = FALSE))
+                      loosest_tolerance = numeric(),
+                      worst_tolerance_fraction = numeric(), stringsAsFactors = FALSE))
   }
   parts <- split(report, list(report$suite, report$source, report$precision),
                  drop = TRUE)
@@ -655,6 +667,7 @@ equivalence_summary <- function(report) {
                compared = nrow(part), agreed = sum(part$agrees),
                worst_difference = max(part$difference),
                loosest_tolerance = max(part$tolerance),
+               worst_tolerance_fraction = max(part$difference / part$tolerance),
                stringsAsFactors = FALSE)
   })
   out <- do.call(rbind, summaries)
@@ -728,15 +741,31 @@ align_classes <- function(target, candidate) {
 #' @param tolerance How far apart two maximised log-likelihoods may be and
 #'   still count as the same mode.
 #' @return A `data.frame` shaped like [compare_values()], with one row for the
-#'   spread and one for the number of distinct optima.
+#'   spread, the number of distinct optima and the number of converged fits.
 seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_tolerances[["likelihood"]]) {
   stopifnot(
     "`label` must be a single string" = is.character(label) && length(label) == 1L,
     "`fit_one` must be a function of a seed" = is.function(fit_one),
-    "`seeds` must be at least three seeds" = is.numeric(seeds) && length(seeds) >= 3L)
-  optima <- vapply(seeds, function(seed) as.numeric(stats::logLik(fit_one(seed))), numeric(1))
+    "`seeds` must be at least three distinct finite whole-number seeds" =
+      is.numeric(seeds) && length(seeds) >= 3L &&
+        all(is.finite(seeds)) && all(seeds == trunc(seeds)) &&
+        all(abs(seeds) <= .Machine$integer.max) && !anyDuplicated(seeds),
+    "`tolerance` must be finite and positive" = is.numeric(tolerance) &&
+      length(tolerance) == 1L && is.finite(tolerance) && tolerance > 0)
+  fits <- lapply(seeds, fit_one)
+  optima <- vapply(fits, function(fit) as.numeric(stats::logLik(fit)), numeric(1))
+  converged <- vapply(fits, function(fit) {
+    if (is.list(fit)) isTRUE(fit$converged) else isTRUE(attr(fit, "converged"))
+  }, logical(1))
   spread <- max(optima) - min(optima)
-  distinct <- length(unique(round(optima / tolerance)))
+  # Groups have diameter at most tolerance, independent of arbitrary rounding
+  # bin edges. A chain of small gaps does not merge endpoints far apart.
+  finite <- sort(optima[is.finite(optima)])
+  distinct <- if (length(finite) == 0L) 0L else Reduce(function(state, value) {
+    if (value - state$anchor > tolerance) {
+      list(anchor = value, count = state$count + 1L)
+    } else state
+  }, finite, init = list(anchor = finite[1L], count = 1L))$count
   rbind(
     compare_values(sprintf("%s: spread of the maximised log-likelihood across %d seeds",
                            label, length(seeds)),
@@ -744,6 +773,9 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
     compare_values(sprintf("%s: distinct optima reached across %d seeds",
                            label, length(seeds)),
                    reference = 1, obtained = distinct,
+                   tolerance = .equivalence_tolerances[["count"]]),
+    compare_values(sprintf("%s: converged fits across %d seeds", label, length(seeds)),
+                   reference = length(seeds), obtained = sum(converged),
                    tolerance = .equivalence_tolerances[["count"]]))
 }
 
@@ -797,10 +829,12 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
     sprintf("**%d quantities compared across %d sources; %d agreed within tolerance.**",
             nrow(report), length(unique(report$source)), sum(report$agrees)),
     "",
-    sprintf("Largest difference against a reference computed here at full double precision: **%.3e**.",
-            max(c(report$difference[report$precision == "machine"], 0))),
-    sprintf("Largest gap against a reference read from published digits: **%.3g** of the rounding that value's printed precision admits, where 1 would be the whole of it. Published references are compared this way because the raw gap against a statistic printed to one decimal measures the typesetting, not the implementation.",
-            max(c(report$difference[report$precision == "printed"], 0))),
+    sprintf("Largest fraction of the stated tolerance against a reference computed here at full double precision: **%.3g**.",
+            max(c((report$difference / report$tolerance)[report$precision == "machine"], 0))),
+    sprintf(paste("Largest fraction of the stated tolerance against a reference read from published digits: **%.3g**.",
+                  "A fraction above 1 fails. Per-row differences use the comparison's absolute, relative or rounding scale;",
+                  "a printed source does not imply that its differences are measured in rounding units."),
+            max(c((report$difference / report$tolerance)[report$precision == "printed"], 0))),
     "",
     "## Suites",
     "",
@@ -816,7 +850,7 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
     "## By source",
     "",
     row_text(c("Suite", "Reference source", "Reference precision", "Dataset(s)",
-               "Compared", "Agreed", "Largest difference", "Loosest tolerance")),
+               "Compared", "Agreed", "Largest gap / tolerance", "Loosest tolerance")),
     row_text(rep("---", 8L)))
   datasets <- vapply(seq_len(nrow(summary_table)), function(row) {
     part <- report[report$suite == summary_table$suite[[row]] &
@@ -828,7 +862,7 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
     row_text(c(summary_table$suite[[row]], summary_table$source[[row]],
                summary_table$precision[[row]], datasets[[row]],
                summary_table$compared[[row]], summary_table$agreed[[row]],
-               sprintf("%.2e", summary_table$worst_difference[[row]]),
+               sprintf("%.2e", summary_table$worst_tolerance_fraction[[row]]),
                sprintf("%.2e", summary_table$loosest_tolerance[[row]])))
   }, character(1))
   failures <- report[!report$agrees, , drop = FALSE]

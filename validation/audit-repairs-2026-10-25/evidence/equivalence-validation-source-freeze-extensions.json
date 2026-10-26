@@ -1,0 +1,21 @@
+{
+  "status": "FINAL IMMUTABLE FREEZE; no further repository edits planned",
+  "files": {
+    "equivalence/helper-equivalence.R": "50af06f680abd49ee37f8c84c533118093a6d2715c76c20b7e66ccab949961d9",
+    "equivalence/features/direct-effects/helpers.R": "c6b92bee0662be61ac2ca34dbac4383e4eec8847f5898ca2d77b6cdc175f2d70",
+    "equivalence/features/direct-effects/compare.R": "7c8a1d2759eba7720b4abc9b1391b78431a29fe5ba90ceff7b81e46ee32de887",
+    "equivalence/features/direct-effects/FINDINGS.md": "ce9a22769f89f5ecfd439ca474baf7dfafaba3e5949111667184f3175a015227",
+    "equivalence/test-features-direct-effects.R": "f8aa41ada3eed055113a42bbc8fedad873683bf11ab190e6cd786111f92b189c",
+    "equivalence/test-direct-effects-search-protocol.R": "3f3f0a5f1dd784f368352c5a87f7b55fb2ee0b0fc53bc8aa522e47b68059d3f9",
+    "equivalence/features/joint-items/helpers.R": "7024548988fa2ae7f5627d2e6f6555d5cebe5a053d36926db240d79a193646c6",
+    "equivalence/features/joint-items/compare.R": "b7b8d3651d44089e27aebda3dafa3a12dacab1ee007feef177d0ea74238d80bb",
+    "equivalence/features/joint-items/FINDINGS.md": "b25b1045e8e69c9178338c4194e650eccbb529a92fc2006915d760a828b5da6f",
+    "equivalence/test-features-joint-items.R": "e12b144f133396f9e2fa78e831e4a441dc9563adfa358985e0d0c3a67b366f6e",
+    "equivalence/test-joint-items-verification-protocol.R": "96f409927cf1c193808c9acc0a6849aefce42f036beffa55ae92a64c59f96f7a",
+    "equivalence/test-verification-artifact-export.R": "5bc7720b5d39a534b8aa73bb3d42f2efe4e94a8f795715e35a471a7f1196a0a2",
+    "equivalence/features/ml-three-step/helpers.R": "13ad635c644cd984c18c597c4ec64410f5d980a172287cf1b947d8c29b7d811d",
+    "equivalence/test-features-ml-three-step.R": "3fa61df062eddafb4d6fb37ad19c1ab6123b62940d3e2f698257979b538faa6e",
+    "equivalence/test-ml-three-step-runtime.R": "cce28fe94ce4b0a1bc2f42aa2de84483edc23c3e5c27834c3a18adc682d72bf9"
+  },
+  "notes": "Last edits were independent-review comment/FINDINGS clarification and lower-case mock argument names; production code untouched. Parent can copy exact listed files and hash-check."
+}

@@ -1,0 +1,22 @@
+{
+  "scope": "Historical pre-repair growth-guide BLRT99exercise only.",
+  "baseline": "24773e6",
+  "results": {
+    "elapsed_seconds": 3574.86,
+    "valid_replicates": [
+      99,
+      99,
+      99
+    ],
+    "p_values": [
+      0.01,
+      0.01,
+      0.4
+    ],
+    "scope": "Original audit snapshot24773e6 loaded before repairs; not a post-repair rerun."
+  },
+  "post_repair_99_replicate_rerun": false,
+  "source_receipt": "/private/tmp/latents-fix-20261025/root-verification-state.json",
+  "source_receipt_sha256": "3c398efc778242b57be45ae76acb3dd803c098b916c7c1cb142a5897f92df5a4",
+  "limit": "Final20guide renders and other bootstrap tests do not promote this historical99replicate result to post-repair verification."
+}

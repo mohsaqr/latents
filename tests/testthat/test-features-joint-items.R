@@ -199,8 +199,13 @@ test_that("refits, enumeration, sensitivity and comparison keep the pair", {
                                       n_starts = 3))
   terms <- as.data.frame(boot)$term
   # Each class's joint probabilities are bootstrapped as the pair's terms.
-  expect_identical(sum(grepl("^a:b:", terms)),
+  # The joined indicator's colon is escaped within its component; the final
+  # colon still separates that indicator from its response category.
+  joint <- !is.na(terms) & startsWith(terms, "a%3Ab:")
+  expect_identical(sum(joint),
                    2L * length(fit$categorical_levels[["a:b"]]))
+  expect_identical(sum(joint), 12L)
+  expect_identical(anyDuplicated(.multilpa_parameter_names(as.data.frame(boot))), 0L)
 })
 
 test_that("bootstrap inference survives a resample without a rare combination", {

@@ -1,0 +1,129 @@
+{
+  "status": "production_source_frozen;focused_verification_passed",
+  "files": {
+    "production": "R/three-step-ml.R",
+    "new_test": "tests/testthat/test-audit-ml3-optimizer.R",
+    "fixture": "tests/testthat/fixtures/ml3-equal-rare-class.rds"
+  },
+  "sha256": {
+    "R/three-step-ml.R": "e1c2c6a9d0cad2ca00603660c55e43269389a09c62be1936fa59adaece294097",
+    "tests/testthat/fixtures/ml3-equal-rare-class.rds": "85fe6ce6ec494bd4cf6049ce9b1af2c48115be9ee69026efcc54b585dbef31c2",
+    "tests/testthat/test-audit-ml3-optimizer.R": "d5f4d0fa3b63c152e75389b7cc9af858326ca7b767fae7a856ddd5ea8ec10694"
+  },
+  "fixture_bytes": 14084,
+  "measurement_drift": {
+    "cause": "Unnecessary final categorical-row normalization in repaired kernel perturbed EM stopping/start-ranking arithmetic.",
+    "proof": "Baseline kernel in-memory restored exact LL/posteriors/modal for lca_k3_lo_01 and sweep_108; core narrowed kernel repair, public workflow now posterior_gap0/LL_gap0.",
+    "evidence": [
+      "ml3-limited-measurement-probe.json",
+      "ml3-baseline-kernel-probe.json",
+      "ml3-recorded-protocol-probe.json"
+    ]
+  },
+  "genuine_optimizer_failure": {
+    "productionLL": -7316.54473287439,
+    "referenceLL": -7316.50817336643,
+    "gap": 0.036559507960191695,
+    "reference_winning_starts": [
+      5,
+      14,
+      15,
+      22
+    ],
+    "production_BFGS_proportional_LL": -7335.115577852777,
+    "BFGS_gradient": 1.395241908119793e-09,
+    "BFGS_convergence": 0
+  },
+  "mathematical_change": {
+    "applicability": "equal variance only; varying branch unchanged",
+    "initialization": "existing quantile mean placements at common variance1 in standardized outcome chart; no oracle parameters or case names in production",
+    "variance_map": "v=existing_floor+exp(2a); decoded logSD=.5*log(v)",
+    "gradient_chain": "dlogSD/da=exp(2a)/v",
+    "acceptance": "optim convergence0, finite point/value, existing variance-floor exclusion, natural scaled score <=sqrt(eps)*(1+N), positive conditioned information; refine with existing EM",
+    "selection": "append candidates after existing EM runs; original tie window/policy retained",
+    "guarantee": "best regular candidate found from finite fixed starts; no global-maximum guarantee"
+  },
+  "numerical_after": {
+    "LL": -7316.508173366429,
+    "scaled_chart_max_score": 3.862282e-09,
+    "new_fit_elapsed_seconds": 3.863,
+    "public": {
+      "case": "sweep_108",
+      "posterior_gap": 0,
+      "measurement_LL_gap": 0,
+      "public_mean_SE_gap": 2.559974400155177e-10,
+      "public_SE_relative_gap": 7.915212929532345e-10,
+      "public_table": [
+        {
+          "level": "individuals",
+          "method": "ml",
+          "class": 1,
+          "estimate": 1381.5922082988961,
+          "standard_error": 246.6999789797402,
+          "conf_low": 898.0691345118171,
+          "conf_high": 1865.1152820859752,
+          "variance": 6546.462813361569,
+          "effective_n": 4.076977740534583
+        },
+        {
+          "level": "individuals",
+          "method": "ml",
+          "class": 2,
+          "estimate": 423.310344122126,
+          "standard_error": 5.860259815454821,
+          "conf_low": 411.8244459437872,
+          "conf_high": 434.7962423004648,
+          "variance": 6546.462813361569,
+          "effective_n": 364.4786420983262
+        },
+        {
+          "level": "individuals",
+          "method": "ml",
+          "class": 3,
+          "estimate": 383.4537015355771,
+          "standard_error": 3.6067520942620512,
+          "conf_low": 376.3845973296591,
+          "conf_high": 390.5228057414952,
+          "variance": 6546.462813361569,
+          "effective_n": 560.1776964318743
+        },
+        {
+          "level": "individuals",
+          "method": "ml",
+          "class": 4,
+          "estimate": 749.4263609127794,
+          "standard_error": 29.964925398487473,
+          "conf_low": 690.6961863323145,
+          "conf_high": 808.1565354932443,
+          "variance": 6546.462813361569,
+          "effective_n": 71.26668372926471
+        }
+      ]
+    }
+  },
+  "focused_tests": [
+    {
+      "file": "test-audit-ml3-optimizer.R",
+      "pass": 29,
+      "fail": 0,
+      "error": 0,
+      "warning": 0,
+      "skip": 0
+    },
+    {
+      "file": "test-features-ml-three-step.R",
+      "pass": 85,
+      "fail": 0,
+      "error": 0,
+      "warning": 0,
+      "skip": 0
+    }
+  ],
+  "test_evidence": [
+    "ml3-optimizer-regressions.rds",
+    "ml3-existing-feature-tests.rds"
+  ],
+  "independent_covariance_oracle": "Reference fixture covariance plus numerical Hessian/Jacobian of separately reconstructed conditional Gaussian-mixture likelihood; Hessian steps.03/.01 confirm covariance stability. Default.1 scalar-Hessian step was too coarse in this rare-class design; no production/reference acceptance threshold changed.",
+  "independent_source_review": "Core agent reviewed bounded chart, score chain rule, unchanged varying branch and candidate validity/append rules without additional suite runs.",
+  "documentation_needed": "Root owns public three-step roxygen and feature FINDINGS/README updates: equal-variance bounded BFGS candidates and repaired known sweep108 point; qualify RNG seed restoration and retain finite-search/global-maximum limitation."
+}

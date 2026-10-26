@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "normalized_weight_difference": 8.8817841970012523e-16,
+    "likelihood_difference": 0,
+    "status": "latents_incomparable_models",
+    "message": "b is fitted to different data from a: information criteria compare models only on the same indicators and observations."
+  },
+  "regression": {
+    "normalized_weight_difference": 8.8817841970012523e-16,
+    "likelihood_difference": 0,
+    "status": "latents_incomparable_models",
+    "message": "b is fitted to different data from a: information criteria compare models only on the same outcome and observations."
+  }
+}

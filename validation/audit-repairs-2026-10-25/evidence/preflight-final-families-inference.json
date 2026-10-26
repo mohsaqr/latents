@@ -1,0 +1,57 @@
+{
+  "kind": "diagnostic preflight, not replacement for full final batch",
+  "source": "/private/tmp/latents-fix-20261025/verification-source-2",
+  "files": ["test-growth-correlated-lcmm.R", "test-growth-mixture-lcmm.R", "test-growth-predict-lcmm.R", "test-jstats-lta.R", "test-mixture-regression-flexmix.R", "test-mplus-mixture-weights.R"],
+  "cases": 30,
+  "totals": {
+    "failed": 0,
+    "skipped": 0,
+    "error": 0,
+    "warning": 0,
+    "passed": 158
+  },
+  "by_file": {
+    "test-growth-correlated-lcmm.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 18
+    },
+    "test-growth-mixture-lcmm.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 25
+    },
+    "test-growth-predict-lcmm.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 21
+    },
+    "test-jstats-lta.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 57
+    },
+    "test-mixture-regression-flexmix.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 28
+    },
+    "test-mplus-mixture-weights.R": {
+      "failed": 0,
+      "skipped": 0,
+      "error": 0,
+      "warning": 0,
+      "passed": 9
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "scope": "Independent source/negative-contract review of root-owned repairs; no root-owned repository files edited by this reviewer. No broad suites or external executable kits rerun.",
+  "files": [
+    {
+      "path": "R/descriptives.R",
+      "sha256_after_recheck": "72e94c4b8f15da531a4e2ff26e6f6ba25f5199d0baa4b512e0ed4f6c371a5f1f"
+    },
+    {
+      "path": "R/tna.R",
+      "sha256_after_recheck": "b73b5f35cfb1476b5e8e0a75ff773512359291f692cc47766628bd718a88ae6b"
+    },
+    {
+      "path": "R/selection.R",
+      "sha256_after_recheck": "7503368516245a397419d1bef3cdb1e1b72f374f5272327746a06c52f5466e5b"
+    },
+    {
+      "path": "R/tree.R",
+      "sha256_after_recheck": "ef53a420213430a507a2d381bb733986ba04a699c9afb388370c341e1e568c0b"
+    },
+    {
+      "path": "R/additive-compare.R",
+      "sha256_after_recheck": "d99b1d8c81c95c7d8a9b7676038b1bc249c7d080b4e55fc8f973c77365e06435"
+    },
+    {
+      "path": "equivalence/harness/registry.R",
+      "sha256_after_recheck": "8f478faf85441170a3efb474fef92868383a9f95c8c3892ffe1117cf1115a542"
+    },
+    {
+      "path": "equivalence/harness/test-harness.R",
+      "sha256_after_recheck": "edd4de33c4c4bf638fb767528064db95c4e35e247f0151d9616e09281aec62a6"
+    },
+    {
+      "path": "equivalence/features/run.sh",
+      "sha256_after_recheck": "562300c21dd5f04422f149a1ac2f09a838cdbfbebe3284b5f4b2567a13532f79"
+    },
+    {
+      "path": "equivalence/latentgold-families/run-kit.sh",
+      "sha256_after_recheck": "b6b18fab351390040ab9a55be4f73ba5e217835e2936473f92a3b20544b06b6a"
+    },
+    {
+      "path": "equivalence/montecarlo/run.sh",
+      "sha256_after_recheck": "6390464c84e3ae15b69c259a0465dd02b02f71a40fe94044e69251e1f64fc36c"
+    },
+    {
+      "path": "equivalence/montecarlo/extended/run.sh",
+      "sha256_after_recheck": "001c25a3f30731885d7ce9f0e1783efb741f41dcf6f5a506f3008bdf4fa8b616"
+    },
+    {
+      "path": "equivalence/deferred.R",
+      "sha256_after_recheck": "4c4f171692b7552e644462f3186a049bf96b067723d5723a0617389f9ebb3e11"
+    },
+    {
+      "path": "future/R/lmr.R",
+      "sha256_after_recheck": "fce90cdec04c4370fc77d6609cddfab92875c7539cc3f84b7a0cb7093a99b32e"
+    },
+    {
+      "path": "future/R/random-intercept.R",
+      "sha256_after_recheck": "3fff96f7a063852b011bd86da5eabf2fa5c88bbe814a34cc740a248376506acd"
+    },
+    {
+      "path": "R/predict-docs.R",
+      "sha256_after_recheck": "4002e86c16f91d9892520bd5996ceb415de61af653fd791d9a41be69c5fd60af"
+    },
+    {
+      "path": "vignettes/articles/mixture-regression.Rmd",
+      "sha256_after_recheck": "ec929dd471c20d98046775a1cc534e1f0854d62ac8f82c94761b08e1288debee"
+    },
+    {
+      "path": "vignettes/articles/tree-plot.Rmd",
+      "sha256_after_recheck": "da18617a130f5099ffbfd967a5891bed89dbe102427ef4fdce9f50068100416f"
+    }
+  ],
+  "source_findings": [
+    {
+      "id": "ROOT-REVIEW-SEEDS",
+      "file": "equivalence/harness/registry.R",
+      "function": "seed_stability",
+      "evidence": "Deterministic logLik stand-in yields all three agreement rows TRUE for duplicate, nonfinite, NA and fractional seed vectors.",
+      "probe": "independent-root-review-extensions-probes.json",
+      "status": "Root fixed; reviewer reran all four negative input cases and each now rejects with explicit finite/distinct/integer seed message. See current probe JSON."
+    },
+    {
+      "id": "ROOT-REVIEW-FUTURE-AESTHETICS",
+      "file": "future/R/random-intercept.R",
+      "function": "plot.multilpa_random_intercept",
+      "evidence": "New adapter accepts documented labels/symbols/linetypes but initial version ignores them silently; style alone warns.",
+      "status": "Root fixed implementation; reviewer source-rechecked profile shape/linetype mappings and conditional end labels. Runtime verification owned by root focused tests/preview."
+    },
+    {
+      "id": "ROOT-REVIEW-RNG-DOCS",
+      "file": "R/mixture-regression.R and other seed documentation",
+      "evidence": "predict-docs qualifies cached Box-Muller state but other public seeds still promise full random-state restoration.",
+      "status": "Root coordinated public documentation qualification; owned mixture-regression.R and simulation-service comments updated. predict-docs already qualified."
+    }
+  ],
+  "reviewed_logic": [
+    {
+      "files": [
+        "R/descriptives.R",
+        "R/tna.R"
+      ],
+      "assessment": "Native integer group indexing fixes display-collision aggregation without changing ANOVA formulas or sequence order. No blocking defect identified."
+    },
+    {
+      "files": [
+        "R/selection.R",
+        "R/tree.R"
+      ],
+      "assessment": "Missing replication explicitly distinguished; mover/stayer tree cardinalities now use fitted posterior columns. Existing failed/nonconverged/boundary priority retained."
+    },
+    {
+      "files": [
+        "R/additive-compare.R"
+      ],
+      "assessment": "Null feasible variance floor cannot be excluded by higher alternative floor; exact sufficient-statistic identity and search/n_screen routing repair are consistent with upstream additive fitter."
+    },
+    {
+      "files": [
+        "equivalence/harness/registry.R",
+        "equivalence/harness/test-harness.R"
+      ],
+      "assessment": "Finite positive tolerances/nonfinite mismatch refusal, no forged agrees override, diameter-based mode counts, convergence counts and gap/tolerance report scale are mathematically consistent. Harness trusts suite-defined difference metric, necessary because absolute/relative/printed scales differ; this is not proof arbitrary suite metrics are correct."
+    },
+    {
+      "files": [
+        "equivalence/features/run.sh",
+        "equivalence/montecarlo/run.sh",
+        "equivalence/montecarlo/extended/run.sh",
+        "equivalence/latentgold-families/run-kit.sh"
+      ],
+      "assessment": "Bash exported functions and argument passing remove dependence on shell function pretty-printing. Mplus normal termination required; LG outputs cleared and fresh likelihood-bearing listing required. LG still needs downstream convergence/estimate checks, now stated honestly. No fresh proprietary external executable run."
+    },
+    {
+      "files": [
+        "equivalence/deferred.R",
+        "future/R/random-intercept.R",
+        "future/R/lmr.R"
+      ],
+      "assessment": "Session S3 registration makes generics reach deferred enclosures without production exports/files. Deferred table/prediction contracts explicitly adapted; LMR distinction from shipped VLMR and parametric bootstrap corrected. Initial aesthetic contract gap separately reported. Session S3 method registration is an intentional process mutation, not a read-only loading claim."
+    },
+    {
+      "files": [
+        "vignettes/articles/mixture-regression.Rmd",
+        "vignettes/articles/tree-plot.Rmd",
+        "R/predict-docs.R"
+      ],
+      "assessment": "Revised binary-mixture policy, flexmix LR_test and total-overlap one-to-one matching claims agree with inspected implementations/reference evidence. RNG promise correctly qualified in predict docs."
+    }
+  ],
+  "limits": [
+    "Root-owned fixes accepted from this review were rechecked as described; no final whole-codebase certification or broad rerun claimed.",
+    "Independent root dynamic probe is a small synthetic harness input-contract test, not a repeat of root full tests.",
+    "Deferred API availability and plotting are not proof numerical equivalence of archived/deferred estimators."
+  ],
+  "negative_seed_recheck": {
+    "duplicates": {
+      "error": "`seeds` must be at least three distinct finite whole-number seeds"
+    },
+    "nonfinite": {
+      "error": "`seeds` must be at least three distinct finite whole-number seeds"
+    },
+    "missing": {
+      "error": "`seeds` must be at least three distinct finite whole-number seeds"
+    },
+    "fractional": {
+      "error": "`seeds` must be at least three distinct finite whole-number seeds"
+    }
+  }
+}

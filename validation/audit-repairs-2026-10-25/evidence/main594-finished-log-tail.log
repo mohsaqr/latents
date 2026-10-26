@@ -1,0 +1,80 @@
+7. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+8. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+9. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 3: 1.9, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+10. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+11. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 4: 1.0, 1.9 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+12. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+13. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.9, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+14. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+15. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 2.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+16. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+17. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 2: 5.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+18. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+19. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+20. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+21. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+22. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+23. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+24. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+25. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.0, 2.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+26. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+27. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+28. fitted likelihood and posteriors match exhaustive latent assignments ('test-numerical-equivalence.R:30:3') - Profiles 1, 2: 2.0, 2.0 Gaussian membership mass for 4 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+29. one EM update matches an independent exhaustive E-step and M-step ('test-numerical-equivalence.R:60:5') - Profiles 1, 2: 3.0, 3.0 Gaussian membership mass for 4 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-features-joint-items.R:76:3'): the strict own-parameter ver
+Expected `all(ji_gaps$loglik_gap > -1e-09)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 2. Failure ('test-features-joint-items.R:211:3'): poLCA on the joined item re
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 5
+`expected`: 0
+
+                           case reference       quantity    n   difference
+twopair_mod_05.2 twopair_mod_05     polca            bic    1 7.413837e-05
+twopair_mod_05.4 twopair_mod_05     polca log_likelihood    1 3.706918e-05
+twopair_mod_05.5 twopair_mod_05     polca    class_sizes    3 3.217683e-04
+twopair_mod_05.6 twopair_mod_05     polca  probabilities   36 1.081150e-03
+twopair_mod_05.7 twopair_mod_05     polca     posteriors 2400 2.579287e-03
+                    tolerance
+twopair_mod_05.2 6.035514e-06
+twopair_mod_05.4 3.017757e-06
+twopair_mod_05.5 1.300000e-04
+twopair_mod_05.6 1.300000e-04
+twopair_mod_05.7 6.000000e-04
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(rows) at test-features-joint-items.R:211:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:33:3
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one gets it right on their first try
+FINISH 2026-10-26 05:40:24 

@@ -1,0 +1,11 @@
+{
+  "warning_journal_count": 29,
+  "all_thin_gaussian_support": true,
+  "warning_contexts": {
+    "features-direct-effects": 2,
+    "features-vlmr": 25,
+    "numerical-equivalence": 2
+  },
+  "warnings_inside_test_cases": 4,
+  "warnings_during_file_setup": 25
+}

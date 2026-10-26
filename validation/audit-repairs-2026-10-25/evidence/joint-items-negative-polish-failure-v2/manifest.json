@@ -1,0 +1,14 @@
+{
+  "strict-polish-gaps.csv": {
+    "path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/strict-polish-gaps.csv",
+    "sha256": "cb1b54384f9865fc73bfb3db05ac384fe49d4b6e206144253bc0f8d95ce2ec8f"
+  },
+  "comparison.csv": {
+    "path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/comparison.csv",
+    "sha256": "f0e712578f202377b3c4bf12ad0c4c5083176f4c5f67bc04fb41d24938a78072"
+  },
+  "original-seed-diagnostics.csv": {
+    "path": "/private/tmp/latents-fix-20261025/joint-items-negative-polish-failure-v2/original-seed-diagnostics.csv",
+    "sha256": "f6437ec26e77da2c6e0fbeb1ca62ff703060963cd0b6c1b43ffd1df89bf9072f"
+  }
+}

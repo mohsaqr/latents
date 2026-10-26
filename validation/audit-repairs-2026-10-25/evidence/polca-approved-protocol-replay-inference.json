@@ -1,0 +1,157 @@
+{
+  "status": "passed",
+  "checks": {
+    "original_rows_exact": true,
+    "verification_rows_exact": true,
+    "full_original_fit_preserved": true,
+    "full_verification_fit_preserved": true,
+    "all_original_attempts_preserved": true,
+    "all_verification_attempts_preserved": true,
+    "capped_status_preserved": true,
+    "all_verification_rows_pass": true,
+    "five_original_rows_still_fail": true
+  },
+  "diagnostics": [
+    {
+      "case": "twopair_mod_05",
+      "stage": "original",
+      "maxiter": 20000,
+      "nrep": 10,
+      "tol": 9.9999999999999998e-13,
+      "seed": 20266025,
+      "log_likelihood": -2916.7570490118028,
+      "numiter": 20000,
+      "iteration_cap_reached": true,
+      "_row": "original"
+    },
+    {
+      "case": "twopair_mod_05",
+      "stage": "verification",
+      "maxiter": 200000,
+      "nrep": 10,
+      "tol": 9.9999999999999998e-13,
+      "seed": 20266025,
+      "log_likelihood": -2916.7570116947718,
+      "numiter": 56767,
+      "iteration_cap_reached": false,
+      "_row": "verification"
+    }
+  ],
+  "original_rows": [
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "n_parameters",
+      "n": 1,
+      "difference": 0,
+      "tolerance": 0
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "bic",
+      "n": 1,
+      "difference": 7.4138369200227316e-05,
+      "tolerance": 6.0355140238852365e-06
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "joint_unobserved_floor",
+      "n": 0,
+      "difference": 0,
+      "tolerance": 0
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "log_likelihood",
+      "n": 1,
+      "difference": 3.7069184600113658e-05,
+      "tolerance": 3.0177570119426182e-06
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "class_sizes",
+      "n": 3,
+      "difference": 0.00032176829801872087,
+      "tolerance": 0.00013000000000000002
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "probabilities",
+      "n": 36,
+      "difference": 0.0010811495570127727,
+      "tolerance": 0.00013000000000000002
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "posteriors",
+      "n": 2400,
+      "difference": 0.0025792868440822382,
+      "tolerance": 0.00060000000000000006
+    }
+  ],
+  "verification_rows": [
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "n_parameters",
+      "n": 1,
+      "difference": 0,
+      "tolerance": 0
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "bic",
+      "n": 1,
+      "difference": 4.9569280236028135e-07,
+      "tolerance": 6.0355140238852365e-06
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "joint_unobserved_floor",
+      "n": 0,
+      "difference": 0,
+      "tolerance": 0
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "log_likelihood",
+      "n": 1,
+      "difference": 2.4784640118014067e-07,
+      "tolerance": 3.0177570119426182e-06
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "class_sizes",
+      "n": 3,
+      "difference": 2.1961512683410511e-06,
+      "tolerance": 0.00013000000000000002
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "probabilities",
+      "n": 36,
+      "difference": 7.3875253787568768e-06,
+      "tolerance": 0.00013000000000000002
+    },
+    {
+      "case": "twopair_mod_05",
+      "reference": "polca",
+      "quantity": "posteriors",
+      "n": 2400,
+      "difference": 1.7602323859194655e-05,
+      "tolerance": 0.00060000000000000006
+    }
+  ],
+  "scope": "Cached real fits from same-seed stock-equivalent tracing diagnostic replayed through final helper; no repeated production or poLCA fits."
+}

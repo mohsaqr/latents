@@ -1,0 +1,10 @@
+{
+  "time_utc": "2026-10-25T23:49:16.061531+00:00",
+  "manifest": "verification-toplevel-phase-manifest.json",
+  "sha256": "ee44ea43ea085c5ccc4d1b9f68419adb97cf61448c95ee8984a82bc8b32c1dfb",
+  "entries": 594,
+  "production_test_man_vignette_entries_unchanged": 384,
+  "all_workspace_stage_hashes_match": true,
+  "staged_before_toplevel_start": true,
+  "limits": "EQ supporting runtime guards postdate the592 completed-gate manifest; production R/tests/man/vignettes remain identical."
+}

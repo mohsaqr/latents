@@ -101,11 +101,12 @@
   }
   # The step-three likelihood can have several maxima (a heavy-tailed or
   # skewed outcome lets one class absorb the tail), so EM runs from a fixed,
-  # non-random set of starts: the proportional (posterior-weighted) moments,
+  # reproducible set of starts: the proportional (posterior-weighted) moments,
   # Latent GOLD's start, first; then the modal-class means; then the class
   # means at the outcome's quantiles in every order (every cyclic order, both
   # ways, above five classes), from the outcome's own variance and from the
-  # proportional spread; then the seeded draws below.
+  # proportional spread; then the seeded draws below. The equal-variance
+  # model also tries quasi-Newton optimization from the quantile placements.
   proportional <- as.vector(crossprod(pieces$posteriors, values)) / colSums(pieces$posteriors)
   spread <- pmax(moments(pieces$posteriors, proportional), smallest)
   modal <- vapply(seq_len(pieces$n_classes), function(class) {
@@ -130,7 +131,8 @@
   # Twenty more starts at random quantiles with random standard deviations
   # (0.3 to 1 of the outcome's) reach basins the ordered placements miss.
   # They are drawn from a fixed seed in a local stream, so the result is the
-  # same whatever the caller's seed and the caller's stream is untouched.
+  # same whatever the caller's seed and the caller's .Random.seed is restored
+  # (with the Box-Muller cache limitation documented by the seed service).
   drawn <- (function() {
     .latents_local_seed(20261021L)
     lapply(seq_len(20L), function(draw) {
@@ -152,6 +154,53 @@
             lapply(placed, slim, variances = rep(1, k)),
             lapply(placed, slim, variances = spread),
             lapply(drawn, function(start) slim(start$means, start$variances)))
+  if (identical(variance, "equal")) {
+    # EM and quasi-Newton iterations can enter different basins from the
+    # same mean placement. For the shared-variance model, also optimize the
+    # existing quantile starts directly. The chart variance = floor + exp(2a)
+    # enforces the same lower bound as EM without changing the likelihood.
+    template <- list(means = numeric(k), variances = rep(1, k), weights = weights)
+    log_floor <- log(smallest)
+    decode <- function(point) {
+      log_excess <- 2 * point[k + 1L]
+      log_variance <- max(log_floor, log_excess) +
+        log1p(exp(-abs(log_floor - log_excess)))
+      c(point[seq_len(k)], log_variance / 2)
+    }
+    objective <- function(point) {
+      -.multilpa_step_ml_log_likelihood(template, values, variance, decode(point))
+    }
+    gradient <- function(point) {
+      decoded <- decode(point)
+      score <- -colSums(.multilpa_step_ml_scores(template, values, variance, decoded))
+      score[k + 1L] <- score[k + 1L] * exp(2 * point[k + 1L] - 2 * decoded[k + 1L])
+      score
+    }
+    optimized <- lapply(placed, function(means) tryCatch({
+      start <- c(means, log(1 - smallest) / 2)
+      found <- stats::optim(start, objective, gradient, method = "BFGS",
+                            control = list(maxit = max_iter, reltol = 1e-15))
+      if (!identical(found$convergence, 0L) || !is.finite(found$value) ||
+          any(!is.finite(found$par))) return(NULL)
+      point <- decode(found$par)
+      candidate <- template
+      candidate$means <- point[seq_len(k)]
+      candidate$variances <- rep(exp(2 * point[k + 1L]), k)
+      if (any(candidate$variances <= smallest * (1 + 1e-8))) return(NULL)
+      scale <- .multilpa_step_ml_scale(candidate, variance)
+      score <- colSums(.multilpa_step_ml_scores(candidate, values, variance, point))
+      if (any(!is.finite(score)) || max(abs(score * scale)) >
+          sqrt(.Machine$double.eps) * (1 + length(values))) return(NULL)
+      information <- .multilpa_step_ml_hessian(function(theta) {
+        -colSums(.multilpa_step_ml_scores(candidate, values, variance, theta))
+      }, point, scale)
+      chol(information * tcrossprod(scale))
+      slim(candidate$means, candidate$variances)
+    }, error = function(condition) NULL))
+    # Appending preserves the original EM winner whenever the likelihoods
+    # are tied under the existing selection rule below.
+    runs <- c(runs, Filter(Negate(is.null), optimized))
+  }
   failed <- vapply(runs, `[[`, logical(1), "failed")
   if (all(failed)) {
     stop(errorCondition(paste(

@@ -89,6 +89,15 @@
   if (ncol(counts) == 1L) {
     return(list(coefficients = initial, converged = TRUE, scaled_score = 0))
   }
+  # Rows with no expected mass do not enter the objective or its information.
+  # Including them in the coordinate basis can nevertheless shrink the active
+  # score arbitrarily and falsely satisfy the convergence tolerance.
+  active <- rowSums(counts) > 0
+  if (!any(active)) {
+    return(list(coefficients = initial, converged = TRUE, scaled_score = 0))
+  }
+  design <- design[active, , drop = FALSE]
+  counts <- counts[active, , drop = FALSE]
   ## Orthonormal coordinates where the design allows them, so that a
   ## covariate held far from zero relative to its spread cannot leave the
   ## Hessian nearly singular; per-column scaling otherwise.
@@ -647,14 +656,14 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
 logLik.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = object$n_groups, class = "logLik")
+            nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
 #' @rdname latents-model-methods
 #' @export
 nobs.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
-  object$n_groups
+  .multilpa_group_sample_size(object)
 }
 
 #' Validate covariate columns
@@ -740,10 +749,13 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @param profile_design List of profile design matrices.
 #' @param group_design Group-level design matrix.
 #' @param limit Largest unit-free coefficient treated as finite.
+#' @param profile_weights,group_weights Optional masses used to exclude
+#'   zero-weight rows from the corresponding design's coordinate basis.
 #' @return `TRUE` or `FALSE`.
 #' @noRd
 .multilpa_cov_extreme <- function(profile_coefficients, group_coefficients,
-                                  profile_design, group_design, limit = 20) {
+                                  profile_design, group_design, limit = 20,
+                                  profile_weights = NULL, group_weights = NULL) {
   stopifnot("`profile_design` must be a list of matrices" =
               is.list(profile_design) && length(profile_design) >= 1L,
             "`group_design` must be a matrix" = is.matrix(group_design))
@@ -752,6 +764,14 @@ nobs.multilpa_covariates <- function(object, ...) {
     if (is.null(basis)) {
       as.matrix(coefficients) * .multilpa_design_scale(design)
     } else basis %*% as.matrix(coefficients)
+  }
+  if (!is.null(profile_weights)) {
+    profile_design <- lapply(profile_design, function(design) {
+      design[profile_weights > 0, , drop = FALSE]
+    })
+  }
+  if (!is.null(group_weights)) {
+    group_design <- group_design[group_weights > 0, , drop = FALSE]
   }
   scaled <- c(unit_free(profile_coefficients, do.call(rbind, profile_design)),
               unit_free(group_coefficients, group_design))
@@ -816,7 +836,10 @@ nobs.multilpa_covariates <- function(object, ...) {
     cbind(indicators, slopes)
   })
   stacked_design <- do.call(rbind, profile_design)
-  if (qr(stacked_design)$rank != ncol(stacked_design) || qr(w)$rank != ncol(w)) {
+  active <- if (is.null(row_weights)) rep(TRUE, nrow(data)) else row_weights > 0
+  active_stacked <- rep(active, n_group_classes)
+  if (qr(stacked_design[active_stacked, , drop = FALSE])$rank != ncol(stacked_design) ||
+      qr(w[active[first_rows], , drop = FALSE])$rank != ncol(w)) {
     stop(errorCondition(
       "Covariate design is rank deficient; remove constant or collinear predictors.",
       class = "latents_bad_covariate", call = NULL))
@@ -1075,7 +1098,9 @@ nobs.multilpa_covariates <- function(object, ...) {
     list(means = result$means, variances = result$variances,
          covariances = result$covariances), min_variance)
   result$extreme_logits <- .multilpa_cov_extreme(best$beta, best$gamma,
-                                                 designs$profile_design, designs$w)
+    designs$profile_design, designs$w,
+    profile_weights = base$sampling_weights[group_index],
+    group_weights = base$sampling_weights)
   result$call <- call
   structure(result, class = "multilpa_covariates")
 }

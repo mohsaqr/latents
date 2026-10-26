@@ -15,6 +15,19 @@
 skip_if_not_installed("flexmix")
 flexmix_control <- list(tolerance = 1e-13, iter.max = 10000L)
 
+test_that("flexmix exposes a working bootstrap likelihood-ratio test", {
+  set.seed(12)
+  data <- data.frame(x = rnorm(60))
+  data$y <- data$x + rnorm(60)
+  fit <- flexmix::flexmix(y ~ x, data, k = 1,
+    model = flexmix::FLXMRglm(family = "gaussian"), control = list(verbose = 0))
+  result <- flexmix::LR_test(fit, R = 3)
+  expect_s3_class(result, "htest")
+  expect_equal(unname(result$parameter), 3L)
+  expect_true(is.finite(result$p.value) && result$p.value >= 0 && result$p.value <= 1)
+  expect_match(result$method, "Bootstrap likelihood ratio")
+})
+
 best_flexmix <- function(...) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (!is.null(old)) assign(".Random.seed", old, globalenv()),

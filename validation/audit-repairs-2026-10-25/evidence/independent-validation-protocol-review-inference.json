@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "independent_checks": {
+    "direct_comparison_math_and_tolerances_unchanged": true,
+    "joint_tolerances_unchanged": true,
+    "ml3_fit_exact_recipe_unchanged": true,
+    "all_67_case_controls_uniform": true,
+    "higher_unconverged_default_retained_but_not_selected": true,
+    "direct_calls_have_no_reference_inputs": true,
+    "joint_resume_own_start_only_and_never_looser": true,
+    "joint_study_both_arms_resumed_and_original_retained": true,
+    "ml3_serial_preserves_order_and_explicit_seed_one": true,
+    "accelerate_automatically_unsafe": true,
+    "default_gap_evidence_not_erased": true,
+    "strict_joint_proof_unchanged_oracle": true
+  },
+  "source_review": {
+    "direct": "Both searches, allcases/seeds, budgets based only on n; no reference reads or parameters in search. Highest finite converged nonboundary selected. Default attempts including inadmissible higher points retained with status and gaps.",
+    "joint": "Every own selected seed resumed at min(originaltol,1e-13); no reference point enters production resume. Same policy both joined/plain study arms. Independent EM oracle unchanged; twolevel tighter production checks explicitly labeled.",
+    "ml3": "Only mapping route changed; explicit seed1 in ml3_fit unchanged. Unsafe DarwinAccelerate and Windows serial; safe platforms retain previous mclapply settings.",
+    "artifacts": "Optional fresh output directory preserves original diagnostics without overwriting retained reference reports."
+  },
+  "reused_limited_evidence": [
+    "direct-effects-declared-protocol-extensions.json",
+    "joint-resume-diagnosis-extensions.json"
+  ],
+  "limitations": [
+    "No full study rerun by this reviewer; parent owns full frozen verification.",
+    "Configured search and strict ownparameter verification do not establish default reliability, remaining-gap guarantees, or global optimality.",
+    "Twolevel joint-item polish is a tighter production refit, not an independent implementation."
+  ],
+  "followup": "Resolved: owner clarified compare.R original-vs-strict recipe and FINDINGS historical failure/test-name language; independently read after update.",
+  "source_locations": {
+    "direct_controls": "equivalence/features/direct-effects/helpers.R:15",
+    "direct_selection": "equivalence/features/direct-effects/helpers.R:41",
+    "direct_oracle": "equivalence/features/direct-effects/helpers.R:320",
+    "direct_diagnostics": "equivalence/features/direct-effects/helpers.R:373",
+    "joint_controls": "equivalence/features/joint-items/helpers.R:12",
+    "joint_own_start": "equivalence/features/joint-items/helpers.R:43",
+    "joint_seed_preservation": "equivalence/features/joint-items/helpers.R:56",
+    "joint_diagnostics": "equivalence/features/joint-items/helpers.R:86",
+    "joint_independent_polish": "equivalence/features/joint-items/compare.R:172",
+    "joint_study_both_arms": "equivalence/features/joint-items/compare.R:306",
+    "ml3_unchanged_seed_recipe": "equivalence/features/ml-three-step/helpers.R:17",
+    "ml3_runtime_mapping": "equivalence/features/ml-three-step/helpers.R:39",
+    "optional_artifact_export": "equivalence/helper-equivalence.R:21"
+  }
+}

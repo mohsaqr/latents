@@ -71,12 +71,13 @@ test_that("the measurement signature permutes with the classes", {
                 response_probabilities = list(a = matrix(c(.2, .5, .9, .8, .5, .1), 3L)))
   shuffled <- block
   shuffled$means <- block$means[order, , drop = FALSE]
+  shuffled$variances <- block$variances[order, , drop = FALSE]
   shuffled$response_probabilities$a <- block$response_probabilities$a[order, , drop = FALSE]
   base <- .latents_measurement_signature(list(block), list(block), mixing = c(.5, .3, .2))
   expect_identical(.latents_measurement_signature(list(shuffled), list(block),
                                                   mixing = c(.5, .3, .2)[order]),
                    base[order, , drop = FALSE])
-  expect_identical(ncol(base), 5L)
+  expect_identical(ncol(base), 7L)
   # Means are in units of the reference's within-class standard deviation.
   expect_equal(base[, 1L], block$means[, 1L] / sqrt(mean(block$variances[, 1L])))
   expect_null(.latents_measurement_signature(list(list()), list(list())))

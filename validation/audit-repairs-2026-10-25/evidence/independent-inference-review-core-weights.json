@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "normalized_weight_difference": 8.8817841970012523e-16,
+    "likelihood_difference": 0,
+    "status": "returned",
+    "message": null
+  },
+  "regression": {
+    "normalized_weight_difference": 8.8817841970012523e-16,
+    "likelihood_difference": 0,
+    "status": "returned",
+    "message": null
+  }
+}

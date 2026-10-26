@@ -1,0 +1,10 @@
+{
+  "time_utc": "2026-10-25T23:46:11.481997+00:00",
+  "files": {
+    "equivalence/features/vlmr/helpers.R": "e73968e5ce953d6cd8db79c6405a5ea4b8727c03e67269f079abb7c172d1fc28",
+    "equivalence/test-vlmr-runtime.R": "91624d2c055e9eab516221e80993645e770a54dee667787d44e4b4a980b584b8"
+  },
+  "staged_before_toplevel_start": true,
+  "production_sources_unchanged": true,
+  "reason": "Safe dispatch for remaining VLMR validation fork path; statistical worker body and seeds unchanged."
+}

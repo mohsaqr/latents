@@ -1,0 +1,65 @@
+{
+  "issue": "VALIDATION_FORK_SAFETY",
+  "files": 4,
+  "direct_calls": 5,
+  "method": "Exact R language-object identity after removing only new guard-loading and early-refusal expressions and unwrapping only guarded core arguments. No study or kit evaluation.",
+  "records": [
+    {
+      "file": "equivalence/features/ml-three-step/make-kit.R",
+      "full_scientific_AST_exact_identity": true,
+      "guarded_mclapply_calls": 2,
+      "additional_early_preflights": 1,
+      "calls": [
+        {
+          "original_core_expression": "2L",
+          "original_call": "parallel::mclapply(cases, function(case) {\n    fit <- suppressWarnings(ml3_fit(case))\n    inputs <- ml3_level_inputs(fit, case)\n    list(posteriors = inputs$posteriors, modal = inputs$modal, values = inputs$values, ids = inputs$ids, clusters = inputs$clusters, step1_log_likelihood = fit$log_likelihood, entropy = ml3_entropy(inputs$posteriors), modal_counts = tabulate(inputs$modal, ncol(inputs$posteriors)))\n}, mc.cores = 2L, mc.preschedule = FALSE)",
+          "all_other_arguments_exact_AST_identity": true
+        },
+        {
+          "original_core_expression": "2L",
+          "original_call": "parallel::mclapply(sweep, function(case) {\n    fit <- suppressWarnings(ml3_fit(case))\n    list(posteriors = unname(fit$subject_posteriors), modal = fit$subject_profiles, step1_log_likelihood = fit$log_likelihood, entropy = ml3_entropy(fit$subject_posteriors), modal_counts = tabulate(fit$subject_profiles, case$spec$k))\n}, mc.cores = 2L, mc.preschedule = FALSE)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ]
+    },
+    {
+      "file": "equivalence/search/blrt-emem.R",
+      "full_scientific_AST_exact_identity": true,
+      "guarded_mclapply_calls": 1,
+      "additional_early_preflights": 1,
+      "calls": [
+        {
+          "original_core_expression": "cores",
+          "original_call": "mclapply(replicates, run_one, mc.cores = cores, mc.preschedule = FALSE)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ]
+    },
+    {
+      "file": "equivalence/search/pilot.R",
+      "full_scientific_AST_exact_identity": true,
+      "guarded_mclapply_calls": 1,
+      "additional_early_preflights": 1,
+      "calls": [
+        {
+          "original_core_expression": "cores",
+          "original_call": "mclapply(replicates, run_one, mc.cores = cores, mc.preschedule = FALSE)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ]
+    },
+    {
+      "file": "equivalence/montecarlo/audit-maxima.R",
+      "full_scientific_AST_exact_identity": true,
+      "guarded_mclapply_calls": 1,
+      "additional_early_preflights": 0,
+      "calls": [
+        {
+          "original_core_expression": "cores",
+          "original_call": "parallel::mclapply(seq_len(nrow(grid)), function(i) {\n    fit <- suppressWarnings(montecarlo_fit(cases[[grid$case[i]]], seed = grid$seed[i], n_starts = grid$n_starts[i]))\n    fit$log_likelihood\n}, mc.cores = cores, mc.preschedule = FALSE)",
+          "all_other_arguments_exact_AST_identity": true
+        }
+      ]
+    }
+  ]
+}

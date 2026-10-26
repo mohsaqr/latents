@@ -53,7 +53,18 @@
 #' @noRd
 .mixture_log_softmax <- function(design, coefficients) {
   scores <- design %*% coefficients
+  scores <- sweep(scores, 1L, .multilpa_row_max(scores), "-")
   scores - .mixture_row_lse(scores)
+}
+
+#' Normalize log weights without subtracting a large log normalizer
+#' @param log_weights Matrix of log weights, one row per unit.
+#' @return A matrix of row probabilities.
+#' @noRd
+.mixture_normalize_log_weights <- function(log_weights) {
+  stopifnot(is.matrix(log_weights), is.numeric(log_weights), ncol(log_weights) > 0L)
+  weights <- exp(sweep(log_weights, 1L, .multilpa_row_max(log_weights), "-"))
+  weights / rowSums(weights)
 }
 
 #' Weight a mixture-regression expectation by sampling weights
@@ -101,13 +112,18 @@
 #'   `tau_by_group_class`, `log_prior_by_group_class` and `log_eta`.
 #' @noRd
 .mixture_structure_expectation <- function(spec, params, log_density) {
+  # Mixing probabilities can be far smaller than one ulp of an extreme log
+  # density. Remove the common measurement contribution before adding priors
+  # for the posterior calculation; retain the original likelihood calculation.
+  relative_density <- sweep(log_density, 1L, .multilpa_row_max(log_density), "-")
   switch(spec$nesting,
     observation = {
       log_prior <- .mixture_log_softmax(spec$w, params$gamma)
       joint <- log_prior + log_density
       unit <- .mixture_row_lse(joint)
       list(log_likelihood = sum(unit), unit_log_likelihood = unit,
-           tau = exp(joint - unit), log_prior = log_prior,
+           tau = .mixture_normalize_log_weights(relative_density + log_prior),
+           log_prior = log_prior,
            log_density = log_density)
     },
     group = {
@@ -115,7 +131,10 @@
       joint <- log_prior + rowsum(log_density, spec$group_index,
                                   reorder = TRUE)
       unit <- .mixture_row_lse(joint)
-      group_tau <- exp(joint - unit)
+      relative_group <- rowsum(relative_density, spec$group_index, reorder = TRUE)
+      relative_group <- sweep(relative_group, 1L,
+                                .multilpa_row_max(relative_group), "-")
+      group_tau <- .mixture_normalize_log_weights(relative_group + log_prior)
       list(log_likelihood = sum(unit), unit_log_likelihood = unit,
            tau = group_tau[spec$group_index, , drop = FALSE],
            group_tau = group_tau, log_prior = log_prior,
@@ -131,16 +150,24 @@
           .mixture_two_level_design(spec, h), params$class_logits)
         joint <- log_prior + log_density
         marginal <- .mixture_row_lse(joint)
-        list(log_prior = log_prior, joint = joint, marginal = marginal)
+        relative_joint <- log_prior + relative_density
+        list(log_prior = log_prior, joint = joint, marginal = marginal,
+             relative_joint = relative_joint,
+             relative_marginal = .mixture_row_lse(relative_joint))
       })
       group_log <- log_eta + vapply(within, function(piece) {
         drop(rowsum(piece$marginal, spec$group_index, reorder = TRUE))
       }, numeric(spec$n_groups))
       unit <- .mixture_row_lse(group_log)
-      rho <- exp(group_log - unit)
+      relative_group <- matrix(vapply(within, function(piece) {
+        drop(rowsum(piece$relative_marginal, spec$group_index, reorder = TRUE))
+      }, numeric(spec$n_groups)), spec$n_groups, n_group_classes)
+      relative_group <- sweep(relative_group, 1L,
+                                .multilpa_row_max(relative_group), "-")
+      rho <- .mixture_normalize_log_weights(relative_group + log_eta)
       tau_by_group_class <- lapply(seq_len(n_group_classes), function(h) {
         rho[spec$group_index, h] *
-          exp(within[[h]]$joint - within[[h]]$marginal)
+          .mixture_normalize_log_weights(within[[h]]$relative_joint)
       })
       list(log_likelihood = sum(unit), unit_log_likelihood = unit,
            tau = Reduce(`+`, tau_by_group_class), rho = rho,

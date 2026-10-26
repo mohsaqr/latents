@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Run every Monte Carlo case through Mplus and Latent GOLD.
 # From the project root: sh equivalence/montecarlo/run.sh [mplus|latentgold] [pattern]
 # Outputs land in equivalence/montecarlo/returned/. Earlier outputs of a case
 # are removed before it runs, and a case that does not terminate normally, or
 # writes no output, stops the run.
+[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -e
 here="$(cd "$(dirname "$0")" && pwd)"
 kit="$here/kit"
@@ -27,10 +28,10 @@ run_mplus_case() {
 
 if [ "$which_program" = "all" ] || [ "$which_program" = "mplus" ]; then
   mplus="${MPLUS:-/Applications/MplusDemo/mpdemo}"
-  export -f run_mplus_case 2>/dev/null || true
+  export -f run_mplus_case
   ls "$kit"/*.inp | grep "${pattern}" | while read -r input; do
     printf '%s\n' "$input"
-  done | xargs -P "${JOBS:-4}" -I{} sh -c "$(declare -f run_mplus_case 2>/dev/null || type run_mplus_case | tail -n +2); run_mplus_case \"\$1\" \"$returned\" \"$kit\" \"$mplus\"" _ {}
+  done | xargs -P "${JOBS:-4}" -I{} bash -c 'run_mplus_case "$1" "$2" "$3" "$4"' _ {} "$returned" "$kit" "$mplus"
 fi
 
 if [ "$which_program" = "all" ] || [ "$which_program" = "latentgold" ]; then

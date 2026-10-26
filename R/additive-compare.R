@@ -47,6 +47,8 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
 #' in every family, since all families coincide there.
 #' @noRd
 .additive_nested <- function(null_model, alternative_model) {
+  if ((alternative_model$min_variance %||% 1e-6) >
+      (null_model$min_variance %||% 1e-6)) return(FALSE)
   if (length(null_model$group_probabilities) == 1L) return(TRUE)
   rank <- c(equal = 0L, varying = 1L)
   blocks <- c("means", "between", "within")
@@ -69,8 +71,8 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   }
   same_statistics <- function(left, right) {
     identical(left$ids, right$ids) && identical(left$sizes, right$sizes) &&
-      isTRUE(all.equal(left$averages, right$averages)) &&
-      isTRUE(all.equal(left$scatter, right$scatter))
+      isTRUE(all.equal(left$averages, right$averages, tolerance = 0)) &&
+      isTRUE(all.equal(left$scatter, right$scatter, tolerance = 0))
   }
   same_data <- identical(null_model$vars, alternative_model$vars) &&
     identical(null_model$id, alternative_model$id) &&
@@ -200,7 +202,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
                         class = "latents_bad_argument", call = NULL))
   }
   unknown <- setdiff(names(extra), c("n_starts", "max_iter", "tol", "min_variance",
-                                     "weights"))
+                                     "weights", "search", "n_screen"))
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
       "%s cannot be used when enumerating group-class families.",

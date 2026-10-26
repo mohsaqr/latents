@@ -1,0 +1,189 @@
+{
+  "issue_family": "SERVICE_VARIANCE_ALIGNMENT",
+  "repair_scope": "R/alignment-service.R .multilpa_extra_signature only: log1p(candidate NB variance / common reference variance), finite at zero means; adjacent private contracts clarified. No public signatures changed.",
+  "counterexample": {
+    "before": {
+      "before_reference": [
+        [
+          0.5576,
+          0.8
+        ],
+        [
+          0.5576,
+          0.2
+        ]
+      ],
+      "before_candidate": [
+        [
+          0.5576,
+          0.8
+        ],
+        [
+          0.5576,
+          0.2
+        ]
+      ],
+      "before_order": [
+        1,
+        2
+      ],
+      "expected_order": [
+        2,
+        1
+      ]
+    },
+    "after": {
+      "after_reference": [
+        [
+          0.5575668829974966,
+          0.2137733630266251,
+          0.8
+        ],
+        [
+          0.5575668829974966,
+          1.0158312352609589,
+          0.2
+        ]
+      ],
+      "after_candidate": [
+        [
+          0.5575668829974966,
+          1.0158312352609589,
+          0.8
+        ],
+        [
+          0.5575668829974966,
+          0.2137733630266251,
+          0.2
+        ]
+      ],
+      "after_order": [
+        2,
+        1
+      ],
+      "expected_order": [
+        2,
+        1
+      ],
+      "nb_variances": [
+        1.725,
+        12.75
+      ],
+      "zero_mean_signature": [
+        [
+          0,
+          0
+        ],
+        [
+          0.5940885257860046,
+          1.0986122886681098
+        ]
+      ],
+      "zero_identity_order": [
+        1,
+        2
+      ]
+    }
+  },
+  "independently_fitted_public_NB_example": {
+    "limits": "Two independently fitted synthetic NB mixtures, not a calibration study. No guarantee of global MLE.",
+    "fit": [
+      {
+        "converged": true,
+        "count_means": [
+          [
+            1.5644,
+            1.5884
+          ],
+          [
+            1.9224,
+            1.6429
+          ]
+        ],
+        "count_dispersion": [
+          [
+            0.0509,
+            0.0497
+          ],
+          [
+            5.6086,
+            5.361
+          ]
+        ],
+        "mixing": [
+          [
+            0.7562,
+            0.2438
+          ]
+        ],
+        "log_likelihood": -2013.761
+      },
+      {
+        "converged": true,
+        "count_means": [
+          [
+            1.296,
+            1.459
+          ],
+          [
+            1.704,
+            2.1016
+          ]
+        ],
+        "count_dispersion": [
+          [
+            4.8104,
+            10.0436
+          ],
+          [
+            0.5501,
+            0.1028
+          ]
+        ],
+        "mixing": [
+          [
+            0.7573,
+            0.2427
+          ]
+        ],
+        "log_likelihood": -1812.3998
+      }
+    ],
+    "old_order": [
+      1,
+      2
+    ],
+    "new_order": [
+      2,
+      1
+    ]
+  },
+  "test_summary": {
+    "nb-alignment-focused-core.json": {
+      "cases": 6,
+      "passed": 20,
+      "failed": 0,
+      "error": 0,
+      "warning": 0,
+      "skipped": 0
+    },
+    "nb-alignment-existing-core.json": {
+      "cases": 12,
+      "passed": 63,
+      "failed": 0,
+      "error": 0,
+      "warning": 0,
+      "skipped": 0
+    }
+  },
+  "source_sha256": {
+    "R/alignment-service.R": "bbe71ae227d0b136669929ee135dcdd1debaabde8c385509f3ddd429cf62b2c3",
+    "tests/testthat/test-audit-nb-alignment-repairs.R": "fe9fc07d74a6443ab302b48bc3f40fe2b76e8836e2e913189861a878536e9497"
+  },
+  "limits": [
+    "No heavy simulation/calibration or full unit suite run.",
+    "Fitted example demonstrates dispersion matching, not global MLE certification."
+  ],
+  "independent_boundary_review": "independent-nb-boundary-review.json",
+  "existing_alignment_test_environment": "Final log1p source rerun with NOT_CRAN=true, so categorical RNG case included."
+}

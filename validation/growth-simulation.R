@@ -14,6 +14,7 @@
 # Run from the project root: Rscript validation/growth-simulation.R
 # Outputs: growth-simulation-{replicates,summary}.csv, growth-simulation.txt
 
+source(file.path("validation", "fork-runtime.R"))
 devtools::load_all(".", quiet = TRUE)
 RNGkind("L'Ecuyer-CMRG")
 out_dir <- Sys.getenv("GROWTH_SIM_OUT", "validation")
@@ -178,7 +179,7 @@ one_replicate <- function(cell_name, i) {
 started <- Sys.time()
 results <- unlist(lapply(names(cells), function(cell_name) {
   parallel::mclapply(seq_len(n_datasets), function(i) one_replicate(cell_name, i),
-                     mc.cores = n_cores, mc.set.seed = TRUE)
+                     mc.cores = .validation_fork_cores(n_cores), mc.set.seed = TRUE)
 }), recursive = FALSE)
 errors <- vapply(results, inherits, logical(1), what = "try-error")
 stopifnot("a worker failed" = !any(errors))

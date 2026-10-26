@@ -106,12 +106,14 @@ zero-padded numbers and ISO dates are accepted.}
 
 \item{search}{How the starts are found: \code{NULL} (the default), \code{"kmeans"}
 or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one
-covariance matrix (EII, EEI, EEE with continuous indicators), where the
-likelihood is bounded and a higher maximum cannot be a collapsed profile,
-and \code{"kmeans"} otherwise, including categorical-only models and the
+covariance matrix (EII, EEI, EEE with continuous indicators), which removes
+the isolated-profile covariance-collapse mechanism. Shared covariances can
+still hit their floor on degenerate or over-extracted data; inspect the
+boundary diagnostics. It uses
+\code{"kmeans"} otherwise, including categorical-only models and the
 group-class families. The search used is recorded on the fit, and
-\code{search = "kmeans"} reproduces the fits of latents 0.96.2 for every
-model. \code{"kmeans"} runs
+\code{search = "kmeans"} retains the start-search policy of latents 0.96.2.
+\code{"kmeans"} runs
 \code{n_starts} starts to convergence: Ward's clustering first, then k-means
 from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
 short EM run each and runs \code{n_starts} finalists to convergence

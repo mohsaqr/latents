@@ -15,39 +15,7 @@ utils::globalVariables(c("predictor_value", "outcome", "class_label",
 #' @noRd
 .mixture_new_spec <- function(object, newdata, with_response) {
   spec <- object$spec
-  stopifnot("`newdata` must be a data frame" = is.data.frame(newdata))
-  model_terms <- if (with_response) spec$terms else
-    stats::delete.response(spec$terms)
-  frame <- stats::model.frame(model_terms, newdata, xlev = spec$xlevels,
-                              na.action = stats::na.fail)
-  full_design <- stats::model.matrix(model_terms, frame,
-                                     contrasts.arg = spec$contrasts)
-  new <- spec
-  new$n <- nrow(newdata)
-  new$x <- full_design[, colnames(spec$x), drop = FALSE]
-  new$z <- full_design[, colnames(spec$z), drop = FALSE]
-  new$offset <- as.numeric(stats::model.offset(frame) %||% rep(0, new$n))
-  if (any(!is.finite(full_design)) || any(!is.finite(new$offset))) {
-    stop(errorCondition("The evaluated regression design and offsets must be finite.",
-                        class = "latents_bad_data", call = NULL))
-  }
-  new$kept_rows <- seq_len(new$n)
-  if (with_response) {
-    response <- .mixture_response(stats::model.response(frame), spec$family,
-                                  spec$category_levels)
-    new$y <- response$y
-    new$trials <- response$trials
-    new$log_normalizer <- switch(spec$family,
-      gaussian = rep(0, new$n),
-      binomial = lchoose(response$trials, response$y),
-      poisson = ,
-      negative_binomial = -lgamma(response$y + 1),
-      ordinal = rep(0, new$n))
-  } else {
-    new$y <- rep(0, new$n)
-    new$trials <- rep(1, new$n)
-    new$log_normalizer <- rep(0, new$n)
-  }
+  new <- .mixture_prediction_regression(spec, newdata, with_response)
   membership_matrix <- function(name) {
     blueprint <- spec[[paste0(name, "_design")]] %||%
       .mixture_membership_design(spec[[name]], spec$model_data)
@@ -87,6 +55,49 @@ utils::globalVariables(c("predictor_value", "outcome", "class_label",
     new$v <- .mixture_group_design(
       membership_matrix("group_membership"),
       new$group_index, "group_membership")
+  }
+  new
+}
+
+#' Evaluate the regression part without constructing membership groups
+#' @param spec A fitted specification.
+#' @param newdata Data frame of predictor rows.
+#' @param with_response Whether to evaluate the response too.
+#' @return The specification with its regression design and response replaced.
+#' @noRd
+.mixture_prediction_regression <- function(spec, newdata, with_response) {
+  stopifnot("`newdata` must be a data frame" = is.data.frame(newdata))
+  model_terms <- if (with_response) spec$terms else
+    stats::delete.response(spec$terms)
+  frame <- stats::model.frame(model_terms, newdata, xlev = spec$xlevels,
+                              na.action = stats::na.fail)
+  full_design <- stats::model.matrix(model_terms, frame,
+                                     contrasts.arg = spec$contrasts)
+  new <- spec
+  new$n <- nrow(newdata)
+  new$x <- full_design[, colnames(spec$x), drop = FALSE]
+  new$z <- full_design[, colnames(spec$z), drop = FALSE]
+  new$offset <- as.numeric(stats::model.offset(frame) %||% rep(0, new$n))
+  if (any(!is.finite(full_design)) || any(!is.finite(new$offset))) {
+    stop(errorCondition("The evaluated regression design and offsets must be finite.",
+                        class = "latents_bad_data", call = NULL))
+  }
+  new$kept_rows <- seq_len(new$n)
+  if (with_response) {
+    response <- .mixture_response(stats::model.response(frame), spec$family,
+                                  spec$category_levels)
+    new$y <- response$y
+    new$trials <- response$trials
+    new$log_normalizer <- switch(spec$family,
+      gaussian = rep(0, new$n),
+      binomial = lchoose(response$trials, response$y),
+      poisson = ,
+      negative_binomial = -lgamma(response$y + 1),
+      ordinal = rep(0, new$n))
+  } else {
+    new$y <- rep(0, new$n)
+    new$trials <- rep(1, new$n)
+    new$log_normalizer <- rep(0, new$n)
   }
   new
 }
@@ -339,7 +350,9 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
   grid_values <- seq(min(frame[[predictor]]), max(frame[[predictor]]),
                      length.out = 100L)
   typical <- .mixture_typical_rows(frame, predictor, grid_values)
-  new_spec <- .mixture_new_spec(x, typical, with_response = FALSE)
+  # Class curves need no membership groups: a grid varying a person-level
+  # predictor is not one person whose membership covariate changes.
+  new_spec <- .mixture_prediction_regression(spec, typical, with_response = FALSE)
   means <- .mixture_class_means(new_spec, x$params)
   if (identical(spec$family, "binomial")) means <- stats::plogis(
     .mixture_linear_predictors(new_spec, x$params))
@@ -374,7 +387,10 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
 .mixture_typical_rows <- function(predictors, predictor, grid_values) {
   typical <- lapply(predictors, function(column) {
     if (is.numeric(column)) mean(column) else if (is.factor(column)) {
-      factor(levels(column)[1L], levels = levels(column))
+      value <- factor(levels(column)[1L], levels = levels(column),
+                        ordered = is.ordered(column))
+      attr(value, "contrasts") <- attr(column, "contrasts")
+      value
     } else column[1L]
   })
   # A model without other predictors (`y ~ 1`) still needs one row per grid

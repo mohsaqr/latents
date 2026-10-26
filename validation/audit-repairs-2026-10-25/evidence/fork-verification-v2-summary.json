@@ -1,0 +1,12 @@
+{
+  "files": 3,
+  "cases": 34,
+  "totals": {
+    "failed": 0,
+    "skipped": 0,
+    "error": 0,
+    "warning": 0,
+    "passed": 338
+  },
+  "blas": "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib"
+}

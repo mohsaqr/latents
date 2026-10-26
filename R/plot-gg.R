@@ -747,8 +747,8 @@ utils::globalVariables(c(
   # The whiskers are the inference table's own bounds, which a probability
   # takes on the logit scale, so the plot and parameter_inference() agree.
   bounds <- .gg_match_bounds(errors, "response", frame$profile,
-                             sprintf("%s:%s", vars[frame$position],
-                                     category_labels[frame$position]))
+    sprintf("%s:%s", .latents_parameter_component(vars[frame$position]),
+            .latents_parameter_component(category_labels[frame$position])))
   frame$lower <- bounds$lower
   frame$upper <- bounds$upper
   frame$profile_label <- key$label[frame$profile]
@@ -790,9 +790,11 @@ utils::globalVariables(c(
                       upper = rep(NA_real_, length(profile))))
   }
   wanted <- errors[errors$parameter == parameter, , drop = FALSE]
-  at <- match(paste(profile, term, sep = "\r"),
-              paste(sub("^profile_", "", wanted$outcome), wanted$term,
-                    sep = "\r"))
+  at <- vapply(seq_along(profile), function(i) {
+    found <- which(sub("^profile_", "", wanted$outcome) == as.character(profile[i]) &
+                     wanted$term == term[i])
+    if (length(found)) found[1L] else NA_integer_
+  }, integer(1))
   data.frame(lower = wanted$conf_low[at], upper = wanted$conf_high[at])
 }
 

@@ -16,6 +16,7 @@ boundary_fit <- function(data, ..., search = "kmeans") {
     lpa(data, c("y1", "y2"), n_profiles = 3, model = "VVI", n_starts = 5, seed = 1,
         search = search, ...),
     latents_boundary = function(w) invokeRestart("muffleWarning"),
+    latents_thin_profiles = function(w) invokeRestart("muffleWarning"),
     latents_small_classes = function(w) invokeRestart("muffleWarning"))
 }
 
@@ -55,6 +56,7 @@ test_that("exclude reaches enumerate_lpa() and the covariate model", {
     enumerate_lpa(data, c("y1", "y2"), n_profiles = 2:3, model = "VVI", n_starts = 5,
                   seed = 1, boundary = "exclude", search = "kmeans"),
     latents_boundary = function(w) invokeRestart("muffleWarning"),
+    latents_thin_profiles = function(w) invokeRestart("muffleWarning"),
     latents_small_classes = function(w) invokeRestart("muffleWarning"))
   three <- boundary_fit(data, boundary = "exclude")
   candidate <- subset(get_results(enumeration, "candidates"), n_profiles == 3)

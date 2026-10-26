@@ -111,17 +111,13 @@
                                 ifelse(counts > 1,
                                        sqrt(squares / pmax(counts - 1, 1)),
                                        NA_real_))
-  # A unit whose values do not vary is judged relative to its own magnitude
-  # (their root mean square), so the verdict depends neither on the units the
-  # indicator was recorded in nor on how large other units' values are.
-  magnitude <- matrix(NA_real_, n_units, ncol(x))
-  magnitude[present, ] <- sqrt(rowsum(filled^2, units, reorder = TRUE) /
-                                 pmax(counts, 1))
+  # The standard deviation measures variation around the unit's mean. A
+  # threshold based on raw magnitudes would turn an ordinary variable into
+  # a constant merely by translating its origin.
   degenerate <- matrix(FALSE, n_units, ncol(x))
   degenerate[present, ] <- counts > 0 &
-    (is.na(standard[present, , drop = FALSE]) |
-       standard[present, , drop = FALSE] <=
-         sqrt(.Machine$double.eps) * pmax(magnitude[present, , drop = FALSE], 1e-300))
+    (!is.finite(standard[present, , drop = FALSE]) |
+       standard[present, , drop = FALSE] <= 0)
   if (any(degenerate)) {
     columns <- colnames(x)[colSums(degenerate) > 0L]
     stop(errorCondition(sprintf(paste(

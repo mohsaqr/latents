@@ -83,16 +83,18 @@
 #' \eqn{\sum_c c P(Y = c)}{sum_c c P(Y = c)}, the categories scored 1 to C in
 #' order; `predict(type = "probabilities")` gives the category probabilities.
 #' With one outcome per class assignment, an ordinal mixture with no
-#' predictors or with two categories (the logistic mixture of `"binomial"`)
-#' is not identified and is refused with `latents_not_identified`, unless
+#' predictors is not identified. Two-category mixtures follow the binary
+#' support restriction below. Both are refused with `latents_not_identified`, unless
 #' `class_level = "group"` gives each class assignment several outcomes. A
 #' single-level mixture is also refused when it has more free parameters than
 #' P (C - 1), the number of free category probabilities in P distinct
 #' covariate patterns (for example two classes and one binary factor).
 #'
-#' A mixture of Bernoulli regressions with one trial per unit is not
-#' identified (a mixture of Bernoullis is again a Bernoulli), so a binary
-#' outcome requires `class_level = "group"` (several rows per class
+#' This implementation does not support binary mixtures with one trial per
+#' class assignment. Their identification depends on the covariate design and
+#' model constraints; being Bernoulli at each fixed covariate value does not
+#' imply nonidentification over all covariates. Here a binary mixture
+#' requires `class_level = "group"` (several rows per class
 #' assignment) or binomial counts with more than one trial per row; other
 #' binary specifications are refused.
 #'
@@ -133,8 +135,10 @@
 #' @param min_variance Floor for a Gaussian residual variance, relative to the
 #'   outcome's variance (default `1e-6`). Starts in which a class reaches the
 #'   floor (fits too few rows exactly) are set aside.
-#' @param seed `NULL` (default) or an integer seed. The caller's random state
-#'   is restored afterwards.
+#' @param seed `NULL` (default) advances the caller's random stream. An integer
+#'   seed restores the caller's `.Random.seed` afterwards. R does not store a
+#'   cached Box-Muller normal draw
+#'   in `.Random.seed`, so that hidden cached draw cannot be preserved.
 #' @param missing `"error"` (default) refuses rows with missing values in any
 #'   variable the model uses; `"omit"` drops them with a
 #'   `latents_rows_dropped` warning stating how many.
@@ -205,7 +209,8 @@
 #'   `missing = "omit"`; `latents_no_valid_start` when every start
 #'   degenerated; `latents_unconverged` (warning) when the selected start did
 #'   not converge; `latents_degenerate_start` (warning) when some starts
-#'   degenerated; `latents_separation` (warning) when a coefficient diverged;
+#'   degenerated; `latents_separation` (warning) for extreme fitted logits or
+#'   log means that may signal separation;
 #'   `latents_failed_starts` (warning) when some growth-mixture starts could
 #'   not be built (they are marked `"failed"` in the starts table);
 #'   `latents_boundary` (warning) for a negative-binomial dispersion at the
@@ -482,7 +487,7 @@ mixture_regression <- function(formula, data, n_classes,
     x == floor(x) && x <= .Machine$integer.max
 }
 
-#' Evaluate code under a seed, restoring the caller's random state
+#' Evaluate code under a seed, restoring the caller's exposed RNG seed
 #'
 #' The expression form of `.latents_local_seed()`, for callers that scope a
 #' seed to one expression rather than to their whole body.
@@ -626,8 +631,8 @@ mixture_regression <- function(formula, data, n_classes,
       !identical(nesting, "group")) {
     stop(errorCondition(paste(
       "A mixture of logistic regressions with one binary outcome per class",
-      "assignment is not identified: a mixture of Bernoulli distributions is",
-      "itself a Bernoulli distribution (Follmann and Lambert 1991). Give each",
+      "assignment is not supported. Identification depends on the covariate",
+      "design and model constraints. Give each",
       "class assignment several outcomes with `id` and",
       "`class_level = \"group\"`, or supply binomial counts as",
       "`cbind(successes, failures)`."),
@@ -688,6 +693,10 @@ mixture_regression <- function(formula, data, n_classes,
       deparse1(formula[[2L]]),
     random = random,
     random_design = random_design,
+    random_terms = if (is.null(random)) NULL else
+      stats::terms(stats::model.frame(random, data)),
+    random_xlevels = if (is.null(random)) NULL else
+      stats::.getXlevels(stats::terms(random), stats::model.frame(random, data)),
     cluster = cluster), clusters,
     if (ordinal) list(n_categories = length(response$levels),
                       category_levels = response$levels,

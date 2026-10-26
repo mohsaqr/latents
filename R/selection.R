@@ -385,13 +385,16 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
   status <- ifelse(is.na(grid$log_likelihood), "not fitted",
                    ifelse(!(grid$converged %in% TRUE), "not converged",
                           ifelse(grid$boundary %in% TRUE, "on a boundary",
-                                 ifelse(grid$n_best_replicated %in% 1L,
-                                        "best found once", "best replicated"))))
+                                 ifelse(is.na(grid$n_best_replicated),
+                                        "replication unavailable",
+                                        ifelse(grid$n_best_replicated %in% 1L,
+                                               "best found once", "best replicated")))))
   frame <- data.frame(candidate = grid$candidate, n_profiles = grid$n_profiles,
                       n_group_label = factor(grid$n_group_classes,
                                              levels = sort(unique(grid$n_group_classes))),
                       model = grid$model,
                       status = factor(status, levels = c("best replicated", "best found once",
+                                                         "replication unavailable",
                                                          "on a boundary", "not converged",
                                                          "not fitted")),
                       tile_label = ifelse(is.na(grid$log_likelihood), "x",
@@ -404,6 +407,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
     ggplot2::geom_text(ggplot2::aes(label = tile_label), size = 3.2) +
     ggplot2::scale_fill_manual(values = c("best replicated" = "#009E73",
                                           "best found once" = "#F0E442",
+                                          "replication unavailable" = "#BDBDBD",
                                           "on a boundary" = "#E69F00",
                                           "not converged" = "#D55E00",
                                           "not fitted" = "#999999"),
@@ -412,8 +416,9 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
     ggplot2::labs(y = "Number of group classes")
   if (several_models) plot <- plot + ggplot2::facet_wrap(ggplot2::vars(model))
   .latents_selection_look(
-    plot, main, subtitle, "Can each candidate be trusted?",
-    "Label: how many random starts reached the best log likelihood; x = not fitted",
+    plot, main, subtitle, "Convergence and repeated maxima",
+    paste("Label: how many random starts reached the best log likelihood;",
+          "blank = unavailable; x = not fitted. Replication does not prove a global maximum."),
     sprintf("Number of %s", .latents_grid_views(x)$word), legend = TRUE) +
     ggplot2::theme(panel.grid = ggplot2::element_blank())
 }

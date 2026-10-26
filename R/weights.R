@@ -32,8 +32,11 @@
   }
   stopifnot("one unit per row" = length(group_index) == length(values))
   unit <- as.vector(tapply(values, group_index, min))
-  spread <- as.vector(tapply(values, group_index, max)) - unit
-  if (any(spread > sqrt(.Machine$double.eps) * pmax(1, abs(unit)))) {
+  maximum <- as.vector(tapply(values, group_index, max))
+  # Compare relative variation before normalizing. An absolute floor of one
+  # accepted genuinely varying weights whenever their common units were small.
+  spread <- ifelse(maximum > 0, 1 - unit / maximum, 0)
+  if (any(spread > sqrt(.Machine$double.eps))) {
     stop(errorCondition(sprintf(paste(
       "Sampling weights in `%s` vary inside a unit. The pseudo likelihood",
       "weights the independent units (the `id` groups, or the rows of a",

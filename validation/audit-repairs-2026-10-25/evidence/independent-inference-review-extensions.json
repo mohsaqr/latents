@@ -1,0 +1,21 @@
+{
+  "additive": [
+    {
+      "type": "observed",
+      "max_se_absolute_delta": 4.5872083909159755e-11
+    },
+    {
+      "type": "robust",
+      "max_se_absolute_delta": 4.1328718225486227e-11
+    },
+    {
+      "type": "opg",
+      "max_se_absolute_delta": 1.2713596841962271e-10
+    }
+  ],
+  "categorical_reserved_indicator_count": 8,
+  "categorical_reserved_category_count": 6,
+  "categorical_max_se_absolute_delta": 4.5225941047721818e-12,
+  "source_review": "Conditioned-information Jacobian/back-transform, covariance/OPG/Newton scaling and percent escaping reviewed; no blocking math defect identified in reviewed changes.",
+  "limits": "Finite one-class synthetic probes, not global proof. Existing multicomponent tests owned by inference agent."
+}

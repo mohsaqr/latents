@@ -86,8 +86,10 @@ convergence.}
 outcome's variance (default \code{1e-6}). Starts in which a class reaches the
 floor (fits too few rows exactly) are set aside.}
 
-\item{seed}{\code{NULL} (default) or an integer seed. The caller's random state
-is restored afterwards.}
+\item{seed}{\code{NULL} (default) advances the caller's random stream. An integer
+seed restores the caller's \code{.Random.seed} afterwards. R does not store a
+cached Box-Muller normal draw
+in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
 
 \item{missing}{\code{"error"} (default) refuses rows with missing values in any
 variable the model uses; \code{"omit"} drops them with a
@@ -245,16 +247,18 @@ category. The class "mean" of an ordinal outcome (fitted values,
 \eqn{\sum_c c P(Y = c)}{sum_c c P(Y = c)}, the categories scored 1 to C in
 order; \code{predict(type = "probabilities")} gives the category probabilities.
 With one outcome per class assignment, an ordinal mixture with no
-predictors or with two categories (the logistic mixture of \code{"binomial"})
-is not identified and is refused with \code{latents_not_identified}, unless
+predictors is not identified. Two-category mixtures follow the binary
+support restriction below. Both are refused with \code{latents_not_identified}, unless
 \code{class_level = "group"} gives each class assignment several outcomes. A
 single-level mixture is also refused when it has more free parameters than
 P (C - 1), the number of free category probabilities in P distinct
 covariate patterns (for example two classes and one binary factor).
 
-A mixture of Bernoulli regressions with one trial per unit is not
-identified (a mixture of Bernoullis is again a Bernoulli), so a binary
-outcome requires \code{class_level = "group"} (several rows per class
+This implementation does not support binary mixtures with one trial per
+class assignment. Their identification depends on the covariate design and
+model constraints; being Bernoulli at each fixed covariate value does not
+imply nonidentification over all covariates. Here a binary mixture
+requires \code{class_level = "group"} (several rows per class
 assignment) or binomial counts with more than one trial per row; other
 binary specifications are refused.
 }
@@ -273,7 +277,8 @@ values under
 \code{missing = "omit"}; \code{latents_no_valid_start} when every start
 degenerated; \code{latents_unconverged} (warning) when the selected start did
 not converge; \code{latents_degenerate_start} (warning) when some starts
-degenerated; \code{latents_separation} (warning) when a coefficient diverged;
+degenerated; \code{latents_separation} (warning) for extreme fitted logits or
+log means that may signal separation;
 \code{latents_failed_starts} (warning) when some growth-mixture starts could
 not be built (they are marked \code{"failed"} in the starts table);
 \code{latents_boundary} (warning) for a negative-binomial dispersion at the

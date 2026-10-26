@@ -205,9 +205,14 @@
       rank(substr(structure_for(b), position, position), c("I", "E", "V"))
   }, logical(1)))
   identical(a$vars, b$vars) && identical(a$id, b$id) && identical(a$time, b$time) &&
+    identical(null$weights, alternative$weights) &&
+    isTRUE(all.equal(unname(null$sampling_weights),
+                     unname(alternative$sampling_weights), tolerance = 1e-12)) &&
     identical(a$categorical %||% character(), b$categorical %||% character()) &&
     identical(a$occasions %||% "observed", b$occasions %||% "observed") &&
     identical(a$missing %||% "error", b$missing %||% "error") && covariance_nested &&
+    identical(a$min_variance, b$min_variance) &&
+    identical(a$min_probability, b$min_probability) &&
     a$n_profiles <= b$n_profiles && a$n_group_classes <= b$n_group_classes &&
     rank(a$transitions, c("homogeneous", "occasion")) <=
       rank(b$transitions, c("homogeneous", "occasion")) &&
@@ -261,12 +266,19 @@
 #' @noRd
 .lta_check_data <- function(fit, data) {
   a <- .lta_arguments(fit)
-  required <- c(a$vars, a$id, a$time, a$transition_covariates, a$initial_covariates)
+  required <- c(a$vars, a$id, a$time, a$transition_covariates, a$initial_covariates,
+                fit$weights)
   refuse <- function() stop(errorCondition(
     "`data` must reproduce the indicators, groups, occasions and covariates of both fits.",
     class = "latents_bad_inference_data", call = NULL))
   if (!is.data.frame(data) || nrow(data) != fit$n_observations ||
       !all(required %in% names(data))) refuse()
+  if (!is.null(fit$weights)) {
+    supplied_weights <- tryCatch(.latents_sampling_weights(
+      data, fit$weights, fit$group_index, fit$n_groups), error = function(error) refuse())
+    if (!isTRUE(all.equal(unname(supplied_weights), unname(fit$sampling_weights),
+                          tolerance = 1e-12))) refuse()
+  }
   if (!inherits(fit, "multilpa_lta")) {
     .multilpa_check_transition_data(fit, data)
     if (length(fit$categorical) &&
@@ -287,7 +299,7 @@
   codes <- encoded$codes
   extra <- .latents_prepare_extra(data, fit$ordinal, fit$count, a$missing)
   same <- function(left, right) isTRUE(all.equal(left, right, check.attributes = FALSE,
-                                                tolerance = 1e-12))
+                                                tolerance = 0))
   if (!identical(groups$ids, fit$group_ids) || !identical(groups$index, fit$group_index) ||
       !identical(time_values, fit$time_values) || !identical(layout, fit$layout) ||
       !identical(encoded$levels, fit$categorical_levels) || !same(designs, fit$designs) ||

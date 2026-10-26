@@ -1,0 +1,413 @@
+{
+  "count": 20,
+  "rendered": 20,
+  "core_manifest": "vignette-review-core15.json",
+  "extensions_manifest": "extensions-guide-render-status.json",
+  "guides": [
+    {
+      "file": "lpa.Rmd",
+      "md5": "cfd0c4873f5c75a81c785558022fc729",
+      "status": "rendered",
+      "seconds": "10.912",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/lpa/lpa.html",
+      "source_identical": true,
+      "html_bytes": 176782,
+      "eval_false_chunks": 1
+    },
+    {
+      "file": "lca.Rmd",
+      "md5": "43e13cbc603b383c5ba3ce1eb8e390de",
+      "status": "rendered",
+      "seconds": "3.956",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/lca/lca.html",
+      "source_identical": true,
+      "html_bytes": 170342,
+      "eval_false_chunks": 2
+    },
+    {
+      "file": "lta.Rmd",
+      "md5": "7abd784a32cb2b25566d524219ed2825",
+      "status": "rendered",
+      "seconds": "21.47",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/lta/lta.html",
+      "source_identical": true,
+      "html_bytes": 731049,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "enumeration.Rmd",
+      "md5": "824ec002b6fac02be9a39d1fc68a51bd",
+      "status": "rendered",
+      "seconds": "31.907",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/enumeration/enumeration.html",
+      "source_identical": true,
+      "html_bytes": 2573825,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/covariates.Rmd",
+      "md5": "2a144bf865c135ce5770b122aca4d444",
+      "status": "rendered",
+      "seconds": "4.82900000000001",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/articles/covariates/covariates.html",
+      "source_identical": true,
+      "html_bytes": 52469,
+      "eval_false_chunks": 1
+    },
+    {
+      "file": "articles/evaluation.Rmd",
+      "md5": "a720ebc790ef4daab378ef028906f592",
+      "status": "rendered",
+      "seconds": "35.699",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/articles/evaluation/evaluation.html",
+      "source_identical": true,
+      "html_bytes": 324084,
+      "eval_false_chunks": 1
+    },
+    {
+      "file": "articles/model-selection.Rmd",
+      "md5": "31bf9c098a78e2a923fc061d8c8cedc5",
+      "status": "rendered",
+      "seconds": "51.614",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-core-980a61551d4/rendered/articles/model-selection/model-selection.html",
+      "source_identical": true,
+      "html_bytes": 1473180,
+      "eval_false_chunks": 2
+    },
+    {
+      "file": "articles/case-engagement-evaluation.Rmd",
+      "md5": "bb6460e403bb4f1fb2cc0895e0568a6e",
+      "status": "rendered",
+      "seconds": "18.283",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/case-engagement-evaluation/case-engagement-evaluation.html",
+      "source_identical": true,
+      "html_bytes": 75615,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/case-engagement-profiles.Rmd",
+      "md5": "e58e5a0dbf60d62a2f8aa0417929f2ae",
+      "status": "rendered",
+      "seconds": "4.808",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/case-engagement-profiles/case-engagement-profiles.html",
+      "source_identical": true,
+      "html_bytes": 160390,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/class-enumeration.Rmd",
+      "md5": "b1a06841fe0bb9cdeae015efda484bcb",
+      "status": "rendered",
+      "seconds": "84.84",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/class-enumeration/class-enumeration.html",
+      "source_identical": true,
+      "html_bytes": 2780191,
+      "eval_false_chunks": 1
+    },
+    {
+      "file": "articles/case-engagement-transitions.Rmd",
+      "md5": "e48ab695d5f70e2ad7cd5d6de1ced45f",
+      "status": "rendered",
+      "seconds": "9.55799999999999",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/case-engagement-transitions/case-engagement-transitions.html",
+      "source_identical": true,
+      "html_bytes": 2672902,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/case-engagement-covariates.Rmd",
+      "md5": "1149617a71daeaa1e31b378d0f57e291",
+      "status": "rendered",
+      "seconds": "13.452",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/case-engagement-covariates/case-engagement-covariates.html",
+      "source_identical": true,
+      "html_bytes": 60565,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/case-esm-lca.Rmd",
+      "md5": "cd831e01d8ff06fbc2bdcaa277367a4c",
+      "status": "rendered",
+      "seconds": "29.536",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-cases-980b22482722/rendered/articles/case-esm-lca/case-esm-lca.html",
+      "source_identical": true,
+      "html_bytes": 255046,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/workflow-lpa.Rmd",
+      "md5": "b1f0909742b67514dfff57a1da7e42b3",
+      "status": "rendered",
+      "seconds": "295.382",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-workflows-aa2b77bb03be/rendered/articles/workflow-lpa/workflow-lpa.html",
+      "source_identical": true,
+      "html_bytes": 622260,
+      "eval_false_chunks": 0
+    },
+    {
+      "file": "articles/workflow-lca.Rmd",
+      "md5": "833132715c6c2c103adadcb2443cce23",
+      "status": "rendered",
+      "seconds": "69.463",
+      "error": "NA",
+      "html": "/private/tmp/latents-doc-workflows-aa2b77bb03be/rendered/articles/workflow-lca/workflow-lca.html",
+      "source_identical": true,
+      "html_bytes": 500741,
+      "eval_false_chunks": 0
+    },
+    {
+      "elapsed_seconds": 89.538,
+      "warnings": [],
+      "values": {
+        "growth_BIC_2_3_4": [
+          10890.11,
+          10803.59,
+          10820.56
+        ],
+        "lcga_BIC_3_4_5": [
+          11841.85,
+          11640.63,
+          11424.79
+        ],
+        "fit_loglik": -5315.44,
+        "random_intercept_sd": 4.09,
+        "random_slope_sd": 0.73,
+        "random_correlation": -0.25,
+        "schools_loglik": -7019.852,
+        "schools_clusters": 40,
+        "schools_persons": 600,
+        "schools_rows": 2780,
+        "school_group_BIC_1_2_3": [
+          14246,
+          14102,
+          14109
+        ]
+      },
+      "limits": [
+        "The 99-replicate-per-comparison enumeration snippet is eval=FALSE, with prose reporting p=.01 and p=.40; render does not establish those results. Parent running separate targeted reproduction.",
+        "External lcmm/software/calibration agreement needs independent equivalence evidence."
+      ],
+      "guide": "vignettes/articles/growth-mixture.Rmd",
+      "status": "success",
+      "current_source_version": "0.97.1",
+      "namespace_path": "/Users/mohammedsaqr/Documents/Github/latents",
+      "source_copy_identical": true,
+      "sha256": "2edb554f4bae21fcd226a684a3a2ef317388d2d57537fd5efe642e4e46f009ff",
+      "html": "/private/tmp/latents-guide-audit-iHWhm3t3/growth-mixture/growth-mixture.html",
+      "knitted_markdown": "/private/tmp/latents-guide-audit-iHWhm3t3/growth-mixture/growth-mixture.knit.md",
+      "log": "/private/tmp/latents-guide-audit-iHWhm3t3/growth-mixture.log",
+      "recorded_render_result": "/private/tmp/latents-guide-audit-iHWhm3t3/growth-mixture/render-result.rds",
+      "all_output_intermediates_knitroot_under_tmp": true,
+      "displayed_unexpected_errors": 0,
+      "infrastructure_warning": "Pandoc --highlight-style deprecation (all five renders).",
+      "fit_convergence": "All inspected fitted examples converged; boundary/failed grid candidates recorded separately."
+    },
+    {
+      "elapsed_seconds": 10.68,
+      "warnings": [],
+      "expected_errors": [
+        "The unsupported one-row Bernoulli example uses error=TRUE and displays the intended refusal."
+      ],
+      "values": {
+        "loglik": {
+          "fit": -3144.007,
+          "with_sleep": -3140.23,
+          "students": -540.8146,
+          "two_level": -3091.78,
+          "asked_poisson": -1767.475
+        },
+        "class_count_BIC_1_2_3_4": [
+          6510,
+          6336,
+          6341,
+          6354
+        ],
+        "base_class_intercept_slope": [
+          [
+            34.35452,
+            4.565871
+          ],
+          [
+            54.89514,
+            0.8083711
+          ]
+        ],
+        "membership_sleep_slope": -0.26
+      },
+      "limits": [
+        "Rendered examples establish supported calls/results on these data, not model-family identifiability or software feature comparisons."
+      ],
+      "guide": "vignettes/articles/mixture-regression.Rmd",
+      "status": "success",
+      "current_source_version": "0.97.1",
+      "namespace_path": "/Users/mohammedsaqr/Documents/Github/latents",
+      "source_copy_identical": true,
+      "sha256": "d34e658912a1e24915b4138ff2883668f896f4e3d76d3470b695b92873ad387d",
+      "html": "/private/tmp/latents-guide-audit-iHWhm3t3/mixture-regression/mixture-regression.html",
+      "knitted_markdown": "/private/tmp/latents-guide-audit-iHWhm3t3/mixture-regression/mixture-regression.knit.md",
+      "log": "/private/tmp/latents-guide-audit-iHWhm3t3/mixture-regression.log",
+      "recorded_render_result": "/private/tmp/latents-guide-audit-iHWhm3t3/mixture-regression/render-result.rds",
+      "all_output_intermediates_knitroot_under_tmp": true,
+      "displayed_unexpected_errors": 0,
+      "infrastructure_warning": "Pandoc --highlight-style deprecation (all five renders).",
+      "fit_convergence": "All inspected fitted examples converged; boundary/failed grid candidates recorded separately."
+    },
+    {
+      "elapsed_seconds": 16.274,
+      "warnings": [],
+      "values": {
+        "LCGA_BIC_1_2_3_4_5": [
+          13276,
+          12199,
+          11842,
+          11641,
+          11425
+        ],
+        "loglik": {
+          "membership_lcga3": -5848.965,
+          "straight": -5889.552,
+          "curved": -5888.777,
+          "binary": -859.1205,
+          "ordinal": -1922.674
+        },
+        "BIC_straight_curved": [
+          11841.85,
+          11857.41
+        ]
+      },
+      "limits": [
+        "No fresh external reference validation implied."
+      ],
+      "guide": "vignettes/articles/trajectory-classes.Rmd",
+      "status": "success",
+      "current_source_version": "0.97.1",
+      "namespace_path": "/Users/mohammedsaqr/Documents/Github/latents",
+      "source_copy_identical": true,
+      "sha256": "886104cdb2f0fdcee15e68f2c8064f5c7b0fb70119d7e568bcd186a8669fe7b1",
+      "html": "/private/tmp/latents-guide-audit-iHWhm3t3/trajectory-classes/trajectory-classes.html",
+      "knitted_markdown": "/private/tmp/latents-guide-audit-iHWhm3t3/trajectory-classes/trajectory-classes.knit.md",
+      "log": "/private/tmp/latents-guide-audit-iHWhm3t3/trajectory-classes.log",
+      "recorded_render_result": "/private/tmp/latents-guide-audit-iHWhm3t3/trajectory-classes/render-result.rds",
+      "all_output_intermediates_knitroot_under_tmp": true,
+      "displayed_unexpected_errors": 0,
+      "infrastructure_warning": "Pandoc --highlight-style deprecation (all five renders).",
+      "fit_convergence": "All inspected fitted examples converged; boundary/failed grid candidates recorded separately."
+    },
+    {
+      "elapsed_seconds": 23.082,
+      "warnings": [
+        {
+          "type": "boundary",
+          "displayed_count": 4
+        },
+        {
+          "type": "weak classes",
+          "displayed_count": 5
+        }
+      ],
+      "values": {
+        "loglik": {
+          "varying2": -2593.282,
+          "one": -2630.456,
+          "three": -2587.82,
+          "equal2": -2593.948,
+          "full_cross_level": -8512.349,
+          "restricted_cross_level": -8751.949
+        },
+        "bic": {
+          "varying2": 5239.226,
+          "one": 5289.636,
+          "three": 5252.239,
+          "equal2": 5230.983,
+          "full_cross_level": 17225.23,
+          "restricted_cross_level": 17699.76
+        },
+        "selected": "additive_equal_groups2",
+        "recovery_agreement": 0.9583333,
+        "effective_groups": 38.33155,
+        "expected_effective_groups": 49.26569,
+        "bootstrap": {
+          "executed_replicates": 19,
+          "valid_replicates": 19,
+          "statistic": 73.015578,
+          "p_value": 0.05
+        }
+      },
+      "limits": [
+        "Nineteen bootstrap replicates produce p-grid resolution .05; no calibration claim from one render.",
+        "Warnings match narrative; three-class fit is boundary flagged."
+      ],
+      "guide": "vignettes/articles/additive.Rmd",
+      "status": "success",
+      "current_source_version": "0.97.1",
+      "namespace_path": "/Users/mohammedsaqr/Documents/Github/latents",
+      "source_copy_identical": true,
+      "sha256": "48ba32b37141dd60e754aefd22fe6bf8bff846a9775c178b49c2647e6906972c",
+      "html": "/private/tmp/latents-guide-audit-iHWhm3t3/additive/additive.html",
+      "knitted_markdown": "/private/tmp/latents-guide-audit-iHWhm3t3/additive/additive.knit.md",
+      "log": "/private/tmp/latents-guide-audit-iHWhm3t3/additive.log",
+      "recorded_render_result": "/private/tmp/latents-guide-audit-iHWhm3t3/additive/render-result.rds",
+      "all_output_intermediates_knitroot_under_tmp": true,
+      "displayed_unexpected_errors": 0,
+      "infrastructure_warning": "Pandoc --highlight-style deprecation (all five renders).",
+      "fit_convergence": "All inspected fitted examples converged; boundary/failed grid candidates recorded separately."
+    },
+    {
+      "elapsed_seconds": 64.935,
+      "warnings": [],
+      "warnings_suppressed_in_source": true,
+      "values": {
+        "candidates": 24,
+        "expected_failed_candidates": 3,
+        "media_kept": 0.7637834,
+        "offline_kept": 0.6427814,
+        "offline_to_media": 0.2692521,
+        "job_share": 0.03624564,
+        "job_kept": 0.9771898,
+        "job_probability": 0.9999457,
+        "media_on_social_probability": 0.4541983,
+        "offline_on_social_probability": 0.01401827,
+        "retained_range": [
+          0.6092376,
+          0.8269311
+        ]
+      },
+      "limits": [
+        "Candidate chunk suppresses warnings/messages, so successful render does not establish warning-free fitting.",
+        "Inline stopifnot guards passed. No visual pixel-reference comparison."
+      ],
+      "guide": "vignettes/articles/tree-plot.Rmd",
+      "status": "success",
+      "current_source_version": "0.97.1",
+      "namespace_path": "/Users/mohammedsaqr/Documents/Github/latents",
+      "source_copy_identical": true,
+      "sha256": "34f348e065710718056ad25cd8d256260489d2d072adacc4e22bb3c75adaa87c",
+      "html": "/private/tmp/latents-guide-audit-iHWhm3t3/tree-plot/tree-plot.html",
+      "knitted_markdown": "/private/tmp/latents-guide-audit-iHWhm3t3/tree-plot/tree-plot.knit.md",
+      "log": "/private/tmp/latents-guide-audit-iHWhm3t3/tree-plot.log",
+      "recorded_render_result": "/private/tmp/latents-guide-audit-iHWhm3t3/tree-plot/render-result.rds",
+      "all_output_intermediates_knitroot_under_tmp": true,
+      "displayed_unexpected_errors": 0,
+      "infrastructure_warning": "Pandoc --highlight-style deprecation (all five renders).",
+      "fit_convergence": "All inspected fitted examples converged; boundary/failed grid candidates recorded separately."
+    }
+  ],
+  "limitations": [
+    "Rendering preserves eval=FALSE chunks; excluded chunks are not verified by render.",
+    "Successful execution does not imply prose claims or model assumptions are correct."
+  ]
+}

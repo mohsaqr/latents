@@ -176,8 +176,9 @@ test_that("explicit starts give the independently calculated initial likelihood"
   )))
 
   expect_warning(
-    fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 2L, 2L,
+    expect_warning(fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 2L, 2L,
                      n_starts = 1L, max_iter = 1L, start = start, seed = 92),
+                   class = "latents_thin_profiles"),
     "converg|iteration"
   )
   expect_equal(fit$log_likelihood_history[1L], expected_log_likelihood,

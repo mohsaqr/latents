@@ -1,0 +1,21 @@
+{
+  "status": "passed_after_full_affected_family_rerun",
+  "files": 52,
+  "cases": 400,
+  "totals": {
+    "failed": 0,
+    "skipped": 0,
+    "error": 0,
+    "warning": 4,
+    "passed": 21159
+  },
+  "original_main_files": 50,
+  "original_main_cases": 395,
+  "original_main_failed_assertions": 2,
+  "replaced_complete_files": ["test-features-joint-items.R", "test-joint-items-verification-protocol.R"],
+  "rerun_files": ["test-features-joint-items.R", "test-joint-items-polca-protocol.R", "test-joint-items-reference-optimizer.R", "test-joint-items-verification-protocol.R"],
+  "new_regression_files": ["test-joint-items-polca-protocol.R", "test-joint-items-reference-optimizer.R"],
+  "source_main": "verification-toplevel-phase-manifest.json",
+  "source_validation_overlay": "verification-joint-v3-manifest.json",
+  "limits": "Entire affected files replaced by complete rerun results, never just failed assertions; unchanged remaining files retain original full-batch results. Production R/tests/man/vignettes unchanged."
+}

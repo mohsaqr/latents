@@ -25,7 +25,7 @@ Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, grDevices, utils, parallel
 Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna, mclust, mice, ggplot2,
-    MASS, withr
+    MASS, withr, numDeriv
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

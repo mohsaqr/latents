@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "independent_checks": {
+    "other_scientific_definitions_exact": true,
+    "original_formals_preserved": true,
+    "comparison_remainder_exact": true,
+    "only_declared_caps": true,
+    "unchanged_tolerance_and_starts": true,
+    "fixed_verification_selected_even_if_worse": true,
+    "original_fit_and_rows_preserved": true,
+    "no_target_inputs_to_fitter": true,
+    "both_calls_same_inputs_except_cap": true,
+    "all_attempts_and_cap_status_retained": true,
+    "source_freeze_hashes_match": true,
+    "focused_protocol_tests_clean": true,
+    "cached_actual_replay_nine_checks_recorded": true
+  },
+  "focused_test_totals": {
+    "passed": 22,
+    "failed": 0,
+    "error": 0,
+    "warning": 0,
+    "skipped": 0
+  },
+  "source_hashes": {
+    "equivalence/features/joint-items/compare.R": "b857a07748fe8a3afee0409e75315e79d506f5c5da0b4bd248036eb40fd518a1",
+    "equivalence/test-features-joint-items.R": "f5a161579b3dc8e893748fa10fc5943318eb55caf96e1de91ea5d17664e1a092",
+    "equivalence/test-joint-items-polca-protocol.R": "cd15528b6b49d0f5e38eaf59be24c3a3bf8ded0c6dbf2698f6026e62f7e5b5a9",
+    "equivalence/features/joint-items/FINDINGS.md": "3ad519210716886fbd925db44fbc8f31a4f345a9aa528010ede9b2fe45333818"
+  },
+  "limitations": ["No expensive49case production/poLCA rerun; parent owns full file.", "Real capped-case evidence reuses independently inspected cached replay; no fresh Mplus orLG executables.", "Larger cap is a declared external validation recipe, not evidence of default poLCA completion or global optimality.", "Caller RNG preservation checked with existing .Random.seed; absent-seed behavior remains the old helper convention."],
+  "cached_case": {
+    "case": "twopair_mod_05",
+    "original_ll": -2916.7570490118028,
+    "verification_ll": -2916.7570116947718,
+    "selected_iterations": 56767,
+    "baseline_failed_comparison_rows": 5,
+    "verified_rows_pass": true
+  }
+}

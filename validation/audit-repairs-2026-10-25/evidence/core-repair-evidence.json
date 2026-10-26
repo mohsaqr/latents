@@ -1,0 +1,224 @@
+{
+  "head": "24773e6954bb7723aa75a34484a8e4638c32f1f6",
+  "date": "2026-10-26",
+  "issues": {
+    "zero_weight_membership": {
+      "independent_target": [
+        0.3,
+        2
+      ],
+      "helper_before": {
+        "coefficients": [
+          [
+            0.14324834157628966
+          ],
+          [
+            2.4458354113551063e-12
+          ]
+        ],
+        "converged": true,
+        "scaled_score": 4.302585210336218e-08
+      },
+      "helper_after": {
+        "coefficients": [
+          [
+            0.2999999718466613
+          ],
+          [
+            1.999999881219645
+          ]
+        ],
+        "converged": true,
+        "scaled_score": 5.872244402988298e-07
+      },
+      "baseline_public_evidence": {
+        "head": "24773e6",
+        "seed": 41,
+        "z_0_slope": -2.1036236,
+        "z_1e12_slope": 0,
+        "z_0_ll": -586.8441,
+        "z_1e12_ll": -730.5432,
+        "both_reported_converged": true,
+        "precision": "Values retained from original read-only audit, rounded as printed."
+      },
+      "public_after": {
+        "slope_0": -2.103623610738666,
+        "slope_1e12": -2.103623610738666,
+        "ll_0": -586.8440832172452,
+        "ll_1e12": -586.8440832172452,
+        "posterior_max_error": 0,
+        "robust_SE_max_error": 0,
+        "extreme_logits": false
+      }
+    },
+    "count_offset": {
+      "before": [
+        0.5,
+        0.5
+      ],
+      "after": [
+        0.7665746545193762,
+        0.2334253454806237
+      ],
+      "independent_target": [
+        0.7665746545193762,
+        0.23342534548062366
+      ],
+      "max_error": 5.551115123125783e-17,
+      "near_equal_means": {
+        "means": [
+          1.5,
+          1.5000000000000009
+        ],
+        "log_density_ratio": 5.921189464667498,
+        "after": [
+          0.010614163410020623,
+          0.9893858365899795
+        ],
+        "independent_target": [
+          0.010614163410020621,
+          0.9893858365899795
+        ],
+        "max_error": 1.734723475976807e-18
+      }
+    },
+    "ordinal_native_values": {
+      "before_distinct_codes": [
+        1,
+        2
+      ],
+      "before_levels": {
+        "y": [
+          "1",
+          "1e+15",
+          "1e+15"
+        ]
+      },
+      "after_levels": {
+        "y": [
+          "1",
+          "1000000000000000",
+          "1000000000000001"
+        ]
+      },
+      "after_distinct_codes": [
+        1,
+        2,
+        3
+      ],
+      "after_ll": -102.96530140645737,
+      "independent_ll": -102.96530140645737,
+      "prediction_logdensity": [
+        -1.6094379124340867,
+        -1.203972804325875,
+        -0.6931471805599873
+      ]
+    },
+    "scaling_origin": {
+      "before": "latents_bad_data",
+      "after": 0.9340709705891131,
+      "independent_sd": 0.9340709705891131,
+      "distinct_values": 100
+    },
+    "weight_constancy": {
+      "scales": [
+        9.999999999999994e-301,
+        1e-12,
+        1,
+        1.0000000000000006e+300
+      ],
+      "before": [
+        "accepted",
+        "accepted",
+        "latents_bad_weights",
+        "latents_bad_weights"
+      ],
+      "after": [
+        "latents_bad_weights",
+        "latents_bad_weights",
+        "latents_bad_weights",
+        "latents_bad_weights"
+      ]
+    },
+    "shared_mixture_posterior": {
+      "before": [
+        [
+          1,
+          0.1353352832366127
+        ],
+        [
+          1,
+          0.1353352832366127
+        ]
+      ],
+      "after": [
+        [
+          0.8,
+          0.2
+        ],
+        [
+          0.8,
+          0.2
+        ]
+      ],
+      "independent_target": [
+        [
+          0.8,
+          0.2
+        ],
+        [
+          0.8,
+          0.2
+        ]
+      ]
+    },
+    "additional_repairs": {
+      "covariate_BIC": "logLik/nobs use existing informative-group convention; tested both drop_empty choices",
+      "validation_CLI": "base-only stage resolution before source; default pilot, explicit full, invalid/extra arguments rejected",
+      "recovery_pivot": "complete unique row-by-column grid and finite values required; structural zeros retained, absent/duplicate cells refused"
+    },
+    "limits": [
+      "Original ordinary public fit/shape conventions retained; only previously incorrect edge cases change.",
+      "Ordinal collision fits store an extra native numeric map and unambiguous labels; simulation factors retain those labels.",
+      "No broad calibration study rerun. Focused integration tests and parent independent full/external gates establish the tested scope.",
+      "Historical source-only artifacts remain historical and are not current run evidence."
+    ]
+  },
+  "final_source_sha256": {
+    "R/covariates.R": "b88effa451adecec8b8a7cb367bc9a324c9fbeee45551ac00d0c4bfa33782931",
+    "R/covariate-inference.R": "c56bd1305ec16130f201e6579738dba5ad77ad11defffeee0abd9fdba4a1cf93",
+    "R/kernel-blocks.R": "57a3fc8d816f2af9450463aa63494717921324e3e0cc09892112852e0ab97ad9",
+    "R/kernel-structures.R": "fbe0dee72e2c8db1119fb69f684f5f87f822040485bfd85cbefdf2a48a06a15d",
+    "R/extra-indicators.R": "dad847c478957be69b48fd2e084df5efaf02b69ac12b720e1bfde02cd9e30b9c",
+    "R/centering.R": "f4800ef5c61f78a2cfbca692e57f0137fc1566f23d3c12876447c91ddf1655b8",
+    "R/weights.R": "cd0e0da1fdb38165c681f3af045c4d1e15daba38e85dbaf8f2971440925ecf52",
+    "validation/additive-simulation.R": "56fd12f2a8e2ae3f1850df0ad6a96f169ff1bae4af04eacbbe2240601d344b8a",
+    "validation/simulab-recovery/recovery-study.R": "552a6abacbeee6d6aae6b521f0cb7eac5cabb498ae95f074c09ed17ad77c1265",
+    "tests/testthat/test-audit-core-repairs.R": "4f1ec4aba8c9e5b3308a4349a8ac68b965c463979f7a632566d39e16a7ac2620"
+  },
+  "verification": {
+    "unique_test_files": 10,
+    "unique_cases": 84,
+    "passing_expectations": 416,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 0,
+    "skipped": 0,
+    "new_regression_file": {
+      "cases": 12,
+      "passing_expectations": 58
+    },
+    "method": "Deduplicated by source test file + test label, retaining latest run. Earlier8-file run and final5-file run overlap; summed totals are not claimed unique."
+  },
+  "categorical_arithmetic_compatibility_refinement": {
+    "evidence": "categorical-arithmetic-proof-core.json",
+    "selected_retained_cases": [
+      "lca_k3_lo_01",
+      "sweep_108"
+    ],
+    "all_loglik_posterior_modal_gaps": 0,
+    "focused_core_test_passes": 64,
+    "focused_core_test_cases": 13,
+    "scope": "Supplementary focused gate after compatibility refinement. Previous aggregate counts describe earlier runs and are not added as independent expectations."
+  }
+}

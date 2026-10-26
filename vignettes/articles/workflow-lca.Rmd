@@ -186,9 +186,10 @@ activities about as well without modelling it.
 ## Classes and a distal outcome
 
 `three_step()` estimates the mean of an outcome within each class. It uses
-the BCH method, which weights each observation by its posterior class
-probabilities and corrects for classification error (Bolck, Croon and
-Hagenaars, 2004). The outcome here is the happiness rating.
+the BCH method, which applies the inverse estimated classification-error matrix
+to modal class assignments (Bolck, Croon and Hagenaars, 2004). These corrected
+weights can be negative; posterior-probability weighting is the separate
+`method = "proportional"` option. The outcome here is the happiness rating.
 
 ```{r three-step}
 happiness <- three_step(fit, student_esm, outcome = "happy")

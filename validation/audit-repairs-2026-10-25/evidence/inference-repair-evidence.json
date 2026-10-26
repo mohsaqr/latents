@@ -1,0 +1,180 @@
+{
+  "status": "V2_source_ready;214affected_expectations_clean",
+  "owned_files": [
+    "R/alignment-service.R",
+    "R/accessors.R",
+    "R/inference.R",
+    "R/additive-inference.R",
+    "R/additive-methods.R",
+    "R/compare-models.R",
+    "R/methods.R",
+    "R/lta-three-step.R",
+    "R/lta-compare.R",
+    "R/transitions.R",
+    "R/lta-methods.R",
+    "tests/testthat/test-audit-inference-repairs.R",
+    "tests/testthat/test-alignment-service.R",
+    "R/transition-inference.R",
+    "tests/testthat/test-features-joint-items.R"
+  ],
+  "sha256": {
+    "R/alignment-service.R": "96f91412d96508ad452ccb8b827291b2b70a79c828d861fe85fa3422834a9de1",
+    "R/accessors.R": "7628f07bc9ff3de386ffa048cf46e6381e85b9b99804c3f390571ff317340787",
+    "R/inference.R": "ac7a2d53c06aabbce1807d1ef991d20cd7eef2ba82cc565af1ee8077c820965f",
+    "R/additive-inference.R": "9e3684e30723dd5f3847f07f6265a229afe98d848b50f47af6b929aaae42b573",
+    "R/additive-methods.R": "e087ac6aab1a83266d12bb81b8f9ec7b145f64b18832cdb416e7eba8c4d70232",
+    "R/compare-models.R": "f13cab19e9a14944d856c630d22271c780a8cceee0300f1ba08d7cb2e874ac7d",
+    "R/methods.R": "6f50f47b4ac71c3a0d6cb4532d6218324c163df086bca77b54fa2c3d73ffab9c",
+    "R/lta-three-step.R": "dd3ad335a25aec838e9335cae635a171c13348115418f6e94ead8126e93092ce",
+    "R/lta-compare.R": "9421729e81ee1d06647a300ecc365341e43c7a50fb0caee6e1c1447fad13123e",
+    "R/transitions.R": "17969405051272414e811576aa7ced3c73571920b7fa1803133e7230c49270d0",
+    "R/lta-methods.R": "c967f89f45d4d58c012fef363f6b6c7417e485f2e98d248e410534d8bc376fb1",
+    "tests/testthat/test-audit-inference-repairs.R": "4e6c54b180954ce136cbfca8694941c664bdaf1c376f264e28970e084ca55723",
+    "tests/testthat/test-alignment-service.R": "4ab272227a8edf9d3b7ef4d0835457f6b6a5a3bc9ed002bf305dffd641f324d7",
+    "R/transition-inference.R": "11b067d5546aeb9b7664f84c4c6a6b2973c07dc16c1f13efdd57fed2b9bb3817",
+    "tests/testthat/test-features-joint-items.R": "291e06de80bf39de1ae08bd7146d90706ff0691526c7e75399abe9fd4ac42ec4"
+  },
+  "verification": {
+    "files": 18,
+    "pass": 1211,
+    "fail": 0,
+    "error": 0,
+    "warning": 0,
+    "skip": 0
+  },
+  "regressions": {
+    "public_MI_variance_pooling": {
+      "before": [
+        12.38,
+        13.52
+      ],
+      "after": [
+        0.9403591,
+        24.9588584
+      ],
+      "oracle": "mean of narrow and wide variance estimates separately, no prevalence-driven swap"
+    },
+    "categorical_collision": {
+      "before_SE": [
+        0.04,
+        0.04,
+        0.04,
+        0.04
+      ],
+      "after_SE": [
+        0.04,
+        0.04,
+        0.04898979487,
+        0.04898979487
+      ],
+      "numeric_confint_third": [
+        0.5013473,
+        0.6911585
+      ]
+    },
+    "univariate_start_full_covariance": {
+      "before_shape": "1profile x2indicators",
+      "after_shape": "2profiles x1indicator",
+      "variances": [
+        0.9782054,
+        0.6983753
+      ]
+    },
+    "additive_units": {
+      "multiplier": 1000000.0,
+      "before": "false singular information",
+      "after": "SEs transform with multiplier for means and squared multiplier for variances"
+    },
+    "LTA_missing_occasion": {
+      "empty_rows": 66,
+      "before": "prior modal profile treated as observed class",
+      "after": "modalNA,zero log-emission; excluded from errors and pooled prior",
+      "LL_vs_removed_gap": 3.183231e-12,
+      "R3_coefficient_max_gap": 1.067616e-07,
+      "error_matrix_max_gap": 2.503805e-08
+    },
+    "LTA_large_covariate_offset": {
+      "offset": 100000000.0,
+      "before": "falseconstant, then unnecessary natural-basis solve singular",
+      "after": "positive spread check; intercept-only start directly valid in both charts"
+    },
+    "data_identity": "Exact numeric values, forward transform or exact reconstruction; original/default centered/scaled inference preserved. Normalized LTA weights checked; min bounds and objective weights must match for nested LR.",
+    "BIC_nobs": "existing informative-group sample-size helper used by profile and both LTA engines; covariate methods repaired separately by core agent",
+    "numeric_ID_printing_collision": {
+      "native_ID_count": 20,
+      "character_ID_count": 19,
+      "public_growth_supplied_data": "latents_bad_inference_data after guard",
+      "values": [
+        0.3,
+        0.30000000000000004
+      ]
+    }
+  },
+  "independent_cross_review": [
+    "/private/tmp/latents-fix-20261025/independent-inference-review.json",
+    "/private/tmp/latents-fix-20261025/independent-inference-review-core.json",
+    "/private/tmp/latents-fix-20261025/independent-inference-review-core-weights.json"
+  ],
+  "limitations": [
+    "Finite regression designs; no universal global-optimum or inferential-coverage claim.",
+    "Parent owns full-suite/install/check/docs and additive-compare.R.",
+    "Extension cross-review identified residual regression origin issue; owner repairing; not part of owned readiness."
+  ],
+  "handoff_notes": [
+    "Keep percent escaping of categorical response term components consistent in inference, accessor and plot; ordinary terms unchanged.",
+    "Gaussian alignment signatures now include reference-normalized log variances and full covariance correlations; permutation test must permute variance blocks too.",
+    "Information finite differences center additive means and use indicator units; observed/robust/OPG/Newton conditioning is a congruence, not statistical regularization.",
+    "Exact identity checks must accept exact forward-transformed input and exact reconstructed inverse-transformed frame separately to avoid rejecting own stored rows due to inverse roundoff.",
+    "LTA missing measurement rows are neutral emissions and excluded from classification-error calibration even if present in the supplied panel."
+  ],
+  "second_round_repairs": {
+    "normalized_weight_roundoff": "tol1e-12 only for normalizedweightfields; exact outcomes/sufficientstats retained",
+    "huge_count_occasion_prior": "centered measurement density before adding pooled prior, both LTA engines",
+    "empty_person_R3STEP": "basis/objective/score/rank/CR1 count measurement-contributing persons only; core after ratios exactly1",
+    "seed_documentation": "inference.R and transition-inference.R qualify .Random.seed restoration versus inaccessible Box-Muller cache"
+  },
+  "V2_compatibility": {
+    "verification_source_modified": false,
+    "worker_library_modified": false,
+    "affected_file_results": [
+      {
+        "file": "test-assignment-alignment.R",
+        "pass": 26,
+        "fail": 0,
+        "error": 0,
+        "warning": 0,
+        "skip": 0
+      },
+      {
+        "file": "test-audit-recent-api.R",
+        "pass": 42,
+        "fail": 0,
+        "error": 0,
+        "warning": 0,
+        "skip": 0
+      },
+      {
+        "file": "test-audit-inference-repairs.R",
+        "pass": 85,
+        "fail": 0,
+        "error": 0,
+        "warning": 0,
+        "skip": 0
+      },
+      {
+        "file": "test-features-joint-items.R",
+        "pass": 61,
+        "fail": 0,
+        "error": 0,
+        "warning": 0,
+        "skip": 0
+      }
+    ],
+    "pass": 214,
+    "CSV_alignment": "Exact base-R write.table serialization via textConnection recognized only for row alignment; injective representation required, strict objective-data helper retained. seed193 reproducer passes.",
+    "cross_engine_LTA": "Exact forward raw-minus-center equality proves identity despite inverse reconstruction rounding; no numeric outcome tolerance.",
+    "native_ordinal": "Numeric supplied ordinal values compared to stored native ordinal_values[codes]; originals preserved and collapsed values rejected.",
+    "independent_review": "/private/tmp/latents-fix-20261025/after-function-audit-core-ordinal-interaction-after.json",
+    "joint_item_contract": "Fixed encoded prefix a%3Ab: retains12 class/category rows and unique full coefficient grammar."
+  }
+}

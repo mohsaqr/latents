@@ -1,0 +1,26 @@
+{
+  "checked_utc": "2026-10-26T08:14:21.106638+00:00",
+  "report_entries": 41,
+  "ledger_groups_covered_once": 53,
+  "local_links_checked": 86,
+  "broken_links": 0,
+  "html_ids_unique": true,
+  "javascript_smoke": {
+    "search": true,
+    "category_counts": [
+      27,
+      10,
+      4
+    ],
+    "empty_result": true,
+    "reset": true,
+    "print_action": true
+  },
+  "independent_content_review": "Core audit reviewer; three factual precision changes and three exact-description refinements applied.",
+  "scope": "Report/documentation checks only; production code and prior verification results unchanged.",
+  "files": {
+    "defects-and-fixes.html": "4617269798673edef868ffc719edf2db86d2eafbf3144ed07bd1b28633830656",
+    "defects-and-fixes.json": "e15777cbf9d1467bfaf343d049a39a10888fec9c90487df2008bf1adf3073152"
+  },
+  "publication_links": "Handoff and lesson links point to the portable audit documents."
+}

@@ -1,7 +1,9 @@
 # Findings: direct effects (`direct_effects`)
 
-Finding 1 keeps a failing assertion (a limitation of the released start
-search, which is not changed: see below). Findings 2 and 3 were fixed on
+Finding 1 remains a limitation of the default start search, whose production
+policy is unchanged. The external comparison now declares both search
+configurations for every case and retains the default attempts and gaps
+separately; it does not claim default-search reliability. Findings 2 and 3 were fixed on
 2026-10-21 in `.latents_parse_direct_effects()` (`R/direct-effects.R`) and
 their test now passes.
 
@@ -40,7 +42,27 @@ their test now passes.
   random-centre and random-partition starts; the solution is regular
   (smallest standardized eigenvalue 0.153, no boundary, no warning). emEM
   took 5-6 times as long (11 s against 2 s at 200 starts). The equivalence
-  test still runs the default search, so its assertion still fails.
+  test originally ran the default search alone, so its maximum and per-case
+  comparison assertions failed.
+- Declared validation recipe (2026-10-26): every external case is fitted with
+  both `search = "kmeans"` and `search = "emEM"`, at 20 finalists and 100
+  screened starts for emEM, seeds 1--3. For every case with n >= 10000 the
+  common budget is 10 finalists / 50 screened and seeds 1--2. Both searches
+  use tol = 1e-10, max_iter = 5000, min_variance = 1e-6 and
+  `boundary = "allow"`; the comparison selects the highest finite, converged,
+  nonboundary result. The reference results do not choose seeds, budgets or
+  retries. All numerical oracles and tolerances are unchanged. The original
+  default-policy attempts remain in `search-attempts.csv`, including their
+  likelihood gap to the references; `default-search-diagnostics.csv`
+  summarizes them. These are separate from the configured-search comparison.
+  The independent 84-dataset reference battery retains its original default
+  fitting controls.
+- Current limited reproduction: both heavy_02 points are regular local
+  maxima. Independent standardized Hessians are negative definite, and the
+  independent likelihood differs from production by less than 1e-12 at both
+  points. Default kmeans gives -3106.9860142378, explicit emEM gives
+  -3098.4867902323. The default deficit of 8.499224 remains a reported
+  multimodality/search limitation, not a repaired likelihood-algebra defect.
 
 ## 2. A trailing `+` in a term is accepted silently (fixed)
 

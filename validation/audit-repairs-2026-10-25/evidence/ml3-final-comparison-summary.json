@@ -1,0 +1,10 @@
+{
+  "status": "completed_ML3_file_without_failures",
+  "reported_passing_assertions": 2014,
+  "measurement_cases_refitted": 193,
+  "comparison_quantity_rows": 6328,
+  "all_rows_finite_and_within_declared_tolerances": true,
+  "outside_tolerance": 0,
+  "source_manifest": "verification-toplevel-phase-manifest.json",
+  "limits": "Per-quantity comparisons of retained commercial outputs and independent numerical references; not a global optimum or universal equivalence guarantee."
+}

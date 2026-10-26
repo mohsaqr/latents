@@ -2,13 +2,17 @@
 # against Latent GOLD 6.1, the Mplus 9 Demo and an independent implementation.
 #
 # The kit (features/direct-effects/, built by make-kit.R from simulab data and
-# run by features/run.sh) holds 67 cases; each is fitted here from three seeds
+# run by features/run.sh) holds 67 cases; each is fitted with both kmeans and
+# emEM under one declared recipe, from three seeds (two for n >= 10000),
 # and compared with both programs' retained outputs: log likelihood, parameter
 # count, BIC, every mean, variance, effect and class proportion with its
 # standard error, row-by-row posteriors and predict() on the training data.
 # Classes are aligned once from the posteriors. Tolerances are documented in
 # de_compare() (features/direct-effects/helpers.R). The independent
 # implementation (reference.R) is run on 84 further simulab datasets.
+# Those independent-reference fits retain their original default controls.
+# The external comparison claims configured-search plus likelihood agreement;
+# default attempts and gaps remain in search_attempts/default_diagnostics.
 
 de_root <- file.path("features", "direct-effects")
 sys.source(file.path(de_root, "helpers.R"), envir = environment())
@@ -17,6 +21,10 @@ de_state <- new.env()
 de_results <- function() {
   if (is.null(de_state$external)) {
     de_state$external <- withr::with_seed(20261020, de_compare_all(de_root))
+    equivalence_write_tables("direct-effects", list(
+      comparison = de_state$external$comparison, maxima = de_state$external$maxima,
+      "search-attempts" = de_state$external$search_attempts,
+      "default-search-diagnostics" = de_state$external$default_diagnostics))
   }
   de_state$external
 }
@@ -85,6 +93,32 @@ test_that("latents reaches the best maximum either program found", {
   compared <- aggregate(compared ~ case, data = subset(maxima, program != "latents"), FUN = any)
   expect_true(all(compared$compared), info = paste(subset(compared, !compared)$case,
                                                    collapse = ", "))
+})
+
+test_that("the declared searches retain every default attempt and its reference gap", {
+  attempts <- de_results()$search_attempts
+  cases <- de_cases(de_root)
+  invisible(lapply(cases, function(case) {
+    # Use explicit indexing: the data frame also has a column called case.
+    rows <- attempts[attempts$case == case$name, , drop = FALSE]
+    expect_setequal(unique(rows$search), c("kmeans", "emEM"))
+    budget <- if (nrow(case$data) >= 10000L) 10L else 20L
+    seeds <- if (nrow(case$data) >= 10000L) 1:2 else 1:3
+    expect_equal(nrow(rows), 2L * length(seeds))
+    expect_true(all(rows$n_starts == budget))
+    expect_equal(rows$n_screen[rows$search == "emEM"], rep(5L * budget, length(seeds)))
+    expect_true(all(is.na(rows$n_screen[rows$search == "kmeans"])))
+    expect_true(all(rows$tol == 1e-10 & rows$max_iter == 5000L &
+                      rows$min_variance == 1e-6 & rows$boundary_policy == "allow"))
+    expect_equal(sum(rows$is_default), length(seeds))
+    expect_equal(sum(rows$selected), 1L)
+  }))
+  # This known limitation stays visible. It is not presented as an algebra
+  # defect or erased by the better configured-search fit.
+  default <- subset(de_results()$default_diagnostics, case == "heavy_02")
+  expect_lt(default$gap_to_reference, -8)
+  expect_true(default$converged)
+  expect_false(default$boundary)
 })
 
 test_that("one profile is a linear regression of each indicator", {

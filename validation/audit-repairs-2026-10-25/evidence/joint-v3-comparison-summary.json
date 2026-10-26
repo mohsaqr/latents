@@ -1,0 +1,22 @@
+{
+  "status": "full_joint_item_family_and_regressions_passed",
+  "assertions": 164,
+  "test_cases": 25,
+  "test_files": 4,
+  "retained_external_rows": 792,
+  "verified_polca_rows": 343,
+  "all_verified_comparison_rows_within_unchanged_tolerances": true,
+  "original_polca_comparison_rows": 343,
+  "original_polca_outside_tolerance": 5,
+  "original_failure_cases": [
+    "twopair_mod_05"
+  ],
+  "polca_eligible_cases": 49,
+  "same_seeds_nrep_tolerance_for_both_caps": true,
+  "polca_attempt_records": 980,
+  "verified_polca_cap_reached_cases": [],
+  "independent_polish_cases": 52,
+  "independent_reference_study_datasets": 140,
+  "production_R_tests_man_vignettes_unchanged": true,
+  "limits": "Supersedes only the affected joint-item family in the still-running whole-batch run; original failures remain preserved."
+}

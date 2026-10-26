@@ -1,0 +1,13 @@
+{
+  "files": 180,
+  "cases": 1527,
+  "totals": {
+    "failed": 0,
+    "skipped": 15,
+    "error": 0,
+    "warning": 0,
+    "passed": 10794
+  },
+  "seconds": 883.716,
+  "blas": "/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib"
+}

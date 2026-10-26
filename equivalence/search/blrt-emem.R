@@ -6,12 +6,16 @@
 # Mplus with heavy starts reached 0.33 on spikes.
 #
 # Rscript equivalence/search/blrt-emem.R <out_dir> <condition> <first> <last> <iter> <cores>
+source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE),
+                                                value = TRUE))),
+                 "..", "..", "validation", "fork-runtime.R"))
 args <- commandArgs(trailingOnly = TRUE)
 out <- args[1]
 condition <- args[2]
 replicates <- seq(as.integer(args[3]), as.integer(args[4]))
 iter <- as.integer(args[5])
 cores <- as.integer(args[6])
+invisible(.validation_fork_cores(cores))
 dir.create(out, showWarnings = FALSE, recursive = TRUE)
 suppressPackageStartupMessages({
   library(latents)
@@ -59,5 +63,6 @@ run_one <- function(replicate) {
   saveRDS(result, file.path(out, sprintf("%s_%03d.rds", condition, replicate)))
   result
 }
-invisible(mclapply(replicates, run_one, mc.cores = cores, mc.preschedule = FALSE))
+invisible(mclapply(replicates, run_one, mc.cores = .validation_fork_cores(cores),
+                   mc.preschedule = FALSE))
 cat(condition, "done\n")

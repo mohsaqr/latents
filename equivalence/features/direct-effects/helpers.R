@@ -10,21 +10,81 @@
 
 de_cases <- function(root) readRDS(file.path(root, "kit", "cases.rds"))
 
-#' Fit one case as the programs were asked to, from several seeds; keep the best
-de_fit <- function(case, seeds = 1:3, n_starts = 20L) {
-  spec <- case$spec
+#' The declared search recipe, independent of reference results
+#' @return One row per search and seed, including the common bounds and budgets.
+de_search_controls <- function(case, seeds = 1:3, n_starts = 20L) {
   if (nrow(case$data) >= 10000L) {
     seeds <- seeds[seq_len(min(2L, length(seeds)))]
     n_starts <- 10L
   }
-  fits <- lapply(seeds, function(seed) {
-    suppressMessages(lpa(case$data, spec$vars, spec$k, model = spec$model,
-                         n_starts = n_starts, seed = seed, tol = 1e-10, max_iter = 5000,
-                         direct_effects = spec$direct_effects))
+  controls <- expand.grid(search = c("kmeans", "emEM"), seed = seeds,
+                           KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
+  controls$case <- case$name
+  controls$n_starts <- n_starts
+  controls$n_screen <- ifelse(controls$search == "emEM", 5L * n_starts, NA_integer_)
+  controls$tol <- 1e-10
+  controls$max_iter <- 5000L
+  controls$min_variance <- 1e-6
+  controls$boundary_policy <- "allow"
+  controls$default_search <- latents:::.latents_default_search(case$spec$model,
+                                                              case$spec$vars)
+  controls$is_default <- controls$search == controls$default_search
+  controls
+}
+
+#' Fit both declared searches for every case and retain the default diagnostics
+#'
+#' Numerical comparisons use the best finite, converged interior fit across
+#' the same two search configurations for every case. This measures configured
+#' search plus likelihood equivalence, not default-search reliability. Every
+#' default attempt is retained even when a different configuration wins.
+de_fit <- function(case, seeds = 1:3, n_starts = 20L) {
+  spec <- case$spec
+  controls <- de_search_controls(case, seeds, n_starts)
+  warnings <- vector("list", nrow(controls))
+  fits <- lapply(seq_len(nrow(controls)), function(index) {
+    control <- controls[index, ]
+    arguments <- list(data = case$data, vars = spec$vars, n_profiles = spec$k,
+      model = spec$model, n_starts = control$n_starts, seed = control$seed,
+      tol = control$tol, max_iter = control$max_iter,
+      min_variance = control$min_variance, boundary = control$boundary_policy,
+      direct_effects = spec$direct_effects, search = control$search)
+    if (control$search == "emEM") arguments$n_screen <- control$n_screen
+    tryCatch(withCallingHandlers(suppressMessages(do.call(lpa, arguments)),
+      warning = function(condition) {
+        warnings[[index]] <<- c(warnings[[index]], conditionMessage(condition))
+      }), error = identity)
   })
-  log_likelihoods <- vapply(fits, `[[`, numeric(1), "log_likelihood")
-  best <- fits[[which.max(log_likelihoods)]]
-  best$seed_log_likelihoods <- log_likelihoods
+  failed <- vapply(fits, inherits, logical(1), "condition")
+  values <- vapply(seq_along(fits), function(index) {
+    if (failed[index]) NA_real_ else fits[[index]]$log_likelihood
+  }, numeric(1))
+  controls$log_likelihood <- values
+  controls$converged <- vapply(fits, function(fit) isTRUE(fit$converged), logical(1))
+  controls$boundary <- vapply(fits, function(fit) isTRUE(fit$boundary), logical(1))
+  controls$admissible <- !failed & is.finite(values) & controls$converged &
+    vapply(fits, function(fit) identical(fit$boundary, FALSE), logical(1))
+  controls$error <- vapply(seq_along(fits), function(index) {
+    if (failed[index]) conditionMessage(fits[[index]]) else NA_character_
+  }, character(1))
+  controls$warnings <- vapply(warnings, paste, collapse = " | ", character(1))
+  eligible <- which(controls$admissible)
+  if (!length(eligible)) {
+    stop(sprintf("%s: neither configured search produced a converged interior fit.",
+                 case$name), call. = FALSE)
+  }
+  selected <- eligible[which.max(values[eligible])]
+  controls$selected <- seq_len(nrow(controls)) == selected
+  default <- which(controls$is_default & is.finite(values))
+  default_best <- if (length(default)) default[which.max(values[default])] else NA_integer_
+  best <- fits[[selected]]
+  best$seed_log_likelihoods <- vapply(unique(controls$seed), function(seed) {
+    at <- which(controls$admissible & controls$seed == seed)
+    if (length(at)) max(values[at]) else NA_real_
+  }, numeric(1))
+  best$de_default_fit <- if (!is.na(default_best)) fits[[default_best]] else NULL
+  best$de_default_seed_log_likelihoods <- values[controls$is_default]
+  best$de_search_attempts <- controls
   best
 }
 
@@ -340,15 +400,35 @@ de_compare_all <- function(root, cases = de_cases(root)) {
       seed_spread = c(rep(NA_real_, length(usable)),
                       diff(range(fit$seed_log_likelihoods))))
     maxima$gap_to_best <- maxima$log_likelihood - best
+    attempts <- fit$de_search_attempts
+    attempts$best_reference <- best
+    attempts$gap_to_reference <- attempts$log_likelihood - best
+    attempts$gap_to_configured <- attempts$log_likelihood - fit$log_likelihood
+    default <- fit$de_default_fit
+    default_values <- fit$de_default_seed_log_likelihoods
+    default_diagnostics <- data.frame(case = case$name,
+      search = unique(attempts$default_search),
+      log_likelihood = if (is.null(default)) NA_real_ else default$log_likelihood,
+      converged = !is.null(default) && isTRUE(default$converged),
+      boundary = if (is.null(default)) NA else isTRUE(default$boundary),
+      seed_spread = if (all(is.finite(default_values))) diff(range(default_values)) else NA_real_,
+      failed_attempts = sum(attempts$is_default & !is.na(attempts$error)),
+      best_reference = best, configured_log_likelihood = fit$log_likelihood)
+    default_diagnostics$gap_to_reference <- default_diagnostics$log_likelihood - best
+    default_diagnostics$gap_to_configured <- default_diagnostics$log_likelihood -
+      fit$log_likelihood
     list(comparison = comparison, maxima = maxima,
-         failed = setdiff(names(references), names(usable)), fit = fit)
+         failed = setdiff(names(references), names(usable)), fit = fit,
+         search_attempts = attempts, default_diagnostics = default_diagnostics)
   })
   list(comparison = do.call(rbind, lapply(per_case, `[[`, "comparison")),
        maxima = do.call(rbind, lapply(per_case, `[[`, "maxima")),
        failed = unlist(lapply(names(per_case), \(name) {
          if (length(per_case[[name]]$failed)) paste(name, per_case[[name]]$failed)
        })),
-       fits = lapply(per_case, `[[`, "fit"))
+       fits = lapply(per_case, `[[`, "fit"),
+       search_attempts = do.call(rbind, lapply(per_case, `[[`, "search_attempts")),
+       default_diagnostics = do.call(rbind, lapply(per_case, `[[`, "default_diagnostics")))
 }
 
 #' Evaluate `expr`, muffling only latents' documented boundary warning (a

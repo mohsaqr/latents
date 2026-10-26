@@ -268,13 +268,31 @@ vlmr_compute_case <- function(name, case, draws = 1e6) {
   list(rows = vlmr_bind(rows), seed = fitted$seed, lambda = lambda)
 }
 
-#' Every case, on at most `cores` forked workers; results bound into one table
+#' Map fixed-seed cases without forking an unsafe BLAS runtime
+#'
+#' Fitting and reference Monte Carlo each set explicit seeds. Serial execution
+#' therefore preserves the case streams and can also be requested through
+#' `options(latents.vlmr.serial = TRUE)`.
+#' @param cases The case names or inputs to map.
+#' @param fun A function of one case.
+#' @param cores Maximum number of workers on a fork-safe platform.
+#' @return A list in input order.
+vlmr_map_cases <- function(cases, fun, cores = 2L) {
+  if (isTRUE(getOption("latents.vlmr.serial", FALSE)) ||
+      identical(.Platform$OS.type, "windows") || !latents:::.latents_fork_safe()) {
+    lapply(cases, fun)
+  } else {
+    parallel::mclapply(cases, fun, mc.cores = cores, mc.preschedule = FALSE)
+  }
+}
+
+#' Every case, on at most `cores` safe workers; results bound into one table
 vlmr_compute_all <- function(names, cores = 2L, draws = 1e6) {
   cases <- vlmr_cases()
-  results <- parallel::mclapply(names, function(name) {
+  results <- vlmr_map_cases(names, function(name) {
     tryCatch(vlmr_compute_case(name, cases[[name]], draws),
              error = function(condition) list(error = conditionMessage(condition)))
-  }, mc.cores = cores, mc.preschedule = FALSE)
+  }, cores = cores)
   names(results) <- names
   failed <- Filter(function(result) !is.null(result$error), results)
   succeeded <- Filter(function(result) is.null(result$error), results)

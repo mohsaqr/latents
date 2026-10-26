@@ -53,7 +53,9 @@
 #'   success-count scale; `trials = 1` requests probabilities for each trial.
 #' @param nsim Number of simulated outcome vectors.
 #' @param seed `NULL` uses and advances the caller's random stream. An integer
-#'   makes simulation reproducible and restores the caller's random state.
+#'   makes simulation reproducible and restores the caller's `.Random.seed`.
+#'   R does not store the cached Box-Muller normal draw in `.Random.seed`, so
+#'   the next normal draw is not preserved when that generator has a cached draw.
 #' @param ... Unused.
 #' @return A base `data.frame` with one row per row of `newdata` (per row and
 #'   class for `"class_response"` and `"class_conditional"`, per row, class and

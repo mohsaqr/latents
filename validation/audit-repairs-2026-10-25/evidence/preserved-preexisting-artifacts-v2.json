@@ -1,0 +1,12 @@
+{
+  "equivalence/engine-golden/last-compare.csv": true,
+  "equivalence/harness/REPORT.md": true,
+  "equivalence/harness/SESSION.txt": true,
+  "equivalence/harness/report.csv": true,
+  "equivalence/harness/suites.csv": true,
+  "equivalence/lta-extensions/result-depmix-covariate.rds": true,
+  "equivalence/lta-extensions/result-ex813.rds": true,
+  "equivalence/lta-extensions/result-ex814.rds": true,
+  "equivalence/lta-extensions/result-lmest-occasion.rds": true,
+  "equivalence/lta-extensions/result-mplus-measurement.rds": true
+}

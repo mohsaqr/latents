@@ -1,17 +1,17 @@
 # Deferred features
 
-Code removed from the shipped package so that everything shipped is defensible,
-not so that everything is shipped. Nothing here is believed to be wrong; each
-was cut because its evidence did not reach the bar the rest of the package
-holds to. Each entry says what would have to be true to bring it back.
+Code removed from the shipped package because its evidence or supported scope
+did not meet the release requirements. Exclusion does not certify correctness.
+The audit repaired reporting/API drift and data-identity checks here, while the
+statistical validation limits below remain requirements for restoration.
 
 Removed in 0.12.0.
 
 ## `fit_random_intercept()` — `R/random-intercept.R`
 
 A continuous Gaussian group random intercept with unit indicator loadings, as
-an alternative to discrete group classes. Adaptive Gauss-Hermite quadrature,
-with a check at a higher node count.
+an alternative to discrete group classes. Fixed Gaussian quadrature, with a
+check at a higher node count, and analytic integration for a single profile.
 
 Why it is here, in the order the reasons matter:
 
@@ -46,8 +46,10 @@ adjustment. The adjustment factor itself was verified against two genuine Mplus
 `TECH11` runs, reproducing the adjusted statistic to the precision Mplus prints
 (`747.0633` against `747.063`, adjusted `723.7708` against `723.771`).
 
-Why it is here: it returned a `p_value` column that was always `NA`, because
-the Vuong-Lo-Mendell-Rubin reference distribution is not reproduced. The help
+Why it is here: this deferred function returns a `p_value` column that is always
+`NA`, because it computes only the adjusted statistic. The shipped package now
+provides the Vuong-Lo-Mendell-Rubin approximation for supported comparisons
+through `get_results(compare_models(...), "lmr")`. The deferred help
 page said so plainly, but a function named `_lrt` that performs no test invites
 the adjusted statistic to be reported as though it had one, and `bootstrap_lrt()`
 already gives a calibrated p-value for the same comparison.

@@ -169,6 +169,12 @@ Every object also has \code{print()}, which shows a compact overview,
 \code{summary()}, which collects its main tables (taking \code{level} and
 \code{vcov_type} where the model has standard errors), and \code{as.data.frame()},
 which returns its primary table, the same as \code{get_results(x)}.
+
+Tables joining caller-supplied columns to fitted rows check their alignment.
+Numeric columns may also match R's canonical CSV serialization, provided
+that serialization does not merge distinct values. This row-alignment check
+differs from the stricter fitted-data checks used for inference and model
+comparison; supplying unrelated columns alone cannot verify row order.
 }
 \section{Tables}{
 
@@ -632,7 +638,8 @@ posterior in the assigned class and \code{r} is the model-estimated class
 proportion. Values near one indicate classification no better than the
 class proportions alone; values of five or more are conventionally taken
 as adequate separation. It is \code{NA_real_} when \code{average_posterior} is
-missing, or when it or \code{estimated_proportion} is zero or one, so a
+missing or zero, or when \code{estimated_proportion} is zero or one. A perfect
+\code{average_posterior} of one gives \code{Inf} at an interior estimated proportion; a
 single-class solution always reports \code{NA_real_}. \code{average_posterior} is
 \code{NA_real_} for a class with no modal members. \code{n_modal} and
 \code{estimated_n} differ whenever entropy is below one.

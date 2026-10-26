@@ -1,9 +1,10 @@
 # Re-run sampled replicates of the additive simulation; compare to stored. Run from the repository root.
+source(file.path("validation", "fork-runtime.R"))
 source(file.path("validation", "additive-simulation-setup.R"))
 reps <- c(1L, 2L, 3L, 500L)
 jobs <- expand.grid(cell = names(cells), replicate = reps, stringsAsFactors = FALSE)
 new <- do.call(rbind, parallel::mclapply(seq_len(nrow(jobs)), \(k)
-  run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = 4L))
+  run_one(jobs$cell[k], jobs$replicate[k]), mc.cores = .validation_fork_cores(4L)))
 old <- read.csv("validation/additive-simulation-full-replicates.csv", stringsAsFactors = FALSE)
 m <- merge(old, new, by = c("cell", "replicate", "parameter_id"), suffixes = c(".old", ".new"))
 d <- abs(m$estimate.old - m$estimate.new)

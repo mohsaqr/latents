@@ -34,7 +34,13 @@
                                    count = character(), missing = "error") {
   if (length(ordinal) == 0L && length(count) == 0L) return(NULL)
   levels_of <- function(value) {
-    if (is.factor(value)) levels(value) else as.character(sort(unique(value)))
+    if (is.factor(value)) return(levels(value))
+    native <- sort(unique(value))
+    labels <- as.character(native)
+    if (anyDuplicated(labels)) {
+      labels <- format(native, digits = 17, scientific = FALSE, trim = TRUE)
+    }
+    labels
   }
   ordinal_levels <- stats::setNames(lapply(ordinal, function(name) {
     value <- data[[name]]
@@ -51,7 +57,9 @@
   }), ordinal)
   ordinal_codes <- if (length(ordinal) == 0L) NULL else
     matrix(vapply(ordinal, function(name) {
-      as.integer(match(as.character(data[[name]]), ordinal_levels[[name]]))
+      value <- data[[name]]
+      as.integer(if (is.numeric(value)) match(value, sort(unique(value))) else
+        match(as.character(value), ordinal_levels[[name]]))
     }, integer(nrow(data))), nrow(data), length(ordinal),
     dimnames = list(NULL, ordinal))
   categories <- lengths(ordinal_levels)
@@ -113,8 +121,18 @@
     stop(errorCondition("Every indicator must have observed values.",
                         class = "latents_bad_data", call = NULL))
   }
-  list(ordinal = ordinal_codes, ordinal_levels = ordinal_levels,
-       ordinal_categories = as.integer(categories), count = counts)
+  result <- list(ordinal = ordinal_codes, ordinal_levels = ordinal_levels,
+                 ordinal_categories = as.integer(categories), count = counts)
+  # Only ambiguous numeric displays need an additional native-value map.
+  # Ordinary category labels and ordinary fitted-object shapes stay unchanged.
+  native <- stats::setNames(lapply(ordinal, function(name) {
+    value <- data[[name]]
+    if (!is.numeric(value)) return(NULL)
+    values <- sort(unique(value))
+    if (anyDuplicated(as.character(values))) values else NULL
+  }), ordinal)
+  if (any(!vapply(native, is.null, logical(1)))) result$ordinal_values <- native
+  result
 }
 
 #' The names of a fit's ordinal and count indicators
@@ -145,11 +163,17 @@
 #'   (C x J matrix) and, for negative-binomial counts, `count_dispersion`
 #'   (C x J matrix).
 #' @param n_rows,n_profiles Dimensions of the result.
-#' @return An n x C matrix; zero when there is nothing to add.
+#' @param offset Whether to return centered indicator contributions and their
+#'   per-row offsets instead of the uncentered density matrix.
+#' @return An n x C matrix, or with `offset`, a list containing that centered
+#'   matrix and the removed per-row offsets; zero when there is nothing to add.
 #' @noRd
-.latents_extra_log_density <- function(extra, parameters, n_rows, n_profiles) {
+.latents_extra_log_density <- function(extra, parameters, n_rows, n_profiles,
+                                       offset = FALSE) {
   total <- matrix(0, n_rows, n_profiles)
-  if (is.null(extra)) return(total)
+  if (is.null(extra)) {
+    return(if (offset) list(log_density = total, offset = rep(0, n_rows)) else total)
+  }
   ordinal <- lapply(seq_len(ncol(extra$ordinal) %||% 0L), function(j) {
     log_probability <- .latents_ordinal_log_probabilities(
       parameters$ordinal_intercepts[[j]], parameters$ordinal_locations[, j])
@@ -175,9 +199,42 @@
         stats::dpois(value[observed], lambda = mean, log = TRUE)
       }, numeric(sum(observed)))
     }
-    contribution
+    if (!offset) return(contribution)
+    row_offset <- rep(0, n_rows)
+    if (any(observed) && !.latents_negative_binomial(extra)) {
+      # In Poisson log ratios the log-factorial cancels. Form the ratio
+      # directly, rather than subtracting two log pmfs of size 1e17 whose
+      # difference can still contain meaningful class evidence.
+      reference <- max.col(contribution[observed, , drop = FALSE],
+                            ties.method = "first")
+      reference_mean <- means[reference]
+      row_offset[observed] <- contribution[cbind(which(observed), reference)]
+      difference <- sweep(matrix(means, sum(observed), n_profiles, byrow = TRUE),
+                            1L, reference_mean, "-")
+      relative <- difference / reference_mean
+      log_ratio <- matrix(log(means), sum(observed), n_profiles, byrow = TRUE) -
+        log(reference_mean)
+      close <- abs(relative) <= .5
+      log_ratio[close] <- log1p(relative[close])
+      contribution[observed, ] <- value[observed] * log_ratio - difference
+    }
+    list(log_density = contribution, offset = row_offset)
   })
-  Reduce(`+`, c(ordinal, count), total)
+  if (!offset) return(Reduce(`+`, c(ordinal, count), total))
+  blocks <- c(lapply(ordinal, function(block) {
+    list(log_density = block, offset = rep(0, n_rows))
+  }), count)
+  # Remove each indicator's common contribution before summing: a huge
+  # Poisson log density must not round away another indicator's information.
+  shifts <- lapply(blocks, function(block) .multilpa_row_max(block$log_density))
+  offsets <- Map(function(block, shift) block$offset + shift, blocks, shifts)
+  if (any(!is.finite(unlist(offsets)))) {
+    stop("All component densities vanished, or a density overflowed.")
+  }
+  centered <- Map(function(block, shift) sweep(block$log_density, 1L, shift, "-"),
+                  blocks, shifts)
+  list(log_density = Reduce(`+`, centered, total),
+       offset = Reduce(`+`, offsets, rep(0, n_rows)))
 }
 
 #' Posterior-weighted category counts of one ordinal indicator, C x K
@@ -763,7 +820,9 @@
           "Ordinal indicator `%s` must be a vector of categories.", name),
           class = "latents_bad_data", call = NULL))
       }
-      code <- match(as.character(value), extra$ordinal_levels[[name]])
+      native <- extra$ordinal_values[[name]]
+      code <- if (is.numeric(value) && !is.null(native)) match(value, native) else
+        match(as.character(value), extra$ordinal_levels[[name]])
       unseen <- !is.na(value) & is.na(code)
       if (any(unseen)) {
         stop(errorCondition(sprintf(
@@ -787,10 +846,12 @@
       }
       as.numeric(value)
     }, numeric(n)), n, dimnames = list(NULL, colnames(extra$count)))
-  list(ordinal = ordinal, ordinal_levels = extra$ordinal_levels,
+  result <- list(ordinal = ordinal, ordinal_levels = extra$ordinal_levels,
        ordinal_categories = extra$ordinal_categories, count = count,
        count_model = extra$count_model, count_dispersion = extra$count_dispersion,
        direct = if (!is.null(extra$direct)) .latents_direct_like(extra$direct, newdata))
+  if (!is.null(extra$ordinal_values)) result$ordinal_values <- extra$ordinal_values
+  result
 }
 
 #' Print the ordinal and count indicators of a fit

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Run one feature kit through Latent GOLD 6.1 (under Wine) and the Mplus 9 Demo.
 #
 # From the project root:
@@ -10,6 +10,7 @@
 # all named <case>.* or <case>-*. Outputs land in <feature>/returned/. Earlier
 # outputs of a case are removed before it runs, and a case that writes no
 # listing stops the run. JOBS (default 4) cases run at once.
+[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -e
 here="$(cd "$(dirname "$0")" && pwd)"
 feature="${1:?usage: run.sh <feature> [all|latentgold|mplus] [pattern]}"
@@ -36,15 +37,16 @@ run_latentgold_case() {
   # Latent GOLD's exit status is not reliable under Wine; the fresh files are.
   (cd "$work" && WINEPREFIX="$prefix" "$wine" "C:\\Program Files\\LatentGOLD6.1\\lg61.exe" \
     "$case_name.lgs" /b /o "$case_name.lst" > /dev/null 2>&1) || true
-  if [ ! -s "$work/$case_name.lst" ]; then
-    echo "Latent GOLD $case_name: no listing was written" >&2
+  if [ ! -s "$work/$case_name.lst" ] ||
+     ! grep -q "Log-likelihood (LL)" "$work/$case_name.lst"; then
+    echo "Latent GOLD $case_name: no fitted likelihood listing was written" >&2
     exit 1
   fi
   cp "$work/$case_name.lst" "$returned/"
   for produced in "$work/${case_name}_"*.txt; do
     [ -e "$produced" ] && cp "$produced" "$returned/"
   done
-  echo "Latent GOLD $case_name done"
+  echo "Latent GOLD $case_name listing collected; validate convergence and estimates downstream"
 }
 
 run_mplus_case() {
@@ -56,25 +58,26 @@ run_mplus_case() {
     [ -e "$file" ] && cp "$file" "$returned/"
   done
   (cd "$returned" && "$mplus" "$case_name.inp" "$case_name.out" > "$case_name-console.txt" 2>&1) || true
-  if [ ! -s "$returned/$case_name.out" ]; then
-    echo "Mplus $case_name: no output was written" >&2
+  if [ ! -s "$returned/$case_name.out" ] ||
+     ! grep -q "THE MODEL ESTIMATION TERMINATED NORMALLY" "$returned/$case_name.out"; then
+    echo "Mplus $case_name: no normally terminated output was written" >&2
     exit 1
   fi
   echo "Mplus $case_name done"
 }
 
+export -f run_latentgold_case run_mplus_case
+
 if [ "$which_program" = "all" ] || [ "$which_program" = "latentgold" ]; then
   for input in "$kit"/*.lgs; do
     [ -e "$input" ] || continue
     case "$(basename "$input")" in *"$pattern"*) printf '%s\n' "$input" ;; esac
-  done | xargs -P "$jobs" -I{} sh -c "$(type run_latentgold_case | tail -n +2)
-    run_latentgold_case \"\$1\" \"$kit\" \"$returned\" \"$feature\"" _ {}
+  done | xargs -P "$jobs" -I{} bash -c 'run_latentgold_case "$1" "$2" "$3" "$4"' _ {} "$kit" "$returned" "$feature"
 fi
 
 if [ "$which_program" = "all" ] || [ "$which_program" = "mplus" ]; then
   for input in "$kit"/*.inp; do
     [ -e "$input" ] || continue
     case "$(basename "$input")" in *"$pattern"*) printf '%s\n' "$input" ;; esac
-  done | xargs -P "$jobs" -I{} sh -c "$(type run_mplus_case | tail -n +2)
-    run_mplus_case \"\$1\" \"$kit\" \"$returned\"" _ {}
+  done | xargs -P "$jobs" -I{} bash -c 'run_mplus_case "$1" "$2" "$3"' _ {} "$kit" "$returned"
 fi
