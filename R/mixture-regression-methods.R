@@ -86,7 +86,11 @@
   weighted_tau <- if (is.null(unit_weights)) unit_tau else unit_tau * unit_weights
   # A unit of weight zero is not in the sample (ML-1): it is assigned to no
   # class (review 2026-10-26, round 2, N7).
-  if (!is.null(unit_weights)) unit_tau <- unit_tau[unit_weights > 0, , drop = FALSE]
+  if (!is.null(unit_weights)) {
+    kept <- unit_weights > 0
+    unit_tau <- unit_tau[kept, , drop = FALSE]
+    unit_weights <- unit_weights[kept]
+  }
   modal <- max.col(unit_tau, ties.method = "first")
   class_names <- paste0("class_", seq_len(spec$n_classes))
   table <- data.frame(
@@ -96,7 +100,8 @@
     n_assigned = tabulate(modal, spec$n_classes),
     mean_posterior = vapply(seq_len(spec$n_classes), function(k) {
       assigned <- modal == k
-      if (any(assigned)) mean(unit_tau[assigned, k]) else NA_real_
+      if (any(assigned)) stats::weighted.mean(unit_tau[assigned, k],
+        (unit_weights %||% rep(1, nrow(unit_tau)))[assigned]) else NA_real_
     }, numeric(1)),
     row.names = NULL)
   if (identical(spec$family, "gaussian")) {
@@ -201,11 +206,29 @@
 
 #' Relative entropy of a posterior matrix (1 = perfectly separated)
 #' @noRd
-.mixture_relative_entropy <- function(posterior) {
-  if (ncol(posterior) < 2L) return(NA_real_)
-  positive <- posterior > 0
-  entropy <- -sum(posterior[positive] * log(posterior[positive]))
-  1 - entropy / (nrow(posterior) * log(ncol(posterior)))
+.mixture_relative_entropy <- function(posterior, weights = NULL) {
+  .multilpa_relative_entropy(posterior, weights)
+}
+
+#' Complete classification entropy of a regression mixture
+#' @param x A regression mixture fit.
+#' @return Sampling-weighted joint entropy of every latent class.
+#' @noRd
+.mixture_complete_entropy <- function(x) {
+  stopifnot("`x` must be a fitted regression mixture" =
+              inherits(x, "latents_mixture_regression"))
+  spec <- x$spec
+  if (identical(spec$nesting, "two-level")) {
+    within <- .latents_row_conditional_entropy(
+      x$expectation$tau_by_group_class, x$expectation$rho, spec$group_index)
+    return(.multilpa_entropy_sum(x$expectation$rho, spec$sampling_weights) +
+             sum(within * (spec$row_weights %||% 1)))
+  }
+  posterior <- if (identical(spec$nesting, "group")) x$expectation$group_tau else
+    x$expectation$tau
+  weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
+    spec$row_weights
+  .multilpa_entropy_sum(posterior, weights)
 }
 
 #' Fit-statistics table
@@ -220,16 +243,9 @@
   n_units <- sample$units
   k <- x$n_parameters
   log_lik <- x$log_likelihood
-  # ICL's entropy term sums every unit's own (unweighted) posteriors, also for
-  # a sampling-weighted fit, as the profile and class models do; only the log
-  # likelihood is the weighted pseudo-likelihood. A unit of weight zero is not
-  # part of the sample, so it is left out, as it is from the sample size.
-  # The posterior's rows are the units, except in the two-level nesting, whose
-  # row posteriors are taken over the rows that carry weight.
-  kept <- if (nrow(unit_posterior) == length(sample$unit_kept)) sample$unit_kept else
-    (spec$row_weights %||% rep(1, nrow(unit_posterior))) > 0
-  classified <- unit_posterior[kept, , drop = FALSE]
-  entropy_sum <- -sum(classified[classified > 0] * log(classified[classified > 0]))
+  # Classification likelihood and reporting use the same sampling weights
+  # as the fitted likelihood; two-level ICL includes both latent levels.
+  entropy_sum <- .mixture_complete_entropy(x)
   bic <- -2 * log_lik + k * log(n_units)
   unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
     spec$row_weights
@@ -245,9 +261,9 @@
     bic_rows = -2 * log_lik + k * log(sample$rows),
     sabic = -2 * log_lik + k * log((n_units + 2) / 24),
     icl = bic + 2 * entropy_sum,
-    entropy = .mixture_relative_entropy(classified),
+    entropy = .mixture_relative_entropy(unit_posterior, unit_weights),
     group_entropy = if (identical(spec$nesting, "two-level"))
-      .mixture_relative_entropy(x$expectation$rho) else NA_real_,
+      .mixture_relative_entropy(x$expectation$rho, spec$sampling_weights) else NA_real_,
     smallest_share = min(colSums(weighted_posterior) / sum(weighted_posterior)),
     converged = x$converged, iterations = x$iterations,
     n_starts = nrow(x$starts), n_best_replicated = x$n_best_replicated,
@@ -322,13 +338,19 @@
   unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
     spec$row_weights
   # Units of weight zero are not in the sample (ML-1, round 2 N7).
-  if (!is.null(unit_weights)) posterior <- posterior[unit_weights > 0, , drop = FALSE]
+  if (!is.null(unit_weights)) {
+    kept <- unit_weights > 0
+    posterior <- posterior[kept, , drop = FALSE]
+    unit_weights <- unit_weights[kept]
+  }
   assigned <- max.col(posterior, ties.method = "first")
   k <- spec$n_classes
   sizes <- tabulate(assigned, k)
   occupied <- which(sizes > 0L)
   means <- matrix(NA_real_, k, k)
-  means[occupied, ] <- rowsum(posterior, assigned) / sizes[occupied]
+  weights <- unit_weights %||% rep(1, nrow(posterior))
+  means[occupied, ] <- rowsum(posterior * weights, assigned) /
+    as.vector(rowsum(weights, assigned))
   data.frame(assigned = rep(paste0("class_", seq_len(k)), times = k),
              class = rep(paste0("class_", seq_len(k)), each = k),
              mean_posterior = as.vector(means),

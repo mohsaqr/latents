@@ -375,12 +375,21 @@ mixture_regression <- function(formula, data, n_classes,
                        n_group_classes, common, membership, group_membership,
                        variance, min_variance, missing, random, cluster)
   if (!is.null(weights)) {
-    spec <- .mixture_weight_spec(spec, data, weights)
+    spec <- .mixture_weight_spec(spec, data, weights, min_variance)
     if (!identical(vcov_type, "none")) {
       vcov_type <- .latents_weighted_vcov(TRUE, vcov_type, vcov_defaulted)
     }
   }
   if (!is.null(random)) {
+    carrying <- (spec$row_weights %||% rep(1, spec$n)) > 0
+    if ("(Intercept)" %in% colnames(spec$random_design) &&
+        all(tabulate(spec$group_index[carrying], spec$n_groups) <= 1L)) {
+      stop(errorCondition(paste(
+        "Every person of positive weight has only one observation. A random",
+        "intercept variance and a residual variance are then indistinguishable;",
+        "repeated observations are needed for a growth mixture."),
+        class = "latents_not_identified", call = NULL))
+    }
     spec$random_covariance <- random_covariance
     spec$random_diagonal <- random_diagonal
     # Fitted on a standardized outcome and mapped back exactly, so the search
@@ -477,10 +486,12 @@ mixture_regression <- function(formula, data, n_classes,
 #' @param spec The specification.
 #' @param data The data frame passed to the fit.
 #' @param weights Name of the weight column.
+#' @param min_variance Optional relative Gaussian variance floor, recomputed
+#'   on the rows of positive weight rather than on absent units.
 #' @return `spec` with `sampling_weights` (per unit), `row_weights` and
 #'   `weights`.
 #' @noRd
-.mixture_weight_spec <- function(spec, data, weights) {
+.mixture_weight_spec <- function(spec, data, weights, min_variance = NULL) {
   if (is.character(weights) && length(weights) == 1L && weights %in% names(data) &&
       length(spec$kept_rows) < nrow(data) && anyNA(data[[weights]])) {
     .latents_refuse_weights("missing weights; drop those rows first")
@@ -492,6 +503,16 @@ mixture_regression <- function(formula, data, n_classes,
   spec$sampling_weights <- unit_weights
   spec$row_weights <- unit_weights[unit_index]
   spec$weights <- weights
+  if (identical(spec$family, "gaussian") && !is.null(min_variance)) {
+    supported <- spec$y[spec$row_weights > 0]
+    if (max(supported) == min(supported)) {
+      stop(errorCondition(paste(
+        "The outcome takes the same value in every row of positive weight,",
+        "so there is no variation for a Gaussian mixture regression to model."),
+        class = "latents_bad_data", call = NULL))
+    }
+    spec$min_variance <- min_variance * max(stats::var(supported), .Machine$double.xmin)
+  }
   spec
 }
 
@@ -711,7 +732,7 @@ mixture_regression <- function(formula, data, n_classes,
       identical(colnames(v), "(Intercept)"),
     id = id, group_index = group_index, group_levels = group_levels,
     n_groups = n_groups,
-    min_variance = min_variance * max(y_variance, .Machine$double.eps),
+    min_variance = min_variance * max(y_variance, .Machine$double.xmin),
     kept_rows = kept_rows,
     terms = model_terms, xlevels = stats::.getXlevels(model_terms, frame),
     contrasts = attr(full_design, "contrasts"), model_data = data[used],

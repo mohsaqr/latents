@@ -102,6 +102,26 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
   expressions <- vapply(as.list(substitute(list(...)))[-1L], deparse1, character(1))
   labels <- names(fits) %||% rep("", length(fits))
   labels[!nzchar(labels)] <- expressions[!nzchar(labels)]
+  # Before candidate filters were added these names were ordinary model
+  # labels in `...`. A fit-valued control keeps that released meaning.
+  controls <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
+                    cutoff = cutoff)
+  model_controls <- vapply(controls, function(value) {
+    .latents_comparison_measurement_fit(value) ||
+      inherits(value, c("latents_mixture_regression", "latents_growth_mixture"))
+  }, logical(1))
+  if (any(model_controls)) {
+    restored <- controls[model_controls]
+    supplied <- as.list(sys.call())[-1L]
+    supplied_names <- names(supplied) %||% rep("", length(supplied))
+    positions <- c(which(!supplied_names %in% names(controls)),
+                    match(names(restored), supplied_names))
+    fits <- c(fits, restored)[order(positions)]
+    labels <- c(labels, names(restored))[order(positions)]
+    if (model_controls[["n_profiles"]]) n_profiles <- NULL
+    if (model_controls[["n_group_classes"]]) n_group_classes <- NULL
+    if (model_controls[["cutoff"]]) cutoff <- 0.8
+  }
   if (length(fits) >= 1L && inherits(fits[[1L]], "latents_family_enumeration")) {
     stop(errorCondition(paste(
       "Group-class family grids are compared in their own table:",

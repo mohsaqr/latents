@@ -1,2 +1,1 @@
 "id","suite","pattern","defect","decision","matched","status"
-"GD-1","mclust","gaussian_diagnostics[$]positive_rows","`positive_rows` counts posteriors that did not underflow. A Gaussian posterior is positive for every row, so the exact count is every row with a Gaussian value; the package reports 208 and 192 of 215 on thyroid VVV, mclust 207.","Redefine as the exact count, count posteriors above a stated threshold, or drop the column",2,"open"

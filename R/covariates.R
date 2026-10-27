@@ -645,8 +645,15 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
   ## value stored for each category, so a factor returns as that factor and a
   ## number as that number.
   invisible(lapply(object$categorical %||% character(), function(name) {
-    result[[name]] <<- object$categorical_values[[name]][
-      object$categorical_data[, name]]
+    original <- object$categorical_values[[name]]
+    value <- .latents_restore_partial(original[object$categorical_data[, name]],
+                                      object$categorical_data, name)
+    pair <- object$local_dependence
+    joined <- match(name, pair$name)
+    attr(value, "latents_pair") <- if (!is.na(joined))
+      c(pair$item_1[joined], pair$item_2[joined]) else
+        attr(original, "latents_pair", exact = TRUE)
+    result[[name]] <<- value
   }))
   extra <- .latents_draw_extra_columns(object$extra_data)
   if (length(extra) > 0L) result[names(extra)] <- extra

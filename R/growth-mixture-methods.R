@@ -314,7 +314,8 @@
   }))
   average <- vapply(seq_along(classes), function(k) {
     members <- kept & modal == k
-    if (!any(members)) NA_real_ else mean(posterior[members, k])
+    if (!any(members)) NA_real_ else
+      stats::weighted.mean(posterior[members, k], weights[members])
   }, numeric(1))
   data.frame(class = classes, share = shares$estimate, share_std_error = shares$std_error,
              share_conf_low = shares$conf_low, share_conf_high = shares$conf_high,
@@ -371,10 +372,8 @@
 
 #' Relative entropy of the person posteriors
 #' @noRd
-.growth_entropy <- function(posterior) {
-  if (ncol(posterior) < 2L) return(NA_real_)
-  logs <- ifelse(posterior > 0, log(posterior), 0)
-  1 - sum(-posterior * logs) / (nrow(posterior) * log(ncol(posterior)))
+.growth_entropy <- function(posterior, weights = NULL) {
+  .multilpa_relative_entropy(posterior, weights)
 }
 
 #' The random effects in words: "intercept", "intercept + time", "time"
@@ -387,12 +386,10 @@
 
 #' Classification entropy of the person posteriors (for ICL)
 #'
-#' Unweighted, also for a sampling-weighted fit, as the profile and class
-#' models compute it; only the log likelihood is the weighted one.
+#' Weighted by the person's sampling weight, as the fitted likelihood is.
 #' @noRd
 .growth_entropy_sum <- function(x) {
-  posterior <- x$expectation$posterior[.growth_weighted_persons(x)$kept, , drop = FALSE]
-  -sum(posterior[posterior > 0] * log(posterior[posterior > 0]))
+  .multilpa_entropy_sum(x$expectation$posterior, x$spec$sampling_weights)
 }
 
 #' One-row summary of the fit
@@ -416,7 +413,7 @@
     bic_rows = -2 * log_likelihood + log(used$rows) * k,
     sabic = -2 * log_likelihood + log((used$persons + 2) / 24) * k,
     icl = -2 * log_likelihood + log(used$persons) * k + 2 * .growth_entropy_sum(x),
-    entropy = .growth_entropy(x$expectation$posterior[used$kept, , drop = FALSE]),
+    entropy = .growth_entropy(x$expectation$posterior, spec$sampling_weights),
     smallest_share = min(colSums(x$expectation$posterior *
                                    (spec$sampling_weights %||% 1)) /
                            sum(spec$sampling_weights %||% rep(1, n_persons))),

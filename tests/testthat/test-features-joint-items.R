@@ -223,7 +223,8 @@ test_that("bootstrap inference survives a resample without a rare combination", 
   skip_on_cran()
   # Finding 2 (equivalence/features/joint-items/findings/): a resample that
   # misses a combination observed twice used to stop with an internal,
-  # unclassed error. Such a replicate is now dropped and counted.
+  # unclassed error. The joined item retains its full grid, so an unobserved
+  # combination stays on the probability floor without dropping the replicate.
   data <- joint_items_data()
   data$b[data$a == 1] <- 0
   data$b[which(data$a == 1)[1:2]] <- 1
@@ -235,7 +236,7 @@ test_that("bootstrap inference survives a resample without a rare combination", 
       dropped <<- TRUE
       invokeRestart("muffleWarning")
     })
-  expect_true(dropped)
+  expect_false(dropped)
   expect_true(all(is.finite(boot$standard_error)))
 })
 

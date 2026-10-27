@@ -114,7 +114,9 @@ predict.multilpa_transitions <- function(object, ...) {
       code <- match(as.character(value), object$categorical_levels[[indicator]])
       # A half-observed pair row ("a::", ":::b") is a set of joint categories,
       # recorded by `.multilpa_attach_partial()` below, not an unseen one.
-      half <- !is.na(value) & .latents_partial_levels(c(
+      paired <- indicator %in% object$local_dependence$name[
+        object$local_dependence$kind == "categorical"]
+      half <- paired & !is.na(value) & .latents_partial_levels(c(
         object$categorical_levels[[indicator]], as.character(value)))[
           -seq_along(object$categorical_levels[[indicator]])]
       unseen <- !is.na(value) & is.na(code) & !half

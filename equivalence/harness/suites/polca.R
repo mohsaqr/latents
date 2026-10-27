@@ -587,7 +587,12 @@ suite_polca <- function() {
     `residuals$p_adjusted` = from_posteriors,
     `information_criteria$awe_individual` = entropy_charge,
     `information_criteria$icl_individual` = entropy_charge,
-    `information_criteria$clc_individual` = entropy_charge)
+    `information_criteria$clc_individual` = entropy_charge,
+    # Both conventions charge the same complete-data entropy (round 2), so
+    # the groups columns carry the ridge's posteriors too.
+    `information_criteria$awe_groups` = entropy_charge,
+    `information_criteria$icl_groups` = entropy_charge,
+    `information_criteria$clc_groups` = entropy_charge)
   inventory <- fit_outputs(fit)
   # The posterior columns of the assignments are named by profile.
   posterior_columns <- grep("^assignments[$]posterior_profile_", inventory$output, value = TRUE)

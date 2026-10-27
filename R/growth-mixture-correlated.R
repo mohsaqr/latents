@@ -205,7 +205,9 @@
 #' log-Cholesky diagonal) at `min_variance`, in standard coordinates. The process rate is kept
 #' within a factor of 10^4 of the reciprocal median time gap, beyond which an
 #' autoregressive process cannot be told from white noise (fast) or from a
-#' random intercept (slow).
+#' random intercept (slow). For Brownian residuals the floor applies to the
+#' process variance at the largest observed time: its diffusion variance has
+#' units of outcome squared per time and cannot use the residual floor itself.
 #'
 #' @return A list with `lower` and `upper`, named like the coordinates.
 #' @noRd
@@ -218,6 +220,12 @@
     startsWith(names_theta, "random.log_cholesky.") |
     names_theta == "residual_correlation.log_sd"
   lower[variance_like] <- floor
+  if (identical(spec$residual_correlation, "brownian")) {
+    carrying <- (spec$row_weights %||% rep(1, spec$n)) > 0
+    time_scale <- max(spec$residual_times[carrying])
+    if (time_scale <= 0) time_scale <- 1
+    lower[names_theta == "residual_correlation.log_sd"] <- floor - 0.5 * log(time_scale)
+  }
   rate <- names_theta == "residual_correlation.log_rate"
   lower[rate] <- log(1e-4 / gap)
   upper[rate] <- log(1e4 / gap)
@@ -243,13 +251,18 @@
 .growth_correlated_refit <- function(spec, uncorrelated, max_iter, tol) {
   stats <- .growth_statistics(spec)
   base <- uncorrelated$params
-  gaps <- unlist(lapply(stats$raw$rows, function(r) diff(sort(spec$residual_times[r]))))
+  carrying <- (spec$row_weights %||% rep(1, spec$n)) > 0
+  rows <- stats$raw$rows[(spec$sampling_weights %||% rep(1, length(stats$n))) > 0]
+  gaps <- unlist(lapply(rows, function(r) diff(sort(spec$residual_times[r]))))
   gap <- if (any(gaps > 0)) stats::median(gaps[gaps > 0]) else 1
   floor <- spec$min_variance
   starts <- lapply(c(0.5, 2) / gap, function(rate) {
     params <- base
     params$sigma2 <- pmax(base$sigma2 / 2, 2 * floor)
-    sd <- sqrt(max(mean(base$sigma2) / 2, 2 * floor))
+    process_time <- if (identical(spec$residual_correlation, "brownian"))
+      max(spec$residual_times[carrying]) else 1
+    if (process_time <= 0) process_time <- 1
+    sd <- sqrt(max(mean(base$sigma2) / 2, 2 * floor) / process_time)
     params$correlation <- if (identical(spec$residual_correlation, "ar"))
       c(rate = rate, sd = sd) else c(sd = sd)
     params

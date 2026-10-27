@@ -422,7 +422,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   # indicator matrix, the group index and both designs, which is everything the
   # observed information is rebuilt from; passing `data` remains the stronger
   # check that the caller still holds the frame that produced the estimates.
-  if (is.null(data)) data <- .multilpa_cov_stored_data(object)
+  data <- if (is.null(data)) .multilpa_cov_stored_data(object) else
+    .multilpa_resolve_data(object, data)
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`step` must be a single positive number" =

@@ -126,23 +126,28 @@ test_that("the probabilities implied by Mplus's posteriors agree", {
                          quantity %in% c("class_sizes", "joint_probabilities")))
 })
 
-test_that("a partially observed pair loses the pair, unlike Latent GOLD's includeall", {
+test_that("a partially observed pair keeps its observed item, as Latent GOLD's includeall does", {
   partial <- ji_all_cases[grepl("^partial_", names(ji_all_cases))]
   expect_length(partial, 3L)
   invisible(lapply(names(partial), function(name) {
     case <- partial[[name]]
     fit <- ji_all_fits[[name]]
-    expect_true("latents_partial_pair" %in% fit$ji_warnings)
-    # latents was compared above with Latent GOLD on data whose partial pairs
-    # were made missing. On the raw data Latent GOLD keeps the observed item's
-    # marginal, sum_b P(a, b | class); the reference reproduces that maximum.
+    # Until 2026-10-26 latents dropped the pair for such a row and warned
+    # (`latents_partial_pair`); that was the MAR bias C2-2 of the round-2
+    # review. A half-observed pair now contributes its observed item's marginal
+    # sum_b P(a, b | class), which is Latent GOLD's convention, so the raw run
+    # is the comparison and no warning is raised.
+    expect_false("latents_partial_pair" %in% fit$ji_warnings)
     raw <- ji_latentgold(case$spec$latentgold[["main"]], case$spec$k)
     marginal <- ref_marginal_em(case$data, c("p1", "p2"), c("u1", "u2", "u3"), case$spec$k,
                                 n_starts = 10L, seed = case$seed)
     expect_lt(abs(marginal$log_likelihood - raw$log_likelihood), ji_tol$lg_printed + 1e-6)
+    expect_lt(abs(fit$log_likelihood - raw$log_likelihood), ji_tol$lg_printed + 1e-6)
     expect_identical(raw$n_parameters, as.integer(fit$n_parameters))
-    # Latent GOLD's raw run also scores the lone items, so its likelihood is lower.
-    expect_gt(fit$log_likelihood, raw$log_likelihood + 10)
+    # The masked run (both items of a half-observed pair removed) scores fewer
+    # cells, so its likelihood is higher; it is kept only as this contrast.
+    masked <- ji_latentgold(case$spec$latentgold[["mask"]], case$spec$k)
+    expect_gt(masked$log_likelihood, raw$log_likelihood + 10)
   }))
 })
 

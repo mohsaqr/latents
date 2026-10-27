@@ -53,9 +53,12 @@ ji_compare_case <- function(case, fit) {
   rows <- list()
   notes <- character()
   add <- function(...) rows[[length(rows) + 1L]] <<- ji_row(case$name, ...)
-  # Latent GOLD's main run: the mask run for partial pairs (latents' convention).
-  run <- if ("mask" %in% names(spec$latentgold)) spec$latentgold[["mask"]] else
-    spec$latentgold[["main"]]
+  # Latent GOLD's main run. For the partial cases that is its `missing
+  # includeall` run: since 2026-10-26 (round 2, C2-2) latents keeps the
+  # observed item of a half-observed pair exactly as Latent GOLD does, so the
+  # masked run that reproduced the old drop-the-pair convention is no longer
+  # the comparison.
+  run <- spec$latentgold[["main"]]
   lg <- ji_latentgold(run, k)
   at <- match(case$data$id, lg$id)
   stopifnot("Latent GOLD lost rows" = !anyNA(at))
@@ -116,6 +119,15 @@ ji_compare_case <- function(case, fit) {
   }
   if (isTRUE(spec$mplus)) {
     mp <- ji_mplus(case$name, k)
+    if (isTRUE(spec$missing)) {
+      # Mplus reads the pair as one joined variable, so a row missing one item
+      # is missing the pair: its run is the old drop-the-pair convention and
+      # cannot express includeall. It is compared with latents fitted on the
+      # data masked the same way (both items removed for such rows), which
+      # keeps the Mplus claim exact without charging the includeall fit.
+      fit <- ji_masked_fit(case)
+      latents_ll <- ji_latents_loglik(fit$log_likelihood)
+    }
     at <- match(case$data$id, mp$id)
     stopifnot("Mplus lost rows" = !anyNA(at), "Mplus did not terminate normally" = mp$terminated)
     ll_tol <- ji_mplus_rounding(mp$log_likelihood) + ji_tol$mplus_loglik + latents_ll
@@ -188,6 +200,7 @@ ji_polish <- function(case, fit) {
                   posteriors = tight$subject_posteriors, method = "tighter production refit")))
   }
   spec <- case$spec
+  if (isTRUE(spec$missing)) return(ji_polish_marginal(case, fit))
   coded <- ref_code(case$data, spec$vars, spec$pairs)
   priors <- c(fit$profile_probabilities[1L, ])
   indicators <- colnames(coded$codes)
@@ -258,6 +271,10 @@ ji_polca_fit <- function(formula, frame, k, seed, nrep, maxiter, tol) {
 #' fit, its comparisons and its iteration-cap diagnostics remain available.
 ji_polca <- function(case, fit, polish = NULL, nrep = 10L) {
   spec <- case$spec
+  # poLCA, like Mplus, reads a joined pair as one variable (`ref_code()` makes
+  # a half-observed pair missing), so a partial case is compared with latents
+  # fitted on the data masked the same way.
+  if (isTRUE(spec$missing)) fit <- ji_masked_fit(case)
   coded <- ref_code(case$data, spec$vars, spec$pairs)
   frame <- as.data.frame(coded$codes)
   names(frame) <- paste0("V", seq_len(ncol(frame)))
@@ -435,4 +452,81 @@ ji_reference_study <- function() {
   design <- ji_study_design()
   rows <- split(design, seq_len(nrow(design)))
   do.call(rbind, ji_parallel(rows, function(row) ji_study_one(row)))
+}
+
+#' Polish a partial-pair case under Latent GOLD's includeall convention
+#'
+#' latents keeps the observed item of a half-observed pair (since 2026-10-26),
+#' which is what `ref_marginal_*` implement, so the likelihood scored at the
+#' fit's estimates and the independent EM are the marginal ones; `ref_*` would
+#' charge the fit with the old drop-the-pair convention.
+#'
+#' @return As [ji_polish()].
+ji_polish_marginal <- function(case, fit) {
+  spec <- case$spec
+  stopifnot("one pair per partial case" = length(spec$pairs) == 1L)
+  pair <- strsplit(spec$pairs, ":", fixed = TRUE)[[1L]]
+  others <- setdiff(spec$vars, pair)
+  joint_name <- spec$pairs
+  block <- fit$response_probabilities[[joint_name]]
+  cells <- strsplit(colnames(block), ":", fixed = TRUE)
+  first <- sort(unique(vapply(cells, `[`, "", 1L)))
+  second <- sort(unique(vapply(cells, `[`, "", 2L)))
+  k <- nrow(block)
+  joint <- array(0, c(k, length(first), length(second)), dimnames = list(NULL, first, second))
+  invisible(lapply(seq_along(cells), function(index) {
+    joint[, cells[[index]][1L], cells[[index]][2L]] <<- block[, index]
+  }))
+  priors <- c(fit$profile_probabilities[1L, ])
+  probabilities <- lapply(stats::setNames(others, others),
+                          function(v) fit$response_probabilities[[v]])
+  parts <- ref_marginal_parts(case$data, pair, others, priors, joint, probabilities)
+  polished <- ref_marginal_em(case$data, pair, others, spec$k, n_starts = 10L,
+                              seed = case$seed, tol = 1e-12, max_iter = 200000L)
+  order <- montecarlo_relabel(polished$posteriors, fit$subject_posteriors)$order
+  difference <- function(set) {
+    if (length(set) == 0L) return(0)
+    max(abs(unlist(lapply(set, function(v) {
+      polished$probabilities[[v]][order, colnames(fit$response_probabilities[[v]]), drop = FALSE] -
+        fit$response_probabilities[[v]]
+    }))))
+  }
+  joint_gap <- max(abs(unlist(lapply(seq_along(cells), function(index) {
+    polished$joint[order, cells[[index]][1L], cells[[index]][2L]] - block[, index]
+  }))))
+  gap <- list(log_likelihood = polished$log_likelihood - fit$log_likelihood,
+              sizes = max(abs(polished$priors[order] - priors)),
+              items = difference(others), joint = joint_gap,
+              posteriors = max(abs(polished$posteriors[, order] - fit$subject_posteriors)))
+  row <- data.frame(case = case$name, log_likelihood = fit$log_likelihood,
+                    relative_at_estimates = abs(parts$log_likelihood - fit$log_likelihood) /
+                      abs(fit$log_likelihood),
+                    posteriors_at_estimates = max(abs(parts$posteriors - fit$subject_posteriors)),
+                    loglik_gap = gap$log_likelihood,
+                    relative_loglik_gap = gap$log_likelihood / (1 + abs(fit$log_likelihood)),
+                    parameter_gap = max(unlist(gap[c("sizes", "items", "joint")])),
+                    posterior_gap = gap$posteriors, polished_converged = polished$converged)
+  list(row = row, gap = gap,
+       reference = list(log_likelihood = polished$log_likelihood,
+                        posteriors = polished$posteriors[, order],
+                        method = "independent categorical EM, includeall convention"),
+       polished = list(log_likelihood = polished$log_likelihood, priors = polished$priors[order],
+                       probabilities = polished$probabilities, posteriors = polished$posteriors[, order]))
+}
+
+#' latents fitted with every half-observed pair masked
+#'
+#' The convention of a program that reads the pair as one joined variable: a
+#' row missing one item is missing the pair. latents itself keeps the observed
+#' item (Latent GOLD's includeall), so this fit exists only to compare with
+#' those programs.
+#' @return A latents fit of the masked data.
+ji_masked_fit <- function(case) {
+  spec <- case$spec
+  stopifnot("one pair per partial case" = length(spec$pairs) == 1L)
+  items <- strsplit(spec$pairs[[1L]], ":", fixed = TRUE)[[1L]]
+  masked <- case
+  either <- is.na(masked$data[[items[1L]]]) | is.na(masked$data[[items[2L]]])
+  masked$data[either, items] <- NA
+  ji_fit(masked)
 }

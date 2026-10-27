@@ -222,7 +222,8 @@
                           list(mean = unname(prior_parameters$mean + centers))),
       missing = missing, max_iter = max_iter, tol = tol,
       n_observed_by_indicator = setNames(
-        c(colSums(!is.na(x)), if (is.null(codes)) NULL else colSums(!is.na(codes))),
+        c(colSums(!is.na(x) & carried_rows), if (is.null(codes)) NULL else
+          colSums(!is.na(codes) & carried_rows)),
         c(continuous, categorical)),
       min_variance = min_variance, standard_deviations = sqrt(parameters$variances),
       fixed = fixed,

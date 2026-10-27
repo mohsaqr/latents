@@ -182,7 +182,12 @@
     prepared <- pair$name %in% names(frame) &&
       identical(attr(frame[[pair$name]], "latents_pair"), c(pair$item_1, pair$item_2))
     if (pair$name %in% names(frame) && !has_items &&
-        (!any(c(pair$item_1, pair$item_2) %in% names(frame)) || prepared)) return(frame)
+        (!any(c(pair$item_1, pair$item_2) %in% names(frame)) || prepared)) {
+      # A fitted pair may be supplied as its reconstructed joint column.
+      # Restore provenance before interpreting its partial-row markers.
+      attr(frame[[pair$name]], "latents_pair") <- c(pair$item_1, pair$item_2)
+      return(frame)
+    }
     if (!has_items) {
       stop(errorCondition(sprintf(
         "`data` needs `%s` and `%s` for the pair \"%s\" of `local_dependence`.",

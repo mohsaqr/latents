@@ -59,10 +59,8 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
 
 #' Relative entropy of the group classification (1 = perfectly separated)
 #' @noRd
-.additive_entropy <- function(posterior) {
-  if (ncol(posterior) < 2L) return(NA_real_)
-  terms <- ifelse(posterior > 0, posterior * log(posterior), 0)
-  1 + sum(terms) / (nrow(posterior) * log(ncol(posterior)))
+.additive_entropy <- function(posterior, weights = NULL) {
+  .multilpa_relative_entropy(posterior, weights)
 }
 
 #' Cross-tabulate modal group classes against a known group-level variable
@@ -119,6 +117,7 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
   used <- .additive_used_groups(x)
   used_posterior <- posterior[used, , drop = FALSE]
   used_assigned <- assigned[used]
+  used_weights <- (x$sampling_weights %||% rep(1, nrow(posterior)))[used]
   id_frame <- stats::setNames(data.frame(ids, stringsAsFactors = FALSE), x$id)
   switch(what,
     parameters = .additive_parameters_or_notice(x, level, vcov_type, adjust),
@@ -130,7 +129,8 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
       n_assigned = tabulate(used_assigned, length(class_names)),
       mean_posterior = vapply(seq_along(class_names), function(h) {
         if (any(used_assigned == h)) {
-          mean(used_posterior[used_assigned == h, h])
+          stats::weighted.mean(used_posterior[used_assigned == h, h],
+                                 used_weights[used_assigned == h])
         } else NA_real_
       }, numeric(1)),
       effective_groups = .additive_effective_or_na(x),
@@ -183,7 +183,8 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
         group_class = class_names[cells$group_class],
         mean_posterior = mapply(function(a, h) {
           if (any(used_assigned == a)) {
-            mean(used_posterior[used_assigned == a, h])
+            stats::weighted.mean(used_posterior[used_assigned == a, h],
+                                 used_weights[used_assigned == a])
           } else NA_real_
         }, cells$assigned, cells$group_class),
         n_assigned = tabulate(used_assigned, length(class_names))[cells$assigned],
@@ -196,7 +197,7 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
       bic_individual = x$bic_individual,
       n_groups = x$n_used_groups %||% x$n_groups,
       n_obs = x$sufficient_statistics$n_used_obs %||% x$n_obs,
-      entropy = .additive_entropy(used_posterior),
+      entropy = .additive_entropy(used_posterior, used_weights),
       smallest_class = min(x$group_probabilities),
       min_effective_groups = min(.additive_effective_or_na(x)),
       converged = x$converged,

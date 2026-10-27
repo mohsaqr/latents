@@ -55,7 +55,11 @@
   # Normalize before summing or multiplying: finite raw weights can overflow
   # both operations even though their relative weights are well defined.
   relative <- unit / max(unit)
-  relative * (sum(relative > 0) / sum(relative))
+  # A positive ratio smaller than the representable range must not turn a
+  # sampled unit into an absent unit, or lower the normalization of every
+  # other weight. Its negligible mass is represented by the smallest double.
+  relative[unit > 0 & relative == 0] <- .Machine$double.xmin * .Machine$double.eps
+  relative * (sum(unit > 0) / sum(relative))
 }
 
 #' Refuse an option that sampling weights do not support

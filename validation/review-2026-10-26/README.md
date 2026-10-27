@@ -107,6 +107,12 @@ observation, not a defect. The search claim compares estimates in standard
 errors, the yardstick for "close enough to the maximum"; machine precision
 remains the yardstick for "the same computation".
 
+Round 2 (`round-2/`) re-derived every formula after these fixes: 68
+findings, 63 fixed, none in the model mathematics. Round 3
+(`round-3-codex.md`, an adversarial pass by Codex over the interactions of the
+round-2 changes) found and fixed 11 more, each with a test failing on the old
+code and verified here on 65 test files and seven harness suites.
+
 Open defects are listed in `equivalence/harness/known-open.csv`. They are
 reported by id instead of failing the run, and an entry that no longer
 matches anything fails the run. TS-1, INF-7, INF-6, ENUM-1, MR-F7, ML-1, MR-F5 and G2 are fixed, each
@@ -117,12 +123,18 @@ with a regression test that fails without the fix
 
 ## Verification
 
-All results are from a fresh install of the final tree.
+Final runs of 2026-10-27, each on a fresh install of the finished tree
+(rounds 1-3 and every fix above), under `NOT_CRAN=true` with one BLAS thread:
 
 | Run | Result |
 |---|---|
-| Full suite | 1,629 tests, 11,327 passes, 0 failures, errors or warnings, 15 fork skips (Accelerate BLAS) |
-| New review tests (`tests/testthat/test-review-1026-*.R`) | 111 tests, 729 passes |
-| External oracles (`equivalence/test-review-1026-oracles.R`) | 9 tests, 197 passes |
+| Harness self-tests (`equivalence/harness/test-harness.R`) | 0 failures |
+| Equivalence harness, all 15 suites (`equivalence/harness/run.R`) | 8,916 quantities, 3,142,823 values compared; 8,916 agreed; 0 outputs not covered; known-open register empty |
+| Full package suite (fresh install) | 206 files, 1,794 tests, 12,071 passes, 0 failures, 0 errors, 16 fork skips (Accelerate BLAS) |
+| Equivalence test files (`equivalence/run.R`, against the same fresh install) | Full set run on 2026-10-27: every file passes except the ml-three-step reproduction test, repaired afterwards and rerun on its own (2,016 passes, 0 failures). Two kits had encoded the pre-review conventions: joint-items (now compared with Latent GOLD's `includeall` run and polished under that convention; its partial cases agree with Latent GOLD at the fit's estimates to 0 relative difference and with the kit's own EM to 1e-14; 97 passes) and ml-three-step (its fit recipe now carries the absolute variance floor it was built under, and step three is compared on the stored posteriors; the refit reaches the stored maximum in all 193 cases, max log-likelihood gap 9.8e-5, max posterior gap 0.017 on a flat ridge, 12 cases relabelled). `claims` 275 passes after two reworded claims were re-registered. Worker-based files must run with `R_LIBS` at an install of the current tree. |
 
-The 15 fork tests were not run under the reference BLAS.
+Round-1 figures, for the record: 1,629 tests, 11,327 passes at the end of
+round 1; the round-1 review tests alone 111 tests, 729 passes; the external
+oracles 9 tests, 197 passes.
+
+The 16 fork tests were not run under the reference BLAS.

@@ -212,8 +212,15 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       original_values <- x$categorical_values[[name]]
       if (!is.null(original_values)) {
         # Half-observed rows of a joined pair keep their observed item.
-        return(.latents_restore_partial(original_values[x$categorical_data[, name]],
-                                        x$categorical_data, name))
+        value <- .latents_restore_partial(original_values[x$categorical_data[, name]],
+                                          x$categorical_data, name)
+        pair <- x$local_dependence
+        joined <- match(name, pair$name)
+        # Older saved fits recorded the pair on the fit, not its typed values.
+        attr(value, "latents_pair") <- if (!is.na(joined))
+          c(pair$item_1[joined], pair$item_2[joined]) else
+            attr(original_values, "latents_pair", exact = TRUE)
+        return(value)
       }
       # Fits saved before typed category values were retained still expose
       # their labels, even though their original storage class is unknown.

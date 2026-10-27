@@ -1,5 +1,22 @@
 # latents (development version)
 
+### Third pass: interactions (2026-10-27)
+
+* A plain categorical item whose labels happen to contain `::` is no longer
+  read as a half-observed joined item (the one-class log likelihood was 47.8
+  too high); only a declared `local_dependence` pair carries that meaning.
+* `compare_models()` again accepts fits named `n_profiles`, `n_group_classes`
+  or `cutoff`, as 0.9.21 did; numeric values keep their filtering meaning.
+* A positive sampling weight whose ratio underflows stays a present unit.
+* Regression, growth and additive fits apply the sampling-weight convention
+  to their entropy, average posteriors and classification tables; the
+  two-level regression ICL charges the joint classification entropy.
+* Covariate inference keeps half-observed pair rows; zero-weight outcomes no
+  longer set a Gaussian floor or a growth coordinate; the regression floor
+  stays relative below machine epsilon; a random-intercept growth model whose
+  every person has one observation is refused as `latents_not_identified`;
+  Brownian residual bounds and starts follow the time units.
+
 ### Second review of every formula (2026-10-26, round 2)
 
 * **Standard errors of centred fits.** Under `centering = "grand"` or

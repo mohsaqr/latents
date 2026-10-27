@@ -35,9 +35,10 @@
     # each of which has an estimated probability at the model's floor. Its
     # markers of half-observed rows ("a::", ":::b") are not categories: such
     # a row is a set of joint categories (`.latents_partial_map()`).
-    declared <- if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) levels(value) else
-      levels(droplevels(value))
-    declared[!.latents_partial_levels(declared)]
+    if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) {
+      declared <- levels(value)
+      declared[!.latents_partial_levels(declared)]
+    } else levels(droplevels(value))
   } else sort(unique(value[!is.na(value)]))
   if (length(levels_observed) < min_categories) {
     stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
@@ -135,7 +136,8 @@
 .multilpa_attach_partial <- function(codes, frame, levels) {
   maps <- lapply(seq_len(ncol(codes)), function(column) {
     value <- frame[[column]]
-    if (!is.factor(value)) return(NULL)
+    if (!is.factor(value) ||
+        length(attr(value, "latents_pair", exact = TRUE)) != 2L) return(NULL)
     .latents_partial_map(value, as.character(levels[[column]]))
   })
   if (all(vapply(maps, is.null, logical(1)))) return(codes)
@@ -244,7 +246,11 @@
   if (length(categorical) == 0L) return(NULL)
   stats::setNames(lapply(categorical, function(name) {
     column <- data[[name]]
-    column[match(encoded$levels[[name]], as.character(column))]
+    values <- column[match(encoded$levels[[name]], as.character(column))]
+    # Factor subsetting drops custom attributes. Keep the explicit pair
+    # provenance: labels alone can also be ordinary user categories.
+    attr(values, "latents_pair") <- attr(column, "latents_pair", exact = TRUE)
+    values
   }), categorical)
 }
 

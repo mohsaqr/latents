@@ -352,7 +352,8 @@
 #'   `random_center`, `random_spread` of the design columns.
 #' @noRd
 .growth_standardize <- function(spec) {
-  response <- spec$y - spec$offset
+  carrying <- (spec$row_weights %||% rep(1, spec$n)) > 0
+  response <- (spec$y - spec$offset)[carrying]
   x_intercept <- "(Intercept)" %in% colnames(spec$x)
   z_intercept <- "(Intercept)" %in% colnames(spec$z)
   center_on <- if (x_intercept) "beta" else if (z_intercept) "common" else "none"
@@ -363,7 +364,7 @@
   columns <- function(design, centre) {
     if (ncol(design) == 0L) return(list(center = numeric(), spread = numeric()))
     pieces <- lapply(seq_len(ncol(design)), function(j) {
-      values <- design[, j]
+      values <- design[carrying, j]
       constant <- max(values) == min(values)
       if (identical(colnames(design)[j], "(Intercept)") || constant) return(c(0, 1))
       if (centre) c(mean(values), stats::sd(values)) else c(0, sqrt(mean(values^2)))

@@ -16,7 +16,12 @@ ml3_returned <- function() file.path(ml3_root(), "returned")
 #' The latents measurement fit of a case (deterministic: fixed seed and starts)
 ml3_fit <- function(case) {
   spec <- case$spec
-  common <- list(n_starts = spec$n_starts %||% 20L, seed = 1L, tol = 1e-10, max_iter = 5000L)
+  # The kit was built on 2026-10-20 under the absolute variance floor of that
+  # day; the default became relative on 2026-10-26 (K2-2). sweep_041 (four
+  # classes on 50 units) is the kit's single-unit-class solution only under
+  # the old floor, so the floor is part of the kit's recipe.
+  common <- list(n_starts = spec$n_starts %||% 20L, seed = 1L, tol = 1e-10, max_iter = 5000L,
+                 min_variance = 1e-6)
   extra <- spec$extra %||% list()
   fit <- switch(spec$family,
     lpa = do.call(lpa, c(list(case$data, spec$vars, n_profiles = spec$k,
@@ -25,6 +30,35 @@ ml3_fit <- function(case) {
     ml_lpa = do.call(multilpa, c(list(case$data, spec$vars, "g", n_profiles = spec$k,
                                       n_group_classes = spec$h, model = spec$model %||% "VVI"),
                                  common, extra)))
+  fit
+}
+
+#' The case's fit carrying the posteriors the kit sent to the other programs
+#'
+#' The kit's posteriors were written by the latents of 2026-10-20. The EM stop
+#' rule changed on 2026-10-26 (tol times the number of observed values), so a
+#' refit reaches the same maximum but may stop at another point of a flat
+#' likelihood, and may order the classes differently. Step three is compared
+#' on the posteriors Latent GOLD and Mplus actually received, so those are
+#' installed in the fit at the analysed level; the distance of the refit from
+#' them is kept in `attr(fit, "ml3_refit")` for the reproduction test.
+ml3_kit_fit <- function(case) {
+  fit <- suppressWarnings(ml3_fit(case))
+  inputs <- ml3_level_inputs(fit, case)
+  order <- montecarlo_relabel(inputs$posteriors, case$posteriors)$order
+  refit <- data.frame(
+    case = case$name,
+    log_likelihood_gap = fit$log_likelihood - case$step1_log_likelihood,
+    posterior_gap = max(abs(inputs$posteriors[, order, drop = FALSE] - case$posteriors)),
+    relabelled = !identical(order, seq_along(order)))
+  if (identical(case$level, "groups")) {
+    fit$group_posteriors <- case$posteriors
+    fit$group_classes <- case$modal
+  } else {
+    fit$subject_posteriors <- case$posteriors
+    fit$subject_profiles <- case$modal
+  }
+  attr(fit, "ml3_refit") <- refit
   fit
 }
 

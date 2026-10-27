@@ -92,3 +92,18 @@ Largest differences (`maxima.csv`):
 ## Findings
 
 See FINDINGS.md.
+
+## Reproducing the kit's fits after 2026-10-26
+
+The kit's posteriors were written by the latents of 2026-10-20. Two package
+conventions changed on 2026-10-26: the EM stop (now `tol` times the number of
+observed values) and the default variance floor (now relative). The fit
+recipe `ml3_fit()` passes the old absolute floor (`min_variance = 1e-6`), so
+every case refits to the kit's maximum (log likelihood within 1e-4 over the
+193 cases); the stop rule leaves the weakly separated cases some way from the
+saved posteriors on a flat likelihood (up to 0.017 for large_lca_k3_05, whose
+saved point was an early stop on a flat ridge: the tightest refit lies 3.5e-5
+above it), and may order the classes differently (12 cases).
+`ml3_kit_fit()` records that distance (`refit-reproduction` table) and then
+installs the kit's own posteriors in the fit, so step three is compared on
+exactly what Latent GOLD and Mplus received.

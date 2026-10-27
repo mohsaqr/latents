@@ -83,10 +83,12 @@ is never below the plain model's; every parameter count matches.
   against 11). The likelihoods agree; counts are compared under Latent
   GOLD's convention.
 - **Partial pairs:** Latent GOLD's `includeall` keeps the observed item's
-  marginal for a row missing the other item of the pair; latents drops the
-  pair for that row. The reference reproduces Latent GOLD's value
-  (-2712.4457), and latents matches Latent GOLD run on the data with the
-  pair masked.
+  marginal for a row missing the other item of the pair, and so does latents
+  since 2026-10-26 (it used to drop the pair, the MAR bias C2-2 of that day's
+  review). Both give -2712.4457 on `partial_01`; the reference's
+  `ref_marginal_*` functions implement this convention and are what the
+  partial cases are polished against. The masked run (both items removed for
+  such rows) is retained only as a contrast.
 - **Case weights:** Latent GOLD sums the raw weights; latents rescales them
   to n.
 - **Two-level BIC:** Latent GOLD's BIC is latents' `bic_individual`.

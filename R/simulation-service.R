@@ -102,6 +102,12 @@
             length(id) == 1L)
   taken <- rows_by_group[drawn]
   resampled <- data[unlist(taken, use.names = FALSE), , drop = FALSE]
+  # Factor row subsetting removes the provenance needed to distinguish a
+  # joined item's partial observations from ordinary category labels.
+  invisible(lapply(names(data), function(name) {
+    pair <- attr(data[[name]], "latents_pair", exact = TRUE)
+    if (length(pair) == 2L) attr(resampled[[name]], "latents_pair") <<- pair
+  }))
   resampled[[id]] <- rep(seq_along(drawn), lengths(taken))
   row.names(resampled) <- NULL
   resampled
