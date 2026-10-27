@@ -737,8 +737,14 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_screen = NULL,
                             acceleration = c("squarem", "none"), cores = 1L) {
   # Setup forces the public arguments and draws every start in its seed frame.
-  plan <- do.call(.lta_setup, c(as.list(environment()), list(call = match.call())),
-                  quote = TRUE)
+  # It is called with the formals as symbols so that a condition raised while
+  # validating the input names the arguments instead of embedding the data.
+  fitting_call <- match.call()
+  formals_as_symbols <- lapply(stats::setNames(nm = names(formals(sys.function()))),
+                               as.symbol)
+  setup_call <- as.call(c(list(quote(.lta_setup)), formals_as_symbols,
+                          list(call = quote(fitting_call))))
+  plan <- eval(setup_call, environment())
   .lta_run_plan(plan, cores)
 }
 
@@ -789,7 +795,8 @@ lta <- function(data, vars, id, n_profiles, time,
     !identical(measurement_model, "invariant") || !is.null(weights) ||
     length(ordinal) > 0L || length(count) > 0L
   .latents_check_extra_arguments(vars, categorical, ordinal, count)
-  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
+  .latents_check_data_frame(data)
+  stopifnot(is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
             "`min_probability` must be a single number in (0, 1)" =

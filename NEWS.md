@@ -1,5 +1,20 @@
 # latents (development version)
 
+## Conditions never carry the data (0.97.4)
+
+* An error raised while a fitting verb validated its input could carry the
+  whole data set in its call: `multilca()` forwarded to `multilpa()` with
+  `do.call()`, so the recorded call held the data by value, and `multilpa()`
+  put the setup function's body (375 lines) at the head of the call it
+  evaluated. R's own error printing truncates the call, but a host that
+  deparses `conditionCall()` in full streamed every value of a 400,000-row
+  data set (a 10,000-row object printed as 3.3 MB; now 83 bytes). The
+  fitting verbs now evaluate calls of symbols only (`multilpa()`,
+  `multilca()`, `lta()`), a non data frame is refused with
+  `latents_bad_data` naming the object's class, and every candidate error
+  that is stored on a grid or raised again has its call bounded
+  (`<data.frame[400000 x 9]>` in place of the values).
+
 ### Third pass: interactions (2026-10-27)
 
 * A plain categorical item whose labels happen to contain `::` is no longer

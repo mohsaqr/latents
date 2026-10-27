@@ -1478,10 +1478,16 @@ multilpa <- function(data, vars, id, n_profiles,
                        boundary = c("allow", "exclude")) {
   # Forward only supplied arguments so setup retains every missing() check.
   fitting_call <- match.call()
-  setup_call <- fitting_call
-  setup_call[[1L]] <- .multilpa_setup
+  # The setup runs as a call of symbols: its head is the function's name and
+  # any argument that arrived as a value (through do.call()) is bound to a
+  # name first, so a condition raised while validating the input never
+  # carries the data in its call (review 2026-10-27).
+  setup_env <- new.env(parent = parent.frame())
+  setup_env$.multilpa_setup <- .multilpa_setup
+  setup_call <- .latents_bind_values(fitting_call, setup_env, parent.frame())
+  setup_call[[1L]] <- quote(.multilpa_setup)
   setup_call$.call <- substitute(quote(value), list(value = fitting_call))
-  plan <- eval(setup_call, parent.frame())
+  plan <- eval(setup_call, setup_env)
   if (!inherits(plan, "latents_multilpa_plan")) return(plan)
   .multilpa_run_plan(plan, plan$cores)
 }
@@ -1595,8 +1601,8 @@ multilpa <- function(data, vars, id, n_profiles,
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
+  .latents_check_data_frame(data)
   stopifnot(
-    "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector of column names" =
       is.character(vars),
     "`id` must be a single column name, or NULL for a single-level fit" =

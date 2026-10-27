@@ -1839,6 +1839,6 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     identical(class(value), class(first)) &&
       identical(conditionMessage(value), conditionMessage(first))
   }, logical(1)))
-  if (shared) stop(first)
+  if (shared) stop(.latents_bounded_condition(first))
   invisible(NULL)
 }

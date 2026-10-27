@@ -165,8 +165,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                            n_group_classes = n_group_classes,
                            vcov_type = "none"), arguments)
   tryCatch(do.call(mixture_regression, call_arguments),
-           latents_no_valid_start = function(condition) condition,
-           latents_bad_data = function(condition) condition)
+           latents_no_valid_start = .latents_bounded_condition,
+           latents_bad_data = .latents_bounded_condition)
 }
 
 #' One enumeration row

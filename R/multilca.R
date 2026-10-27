@@ -51,10 +51,16 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
   # the set rather than replacing it, so every indicator stays categorical.
   categorical <- .latents_lca_categorical(vars, extra)
   extra$categorical <- NULL
-  arguments <- c(list(data = data, vars = vars, id = id, n_profiles = n_profiles,
-                       categorical = categorical), extra)
-  if (!missing(n_group_classes)) arguments$n_group_classes <- n_group_classes
-  fit <- do.call(multilpa, arguments)
+  # Forward the caller's own expressions rather than their values, so the
+  # call multilpa() records (and any condition raised while validating the
+  # input) names the caller's objects instead of embedding the data.
+  fitting_env <- new.env(parent = parent.frame())
+  fitting_env$multilpa <- multilpa
+  fitting_call <- .latents_bind_values(match.call(expand.dots = TRUE), fitting_env,
+                                       parent.frame())
+  fitting_call[[1L]] <- quote(multilpa)
+  fitting_call$categorical <- categorical
+  fit <- eval(fitting_call, fitting_env)
   # Report the call the caller wrote, as multilpa() does for its own calls.
   fit$call <- match.call()
   fit

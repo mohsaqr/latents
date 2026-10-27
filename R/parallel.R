@@ -139,7 +139,8 @@
   force(fun)
   function(i) .latents_collect_conditions(function() {
     tryCatch(fun(i), error = function(condition) {
-      structure(list(condition = condition), class = "latents_task_error")
+      structure(list(condition = .latents_bounded_condition(condition)),
+                class = "latents_task_error")
     })
   })
 }
