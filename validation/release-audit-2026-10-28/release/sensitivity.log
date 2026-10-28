@@ -1,0 +1,8 @@
+'data.frame':	200 obs. of  2 variables:
+ $ a: num  -2.835 -0.152 -1.558 -1.426 -1.528 ...
+ $ b: num  -0.00474 -1.0592 -1.43257 -1.43128 -0.2849 ...
+  seed log_likelihood converged iterations optimum best agreement
+1    1      -672.0049     FALSE          0       1 TRUE         1
+2    2      -672.0049     FALSE          0       1 TRUE         1
+3    3      -672.0049     FALSE          0       1 TRUE         1
+Confirmed: unfinished refit is labelled best=TRUE, optimum=1.

@@ -1,0 +1,51 @@
+Complete final outer equivalence validation — PASS
+Commit: cf1127fa66283826ed421d028999b5ac23e1901d
+
+198 cases, 39 files, 5,419 passing expectations; zero failures, errors,
+warnings or skips. This is ONE complete clean run, with NO whole-file
+replacement, merged results or tolerance changes.
+
+Started 2026-10-20 15:37:47 UTC; completed 16:08:14 UTC.
+Elapsed: 1,827.34 seconds (30m27s).
+Environment: R 4.5.2/aarch64/macOS Tahoe 26.3.1/Accelerate BLAS.
+
+Isolation/provenance:
+
+- Fresh scratch copy of all 3,415 current tracked files at cf1127f.
+- Six required JStats data/JSON inputs copied into an isolated sibling tree.
+- Fresh isolated installation from that scratch source; the runner asserts
+  its installed package path before testing. R_LIBS is inherited by socket
+  workers and subprocesses. Monte Carlo workers additionally load scratch
+  source explicitly.
+- All 3,415 original AND scratch tracked input files remain identical to
+  their initial SHA256 hashes after completion, including all 91 production
+  R files. Current Git HEAD still matches the snapshot commit.
+- Six freshly regenerated transition/ordinal comparison outputs are retained
+  under generated-evidence/; all match their pre-run retained bytes.
+- No original source, test, fixture, external output or package installation
+  was overwritten. Original external licensed programs were not rerun.
+
+Coverage includes 120 base and 40 extended Monte Carlo datasets; retained
+Mplus/Latent GOLD likelihoods, posteriors, parameters, inference and model
+tests; JStats latent transitions; open-source lcmm, depmixS4, flexmix, mclust,
+tidyLPA and tidySEM comparisons; missing-pattern and independent numerical
+references; covariance-structure derivatives; and the original 199-replicate
+TECH14 parametric-bootstrap comparison.
+
+This complete suite includes the 566 affected-reference expectations run
+separately earlier; those must not be added again as disjoint coverage.
+
+Authoritative artifacts:
+
+summary.log — direct totals, no aggregation.
+full-suite.log — complete measured execution/session information.
+results.rds, cases.rds/.csv — complete test results.
+issues.csv — empty failure/error/warning/skip table.
+commit.txt, snapshot-manifest.json, production-before.csv — input provenance.
+final-integrity.json — final original/scratch input and output verification.
+run-outer.R, summarize-clean.R — execution and result verification scripts.
+
+aborted-c065dec/ retains the intentionally interrupted pre-cleanup run;
+it contributes nothing to these final totals.
+
+Supported-platform CI remains a separate release gate owned by the parent.

@@ -1,0 +1,79 @@
+Inference repair and fresh review, 2026-10-20
+
+Scope
+F01 (empty-unit robust safeguards and CR1), F04 (direct-effect predictor
+origins), and adjacent verified defects involving zero sampling weights,
+target-specific missingness, and legacy empty-unit counting.
+
+Implementation
+1. R/inference-service.R supplies the independent-group selection. Zero
+   weights never count. Guard/rank checks always require genuinely observed
+   measurement; CR1 alone respects the explicit drop_empty=FALSE convention.
+   Score matrices preserve all rows for group alignment.
+2. Profile, membership-covariate, homogeneous-transition and general-LTA
+   engines use contributing groups for robust validity and CR1. Rank checks
+   exclude empty/zero-weight rows. Additive, regression and growth engines
+   count positive-weight independent units for their safeguards and CR1.
+3. Direct effects use centred predictor coordinates, matching their fitting
+   chart. The full covariance, information and scores are transformed back
+   to the reported predictor origin, including intercept/slope cross terms.
+   Stationarity diagnostics remain in conditioned coordinates. Conditioned
+   information/scores are exposed for VLMR without dropping aligned rows.
+4. Additional review found that an irrelevant covariate on a missing target
+   could destabilize fitting itself. A direct effect now gets centres and
+   widths from the positive-weight observations of its own target. Internal
+   designs can therefore repeat a predictor column with different centres;
+   the public fit retains the original unique covariate columns and metadata.
+
+Reproduced additional failures before repair
+- Adding ten entirely missing groups with predictors at +/-1e5 changed a
+  regular one-profile likelihood from about -549.8 to -649.6 and prevented
+  convergence. Sharing a predictor across targets with different observation
+  patterns also prevented convergence. Both regressions pass after repair.
+- A single informative group, fixed means, one free variance and twenty
+  empty groups under drop_empty=FALSE produced a robust variance SE of
+  1.90e-16 despite the rank check (a tiny scalar has numerical rank one).
+  The observed-unit validity guard now refuses this case.
+
+Independent references
+- One-profile direct-effect intercepts/slopes and the complete covariance
+  agree with lm() normal maximum-likelihood references after shifts of
+  +2026 and -1000. The maximum relative covariance discrepancy in the
+  public proof is 3.54e-14. The shifted intercept SE is 120.87500645;
+  slope SEs remain 0.05295047 and 0.05219989.
+- A separately constructed Gaussian group-score sandwich agrees with the
+  reported robust covariance, including the shifted intercept cross terms.
+- Target-specific missingness is compared separately against each outcome's
+  independent lm() fit and complete intercept/slope covariance.
+- One informative group plus 95 empty groups refuses robust and OPG
+  inference. With five informative groups, adding 95 empty groups leaves
+  the mean SE at 0.03272652.
+
+Evidence
+tests/testthat/test-review-1020-inference.R contains 77 passing expectations
+at the final local repair, including standard/robust/OPG charts, gradient
+and Hessian transformations, cached information, missingness and weights,
+public predictions and refit metadata, all three empty-data model engines,
+and preserved legacy CR1 when inference is valid.
+
+regression-before.log and regression-extended-before.log preserve original
+failures. adversarial-before.log preserves newly discovered fit/legacy
+failures; adversarial-after.log records their first successful repair.
+legacy-fixed-before.log and legacy-fixed-after.log demonstrate the final
+one-parameter validity edge. public-proof.R/log provide concrete output.
+
+targeted-final.log, targeted-final-cases.csv and targeted-final-results.rds
+are the authoritative targeted suite results. Earlier diagnostic logs,
+including targeted-tests.log, intentionally retain pre-correction failures.
+The fresh targeted run covers inference, direct effects, caching, fixed
+measurement, covariate inference, homogeneous/general transitions,
+categorical inference, math audit, weights and both new regression files.
+Root-level full-suite/build/check results supersede this targeted evidence.
+
+Review boundaries
+Direct effects publicly refuse fixed/start, membership covariates, time,
+non-diagonal covariance and indicator centring/scaling. Those refusals are
+preserved; the fix does not imply support for those combinations. Existing
+ordinary fixed-measurement tests were rerun separately. No new loops,
+dependencies, commits, pushes or project tracking-log edits were introduced
+by this subtask.

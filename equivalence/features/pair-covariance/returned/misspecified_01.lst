@@ -1,0 +1,198 @@
+misspecified_01-lg.dat
+File name:	misspecified_01-lg.dat	
+File size:	38132 bytes  500 records	
+File date:	2026-Oct-20 9:03:54 PM	
+Syntax:	misspecified_01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+misspecified_01	2-Cluster	-3047.9208	6213.9191	6133.8416	6152.8416	19	0.0659	0.7693	
+misspecified_01 - LL = -3047.9208
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	19				
+Activated Constraints	0				
+Random Seed	20261020				
+Best Start Seed	2116070				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3047.9208				
+Log-prior	0.0000				
+Log-posterior	-3047.9208				
+BIC (based on LL)	6213.9191				
+AIC (based on LL)	6133.8416				
+AIC3 (based on LL)	6152.8416				
+CAIC (based on LL)	6232.9191				
+SABIC (based on LL)	6153.6120				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0659				
+Reduction of errors (Lambda)	0.8601				
+Entropy R-squared	0.7693				
+Standard R-squared	0.8073				
+Classification log-likelihood	-3127.6593				
+Entropy	79.7385				
+CLC	6255.3186				
+AWE	6548.4737				
+ICL-BIC	6373.3961				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	245.3978	19.3247	264.7225		
+2	13.6022	221.6753	235.2775		
+Total	259.0000	241.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	240.7231	23.9994	264.7225		
+2	23.9994	211.2781	235.2775		
+Total	264.7225	235.2775	500.0000		
+					
+Files					
+Infile	C:\lgfeatures\pair-covariance\misspecified_01\misspecified_01-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+write	misspecified_01_write.txt	
+outfile					
+file name	misspecified_01_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile write='misspecified_01_write.txt';
+   outfile 'misspecified_01_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+   y4 | Cluster;
+   y1 <-> y2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	0.9283	1	0.34				
+Cluster(2)	<-	1			-0.1179	0.1224	-0.9635	0.34							
+															
+y1	<-	1			-0.0342	0.0786	-0.4351	0.66	0.1893	1	0.66				
+y1	<-	Cluster(1)			0.0000	.	.	.	506.2401	1	4.2e-112				
+y1	<-	Cluster(2)			1.9682	0.0875	22.4998	4.2e-112							
+															
+y2	<-	1			-0.0485	0.0773	-0.6280	0.53	0.3943	1	0.53				
+y2	<-	Cluster(1)			0.0000	.	.	.	179.7118	1	5.6e-41				
+y2	<-	Cluster(2)			1.5873	0.1184	13.4057	5.6e-41							
+															
+y3	<-	1			0.1287	0.0684	1.8827	0.060	3.5447	1	0.060				
+y3	<-	Cluster(1)			0.0000	.	.	.	90.4639	1	1.9e-21				
+y3	<-	Cluster(2)			0.9165	0.0964	9.5113	1.9e-21							
+															
+y4	<-	1			-0.0177	0.0686	-0.2575	0.80	0.0663	1	0.80				
+y4	<-	Cluster(1)			0.0000	.	.	.	54.8472	1	1.3e-13				
+y4	<-	Cluster(2)			-0.8093	0.1093	-7.4059	1.3e-13							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	Cluster(1)	0.8609	0.0989	8.7057	3.2e-18	166.0081	2	8.9e-37	2.4901	1	0.11	
+y1			|	Cluster(2)	0.6762	0.0680	9.9375	2.9e-23							
+y2			|	Cluster(1)	0.9295	0.1007	9.2289	2.7e-20	167.7828	2	3.7e-37	24.1098	1	9.1e-7	
+y2			|	Cluster(2)	1.8948	0.1838	10.3102	6.3e-25							
+y3			|	Cluster(1)	1.0002	0.0921	10.8558	1.9e-27	223.3734	2	3.1e-49	1.4770	1	0.22	
+y3			|	Cluster(2)	0.8436	0.0862	9.7880	1.3e-22							
+y4			|	Cluster(1)	1.0834	0.1032	10.5001	8.6e-26	233.3003	2	2.2e-51	1.1912	1	0.28	
+y4			|	Cluster(2)	1.2664	0.1241	10.2059	1.9e-24							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1	<->	y2	|	Cluster(1)	0.5072	0.0826	6.1417	8.2e-10	58.4170	2	2.1e-13	57.8049	1	2.9e-14	
+y1	<->	y2	|	Cluster(2)	-0.4737	0.0879	-5.3878	7.1e-8							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	0.9283	1	0.34	
+	
+y1	<-	 Cluster			Cluster	1	2	506.2401	1	4.2e-112	
+	
+y2	<-	 Cluster			Cluster	1	2	179.7118	1	5.6e-41	
+	
+y3	<-	 Cluster			Cluster	1	2	90.4639	1	1.9e-21	
+	
+y4	<-	 Cluster			Cluster	1	2	54.8472	1	1.3e-13	
+Variances	
+y1			|	Cluster	Cluster	1	2	2.4901	1	0.11	
+y2			|	Cluster	Cluster	1	2	24.1098	1	9.1e-7	
+y3			|	Cluster	Cluster	1	2	1.4770	1	0.22	
+y4			|	Cluster	Cluster	1	2	1.1912	1	0.28	
+Covariances / Associations	
+y1	<->	y2	|	Cluster	Cluster	1	2	57.8049	1	2.9e-14	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5294	0.0305	0.4706	0.0305	 	 	
+y1	 	
+Mean	-0.0342	0.0786	1.9340	0.0628	0.8919	0.0590	
+y2	 	
+Mean	-0.0485	0.0773	1.5388	0.0943	0.6984	0.0634	
+y3	 	
+Mean	0.1287	0.0684	1.0452	0.0661	0.5600	0.0477	
+y4	 	
+Mean	-0.0177	0.0686	-0.8270	0.0812	-0.3985	0.0516	

@@ -1,0 +1,9 @@
+              base             padded      base_boundary    padded_boundary 
+-226.9712124143479 -226.9712124143477    0.0000000000000    1.0000000000000 
+[1] 14 14
+[1] "latents_boundary_fit"                                                                                                                    
+[2] "A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply."
+             base_ll            padded_ll             bic_base 
+-107.505568153683285 -107.505568159683364  227.294169994032870 
+          bic_padded            delta_bic 
+ 231.388514568255118    4.094344574222248 

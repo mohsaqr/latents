@@ -1,0 +1,38 @@
+ separation     size                       status nonzero min max
+      5e-08 8.0e+153 latents_singular_information      NA  NA  NA
+      6e-08 8.0e+153 latents_singular_information      NA  NA  NA
+      7e-08 8.0e+153 latents_singular_information      NA  NA  NA
+      8e-08 8.0e+153                     returned       0   0   0
+      9e-08 8.0e+153                     returned       0   0   0
+      1e-07 8.0e+153                     returned       0   0   0
+      5e-08 1.0e+154 latents_singular_information      NA  NA  NA
+      6e-08 1.0e+154 latents_singular_information      NA  NA  NA
+      7e-08 1.0e+154 latents_singular_information      NA  NA  NA
+      8e-08 1.0e+154                     returned       0   0   0
+      9e-08 1.0e+154                     returned       0   0   0
+      1e-07 1.0e+154                     returned       0   0   0
+      5e-08 1.1e+154 latents_singular_information      NA  NA  NA
+      6e-08 1.1e+154 latents_singular_information      NA  NA  NA
+      7e-08 1.1e+154 latents_singular_information      NA  NA  NA
+      8e-08 1.1e+154                     returned       0   0   0
+      9e-08 1.1e+154                     returned       0   0   0
+      1e-07 1.1e+154                     returned       0   0   0
+                                                      message
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+                                                             
+                                                             
+                                                             
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+                                                             
+                                                             
+                                                             
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+ The Vuong comparison information is singular or nonpositive.
+                                                             
+                                                             
+                                                             

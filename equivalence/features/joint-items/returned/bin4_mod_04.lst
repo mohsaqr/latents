@@ -1,0 +1,298 @@
+bin4_mod_04-lg.dat
+File name:	bin4_mod_04-lg.dat	
+File size:	13514 bytes  800 records	
+File date:	2026-Oct-20 9:04:01 PM	
+Syntax:	bin4_mod_04.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+bin4_mod_04	2-Cluster	-3451.7126	7057.1713	6949.4252	6972.4252	23	120.5231	104	0.13	0.0722	0.7240	
+bin4_mod_04 - L² = 120.5231
+2-Cluster Syntax Model	
+					
+Number of cases	800				
+Number of parameters (Npar)	23				
+Random Seed	20261020				
+Best Start Seed	1987168				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	104	p-value			
+L-squared (L²)	120.5231	0.13			
+X-squared	112.4611	0.27			
+Cressie-Read	112.1475	0.28			
+BIC (based on L²)	-574.6765				
+AIC (based on L²)	-87.4769				
+AIC3 (based on L²)	-191.4769				
+CAIC (based on L²)	-678.6765				
+SABIC (based on L²)	-244.4186				
+Dissimilarity Index	0.1326	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3451.7126				
+Log-prior	0.0000				
+Log-posterior	-3451.7126				
+BIC (based on LL)	7057.1713				
+AIC (based on LL)	6949.4252				
+AIC3 (based on LL)	6972.4252				
+CAIC (based on LL)	7080.1713				
+SABIC (based on LL)	6984.1335				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0722				
+Reduction of errors (Lambda)	0.8170				
+Entropy R-squared	0.7240				
+Standard R-squared	0.7733				
+Classification log-likelihood	-3599.8046				
+Entropy	148.0920				
+CLC	7199.6092				
+AWE	7576.1013				
+ICL-BIC	7353.3553				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	285.9911	29.7751	315.7662		
+2	28.0089	456.2249	484.2338		
+Total	314.0000	486.0000	800.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	272.4335	43.3326	315.7662		
+2	43.3326	440.9012	484.2338		
+Total	315.7662	484.2338	800.0000		
+					
+Files					
+Infile	C:\lgfeatures\joint-items\bin4_mod_04\bin4_mod_04-lg.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	150				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     800				
+predictionstatistics	no				
+outfile					
+file name	bin4_mod_04_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+p1	Nominal	2			
+1	1				
+2	2				
+p2	Nominal	4			
+1	1				
+2	2				
+3	3				
+4	4				
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=150 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'bin4_mod_04_posteriors.txt' classification keep id;
+variables
+   dependent p1 nominal, p2 nominal, u1 nominal, u2 nominal, u3 nominal, u4 nominal;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   p1 <- 1 + Cluster;
+   p2 <- 1 + Cluster;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   p1 <-> p2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	17.1050	1	3.5e-5				
+Cluster(2)	<-	1			0.4276	0.1034	4.1358	3.5e-5							
+															
+p1(1)	<-	1			0.0000	.	.	.	0.5600	1	0.45				
+p1(2)	<-	1			-0.2083	0.2784	-0.7483	0.45							
+p1(1)	<-	Cluster(1)			0.0000	.	.	.	24.5643	1	7.2e-7				
+p1(2)	<-	Cluster(1)			0.0000	.	.	.							
+p1(1)	<-	Cluster(2)			0.0000	.	.	.							
+p1(2)	<-	Cluster(2)			-3.4052	0.6871	-4.9562	7.2e-7							
+															
+p2(1)	<-	1			0.0000	.	.	.	13.0091	3	0.0046				
+p2(2)	<-	1			-0.0994	0.2796	-0.3555	0.72							
+p2(3)	<-	1			-0.9603	0.3775	-2.5440	0.011							
+p2(4)	<-	1			-0.9971	0.3564	-2.7979	0.0052							
+p2(1)	<-	Cluster(1)			0.0000	.	.	.	9.7011	3	0.021				
+p2(2)	<-	Cluster(1)			0.0000	.	.	.							
+p2(3)	<-	Cluster(1)			0.0000	.	.	.							
+p2(4)	<-	Cluster(1)			0.0000	.	.	.							
+p2(1)	<-	Cluster(2)			0.0000	.	.	.							
+p2(2)	<-	Cluster(2)			-0.6760	0.3309	-2.0430	0.041							
+p2(3)	<-	Cluster(2)			-0.0044	0.4258	-0.0102	0.99							
+p2(4)	<-	Cluster(2)			-1.2078	0.4584	-2.6346	0.0085							
+															
+u1(1)	<-	1			0.0000	.	.	.	53.0453	1	3.3e-13				
+u1(2)	<-	1			1.4632	0.2009	7.2832	3.3e-13							
+u1(1)	<-	Cluster(1)			0.0000	.	.	.	160.5477	1	8.6e-37				
+u1(2)	<-	Cluster(1)			0.0000	.	.	.							
+u1(1)	<-	Cluster(2)			0.0000	.	.	.							
+u1(2)	<-	Cluster(2)			-3.4463	0.2720	-12.6707	8.6e-37							
+															
+u2(1)	<-	1			0.0000	.	.	.	41.5028	1	1.2e-10				
+u2(2)	<-	1			0.9881	0.1534	6.4423	1.2e-10							
+u2(1)	<-	Cluster(1)			0.0000	.	.	.	128.0057	1	1.1e-29				
+u2(2)	<-	Cluster(1)			0.0000	.	.	.							
+u2(1)	<-	Cluster(2)			0.0000	.	.	.							
+u2(2)	<-	Cluster(2)			-2.3356	0.2064	-11.3140	1.1e-29							
+															
+u3(1)	<-	1			0.0000	.	.	.	42.4143	1	7.4e-11				
+u3(2)	<-	1			1.0030	0.1540	6.5126	7.4e-11							
+u3(1)	<-	Cluster(1)			0.0000	.	.	.	113.7039	1	1.5e-26				
+u3(2)	<-	Cluster(1)			0.0000	.	.	.							
+u3(1)	<-	Cluster(2)			0.0000	.	.	.							
+u3(2)	<-	Cluster(2)			-2.1360	0.2003	-10.6632	1.5e-26							
+															
+u4(1)	<-	1			0.0000	.	.	.	62.1453	1	3.2e-15				
+u4(2)	<-	1			1.5348	0.1947	7.8832	3.2e-15							
+u4(1)	<-	Cluster(1)			0.0000	.	.	.	143.3072	1	5.0e-33				
+u4(2)	<-	Cluster(1)			0.0000	.	.	.							
+u4(1)	<-	Cluster(2)			0.0000	.	.	.							
+u4(2)	<-	Cluster(2)			-2.8285	0.2363	-11.9711	5.0e-33							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+p1(1)	<->	p2(1)	|	Cluster(1)	0.0000	.	.	.	124.7248	6	1.7e-24	13.5969	3	0.0035	
+p1(1)	<->	p2(2)	|	Cluster(1)	0.0000	.	.	.							
+p1(1)	<->	p2(3)	|	Cluster(1)	0.0000	.	.	.							
+p1(1)	<->	p2(4)	|	Cluster(1)	0.0000	.	.	.							
+p1(2)	<->	p2(1)	|	Cluster(1)	0.0000	.	.	.							
+p1(2)	<->	p2(2)	|	Cluster(1)	0.5315	0.3751	1.4169	0.16							
+p1(2)	<->	p2(3)	|	Cluster(1)	1.7419	0.4449	3.9150	9.0e-5							
+p1(2)	<->	p2(4)	|	Cluster(1)	2.0360	0.4244	4.7978	1.6e-6							
+p1(1)	<->	p2(1)	|	Cluster(2)	0.0000	.	.	.							
+p1(1)	<->	p2(2)	|	Cluster(2)	0.0000	.	.	.							
+p1(1)	<->	p2(3)	|	Cluster(2)	0.0000	.	.	.							
+p1(1)	<->	p2(4)	|	Cluster(2)	0.0000	.	.	.							
+p1(2)	<->	p2(1)	|	Cluster(2)	0.0000	.	.	.							
+p1(2)	<->	p2(2)	|	Cluster(2)	2.1998	0.6533	3.3674	0.00076							
+p1(2)	<->	p2(3)	|	Cluster(2)	3.0606	0.6304	4.8548	1.2e-6							
+p1(2)	<->	p2(4)	|	Cluster(2)	4.8872	0.6534	7.4792	7.5e-14							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	17.1050	1	3.5e-5	
+	
+p1	<-	 Cluster			Cluster	1	2	24.5643	1	7.2e-7	
+	
+p2	<-	 Cluster			Cluster	1	2	9.7011	3	0.021	
+	
+u1	<-	 Cluster			Cluster	1	2	160.5477	1	8.6e-37	
+	
+u2	<-	 Cluster			Cluster	1	2	128.0057	1	1.1e-29	
+	
+u3	<-	 Cluster			Cluster	1	2	113.7039	1	1.5e-26	
+	
+u4	<-	 Cluster			Cluster	1	2	143.3072	1	5.0e-33	
+Covariances / Associations	
+p1	<->	p2	|	Cluster	Cluster	1	2	13.5969	3	0.0035	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.3947	0.0247	0.6053	0.0247	 	 	
+p1	 	
+1	0.3023	0.0301	0.7218	0.0229	0.5562	0.0176	
+2	0.6977	0.0301	0.2782	0.0229	0.4438	0.0176	
+p2	 	
+1	0.2062	0.0253	0.3798	0.0235	0.3112	0.0164	
+2	0.2453	0.0265	0.2117	0.0199	0.2250	0.0148	
+3	0.2454	0.0265	0.2220	0.0201	0.2312	0.0149	
+4	0.3031	0.0281	0.1865	0.0192	0.2325	0.0149	
+u1	 	
+1	0.1880	0.0307	0.8790	0.0202	0.6062	0.0173	
+2	0.8120	0.0307	0.1210	0.0202	0.3938	0.0173	
+u2	 	
+1	0.2713	0.0303	0.7937	0.0218	0.5875	0.0174	
+2	0.7287	0.0303	0.2063	0.0218	0.4125	0.0174	
+u3	 	
+1	0.2683	0.0302	0.7564	0.0223	0.5637	0.0175	
+2	0.7317	0.0302	0.2436	0.0223	0.4363	0.0175	
+u4	 	
+1	0.1773	0.0284	0.7848	0.0227	0.5450	0.0176	
+2	0.8227	0.0284	0.2152	0.0227	0.4550	0.0176	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	 	 	 	 	
+ 	0.3947	0.0247	0.6053	0.0247	 	 	 	 	 	 	 	 	 	 	 	 	
+	
+ 	p1	
+ 	1		1		1		1		2		2		2		2		
+ 	p2	
+Cluster	1	s.e.	2	s.e.	3	s.e.	4	s.e.	1	s.e.	2	s.e.	3	s.e.	4	s.e.	
+1	0.1138	0.0208	0.1030	0.0197	0.0436	0.0139	0.0420	0.0122	0.0924	0.0173	0.1423	0.0210	0.2019	0.0244	0.2611	0.0268	
+2	0.3698	0.0234	0.1703	0.0181	0.1409	0.0166	0.0408	0.0095	0.0100	0.0058	0.0414	0.0102	0.0811	0.0138	0.1457	0.0175	
+	
+ 	u1	
+Cluster	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	 	 	 	 	
+1	0.1880	0.0307	0.8120	0.0307	 	 	 	 	 	 	 	 	 	 	 	 	
+2	0.8790	0.0202	0.1210	0.0202	 	 	 	 	 	 	 	 	 	 	 	 	
+	
+ 	u2	
+Cluster	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	 	 	 	 	
+1	0.2713	0.0303	0.7287	0.0303	 	 	 	 	 	 	 	 	 	 	 	 	
+2	0.7937	0.0218	0.2063	0.0218	 	 	 	 	 	 	 	 	 	 	 	 	
+	
+ 	u3	
+Cluster	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	 	 	 	 	
+1	0.2683	0.0302	0.7317	0.0302	 	 	 	 	 	 	 	 	 	 	 	 	
+2	0.7564	0.0223	0.2436	0.0223	 	 	 	 	 	 	 	 	 	 	 	 	
+	
+ 	u4	
+Cluster	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	 	 	 	 	
+1	0.1773	0.0284	0.8227	0.0284	 	 	 	 	 	 	 	 	 	 	 	 	
+2	0.7848	0.0227	0.2152	0.0227	 	 	 	 	 	 	 	 	 	 	 	 	

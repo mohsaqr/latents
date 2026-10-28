@@ -1,0 +1,29 @@
+Initial logits used by reference:
+, , 1
+
+            [,1]
+[1,] -0.09451215
+
+, , 2
+
+         [,1]
+[1,] 1313.061
+
+Original reference shares:
+[[1]]
+[1] 0.4763895 0.5236105
+
+[[2]]
+[1] NaN   0
+
+Stable reference shares:
+[[1]]
+[1] 0.4763895 0.5236105
+
+[[2]]
+[1] 1 0
+
+Production LL -899.06784279732847
+Original reference NaN
+Stable independent reference -899.06784279732847
+Difference 0

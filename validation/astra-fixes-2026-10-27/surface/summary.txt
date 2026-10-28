@@ -1,0 +1,39 @@
+Astra surface corrections, 2026-10-27
+
+Fixed A04: generated argument bindings reserve caller symbols and existing
+function bindings, preventing collisions such as data named .vars or
+.multilpa_setup. Existing noncolliding caller names remain in conditions.
+
+Fixed A05: multilca forwards already evaluated arguments and dots through
+symbol bindings. Data/vars/id/profile/group/start/seed expressions execute
+once. Omitted n_group_classes still resolves to one under id=NULL, and NULL
+controls remain intact. Original public call remains fit metadata.
+
+Fixed A11: sensitivity plots distinguish unfinished and failed refits.
+Only converged refits determine and replicate the displayed maximum; a
+higher unfinished likelihood cannot displace it. All-unconverged runs
+explicitly report no converged seed and show finite likelihoods. Failed
+seeds remain on the axis. Deterministic Ward start policy was not changed.
+
+Fixed A15: documented sensitivity method ... arguments as ignored.
+Root regenerates Rd and performs package-level checks.
+
+Files modified by this agent: R/condition-calls.R, R/multilca.R,
+R/sensitivity.R; added tests/testthat/test-astra-surface.R.
+Pre-existing uncommitted changes preserved. No git writes.
+
+Validation:
+- Five new regression cases, 22 expectations: pass on current source.
+- Same tests against old scratch install: 1 collision error and 9 assertion
+  failures, proving the repaired behavior was absent.
+- Existing condition-call tests: 55 expectations pass.
+- Existing error-contract tests: 176 expectations pass.
+- Existing sensitivity tests: 72 expectations pass; one pre-existing fork
+  test skipped because Accelerate BLAS cannot safely fork.
+- git diff --check on owned source/tests: clean.
+- Self-contained plot preview rendered successfully to
+  tmp/astra-sensitivity.html from tmp/astra-sensitivity.Rmd.
+  Parent handles user visual-review step after independent work completes.
+
+Logs in this directory record baseline/current/related test output and
+render output. Full suite and fresh installation handled by root.

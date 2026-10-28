@@ -449,6 +449,37 @@
   out
 }
 
+#' Local parameter scales for transition-model score differences
+#'
+#' Means and unlogged Cholesky entries use their measurement SDs; log,
+#' probability and transition coordinates use unit scale. Constrained
+#' covariance coordinates use the same chart scales as profile inference.
+#' These cap a score-derived step when a nearly flat coordinate has a huge
+#' inverse score norm, without introducing an absolute outcome-unit floor.
+#' @param fit A general transition fit.
+#' @return Named positive scales in `.lta_names()` order.
+#' @noRd
+.lta_inference_scales <- function(fit) {
+  scales <- stats::setNames(rep(1, length(.lta_names(fit))), .lta_names(fit))
+  if (!length(fit$continuous)) return(scales)
+  invisible(lapply(seq_along(fit$measurement), function(b) {
+    block <- fit$measurement[[b]]
+    label <- if (length(fit$measurement) == 1L) "all" else paste0("occasion_", b)
+    means <- startsWith(names(scales), paste0("mean.", label, "."))
+    scales[means] <<- as.vector(t(sqrt(block$variances)))
+    if (.lta_uses_covariance_chart(fit)) {
+      view <- .lta_covariance_view(block, fit)
+      covariance_scale <- if (.multilpa_uses_chart(view)) {
+        .multilpa_chart_encode(view)$scale
+      } else .multilpa_covariance_coordinate_scale(
+        block$variances, length(fit$continuous),
+        if (identical(fit$variance_model, "equal")) 1L else seq_len(fit$n_profiles))
+      scales[.lta_covariance_names(fit, b, label)] <<- covariance_scale
+    }
+  }))
+  scales
+}
+
 #' Estimation-scale covariance of a general transition fit
 #' @noRd
 .lta_inference <- function(fit, vcov_type = c("observed", "robust", "opg"),
@@ -515,23 +546,41 @@
   to_chart <- .lta_chart_jacobian(fit, chart, length(theta), "to_chart")
   all_scores <- .lta_group_scores(phi, internal)
   chart_scores <- all_scores[, identified, drop = FALSE]
-  total <- function(v) colSums(.lta_group_scores(replace(phi, identified, v),
-                                                 internal))[identified]
-  # Fourth-order differences of the analytic score with h = step * max(1, |phi|),
-  # and the "min <= 1e-10 max" refusal: the arithmetic this engine has always
-  # reported, now from the shared service.
-  chart_information <- .inference_score_information(total, phi[identified], step,
-                                                    scheme = "five_point", h_rule = "max1")
-  inverse <- .inference_invert(chart_information, "min_le_eps_max")
-  meat <- crossprod(chart_scores)
+  # Differentiate displacements measured in each coordinate's score-based
+  # standard-error scale. Covariate standardization alone leaves measurement
+  # means in their supplied units: a fixed 1e-4 step can exceed a whole SD,
+  # and comparing raw information eigenvalues can falsely declare singularity.
+  # With phi = phi_hat + D u, scores are S D and information is D I D.
+  # An all-zero score column still receives a finite scale so genuine missing
+  # information is judged by the usual positive-definiteness/rank checks.
+  parameter_scale <- 1 / sqrt(colSums(chart_scores^2))
+  parameter_scale[!is.finite(parameter_scale) | parameter_scale <= 0] <- 1
+  # Conditioning and derivative widths have different jobs: a nearly flat
+  # logit can have a huge score-based scale, but differencing it must remain
+  # local. In displacement coordinates this ratio caps its step; mean and
+  # Cholesky caps retain their measurement units.
+  derivative_scale <- pmin(parameter_scale, .lta_inference_scales(fit)[identified])
+  scaled_scores <- sweep(chart_scores, 2L, parameter_scale, "*")
+  total <- function(displacement) {
+    point <- phi[identified] + displacement * parameter_scale
+    colSums(.lta_group_scores(replace(phi, identified, point), internal))[identified] *
+      parameter_scale
+  }
+  scaled_information <- .inference_score_information(
+    total, numeric(sum(identified)), step, scheme = "five_point", h_rule = "scaled",
+    scale = derivative_scale / parameter_scale)
+  inverse <- .inference_invert(scaled_information, "min_le_eps_max")
+  meat <- crossprod(scaled_scores)
   if (vcov_type != "observed") {
-    .inference_require_rank(chart_scores[
+    .inference_require_rank(scaled_scores[
       .multilpa_inference_groups(fit, observed_only = TRUE), , drop = FALSE],
       "Too few groups for a robust or OPG covariance.")
   }
-  chart_covariance <- switch(vcov_type, observed = inverse,
-                             robust = .inference_sandwich(inverse, meat, n_units),
-                             opg = chol2inv(chol(meat)))
+  scaled_covariance <- switch(vcov_type, observed = inverse,
+                              robust = .inference_sandwich(inverse, meat, n_units),
+                              opg = chol2inv(chol(meat)))
+  chart_covariance <- scaled_covariance * tcrossprod(parameter_scale)
+  chart_information <- scaled_information / tcrossprod(parameter_scale)
   kept_raw <- to_raw[identified, identified, drop = FALSE]
   kept_chart <- to_chart[identified, identified, drop = FALSE]
   covariance <- information <- matrix(NA_real_, length(theta), length(theta))

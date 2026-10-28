@@ -69,8 +69,10 @@ plot_enumeration(models)
 
 The choice of structure matters here because four of the five constructs are
 strongly correlated. The structures without covariances (`EEI`, `VVI`) can
-reproduce these correlations only by adding profiles, and their BIC continues
-to fall up to six profiles. The warnings printed during the enumeration
+reproduce these correlations only by adding profiles. BIC falls through six
+profiles for `EEI`. For `VVI`, it is lowest at five profiles, but that fit
+reaches the variance floor; BIC rises again at six profiles.
+The warnings printed during the enumeration
 report candidates with low Gaussian membership mass relative to the number of
 profile-specific means and variances (`latents_thin_profiles`). This is a
 conservative support diagnostic, not an identification test; inspect the

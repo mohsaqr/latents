@@ -1,0 +1,76 @@
+nice: setpriority: Operation not permitted
+
+SEED 1 LL -584.9543 
+   start log_likelihood converged iterations error boundary      kind    stage
+1      1      -584.9543      TRUE         75  <NA>    FALSE      ward    final
+2      2      -585.0723     FALSE         21  <NA>    FALSE partition screened
+3      3      -588.0726     FALSE         21  <NA>    FALSE   centres screened
+4      4      -586.8589     FALSE         21  <NA>    FALSE partition screened
+5      5      -583.2340     FALSE         21  <NA>    FALSE   centres screened
+6      6      -587.7328     FALSE         21  <NA>    FALSE partition screened
+7      7      -584.9663     FALSE         21  <NA>    FALSE   centres screened
+8      8      -588.0675     FALSE         21  <NA>    FALSE partition screened
+9      9      -582.1427     FALSE         21  <NA>    FALSE   centres screened
+10    10      -591.1301     FALSE         21  <NA>    FALSE partition screened
+   screened_log_likelihood
+1                -587.0833
+2                -585.0723
+3                -588.0726
+4                -586.8589
+5                -583.2340
+6                -587.7328
+7                -584.9663
+8                -588.0675
+9                -582.1427
+10               -591.1301
+
+SEED 2 LL -584.9543 
+   start log_likelihood converged iterations error boundary      kind    stage
+1      1      -584.9543      TRUE         75  <NA>    FALSE      ward    final
+2      2      -586.5628     FALSE         21  <NA>    FALSE partition screened
+3      3      -587.8772     FALSE         21  <NA>    FALSE   centres screened
+4      4      -585.3439     FALSE         21  <NA>    FALSE partition screened
+5      5      -592.2503     FALSE         21  <NA>    FALSE   centres screened
+6      6      -586.8527     FALSE         21  <NA>    FALSE partition screened
+7      7      -585.3105     FALSE         21  <NA>    FALSE   centres screened
+8      8      -589.6277     FALSE         21  <NA>    FALSE partition screened
+9      9      -592.2480     FALSE         21  <NA>    FALSE   centres screened
+10    10      -595.1074     FALSE         21  <NA>    FALSE partition screened
+   screened_log_likelihood
+1                -587.0833
+2                -586.5628
+3                -587.8772
+4                -585.3439
+5                -592.2503
+6                -586.8527
+7                -585.3105
+8                -589.6277
+9                -592.2480
+10               -595.1074
+
+SEED 3 LL -584.9543 
+   start log_likelihood converged iterations error boundary      kind    stage
+1      1      -584.9543      TRUE         75  <NA>    FALSE      ward    final
+2      2      -585.2694     FALSE         21  <NA>    FALSE partition screened
+3      3      -590.5087     FALSE         21  <NA>    FALSE   centres screened
+4      4      -585.2775     FALSE         21  <NA>    FALSE partition screened
+5      5      -586.2007     FALSE         21  <NA>    FALSE   centres screened
+6      6      -588.1896     FALSE         21  <NA>    FALSE partition screened
+7      7      -583.2988     FALSE         21  <NA>    FALSE   centres screened
+8      8      -586.5151     FALSE         21  <NA>    FALSE partition screened
+9      9      -585.8772     FALSE         21  <NA>    FALSE   centres screened
+10    10      -586.9608     FALSE         21  <NA>    FALSE partition screened
+   screened_log_likelihood
+1                -587.0833
+2                -585.2694
+3                -590.5087
+4                -585.2775
+5                -586.2007
+6                -588.1896
+7                -583.2988
+8                -586.5151
+9                -585.8772
+10               -586.9608
+
+Zero-weight saved-object assertions passed
+LTA covariance-boundary mismatch independently verified

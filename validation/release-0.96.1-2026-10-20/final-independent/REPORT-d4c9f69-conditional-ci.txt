@@ -1,0 +1,105 @@
+Independent final artifact audit — d4c9f699525d9e07959463010e004b6362dcdaaf
+
+Disposition: all completed local implementation, test, package-data and
+artifact checks pass. No additional release blocker was found in this audit.
+The final six-platform CI matrix has not all completed; publication remains
+conditional on its remaining jobs succeeding. No pending job is called green.
+No models were rerun for this final artifact audit, and no tracked file was
+edited, staged, committed, pushed or externally published by this reviewer.
+
+Verified validation results/provenance
+
+- Final d4 full unit RDS: 1,224 cases, 8,144 passing expectations; zero failures,
+  errors, warnings or skips. Its log identifies d4c9f69; all 91 recorded R-file
+  hashes match current production source.
+- Inner equivalence: 64 cases/405 passes; affected references: 33/566 passes,
+  with zero failures/errors/warnings/skips and current 91-file source hashes.
+- Complete outer equivalence: one clean run of 198 cases, 39 files, 5,419
+  passing expectations, zero failures/errors/warnings/skips, elapsed 30m27s.
+  This EXECUTED cf1127f and has not been relabeled as a d4 execution.
+- A full input SHA256 comparison establishes 3,413 tracked inputs are identical
+  at d4, including all 91 production files and outer tests/helpers/fixtures/data.
+  Exactly the unit engine-fixture file and CI workflow differ; neither is
+  consumed as outer runtime input. That explicit source equivalence makes
+  the complete outer evidence applicable to the final production code.
+- The separately run 566 affected-reference expectations are included in
+  5,419; they must not be counted again as disjoint full-suite coverage.
+- Final native check: zero errors, zero warnings, one environmental NOTE
+  (unable to verify current time). Regular examples, donttest examples and
+  vignette rebuilds pass. The native check omits tests/PDF manual; complete
+  unit tests run separately. Configured lint is clean.
+
+Independent final archive integrity
+
+All 324 manifest files match current working bytes and committed Git blobs.
+The 286 manifest files packaged in latents_0.96.1.tar.gz match those sources;
+38 development-only files are intentionally excluded. An independent scan
+checks ALL 306 tracked archive members: 305 bytewise against Git blobs, plus
+DESCRIPTION semantically after standard DCF wrapping. There are no mismatches.
+Tracked working tree is clean.
+
+Final d4 archive SHA256:
+033aedba1e4b2a88764dbe9fc6615a010093c29d5e48fab479cea071afbafe1f
+
+Installed final archive provenance
+
+The archive was successfully installed into the release's isolated library
+(install-final-archive.log). Independent inspection compares all 1,219 installed
+function formals/bodies with current source: zero missing, extra or changed
+functions. All SIX installed package datasets are identical to committed
+source objects. These checks inspect code/data and rerun no statistical fit.
+
+The retained installed-public-proofs.log then establishes the installed
+artifact passes original five-group/padding SE invariance, weighted tree
+0.8/0.2 shares, typed pair-name/category refusals, and actual SIGTERM worker
+death. It reports the correct typed worker failure, zero cleanup warnings
+and no leaked sockets. Independent real/mock cleanup probes previously
+confirmed unrelated connections stay open and GC returns to baseline.
+
+Accepted implementation/test follow-ups
+
+The numerical/covariance V2 and failed-worker cleanup sources retain their
+accepted independent fingerprints and counterexample results. Genuine small
+Vuong weights are retained or typed unavailable; enlarged uncertainty cannot
+justify zeroing them. Covariance convergence verifies actual active floors
+and KKT conditions. No inference/variance-floor/EM guard was weakened.
+
+The d4 transition fixture fixes an assumption of interiority, not a production
+failure: its predecessor's conditional likelihood improves toward a boundary
+across the existing guard. The new deterministic balanced-path panel is
+nonboundary in all three matrix-product modes, has transition probabilities
+about .496, and changes SEs by 5.64747e-7 across the unchanged caller steps.
+Covariance/table SE consistency is exact; the full engine-fixes file passes
+26 expectations. Diagnosis and the precise limits of causal attribution are
+retained in r41-fixture-followup/cross-review/REPORT.txt.
+
+Remaining CI gate
+
+Exact d4 remote equivalence passes 405+390=795 expectations with no failures,
+warnings or skips; remote lint succeeds. The captured d4 macOS release log
+has Status: OK. Windows release and Linux release/devel/oldrel/R4.1 remain
+in progress in the captured table. Await the parent's current final outcomes
+for those jobs before declaring all-platform release readiness. The parent
+owns ongoing CI monitoring and final publication decisions.
+
+Original licensed external programs were not rerun: current package fits
+were checked against retained outputs and installed open-source packages.
+Numerically unresolved charts intentionally report unavailable probabilities;
+finite precision limits are documented in the numerical V2 review. This is
+strong scoped validation, not a proof that no future defect can exist.
+
+Authoritative evidence
+
+final-independent/integrity.json
+final-independent/installed-runtime-comparison.log/.rds
+final-independent/installed-data-comparison.log/.rds
+final-independent/current-local-validation.rds
+final-independent/ci-status-at-audit-d4c9f69.csv
+outer-final/REPORT.txt, summary.log, results.rds and final-integrity.json
+outer-final/source-equivalence-d4c9f69.json
+installed-public-proofs.log and install-final-archive.log
+unit-final.log/.rds/-source.csv and check-final.log
+
+Earlier notes/failed experiments and the intentionally interrupted pre-fix
+run remain preserved with their execution identities. They are not silently
+merged into final passing totals.

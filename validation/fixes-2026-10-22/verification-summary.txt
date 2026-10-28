@@ -1,0 +1,11 @@
+latents 0.96.2, working-tree fixes based on 12e0145; 2026-10-22
+Single-thread BLAS, installed current package for socket workers, NOT_CRAN=true.
+unit 1320 test blocks in 153 files; nb 8994; failed 0; skipped 0; error 0; warning 7; passed 8987
+equivalence 64 test blocks in 29 files; nb 407; failed 0; skipped 0; error 0; warning 2; passed 405
+Focused warning tests: 90 expectations, zero failures/errors/warnings.
+Focused staged-bootstrap file: 57 expectations, zero failures/errors/warnings.
+The review-lta fixture file was rerun after allowing its expected thin-profile warning; that file replaces the initial warning-heavy result.
+Full package lint: zero findings. Fresh install and clean source build succeeded.
+Limited R CMD check: zero errors, two warnings for unbuilt vignette outputs.
+No complete CRAN check, manual, full vignette render or standalone feature sweeps rerun.
+Four LTA fit objects identical before/after; unaffected staged bootstrap and RNG state identical.

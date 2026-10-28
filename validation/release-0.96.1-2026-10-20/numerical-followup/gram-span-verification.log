@@ -1,0 +1,7 @@
+                   angle       max_weight_error retained_weights
+1 2.0000000000000001e-01 9.1593399531575415e-16                9
+2 9.9999999999999995e-07 1.3322676295501878e-15                9
+3 1.0000000000000000e-10 1.9984014443252818e-15                9
+  separation delta expected_probability                    disposition
+1      1e-04 1e-08  0.99985000000125002 latents_inaccurate_probability
+2      1e-03 1e-10  0.99998500000000123 latents_inaccurate_probability

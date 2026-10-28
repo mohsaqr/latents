@@ -1,0 +1,10 @@
+Package version: 0.96.1 
+Installed worker package: /Users/mohammedsaqr/Documents/Github/latents/validation/release-0.96.1-2026-10-20/outer-final/rlib/latents 
+Scratch: /private/var/folders/y4/__sfmk691xb88cllsy7y09fm0000gq/T/latents-outer-final-38qnw5kj/latents 
+Started: 2026-10-20 15:32:44 UTC
+claims: ...............................................................................................................................................................................................................................................................................
+depmixs4-standard-errors: ...............
+enumeration-mplus: ..............................................
+! Interrupting test: compare_models() BIC weights follow Mplus's BIC
+
+Execution halted

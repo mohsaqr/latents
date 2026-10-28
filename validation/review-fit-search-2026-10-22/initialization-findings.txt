@@ -1,0 +1,54 @@
+INITIALIZATION REVIEW 2026-10-22
+
+Actionable confirmed P2: zero-weight rows determine every default start.
+Location: R/multilpa.R:1702-1706, initializer invoked without sampling weights;
+R/multilpa.R:181-213 and :251-253 derive mean-fill, normalization, Ward/kmeans
+and profile probabilities from all rows equally. The weighted E/M objective
+subsequently disregards the zero-weight row, but initialization has already
+allocated a profile solely to it.
+
+Reproduction zero-weight-starts.R loads current working source via pkgload.
+100 active rows: seed 803, 50 draws N(-3,.5^2), 50 draws N(3,.5^2).
+Add one zero-weight row, fit VVI 2 profiles, weights='w', seed=1.
+Same 101 units and identical weighted objective in both cases:
+- zero-weight y=0: LL -152.6178709085347, fitted means -3.025848,3.006199.
+- zero-weight y=10000: LL -256.4855779545336, fitted means -.0098246,.1280315.
+  n_starts=10 AND n_starts=100 produce exactly the latter result in every
+  converged start. It reports converged=TRUE, boundary=FALSE, plus legitimate
+  small/thin profile warnings. One component has virtually zero effective n.
+- Supplying starting_values() from the 100-row fit to the same extreme
+  data recovers LL -152.6178709085347 and the correct means in one start.
+- Opt-in emEM 10/50 recovers that same optimum, from its centre starts.
+Thus this is avoidable systematic start failure due to zero-weight data,
+not heteroscedastic likelihood singularity or a proposed spike filter.
+Use positive-weight support for initializer rows/statistics (or weighted
+initialization), while preserving mapping to the full observed row layout.
+
+Associated precision defect: initial centering also uses all unweighted rows
+(R/multilpa.R around centers <- colMeans(x, na.rm=TRUE)); replacing the zero
+row by 1e20 loses the active observations' differences during subtraction,
+returning means 1408,-1152 and LL -875.5553. initialization-probes.R/log
+records the progression. Treat as same zero-support cause if grouping findings.
+
+Other audited details:
+- Read current HANDOFF.md, relevant current and historical LEARNINGS.md entries,
+  starts-study README.md, codex/REVIEW.md and its handoff/learnings; current
+  search benchmark scripts and spike-measure.R.
+- kmeans Lloyd warning handling only muffles the existing empty-cluster warning;
+  ifault failures remain recorded by outer start runner.
+- Ward nearest-centre/repair nonempty guarantee: brute-force 30,000 small
+  Gaussian/heavy-tailed matrices (6-40 rows,1-5 columns,3-12 clusters) found
+  no violation. This is a limited probe, not proof.
+- Ward caps its tree at 2,000 evenly spaced rows; k>2,000 would fail its first
+  start despite n_profiles<=nrows, an extreme-count edge. Did not promote
+  this to a main finding.
+- Mean filling and unweighted start geometry are statistical heuristics;
+  local maxima on low separation, overextraction and heavy tails are already
+  documented. No universal global-optimum guarantee.
+- Stronger search finding more VVI/VVV spikes is intrinsic to a finite variance
+  floor applied to an otherwise singular mixture likelihood. Prior user policy
+  explicitly keeps kmeans default, emEM optional, and rejects handmade spike
+  exclusion thresholds. No recommendation to reverse that policy.
+
+Artifacts (all scratch only): zero-weight-starts.R/log/rds,
+initialization-probes.R/log. Production source, repository logs and git untouched.

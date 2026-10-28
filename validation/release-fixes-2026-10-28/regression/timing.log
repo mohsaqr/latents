@@ -1,0 +1,13 @@
+release-audit-regression: ..........................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+   user  system elapsed 
+  1.364   0.067   1.485 
+                                                                 test  real
+1 shared regression dispersions retain public names and finite errors 0.643
+2                  an excluded regression row cannot remove inference 0.062
+3      excluded groups cannot choose regression inference coordinates 0.751
+  failed warning passed
+1      0       0     24
+2      0       0      7
+3      0       0     27

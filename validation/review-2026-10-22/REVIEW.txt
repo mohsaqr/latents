@@ -1,0 +1,119 @@
+Intensive review of latents 0.96.2 (HEAD 12e0145), 2026-10-22
+
+Scope: latest release changes and surrounding estimation/refit paths, plus
+recent covariance, Vuong-weight and socket-cleanup fixes. Three independent
+review passes covered start-search/EM, refit/LTA controls and three-step
+inference. No production code was changed.
+
+Run the isolated regression tests from the repository root against the current
+working tree (the default installed package may be older):
+Rscript -e 'pkgload::load_all(); testthat::test_file("validation/review-2026-10-22/test-targeted-regressions.R")'
+The expected current result is five failures and seven supporting passes.
+
+Five confirmed P2 findings (normal priority; reproducible with synthetic data)
+
+1. Staged bootstrap discards the first-stage emEM pool for n_starts = 1.
+   Source: R/bootstrap-inference.R:134-137.
+   fit_staged(..., search="emEM", n_starts=1, n_screen=8) screens eight starts
+   at stage one. Stage two uses a supplied measurement start, so screening is
+   disabled and its n_screen is NULL. Bootstrap reconstruction inherits only
+   that second-stage record and reruns stage one with the default five starts.
+   Thus its estimates and uncertainty can use a different fitting procedure.
+   Retain/replay first-stage controls separately, including the requested pool.
+   Reproduction: probe-refit-lta.R, probe 3; targeted regression test 5.
+   This probe reconstructs the exact bootstrap arguments on the original
+   data, without stochastic resampling; it is not a full bootstrap run.
+
+2. Patterned Gaussian covariances overcount the thin-profile parameters.
+   Source: R/multilpa.R:2127-2134 (called at 1936-1938).
+   Five continuous indicators with local_dependence="a:b" estimate eleven
+   density parameters per profile: five means, five variances, one covariance.
+   The new helper counts the unrestricted full covariance instead (twenty).
+   A synthetic 13/67-member fit therefore warns that thirteen members cannot
+   determine twenty parameters, although its model count is 2*11+1=23 and
+   covariance eigenvalues range from 0.489 to 1.315. Respect the zero pattern,
+   as the existing information-criterion parameter count already does.
+   Reproduction: probe-thin-pattern-fixed.R, first fit; regression test 1.
+
+3. Fixed Gaussian measurement receives an inapplicable collapse warning.
+   Source: R/multilpa.R:1936-1938.
+   A supplied start with fixed=c("means","variances") and known unit
+   variances still warns that a three-member profile cannot determine its ten
+   measurement parameters. Only one mixing weight is estimated (n_parameters
+   is one), and held variances cannot collapse during this fit. Account for
+   held blocks; disable the covariance-collapse diagnostic when spread is fixed.
+   Reproduction: probe-thin-pattern-fixed.R, second fit; regression test 2.
+
+4. Completely unobserved LTA subjects can erase a thin-profile warning.
+   Source: R/transitions.R:947-950; same raw aggregation in R/lta-engine.R:912-915.
+   Warning code uses colSums(subject_posteriors), including rows with no
+   observed measurement. In the homogeneous FIML reproduction, adding 100
+   entirely empty subjects preserves effective profile counts (87,3) and the
+   likelihood within 6.2e-8, but inflates raw counts to about (377,13). The
+   warning for three members/four parameters disappears. Use informative
+   measurement memberships, respecting the fit's empty-row policy.
+   Reproduction: probe-refit-lta.R, probe 1; targeted regression test 3.
+
+5. Occasion-specific LTA measurement pools counts across separate densities.
+   Source: R/lta-engine.R:912-915.
+   With measurement="occasion", means and variances are estimated separately
+   at each occasion. A rare profile with two members at each of three
+   occasions has only two members for each four-parameter density. The warning
+   instead compares pooled membership six with four parameters and stays
+   silent. Assess counts separately for every estimated measurement block,
+   and identify the affected occasion in the diagnostic.
+   Reproduction: probe-refit-lta.R, probe 2; targeted regression test 4.
+
+The five regression tests in test-targeted-regressions.R deliberately express
+the corrected behavior and currently fail once each. Supporting count/shape
+assertions pass. These tests are isolated from the package's shipped suite.
+
+Additional observations, separate from the five confirmed latest regressions
+
+- Known documented ML step-three local optimum remains: retained sweep_108,
+  equal variances, returns converged=TRUE and log likelihood -7316.5447328744;
+  the independent reference attains -7316.5081733664 (gap 0.03655950796).
+  Class-one mean is 1287.4149 versus 1381.5922, and its robust SE is 315.99
+  versus 246.70. This predates HEAD and is already recorded in
+  equivalence/features/ml-three-step/FINDINGS.md. Reproduced by sweep108-repro.R;
+  no full standalone feature sweep was rerun. The document's 1.7-SE comparison
+  uses the reference model-based SE 56.774, not the reported robust SE.
+- New standalone ML-three-step and VLMR feature harnesses call mclapply with
+  two workers directly (equivalence/test-features-ml-three-step.R:64 and
+  equivalence/features/vlmr/helpers.R:274). They lack the package's socket
+  fallback for Windows and macOS Accelerate, unlike the joint-items helper.
+  This is a portability concern from inspection; worker crashes were not
+  deliberately triggered. VLMR's NULL-worker handling also merits hardening.
+- Direct effects still solve normal equations and can fail on a full-rank
+  but highly collinear design, or extreme changes of predictor units. This
+  M-step is unchanged by HEAD; it is a pre-existing numerical limitation.
+
+Verification notes
+
+- Fresh installation in /private/tmp/latents-review-20261022/rlib succeeded.
+- Full unit and tests/equivalence runs used NOT_CRAN=true, R 4.5.2 on arm64
+  macOS, single-threaded BLAS and the installed current package for workers.
+  See final totals in verification-summary.txt and raw suites.log.
+- Initial socket tests failed because sandboxed R cannot open serverSocket.
+  The independent minimal cluster reproducer failed identically. Parallel and
+  search files were rerun with local socket access: 271/271 expectations pass,
+  no failures/errors/warnings/skips. Merge these replacements into the unit
+  results when interpreting final totals; do not count sandbox failures as bugs.
+- Full package lint: zero findings (lint.log).
+- Source archive built successfully. A limited R CMD check (examples, tests,
+  manual and vignette execution disabled) found no code/documentation errors.
+  Its two warnings concern vignette outputs deliberately omitted by
+  --no-build-vignettes. Network repository indexes were unavailable in the
+  sandbox. This is not a fresh complete CRAN check or vignette-render check.
+- Additional numerical probes: all 56 fits spanning fourteen covariance
+  structures, two acceleration settings and one/two group classes had
+  identical estimates/history with and without screening when all starts were
+  retained. Eight further measurement paths preserved shared finalized starts
+  exactly. Preparation/resume failures, boundary exclusion and evaluate-only
+  supplied starts behaved as expected. 120 randomized constrained variance
+  solver cases completed without error; this checks robustness, not an
+  independent proof of global optimality for those cases.
+
+Suggested repair order: staged-bootstrap first-stage controls; shared warning
+parameter counts for patterns and held blocks; LTA informative counts and
+occasion blocks. Then run the isolated regression tests and existing suites.

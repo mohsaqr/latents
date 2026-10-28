@@ -1,0 +1,128 @@
+astra-diagnostics: 123456789abcde.fg.hij
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-astra-diagnostics.R:71:3'): cross-level diagnostics exclude
+Expected `direct$estimated_n` to equal `unname(expected$counts)`.
+Differences:
+  `actual`: 22.6 37.4
+`expected`: 20.8 34.2
+
+
+── 2. Failure ('test-astra-diagnostics.R:72:3'): cross-level diagnostics exclude
+Expected `direct$n_assigned` to be identical to `expected$modal`.
+Differences:
+  `actual`: 21 39
+`expected`: 20 35
+
+
+── 3. Error ('test-astra-diagnostics.R:73:3'): cross-level diagnostics exclude z
+<latents_bad_argument/error/condition>
+Error: `what = "classification"` is not a table of this object. It has "replication", "checks", and "all".
+Backtrace:
+    ▆
+ 1. ├─latents::get_results(dg, "classification") at test-astra-diagnostics.R:73:3
+ 2. └─latents:::get_results.multilpa_diagnostics(dg, "classification")
+ 3.   └─latents:::.multilpa_dispatch_table(x, what, list(...))
+ 4.     └─latents:::.multilpa_match_table(what, names(catalogue))
+
+── 4. Failure ('test-astra-diagnostics.R:96:5'): both LTA engines obey empty-row
+Expected lta_drop to equal `expected$entropy`.
+Differences:
+  `actual`:                  
+`expected`: 0.791451122608598
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-diagnostics.R:88:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-astra-diagnostics.R:96:5
+
+── 5. Error ('test-astra-diagnostics.R:98:5'): both LTA engines obey empty-row p
+<latents_bad_argument/error/condition>
+Error: `what = "entropy"` is not a table of this object. It has "replication", "checks", and "all".
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-diagnostics.R:88:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     ├─latents::get_results(dg, "entropy") at test-astra-diagnostics.R:98:5
+ 4.     └─latents:::get_results.multilpa_diagnostics(dg, "entropy")
+ 5.       └─latents:::.multilpa_dispatch_table(x, what, list(...))
+ 6.         └─latents:::.multilpa_match_table(what, names(catalogue))
+
+── 6. Failure ('test-astra-diagnostics.R:112:3'): regression diagnostics use the
+Expected `all(c("individuals", "groups") %in% two$level)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 7. Error ('test-astra-diagnostics.R:113:3'): regression diagnostics use the r
+<latents_bad_argument/error/condition>
+Error: `what = "classification"` is not a table of this object. It has "replication", "checks", and "all".
+Backtrace:
+    ▆
+ 1. ├─latents::get_results(...) at test-astra-diagnostics.R:113:3
+ 2. └─latents:::get_results.multilpa_diagnostics(...)
+ 3.   └─latents:::.multilpa_dispatch_table(x, what, list(...))
+ 4.     └─latents:::.multilpa_match_table(what, names(catalogue))
+
+── 8. Error ('test-astra-diagnostics.R:132:7'): every newly supported family has
+<latents_bad_argument/error/condition>
+Error: `what = "entropy"` is not a table of this object. It has "replication", "checks", and "all".
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-diagnostics.R:129:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     ├─latents::get_results(dg, "entropy") at test-astra-diagnostics.R:132:7
+ 4.     └─latents:::get_results.multilpa_diagnostics(dg, "entropy")
+ 5.       └─latents:::.multilpa_dispatch_table(x, what, list(...))
+ 6.         └─latents:::.multilpa_match_table(what, names(catalogue))
+
+── 9. Failure ('test-astra-diagnostics.R:150:5'): weighted regression quality vi
+Expected grid to equal `min(expected$average, na.rm = TRUE)`.
+Differences:
+  `actual`: 0.857
+`expected`: 0.842
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-diagnostics.R:142:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-astra-diagnostics.R:150:5
+
+── 10. Failure ('test-astra-diagnostics.R:152:5'): weighted regression quality v
+Expected grid to equal `min(...)`.
+Differences:
+  `actual`: 0.857
+`expected`: 0.842
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-diagnostics.R:142:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-astra-diagnostics.R:152:5
+  ... and 9 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one is perfect!
+                                                                       test
+1        cross-level diagnostics exclude zero weights at both mapped levels
+2        both LTA engines obey empty-row policy and zero-weight eligibility
+3      regression diagnostics use the real classification levels and counts
+4  every newly supported family has entropy as the primary diagnostic table
+5    weighted regression quality views agree with their candidate summaries
+6  hierarchical growth diagnostics retain person and cluster classification
+7           weighted growth diagnostics and grid views use eligible persons
+8 older weighted cross-level objects explicitly mark an unavailable row map
+  failed error passed
+1      2  TRUE      0
+2      1  TRUE      0
+3      1  TRUE      0
+4      0  TRUE      0
+5      8 FALSE      2
+6      0  TRUE      0
+7      0  TRUE      0
+8      0  TRUE      0

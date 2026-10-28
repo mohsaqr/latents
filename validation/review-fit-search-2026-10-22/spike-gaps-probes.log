@@ -1,0 +1,56 @@
+
+KNOWN MODERATE FLAT SPIKE
+list()
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$log_likelihood
+[1] -502.0884
+
+$effective_profile_counts
+profile_1 profile_2 profile_3 profile_4 
+ 36.44244  23.67246  74.52369 165.36141 
+
+[1] 0.001206186
+
+CROSS LEVEL BETWEEN DENSITY THINNESS
+[1] "full_cross_level"
+list()
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$group_mean_variances
+                       a         b
+group_class_1 0.03524957 0.1264799
+group_class_2 0.26232721 0.2766055
+
+group_class_1 group_class_2 
+            3            37 
+[1] "restricted_cross_level"
+[[1]]
+[[1]]$class
+[1] "latents_thin_profiles"
+
+[[1]]$message
+[1] "Profile 1: 3.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+
+
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$group_mean_variances
+                       a         b
+group_class_1 0.03524957 0.1264799
+group_class_2 0.26232721 0.2766055
+
+group_class_1 group_class_2 
+            3            37 

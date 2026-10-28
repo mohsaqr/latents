@@ -1,0 +1,388 @@
+"suite","fit","output","n_produced","n_compared","status","reason"
+"flexmix","gaussian-2-membership, 2 classes","coefficients$estimate",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$std_error",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$statistic",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$p_value",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$conf_low",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$conf_high",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","coefficients$p_adjusted",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$sigma",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classes$sigma_std_error",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$estimate",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$std_error",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$statistic",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$p_value",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$conf_low",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$conf_high",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","membership$odds_ratio",2,2,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","gaussian-2-membership, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","gaussian-2-membership, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","gaussian-2-membership, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","gaussian-2-membership, 2 classes","assignments$row",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","assignments$class",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","assignments$posterior",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","assignments$probability_class_1",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","assignments$probability_class_2",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fitted$observed",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fitted$fitted",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fitted$fitted_modal",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","fitted$residual",400,400,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-2-membership, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","gaussian-2-membership, 2 classes","classification$n_assigned",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$estimate",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$std_error",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$statistic",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$p_value",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$conf_low",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$conf_high",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","coefficients$p_adjusted",6,6,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$share",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$count",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$n_assigned",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$mean_posterior",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$sigma",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classes$sigma_std_error",3,3,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$estimate",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$std_error",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$statistic",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$p_value",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$conf_low",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$conf_high",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","membership$odds_ratio",4,4,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$aic",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$bic",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$sabic",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$icl",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$entropy",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","gaussian-3-membership, 3 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","gaussian-3-membership, 3 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","gaussian-3-membership, 3 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","gaussian-3-membership, 3 classes","assignments$row",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","assignments$class",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","assignments$posterior",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","assignments$probability_class_1",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","assignments$probability_class_2",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","assignments$probability_class_3",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fitted$observed",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fitted$fitted",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fitted$fitted_modal",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","fitted$residual",600,600,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-3-membership, 3 classes","classification$mean_posterior",9,9,"compared",NA
+"flexmix","gaussian-3-membership, 3 classes","classification$n_assigned",9,9,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$estimate",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$std_error",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$statistic",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$p_value",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$conf_low",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$conf_high",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$p_adjusted",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","coefficients$exp_estimate",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$prior",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","classes$prior_std_error",2,2,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$estimate",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$std_error",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$statistic",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$p_value",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$conf_low",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$conf_high",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","membership$odds_ratio",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","binomial-counts, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","binomial-counts, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","binomial-counts, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","binomial-counts, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","binomial-counts, 2 classes","assignments$row",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","assignments$class",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","assignments$posterior",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","assignments$probability_class_1",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","assignments$probability_class_2",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","fitted$observed",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","fitted$fitted",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","fitted$fitted_modal",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","fitted$residual",400,400,"compared",NA
+"flexmix","binomial-counts, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","binomial-counts, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","binomial-counts, 2 classes","classification$n_assigned",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$estimate",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$std_error",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$statistic",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$p_value",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$conf_low",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$conf_high",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$p_adjusted",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","coefficients$exp_estimate",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$estimate",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$std_error",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$statistic",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$p_value",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$conf_low",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$conf_high",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","membership$odds_ratio",2,2,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","poisson-membership, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","poisson-membership, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","poisson-membership, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","poisson-membership, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","poisson-membership, 2 classes","assignments$row",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","assignments$class",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","assignments$posterior",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","assignments$probability_class_1",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","assignments$probability_class_2",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","fitted$observed",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","fitted$fitted",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","fitted$fitted_modal",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","fitted$residual",400,400,"compared",NA
+"flexmix","poisson-membership, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","poisson-membership, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","poisson-membership, 2 classes","classification$n_assigned",4,4,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$estimate",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$std_error",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$statistic",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$p_value",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$conf_low",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$conf_high",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","coefficients$p_adjusted",5,5,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$sigma",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$sigma_std_error",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$prior",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classes$prior_std_error",2,2,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$estimate",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$std_error",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$statistic",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$p_value",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$conf_low",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$conf_high",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","membership$odds_ratio",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","gaussian-common-equal, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","gaussian-common-equal, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","gaussian-common-equal, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","gaussian-common-equal, 2 classes","assignments$row",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","assignments$class",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","assignments$posterior",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","assignments$probability_class_1",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","assignments$probability_class_2",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fitted$observed",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fitted$fitted",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fitted$fitted_modal",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","fitted$residual",400,400,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-common-equal, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","gaussian-common-equal, 2 classes","classification$n_assigned",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$estimate",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$std_error",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$statistic",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$p_value",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$conf_low",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$conf_high",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","coefficients$p_adjusted",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$sigma",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$sigma_std_error",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$prior",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classes$prior_std_error",2,2,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$estimate",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$std_error",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$statistic",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$p_value",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$conf_low",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$conf_high",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","membership$odds_ratio",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","gaussian-cluster-robust, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","gaussian-cluster-robust, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","gaussian-cluster-robust, 2 classes","assignments$row",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","assignments$class",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","assignments$posterior",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","assignments$probability_class_1",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","assignments$probability_class_2",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fitted$observed",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fitted$fitted",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fitted$fitted_modal",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","fitted$residual",400,400,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-cluster-robust, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","gaussian-cluster-robust, 2 classes","classification$n_assigned",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$estimate",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$std_error",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$statistic",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$p_value",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$conf_low",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$conf_high",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","coefficients$p_adjusted",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$share",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$count",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$n_assigned",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$mean_posterior",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$sigma",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classes$sigma_std_error",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$estimate",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$std_error",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$statistic",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$p_value",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$conf_low",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$conf_high",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","membership$odds_ratio",2,2,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$n_group_classes",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$n_observations",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$n_groups",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$log_likelihood",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$n_parameters",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$aic",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$bic",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$bic_rows",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$sabic",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$icl",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$entropy",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$group_entropy",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$smallest_share",1,1,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fit$converged",1,0,"exempt","this optimiser's own stopping flag"
+"flexmix","gaussian-group-classes, 2 classes","fit$iterations",1,0,"exempt","this optimiser's iteration count"
+"flexmix","gaussian-group-classes, 2 classes","fit$n_starts",1,0,"exempt","how many random starts this program ran: a setting of its search"
+"flexmix","gaussian-group-classes, 2 classes","fit$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"flexmix","gaussian-group-classes, 2 classes","assignments$row",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","assignments$class",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","assignments$posterior",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","assignments$probability_class_1",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","assignments$probability_class_2",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","groups$n_rows",90,90,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","groups$posterior",90,90,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","groups$probability_class_1",90,90,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","groups$probability_class_2",90,90,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fitted$observed",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fitted$fitted",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fitted$fitted_modal",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","fitted$residual",540,540,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","starts$start",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","starts$log_likelihood",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","starts$converged",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","starts$iterations",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","starts$degenerate",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","starts$selected",21,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"flexmix","gaussian-group-classes, 2 classes","classification$mean_posterior",4,4,"compared",NA
+"flexmix","gaussian-group-classes, 2 classes","classification$n_assigned",4,4,"compared",NA

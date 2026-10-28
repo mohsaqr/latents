@@ -1,0 +1,7 @@
+engine-fixes: .No standard errors in this table: parameter_inference() does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it.
+.No standard errors in this table: parameter_inference() does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it.
+........................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+     nb  failed skipped   error warning  passed 
+     26       0       0       0       0      26 

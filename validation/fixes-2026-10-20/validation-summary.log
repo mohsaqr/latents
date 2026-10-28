@@ -1,0 +1,9 @@
+Unit aggregation replaces the complete condition-catalogue test file after its documentation-only correction. Original run is retained.
+       suite cases   nb failed error warning skipped passed
+        unit  1209 8104      0     0       0       0   8104
+ equivalence    64  405      0     0       0       0    405
+All production executable expressions match the complete suite run; only condition-catalogue comments changed.
+Retained Latent GOLD comparison statuses:
+
+         agree not comparable 
+           376             11 

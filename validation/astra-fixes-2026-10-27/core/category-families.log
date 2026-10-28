@@ -1,0 +1,11 @@
+   llgap   p_base p_padded 
+       0        8        8 
+[1] 0
+[1] 0
+[1] TRUE
+   llgap   p_base p_padded 
+       0       16       16 
+[1] 2.775558e-17
+[1] 2.775558e-17
+Warning message:
+vcov() ignores `data`. Choose the covariance with `type =`. 

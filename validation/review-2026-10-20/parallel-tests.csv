@@ -1,0 +1,11 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-parallel.R","parallel","a profile grid on several cores is identical to one core",2,0,FALSE,FALSE,0,0.76,0.024,1.162,2
+"test-parallel.R","parallel","transition and family grids on several cores are identical to one core",2,0,FALSE,FALSE,0,4.4,0.076,8.221,2
+"test-parallel.R","parallel","candidates' warnings reach the caller in grid order, as on one core",3,0,FALSE,FALSE,0,0.455,0.031,0.975,3
+"test-parallel.R","parallel","the socket backend returns values and conditions in order",3,0,FALSE,FALSE,0,0.00900000000000034,0.003,0.141999999999999,3
+"test-parallel.R","parallel","cores is validated by class, and one core is lapply",6,0,FALSE,FALSE,0,0.00999999999999979,0,0.0109999999999992,6
+"test-parallel.R","parallel","forked workers are refused only on macOS with Accelerate's BLAS",4,0,FALSE,FALSE,0,0.00399999999999956,0.001,0.0080000000000009,4
+"test-parallel.R","parallel","a forked worker killed by a signal is a parallel failure, not a NULL candidate",1,0,FALSE,FALSE,0,0.00400000000000045,0.011,0.0150000000000006,1
+"test-parallel.R","parallel","a socket worker that dies is a parallel failure",1,0,FALSE,FALSE,0,0.00499999999999989,0.003,0.138,1
+"test-parallel.R","parallel","one fit's starts on several cores give the same fit as one core",4,0,FALSE,FALSE,0,1.124,0.079,2.009,4
+"test-parallel.R","parallel","a fit refuses a `cores` that is not a whole number of at least 1",2,0,FALSE,FALSE,0,0.0329999999999995,0.003,0.0440000000000005,2

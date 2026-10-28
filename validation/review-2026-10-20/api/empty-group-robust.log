@@ -1,0 +1,24 @@
+        level       outcome          term   parameter    estimate
+1 measurement     profile_1             y        mean -0.01065691
+2 measurement     profile_1             y    variance  1.17158213
+3     profile     profile_1 group_class_1 probability  1.00000000
+4       group group_class_1          <NA> probability  1.00000000
+  standard_error   statistic   p_value p_adjusted   conf_low conf_high
+1      0.1083709 -0.09833734 0.9216644  0.9216644 -0.2230600 0.2017462
+2      0.1514179          NA        NA         NA  0.9094137 1.5093292
+3      0.0000000          NA        NA         NA  1.0000000 1.0000000
+4      0.0000000          NA        NA         NA  1.0000000 1.0000000
+        level       outcome          term   parameter    estimate
+1 measurement     profile_1             y        mean -0.01065691
+2 measurement     profile_1             y    variance  1.17158213
+3     profile     profile_1 group_class_1 probability  1.00000000
+4       group group_class_1          <NA> probability  1.00000000
+  standard_error  statistic   p_value p_adjusted   conf_low conf_high
+1     0.09741823 -0.1093934 0.9128905  0.9128905 -0.2015931 0.1802793
+2     0.13611461         NA        NA         NA  0.9329965 1.4711789
+3     0.00000000         NA        NA         NA  1.0000000 1.0000000
+4     0.00000000         NA        NA         NA  1.0000000 1.0000000
+Informative groups: 5 5 
+Log likelihood: -224.7174 -224.7174 
+SE ratios: 0.8989331 0.8989331 
+CR1 count ratio: 0.8989331 

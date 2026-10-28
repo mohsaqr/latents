@@ -1,0 +1,35 @@
+ separation delta                         status negative_weights
+      1e+00 1e-06                       returned                4
+      1e-02 1e-06                       returned                4
+      1e-03 1e-06                       returned                4
+      1e-04 1e-06                       returned                4
+      1e+00 1e-08                       returned                4
+      1e-02 1e-08                       returned                4
+      1e-03 1e-08                       returned                4
+      1e-04 1e-08 latents_inaccurate_probability               NA
+      1e+00 1e-10                       returned                4
+      1e-02 1e-10                       returned                4
+      1e-03 1e-10 latents_inaccurate_probability               NA
+      1e-04 1e-10 latents_inaccurate_probability               NA
+              p          exact              error
+ 0.998500001250 0.998500001250  6.22835116815e-14
+ 0.998500001073 0.998500001250 -1.77243886235e-10
+ 0.998499989781 0.998500001250 -1.14689944208e-08
+ 0.998498656239 0.998500001250 -1.34501067595e-06
+ 0.999850000002 0.999850000001  3.50164341967e-13
+ 0.999849998228 0.999850000001 -1.77343228991e-09
+ 0.999849885414 0.999850000001 -1.14587449085e-07
+             NA 0.999850000001                 NA
+ 0.999984999981 0.999985000000 -1.93671745308e-11
+ 0.999984982292 0.999985000000 -1.77080446973e-08
+             NA 0.999985000000                 NA
+             NA 0.999985000000                 NA
+ angle             error
+ 2e-01 7.77156117238e-16
+ 1e-06 4.44089209850e-16
+ 1e-10 6.93695281280e-16
+                            size                            class 
+                        "8e+153" "latents_inaccurate_probability" 
+                            size                            class 
+                      "1.1e+154" "latents_inaccurate_probability" 
+Independent V2 probes passed.

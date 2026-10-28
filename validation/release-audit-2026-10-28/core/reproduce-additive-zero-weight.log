@@ -1,0 +1,9 @@
+base_loglik 
+  -178.4893 
+ magnitude expected_loglik                         actual   condition
+      1000       -178.4893             -178.4893059150279        none
+     10000       -178.4893             -178.4893059150279        none
+    100000       -178.4893 posterior rows must sum to one simpleError
+    999999       -178.4893 posterior rows must sum to one simpleError
+   1000000       -178.4893 posterior rows must sum to one simpleError
+Confirmed defect: excluded finite groups make an otherwise converged model fail.

@@ -1,0 +1,31 @@
+    data        ll n_parameters      bic
+1   base -107.5056            3 227.2942
+2 padded -107.5056            4 231.3885
+$a
+[1] "a" "b"
+
+$b
+[1] "x" "y" "z"
+
+$a
+[1] "a"               "absent-category" "b"              
+
+$b
+[1] "x" "y" "z"
+
+     base converged 
+-226.9712    1.0000 
+$scale
+[1] 10000
+
+$result
+           ll           gap     converged 
+-2.269712e+02  1.989520e-13  1.000000e+00 
+
+$scale
+[1] 1e+08
+
+$result
+       ll       gap converged 
+-228.4333   -1.4621    1.0000 
+

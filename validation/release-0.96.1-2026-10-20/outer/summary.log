@@ -1,0 +1,12 @@
+Original full-suite totals:
+     nb  failed skipped   error warning  passed 
+   5418      26       0       1       0    5392 
+
+Final totals after whole-file replacements:
+     nb  failed skipped   error warning  passed 
+   5419       0       0       0       0    5419 
+Cases: 198 
+Replaced files: test-claims.R, test-enumeration-mplus.R 
+ [1] file    context test    nb      failed  skipped error   warning user   
+[10] system  real    passed 
+<0 rows> (or 0-length row.names)

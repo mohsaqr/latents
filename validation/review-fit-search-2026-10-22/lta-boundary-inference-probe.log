@@ -1,0 +1,44 @@
+$boundary
+[1] FALSE
+
+$probability_boundary
+[1] FALSE
+
+$converged
+[1] TRUE
+
+
+VCOV observed 
+$error_class
+[1] "latents_singular_information" "error"                       
+[3] "condition"                   
+
+$message
+[1] "The observed information is not positive definite."
+
+
+VCOV opg 
+$error_class
+[1] "latents_singular_information" "error"                       
+[3] "condition"                   
+
+$message
+[1] "The observed information is not positive definite."
+
+
+VCOV robust 
+$error_class
+[1] "latents_singular_information" "error"                       
+[3] "condition"                   
+
+$message
+[1] "The observed information is not positive definite."
+
+
+REFERENCE CORRECTED FLAG
+$error_class
+[1] "latents_boundary_fit" "error"                "condition"           
+
+$message
+[1] "A variance sits at min_variance or a transition or initial probability at zero; Wald inference does not apply."
+

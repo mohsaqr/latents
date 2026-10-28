@@ -1,0 +1,1300 @@
+"file","name","messages"
+"R/acceleration.R",".multilpa_accelerated_blocks",""
+"R/acceleration.R",".multilpa_flatten_parameters",""
+"R/acceleration.R",".multilpa_restore_parameters",""
+"R/acceleration.R",".multilpa_valid_parameters",""
+"R/accessors.R","as.data.frame.multilpa",""
+"R/accessors.R",".multilpa_assignments",""
+"R/accessors.R",".multilpa_recovery_frame",""
+"R/accessors.R",".multilpa_recovery_rows",""
+"R/accessors.R",".multilpa_constant_within",""
+"R/accessors.R",".multilpa_model_frame",""
+"R/accessors.R",".multilpa_resolve_data",""
+"R/accessors.R",".multilpa_same_values",""
+"R/accessors.R",".multilpa_check_row_count",""
+"R/accessors.R",".multilpa_check_alignment",""
+"R/accessors.R",".multilpa_stage_frame",""
+"R/accessors.R",".multilpa_continuous_names",""
+"R/accessors.R",".multilpa_profile_frame",""
+"R/accessors.R",".multilpa_standardization",""
+"R/accessors.R",".multilpa_measurement_errors",""
+"R/accessors.R",".multilpa_table_errors",""
+"R/accessors.R",".multilpa_match_error",""
+"R/accessors.R",".multilpa_variance_error",""
+"R/accessors.R",".multilpa_response_frame",""
+"R/accessors.R",".multilpa_probability_frame",""
+"R/accessors.R",".multilpa_posterior_frame",""
+"R/accessors.R",".multilpa_group_posterior_frame",""
+"R/accessors.R","as.data.frame.multilpa_enumeration",""
+"R/accessors.R",".multilpa_is_probability",""
+"R/accessors.R","print.multilpa_enumeration",""
+"R/accessors.R","starting_values",""
+"R/accessors.R","print.multilpa_start",""
+"R/accessors.R","as.data.frame.multilpa_start",""
+"R/accessors.R",".multilpa_start_profile_frame",""
+"R/accessors.R",".multilpa_start_variances",""
+"R/accessors.R",".multilpa_start_response_frame",""
+"R/accessors.R",".multilpa_start_probability_frame",""
+"R/accessors.R",".multilpa_start_covariance_frame",""
+"R/accessors.R","as.data.frame.multilpa_covariates",""
+"R/accessors.R",".multilpa_coefficient_frame",""
+"R/additive-compare.R",".additive_model_code",""
+"R/additive-compare.R",".additive_simulate",""
+"R/additive-compare.R",".additive_nested",""
+"R/additive-compare.R",".additive_bootstrap_lrt",""
+"R/additive-compare.R",".additive_enumerate",""
+"R/additive-compare.R","get_results.latents_family_enumeration",""
+"R/additive-compare.R","as.data.frame.latents_family_enumeration",""
+"R/additive-compare.R","print.latents_family_enumeration",""
+"R/additive-compare.R","summary.latents_family_enumeration",""
+"R/additive-compare.R","plot.latents_family_enumeration","plot.latents_family_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:313)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘n_group_classes’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+ | plot.latents_family_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-compare.R:320-333)
+"
+"R/additive-inference.R",".additive_block_names",""
+"R/additive-inference.R",".additive_block_pack",""
+"R/additive-inference.R",".additive_block_unpack",""
+"R/additive-inference.R",".additive_block_combine",""
+"R/additive-inference.R",".additive_names",""
+"R/additive-inference.R",".additive_pack",""
+"R/additive-inference.R",".additive_unpack",""
+"R/additive-inference.R",".additive_group_scores",""
+"R/additive-inference.R",".additive_information",""
+"R/additive-inference.R",".additive_inference",""
+"R/additive-inference.R",".additive_warn_weak",""
+"R/additive-inference.R",".additive_natural",""
+"R/additive-inference.R",".additive_block_labels",""
+"R/additive-inference.R",".additive_parameter_table",""
+"R/additive-inference.R",".additive_newton",""
+"R/additive-inference.R",".additive_effective_groups",""
+"R/additive-methods.R",".additive_tables",""
+"R/additive-methods.R",".additive_parameters_or_notice",""
+"R/additive-methods.R",".additive_effective_or_na",""
+"R/additive-methods.R",".additive_entropy",""
+"R/additive-methods.R",".additive_recovery",""
+"R/additive-methods.R",".additive_table",""
+"R/additive-methods.R","get_results.multilpa_additive",""
+"R/additive-methods.R","as.data.frame.multilpa_additive",""
+"R/additive-methods.R","coef.multilpa_additive",""
+"R/additive-methods.R","vcov.multilpa_additive",""
+"R/additive-methods.R","confint.multilpa_additive",""
+"R/additive-methods.R","logLik.multilpa_additive",""
+"R/additive-methods.R","nobs.multilpa_additive",""
+"R/additive-methods.R","parameter_inference.multilpa_additive",""
+"R/additive-methods.R","summary.multilpa_additive",""
+"R/additive-methods.R","print.summary_multilpa_additive",""
+"R/additive-methods.R","as.data.frame.summary_multilpa_additive",""
+"R/additive-methods.R",".additive_key",""
+"R/additive-methods.R","plot.multilpa_additive","plot.multilpa_additive: no visible binding for global variable ‘parameter’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:396)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:399)
+ | plot.multilpa_additive: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:402-406)
+ | plot.multilpa_additive: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:408-409)
+ | plot.multilpa_additive: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:408-409)
+ | plot.multilpa_additive: no visible binding for global variable ‘parameter’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:419)
+ | plot.multilpa_additive: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:434-437)
+ | plot.multilpa_additive: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:434-437)
+ | plot.multilpa_additive: no visible binding for global variable ‘component’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:434-437)
+ | plot.multilpa_additive: no visible binding for global variable ‘component’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:434-437)
+ | plot.multilpa_additive: no visible binding for global variable ‘component’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:434-437)
+ | plot.multilpa_additive: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:439-441)
+ | plot.multilpa_additive: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:439-441)
+ | plot.multilpa_additive: no visible binding for global variable ‘group_class’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:462)
+ | plot.multilpa_additive: no visible binding for global variable ‘parameter’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:466)
+ | plot.multilpa_additive: no visible binding for global variable ‘offset_x’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+ | plot.multilpa_additive: no visible binding for global variable ‘intercept_mean’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+ | plot.multilpa_additive: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+ | plot.multilpa_additive: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/additive-methods.R:476-488)
+"
+"R/additive.R",".additive_prepare",""
+"R/additive.R",".additive_structure",""
+"R/additive.R",".additive_check_parameters",""
+"R/additive.R",".additive_row",""
+"R/additive.R",".additive_log_density",""
+"R/additive.R",".additive_expectation",""
+"R/additive.R",".additive_slice",""
+"R/additive.R",".additive_between_score",""
+"R/additive.R",".additive_pool",""
+"R/additive.R",".additive_initialize",""
+"R/additive.R",".additive_maximization",""
+"R/additive.R",".additive_em",""
+"R/additive.R",".additive_polish",""
+"R/additive.R",".additive_arguments",""
+"R/additive.R",".additive_rows",""
+"R/additive.R",".additive_count_parameters",""
+"R/additive.R",".additive_family_label",""
+"R/additive.R",".additive_fit",""
+"R/additive.R","print.multilpa_additive",""
+"R/alignment-service.R",".multilpa_permutations",""
+"R/alignment-service.R",".multilpa_match_order",""
+"R/alignment-service.R",".latents_measurement_signature",""
+"R/alignment-service.R",".multilpa_extra_signature",""
+"R/alignment-service.R",".multilpa_profile_signature",""
+"R/alignment-service.R",".multilpa_cov_profile_signature",""
+"R/alignment-service.R",".multilpa_group_signature",""
+"R/alignment-service.R",".multilpa_cov_group_signature",""
+"R/alignment-service.R",".latents_rebase_logits",""
+"R/alignment-service.R",".multilpa_permute_extra",""
+"R/alignment-service.R",".multilpa_permute_profiles",""
+"R/alignment-service.R",".multilpa_permute_group_classes",""
+"R/alignment-service.R",".multilpa_cov_permute",""
+"R/alignment-service.R",".multilpa_pool_align",""
+"R/alignment-service.R",".multilpa_align_labels",""
+"R/bivariate-residuals.R",".multilpa_bivariate_residuals",""
+"R/bivariate-residuals.R",".multilpa_cramers_v",""
+"R/bivariate-residuals.R",".multilpa_gaussian_residuals",""
+"R/bivariate-residuals.R",".multilpa_categorical_residuals",".multilpa_categorical_residuals : <anonymous>: local variable ‘category_1’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/bivariate-residuals.R:160)
+ | .multilpa_categorical_residuals : <anonymous>: local variable ‘category_2’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/bivariate-residuals.R:161)
+"
+"R/bootstrap-inference.R",".multilpa_refit_arguments",""
+"R/bootstrap-inference.R",".multilpa_staged_refit_arguments",""
+"R/bootstrap-inference.R",".multilpa_bootstrap_replicates",""
+"R/bootstrap-inference.R",".multilpa_bootstrap_inference",""
+"R/candidates.R",".latents_candidate_names",""
+"R/candidates.R",".latents_candidate_data",""
+"R/candidates.R",".latents_is_grid",""
+"R/candidates.R",".latents_candidate_row",""
+"R/candidates.R",".latents_candidate_at",""
+"R/candidates.R",".latents_named_table",""
+"R/candidates.R",".latents_grid_dollar",""
+"R/candidates.R","$.multilpa_enumeration",""
+"R/candidates.R","$.latents_transition_enumeration",""
+"R/candidates.R","$.latents_family_enumeration",""
+"R/candidates.R",".latents_grid_dollar_names",""
+"R/candidates.R",".DollarNames.multilpa_enumeration",""
+"R/candidates.R",".DollarNames.latents_transition_enumeration",""
+"R/candidates.R",".DollarNames.latents_family_enumeration",""
+"R/categorical.R",".multilpa_encode_categorical",""
+"R/categorical.R",".multilpa_categorical_values",""
+"R/categorical.R",".multilpa_categorical_log_density",""
+"R/categorical.R",".multilpa_categorical_maximize",""
+"R/categorical.R",".multilpa_bound_probabilities",""
+"R/categorical.R",".multilpa_categorical_initialize",""
+"R/categorical.R",".multilpa_categorical_design",""
+"R/categorical.R",".multilpa_categorical_parameters",""
+"R/categorical.R",".multilpa_categorical_thresholds",""
+"R/centering.R",".multilpa_centering_schemes",""
+"R/centering.R",".multilpa_center_indicators",""
+"R/centering.R",".multilpa_uncentered_indicators",""
+"R/centering.R",".multilpa_center_like",""
+"R/centering.R",".multilpa_check_centered",""
+"R/compare-models.R","compare_models",""
+"R/compare-models.R","plot.latents_comparison","plot.latents_comparison: no visible binding for global variable ‘model’ (/Users/mohammedsaqr/Documents/Github/latents/R/compare-models.R:197-208)
+ | plot.latents_comparison: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/compare-models.R:197-208)
+ | plot.latents_comparison: no visible binding for global variable ‘criterion’ (/Users/mohammedsaqr/Documents/Github/latents/R/compare-models.R:197-208)
+ | plot.latents_comparison: no visible binding for global variable ‘criterion’ (/Users/mohammedsaqr/Documents/Github/latents/R/compare-models.R:197-208)
+ | plot.latents_comparison: no visible binding for global variable ‘criterion’ (/Users/mohammedsaqr/Documents/Github/latents/R/compare-models.R:197-208)
+"
+"R/compare-models.R",".multilpa_compare_candidates",""
+"R/compare-models.R",".multilpa_compare_fits",""
+"R/compare-models.R",".latents_compared_model",""
+"R/compare-models.R",".latents_comparison_classification",""
+"R/covariance-structure.R",".multilpa_structures",""
+"R/covariance-structure.R",".multilpa_is_ellipsoidal",""
+"R/covariance-structure.R",".multilpa_inferable_structures",""
+"R/covariance-structure.R",".multilpa_resolve_structure",""
+"R/covariance-structure.R",".multilpa_structure_parameters",""
+"R/covariance-structure.R",".multilpa_structure_variances",""
+"R/covariance-structure.R",".multilpa_evi_variances",""
+"R/covariance-structure.R",".multilpa_vei_variances",""
+"R/covariance-structure.R",".multilpa_scatter_diagonals",""
+"R/covariance-structure.R",".multilpa_check_structure_inference",""
+"R/covariance-structure.R",".multilpa_project_start",""
+"R/covariance-structure.R",".multilpa_scaled_determinant",""
+"R/covariance-structure.R",".multilpa_structure_covariances",""
+"R/covariance-structure.R",".multilpa_eev_covariances",""
+"R/covariance-structure.R",".multilpa_vev_covariances",""
+"R/covariance-structure.R",".multilpa_evv_covariances",""
+"R/covariance-structure.R",".multilpa_vee_covariances",""
+"R/covariance-structure.R",".multilpa_eve_covariances",""
+"R/covariance-structure.R",".multilpa_reset_structure_log",""
+"R/covariance-structure.R",".multilpa_warn_structure",""
+"R/covariance-structure.R",".multilpa_report_structure_log",""
+"R/covariance-structure.R",".multilpa_structure_arguments",""
+"R/covariance-structure.R",".multilpa_seed_block",""
+"R/covariance-structure.R",".multilpa_orientation_steps",""
+"R/covariate-inference.R",".multilpa_cov_encode",""
+"R/covariate-inference.R",".multilpa_cov_is_full",""
+"R/covariate-inference.R",".multilpa_cov_spread_rows",""
+"R/covariate-inference.R",".multilpa_cov_cholesky_coordinates",""
+"R/covariate-inference.R",".multilpa_cov_cholesky_decode",""
+"R/covariate-inference.R",".multilpa_cov_decode",""
+"R/covariate-inference.R",".multilpa_cov_group_scores",""
+"R/covariate-inference.R",".multilpa_cov_full_scores",""
+"R/covariate-inference.R","parameter_inference.multilpa_covariates",""
+"R/covariate-inference.R",".multilpa_cov_covariance",""
+"R/covariate-inference.R",".multilpa_cov_parameter_names",""
+"R/covariate-inference.R","vcov.multilpa_covariates",""
+"R/covariate-inference.R",".multilpa_cov_estimation_labels",""
+"R/covariate-inference.R",".multilpa_cov_inference_frame",""
+"R/covariate-inference.R",".multilpa_cov_front_estimate",""
+"R/covariate-inference.R",".multilpa_cov_front_jacobian",""
+"R/covariate-inference.R",".multilpa_cov_blocks",""
+"R/covariate-inference.R",".multilpa_cov_natural_estimate",""
+"R/covariate-inference.R",".multilpa_cov_natural_jacobian",""
+"R/covariate-inference.R",".multilpa_cov_cholesky_natural",""
+"R/covariate-inference.R",".multilpa_cov_cholesky_jacobian",""
+"R/covariate-inference.R",".multilpa_cov_labels",".multilpa_cov_labels: local variable ‘vars’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/covariate-inference.R:906)
+"
+"R/covariate-inference.R","coef.multilpa_covariates",""
+"R/covariate-inference.R","confint.multilpa_covariates",""
+"R/covariates.R",".multilpa_softmax",""
+"R/covariates.R",".multilpa_log_softmax",""
+"R/covariates.R",".multilpa_weighted_logits",""
+"R/covariates.R",".multilpa_cov_expectation",""
+"R/covariates.R",".multilpa_fit_covariates",".multilpa_fit_covariates: local variable ‘center’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/covariates.R:289)
+"
+"R/covariates.R","print.multilpa_covariates",""
+"R/covariates.R","summary.multilpa_covariates",""
+"R/covariates.R","print.summary_multilpa_covariates",""
+"R/covariates.R","as.data.frame.summary_multilpa_covariates",""
+"R/covariates.R",".multilpa_cov_stored_data",""
+"R/covariates.R","logLik.multilpa_covariates",""
+"R/covariates.R","nobs.multilpa_covariates",""
+"R/covariates.R",".multilpa_cov_check_covariates",""
+"R/covariates.R",".multilpa_cov_designs",""
+"R/covariates.R",".multilpa_cov_start",""
+"R/covariates.R",".multilpa_cov_assemble",""
+"R/cross-level.R",".cross_level_arguments",""
+"R/cross-level.R",".cross_level_group_density",""
+"R/cross-level.R",".cross_level_between_update",""
+"R/cross-level.R",".cross_level_initialize",""
+"R/cross-level.R",".cross_level_em",""
+"R/cross-level.R",".cross_level_count",""
+"R/cross-level.R",".cross_level_fit",""
+"R/cross-level.R",".cross_level_select",""
+"R/cross-level.R",".cross_level_restricted",""
+"R/cross-level.R",".cross_level_result",""
+"R/cross-level.R",".cross_level_tables",""
+"R/cross-level.R","get_results.multilpa_cross_level",""
+"R/cross-level.R",".cross_level_table",""
+"R/cross-level.R","as.data.frame.multilpa_cross_level",""
+"R/cross-level.R","print.multilpa_cross_level",""
+"R/cross-level.R","summary.multilpa_cross_level",""
+"R/cross-level.R","logLik.multilpa_cross_level",""
+"R/cross-level.R","nobs.multilpa_cross_level",""
+"R/cross-level.R","parameter_inference.multilpa_cross_level",""
+"R/cross-level.R","plot.multilpa_cross_level","plot.multilpa_cross_level: no visible binding for global variable ‘group_class’ (/Users/mohammedsaqr/Documents/Github/latents/R/cross-level.R:487-497)
+ | plot.multilpa_cross_level: no visible binding for global variable ‘share’ (/Users/mohammedsaqr/Documents/Github/latents/R/cross-level.R:487-497)
+ | plot.multilpa_cross_level: no visible binding for global variable ‘level’ (/Users/mohammedsaqr/Documents/Github/latents/R/cross-level.R:500)
+ | plot.multilpa_cross_level: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/cross-level.R:505-517)
+"
+"R/descriptives.R","descriptives",""
+"R/descriptives.R","descriptives.data.frame",""
+"R/descriptives.R","descriptives.multilpa",""
+"R/descriptives.R",".multilpa_assignment_values",""
+"R/descriptives.R",".multilpa_describe_by",""
+"R/descriptives.R",".multilpa_describe",""
+"R/descriptives.R",".multilpa_icc",""
+"R/diagnostics.R",".multilpa_entropy_sum",""
+"R/diagnostics.R",".multilpa_relative_entropy",""
+"R/diagnostics.R",".multilpa_criterion_definitions",""
+"R/diagnostics.R",".multilpa_information_criteria",""
+"R/diagnostics.R",".multilpa_criteria_wide",""
+"R/diagnostics.R",".multilpa_criterion_labels",""
+"R/diagnostics.R",".multilpa_posterior_levels",""
+"R/diagnostics.R",".multilpa_classification_levels",""
+"R/diagnostics.R",".multilpa_classification_table",""
+"R/diagnostics.R",".multilpa_level_weights",""
+"R/diagnostics.R",".multilpa_average_posteriors",""
+"R/diagnostics.R",".multilpa_average_posterior_matrix",""
+"R/diagnostics.R",".multilpa_classification_summary",""
+"R/diagnostics.R",".multilpa_average_posterior_rows",".multilpa_average_posterior_rows: local variable ‘classes’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/diagnostics.R:303)
+"
+"R/diagnostics.R",".multilpa_class_labels",""
+"R/diagnostics.R",".multilpa_odds_correct",""
+"R/diagnostics.R",".multilpa_entropy_table",""
+"R/enumeration.R","enumerate_classes",""
+"R/enumeration.R",".latents_candidate_call",""
+"R/enumeration.R",".multilpa_enumeration_models",""
+"R/enumeration.R","get_candidate",""
+"R/enumeration.R","candidate_fit",""
+"R/enumeration.R","summary.multilpa_enumeration",""
+"R/enumeration.R",".multilpa_enumeration_minima",""
+"R/enumeration.R",".multilpa_enumeration_grid",""
+"R/enumeration.R",".multilpa_avepp_summary",""
+"R/enumeration.R",".multilpa_informative_classification",""
+"R/enumeration.R",".multilpa_enumeration_classification",""
+"R/enumeration.R","print.summary_multilpa_enumeration",""
+"R/enumeration.R",".multilpa_compact_candidates",""
+"R/enumeration.R","as.data.frame.summary_multilpa_enumeration",""
+"R/enumeration.R",".multilpa_simulate",""
+"R/enumeration.R",".multilpa_cov_simulate",""
+"R/enumeration.R",".multilpa_carry_missingness",""
+"R/enumeration.R",".multilpa_draw_indicators",""
+"R/enumeration.R",".multilpa_bootstrap_constraint",""
+"R/enumeration.R",".multilpa_check_covariate_nesting",""
+"R/enumeration.R",".multilpa_cov_check_likelihood",""
+"R/enumeration.R","bootstrap_lrt",""
+"R/enumeration.R","print.multilpa_bootstrap_lrt",""
+"R/enumeration.R","summary.multilpa_bootstrap_lrt",""
+"R/enumeration.R",".multilpa_bootstrap_test_frame",""
+"R/enumeration.R","print.summary_multilpa_bootstrap_lrt",""
+"R/enumeration.R","as.data.frame.multilpa_bootstrap_lrt",""
+"R/enumeration.R","as.data.frame.summary_multilpa_bootstrap_lrt",""
+"R/enumeration.R","plot.multilpa_bootstrap_lrt","plot.multilpa_bootstrap_lrt: no visible binding for global variable ‘statistic’ (/Users/mohammedsaqr/Documents/Github/latents/R/enumeration.R:1502-1516)
+"
+"R/enumeration.R",".multilpa_enumeration_indices",""
+"R/enumeration.R",".multilpa_enumeration_criteria",""
+"R/extra-indicators.R",".latents_prepare_extra",""
+"R/extra-indicators.R",".latents_extra_names",""
+"R/extra-indicators.R",".latents_ordinal_log_probabilities",""
+"R/extra-indicators.R",".latents_extra_log_density",""
+"R/extra-indicators.R",".latents_ordinal_counts",""
+"R/extra-indicators.R",".latents_ordinal_maximize",""
+"R/extra-indicators.R",".latents_extra_maximize",""
+"R/extra-indicators.R",".latents_extra_initialize",""
+"R/extra-indicators.R",".latents_extra_clustering",""
+"R/extra-indicators.R",".latents_extra_n_parameters",""
+"R/extra-indicators.R",".latents_extra_matrix",""
+"R/extra-indicators.R",".latents_check_extra_arguments",""
+"R/extra-indicators.R",".latents_label_extra",""
+"R/extra-indicators.R",".latents_measurement_model",""
+"R/extra-indicators.R",".latents_extra_coordinates",""
+"R/extra-indicators.R",".latents_extra_width",""
+"R/extra-indicators.R",".latents_extra_decode",""
+"R/extra-indicators.R",".latents_extra_scores",""
+"R/extra-indicators.R",".latents_extra_jacobian",""
+"R/extra-indicators.R",".latents_ordinal_frame",""
+"R/extra-indicators.R",".latents_count_frame",""
+"R/extra-indicators.R",".latents_extra_catalogue",""
+"R/extra-indicators.R",".latents_draw_extra",""
+"R/extra-indicators.R",".latents_prepare_extra_like",""
+"R/extra-indicators.R",".latents_print_extra",""
+"R/extra-indicators.R",".latents_draw_extra_columns",""
+"R/extra-indicators.R",".latents_extra_labels",""
+"R/extra-indicators.R",".latents_extra_rows",""
+"R/extra-indicators.R",".lta_extra_table",""
+"R/extra-indicators.R",".latents_as_column_type",""
+"R/extra-indicators.R",".latents_negative_binomial",""
+"R/extra-indicators.R",".latents_dispersion_rows",""
+"R/extra-indicators.R",".latents_set_count_model",""
+"R/extra-indicators.R",".latents_negative_binomial_scores",""
+"R/extra-indicators.R",".latents_negative_binomial_dispersion_derivatives",""
+"R/extra-indicators.R",".latents_moment_dispersion",""
+"R/extra-indicators.R",".latents_negative_binomial_maximize",""
+"R/extra-indicators.R",".latents_poisson_limit",""
+"R/extra-indicators.R",".latents_warn_poisson_limit",""
+"R/extra-indicators.R",".latents_negative_binomial_hessian",""
+"R/fixed-measurement.R",".multilpa_fixed_blocks",""
+"R/fixed-measurement.R",".multilpa_validate_fixed",""
+"R/fixed-measurement.R",".multilpa_held_parameters",""
+"R/fixed-measurement.R",".multilpa_apply_held",""
+"R/fixed-measurement.R",".multilpa_fixed_parameters",""
+"R/fixed-measurement.R",".multilpa_complete_start",""
+"R/fixed-measurement.R","fit_staged",""
+"R/fixed-measurement.R",".multilpa_stage_start",""
+"R/fixed-measurement.R",".multilpa_requested_levels",""
+"R/fixed-measurement.R",".multilpa_category_counts",""
+"R/fixed-measurement.R",".multilpa_check_measurement",""
+"R/gaussian-moments.R",".multilpa_gaussian_moments",""
+"R/gaussian-moments.R",".multilpa_bound_covariance",""
+"R/gaussian-moments.R",".multilpa_maximize_moments",""
+"R/gaussian-moments.R",".multilpa_covariance_boundary",""
+"R/get-data.R","get_results",""
+"R/get-data.R","get_results.default",""
+"R/get-data.R","get_results.multilpa",""
+"R/get-data.R","get_results.multilpa_covariates",""
+"R/get-data.R","get_results.multilpa_transitions",""
+"R/get-data.R","get_results.multilpa_enumeration",""
+"R/get-data.R","get_results.latents_comparison",""
+"R/get-data.R","get_results.multilpa_bootstrap_lrt",""
+"R/get-data.R","get_results.multilpa_start",""
+"R/get-data.R","get_results.multilpa_diagnostics",""
+"R/get-data.R","get_results.summary_multilpa",""
+"R/get-data.R","get_results.summary_multilpa_covariates",""
+"R/get-data.R","get_results.summary_multilpa_transitions",""
+"R/get-data.R","get_results.summary_multilpa_enumeration",""
+"R/get-data.R","get_results.summary_multilpa_bootstrap_lrt",""
+"R/get-data.R",".multilpa_coerce",""
+"R/get-data.R",".multilpa_dispatch_table",""
+"R/get-data.R",".multilpa_match_table",""
+"R/get-data.R",".multilpa_check_table_arguments",""
+"R/get-data.R",".multilpa_absent_table_conditions",""
+"R/get-data.R",".multilpa_all_tables",""
+"R/get-data.R",".multilpa_catalogue",""
+"R/get-data.R",".multilpa_table",""
+"R/get-data.R",".multilpa_any_summary",""
+"R/get-data.R",".multilpa_stored_catalogue",""
+"R/get-data.R",".multilpa_measurement_catalogue",""
+"R/get-data.R",".multilpa_mixing_catalogue",""
+"R/get-data.R",".multilpa_unit_catalogue",""
+"R/get-data.R",".multilpa_diagnostic_catalogue",""
+"R/get-data.R",".multilpa_sequence_catalogue",""
+"R/get-data.R",".multilpa_provenance_catalogue",""
+"R/get-data.R",".multilpa_hide_fabricated_id",""
+"R/get-data.R",".multilpa_default_level",""
+"R/get-data.R",".multilpa_diagnostic_residuals",""
+"R/get-data.R",".multilpa_sequence_length_frame",""
+"R/get-data.R",".multilpa_print_tables",""
+"R/get-data.R",".multilpa_print_table_footer",""
+"R/get-data.R",".multilpa_check_print_arguments",""
+"R/get-data.R",".multilpa_wide_means",""
+"R/get-data.R",".multilpa_print_primary",""
+"R/growth-mixture-engine.R",".growth_statistics",""
+"R/growth-mixture-engine.R",".growth_patterns",""
+"R/growth-mixture-engine.R",".growth_coefficients",""
+"R/growth-mixture-engine.R",".growth_residuals",""
+"R/growth-mixture-engine.R",".growth_class_terms",""
+"R/growth-mixture-engine.R",".growth_covariances",""
+"R/growth-mixture-engine.R",".growth_factor",""
+"R/growth-mixture-engine.R",".growth_expectation",""
+"R/growth-mixture-engine.R",".growth_maximization",""
+"R/growth-mixture-engine.R",".growth_structure",""
+"R/growth-mixture-engine.R",".growth_structure_names",""
+"R/growth-mixture-engine.R",".growth_em",""
+"R/growth-mixture-inference.R",".growth_names",""
+"R/growth-mixture-inference.R",".growth_pack",""
+"R/growth-mixture-inference.R",".growth_unpack",""
+"R/growth-mixture-inference.R",".growth_scores",""
+"R/growth-mixture-inference.R",".growth_quasi_newton",""
+"R/growth-mixture-methods.R",".growth_inference",""
+"R/growth-mixture-methods.R",".growth_resolve_inference",""
+"R/growth-mixture-methods.R",".growth_class_names",""
+"R/growth-mixture-methods.R",".growth_delta_table",""
+"R/growth-mixture-methods.R",".growth_coefficient_table",""
+"R/growth-mixture-methods.R",".growth_random_table",""
+"R/growth-mixture-methods.R",".growth_class_is_degenerate",""
+"R/growth-mixture-methods.R",".growth_class_table",""
+"R/growth-mixture-methods.R",".growth_class_prior",""
+"R/growth-mixture-methods.R",".growth_membership_table",""
+"R/growth-mixture-methods.R",".growth_entropy",""
+"R/growth-mixture-methods.R",".growth_random_description",""
+"R/growth-mixture-methods.R",".growth_entropy_sum",""
+"R/growth-mixture-methods.R",".growth_fit_table",""
+"R/growth-mixture-methods.R",".growth_cluster_fit_table",""
+"R/growth-mixture-methods.R",".growth_group_class_table",""
+"R/growth-mixture-methods.R",".growth_cluster_table",""
+"R/growth-mixture-methods.R",".growth_assignment_table",""
+"R/growth-mixture-methods.R",".growth_random_effects_table",""
+"R/growth-mixture-methods.R",".growth_time_variable",""
+"R/growth-mixture-methods.R",".growth_design",""
+"R/growth-mixture-methods.R",".growth_trajectory_table",""
+"R/growth-mixture-methods.R",".growth_individual_table",""
+"R/growth-mixture-methods.R",".growth_tables",""
+"R/growth-mixture-methods.R",".growth_table",""
+"R/growth-mixture-methods.R",".growth_present",""
+"R/growth-mixture-methods.R","get_results.latents_growth_mixture",""
+"R/growth-mixture-methods.R","as.data.frame.latents_growth_mixture",""
+"R/growth-mixture-methods.R","print.latents_growth_mixture",""
+"R/growth-mixture-methods.R","summary.latents_growth_mixture",""
+"R/growth-mixture-methods.R","print.summary_latents_growth_mixture",""
+"R/growth-mixture-methods.R","coef.latents_growth_mixture",""
+"R/growth-mixture-methods.R","vcov.latents_growth_mixture",""
+"R/growth-mixture-methods.R","confint.latents_growth_mixture",""
+"R/growth-mixture-methods.R","logLik.latents_growth_mixture",""
+"R/growth-mixture-methods.R","nobs.latents_growth_mixture",""
+"R/growth-mixture-plot.R",".growth_class_key",""
+"R/growth-mixture-plot.R",".growth_scales",""
+"R/growth-mixture-plot.R","plot.latents_growth_mixture",""
+"R/growth-mixture-plot.R",".growth_observed_means",""
+"R/growth-mixture-plot.R",".growth_spread",""
+"R/growth-mixture-plot.R",".growth_plot_trajectories",".growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:153-156)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:153-156)
+ | .growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:160-163)
+ | .growth_plot_trajectories: no visible binding for global variable ‘spread_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:160-163)
+ | .growth_plot_trajectories: no visible binding for global variable ‘spread_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:160-163)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:160-163)
+ | .growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:165-167)
+ | .growth_plot_trajectories: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:165-167)
+ | .growth_plot_trajectories: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:165-167)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:165-167)
+ | .growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:168-170)
+ | .growth_plot_trajectories: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:168-170)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:168-170)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:168-170)
+ | .growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:173-175)
+ | .growth_plot_trajectories: no visible binding for global variable ‘observed_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:173-175)
+ | .growth_plot_trajectories: no visible binding for global variable ‘observed_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:173-175)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:173-175)
+ | .growth_plot_trajectories: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:176-179)
+ | .growth_plot_trajectories: no visible binding for global variable ‘observed_mean’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:176-179)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:176-179)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:176-179)
+ | .growth_plot_trajectories: no visible binding for global variable ‘label_y’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:211-218)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:211-218)
+ | .growth_plot_trajectories: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:211-218)
+"
+"R/growth-mixture-plot.R",".growth_plot_individuals",".growth_plot_individuals: no visible binding for global variable ‘trajectory_time’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘class_mean’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘predicted’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘observed’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+ | .growth_plot_individuals: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:250-262)
+"
+"R/growth-mixture-plot.R",".growth_plot_coefficients",".growth_plot_coefficients: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+ | .growth_plot_coefficients: no visible binding for global variable ‘value_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:288-310)
+"
+"R/growth-mixture-plot.R",".growth_plot_random",".growth_plot_random: no visible binding for global variable ‘effect_x’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:329-339)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:329-339)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:329-339)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:329-339)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:329-339)
+ | .growth_plot_random: no visible binding for global variable ‘note’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:341-343)
+ | .growth_plot_random: no visible binding for global variable ‘effect_x’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘effect_y’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:354-370)
+ | .growth_plot_random: no visible binding for global variable ‘note’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:372-374)
+"
+"R/growth-mixture-plot.R",".growth_plot_classification",".growth_plot_classification: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:399-410)
+ | .growth_plot_classification: no visible binding for global variable ‘posterior_class’ (/Users/mohammedsaqr/Documents/Github/latents/R/growth-mixture-plot.R:399-410)
+"
+"R/growth-mixture-simulate.R",".growth_draw",""
+"R/growth-mixture-simulate.R","simulate.latents_growth_mixture",""
+"R/growth-mixture-simulate.R","predict.latents_growth_mixture",""
+"R/growth-mixture.R",".growth_check_arguments",""
+"R/growth-mixture.R",".growth_cluster_spec",""
+"R/growth-mixture.R",".growth_start",""
+"R/growth-mixture.R",".growth_two_level_start",""
+"R/growth-mixture.R",".growth_trajectory_seed",""
+"R/growth-mixture.R",".growth_fit",""
+"R/growth-mixture.R",".growth_select",""
+"R/growth-mixture.R",".growth_degenerate_covariances",""
+"R/growth-mixture.R",".growth_order_classes",""
+"R/growth-mixture.R",".growth_count_parameters",""
+"R/inference-service.R",".inference_score_information",""
+"R/inference-service.R",".inference_positive_definite",""
+"R/inference-service.R",".inference_invert",""
+"R/inference-service.R",".inference_require_rank",""
+"R/inference-service.R",".inference_sandwich",""
+"R/inference-service.R",".inference_delta_covariance",""
+"R/inference-service.R",".inference_delta_se",""
+"R/inference-service.R",".inference_numeric_jacobian",""
+"R/inference-service.R",".inference_simplex_jacobian",""
+"R/inference-service.R",".inference_critical",""
+"R/inference-service.R",".inference_wald",""
+"R/inference-service.R",".multilpa_observed_hessian",""
+"R/inference-service.R",".multilpa_opg_inverse",""
+"R/inference-service.R",".multilpa_cross_product",""
+"R/inference-service.R",".multilpa_require_clusters",""
+"R/inference-service.R",".multilpa_wald_bounds",""
+"R/inference-service.R",".multilpa_interval_kind",""
+"R/inference-service.R",".multilpa_adjust_p",""
+"R/inference.R",".multilpa_parameter_names",""
+"R/inference.R",".multilpa_coefficient_labels",""
+"R/inference.R",".multilpa_coefficients",""
+"R/inference.R",".multilpa_coefficients_raw",".multilpa_coefficients_raw: local variable ‘n_indicators’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/inference.R:66)
+"
+"R/inference.R",".multilpa_response_coordinates",""
+"R/inference.R",".multilpa_response_decode",""
+"R/inference.R",".multilpa_response_width",""
+"R/inference.R",".multilpa_covariance_coordinates",""
+"R/inference.R",".multilpa_coordinate_widths",""
+"R/inference.R",".multilpa_free_index",""
+"R/inference.R",".multilpa_restore_held",""
+"R/inference.R",".multilpa_decode",""
+"R/inference.R",".multilpa_response_scores",""
+"R/inference.R",".multilpa_score",""
+"R/inference.R",".multilpa_full_measurement_score",""
+"R/inference.R",".multilpa_inference_jacobian",""
+"R/inference.R","parameter_inference",""
+"R/inference.R","parameter_inference.multilpa","parameter_inference.multilpa: local variable ‘scaled_hessian’ assigned but may not be used (/Users/mohammedsaqr/Documents/Github/latents/R/inference.R:892)
+"
+"R/inference.R",".multilpa_response_bound",""
+"R/inference.R",".multilpa_probability_floor",""
+"R/inference.R","coef.multilpa",""
+"R/inference.R","vcov.multilpa",""
+"R/inference.R","confint.multilpa",""
+"R/inference.R",".multilpa_check_regularity",""
+"R/inference.R",".multilpa_number_single_level",""
+"R/inference.R",".multilpa_inference_matrix",""
+"R/inference.R",".multilpa_tidy_labels",""
+"R/kernel-blocks.R",".latents_gaussian_log_density",""
+"R/kernel-blocks.R",".latents_measurement_log_density",""
+"R/kernel-em.R",".latents_em_settings",""
+"R/kernel-em.R",".latents_em_decrease",""
+"R/kernel-em.R",".latents_em_step",""
+"R/kernel-em.R",".latents_em",""
+"R/kernel-em.R",".latents_squarem_cycle",""
+"R/kernel-em.R",".latents_run_starts",""
+"R/kernel-em.R",".latents_quasi_newton",""
+"R/kernel-structures.R",".mixture_row_lse",""
+"R/kernel-structures.R",".mixture_log_softmax",""
+"R/kernel-structures.R",".mixture_weigh",""
+"R/kernel-structures.R",".mixture_structure_expectation",""
+"R/kernel-structures.R",".mixture_two_level_design",""
+"R/kernel-structures.R",".mixture_solve",""
+"R/kernel-structures.R",".mixture_multinomial",""
+"R/kernel-structures.R",".mixture_update_mixing",""
+"R/kernel-structures.R",".mixture_structure_scores",""
+"R/kernel-structures.R",".latents_forward_backward",""
+"R/kernel-structures.R",".latents_log_sum_exp",""
+"R/kernel-structures.R",".multilpa_nested_structure",""
+"R/kernel-structures.R",".multilpa_logit_structure",""
+"R/kernel-structures.R",".multilpa_weigh",""
+"R/kernel-structures.R",".mixture_structure_pack",""
+"R/kernel-structures.R",".mixture_structure_unpack",""
+"R/latents-table.R",".latents_table",""
+"R/latents-table.R",".latents_column",""
+"R/latents-table.R",".latents_column_decimals",""
+"R/latents-table.R",".latents_label",""
+"R/latents-table.R",".latents_format_p",""
+"R/latents-table.R",".latents_cells",""
+"R/latents-table.R",".latents_default_display",""
+"R/latents-table.R",".latents_render_card",""
+"R/latents-table.R",".latents_render",""
+"R/latents-table.R","print.latents_table",""
+"R/latents-table.R","as.data.frame.latents_table",""
+"R/lpa.R","lpa",""
+"R/lpa.R","lca",""
+"R/lpa.R","enumerate_lpa",""
+"R/lpa.R","enumerate_lca",""
+"R/lpa.R",".multilpa_single_level_call",""
+"R/lpa.R",".multilpa_quiet_single_level",""
+"R/lta-bootstrap.R",".lta_bootstrap_inference",""
+"R/lta-bootstrap.R",".lta_bootstrap_frame",""
+"R/lta-bootstrap.R",".lta_bootstrap_estimates",""
+"R/lta-bootstrap.R",".lta_bootstrap_replicates",""
+"R/lta-bootstrap.R",".lta_align_estimates",""
+"R/lta-bootstrap.R",".lta_profile_signature",""
+"R/lta-bootstrap.R",".lta_class_signature",""
+"R/lta-bootstrap.R",".lta_relabel_profiles",""
+"R/lta-bootstrap.R",".lta_relabel_classes",""
+"R/lta-bootstrap.R",".lta_permute_transitions",""
+"R/lta-bootstrap.R",".lta_bootstrap_dispatch",""
+"R/lta-compare.R",".lta_arguments",""
+"R/lta-compare.R",".lta_general_view",""
+"R/lta-compare.R",".lta_simulate",""
+"R/lta-compare.R",".lta_draw_continuous",""
+"R/lta-compare.R",".lta_nested",""
+"R/lta-compare.R",".lta_refit",""
+"R/lta-compare.R",".lta_check_data",""
+"R/lta-compare.R",".lta_bootstrap_lrt",""
+"R/lta-compare.R",".lta_enumerate",""
+"R/lta-compare.R","get_results.latents_transition_enumeration",""
+"R/lta-compare.R","as.data.frame.latents_transition_enumeration",""
+"R/lta-compare.R","print.latents_transition_enumeration",""
+"R/lta-compare.R","summary.latents_transition_enumeration",""
+"R/lta-compare.R","plot.latents_transition_enumeration","plot.latents_transition_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-compare.R:502)
+ | plot.latents_transition_enumeration: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-compare.R:507-521)
+ | plot.latents_transition_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-compare.R:507-521)
+"
+"R/lta-engine.R",".lta_covariate_matrix",""
+"R/lta-engine.R",".lta_designs",""
+"R/lta-engine.R",".lta_log_transition",""
+"R/lta-engine.R",".lta_log_initial",""
+"R/lta-engine.R",".lta_moments",""
+"R/lta-engine.R",".lta_reduce_moments",""
+"R/lta-engine.R",".lta_log_density",""
+"R/lta-engine.R",".lta_augment",""
+"R/lta-engine.R",".lta_identity_transition",""
+"R/lta-engine.R",".lta_identity_transition2",""
+"R/lta-engine.R",".lta_log_transition2",""
+"R/lta-engine.R",".lta_expectation",""
+"R/lta-engine.R",".lta_maximization",""
+"R/lta-engine.R",".lta_em",""
+"R/lta-engine.R",".lta_initialize",""
+"R/lta-engine.R",".lta_fit_general",""
+"R/lta-engine.R",".lta_count_parameters",""
+"R/lta-engine.R",".lta_result",""
+"R/lta-inference.R",".lta_transition_columns",""
+"R/lta-inference.R",".lta_uses_covariance_chart",""
+"R/lta-inference.R",".lta_covariance_view",""
+"R/lta-inference.R",".lta_covariance_coordinates",""
+"R/lta-inference.R",".lta_covariance_names",""
+"R/lta-inference.R",".lta_names",""
+"R/lta-inference.R",".lta_pack",""
+"R/lta-inference.R",".lta_unpack",""
+"R/lta-inference.R",".lta_group_scores",""
+"R/lta-inference.R",".lta_rowsum",""
+"R/lta-inference.R",".lta_inference",""
+"R/lta-inference.R",".lta_parameters",""
+"R/lta-inference.R",".lta_quasi_newton",""
+"R/lta-inference.R",".lta_probability_boundary",""
+"R/lta-inference.R",".lta_extra_names",""
+"R/lta-methods.R",".lta_tables",""
+"R/lta-methods.R",".lta_coefficient_table",""
+"R/lta-methods.R",".lta_probability_table",""
+"R/lta-methods.R",".lta_second_order_table",""
+"R/lta-methods.R",".lta_table",""
+"R/lta-methods.R","get_results.multilpa_lta",""
+"R/lta-methods.R","as.data.frame.multilpa_lta",""
+"R/lta-methods.R","print.multilpa_lta",""
+"R/lta-methods.R","summary.multilpa_lta",""
+"R/lta-methods.R","coef.multilpa_lta",""
+"R/lta-methods.R","vcov.multilpa_lta",""
+"R/lta-methods.R","logLik.multilpa_lta",""
+"R/lta-methods.R","nobs.multilpa_lta",""
+"R/lta-methods.R","parameter_inference.multilpa_lta",""
+"R/lta-methods.R","plot.multilpa_lta","plot.multilpa_lta: no visible binding for global variable ‘to’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-methods.R:365-373)
+ | plot.multilpa_lta: no visible binding for global variable ‘from’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-methods.R:365-373)
+ | plot.multilpa_lta: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-methods.R:365-373)
+ | plot.multilpa_lta: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/lta-methods.R:365-373)
+"
+"R/methods.R","print.multilpa",""
+"R/methods.R","summary.multilpa",""
+"R/methods.R","as.data.frame.summary_multilpa",""
+"R/methods.R",".multilpa_count_frame",""
+"R/methods.R",".multilpa_covariance_frame",""
+"R/methods.R",".multilpa_fit_frame",""
+"R/methods.R",".multilpa_one",""
+"R/methods.R",".multilpa_covariate_fit_frame",""
+"R/methods.R","print.summary_multilpa",""
+"R/methods.R","logLik.multilpa",""
+"R/methods.R","nobs.multilpa",""
+"R/mixture-regression-engine.R",".mixture_log1pexp",""
+"R/mixture-regression-engine.R",".mixture_linear_predictors",""
+"R/mixture-regression-engine.R",".mixture_log_density",""
+"R/mixture-regression-engine.R",".mixture_expectation",""
+"R/mixture-regression-engine.R",".mixture_unweighted_expectation",""
+"R/mixture-regression-engine.R",".mixture_family_derivatives",""
+"R/mixture-regression-engine.R",".mixture_block_diagonal",""
+"R/mixture-regression-engine.R",".mixture_regression_objective",""
+"R/mixture-regression-engine.R",".mixture_update_regression",""
+"R/mixture-regression-engine.R",".mixture_update_variance",""
+"R/mixture-regression-engine.R",".mixture_update_dispersion",""
+"R/mixture-regression-engine.R",".mixture_maximization",""
+"R/mixture-regression-engine.R",".mixture_em_settings",""
+"R/mixture-regression-engine.R",".mixture_em",""
+"R/mixture-regression-enumerate.R","enumerate_regressions",""
+"R/mixture-regression-enumerate.R",".mixture_try_fit",""
+"R/mixture-regression-enumerate.R",".mixture_enumeration_row",""
+"R/mixture-regression-enumerate.R",".mixture_blrt",""
+"R/mixture-regression-enumerate.R","as.data.frame.latents_regression_enumeration",""
+"R/mixture-regression-enumerate.R","get_results.latents_regression_enumeration",""
+"R/mixture-regression-enumerate.R","print.latents_regression_enumeration",""
+"R/mixture-regression-inference.R",".mixture_pack",""
+"R/mixture-regression-inference.R",".mixture_unpack",""
+"R/mixture-regression-inference.R",".mixture_unit_scores",""
+"R/mixture-regression-inference.R",".mixture_total_score",""
+"R/mixture-regression-inference.R",".mixture_observed_information",""
+"R/mixture-regression-inference.R",".mixture_inference",""
+"R/mixture-regression-inference.R",".mixture_boundary_coordinates",""
+"R/mixture-regression-inference.R",".mixture_invert",""
+"R/mixture-regression-inference.R",".mixture_delta",""
+"R/mixture-regression-methods.R",".mixture_tables",""
+"R/mixture-regression-methods.R",".mixture_resolve_inference",""
+"R/mixture-regression-methods.R",".mixture_class_means",""
+"R/mixture-regression-methods.R",".mixture_coefficient_table",""
+"R/mixture-regression-methods.R",".mixture_class_table",""
+"R/mixture-regression-methods.R",".mixture_membership_table",""
+"R/mixture-regression-methods.R",".mixture_group_class_table",""
+"R/mixture-regression-methods.R",".mixture_relative_entropy",""
+"R/mixture-regression-methods.R",".mixture_fit_table",""
+"R/mixture-regression-methods.R",".mixture_assignment_table",""
+"R/mixture-regression-methods.R",".mixture_group_table",""
+"R/mixture-regression-methods.R",".mixture_fitted_table",""
+"R/mixture-regression-methods.R",".mixture_classification_table",""
+"R/mixture-regression-methods.R",".mixture_recovery_table",""
+"R/mixture-regression-methods.R",".mixture_table",""
+"R/mixture-regression-methods.R",".mixture_present",""
+"R/mixture-regression-methods.R","get_results.latents_mixture_regression",""
+"R/mixture-regression-methods.R","as.data.frame.latents_mixture_regression",""
+"R/mixture-regression-methods.R","print.latents_mixture_regression",""
+"R/mixture-regression-methods.R","summary.latents_mixture_regression",""
+"R/mixture-regression-methods.R","print.summary_latents_mixture_regression",""
+"R/mixture-regression-methods.R","coef.latents_mixture_regression",""
+"R/mixture-regression-methods.R","vcov.latents_mixture_regression",""
+"R/mixture-regression-methods.R","confint.latents_mixture_regression",""
+"R/mixture-regression-methods.R","logLik.latents_mixture_regression",""
+"R/mixture-regression-methods.R","nobs.latents_mixture_regression",""
+"R/mixture-regression-ordinal.R",".ordinal_response",""
+"R/mixture-regression-ordinal.R",".ordinal_check_identified",""
+"R/mixture-regression-ordinal.R",".ordinal_threshold_labels",""
+"R/mixture-regression-ordinal.R",".ordinal_start_thresholds",""
+"R/mixture-regression-ordinal.R",".ordinal_log1mexp",""
+"R/mixture-regression-ordinal.R",".ordinal_bounds",""
+"R/mixture-regression-ordinal.R",".ordinal_log_density",""
+"R/mixture-regression-ordinal.R",".ordinal_derivatives",""
+"R/mixture-regression-ordinal.R",".ordinal_indicators",""
+"R/mixture-regression-ordinal.R",".ordinal_ordered",""
+"R/mixture-regression-ordinal.R",".ordinal_update",""
+"R/mixture-regression-ordinal.R",".ordinal_threshold_jacobian",""
+"R/mixture-regression-ordinal.R",".ordinal_pack",""
+"R/mixture-regression-ordinal.R",".ordinal_natural",""
+"R/mixture-regression-ordinal.R",".ordinal_threshold_scores",""
+"R/mixture-regression-ordinal.R",".ordinal_probabilities",""
+"R/mixture-regression-ordinal.R",".ordinal_expected_scores",""
+"R/mixture-regression-ordinal.R",".ordinal_categories",""
+"R/mixture-regression-ordinal.R",".ordinal_draw",""
+"R/mixture-regression-ordinal.R",".ordinal_probability_table",""
+"R/mixture-regression-ordinal.R",".ordinal_threshold_table",""
+"R/mixture-regression-ordinal.R",".ordinal_trajectory_band",""
+"R/mixture-regression-predict.R",".mixture_new_spec",""
+"R/mixture-regression-predict.R",".mixture_row_priors",""
+"R/mixture-regression-predict.R","predict.latents_mixture_regression",""
+"R/mixture-regression-predict.R","simulate.latents_mixture_regression",""
+"R/mixture-regression-predict.R",".mixture_draw",""
+"R/mixture-regression-predict.R","plot.latents_mixture_regression",""
+"R/mixture-regression-predict.R",".mixture_plot_fitted",".mixture_plot_fitted: no visible binding for global variable ‘predictor_value’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+ | .mixture_plot_fitted: no visible binding for global variable ‘outcome’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+ | .mixture_plot_fitted: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+ | .mixture_plot_fitted: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+ | .mixture_plot_fitted: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+ | .mixture_plot_fitted: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:263-272)
+"
+"R/mixture-regression-predict.R",".mixture_model_data",""
+"R/mixture-regression-predict.R",".mixture_typical_rows",""
+"R/mixture-regression-predict.R",".mixture_plot_coefficients",".mixture_plot_coefficients: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+ | .mixture_plot_coefficients: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:308-319)
+"
+"R/mixture-regression-predict.R",".mixture_plot_posteriors",".mixture_plot_posteriors: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:337-347)
+ | .mixture_plot_posteriors: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:337-347)
+ | .mixture_plot_posteriors: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:337-347)
+ | .mixture_plot_posteriors: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/mixture-regression-predict.R:337-347)
+"
+"R/mixture-regression-predict.R",".mixture_class_scales",""
+"R/mixture-regression-starts.R",".mixture_null_params",""
+"R/mixture-regression-starts.R",".mixture_soften",""
+"R/mixture-regression-starts.R",".mixture_residual_labels",""
+"R/mixture-regression-starts.R",".mixture_seed_expectation",""
+"R/mixture-regression-starts.R",".mixture_run_starts",""
+"R/mixture-regression-starts.R",".mixture_select",""
+"R/mixture-regression-starts.R",".mixture_count_parameters",""
+"R/mixture-regression-starts.R",".mixture_order_classes",""
+"R/mixture-regression-starts.R",".mixture_class_orders",""
+"R/mixture-regression-starts.R",".mixture_permute",""
+"R/mixture-regression.R","mixture_regression",""
+"R/mixture-regression.R",".mixture_as_formula",""
+"R/mixture-regression.R",".mixture_weight_spec",""
+"R/mixture-regression.R",".mixture_is_count",""
+"R/mixture-regression.R",".mixture_with_seed",""
+"R/mixture-regression.R",".mixture_spec",""
+"R/mixture-regression.R",".mixture_membership_design",""
+"R/mixture-regression.R",".mixture_response",""
+"R/mixture-regression.R",".mixture_group_design",""
+"R/multilca.R","multilca",""
+"R/multilpa.R",".multilpa_log_sum_exp",""
+"R/multilpa.R",".multilpa_expectation",""
+"R/multilpa.R",".multilpa_maximization",""
+"R/multilpa.R",".multilpa_initialize",""
+"R/multilpa.R",".multilpa_ward_assignments",""
+"R/multilpa.R",".multilpa_validate_start",""
+"R/multilpa.R",".multilpa_align_response_start",""
+"R/multilpa.R",".multilpa_validate_response_start",""
+"R/multilpa.R",".multilpa_em",""
+"R/multilpa.R",".multilpa_time_values",""
+"R/multilpa.R",".multilpa_single_level",""
+"R/multilpa.R","multilpa",""
+"R/multilpa.R",".multilpa_check_arguments",""
+"R/multilpa.R",".multilpa_prepare_indicators",""
+"R/multilpa.R",".multilpa_prepare_groups",""
+"R/multilpa.R",".multilpa_label_parameters",""
+"R/multilpa.R",".multilpa_count_parameters",""
+"R/multilpa.R",".multilpa_covariate_model",""
+"R/noise.R",".multilpa_log_hypervolume",""
+"R/noise.R",".multilpa_check_noise",""
+"R/noise.R",".multilpa_noise_start",""
+"R/noise.R",".multilpa_add_noise",""
+"R/noise.R",".multilpa_split_noise",""
+"R/noise.R",".multilpa_class_posteriors",""
+"R/noise.R",".multilpa_refuse_noise",""
+"R/plot-gg.R",".gg_require",""
+"R/plot-gg.R",".gg_available",""
+"R/plot-gg.R",".gg_theme",""
+"R/plot-gg.R",".gg_top_legend",""
+"R/plot-gg.R",".gg_percent",""
+"R/plot-gg.R",".gg_profile_key",""
+"R/plot-gg.R",".gg_scales",""
+"R/plot-gg.R",".gg_titles",""
+"R/plot-gg.R",".gg_spread",""
+"R/plot-gg.R",".gg_ink",""
+"R/plot-gg.R",".gg_probability_fill",""
+"R/plot-gg.R",".gg_probability_scale",""
+"R/plot-gg.R",".gg_tile_theme",""
+"R/plot-gg.R",".gg_group_class_text",""
+"R/plot-gg.R",".gg_mean_frame",""
+"R/plot-gg.R",".gg_series_plot",".gg_series_plot: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:273-274)
+ | .gg_series_plot: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:273-274)
+ | .gg_series_plot: no visible binding for global variable ‘lower’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:281-283)
+ | .gg_series_plot: no visible binding for global variable ‘upper’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:281-283)
+ | .gg_series_plot: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:285-289)
+ | .gg_series_plot: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:285-289)
+ | .gg_series_plot: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:291-293)
+ | .gg_series_plot: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:291-293)
+"
+"R/plot-gg.R",".gg_category_scores",""
+"R/plot-gg.R",".gg_categorical_summary_frame",""
+"R/plot-gg.R",".gg_view_profiles",""
+"R/plot-gg.R",".gg_view_bars",".gg_view_bars: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:396-399)
+ | .gg_view_bars: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:396-399)
+ | .gg_view_bars: no visible binding for global variable ‘lower’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:401-404)
+ | .gg_view_bars: no visible binding for global variable ‘upper’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:401-404)
+ | .gg_view_bars: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:401-404)
+"
+"R/plot-gg.R",".gg_view_heatmap",".gg_view_heatmap: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:436-453)
+ | .gg_view_heatmap: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:436-453)
+ | .gg_view_heatmap: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:436-453)
+"
+"R/plot-gg.R",".gg_view_response_heatmap",".gg_view_response_heatmap: no visible binding for global variable ‘column_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:489-502)
+ | .gg_view_response_heatmap: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:489-502)
+ | .gg_view_response_heatmap: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:489-502)
+ | .gg_view_response_heatmap: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:489-502)
+ | .gg_view_response_heatmap: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:489-502)
+ | .gg_view_response_heatmap: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:508-515)
+"
+"R/plot-gg.R",".gg_view_raincloud",".gg_view_raincloud: no visible binding for global variable ‘height’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘height’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:582-592)
+ | .gg_view_raincloud: no visible binding for global variable ‘q1’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+ | .gg_view_raincloud: no visible binding for global variable ‘q3’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+ | .gg_view_raincloud: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+ | .gg_view_raincloud: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+ | .gg_view_raincloud: no visible binding for global variable ‘indicator’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:594-619)
+"
+"R/plot-gg.R",".gg_view_responses",""
+"R/plot-gg.R",".gg_view_probabilities",""
+"R/plot-gg.R",".gg_view_sequences",".gg_view_sequences: no visible binding for global variable ‘column’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:758-763)
+ | .gg_view_sequences: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:758-763)
+ | .gg_view_sequences: no visible binding for global variable ‘cell_text’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:765-767)
+ | .gg_view_sequences: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:765-767)
+ | .gg_view_sequences: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:770-772)
+"
+"R/plot-gg.R",".gg_view_transitions",".gg_view_transitions: no visible binding for global variable ‘column_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+ | .gg_view_transitions: no visible binding for global variable ‘row_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+ | .gg_view_transitions: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+ | .gg_view_transitions: no visible binding for global variable ‘probability’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+ | .gg_view_transitions: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+ | .gg_view_transitions: no visible binding for global variable ‘class_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:824-839)
+"
+"R/plot-gg.R",".gg_view_sizes",".gg_view_sizes: no visible binding for global variable ‘count’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:859-874)
+ | .gg_view_sizes: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:859-874)
+ | .gg_view_sizes: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:859-874)
+ | .gg_view_sizes: no visible binding for global variable ‘bar_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:859-874)
+"
+"R/plot-gg.R",".gg_case_values",""
+"R/plot-gg.R",".gg_case_strip",".gg_case_strip: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:909-940)
+ | .gg_case_strip: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:909-940)
+ | .gg_case_strip: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:909-940)
+"
+"R/plot-gg.R",".gg_view_posteriors",""
+"R/plot-gg.R",".gg_view_entropy",""
+"R/plot-gg.R",".gg_view_avepp",".gg_view_avepp: no visible binding for global variable ‘posterior_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:998-1015)
+ | .gg_view_avepp: no visible binding for global variable ‘assigned_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:998-1015)
+ | .gg_view_avepp: no visible binding for global variable ‘average_posterior’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:998-1015)
+ | .gg_view_avepp: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:998-1015)
+ | .gg_view_avepp: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:998-1015)
+"
+"R/plot-gg.R",".gg_observed_cases",""
+"R/plot-gg.R",".gg_view_parallel",".gg_view_parallel: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘case’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘case’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘certainty’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘position’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+ | .gg_view_parallel: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1061-1089)
+"
+"R/plot-gg.R",".gg_ellipse",""
+"R/plot-gg.R",".gg_pair_covariance",""
+"R/plot-gg.R",".gg_view_pairs",".gg_view_pairs: no visible binding for global variable ‘ymin’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1185-1194)
+ | .gg_view_pairs: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘uncertainty’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘profile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘yvar’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+ | .gg_view_pairs: no visible binding for global variable ‘xvar’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1196-1225)
+"
+"R/plot-gg.R",".gg_enumeration_frame",""
+"R/plot-gg.R",".gg_view_enumeration",".gg_view_enumeration: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1292-1296)
+ | .gg_view_enumeration: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1298-1301)
+ | .gg_view_enumeration: no visible binding for global variable ‘failed_y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1298-1301)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1298-1301)
+ | .gg_view_enumeration: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1304-1307)
+ | .gg_view_enumeration: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1304-1307)
+ | .gg_view_enumeration: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1310-1312)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1310-1312)
+ | .gg_view_enumeration: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1310-1312)
+"
+"R/plot-gg.R",".gg_flow_band",""
+"R/plot-gg.R",".gg_view_tree",".gg_view_tree: no visible binding for global variable ‘classes_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1492-1493)
+ | .gg_view_tree: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1492-1493)
+ | .gg_view_tree: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1491-1494)
+ | .gg_view_tree: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘group’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘fill’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘xmin’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘xmax’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘fill’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘xmin’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘xmax’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘label’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+ | .gg_view_tree: no visible binding for global variable ‘text_colour’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1495-1527)
+"
+"R/plot-gg.R",".gg_plots",""
+"R/plot-gg.R","print.latents_plots",""
+"R/plot-gg.R",".gg_view_enumeration_quality",".gg_view_enumeration_quality: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘value’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1594-1598)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1600-1602)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1614-1616)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1614-1616)
+ | .gg_view_enumeration_quality: no visible binding for global variable ‘series’ (/Users/mohammedsaqr/Documents/Github/latents/R/plot-gg.R:1614-1616)
+"
+"R/plot-named.R",".multilpa_plot_named_view",""
+"R/plot-named.R",".multilpa_supplied_arguments",""
+"R/plot-named.R","plot_profiles",""
+"R/plot-named.R","plot_responses",""
+"R/plot-named.R","plot_prevalence",""
+"R/plot-named.R","plot_diagnostics",""
+"R/plot-named.R","plot_transitions",""
+"R/plot-named.R","plot_tree",""
+"R/plot.R","plot.multilpa",""
+"R/plot.R",".multilpa_check_plot_statistic",""
+"R/plot.R",".multilpa_check_plot_arguments",""
+"R/plot.R",".multilpa_draw_view",""
+"R/plot.R",".gg_every_view",""
+"R/plot.R",".multilpa_require_case_posteriors",""
+"R/plot.R",".multilpa_plot_observations",""
+"R/plot.R","plot.multilpa_enumeration",""
+"R/plot.R",".multilpa_enumeration_plot_advice",""
+"R/plot.R",".latents_grid_plot_advice",""
+"R/plot.R",".latents_grid_criterion",""
+"R/plot.R","plot_enumeration",""
+"R/plot.R",".multilpa_distinct_criteria",""
+"R/plot.R","plot.multilpa_covariates",""
+"R/plot.R","plot_views",""
+"R/plot.R",".multilpa_mean_error_matrix",""
+"R/plot.R",".multilpa_response_error_table",""
+"R/pool-imputations.R","pool_imputations",""
+"R/pool-imputations.R",".multilpa_completed_data",""
+"R/pool-imputations.R",".multilpa_pool_step",""
+"R/pool-imputations.R",".multilpa_pool_keys",""
+"R/pool-imputations.R",".multilpa_rubin",""
+"R/pool-imputations.R",".multilpa_rubin_covariance",""
+"R/pool-imputations.R",".multilpa_pool_long",""
+"R/pool-imputations.R",".multilpa_pool_fit_frame",""
+"R/pool-imputations.R","get_results.latents_pooled",""
+"R/pool-imputations.R","as.data.frame.latents_pooled",""
+"R/pool-imputations.R","print.latents_pooled",""
+"R/pool-imputations.R","summary.latents_pooled",""
+"R/pool-imputations.R","vcov.latents_pooled",""
+"R/pool-imputations.R","plot.latents_pooled","plot.latents_pooled: no visible binding for global variable ‘estimate’ (/Users/mohammedsaqr/Documents/Github/latents/R/pool-imputations.R:423-437)
+ | plot.latents_pooled: no visible binding for global variable ‘conf_low’ (/Users/mohammedsaqr/Documents/Github/latents/R/pool-imputations.R:423-437)
+ | plot.latents_pooled: no visible binding for global variable ‘conf_high’ (/Users/mohammedsaqr/Documents/Github/latents/R/pool-imputations.R:423-437)
+"
+"R/predict.R","predict.multilpa",""
+"R/predict.R",".multilpa_training_rows",""
+"R/predict.R",".multilpa_fit_data",""
+"R/predict.R",".multilpa_prediction_rows",""
+"R/predict.R",".multilpa_row_log_density",""
+"R/predict.R",".multilpa_prediction_table",""
+"R/prior.R","prior_control",""
+"R/prior.R","print.latents_prior",""
+"R/prior.R",".multilpa_prior_structures",""
+"R/prior.R",".multilpa_prior_parameters",""
+"R/prior.R",".multilpa_prior_maximize",""
+"R/prior.R",".multilpa_prior_vei",""
+"R/prior.R",".multilpa_prior_vev",""
+"R/prior.R",".multilpa_check_prior",""
+"R/report.R","diagnostics",""
+"R/report.R","as.data.frame.multilpa_diagnostics",""
+"R/report.R","print.multilpa_diagnostics",""
+"R/report.R",".multilpa_reject_extra_arguments",""
+"R/report.R",".latents_warn_unused_arguments",""
+"R/report.R",".latents_former_argument",""
+"R/report.R","plot.multilpa_diagnostics",""
+"R/report.R","report",""
+"R/report.R",".multilpa_supported_views",""
+"R/report.R",".multilpa_available_views_text",""
+"R/robust.R",".multilpa_group_scores",""
+"R/robust.R",".multilpa_full_measurement_group_score",""
+"R/scaling.R",".multilpa_design_scale",""
+"R/scaling.R",".multilpa_covariance_coordinate_scale",""
+"R/selection.R",".latents_selection_views",""
+"R/selection.R",".latents_selection_frame",""
+"R/selection.R",".latents_smaller_neighbour",""
+"R/selection.R",".latents_deltas_table",""
+"R/selection.R",".latents_kneedle",""
+"R/selection.R",".latents_knees_table",""
+"R/selection.R",".latents_selection_look",""
+"R/selection.R",".latents_class_word",""
+"R/selection.R",".gg_selection_deltas",".gg_selection_deltas: no visible binding for global variable ‘delta’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:278-292)
+ | .gg_selection_deltas: no visible binding for global variable ‘key’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:278-292)
+ | .gg_selection_deltas: no visible binding for global variable ‘key’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:278-292)
+ | .gg_selection_deltas: no visible binding for global variable ‘y’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:278-292)
+ | .gg_selection_deltas: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:278-292)
+"
+"R/selection.R",".gg_selection_heatmap",".gg_selection_heatmap: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:315-321)
+ | .gg_selection_heatmap: no visible binding for global variable ‘n_group_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:315-321)
+ | .gg_selection_heatmap: no visible binding for global variable ‘delta’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:315-321)
+ | .gg_selection_heatmap: no visible binding for global variable ‘tile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:315-321)
+ | .gg_selection_heatmap: no visible binding for global variable ‘model’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:322)
+"
+"R/selection.R",".gg_selection_smallest",".gg_selection_smallest: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:362-376)
+ | .gg_selection_smallest: no visible binding for global variable ‘smallest_share’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:362-376)
+ | .gg_selection_smallest: no visible binding for global variable ‘panel’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:362-376)
+"
+"R/selection.R",".gg_selection_trust",".gg_selection_trust: no visible binding for global variable ‘n_profiles’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:404-414)
+ | .gg_selection_trust: no visible binding for global variable ‘n_group_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:404-414)
+ | .gg_selection_trust: no visible binding for global variable ‘tile_label’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:404-414)
+ | .gg_selection_trust: no visible binding for global variable ‘model’ (/Users/mohammedsaqr/Documents/Github/latents/R/selection.R:415)
+"
+"R/selection.R",".gg_selection_view",""
+"R/sensitivity.R","sensitivity",""
+"R/sensitivity.R",".multilpa_optimum_index",""
+"R/sequences.R",".multilpa_require_time",""
+"R/sequences.R",".multilpa_time_name",""
+"R/sequences.R",".multilpa_sequence_matrix",""
+"R/sequences.R",".multilpa_occasion_names",""
+"R/sequences.R",".multilpa_sequences",""
+"R/sequences.R",".multilpa_sequence_summary",""
+"R/simulation-service.R",".latents_local_seed",""
+"R/simulation-service.R",".latents_draw_rows",""
+"R/simulation-service.R",".multilpa_resample_groups",""
+"R/simulation-service.R",".latents_cluster_bootstrap",""
+"R/simulation-service.R",".latents_blrt_replicates",""
+"R/simulation-service.R",".latents_blrt_p_value",""
+"R/structure-inference.R",".multilpa_separable_structures",""
+"R/structure-inference.R",".multilpa_uses_chart",""
+"R/structure-inference.R",".multilpa_spread_shared",""
+"R/structure-inference.R",".multilpa_chart",""
+"R/structure-inference.R",".multilpa_chart_cholesky_positions",""
+"R/structure-inference.R",".multilpa_chart_rotation_pairs",""
+"R/structure-inference.R",".multilpa_fitted_blocks",""
+"R/structure-inference.R",".multilpa_chart_anchor",""
+"R/structure-inference.R",".multilpa_chart_encode",""
+"R/structure-inference.R",".multilpa_chart_map",""
+"R/structure-inference.R",".multilpa_chart_decode",""
+"R/structure-inference.R",".multilpa_profile_gradients",""
+"R/structure-inference.R",".multilpa_chart_scores",""
+"R/structure-inference.R",".multilpa_chart_natural_jacobian",""
+"R/three-step.R",".multilpa_level_assignments",""
+"R/three-step.R",".multilpa_check_three_step_fit",""
+"R/three-step.R",".multilpa_classification_errors",""
+"R/three-step.R",".multilpa_error_frame",""
+"R/three-step.R",".multilpa_error_matrix",""
+"R/three-step.R",".multilpa_bch_weights",""
+"R/three-step.R",".multilpa_weight_frame",""
+"R/three-step.R",".multilpa_invert_errors",""
+"R/three-step.R","three_step",""
+"R/three-step.R",".multilpa_step_pairs",""
+"R/three-step.R",".multilpa_outcome_values",""
+"R/three-step.R",".multilpa_step_weights",""
+"R/three-step.R",".multilpa_logit_prior",""
+"R/three-step.R","r3step",""
+"R/three-step.R",".multilpa_r3step_design",""
+"R/three-step.R",".multilpa_r3step_frame",""
+"R/three-step.R",".multilpa_r3step_by_group_class",""
+"R/three-step.R",".multilpa_r3step_group_model",""
+"R/three-step.R",".multilpa_r3step_group_frame",""
+"R/tna.R","get_tna",""
+"R/tna.R","get_tna.multilpa_transitions",""
+"R/tna.R","get_group_tna",""
+"R/tna.R","get_group_tna.multilpa_transitions",""
+"R/tna.R","get_tna.multilpa_lta",""
+"R/tna.R","get_group_tna.multilpa_lta",""
+"R/tna.R",".lta_refuse_tna",""
+"R/tna.R",".multilpa_warn_tna_empty_rows",""
+"R/tna.R",".multilpa_require_tna",""
+"R/tna.R",".multilpa_state_labels",""
+"R/tna.R",".multilpa_aggregate_transitions",""
+"R/tna.R",".multilpa_as_group_tna",""
+"R/tna.R","get_tna.multilpa",""
+"R/tna.R","get_group_tna.multilpa",""
+"R/tna.R",".multilpa_modal_sequences",""
+"R/trajectory-views.R",".trajectory_view",""
+"R/trajectory-views.R",".trajectory_inference",""
+"R/trajectory-views.R",".trajectory_observed",""
+"R/trajectory-views.R",".trajectory_band",""
+"R/trajectory-views.R",".trajectory_coefficients",""
+"R/trajectory-views.R",".trajectory_is_fit",""
+"R/trajectory-views.R",".trajectory_three_step_inputs",""
+"R/transition-inference.R",".multilpa_transition_view",""
+"R/transition-inference.R",".multilpa_transition_shared_blocks",""
+"R/transition-inference.R",".multilpa_transition_encode",""
+"R/transition-inference.R",".multilpa_transition_decode",""
+"R/transition-inference.R",".multilpa_transition_group_scores",""
+"R/transition-inference.R",".multilpa_transition_group_counts",""
+"R/transition-inference.R",".multilpa_transition_jacobian",""
+"R/transition-inference.R",".multilpa_transition_labels",""
+"R/transition-inference.R","parameter_inference.multilpa_transitions",""
+"R/transition-inference.R",".multilpa_transition_covariance",""
+"R/transition-inference.R",".multilpa_check_transition_regularity",""
+"R/transition-inference.R",".multilpa_check_transition_data",""
+"R/transition-inference.R","vcov.multilpa_transitions",""
+"R/transition-inference.R","confint.multilpa_transitions",""
+"R/transitions.R",".multilpa_sequence_layout",""
+"R/transitions.R",".multilpa_sequence_emission",""
+"R/transitions.R",".multilpa_forward_backward",""
+"R/transitions.R",".multilpa_sequence_moments",""
+"R/transitions.R",".multilpa_transition_prevalence",""
+"R/transitions.R",".multilpa_transition_expectation",""
+"R/transitions.R",".multilpa_transition_maximization",""
+"R/transitions.R",".multilpa_transition_em",""
+"R/transitions.R",".multilpa_transition_initialize",""
+"R/transitions.R",".multilpa_count_transition_parameters",""
+"R/transitions.R","lta",""
+"R/transitions.R",".multilpa_transitions_table",""
+"R/transitions.R",".multilpa_optional_flag",""
+"R/transitions.R",".multilpa_transition_frame",""
+"R/transitions.R",".multilpa_restrict_transitions",""
+"R/transitions.R",".multilpa_initial_frame",""
+"R/transitions.R","as.data.frame.multilpa_transitions",""
+"R/transitions.R","print.multilpa_transitions",""
+"R/transitions.R","logLik.multilpa_transitions",""
+"R/transitions.R","nobs.multilpa_transitions",""
+"R/transitions.R","summary.multilpa_transitions",""
+"R/transitions.R","as.data.frame.summary_multilpa_transitions",""
+"R/transitions.R","print.summary_multilpa_transitions",""
+"R/transitions.R","coef.multilpa_transitions",""
+"R/transitions.R","plot.multilpa_transitions",""
+"R/utils.R","%||%",""
+"R/utils.R",".multilpa_any_fit",""
+"R/utils.R",".multilpa_is_seed",""
+"R/utils.R",".multilpa_check_seed",""
+"R/utils.R",".multilpa_select_start",""
+"R/utils.R",".multilpa_row_max",""
+"R/utils.R",".multilpa_notice",""
+"R/utils.R",".multilpa_single_level_notice",""
+"R/utils.R",".multilpa_missing_id",""
+"R/weights.R",".latents_sampling_weights",""
+"R/weights.R",".latents_refuse_weights",""
+"R/weights.R",".latents_weighted_vcov",""
+"R/weights.R",".latents_is_weighted",""
+"R/weights.R",".latents_print_weights",""

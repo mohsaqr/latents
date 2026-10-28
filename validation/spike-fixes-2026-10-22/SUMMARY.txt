@@ -1,0 +1,43 @@
+Implemented fitting and spike-diagnostic corrections — 2026-10-22
+
+Scope
+- Corrected full-covariance LTA boundary flags and Wald/vcov refusal.
+- Excluded zero-weight units from internal Gaussian origins and initialization geometry in ordinary, membership-covariate, weighted LTA and full cross-level fits. Full data/group mappings remain available for estimation and reporting. Unequal positive weights retain the established initial clustering heuristic.
+- Gaussian support warnings exclude retained empty/categorical-only rows, use weighted mass, and check both cross-level Gaussian densities. Restricted cross-level warnings are emitted once per level.
+- Corrected thinness language: this is a conservative mass/parameter heuristic, not a covariance-rank or identification test. Normalized mass, positive support and posterior-weight concentration are distinct quantities.
+- Added R/gaussian-diagnostics.R and get_results(fit, "gaussian_diagnostics") for ordinary/covariate/transition/cross-level Gaussian fits. Per-component context, normalized observed-Gaussian mass, positive contributing rows, weight effective n, minimum marginal variance ratio, standardized minimum covariance eigenvalue, and absolute-bound flag are reported. The narrowest direction is printed on fits; summaries include the table. Enumeration reports minimum standardized eigenvalue and Gaussian mass.
+- Kept kmeans default, emEM optional and selection unchanged. Documented the protected first-start finalist slot, including n_starts=1. Added no spike rejection cutoff or prior recommendation.
+- Corrected benchmark claims and missing-metric analysis: missing Gaussian finalists are unclassified, not assumed above-cutoff; categorical metrics are inapplicable. Future pilot records carry applicability metadata; known legacy records remain supported. The descriptive .01 cutoff remains confined to benchmark analysis.
+
+Verification
+- Full unit suite: 159 files, 1,352 cases, 9,288 recorded expectations; 0 failures/errors/skips; 7 existing thin-profile fixture warnings.
+- Full tests/equivalence suite: 29 files, 64 cases, 407 recorded expectations; 0 failures/errors/skips; 2 existing workflow fixture warnings.
+- Added 32 package regression cases across six new files; existing thin-warning expectations updated narrowly for corrected wording. Unit totals include the new cases.
+- The original five-review regression cases now pass all13 assertions without warnings; original-regressions.log/RDS/CSV retain the result.
+- Fresh scratch-library install succeeds; full package lint clean; git diff whitespace check clean; regenerated Rd parses. Full suite used local socket access and the fresh install, NOT_CRAN=true and one BLAS thread.
+- Known moderate flat srl VVV4 fit: every preceding fitted-object field and caller RNG identical; new diagnostics expose minimum standardized eigenvalue .001206. See diagnostic-example.R/.log/.csv/.rds.
+- Saved LTA full-covariance examples preserve covariance estimates and LL; cross-level examples preserve every preceding fit field; unweighted initializer result and RNG unchanged. Archived evidence subdirectories retain before/after objects.
+- Harness synthetic tests pass. Reanalysis of archived tables excludes1,400 unmeasured Gaussian finalists, retains explicit categorical applicability, and performs no model refitting.
+
+Limits and current state
+- Spikes/flat components can still be selected. The diagnostics are descriptive and do not prove that a class is false, regular or identified. Any-Gaussian-observed membership does not establish joint covariance support under arbitrary missingness.
+- Explicit user-requested preprocessing centering/scaling retains its established data-based definitions; this change addresses internal origins and initialization, not a weighted preprocessing redesign.
+- No controlled cross-package recovery study, final no-rule emEM BLRT calibration, full top-level external equivalence feature sweep, full CRAN check, full vignette rendering, release, commit or push was performed. Existing top-level feature studies retain documented local-maximum limitations; passing tests/equivalence is not a rerun of those studies.
+- Existing earlier uncommitted staged-bootstrap and LTA thin-support corrections are preserved. working-tree.patch is the COMPLETE diff from HEAD including those earlier corrections, plus new source/test files; source-sha256.txt identifies the final reviewed source.
+
+Reproduce from repository root
+- Rscript validation/spike-fixes-2026-10-22/diagnostic-example.R
+- Rscript validation/spike-fixes-2026-10-22/test-pilot-metric-coverage.R
+- Rscript validation/spike-fixes-2026-10-22/check-archived-pilot.R
+- Full suites: run-suites.R with the fresh latents library in R_LIBS; socket access is needed for existing parallel tests. CSV/RDS/logs are retained here.
+
+USER-REQUESTED HANDOFF ADDENDUM — RESULT/VIGNETTE IMPACT
+All20vignettes still require complete execution/rendering and before/after
+output/prose verification. Only the extracted workflow-lpa/workflow-lca code
+and selected claims passed the existing checks; no complete render is
+certified. Bug-affected zero-weight fits and staged bootstrap can change
+numerical results; LTA boundary status can change inference availability;
+warnings/printed summaries/tables change even when fitting is unchanged.
+The immediate next task is documented in HANDOFF.md,
+RESULT-IMPACT-AND-VIGNETTE-CHECKS.txt and vignette-checklist.csv. No further
+computation was performed for this documentation-only handoff update.

@@ -28,10 +28,10 @@
     params$common, paste0("coefficient.common.", colnames(spec$z)))
   dispersion <- switch(spec$family,
     gaussian = if (identical(spec$variance, "equal")) {
-      c(log_sigma.all = 0.5 * log(params$sigma2[1L]))
+      c(log_sigma.all = 0.5 * log(params$sigma2[[1L]]))
     } else stats::setNames(0.5 * log(params$sigma2), paste0("log_sigma.", class_names)),
     negative_binomial = if (identical(spec$variance, "equal")) {
-      c(log_dispersion.all = log(params$sigma2[1L]))
+      c(log_dispersion.all = log(params$sigma2[[1L]]))
     } else stats::setNames(log(params$sigma2), paste0("log_dispersion.", class_names)),
     ordinal = .ordinal_pack(spec, params),
     numeric())
@@ -285,7 +285,10 @@
 #' @noRd
 .mixture_inference <- function(fit, vcov_type = c("observed", "robust", "opg")) {
   vcov_type <- match.arg(vcov_type)
-  spec <- fit$spec
+  # Excluded units cannot set the chart's origin or spread, contribute score
+  # rows, or affect rank and cluster counts. Keep their data/posteriors on the
+  # fitted object, but differentiate the same support used by its fit.
+  spec <- .mixture_carrying_spec(fit$spec)
   params <- fit$params
   theta <- .mixture_pack(spec, params)
   chart <- .mixture_chart(spec)

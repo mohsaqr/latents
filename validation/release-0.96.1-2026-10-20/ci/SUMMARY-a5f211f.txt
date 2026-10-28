@@ -1,0 +1,54 @@
+Candidate CI evidence, completed 2026-10-20 15:09 UTC
+Exact commit: a5f211f46fb93f4290032775e3d47af48f8f1717
+
+Every observed run headSha was checked against that exact commit.
+No workflow was cancelled, rerun or edited by this read-only monitor.
+
+R-CMD-check 39439978015: FAILURE (all six jobs completed failure)
+- Linux R-devel: PASS 8087 FAIL 5 WARN 0 SKIP 4; check 1 ERROR, no WARNING/NOTE.
+- Linux oldrel-1: PASS 8087 FAIL 5 WARN 0 SKIP 4; check 1 ERROR, no WARNING/NOTE.
+- Linux R4.1: PASS 8044 FAIL 5 WARN 0 SKIP 6; check 1 ERROR, 2 NOTEs, no WARNING.
+- Linux release: PASS 8087 FAIL 5 WARN 0 SKIP 4; check 1 ERROR, no WARNING/NOTE.
+- Windows release: PASS 8056 FAIL 5 WARN 0 SKIP 9; check 1 ERROR, no WARNING/NOTE.
+- macOS release: PASS 8065 FAIL 5 WARN 0 SKIP 4; check 1 ERROR, no WARNING/NOTE.
+
+Concrete failures (not dependency installation errors):
+1. All platforms: test-lmr.R195/196/198 exact-nested reference retains a
+   numerical null eigenvalue (~-5.5e-13 Linux, +2.5e-12 Windows,
+   +2.3e-12 macOS), changing the upper tail near q=0. Source numerics issue.
+2. Non-Windows: test-parallel.R154 requests 3 cores, while R CMD check enforces
+   a 2-core limit: '3 simultaneous processes spawned'. Test/check-policy issue.
+3. Windows: test-parallel.R136 tools::pskill(SIGKILL) did not terminate a
+   socket worker as the test assumes; expected parallel failure not raised.
+   Platform-specific termination test issue; no evidence of worker failure
+   escaping the mapper was established by this test.
+4. Windows: test-review-core-audit.R93 floor-active structured fit fails with
+   'All 1 starts failed: EM likelihood decreased beyond numerical roundoff'.
+   Source numerics issue; failing model code not printed by the test loop.
+5. macOS: test-review-core-audit.R69 constrained covariance primitive errors
+   inside constrOptim: initial value in 'vmmin' is not finite. Stack includes
+   solve_values(next_orientations), .multilpa_bounded_variances and
+   .multilpa_bounded_covariances. Source numerics issue.
+
+R4.1 NOTEs: missing suggested mice, deliberately ignored by the minimum-R
+workflow, and installed package size. All six jobs passed regular examples,
+donttest examples and rebuilding vignette outputs. Full logs are retained.
+
+Equivalence 39439985705: SUCCESS.
+- Inner independent suite: 64 cases, 405 expectations, FAIL 0 WARN 0 SKIP 0 PASS 405.
+- Documentation claims/retained inference: FAIL 0 WARN 0 SKIP 0 PASS 390.
+
+Lint 39439992164: SUCCESS; 'No lints found'.
+
+Artifacts:
+- <runid>-latest.json plus timestamped run/job snapshots.
+- jobs-latest.csv: exact-commit final job names, statuses and URLs.
+- 39439978015-complete.log: full failed matrix logs.
+- Individual <jobid>-<platform>-failed.log files: exact per-platform logs.
+- 39439985705-complete.log and 39439992164-complete.log: successful checks.
+- r41-check-metadata.json/r41-annotations.json: structured failed check.
+- macos-job/check-metadata.json: initially queued without explicit approval
+  blocker; job subsequently allocated a runner and completed.
+
+This candidate must be superseded by validated repairs and new exact-commit
+CI. These failed logs are retained as evidence and must not be called green.

@@ -1,0 +1,559 @@
+.multilpa_cov_encode <- function(object) {
+    variances <- if (identical(object$variance_model, "equal")) {
+        object$variances[1L, , drop = FALSE]
+    }
+    else object$variances
+    centred_means <- if (ncol(object$means) > 0L) {
+        sweep(object$means, 2L, object$center, "-")
+    }
+    else object$means
+    spread <- if (.multilpa_cov_is_full(object)) {
+        .multilpa_cov_cholesky_coordinates(object)
+    }
+    else as.vector(t(log(variances)))
+    response <- unname(.multilpa_response_coordinates(object, "unconstrained"))
+    extra <- unname(.latents_extra_coordinates(object, object$extra_data, object$n_profiles, "unconstrained"))
+    c(as.vector(t(centred_means)), spread, response, extra, as.vector(object$profile_coefficients), as.vector(object$group_coefficients))
+}
+.multilpa_cov_is_full <- function(object) {
+    identical(object$covariance_model %||% "diagonal", "full")
+}
+.multilpa_cov_spread_rows <- function(object) {
+    if (identical(object$variance_model, "equal")) 
+        1L
+    else seq_len(object$n_profiles)
+}
+.multilpa_cov_cholesky_coordinates <- function(object) {
+    dimension <- ncol(object$means)
+    lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+    unlist(lapply(.multilpa_cov_spread_rows(object), function(profile) {
+        factor <- t(chol(matrix(object$covariances[, , profile], dimension, dimension)))
+        diag(factor) <- log(diag(factor))
+        factor[lower]
+    }), use.names = FALSE)
+}
+.multilpa_cov_cholesky_decode <- function(values, dimension, n_profiles, shared) {
+    lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+    width <- sum(lower)
+    blocks <- lapply(seq_len(if (shared) 1L else n_profiles), function(index) {
+        factor <- matrix(0, dimension, dimension)
+        factor[lower] <- values[(index - 1L) * width + seq_len(width)]
+        diag(factor) <- exp(diag(factor))
+        tcrossprod(factor)
+    })
+    if (shared) 
+        blocks <- rep(blocks, n_profiles)
+    array(unlist(blocks, use.names = FALSE), c(dimension, dimension, n_profiles))
+}
+.multilpa_cov_decode <- function(theta, object) {
+    n_profiles <- object$n_profiles
+    n_indicators <- length(.multilpa_continuous_names(object))
+    n_variance_rows <- if (identical(object$variance_model, "equal")) 
+        1L
+    else n_profiles
+    at <- 0L
+    take <- function(n) {
+        values <- theta[at + seq_len(n)]
+        at <<- at + n
+        values
+    }
+    means <- matrix(take(n_profiles * n_indicators), n_profiles, n_indicators, byrow = TRUE)
+    covariances <- NULL
+    if (.multilpa_cov_is_full(object)) {
+        width <- n_indicators * (n_indicators + 1L)/2L
+        covariances <- .multilpa_cov_cholesky_decode(take(length(.multilpa_cov_spread_rows(object)) * 
+            width), n_indicators, n_profiles, n_variance_rows == 1L)
+        variances <- t(matrix(vapply(seq_len(n_profiles), function(profile) {
+            diag(matrix(covariances[, , profile], n_indicators, n_indicators))
+        }, numeric(n_indicators)), n_indicators, n_profiles))
+    }
+    else {
+        variances <- exp(matrix(take(n_variance_rows * n_indicators), n_variance_rows, n_indicators, 
+            byrow = TRUE))
+        if (n_variance_rows == 1L) {
+            variances <- matrix(variances, n_profiles, n_indicators, byrow = TRUE)
+        }
+    }
+    response_width <- .multilpa_response_width(object)
+    response_probabilities <- if (response_width > 0L) {
+        .multilpa_response_decode(take(response_width), object)
+    }
+    else NULL
+    extra_width <- .latents_extra_width(object$extra_data, n_profiles)
+    extra_blocks <- if (extra_width > 0L) {
+        .latents_extra_decode(take(extra_width), object$extra_data, n_profiles)
+    }
+    else NULL
+    beta <- matrix(take(length(object$profile_coefficients)), nrow(object$profile_coefficients), ncol(object$profile_coefficients))
+    gamma <- matrix(take(length(object$group_coefficients)), nrow(object$group_coefficients), ncol(object$group_coefficients))
+    parameters <- list(means = means, variances = variances)
+    if (!is.null(covariances)) 
+        parameters$covariances <- covariances
+    if (!is.null(response_probabilities)) {
+        parameters$response_probabilities <- response_probabilities
+    }
+    if (!is.null(extra_blocks)) 
+        parameters[names(extra_blocks)] <- extra_blocks
+    list(parameters = parameters, beta = beta, gamma = gamma)
+}
+.multilpa_cov_group_scores <- function(theta, x, object, codes = NULL) {
+    pieces <- .multilpa_cov_decode(theta, object)
+    expectation <- .multilpa_cov_expectation(x, object$group_index, pieces$parameters, object$profile_design, 
+        object$group_design, pieces$beta, pieces$gamma, codes, unname(object$sampling_weights), object$extra_data)
+    n_groups <- nrow(object$group_design)
+    n_profiles <- object$n_profiles
+    n_group_classes <- object$n_group_classes
+    posteriors <- expectation$subject_posteriors
+    equal <- identical(object$variance_model, "equal")
+    if (.multilpa_cov_is_full(object)) {
+        measurement <- .multilpa_cov_full_scores(x, pieces$parameters, posteriors, object, expectation$gaussian_moments)
+        mean_block <- measurement$means
+        variance_block <- measurement$covariances
+    }
+    else {
+        observed <- !is.na(x)
+        mean_block <- do.call(cbind, lapply(seq_len(n_profiles), function(k) {
+            residual <- sweep(x, 2L, pieces$parameters$means[k, ], "-")
+            residual[!observed] <- 0
+            weighted <- residual * posteriors[, k]
+            rowsum(sweep(weighted, 2L, pieces$parameters$variances[k, ], "/"), object$group_index, reorder = FALSE)
+        }))
+        variance_pieces <- lapply(seq_len(n_profiles), function(k) {
+            residual <- sweep(x, 2L, pieces$parameters$means[k, ], "-")
+            residual[!observed] <- 0
+            standardized <- sweep(residual^2, 2L, pieces$parameters$variances[k, ], "/")
+            rowsum(0.5 * (standardized - observed) * posteriors[, k], object$group_index, reorder = FALSE)
+        })
+        variance_block <- if (equal) 
+            Reduce(`+`, variance_pieces)
+        else do.call(cbind, variance_pieces)
+    }
+    group_weight <- expectation$group_posteriors[object$group_index, , drop = FALSE]
+    beta_block <- do.call(cbind, lapply(seq_len(ncol(pieces$beta)), function(k) {
+        contribution <- Reduce(`+`, lapply(seq_len(n_group_classes), function(h) {
+            residual <- expectation$joint[[h]][, k] - group_weight[, h] * expectation$profile_priors[[h]][, 
+                k]
+            object$profile_design[[h]] * residual
+        }))
+        rowsum(contribution, object$group_index, reorder = FALSE)
+    }))
+    gamma_block <- do.call(cbind, lapply(seq_len(ncol(pieces$gamma)), function(h) {
+        object$group_design * (expectation$group_posteriors[, h] - rowSums(expectation$group_posteriors) * 
+            expectation$group_priors[, h])
+    }))
+    response_block <- .multilpa_response_scores(codes, posteriors, pieces$parameters$response_probabilities, 
+        object$group_index)
+    extra_block <- .latents_extra_scores(object$extra_data, posteriors, pieces$parameters, object$group_index)
+    scores <- cbind(mean_block, variance_block, response_block, extra_block, beta_block, gamma_block)
+    stopifnot(`scores must be one row per group` = nrow(scores) == n_groups, `scores must be one column per parameter` = ncol(scores) == 
+        length(theta))
+    scores
+}
+.multilpa_cov_full_scores <- function(x, parameters, posteriors, object, moments) {
+    dimension <- ncol(x)
+    n_groups <- nrow(object$group_design)
+    lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+    index <- object$group_index
+    per_profile <- lapply(seq_len(object$n_profiles), function(k) {
+        covariance <- matrix(parameters$covariances[, , k], dimension, dimension)
+        precision <- chol2inv(chol(covariance))
+        weights <- posteriors[, k]
+        residual <- sweep(moments[[k]]$expected, 2L, parameters$means[k, ], "-")
+        mean_score <- rowsum(residual * weights, index, reorder = FALSE) %*% precision
+        pairs <- residual[, rep(seq_len(dimension), each = dimension), drop = FALSE] * residual[, rep(seq_len(dimension), 
+            times = dimension), drop = FALSE]
+        correction <- Reduce(`+`, lapply(moments[[k]]$adjustments, function(pattern) {
+            group_weight <- rowsum(weights[pattern$rows], index[pattern$rows], reorder = FALSE)
+            per_group <- numeric(n_groups)
+            per_group[as.integer(rownames(group_weight))] <- group_weight
+            outer(per_group, as.vector(pattern$covariance))
+        }))
+        scatter <- rowsum(pairs * weights, index, reorder = FALSE) + correction
+        totals <- as.vector(rowsum(weights, index, reorder = FALSE))
+        list(means = mean_score, scatter = scatter, totals = totals, precision = precision, covariance = covariance)
+    })
+    spread_rows <- .multilpa_cov_spread_rows(object)
+    covariance_block <- do.call(cbind, lapply(spread_rows, function(profile) {
+        factor <- t(chol(matrix(parameters$covariances[, , profile], dimension, dimension)))
+        contributors <- if (identical(object$variance_model, "equal")) 
+            seq_len(object$n_profiles)
+        else profile
+        rows <- lapply(seq_len(n_groups), function(g) {
+            gradient <- Reduce(`+`, lapply(contributors, function(k) {
+                piece <- per_profile[[k]]
+                scatter <- matrix(piece$scatter[g, ], dimension, dimension)
+                0.5 * (piece$precision %*% scatter %*% piece$precision - piece$totals[g] * piece$precision)
+            }))
+            factor_score <- 2 * gradient %*% factor
+            diag(factor_score) <- diag(factor_score) * diag(factor)
+            factor_score[lower]
+        })
+        matrix(unlist(rows, use.names = FALSE), n_groups, sum(lower), byrow = TRUE)
+    }))
+    list(means = do.call(cbind, lapply(per_profile, `[[`, "means")), covariances = covariance_block)
+}
+parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95, step = 1e-04, vcov_type = c("observed", 
+    "robust", "opg"), adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"), iter = 199L, 
+    n_starts = 10L, max_iter = 1000L, tol = 1e-08, seed = NULL, boundary = c("error", "fix")) {
+    stopifnot(`\`level\` must be a single number in (0, 1)` = is.numeric(level) && length(level) == 1L && 
+        is.finite(level) && level > 0 && level < 1)
+    if (!identical(match.arg(method), "wald")) {
+        stop(errorCondition(paste("`method = \"bootstrap\"` is not implemented for a covariate fit. Its", 
+            "covariance structures are the four the Wald coordinates already", "express, so `method = \"wald\"` covers every model this verb can fit."), 
+            class = "latents_unsupported_inference", call = NULL))
+    }
+    vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type), missing(vcov_type))
+    adjust <- match.arg(adjust)
+    boundary <- match.arg(boundary)
+    covariance <- .multilpa_cov_covariance(x, data, step, vcov_type, boundary)
+    held <- if (identical(boundary, "fix")) 
+        .multilpa_response_bound(x)$natural
+    else character()
+    .multilpa_cov_inference_frame(x, .multilpa_cov_encode(x), covariance, level, vcov_type, adjust, held)
+}
+.multilpa_cov_covariance <- function(object, data = NULL, step, vcov_type, boundary = "error") {
+    stopifnot(`\`object\` must be a fitted \`multilpa_covariates\` model` = inherits(object, "multilpa_covariates"))
+    if (is.null(data)) 
+        data <- .multilpa_cov_stored_data(object)
+    stopifnot(`\`data\` must be a data frame` = is.data.frame(data), `\`step\` must be a single positive number` = is.numeric(step) && 
+        length(step) == 1L && is.finite(step) && step > 0)
+    if (is.null(object$profile_design) || is.null(object$group_design)) {
+        stop(errorCondition("This fit predates covariate inference; refit with the current version.", 
+            class = "latents_unsupported_inference", call = NULL))
+    }
+    .multilpa_check_regularity(object, vcov_type, boundary)
+    if (isTRUE(object$single_level) && !object$id %in% names(data) && nrow(data) == object$n_observations) {
+        data[[object$id]] <- object$group_values[object$group_index]
+    }
+    categorical <- object$categorical %||% character()
+    continuous <- .multilpa_continuous_names(object)
+    columns <- unique(c(object$vars, object$id, object$profile_covariates, object$group_covariates))
+    fiml <- identical(object$missing, "fiml")
+    ordinal <- object$ordinal %||% character()
+    numeric_columns <- setdiff(columns, c(object$id, categorical, ordinal))
+    may_be_missing <- if (fiml) 
+        c(continuous, categorical, object$count)
+    else character()
+    if (!all(columns %in% names(data)) || anyDuplicated(names(data)) || nrow(data) != object$n_observations || 
+        !all(vapply(numeric_columns, function(name) {
+            column <- data[[name]]
+            present <- if (name %in% may_be_missing) column[!is.na(column)] else column
+            is.numeric(column) && is.null(dim(column)) && all(is.finite(present))
+        }, logical(1))) || (!fiml && anyNA(data[categorical])) || !identical(match(data[[object$id]], 
+        object$group_values), object$group_index)) {
+        stop(errorCondition("`data` must contain the original finite indicators, covariates and group identifiers in fitting order.", 
+            class = "latents_bad_inference_data", call = NULL))
+    }
+    first_rows <- match(seq_len(object$n_groups), object$group_index)
+    designs <- .multilpa_cov_designs(data, object$vars, object$profile_covariates, object$group_covariates, 
+        first_rows, object$n_group_classes, categorical = categorical, missing = object$missing %||% 
+            "error", profile_slopes = object$profile_slopes %||% "shared", ordinal = object$ordinal %||% 
+            character(), count = object$count %||% character())
+    codes <- designs$codes
+    if (!identical(designs$extra$ordinal_levels, object$extra_data$ordinal_levels) || !identical(unname(designs$extra$ordinal), 
+        unname(object$extra_data$ordinal)) || !identical(unname(designs$extra$count), unname(object$extra_data$count))) {
+        stop(errorCondition("`data` must reproduce the original ordinal and count indicators.", class = "latents_bad_inference_data", 
+            call = NULL))
+    }
+    same <- function(left, right) identical(unname(left), unname(right))
+    if ((!is.null(object$indicator_data) && !same(as.matrix(data[continuous]), object$indicator_data)) || 
+        (length(categorical) > 0L && !same(codes, object$categorical_data)) || !all(vapply(seq_along(designs$profile_design), 
+        function(index) {
+            same(designs$profile_design[[index]], object$profile_design[[index]])
+        }, logical(1))) || !same(designs$w, object$group_design) || any(vapply(object$group_covariates, 
+        function(name) {
+            any(data[[name]] != data[[name]][first_rows][object$group_index])
+        }, logical(1)))) {
+        stop(errorCondition("`data` must reproduce the original indicators and covariates.", class = "latents_bad_inference_data", 
+            call = NULL))
+    }
+    x <- as.matrix(data[continuous])
+    if (ncol(x) > 0L) 
+        x <- sweep(x, 2L, object$center, "-")
+    theta <- .multilpa_cov_encode(object)
+    objective <- function(parameters) {
+        pieces <- .multilpa_cov_decode(parameters, object)
+        -.multilpa_cov_expectation(x, object$group_index, pieces$parameters, object$profile_design, object$group_design, 
+            pieces$beta, pieces$gamma, codes, unname(object$sampling_weights), object$extra_data)$log_likelihood
+    }
+    reproduced <- -objective(theta)
+    if (abs(reproduced - object$log_likelihood) > 1e-06 * (1 + abs(object$log_likelihood))) {
+        stop(errorCondition("`data` do not reproduce the fitted log likelihood; supply the fitting data.", 
+            class = "latents_bad_inference_data", call = NULL))
+    }
+    gradient <- function(parameters) {
+        -colSums(.multilpa_cov_group_scores(parameters, x, object, codes))
+    }
+    scale <- c(as.vector(t(sqrt(object$variances))), rep(1, length(theta) - length(object$means)))
+    dimension <- length(.multilpa_continuous_names(object))
+    if (.multilpa_cov_is_full(object) && dimension > 0L) {
+        covariance_scale <- .multilpa_covariance_coordinate_scale(object$variances, dimension, .multilpa_cov_spread_rows(object))
+        scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
+    }
+    profile_scale <- 1/.multilpa_design_scale(do.call(rbind, object$profile_design))
+    group_scale <- 1/.multilpa_design_scale(object$group_design)
+    membership <- length(theta) - length(object$profile_coefficients) - length(object$group_coefficients)
+    scale[membership + seq_len(length(theta) - membership)] <- c(rep(profile_scale, ncol(object$profile_coefficients)), 
+        rep(group_scale, ncol(object$group_coefficients)))
+    estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+    held <- if (identical(boundary, "fix")) {
+        estimation_names %in% .multilpa_response_bound(object)$unconstrained
+    }
+    else rep(FALSE, length(theta))
+    free <- which(!held)
+    embed <- function(displacement) replace(numeric(length(theta)), free, displacement)
+    information <- .multilpa_observed_hessian(function(displacement) objective(theta + embed(displacement) * 
+        scale), function(displacement) {
+        (gradient(theta + embed(displacement) * scale) * scale)[free]
+    }, scale[free], step)
+    free_covariance <- information$inverse
+    if (vcov_type %in% c("robust", "opg")) {
+        scores <- sweep(.multilpa_cov_group_scores(theta, x, object, codes), 2L, scale, "*")[, free, 
+            drop = FALSE]
+        cross <- .multilpa_cross_product(scores)
+        free_covariance <- if (identical(vcov_type, "opg")) {
+            .multilpa_opg_inverse(cross)
+        }
+        else .inference_sandwich(free_covariance, cross)
+    }
+    covariance <- matrix(0, length(theta), length(theta))
+    covariance[free, free] <- free_covariance
+    covariance <- covariance * tcrossprod(scale)
+    estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+    dimnames(covariance) <- list(estimation_names, estimation_names)
+    covariance
+}
+.multilpa_cov_parameter_names <- function(object) {
+    .multilpa_parameter_names(.multilpa_cov_labels(object))
+}
+vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-04, vcov_type = c("observed", "robust", 
+    "opg"), scale = c("natural", "unconstrained"), boundary = c("error", "fix"), ...) {
+    scale <- match.arg(scale)
+    covariance <- .multilpa_cov_covariance(object, data, step, .latents_weighted_vcov(.latents_is_weighted(object), 
+        match.arg(vcov_type), missing(vcov_type)), match.arg(boundary))
+    if (identical(scale, "unconstrained")) {
+        names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+        dimnames(covariance) <- list(names, names)
+        return(covariance)
+    }
+    theta <- .multilpa_cov_encode(object)
+    jacobian <- .multilpa_cov_natural_jacobian(object, theta, .multilpa_cov_labels(object))
+    natural <- .inference_delta_covariance(jacobian, covariance)
+    natural_names <- .multilpa_cov_parameter_names(object)
+    dimnames(natural) <- list(natural_names, natural_names)
+    natural
+}
+.multilpa_cov_estimation_labels <- function(object) {
+    labels <- .multilpa_cov_labels(object, response = "free")
+    on_diagonal <- vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
+        length(pair) == 2L && identical(pair[[1L]], pair[[2L]])
+    }, logical(1))
+    labels$parameter <- ifelse(labels$parameter == "variance", "log_variance", ifelse(labels$parameter == 
+        "covariance", ifelse(on_diagonal, "log_cholesky", "cholesky"), labels$parameter))
+    labels
+}
+.multilpa_cov_inference_frame <- function(object, theta, covariance, level, vcov_type, adjust, held = character()) {
+    labels <- .multilpa_cov_labels(object)
+    estimate <- .multilpa_cov_natural_estimate(object, theta, labels)
+    jacobian <- .multilpa_cov_natural_jacobian(object, theta, labels)
+    errors <- .inference_delta_se(jacobian, covariance, "quadratic")
+    is_variance <- labels$parameter == "variance"
+    is_covariance <- labels$parameter == "covariance"
+    is_response <- labels$parameter %in% c("response", "count_mean", "count_dispersion")
+    quantile <- .inference_critical(level, "one_minus")
+    statistic <- estimate/errors
+    result <- data.frame(labels, estimate = estimate, standard_error = errors, statistic = statistic, 
+        p_value = 2 * stats::pnorm(-abs(statistic)), conf_low = estimate - quantile * errors, conf_high = estimate + 
+            quantile * errors, row.names = NULL, stringsAsFactors = FALSE)
+    bounds <- .multilpa_wald_bounds(result$estimate, result$standard_error, .multilpa_interval_kind(result$parameter, 
+        result$term, .multilpa_continuous_names(object)), quantile)
+    result$conf_low <- bounds$low
+    result$conf_high <- bounds$high
+    on_diagonal <- is_covariance & vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
+        length(pair) == 2L && identical(pair[1L], pair[2L])
+    }, logical(1))
+    result$statistic[is_variance | on_diagonal | is_response] <- NA_real_
+    result$p_value[is_variance | on_diagonal | is_response] <- NA_real_
+    at_bound <- .multilpa_cov_parameter_names(object) %in% held
+    result[at_bound, c("standard_error", "conf_low", "conf_high")] <- NA_real_
+    result <- .multilpa_adjust_p(result, adjust)
+    attr(result, "vcov_type") <- vcov_type
+    attr(result, "level") <- level
+    attr(result, "fixed_at_bound") <- held
+    result
+}
+.multilpa_cov_front_estimate <- function(object, theta, labels) {
+    estimate <- theta
+    is_mean <- labels$parameter == "mean"
+    is_variance <- labels$parameter == "variance"
+    is_covariance <- labels$parameter == "covariance"
+    estimate[is_mean] <- estimate[is_mean] + rep(object$center, times = object$n_profiles)
+    estimate[is_variance] <- exp(theta[is_variance])
+    if (any(is_covariance)) {
+        dimension <- length(.multilpa_continuous_names(object))
+        width <- dimension * (dimension + 1L)/2L
+        starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
+        estimate[is_covariance] <- unlist(lapply(starts, function(first) {
+            .multilpa_cov_cholesky_natural(theta[first + seq_len(width) - 1L], dimension)
+        }), use.names = FALSE)
+    }
+    estimate
+}
+.multilpa_cov_front_jacobian <- function(object, theta, labels) {
+    jacobian <- diag(1, length(theta))
+    is_variance <- labels$parameter == "variance"
+    is_covariance <- labels$parameter == "covariance"
+    diag(jacobian)[is_variance] <- exp(theta[is_variance])
+    if (any(is_covariance)) {
+        dimension <- length(.multilpa_continuous_names(object))
+        width <- dimension * (dimension + 1L)/2L
+        starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
+        invisible(lapply(starts, function(first) {
+            at <- first + seq_len(width) - 1L
+            jacobian[at, at] <<- .multilpa_cov_cholesky_jacobian(theta[at], dimension)
+        }))
+    }
+    jacobian
+}
+.multilpa_cov_blocks <- function(object, n_theta) {
+    n_response <- .multilpa_response_width(object)
+    n_extra <- .latents_extra_width(object$extra_data, object$n_profiles)
+    n_back <- length(object$profile_coefficients) + length(object$group_coefficients)
+    n_front <- n_theta - n_response - n_extra - n_back
+    stopifnot(`the parameter vector must hold every block` = n_front >= 0L)
+    list(front = seq_len(n_front), response = n_front + seq_len(n_response), extra = n_front + n_response + 
+        seq_len(n_extra), back = n_front + n_response + n_extra + seq_len(n_back))
+}
+.multilpa_cov_natural_estimate <- function(object, theta, labels) {
+    at <- .multilpa_cov_blocks(object, length(theta))
+    front_labels <- labels[at$front, , drop = FALSE]
+    response <- if (length(at$response) > 0L) {
+        unlist(lapply(.multilpa_response_decode(theta[at$response], object), function(block) as.vector(t(block))), 
+            use.names = FALSE)
+    }
+    else numeric(0)
+    extra <- if (length(at$extra) > 0L) {
+        unname(.latents_extra_coordinates(.latents_extra_decode(theta[at$extra], object$extra_data, object$n_profiles), 
+            object$extra_data, object$n_profiles, "natural"))
+    }
+    else numeric(0)
+    estimate <- c(.multilpa_cov_front_estimate(object, theta[at$front], front_labels), response, extra, 
+        theta[at$back])
+    stopifnot(`every natural parameter must be labelled` = length(estimate) == nrow(labels))
+    estimate
+}
+.multilpa_cov_natural_jacobian <- function(object, theta, labels) {
+    at <- .multilpa_cov_blocks(object, length(theta))
+    blocks <- if (length(at$response) > 0L) {
+        .multilpa_response_decode(theta[at$response], object)
+    }
+    else list()
+    n_natural_response <- sum(vapply(blocks, length, integer(1)))
+    n_front <- length(at$front)
+    n_extra <- length(at$extra)
+    jacobian <- matrix(0, n_front + n_natural_response + n_extra + length(at$back), length(theta))
+    if (n_extra > 0L) {
+        jacobian[n_front + n_natural_response + seq_len(n_extra), at$extra] <- .latents_extra_jacobian(.latents_extra_decode(theta[at$extra], 
+            object$extra_data, object$n_profiles), object$extra_data, object$n_profiles)
+    }
+    jacobian[seq_len(n_front), at$front] <- .multilpa_cov_front_jacobian(object, theta[at$front], labels[seq_len(n_front), 
+        , drop = FALSE])
+    row_at <- n_front
+    column_at <- n_front
+    invisible(lapply(blocks, function(block) {
+        n_categories <- ncol(block)
+        invisible(lapply(seq_len(nrow(block)), function(profile) {
+            free <- seq_len(n_categories - 1L)
+            jacobian[row_at + seq_len(n_categories), column_at + free] <<- .inference_simplex_jacobian(block[profile, 
+                ], "last")
+            row_at <<- row_at + n_categories
+            column_at <<- column_at + length(free)
+        }))
+    }))
+    back_rows <- n_front + n_natural_response + n_extra + seq_along(at$back)
+    jacobian[cbind(back_rows, at$back)] <- 1
+    stopifnot(`every natural parameter must be labelled` = nrow(jacobian) == nrow(labels))
+    jacobian
+}
+.multilpa_cov_cholesky_natural <- function(values, dimension) {
+    lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+    factor <- matrix(0, dimension, dimension)
+    factor[lower] <- values
+    diag(factor) <- exp(diag(factor))
+    tcrossprod(factor)[lower]
+}
+.multilpa_cov_cholesky_jacobian <- function(values, dimension) {
+    step <- 1e-06
+    columns <- lapply(seq_along(values), function(index) {
+        up <- values
+        down <- values
+        up[index] <- up[index] + step
+        down[index] <- down[index] - step
+        (.multilpa_cov_cholesky_natural(up, dimension) - .multilpa_cov_cholesky_natural(down, dimension))/(2 * 
+            step)
+    })
+    matrix(unlist(columns, use.names = FALSE), length(values), length(values))
+}
+.multilpa_cov_labels <- function(object, response = c("natural", "free")) {
+    response <- match.arg(response)
+    vars <- object$vars
+    profiles <- paste0("profile_", seq_len(object$n_profiles))
+    variance_rows <- if (identical(object$variance_model, "equal")) 
+        "shared"
+    else profiles
+    block <- function(term, outcome, level, parameter) {
+        grid <- expand.grid(term = term, outcome = outcome, stringsAsFactors = FALSE)
+        data.frame(level = rep(level, nrow(grid)), outcome = grid$outcome, term = grid$term, parameter = rep(parameter, 
+            nrow(grid)), stringsAsFactors = FALSE)
+    }
+    continuous <- .multilpa_continuous_names(object)
+    spread <- if (.multilpa_cov_is_full(object)) {
+        positions <- which(lower.tri(matrix(0, length(continuous), length(continuous)), diag = TRUE), 
+            arr.ind = TRUE)
+        pairs <- sprintf("%s:%s", continuous[positions[, 1L]], continuous[positions[, 2L]])
+        block(pairs, variance_rows, "measurement", "covariance")
+    }
+    else block(continuous, variance_rows, "measurement", "variance")
+    blocks <- object$response_probabilities %||% list()
+    responses <- do.call(rbind, c(list(block(character(), profiles, "measurement", "response")), lapply(names(blocks), 
+        function(indicator) {
+            categories <- colnames(blocks[[indicator]])
+            if (identical(response, "free")) categories <- categories[-length(categories)]
+            block(sprintf("%s:%s", indicator, categories), profiles, "measurement", if (identical(response, 
+                "free")) "response_logit" else "response")
+        })))
+    extra <- .latents_extra_labels(object, profiles, free = identical(response, "free"))
+    rbind(block(continuous, profiles, "measurement", "mean"), spread, responses, extra, block(rownames(object$profile_coefficients), 
+        colnames(object$profile_coefficients), "profile", "coefficient"), block(rownames(object$group_coefficients), 
+        colnames(object$group_coefficients), "group", "coefficient"))
+}
+coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained"), ...) {
+    stopifnot(`\`object\` must be a fitted \`multilpa_covariates\` model` = inherits(object, "multilpa_covariates"))
+    scale <- match.arg(scale)
+    theta <- .multilpa_cov_encode(object)
+    if (identical(scale, "unconstrained")) {
+        return(stats::setNames(theta, .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))))
+    }
+    stats::setNames(.multilpa_cov_natural_estimate(object, theta, .multilpa_cov_labels(object)), .multilpa_cov_parameter_names(object))
+}
+confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL, ...) {
+    stopifnot(`\`object\` must be a fitted \`multilpa_covariates\` model` = inherits(object, "multilpa_covariates"), 
+        `\`data\` must be a data frame when supplied` = is.null(data) || is.data.frame(data))
+    inference <- parameter_inference(object, data, level = level, ...)
+    names_all <- .multilpa_cov_parameter_names(object)
+    intervals <- cbind(inference$conf_low, inference$conf_high)
+    dimnames(intervals) <- list(names_all, paste0(format(100 * c((1 - level)/2, (1 + level)/2), trim = TRUE), 
+        "%"))
+    if (missing(parm)) 
+        return(intervals)
+    if (is.numeric(parm)) {
+        if (anyNA(parm) || any(parm < 1) || any(parm > length(names_all)) || any(parm != floor(parm))) {
+            stop("`parm` must identify existing parameters by name or index.")
+        }
+        parm <- names_all[parm]
+    }
+    if (!is.character(parm) || anyNA(parm) || !all(parm %in% names_all)) {
+        stop("`parm` must identify existing parameters by name or index.")
+    }
+    intervals[parm, , drop = FALSE]
+}

@@ -1,0 +1,65 @@
+<multilpa_cross_level> Restricted cross-level model: 2 profiles, 2 group classes
+ A list of 41 components. Tables: get_results(x, what = ); raw list: str(unclass(x))
+NULL
+    group_class weight count n_assigned
+1 group_class_1    0.6    30         30
+2 group_class_2    0.4    20         30
+               level class estimated_n estimated_proportion n_assigned
+group_class_1 groups     1          36                  0.6         30
+group_class_2 groups     2          24                  0.4         30
+              average_posterior odds_correct_classification
+group_class_1                 1                         Inf
+group_class_2                 1                         Inf
+expected count sum from fit: 50 diagnostics expected count: 60 diagnostics assigned count: 60 nobs: 50 
+               domain                           check       level     value
+1          Estimation            best start converged       model     1.000
+2          Estimation  best log likelihood reached by       model     1.000
+3          Estimation     starts failed or unfinished       model     0.000
+4          Estimation            estimates at a bound       model     0.000
+5          Class size                  smallest class      groups     0.400
+6          Class size  modal vs estimated proportions      groups     0.100
+7          Class size  classes with no assigned group      groups     0.000
+8      Classification  class sizes and classification individuals        NA
+9      Classification                relative entropy      groups     1.000
+10     Classification        lowest average posterior      groups     1.000
+11 Local independence             bivariate residuals       model        NA
+12        Information log likelihood, parameters, BIC       model -1141.787
+                   display criterion status
+1                      yes               ok
+2            1 of 2 starts             info
+3                   0 of 2               ok
+4                       no               ok
+5  40.0% (n = 24, class 2)             info
+6        largest gap 0.100             info
+7                   0 of 2               ok
+8                                       n/a
+9                    1.000             info
+10         1.000 (class 1)             info
+11                                      n/a
+12   -1141.79, 18, 2353.99             info
+                                                                                                                                         detail
+1                                                                                                                                              
+2                                                                                                 one start only: the maximum is not replicated
+3                                                                                                                                              
+4                                                                                                                                              
+5                                                                                                                                              
+6                                                                                                                                              
+7                                                                                                                                              
+8  The individuals level of this weighted fit cannot be weighted: the fit stores its sampling weights per group and no map from rows to groups.
+9                                                                                                                                              
+10                                                                                                                                             
+11                                                                                                            not defined for this model family
+12                                                                                       meaningful only against other models: compare_models()
+                             reference
+1                                     
+2                         Masyn (2013)
+3                                     
+4                                     
+5                                     
+6                                     
+7                                     
+8                                     
+9  Clark & Muthen (2009); Masyn (2013)
+10                        Nagin (2005)
+11                                    
+12                                    

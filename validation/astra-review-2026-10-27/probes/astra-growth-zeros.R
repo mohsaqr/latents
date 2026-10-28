@@ -1,0 +1,15 @@
+Sys.setenv(OMP_NUM_THREADS='1', VECLIB_MAXIMUM_THREADS='1', NOT_CRAN='true')
+pkgload::load_all('.',quiet=TRUE)
+run <- function(seed) {
+ set.seed(seed)
+ d<-data.frame(id=rep(1:40,each=4),time=rep(0:3,40),w=1)
+ cl<-rbinom(40,1,.5)
+ d$y<-rep(1.5*cl+rnorm(40,sd=.6),each=4)+rep(.4-.8*cl,each=4)*d$time+rnorm(160,sd=.4)
+ z<-d;z$id<-z$id+40;z$w<-0;z$y<-z$y+rep(c(-20,20),each=80)
+ fit<-function(v) tryCatch(suppressWarnings(mixture_regression(y~time,v,2,id='id',class_level='group',random=~1,n_starts=0,seed=4,weights='w',vcov_type='none',max_iter=500)),error=function(e)e)
+ a<-fit(d);b<-fit(rbind(d,z))
+ out<-if(inherits(a,'error')||inherits(b,'error'))list(seed=seed,a=if(inherits(a,'error'))conditionMessage(a),b=if(inherits(b,'error'))conditionMessage(b))else c(seed=seed,base=a$log_likelihood,padded=b$log_likelihood,gap=b$log_likelihood-a$log_likelihood,a_conv=a$converged,b_conv=b$converged)
+ print(out)
+ saveRDS(list(data=d,padded=rbind(d,z),base=a,fit=b),paste0('/tmp/astra-growth-seed-',seed,'.rds'))
+}
+invisible(lapply(1:8,run))

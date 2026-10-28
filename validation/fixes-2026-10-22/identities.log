@@ -1,0 +1,3 @@
+LTA returned fits identical before/after: TRUE, TRUE, TRUE, TRUE 
+Unaffected staged-bootstrap estimates/messages identical: TRUE 
+Unaffected staged-bootstrap RNG state identical: TRUE 

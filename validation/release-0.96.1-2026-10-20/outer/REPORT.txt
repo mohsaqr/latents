@@ -1,0 +1,84 @@
+Outer equivalence validation for latents 0.96.1 — 2026-10-20
+
+Result: 198 cases, 5,419 passing expectations, zero failures, errors,
+warnings or skips after the two whole-file replacements described below.
+No numerical mismatch was found in any completed comparison.
+
+The comprehensive original run took 1,693.65 seconds (28m14s), from
+14:25:07 to 14:53:21 UTC, on R 4.5.2/aarch64/macOS Tahoe 26.3.1.
+It exercised 39 test files. This is the outer equivalence/ suite, separate
+from the 405-expectation tests/equivalence/ development suite.
+
+Isolation and provenance
+
+- A scratch snapshot copied the current contents of 3,411 tracked files
+  plus the four new regression files. Its DESCRIPTION was already 0.96.1.
+- Six required JStats data/JSON fixtures were copied into a scratch sibling
+  repository. Neither original repository was used as a write destination
+  for comparison-script outputs.
+- All 91 production R files have SHA256 manifests. Original and scratch
+  production files remained identical to their initial fingerprints.
+- Scratch package installation under outer/rlib supplies version 0.96.1
+  to the corrected socket-worker run. Monte Carlo helpers explicitly load
+  the scratch source on each worker.
+- Source-only test scripts regenerated comparison outputs in scratch;
+  the five transition tables and ordinal/count table are retained under
+  generated-evidence/. All six match the pre-run retained outputs bytewise.
+- Original external programs were not rerun. This execution refits latents
+  and compares with recorded licensed-program outputs and locally installed
+  open-source comparison packages.
+
+Transparent replacements
+
+The original comprehensive run recorded 5,392 passing expectations,
+26 failures and one error, with zero warnings/skips. Its log and raw RDS
+remain unchanged.
+
+1. test-claims.R: 26 registry phrases were stale after earlier documentation
+   editing. The separate release_claims agent updated only phrase fields in
+   CLAIMS.csv, preserving all 67 claim rows, references, test identities and
+   numerical assertions. The corrected file was copied into scratch; its
+   entire four-case test file passed 271 expectations. Corrected registry
+   MD5: e35b7e9e277fb42cd39fcd1f2536be77.
+
+2. test-enumeration-mplus.R: the initial two-core comparison used an ambient
+   installed latents 0.95.1 and errored because its workers could not find
+   .multilpa_enumeration_arguments. The scratch source was installed in the
+   isolated library; rerunning this entire file with R_LIBS inherited by
+   workers passed all 49 expectations. No package code/test/reference was
+   changed to obtain that result.
+
+summarize-outer.R replaces those two complete files in the aggregate,
+without double counting. Final totals include the formerly errored parallel
+assertion, explaining the increase from 5,418 original counted expectations
+to 5,419 final passing expectations. All 198 cases are retained.
+
+Breadth
+
+- 120 base Monte Carlo datasets: 3,461 passing comparisons.
+- 40 extended Monte Carlo datasets: 403 passing comparisons.
+- 40 retained JStats/Mplus model refits: 450 passing assertions.
+- Latent GOLD feature, group-family, latent Markov, ordinal/count and
+  transition-extension comparisons; open-source lcmm, depmixS4, flexmix,
+  mclust, tidyLPA and tidySEM comparisons.
+- Missing-pattern references, independent numerical likelihood/derivative
+  checks, all covariance-structure inference checks, weighted inference,
+  retained Mplus CR1/standardization/LMR/TECH14 comparisons.
+- TECH14 includes the original serial 199-replicate parametric bootstrap
+  with ten starts per refit; its 13 assertions passed without changing
+  tolerances, iteration limits or seeds.
+
+Authoritative artifacts
+
+- summary.log: measured initial/final totals and replacement identities.
+- final-cases.csv/.rds: complete final case-level results.
+- full-suite.log, results.rds, cases.csv/.rds: original comprehensive run.
+- initial-issues.csv: all original failures/error, including exact error.
+- claims-corrected.log/.rds/.csv: corrected entire claims-file run.
+- enumeration-current-library.log/.rds/.csv: entire current-worker rerun.
+- snapshot-manifest.json and production-snapshot-sha256.json: input hashes.
+- final-integrity.json: final source integrity and retained generated outputs.
+- run-outer.R and summarize-outer.R: reproducible execution/aggregation.
+
+This local execution adds release evidence; it does not replace exact-commit
+Windows/Linux/macOS/minimum-R CI or assert that untested defects cannot exist.

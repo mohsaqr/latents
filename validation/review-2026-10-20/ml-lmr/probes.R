@@ -1,0 +1,42 @@
+pkgload::load_all(quiet=TRUE)
+record <- function(label, expr) {
+ cat('\n---',label,'---\n')
+ tryCatch(print(force(expr)), error=function(e) cat('ERROR ', paste(class(e),collapse='/'), ': ', conditionMessage(e), '\n',sep=''))
+}
+record('Negative q known-answer upper tail, lambda=1', .latents_imhof_upper(-1,1))
+record('Negative q known-answer upper tail, lambda=-1', .latents_imhof_upper(-1,-1))
+record('Negative q known-answer upper tail, lambda=(1,-1)', .latents_imhof_upper(-1,c(1,-1)))
+# Exact change of coordinates applied to synthetic, positive-definite nested-model
+# information and scores. The reference distribution must stay chi-square(2).
+set.seed(8)
+scores <- matrix(rnorm(400 * 5),400,5)
+jacobian <- matrix(rnorm(5*3),5,3)
+info <- crossprod(scores)
+alt <- list(scores=scores,information=info)
+null <- list(scores=scores %*% jacobian, information=t(jacobian)%*%info%*%jacobian)
+record('Vuong eigenvalues, regular nested case', sort(.latents_vuong_weights(alt,null)))
+move <- diag(c(1e-8,rep(1,4)))
+alt_scaled <- list(scores=alt$scores%*%move, information=t(move)%*%alt$information%*%move)
+record('Same regular nested case after one coordinate changed to units of 1e8', .latents_vuong_weights(alt_scaled,null))
+# ML outcome offset should affect only class means.
+set.seed(4)
+values <- c(rnorm(30,2), rnorm(20,-1,3))
+modal <- rep(1:2,c(30,20))
+pieces <- list(posteriors=cbind(modal==1,modal==2)*1, modal=modal,n_classes=2L,group_index=seq_along(modal))
+record('ML known-answer hard-assignment influence at offset 0', colSums(.multilpa_step_ml_influence(.multilpa_step_ml_fit(pieces,values,'varying'), values,'varying')^2))
+record('ML known-answer hard-assignment influence at offset 1e12', colSums(.multilpa_step_ml_influence(.multilpa_step_ml_fit(pieces,values+1e12,'varying'), values+1e12,'varying')^2))
+# Exercise public LPA -> comparison verb on ordinary and rescaled indicators.
+set.seed(21)
+n <- 300
+cl <- sample(1:2,n,TRUE)
+dat <- data.frame(a=rnorm(n,c(-1.5,1.5)[cl]),b=rnorm(n,c(-1.5,1.5)[cl]), distal=rnorm(n,c(0,2)[cl]))
+base <- suppressWarnings(enumerate_lpa(dat,c('a','b'),n_profiles=1:2, model='EEI',n_starts=10,seed=1,tol=1e-12))
+record('Public base LMR', get_results(base,'lmr'))
+scaled <- suppressWarnings(enumerate_lpa(transform(dat,a=a*1e8,b=b*1e8),c('a','b'),n_profiles=1:2,model='EEI',n_starts=10,seed=1,tol=1e-12))
+record('Public scaled candidate convergence', as.data.frame(scaled)[,c('n_profiles','converged','log_likelihood')])
+record('Public scaled parameter inference', head(parameter_inference(get_candidate(scaled,1),vcov_type='robust')))
+record('Public scaled LMR', get_results(scaled,'lmr'))
+fit <- get_candidate(base,2)
+record('Public ML base outcome', three_step(fit,dat,'distal',method='ml',vcov_type='independent'))
+record('Public ML offset outcome', three_step(fit,transform(dat,distal=distal+1e12),'distal',method='ml',vcov_type='independent'))
+saveRDS(list(base=base,scaled=scaled,data=dat),'validation/review-2026-10-20/ml-lmr/models.rds')

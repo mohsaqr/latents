@@ -1,0 +1,48 @@
+
+=== Informative groups: 1 ===
+Original groups/parameters: 1 2 
+Padded groups/informative/parameters: 96 1 2 
+Log likelihood: -77.79141 -77.79141 
+Type: robust 
+Baseline: latents_too_few_groups, error, condition 
+Robust and OPG inference need more groups than parameters; this fit has 1 groups and 2 parameters. 
+Padded: data.frame 
+        level       outcome          term   parameter   estimate standard_error
+1 measurement     profile_1             y        mean -0.1974855   1.320771e-17
+2 measurement     profile_1             y    variance  1.3149246   2.524139e-16
+3     profile     profile_1 group_class_1 probability  1.0000000   0.000000e+00
+4       group group_class_1          <NA> probability  1.0000000   0.000000e+00
+      statistic p_value p_adjusted   conf_low  conf_high
+1 -1.495229e+16       0          0 -0.1974855 -0.1974855
+2            NA      NA         NA  1.3149246  1.3149246
+3            NA      NA         NA  1.0000000  1.0000000
+4            NA      NA         NA  1.0000000  1.0000000
+Type: opg 
+Baseline: latents_too_few_groups, error, condition 
+Robust and OPG inference need more groups than parameters; this fit has 1 groups and 2 parameters. 
+Padded: latents_singular_information, error, condition 
+The outer product of the group scores is singular; OPG inference is unavailable. `vcov_type = "observed"` uses the curvature instead. 
+
+=== Informative groups: 2 ===
+Original groups/parameters: 2 2 
+Padded groups/informative/parameters: 97 2 2 
+Log likelihood: -147.4705 -147.4705 
+Type: robust 
+Baseline: latents_too_few_groups, error, condition 
+Robust and OPG inference need more groups than parameters; this fit has 2 groups and 2 parameters. 
+Padded: data.frame 
+        level       outcome          term   parameter   estimate standard_error
+1 measurement     profile_1             y        mean 0.02423766     0.02730927
+2 measurement     profile_1             y    variance 1.11799141     0.19205301
+3     profile     profile_1 group_class_1 probability 1.00000000     0.00000000
+4       group group_class_1          <NA> probability 1.00000000     0.00000000
+  statistic   p_value p_adjusted    conf_low  conf_high
+1 0.8875252 0.3747962  0.3747962 -0.02928752 0.07776284
+2        NA        NA         NA  0.79839109 1.56552948
+3        NA        NA         NA  1.00000000 1.00000000
+4        NA        NA         NA  1.00000000 1.00000000
+Type: opg 
+Baseline: latents_too_few_groups, error, condition 
+Robust and OPG inference need more groups than parameters; this fit has 2 groups and 2 parameters. 
+Padded: latents_singular_information, error, condition 
+The outer product of the group scores is singular; OPG inference is unavailable. `vcov_type = "observed"` uses the curvature instead. 

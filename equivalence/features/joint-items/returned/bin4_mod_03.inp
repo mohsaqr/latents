@@ -1,0 +1,34 @@
+TITLE: latents joint items bin4_mod_03;
+DATA: FILE = bin4_mod_03.dat;
+VARIABLE:
+ NAMES = id p1p2 u1 u2 u3 u4;
+ USEVARIABLES = p1p2 u1 u2 u3 u4;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ CATEGORICAL = u1 u2 u3 u4;
+ NOMINAL = p1p2;
+ CLASSES = c(2);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 400 80;
+ STITERATIONS = 40;
+ STSEED = 20261020;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [u1$1 u2$1 u3$1 u4$1];
+ [p1p2#1 p1p2#2 p1p2#3 p1p2#4 p1p2#5 p1p2#6 p1p2#7];
+ %c#2%
+ [u1$1 u2$1 u3$1 u4$1];
+ [p1p2#1 p1p2#2 p1p2#3 p1p2#4 p1p2#5 p1p2#6 p1p2#7];
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = bin4_mod_03-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = bin4_mod_03-results.dat;

@@ -1,0 +1,7 @@
+Release commit: cf1127fa66283826ed421d028999b5ac23e1901d
+Tracked working tree and index: clean
+Manifest files match committed content: 324
+Archive matches committed package files: 286
+All tracked archive files independently match Git content: 306
+Development-only manifest files excluded by .Rbuildignore: 38
+Archive SHA256: a0bb76047e2134631fc25adbb8a2e41ff1a5984cf8db2e522bd07fa951a15f5e

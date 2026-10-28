@@ -1,0 +1,70 @@
+'data.frame':	100 obs. of  3 variables:
+ $ x: num  1.3706 1.1601 0.0344 1.035 0.6362 ...
+ $ w: num  1 1 1 1 1 1 1 1 1 1 ...
+ $ y: num  3.32 5.4 1.73 2.59 3.91 ...
+    class        term estimate std_error statistic      p_value conf_low
+1 class_1 (Intercept) 2.087826 0.1021741  20.43399 8.339380e-93 1.887568
+2 class_1           x 1.510049 0.1019461  14.81223 1.221242e-49 1.310238
+  conf_high   p_adjusted
+1  2.288083           NA
+2  1.709859 1.221242e-49
+zero row x= 100 LLgap= 0 
+    class        term estimate std_error statistic      p_value conf_low
+1 class_1 (Intercept) 2.087826 0.1021741  20.43399 8.339380e-93 1.887568
+2 class_1           x 1.510049 0.1019461  14.81223 1.221242e-49 1.310238
+  conf_high   p_adjusted
+1  2.288083           NA
+2  1.709859 1.221242e-49
+zero row x= 10000 LLgap= 0 
+    class        term estimate std_error statistic      p_value conf_low
+1 class_1 (Intercept) 2.087826 0.1021741  20.43399 8.339379e-93 1.887568
+2 class_1           x 1.510049 0.1019461  14.81223 1.221242e-49 1.310238
+  conf_high   p_adjusted
+1  2.288083           NA
+2  1.709859 1.221242e-49
+zero row x= 1e+05 LLgap= 0 
+    class        term estimate std_error statistic      p_value conf_low
+1 class_1 (Intercept) 2.087826 0.1021741  20.43399 8.339461e-93 1.887568
+2 class_1           x 1.510049 0.1019461  14.81223 1.221213e-49 1.310238
+  conf_high   p_adjusted
+1  2.288083           NA
+2  1.709859 1.221213e-49
+zero row x= 1e+06 LLgap= 0 
+    class        term estimate std_error statistic      p_value conf_low
+1 class_1 (Intercept) 2.087826 0.1021736  20.43410 8.321563e-93 1.887569
+2 class_1           x 1.510049 0.1019469  14.81211 1.223457e-49 1.310236
+  conf_high   p_adjusted
+1  2.288082           NA
+2  1.709861 1.223457e-49
+zero row x= 1e+07 LLgap= 0 
+    class        term estimate std_error statistic p_value conf_low conf_high
+1 class_1 (Intercept) 2.087826        NA        NA      NA       NA        NA
+2 class_1           x 1.510049        NA        NA      NA       NA        NA
+  p_adjusted
+1         NA
+2         NA
+zero row x= 1e+08 LLgap= 0 
+    class        term estimate std_error statistic p_value conf_low conf_high
+1 class_1 (Intercept) 2.087826        NA        NA      NA       NA        NA
+2 class_1           x 1.510049        NA        NA      NA       NA        NA
+  p_adjusted
+1         NA
+2         NA
+Warning messages:
+1: The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA. 
+2: The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA. 
+Recomputing only inference on positive-weight units restores covariance, max absolute error: 0 
+ zero_predictor ll_gap coefficient_gap   intercept_se       slope_se
+          1e+02      0               0 0.102174134757 0.101946078479
+          1e+04      0               0 0.102174134744 0.101946078517
+          1e+05      0               0 0.102174137135 0.101946067490
+          1e+06      0               0 0.102173612668 0.101946916827
+          1e+07      0               0             NA             NA
+          1e+08      0               0             NA             NA
+ max_relative_se_error
+     1.31183952590e-12
+     3.75248720985e-10
+     1.07794266180e-07
+     8.22344610918e-06
+                    NA
+                    NA

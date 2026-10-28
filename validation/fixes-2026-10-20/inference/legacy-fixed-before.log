@@ -1,0 +1,7 @@
+review-1020-inference: .....................1.......................................................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-review-1020-inference.R:49:3'): empty groups do not evade r
+Expected `parameter_inference(fixed, vcov_type = "robust")` to throw a error with class <latents_too_few_groups>.
+
+══ DONE ════════════════════════════════════════════════════════════════════════

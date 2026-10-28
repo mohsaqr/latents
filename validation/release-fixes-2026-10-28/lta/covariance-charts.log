@@ -1,0 +1,169 @@
+'data.frame':	400 obs. of  5 variables:
+ $ id  : int  1 1 1 1 1 2 2 2 2 2 ...
+ $ time: int  1 2 3 4 5 1 2 3 4 5 ...
+ $ z   : num  -0.5815 -0.2242 1.1984 -1.3586 -0.0201 ...
+ $ y1  : num  3.388 2.793 2.817 0.476 1.585 ...
+ $ y2  : num  2.326 0.343 1.487 1.081 2.305 ...
+MODEL EEE 
+coefficient count 12 scale count 12 
+                                    mean.all.profile_1.y1 
+                                                1.0334292 
+                                    mean.all.profile_1.y2 
+                                                0.7920388 
+                                    mean.all.profile_2.y1 
+                                                1.0334292 
+                                    mean.all.profile_2.y2 
+                                                0.7920388 
+                            log_cholesky.all.shared.y1:y1 
+                                                1.0000000 
+                                cholesky.all.shared.y2:y1 
+                                                0.7920388 
+                            log_cholesky.all.shared.y2:y2 
+                                                1.0000000 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                1.0000000 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                1.0000000 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                1.0000000 
+model EEE scale 1e-05 type observed max standardized covariance error 2.50988e-10 
+model EEE scale 1e-05 type robust max standardized covariance error 4.916789e-10 
+model EEE scale 1e-05 type opg max standardized covariance error 3.599684e-10 
+model EEE scale 1e+06 type observed max standardized covariance error 2.407183e-09 
+model EEE scale 1e+06 type robust max standardized covariance error 5.855597e-09 
+model EEE scale 1e+06 type opg max standardized covariance error 1.016166e-09 
+MODEL VVV 
+coefficient count 15 scale count 15 
+                                    mean.all.profile_1.y1 
+                                                1.0261070 
+                                    mean.all.profile_1.y2 
+                                                0.8006921 
+                                    mean.all.profile_2.y1 
+                                                1.0420626 
+                                    mean.all.profile_2.y2 
+                                                0.7803120 
+                         log_cholesky.all.profile_1.y1:y1 
+                                                1.0000000 
+                             cholesky.all.profile_1.y2:y1 
+                                                0.8006921 
+                         log_cholesky.all.profile_1.y2:y2 
+                                                1.0000000 
+                         log_cholesky.all.profile_2.y1:y1 
+                                                1.0000000 
+                             cholesky.all.profile_2.y2:y1 
+                                                0.7803120 
+                         log_cholesky.all.profile_2.y2:y2 
+                                                1.0000000 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                1.0000000 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                1.0000000 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                1.0000000 
+model VVV scale 1e-05 type observed max standardized covariance error 1.835151e-10 
+model VVV scale 1e-05 type robust max standardized covariance error 2.929736e-10 
+model VVV scale 1e-05 type opg max standardized covariance error 3.205181e-10 
+model VVV scale 1e+06 type observed max standardized covariance error 3.067007e-10 
+model VVV scale 1e+06 type robust max standardized covariance error 1.392856e-09 
+model VVV scale 1e+06 type opg max standardized covariance error 1.086065e-09 
+MODEL VEE 
+coefficient count 13 scale count 13 
+                                    mean.all.profile_1.y1 
+                                                1.0322294 
+                                    mean.all.profile_1.y2 
+                                                0.7911181 
+                                    mean.all.profile_2.y1 
+                                                1.0347628 
+                                    mean.all.profile_2.y2 
+                                                0.7930598 
+                                 log_volume.all.profile_1 
+                                                1.0000000 
+                                 log_volume.all.profile_2 
+                                                1.0000000 
+                      log_shape_cholesky.all.shared.y1:y1 
+                                                1.0000000 
+                          shape_cholesky.all.shared.y2:y1 
+                                                0.8755046 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                1.0000000 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                1.0000000 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                1.0000000 
+model VEE scale 1e-05 type observed max standardized covariance error 1.316605e-07 
+model VEE scale 1e-05 type robust max standardized covariance error 2.654384e-07 
+model VEE scale 1e-05 type opg max standardized covariance error 3.371994e-10 
+model VEE scale 1e+06 type observed max standardized covariance error 8.896371e-08 
+model VEE scale 1e+06 type robust max standardized covariance error 1.894302e-07 
+model VEE scale 1e+06 type opg max standardized covariance error 3.212337e-10 
+MODEL EVE 
+coefficient count 13 scale count 13 
+                                    mean.all.profile_1.y1 
+                                                1.0187382 
+                                    mean.all.profile_1.y2 
+                                                0.8021877 
+                                    mean.all.profile_2.y1 
+                                                1.0472945 
+                                    mean.all.profile_2.y2 
+                                                0.7803993 
+                                    log_volume.all.shared 
+                                                1.0000000 
+                               log_shape.all.profile_1.y1 
+                                                1.0000000 
+                               log_shape.all.profile_2.y1 
+                                                1.0000000 
+                                rotation.all.shared.y1:y2 
+                                                1.0000000 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                1.0000000 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                1.0000000 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                1.0000000 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                1.0000000 
+model EVE scale 1e-05 type observed max standardized covariance error 4.360378e-08 
+model EVE scale 1e-05 type robust max standardized covariance error 8.704306e-08 
+model EVE scale 1e-05 type opg max standardized covariance error 3.349215e-10 
+model EVE scale 1e+06 type observed max standardized covariance error 5.39716e-08 
+model EVE scale 1e+06 type robust max standardized covariance error 1.031015e-07 
+model EVE scale 1e+06 type opg max standardized covariance error 4.856126e-10 
+   model scale     type        error
+1    EEE 1e-05 observed 2.509880e-10
+2    EEE 1e-05   robust 4.916789e-10
+3    EEE 1e-05      opg 3.599684e-10
+4    EEE 1e+06 observed 2.407183e-09
+5    EEE 1e+06   robust 5.855597e-09
+6    EEE 1e+06      opg 1.016166e-09
+7    VVV 1e-05 observed 1.835151e-10
+8    VVV 1e-05   robust 2.929736e-10
+9    VVV 1e-05      opg 3.205181e-10
+10   VVV 1e+06 observed 3.067007e-10
+11   VVV 1e+06   robust 1.392856e-09
+12   VVV 1e+06      opg 1.086065e-09
+13   VEE 1e-05 observed 1.316605e-07
+14   VEE 1e-05   robust 2.654384e-07
+15   VEE 1e-05      opg 3.371994e-10
+16   VEE 1e+06 observed 8.896371e-08
+17   VEE 1e+06   robust 1.894302e-07
+18   VEE 1e+06      opg 3.212337e-10
+19   EVE 1e-05 observed 4.360378e-08
+20   EVE 1e-05   robust 8.704306e-08
+21   EVE 1e-05      opg 3.349215e-10
+22   EVE 1e+06 observed 5.397160e-08
+23   EVE 1e+06   robust 1.031015e-07
+24   EVE 1e+06      opg 4.856126e-10

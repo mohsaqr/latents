@@ -1,0 +1,311 @@
+x_e_empty_01-data.txt
+File name:	x_e_empty_01-data.txt	
+File size:	36612 bytes  400 records	
+File date:	2026-Oct-20 9:53:33 PM	
+Syntax:	x_e_empty_01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	
+x_e_empty_01_vr	3-Cluster	-2502.4470	5040.8428	5016.8940	5022.8940	6	
+x_e_empty_01_er	3-Cluster	-2520.3437	5064.6533	5048.6874	5052.6874	4	
+x_e_empty_01_vr - LL = -2502.4470
+3-Cluster Syntax Model	
+						
+Number of cases	400					
+Number of parameters (Npar)	6					
+Activated Constraints	0					
+Robustness Effect	0.8975					
+Random Seed	20261020					
+Best Start Seed	66168					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-2502.4470					
+Log-prior	0.0000					
+Log-posterior	-2502.4470					
+BIC (based on LL)	5040.8428					
+AIC (based on LL)	5016.8940					
+AIC3 (based on LL)	5022.8940					
+CAIC (based on LL)	5046.8428					
+SABIC (based on LL)	5021.8044					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.3097					
+Reduction of errors (Lambda)	0.3756					
+Entropy R-squared	0.2203					
+Standard R-squared	0.2201					
+Classification log-likelihood	-2736.5166					
+Entropy	234.0697					
+CLC	5473.0333					
+AWE	5562.9309					
+ICL-BIC	5508.9821					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	161.7828	1.1369	36.1657	199.0854		
+2	0.0000	3.4935	1.9896	5.4831		
+3	82.2172	2.3696	110.8447	195.4315		
+Total	244.0000	7.0000	149.0000	400.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	121.3538	1.0045	76.7272	199.0854		
+2	1.0045	2.3769	2.1018	5.4831		
+3	76.7272	2.1018	116.6026	195.4315		
+Total	199.0854	5.4831	195.4315	400.0000		
+						
+Files						
+Infile	C:\lgfeatures\ml-three-step\x_e_empty_01\x_e_empty_01-data.txt	
+						
+Options						
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	10000					
+nriterations	1000					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261020					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+step3						
+classification	modal					
+adjustment	ML					
+simultaneous	yes					
+aggregate	no					
+output						
+parameters	first					
+standard errors	robust					
+identification	no					
+validation LL	no					
+sample size BIC	     400					
+predictionstatistics	no					
+write	x_e_empty_01_vr.txt	
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Variables						
+y	Continuous					
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml simultaneous;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model
+      write='x_e_empty_01_vr.txt';
+variables
+   dependent y continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 Cluster#3 );
+equations
+   y <- 1 + Cluster;
+   y | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y	<-	1			496.8631	3.7521	132.4217	9.8e-3811	17535.5104	1	9.8e-3811				
+y	<-	Cluster(1)			0.0000	.	.	.	447.3778	2	7.1e-98				
+y	<-	Cluster(2)			79.8991	3.8252	20.8877	6.9e-97							
+y	<-	Cluster(3)			61.0710	6.9177	8.8283	1.1e-18							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Cluster(1)	2568.5987	259.9447	9.8813	5.0e-23	189.9495	3	6.3e-41	186.5512	2	3.1e-41	
+y			|	Cluster(2)	1.1894	0.6112	1.9462	0.052							
+y			|	Cluster(3)	6119.8675	655.5261	9.3358	1.0e-20							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+y	<-	 Cluster			Cluster	1	2	436.2949	1	6.9e-97	
+					Cluster	1	3	77.9381	1	1.1e-18	
+					Cluster	2	3	10.7090	1	0.0011	
+Variances	
+y			|	Cluster	Cluster	1	2	97.5495	1	5.3e-23	
+					Cluster	1	3	25.1874	1	5.2e-7	
+					Cluster	2	3	87.1258	1	1.0e-20	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	Overall	s.e.	
+Size	0.5040	.	0.0122	.	0.4837	.	 	 	
+y	 	
+Mean	496.8631	3.7521	576.7622	0.7672	557.9341	5.7023	527.3828	3.2982	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	
+ 	0.5040	.	0.0122	.	0.4837	.	
+	
+ 	y	
+Cluster	Mean	s.e.	 	 	 	 	
+1	496.8631	3.7521	 	 	 	 	
+2	576.7622	0.7672	 	 	 	 	
+3	557.9341	5.7023	 	 	 	 	
+	
+ 	Cluster_Modal	
+Cluster	Cluster#1	s.e.	Cluster#2	s.e.	Cluster#3	s.e.	
+1	0.9873	.	0.0000	.	0.0127	.	
+2	0.5432	.	0.0000	.	0.4568	.	
+3	0.0170	.	0.0000	.	0.9830	.	
+x_e_empty_01_er - LL = -2520.3437
+3-Cluster Syntax Model	
+						
+Number of cases	400					
+Number of parameters (Npar)	4					
+Activated Constraints	0					
+Robustness Effect	0.9103					
+Random Seed	20261020					
+Best Start Seed	1555506					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-2520.3437					
+Log-prior	0.0000					
+Log-posterior	-2520.3437					
+BIC (based on LL)	5064.6533					
+AIC (based on LL)	5048.6874					
+AIC3 (based on LL)	5052.6874					
+CAIC (based on LL)	5068.6533					
+SABIC (based on LL)	5051.9610					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.3208					
+Reduction of errors (Lambda)	0.3532					
+Entropy R-squared	0.1573					
+Standard R-squared	0.1873					
+Classification log-likelihood	-2773.3206					
+Entropy	252.9769					
+CLC	5546.6413					
+AWE	5606.5730					
+ICL-BIC	5570.6071					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	143.6617	0.0000	60.7168	204.3786		
+2	4.2210	0.0000	0.2544	4.4754		
+3	63.1173	0.0000	128.0288	191.1461		
+Total	211.0000	0.0000	189.0000	400.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	122.1896	3.3061	78.8829	204.3786		
+2	3.3061	0.1721	0.9972	4.4754		
+3	78.8829	0.9972	111.2660	191.1461		
+Total	204.3786	4.4754	191.1461	400.0000		
+						
+Files						
+Infile	C:\lgfeatures\ml-three-step\x_e_empty_01\x_e_empty_01-data.txt	
+						
+Options						
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	10000					
+nriterations	1000					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261020					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+step3						
+classification	modal					
+adjustment	ML					
+simultaneous	yes					
+aggregate	no					
+output						
+parameters	first					
+standard errors	robust					
+identification	no					
+validation LL	no					
+sample size BIC	     400					
+predictionstatistics	no					
+write	x_e_empty_01_er.txt	
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Variables						
+y	Continuous					
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml simultaneous;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model
+      write='x_e_empty_01_er.txt';
+variables
+   dependent y continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 Cluster#3 );
+equations
+   y <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y	<-	1	499.1427	3.7204	134.1643	1.3e-3911	18000.0708	1	1.3e-3911	
+y	<-	Cluster(1)	0.0000	.	.	.	82.3896	2	1.3e-18	
+y	<-	Cluster(2)	-71.9397	18.8831	-3.8097	0.00014				
+y	<-	Cluster(3)	62.1986	7.2565	8.5714	1.0e-17				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y			4103.4210	388.8648	10.5523	5.0e-26	111.3512	1	5.0e-26	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+y	<-	 Cluster	Cluster	1	2	14.5141	1	0.00014	
+			Cluster	1	3	73.4684	1	1.0e-17	
+			Cluster	2	3	41.2688	1	1.3e-10	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	Overall	s.e.	
+Size	0.5040	.	0.0122	.	0.4837	.	 	 	
+y	 	
+Mean	499.1427	3.7204	427.2030	18.6447	561.3412	6.0954	528.3483	3.4035	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	
+ 	0.5040	.	0.0122	.	0.4837	.	
+	
+ 	y	
+Cluster	Mean	s.e.	 	 	 	 	
+1	499.1427	3.7204	 	 	 	 	
+2	427.2030	18.6447	 	 	 	 	
+3	561.3412	6.0954	 	 	 	 	
+	
+ 	Cluster_Modal	
+Cluster	Cluster#1	s.e.	Cluster#2	s.e.	Cluster#3	s.e.	
+1	0.9873	.	0.0000	.	0.0127	.	
+2	0.5432	.	0.0000	.	0.4568	.	
+3	0.0170	.	0.0000	.	0.9830	.	

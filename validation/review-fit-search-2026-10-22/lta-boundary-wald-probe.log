@@ -1,0 +1,84 @@
+
+NOISE 0.03 
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$probability_boundary
+[1] FALSE
+
+         [,1]     [,2]
+[1,] 1.703566 1.917437
+[2,] 0.010000 0.010000
+list()
+       block   group_class      from        to        term   estimate
+1 transition group_class_1 profile_1 profile_2  occasion_2  0.2876821
+2 transition group_class_1 profile_1 profile_2  occasion_3 -0.4924765
+3 transition group_class_1 profile_2 profile_1  occasion_2  0.1251631
+4 transition group_class_1 profile_2 profile_1  occasion_3  0.5978370
+5    initial group_class_1      <NA> profile_1 (Intercept) -0.1335314
+  standard_error  statistic   p_value p_adjusted   conf_low conf_high
+1      0.3818813  0.7533285 0.4512525  0.4512525 -0.4607915 1.0361557
+2      0.3827070 -1.2868238 0.1981557  0.1981557 -1.2425684 0.2576154
+3      0.3542460  0.3533227 0.7238465  0.7238465 -0.5691462 0.8194725
+4      0.3753786  1.5926241 0.1112445  0.1112445 -0.1378915 1.3335655
+5      0.2587746 -0.5160143 0.6058444  0.6058444 -0.6407203 0.3736575
+ASSERTIONS PASSED; corrected boundary flag raises latents_boundary_fit 
+
+NOISE 0.08 
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$probability_boundary
+[1] FALSE
+
+         [,1]     [,2]
+[1,] 1.715013 1.915699
+[2,] 0.010000 0.010000
+list()
+       block   group_class      from        to        term   estimate
+1 transition group_class_1 profile_1 profile_2  occasion_2  0.2876821
+2 transition group_class_1 profile_1 profile_2  occasion_3 -0.4924765
+3 transition group_class_1 profile_2 profile_1  occasion_2  0.1251631
+4 transition group_class_1 profile_2 profile_1  occasion_3  0.5978370
+5    initial group_class_1      <NA> profile_1 (Intercept) -0.1335314
+  standard_error  statistic   p_value p_adjusted   conf_low conf_high
+1      0.3818813  0.7533285 0.4512525  0.4512525 -0.4607915 1.0361557
+2      0.3827070 -1.2868238 0.1981557  0.1981557 -1.2425684 0.2576154
+3      0.3542460  0.3533227 0.7238465  0.7238465 -0.5691462 0.8194725
+4      0.3753786  1.5926241 0.1112445  0.1112445 -0.1378915 1.3335655
+5      0.2587746 -0.5160143 0.6058444  0.6058444 -0.6407203 0.3736575
+ASSERTIONS PASSED; corrected boundary flag raises latents_boundary_fit 
+
+NOISE 0.12 
+$converged
+[1] TRUE
+
+$boundary
+[1] FALSE
+
+$probability_boundary
+[1] FALSE
+
+         [,1]    [,2]
+[1,] 1.726059 1.91584
+[2,] 0.010000 0.01000
+list()
+       block   group_class      from        to        term   estimate
+1 transition group_class_1 profile_1 profile_2  occasion_2  0.2876821
+2 transition group_class_1 profile_1 profile_2  occasion_3 -0.4924765
+3 transition group_class_1 profile_2 profile_1  occasion_2  0.1251631
+4 transition group_class_1 profile_2 profile_1  occasion_3  0.5978370
+5    initial group_class_1      <NA> profile_1 (Intercept) -0.1335314
+  standard_error  statistic   p_value p_adjusted   conf_low conf_high
+1      0.3818813  0.7533285 0.4512525  0.4512525 -0.4607915 1.0361557
+2      0.3827070 -1.2868238 0.1981557  0.1981557 -1.2425684 0.2576154
+3      0.3542460  0.3533227 0.7238465  0.7238465 -0.5691462 0.8194725
+4      0.3753786  1.5926241 0.1112445  0.1112445 -0.1378915 1.3335655
+5      0.2587746 -0.5160143 0.6058444  0.6058444 -0.6407203 0.3736575
+ASSERTIONS PASSED; corrected boundary flag raises latents_boundary_fit 

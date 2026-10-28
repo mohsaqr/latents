@@ -1,0 +1,19 @@
+Installed version: 0.96.1 
+Installed library: /Users/mohammedsaqr/Documents/Github/latents/validation/release-0.96.1-2026-10-20/rlib/latents 
+Original review's five-group example after repair:
+  parameter original_se padded_se
+1      mean   0.1083709 0.1083709
+2  variance   0.1514179 0.1514179
+
+Original review's weighted tree after repair:
+  class weighted_fit tree_share tree_mass
+1     1          0.8        0.8       0.8
+2     2          0.2        0.2       0.2
+
+Original pair-name collision is refused:
+<latents_bad_data: The generated joint indicator `a:b` conflicts with an existing column; rename that column before using `local_dependence`.>
+
+Original ambiguous native categories are refused:
+<latents_bad_categorical: Categorical indicator `a` has distinct values that print alike ("0.3"); round the column so that each category has its own label.>
+
+Installed archive: typed worker failure, zero cleanup warnings, no leaked sockets.

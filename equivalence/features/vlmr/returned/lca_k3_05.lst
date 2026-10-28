@@ -1,0 +1,1157 @@
+lca_k3_05-lg.dat
+File name:	lca_k3_05-lg.dat	
+File size:	16915 bytes  1000 records	
+File date:	2026-Oct-20 9:41:50 PM	
+Syntax:	lca_k3_05.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	VLMR	p-value	Class.Err.	Entropy R²	
+Model1	1-Cluster	-4038.7038	8118.8542	8089.4076	8095.4076	6	612.9994	57	3.5e-94			0.0000	1.0000	
+Model2	2-Cluster	-3791.1289	7672.0587	7608.2579	7621.2579	13	117.8496	50	2.1e-7	495.1498	0.0000	0.1212	0.6098	
+Model3	3-Cluster	-3748.0924	7634.3399	7536.1848	7556.1848	20	31.7766	43	0.90	86.0730	0.0000	0.1839	0.5862	
+Model4	4-Cluster	-3742.2798	7671.0689	7538.5595	7565.5595	27	20.1512	36	0.99	11.6253	0.1028	0.2574	0.5489	
+Model1 - L² = 612.9994
+1-Cluster Syntax Model	
+					
+Number of cases	1000				
+Number of parameters (Npar)	6				
+Random Seed	94295				
+Best Start Seed	94295				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	57	p-value			
+L-squared (L²)	612.9994	3.5e-94			
+X-squared	919.7720	5.8e-156			
+Cressie-Read	774.2539	2.1e-126			
+BIC (based on L²)	219.2573				
+AIC (based on L²)	498.9994				
+AIC3 (based on L²)	441.9994				
+CAIC (based on L²)	162.2573				
+SABIC (based on L²)	400.2925				
+Dissimilarity Index	0.2960	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4038.7038				
+Log-prior	0.0000				
+Log-posterior	-4038.7038				
+BIC (based on LL)	8118.8542				
+AIC (based on LL)	8089.4076				
+AIC3 (based on LL)	8095.4076				
+CAIC (based on LL)	8124.8542				
+SABIC (based on LL)	8099.7978				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-4038.7038				
+Entropy	0.0000				
+CLC	8077.4076				
+AWE	8178.3007				
+ICL-BIC	8118.8542				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	1000.0000	1000.0000			
+Total	1000.0000	1000.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	1000.0000	1000.0000			
+Total	1000.0000	1000.0000			
+					
+Files					
+Infile	C:\lgfeatures\vlmr\lca_k3_05\lca_k3_05-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1000				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+u5	Nominal	2			
+1	1				
+2	2				
+u6	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271075 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 1;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+										
+u1(1)	<-	1	0.0000	.	.	.	37.1554	1	1.1e-9	
+u1(2)	<-	1	-0.3930	0.0645	-6.0955	1.1e-9				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.				
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u2(1)	<-	1	0.0000	.	.	.	41.8235	1	1.0e-10	
+u2(2)	<-	1	-0.4180	0.0646	-6.4671	1.0e-10				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.				
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u3(1)	<-	1	0.0000	.	.	.	81.6450	1	1.6e-19	
+u3(2)	<-	1	-0.5971	0.0661	-9.0358	1.6e-19				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.				
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u4(1)	<-	1	0.0000	.	.	.	16.2938	1	5.4e-5	
+u4(2)	<-	1	-0.2574	0.0638	-4.0366	5.4e-5				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.				
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u5(1)	<-	1	0.0000	.	.	.	22.9241	1	1.7e-6	
+u5(2)	<-	1	-0.3064	0.0640	-4.7879	1.7e-6				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.				
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u6(1)	<-	1	0.0000	.	.	.	34.1905	1	5.0e-9	
+u6(2)	<-	1	-0.3764	0.0644	-5.8473	5.0e-9				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.				
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+Model2 - L² = 117.8496
+2-Cluster Syntax Model	
+					
+Number of cases	1000				
+Number of parameters (Npar)	13				
+Random Seed	94295				
+Best Start Seed	755453				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	50	p-value			
+L-squared (L²)	117.8496	2.1e-7			
+X-squared	139.0717	2.5e-10			
+Cressie-Read	130.2581	4.4e-9			
+BIC (based on L²)	-227.5382				
+AIC (based on L²)	17.8496				
+AIC3 (based on L²)	-32.1504				
+CAIC (based on L²)	-277.5382				
+SABIC (based on L²)	-68.7354				
+Dissimilarity Index	0.1230	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3791.1289				
+Log-prior	0.0000				
+Log-posterior	-3791.1289				
+BIC (based on LL)	7672.0587				
+AIC (based on LL)	7608.2579				
+AIC3 (based on LL)	7621.2579				
+CAIC (based on LL)	7685.0587				
+SABIC (based on LL)	7630.7700				
+					
+Vuong Likelihood-Ratio Test	 	p-value			
+LL of H0 model	-4038.7038				
+Diff in Number of Parameters	7				
+Mean of VLMR Distr.	8.6435				
+StdDev of VLMR Distr.	5.7329				
+-2LL Diff (VLMR)	495.1498	0.0000			
+-2LL Diff Adjusted (aVLMR)	485.1172	0.0000			
+Variance LL Diff	0.5837	0.0000			
+Z-Value Mean LL Diff	10.2474	0.0000			
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1212				
+Reduction of errors (Lambda)	0.7538				
+Entropy R-squared	0.6098				
+Standard R-squared	0.6673				
+Classification log-likelihood	-4061.5217				
+Entropy	270.3928				
+CLC	8123.0434				
+AWE	8341.6451				
+ICL-BIC	8212.8443				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	453.4611	38.6382	492.0993		
+2	82.5389	425.3618	507.9007		
+Total	536.0000	464.0000	1000.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	408.9435	83.1558	492.0993		
+2	83.1558	424.7449	507.9007		
+Total	492.0993	507.9007	1000.0000		
+					
+Files					
+Infile	C:\lgfeatures\vlmr\lca_k3_05\lca_k3_05-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1000				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+u5	Nominal	2			
+1	1				
+2	2				
+u6	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271075 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	0.0535	1	0.82	
+Cluster(2)	<-	1	0.0316	0.1367	0.2312	0.82				
+										
+u1(1)	<-	1	0.0000	.	.	.	17.5623	1	2.8e-5	
+u1(2)	<-	1	0.6484	0.1547	4.1907	2.8e-5				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	110.9031	1	6.2e-26	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-2.3273	0.2210	-10.5311	6.2e-26				
+										
+u2(1)	<-	1	0.0000	.	.	.	13.2730	1	0.00027	
+u2(2)	<-	1	0.5192	0.1425	3.6432	0.00027				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	98.3108	1	3.6e-23	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-2.0753	0.2093	-9.9152	3.6e-23				
+										
+u3(1)	<-	1	0.0000	.	.	.	1.4158	1	0.23	
+u3(2)	<-	1	0.1492	0.1254	1.1899	0.23				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	73.4622	1	1.0e-17	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-1.6762	0.1956	-8.5710	1.0e-17				
+										
+u4(1)	<-	1	0.0000	.	.	.	95.9196	1	1.2e-22	
+u4(2)	<-	1	-1.4239	0.1454	-9.7939	1.2e-22				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	101.8977	1	5.8e-24	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	2.1340	0.2114	10.0944	5.8e-24				
+										
+u5(1)	<-	1	0.0000	.	.	.	98.6147	1	3.1e-23	
+u5(2)	<-	1	-1.3407	0.1350	-9.9305	3.1e-23				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	88.0242	1	6.5e-21	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	1.8895	0.2014	9.3821	6.5e-21				
+										
+u6(1)	<-	1	0.0000	.	.	.	103.0925	1	3.2e-24	
+u6(2)	<-	1	-1.6727	0.1647	-10.1534	3.2e-24				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	113.4162	1	1.7e-26	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	2.2838	0.2144	10.6497	1.7e-26				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0535	1	0.82	
+	
+u1	<-	 Cluster	Cluster	1	2	110.9031	1	6.2e-26	
+	
+u2	<-	 Cluster	Cluster	1	2	98.3108	1	3.6e-23	
+	
+u3	<-	 Cluster	Cluster	1	2	73.4622	1	1.0e-17	
+	
+u4	<-	 Cluster	Cluster	1	2	101.8977	1	5.8e-24	
+	
+u5	<-	 Cluster	Cluster	1	2	88.0242	1	6.5e-21	
+	
+u6	<-	 Cluster	Cluster	1	2	113.4162	1	1.7e-26	
+Model3 - L² = 31.7766
+3-Cluster Syntax Model	
+						
+Number of cases	1000					
+Number of parameters (Npar)	20					
+Random Seed	125545					
+Best Start Seed	593908					
+						
+Chi-squared Statistics						
+Degrees of freedom (df)	43	p-value				
+L-squared (L²)	31.7766	0.90				
+X-squared	31.5091	0.90				
+Cressie-Read	31.4489	0.90				
+BIC (based on L²)	-265.2569					
+AIC (based on L²)	-54.2234					
+AIC3 (based on L²)	-97.2234					
+CAIC (based on L²)	-308.2569					
+SABIC (based on L²)	-128.6865					
+Dissimilarity Index	0.0512	 				
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-3748.0924					
+Log-prior	0.0000					
+Log-posterior	-3748.0924					
+BIC (based on LL)	7634.3399					
+AIC (based on LL)	7536.1848					
+AIC3 (based on LL)	7556.1848					
+CAIC (based on LL)	7654.3399					
+SABIC (based on LL)	7570.8188					
+						
+Vuong Likelihood-Ratio Test	 	p-value				
+LL of H0 model	-3791.1289					
+Diff in Number of Parameters	7					
+Mean of VLMR Distr.	5.9053					
+StdDev of VLMR Distr.	5.2665					
+-2LL Diff (VLMR)	86.0730	0.0000				
+-2LL Diff Adjusted (aVLMR)	84.3290	0.0000				
+Variance LL Diff	0.1006	0.0000				
+Z-Value Mean LL Diff	4.2901	0.0000				
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1839					
+Reduction of errors (Lambda)	0.6887					
+Entropy R-squared	0.5862					
+Standard R-squared	0.6155					
+Classification log-likelihood	-4185.8608					
+Entropy	437.7683					
+CLC	8371.7215					
+AWE	8708.0318					
+ICL-BIC	8509.8766					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	147.0470	21.9075	35.9309	204.8854		
+2	44.5095	340.3504	24.3506	409.2105		
+3	36.4434	20.7421	328.7185	385.9041		
+Total	228.0000	383.0000	389.0000	1000.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	114.3521	46.1184	44.4149	204.8854		
+2	46.1184	330.2539	32.8382	409.2105		
+3	44.4149	32.8382	308.6510	385.9041		
+Total	204.8854	409.2105	385.9041	1000.0000		
+						
+Files						
+Infile	C:\lgfeatures\vlmr\lca_k3_05\lca_k3_05-lg.dat	
+						
+Options						
+threads	2					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	0					
+sets	200					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+output						
+parameters	first					
+standard errors	standard					
+identification	no					
+validation LL	no					
+sample size BIC	    1000					
+predictionstatistics	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+u1	Nominal	2				
+1	1					
+2	2					
+u2	Nominal	2				
+1	1					
+2	2					
+u3	Nominal	2				
+1	1					
+2	2					
+u4	Nominal	2				
+1	1					
+2	2					
+u5	Nominal	2				
+1	1					
+2	2					
+u6	Nominal	2				
+1	1					
+2	2					
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271075 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 3;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	4.9808	2	0.083	
+Cluster(2)	<-	1	0.6918	0.3103	2.2295	0.026				
+Cluster(3)	<-	1	0.6331	0.3149	2.0107	0.044				
+										
+u1(1)	<-	1	0.0000	.	.	.	10.4859	1	0.0012	
+u1(2)	<-	1	-1.3351	0.4123	-3.2382	0.0012				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	116.5469	2	4.9e-26	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-0.2546	0.4672	-0.5449	0.59				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	2.4554	0.4316	5.6890	1.3e-8				
+										
+u2(1)	<-	1	0.0000	.	.	.	11.7064	1	0.00062	
+u2(2)	<-	1	-1.6939	0.4951	-3.4215	0.00062				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	101.4951	2	9.1e-23	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	0.2655	0.5338	0.4974	0.62				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	2.7466	0.5045	5.4438	5.2e-8				
+										
+u3(1)	<-	1	0.0000	.	.	.	12.0711	1	0.00051	
+u3(2)	<-	1	-2.0226	0.5822	-3.4743	0.00051				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	91.9242	2	1.1e-20	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	0.6605	0.6158	1.0727	0.28				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	2.6052	0.5745	4.5348	5.8e-6				
+										
+u4(1)	<-	1	0.0000	.	.	.	9.5620	1	0.0020	
+u4(2)	<-	1	-1.5447	0.4995	-3.0923	0.0020				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	101.2045	2	1.1e-22	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	2.7861	0.5145	5.4151	6.1e-8				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	0.2425	0.5417	0.4476	0.65				
+										
+u5(1)	<-	1	0.0000	.	.	.	11.1334	1	0.00085	
+u5(2)	<-	1	-1.6704	0.5006	-3.3367	0.00085				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	93.1270	2	6.0e-21	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	2.6829	0.5131	5.2288	1.7e-7				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	0.5003	0.5408	0.9252	0.35				
+										
+u6(1)	<-	1	0.0000	.	.	.	12.7099	1	0.00036	
+u6(2)	<-	1	-1.1882	0.3333	-3.5651	0.00036				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	124.3277	2	1.0e-27	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	2.1350	0.3508	6.0864	1.2e-9				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	-0.4213	0.3966	-1.0623	0.29				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	4.9707	1	0.026	
+			Cluster	1	3	4.0427	1	0.044	
+			Cluster	2	3	0.1471	1	0.70	
+	
+u1	<-	 Cluster	Cluster	1	2	0.2969	1	0.59	
+			Cluster	1	3	32.3646	1	1.3e-8	
+			Cluster	2	3	100.6371	1	1.1e-23	
+	
+u2	<-	 Cluster	Cluster	1	2	0.2474	1	0.62	
+			Cluster	1	3	29.6349	1	5.2e-8	
+			Cluster	2	3	84.9805	1	3.0e-20	
+	
+u3	<-	 Cluster	Cluster	1	2	1.1507	1	0.28	
+			Cluster	1	3	20.5646	1	5.8e-6	
+			Cluster	2	3	72.2834	1	1.9e-17	
+	
+u4	<-	 Cluster	Cluster	1	2	29.3233	1	6.1e-8	
+			Cluster	1	3	0.2004	1	0.65	
+			Cluster	2	3	85.6907	1	2.1e-20	
+	
+u5	<-	 Cluster	Cluster	1	2	27.3406	1	1.7e-7	
+			Cluster	1	3	0.8559	1	0.35	
+			Cluster	2	3	76.0804	1	2.7e-18	
+	
+u6	<-	 Cluster	Cluster	1	2	37.0437	1	1.2e-9	
+			Cluster	1	3	1.1285	1	0.29	
+			Cluster	2	3	104.1556	1	1.9e-24	
+Model4 - L² = 20.1512
+4-Cluster Syntax Model	
+Estimation Warnings! See Iteration Detail	
+							
+Number of cases	1000						
+Number of parameters (Npar)	27						
+Random Seed	156795						
+Best Start Seed	1076112						
+							
+Chi-squared Statistics							
+Degrees of freedom (df)	36	p-value					
+L-squared (L²)	20.1512	0.99					
+X-squared	20.5114	0.98					
+Cressie-Read	20.3209	0.98					
+BIC (based on L²)	-228.5280						
+AIC (based on L²)	-51.8488						
+AIC3 (based on L²)	-87.8488						
+CAIC (based on L²)	-264.5280						
+SABIC (based on L²)	-114.1900						
+Dissimilarity Index	0.0400	 					
+							
+Log-likelihood Statistics							
+Log-likelihood (LL)	-3742.2798						
+Log-prior	0.0000						
+Log-posterior	-3742.2798						
+BIC (based on LL)	7671.0689						
+AIC (based on LL)	7538.5595						
+AIC3 (based on LL)	7565.5595						
+CAIC (based on LL)	7698.0689						
+SABIC (based on LL)	7585.3154						
+							
+Vuong Likelihood-Ratio Test	 	p-value					
+LL of H0 model	-3748.0924						
+Diff in Number of Parameters	7						
+Mean of VLMR Distr.	6.2681						
+StdDev of VLMR Distr.	4.1905						
+-2LL Diff (VLMR)	11.6253	0.1028					
+-2LL Diff Adjusted (aVLMR)	11.3898	0.1099					
+Variance LL Diff	0.0108	0.2640					
+Z-Value Mean LL Diff	1.7704	0.0383					
+							
+							
+Classification Statistics	Cluster						
+Classification errors	0.2574						
+Reduction of errors (Lambda)	0.5817						
+Entropy R-squared	0.5489						
+Standard R-squared	0.5237						
+Classification log-likelihood	-4346.5640						
+Entropy	604.2843						
+CLC	8693.1280						
+AWE	9147.1468						
+ICL-BIC	8879.6374						
+							
+Cluster  Classification Table	Modal						
+Latent	1	2	3	4	Total		
+1	178.3198	11.9908	20.2771	12.1813	222.7691		
+2	21.0788	140.5790	8.1393	43.6916	213.4887		
+3	53.9382	7.4734	311.3864	11.8244	384.6224		
+4	20.6632	41.9567	4.1973	112.3026	179.1198		
+Total	274.0000	202.0000	344.0000	180.0000	1000.0000		
+							
+Cluster  Classification Table	Proportional						
+Latent	1	2	3	4	Total		
+1	131.6020	23.3248	47.8551	19.9871	222.7691		
+2	23.3248	120.7163	14.9009	54.5467	213.4887		
+3	47.8551	14.9009	309.8673	11.9991	384.6224		
+4	19.9871	54.5467	11.9991	92.5869	179.1198		
+Total	222.7691	213.4887	384.6224	179.1198	1000.0000		
+							
+Files							
+Infile	C:\lgfeatures\vlmr\lca_k3_05\lca_k3_05-lg.dat	
+							
+Options							
+threads	2						
+algorithm							
+tolerance	1e-12						
+emtolerance	1e-10						
+emiterations	5000						
+nriterations	500						
+algorithm	NR						
+MstepNR	no						
+startvalues							
+seed	0						
+sets	200						
+tolerance	1e-05						
+iterations	250						
+bayes							
+categorical	0						
+variances	0						
+latent	0						
+poisson	0						
+quadrature							
+nodes	10						
+missing	excludeall						
+output							
+parameters	first						
+standard errors	standard						
+identification	no						
+validation LL	no						
+sample size BIC	    1000						
+predictionstatistics	no						
+							
+Variable Detail							
+Latent							
+Cluster	Nominal	Case	4				
+ 							
+Dependent							
+u1	Nominal	2					
+1	1						
+2	2						
+u2	Nominal	2					
+1	1						
+2	2						
+u3	Nominal	2					
+1	1						
+2	2						
+u4	Nominal	2					
+1	1						
+2	2						
+u5	Nominal	2					
+1	1						
+2	2						
+u6	Nominal	2					
+1	1						
+2	2						
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271075 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 4;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	18.8070	3	0.00030	
+Cluster(2)	<-	1	-0.0426	0.4133	-0.1029	0.92				
+Cluster(3)	<-	1	0.5461	0.3086	1.7696	0.077				
+Cluster(4)	<-	1	-0.2181	0.5416	-0.4027	0.69				
+										
+u1(1)	<-	1	0.0000	.	.	.	10.7744	1	0.0010	
+u1(2)	<-	1	-1.3737	0.4185	-3.2824	0.0010				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	44.9027	3	9.7e-10	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	0.4622	0.5817	0.7946	0.43				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	2.5914	0.4367	5.9338	3.0e-9				
+u1(1)	<-	Cluster(4)	0.0000	.	.	.				
+u1(2)	<-	Cluster(4)	-24.9748	1000.0000	-0.0250	0.98				
+										
+u2(1)	<-	1	0.0000	.	.	.	13.7997	1	0.00020	
+u2(2)	<-	1	-1.6075	0.4327	-3.7148	0.00020				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	78.4599	3	6.6e-17	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-0.4429	0.6429	-0.6888	0.49				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	2.6534	0.4408	6.0198	1.7e-9				
+u2(1)	<-	Cluster(4)	0.0000	.	.	.				
+u2(2)	<-	Cluster(4)	0.6821	0.5627	1.2122	0.23				
+										
+u3(1)	<-	1	0.0000	.	.	.	13.9417	1	0.00019	
+u3(2)	<-	1	-1.8969	0.5080	-3.7339	0.00019				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	70.7985	3	2.9e-15	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	0.0589	0.6180	0.0953	0.92				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	2.4652	0.4999	4.9315	8.2e-7				
+u3(1)	<-	Cluster(4)	0.0000	.	.	.				
+u3(2)	<-	Cluster(4)	0.9785	0.6364	1.5377	0.12				
+										
+u4(1)	<-	1	0.0000	.	.	.	9.0116	1	0.0027	
+u4(2)	<-	1	-1.4590	0.4860	-3.0019	0.0027				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	40.5897	3	8.0e-9	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	3.6515	0.9235	3.9539	7.7e-5				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	0.1962	0.5268	0.3724	0.71				
+u4(1)	<-	Cluster(4)	0.0000	.	.	.				
+u4(2)	<-	Cluster(4)	2.0953	0.6155	3.4041	0.00066				
+										
+u5(1)	<-	1	0.0000	.	.	.	6.9755	1	0.0083	
+u5(2)	<-	1	-1.8267	0.6916	-2.6411	0.0083				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	39.9983	3	1.1e-8	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	2.4772	0.7653	3.2367	0.0012				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	0.6747	0.7406	0.9111	0.36				
+u5(1)	<-	Cluster(4)	0.0000	.	.	.				
+u5(2)	<-	Cluster(4)	3.9792	1.7356	2.2927	0.022				
+										
+u6(1)	<-	1	0.0000	.	.	.	12.0560	1	0.00052	
+u6(2)	<-	1	-1.0217	0.2943	-3.4722	0.00052				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	87.1265	3	9.1e-19	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	2.3182	0.5581	4.1536	3.3e-5				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	-0.5668	0.3650	-1.5528	0.12				
+u6(1)	<-	Cluster(4)	0.0000	.	.	.				
+u6(2)	<-	Cluster(4)	1.6100	0.4634	3.4741	0.00051				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0106	1	0.92	
+			Cluster	1	3	3.1315	1	0.077	
+			Cluster	1	4	0.1621	1	0.69	
+			Cluster	2	3	2.6267	1	0.11	
+			Cluster	2	4	0.0596	1	0.81	
+			Cluster	3	4	3.2734	1	0.070	
+	
+u1	<-	 Cluster	Cluster	1	2	0.6314	1	0.43	
+			Cluster	1	3	35.2105	1	3.0e-9	
+			Cluster	1	4	0.0006	1	0.98	
+			Cluster	2	3	18.7847	1	1.5e-5	
+			Cluster	2	4	0.0006	1	0.98	
+			Cluster	3	4	0.0008	1	0.98	
+	
+u2	<-	 Cluster	Cluster	1	2	0.4745	1	0.49	
+			Cluster	1	3	36.2379	1	1.7e-9	
+			Cluster	1	4	1.4694	1	0.23	
+			Cluster	2	3	34.5744	1	4.1e-9	
+			Cluster	2	4	2.5936	1	0.11	
+			Cluster	3	4	20.6377	1	5.6e-6	
+	
+u3	<-	 Cluster	Cluster	1	2	0.0091	1	0.92	
+			Cluster	1	3	24.3194	1	8.2e-7	
+			Cluster	1	4	2.3644	1	0.12	
+			Cluster	2	3	32.0507	1	1.5e-8	
+			Cluster	2	4	2.1846	1	0.14	
+			Cluster	3	4	13.9755	1	0.00019	
+	
+u4	<-	 Cluster	Cluster	1	2	15.6332	1	7.7e-5	
+			Cluster	1	3	0.1387	1	0.71	
+			Cluster	1	4	11.5877	1	0.00066	
+			Cluster	2	3	16.2986	1	5.4e-5	
+			Cluster	2	4	2.6452	1	0.10	
+			Cluster	3	4	20.3222	1	6.5e-6	
+	
+u5	<-	 Cluster	Cluster	1	2	10.4765	1	0.0012	
+			Cluster	1	3	0.8301	1	0.36	
+			Cluster	1	4	5.2565	1	0.022	
+			Cluster	2	3	25.4630	1	4.5e-7	
+			Cluster	2	4	0.7326	1	0.39	
+			Cluster	3	4	4.0180	1	0.045	
+	
+u6	<-	 Cluster	Cluster	1	2	17.2524	1	3.3e-5	
+			Cluster	1	3	2.4112	1	0.12	
+			Cluster	1	4	12.0694	1	0.00051	
+			Cluster	2	3	30.8326	1	2.8e-8	
+			Cluster	2	4	0.9371	1	0.33	
+			Cluster	3	4	29.7172	1	5.0e-8	
+Iteration Detail
+   Starting set        log-posterior             L-squared            seed
+              2     -3742.2864947611         20.1647148517          256487
+              1     -3743.0808902101         21.7535057496          156795
+              3     -3742.3082900107         20.2083053509         2326179
+              4     -3742.3406868369         20.2730990032         2766156
+              5     -3745.7129536240         27.0176325774          725739
+              6     -3742.3783133431         20.3483520156         1440813
+              7     -3743.2831894410         22.1581042114         1869871
+              8     -3742.2801661925         20.1520577143          922545
+              9     -3742.2885809906         20.1688873107         1308582
+             10     -3743.5921707281         22.7760667855          824966
+             11     -3743.7923833503         23.1764920301         1492851
+             13     -3743.3442315159         22.2801883612         1789513
+             12     -3742.2950134264         20.1817521821         2181609
+             14     -3742.2869840660         20.1656934614         2305289
+             15     -3742.2815809221         20.1548871736         2556758
+             16     -3743.3621125310         22.3159503913         2120080
+             18     -3742.3147069669         20.2211392632          661399
+             17     -3742.2844744318         20.1606741930         1900117
+             19     -3744.9815213764         25.5547680822         1044847
+             20     -3744.1964505251         23.9846263796         1935924
+             21     -3744.5545515316         24.7008283925         1060211
+             22     -3744.0957752943         23.7832759180          358667
+             23     -3743.5241412365         22.6400078024         1541820
+             24     -3742.4408550821         20.4734354936         2143209
+             25     -3742.2803959366         20.1525172026          816980
+             26     -3742.3359243885         20.2635741064         1002673
+             27     -3743.4460864036         22.4838981365         2536356
+             29     -3742.2815546653         20.1548346599         1684554
+             28     -3742.2988500664         20.1894254621         1939935
+             30     -3742.2820168293         20.1557589880          786583
+             31     -3743.3134085585         22.2185424464         1810570
+             32     -3742.3081015071         20.2079283436         1372983
+             33     -3742.3207072335         20.2331397964         1574114
+             34     -3744.9900764220         25.5718781734         1225560
+             35     -3745.1332755508         25.8582764310         2002178
+             36     -3743.4298893949         22.4515041191         2636677
+             37     -3743.3893180099         22.3703613491          808429
+             39     -3743.2815407725         22.1548068744          125250
+             38     -3743.3185777629         22.2288808552          725013
+             40     -3742.2814158593         20.1545570480         1538385
+             41     -3742.2818272577         20.1553798449         2470182
+             42     -3742.3049156694         20.2015566682          184907
+             43     -3742.2800988893         20.1519231079          439024
+             44     -3743.3068879507         22.2055012307         2253874
+             45     -3745.2040075259         25.9997403811         2322475
+             46     -3742.6478312470         20.8873878234         2085727
+             47     -3742.3755159804         20.3427572902         2310435
+             48     -3745.1881882312         25.9681017918          997278
+             49     -3743.7779180762         23.1475614817         1645692
+             50     -3742.3197344655         20.2311942604         1264676
+             51     -3742.6421949915         20.8761153125         2215442
+             53     -3742.3410467525         20.2738188344           17730
+             52     -3744.2221661795         24.0360576884         2539848
+             54     -3745.7232252550         27.0381758394          639711
+             55     -3742.3043146511         20.2003546316          799073
+             56     -3742.2910118946         20.1737491185         1195557
+             57     -3742.2965427137         20.1848107567         1790847
+             58     -3743.3175482812         22.2268218917          586059
+             59     -3743.3143909239         22.2205071771           35329
+             61     -3744.7858212071         25.1633677436          313663
+             60     -3743.4019303591         22.3955860476           86664
+             62     -3742.2802253307         20.1521759908          942845
+             63     -3743.3404340356         22.2725934005         2135824
+             64     -3743.4049614235         22.4016481763          872792
+             65     -3742.3447940385         20.2813134064         2537649
+             67     -3742.2993277722         20.1903808737         1590353
+             66     -3745.0023262879         25.5963779051         1220984
+             68     -3743.1445713582         21.8808680457         2239111
+             69     -3742.3615296213         20.3147845720         1649519
+             70     -3743.4157874322         22.4233001937         1740471
+             71     -3742.2803128795         20.1523510884         1737671
+             73     -3745.1414829908         25.8746913109         1134868
+             72     -3742.2801680073         20.1520613439         2394935
+             74     -3742.2830631963         20.1578517220           26550
+             75     -3744.1720729077         23.9358711448          560513
+             76     -3742.4232037743         20.4381328780         2388871
+             77     -3742.2831264444         20.1579782182          129612
+             78     -3745.0456483280         25.6830219853         1445956
+             79     -3742.2808300703         20.1533854699          247182
+             80     -3742.2800570839         20.1518394971          123947
+             81     -3743.2940051269         22.1797355832          453796
+             83     -3745.1799138525         25.9515530344           49894
+             82     -3742.3108213002         20.2133679297          336987
+             84     -3744.8650506645         25.3218266583         1087676
+             85     -3743.3168724822         22.2254702938          223041
+             87     -3743.3558829267         22.3034911828         1149328
+             86     -3742.2885466637         20.1688186568         2564365
+             88     -3745.1714748625         25.9346750544         2704006
+             89     -3743.7444742271         23.0806737835         1733095
+             91     -3745.0934665363         25.7786584020          737302
+             90     -3743.3364698771         22.2646650835         1983110
+             92     -3743.3379610092         22.2676473477          867640
+             93     -3742.2821401370         20.1560056033         1174508
+             94     -3745.1350480735         25.8618214764         1027575
+             95     -3745.1602980951         25.9123215196         2459099
+             96     -3745.3405942954         26.2729139201         2482911
+             97     -3742.2818085254         20.1553423803         2741409
+             98     -3742.2876110053         20.1669473399         2204659
+             99     -3743.3291698675         22.2500650644         2770143
+            100     -3743.4215976808         22.4349206909          844410
+            101     -3742.2860125903         20.1637505099         1993744
+            102     -3742.4164774197         20.4246801687         2027965
+            103     -3743.3995021927         22.3907297147         1632654
+            104     -3742.2801577360         20.1520408013          586256
+            105     -3745.1788909879         25.9495073051         2321918
+            106     -3742.2818949242         20.1555151778          602667
+            107     -3743.3734082034         22.3385417362          434978
+            108     -3742.2863256096         20.1643765486         1295999
+            109     -3743.2612591633         22.1142436560         2276703
+            110     -3742.2809061718         20.1535376730          510844
+            111     -3743.4247440720         22.4412134734         1608976
+            113     -3742.2874461019         20.1666175331          995583
+            112     -3745.6914482229         26.9746217752         1286958
+            114     -3742.2805241002         20.1527735297         2283246
+            115     -3742.4269285005         20.4455823304         1355726
+            117     -3742.5284353260         20.6485959813          123448
+            116     -3745.1404252938         25.8725759170         2413334
+            118     -3742.3008836772         20.1934926837         1652211
+            119     -3743.3230591530         22.2378436353         1603886
+            120     -3742.2812578756         20.1542410806         2162204
+            121     -3742.6493942527         20.8905138347         2110337
+            122     -3745.1577303109         25.9071859513         2605309
+            123     -3744.9662731954         25.5242717202         2595236
+            124     -3743.3421337806         22.2759928905         1939844
+            125     -3743.6693640306         22.9304533906          699282
+            126     -3742.2842971135         20.1603195564          445039
+            127     -3742.2820188110         20.1557629514          135999
+            128     -3743.2931627742         22.1780508779         1135615
+            129     -3744.9553041861         25.5023337015         1784576
+            130     -3743.5376995929         22.6671245152          811788
+            131     -3742.2805617216         20.1528487725         2525016
+            132     -3742.2974351295         20.1865955883          687170
+            133     -3745.2026945939         25.9971145172          635777
+            134     -3745.1292293893         25.8501841080         2729162
+            135     -3745.1799777087         25.9516807468         2347195
+            136     -3742.2807374149         20.1532001592           37926
+            137     -3744.9810890589         25.5539034471         1896411
+            138     -3742.2814447881         20.1546149056         1802966
+            139     -3745.1119242256         25.8155737805         2406944
+            140     -3744.9086523712         25.4090300717         2502225
+            141     -3743.3799428993         22.3516111279         1435313
+            142     -3742.3919896380         20.3757046054         1563095
+            143     -3744.5530561154         24.6978375601         1143752
+            144     -3743.2747819418         22.1412892129         1728003
+            145     -3744.8665275270         25.3247803834         1884149
+            146     -3743.3180472299         22.2278197891         1629457
+            147     -3744.0703407669         23.7324068632         2199539
+            148     -3743.3094710174         22.2106673641          217096
+            149     -3742.2801257496         20.1519768285         1264030
+            151     -3743.3312564147         22.2542381587          545446
+            150     -3743.2749519407         22.1416292107          721317
+            152     -3742.2817217652         20.1551688597         1245011
+            153     -3743.2883311717         22.1683876727         1718491
+            154     -3743.4174123769         22.4265500832         1864028
+            155     -3744.9313578838         25.4544410969         2709550
+            157     -3743.3386670636         22.2690594565         1066675
+            156     -3742.2809816395         20.1536886084         1102801
+            159     -3745.6834056633         26.9585366559         1570716
+            158     -3742.2802258137         20.1521769567          471113
+            160     -3745.0099074062         25.6115401418         1400043
+            161     -3744.0551140571         23.7019534436         1293882
+            162     -3743.5206709832         22.6330672957         1479399
+            163     -3743.2881751267         22.1680755827         1168956
+            164     -3745.2586579579         26.1090412452          557244
+            165     -3743.5304266355         22.6525786003         2346322
+            166     -3743.3537280006         22.2991813305         1217528
+            167     -3742.2857069446         20.1631392185         1474863
+            168     -3742.2805389312         20.1528031917          667850
+            169     -3742.2823370113         20.1563993520         1815455
+            170     -3742.2912269553         20.1741792399         2702929
+            171     -3742.3046701743         20.2010656780         1410688
+            173     -3743.3548137868         22.3013529029         2070606
+            172     -3742.3015074262         20.1947401818          952176
+            174     -3742.2800215845         20.1517684985          619012
+            175     -3742.3361476216         20.2640205725         2749846
+            176     -3742.2879274132         20.1675801558           80377
+            177     -3742.3018160538         20.1953574369         2132168
+            178     -3743.3204642444         22.2326538182         1203707
+            179     -3742.2799778855         20.1516811003         1076112
+            180     -3742.4934997045         20.5787247383         1707212
+            181     -3742.2912897886         20.1743049065          964445
+            182     -3744.8776015850         25.3469284994         1459535
+            183     -3745.1840259164         25.9597771622          207412
+            184     -3742.2802047830         20.1521348953          392288
+            185     -3742.2864397153         20.1646047599         1146718
+            186     -3744.0052494669         23.6022242631          840033
+            187     -3743.6174306320         22.8265865933         2046512
+            188     -3743.2967447622         22.1852148537           11274
+            189     -3743.3124829752         22.2166912799         1922685
+            190     -3742.2810873019         20.1538999331         1739194
+            191     -3743.3312234202         22.2541721697         1861669
+            192     -3742.2891421097         20.1700095487         1473725
+            193     -3742.3175000829         20.2267254952         2788464
+            195     -3743.2910757920         22.1738769133         1281795
+            194     -3745.1401708259         25.8720669812          985759
+            196     -3745.7095904233         27.0109061759         1264811
+            197     -3742.4005645099         20.3928543492         2263644
+            198     -3743.7806802825         23.1530858943         2186164
+            200     -3744.9386636143         25.4690525580         1763667
+            199     -3742.3763111366         20.3443476025         1758875
+              2     -3742.2797509378         20.1512272049          619012
+              1     -3742.2797509375         20.1512272044         1076112
+              3     -3742.2797509397         20.1512272088          123947
+              4     -3742.2797509379         20.1512272052          439024
+              5     -3742.2797509388         20.1512272070         1264030
+              6     -3742.2797509383         20.1512272059          586256
+              7     -3742.2797509396         20.1512272085          922545
+              8     -3742.2797509389         20.1512272072         2394935
+              9     -3742.2797509400         20.1512272095          392288
+             10     -3742.2797509411         20.1512272116          942845
+             11     -3742.2797509391         20.1512272076          471113
+             12     -3742.2797509394         20.1512272081         1737671
+             13     -3742.2797509436         20.1512272165          816980
+             14     -3742.2797509484         20.1512272261         2283246
+             15     -3742.2797509418         20.1512272130          667850
+             16     -3742.2797509405         20.1512272104         2525016
+             17     -3742.2797509450         20.1512272193           37926
+             18     -3742.2797509445         20.1512272183          247182
+             20     -3742.2797509456         20.1512272206         1102801
+             19     -3742.2797509464         20.1512272222          510844
+   Iteration           log-posterior             L-squared       criterion
+              0     -3742.2797509375         20.1512272044
+   EM         5     -3742.2797509374         20.1512272041      0.00120466
+   EM        10     -3742.2797509372         20.1512272038      0.00119731
+   EM        15     -3742.2797509371         20.1512272035      0.00119005
+   EM        20     -3742.2797509369         20.1512272033      0.00118289
+   EM        25     -3742.2797509368         20.1512272030      0.00117582
+   EM        30     -3742.2797509367         20.1512272028      0.00116883
+   EM        35     -3742.2797509367         20.1512272027      0.00116193
+   EM        40     -3742.2797509366         20.1512272025      0.00115512
+   EM        45     -3742.2797509365         20.1512272024      0.00114839
+   EM        50     -3742.2797509365         20.1512272023      0.00114175
+   EM        55     -3742.2797509364         20.1512272022      0.00113518
+   EM        60     -3742.2797509364         20.1512272021      0.00112869
+   EM        65     -3742.2797509363         20.1512272020      0.00112228
+   EM        70     -3742.2797509363         20.1512272019      0.00111594
+   EM        75     -3742.2797509362         20.1512272019      0.00110968
+   EM        80     -3742.2797509362         20.1512272018      0.00110350
+   EM        85     -3742.2797509362         20.1512272017      0.00109738
+   EM        90     -3742.2797509362         20.1512272017      0.00109133
+   EM        95     -3742.2797509361         20.1512272017      0.00108535
+   EM       100     -3742.2797509361         20.1512272016      0.00107944
+   EM       105     -3742.2797509361         20.1512272016      0.00107360
+   EM       110     -3742.2797509361         20.1512272016      0.00106782
+   EM       115     -3742.2797509361         20.1512272015      0.00106210
+   EM       120     -3742.2797509361         20.1512272015      0.00105645
+   EM       125     -3742.2797509361         20.1512272015      0.00105086
+   EM       130     -3742.2797509361         20.1512272015      0.00104533
+   EM       135     -3742.2797509360         20.1512272015      0.00103985
+   EM       140     -3742.2797509360         20.1512272014      0.00103444
+   EM       145     -3742.2797509360         20.1512272014      0.00102909
+   EM       150     -3742.2797509360         20.1512272014      0.00102484
+   EM       155     -3742.2797509360         20.1512272014      0.00101958
+   EM       156     -3742.2797509360         20.1512272014      0.00101854
+   Newton     1     -3742.2797509360         20.1512272014      0.00101379 
+   Newton     2     -3742.2797509360         20.1512272014      0.00100867 
+   Newton     3     -3742.2797509360         20.1512272014      0.00099860 
+   Newton     4     -3742.2797509360         20.1512272014      0.00000000 
+   Standard errors
+   WARNING: 1 boundary or non-identified parameter(s)
+   Preparing output
+
+   Wall clock time=3

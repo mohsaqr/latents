@@ -272,7 +272,11 @@
   log_density <- .additive_log_density(stats, parameters)
   log_joint <- sweep(log_density, 2L, log(parameters$weights), "+")
   group_log_likelihood <- .multilpa_log_sum_exp(log_joint)
-  posterior <- exp(log_joint - group_log_likelihood)
+  # Normalize before adding the row maximum back to the log likelihood.
+  # For a distant group (including one of weight zero), that addition can
+  # round away log(sum(exp(.))), leaving posterior rows that do not sum to 1.
+  posterior <- exp(log_joint - .multilpa_row_max(log_joint))
+  posterior <- posterior / rowSums(posterior)
   n_classes <- nrow(parameters$means)
   j_count <- stats$n_groups
   dims <- c(j_count, length(stats$vars), n_classes)

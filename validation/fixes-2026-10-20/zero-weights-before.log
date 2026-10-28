@@ -1,0 +1,131 @@
+
+ additive 
+List of 47
+ $ call                           : language multilpa(data = d, vars = "y", id = "g", n_group_classes = 1, n_starts = 1,      tol = 1e-10, seed = 1, family = | __truncated__
+ $ family                         : chr "additive"
+ $ structure                      :List of 3
+ $ between_variance               : chr "varying"
+ $ vars                           : chr "y"
+ $ id                             : chr "g"
+ $ means                          : num [1, 1] 0.702
+  ..- attr(*, "dimnames")=List of 2
+ $ between_variances              : num [1, 1] 1.33
+  ..- attr(*, "dimnames")=List of 2
+ $ within_variances               : num [1, 1] 1.11
+  ..- attr(*, "dimnames")=List of 2
+ $ group_probabilities            : Named num 1
+  ..- attr(*, "names")= chr "group_class_1"
+ $ log_likelihood                 : num -166
+ $ group_log_likelihood           : Named num [1:20] -8.92 -8.64 -10 -7.59 -8.51 ...
+  ..- attr(*, "names")= chr [1:20] "1" "2" "3" "4" ...
+ $ group_posteriors               : num [1:20, 1] 1 1 1 1 1 1 1 1 1 1 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ group_assignments              : Named int [1:20] 1 1 1 1 1 1 1 1 1 1 ...
+  ..- attr(*, "names")= chr [1:20] "1" "2" "3" "4" ...
+ $ conditional_intercept_means    : num [1:20, 1, 1] -1.043 -1.014 -1.255 0.262 0.259 ...
+  ..- attr(*, "dimnames")=List of 3
+ $ conditional_intercept_variances: num [1:20, 1, 1] 0.19 0.19 0.19 0.19 0.19 ...
+  ..- attr(*, "dimnames")=List of 3
+ $ intercept_means                : num [1:20, 1] -1.043 -1.014 -1.255 0.262 0.259 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ intercept_variances            : num [1:20, 1] 0.19 0.19 0.19 0.19 0.19 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ n_groups                       : int 20
+ $ n_obs                          : int 100
+ $ group_sizes                    : Named int [1:20] 5 5 5 5 5 5 5 5 5 5 ...
+  ..- attr(*, "names")= chr [1:20] "1" "2" "3" "4" ...
+ $ n_parameters                   : int 3
+ $ aic                            : num 339
+ $ bic                            : num 342
+ $ bic_individual                 : num 347
+ $ converged                      : logi TRUE
+ $ iterations                     : int 9
+ $ newton_steps                   : int 0
+ $ newton_decrement               : num 2.27e-11
+ $ between_zero                   : logi [1, 1] FALSE
+  ..- attr(*, "dimnames")=List of 2
+ $ kkt                            : logi TRUE
+ $ within_floor                   : logi [1, 1] FALSE
+  ..- attr(*, "dimnames")=List of 2
+ $ zero_within_scatter            : Named logi FALSE
+  ..- attr(*, "names")= chr "y"
+ $ small_classes                  : logi FALSE
+ $ starts                         :'data.frame':	1 obs. of  7 variables:
+ $ best_start                     : int 1
+ $ n_failed_starts                : int 0
+ $ n_best_replicated              : int 1
+ $ replication_tolerance          : num 0.000167
+ $ log_likelihood_history         : num [1:10] -166 -166 -166 -166 -166 ...
+ $ min_variance                   : num 1e-06
+ $ tol                            : num 1e-10
+ $ max_iter                       : int 1000
+ $ seed                           : num 1
+ $ weights                        : chr "weight"
+ $ sampling_weights               : Named num [1:20] 0.667 1.333 0.667 1.333 0.667 ...
+  ..- attr(*, "names")= chr [1:20] "1" "2" "3" "4" ...
+ $ sufficient_statistics          :List of 11
+  ..- attr(*, "class")= chr "latents_additive_data"
+ - attr(*, "class")= chr "multilpa_additive"
+                                                          ratio
+mean.group_class_1.y             0.09272731 0.0917614 0.9895833
+within_variance.y                0.01637973 0.0162091 0.9895833
+between_variance.group_class_1.y 0.27886195 0.2759571 0.9895833
+weight.group_class_1             0.00000000 0.0000000       NaN
+Expected old CR1 ratio: 0.9895833 
+
+ regression 
+List of 15
+ $ spec             :List of 39
+ $ params           :List of 5
+ $ expectation      :List of 5
+ $ log_likelihood   : num -179
+ $ n_parameters     : int 3
+ $ converged        : logi TRUE
+ $ iterations       : int 2
+ $ history          : num [1:3] -179 -179 -179
+ $ starts           :'data.frame':	2 obs. of  8 variables:
+ $ n_best_replicated: int 2
+ $ call             : language mixture_regression(formula = y ~ t, data = d, n_classes = 1, id = "g",      n_starts = 1, tol = 1e-10, seed = 1, | __truncated__
+ $ settings         :List of 6
+ $ weights          : chr "weight"
+ $ sampling_weights : num [1:20] 0.667 1.333 0.667 1.333 0.667 ...
+ $ inference        :List of 6
+ - attr(*, "class")= chr "latents_mixture_regression"
+                                                            ratio
+coefficient.class_1.(Intercept) 0.071114122 0.070373350 0.9895833
+coefficient.class_1.t           0.002031627 0.002010465 0.9895833
+log_sigma.class_1               0.015440534 0.015279695 0.9895833
+Expected old CR1 ratio: 0.9895833 
+
+ growth 
+List of 18
+ $ spec              :List of 41
+ $ stats             :List of 11
+ $ params            :List of 7
+ $ expectation       :List of 9
+ $ log_likelihood    : num -147
+ $ n_parameters      : int 4
+ $ random_boundary   : logi FALSE
+ $ degenerate_classes: chr(0) 
+ $ converged         : logi TRUE
+ $ iterations        : int 5
+ $ history           : num [1:7] -151 -147 -147 -147 -147 ...
+ $ starts            :'data.frame':	3 obs. of  8 variables:
+ $ n_best_replicated : int 3
+ $ call              : language mixture_regression(formula = y ~ t, data = d, n_classes = 1, id = "g",      class_level = "group", n_starts = 1, | __truncated__ ...
+ $ settings          :List of 6
+ $ weights           : chr "weight"
+ $ sampling_weights  : num [1:20] 0.667 1.333 0.667 1.333 0.667 ...
+ $ inference         :List of 5
+ - attr(*, "class")= chr "latents_growth_mixture"
+                                                                           
+coefficient.class_1.(Intercept)                     0.071114122 0.070373350
+coefficient.class_1.t                               0.002031627 0.002010465
+log_sigma.class_1                                   0.006489206 0.006421610
+random.log_cholesky.class_1.(Intercept):(Intercept) 0.034597338 0.034236949
+                                                        ratio
+coefficient.class_1.(Intercept)                     0.9895833
+coefficient.class_1.t                               0.9895833
+log_sigma.class_1                                   0.9895833
+random.log_cholesky.class_1.(Intercept):(Intercept) 0.9895833
+Expected old CR1 ratio: 0.9895833 

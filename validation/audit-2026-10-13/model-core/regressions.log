@@ -1,0 +1,37 @@
+findings: 1234
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-findings.R:5:2'): EVI retains equal volumes when its floor 
+Expected `prod(v[1, ])` to equal `prod(v[2, ])`.
+Differences:
+  `actual`: 0.100
+`expected`: 0.010
+
+
+── 2. Failure ('test-findings.R:9:2'): VEI retains common shape when its floor i
+Expected `v[1, 1]/v[2, 1]` to equal `v[1, 2]/v[2, 2]`.
+Differences:
+  `actual`: 0.48
+`expected`: 0.15
+
+
+── 3. Failure ('test-findings.R:19:2'): growth random-intercept quadratic retain
+Expected `actual` to equal `expected`.
+Differences:
+  `actual`: -21.7
+`expected`: -23.2
+
+
+── 4. Failure ('test-findings.R:23:2'): requested person centering is applied to
+Expected `unname(p$person$means)` to equal `unname(p$manual$means)`.
+Differences:
+actual vs expected
+                      [,1]
+- actual[1, ]    96.425781
++ expected[1, ]  -2.391015
+- actual[2, ]   103.060851
++ expected[2, ]   2.555912
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one gets it right on their first try

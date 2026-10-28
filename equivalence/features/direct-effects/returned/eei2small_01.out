@@ -1,0 +1,706 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/20/2026   9:12 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents direct effects eei2small_01;
+  DATA: FILE = eei2small_01.dat;
+  VARIABLE:
+   NAMES = id z y1 y2 y3 y4;
+   USEVARIABLES = y1 y2 y3 y4 z;
+   IDVARIABLE = id;
+   CLASSES = c(2);
+  ANALYSIS:
+   TYPE = MIXTURE;
+   ESTIMATOR = ML;
+   INFORMATION = OBSERVED;
+   STARTS = 400 80;
+   STITERATIONS = 40;
+   STSEED = 20261020;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %OVERALL%
+   y3 ON z;
+   y1 y2 y3 y4;
+   %c#1%
+   [y1 y2 y3 y4];
+   %c#2%
+   [y1 y2 y3 y4];
+  OUTPUT: TECH1;
+  SAVEDATA:
+   FILE = eei2small_01-posteriors.dat;
+   SAVE = CPROBABILITIES;
+   FORMAT = F20.12;
+   RESULTS = eei2small_01-results.dat;
+
+
+
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class:  Y1
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class:  Y2
+*** WARNING in MODEL command
+  Variable is uncorrelated with all other variables within class:  Y4
+*** WARNING in MODEL command
+  At least one variable is uncorrelated with all other variables within class.
+  Check that this is what is intended.
+   4 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+latents direct effects eei2small_01;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                          40
+
+Number of dependent variables                                    4
+Number of independent variables                                  1
+Number of continuous latent variables                            0
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2          Y3          Y4
+
+Observed independent variables
+   Z
+
+Categorical latent variables
+   C
+
+Variables with special functions
+
+  ID variable           ID
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                               10000
+  Convergence criteria
+    Loglikelihood change                                 0.100D-07
+    Relative loglikelihood change                        0.100D-08
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent Variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+Random Starts Specifications
+  Number of initial stage random starts                        400
+  Number of final stage optimizations                           80
+  Number of initial stage iterations                            40
+  Initial stage convergence criterion                    0.100D+01
+  Random starts scale                                    0.500D+01
+  Random seed for generating random starts                20261020
+
+Input data file(s)
+  eei2small_01.dat
+Input data format  FREE
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    0.801       0.151      -2.000    2.50%      -0.813      0.041      0.563
+              40.000       2.820      -1.090       4.307    2.50%       1.530      2.334
+     Y2                    0.492      -0.188      -3.707    2.50%      -1.164     -0.028      0.297
+              40.000       2.759      -0.510       3.499    2.50%       0.786      2.005
+     Y3                    1.004       0.121      -2.974    2.50%      -0.623      0.247      0.937
+              40.000       3.466      -0.155       5.700    2.50%       1.237      2.907
+     Y4                    0.721       0.550      -1.096    2.50%      -0.656      0.163      0.464
+              40.000       1.664      -0.545       4.041    2.50%       0.855      1.821
+     Z                     0.491      -0.225      -2.778    2.50%      -0.797     -0.032      0.766
+              40.000       2.225      -0.497       3.330    2.50%       0.965      1.868
+
+RANDOM STARTS RESULTS RANKED FROM THE BEST TO THE WORST LOGLIKELIHOOD VALUES
+
+Final stage loglikelihood values at local maxima, seeds, and initial stage start numbers:
+
+            -243.202  880108           197
+            -243.202  697321           126
+            -243.202  781820           372
+            -243.202  380874           68
+            -243.202  97287            385
+            -243.202  549075           11
+            -243.202  28884            111
+            -243.202  915652           112
+            -243.202  105352           104
+            -243.202  918252           185
+            -243.202  109921           162
+            -243.202  479175           128
+            -243.202  582969           160
+            -243.202  5235             342
+            -243.202  11624            89
+            -243.202  194618           289
+            -243.202  275465           73
+            -243.202  409424           200
+            -243.202  433457           353
+            -243.202  572344           174
+            -243.202  632878           52
+            -243.202  498537           288
+            -243.202  931511           305
+            -243.202  77893            338
+            -243.202  230017           116
+            -243.202  296199           253
+            -243.202  694328           281
+            -243.202  84640            373
+            -243.202  411517           10
+            -243.202  371752           134
+            -243.202  175893           222
+            -243.202  138875           194
+            -243.202  725180           13
+            -243.202  532436           7
+            -243.202  745760           280
+            -243.202  229987           132
+            -243.202  999155           360
+            -243.202  265588           285
+            -243.202  833688           310
+            -243.202  396469           355
+            -243.202  765418           146
+            -243.202  615760           76
+            -243.202  799903           218
+            -243.202  540560           99
+            -243.202  186805           318
+            -243.202  476779           18
+            -243.202  358792           241
+            -243.202  278216           293
+            -243.202  597280           231
+            -243.202  73271            273
+            -243.202  471841           1
+            -243.202  354623           249
+            -243.202  284441           250
+            -243.202  620466           183
+            -243.202  858074           381
+            -243.202  908047           47
+            -243.202  628635           21
+            -243.202  705541           265
+            -243.202  759371           193
+            -243.202  98336            153
+            -243.202  444621           59
+            -243.202  226148           394
+            -243.202  114791           180
+            -243.202  974245           224
+            -243.202  230792           268
+            -243.202  517507           164
+            -243.202  694229           22
+            -243.202  171069           386
+            -243.202  332292           299
+            -243.202  562759           123
+            -243.202  494313           294
+            -243.202  82931            331
+            -243.202  12124            187
+            -243.202  403835           247
+            -243.202  566457           378
+            -243.202  914958           266
+            -243.202  77645            349
+            -243.202  107874           186
+            -243.202  700007           181
+            -243.202  243651           269
+
+
+
+THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED.  RERUN WITH AT LEAST TWICE THE
+RANDOM STARTS TO CHECK THAT THE BEST LOGLIKELIHOOD IS STILL OBTAINED AND REPLICATED.
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       14
+
+Loglikelihood
+
+          H0 Value                        -243.202
+
+Information Criteria
+
+          Akaike (AIC)                     514.405
+          Bayesian (BIC)                   538.049
+          Sample-Size Adjusted BIC         494.239
+            (n* = (n + 2) / 24)
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THE ESTIMATED MODEL
+
+    Latent
+   Classes
+
+       1         27.72395          0.69310
+       2         12.27605          0.30690
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1         27.72395          0.69310
+       2         12.27605          0.30690
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1               28          0.70000
+       2               12          0.30000
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.970
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.990    0.010
+    2   0.000    1.000
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   1.000    0.000
+    2   0.023    0.977
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      8.619    0.000
+    2     -3.754    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ Y3         ON
+    Z                  0.777      0.079      9.777      0.000
+
+ Means
+    Y1                -0.069      0.206     -0.335      0.738
+    Y2                -0.238      0.237     -1.002      0.316
+    Y4                 0.100      0.170      0.590      0.555
+
+ Intercepts
+    Y3                -0.087      0.138     -0.630      0.529
+
+ Variances
+    Y1                 1.111      0.259      4.280      0.000
+    Y2                 1.555      0.352      4.424      0.000
+    Y4                 0.793      0.184      4.301      0.000
+
+ Residual Variances
+    Y3                 0.498      0.115      4.335      0.000
+
+Latent Class 2
+
+ Y3         ON
+    Z                  0.777      0.079      9.777      0.000
+
+ Means
+    Y1                 2.766      0.303      9.125      0.000
+    Y2                 2.142      0.368      5.822      0.000
+    Y4                 2.124      0.267      7.945      0.000
+
+ Intercepts
+    Y3                 2.227      0.228      9.784      0.000
+
+ Variances
+    Y1                 1.111      0.259      4.280      0.000
+    Y2                 1.555      0.352      4.424      0.000
+    Y4                 0.793      0.184      4.301      0.000
+
+ Residual Variances
+    Y3                 0.498      0.115      4.335      0.000
+
+Categorical Latent Variables
+
+ Means
+    C#1                0.815      0.350      2.326      0.020
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.928E-02
+       (ratio of smallest to largest eigenvalue)
+
+
+LATENT CLASS INDICATOR MEANS AND PROBABILITIES FOR EACH LATENT CLASS
+
+     MEAN/PROBABILITY PROFILES FOR C
+                   Latent class
+                     1      2
+     Y1           -0.069  2.766
+     Y2           -0.238  2.142
+     Y3            0.143  2.950
+     Y4            0.100  2.124
+
+
+EQUALITY TESTS OF INTERCEPTS ACROSS THE LATENT CLASSES
+
+                    Chi-Square     P-Value   Degrees of Freedom
+
+
+Y1
+  Overall test         61.053      0.000        1
+
+Y2
+  Overall test         29.859      0.000        1
+
+Y3
+  Overall test         83.174      0.000        1
+
+Y4
+  Overall test         41.130      0.000        1
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+                    1             2             0             3             0
+
+
+           LAMBDA
+              Y3            Z
+              ________      ________
+ Y1                 0             0
+ Y2                 0             0
+ Y3                 0             0
+ Y4                 0             0
+ Z                  0             0
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+ Y1                 4
+ Y2                 0             5
+ Y3                 0             0             0
+ Y4                 0             0             0             6
+ Z                  0             0             0             0             0
+
+
+           ALPHA
+              Y3            Z
+              ________      ________
+                    7             0
+
+
+           BETA
+              Y3            Z
+              ________      ________
+ Y3                 0             8
+ Z                  0             0
+
+
+           PSI
+              Y3            Z
+              ________      ________
+ Y3                 9
+ Z                  0             0
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+                   10            11             0            12             0
+
+
+           LAMBDA
+              Y3            Z
+              ________      ________
+ Y1                 0             0
+ Y2                 0             0
+ Y3                 0             0
+ Y4                 0             0
+ Z                  0             0
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+ Y1                 4
+ Y2                 0             5
+ Y3                 0             0             0
+ Y4                 0             0             0             6
+ Z                  0             0             0             0             0
+
+
+           ALPHA
+              Y3            Z
+              ________      ________
+                   13             0
+
+
+           BETA
+              Y3            Z
+              ________      ________
+ Y3                 0             8
+ Z                  0             0
+
+
+           PSI
+              Y3            Z
+              ________      ________
+ Y3                 9
+ Z                  0             0
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                   14             0
+
+
+           GAMMA(C)
+              Z
+              ________
+ C#1                0
+ C#2                0
+
+
+     STARTING VALUES FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+               -0.878        -1.169         0.000        -0.569         0.000
+
+
+           LAMBDA
+              Y3            Z
+              ________      ________
+ Y1             0.000         0.000
+ Y2             0.000         0.000
+ Y3             1.000         0.000
+ Y4             0.000         0.000
+ Z              0.000         1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+ Y1             1.410
+ Y2             0.000         1.380
+ Y3             0.000         0.000         0.000
+ Y4             0.000         0.000         0.000         0.832
+ Z              0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              Y3            Z
+              ________      ________
+               -0.857         0.000
+
+
+           BETA
+              Y3            Z
+              ________      ________
+ Y3             0.000         0.000
+ Z              0.000         0.000
+
+
+           PSI
+              Y3            Z
+              ________      ________
+ Y3             1.733
+ Z              0.000         1.112
+
+
+     STARTING VALUES FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+                2.480         2.154         0.000         2.012         0.000
+
+
+           LAMBDA
+              Y3            Z
+              ________      ________
+ Y1             0.000         0.000
+ Y2             0.000         0.000
+ Y3             1.000         0.000
+ Y4             0.000         0.000
+ Z              0.000         1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Z
+              ________      ________      ________      ________      ________
+ Y1             1.410
+ Y2             0.000         1.380
+ Y3             0.000         0.000         0.000
+ Y4             0.000         0.000         0.000         0.832
+ Z              0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              Y3            Z
+              ________      ________
+                2.866         0.000
+
+
+           BETA
+              Y3            Z
+              ________      ________
+ Y3             0.000         0.000
+ Z              0.000         0.000
+
+
+           PSI
+              Y3            Z
+              ________      ________
+ Y3             1.733
+ Z              0.000         1.112
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                0.000         0.000
+
+
+           GAMMA(C)
+              Z
+              ________
+ C#1            0.000
+ C#2            0.000
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Entropy
+    Condition Number
+
+  Save file
+    eei2small_01-results.dat
+
+  Save file format           Free
+
+
+SAVEDATA INFORMATION
+
+
+  Save file
+    eei2small_01-posteriors.dat
+
+  Order and format of variables
+
+    Y1             F20.12
+    Y2             F20.12
+    Y3             F20.12
+    Y4             F20.12
+    Z              F20.12
+    CPROB1         F20.12
+    CPROB2         F20.12
+    MLCC           F20.12
+    ID             I3
+
+  Save file format
+    8F20.12 I3
+
+  Save file record length    10000
+
+  Save missing symbol        *
+
+
+     Beginning Time:  21:12:25
+        Ending Time:  21:12:26
+       Elapsed Time:  00:00:01
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

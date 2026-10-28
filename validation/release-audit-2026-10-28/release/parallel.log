@@ -1,0 +1,68 @@
+lta-parallel: .........SS.....................................................................................Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+.Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+....
+parallel-candidates: Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+.Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+...............
+parallel-profile-pool: S...............................................................................SSS..
+parallel-recovery: SS....SSSSSSS
+parallel-report: ....................
+parallel: Preparing 6 candidates on 2 workers.
+Fitting 10 starts on 2 workers.
+Done in under a minute.
+..Preparing 2 candidates on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+.......................................Preparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+....................................................................
+review-0970-parallel: ...........................................................................................................................................................................................................................................................................................................................................................................................................................................Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+...Done in under a minute.
+............................................................
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. both lta engines have identical forked starts and emEM screening ('test-lta-parallel.R:61:3') - Reason: This BLAS cannot run safely in forked workers
+
+2. transition grids match serial and direct fits for both searches and engines ('test-lta-parallel.R:88:3') - Reason: This BLAS cannot run safely in forked workers
+
+3. profile grids match serial and direct categorical and continuous fits ('test-parallel-profile-pool.R:66:3') - Reason: This BLAS cannot run safely in forked workers
+
+4. a recovered categorical grid start preserves all fitted results ('test-parallel-profile-pool.R:370:3') - Reason: This BLAS cannot run safely in forked workers
+
+5. a persistently killed categorical start leaves other starts intact ('test-parallel-profile-pool.R:394:3') - Reason: This BLAS cannot run safely in forked workers
+
+6. losing every categorical start fails only that candidate ('test-parallel-profile-pool.R:420:3') - Reason: This BLAS cannot run safely in forked workers
+
+7. a killed fork task is retried once and recovers its exact value ('test-parallel-recovery.R:57:3') - Reason: This BLAS cannot run safely in forked workers
+
+8. a permanently killed fork task leaves other task results intact ('test-parallel-recovery.R:83:3') - Reason: This BLAS cannot run safely in forked workers
+
+9. ordinary errors in start code are recorded without a process-loss retry ('test-parallel-recovery.R:127:3') - Reason: This BLAS cannot run safely in forked workers
+
+10. recovered flat starts preserve the complete transition grid ('test-parallel-recovery.R:152:3') - Reason: This BLAS cannot run safely in forked workers
+
+11. a recovered direct lta start preserves the undisturbed fitted object ('test-parallel-recovery.R:176:3') - Reason: This BLAS cannot run safely in forked workers
+
+12. a genuine transition start error is neither retried nor called worker loss ('test-parallel-recovery.R:203:3') - Reason: This BLAS cannot run safely in forked workers
+
+13. a permanently lost flat start is reported alongside fitted candidates ('test-parallel-recovery.R:228:3') - Reason: This BLAS cannot run safely in forked workers
+
+14. losing all starts fails only their candidate in a transition grid ('test-parallel-recovery.R:258:3') - Reason: This BLAS cannot run safely in forked workers
+
+15. emEM aggregates recovered screening and finalist losses into one warning ('test-parallel-recovery.R:281:3') - Reason: This BLAS cannot run safely in forked workers
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+     nb  failed skipped   error warning  passed 
+    834       0      15       0       0     819 

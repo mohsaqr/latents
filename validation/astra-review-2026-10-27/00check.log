@@ -1,0 +1,131 @@
+* using log directory ‘/private/tmp/astra-review/latents.Rcheck’
+* using R version 4.5.2 (2025-10-31)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 16.0.0 (clang-1600.0.26.6)
+    GNU Fortran (GCC) 14.2.0
+* running under: macOS Tahoe 26.3.1
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --no-vignettes --no-build-vignettes’
+* checking for file ‘latents/DESCRIPTION’ ... OK
+* this is package ‘latents’ version ‘0.97.4’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘latents’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... NOTE
+Problems with news in ‘NEWS.md’:
+  Cannot extract version info from the following section titles:
+    Enumeration on several cores
+    Clearer reports
+    Review corrections
+    Faster latent transition models
+    Default start search
+    Start search
+    Corrections found by the feature equivalence suites
+    Inference and numerical corrections
+    Paired indicators and weighted trees
+    Direct effects
+    Compatibility
+    Local dependence
+    Lo-Mendell-Rubin tests
+    Maximum-likelihood three-step distal outcomes
+    Quieter and stricter checks
+    Faster standard errors
+    Named plot functions on every fitted model
+    One contract for every grid
+    Criterion panels
+    Tree plots
+    Documentation
+    Bug fixes
+    New features
+    Equivalence
+    Parallel enumeration
+    drop_empty
+    Groups with nothing observed
+    Classification quality with missing indicators (bug fix)
+    Scaling the indicators (scaling)
+    Group-level classification plots
+    Enumeration grids
+    Growth mixture models (mixture_regression(random = ))
+    Latent transition models (lta())
+    Migration
+    Two defaults changed
+    A covariate's units no longer change the fit
+    Staged categorical measurement attaches to the right item
+    Bootstrap comparisons keep the constraints they were given
+    Transition counts no longer overflow
+    descriptives() no longer invents or replaces values
+    Cluster-robust standard errors are refused when they cannot exist
+    diagnostics() no longer ignores the argument you passed
+    A bootstrap comparison stops withholding its p-value
+    An ordinary converged fit stops being told it has not converged
+    Misaligned data is refused, not scored
+    A fit carries the data it was built from
+    Three convenience verbs
+    assignments()
+    plot(fit, what = "bars") draws its intervals without being handed data
+    information_criteria() returns the shape people report
+    Argument names now follow the sibling package Nestimate
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in Rd file 'sensitivity.Rd'
+  ‘...’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking LazyData ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘enumeration.Rmd’ ‘lca.Rmd’ ‘lpa.Rmd’ ‘lta.Rmd’
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes ... WARNING
+Directory 'inst/doc' does not exist.
+Package vignettes without corresponding single PDF/HTML:
+  ‘enumeration.Rmd’
+  ‘lca.Rmd’
+  ‘lpa.Rmd’
+  ‘lta.Rmd’
+* checking running R code from vignettes ... SKIPPED
+* checking re-building of vignette outputs ... SKIPPED
+* DONE
+Status: 3 WARNINGs, 1 NOTE

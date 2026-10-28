@@ -1,0 +1,68 @@
+
+FILE test-review-1020-inference.R 
+review-1020-inference: ...................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-inference.R 
+inference: ......................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-direct-effects.R 
+direct-effects: ...............................................Fitted a single-level latent profile model.
+..................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-inference-cache.R 
+inference-cache: .....................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Nice code.
+
+FILE test-inference-fixed-measurement.R 
+inference-fixed-measurement: .................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-covariate-inference.R 
+covariate-inference: ........................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-transition-inference.R 
+transition-inference: .......................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-categorical-inference.R 
+categorical-inference: ...........................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-lta-general.R 
+lta-general: .................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+FILE test-math-inference-audit.R 
+math-inference-audit: .........................1..........
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-math-inference-audit.R:133:3'): covariate inference refuses n
+<latents_bad_inference_data/error/condition>
+Error: `data` must reproduce the original indicators and covariates.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_error(...) at test-math-inference-audit.R:133:3
+ 2. │ └─testthat:::expect_condition_matching_(...)
+ 3. │   └─testthat:::quasi_capture(...)
+ 4. │     ├─testthat (local) .capture(...)
+ 5. │     │ └─base::withCallingHandlers(...)
+ 6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+ 7. ├─latents::parameter_inference(few_groups, dat, vcov_type = "robust")
+ 8. └─latents:::parameter_inference.multilpa_covariates(...) at latents/R/inference.R:788:3
+ 9.   └─latents:::.multilpa_cov_covariance(...) at latents/R/covariate-inference.R:394:3
+
+══ DONE ════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,199 @@
+API check: every validation call matches multilpa 0.98.0.
+running suite: twolevel-lpa
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+running suite: covariates
+converged at iteration 15 with logLik: -2272.584 
+converged at iteration 16 with logLik: -2272.584 
+converged at iteration 15 with logLik: -2272.584 
+converged at iteration 14 with logLik: -2272.584 
+converged at iteration 15 with logLik: -2272.584 
+running suite: lta-general
+converged at iteration 28 with logLik: -2324.061 
+converged at iteration 27 with logLik: -2324.061 
+converged at iteration 26 with logLik: -2324.061 
+converged at iteration 25 with logLik: -2324.061 
+converged at iteration 27 with logLik: -2324.061 
+converged at iteration 158 with logLik: -1574.718 
+converged at iteration 154 with logLik: -1574.718 
+converged at iteration 155 with logLik: -1574.718 
+converged at iteration 153 with logLik: -1574.718 
+converged at iteration 158 with logLik: -1574.718 
+running suite: lta-mixed
+running suite: ordinal-count
+converged at iteration 34 with logLik: -2093.267 
+converged at iteration 37 with logLik: -1891.461 
+converged at iteration 23 with logLik: -2448.798 
+running suite: three-step
+running suite: predict-newdata
+running suite: robust-se
+running suite: pool-imputations
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Equivalence run against multilpa 0.98.0 under R version 4.5.2 (2025-10-31)
+             suite status compared agreed values outputs_not_covered warnings
+1     twolevel-lpa    ran     1231   1231 134822                   0        0
+2       covariates    ran      577    577  41761                   0        0
+3      lta-general    ran      102    102   9539                   0        0
+4        lta-mixed    ran      358    358  50755                   0        0
+5    ordinal-count    ran      486    486  26814                   0        0
+6       three-step    ran      271    271    897                   0        0
+7  predict-newdata    ran       57     57   7571                   0        0
+8        robust-se    ran      541    541  24390                   0        0
+9 pool-imputations    ran       92     92   2396                   0        0
+  seconds
+1   52.74
+2   28.20
+3   43.62
+4   22.46
+5   13.92
+6   34.13
+7    4.63
+8    7.28
+9    5.72
+
+3715 quantities (298945 values) compared, 3715 agreed, 0 disagreed
+
+              suite
+4        covariates
+11       covariates
+19       covariates
+20       covariates
+5       lta-general
+15        lta-mixed
+6     ordinal-count
+8     ordinal-count
+9     ordinal-count
+1  pool-imputations
+13 pool-imputations
+18 pool-imputations
+3   predict-newdata
+10  predict-newdata
+16  predict-newdata
+21  predict-newdata
+22  predict-newdata
+2         robust-se
+17        robust-se
+24        robust-se
+7        three-step
+14       three-step
+23       three-step
+25       three-step
+12     twolevel-lpa
+26     twolevel-lpa
+                                                                                  source
+4                                                                         depmixS4 1.5.1
+11                                                                            glca 1.4.2
+19                                                                     multilevLCA 2.1.6
+20                                                                         poLCA 1.6.0.1
+5                                                                         depmixS4 1.5.1
+15                                                                           LMest 3.2.8
+6                                                                         depmixS4 1.5.1
+8                                                      EM with MASS 7.3.65 glm.nb M-step
+9                                                  EM with VGAM 1.1.14 vglm(acat) M-step
+1                                base-R Gaussian mixture likelihood, numDeriv 2016.8.1.1
+13                          latents 0.98.0 multilpa() called directly (same computation)
+18                                                  mice 3.19.0 pool.scalar (Rubin 1987)
+3                                base-R two-level likelihood (two-level-lca-reference.R)
+10                                                                        flexmix 2.3.20
+16                                                                          mclust 6.1.2
+21                                                                         poLCA 1.6.0.1
+22                                                                        refusal parity
+2                          base-R likelihood, numDeriv 2016.8.1.1 scores and information
+17 mclust 6.1.2 estimates; base-R likelihood, numDeriv 2016.8.1.1 scores and information
+24  sandwich 3.1.1 vcovCL; base-R likelihood, numDeriv 2016.8.1.1 scores and information
+7                                                    depmixS4 1.5.1; numDeriv 2016.8.1.1
+14                                          likelihood written here; numDeriv 2016.8.1.1
+23                                                               sandwich 3.1.1 (vcovCL)
+25                                          tidySEM 0.2.12; estimating-equation sandwich
+12                                                                       Latent GOLD 6.1
+26                                                                       Latent GOLD 6.1
+   precision compared agreed worst_difference loosest_tolerance
+4    machine      104    104     3.410288e-08               0.5
+11   machine      190    190     7.439243e-07               0.5
+19   machine      192    192     1.592493e-06               0.5
+20   machine       91     91     1.010506e-06               0.5
+5    machine      102    102     3.173849e-06               0.5
+15   machine      358    358     3.662874e-06               0.5
+6    machine      243    243     1.850953e-07               0.5
+8    machine      160    160     2.901084e-08               0.5
+9    machine       83     83     3.514737e-08               0.5
+1    machine       16     16     1.944851e-07               0.5
+13   machine       14     14     1.750156e-12               0.5
+18   machine       62     62     4.862777e-13               0.5
+3    machine       17     17     3.441691e-15               0.5
+10   machine       10     10     3.207807e-16               0.5
+16   machine       11     11     4.437671e-16               0.5
+21   machine       11     11     2.090708e-14               0.5
+22   machine        8      8     0.000000e+00               0.5
+2    machine      321    321     5.655334e-07               0.5
+17   machine      125    125     6.756491e-07               0.5
+24   machine       95     95     2.538681e-09               0.5
+7    machine      157    157     2.927253e-07               0.5
+14   machine       18     18     1.409087e-06               0.5
+23   machine       56     56     1.695291e-15               0.5
+25   machine       40     40     2.133849e-13               0.5
+12   machine     1005   1005     2.158414e-07               0.5
+26   printed      226    226     9.999586e-01               1.0
+   worst_tolerance_fraction
+4              1.972045e-01
+11             4.087113e-01
+19             7.211125e-01
+20             3.637023e-01
+5              3.173849e-03
+15             3.662874e-01
+6              5.709772e-02
+8              2.288743e-02
+9              3.179816e-02
+1              1.944851e-01
+13             1.750156e-02
+18             4.862777e-03
+3              3.441691e-05
+10             3.207807e-06
+16             4.437671e-06
+21             2.090708e-04
+22             0.000000e+00
+2              2.147606e-01
+17             9.452378e-03
+24             2.538681e-03
+7              2.927253e-01
+14             1.409087e-01
+23             1.695291e-05
+25             2.133849e-03
+12             2.158414e-01
+26             9.999586e-01
+
+3715 quantities (298945 values) compared, 3715 agreed, 0 disagreed (0 explained by a known open defect)
+
+wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in validation/release-audit-2026-10-28/equivalence/harness

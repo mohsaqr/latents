@@ -1,0 +1,38 @@
+targeted-regressions: ..1.2..3.4.5
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-targeted-regressions.R:21:3'): patterned covariances use th
+Expected `"latents_thin_profiles" %in% result$classes` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 2. Failure ('test-targeted-regressions.R:38:3'): fixed means and variances ca
+Expected `"latents_thin_profiles" %in% result$classes` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 3. Failure ('test-targeted-regressions.R:56:3'): empty subjects cannot erase 
+Expected `"latents_thin_profiles" %in% appended$classes` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 4. Failure ('test-targeted-regressions.R:69:3'): occasion measurement assesse
+Expected `"latents_thin_profiles" %in% result$classes` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 5. Failure ('test-targeted-regressions.R:84:3'): staged bootstrap retains the
+Expected `refit$stage_one$n_screen` to be identical to `original$stage_one$n_screen`.
+Differences:
+1/1 mismatches
+[1] 5 - 8 == -3
+
+══ DONE ════════════════════════════════════════════════════════════════════════

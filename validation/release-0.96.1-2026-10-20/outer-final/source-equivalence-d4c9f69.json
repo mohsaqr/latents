@@ -1,0 +1,479 @@
+{
+  "outer_execution_commit": "cf1127fa66283826ed421d028999b5ac23e1901d",
+  "target_release_commit": "d4c9f699525d9e07959463010e004b6362dcdaaf",
+  "outer_results": "198 cases;5419 passed;0 failures/errors/warnings/skips;single complete run",
+  "tracked_files_at_execution": 3415,
+  "current_tracked_files": 3415,
+  "new_tracked_files": [],
+  "removed_tracked_files": [],
+  "changed_snapshot_files": [
+    ".github/workflows/R-CMD-check.yaml",
+    "tests/testthat/test-engine-fixes.R"
+  ],
+  "commit_delta_files": [
+    ".github/workflows/R-CMD-check.yaml",
+    "tests/testthat/test-engine-fixes.R"
+  ],
+  "production_files": 91,
+  "all_production_runtime_bytes_identical": true,
+  "all_other_3413_tracked_inputs_identical": true,
+  "changed_files_not_consumed_by_outer_runtime": true,
+  "scope": "unit test-engine-fixes.R is not sourced by outer test_dir or load_all helpers; CI YAML is not runtime input; no outer execution relabeling",
+  "production_manifest": [
+    {
+      "file": "R/acceleration.R",
+      "sha256": "9c64d25d4a63ea257387d94ce81a6ba5870ba9dd4f517f2917c9eb434e82d63d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/accessors.R",
+      "sha256": "95a4eb0117e1858c1880942ad32d288e232c0098a753dcc8840f9d05e88d404c",
+      "matches_execution": true
+    },
+    {
+      "file": "R/additive-compare.R",
+      "sha256": "4fc81f33340e85757eca54f3681d7a26d26e10b05910dd78ce77e7d062c7a9e6",
+      "matches_execution": true
+    },
+    {
+      "file": "R/additive-inference.R",
+      "sha256": "ecafcf39a52bf3b21c275af7d623e81fb7ed94379babd2ace95d1b3a15dfc37e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/additive-methods.R",
+      "sha256": "8f3eba78d49cbbf0b238a296b3f92a15d963725eeaf3df3ddc5df840c4f16833",
+      "matches_execution": true
+    },
+    {
+      "file": "R/additive.R",
+      "sha256": "7b053bed18d80556ff5a438750deeffcc59f779855d12ba4010b454390f9898e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/alignment-service.R",
+      "sha256": "625f2c143edd1d4b8e28d945df966615eeb6584887b8a27e84cda0ce025c2909",
+      "matches_execution": true
+    },
+    {
+      "file": "R/bivariate-residuals.R",
+      "sha256": "a13c20ac7d9565b70e7c96479b3bf8a3e307ed823f09d963208f4e3b4e22b983",
+      "matches_execution": true
+    },
+    {
+      "file": "R/bootstrap-inference.R",
+      "sha256": "abbdfc48c37e8771dcb51bc790a93c95d4fff139413b2a4f8fde8a95d982caef",
+      "matches_execution": true
+    },
+    {
+      "file": "R/candidates.R",
+      "sha256": "568391be6fbfeaca18bdac9dd1b5c54d9d445a4c006139ccbae4f0503e7b6c2b",
+      "matches_execution": true
+    },
+    {
+      "file": "R/categorical.R",
+      "sha256": "30c9cb698e9c26d26b0f99e1be676b3d3d536f6bd4129eb3d0ababd96238c661",
+      "matches_execution": true
+    },
+    {
+      "file": "R/centering.R",
+      "sha256": "5eb90ac08b381e342743a19551a602bcf2ff8e7690cd68331dd31858c849da3b",
+      "matches_execution": true
+    },
+    {
+      "file": "R/compare-models.R",
+      "sha256": "8ca5fa7887b5a7db11ccae7c3480acb989e0931d4a4aa13898466bb6a489983a",
+      "matches_execution": true
+    },
+    {
+      "file": "R/conditions.R",
+      "sha256": "63cfac08543fa474dc13b76af37b9d3e139899481e2c22d072e82901a0eac628",
+      "matches_execution": true
+    },
+    {
+      "file": "R/covariance-structure.R",
+      "sha256": "02344bf3858e13f88435c5ce436b370f85210f0274d63f0a83b5f390f554bfd0",
+      "matches_execution": true
+    },
+    {
+      "file": "R/covariate-inference.R",
+      "sha256": "8141a4be1fbf730361f72c5ebbddd5ec62c9cbdc50fc0db9ca0bb7606cf94e1d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/covariates.R",
+      "sha256": "7d894c4be018bc60152ec8a8e07951590c81926ecca7f67c6ecc52c6a1fbe017",
+      "matches_execution": true
+    },
+    {
+      "file": "R/cross-level.R",
+      "sha256": "feb3eb6cc18921a764841058c05c05ae5c8bb2e0a31e4b9deea5e60505edc0dc",
+      "matches_execution": true
+    },
+    {
+      "file": "R/data.R",
+      "sha256": "219290cb0e9c0296547691ae4067f6d168dc7b7ec262c5c74e67d513b561960b",
+      "matches_execution": true
+    },
+    {
+      "file": "R/descriptives.R",
+      "sha256": "e96511a01caf0512f70fe441a7ff6ddd0c5e5bf2c279eba13126a393bcd7f9b7",
+      "matches_execution": true
+    },
+    {
+      "file": "R/diagnostics.R",
+      "sha256": "f46292d7c9d81f44eb382f210685c4bfc928bfa7d18c8611e855beced49ea189",
+      "matches_execution": true
+    },
+    {
+      "file": "R/direct-effects.R",
+      "sha256": "3d8843e49ff4e800f0ed01de0491a7bece105985e3989aaff434d9d3069cdeae",
+      "matches_execution": true
+    },
+    {
+      "file": "R/enumeration.R",
+      "sha256": "46ff8165453afb76fa1fc1e3ae43b186232dc6eb8de2c7eeb49c01c95c154e12",
+      "matches_execution": true
+    },
+    {
+      "file": "R/extra-indicators.R",
+      "sha256": "a446dc2abcd277b8fe4f572dd92a69107fd91cae0c8a3c07e866e8ce9dfa9fda",
+      "matches_execution": true
+    },
+    {
+      "file": "R/fixed-measurement.R",
+      "sha256": "1c43e73157d676932ea1b4edadf5755a94cfacb2abe59bee0522cafd80491f7e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/gaussian-moments.R",
+      "sha256": "1b961bb29b3e11df6f8f61c5747f43992411d1faab2d2ea079c799144e0e31cc",
+      "matches_execution": true
+    },
+    {
+      "file": "R/get-data.R",
+      "sha256": "b3ddc976c3d7e793be9dc70d10e5d0e0a99c175d64010e0e0b743caf001e588c",
+      "matches_execution": true
+    },
+    {
+      "file": "R/grid-views.R",
+      "sha256": "7ec34267f47c024bf64d769bcadacbfd4a7d85373f1ce898d33b8aac4c5ec33d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-correlated.R",
+      "sha256": "425c2f32690ee0260ab19072ad6dcc82f531b36b4210f5ce6d3bcb7c161a98bb",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-engine.R",
+      "sha256": "da86059bfe21d609cdf652a2218336f5c3bbe603b0aad1eacd9298b4dcf339d2",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-inference.R",
+      "sha256": "be9af6b140c554e2f19c04cce2594cc2c225151930ca08abf0617f5cdfe08c12",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-methods.R",
+      "sha256": "c5198af0d4ea86ac3f506dd5a644dd2bcdf0925b95bfd3fd72d36f6209569c77",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-parameter-inference.R",
+      "sha256": "332c7845b303d3f5d612e5de94941e74fe3f22e6cd4967700db911e90ceafdbd",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-plot.R",
+      "sha256": "273094fe374f70a4c2903699407caae13d88da92715eeee538c7d5359c787e79",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-predict.R",
+      "sha256": "2ff09962385f95da826a44e8d2e9a39672ddbf5c9e80b63d0b909a92095e9357",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture-simulate.R",
+      "sha256": "100315a54fa0b33785144b489e5fced3194601f969aa9cd7939e449231110841",
+      "matches_execution": true
+    },
+    {
+      "file": "R/growth-mixture.R",
+      "sha256": "f4bd60505286b4e79e4571383f74cf1f0a344ac9cd5969c3ba67d33296e8182d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/inference-service.R",
+      "sha256": "c96a78108439578fa602f5d35a0b0d187e1d33fa643d78732969298a8844fa8d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/inference.R",
+      "sha256": "a47cdad3a304a65c03ca52dd95a0e1f3e2e9c0f35bfce73c8de9340c3c22caea",
+      "matches_execution": true
+    },
+    {
+      "file": "R/kernel-blocks.R",
+      "sha256": "0821a86989e3901399418b226ff7c90e1068f505ffec7b8d7d15d34fa353c451",
+      "matches_execution": true
+    },
+    {
+      "file": "R/kernel-em.R",
+      "sha256": "12b9f62e807de07bffa666c3f95092e1a10aa85f2c4804407ecedb34cd3e94af",
+      "matches_execution": true
+    },
+    {
+      "file": "R/kernel-structures.R",
+      "sha256": "0a2fdd17f62e11e264e9a59d51159dd16ba74b99bfedc9b7255d74c5f8bf34ae",
+      "matches_execution": true
+    },
+    {
+      "file": "R/latents-table.R",
+      "sha256": "4b741c20bfea5ee915157eb0ed5298ff2f961f36306fd8e1f8e1722e0b556d41",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lmr.R",
+      "sha256": "b2a1ecc32b2693019c892b42507b14dbf4da16edf19129d9d314c914ea4854f3",
+      "matches_execution": true
+    },
+    {
+      "file": "R/local-dependence.R",
+      "sha256": "e9026ce7caeb230ba741f9f9086b3a5cad82e3c400519faccb13664fa40b2b7c",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lpa.R",
+      "sha256": "53a822d6264ab8b05ec0648844358b1a0dc31a3e4bab12591d85f5552ab43128",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-bootstrap.R",
+      "sha256": "4d4ce508e5ea2bea61a2bec2c6c109c680184e9e076b85616b6d555ada1d3213",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-compare.R",
+      "sha256": "031682c084a4a42ab3292413c852673b62b3d54c9e2322e76537d11cf6753adb",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-engine.R",
+      "sha256": "6825c1f2b0c12a861b183d0154e86b2c9949086c18a22caad967dc069af5e71e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-inference.R",
+      "sha256": "addeda04d761257a847e7739fafe2c734af070a13b7088fca53b76e2f65c291f",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-methods.R",
+      "sha256": "dac39833784af4e994a55a8d733bed724b58438f538b4f64e2c4e09d6f1dc678",
+      "matches_execution": true
+    },
+    {
+      "file": "R/lta-three-step.R",
+      "sha256": "3adfe6c11693004a457f981be9336fc4c9aa25c8720dc5006536d200c1a95937",
+      "matches_execution": true
+    },
+    {
+      "file": "R/methods-documentation.R",
+      "sha256": "395abf4a3a24b37e93d1e7b867a82d2cee6559dce4502fd04530fc700c613d46",
+      "matches_execution": true
+    },
+    {
+      "file": "R/methods.R",
+      "sha256": "727fda20a38b2bc6d394a066b8d208e8534ec63c73f356b4fef84ffaed362be9",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-engine.R",
+      "sha256": "500328f13a838f77d901573bcfb516a4c714a3ba88e682e8a263050a825a1e16",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-enumerate.R",
+      "sha256": "8d9ff862d6447d95cc24e5283f9e772694d3e881fcb35efb5d0e88b7c03f1da0",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-inference.R",
+      "sha256": "68b079bf5b7c1c9991958cd410cab14fa8b58acf484b2dac5decfffb8d80f0ff",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-methods.R",
+      "sha256": "c22d0d34c9f28494db03b26298ab4b6c656e90f4847a2680c1df0ee217ad5da8",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-ordinal.R",
+      "sha256": "274affb1f3171dd2c9d4567efc0d1ca970c987296b38301c683cc7dc2ead1a90",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-predict.R",
+      "sha256": "5d6889984b1f6e928795d15cc7bd0114f8ae5f165362690317ef5657270ebb35",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression-starts.R",
+      "sha256": "bbfcf07ffa004fdec8f2601948f88943e6533b282bd545db35974d60a4cd3694",
+      "matches_execution": true
+    },
+    {
+      "file": "R/mixture-regression.R",
+      "sha256": "38755a9c04d4d9ee7209d527d2f486f3da2bc0da7be8affb4581136209e05515",
+      "matches_execution": true
+    },
+    {
+      "file": "R/multilca.R",
+      "sha256": "e3f5c20414160824aaa731e819d41d3333eb707324e368963b1484031a3a8857",
+      "matches_execution": true
+    },
+    {
+      "file": "R/multilpa.R",
+      "sha256": "d539394b7f5bdf38a9527342b6e6f0e0adeaeb7be48a804f2bc35d0b3052536e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/noise.R",
+      "sha256": "a0c800cbb1bbe27e8f7c7b723668b194bfebbbdbf530b1418813ece1b971b873",
+      "matches_execution": true
+    },
+    {
+      "file": "R/parallel.R",
+      "sha256": "4d18a21682703c2bba31a213f6d1297742784bd7647122356db6ecbfac036554",
+      "matches_execution": true
+    },
+    {
+      "file": "R/plot-docs.R",
+      "sha256": "d965a6c32f6336b136520445d837fd0c926f5436039c63c0b807357e1183f5e2",
+      "matches_execution": true
+    },
+    {
+      "file": "R/plot-gg.R",
+      "sha256": "8121db82a2e307e5d620dffb255bb095b309f6bce2d0cc8b3f72929272f85e8b",
+      "matches_execution": true
+    },
+    {
+      "file": "R/plot-named.R",
+      "sha256": "d701a4f6d4680bc6be70ea03a43fafe7110da7690366947f63b90282154a5217",
+      "matches_execution": true
+    },
+    {
+      "file": "R/plot.R",
+      "sha256": "f7b9e4044d8d832b907f1d723c7e222eb1b625aec99085b00d3f4a929b9bd1a9",
+      "matches_execution": true
+    },
+    {
+      "file": "R/pool-imputations.R",
+      "sha256": "4edfbf289e4f2611801535049f05a310a5a6f065d55daf9c24167916bdc77d80",
+      "matches_execution": true
+    },
+    {
+      "file": "R/predict-docs.R",
+      "sha256": "ebf0b9e941c56723d56c09b13e2fea14a7f9467eb6ff19c8ec000d2e067ea86d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/predict.R",
+      "sha256": "8e838e3ddc757b52f6a6dd899bb181eaf2fb76eb91b8b2ea65c188ef56585679",
+      "matches_execution": true
+    },
+    {
+      "file": "R/prior.R",
+      "sha256": "047d1d7f53d167d62f925ad2f50b44d02060d08b83b594efa739bfc75aeb466d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/report.R",
+      "sha256": "6695a2481430c6dff1521a7bb328a164c337988b483b18df75dfb8c0509d6aa3",
+      "matches_execution": true
+    },
+    {
+      "file": "R/robust.R",
+      "sha256": "1aa29d0e0f35e2cac8a41f450a5071ac2f2b3908133ebcadd8c1bd357158fb57",
+      "matches_execution": true
+    },
+    {
+      "file": "R/scaling.R",
+      "sha256": "00592376e9c612b68b83ed35a20c7de6b82e2aa1826c71d35e359ac18f162d07",
+      "matches_execution": true
+    },
+    {
+      "file": "R/selection.R",
+      "sha256": "d51c4db2b626622e6be56e4d9d2154e5814e7d72e604bb3985fae5f4bd830d9f",
+      "matches_execution": true
+    },
+    {
+      "file": "R/sensitivity.R",
+      "sha256": "0137435a73930f309371cfdae026290ffac85fa8883ac38e72e2633d591a977e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/sequences.R",
+      "sha256": "fc3316ee49a9a8e8604148692bfe2d4654856b1bbcd621a6c39c8e151b53f79d",
+      "matches_execution": true
+    },
+    {
+      "file": "R/simulation-service.R",
+      "sha256": "73f04c19c90d1d1741d6fbd8a57294ed7d08b8eb48a337b78581ee664922a9fe",
+      "matches_execution": true
+    },
+    {
+      "file": "R/structure-inference.R",
+      "sha256": "2653906bc0b482d008274c94081565d66333f1fa69edc9bbd6ca15f5e627f37c",
+      "matches_execution": true
+    },
+    {
+      "file": "R/three-step-ml.R",
+      "sha256": "f636f5473aba6d1393a0c20d31f6c5bc723c1493e9ee318c2aca49cf7bd4fbf4",
+      "matches_execution": true
+    },
+    {
+      "file": "R/three-step.R",
+      "sha256": "112fe4879825e2fa2e903f6dfcb7c9d8ba2c4598dea44463c869d3ead59384e6",
+      "matches_execution": true
+    },
+    {
+      "file": "R/tna.R",
+      "sha256": "dd2d6cd5011efbde3cce6699a4f855507affe759abae0a6e4212c02b82132442",
+      "matches_execution": true
+    },
+    {
+      "file": "R/trajectory-views.R",
+      "sha256": "774812a399604dbc639f9bd630e56c9a6aaf645d22f1c214b2be09b1deba6b0e",
+      "matches_execution": true
+    },
+    {
+      "file": "R/transition-inference.R",
+      "sha256": "4b7c6452727576822a9dc6d339b39fca61b951ec05529640d815766cc769b212",
+      "matches_execution": true
+    },
+    {
+      "file": "R/transitions.R",
+      "sha256": "53a3ce03829cbe62c2e3b5e765cdb8ac055fc6c6d1ebc4a11773055cf5443e95",
+      "matches_execution": true
+    },
+    {
+      "file": "R/tree.R",
+      "sha256": "fc014868c56228d455c5d9f5dd8b6a2e8bd3bb6f3ddb28066af027e17643c7a0",
+      "matches_execution": true
+    },
+    {
+      "file": "R/utils.R",
+      "sha256": "36dc8a0bd567f77a4747c18998a9e6108baea9d309cbaec1007c0b584849e5d7",
+      "matches_execution": true
+    },
+    {
+      "file": "R/weights.R",
+      "sha256": "be0b07b4b0e15788d1abad5e19da436fb9bac51bc74897484e8cfdc6fdefbb88",
+      "matches_execution": true
+    }
+  ]
+}

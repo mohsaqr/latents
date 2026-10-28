@@ -1,0 +1,199 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-depmixs4-standard-errors.R","depmixs4-standard-errors","transition standard errors agree with depmixS4's numerical ones",15,0,FALSE,FALSE,0,2.555,0.052,2.636,15
+"test-external-scripts.R","external-scripts","weights agree with Mplus TYPE = COMPLEX and the weighted closed form",1,0,FALSE,FALSE,0,0.00200000000000244,0.00099999999999989,0.847000000000001,1
+"test-external-scripts.R","external-scripts","BCH weights and corrected means agree with tidySEM",1,0,FALSE,FALSE,0,0.387,0.036,1.992,1
+"test-external-scripts.R","external-scripts","Houle et al. (2026) likelihood and fit-index arithmetic agree",2,0,FALSE,FALSE,0,0.00399999999999778,0.00100000000000033,1.232,2
+"test-external-scripts.R","external-scripts","latent transition extensions agree with Mplus, depmixS4 and LMest",11,0,FALSE,FALSE,0,0.0150000000000006,0.00700000000000012,198.702,11
+"test-external-scripts.R","external-scripts","ordinal and count indicators agree with Latent GOLD",5,0,FALSE,FALSE,0,0.00600000000000023,0.00299999999999967,62.129,5
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: AR, one class",6,0,FALSE,FALSE,0,2.038,0.0230000000000001,2.09699999999998,6
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: AR, two classes",6,0,FALSE,FALSE,0,7.034,0.146,7.21499999999997,6
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: Brownian motion, two classes",6,0,FALSE,FALSE,0,2.141,0.0609999999999999,2.20699999999999,6
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: two classes, equal covariance",4,0,FALSE,FALSE,0,5.15,0.135,5.28900000000004,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: one class (a linear mixed model)",4,0,FALSE,FALSE,0,0.609000000000002,0.00800000000000001,0.621999999999957,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: proportional covariance (nwg)",4,0,FALSE,FALSE,0,6.633,0.149,6.791,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: diagonal random effects (idiag)",4,0,FALSE,FALSE,0,2.642,0.06,2.709,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: common covariate and membership covariate",5,0,FALSE,FALSE,0,5.798,0.148,5.96500000000003,5
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: random intercept only, three classes",4,0,FALSE,FALSE,0,3.52799999999999,0.103,3.63499999999999,4
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: random intercept and slope, equal covariance",7,0,FALSE,FALSE,0,2.49799999999999,0.0569999999999999,2.56200000000001,7
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: proportional covariance (nwg)",7,0,FALSE,FALSE,0,3.362,0.0780000000000003,3.452,7
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: random intercept, three classes",7,0,FALSE,FALSE,0,2.738,0.0830000000000002,2.82900000000001,7
+"test-jstats-lta.R","jstats-lta","Gaussian LTA reproduces depmixS4 on both JStats scenarios",18,0,FALSE,FALSE,0,0.516000000000005,0.0179999999999998,0.552999999999997,18
+"test-jstats-lta.R","jstats-lta","binary LTA reproduces depmixS4 where depmixS4 reached the maximum",8,0,FALSE,FALSE,0,0.331000000000003,0.0139999999999993,0.362000000000023,8
+"test-jstats-lta.R","jstats-lta","on the three-profile binary scenario multilpa finds a higher maximum than depmixS4",4,0,FALSE,FALSE,0,27.967,1.281,29.252,4
+"test-jstats-lta.R","jstats-lta","binary LTA reproduces the two Mplus LTA runs pinned by JStats",18,0,FALSE,FALSE,0,1.018,0.0369999999999999,1.07399999999996,18
+"test-jstats-lta.R","jstats-lta","plain LTA reproduces Table 5 of Muthen and Asparouhov (2022)",8,0,FALSE,FALSE,0,1.71299999999999,0.0970000000000004,1.82800000000003,8
+"test-jstats-lta.R","jstats-lta","the brute-force path likelihood reproduces a Gaussian reference",1,0,FALSE,FALSE,0,0.0120000000000005,0.00100000000000033,0.01400000000001,1
+"test-jstats-mplus.R","jstats-mplus","lpa-constraint-new: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00399999999996226,0.00199999999999889,0.00900000000001455,7
+"test-jstats-mplus.R","jstats-mplus","lpa-constraint-new: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00900000000001455,0.00100000000000122,0.0100000000001046,4
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999997669,0.0099999999999909,7
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0109999999999673,0.00100000000000122,0.0120000000000573,4
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.00699999999994816,3
+"test-jstats-mplus.R","jstats-mplus","lpa-eei-k3-tech11: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.0040000000000191,0.00199999999999889,0.0099999999999909,7
+"test-jstats-mplus.R","jstats-mplus","lpa-eei-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lpa-ex710-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00399999999996226,0.000999999999997669,0.00900000000001455,7
+"test-jstats-mplus.R","jstats-mplus","lpa-ex710-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-tech11: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.0099999999999909,7
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-vvi-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00499999999999545,0.00200000000000244,0.0099999999999909,7
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-vvi-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000004275,0.000999999999997669,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lpa-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.0110000000000809,7
+"test-jstats-mplus.R","jstats-mplus","lpa-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-entropy: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.00199999999999889,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-entropy: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-k1starts-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-k1starts-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999996226,0.00100000000000122,0.00799999999992451,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00600000000008549,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000004275,0.00100000000000122,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999996226,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-k4-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","lca-k4-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-k5-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","lca-k5-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999996226,0.000999999999997669,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-lrtstarts: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-lrtstarts: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","miterations-uncapped: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00199999999995271,0.00100000000000122,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","miterations-uncapped: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","training-partial-off: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","training-partial-off: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00199999999995271,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-4cat-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999996226,0.00100000000000122,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","lca-4cat-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0050000000000523,0.00100000000000122,0.00599999999997181,4
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999996226,0.000999999999997669,0.00699999999994816,6
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00600000000008549,4
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-poly-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999996226,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-poly-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00599999999997181,4
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-k3-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000004275,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999996226,0.00100000000000122,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-count-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000004275,0.000999999999997669,0.00599999999997181,6
+"test-jstats-mplus.R","jstats-mplus","lca-count-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000004275,0.00100000000000122,0.00600000000008549,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0130000000000337,0.00199999999999889,0.0170000000000528,3
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.00799999999992451,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999996226,0.000999999999997669,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,3
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00599999999997181,6
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00399999999990541,4
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00699999999994816,3
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999997669,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.00599999999997181,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0040000000000191,0.00100000000000122,0.00699999999994816,3
+"test-jstats-mplus.R","jstats-mplus","lca-du3step-multi: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00599999999997181,6
+"test-jstats-mplus.R","jstats-mplus","lca-du3step-multi: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","lca-de3step-multi: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","lca-de3step-multi: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.000999999999997669,0.00600000000008549,6
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0,0.0040000000000191,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-de3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999996226,0.00100000000000122,0.0080000000000382,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-de3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999997669,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-du3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00600000000008549,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-du3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999996226,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000004275,0.00100000000000122,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0.00100000000000122,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step-both: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999997669,0.00700000000006185,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step-both: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0029999999999859,0,0.00499999999999545,4
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: posteriors match the CPROB file Mplus saved",5,0,FALSE,FALSE,0,0.00499999999999545,0.00100000000000122,0.0190000000000055,5
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: R3STEP logits match Mplus",4,0,FALSE,FALSE,0,0.147999999999968,0.004999999999999,0.156999999999925,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: R3STEP logits match Mplus",4,0,FALSE,FALSE,0,0.523000000000025,0.00899999999999679,0.534999999999968,4
+"test-jstats-mplus.R","jstats-mplus","mixreg-classspecific: mixture_regression() reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.26400000000001,0.0190000000000019,0.306999999999903,6
+"test-jstats-mplus.R","jstats-mplus","lta-classvarying-measurement: lta() reaches Mplus's maximum",9,0,FALSE,FALSE,0,12.348,1.131,13.1569999999999,9
+"test-latentgold-families.R","latentgold-families","every group-class family reproduces Latent GOLD at its finest quadrature",25,0,FALSE,FALSE,0,209.307,5.763,215.315,25
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m01",5,0,FALSE,FALSE,0,0.225000000000023,0.0120000000000005,0.254000000000019,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m02",5,0,FALSE,FALSE,0,0.350999999999999,0.0249999999999986,0.394000000000005,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m03",5,0,FALSE,FALSE,0,0.182999999999993,0.0139999999999993,0.215000000000032,5
+"test-latentgold.R","latentgold","every Latent GOLD case agrees with the current package",3,0,FALSE,FALSE,0,121.115,5.181,126.267,3
+"test-mclust-noise.R","mclust-noise","the hypervolume is mclust's hypvol()",1,0,FALSE,FALSE,0,0.00699999999994816,0.00100000000000477,0.0270000000000437,1
+"test-mclust-noise.R","mclust-noise","a noise fit reproduces mclust's EM for all fourteen structures",6,0,FALSE,FALSE,0,0.274999999999977,0.0069999999999979,0.283999999999992,6
+"test-mclust-noise.R","mclust-noise","noise and prior together reproduce mclust's EM",2,0,FALSE,FALSE,0,0.211000000000013,0.00400000000000489,0.216000000000008,2
+"test-mclust-noise.R","mclust-noise","from Mclust's own noise initialization the fits agree",3,0,FALSE,FALSE,0,0.0309999999999491,0.000999999999997669,0.0319999999999254,3
+"test-mclust-noise.R","mclust-noise","an observation assigned to noise is profile 0, as in mclust",2,0,FALSE,FALSE,0,0.0220000000000482,0.00100000000000477,0.0229999999999109,2
+"test-mclust-prior.R","mclust-prior","each MAP M-step is mclust's EM step from the same posteriors",20,0,FALSE,FALSE,0,0.0230000000000246,0.00399999999999778,0.0289999999999964,20
+"test-mclust-prior.R","mclust-prior","the whole MAP EM reproduces mclust::me from the same start",31,0,FALSE,FALSE,0,1.34300000000007,0.0399999999999991,1.404,31
+"test-mclust.R","mclust","every M-step reproduces mclust's own, or beats it",16,0,FALSE,FALSE,0,0.0240000000000009,0.00500000000000256,0.0429999999998927,16
+"test-mclust.R","mclust","the parameter counts are the ones mclust reports",14,0,FALSE,FALSE,0,5.57400000000007,0.0420000000000016,5.63299999999992,14
+"test-mclust.R","mclust","the likelihood is the mixture likelihood, at mclust's own estimate",1,0,FALSE,FALSE,0,0.377999999999929,0.00300000000000011,0.382999999999925,1
+"test-mclust.R","mclust","full covariance mixture limits reproduce mclust VVV and EEE",10,0,FALSE,FALSE,0,0.0320000000000391,0.00399999999999778,0.0460000000000491,10
+"test-missing-patterns.R","missing-patterns","the five patterns' data are what the kit describes",2,0,FALSE,FALSE,0,0.00200000000006639,0.00100000000000477,0.0040000000000191,2
+"test-missing-patterns.R","missing-patterns","likelihood, sample size, BIC, entropy and AvePP reproduce Mplus",50,0,FALSE,FALSE,0,26.044,0.348999999999997,26.5070000000001,50
+"test-missing-patterns.R","missing-patterns","likelihood and every row's posteriors reproduce Latent GOLD",20,0,FALSE,FALSE,0,25.958,0.336999999999996,26.399,20
+"test-missing-patterns.R","missing-patterns","class counts reproduce Mplus's counts based on posterior probabilities",5,0,FALSE,FALSE,0,25.9620000000001,0.323,26.2859999999999,5
+"test-missing-patterns.R","missing-patterns","the programs' sample sizes differ only by the rows with nothing observed",4,0,FALSE,FALSE,0,0.00799999999992451,0.00200000000000244,0.0130000000001473,4
+"test-missing-patterns.R","missing-patterns","m5's group level reproduces Mplus: clusters, posteriors and statistics",11,0,FALSE,FALSE,0,5.31799999999998,0.0589999999999975,5.38299999999981,11
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian rows",2,0,FALSE,FALSE,0,0.181999999999903,0.00399999999999778,0.187999999999874,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian rows with a concomitant model",2,0,FALSE,FALSE,0,0.358000000000061,0.0110000000000028,0.371000000000095,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian, one class per group",2,0,FALSE,FALSE,0,0.0639999999999645,0.000999999999997669,0.0679999999999836,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","binomial, one class per group",3,0,FALSE,FALSE,0,0.312999999999988,0.00900000000000034,0.326000000000022,3
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","binomial, one class per group, with a concomitant model",3,0,FALSE,FALSE,0,0.399000000000001,0.0120000000000005,0.413999999999987,3
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Poisson rows and Poisson per group",6,0,FALSE,FALSE,0,0.517000000000053,0.019999999999996,0.54099999999994,6
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Poisson with a coefficient shared across classes",2,0,FALSE,FALSE,0,0.505999999999972,0.0310000000000059,0.539999999999964,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian with equal variances",1,0,FALSE,FALSE,0,0.140999999999963,0.0069999999999979,0.150000000000091,1
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","the parameter count is flexmix's",1,0,FALSE,FALSE,0,0.317000000000007,0.00400000000000489,0.323000000000093,1
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","bic_rows is flexmix's BIC, penalised by rows",2,0,FALSE,FALSE,0,0.32000000000005,0.00799999999999557,0.33199999999988,2
+"test-montecarlo-extended.R","montecarlo-extended","the extended kit holds 4 configurations of 10, each with its outputs",62,0,FALSE,FALSE,0,0.0450000000000728,0.0180000000000007,0.0920000000000982,62
+"test-montecarlo-extended.R","montecarlo-extended","two-level full-covariance models reproduce Mplus",141,0,FALSE,FALSE,0,0.274999999999977,0.0380000000000038,0.666999999999916,141
+"test-montecarlo-extended.R","montecarlo-extended","every extended case reproduces Latent GOLD, every row included",200,0,FALSE,FALSE,0,0.323000000000093,0.0429999999999993,0.917000000000144,200
+"test-montecarlo.R","montecarlo","the kit holds 8 configurations of 15 replicates, each with both outputs",5,0,FALSE,FALSE,0,0.0169999999999391,0.00200000000000244,0.0220000000001619,5
+"test-montecarlo.R","montecarlo","every case reproduces Mplus",1410,0,FALSE,FALSE,0,2.68200000000002,0.222000000000001,5.69799999999987,1410
+"test-montecarlo.R","montecarlo","two-level cases reproduce Mplus at the group level",121,0,FALSE,FALSE,0,0.677999999999997,0.0209999999999937,0.728000000000065,121
+"test-montecarlo.R","montecarlo","every case reproduces Latent GOLD, rows with nothing observed included",600,0,FALSE,FALSE,0,0.84699999999998,0.125,2.33899999999994,600
+"test-montecarlo.R","montecarlo","no reference program finds a higher maximum than the package",1,0,FALSE,FALSE,0,0.908999999999992,0.0420000000000016,1.05199999999991,1
+"test-montecarlo.R","montecarlo","the retained global-maximum audit covers every case and found no lower maximum",4,0,FALSE,FALSE,0,0.0159999999999627,0.00199999999999534,0.0310000000001764,4
+"test-montecarlo.R","montecarlo","criteria, the AvePP matrix and OCC follow from Mplus's own quantities",1200,0,FALSE,FALSE,0,2.63800000000003,0.0609999999999999,2.70000000000005,1200
+"test-montecarlo.R","montecarlo","predict() on the data reproduces Mplus's posteriors",90,0,FALSE,FALSE,0,0.553999999999974,0.0219999999999985,0.580999999999904,90
+"test-montecarlo.R","montecarlo","drop_empty = FALSE counts every row, as Latent GOLD does",30,0,FALSE,FALSE,0,33.696,0.204000000000001,33.9300000000001,30
+"test-mplus-categorical.R","mplus-categorical","thresholds and their standard errors reproduce a genuine Mplus run",3,0,FALSE,FALSE,0,0.152999999999906,0.00900000000000034,0.173000000000002,3
+"test-mplus-categorical.R","mplus-categorical","categorical fits reproduce genuine Mplus two-level results",6,0,FALSE,FALSE,0,0.881000000000085,0.0450000000000017,0.92899999999986,6
+"test-mplus-classification.R","mplus-classification","single-level entropy and AvePP reproduce published Mplus examples",6,0,FALSE,FALSE,0,0.286000000000058,0.0100000000000051,0.344000000000051,6
+"test-mplus-classification.R","mplus-classification","two-level FIML entropy and AvePP reproduce genuine Mplus at each level",6,0,FALSE,FALSE,0,0.393999999999892,0.0110000000000028,0.449000000000069,6
+"test-mplus-classification.R","mplus-classification","the parser reads a two-level output's levels by name",3,0,FALSE,FALSE,0,0.00500000000010914,0.000999999999997669,0.00900000000001455,3
+"test-mplus-covariates.R","mplus-covariates","one-step covariate model agrees with genuine multilevel Mplus ML",12,0,FALSE,FALSE,0,0.102999999999952,0.0120000000000005,0.117999999999938,12
+"test-mplus-covariates.R","mplus-covariates","standard errors reproduce a genuine Mplus covariate run",8,0,FALSE,FALSE,0,0.228000000000065,0.0249999999999986,0.251999999999953,8
+"test-mplus-covariates.R","mplus-covariates","the group-class contrast matches Mplus through vcov()",2,0,FALSE,FALSE,0,0.202999999999975,0.0200000000000031,0.214000000000169,2
+"test-mplus-inference.R","mplus-inference","ordinary ML Hessian standard errors reproduce genuine Mplus9 results",6,0,FALSE,FALSE,0,0.105000000000018,0.00600000000000023,0.129000000000133,6
+"test-mplus-inference.R","mplus-inference","full-covariance FIML Hessian standard errors reproduce genuine Mplus9",4,0,FALSE,FALSE,0,0.163999999999987,0.000999999999997669,0.16599999999994,4
+"test-mplus-lmr.R","mplus-lmr","the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11",2,0,FALSE,FALSE,0,0.00199999999995271,0.000999999999997669,0.0110000000001946,2
+"test-mplus-missing-full.R","mplus-missing-full","full covariance with missing indicators reproduces genuine two-level Mplus",28,0,FALSE,FALSE,0,0.413999999999987,0.00999999999999801,0.432999999999993,28
+"test-mplus-mixture-weights.R","mplus-mixture-weights","a weighted mixture reproduces Mplus's pseudo likelihood, posteriors and robust SEs",9,0,FALSE,FALSE,0,0.581000000000017,0.0279999999999987,0.642000000000053,9
+"test-mplus-person-scaling.R","mplus-person-scaling","person centring and scaling reproduce Mplus on within-person z-scores",5,0,FALSE,FALSE,0,1.46900000000005,0.0710000000000051,1.57399999999984,5
+"test-mplus-public-parser.R","mplus-public-parser","the public Mplus parser handles known synthetic output and label reversal",12,0,FALSE,FALSE,0,0.0230000000000246,0.00300000000000011,0.0360000000000582,12
+"test-mplus-public.R","mplus-public","single-level equal and varying LPA reproduce published Mplus examples",22,0,FALSE,FALSE,0,0.307999999999993,0.0120000000000005,0.342000000000098,22
+"test-mplus-random-intercept.R","mplus-random-intercept","one-profile random intercept matches genuine Mplus output",5,0,FALSE,FALSE,0,0.120000000000005,0.00199999999999534,0.126999999999953,5
+"test-mplus-robust.R","mplus-robust","robust standard errors reproduce genuine Mplus MLR results",6,0,FALSE,FALSE,0,0.0399999999999636,0.00200000000000244,0.0509999999999309,6
+"test-mplus-standardize.R","mplus-standardize","grand scaling matches Mplus STANDARDIZE up to the n versus n - 1 constant",6,0,FALSE,FALSE,0,1.11399999999992,0.0510000000000019,1.20100000000002,6
+"test-mplus-tech14.R","mplus-tech14","the bootstrap LRT statistic and parameter difference match TECH14",9,0,FALSE,FALSE,0,2.22299999999996,0.128,2.40699999999993,9
+"test-mplus-tech14.R","mplus-tech14","bootstrap_lrt()'s p-value agrees with TECH14 where the null is true",4,0,FALSE,FALSE,0,480.808,27.621,509.722,4
+"test-mplus-twolevel-public.R","mplus-twolevel-public","matched multilevel fits reproduce Mplus on public continuous data",36,0,FALSE,FALSE,0,0.758000000000038,0.0889999999999986,0.86200000000008,36
+"test-mplus-twolevel-synthetic.R","mplus-twolevel-synthetic","native multilevel LPA reproduces Mplus9 on two synthetic variance models",28,0,FALSE,FALSE,0,0.220000000000027,0.0210000000000008,0.25,28
+"test-numerical-equivalence.R","numerical-equivalence","exhaustive reference agrees with an analytically solvable model",8,0,FALSE,FALSE,0,0.0480000000000018,0.00199999999999534,0.053000000000111,8
+"test-numerical-equivalence.R","numerical-equivalence","fitted likelihood and posteriors match exhaustive latent assignments",6,0,FALSE,FALSE,0,0.0110000000001946,0.00199999999999534,0.0149999999998727,6
+"test-numerical-equivalence.R","numerical-equivalence","one EM update matches an independent exhaustive E-step and M-step",10,0,FALSE,FALSE,0,0.0249999999998636,0.00400000000000489,0.0320000000001528,10
+"test-numerical-equivalence.R","numerical-equivalence","EM agrees with independent direct numerical maximum likelihood",7,0,FALSE,FALSE,0,0.138000000000147,0.00600000000000023,0.147999999999911,7
+"test-numerical-equivalence.R","numerical-equivalence","single group class reproduces mclust diagonal Gaussian mixtures",8,0,FALSE,FALSE,0,0.0259999999998399,0.00300000000000011,0.0350000000000819,8
+"test-structure-inference.R","structure-inference","single-level Wald SEs of all fourteen structures match numDeriv",42,0,FALSE,FALSE,0,4.94899999999984,0.608000000000004,5.08400000000006,42
+"test-structure-inference.R","structure-inference","two-level Wald SEs of all fourteen structures match numDeriv",42,0,FALSE,FALSE,0,6.38699999999994,0.822000000000003,6.50600000000009,42
+"test-tidylpa-classification.R","tidylpa-classification","relative entropy and AvePP equal tidyLPA's on the same posteriors",9,0,FALSE,FALSE,0,0.953999999999951,0.0480000000000018,1.03800000000001,9
+"test-tidylpa-classification.R","tidylpa-classification","tidyLPA's formulas take every row, so they agree on complete data only",2,0,FALSE,FALSE,0,0.0960000000000036,0.00200000000000955,0.100000000000136,2
+"test-tidysem-bch.R","tidysem-bch","the correction agrees with an independent implementation",2,0,FALSE,FALSE,0,0.05600000000004,0.00300000000000011,0.0650000000000546,2
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.023,0.004,0.0740000000000001,3
+"test-claims.R","claims","every claim is still worded as registered in its source",134,0,FALSE,FALSE,0,0.205,0.065,0.362,134
+"test-claims.R","claims","every backed claim names a test that exists",132,0,FALSE,FALSE,0,0.114,0.05,0.273,132
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.002,0.001,0.006,2
+"test-enumeration-mplus.R","enumeration-mplus","every candidate of a grid reproduces Mplus at its number of classes",46,0,FALSE,FALSE,0,22.754,1.556,24.835,46
+"test-enumeration-mplus.R","enumeration-mplus","compare_models() BIC weights follow Mplus's BIC",2,0,FALSE,FALSE,0,13.486,1.16,14.877,2
+"test-enumeration-mplus.R","enumeration-mplus","a grid fitted on two cores is identical to one fitted on one",1,0,FALSE,FALSE,0,4.259,0.321,8.72300000000001,1

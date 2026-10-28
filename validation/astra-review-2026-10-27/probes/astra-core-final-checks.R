@@ -1,0 +1,5 @@
+library(latents,lib.loc='/private/tmp/astra-review/lib'); options(digits=16)
+s<-readRDS('/tmp/astra-lta-10000.rds')
+print(c(base=s$a$log_likelihood,padded=s$b$log_likelihood,base_boundary=s$a$boundary,padded_boundary=s$b$boundary))
+print(tryCatch(dim(vcov(s$a)),error=function(e)conditionMessage(e)));print(tryCatch(dim(vcov(s$b)),error=function(e)c(class(e)[1],conditionMessage(e))))
+d<-data.frame(a=rep(c('a','b'),30),b=rep(c('x','y','z'),20),w=1);p<-rbind(d,data.frame(a='absent-category',b='x',w=0));f<-function(z)lca(z,c('a','b'),1,n_starts=1,seed=1,weights='w');a<-f(d);b<-f(p);print(c(base_ll=a$log_likelihood,padded_ll=b$log_likelihood,bic_base=a$bic,bic_padded=b$bic,delta_bic=b$bic-a$bic))

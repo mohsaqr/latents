@@ -1,0 +1,127 @@
+rows 1440 finals 18000 unconverged rows 0 unconverged finals 0 
+largest deficit from excluding finals from best reference 3.659729e-07 
+reference improvements from retained finalists
+[1] key    rows   finals gain  
+<0 rows> (or 0-length row.names)
+rows changing status
+[1] condition      replicate      k              fit            log_likelihood
+[6] old_best       best           status         old_status    
+<0 rows> (or 0-length row.names)
+counts using all retained finalist references
+           status
+fit         best miss spike
+  emem_10    136   19    25
+  kmeans_10  130   38    12
+by condition and k
+, , fit = emem_10, status = best
+
+            k
+condition     2  3  4
+  lca_k3      0 20 20
+  lpa_eee_k3  0 18 18
+  lpa_vvi_k3  0 19  7
+  lpa_vvv_k2 14  0  0
+  ml_lpa      0 20  0
+
+, , fit = kmeans_10, status = best
+
+            k
+condition     2  3  4
+  lca_k3      0 20 18
+  lpa_eee_k3  0 17 15
+  lpa_vvi_k3  0 20  7
+  lpa_vvv_k2 13  0  0
+  ml_lpa      0 20  0
+
+, , fit = emem_10, status = miss
+
+            k
+condition     2  3  4
+  lca_k3      0  0  0
+  lpa_eee_k3  0  2  2
+  lpa_vvi_k3  0  0  7
+  lpa_vvv_k2  5  3  0
+  ml_lpa      0  0  0
+
+, , fit = kmeans_10, status = miss
+
+            k
+condition     2  3  4
+  lca_k3      0  0  2
+  lpa_eee_k3  0  3  5
+  lpa_vvi_k3  0  0 10
+  lpa_vvv_k2  7 11  0
+  ml_lpa      0  0  0
+
+, , fit = emem_10, status = spike
+
+            k
+condition     2  3  4
+  lca_k3      0  0  0
+  lpa_eee_k3  0  0  0
+  lpa_vvi_k3  0  1  6
+  lpa_vvv_k2  1 17  0
+  ml_lpa      0  0  0
+
+, , fit = kmeans_10, status = spike
+
+            k
+condition     2  3  4
+  lca_k3      0  0  0
+  lpa_eee_k3  0  0  0
+  lpa_vvi_k3  0  0  3
+  lpa_vvv_k2  0  9  0
+  ml_lpa      0  0  0
+
+thin/spike profile counts
+      condition replicate k       fit min_class min_relative_variance boundary
+764  lpa_vvi_k3        15 4 kmeans_10  1.999827          3.891419e-03    FALSE
+792  lpa_vvi_k3        17 4 kmeans_10  5.627023          8.881770e-04    FALSE
+806  lpa_vvi_k3        18 4 kmeans_10  4.638930          2.488161e-03    FALSE
+862  lpa_vvv_k2         2 3 kmeans_10 28.678465          4.530330e-03    FALSE
+876  lpa_vvv_k2         3 3 kmeans_10  3.000000          8.327640e-07     TRUE
+890  lpa_vvv_k2         4 3 kmeans_10  2.000000          7.478727e-07     TRUE
+904  lpa_vvv_k2         5 3 kmeans_10 15.372142          1.033072e-03    FALSE
+932  lpa_vvv_k2         7 3 kmeans_10 22.860539          2.694272e-03    FALSE
+946  lpa_vvv_k2         8 3 kmeans_10 41.661225          6.889508e-03    FALSE
+974  lpa_vvv_k2        10 3 kmeans_10  8.641543          2.381573e-04    FALSE
+1002 lpa_vvv_k2        12 3 kmeans_10  9.830296          6.452295e-03    FALSE
+1016 lpa_vvv_k2        13 3 kmeans_10 15.530178          6.043614e-04    FALSE
+82   lpa_vvi_k3         1 4   emem_10  3.986954          5.206615e-03    FALSE
+86   lpa_vvi_k3         3 4   emem_10  1.000000          5.480441e-07     TRUE
+100  lpa_vvi_k3        10 4   emem_10  1.000000          6.518662e-07     TRUE
+104  lpa_vvi_k3        12 4   emem_10  1.987472          6.952592e-04    FALSE
+108  lpa_vvi_k3        14 4   emem_10  1.999587          3.476917e-05    FALSE
+110  lpa_vvi_k3        15 4   emem_10  1.999826          3.891419e-03    FALSE
+119  lpa_vvi_k3        20 3   emem_10  1.000000          5.830749e-07     TRUE
+122  lpa_vvv_k2         1 3   emem_10  4.999653          1.117980e-06     TRUE
+124  lpa_vvv_k2         2 3   emem_10  9.881701          9.662332e-05    FALSE
+126  lpa_vvv_k2         3 3   emem_10  9.860859          1.094703e-03    FALSE
+128  lpa_vvv_k2         4 3   emem_10  3.000000          8.059395e-07     TRUE
+130  lpa_vvv_k2         5 3   emem_10 15.115080          2.035046e-03    FALSE
+132  lpa_vvv_k2         6 3   emem_10 16.309894          2.204726e-03    FALSE
+1341 lpa_vvv_k2         7 3   emem_10  4.997888          9.090471e-07     TRUE
+136  lpa_vvv_k2         8 3   emem_10 41.661225          6.889508e-03    FALSE
+138  lpa_vvv_k2         9 3   emem_10 16.471920          5.416644e-04    FALSE
+139  lpa_vvv_k2        10 2   emem_10 25.654320          7.418708e-03    FALSE
+140  lpa_vvv_k2        10 3   emem_10  6.851353          4.529747e-06    FALSE
+144  lpa_vvv_k2        12 3   emem_10 14.209833          2.795574e-04    FALSE
+146  lpa_vvv_k2        13 3   emem_10 14.891566          3.606024e-04    FALSE
+1481 lpa_vvv_k2        14 3   emem_10 13.150386          7.082699e-04    FALSE
+150  lpa_vvv_k2        15 3   emem_10  6.920137          1.507813e-05    FALSE
+152  lpa_vvv_k2        16 3   emem_10  4.995664          1.179239e-06     TRUE
+156  lpa_vvv_k2        18 3   emem_10 11.730256          2.626221e-03    FALSE
+160  lpa_vvv_k2        20 3   emem_10  5.995273          8.090640e-05    FALSE
+only emem 10 only kmeans 4 
+runtime ratios by condition
+   condition seconds.emem_10 seconds.kmeans_10
+1     lca_k3          1.2440            0.9565
+2 lpa_eee_k3          1.4390            0.8280
+3 lpa_vvi_k3          0.9140            0.4640
+4 lpa_vvv_k2          1.0195            0.4910
+5     ml_lpa          0.9585            0.3760
+overall final-run timing summaries
+                fit median_seconds total_seconds
+emem_10     emem_10         1.0265       207.450
+kmeans_10 kmeans_10         0.5150       143.536
+Gaussian no-rule finalists with missing variance metrics: 1400 of 1400 

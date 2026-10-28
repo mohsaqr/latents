@@ -1,0 +1,3 @@
+ASTRA SUMMARY
+   files    tests   passed   failed   errors warnings  skipped 
+     213     1846    12664        0        0        2       16 

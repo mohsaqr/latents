@@ -1,0 +1,74 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/20/2026   9:13 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents pair covariance scales_01;
+  DATA: FILE = scales_01.dat;
+  VARIABLE:
+   NAMES = id y1 y2 y3 y4;
+   USEVARIABLES = y1 y2 y3 y4;
+   IDVARIABLE = id;
+   MISSING = ALL(-999);
+   CLASSES = c(2);
+  ANALYSIS:
+   TYPE = MIXTURE;
+   ESTIMATOR = ML;
+   STARTS = 200 40;
+   STITERATIONS = 40;
+   STSEED = 20261020;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %OVERALL%
+   %c#1%
+   [y1 y2 y3 y4];
+   y1 y2 y3 y4;
+   y1 WITH y2;
+   %c#2%
+   [y1 y2 y3 y4];
+   y1 y2 y3 y4;
+   y1 WITH y2;
+  OUTPUT: TECH1;
+  SAVEDATA:
+   FILE = scales_01-posteriors.dat;
+   SAVE = CPROBABILITIES;
+   FORMAT = F20.12;
+   RESULTS = scales_01-results.dat;
+
+*** WARNING in MODEL command
+  All variables are uncorrelated with all other variables within class.
+  Check that this is what is intended.
+*** ERROR
+  One or more variables have a variance of zero.
+  Check your data and format statement.
+
+    Continuous    Number of
+     Variable   Observations    Variance
+
+    **Y1             500           0.000
+    **Y2             500      **********
+      Y3             500           1.372
+      Y4             500           1.366
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

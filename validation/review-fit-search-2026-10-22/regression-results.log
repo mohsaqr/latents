@@ -1,0 +1,44 @@
+review-regressions: ..12.3.4..5.6
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-review-regressions.R:31:3'): full-covariance LTA identifies
+Expected `fitted$fit$boundary` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 2. Failure ('test-review-regressions.R:32:3'): full-covariance LTA identifies
+Expected `parameter_inference(fitted$fit)` to throw a error with class <latents_boundary_fit>.
+
+── 3. Failure ('test-review-regressions.R:45:3'): an excluded outlier does not d
+Expected `outlier$log_likelihood` to equal `ordinary$log_likelihood`.
+Differences:
+  `actual`: -256.5
+`expected`: -152.6
+
+
+── 4. Failure ('test-review-regressions.R:67:3'): non-Gaussian rows cannot hide 
+Expected `"latents_thin_profiles" %in% fitted$warnings` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 5. Failure ('test-review-regressions.R:82:3'): cross-level thinness uses weig
+Expected `"latents_thin_profiles" %in% fitted$warnings` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 6. Failure ('test-review-regressions.R:94:3'): cross-level thinness also chec
+Expected `"latents_thin_profiles" %in% fitted$warnings` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+Review totals: 5 cases; 7 supporting passes; 6 expected failures; 0 errors; 0 warnings.

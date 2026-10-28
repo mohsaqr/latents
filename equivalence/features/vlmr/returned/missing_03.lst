@@ -1,0 +1,665 @@
+missing_03-lg.dat
+File name:	missing_03-lg.dat	
+File size:	33512 bytes  500 records	
+File date:	2026-Oct-20 9:43:00 PM	
+Syntax:	missing_03.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	VLMR	p-value	Class.Err.	Entropy R²	
+Model1	1-Cluster	-2736.4479	5522.6127	5488.8958	5496.8958	8			0.0000	1.0000	
+Model2	2-Cluster	-2646.8009	5374.3916	5319.6017	5332.6017	13	179.2941	0.0000	0.1225	0.5983	
+Model3	3-Cluster	-2641.5175	5394.8979	5319.0349	5337.0349	18	10.5668	0.2181	0.1939	0.5263	
+Model4	4-Cluster	-2638.1011	5419.1382	5322.2022	5345.2022	23	6.8327	0.4544	0.2470	0.4862	
+Model1 - LL = -2736.4479
+1-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	8				
+Activated Constraints	0				
+Random Seed	550680				
+Best Start Seed	550680				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2736.4479				
+Log-prior	0.0000				
+Log-posterior	-2736.4479				
+BIC (based on LL)	5522.6127				
+AIC (based on LL)	5488.8958				
+AIC3 (based on LL)	5496.8958				
+CAIC (based on LL)	5530.6127				
+SABIC (based on LL)	5497.2202				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-2736.4479				
+Entropy	0.0000				
+CLC	5472.8958				
+AWE	5596.3295				
+ICL-BIC	5522.6127				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	500.0000	500.0000			
+Total	500.0000	500.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	500.0000	500.0000			
+Total	500.0000	500.0000			
+					
+Files					
+Infile	C:\lgfeatures\vlmr\missing_03\missing_03-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20273053 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 1;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+										
+y1	<-	1	0.7119	0.0624	11.4128	3.6e-30	130.2523	1	3.6e-30	
+y1	<-	Cluster(1)	0.0000	.	.	.				
+										
+y2	<-	1	0.6461	0.0570	11.3438	8.0e-30	128.6829	1	8.0e-30	
+y2	<-	Cluster(1)	0.0000	.	.	.				
+										
+y3	<-	1	0.5333	0.0569	9.3665	7.5e-21	87.7315	1	7.5e-21	
+y3	<-	Cluster(1)	0.0000	.	.	.				
+										
+y4	<-	1	0.3803	0.0542	7.0133	2.3e-12	49.1868	1	2.3e-12	
+y4	<-	Cluster(1)	0.0000	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			1.6809	0.1144	14.6969	6.7e-49	216.0000	1	6.7e-49	
+y2			1.3659	0.0941	14.5086	1.1e-47	210.5000	1	1.1e-47	
+y3			1.3939	0.0951	14.6629	1.1e-48	215.0000	1	1.1e-48	
+y4			1.2735	0.0865	14.7139	5.2e-49	216.5000	1	5.2e-49	
+Model2 - LL = -2646.8009
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	13				
+Activated Constraints	0				
+Random Seed	550680				
+Best Start Seed	462853				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2646.8009				
+Log-prior	0.0000				
+Log-posterior	-2646.8009				
+BIC (based on LL)	5374.3916				
+AIC (based on LL)	5319.6017				
+AIC3 (based on LL)	5332.6017				
+CAIC (based on LL)	5387.3916				
+SABIC (based on LL)	5333.1288				
+					
+Vuong Likelihood-Ratio Test	 	p-value			
+LL of H0 model	-2736.4479				
+Diff in Number of Parameters	5				
+Mean of VLMR Distr.	5.2851				
+StdDev of VLMR Distr.	3.4602				
+-2LL Diff (VLMR)	179.2941	0.0000			
+-2LL Diff Adjusted (aVLMR)	173.7039	0.0000			
+Variance LL Diff	0.3612	0.0000			
+Z-Value Mean LL Diff	6.6703	0.0000			
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1225				
+Reduction of errors (Lambda)	0.7282				
+Entropy R-squared	0.5983				
+Standard R-squared	0.6530				
+Classification log-likelihood	-2785.0597				
+Entropy	138.2588				
+CLC	5570.1194				
+AWE	5770.6992				
+ICL-BIC	5650.9093				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	188.5876	36.8626	225.4502		
+2	24.4124	250.1374	274.5498		
+Total	213.0000	287.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	182.4933	42.9569	225.4502		
+2	42.9569	231.5929	274.5498		
+Total	225.4502	274.5498	500.0000		
+					
+Files					
+Infile	C:\lgfeatures\vlmr\missing_03\missing_03-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20273053 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	1.8234	1	0.18	
+Cluster(2)	<-	1	0.1970	0.1459	1.3503	0.18				
+										
+y1	<-	1	1.5609	0.1009	15.4629	6.2e-54	239.1027	1	6.2e-54	
+y1	<-	Cluster(1)	0.0000	.	.	.	144.8116	1	2.4e-33	
+y1	<-	Cluster(2)	-1.5379	0.1278	-12.0338	2.4e-33				
+										
+y2	<-	1	1.3208	0.0908	14.5494	5.9e-48	211.6853	1	5.9e-48	
+y2	<-	Cluster(1)	0.0000	.	.	.	97.0308	1	6.8e-23	
+y2	<-	Cluster(2)	-1.2144	0.1233	-9.8504	6.8e-23				
+										
+y3	<-	1	1.3097	0.0911	14.3691	8.1e-47	206.4709	1	8.1e-47	
+y3	<-	Cluster(1)	0.0000	.	.	.	142.7124	1	6.8e-33	
+y3	<-	Cluster(2)	-1.4169	0.1186	-11.9462	6.8e-33				
+										
+y4	<-	1	0.9030	0.0880	10.2586	1.1e-24	105.2381	1	1.1e-24	
+y4	<-	Cluster(1)	0.0000	.	.	.	61.9553	1	3.5e-15	
+y4	<-	Cluster(2)	-0.9620	0.1222	-7.8712	3.5e-15				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			1.0961	0.0946	11.5888	4.7e-31	134.3003	1	4.7e-31	
+y2			1.0017	0.0824	12.1543	5.4e-34	147.7280	1	5.4e-34	
+y3			0.8966	0.0805	11.1329	8.7e-29	123.9415	1	8.7e-29	
+y4			1.0438	0.0788	13.2404	5.1e-40	175.3080	1	5.1e-40	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	1.8234	1	0.18	
+	
+y1	<-	 Cluster	Cluster	1	2	144.8116	1	2.4e-33	
+	
+y2	<-	 Cluster	Cluster	1	2	97.0308	1	6.8e-23	
+	
+y3	<-	 Cluster	Cluster	1	2	142.7124	1	6.8e-33	
+	
+y4	<-	 Cluster	Cluster	1	2	61.9553	1	3.5e-15	
+Model3 - LL = -2641.5175
+3-Cluster Syntax Model	
+						
+Number of cases	500					
+Number of parameters (Npar)	18					
+Activated Constraints	0					
+Random Seed	53937					
+Best Start Seed	569437					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-2641.5175					
+Log-prior	0.0000					
+Log-posterior	-2641.5175					
+BIC (based on LL)	5394.8979					
+AIC (based on LL)	5319.0349					
+AIC3 (based on LL)	5337.0349					
+CAIC (based on LL)	5412.8979					
+SABIC (based on LL)	5337.7648					
+						
+Vuong Likelihood-Ratio Test	 	p-value				
+LL of H0 model	-2646.8009					
+Diff in Number of Parameters	5					
+Mean of VLMR Distr.	7.5391					
+StdDev of VLMR Distr.	5.8992					
+-2LL Diff (VLMR)	10.5668	0.2181				
+-2LL Diff Adjusted (aVLMR)	10.2373	0.2318				
+Variance LL Diff	0.0240	0.4613				
+Z-Value Mean LL Diff	1.5242	0.0637				
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1939					
+Reduction of errors (Lambda)	0.6502					
+Entropy R-squared	0.5263					
+Standard R-squared	0.5447					
+Classification log-likelihood	-2870.9028					
+Entropy	229.3854					
+CLC	5741.8057					
+AWE	6019.5315					
+ICL-BIC	5853.6686					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	186.8193	33.0214	0.4692	220.3100		
+2	22.2778	191.6135	8.9262	222.8175		
+3	2.9029	29.3651	24.6045	56.8725		
+Total	212.0000	254.0000	34.0000	500.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	179.2243	36.4003	4.6854	220.3100		
+2	36.4003	159.8596	26.5577	222.8175		
+3	4.6854	26.5577	25.6294	56.8725		
+Total	220.3100	222.8175	56.8725	500.0000		
+						
+Files						
+Infile	C:\lgfeatures\vlmr\missing_03\missing_03-lg.dat	
+						
+Options						
+threads	2					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	0					
+sets	200					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	includeall					
+output						
+parameters	first					
+standard errors	standard					
+identification	no					
+validation LL	no					
+sample size BIC	     500					
+predictionstatistics	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+y1	Continuous					
+y2	Continuous					
+y3	Continuous					
+y4	Continuous					
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20273053 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 3;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	6.1752	2	0.046	
+Cluster(2)	<-	1	0.0113	0.2074	0.0546	0.96				
+Cluster(3)	<-	1	-1.3542	0.6101	-2.2195	0.026				
+										
+y1	<-	1	1.5656	0.1033	15.1566	6.9e-52	229.7215	1	6.9e-52	
+y1	<-	Cluster(1)	0.0000	.	.	.	116.1974	2	5.9e-26	
+y1	<-	Cluster(2)	-1.4202	0.1483	-9.5792	9.8e-22				
+y1	<-	Cluster(3)	-1.8900	0.3351	-5.6398	1.7e-8				
+										
+y2	<-	1	1.3457	0.0873	15.4193	1.2e-53	237.7555	1	1.2e-53	
+y2	<-	Cluster(1)	0.0000	.	.	.	42.8417	2	5.0e-10	
+y2	<-	Cluster(2)	-0.9508	0.1827	-5.2028	2.0e-7				
+y2	<-	Cluster(3)	-2.3596	0.3722	-6.3395	2.3e-10				
+										
+y3	<-	1	1.3425	0.0908	14.7796	2.0e-49	218.4359	1	2.0e-49	
+y3	<-	Cluster(1)	0.0000	.	.	.	125.7825	2	4.9e-28	
+y3	<-	Cluster(2)	-1.5295	0.1541	-9.9230	3.3e-23				
+y3	<-	Cluster(3)	-1.1335	0.3158	-3.5889	0.00033				
+										
+y4	<-	1	0.9146	0.0886	10.3185	5.8e-25	106.4716	1	5.8e-25	
+y4	<-	Cluster(1)	0.0000	.	.	.	63.8267	2	1.4e-14	
+y4	<-	Cluster(2)	-0.9884	0.1533	-6.4490	1.1e-10				
+y4	<-	Cluster(3)	-0.8714	0.3616	-2.4100	0.016				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			1.0937	0.0957	11.4313	2.9e-30	130.6746	1	2.9e-30	
+y2			0.8095	0.0959	8.4442	3.1e-17	71.3041	1	3.1e-17	
+y3			0.8616	0.0890	9.6851	3.5e-22	93.8012	1	3.5e-22	
+y4			1.0419	0.0795	13.1086	2.9e-39	171.8360	1	2.9e-39	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0030	1	0.96	
+			Cluster	1	3	4.9263	1	0.026	
+			Cluster	2	3	3.4919	1	0.062	
+	
+y1	<-	 Cluster	Cluster	1	2	91.7606	1	9.8e-22	
+			Cluster	1	3	31.8079	1	1.7e-8	
+			Cluster	2	3	1.7393	1	0.19	
+	
+y2	<-	 Cluster	Cluster	1	2	27.0693	1	2.0e-7	
+			Cluster	1	3	40.1891	1	2.3e-10	
+			Cluster	2	3	22.6203	1	2.0e-6	
+	
+y3	<-	 Cluster	Cluster	1	2	98.4669	1	3.3e-23	
+			Cluster	1	3	12.8801	1	0.00033	
+			Cluster	2	3	1.1292	1	0.29	
+	
+y4	<-	 Cluster	Cluster	1	2	41.5891	1	1.1e-10	
+			Cluster	1	3	5.8082	1	0.016	
+			Cluster	2	3	0.0721	1	0.79	
+Model4 - LL = -2638.1011
+4-Cluster Syntax Model	
+							
+Number of cases	500						
+Number of parameters (Npar)	23						
+Activated Constraints	0						
+Random Seed	335187						
+Best Start Seed	2575773						
+							
+Log-likelihood Statistics							
+Log-likelihood (LL)	-2638.1011						
+Log-prior	0.0000						
+Log-posterior	-2638.1011						
+BIC (based on LL)	5419.1382						
+AIC (based on LL)	5322.2022						
+AIC3 (based on LL)	5345.2022						
+CAIC (based on LL)	5442.1382						
+SABIC (based on LL)	5346.1348						
+							
+Vuong Likelihood-Ratio Test	 	p-value					
+LL of H0 model	-2641.5175						
+Diff in Number of Parameters	5						
+Mean of VLMR Distr.	8.4284						
+StdDev of VLMR Distr.	10.9998						
+-2LL Diff (VLMR)	6.8327	0.4544					
+-2LL Diff Adjusted (aVLMR)	6.6197	0.4654					
+Variance LL Diff	0.0190	0.9025					
+Z-Value Mean LL Diff	1.1089	0.1337					
+							
+							
+Classification Statistics	Cluster						
+Classification errors	0.2470						
+Reduction of errors (Lambda)	0.5722						
+Entropy R-squared	0.4862						
+Standard R-squared	0.4780						
+Classification log-likelihood	-2937.7975						
+Entropy	299.6964						
+CLC	5875.5951						
+AWE	6230.4671						
+ICL-BIC	6018.5311						
+							
+Cluster  Classification Table	Modal						
+Latent	1	2	3	4	Total		
+1	147.0469	29.8791	2.5682	12.2643	191.7585		
+2	23.4131	187.4566	0.2601	0.1788	211.3086		
+3	7.8709	4.1625	11.8251	4.3896	28.2482		
+4	31.6692	4.5018	2.3465	30.1672	68.6847		
+Total	210.0000	226.0000	17.0000	47.0000	500.0000		
+							
+Cluster  Classification Table	Proportional						
+Latent	1	2	3	4	Total		
+1	119.6158	34.0341	8.2261	29.8826	191.7585		
+2	34.0341	169.7759	3.3022	4.1963	211.3086		
+3	8.2261	3.3022	11.2351	5.4847	28.2482		
+4	29.8826	4.1963	5.4847	29.1211	68.6847		
+Total	191.7585	211.3086	28.2482	68.6847	500.0000		
+							
+Files							
+Infile	C:\lgfeatures\vlmr\missing_03\missing_03-lg.dat	
+							
+Options							
+threads	2						
+algorithm							
+tolerance	1e-12						
+emtolerance	1e-10						
+emiterations	5000						
+nriterations	500						
+algorithm	NR						
+MstepNR	no						
+startvalues							
+seed	0						
+sets	200						
+tolerance	1e-05						
+iterations	250						
+bayes							
+categorical	0						
+variances	0						
+latent	0						
+poisson	0						
+quadrature							
+nodes	10						
+missing	includeall						
+output							
+parameters	first						
+standard errors	standard						
+identification	no						
+validation LL	no						
+sample size BIC	     500						
+predictionstatistics	no						
+							
+Variable Detail							
+Latent							
+Cluster	Nominal	Case	4				
+ 							
+Dependent							
+y1	Continuous						
+y2	Continuous						
+y3	Continuous						
+y4	Continuous						
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20273053 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 4;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	17.2617	3	0.00062	
+Cluster(2)	<-	1	0.0971	0.3818	0.2543	0.80				
+Cluster(3)	<-	1	-1.9152	0.9099	-2.1049	0.035				
+Cluster(4)	<-	1	-1.0267	1.1474	-0.8948	0.37				
+										
+y1	<-	1	0.1545	0.1538	1.0042	0.32	1.0083	1	0.32	
+y1	<-	Cluster(1)	0.0000	.	.	.	126.9763	3	2.4e-27	
+y1	<-	Cluster(2)	1.4420	0.1842	7.8297	4.9e-15				
+y1	<-	Cluster(3)	-0.3038	0.4487	-0.6771	0.50				
+y1	<-	Cluster(4)	-0.2150	0.6022	-0.3569	0.72				
+										
+y2	<-	1	0.5584	0.2049	2.7252	0.0065	7.4269	1	0.0065	
+y2	<-	Cluster(1)	0.0000	.	.	.	42.6133	3	3.0e-9	
+y2	<-	Cluster(2)	0.8087	0.2395	3.3770	0.00073				
+y2	<-	Cluster(3)	-1.6892	0.4695	-3.5979	0.00032				
+y2	<-	Cluster(4)	-1.0861	0.5607	-1.9370	0.053				
+										
+y3	<-	1	-0.1015	0.1601	-0.6337	0.53	0.4016	1	0.53	
+y3	<-	Cluster(1)	0.0000	.	.	.	127.0237	3	2.4e-27	
+y3	<-	Cluster(2)	1.4656	0.1764	8.3073	9.8e-17				
+y3	<-	Cluster(3)	0.6161	0.4012	1.5357	0.12				
+y3	<-	Cluster(4)	-0.1386	0.3848	-0.3603	0.72				
+										
+y4	<-	1	0.0679	0.2606	0.2606	0.79	0.0679	1	0.79	
+y4	<-	Cluster(1)	0.0000	.	.	.	40.2861	3	9.3e-9	
+y4	<-	Cluster(2)	0.8631	0.2841	3.0379	0.0024				
+y4	<-	Cluster(3)	0.8843	0.8250	1.0719	0.28				
+y4	<-	Cluster(4)	-0.7980	0.4118	-1.9380	0.053				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			1.1074	0.0945	11.7221	9.8e-32	137.4082	1	9.8e-32	
+y2			0.7723	0.0863	8.9485	3.6e-19	80.0757	1	3.6e-19	
+y3			0.8643	0.0871	9.9205	3.4e-23	98.4166	1	3.4e-23	
+y4			0.9258	0.0971	9.5362	1.5e-21	90.9384	1	1.5e-21	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0647	1	0.80	
+			Cluster	1	3	4.4308	1	0.035	
+			Cluster	1	4	0.8007	1	0.37	
+			Cluster	2	3	8.2622	1	0.0041	
+			Cluster	2	4	1.8331	1	0.18	
+			Cluster	3	4	0.8560	1	0.35	
+	
+y1	<-	 Cluster	Cluster	1	2	61.3044	1	4.9e-15	
+			Cluster	1	3	0.4585	1	0.50	
+			Cluster	1	4	0.1274	1	0.72	
+			Cluster	2	3	14.1534	1	0.00017	
+			Cluster	2	4	10.5603	1	0.0012	
+			Cluster	3	4	0.0113	1	0.92	
+	
+y2	<-	 Cluster	Cluster	1	2	11.4039	1	0.00073	
+			Cluster	1	3	12.9452	1	0.00032	
+			Cluster	1	4	3.7519	1	0.053	
+			Cluster	2	3	31.7391	1	1.8e-8	
+			Cluster	2	4	7.0488	1	0.0080	
+			Cluster	3	4	0.4690	1	0.49	
+	
+y3	<-	 Cluster	Cluster	1	2	69.0117	1	9.8e-17	
+			Cluster	1	3	2.3582	1	0.12	
+			Cluster	1	4	0.1298	1	0.72	
+			Cluster	2	3	5.6519	1	0.017	
+			Cluster	2	4	28.1422	1	1.1e-7	
+			Cluster	3	4	3.1016	1	0.078	
+	
+y4	<-	 Cluster	Cluster	1	2	9.2289	1	0.0024	
+			Cluster	1	3	1.1490	1	0.28	
+			Cluster	1	4	3.7558	1	0.053	
+			Cluster	2	3	0.0010	1	0.97	
+			Cluster	2	4	29.8715	1	4.6e-8	
+			Cluster	3	4	7.4609	1	0.0063	

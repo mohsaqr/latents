@@ -1,0 +1,28 @@
+Probe 1: all-missing subjects should not change thin-profile warning
+LL: -239.3313906811274
+Effective counts: 87, 3
+Raw sums: 87, 3
+Warnings: latents_thin_profiles: Profile 2: 3.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+LL: -239.3313907427869
+Effective counts: 87, 3
+Raw sums: 377.000001893833, 12.9999981061646
+Warnings: 
+Expected: both should warn for the same 3-member profile (4 own parameters).
+
+Probe 2: occasion-specific measurement should assess each separate block
+Pooled counts: 84, 6
+Memberships by occasion:
+  profile_1 profile_2
+1        28         2
+2        28         2
+3        28         2
+Measurement blocks: 3
+Warnings: latents_boundary: A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld.
+Expected: rare profile warns; each block has 2 effective members for 4 own parameters.
+
+Probe 3: exact staged-bootstrap argument reconstruction, without resampling
+Original first-stage pool: 8; screened rows: 8
+Returned second-stage pool: NULL
+Inherited bootstrap pool: NULL
+Reconstructed first-stage pool: 5; screened rows: 5
+Expected: reconstructed first-stage pool remains 8.

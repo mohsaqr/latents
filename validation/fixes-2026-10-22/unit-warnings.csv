@@ -1,0 +1,8 @@
+"file","test","message"
+"test-boundary-exclude.R","the default keeps the singleton spike; exclude takes the best start without one","Profile 3: 1.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-boundary-exclude.R","the default is unchanged by the new argument","Profile 3: 1.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-boundary-exclude.R","the default is unchanged by the new argument","Profile 3: 1.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-boundary-exclude.R","exclude reaches enumerate_lpa() and the covariate model","Profile 3: 1.0 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-multilpa.R","explicit starts give the independently calculated initial likelihood","Profiles 1, 2: 3.0, 3.0 members for 4 means and variances each; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-review-1015-inference.R","bootstrap_lrt() matches groups by value, not by storage type","Profile 2: 3.7 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-review-1015-inference.R","bootstrap_lrt() matches groups by value, not by storage type","Profile 2: 3.7 members for 4 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."

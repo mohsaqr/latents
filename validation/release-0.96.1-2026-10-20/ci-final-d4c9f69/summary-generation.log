@@ -1,0 +1,14 @@
+                 platform conclusion check_status errors warnings notes
+   macos-latest (release)    success           OK      0        0     0
+ windows-latest (release)    success       1 NOTE      0        0     1
+    ubuntu-latest (devel)    success           OK      0        0     0
+  ubuntu-latest (release)    success           OK      0        0     0
+      ubuntu-latest (4.1)    success      2 NOTEs      0        0     2
+ ubuntu-latest (oldrel-1)    success           OK      0        0     0
+ unit_pass unit_fail unit_warn unit_skip
+      8136         0         0         4
+      8124         0         0         9
+      8133         0         0         4
+      8133         0         0         4
+      8090         0         0         6
+      8133         0         0         4

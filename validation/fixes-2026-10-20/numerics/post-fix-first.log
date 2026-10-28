@@ -1,0 +1,296 @@
+
+══ Testing test-three-step-ml.R ════════════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 15 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 17 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 18 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 21 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 24 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 25 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 26 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 27 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 29 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 30 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 31 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 32 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 33 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 34 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 35 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 36 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 38 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 39 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 40 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 41 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 43 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 44 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 45 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 46 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 47 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 48 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 49 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 50 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 51 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 52 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 53 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 54 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 55 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 56 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 58 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 59 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 60 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 61 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 63 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 64 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 65 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 66 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 67 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 68 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 69 ] Done!
+
+══ Testing test-lmr.R ══════════════════════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 15 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 17 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 18 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 21 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 24 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 25 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 26 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 27 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 29 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 30 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 31 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 32 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 33 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 34 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 35 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 36 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 38 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 39 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 40 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 41 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 43 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 44 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 45 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 46 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 47 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 48 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 49 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 50 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 51 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 52 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 53 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 54 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 55 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 56 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 57 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 58 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 59 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 60 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 61 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 62 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 63 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 64 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 65 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 66 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 67 ]
+
+── Failure ('test-lmr.R:177:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `is.na(result$note)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(is.na(result$note)) at test-lmr.R:177:7
+
+── Failure ('test-lmr.R:178:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$lr` to equal `reference$lr`.
+Differences:
+  `actual`:    NA
+`expected`: 202.5
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$lr, reference$lr, tolerance = 1e-07) at test-lmr.R:178:7
+
+── Failure ('test-lmr.R:179:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_mean` to equal `reference$reference_mean`.
+Differences:
+  `actual`:  NA
+`expected`: 4.2
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:179:7
+
+── Failure ('test-lmr.R:180:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_sd` to equal `reference$reference_sd`.
+Differences:
+  `actual`:  NA
+`expected`: 3.2
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:180:7
+
+── Failure ('test-lmr.R:181:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$vlmr_p` to equal `reference$vlmr_p`.
+Differences:
+  `actual`:  NA
+`expected`: 0.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$vlmr_p, reference$vlmr_p, tolerance = 1e-07) at test-lmr.R:181:7
+
+── Failure ('test-lmr.R:177:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `is.na(result$note)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(is.na(result$note)) at test-lmr.R:177:7
+
+── Failure ('test-lmr.R:178:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$lr` to equal `reference$lr`.
+Differences:
+  `actual`:   NA
+`expected`: 70.1
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$lr, reference$lr, tolerance = 1e-07) at test-lmr.R:178:7
+
+── Failure ('test-lmr.R:179:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_mean` to equal `reference$reference_mean`.
+Differences:
+  `actual`:  NA
+`expected`: 3.7
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:179:7
+
+── Failure ('test-lmr.R:180:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_sd` to equal `reference$reference_sd`.
+Differences:
+  `actual`:  NA
+`expected`: 2.7
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:180:7
+
+── Failure ('test-lmr.R:181:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$vlmr_p` to equal `reference$vlmr_p`.
+Differences:
+  `actual`:  NA
+`expected`: 0.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$vlmr_p, reference$vlmr_p, tolerance = 1e-07) at test-lmr.R:181:7
+
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 67 ]

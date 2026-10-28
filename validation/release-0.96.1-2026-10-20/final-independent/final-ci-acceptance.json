@@ -1,0 +1,42 @@
+{
+  "commit": "d4c9f699525d9e07959463010e004b6362dcdaaf",
+  "remote_head_matches": true,
+  "workflow_runs": [
+    {
+      "id": "39456155958",
+      "name": "R-CMD-check",
+      "head_sha": "d4c9f699525d9e07959463010e004b6362dcdaaf",
+      "jobs": 6,
+      "conclusion": "success",
+      "url": "https://github.com/mohsaqr/latents/actions/runs/39456155958"
+    },
+    {
+      "id": "39456160271",
+      "name": "equivalence",
+      "head_sha": "d4c9f699525d9e07959463010e004b6362dcdaaf",
+      "jobs": 1,
+      "conclusion": "success",
+      "url": "https://github.com/mohsaqr/latents/actions/runs/39456160271"
+    },
+    {
+      "id": "39456165092",
+      "name": "lint",
+      "head_sha": "d4c9f699525d9e07959463010e004b6362dcdaaf",
+      "jobs": 1,
+      "conclusion": "success",
+      "url": "https://github.com/mohsaqr/latents/actions/runs/39456165092"
+    }
+  ],
+  "matrix_jobs_passed": 6,
+  "matrix_errors": 0,
+  "matrix_warnings": 0,
+  "matrix_notes": {
+    "macos-latest (release)": 0,
+    "windows-latest (release)": 1,
+    "ubuntu-latest (devel)": 0,
+    "ubuntu-latest (release)": 0,
+    "ubuntu-latest (4.1)": 2,
+    "ubuntu-latest (oldrel-1)": 0
+  },
+  "final_gates_passed": true
+}

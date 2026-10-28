@@ -1,0 +1,15 @@
+step-ignored_step: ......1..
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-step-ignored_step.R:32:9'): transition parameter_inference(
+Expected `steps` to be identical to `c(0.01, 1e-04)`.
+Differences:
+  `actual`: 0.000 0.000
+`expected`: 0.010 0.000
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                  test failed
+1 transition parameter_inference() uses the caller's step in its table      1
+  error passed
+1 FALSE      8

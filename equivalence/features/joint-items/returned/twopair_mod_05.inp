@@ -1,0 +1,40 @@
+TITLE: latents joint items twopair_mod_05;
+DATA: FILE = twopair_mod_05.dat;
+VARIABLE:
+ NAMES = id p1p2 q1q2 u1 u2;
+ USEVARIABLES = p1p2 q1q2 u1 u2;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ CATEGORICAL = u1 u2;
+ NOMINAL = p1p2 q1q2;
+ CLASSES = c(3);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 400 80;
+ STITERATIONS = 40;
+ STSEED = 20261020;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [u1$1 u2$1];
+ [p1p2#1 p1p2#2 p1p2#3];
+ [q1q2#1 q1q2#2 q1q2#3];
+ %c#2%
+ [u1$1 u2$1];
+ [p1p2#1 p1p2#2 p1p2#3];
+ [q1q2#1 q1q2#2 q1q2#3];
+ %c#3%
+ [u1$1 u2$1];
+ [p1p2#1 p1p2#2 p1p2#3];
+ [q1q2#1 q1q2#2 q1q2#3];
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = twopair_mod_05-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = twopair_mod_05-results.dat;

@@ -1,0 +1,11 @@
+Distinct native values: 2 
+Unpaired fit: Categorical indicator `a` has distinct values that print alike ("0.3"); round the column so that each category has its own label. 
+               implementation parameters likelihood
+1                current pair          2  -277.2589
+2 distinct numeric categories          4  -415.8883
+$`a:b`
+[1] "0.3:0" "0.3:1"
+
+$c
+[1] "0" "1"
+

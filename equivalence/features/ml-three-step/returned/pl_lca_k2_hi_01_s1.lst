@@ -1,0 +1,218 @@
+pl_lca_k2_hi_01_s1-data.txt
+File name:	pl_lca_k2_hi_01_s1-data.txt	
+File size:	17916 bytes  500 records	
+File date:	2026-Oct-20 9:38:57 PM	
+Syntax:	pl_lca_k2_hi_01_s1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+pl_lca_k2_hi_01_s1	2-Cluster	-1590.7676	3262.3252	3207.5353	3220.5353	13	47.3251	50	0.58	0.0227	0.9091	
+pl_lca_k2_hi_01_s1 - L² = 47.3251
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	13				
+Random Seed	20261020				
+Best Start Seed	827189				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	50	p-value			
+L-squared (L²)	47.3251	0.58			
+X-squared	47.8896	0.56			
+Cressie-Read	46.0920	0.63			
+BIC (based on L²)	-263.4053				
+AIC (based on L²)	-52.6749				
+AIC3 (based on L²)	-102.6749				
+CAIC (based on L²)	-313.4053				
+SABIC (based on L²)	-104.7022				
+Dissimilarity Index	0.0709	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1590.7676				
+Log-prior	0.0000				
+Log-posterior	-1590.7676				
+BIC (based on LL)	3262.3252				
+AIC (based on LL)	3207.5353				
+AIC3 (based on LL)	3220.5353				
+CAIC (based on LL)	3275.3252				
+SABIC (based on LL)	3221.0624				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0227				
+Reduction of errors (Lambda)	0.9399				
+Entropy R-squared	0.9091				
+Standard R-squared	0.9254				
+Classification log-likelihood	-1620.9036				
+Entropy	30.1359				
+CLC	3241.8071				
+AWE	3442.3869				
+ICL-BIC	3322.5970				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	179.7772	9.1370	188.9142		
+2	2.2228	308.8630	311.0858		
+Total	182.0000	318.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	180.1457	8.7686	188.9142		
+2	8.7686	302.3172	311.0858		
+Total	188.9142	311.0858	500.0000		
+					
+Files					
+Infile	C:\lgfeatures\ml-three-step\pl_lca_k2_hi_01_s1\pl_lca_k2_hi_01_s1-data.txt	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	10000				
+nriterations	1000				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+outfile					
+file name	pl_lca_k2_hi_01_s1_post.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+u5	Nominal	2			
+1	1				
+2	2				
+u6	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first profile;
+   outfile 'pl_lca_k2_hi_01_s1_post.txt' classification keep id y;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+Cluster(2)	<-	1	0.4988	.	.	.				
+										
+u1(1)	<-	1	0.0000	.	.	.				
+u1(2)	<-	1	1.7405	.	.	.				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.				
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-3.3172	.	.	.				
+										
+u2(1)	<-	1	0.0000	.	.	.				
+u2(2)	<-	1	2.0343	.	.	.				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.				
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-3.8395	.	.	.				
+										
+u3(1)	<-	1	0.0000	.	.	.				
+u3(2)	<-	1	2.2187	.	.	.				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.				
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-3.8336	.	.	.				
+										
+u4(1)	<-	1	0.0000	.	.	.				
+u4(2)	<-	1	-1.8771	.	.	.				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.				
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	3.3683	.	.	.				
+										
+u5(1)	<-	1	0.0000	.	.	.				
+u5(2)	<-	1	-1.7029	.	.	.				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.				
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	3.3276	.	.	.				
+										
+u6(1)	<-	1	0.0000	.	.	.				
+u6(2)	<-	1	-1.6233	.	.	.				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.				
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	3.1569	.	.	.				
+Profile
+ 	Cluster	 	 	
+ 	1	2	Overall	
+Size	0.3778	0.6222	 	
+u1	 	
+1	0.1492	0.8287	0.5720	
+2	0.8508	0.1713	0.4280	
+u2	 	
+1	0.1156	0.8588	0.5780	
+2	0.8844	0.1412	0.4220	
+u3	 	
+1	0.0981	0.8341	0.5560	
+2	0.9019	0.1659	0.4440	
+u4	 	
+1	0.8673	0.1837	0.4420	
+2	0.1327	0.8163	0.5580	
+u5	 	
+1	0.8459	0.1646	0.4220	
+2	0.1541	0.8354	0.5780	
+u6	 	
+1	0.8353	0.1775	0.4260	
+2	0.1647	0.8225	0.5740	

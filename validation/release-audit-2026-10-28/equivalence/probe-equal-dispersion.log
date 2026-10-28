@@ -1,0 +1,22 @@
+'data.frame':	400 obs. of  2 variables:
+ $ x: num  1.767 0.333 1.001 -0.719 1.085 ...
+ $ y: num  6 0 5 3 2 0 2 1 5 0 ...
+[1] TRUE
+  class_1 
+0.2821447 
+coefficient.class_1.(Intercept)           coefficient.class_1.x 
+                      0.5558775                       0.2669728 
+     log_dispersion.all.class_1 
+                     -1.2653353 
+    class share count n_assigned mean_posterior dispersion dispersion_std_error
+1 class_1     1   400        400              1         NA                   NA
+  prior prior_std_error
+1     1               0
+coefficient.class_1.(Intercept)           coefficient.class_1.x 
+                      0.5558775                       0.2669728 
+             log_dispersion.all 
+                     -1.2653353 
+    class share count n_assigned mean_posterior dispersion dispersion_std_error
+1 class_1     1   400        400              1  0.2821447           0.06338804
+  prior prior_std_error
+1     1               0

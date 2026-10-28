@@ -1,0 +1,122 @@
+ M DESCRIPTION
+ M NAMESPACE
+ M NEWS.md
+ M R/accessors.R
+ M R/additive-compare.R
+ M R/additive-methods.R
+ M R/additive.R
+ M R/compare-models.R
+ M R/conditions.R
+ M R/covariates.R
+ M R/cross-level.R
+ M R/data.R
+ M R/enumeration.R
+ M R/get-data.R
+ M R/growth-mixture-methods.R
+ M R/growth-mixture-plot.R
+ M R/growth-mixture-simulate.R
+ M R/latents-table.R
+ M R/lpa.R
+ M R/lta-compare.R
+ M R/lta-methods.R
+ M R/methods-documentation.R
+ M R/methods.R
+ M R/mixture-regression-enumerate.R
+ M R/mixture-regression-methods.R
+ M R/mixture-regression-predict.R
+ M R/mixture-regression.R
+ M R/multilpa.R
+ M R/plot-gg.R
+D  R/plot-style.R
+ M R/plot.R
+ M R/pool-imputations.R
+ M R/predict.R
+ M R/report.R
+ M R/transitions.R
+ M README.Rmd
+ M README.md
+ M _pkgdown.yml
+ D man/candidate_fit.Rd
+ M man/compare_models.Rd
+ M man/enumerate_classes.Rd
+ M man/enumerate_lca.Rd
+ M man/enumerate_lpa.Rd
+ M man/get_results.Rd
+ D man/get_results.latents_family_enumeration.Rd
+ D man/get_results.latents_growth_mixture.Rd
+ D man/get_results.latents_mixture_regression.Rd
+ D man/get_results.latents_pooled.Rd
+ D man/get_results.latents_transition_enumeration.Rd
+ D man/get_results.multilpa_additive.Rd
+ D man/get_results.multilpa_cross_level.Rd
+ D man/get_results.multilpa_lta.Rd
+ M man/growth_schools.Rd
+ D man/latents-as-data-frame.Rd
+ M man/latents-conditions.Rd
+ D man/latents-print.Rd
+ D man/latents-summary.Rd
+ M man/lta.Rd
+ M man/mixture_regression.Rd
+ M man/multilpa.Rd
+ D man/plot.latents_comparison.Rd
+ D man/plot.latents_family_enumeration.Rd
+ D man/plot.latents_growth_mixture.Rd
+ D man/plot.latents_mixture_regression.Rd
+ D man/plot.latents_pooled.Rd
+ D man/plot.latents_transition_enumeration.Rd
+ D man/plot.multilpa.Rd
+ D man/plot.multilpa_additive.Rd
+ D man/plot.multilpa_bootstrap_lrt.Rd
+ D man/plot.multilpa_covariates.Rd
+ D man/plot.multilpa_cross_level.Rd
+ D man/plot.multilpa_enumeration.Rd
+ D man/plot.multilpa_lta.Rd
+ D man/plot.multilpa_transitions.Rd
+ D man/plot_enumeration.Rd
+ D man/plot_views.Rd
+ D man/predict.latents_growth_mixture.Rd
+ D man/predict.latents_mixture_regression.Rd
+ D man/predict.multilpa.Rd
+ D man/simulate.latents_growth_mixture.Rd
+ D man/simulate.latents_mixture_regression.Rd
+ M tests/equivalence/test-vignette-claims.R
+ M tests/testthat/test-additive-compare.R
+ M tests/testthat/test-covariance-structure.R
+ M tests/testthat/test-enumerate-verbs.R
+ M tests/testthat/test-enumeration.R
+ M tests/testthat/test-get-data.R
+ M tests/testthat/test-lta-compare.R
+ M tests/testthat/test-mixture-regression-prediction-design.R
+ M tests/testthat/test-mixture-regression.R
+ M tests/testthat/test-plot-gg.R
+ M tests/testthat/test-plot.R
+ M tests/testthat/test-pool-imputations.R
+ M tests/testthat/test-review-integration.R
+ M tests/testthat/test-tidy-classes.R
+ M todo.MD
+ M vignettes/articles/additive.Rmd
+ M vignettes/articles/case-engagement-evaluation.Rmd
+ M vignettes/articles/case-esm-lca.Rmd
+ M vignettes/articles/evaluation.Rmd
+ M vignettes/lpa.Rmd
+?? R/candidates.R
+?? R/plot-docs.R
+?? R/plot-named.R
+?? R/predict-docs.R
+?? R/selection.R
+?? man/get_candidate.Rd
+?? man/latents-plots.Rd
+?? man/latents-predict.Rd
+?? tests/testthat/_problems/
+?? tests/testthat/test-compat-0921.R
+?? tests/testthat/test-plot-named.R
+?? tests/testthat/testthat-problems.rds
+?? validation/audit-2026-10-13/
+?? validation/review-2026-10-01/pure-extra-probes.rds
+?? validation/review-2026-10-01/root-probe.rds
+?? validation/review-2026-10-01/tests-baseline.rds
+?? validation/review-2026-10-01/tests-current.rds
+?? validation/review-2026-10-01/tests-final.rds
+?? validation/review-2026-10-02-followup/tests-final.rds
+?? vignettes/articles/class-enumeration.Rmd
+?? vignettes/enumeration.Rmd

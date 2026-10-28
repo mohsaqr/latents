@@ -1,0 +1,75 @@
+Loaded:  /private/tmp/astra-review/lib/latents 
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_0.97.4
+
+loaded via a namespace (and not attached):
+[1] compiler_4.5.2
+audit-core-repairs: ................................................................
+audit-validation-fork-safety: .........................................................................................
+parallel-recovery: SS....SSSSSSS
+parallel: Preparing 6 candidates on 2 workers.
+Fitting 10 starts on 2 workers.
+Done in under a minute.
+..Preparing 2 candidates on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+.......................................Preparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+....................................................................
+review-0970-parallel: ...........................................................................................................................................................................................................................................................................................................................................................................................................................................Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+...Done in under a minute.
+............................................................
+review-1026-refusals: .................
+search: ...................................................................................................................................................................................W.......................................................
+three-step-ml: .....................................................................
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. a killed fork task is retried once and recovers its exact value ('test-parallel-recovery.R:57:3') - Reason: This BLAS cannot run safely in forked workers
+
+2. a permanently killed fork task leaves other task results intact ('test-parallel-recovery.R:83:3') - Reason: This BLAS cannot run safely in forked workers
+
+3. ordinary errors in start code are recorded without a process-loss retry ('test-parallel-recovery.R:126:3') - Reason: This BLAS cannot run safely in forked workers
+
+4. recovered flat starts preserve the complete transition grid ('test-parallel-recovery.R:151:3') - Reason: This BLAS cannot run safely in forked workers
+
+5. a recovered direct lta start preserves the undisturbed fitted object ('test-parallel-recovery.R:175:3') - Reason: This BLAS cannot run safely in forked workers
+
+6. a genuine transition start error is neither retried nor called worker loss ('test-parallel-recovery.R:202:3') - Reason: This BLAS cannot run safely in forked workers
+
+7. a permanently lost flat start is reported alongside fitted candidates ('test-parallel-recovery.R:227:3') - Reason: This BLAS cannot run safely in forked workers
+
+8. losing all starts fails only their candidate in a transition grid ('test-parallel-recovery.R:257:3') - Reason: This BLAS cannot run safely in forked workers
+
+9. emEM aggregates recovered screening and finalist losses into one warning ('test-parallel-recovery.R:280:3') - Reason: This BLAS cannot run safely in forked workers
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. every fit path runs the emEM search and records it ('test-search.R:206:3') - Group classes have collapsed onto identical parameters (group_class_1 = group_class_2, equal to 1e-8 relative): the fit has fewer distinct classes than requested and the weights of the collapsed classes are not identified. Fit fewer group classes.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+ASTRA SUMMARY
+   files    tests   passed   failed   errors warnings  skipped 
+       8       95     1076        0        0        1        9 

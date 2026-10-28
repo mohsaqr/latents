@@ -1,0 +1,80 @@
+Warning messages:
+1: Dropped 1 of 54 rows with a missing value in a model variable (complete-case analysis). 
+2: Dropped 1 of 54 rows with a missing value in a model variable (complete-case analysis). 
+3: Dropped 1 of 54 rows with a missing value in a model variable (complete-case analysis). 
+4: The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA. 
+$nesting
+[1] "observation"
+
+$level
+[1] "individuals"
+
+$units
+[1] 53
+
+$zero_weights
+[1] 11
+
+$shares
+[1] 0.652381 0.347619
+
+$nesting
+[1] "group"
+
+$level
+[1] "individuals"
+
+$units
+[1] 18
+
+$zero_weights
+[1] 6
+
+$shares
+  class_1   class_2 
+0.6481481 0.3518519 
+
+$nesting
+[1] "two-level"
+
+$level
+[1] "individuals"
+
+$units
+[1] 53
+
+$zero_weights
+[1] 11
+
+$shares
+[1] 0.652381 0.347619
+
+$nesting
+[1] "two-level"
+
+$level
+[1] "groups"
+
+$units
+[1] 18
+
+$zero_weights
+[1] 6
+
+$shares
+[1] 0.6481481 0.3518519
+
+$growth_level
+[1] "individuals"
+
+$units
+[1] 18
+
+$growth_level
+[1] "groups"
+
+$units
+[1] 6
+
+Duplicate original vars result: latents_bad_data 
+ADVERSARIAL REVIEW COMPLETE

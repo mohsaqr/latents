@@ -1,0 +1,2 @@
+PASS: all20Rmd sources inventoried; exactly2prior code/claim checks; every full render, before/after comparison and prose/table/figure review remains PENDING.
+PASS: numerical/inference/output impact and explicit next-session task recorded; no production changes or vignette execution.

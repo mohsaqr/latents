@@ -1,0 +1,447 @@
+equivalence	Compare every registered reference suite and output	﻿2026-10-28T16:27:03.8888625Z ##[group]Run Rscript equivalence/harness/run.R
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8889035Z [36;1mRscript equivalence/harness/run.R[0m
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8908991Z shell: /usr/bin/bash -e {0}
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8909255Z env:
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8911583Z   GITHUB_PAT: ***
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8911813Z   NOT_CRAN: true
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8912050Z   LATENTS_EQUIVALENCE_REQUIRE_ALL: true
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8912368Z   LATENTS_EQUIVALENCE_OUTPUT: tmp/equivalence
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8912886Z   OMP_NUM_THREADS: 1
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8913117Z   OPENBLAS_NUM_THREADS: 1
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8913358Z   VECLIB_MAXIMUM_THREADS: 1
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8913628Z   R_LIBS_USER: /home/runner/work/_temp/Library
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8913915Z   TZ: UTC
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8914119Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8914474Z   RSPM: https://packagemanager.posit.co/cran/__linux__/noble/latest
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8915009Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/__linux__/noble/latest
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8916099Z   R_LIB_FOR_PAK: /opt/R/4.6.1/lib/R/site-library
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:03.8916581Z ##[endgroup]
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:06.8812462Z API check: every validation call matches multilpa 0.98.0.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:06.9341077Z running suite: covariates
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:59.1973757Z converged at iteration 15 with logLik: -2272.584 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:59.4096202Z converged at iteration 16 with logLik: -2272.584 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:59.5785486Z converged at iteration 15 with logLik: -2272.584 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:59.7136606Z converged at iteration 14 with logLik: -2272.584 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:27:59.8476550Z converged at iteration 15 with logLik: -2272.584 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:25.6748229Z running suite: depmixs4
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:26.1169476Z converged at iteration 11 with logLik: -1457.504 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:31.1561891Z converged at iteration 38 with logLik: -1960.506 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:46.5701037Z converged at iteration 16 with logLik: -1123.725 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:50.0311741Z converged at iteration 8 with logLik: -1860.582 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:28:58.6156343Z running suite: flexmix
+equivalence	Compare every registered reference suite and output	2026-10-28T16:29:35.0227675Z   FAILED: simpleError/error/condition: every package estimate must be found in its tables
+equivalence	Compare every registered reference suite and output	2026-10-28T16:29:35.0298985Z running suite: glca
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:17.4930800Z running suite: hard-depmixs4
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:20.8588192Z converged at iteration 67 with logLik: -5199.608 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:21.3415117Z converged at iteration 70 with logLik: -5199.608 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:21.8078844Z converged at iteration 67 with logLik: -5199.608 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:22.2755183Z converged at iteration 66 with logLik: -5199.608 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:22.7847276Z converged at iteration 76 with logLik: -5199.608 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:30.9634872Z converged at iteration 79 with logLik: -3366.31 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:31.4743299Z converged at iteration 69 with logLik: -3366.31 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:32.0879509Z converged at iteration 85 with logLik: -3366.31 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:32.9209314Z converged at iteration 92 with logLik: -3366.31 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:33.4101132Z converged at iteration 67 with logLik: -3366.31 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:49.2669806Z converged at iteration 95 with logLik: -3120.098 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:49.6686304Z converged at iteration 96 with logLik: -3120.098 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:50.3249650Z converged at iteration 110 with logLik: -3120.098 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:50.7176768Z converged at iteration 93 with logLik: -3120.098 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:51.1861359Z converged at iteration 112 with logLik: -3120.098 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:57.5744992Z converged at iteration 27 with logLik: -3209.833 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:57.7622095Z converged at iteration 26 with logLik: -3209.833 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:58.1276523Z converged at iteration 26 with logLik: -3209.833 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:58.3399380Z converged at iteration 31 with logLik: -3209.833 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:30:58.5023321Z converged at iteration 23 with logLik: -3209.833 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:37.6310344Z converged at iteration 28 with logLik: -2948.286 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:37.7617563Z converged at iteration 28 with logLik: -2948.286 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:37.8794311Z converged at iteration 26 with logLik: -2948.286 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:37.9984731Z converged at iteration 26 with logLik: -2948.286 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.1222782Z converged at iteration 28 with logLik: -2948.286 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.3731392Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.3741499Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.4248436Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.4257757Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.5737968Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:38.5747512Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:40.2684823Z converged at iteration 18 with logLik: -2599.908 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:40.3999939Z converged at iteration 18 with logLik: -2599.908 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:40.5398586Z converged at iteration 18 with logLik: -2599.908 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:40.6703919Z converged at iteration 18 with logLik: -2599.908 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:40.8021032Z converged at iteration 18 with logLik: -2599.908 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:41.0942165Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:41.1324097Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:41.2851992Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:42.6453140Z converged at iteration 31 with logLik: 3605.761 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:42.7548501Z converged at iteration 34 with logLik: 3605.761 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:42.8731421Z converged at iteration 37 with logLik: 3605.761 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:43.0047308Z converged at iteration 42 with logLik: 3605.761 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:43.1130691Z converged at iteration 33 with logLik: 3605.761 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:47.4971566Z converged at iteration 35 with logLik: -3387.745 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:47.6893832Z converged at iteration 37 with logLik: -3387.745 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:47.8771033Z converged at iteration 34 with logLik: -3387.745 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:48.0755538Z converged at iteration 37 with logLik: -3387.745 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:35:48.2672893Z converged at iteration 35 with logLik: -3387.745 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:19.5414171Z converged at iteration 1381 with logLik: -2917.115 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:28.1430137Z converged at iteration 1535 with logLik: -2917.115 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:35.6924564Z converged at iteration 1399 with logLik: -2917.476 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:41.3551890Z converged at iteration 875 with logLik: -2917.115 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:47.8424938Z converged at iteration 1185 with logLik: -2917.476 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:48.7778537Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:48.8167687Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:48.9620627Z No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:36:49.0036316Z running suite: hard-mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T16:39:23.3751235Z   4 warning(s), first: Profiles 1, 2, 3: 14.0, 13.0, 13.0 Gaussian membership mass for 20 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:39:23.3759094Z running suite: hard-polca
+equivalence	Compare every registered reference suite and output	2026-10-28T16:44:09.1533730Z running suite: invariance
+equivalence	Compare every registered reference suite and output	2026-10-28T16:44:24.7398511Z running suite: lcmm
+equivalence	Compare every registered reference suite and output	2026-10-28T16:45:48.4950169Z running suite: lta-general
+equivalence	Compare every registered reference suite and output	2026-10-28T16:46:06.2842686Z converged at iteration 28 with logLik: -2324.061 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:46:06.7401582Z converged at iteration 27 with logLik: -2324.061 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:46:07.1774314Z converged at iteration 26 with logLik: -2324.061 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:46:07.6224398Z converged at iteration 25 with logLik: -2324.061 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:46:08.0619107Z converged at iteration 27 with logLik: -2324.061 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:02.4317033Z converged at iteration 158 with logLik: -1574.718 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:10.1171526Z converged at iteration 154 with logLik: -1574.718 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:17.8794922Z converged at iteration 155 with logLik: -1574.718 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:25.8671382Z converged at iteration 153 with logLik: -1574.718 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:33.7593866Z converged at iteration 158 with logLik: -1574.718 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:47:34.2698716Z running suite: lta-mixed
+equivalence	Compare every registered reference suite and output	2026-10-28T16:48:29.9813259Z running suite: mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T16:49:18.2786914Z running suite: mplus-twolevel-lca
+equivalence	Compare every registered reference suite and output	2026-10-28T16:51:05.2802683Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:51:08.2896381Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:51:09.2387341Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:52:42.4543798Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:53:02.0423780Z running suite: multilevlca
+equivalence	Compare every registered reference suite and output	2026-10-28T16:57:21.9485714Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:57:39.3858686Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:57:47.2560877Z running suite: ordinal-count
+equivalence	Compare every registered reference suite and output	2026-10-28T16:57:47.8089457Z converged at iteration 34 with logLik: -2093.267 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:57:49.5882221Z converged at iteration 37 with logLik: -1891.461 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:58:19.9792751Z converged at iteration 23 with logLik: -2448.798 
+equivalence	Compare every registered reference suite and output	2026-10-28T16:58:21.6685655Z running suite: polca
+equivalence	Compare every registered reference suite and output	2026-10-28T16:59:27.1295475Z No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+equivalence	Compare every registered reference suite and output	2026-10-28T16:59:27.3103645Z No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:19.8261112Z running suite: pool-imputations
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:20.0384456Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:20.1388177Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:20.2478934Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:20.3351977Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:20.4354538Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:21.0421688Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:21.1439474Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:21.2508420Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:21.3388501Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:21.4411346Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:24.7540794Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:25.0374707Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:25.3222923Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:25.6699427Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:25.9984687Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:26.8264260Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:27.0986191Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:27.3859876Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:27.7341121Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:28.0607187Z Fitted a single-level latent profile model.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:32.5023601Z running suite: predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:01:40.1657723Z running suite: published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:13:42.1135724Z running suite: refusals
+equivalence	Compare every registered reference suite and output	2026-10-28T17:13:43.4107347Z running suite: robust-se
+equivalence	Compare every registered reference suite and output	2026-10-28T17:14:02.4812720Z running suite: stability
+equivalence	Compare every registered reference suite and output	2026-10-28T17:16:10.9094424Z running suite: three-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:16:11.3838365Z Registered S3 method overwritten by 'car':
+equivalence	Compare every registered reference suite and output	2026-10-28T17:16:11.3839306Z   method           from
+equivalence	Compare every registered reference suite and output	2026-10-28T17:16:11.3839913Z   na.action.merMod lme4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:25.6734495Z running suite: twolevel-lpa
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:25.8749210Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:26.0045086Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:32.4365708Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:39.7311250Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:39.8622312Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:44.4413464Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:50.8582377Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:50.9786994Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:17:55.8809466Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:02.2484316Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:02.3739905Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:09.0760495Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:17.4901382Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:17.6677454Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:18:47.0175341Z No standard errors in this table: Inference requires a converged fit.
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3011392Z Equivalence run against multilpa 0.98.0 under R version 4.6.1 (2026-06-24)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3025306Z                 suite status compared agreed  values outputs_not_covered
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3026477Z 1          covariates    ran      577    577   41761                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3027353Z 2            depmixs4    ran      462    462   27804                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3028187Z 3             flexmix failed        0      0       0                  NA
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3029025Z 4                glca    ran      362    362   57400                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3029839Z 5       hard-depmixs4    ran     1140   1140  154530                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3030683Z 6         hard-mclust    ran     1635   1635   67048                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3031501Z 7          hard-polca    ran      958    958   89873                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3032314Z 8          invariance    ran      796    796   31192                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3033100Z 9                lcmm    ran      467    467   34865                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3033896Z 10        lta-general    ran      102    102    9539                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3034753Z 11          lta-mixed    ran      358    358   50755                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3035567Z 12             mclust    ran      450    450   16717                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3036693Z 13 mplus-twolevel-lca    ran      770    770  395792                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3038209Z 14        multilevlca    ran      360    360 2041615                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3039124Z 15      ordinal-count    ran      486    486   26814                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3040005Z 16              polca    ran      820    820   86185                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3040902Z 17   pool-imputations    ran       92     92    2396                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3042165Z 18    predict-newdata    ran       57     57    7571                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3043111Z 19          published    ran       41     41      41                  NA
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3043973Z 20           refusals    ran       50     50      50                  NA
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3044796Z 21          robust-se    ran      541    541   24390                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3045614Z 22          stability    ran        9      9       9                  NA
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3046715Z 23         three-step    ran      271    271     897                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3047570Z 24       twolevel-lpa    ran     1231   1231  134822                   0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3048216Z    warnings seconds
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3048617Z 1         0   78.74
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3049017Z 2         0   32.94
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3049413Z 3         0   36.41
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3049809Z 4         0   42.46
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3050191Z 5         0  391.51
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3050585Z 6         4  154.37
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3050977Z 7         0  285.78
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3051365Z 8         0   15.59
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3051740Z 9         0   83.75
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3052127Z 10        0  105.77
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3052511Z 11        0   55.71
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3052900Z 12        0   48.30
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3053287Z 13        0  223.76
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3053671Z 14        0  285.21
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3054060Z 15        0   34.41
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3054448Z 16        0  178.16
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3054856Z 17        0   12.67
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3055263Z 18        0    7.66
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3055657Z 19        0  721.95
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3056328Z 20        0    1.30
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3056737Z 21        0   19.07
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3057131Z 22        0  128.43
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3057518Z 23        0   74.76
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3057899Z 24        0  107.55
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3058120Z 
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3058605Z 12035 quantities (3302066 values) compared, 12035 agreed, 0 disagreed
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3059128Z 
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3059327Z Suites not run:
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3059740Z     suite status
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3060134Z 3 flexmix failed
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3060730Z                                                                            reason
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3061733Z 3 simpleError/error/condition: every package estimate must be found in its tables
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3062358Z 
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3561744Z                 suite
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3562345Z 4          covariates
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3562778Z 13         covariates
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3563238Z 29         covariates
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3563661Z 32         covariates
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3564083Z 5            depmixs4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3564484Z 14               glca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3564893Z 6       hard-depmixs4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3565315Z 23        hard-mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3565728Z 15         hard-polca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3566384Z 33         hard-polca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3566797Z 16         invariance
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3567221Z 18               lcmm
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3567626Z 20               lcmm
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3568027Z 7         lta-general
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3568436Z 22          lta-mixed
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3568841Z 24             mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3569262Z 28 mplus-twolevel-lca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3569677Z 30        multilevlca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3570089Z 8       ordinal-count
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3570499Z 10      ordinal-count
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3570912Z 11      ordinal-count
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3571314Z 34              polca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3572214Z 1    pool-imputations
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3572640Z 19   pool-imputations
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3573080Z 27   pool-imputations
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3573522Z 3     predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3573948Z 12    predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3574371Z 25    predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3574792Z 35    predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3575216Z 36    predict-newdata
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3575628Z 37           refusals
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3576521Z 2           robust-se
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3576953Z 26          robust-se
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3577379Z 39          robust-se
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3577784Z 31          stability
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3578191Z 9          three-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3578599Z 21         three-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3579017Z 38         three-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3579436Z 40         three-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3579847Z 17       twolevel-lpa
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3580253Z 48             mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3580662Z 49             mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3581069Z 51             mclust
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3581487Z 50 mplus-twolevel-lca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3581906Z 46        multilevlca
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3582319Z 41          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3582732Z 42          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3583139Z 43          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3583547Z 45          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3583953Z 47          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3584371Z 52          published
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3584791Z 44       twolevel-lpa
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3585434Z                                                                                   source
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3586494Z 4                                                                         depmixS4 1.5.4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3587358Z 13                                                                            glca 1.4.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3588193Z 29                                                                     multilevLCA 2.1.7
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3589025Z 32                                                                         poLCA 1.6.0.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3589882Z 5                                                                         depmixS4 1.5.4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3590716Z 14                                                                            glca 1.4.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3591533Z 6                                                                         depmixS4 1.5.4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3592364Z 23                                                                          mclust 6.1.3
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3593191Z 15                                                                            invariance
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3594009Z 33                                                                         poLCA 1.6.0.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3594823Z 16                                                                            invariance
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3595668Z 18                                                              latents (unit-scale fit)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3596698Z 20                                                                            lcmm 2.2.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3597522Z 7                                                                         depmixS4 1.5.4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3598349Z 22                                                                           LMest 4.0.0
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3599192Z 24                                                                          mclust 6.1.3
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3600035Z 28                                                           Mplus 8.8 (UG example 10.7)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3600874Z 30                                                                     multilevLCA 2.1.7
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3601705Z 8                                                                         depmixS4 1.5.4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3602561Z 10                                                     EM with MASS 7.3.65 glm.nb M-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3603408Z 11                                                 EM with VGAM 1.1.14 vglm(acat) M-step
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3604457Z 34                                                                         poLCA 1.6.0.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3605362Z 1                                base-R Gaussian mixture likelihood, numDeriv 2016.8.1.1
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3606535Z 19                          latents 0.98.0 multilpa() called directly (same computation)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3607535Z 27                                                  mice 3.19.0 pool.scalar (Rubin 1987)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3608677Z 3                                base-R two-level likelihood (two-level-lca-reference.R)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3609587Z 12                                                                        flexmix 2.3.21
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3610407Z 25                                                                          mclust 6.1.3
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3611274Z 35                                                                         poLCA 1.6.0.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3612107Z 36                                                                        refusal parity
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3612941Z 37                                                                        refusal parity
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3613786Z 2                          base-R likelihood, numDeriv 2016.8.1.1 scores and information
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3614819Z 26 mclust 6.1.3 estimates; base-R likelihood, numDeriv 2016.8.1.1 scores and information
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3616186Z 39  sandwich 3.1.3 vcovCL; base-R likelihood, numDeriv 2016.8.1.1 scores and information
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3617245Z 31                                                       multilpa, refitted across seeds
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3618179Z 9                                                    depmixS4 1.5.4; numDeriv 2016.8.1.1
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3619071Z 21                                          likelihood written here; numDeriv 2016.8.1.1
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3619947Z 38                                                               sandwich 3.1.3 (vcovCL)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3620838Z 40                                          tidySEM 0.2.12; estimating-equation sandwich
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3621705Z 17                                                                       Latent GOLD 6.1
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3622544Z 48                                                           mclust vignette, clustering
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3623420Z 49                                                   mclust vignette, density estimation
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3624347Z 51                                        Scrucca et al. (2023) mclust book, Example 3.2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3625242Z 50                                                           Mplus 8.8 (UG example 10.7)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3626464Z 46                                Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3627430Z 41                                        Agresti & Lang (1993) Biometrics 49(1) Table 2
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3628407Z 42                          Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3629442Z 43                      Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3630320Z 45                                            Linzer & Lewis (2011) JSS 42(10) pp. 21-22
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3631234Z 47                                         McCutcheon (1987) Latent Class Analysis, Sage
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3632142Z 52                                     Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3633022Z 44                                                                       Latent GOLD 6.1
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3633869Z    precision compared agreed worst_difference loosest_tolerance
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3634717Z 4    machine      104    104     1.695851e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3635483Z 13   machine      190    190     7.439242e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3636481Z 29   machine      192    192     1.486091e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3637241Z 32   machine       91     91     1.173315e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3638433Z 5    machine      462    462     2.303642e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3639200Z 14   machine      362    362     9.943804e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3639973Z 6    machine     1140   1140     7.115151e-05            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3640781Z 23   machine     1635   1635     8.157772e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3641856Z 15   machine       79     79     5.180971e-08            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3642650Z 33   machine      879    879     9.002906e-08            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3643421Z 16   machine      796    796     4.597090e-11            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3644175Z 18   machine       10     10     1.249133e-10            0.0001
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3644949Z 20   machine      457    457     1.846079e-03            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3645698Z 7    machine      102    102     3.220468e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3646719Z 22   machine      358    358     3.662871e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3647509Z 24   machine      441    441     5.109587e-05            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3648294Z 28   machine      173    173     1.858083e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3649046Z 30   machine      357    357     5.502047e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3649806Z 8    machine      243    243     1.577545e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3650584Z 10   machine      160    160     1.615849e-08            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3651351Z 11   machine       83     83     2.400316e-08            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3652110Z 34   machine      820    820     6.555374e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3652884Z 1    machine       16     16     1.944851e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3653626Z 19   machine       14     14     3.866352e-14            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3654381Z 27   machine       62     62     4.080070e-15            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3655138Z 3    machine       17     17     3.219647e-15            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3656175Z 12   machine       10     10     5.551115e-16            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3657020Z 25   machine       11     11     4.437671e-16            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3657835Z 35   machine       11     11     2.034581e-14            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3658592Z 36   machine        8      8     0.000000e+00            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3659368Z 37   machine       50     50     0.000000e+00            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3660129Z 2    machine      321    321     5.649574e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3660909Z 26   machine      125    125     6.756527e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3661696Z 39   machine       95     95     2.364657e-10            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3662441Z 31   machine        9      9     0.000000e+00            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3663207Z 9    machine      157    157     2.642511e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3663961Z 21   machine       18     18     1.408500e-06            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3664734Z 38   machine       56     56     5.551115e-16            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3665481Z 40   machine       40     40     1.898481e-14            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3666470Z 17   machine     1005   1005     2.179787e-07            0.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3667240Z 48   printed        3      3     5.913316e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3667998Z 49   printed        3      3     5.331782e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3668727Z 51   printed        3      3     8.354732e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3669473Z 50   printed      597    597     1.000000e+00           50.5000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3670221Z 46   printed        3      3     8.816367e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3670992Z 41   printed        3      3     7.657521e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3671744Z 42   printed        6      6     8.435683e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3672494Z 43   printed       12     12     9.382571e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3673582Z 45   printed        9      9     7.114471e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3674366Z 47   printed        5      5     7.445945e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3675138Z 52   printed        6      6     1.641260e-04            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3676161Z 44   printed      226    226     9.999586e-01            1.0000
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3677109Z    worst_tolerance_fraction
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3677601Z 4              2.243516e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3678064Z 13             5.093078e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3678512Z 29             6.682037e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3678984Z 32             3.737483e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3679447Z 5              2.056207e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3679911Z 14             9.943804e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3680377Z 6              2.650268e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3680841Z 23             8.157772e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3681294Z 15             5.180971e-04
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3681749Z 33             9.002906e-03
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3682214Z 16             1.562295e-05
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3682671Z 18             1.249133e-06
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3683133Z 20             6.153596e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3683587Z 7              3.220468e-03
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3684039Z 22             3.662871e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3684483Z 24             5.109587e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3684937Z 28             6.501152e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3685387Z 30             3.460175e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3685837Z 8              5.759387e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3686575Z 10             1.262980e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3687046Z 11             2.400316e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3687506Z 34             8.522204e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3688023Z 1              1.944851e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3688464Z 19             3.866352e-04
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3688919Z 27             4.080070e-05
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3689369Z 3              3.219647e-05
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3689820Z 12             5.551115e-06
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3690259Z 25             4.437671e-06
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3690727Z 35             2.034581e-04
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3691169Z 36             0.000000e+00
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3691616Z 37             0.000000e+00
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3692061Z 2              2.127181e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3692512Z 26             6.756527e-03
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3692952Z 39             7.984308e-04
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3693397Z 31             0.000000e+00
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3693858Z 9              8.860986e-02
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3694326Z 21             1.408500e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3694777Z 38             5.551115e-06
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3695216Z 40             1.898481e-04
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3695660Z 17             2.179787e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3696486Z 48             5.913316e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3696988Z 49             5.331782e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3697493Z 51             8.354732e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3697956Z 50             9.523564e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3698392Z 46             8.816367e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3698834Z 41             7.657521e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3699292Z 42             8.435683e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3699731Z 43             9.382571e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3700180Z 45             7.114471e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3700630Z 47             7.445945e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3701077Z 52             3.282520e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.3701516Z 44             9.999586e-01
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.4503810Z 
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.4505225Z 12035 quantities (3302066 values) compared, 12035 agreed, 0 disagreed (0 explained by a known open defect)
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.6399043Z 
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.6400315Z wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in tmp/equivalence
+equivalence	Compare every registered reference suite and output	2026-10-28T17:19:13.7427277Z ##[error]Process completed with exit code 1.

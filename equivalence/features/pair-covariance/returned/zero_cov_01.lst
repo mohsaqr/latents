@@ -1,0 +1,198 @@
+zero_cov_01-lg.dat
+File name:	zero_cov_01-lg.dat	
+File size:	38097 bytes  500 records	
+File date:	2026-Oct-20 9:11:39 PM	
+Syntax:	zero_cov_01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+zero_cov_01	2-Cluster	-3097.5936	6313.2647	6233.1872	6252.1872	19	0.0704	0.7512	
+zero_cov_01 - LL = -3097.5936
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	19				
+Activated Constraints	0				
+Random Seed	20261020				
+Best Start Seed	2116070				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3097.5936				
+Log-prior	0.0000				
+Log-posterior	-3097.5936				
+BIC (based on LL)	6313.2647				
+AIC (based on LL)	6233.1872				
+AIC3 (based on LL)	6252.1872				
+CAIC (based on LL)	6332.2647				
+SABIC (based on LL)	6252.9576				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0704				
+Reduction of errors (Lambda)	0.8482				
+Entropy R-squared	0.7512				
+Standard R-squared	0.7926				
+Classification log-likelihood	-3183.4816				
+Entropy	85.8880				
+CLC	6366.9632				
+AWE	6660.1184				
+ICL-BIC	6485.0408				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	248.4483	19.6543	268.1025		
+2	15.5517	216.3457	231.8975		
+Total	264.0000	236.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	242.3152	25.7873	268.1025		
+2	25.7873	206.1102	231.8975		
+Total	268.1025	231.8975	500.0000		
+					
+Files					
+Infile	C:\lgfeatures\pair-covariance\zero_cov_01\zero_cov_01-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+write	zero_cov_01_write.txt	
+outfile					
+file name	zero_cov_01_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile write='zero_cov_01_write.txt';
+   outfile 'zero_cov_01_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+   y4 | Cluster;
+   y1 <-> y2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	1.2954	1	0.26				
+Cluster(2)	<-	1			-0.1451	0.1275	-1.1381	0.26							
+															
+y1	<-	1			0.0369	0.0849	0.4343	0.66	0.1886	1	0.66				
+y1	<-	Cluster(1)			0.0000	.	.	.	391.2946	1	4.3e-87				
+y1	<-	Cluster(2)			1.9341	0.0978	19.7812	4.3e-87							
+															
+y2	<-	1			0.0652	0.0761	0.8560	0.39	0.7327	1	0.39				
+y2	<-	Cluster(1)			0.0000	.	.	.	154.1189	1	2.2e-35				
+y2	<-	Cluster(2)			1.4774	0.1190	12.4145	2.2e-35							
+															
+y3	<-	1			-0.0780	0.0693	-1.1252	0.26	1.2661	1	0.26				
+y3	<-	Cluster(1)			0.0000	.	.	.	186.1255	1	2.2e-42				
+y3	<-	Cluster(2)			1.3022	0.0954	13.6428	2.2e-42							
+															
+y4	<-	1			0.0255	0.0666	0.3828	0.70	0.1465	1	0.70				
+y4	<-	Cluster(1)			0.0000	.	.	.	104.4424	1	1.6e-24				
+y4	<-	Cluster(2)			-1.0921	0.1069	-10.2197	1.6e-24							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	Cluster(1)	1.1322	0.1184	9.5637	1.1e-21	150.1114	2	2.5e-33	10.9598	1	0.00093	
+y1			|	Cluster(2)	0.6703	0.0814	8.2298	1.9e-16							
+y2			|	Cluster(1)	1.1564	0.1114	10.3821	3.0e-25	197.4726	2	1.3e-43	2.7531	1	0.097	
+y2			|	Cluster(2)	1.4663	0.1519	9.6538	4.7e-22							
+y3			|	Cluster(1)	0.8368	0.0875	9.5679	1.1e-21	179.4879	2	1.1e-39	0.0683	1	0.79	
+y3			|	Cluster(2)	0.8052	0.0847	9.5031	2.0e-21							
+y4			|	Cluster(1)	0.9882	0.0906	10.9063	1.1e-27	218.3790	2	3.8e-48	1.3622	1	0.24	
+y4			|	Cluster(2)	1.1649	0.1195	9.7510	1.8e-22							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1	<->	y2	|	Cluster(1)	0.0745	0.0827	0.9016	0.37	1.2459	2	0.54	0.0468	1	0.83	
+y1	<->	y2	|	Cluster(2)	0.0503	0.0759	0.6627	0.51							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	1.2954	1	0.26	
+	
+y1	<-	 Cluster			Cluster	1	2	391.2946	1	4.3e-87	
+	
+y2	<-	 Cluster			Cluster	1	2	154.1189	1	2.2e-35	
+	
+y3	<-	 Cluster			Cluster	1	2	186.1255	1	2.2e-42	
+	
+y4	<-	 Cluster			Cluster	1	2	104.4424	1	1.6e-24	
+Variances	
+y1			|	Cluster	Cluster	1	2	10.9598	1	0.00093	
+y2			|	Cluster	Cluster	1	2	2.7531	1	0.097	
+y3			|	Cluster	Cluster	1	2	0.0683	1	0.79	
+y4			|	Cluster	Cluster	1	2	1.3622	1	0.24	
+Covariances / Associations	
+y1	<->	y2	|	Cluster	Cluster	1	2	0.0468	1	0.83	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5362	0.0317	0.4638	0.0317	 	 	
+y1	 	
+Mean	0.0369	0.0849	1.9710	0.0696	0.9339	0.0608	
+y2	 	
+Mean	0.0652	0.0761	1.5425	0.0943	0.7504	0.0607	
+y3	 	
+Mean	-0.0780	0.0693	1.2242	0.0688	0.5260	0.0499	
+y4	 	
+Mean	0.0255	0.0666	-1.0666	0.0832	-0.4810	0.0523	

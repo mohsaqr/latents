@@ -1,0 +1,96 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-audit-core-repairs.R","audit-core-repairs","zero-count rows do not change the membership optimum or its score",5,0,FALSE,FALSE,0,0.086,0.006,0.151,5
+"test-audit-core-repairs.R","audit-core-repairs","zero-weight predictor outliers do not change a public covariate fit",6,0,FALSE,FALSE,0,0.074,0.01,0.156,6
+"test-audit-core-repairs.R","audit-core-repairs","an extreme common count density preserves priors and other indicators",3,0,FALSE,FALSE,0,0.055,0.003,0.074,3
+"test-audit-core-repairs.R","audit-core-repairs","ordinary categorical measurements retain their original arithmetic",6,0,FALSE,FALSE,0,0.005,0.00199999999999999,0.014,6
+"test-audit-core-repairs.R","audit-core-repairs","ordinal whole numbers retain distinct native categories",6,0,FALSE,FALSE,0,0.00800000000000001,0.002,0.024,6
+"test-audit-core-repairs.R","audit-core-repairs","indicator scaling depends on variation rather than its origin",5,0,FALSE,FALSE,0,0.014,0.002,0.0390000000000001,5
+"test-audit-core-repairs.R","audit-core-repairs","within-unit weight validation is invariant to a common scale",12,0,FALSE,FALSE,0,0.015,0.002,0.0210000000000001,12
+"test-audit-core-repairs.R","audit-core-repairs","mixture structure posteriors preserve priors at extreme common densities",6,0,FALSE,FALSE,0,0.006,0.002,0.0129999999999999,6
+"test-audit-core-repairs.R","audit-core-repairs","only positive-weight rows can identify membership predictors",1,0,FALSE,FALSE,0,0.047,0.002,0.0619999999999998,1
+"test-audit-core-repairs.R","audit-core-repairs","covariate logLik and nobs use the BIC group convention",5,0,FALSE,FALSE,0,0.031,0.003,0.0680000000000001,5
+"test-audit-core-repairs.R","audit-core-repairs","the additive study CLI validates its stage before loading helpers",4,0,FALSE,FALSE,0,0.00599999999999989,0.000999999999999987,0.0190000000000001,4
+"test-audit-core-repairs.R","audit-core-repairs","the recovery pivot requires a complete unique grid of parameter cells",4,0,FALSE,FALSE,0,0.014,0.001,0.0249999999999999,4
+"test-audit-core-repairs.R","audit-core-repairs","Poisson class evidence survives subtraction of huge log pmfs",1,0,FALSE,FALSE,0,0.002,0.001,0.004,1
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","validation preflight refuses unsafe forks without changing core counts",14,0,FALSE,FALSE,0,0.02,0.002,0.032,14
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","validation preflight preserves explicit arguments and the RNG state",3,0,FALSE,FALSE,0,0.003,0.001,0.00700000000000012,3
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","every retained study guards each direct mclapply core request",72,0,FALSE,FALSE,0,0.0720000000000001,0.02,0.216,72
+"test-parallel-recovery.R","parallel-recovery","a killed fork task is retried once and recovers its exact value",1,0,TRUE,FALSE,0,0.00099999999999989,0.001,0.002,0
+"test-parallel-recovery.R","parallel-recovery","a permanently killed fork task leaves other task results intact",1,0,TRUE,FALSE,0,0.004,0,0.004,0
+"test-parallel-recovery.R","parallel-recovery","a socket retry loses only the task that kills its worker",4,0,FALSE,FALSE,0,0.014,0.00599999999999999,0.536,4
+"test-parallel-recovery.R","parallel-recovery","ordinary errors in start code are recorded without a process-loss retry",1,0,TRUE,FALSE,0,0.001,0,0.00199999999999978,0
+"test-parallel-recovery.R","parallel-recovery","recovered flat starts preserve the complete transition grid",1,0,TRUE,FALSE,0,0,0.001,0.00099999999999989,0
+"test-parallel-recovery.R","parallel-recovery","a recovered direct lta start preserves the undisturbed fitted object",1,0,TRUE,FALSE,0,0,0,0.00099999999999989,0
+"test-parallel-recovery.R","parallel-recovery","a genuine transition start error is neither retried nor called worker loss",1,0,TRUE,FALSE,0,0,0.001,0.00200000000000022,0
+"test-parallel-recovery.R","parallel-recovery","a permanently lost flat start is reported alongside fitted candidates",1,0,TRUE,FALSE,0,0.001,0,0.00099999999999989,0
+"test-parallel-recovery.R","parallel-recovery","losing all starts fails only their candidate in a transition grid",1,0,TRUE,FALSE,0,0.00700000000000001,0,0.00800000000000001,0
+"test-parallel-recovery.R","parallel-recovery","emEM aggregates recovered screening and finalist losses into one warning",1,0,TRUE,FALSE,0,0.001,0.001,0.00200000000000022,0
+"test-parallel.R","parallel","a profile grid on several cores is identical to one core",2,0,FALSE,FALSE,0,0.31,0.021,0.85,2
+"test-parallel.R","parallel","transition and family grids on several cores are identical to one core",2,0,FALSE,FALSE,0,1.033,0.022,2.379,2
+"test-parallel.R","parallel","candidates' warnings reach the caller in grid order, as on one core",3,0,FALSE,FALSE,0,0.453,0.025,1.078,3
+"test-parallel.R","parallel","the socket backend returns values and conditions in order",3,0,FALSE,FALSE,0,0.00900000000000034,0.005,0.151,3
+"test-parallel.R","parallel","cores is validated by class, and one core is lapply",6,0,FALSE,FALSE,0,0.0109999999999997,0.001,0.0129999999999999,6
+"test-parallel.R","parallel","forked workers are refused only on macOS with Accelerate's BLAS",4,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00800000000000001,4
+"test-parallel.R","parallel","a forked worker killed by a signal becomes a failed candidate",3,0,FALSE,FALSE,0,0.00499999999999989,0.014,0.0220000000000002,3
+"test-parallel.R","parallel","a socket worker that dies becomes a failed candidate",3,0,FALSE,FALSE,0,0.0100000000000002,0.00700000000000001,0.5,3
+"test-parallel.R","parallel","one fit's starts on several cores give the same fit as one core",4,0,FALSE,FALSE,0,0.76,0.068,1.62,4
+"test-parallel.R","parallel","a fit refuses a `cores` that is not a whole number of at least 1",2,0,FALSE,FALSE,0,0.0259999999999998,0.003,0.0869999999999997,2
+"test-parallel.R","parallel","socket cleanup cannot replace a worker failure or leak remaining connections",5,0,FALSE,FALSE,0,0.00600000000000023,0,0.00900000000000034,5
+"test-parallel.R","parallel","cleanup closes a live socket even when another node is already closed",4,0,FALSE,FALSE,0,0.00599999999999978,0.001,0.125999999999999,4
+"test-parallel.R","parallel","every enumeration path sends its data, not the caller's variable, to workers",1,0,FALSE,FALSE,0,0.232,0.00800000000000001,0.298,1
+"test-parallel.R","parallel","the shared pool dispatches longest tasks first within its worker budget",5,0,FALSE,FALSE,0,0.00500000000000034,0.002,0.011000000000001,5
+"test-parallel.R","parallel","collected task conditions retain their classes and original task order",7,0,FALSE,FALSE,0,0.00499999999999989,0.002,0.0109999999999992,7
+"test-parallel.R","parallel","the socket pool sends forced task inputs and dynamically balances them",5,0,FALSE,FALSE,0,0.00700000000000012,0.002,0.0129999999999999,5
+"test-parallel.R","parallel","a serialized task collector captures only its forced task function",3,0,FALSE,FALSE,0,0.00200000000000022,0.001,0.00600000000000023,3
+"test-parallel.R","parallel","socket restart and retry startup failures retain completed chunks",6,0,FALSE,FALSE,0,0.00599999999999978,0.002,0.0120000000000005,6
+"test-parallel.R","parallel","initial socket startup failure remains a classed infrastructure error",1,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00399999999999956,1
+"test-parallel.R","parallel","a fork retry that cannot spawn retains earlier recovered tasks",3,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00699999999999967,3
+"test-parallel.R","parallel","a terminal loss callback error cannot hide the worker warning",3,0,FALSE,FALSE,0,0.00199999999999978,0.001,0.00400000000000134,3
+"test-parallel.R","parallel","socket chunk recovery retries only unfinished tasks on a fresh smaller cluster",6,0,FALSE,FALSE,0,0.0100000000000002,0.003,0.0179999999999989,6
+"test-parallel.R","parallel","an uncaught task R error retains its class and is never retried",4,0,FALSE,FALSE,0,0.004,0.001,0.00600000000000023,4
+"test-parallel.R","parallel","broken socket workers are retired before replacement pools start",11,0,FALSE,FALSE,0,0.00999999999999979,0.003,0.0739999999999998,11
+"test-parallel.R","parallel","socket PID registration failures close idle workers before failing",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00600000000000023,2
+"test-parallel.R","parallel","unretired socket workers prevent replacement and give a classed failure",4,0,FALSE,FALSE,0,0.004,0.001,0.00600000000000023,4
+"test-parallel.R","parallel","a seeded multilevel LCA grid prepared on workers is identical to one core",7,0,FALSE,FALSE,0,2.411,0.184,6.686,7
+"test-review-0970-parallel.R","review-0970-parallel","C1 seeded socket tasks inherit all three parent RNG kinds",420,0,FALSE,FALSE,0,0.569,0.127,1.052,420
+"test-review-0970-parallel.R","review-0970-parallel","C1 family and whole-profile fallback candidates preserve seeded fits",11,0,FALSE,FALSE,0,0.215,0.01,0.329000000000001,11
+"test-review-0970-parallel.R","review-0970-parallel","C1 live socket family enumeration agrees under L'Ecuyer-CMRG",1,0,FALSE,FALSE,0,0.069,0.003,0.311,1
+"test-review-0970-parallel.R","review-0970-parallel","C2 Windows retirement accepts exited workers and rejects live survivors",7,0,FALSE,FALSE,0,0.016,0.003,0.0280000000000022,7
+"test-review-0970-parallel.R","review-0970-parallel","C3 socket abnormal exits abort workers while normal exits stop them",6,0,FALSE,FALSE,0,0.00600000000000023,0.002,0.0130000000000017,6
+"test-review-0970-parallel.R","review-0970-parallel","C3 isolated fork abnormal exits kill only their owned child",8,0,FALSE,FALSE,0,0.00599999999999934,0.002,0.0139999999999993,8
+"test-review-0970-parallel.R","review-0970-parallel","C4 socket recovery attempts every task at most twice",5,0,FALSE,FALSE,0,0.00400000000000045,0.001,0.0100000000000016,5
+"test-review-0970-parallel.R","review-0970-parallel","C5a converted family warnings remain failed candidate rows",6,0,FALSE,FALSE,0,0.00800000000000001,0.003,0.0179999999999971,6
+"test-review-0970-parallel.R","review-0970-parallel","C5b collected conditions precede uncaught errors in grid order",20,0,FALSE,FALSE,0,0.0129999999999999,0.002,0.0219999999999985,20
+"test-review-0970-parallel.R","review-0970-parallel","worker execution settings restore on errors and interrupts without a seed",6,0,FALSE,FALSE,0,0.00399999999999956,0.002,0.0140000000000029,6
+"test-review-1026-refusals.R","review-1026-refusals","an enumeration refuses data that every candidate refuses, as multilpa does",5,0,FALSE,FALSE,0,0.0289999999999999,0.005,0.287000000000003,5
+"test-review-1026-refusals.R","review-1026-refusals","a candidate that fails on its own still leaves the rest of the grid",1,0,FALSE,FALSE,0,0.211,0.002,0.271000000000001,1
+"test-review-1026-refusals.R","review-1026-refusals","the shared-error rule needs the same class and message in every cell",4,0,FALSE,FALSE,0,0.00399999999999956,0.001,0.0100000000000016,4
+"test-review-1026-refusals.R","review-1026-refusals","a constant Gaussian outcome is named as the reason, not the starts",4,0,FALSE,FALSE,0,0.0129999999999999,0.001,0.0169999999999995,4
+"test-review-1026-refusals.R","review-1026-refusals","more cores than the machine has are capped with a classed warning",3,0,FALSE,FALSE,0,0.00400000000000045,0.002,0.0279999999999987,3
+"test-search.R","search","a paused and resumed EM run takes exactly the steps of an unpaused one",110,0,FALSE,FALSE,0,0.0809999999999995,0.0259999999999999,0.187000000000001,110
+"test-search.R","search","a run ended by a non-finite step stays ended, with the E-step before it",3,0,FALSE,FALSE,0,0.00199999999999978,0.001,0.0069999999999979,3
+"test-search.R","search","screening runs the protected start and the best screened starts to the end",6,0,FALSE,FALSE,0,0.00499999999999989,0.002,0.0130000000000017,6
+"test-search.R","search","failed starts are recorded, and the fit is refused only when all fail",3,0,FALSE,FALSE,0,0.00400000000000045,0.001,0.0069999999999979,3
+"test-search.R","search","random starts assign every row and leave no cluster empty",28,0,FALSE,FALSE,0,0.0209999999999999,0.00800000000000001,0.0539999999999985,28
+"test-search.R","search","emEM resumes the kmeans search's own starts exactly",7,0,FALSE,FALSE,0,1.76,0.0770000000000001,1.861,7
+"test-search.R","search","the kmeans search keeps its table and records its controls",8,0,FALSE,FALSE,0,0.141999999999999,0.00800000000000001,0.178000000000001,8
+"test-search.R","search","emEM is reproducible under a seed and leaves the caller's stream alone",5,0,FALSE,FALSE,0,0.588000000000001,0.024,0.645,5
+"test-search.R","search","emEM gives the same fit on one core and on two",2,0,FALSE,FALSE,0,0.27,0.0249999999999999,0.730999999999998,2
+"test-search.R","search","a supplied start always runs to the end, and alone when it is the only start",4,0,FALSE,FALSE,0,0.131,0.006,0.161000000000001,4
+"test-search.R","search","invalid search controls are refused by class",3,0,FALSE,FALSE,0,0.00900000000000034,0.001,0.0300000000000011,3
+"test-search.R","search","every fit path runs the emEM search and records it",25,0,FALSE,FALSE,1,3.372,0.221,3.689,24
+"test-search.R","search","the bootstrap refits each model with the controls it was fitted with",24,0,FALSE,FALSE,0,0.879999999999999,0.038,1.029,24
+"test-search.R","search","a covariate fit records the stopping rule its bootstrap refits inherit",2,0,FALSE,FALSE,0,0.542,0.0149999999999999,0.574999999999999,2
+"test-search.R","search","a staged fit's bootstrap refits keep its screening pool",1,0,FALSE,FALSE,0,0.392999999999999,0.0069999999999999,0.436,1
+"test-search.R","search","summaries count replications out of the starts run to the end",3,0,FALSE,FALSE,0,0.456,0.01,0.483999999999998,3
+"test-search.R","search","a fit made before the controls were recorded is refitted as before",1,0,FALSE,FALSE,0,0.0520000000000014,0.002,0.0650000000000013,1
+"test-three-step-ml.R","three-step-ml","with no classification error the ML means are the class means",4,0,FALSE,FALSE,0,0.0229999999999997,0.002,0.0339999999999989,4
+"test-three-step-ml.R","three-step-ml","the analytic scores are the gradient of the step-three likelihood",4,0,FALSE,FALSE,0,0.782,0.006,0.802,4
+"test-three-step-ml.R","three-step-ml","ML recovers the class means and variances of a simulated outcome",7,0,FALSE,FALSE,0,0.300000000000001,0.006,0.321999999999999,7
+"test-three-step-ml.R","three-step-ml","shifting the outcome shifts the means; scaling scales means and errors",5,0,FALSE,FALSE,0,0.792999999999999,0.006,0.818999999999999,5
+"test-three-step-ml.R","three-step-ml","ML standard errors do not depend on the outcome's units",6,0,FALSE,FALSE,0,1.085,0.01,1.112,6
+"test-three-step-ml.R","three-step-ml","ML pairs are the differences of its class means",3,0,FALSE,FALSE,0,0.541999999999998,0.00500000000000012,0.558999999999997,3
+"test-three-step-ml.R","three-step-ml","ML arguments and outcomes it cannot take are refused by class",6,0,FALSE,FALSE,0,0.0470000000000006,0.00299999999999989,0.0640000000000001,6
+"test-three-step-ml.R","three-step-ml","both variance models converge and agree with Latent GOLD's step three",8,0,FALSE,FALSE,0,1.242,0.044,1.322,8
+"test-three-step-ml.R","three-step-ml","ML uncertainty at a large origin matches known normal means",2,0,FALSE,FALSE,0,0.0210000000000008,0.00099999999999989,0.027000000000001,2
+"test-three-step-ml.R","three-step-ml","public ML means and contrasts retain uncertainty at large outcome origins",24,0,FALSE,FALSE,0,1.891,0.0149999999999999,1.956,24

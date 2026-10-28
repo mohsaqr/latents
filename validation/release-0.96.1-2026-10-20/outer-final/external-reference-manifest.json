@@ -1,0 +1,26 @@
+[
+  {
+    "path": "validation/r-reference/mplus-demo-complex-weight-on.dat",
+    "sha256": "75a3ea40bf14c0e00e97ae034a7b04376ef979c5e3988c33ebb137dc29d010ba"
+  },
+  {
+    "path": "validation/r-reference/mplus-ug-ex8.13.dat",
+    "sha256": "749b9885450abae3a8c5d778924863ae1607bd66cceccbfc94918f63aa523f63"
+  },
+  {
+    "path": "validation/r-reference/mplus-ug-ex8.14.dat",
+    "sha256": "959ce401b7c4b758b368f023c343be12b7b685c2537832ab92213567e256cb46"
+  },
+  {
+    "path": "validation/r-reference/mplus-demo-lta-classvarying-measurement.dat",
+    "sha256": "f925ae5dacc7f26977c9524a53bd046e2e88e42460772065d802f78cf6d8b300"
+  },
+  {
+    "path": "tests/fixtures/latent/lta-time-varying-ref.json",
+    "sha256": "abe5b9ebc42f7ee3bb3b7e307f9a6d492becbfd059676a37acfe52bbbed6e4ae"
+  },
+  {
+    "path": "tests/fixtures/lta-covariate-ref.json",
+    "sha256": "76299a0f631e21b8b540190830fcb20f2995795ee46f7df009de2ee312de4784"
+  }
+]

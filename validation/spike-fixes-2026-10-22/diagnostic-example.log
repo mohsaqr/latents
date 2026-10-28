@@ -1,0 +1,115 @@
+                                                      field identical
+means                                                 means      TRUE
+variances                                         variances      TRUE
+profile_probabilities                 profile_probabilities      TRUE
+group_probabilities                     group_probabilities      TRUE
+covariances                                     covariances      TRUE
+call                                                   call      TRUE
+vars                                                   vars      TRUE
+continuous                                       continuous      TRUE
+continuous_types                           continuous_types      TRUE
+ordinal                                             ordinal      TRUE
+count                                                 count      TRUE
+extra_data                                       extra_data      TRUE
+categorical                                     categorical      TRUE
+categorical_levels                       categorical_levels      TRUE
+min_probability                             min_probability      TRUE
+categorical_values                       categorical_values      TRUE
+indicator_data                               indicator_data      TRUE
+centering                                         centering      TRUE
+centering_offsets                         centering_offsets      TRUE
+scaling                                             scaling      TRUE
+scaling_factors                             scaling_factors      TRUE
+categorical_data                           categorical_data      TRUE
+id                                                       id      TRUE
+group_ids                                         group_ids      TRUE
+single_level                                   single_level      TRUE
+weights                                             weights      TRUE
+sampling_weights                           sampling_weights      TRUE
+time                                                   time      TRUE
+time_values                                     time_values      TRUE
+group_values                                   group_values      TRUE
+group_index                                     group_index      TRUE
+group_sizes                                     group_sizes      TRUE
+n_observations                               n_observations      TRUE
+n_informative                                 n_informative      TRUE
+informative                                     informative      TRUE
+n_informative_groups                   n_informative_groups      TRUE
+drop_empty                                       drop_empty      TRUE
+n_groups                                           n_groups      TRUE
+n_profiles                                       n_profiles      TRUE
+n_group_classes                             n_group_classes      TRUE
+variance_model                               variance_model      TRUE
+covariance_model                           covariance_model      TRUE
+covariance_structure                   covariance_structure      TRUE
+prior                                                 prior      TRUE
+acceleration                                   acceleration      TRUE
+prior_parameters                           prior_parameters      TRUE
+missing                                             missing      TRUE
+max_iter                                           max_iter      TRUE
+tol                                                     tol      TRUE
+n_observed_by_indicator             n_observed_by_indicator      TRUE
+min_variance                                   min_variance      TRUE
+standard_deviations                     standard_deviations      TRUE
+fixed                                                 fixed      TRUE
+measurement_model                         measurement_model      TRUE
+subject_posteriors                       subject_posteriors      TRUE
+group_posteriors                           group_posteriors      TRUE
+subject_profiles                           subject_profiles      TRUE
+group_classes                                 group_classes      TRUE
+log_likelihood                               log_likelihood      TRUE
+group_log_likelihood                   group_log_likelihood      TRUE
+n_parameters                                   n_parameters      TRUE
+n_parameters_with_measurement n_parameters_with_measurement      TRUE
+aic                                                     aic      TRUE
+bic                                                     bic      TRUE
+bic_groups                                       bic_groups      TRUE
+bic_individual                               bic_individual      TRUE
+converged                                         converged      TRUE
+iterations                                       iterations      TRUE
+log_likelihood_history               log_likelihood_history      TRUE
+starts                                               starts      TRUE
+best_start                                       best_start      TRUE
+n_failed_starts                             n_failed_starts      TRUE
+boundary                                           boundary      TRUE
+small_classes                                 small_classes      TRUE
+effective_profile_counts           effective_profile_counts      TRUE
+effective_group_counts               effective_group_counts      TRUE
+n_best_replicated                         n_best_replicated      TRUE
+replication_tolerance                 replication_tolerance      TRUE
+noise                                                 noise      TRUE
+search                                               search      TRUE
+n_starts                                           n_starts      TRUE
+n_screen                                           n_screen      TRUE
+select_start                                   select_start      TRUE
+boundary_policy                             boundary_policy      TRUE
+Latent profile analysis: 4 profiles
+300 observations; varying full residual covariance (VVV)
+Log likelihood: -502.088399 | AIC: 1170.177 | BIC: 1477.591
+Converged: TRUE | iterations: 75 | best start: 3/10
+Smallest standardized Gaussian eigenvalue: 0.001206 (profiles, profile_2); Gaussian mass: 23.67; weight effective n: 28.4.
+
+ profile cognitive_strategies intrinsic_value self_efficacy self_regulation
+       1             5.393192        5.787774      5.466392        5.144030
+       2             5.546865        6.006517      5.774047        5.564691
+       3             6.187259        6.503079      6.594497        5.965757
+       4             5.582968        6.030100      5.748306        5.439244
+ test_anxiety     count proportion
+     4.168489  36.44244  0.1214748
+     3.670184  23.67246  0.0789082
+     3.658629  74.52369  0.2484123
+     3.619667 165.36141  0.5512047
+
+Variances and standard errors: get_results(x, "profiles"). 
+Every other table: get_results(x, what = ), or get_results(x, "all").
+   context   profile gaussian_mass positive_rows weight_effective_n
+1 profiles profile_1      36.44244           300           50.10938
+2 profiles profile_2      23.67246           296           28.40461
+3 profiles profile_3      74.52369           300           87.96941
+4 profiles profile_4     165.36141           300          189.65225
+  min_variance_ratio min_standardized_eigenvalue boundary
+1          1.1804156                 0.002492214    FALSE
+2          0.3266713                 0.001206186    FALSE
+3          0.1289217                 0.042426181    FALSE
+4          0.5617261                 0.130426698    FALSE
+Every preceding field and the caller's RNG stream are identical.

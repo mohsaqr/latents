@@ -1,0 +1,3 @@
+additive baseline : latents_boundary,warning,condition : A between-group variance is estimated at zero or a within-group variance reached min_variance; this is a boundary fit and Wald inference does not apply. 
+additive augmented : latents_boundary,warning,condition : A between-group variance is estimated at zero or a within-group variance reached min_variance; this is a boundary fit and Wald inference does not apply. 
+Completed warning inspection.

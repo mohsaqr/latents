@@ -1,0 +1,77 @@
+* installing *source* package ‘latents’ ...
+** this is package ‘latents’ version ‘0.9.23’
+** using non-staged installation
+** R
+** data
+*** moving datasets to lazyload DB
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+  converting help for package ‘latents’
+    bootstrap_lrt                           example
+    compare_models                          example
+    course_engagement                       example
+    descriptives                            example
+    diagnostics                             example
+    enumerate_classes                       example
+    enumerate_lca                           example
+    enumerate_lpa                           example
+    enumerate_regressions                   example
+    fit_staged                              example
+    get_candidate                           example
+    get_group_tna                           example
+    get_results                             example
+    get_tna                                 example
+    growth_schools                          example
+    growth_scores                           example
+    latents-conditions                      example
+    latents-model-methods                   example
+    latents-plots                           example
+    latents-predict                         example
+    lca                                     example
+    lpa                                     example
+    lta                                     example
+    mixture_regression                      example
+    multilca                                example
+    multilpa                                example
+    parameter_inference                     example
+    parameter_inference.multilpa_transitions
+                                            example
+    pool_imputations                        example
+    prior_control                           example
+    r3step                                  example
+    report                                  example
+    sensitivity                             example
+    srl                                     example
+    starting_values                         example
+    student_esm                             example
+    study_hours                             example
+    three_step                              example
+*** copying figures
+** building package indices
+** testing if installed package can be loaded
+* DONE (latents)
+Running specific tests for package ‘latents’
+  Running ‘testthat.R’
+Line coverage percent: 95.24681 
+ [1] "filename"     "functions"    "first_line"   "first_byte"   "last_line"   
+ [6] "last_byte"    "first_column" "last_column"  "first_parsed" "last_parsed" 
+[11] "value"       
+          filename                    functions first_line first_byte last_line
+1 R/acceleration.R .multilpa_accelerated_blocks         14          3        16
+2 R/acceleration.R .multilpa_flatten_parameters         24          3        25
+3 R/acceleration.R .multilpa_flatten_parameters         26          3        26
+4 R/acceleration.R .multilpa_restore_parameters         40          3        40
+5 R/acceleration.R .multilpa_restore_parameters         41          3        47
+6 R/acceleration.R .multilpa_restore_parameters         42          9        42
+  last_byte first_column last_column first_parsed last_parsed value
+1        59            3          59           16          18 75633
+2        52            3          52           26          27 56470
+3        35            3          35           28          28 56470
+4        16            3          16           42          42 19163
+5         3            3           3           43          49 19163
+6        22            9          22           42          42 88691
+Error in match.arg(by) : 'arg' should be one of “line”, “expression”
+Calls: print -> <Anonymous> -> match.arg
+Execution halted

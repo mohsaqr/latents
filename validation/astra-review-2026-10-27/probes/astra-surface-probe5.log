@@ -1,0 +1,9 @@
+seed_expression_evaluations 
+                          2 
+Fitted a single-level latent class model.
+$condition_class
+[1] "latents_bad_data" "error"            "condition"       
+
+$call
+NULL
+

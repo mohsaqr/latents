@@ -1,0 +1,199 @@
+k1cov2_01-lg.dat
+File name:	k1cov2_01-lg.dat	
+File size:	25259 bytes  300 records	
+File date:	2026-Oct-20 9:05:34 PM	
+Syntax:	k1cov2_01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+k1cov2_01	1-Cluster	-1699.1080	3455.2537	3418.2159	3428.2159	10	0.0000	1.0000	
+k1cov2_01 - LL = -1699.1080
+1-Cluster Syntax Model	
+					
+Number of cases	300				
+Number of parameters (Npar)	10				
+Activated Constraints	0				
+Random Seed	20261020				
+Best Start Seed	20261020				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1699.1080				
+Log-prior	0.0000				
+Log-posterior	-1699.1080				
+BIC (based on LL)	3455.2537				
+AIC (based on LL)	3418.2159				
+AIC3 (based on LL)	3428.2159				
+CAIC (based on LL)	3465.2537				
+SABIC (based on LL)	3423.5396				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-1699.1080				
+Entropy	0.0000				
+CLC	3398.2159				
+AWE	3542.2916				
+ICL-BIC	3455.2537				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	300.0000	300.0000			
+Total	300.0000	300.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	300.0000	300.0000			
+Total	300.0000	300.0000			
+					
+Files					
+Infile	C:\lgfeatures\direct-effects\k1cov2_01\k1cov2_01-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     300				
+predictionstatistics	no				
+write	k1cov2_01_write.txt	
+outfile					
+file name	k1cov2_01_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Independent					
+z1	Num-Fixed	300			
+-3.8973800303	-3.89738	-3.89738			
+-3.4773144192	-3.4773144	-3.4773144			
+-3.4612409577	-3.461241	-3.461241			
+-2.5325341789	-2.5325342	-2.5325342			
+-2.4244161809	-2.4244162	-2.4244162			
+-2.4183433162	-2.4183433	-2.4183433			
+-2.4034800243	-2.40348	-2.40348			
+-2.3810728045	-2.3810728	-2.3810728			
+-2.3797498702	-2.3797499	-2.3797499			
+-2.2980506052	-2.2980506	-2.2980506			
+...					
+3.3864564982	3.3864565	3.3864565			
+3.4144385005	3.4144385	3.4144385			
+3.6379922275	3.6379922	3.6379922			
+3.9341097196	3.9341097	3.9341097			
+3.9658022060	3.9658022	3.9658022			
+3.9836960280	3.983696	3.983696			
+4.0761725258	4.0761725	4.0761725			
+4.1050881789	4.1050882	4.1050882			
+4.6504582905	4.6504583	4.6504583			
+z2	Num-Fixed	300			
+-3.7240927315	-3.7240927	-3.7240927			
+-3.5700307697	-3.5700308	-3.5700308			
+-3.5137782042	-3.5137782	-3.5137782			
+-3.4260581437	-3.4260581	-3.4260581			
+-3.3215211651	-3.3215212	-3.3215212			
+-3.2993508784	-3.2993509	-3.2993509			
+-3.1446658025	-3.1446658	-3.1446658			
+-3.1397424098	-3.1397424	-3.1397424			
+-3.0169398091	-3.0169398	-3.0169398			
+-2.8474427959	-2.8474428	-2.8474428			
+...					
+0.7490232040	0.7490232	0.7490232			
+0.7974232133	0.79742321	0.79742321			
+0.8136693021	0.8136693	0.8136693			
+0.8365292072	0.83652921	0.83652921			
+1.3799811108	1.3799811	1.3799811			
+1.4868937949	1.4868938	1.4868938			
+1.5506754415	1.5506754	1.5506754			
+1.5827872992	1.5827873	1.5827873			
+2.1041890625	2.1041891	2.1041891			
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile write='k1cov2_01_write.txt';
+   outfile 'k1cov2_01_posteriors.txt' classification keep id;
+variables
+   independent z1 numeric, z2 numeric;
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent Cluster nominal 1;
+equations
+   Cluster <- 1;
+   y1 <- 1 | Cluster;
+   y2 <- 1 | Cluster;
+   y3 <- 1 | Cluster + z1 + z2;
+   y4 <- 1 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+												
+y1	<-	1	|	Cluster(1)	0.9667	0.0577	16.7468	6.0e-63	280.4562	1	6.0e-63	
+												
+y2	<-	1	|	Cluster(1)	1.9179	0.0704	27.2414	2.1e-163	742.0916	1	2.1e-163	
+												
+y3	<-	1	|	Cluster(1)	0.5306	0.0715	7.4163	1.2e-13	55.0012	1	1.2e-13	
+y3	<-	z1			0.7606	0.0312	24.3949	1.9e-131	595.1110	1	1.9e-131	
+y3	<-	z2			-0.4290	0.0485	-8.8522	8.6e-19	78.3609	1	8.6e-19	
+												
+y4	<-	1	|	Cluster(1)	-0.9757	0.0566	-17.2525	1.1e-66	297.6487	1	1.1e-66	
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1					0.9997	0.0816	12.2474	1.7e-34	150.0000	1	1.7e-34	
+y2					1.4870	0.1214	12.2474	1.7e-34	150.0000	1	1.7e-34	
+y3					0.6844	0.0559	12.2474	1.7e-34	150.0000	1	1.7e-34	
+y4					0.9594	0.0783	12.2474	1.7e-34	150.0000	1	1.7e-34	
+Profile
+ 	Cluster	 	 	 	
+ 	1	s.e.	Overall	s.e.	
+Size	1.0000	.	 	 	
+y1	 	
+Mean	0.9667	0.0577	0.9667	0.0577	
+y2	 	
+Mean	1.9179	0.0704	1.9179	0.0704	
+y3	 	
+Mean	1.3681	0.0478	1.3681	0.0478	
+y4	 	
+Mean	-0.9757	0.0566	-0.9757	0.0566	

@@ -1,0 +1,509 @@
+
+══ Testing test-release-audit-regression.R ═════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 11 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 12 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 12 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 13 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 13 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 14 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 15 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 16 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 16 | WARN 1 | SKIP 0 | PASS 8 ]
+[ FAIL 16 | WARN 1 | SKIP 0 | PASS 9 ]
+[ FAIL 16 | WARN 1 | SKIP 0 | PASS 10 ]
+[ FAIL 17 | WARN 1 | SKIP 0 | PASS 10 ]
+[ FAIL 18 | WARN 1 | SKIP 0 | PASS 10 ]
+[ FAIL 19 | WARN 1 | SKIP 0 | PASS 10 ]
+[ FAIL 19 | WARN 1 | SKIP 0 | PASS 11 ]
+[ FAIL 19 | WARN 1 | SKIP 0 | PASS 12 ]
+[ FAIL 19 | WARN 2 | SKIP 0 | PASS 12 ]
+[ FAIL 19 | WARN 2 | SKIP 0 | PASS 13 ]
+[ FAIL 19 | WARN 2 | SKIP 0 | PASS 14 ]
+[ FAIL 19 | WARN 2 | SKIP 0 | PASS 15 ]
+[ FAIL 19 | WARN 2 | SKIP 0 | PASS 16 ]
+[ FAIL 20 | WARN 2 | SKIP 0 | PASS 16 ]
+[ FAIL 21 | WARN 2 | SKIP 0 | PASS 16 ]
+[ FAIL 21 | WARN 2 | SKIP 0 | PASS 17 ]
+[ FAIL 21 | WARN 2 | SKIP 0 | PASS 18 ]
+[ FAIL 21 | WARN 2 | SKIP 0 | PASS 19 ]
+[ FAIL 21 | WARN 3 | SKIP 0 | PASS 19 ]
+[ FAIL 21 | WARN 3 | SKIP 0 | PASS 20 ]
+[ FAIL 21 | WARN 3 | SKIP 0 | PASS 21 ]
+[ FAIL 21 | WARN 3 | SKIP 0 | PASS 22 ]
+[ FAIL 21 | WARN 3 | SKIP 0 | PASS 23 ]
+[ FAIL 22 | WARN 3 | SKIP 0 | PASS 23 ]
+[ FAIL 23 | WARN 3 | SKIP 0 | PASS 23 ]
+[ FAIL 23 | WARN 3 | SKIP 0 | PASS 24 ]
+[ FAIL 23 | WARN 3 | SKIP 0 | PASS 25 ]
+[ FAIL 23 | WARN 3 | SKIP 0 | PASS 26 ]
+[ FAIL 23 | WARN 4 | SKIP 0 | PASS 26 ]
+[ FAIL 23 | WARN 4 | SKIP 0 | PASS 27 ]
+[ FAIL 23 | WARN 4 | SKIP 0 | PASS 28 ]
+[ FAIL 23 | WARN 4 | SKIP 0 | PASS 29 ]
+[ FAIL 23 | WARN 4 | SKIP 0 | PASS 30 ]
+[ FAIL 24 | WARN 4 | SKIP 0 | PASS 30 ]
+[ FAIL 25 | WARN 4 | SKIP 0 | PASS 30 ]
+[ FAIL 25 | WARN 4 | SKIP 0 | PASS 31 ]
+[ FAIL 25 | WARN 4 | SKIP 0 | PASS 32 ]
+[ FAIL 25 | WARN 4 | SKIP 0 | PASS 33 ]
+
+── Failure ('test-release-audit-regression.R:24:7'): shared regression dispersions retain public names and finite errors ──
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── Failure ('test-release-audit-regression.R:26:7'): shared regression dispersions retain public names and finite errors ──
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── Failure ('test-release-audit-regression.R:28:7'): shared regression dispersions retain public names and finite errors ──
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA
+`expected`: 3.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── Failure ('test-release-audit-regression.R:29:7'): shared regression dispersions retain public names and finite errors ──
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── Failure ('test-release-audit-regression.R:24:7'): shared regression dispersions retain public names and finite errors ──
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── Failure ('test-release-audit-regression.R:26:7'): shared regression dispersions retain public names and finite errors ──
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── Failure ('test-release-audit-regression.R:28:7'): shared regression dispersions retain public names and finite errors ──
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA  NA
+`expected`: 0.7 0.7
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── Failure ('test-release-audit-regression.R:29:7'): shared regression dispersions retain public names and finite errors ──
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── Failure ('test-release-audit-regression.R:24:7'): shared regression dispersions retain public names and finite errors ──
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── Failure ('test-release-audit-regression.R:26:7'): shared regression dispersions retain public names and finite errors ──
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── Failure ('test-release-audit-regression.R:28:7'): shared regression dispersions retain public names and finite errors ──
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA
+`expected`: 1.5
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── Failure ('test-release-audit-regression.R:29:7'): shared regression dispersions retain public names and finite errors ──
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── Failure ('test-release-audit-regression.R:24:7'): shared regression dispersions retain public names and finite errors ──
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── Failure ('test-release-audit-regression.R:26:7'): shared regression dispersions retain public names and finite errors ──
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── Failure ('test-release-audit-regression.R:28:7'): shared regression dispersions retain public names and finite errors ──
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA  NA
+`expected`: 0.3 0.3
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── Failure ('test-release-audit-regression.R:29:7'): shared regression dispersions retain public names and finite errors ──
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── Warning ('test-release-audit-regression.R:39:14'): an excluded regression row cannot remove inference ──
+The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+Backtrace:
+    ▆
+ 1. └─fit_one(padded) at test-release-audit-regression.R:42:3
+ 2.   └─latents::mixture_regression(...) at test-release-audit-regression.R:39:14
+ 3.     └─latents:::.mixture_inference(fit, vcov_type) at latents/R/mixture-regression.R:462:5
+ 4.       └─latents:::.mixture_invert(information[free, free, drop = FALSE]) at latents/R/mixture-regression-inference.R:319:3
+
+── Failure ('test-release-audit-regression.R:45:3'): an excluded regression row cannot remove inference ──
+Expected `all(is.finite(vcov(added)))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── Failure ('test-release-audit-regression.R:46:3'): an excluded regression row cannot remove inference ──
+Expected `vcov(added)` to equal `vcov(baseline)`.
+Differences:
+actual vs expected
+                         [,1]          [,2]          [,3]          [,4]
+- actual[1, ]              NA            NA            NA            NA
++ expected[1, ]  1.017104e-02 -1.295489e-05 -1.598813e-03  2.238780e-04
+- actual[2, ]              NA            NA            NA            NA
++ expected[2, ] -1.295489e-05  9.191214e-03 -7.628946e-04 -6.705164e-04
+- actual[3, ]              NA            NA            NA            NA
++ expected[3, ] -1.598813e-03 -7.628946e-04  9.834089e-03  3.072083e-06
+- actual[4, ]              NA            NA            NA            NA
++ expected[4, ]  2.238780e-04 -6.705164e-04  3.072083e-06  3.534938e-03
+
+
+── Failure ('test-release-audit-regression.R:47:3'): an excluded regression row cannot remove inference ──
+Expected `get_results(added, "coefficients")` to equal `get_results(baseline, "coefficients")`.
+Differences:
+actual vs expected
+                 std_error statistic      p_value  conf_low conf_high   p_adjusted
+- actual[1, ]           NA        NA           NA        NA        NA           NA
++ expected[1, ] 0.10085156 20.179169 1.492326e-90 1.8374353 2.2327661           NA
+- actual[2, ]           NA        NA           NA        NA        NA           NA
++ expected[2, ] 0.09587082 17.513403 1.132185e-68 1.4911209 1.8669276 2.264371e-68
+- actual[3, ]           NA        NA           NA        NA        NA           NA
++ expected[3, ] 0.09916698  4.713137 2.439323e-06 0.2730238 0.6617512 2.439323e-06
+
+  `actual$std_error`:  NA  NA  NA
+`expected$std_error`: 0.1 0.1 0.1
+
+  `actual$statistic`:   NA   NA  NA
+`expected$statistic`: 20.2 17.5 4.7
+
+  `actual$p_value`:  NA  NA  NA
+`expected$p_value`: 0.0 0.0 0.0
+
+  `actual$conf_low`:  NA  NA  NA
+`expected$conf_low`: 1.8 1.5 0.3
+
+  `actual$conf_high`:  NA  NA  NA
+`expected$conf_high`: 2.2 1.9 0.7
+
+  `actual$p_adjusted`: NA  NA  NA
+`expected$p_adjusted`: NA 0.0 0.0
+
+
+── Warning ('test-release-audit-regression.R:77:16'): excluded groups cannot choose regression inference coordinates ──
+The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─fit_one(padded) at test-release-audit-regression.R:81:5
+ 4.       ├─base::do.call(...) at test-release-audit-regression.R:77:16
+ 5.       └─latents (local) `<fn>`(...)
+ 6.         └─latents:::.mixture_inference(fit, vcov_type) at latents/R/mixture-regression.R:462:5
+ 7.           └─latents:::.mixture_invert(information[free, free, drop = FALSE]) at latents/R/mixture-regression-inference.R:319:3
+
+── Failure ('test-release-audit-regression.R:86:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `all(is.finite(vcov(added)))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_true(all(is.finite(vcov(added)))) at test-release-audit-regression.R:86:5
+
+── Failure ('test-release-audit-regression.R:87:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `vcov(added)` to equal `vcov(baseline)`.
+Differences:
+actual vs expected
+                         [,1]         [,2]          [,3]         [,4]
+- actual[1, ]              NA           NA            NA           NA
++ expected[1, ]  0.0533152092 8.746333e-04 -0.0017555458 3.031901e-04
+- actual[2, ]              NA           NA            NA           NA
++ expected[2, ]  0.0008746333 1.934156e-02  0.0007809986 9.382812e-05
+- actual[3, ]              NA           NA            NA           NA
++ expected[3, ] -0.0017555458 7.809986e-04  0.0181333037 1.680150e-05
+- actual[4, ]              NA           NA            NA           NA
++ expected[4, ]  0.0003031901 9.382812e-05  0.0000168015 6.853914e-05
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(vcov(added), vcov(baseline), tolerance = 1e-10) at test-release-audit-regression.R:87:5
+
+── Warning ('test-release-audit-regression.R:77:5'): excluded groups cannot choose regression inference coordinates ──
+The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─fit_one(padded) at test-release-audit-regression.R:81:5
+ 4.       ├─base::do.call(...) at test-release-audit-regression.R:77:5
+ 5.       └─latents (local) `<fn>`(...)
+ 6.         └─latents:::.mixture_inference(fit, vcov_type) at latents/R/mixture-regression.R:462:5
+ 7.           └─latents:::.mixture_invert(information[free, free, drop = FALSE]) at latents/R/mixture-regression-inference.R:319:3
+
+── Failure ('test-release-audit-regression.R:86:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `all(is.finite(vcov(added)))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_true(all(is.finite(vcov(added)))) at test-release-audit-regression.R:86:5
+
+── Failure ('test-release-audit-regression.R:87:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `vcov(added)` to equal `vcov(baseline)`.
+Differences:
+actual vs expected
+                        [,1]         [,2]         [,3]         [,4]         [,5]         [,6]         [,7]         [,8]         [,9]
+- actual[1, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[1, ]  0.107067584  0.027450432  0.093753133  0.005490092  0.019109267  0.041117348 -0.032603583 -0.094635242 -0.031415502
+- actual[2, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[2, ]  0.027450432  0.030492216  0.025378287  0.000688593  0.006791665  0.011064078 -0.008795080 -0.023042105 -0.002292399
+- actual[3, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[3, ]  0.093753133  0.025378287  0.123854831  0.008548375  0.024154435  0.036469446 -0.042159316 -0.097923260 -0.028099449
+- actual[4, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[4, ]  0.005490092  0.000688593  0.008548375  0.021614893  0.006206615  0.001940510 -0.002581284 -0.006346539 -0.001284198
+- actual[5, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[5, ]  0.019109267  0.006791665  0.024154435  0.006206615  0.016060595  0.007361542 -0.008280566 -0.022597637 -0.004932219
+- actual[6, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[6, ]  0.041117348  0.011064078  0.036469446  0.001940510  0.007361542  0.016195152 -0.012666923 -0.036675301 -0.011987921
+- actual[7, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[7, ] -0.032603583 -0.008795080 -0.042159316 -0.002581284 -0.008280566 -0.012666923  0.014715442  0.033877713  0.010022762
+- actual[8, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[8, ] -0.094635242 -0.023042105 -0.097923260 -0.006346539 -0.022597637 -0.036675301  0.033877713  0.146244607  0.044461343
+- actual[9, ]             NA           NA           NA           NA           NA           NA           NA           NA           NA
++ expected[9, ] -0.031415502 -0.002292399 -0.028099449 -0.001284198 -0.004932219 -0.011987921  0.010022762  0.044461343  0.071622186
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(vcov(added), vcov(baseline), tolerance = 1e-10) at test-release-audit-regression.R:87:5
+
+── Warning ('test-release-audit-regression.R:77:5'): excluded groups cannot choose regression inference coordinates ──
+The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─fit_one(padded) at test-release-audit-regression.R:81:5
+ 4.       ├─base::do.call(...) at test-release-audit-regression.R:77:5
+ 5.       └─latents (local) `<fn>`(...)
+ 6.         └─latents:::.mixture_inference(fit, vcov_type) at latents/R/mixture-regression.R:462:5
+ 7.           └─latents:::.mixture_invert(information[free, free, drop = FALSE]) at latents/R/mixture-regression-inference.R:319:3
+
+── Failure ('test-release-audit-regression.R:86:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `all(is.finite(vcov(added)))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_true(all(is.finite(vcov(added)))) at test-release-audit-regression.R:86:5
+
+── Failure ('test-release-audit-regression.R:87:5'): excluded groups cannot choose regression inference coordinates ──
+Expected `vcov(added)` to equal `vcov(baseline)`.
+Differences:
+actual vs expected
+                         [, 1]         [, 2]         [, 3]         [, 4]         [, 5]         [, 6]         [, 7]         [, 8]         [, 9]         [,10]         [,11]         [,12]
+- actual[1, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[1, ]   0.0012073808 -2.194623e-04  1.063702e-04  2.078993e-04 -1.117338e-04  1.850310e-04  0.0001059072  2.560081e-04 -0.0009547435  1.770609e-04 -0.0010186221 -0.0014377247
+- actual[2, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[2, ]  -0.0002194623  1.392836e-03 -2.355653e-04  1.190667e-04  1.524995e-04 -2.112753e-04  0.0001271749 -6.057133e-05  0.0002149480  1.662754e-03  0.0014781852  0.0023310844
+- actual[3, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[3, ]   0.0001063702 -2.355653e-04  1.723496e-03 -2.268152e-04 -1.184826e-04 -9.030864e-05 -0.0001316855 -1.448601e-03 -0.0016908448  1.711073e-03  0.0019468775  0.0005055223
+- actual[4, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[4, ]   0.0002078993  1.190667e-04 -2.268152e-04  2.076798e-03  2.193492e-04  2.765799e-05  0.0006156672  2.045929e-03 -0.0007224931 -1.382225e-03 -0.0038792436 -0.0016644164
+- actual[5, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[5, ]  -0.0001117338  1.524995e-04 -1.184826e-04  2.193492e-04  1.023074e-03  1.646789e-04  0.0001331758  5.072069e-04 -0.0001584723 -1.272768e-05 -0.0004290352  0.0007845425
+- actual[6, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[6, ]   0.0001850310 -2.112753e-04 -9.030864e-05  2.765799e-05  1.646789e-04  1.812812e-03 -0.0001680749  8.297027e-04  0.0022530041 -1.836160e-03 -0.0015619515 -0.0024890170
+- actual[7, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[7, ]   0.0001059072  1.271749e-04 -1.316855e-04  6.156672e-04  1.331758e-04 -1.680749e-04  0.0017488366  5.992938e-04  0.0014627930 -3.875925e-04 -0.0026994400 -0.0002750588
+- actual[8, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[8, ]   0.0002560081 -6.057133e-05 -1.448601e-03  2.045929e-03  5.072069e-04  8.297027e-04  0.0005992938  8.317010e-02  0.0271048771 -3.352300e-02 -0.0468002854 -0.0268234957
+- actual[9, ]               NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[9, ]  -0.0009547435  2.149480e-04 -1.690845e-03 -7.224931e-04 -1.584723e-04  2.253004e-03  0.0014627930  2.710488e-02  0.0864042279 -2.434365e-02 -0.0260899088 -0.0272509741
+- actual[10, ]              NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA            NA
++ expected[10, ]  0.0001770609  1.662754e-03  1.711073e-03 -1.382225e-03 -1.272768e-05 -1.836160e-03 -0.0003875925 -3.352300e-02 -0.0243436462  5.579802e-02  0.0460316268  0.0445637610
+and 2 more ...
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(vcov(added), vcov(baseline), tolerance = 1e-10) at test-release-audit-regression.R:87:5
+
+[ FAIL 25 | WARN 4 | SKIP 0 | PASS 33 ]

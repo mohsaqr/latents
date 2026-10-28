@@ -1,0 +1,44 @@
+{
+  "production_files": 91,
+  "original_production_unchanged": true,
+  "scratch_production_unchanged": true,
+  "original_snapshot_files_changed_during_parallel_parent_work": [
+    ".github/workflows/equivalence.yaml",
+    "equivalence/CLAIMS.csv"
+  ],
+  "claims_corrected_md5": "e35b7e9e277fb42cd39fcd1f2536be77",
+  "claims_current_original_matches_corrected_scratch": true,
+  "generated_evidence": [],
+  "regenerated_outputs": [
+    {
+      "path": "equivalence/lta-extensions/result-depmix-covariate.rds",
+      "sha256": "cd9c99859d4dc14f58d358bf7b25f4d232c628e35f9a622a36bfb9a0be62ddc3",
+      "byte_identical_to_snapshot": true
+    },
+    {
+      "path": "equivalence/lta-extensions/result-ex813.rds",
+      "sha256": "352213edd5a352dd851f17e2fba493073eb4a4a1ee0127608b7ef60ef7c8624a",
+      "byte_identical_to_snapshot": true
+    },
+    {
+      "path": "equivalence/lta-extensions/result-ex814.rds",
+      "sha256": "046f357d4ec01c040407283cc06f48c92416169ae295e83f87a6061a951fc25a",
+      "byte_identical_to_snapshot": true
+    },
+    {
+      "path": "equivalence/lta-extensions/result-lmest-occasion.rds",
+      "sha256": "29501f8ad84e3c7b3d714cdaf0350945e80c1b0ff4bc6142cc86810e417011d2",
+      "byte_identical_to_snapshot": true
+    },
+    {
+      "path": "equivalence/lta-extensions/result-mplus-measurement.rds",
+      "sha256": "ef0fba591dd2306cd365cd2ee9d9d000607296518babd9d9282ba2b657bbfd1e",
+      "byte_identical_to_snapshot": true
+    },
+    {
+      "path": "equivalence/latentgold-ordinal/comparison.csv",
+      "sha256": "62bb153a02fdc916fe0571aff9f950f73db6fcabc2abd0b7b972cdbc0877c712",
+      "byte_identical_to_snapshot": true
+    }
+  ]
+}

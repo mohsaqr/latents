@@ -1,0 +1,7 @@
+step-baseline: .........
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                  test failed
+1 transition parameter_inference() uses the caller's step in its table      0
+  error passed
+1 FALSE      9

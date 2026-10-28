@@ -1,0 +1,8 @@
+* checking for file ‘/Users/mohammedsaqr/Documents/Github/latents/DESCRIPTION’ ... OK
+* preparing ‘latents’:
+* checking DESCRIPTION meta-information ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory ‘latents/Project_docs’
+* building ‘latents_0.98.0.tar.gz’
+

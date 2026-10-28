@@ -68,18 +68,23 @@ test_that("transition parameter_inference() uses the caller's step in its table"
   expect_false(fit$probability_boundary)
   expect_lt(max(abs(stats::plogis(fit$initial_coefficients) - 0.5)), 0.25)
   expect_lt(max(abs(stats::plogis(fit$transition_coefficients) - 0.5)), 0.25)
+  inference <- .lta_inference
+  steps <- numeric()
+  local_mocked_bindings(.lta_inference = function(fit, vcov_type, step = 1e-4) {
+    steps <<- c(steps, step)
+    inference(fit, vcov_type, step)
+  })
   coarse <- parameter_inference(fit, step = 1e-2)
   fine <- parameter_inference(fit, step = 1e-4)
-  # The units make 0.01 a meaningful perturbation of a 0.05 within-state SD;
-  # this checks real curvature sensitivity with a margin beyond rounding.
-  expect_gt(max(abs(coarse$standard_error - fine$standard_error)), 1e-8)
+  # Each table must reuse the inference computed at the caller's step.
+  # Accurate scaled derivatives need not differ noticeably between these steps.
+  expect_identical(steps, c(1e-2, 1e-4))
   covariance <- attr(coarse, "covariance_unconstrained")
   expect_equal(coarse$standard_error[coarse$block == "transition"],
                unname(sqrt(diag(covariance)))[startsWith(colnames(covariance),
                                                          "transition.")],
                tolerance = 1e-12)
-  expect_false(isTRUE(all.equal(coarse$standard_error, fine$standard_error,
-                                tolerance = 1e-12)))
+  expect_equal(coarse$standard_error, fine$standard_error, tolerance = 1e-7)
 })
 
 test_that("a general transition fit refuses a single transition network", {

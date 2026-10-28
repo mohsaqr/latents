@@ -1,0 +1,92 @@
+[[1]]
+[[1]]$code
+[1] "EVI"
+
+[[1]]$variances
+     [,1] [,2]
+[1,]  0.1  1.0
+[2,]  0.1  0.1
+
+[[1]]$determinants
+[1] 0.10 0.01
+
+[[1]]$ratios
+[1]  1 10
+
+
+[[2]]
+[[2]]$code
+[1] "VEI"
+
+[[2]]$variances
+     [,1] [,2]
+[1,]  0.1 0.55
+[2,]  0.1 0.55
+
+[[2]]$determinants
+[1] 0.055 0.055
+
+[[2]]$ratios
+[1] 1 1
+
+
+[[1]]
+[[1]]$code
+[1] "EVI"
+
+[[1]]$error
+[1] "All 1 starts failed: EM likelihood decreased beyond numerical roundoff."
+
+[[1]]$class
+[1] "latents_all_starts_failed" "error"                    
+[3] "condition"                
+
+[[1]]$warnings
+character(0)
+
+
+[[2]]
+[[2]]$code
+[1] "VEI"
+
+[[2]]$error
+[1] "All 1 starts failed: EM likelihood decreased beyond numerical roundoff."
+
+[[2]]$class
+[1] "latents_all_starts_failed" "error"                    
+[3] "condition"                
+
+[[2]]$warnings
+character(0)
+
+
+[[3]]
+[[3]]$code
+[1] "EVV"
+
+[[3]]$error
+[1] "All 1 starts failed: EM likelihood decreased beyond numerical roundoff."
+
+[[3]]$class
+[1] "latents_all_starts_failed" "error"                    
+[3] "condition"                
+
+[[3]]$warnings
+character(0)
+
+
+[[4]]
+[[4]]$code
+[1] "VEV"
+
+[[4]]$error
+[1] "All 1 starts failed: EM likelihood decreased beyond numerical roundoff."
+
+[[4]]$class
+[1] "latents_all_starts_failed" "error"                    
+[3] "condition"                
+
+[[4]]$warnings
+character(0)
+
+

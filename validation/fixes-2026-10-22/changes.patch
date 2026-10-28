@@ -1,0 +1,644 @@
+diff --git a/NEWS.md b/NEWS.md
+index 7383fd4..0d5560b 100644
+--- a/NEWS.md
++++ b/NEWS.md
+@@ -1,5 +1,21 @@
+ # latents (development version)
+ 
++### Review corrections
++
++* Bootstrap inference for `fit_staged()` repeats the measurement stage's
++  own search controls before refitting the group-class stage, preserving
++  an explicit emEM pool even when a single supplied start disables
++  screening at stage two.
++* `latents_thin_profiles` counts the free Gaussian measurement parameters:
++  covariances held at zero and held means are excluded, and held variances
++  do not trigger a collapse warning.
++* In latent transition models, thin-profile warnings use weighted
++  memberships of rows with observed Gaussian indicators. Empty or
++  categorical-only rows cannot hide a thin Gaussian profile, even under
++  `drop_empty = FALSE`. Occasion-specific measurement is checked separately
++  at each occasion, which the warning identifies. Fitted estimates and
++  classification counts are unchanged.
++
+ ### Start search
+ 
+ * `search = "emEM"` (new, opt-in) finds starts by the emEM search
+diff --git a/R/bootstrap-inference.R b/R/bootstrap-inference.R
+index 5e94f3c..74eedf7 100644
+--- a/R/bootstrap-inference.R
++++ b/R/bootstrap-inference.R
+@@ -128,13 +128,34 @@
+   estimator <- if (staged) fit_staged else multilpa
+   arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
+     .multilpa_refit_arguments(x)
++  controls <- .latents_refit_controls(x, n_starts = n_starts,
++                                     max_iter = max_iter, tol = tol)
++  if (staged) {
++    # The supplied-start second stage can record no screening even when the
++    # measurement searched an explicit pool. Replay that first stage's own
++    # controls, including a measurement supplied separately to fit_staged().
++    measurement_arguments <- .multilpa_refit_arguments(x$stage_one)
++    # A supplied measurement can use other identifier and time column names.
++    # One group class has unconditional measurement; replay it using the
++    # resample's columns, recreating any single-level observation identifier.
++    measurement_arguments["id"] <- list(
++      if (isTRUE(x$stage_one$single_level)) NULL else x$id)
++    measurement_arguments["time"] <- list(x$time)
++    measurement_controls <- .latents_refit_controls(
++      x$stage_one, n_starts = n_starts, max_iter = max_iter, tol = tol)
++    measurement_arguments <- c(
++      measurement_arguments[!names(measurement_arguments) %in%
++                              names(measurement_controls)],
++      measurement_controls)
++  }
+   .latents_cluster_bootstrap(
+     data, x$group_index, x$n_groups, x$id, iter,
+     refit = function(resampled) {
+-      do.call(estimator, c(list(data = resampled), arguments,
++      measurement <- if (staged) list(measurement = do.call(
++        multilpa, c(list(data = resampled), measurement_arguments))) else list()
++      do.call(estimator, c(list(data = resampled), arguments, measurement,
+                            list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+-                                n_screen = .latents_refit_controls(
+-                                  x, n_starts = n_starts)$n_screen)))
++                                n_screen = controls$n_screen)))
+     },
+     extract = function(fit) {
+       # A resample that misses a rare category refits that indicator with one
+diff --git a/R/conditions.R b/R/conditions.R
+index 8d2eb37..00e12f7 100644
+--- a/R/conditions.R
++++ b/R/conditions.R
+@@ -271,13 +271,16 @@
+ #'     membership below one observation; or, in [three_step()] with `method =
+ #'     "ml"`, a class is carried by a single unit, so its standard error is
+ #'     reported as `NA`.}
+-#'   \item{`latents_thin_profiles`}{A profile with variances of its own has
+-#'     fewer effective members than its density has parameters (its means
+-#'     plus its variances or covariances), so those variances are poorly
+-#'     determined and the solution may be a spurious maximum (McLachlan &
+-#'     Peel, 2000, section 3.10). The estimate is returned unchanged; the
+-#'     message names the profiles and suggests fewer profiles or a model
+-#'     whose profiles share their variances.}
++#'   \item{`latents_thin_profiles`}{A profile with free variances of its own
++#'     has fewer effective members than its Gaussian density has free
++#'     parameters (its means plus its variances or covariances), so those
++#'     variances are poorly determined and the solution may be a spurious
++#'     maximum (McLachlan & Peel, 2000, section 3.10). Covariances held at zero and held means are
++#'     excluded, and held variances do not trigger it. Transition models
++#'     count weighted memberships of rows with observed Gaussian indicators,
++#'     separately for each occasion-specific measurement block. The estimate
++#'     is returned unchanged; the message names the profiles and suggests
++#'     fewer profiles or a model whose profiles share their variances.}
+ #'   \item{`latents_all_starts_boundary`}{`boundary = "exclude"` found every
+ #'     start with a variance at `min_variance`, so none was set aside and the
+ #'     best start across all of them is reported.}
+diff --git a/R/lta-engine.R b/R/lta-engine.R
+index 312e677..f89d8ff 100644
+--- a/R/lta-engine.R
++++ b/R/lta-engine.R
+@@ -745,6 +745,21 @@
+     result$bic_individual <- -2 * result$log_likelihood +
+       log(result$n_observations) * result$n_parameters
+   }
++  # This diagnostic concerns Gaussian measurement, so rows without any
++  # Gaussian observation cannot support its spread, regardless of drop_empty.
++  # Use the weighted E-step memberships that actually estimated each density;
++  # the reported posteriors have already been converted to probabilities.
++  gaussian_rows <- rowSums(!is.na(x)) > 0L
++  profile_parameters <- .latents_profile_parameters(
++    length(measurement$continuous), variance_model, covariance_model, structure)
++  invisible(lapply(seq_len(n_measurement), function(index) {
++    rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
++    .latents_warn_thin_profiles(
++      colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
++      profile_parameters,
++      context = if (n_measurement > 1L)
++        sprintf("at occasion %s", index) else NULL)
++  }))
+   result
+ }
+ 
+@@ -909,9 +924,5 @@
+       "A profile or group class has effective membership below one.",
+       class = "latents_small_classes", call = NULL))
+   }
+-  .latents_warn_thin_profiles(
+-    colSums(subject_posteriors),
+-    .latents_profile_parameters(length(measurement$continuous), variance_model,
+-                                covariance_model, structure))
+   result
+ }
+diff --git a/R/multilpa.R b/R/multilpa.R
+index 3622040..f2ad39a 100644
+--- a/R/multilpa.R
++++ b/R/multilpa.R
+@@ -1935,7 +1935,8 @@ multilpa <- function(data, vars, id, n_profiles,
+   }
+   .latents_warn_thin_profiles(
+     effective_profile_counts,
+-    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure))
++    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure,
++                                covariance_pattern = covariance_pattern, fixed = fixed))
+   .latents_warn_poisson_limit(result$count_dispersion)
+   result
+ }
+@@ -2111,19 +2112,31 @@ multilpa <- function(data, vars, id, n_profiles,
+ 
+ #' The parameters of one profile's own Gaussian density
+ #'
+-#' Its means plus what its spread adds to the model: every variance or
++#' Its free means plus what its spread adds to the model: every variance or
+ #' covariance when profiles vary, nothing when they share one, and the
+ #' profile's share of a constrained structure (the parameters one more
+-#' profile adds).
++#' profile adds). Covariances held at zero by a pattern are excluded, as
++#' are held means; held variances cannot collapse during this fit.
+ #'
+ #' @param n_continuous Number of continuous indicators.
+ #' @param variance_model,covariance_model,structure As in [multilpa()].
++#' @param covariance_pattern The free covariance entries, or `NULL`.
++#' @param fixed The expanded names of held measurement blocks.
+ #' @return A single number; `0` when there are no continuous indicators or
+-#'   the spread is shared by every profile, so no profile has a variance of
+-#'   its own to collapse.
++#'   the spread is shared by every profile or held fixed, so no profile has
++#'   a free variance of its own to collapse.
+ #' @noRd
+ .latents_profile_parameters <- function(n_continuous, variance_model,
+-                                        covariance_model, structure = NULL) {
++                                        covariance_model, structure = NULL,
++                                        covariance_pattern = NULL,
++                                        fixed = character()) {
++  stopifnot(is.numeric(n_continuous), length(n_continuous) == 1L,
++            is.finite(n_continuous), n_continuous >= 0,
++            is.character(fixed), !anyNA(fixed),
++            is.null(covariance_pattern) ||
++              (is.matrix(covariance_pattern) && is.logical(covariance_pattern) &&
++                 identical(dim(covariance_pattern), rep(as.integer(n_continuous), 2L))))
++  if (n_continuous == 0L || any(c("variances", "measurement") %in% fixed)) return(0)
+   own_spread <- if (!is.null(structure)) {
+     .multilpa_structure_parameters(structure, 2L, n_continuous) -
+       .multilpa_structure_parameters(structure, 1L, n_continuous)
+@@ -2131,7 +2144,11 @@ multilpa <- function(data, vars, id, n_profiles,
+     if (identical(covariance_model, "full")) n_continuous * (n_continuous + 1) / 2 else
+       n_continuous
+   } else 0
+-  if (n_continuous == 0L || own_spread == 0) 0 else n_continuous + own_spread
++  if (own_spread == 0) return(0)
++  if (!is.null(covariance_pattern)) {
++    own_spread <- own_spread - .latents_pattern_zeros(covariance_pattern)
++  }
++  own_spread + if ("means" %in% fixed) 0L else n_continuous
+ }
+ 
+ #' Warn when a profile has fewer members than its own parameters
+@@ -2144,19 +2161,27 @@ multilpa <- function(data, vars, id, n_profiles,
+ #'
+ #' @param effective_counts Effective membership of each profile.
+ #' @param n_parameters The output of `.latents_profile_parameters()`.
++#' @param context Optional text identifying a separately estimated measurement
++#'   block, such as `"at occasion 2"`.
+ #' @return The positions of the thin profiles, invisibly; a
+ #'   `latents_thin_profiles` warning when there are any.
+ #' @noRd
+-.latents_warn_thin_profiles <- function(effective_counts, n_parameters) {
++.latents_warn_thin_profiles <- function(effective_counts, n_parameters, context = NULL) {
++  stopifnot(is.numeric(effective_counts), is.numeric(n_parameters),
++            length(n_parameters) == 1L, is.finite(n_parameters), n_parameters >= 0,
++            is.null(context) ||
++              (is.character(context) && length(context) == 1L &&
++                 !is.na(context) && nzchar(context)))
+   thin <- which(effective_counts < n_parameters)
+   if (n_parameters == 0 || length(effective_counts) < 2L || length(thin) == 0L) {
+     return(invisible(integer()))
+   }
+   warning(warningCondition(sprintf(paste(
+-    "%s %s: %s members for %d means and variances%s; the solution may be",
++    "%s %s%s: %s members for %d means and variances%s; the solution may be",
+     "spurious. Fit fewer profiles or shared variances."),
+     if (length(thin) == 1L) "Profile" else "Profiles",
+     paste(thin, collapse = ", "),
++    if (is.null(context)) "" else paste0(" ", context),
+     paste(format(round(effective_counts[thin], 1), nsmall = 1), collapse = ", "),
+     as.integer(n_parameters), if (length(thin) == 1L) "" else " each"),
+     class = "latents_thin_profiles", call = NULL))
+diff --git a/R/transitions.R b/R/transitions.R
+index b0ecbcc..60bb896 100644
+--- a/R/transitions.R
++++ b/R/transitions.R
+@@ -945,7 +945,9 @@ lta <- function(data, vars, id, n_profiles, time,
+       class = "latents_small_classes", call = NULL))
+   }
+   .latents_warn_thin_profiles(
+-    colSums(subject_posteriors),
++    # Empty and categorical-only rows do not inform Gaussian measurement,
++    # even when drop_empty = FALSE includes them in classification counts.
++    colSums(subject_posteriors[rowSums(!is.na(x)) > 0L, , drop = FALSE]),
+     .latents_profile_parameters(length(continuous), variance_model, covariance_model,
+                                 structure))
+   result
+diff --git a/man/latents-conditions.Rd b/man/latents-conditions.Rd
+index 2ff23d4..0066d1c 100644
+--- a/man/latents-conditions.Rd
++++ b/man/latents-conditions.Rd
+@@ -288,13 +288,16 @@ not valid at that parameter.}
+ \item{\code{latents_small_classes}}{A profile or group class has an effective
+ membership below one observation; or, in \code{\link[=three_step]{three_step()}} with \code{method = "ml"}, a class is carried by a single unit, so its standard error is
+ reported as \code{NA}.}
+-\item{\code{latents_thin_profiles}}{A profile with variances of its own has
+-fewer effective members than its density has parameters (its means
+-plus its variances or covariances), so those variances are poorly
+-determined and the solution may be a spurious maximum (McLachlan &
+-Peel, 2000, section 3.10). The estimate is returned unchanged; the
+-message names the profiles and suggests fewer profiles or a model
+-whose profiles share their variances.}
++\item{\code{latents_thin_profiles}}{A profile with free variances of its own
++has fewer effective members than its Gaussian density has free
++parameters (its means plus its variances or covariances), so those
++variances are poorly determined and the solution may be a spurious
++maximum (McLachlan & Peel, 2000, section 3.10). Covariances held at zero and held means are
++excluded, and held variances do not trigger it. Transition models
++count weighted memberships of rows with observed Gaussian indicators,
++separately for each occasion-specific measurement block. The estimate
++is returned unchanged; the message names the profiles and suggests
++fewer profiles or a model whose profiles share their variances.}
+ \item{\code{latents_all_starts_boundary}}{\code{boundary = "exclude"} found every
+ start with a variance at \code{min_variance}, so none was set aside and the
+ best start across all of them is reported.}
+diff --git a/tests/testthat/test-review-lta.R b/tests/testthat/test-review-lta.R
+index 7d658f2..a5f5dee 100644
+--- a/tests/testthat/test-review-lta.R
++++ b/tests/testthat/test-review-lta.R
+@@ -31,7 +31,8 @@ review_lta_fit <- function(..., gaps = FALSE,
+     transition_covariates = transition_covariates, initial_covariates = "w",
+     occasions = "grid",
+     n_starts = 1L, max_iter = 0L, seed = 51L, ...),
+-          c("latents_unconverged", "latents_boundary", "latents_small_classes"))
++          c("latents_unconverged", "latents_boundary", "latents_small_classes",
++            "latents_thin_profiles"))
+ }
+ 
+ review_lta_exact <- function(theta, fit) {
+@@ -337,7 +338,8 @@ test_that("occasion covariance charts include mixed ordinal and count coordinate
+     fit <- quietly(lta(data, c("y", "x", "c", "o", "k"), "id", 3L, time = "time",
+       categorical = "c", ordinal = "o", count = "k", count_model = "negative_binomial",
+       missing = "fiml", measurement = "occasion", model = model, n_starts = 1L,
+-      max_iter = 0L, seed = 51L), c("latents_unconverged", "latents_boundary"))
++      max_iter = 0L, seed = 51L),
++      c("latents_unconverged", "latents_boundary", "latents_thin_profiles"))
+     theta <- coef(fit)
+     decoded <- .lta_unpack(theta, fit)
+     expect_equal(length(theta), fit$n_parameters, info = model)
+diff --git a/tests/testthat/test-staged-bootstrap.R b/tests/testthat/test-staged-bootstrap.R
+index 5de1f35..31a4f16 100644
+--- a/tests/testthat/test-staged-bootstrap.R
++++ b/tests/testthat/test-staged-bootstrap.R
+@@ -70,3 +70,140 @@ test_that("a staged bootstrap is reproducible from its seed", {
+   again <- .staged_bootstrap(fit, iter = 10L, seed = 5L)
+   expect_identical(first$standard_error, again$standard_error)
+ })
++
++# Inspect the fitted stages, rather than rebuilding bootstrap arguments in a
++# test: a dropped first-stage pool still gives plausible bootstrap estimates.
++.staged_bootstrap_refits <- function(fit, data, n_starts) {
++  refits <- list()
++  real <- multilpa
++  local_mocked_bindings(multilpa = function(...) {
++    result <- real(...)
++    refits[[length(refits) + 1L]] <<- result
++    result
++  })
++  quietly(.multilpa_bootstrap_replicates(fit, data, iter = 1L,
++                                         n_starts = n_starts,
++                                         max_iter = 20L, tol = 1e-6))
++  refits
++}
++
++test_that("a one-start staged bootstrap preserves the measurement screening pool", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, n_screen = 8L, search = "emEM",
++                             seed = 1L, max_iter = 20L))
++  expect_identical(fit$stage_one$n_screen, 8L)
++  expect_null(fit$n_screen)
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$n_screen, 8L)
++  expect_null(refits[[2L]]$n_screen)
++  expect_identical(refits[[1L]]$n_starts, 1L)
++  expect_identical(refits[[2L]]$n_starts, 1L)
++  expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++})
++
++test_that("staged bootstrap replays a supplied measurement's own search controls", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  measurement <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
++                                   n_starts = 1L, n_screen = 8L, search = "emEM",
++                                   acceleration = "none", select_start = "converged",
++                                   seed = 1L, max_iter = 20L))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             measurement = measurement, n_starts = 1L,
++                             search = "kmeans", seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$search, "emEM")
++  expect_identical(refits[[1L]]$n_screen, 8L)
++  expect_identical(refits[[1L]]$acceleration, "none")
++  expect_identical(refits[[1L]]$select_start, "converged")
++  expect_identical(refits[[2L]]$search, "kmeans")
++  expect_null(refits[[2L]]$n_screen)
++  expect_identical(refits[[1L]]$max_iter, 20L)
++  expect_identical(refits[[1L]]$tol, 1e-6)
++})
++
++test_that("a staged bootstrap start override resolves each stage's default pool", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, n_screen = 8L, search = "emEM",
++                             seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 2L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$n_starts, 2L)
++  expect_identical(refits[[2L]]$n_starts, 2L)
++  expect_identical(refits[[1L]]$n_screen, 10L)
++  expect_identical(refits[[2L]]$n_screen, 10L)
++})
++
++test_that("staged bootstrap accepts a measurement predating search records", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, seed = 1L, max_iter = 20L))
++  fit$stage_one[c("search", "n_starts", "n_screen", "acceleration",
++                  "select_start", "boundary_policy")] <- NULL
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$search, "kmeans")
++  expect_identical(refits[[1L]]$n_starts, 1L)
++  expect_null(refits[[1L]]$n_screen)
++  expect_identical(refits[[1L]]$acceleration, "squarem")
++  expect_identical(refits[[1L]]$select_start, "likelihood")
++  expect_identical(refits[[1L]]$max_iter, 20L)
++  expect_identical(refits[[1L]]$tol, 1e-6)
++})
++
++test_that("staged bootstrap rebuilds a supplied single-level measurement", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  measurement <- quietly(lpa(data, c("y1", "y2"), 2L,
++                              n_starts = 1L, n_screen = 8L, search = "emEM",
++                              seed = 1L, max_iter = 20L))
++  expect_true(measurement$single_level)
++  expect_false(measurement$id %in% names(data))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             measurement = measurement, n_starts = 1L,
++                             seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  if (length(refits) == 2L) {
++    expect_true(refits[[1L]]$single_level)
++    expect_identical(refits[[1L]]$n_screen, 8L)
++    expect_false(refits[[2L]]$single_level)
++    expect_identical(refits[[2L]]$id, "g")
++    expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++  }
++})
++
++test_that("staged bootstrap uses current data identifiers for supplied measurement", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  data$occasion <- rep(seq_len(4L), 12L)
++  original <- data.frame(original_id = data$g, original_time = data$occasion,
++                          y1 = data$y1, y2 = data$y2)
++  measurement <- quietly(multilpa(original, c("y1", "y2"), "original_id", 2L, 1L,
++                                   time = "original_time", n_starts = 1L,
++                                   n_screen = 8L, search = "emEM",
++                                   seed = 1L, max_iter = 20L))
++  expect_false(measurement$id %in% names(data))
++  expect_false(measurement$time %in% names(data))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             time = "occasion", measurement = measurement,
++                             n_starts = 1L, seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  if (length(refits) == 2L) {
++    expect_identical(refits[[1L]]$id, "g")
++    expect_identical(refits[[1L]]$time, "occasion")
++    expect_identical(refits[[1L]]$n_screen, 8L)
++    expect_identical(refits[[1L]]$search, "emEM")
++    expect_identical(refits[[2L]]$id, "g")
++    expect_identical(refits[[2L]]$time, "occasion")
++    expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++  }
++})
+diff --git a/tests/testthat/test-thin-profiles.R b/tests/testthat/test-thin-profiles.R
+index f3a3499..a3f500e 100644
+--- a/tests/testthat/test-thin-profiles.R
++++ b/tests/testthat/test-thin-profiles.R
+@@ -20,6 +20,67 @@ test_that("a profile's own parameters are its means and what its spread adds", {
+   expect_equal(.latents_profile_parameters(3L, "varying", "full", "EEE"), 0)
+ })
+ 
++test_that("thin-profile counts respect covariance patterns and held blocks", {
++  pattern <- diag(5L) > 0
++  pattern[1L, 2L] <- pattern[2L, 1L] <- TRUE
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           covariance_pattern = pattern), 11)
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           covariance_pattern = pattern,
++                                           fixed = "means"), 6)
++  expect_equal(.latents_profile_parameters(5L, "equal", "full", "EEE",
++                                           covariance_pattern = pattern), 0)
++  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
++                                           fixed = "means"), 5)
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           fixed = "variances"), 0)
++  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
++                                           fixed = c("means", "variances")), 0)
++})
++
++#' A separated two-profile fixture with five Gaussian indicators
++#' @param n_small Number of rows in the smaller profile.
++#' @return An 80-row data frame with columns a through e.
++thin_constraint_data <- function(n_small = 13L) {
++  stopifnot(n_small > 0L, n_small < 80L)
++  set.seed(73)
++  data <- as.data.frame(matrix(stats::rnorm(80L * 5L), 80L, 5L))
++  names(data) <- letters[1:5]
++  data[seq_len(n_small), ] <- data[seq_len(n_small), ] + 10
++  data
++}
++
++test_that("a patterned fit warns only below its actual free density count", {
++  data <- thin_constraint_data()
++  expect_no_warning(fit <- lpa(data, names(data), 2L, local_dependence = "a:b",
++                               n_starts = 1L, seed = 1))
++  expect_equal(fit$n_parameters, 23)
++  expect_equal(unname(fit$effective_profile_counts), c(13, 67))
++  expect_no_warning(held <- lpa(data, names(data), 2L, local_dependence = "a:b",
++                                start = starting_values(fit), fixed = "means",
++                                n_starts = 1L, seed = 1))
++  expect_equal(held$n_parameters, 13)
++  smaller <- thin_constraint_data(9L)
++  expect_warning(lpa(smaller, names(smaller), 2L, local_dependence = "a:b",
++                      n_starts = 1L, seed = 1),
++                 regexp = "members for 11 means and variances",
++                 class = "latents_thin_profiles")
++})
++
++test_that("holding variances disables the collapse warning with means fixed or free", {
++  data <- thin_constraint_data(3L)
++  start <- list(means = rbind(rep(10, 5), rep(0, 5)),
++                variances = matrix(1, 2, 5),
++                profile_probabilities = matrix(c(3, 77) / 80, 1),
++                group_probabilities = 1)
++  invisible(lapply(list("variances", c("means", "variances")), function(fixed) {
++    expect_no_warning(fit <- lpa(data, names(data), 2L, start = start,
++                                 fixed = fixed, n_starts = 1L, seed = 1))
++    expect_equal(unname(fit$effective_profile_counts), c(3, 77))
++    expect_identical(unname(fit$variances), start$variances)
++  }))
++})
++
+ test_that("the warning names the thin profiles and stays silent otherwise", {
+   expect_warning(thin <- .latents_warn_thin_profiles(c(40, 3.9, 12), 4),
+                  class = "latents_thin_profiles")
+diff --git a/tests/testthat/test-lta-thin-profiles.R b/tests/testthat/test-lta-thin-profiles.R
+new file mode 100644
+index 0000000..11dde11
+--- /dev/null
++++ b/tests/testthat/test-lta-thin-profiles.R
+@@ -0,0 +1,128 @@
++#' Capture thin-profile warnings from a fitted transition model
++#' @param expr A transition fitting expression.
++#' @return The fit and its thin-profile warning conditions.
++capture_lta_thin <- function(expr) {
++  thin <- list()
++  fit <- withCallingHandlers(expr, warning = function(condition) {
++    if (inherits(condition, "latents_thin_profiles")) {
++      thin[[length(thin) + 1L]] <<- condition
++    }
++    if (inherits(condition, .multilpa_expected_warnings)) invokeRestart("muffleWarning")
++  })
++  list(fit = fit, thin = thin)
++}
++
++#' Generate separated profiles at three irregular time values
++#' @param n_rare Number of rows in the rare profile.
++#' @return A data frame with grouping, time and two Gaussian indicators.
++lta_thin_data <- function(n_rare = 3L) {
++  stopifnot(n_rare > 0L, n_rare < 90L)
++  set.seed(1)
++  data.frame(g = rep(seq_len(30L), each = 3L),
++             t = rep(c(2, 4, 9), 30L),
++             a = c(rnorm(90L - n_rare), rnorm(n_rare, 20)),
++             b = c(rnorm(90L - n_rare), rnorm(n_rare, 20)))
++}
++
++test_that("empty LTA rows cannot hide thin Gaussian profiles under either empty policy", {
++  data <- lta_thin_data()
++  # A partly observed measurement still contributes to the density.
++  data$a[nrow(data)] <- NA_real_
++  empty <- data.frame(g = rep(31:130, each = 3L), t = rep(c(2, 4, 9), 100L),
++                      a = NA_real_, b = NA_real_)
++  invisible(lapply(c("homogeneous", "occasion"), function(transitions) {
++    invisible(lapply(c(TRUE, FALSE), function(drop_empty) {
++      fit <- function(frame) capture_lta_thin(lta(
++        frame, c("a", "b"), "g", 2, time = "t", missing = "fiml",
++        transitions = transitions, drop_empty = drop_empty,
++        n_starts = 1, seed = 1, max_iter = 500))
++      original <- fit(data)
++      appended <- fit(rbind(data, empty))
++      expect_length(original$thin, 1L)
++      expect_length(appended$thin, 1L)
++      expect_match(paste(vapply(appended$thin, conditionMessage, character(1)),
++                         collapse = " "), "3.0 members for 4")
++      expect_equal(sum(appended$fit$informative), 90L)
++      expect_gt(min(colSums(appended$fit$subject_posteriors)), 10)
++      expect_equal(appended$fit$log_likelihood, original$fit$log_likelihood,
++                   tolerance = 1e-7)
++    }))
++  }))
++})
++
++test_that("occasion Gaussian densities warn separately with occasion positions", {
++  data <- lta_thin_data(6L)
++  fit <- function(measurement) capture_lta_thin(lta(
++    data, c("a", "b"), "g", 2, time = "t", measurement = measurement,
++    transitions = "occasion", n_starts = 1, seed = 1, max_iter = 500))
++  occasion <- fit("occasion")
++  shared <- fit("invariant")
++  counts <- rowsum(occasion$fit$subject_posteriors, data$t)
++  expect_equal(unname(counts[, 2L]), rep(2, 3L), tolerance = 1e-8)
++  expect_length(occasion$thin, 3L)
++  messages <- vapply(occasion$thin, conditionMessage, character(1))
++  expect_true(all(vapply(seq_len(3L), function(label) {
++    any(grepl(sprintf("at occasion %s:", label), messages, fixed = TRUE))
++  }, logical(1))))
++  expect_length(shared$thin, 0L)
++})
++
++test_that("empty rows cannot inflate occasion-specific measurement support", {
++  data <- lta_thin_data(6L)
++  data$a[nrow(data)] <- NA_real_
++  empty <- data.frame(g = rep(31:130, each = 3L), t = rep(c(2, 4, 9), 100L),
++                      a = NA_real_, b = NA_real_)
++  invisible(lapply(c(TRUE, FALSE), function(drop_empty) {
++    result <- capture_lta_thin(lta(
++      rbind(data, empty), c("a", "b"), "g", 2, time = "t", missing = "fiml",
++      measurement = "occasion", drop_empty = drop_empty,
++      n_starts = 1, seed = 1, max_iter = 500))
++    expect_length(result$thin, 3L)
++    expect_true(all(grepl("2.0 members for 4",
++                         vapply(result$thin, conditionMessage, character(1)),
++                         fixed = TRUE)))
++    expect_equal(sum(result$fit$informative), 90L)
++  }))
++})
++
++test_that("LTA thin measurement warnings use scaled sampling memberships", {
++  invisible(lapply(c("invariant", "occasion"), function(measurement) {
++    # Nine raw rare memberships support a density, but their small weights do not.
++    data <- lta_thin_data(9L)
++    data$w <- ifelse(data$g >= 28L, 0.2, 1)
++    result <- capture_lta_thin(lta(
++      data, c("a", "b"), "g", 2, time = "t", weights = "w",
++      measurement = measurement, n_starts = 1, seed = 1, max_iter = 500))
++    weighted <- result$fit$subject_posteriors *
++      unname(result$fit$sampling_weights[as.character(data$g)])
++    expect_equal(min(colSums(result$fit$subject_posteriors)), 9, tolerance = 1e-7)
++    expect_lt(min(colSums(weighted)), 4)
++    expect_length(result$thin, if (measurement == "occasion") 3L else 1L)
++    # Conversely, a well-supported weighted profile must not warn merely
++    # because its unweighted membership is small.
++    data <- lta_thin_data()
++    data$w <- ifelse(data$g == 30L, 10, 1)
++    result <- capture_lta_thin(lta(
++      data, c("a", "b"), "g", 2, time = "t", weights = "w",
++      measurement = measurement, n_starts = 1, seed = 1, max_iter = 500))
++    expect_equal(min(colSums(result$fit$subject_posteriors)), 3, tolerance = 1e-7)
++    expect_length(result$thin, 0L)
++  }))
++})
++
++test_that("categorical-only LTA rows do not support a Gaussian density", {
++  data <- lta_thin_data(9L)
++  data$category <- factor(ifelse(data$g >= 28L, "rare", "common"))
++  data[data$g >= 29L, c("a", "b")] <- NA_real_
++  invisible(lapply(c("homogeneous", "occasion"), function(transitions) {
++    result <- capture_lta_thin(lta(
++      data, c("a", "b", "category"), "g", 2, time = "t",
++      categorical = "category", missing = "fiml", transitions = transitions,
++      n_starts = 1, seed = 1, max_iter = 500))
++    expect_gt(min(colSums(result$fit$subject_posteriors)), 8.9)
++    expect_true(all(result$fit$informative))
++    expect_length(result$thin, 1L)
++    expect_match(paste(vapply(result$thin, conditionMessage, character(1)),
++                       collapse = " "), "3.0 members for 4")
++  }))
++})

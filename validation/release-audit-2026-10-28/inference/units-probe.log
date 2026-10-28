@@ -1,0 +1,116 @@
+'data.frame':	400 obs. of  5 variables:
+ $ id  : int  1 1 1 1 1 2 2 2 2 2 ...
+ $ time: int  1 2 3 4 5 1 2 3 4 5 ...
+ $ z   : num  -0.5815 -0.2242 1.1984 -1.3586 -0.0201 ...
+ $ y1  : num  3.388 2.793 2.817 0.476 1.585 ...
+ $ y2  : num  2.326 0.343 1.487 1.081 2.305 ...
+SCALE 1 LL -1214.061 CONVERGED TRUE VCOV matrix array 
+                                    mean.all.profile_1.y1 
+                                               0.07696523 
+                                    mean.all.profile_1.y2 
+                                               0.05921642 
+                                    mean.all.profile_2.y1 
+                                               0.08250382 
+                                    mean.all.profile_2.y2 
+                                               0.05984644 
+                            log_variance.all.profile_1.y1 
+                                               0.11010547 
+                            log_variance.all.profile_1.y2 
+                                               0.10553994 
+                            log_variance.all.profile_2.y1 
+                                               0.11593273 
+                            log_variance.all.profile_2.y2 
+                                               0.10830775 
+              initial.group_class_1.profile_1.(Intercept) 
+                                               0.23775565 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                               0.33047269 
+          transition.group_class_1.profile_1->profile_2.z 
+                                               0.31611926 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                               0.22757582 
+          transition.group_class_1.profile_2->profile_1.z 
+                                               0.22749559 
+SCALE 0.001 LL 4312.143 CONVERGED TRUE VCOV matrix array 
+                                    mean.all.profile_1.y1 
+                                             7.696505e-05 
+                                    mean.all.profile_1.y2 
+                                             5.921696e-05 
+                                    mean.all.profile_2.y1 
+                                             8.250440e-05 
+                                    mean.all.profile_2.y2 
+                                             5.984662e-05 
+                            log_variance.all.profile_1.y1 
+                                             1.101054e-01 
+                            log_variance.all.profile_1.y2 
+                                             1.055400e-01 
+                            log_variance.all.profile_2.y1 
+                                             1.159329e-01 
+                            log_variance.all.profile_2.y2 
+                                             1.083079e-01 
+              initial.group_class_1.profile_1.(Intercept) 
+                                             2.377557e-01 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                             3.304728e-01 
+          transition.group_class_1.profile_1->profile_2.z 
+                                             3.161194e-01 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                             2.275759e-01 
+          transition.group_class_1.profile_2->profile_1.z 
+                                             2.274955e-01 
+SCALE 1e-05 LL 7996.279 CONVERGED TRUE VCOV latents_singular_information error condition 
+<latents_singular_information: The observed information is not positive definite.>
+SCALE 1000 LL -6740.265 CONVERGED TRUE VCOV matrix array 
+                                    mean.all.profile_1.y1 
+                                               76.9652305 
+                                    mean.all.profile_1.y2 
+                                               59.2164201 
+                                    mean.all.profile_2.y1 
+                                               82.5038214 
+                                    mean.all.profile_2.y2 
+                                               59.8464351 
+                            log_variance.all.profile_1.y1 
+                                                0.1101055 
+                            log_variance.all.profile_1.y2 
+                                                0.1055399 
+                            log_variance.all.profile_2.y1 
+                                                0.1159327 
+                            log_variance.all.profile_2.y2 
+                                                0.1083078 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                0.2377556 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                0.3304727 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                0.3161193 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                0.2275758 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                0.2274956 
+SCALE 1e+05 LL -10424.4 CONVERGED TRUE VCOV matrix array 
+                                    mean.all.profile_1.y1 
+                                             7696.5231900 
+                                    mean.all.profile_1.y2 
+                                             5921.6420300 
+                                    mean.all.profile_2.y1 
+                                             8250.3823498 
+                                    mean.all.profile_2.y2 
+                                             5984.6434831 
+                            log_variance.all.profile_1.y1 
+                                                0.1101055 
+                            log_variance.all.profile_1.y2 
+                                                0.1055399 
+                            log_variance.all.profile_2.y1 
+                                                0.1159327 
+                            log_variance.all.profile_2.y2 
+                                                0.1083078 
+              initial.group_class_1.profile_1.(Intercept) 
+                                                0.2377556 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                                0.3304727 
+          transition.group_class_1.profile_1->profile_2.z 
+                                                0.3161193 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                                0.2275758 
+          transition.group_class_1.profile_2->profile_1.z 
+                                                0.2274956 

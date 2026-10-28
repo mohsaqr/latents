@@ -1,0 +1,20 @@
+Sys.setenv(VECLIB_MAXIMUM_THREADS=1, OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1)
+pkgload::load_all(quiet=TRUE)
+cap <- function(expr) {
+  notices <- character()
+  ans <- tryCatch(withCallingHandlers(expr,warning=function(w){notices <<- c(notices,conditionMessage(w)); invokeRestart('muffleWarning')}, message=function(m)invokeRestart('muffleMessage')),error=function(e)list(error=conditionMessage(e)))
+  list(fit=ans,warnings=notices)
+}
+set.seed(93)
+d<-data.frame(g=rep(1:30,each=3),a=0,b=c(rnorm(45,-4,.3),rnorm(45,4,.3)),w=1)
+d$w[d$g==30]<-0;d$a[d$g==30]<-10000
+cat('CONSTANT POSITIVE SUPPORT CROSSLEVEL\n')
+print(lapply(c('full_cross_level','restricted_cross_level'),function(family){r<-cap(multilpa(d,c('a','b'),'g',2,1,family=family,weights='w',n_starts=1,seed=1));print(family);print(r$fit[c('error','converged','log_likelihood')]);r$warnings}))
+cat('COMPONENTS ABOVE POSITIVE DISTINCT SUPPORT\n')
+d<-data.frame(g=rep(1:3,each=2),a=c(0,0,0,0,3,4),b=c(0,0,0,0,3,4),w=c(1,1,1,1,0,0))
+print(cap(multilpa(d,c('a','b'),'g',2,1,family='full_cross_level',weights='w',n_starts=1,seed=1)))
+cat('ONE GAUSSIAN SUPPORTING ROW FIML\n')
+d<-data.frame(y=c(0,rep(NA_real_,19),3),z=c(rnorm(20),10000),w=c(rep(1,20),0))
+r<-cap(lpa(d,c('y','z'),1,weights='w',missing='fiml',n_starts=1,seed=1));print(r$fit[c('error','converged','boundary','gaussian_diagnostics')])
+cat('COMPARABLE SCALE INVARIANCE DIAGNOSTICS\n')
+set.seed(33);d<-data.frame(a=rnorm(100),b=rnorm(100)*2,w=runif(100,.1,1));r1<-cap(lpa(d,c('a','b'),2,weights='w',seed=1,n_starts=1));d$a<-d$a*1e4;d$b<-d$b/100;r2<-cap(lpa(d,c('a','b'),2,weights='w',seed=1,n_starts=1));print(r1$fit$gaussian_diagnostics);print(r2$fit$gaussian_diagnostics)

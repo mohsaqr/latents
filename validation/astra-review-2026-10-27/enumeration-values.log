@@ -1,0 +1,10 @@
+Warning message:
+Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics. 
+   criterion convention         candidate n_profiles n_group_classes model
+3        bic     groups profiles4_groups3          4               3   VVI
+9        awe     groups profiles2_groups2          2               2   VVI
+11       icl     groups profiles2_groups3          2               3   VVI
+      value
+3  16852.14
+9  17292.24
+11 17114.68

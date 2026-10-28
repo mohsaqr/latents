@@ -1,0 +1,38 @@
+Installed unit-suite line coverage: 95.2468%
+Function definitions with observed expression hits: 994 / 1023
+Function definitions without hits in this coverage run: 29
+Coverage measures installed unit tests only, not equivalence tests, help examples or audit probes.
+Passing instrumented statements do not establish branch coverage or numerical correctness.
+The raw coverage output succeeded, saved both results and reported coverage; the first wrapper ended on an unsupported by='file' summary argument. That argument is corrected in run-coverage.R. No tests were rerun to repair the summary.
+
+Functions without hits in the installed unit-suite coverage run
+                             file                                         name
+                    R/accessors.R                     .multilpa_is_probability
+             R/additive-compare.R             print.latents_family_enumeration
+             R/additive-compare.R           summary.latents_family_enumeration
+                   R/candidates.R  .DollarNames.latents_transition_enumeration
+                   R/candidates.R      .DollarNames.latents_family_enumeration
+                   R/covariates.R                    print.multilpa_covariates
+                   R/covariates.R                   logLik.multilpa_covariates
+                   R/covariates.R                     nobs.multilpa_covariates
+                  R/cross-level.R           as.data.frame.multilpa_cross_level
+                  R/cross-level.R                 summary.multilpa_cross_level
+                 R/descriptives.R                        descriptives.multilpa
+                  R/enumeration.R as.data.frame.summary_multilpa_bootstrap_lrt
+       R/growth-mixture-methods.R                  vcov.latents_growth_mixture
+       R/growth-mixture-methods.R               confint.latents_growth_mixture
+                R/latents-table.R                     .latents_default_display
+                  R/lta-compare.R         print.latents_transition_enumeration
+                  R/lta-compare.R       summary.latents_transition_enumeration
+                  R/lta-methods.R                   as.data.frame.multilpa_lta
+                  R/lta-methods.R                         summary.multilpa_lta
+                  R/lta-methods.R                          logLik.multilpa_lta
+ R/mixture-regression-enumerate.R         print.latents_regression_enumeration
+   R/mixture-regression-methods.R           confint.latents_mixture_regression
+   R/mixture-regression-methods.R            logLik.latents_mixture_regression
+   R/mixture-regression-methods.R              nobs.latents_mixture_regression
+                         R/plot.R            .multilpa_enumeration_plot_advice
+                        R/prior.R                          .multilpa_prior_vei
+                       R/report.R           as.data.frame.multilpa_diagnostics
+                          R/tna.R                             get_tna.multilpa
+                          R/tna.R                       get_group_tna.multilpa

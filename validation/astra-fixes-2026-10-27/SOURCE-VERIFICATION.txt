@@ -1,0 +1,6 @@
+Generated Rplots.pdf files are excluded by .Rbuildignore and are not source.
+The original inventories including those mutable plot artifacts are retained separately.
+source-manifest.json: 446 source hashes match the final working tree.
+validation-source-manifest.json: 23 source hashes match the final working tree.
+After full unit run: R/mixture-regression.R, tests/testthat/test-astra-core.R
+Final package check: 0 errors, 0 warnings, offline clock note only.

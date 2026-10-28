@@ -13,22 +13,27 @@ skip_on_cran()
                        seed = 3, ...))
 }
 
-# `best_only`: grand scaling divides by a standard deviation, which is not
-# exact in floating point, and twelve SQUAREM steps amplify that rounding
-# differently on each platform's BLAS. There only the best start is compared.
-.release_engine_compare <- function(raw, scaled, jacobian, best_only = FALSE) {
+# `converged`: grand scaling divides by a standard deviation, which is not
+# exact in floating point, and an unconverged SQUAREM trajectory amplifies
+# that rounding differently on each platform's BLAS (CI, 2026-10-28: even the
+# best of three 12-step starts moved by 9e-7). Those fits run to convergence
+# instead, and only what convergence fixes is compared: the best likelihood,
+# the posteriors and the replication count, not each start's iterations.
+.release_engine_compare <- function(raw, scaled, jacobian, converged = FALSE) {
   starts <- scaled$starts
   likelihoods <- intersect(c("log_likelihood", "screened_log_likelihood"), names(starts))
   invisible(lapply(likelihoods, function(name) {
     adjusted <- starts[[name]] - jacobian
-    if (best_only) {
+    if (converged) {
       expect_equal(max(adjusted), max(raw$starts[[name]]), tolerance = 1e-10)
     } else {
       expect_equal(adjusted, raw$starts[[name]], tolerance = 1e-10)
     }
   }))
-  expect_identical(starts[setdiff(names(starts), likelihoods)],
-                   raw$starts[setdiff(names(raw$starts), likelihoods)])
+  if (!converged) {
+    expect_identical(starts[setdiff(names(starts), likelihoods)],
+                     raw$starts[setdiff(names(raw$starts), likelihoods)])
+  }
   expect_equal(scaled$subject_posteriors, raw$subject_posteriors,
                tolerance = 1e-6)
   expect_identical(scaled$n_best_replicated, raw$n_best_replicated)
@@ -52,11 +57,11 @@ invisible(lapply(c("EEI", "VEI", "EVI", "VVI", "EEE", "VEE", "EVV", "VVV"), func
     data <- srl[seq_len(150L), c("cognitive_strategies", "intrinsic_value",
                                 "test_anxiety")]
     data$test_anxiety <- data$test_anxiety * 1000
-    raw <- .release_engine_fit(data, model = model, search = "kmeans", max_iter = 12)
-    changed <- .release_engine_fit(data, model = model, search = "kmeans", max_iter = 12,
+    raw <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-10)
+    changed <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-10,
                                    centering = "grand", scaling = "grand")
     jacobian <- nrow(data) * sum(log(vapply(data, stats::sd, numeric(1))))
-    .release_engine_compare(raw, changed, jacobian, best_only = TRUE)
+    .release_engine_compare(raw, changed, jacobian, converged = TRUE)
   })
 }))
 

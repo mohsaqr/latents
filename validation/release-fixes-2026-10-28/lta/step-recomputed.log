@@ -1,0 +1,27 @@
+step-recomputed_table: ......12.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-step-recomputed_table.R:32:9'): transition parameter_infere
+Expected `steps` to be identical to `c(0.01, 1e-04)`.
+Differences:
+  `actual`: 0.01 1e-04 1e-04 1e-04 1e-04 1e-04
+`expected`: 0.01 1e-04                        
+
+
+── 2. Failure ('test-step-recomputed_table.R:34:9'): transition parameter_infere
+Expected `coarse$standard_error[coarse$block == "transition"]` to equal `...[]`.
+Differences:
+    actual          | expected           
+[1] 0.2382927344688 | 0.2382927344688 [1]
+[2] 0.2382987033431 - 0.2382987033435 [2]
+[3] 0.2382653028391 - 0.2382653028380 [3]
+[4] 0.2382927344731 - 0.2382927344708 [4]
+[5] 0.2382987033448 - 0.2382987033455 [5]
+[6] 0.2382653028395 - 0.2382653028400 [6]
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                  test failed
+1 transition parameter_inference() uses the caller's step in its table      2
+  error passed
+1 FALSE      7

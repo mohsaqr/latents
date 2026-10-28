@@ -1,0 +1,6 @@
+n_observations: 340 n_informative: 320 drop_empty: TRUE 
+informative expected class counts: 151.8988 168.1012 
+diagnostics expected class counts: 161.995 178.005 
+direct informative-row entropy: 0.8888741 reported: 0.8543787 
+as.data.frame columns: n_starts n_screened n_converged n_failed n_best_replicated share tolerance best_start log_likelihood 
+[1] "`what = \"entropy\"` is not a table of this object. It has \"replication\", \"checks\", and \"all\"."

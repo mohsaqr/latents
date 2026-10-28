@@ -1,0 +1,43 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-lmr.R","lmr","the Imhof tail matches exact weighted chi-square probabilities",24,0,FALSE,FALSE,0,0.504,0.017,0.54,24
+"test-lmr.R","lmr","for regular nested models the weights are one per added parameter",2,0,FALSE,FALSE,0,0.019,0.001,0.02,2
+"test-lmr.R","lmr","VLMR and adjusted LMR agree with Latent GOLD",7,0,FALSE,FALSE,0,4.844,0.244,5.224,7
+"test-lmr.R","lmr","the comparison table lists each neighbour pair, with its reason when unavailable",9,0,FALSE,FALSE,0,0.718999999999999,0.04,0.77,9
+"test-lmr.R","lmr","Imhof handles negative statistics and retains genuine small weights",13,0,FALSE,FALSE,0,0.0640000000000001,0.003,0.0700000000000003,13
+"test-lmr.R","lmr","Vuong weights are invariant to information coordinate units",2,0,FALSE,FALSE,0,0.00200000000000067,0.000999999999999945,0.00400000000000045,2
+"test-lmr.R","lmr","public LMR retains its reference distribution when indicator units change",20,0,FALSE,FALSE,0,0.45,0.012,0.479,20
+"test-lmr.R","lmr","numerical null eigenvalues do not create tails in exact nested references",7,0,FALSE,FALSE,0,0.0229999999999997,0.003,0.0330000000000004,7
+"test-lmr.R","lmr","LMR reports a reversed likelihood as an unavailable comparison",3,0,FALSE,FALSE,0,0.0349999999999993,0.001,0.04,3
+"test-lmr.R","lmr","LMR uses the conditioned chart for translated direct-effect predictors",8,0,FALSE,FALSE,0,0.246,0.006,0.258,8
+"test-lmr.R","lmr","LMR adjustment counts informative positive-weight independent units",5,0,FALSE,FALSE,0,0.305,0.006,0.32,5
+"test-lmr.R","lmr","Imhof remains accurate across signs at nearly zero statistics",18,0,FALSE,FALSE,0,0.101999999999999,0.004,0.114000000000001,18
+"test-lmr.R","lmr","Imhof extreme weight ranges avoid overflow or fail with a typed reason",2,0,FALSE,FALSE,0,0.0290000000000008,0.001,0.0310000000000006,2
+"test-lmr.R","lmr","Vuong numerical zeros account for conditioned information whitening",6,0,FALSE,FALSE,0,0.0199999999999996,0.003,0.0259999999999998,6
+"test-lmr.R","lmr","uncertain genuine Vuong weights are refused rather than replaced by zeros",6,0,FALSE,FALSE,0,0.0250000000000004,0.002,0.0299999999999994,6
+"test-lmr.R","lmr","nonfinite or overwhelming Vuong uncertainty cannot erase finite weights",2,0,FALSE,FALSE,0,0.00400000000000045,0,0.00500000000000078,2
+"test-parallel.R","parallel","a profile grid on several cores is identical to one core",2,0,FALSE,FALSE,0,0.307999999999999,0.018,0.656000000000001,2
+"test-parallel.R","parallel","transition and family grids on several cores are identical to one core",2,0,FALSE,FALSE,0,4.292,0.076,8.25,2
+"test-parallel.R","parallel","candidates' warnings reach the caller in grid order, as on one core",3,0,FALSE,FALSE,0,0.458,0.027,0.998000000000001,3
+"test-parallel.R","parallel","the socket backend returns values and conditions in order",3,0,FALSE,FALSE,0,0.00500000000000078,0.003,0.142999999999997,3
+"test-parallel.R","parallel","cores is validated by class, and one core is lapply",6,0,FALSE,FALSE,0,0.00999999999999979,0.001,0.0109999999999992,6
+"test-parallel.R","parallel","forked workers are refused only on macOS with Accelerate's BLAS",4,0,FALSE,FALSE,0,0.00699999999999967,0.002,0.0109999999999992,4
+"test-parallel.R","parallel","a forked worker killed by a signal is a parallel failure, not a NULL candidate",1,0,FALSE,FALSE,0,0.00399999999999956,0.017,0.0219999999999985,1
+"test-parallel.R","parallel","a socket worker that dies is a parallel failure",1,0,FALSE,FALSE,0,0.00500000000000078,0.002,0.152999999999999,1
+"test-parallel.R","parallel","one fit's starts on several cores give the same fit as one core",4,0,FALSE,FALSE,0,0.91,0.072,1.774,4
+"test-parallel.R","parallel","a fit refuses a `cores` that is not a whole number of at least 1",2,0,FALSE,FALSE,0,0.00500000000000078,0.001,0.00700000000000145,2
+"test-review-core-audit.R","review-core-audit","covariate centering records the model and preserves raw-data inference",9,0,FALSE,FALSE,0,1.115,0.101,1.269,9
+"test-review-core-audit.R","review-core-audit","covariate centering composes with FIML, full covariance and weights",4,0,FALSE,FALSE,0,0.651,0.036,0.716000000000001,4
+"test-review-core-audit.R","review-core-audit","all covariance structures retain their defining constraints at a floor",47,0,FALSE,FALSE,0,0.148999999999999,0.013,0.210000000000001,47
+"test-review-core-audit.R","review-core-audit","floor-active EVI profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.00799999999999912,0.001,0.0110000000000028,3
+"test-review-core-audit.R","review-core-audit","floor-active VEI profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.00999999999999979,0.001,0.0129999999999981,3
+"test-review-core-audit.R","review-core-audit","floor-active EVV profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.00900000000000034,0.002,0.0139999999999993,3
+"test-review-core-audit.R","review-core-audit","floor-active VEV profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.0130000000000017,0.001,0.0159999999999982,3
+"test-review-core-audit.R","review-core-audit","floor-active VEE profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.0129999999999999,0.001,0.0160000000000018,3
+"test-review-core-audit.R","review-core-audit","floor-active EVE profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.0199999999999996,0.002,0.0240000000000009,3
+"test-review-core-audit.R","review-core-audit","floor-active VVE profiles converge without an EM decrease",3,0,FALSE,FALSE,0,0.011000000000001,0.002,0.0139999999999993,3
+"test-review-core-audit.R","review-core-audit","constrained prior updates retain volume and shape at their own floors",6,0,FALSE,FALSE,0,0.0609999999999999,0.003,0.0679999999999978,6
+"test-review-core-audit.R","review-core-audit","positive-definite starts outside the covariance family are not retained",9,0,FALSE,FALSE,0,0.0229999999999997,0.004,0.0350000000000001,9
+"test-review-core-audit.R","review-core-audit","active covariance floors are stable to harmless data rounding",3,0,FALSE,FALSE,0,0.0239999999999991,0.001,0.0289999999999999,3
+"test-review-core-audit.R","review-core-audit","the bounded covariance solver agrees with an analytic active EVI optimum",1,0,FALSE,FALSE,0,0.00200000000000067,0,0.00500000000000256,1
+"test-review-core-audit.R","review-core-audit","zero-scatter covariance floors handle dependent active constraints",2,0,FALSE,FALSE,0,0.00399999999999956,0.001,0.00799999999999912,2
+"test-review-core-audit.R","review-core-audit","bounded covariance convergence requires genuinely binding active floors",5,0,FALSE,FALSE,0,0.00900000000000034,0.002,0.0139999999999993,5

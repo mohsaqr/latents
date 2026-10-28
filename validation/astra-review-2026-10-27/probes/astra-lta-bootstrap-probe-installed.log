@@ -1,0 +1,65 @@
+       block   group_class      from        to        term    estimate
+1 transition group_class_1 profile_1 profile_2  occasion_2 -0.96877178
+2 transition group_class_1 profile_1 profile_2  occasion_3 -0.87552543
+3 transition group_class_1 profile_1 profile_2  occasion_4 -0.37251863
+4 transition group_class_1 profile_1 profile_2  occasion_5 -1.56492431
+5 transition group_class_1 profile_2 profile_1  occasion_2 -1.16472855
+6 transition group_class_1 profile_2 profile_1  occasion_3 -1.27386977
+7 transition group_class_1 profile_2 profile_1  occasion_4 -0.93098035
+8 transition group_class_1 profile_2 profile_1  occasion_5 -1.92721802
+9    initial group_class_1      <NA> profile_1 (Intercept)  0.09203368
+  standard_error statistic p_value p_adjusted   conf_low    conf_high estimated
+1      0.4980833        NA      NA         NA -1.3542227 -0.279255555      TRUE
+2      0.5093445        NA      NA         NA -1.0750790  0.006637201      TRUE
+3      0.3464363        NA      NA         NA -0.6255521  0.066410269      TRUE
+4             NA        NA      NA         NA         NA           NA     FALSE
+5      0.4717792        NA      NA         NA -1.3828253 -0.349886641      TRUE
+6      0.2445465        NA      NA         NA -1.4346905 -0.965931266      TRUE
+7      0.6101427        NA      NA         NA -1.3759785 -0.081861049      TRUE
+8             NA        NA      NA         NA         NA           NA     FALSE
+9      0.2633081        NA      NA         NA -0.1902031  0.296589986      TRUE
+transition.group_class_1.profile_1->profile_2.occasion_2 
+                                              0.24808694 
+transition.group_class_1.profile_1->profile_2.occasion_3 
+                                              0.25943186 
+transition.group_class_1.profile_1->profile_2.occasion_4 
+                                              0.12001812 
+transition.group_class_1.profile_1->profile_2.occasion_5 
+                                              0.04989773 
+transition.group_class_1.profile_2->profile_1.occasion_2 
+                                              0.22257565 
+transition.group_class_1.profile_2->profile_1.occasion_3 
+                                              0.05980297 
+transition.group_class_1.profile_2->profile_1.occasion_4 
+                                              0.37227413 
+transition.group_class_1.profile_2->profile_1.occasion_5 
+                                              0.06113789 
+             initial.group_class_1.profile_1.(Intercept) 
+                                              0.06933114 
+unidentified covariance rows:                                                         transition.group_class_1.profile_1->profile_2.occasion_2
+transition.group_class_1.profile_1->profile_2.occasion_5                                              -0.04587863
+transition.group_class_1.profile_2->profile_1.occasion_5                                               0.04127467
+                                                         transition.group_class_1.profile_1->profile_2.occasion_3
+transition.group_class_1.profile_1->profile_2.occasion_5                                               0.06563152
+transition.group_class_1.profile_2->profile_1.occasion_5                                              -0.08331946
+                                                         transition.group_class_1.profile_1->profile_2.occasion_4
+transition.group_class_1.profile_1->profile_2.occasion_5                                              -0.01885552
+transition.group_class_1.profile_2->profile_1.occasion_5                                               0.01151595
+                                                         transition.group_class_1.profile_1->profile_2.occasion_5
+transition.group_class_1.profile_1->profile_2.occasion_5                                               0.04989773
+transition.group_class_1.profile_2->profile_1.occasion_5                                              -0.05485328
+                                                         transition.group_class_1.profile_2->profile_1.occasion_2
+transition.group_class_1.profile_1->profile_2.occasion_5                                              -0.07382855
+transition.group_class_1.profile_2->profile_1.occasion_5                                               0.07781189
+                                                         transition.group_class_1.profile_2->profile_1.occasion_3
+transition.group_class_1.profile_1->profile_2.occasion_5                                               0.03030228
+transition.group_class_1.profile_2->profile_1.occasion_5                                              -0.03460337
+                                                         transition.group_class_1.profile_2->profile_1.occasion_4
+transition.group_class_1.profile_1->profile_2.occasion_5                                               -0.1344420
+transition.group_class_1.profile_2->profile_1.occasion_5                                                0.1465743
+                                                         transition.group_class_1.profile_2->profile_1.occasion_5
+transition.group_class_1.profile_1->profile_2.occasion_5                                              -0.05485328
+transition.group_class_1.profile_2->profile_1.occasion_5                                               0.06113789
+                                                         initial.group_class_1.profile_1.(Intercept)
+transition.group_class_1.profile_1->profile_2.occasion_5                                 -0.04103217
+transition.group_class_1.profile_2->profile_1.occasion_5                                  0.04745578

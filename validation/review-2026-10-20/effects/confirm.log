@@ -1,0 +1,43 @@
+Covariate shifts, unchanged maximum likelihood, and inference result:
+  shift   likelihood_delta      effect_delta slope_reference_se
+1     0  0.00000000000e+00 0.00000000000e+00    0.0487829449939
+2    10  0.00000000000e+00 1.66533453694e-16    0.0487829449939
+3   100 -2.27373675443e-13 2.77555756156e-16    0.0487829449939
+4   300 -2.27373675443e-13 9.99200722163e-16    0.0487829449939
+5  1000  4.54747350886e-13 1.22124532709e-15    0.0487829449939
+6  2026 -4.54747350886e-13 2.38697950294e-15    0.0487829449939
+  reference_intercept_se                    inference
+1        0.0486829850962                      success
+2        0.4932007610503                      success
+3        4.8815080774459                      success
+4       14.6379358722851                      success
+5       48.7859409139018 latents_singular_information
+6       98.8372302229269 latents_singular_information
+Base direct-effect SEs versus independent lm MLE reference:
+  term standard_error
+5 y1:z     0.04878294
+6 y1:w     0.04729556
+(Intercept)           z           w 
+ 0.04868299  0.04878294  0.04729556 
+
+Multiple-covariate units: fit status, likelihood and coefficients:
+  scale     likelihood  result
+1 1e+00 -1116.26508119 success
+2 1e+04 -1116.26508119 success
+3 1e+06 -1116.26508119 success
+4 1e+07 -1116.26508119 success
+5 1e+08 -1116.26508119 success
+
+Existing indicator a:b overwritten by generated a:b:
+                  implementation n_parameters log_likelihood
+1       current local_dependence            4      -828.8379
+2 collision-free joint reference            5     -1105.5966
+
+Additional combination smoke checks:
+         level outcome term     parameter  estimate standard_error statistic
+12 measurement  shared y1:z direct_effect 0.3511800     0.04878294  7.198827
+13 measurement  shared y1:w direct_effect 0.6649496     0.04729556 14.059451
+        p_value   p_adjusted  conf_low conf_high
+12 6.073259e-13 6.073259e-13 0.2555672 0.4467928
+13 6.740706e-45 6.740706e-45 0.5722520 0.7576472
+Combination fit, original-data prediction and direct-effect inference passed.

@@ -1,0 +1,36 @@
+
+ profile 
+base logLik -1482.06455038867 converged TRUE 
+small logLik 11780.825585257 converged TRUE 
+inference rows 14 
+inference rows 14 
+
+ additive 
+base logLik -1947.2561401471 converged TRUE 
+small logLik 11315.6339954986 converged TRUE 
+A between-group variance is estimated at zero or a within-group variance sits at min_variance; the parameter is on the edge of its space and Wald inference does not apply. 
+A between-group variance is estimated at zero or a within-group variance sits at min_variance; the parameter is on the edge of its space and Wald inference does not apply. 
+
+ dispersion 
+base logLik -2004.82956000169 converged TRUE 
+small logLik 11258.060575644 converged TRUE 
+inference rows 10 
+inference rows 10 
+
+ additive_dispersion 
+base logLik -1945.57239320049 converged TRUE 
+small logLik 11317.3177424452 converged TRUE 
+A between-group variance is estimated at zero or a within-group variance sits at min_variance; the parameter is on the edge of its space and Wald inference does not apply. 
+A between-group variance is estimated at zero or a within-group variance sits at min_variance; the parameter is on the edge of its space and Wald inference does not apply. 
+
+ full_cross_level 
+base logLik -1578.54639237732 converged TRUE 
+small logLik 13342.2050102241 converged TRUE 
+Standard errors are not available for the cross-level families: their working likelihood includes the ratings and group means computed from those same ratings. 
+Standard errors are not available for the cross-level families: their working likelihood includes the ratings and group means computed from those same ratings. 
+
+ restricted_cross_level 
+base logLik -1722.61884803176 converged TRUE 
+small logLik 13198.1325545697 converged TRUE 
+Standard errors are not available for the cross-level families: their working likelihood includes the ratings and group means computed from those same ratings. 
+Standard errors are not available for the cross-level families: their working likelihood includes the ratings and group means computed from those same ratings. 

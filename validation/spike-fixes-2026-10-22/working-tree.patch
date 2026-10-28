@@ -1,0 +1,2651 @@
+diff --git a/NEWS.md b/NEWS.md
+index 7383fd4..ec464b6 100644
+--- a/NEWS.md
++++ b/NEWS.md
+@@ -1,22 +1,66 @@
+ # latents (development version)
+ 
++### Review corrections
++
++* General latent transition fits detect covariance eigenvalues at the
++  variance floor, including occasion-specific measurement. Such fits are
++  marked as boundary solutions and refuse Wald inference.
++* Zero-weight units no longer determine the internal Gaussian origin,
++  imputation, clustering geometry or initial measurement parameters in
++  profile, membership-covariate and weighted transition fits. Excluded
++  outliers cannot consume an initial profile or erase supported-row
++  precision. Observation and group mappings are preserved.
++* Gaussian support warnings in ordinary and membership-covariate fits
++  exclude categorical-only and retained empty rows. Cross-level models
++  apply sampling weights and check both the individual and group Gaussian
++  components.
++* `get_results(fit, "gaussian_diagnostics")` exposes per-component Gaussian
++  membership mass, positive contributing rows, weight effective sample size,
++  standardized variances and covariance eigenvalues, and the absolute
++  boundary status. The narrowest standardized direction is also printed.
++  These are descriptive diagnostics, with no automatic spike cutoff or
++  change to start selection. Normalized membership mass is not an
++  independent sample count; thin-profile warnings are heuristics, not
++  proofs of singularity or nonidentification.
++* Bootstrap inference for `fit_staged()` repeats the measurement stage's
++  own search controls before refitting the group-class stage, preserving
++  an explicit emEM pool even when a single supplied start disables
++  screening at stage two.
++* `latents_thin_profiles` counts the free Gaussian measurement parameters:
++  covariances held at zero and held means are excluded, and held variances
++  do not trigger the warning.
++* In latent transition models, thin-profile warnings use weighted
++  memberships of rows with observed Gaussian indicators. Empty or
++  categorical-only rows cannot hide a thin Gaussian profile, even under
++  `drop_empty = FALSE`. Occasion-specific measurement is checked separately
++  at each occasion, which the warning identifies. Fitted estimates and
++  classification counts are unchanged.
++
+ ### Start search
+ 
+ * `search = "emEM"` (new, opt-in) finds starts by the emEM search
+   (Biernacki, Celeux & Govaert, 2003): a pool of `n_screen` starts (five
+   times `n_starts` by default) is screened by a short EM run each, and the
+-  best `n_starts` are run to convergence. The pool begins with the default
++  `n_starts` finalists are run to convergence. A successful first start
++  (Ward or supplied) reserves one finalist slot; the others are ranked by
++  screening likelihood. With `n_starts = 1`, a valid Ward start is therefore
++  always finalized; a single supplied start skips screening. This existing
++  protection is now documented. The pool begins with the default
+   search's own starts. `search = "kmeans"` remains the default and
+   reproduces the fits of 0.96.1, apart from the corrections listed below.
+-  On the start-search benchmark (180 fits), emEM reached the best known
+-  maximum in 136 fits and the default search in 130, but it reported a
+-  spurious maximum in 25 fits against 12, and took three to five times as
+-  long.
++  On the start-search benchmark (180 fits), emEM attained the finite
++  above-cutoff reference in 136 fits and the default search in 130. The
++  benchmark's descriptive cutoff was 0.01 for the smallest standardized
++  variance or covariance eigenvalue; values below it do not prove false
++  classes. On the matched 80 heteroscedastic fits, both searches attained
++  that reference in 40 fits, while emEM returned 25 below-cutoff solutions
++  against 12 for the default search. Retained runs took about twice as long
++  by median time and 1.45 times as long in total.
+ * Either search reports the highest likelihood among the finished starts.
+   The new `latents_thin_profiles` warning fires when a profile with its own
+-  variances has fewer effective members than its means and variances, the
+-  sign of a spurious maximum (McLachlan & Peel, 2000, section 3.10), and
+-  suggests fewer profiles or shared variances. The estimate is unchanged.
++  variances has Gaussian membership mass below its number of free Gaussian
++  parameters. It prompts inspection of covariance and support diagnostics.
++  The warning is heuristic and the estimate is unchanged.
+ * Under emEM, `get_results(fit, "starts")` lists every start of the pool,
+   with its `kind`, `stage` and likelihood after screening, and "Best
+   likelihood replicated" counts the starts that were run to convergence.
+diff --git a/R/bootstrap-inference.R b/R/bootstrap-inference.R
+index 5e94f3c..74eedf7 100644
+--- a/R/bootstrap-inference.R
++++ b/R/bootstrap-inference.R
+@@ -128,13 +128,34 @@
+   estimator <- if (staged) fit_staged else multilpa
+   arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
+     .multilpa_refit_arguments(x)
++  controls <- .latents_refit_controls(x, n_starts = n_starts,
++                                     max_iter = max_iter, tol = tol)
++  if (staged) {
++    # The supplied-start second stage can record no screening even when the
++    # measurement searched an explicit pool. Replay that first stage's own
++    # controls, including a measurement supplied separately to fit_staged().
++    measurement_arguments <- .multilpa_refit_arguments(x$stage_one)
++    # A supplied measurement can use other identifier and time column names.
++    # One group class has unconditional measurement; replay it using the
++    # resample's columns, recreating any single-level observation identifier.
++    measurement_arguments["id"] <- list(
++      if (isTRUE(x$stage_one$single_level)) NULL else x$id)
++    measurement_arguments["time"] <- list(x$time)
++    measurement_controls <- .latents_refit_controls(
++      x$stage_one, n_starts = n_starts, max_iter = max_iter, tol = tol)
++    measurement_arguments <- c(
++      measurement_arguments[!names(measurement_arguments) %in%
++                              names(measurement_controls)],
++      measurement_controls)
++  }
+   .latents_cluster_bootstrap(
+     data, x$group_index, x$n_groups, x$id, iter,
+     refit = function(resampled) {
+-      do.call(estimator, c(list(data = resampled), arguments,
++      measurement <- if (staged) list(measurement = do.call(
++        multilpa, c(list(data = resampled), measurement_arguments))) else list()
++      do.call(estimator, c(list(data = resampled), arguments, measurement,
+                            list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+-                                n_screen = .latents_refit_controls(
+-                                  x, n_starts = n_starts)$n_screen)))
++                                n_screen = controls$n_screen)))
+     },
+     extract = function(fit) {
+       # A resample that misses a rare category refits that indicator with one
+diff --git a/R/conditions.R b/R/conditions.R
+index 8d2eb37..829a559 100644
+--- a/R/conditions.R
++++ b/R/conditions.R
+@@ -271,13 +271,19 @@
+ #'     membership below one observation; or, in [three_step()] with `method =
+ #'     "ml"`, a class is carried by a single unit, so its standard error is
+ #'     reported as `NA`.}
+-#'   \item{`latents_thin_profiles`}{A profile with variances of its own has
+-#'     fewer effective members than its density has parameters (its means
+-#'     plus its variances or covariances), so those variances are poorly
+-#'     determined and the solution may be a spurious maximum (McLachlan &
+-#'     Peel, 2000, section 3.10). The estimate is returned unchanged; the
+-#'     message names the profiles and suggests fewer profiles or a model
+-#'     whose profiles share their variances.}
++#'   \item{`latents_thin_profiles`}{A Gaussian component with free variances
++#'     of its own has posterior membership mass below the number of free
++#'     parameters in its Gaussian density. This is a heuristic prompt to
++#'     inspect the solution, not a proof of singularity or nonidentification.
++#'     Covariances held at zero and held means are excluded, and held
++#'     variances do not trigger it. Memberships use normalized sampling
++#'     weights and only rows with an observed Gaussian indicator; this mass
++#'     is not an independent sample count or a weight effective sample size.
++#'     Transition models check occasion-specific measurement separately;
++#'     cross-level models check both Gaussian levels. The estimate is
++#'     returned unchanged. See `get_results(fit, "gaussian_diagnostics")` for
++#'     continuous covariance and support diagnostics; none supplies an
++#'     automatic spike classification or an identification guarantee.}
+ #'   \item{`latents_all_starts_boundary`}{`boundary = "exclude"` found every
+ #'     start with a variance at `min_variance`, so none was set aside and the
+ #'     best start across all of them is reported.}
+diff --git a/R/covariates.R b/R/covariates.R
+index 2c6d47f..70f30a9 100644
+--- a/R/covariates.R
++++ b/R/covariates.R
+@@ -332,7 +332,8 @@
+                                  categorical, min_probability, missing,
+                                  profile_slopes, ordinal, count, count_model,
+                                  count_dispersion, centering = centering,
+-                                 group_index = group_index, scaling = scaling)
++                                 group_index = group_index, scaling = scaling,
++                                 row_weights = sampling_weights[group_index])
+   x <- designs$x
+   center <- designs$center
+   control <- list(variance_model = variance_model, min_variance = min_variance,
+@@ -493,9 +494,14 @@
+       class = "latents_small_classes", call = NULL))
+   }
+   .latents_warn_thin_profiles(
+-    result$effective_profile_counts,
++    colSums(weighted_expectation$subject_posteriors[
++      rowSums(!is.na(x)) > 0L, , drop = FALSE]),
+     .latents_profile_parameters(length(base$continuous), variance_model,
+                                 covariance_model))
++  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
++    result, x, result$subject_posteriors,
++    weights = if (is.null(sampling_weights)) NULL else sampling_weights[group_index],
++    min_variance = min_variance)
+   if (result$extreme_logits) {
+     warning(warningCondition(
+       "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
+@@ -515,6 +521,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
+   .latents_print_weights(x)
+   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
+               x$log_likelihood, x$aic, x$bic, x$converged))
++  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
+   .multilpa_print_primary(x, rows = rows)
+   invisible(x)
+ }
+@@ -566,6 +573,7 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
+   if (model$extreme_logits) {
+     cat("WARNING: extreme logit coefficients; check scaling, sparse classes and separation.\n")
+   }
++  .latents_print_gaussian_diagnostics(x$tables$gaussian_diagnostics)
+   .multilpa_print_tables(x$tables, rows = rows, digits = digits)
+   .multilpa_print_table_footer(x$tables)
+   invisible(x)
+@@ -763,6 +771,8 @@ nobs.multilpa_covariates <- function(object, ...) {
+ #' classes. Either way the first block after the indicators holds the
+ #' covariates themselves in group class 1's design.
+ #'
++#' @param row_weights Optional sampling weights in observation order, used
++#'   only to omit excluded rows from the internal Gaussian origin.
+ #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
+ #' @noRd
+ .multilpa_cov_designs <- function(data, vars, profile_covariates,
+@@ -773,7 +783,7 @@ nobs.multilpa_covariates <- function(object, ...) {
+                                 count = character(), count_model = "poisson",
+                                 count_dispersion = "varying",
+                                 centering = "none", group_index = NULL,
+-                                scaling = "none") {
++                                scaling = "none", row_weights = NULL) {
+   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
+                                               missing, min_probability,
+                                               other = c(ordinal, count))
+@@ -791,7 +801,7 @@ nobs.multilpa_covariates <- function(object, ...) {
+   # The centre is only a location shift that is added back to the reported
+   # means, so the observed values' mean serves; every indicator has some,
+   # which the indicator check above guarantees.
+-  center <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
++  center <- .multilpa_initialization_center(x, row_weights)
+   z <- as.matrix(data[profile_covariates])
+   w <- cbind(`(Intercept)` = 1,
+              as.matrix(data[first_rows, group_covariates, drop = FALSE]))
+@@ -878,7 +888,8 @@ nobs.multilpa_covariates <- function(object, ...) {
+                        control$variance_model, control$min_variance, start_index,
+                        control$covariance_model, designs$codes,
+                        designs$n_categories, control$min_probability,
+-                       hierarchical = FALSE, extra = designs$extra, kind = kind)
++                       hierarchical = FALSE, extra = designs$extra, kind = kind,
++                       row_weights = control$sampling_weights[group_index])
+   }
+   beta <- rbind(
+     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /
+diff --git a/R/cross-level.R b/R/cross-level.R
+index 2695ecf..67c152d 100644
+--- a/R/cross-level.R
++++ b/R/cross-level.R
+@@ -53,14 +53,31 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
+ 
+ #' Starting values for the full cross-level model from one partition of the
+ #' groups (by their means), so both parts share the group-class labels
++#' @param sampling_weights Optional normalized weights in group order. Excluded
++#'   groups do not contribute to either level's initialization geometry.
+ #' @noRd
+ .cross_level_initialize <- function(x, group_index, group_means, n_profiles,
+                                     n_group_classes, variance_model,
+                                     between_variance, min_variance, start_index,
+-                                    kind = "kmeans") {
++                                    kind = "kmeans", sampling_weights = NULL) {
++  stopifnot(is.null(sampling_weights) ||
++              (is.numeric(sampling_weights) &&
++                 length(sampling_weights) == nrow(group_means) &&
++                 all(is.finite(sampling_weights)) && all(sampling_weights >= 0)))
+   profile <- .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
+                                   variance_model, min_variance, start_index,
+-                                  hierarchical = start_index == 1L, kind = kind)
++                                  hierarchical = start_index == 1L, kind = kind,
++                                  row_weights = if (is.null(sampling_weights)) NULL else
++                                    sampling_weights[group_index])
++  if (!is.null(sampling_weights) && any(sampling_weights == 0)) {
++    # This subset is only for constructing starts. The EM still evaluates all
++    # original groups and returns every group's own reporting probabilities.
++    included_groups <- which(sampling_weights > 0)
++    included_rows <- sampling_weights[group_index] > 0
++    x <- x[included_rows, , drop = FALSE]
++    group_index <- match(group_index[included_rows], included_groups)
++    group_means <- group_means[included_groups, , drop = FALSE]
++  }
+   spread <- apply(group_means, 2L, stats::sd)
+   spread[!is.finite(spread) | spread <= 0] <- 1
+   scaled <- sweep(group_means, 2L, spread, "/")
+@@ -195,7 +212,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
+       .cross_level_initialize(x, group_index, group_means, n_profiles,
+                               n_group_classes, variance_model,
+                               between_variance, min_variance, start_index,
+-                              kind = .latents_start_kind(start_index, n_starts))
++                              kind = .latents_start_kind(start_index, n_starts),
++                              sampling_weights = sampling_weights)
+     }, run = function(start_index, start, pause = Inf, resume = NULL) {
+       .cross_level_em(x, group_index, group_means, start %||% resume$state,
+                       variance_model, between_variance, min_variance, max_iter,
+@@ -286,7 +304,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
+                min_variance = min_variance, acceleration = "none",
+                weights = if (is.null(unit_weights)) NULL else weight_column,
+                search = search, n_screen = n_screen),
+-      latents_single_level = function(notice) invokeRestart("muffleMessage"))
++      latents_single_level = function(notice) invokeRestart("muffleMessage"),
++      # Check both Gaussian levels once, with their level identified, when
++      # assembling the cross-level result below.
++      latents_thin_profiles = function(notice) invokeRestart("muffleWarning"))
+   }
+   row_weights <- if (is.null(sampling_weights)) NULL else sampling_weights[group_index]
+   individual <- single(x, n_profiles, variance_model, row_weights)
+@@ -382,15 +403,38 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
+     warning(warningCondition("A variance reached min_variance; this is a bound-active fit.",
+                              class = "latents_boundary", call = NULL))
+   }
++  # Reporting posteriors belong to each unit. For Gaussian support, restore
++  # the normalized sampling weights used by each density's M-step. The
++  # restricted rating factor normalizes its weights to the number of rows;
++  # the full model uses the common group-normalized weights at both levels.
++  group_weights <- stats$sampling_weights
++  row_weights <- if (is.null(group_weights)) NULL else group_weights[stats$index]
++  if (identical(family, "restricted_cross_level") && !is.null(row_weights)) {
++    row_weights <- row_weights * (nrow(x) / sum(row_weights))
++  }
++  .latents_warn_thin_profiles(
++    colSums(subject_posteriors * (row_weights %||% 1)),
++    .latents_profile_parameters(length(vars), variance_model, "diagonal"),
++    context = "at the individual level")
+   .latents_warn_thin_profiles(
+-    colSums(subject_posteriors),
+-    .latents_profile_parameters(length(vars), variance_model, "diagonal"))
++    colSums(group_posteriors * (group_weights %||% 1)),
++    .latents_profile_parameters(length(vars), between_variance, "diagonal"),
++    context = "at the group level (group classes)")
++  result$gaussian_diagnostics <- rbind(
++    .latents_gaussian_diagnostics(
++      list(means = p$means, variances = p$variances), x,
++      subject_posteriors, row_weights, min_variance,
++      context = "individual profiles"),
++    .latents_gaussian_diagnostics(
++      list(means = p$between_means, variances = p$between_variances), group_means,
++      group_posteriors, group_weights, min_variance,
++      context = "group classes"))
+   result
+ }
+ 
+ .cross_level_tables <- function() {
+   c("profiles", "group_classes", "composition", "groups", "assignments", "fit",
+-    "starts")
++    "starts", "gaussian_diagnostics")
+ }
+ 
+ #' @noRd
+@@ -464,7 +508,8 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
+                      aic = x$aic, bic = x$bic, bic_individual = x$bic_individual,
+                      n_groups = x$n_groups, n_obs = x$n_obs, converged = x$converged,
+                      boundary = x$boundary, stringsAsFactors = FALSE),
+-    starts = x$starts)
++    starts = x$starts,
++    gaussian_diagnostics = x$gaussian_diagnostics)
+ }
+ 
+ #' @noRd
+@@ -486,6 +531,7 @@ print.multilpa_cross_level <- function(x, ...) {
+     label, nrow(x$profile_means), length(x$group_probabilities), x$n_groups,
+     x$n_obs, x$log_likelihood, x$n_parameters, if (x$converged) "yes" else "no"))
+   .latents_print_weights(x)
++  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
+   cat(paste("Tables: get_results(x, what = ), e.g. \"profiles\", \"composition\",",
+             "\"group_classes\", \"groups\"; summary(x).\n"))
+   invisible(x)
+diff --git a/R/enumeration.R b/R/enumeration.R
+index 4881922..6f4b947 100644
+--- a/R/enumeration.R
++++ b/R/enumeration.R
+@@ -255,6 +255,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
+           .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit)),
+         converged = !is.null(fit) && fit$converged,
+         boundary = if (is.null(fit)) NA else fit$boundary,
++        min_standardized_eigenvalue = .latents_gaussian_minimum(
++          fit, "min_standardized_eigenvalue"),
++        min_gaussian_mass = .latents_gaussian_minimum(fit, "gaussian_mass"),
+         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
+         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
+     list(fit = fit, row = row)
+diff --git a/R/get-data.R b/R/get-data.R
+index a51327e..7096280 100644
+--- a/R/get-data.R
++++ b/R/get-data.R
+@@ -125,6 +125,25 @@
+ #' }
+ #' Tables specific to one family or object:
+ #' \describe{
++#'   \item{`"gaussian_diagnostics"`}{Gaussian profile, membership-covariate,
++#'     transition and cross-level fits that record these diagnostics. One row
++#'     per Gaussian component and measurement context: `context`, `profile`,
++#'     `gaussian_mass`, `positive_rows`, `weight_effective_n`,
++#'     `min_variance_ratio`, `min_standardized_eigenvalue`, `boundary`.
++#'     `gaussian_mass` sums posterior times normalized sampling weight over
++#'     rows with at least one observed Gaussian indicator; `positive_rows`
++#'     counts rows with positive contributions. `weight_effective_n` is the
++#'     concentration measure `(sum(a)^2 / sum(a^2))` for those contributions,
++#'     not an identification guarantee; Gaussian mass is not this effective
++#'     sample size. `min_variance_ratio` is the smallest component variance
++#'     divided by its observed sampling-weighted marginal variance on the
++#'     fitted scale, including between-component variation.
++#'     `min_standardized_eigenvalue` is the smallest eigenvalue of the
++#'     component covariance after standardizing every indicator by its
++#'     observed sampling-weighted marginal standard deviation. Missing reference
++#'     variation gives `NA` ratios. `boundary` concerns the absolute variance
++#'     or eigenvalue floor. These descriptive measures use no automatic spike
++#'     cutoff and do not alter start selection.}
+ #'   \item{`"profile_probabilities"`, `"stages"`}{A `multilpa` fit.
+ #'     `"profile_probabilities"` has one row per group class and profile:
+ #'     `group_class`, `profile`, `probability`, `group_class_probability`.
+@@ -152,7 +171,10 @@
+ #'     conventions, both entropies, the average posterior probability (AvePP)
+ #'     summaries of each level (`avepp_min`, `avepp_max`, `avepp_mean`,
+ #'     `avepp_below` and the same four prefixed `group_`) and the convergence,
+-#'     boundary, replication, warning and error diagnostics. Failed candidates
++#'     boundary, replication, warning and error diagnostics, including
++#'     `min_standardized_eigenvalue` and `min_gaussian_mass` where Gaussian
++#'     diagnostics are available. These are descriptive summaries, without
++#'     an automatic cutoff or change to candidate selection. Failed candidates
+ #'     are kept with `NA` estimates and their error text. It takes `cutoff`
+ #'     (default `0.8`): `avepp_below` and `group_avepp_below` count the classes
+ #'     whose AvePP is below it. A class with no modally assigned unit has no
+@@ -907,6 +929,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
+   if (.multilpa_any_summary(x)) return(.multilpa_stored_catalogue(x))
+   stopifnot("`x` must be an object of this package" = .multilpa_any_fit(x))
+   c(.multilpa_measurement_catalogue(),
++    if (!is.null(x$gaussian_diagnostics) && nrow(x$gaussian_diagnostics) > 0L)
++      list(gaussian_diagnostics = .multilpa_table(function(x) x$gaussian_diagnostics)),
+     .latents_extra_catalogue(x),
+     .multilpa_mixing_catalogue(x),
+     .multilpa_unit_catalogue(x),
+diff --git a/R/lta-engine.R b/R/lta-engine.R
+index 312e677..640198c 100644
+--- a/R/lta-engine.R
++++ b/R/lta-engine.R
+@@ -504,17 +504,20 @@
+ 
+ #' Starting values: the homogeneous initializer, converted to logit
+ #' coefficients with zero covariate effects
++#' @param row_weights Optional sampling weights in observation order, as for
++#'   `.multilpa_initialize()`.
+ #' @noRd
+ .lta_initialize <- function(x, group_index, layout, designs, n_profiles, n_types,
+                             variance_model, min_variance, start_index, codes,
+                             n_categories, min_probability, n_measurement,
+                             order = 1L, mover_stayer = 0L,
+                             covariance_model = "diagonal", structure = NULL,
+-                            extra = NULL, kind = "kmeans") {
++                            extra = NULL, kind = "kmeans", row_weights = NULL) {
+   start <- .multilpa_transition_initialize(x, group_index, n_profiles, n_types,
+                                            variance_model, min_variance, start_index,
+                                            covariance_model, codes, n_categories,
+-                                           min_probability, extra, kind = kind)
++                                           min_probability, extra, kind = kind,
++                                           row_weights = row_weights)
+   if (!is.null(structure)) {
+     start <- .multilpa_project_start(start, structure, nrow(x), min_variance)
+   }
+@@ -617,7 +620,7 @@
+                           .lta_covariate_matrix(data, initial_covariates), transitions)
+   n_measurement <- if (identical(measurement_model, "occasion")) layout$n_occasions else 1L
+   .latents_local_seed(seed)
+-  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
++  centers <- .multilpa_initialization_center(x, sampling_weights[groups$index])
+   x <- sweep(x, 2L, centers, "-")
+   categorical_names <- categorical
+   if (!is.null(n_categories)) names(n_categories) <- categorical_names
+@@ -644,7 +647,8 @@
+                     start_index, codes, n_categories, min_probability,
+                     n_measurement, order, as.integer(mover_stayer),
+                     covariance_model, structure, extra,
+-                    kind = .latents_start_kind(start_index, n_starts))
++                    kind = .latents_start_kind(start_index, n_starts),
++                    row_weights = sampling_weights[groups$index])
+   }, run = function(start_index, start, pause = Inf, resume = NULL) {
+     # EM to a loose tolerance, then a quasi-Newton finish on the exact
+     # likelihood: EM alone crawls when profiles are weakly separated.
+@@ -745,6 +749,30 @@
+     result$bic_individual <- -2 * result$log_likelihood +
+       log(result$n_observations) * result$n_parameters
+   }
++  # This diagnostic concerns Gaussian measurement, so rows without any
++  # Gaussian observation cannot support its spread, regardless of drop_empty.
++  # Use the weighted E-step memberships that actually estimated each density;
++  # the reported posteriors have already been converted to probabilities.
++  gaussian_rows <- rowSums(!is.na(x)) > 0L
++  profile_parameters <- .latents_profile_parameters(
++    length(measurement$continuous), variance_model, covariance_model, structure)
++  invisible(lapply(seq_len(n_measurement), function(index) {
++    rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
++    .latents_warn_thin_profiles(
++      colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
++      profile_parameters,
++      context = if (n_measurement > 1L)
++        sprintf("at occasion %s", index) else NULL)
++  }))
++  result$gaussian_diagnostics <- do.call(rbind, lapply(seq_len(n_measurement), function(index) {
++    rows <- n_measurement == 1L | occasion_of_row == index
++    .latents_gaussian_diagnostics(
++      result$measurement[[index]], x[rows, , drop = FALSE],
++      result$subject_posteriors[rows, , drop = FALSE],
++      weights = if (is.null(sampling_weights)) NULL else sampling_weights[groups$index[rows]],
++      min_variance = min_variance,
++      context = if (n_measurement == 1L) "profiles" else sprintf("occasion %s", index))
++  }))
+   result
+ }
+ 
+@@ -831,7 +859,7 @@
+   probability_boundary <- .lta_probability_boundary(expectation, layout,
+                                                     parameters$stayer)
+   boundary <- probability_boundary || any(vapply(parameters$measurement, function(block) {
+-    any(block$variances <= min_variance * (1 + 1e-8))
++    .multilpa_covariance_boundary(block, min_variance)
+   }, logical(1)))
+   result <- list(
+     call = call, vars = vars, continuous = measurement$continuous,
+@@ -899,7 +927,8 @@
+       "A transition or initial probability is estimated at zero (a move or",
+       "start that never occurs); this is a boundary fit and its standard",
+       "errors are withheld.") else
+-      "A variance reached min_variance; this is a bound-active fit.",
++      paste("A variance or covariance eigenvalue reached min_variance;",
++            "this is a bound-active fit."),
+       class = "latents_boundary", call = NULL))
+   }
+   # As in the homogeneous engine: a class that has emptied (a stayer class no
+@@ -909,9 +938,5 @@
+       "A profile or group class has effective membership below one.",
+       class = "latents_small_classes", call = NULL))
+   }
+-  .latents_warn_thin_profiles(
+-    colSums(subject_posteriors),
+-    .latents_profile_parameters(length(measurement$continuous), variance_model,
+-                                covariance_model, structure))
+   result
+ }
+diff --git a/R/lta-inference.R b/R/lta-inference.R
+index db48228..260e0f3 100644
+--- a/R/lta-inference.R
++++ b/R/lta-inference.R
+@@ -472,8 +472,8 @@
+   }
+   if (isTRUE(fit$boundary)) {
+     stop(errorCondition(paste(
+-      "A variance sits at min_variance or a transition or initial probability",
+-      "at zero; Wald inference does not apply."),
++      "A variance or covariance eigenvalue sits at min_variance, or a transition",
++      "or initial probability at zero; Wald inference does not apply."),
+       class = "latents_boundary_fit", call = NULL))
+   }
+   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
+diff --git a/R/lta-methods.R b/R/lta-methods.R
+index db75534..37354ca 100644
+--- a/R/lta-methods.R
++++ b/R/lta-methods.R
+@@ -10,7 +10,9 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
+     if (length(fit$categorical) > 0L) "responses",
+     if (!is.null(fit$extra_data$ordinal)) "ordinal",
+     if (!is.null(fit$extra_data$count)) "count_means",
+-    "group_classes", "assignments", "fit", "starts")
++    "group_classes", "assignments", "fit", "starts",
++    if (!is.null(fit$gaussian_diagnostics) && nrow(fit$gaussian_diagnostics) > 0L)
++      "gaussian_diagnostics")
+ }
+ 
+ #' Coefficient table (log odds) with Wald columns when inference applies
+@@ -201,6 +203,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
+   classes <- names(fit$group_probabilities)
+   profiles <- paste0("profile_", seq_len(fit$n_profiles))
+   switch(what,
++    gaussian_diagnostics = fit$gaussian_diagnostics,
+     transitions = .lta_probability_table(fit, "transitions"),
+     initial = .lta_probability_table(fit, "initial"),
+     transition_coefficients = .lta_coefficient_table(fit, "transition", level, vcov_type),
+@@ -306,6 +309,7 @@ print.multilpa_lta <- function(x, ...) {
+               x$n_parameters, x$bic, if (x$converged) "yes" else "no"))
+   .latents_print_extra(x)
+   .latents_print_weights(x)
++  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
+   cat(paste("Tables: get_results(x, what = ), e.g. \"transitions\",",
+             "\"transition_coefficients\", \"profiles\"; summary(x).\n"))
+   invisible(x)
+diff --git a/R/methods.R b/R/methods.R
+index cb08d49..645b74b 100644
+--- a/R/methods.R
++++ b/R/methods.R
+@@ -90,6 +90,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
+   }
+   if (x$boundary) cat("A variance is at its specified lower bound.\n")
+   if (x$small_classes) cat("An effective class membership is below one.\n")
++  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
+   .multilpa_print_primary(x, rows = rows)
+   invisible(x)
+ }
+diff --git a/R/multilpa.R b/R/multilpa.R
+index 3622040..c84bd84 100644
+--- a/R/multilpa.R
++++ b/R/multilpa.R
+@@ -162,6 +162,9 @@
+ #' @param min_variance Variance lower bound.
+ #' @param start_index Restart number.
+ #' @param covariance_model Diagonal or full residual covariance.
++#' @param row_weights Optional sampling weights in observation order. Only
++#'   positive-weight rows supply starting values; their relative weights do
++#'   not change the existing initialization algorithm.
+ #' @return Strictly positive initial mixture probabilities and Gaussian parameters.
+ #' @noRd
+ .multilpa_initialize <- function(x, group_index, n_profiles, n_types,
+@@ -169,16 +172,41 @@
+                                covariance_model = "diagonal", codes = NULL,
+                                n_categories = NULL, min_probability = 1e-10,
+                                hierarchical = FALSE, extra = NULL,
+-                               kind = "kmeans") {
++                               kind = "kmeans", row_weights = NULL) {
+   stopifnot(is.matrix(x), length(group_index) == nrow(x),
+             n_profiles >= 1L, n_types >= 1L, start_index >= 1L,
+             variance_model %in% c("varying", "equal"), min_variance > 0,
+             kind %in% c("kmeans", "partition", "centres"))
++  stopifnot(is.null(row_weights) ||
++              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
++                 all(is.finite(row_weights)) && all(row_weights >= 0)))
++  if (!is.null(row_weights) && any(row_weights == 0)) {
++    # Initial states contain parameters only. Keep the full observation and
++    # group mapping for EM, but let excluded units influence none of the
++    # imputation, clustering, group compositions or measurement parameters.
++    rows <- row_weights > 0
++    x <- x[rows, , drop = FALSE]
++    group_index <- group_index[rows]
++    if (!is.null(codes)) codes <- codes[rows, , drop = FALSE]
++    extra <- .latents_extra_rows(extra, rows)
++    if (n_profiles > nrow(unique(cbind(x, codes, .latents_extra_matrix(extra))))) {
++      stop(errorCondition(paste(
++        "n_profiles cannot exceed the number of distinct observed indicator",
++        "rows with positive sampling weight."),
++        class = "latents_unidentified", call = NULL))
++    }
++  }
+   # The random kinds of the emEM pool describe each cluster by its own
+   # spread, as Ward's start does, and draw the group classes at random.
+   random_kind <- !identical(kind, "kmeans")
+   if (ncol(x) > 0L && anyNA(x)) {
+     initial_means <- colMeans(x, na.rm = TRUE)
++    if (any(!is.finite(initial_means))) {
++      stop(errorCondition(paste(
++        "Every continuous indicator needs an observed row with positive",
++        "sampling weight for initialization."),
++        class = "latents_bad_data", call = NULL))
++    }
+     x <- matrix(vapply(seq_len(ncol(x)), function(indicator) {
+       value <- x[, indicator]
+       value[is.na(value)] <- initial_means[indicator]
+@@ -193,8 +221,10 @@
+   } else {
+     # Standardizing only for initialization stops a large-scale indicator from
+     # determining all initial clusters; fitting remains in the original units.
++    scales <- sqrt(overall_variances)
++    if (!is.null(row_weights) && any(row_weights == 0)) scales[scales == 0] <- 1
+     standardized <- sweep(sweep(x, 2L, overall_means, "-"),
+-                          2L, sqrt(overall_variances), "/")
++                          2L, scales, "/")
+     # Categorical indicators join the clustering as centered dummy columns, so
+     # a mixed-mode model is initialized from all of its indicators at once.
+     clustering_input <- if (is.null(codes)) standardized else
+@@ -296,6 +326,27 @@
+   result
+ }
+ 
++#' Internal Gaussian origin from the rows that enter the objective
++#' @param x Continuous indicator matrix.
++#' @param row_weights Optional nonnegative weights in observation order.
++#' @return Observed column means among positive-weight rows.
++#' @noRd
++.multilpa_initialization_center <- function(x, row_weights = NULL) {
++  stopifnot(is.matrix(x), is.null(row_weights) ||
++              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
++                 all(is.finite(row_weights)) && all(row_weights >= 0)))
++  if (ncol(x) == 0L) return(numeric(0))
++  rows <- if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0
++  centers <- colMeans(x[rows, , drop = FALSE], na.rm = TRUE)
++  if (any(!is.finite(centers))) {
++    stop(errorCondition(paste(
++      "Every continuous indicator needs an observed row with positive",
++      "sampling weight for initialization."),
++      class = "latents_bad_data", call = NULL))
++  }
++  centers
++}
++
+ #' Assign rows to clusters at random, for the emEM pool
+ #'
+ #' `"partition"` deals the rows into the clusters in a random order, so every
+@@ -327,8 +378,7 @@
+ 
+ #' Assign rows to clusters by Ward's hierarchical clustering
+ #'
+-#' The deterministic start mclust takes its name from (model-based
+-#' hierarchical agglomeration), in its common Ward form. Agglomeration needs
++#' Ward's Euclidean agglomeration on standardized rows. Agglomeration needs
+ #' every pairwise distance, so at most 2000 evenly spaced rows are clustered
+ #' and every row is then assigned to the nearest cluster centre.
+ #'
+@@ -786,11 +836,13 @@
+ #' @param n_starts Positive integer number of EM starts (default 10). The
+ #'   first start is deterministic: Ward's hierarchical clustering of the
+ #'   standardized indicators (on at most 2000 evenly spaced rows), each cluster
+-#'   described by its own means and spread, as in mclust's initialization. The
++#'   described by its own means and spread. The
+ #'   remaining starts are k-means from random centres. A supplied `start`
+ #'   replaces the first start, and the remaining starts are random. With
+ #'   `start` and `max_iter = 0`, exactly one start is run whatever `n_starts`
+-#'   is.
++#'   is. Rows from zero-weight units do not supply initial clustering or
++#'   measurement parameters. For `search = "emEM"`, this is the finalist
++#'   budget, including the protected first start (see `search`).
+ #' @param max_iter Nonnegative integer maximum number of EM updates per start
+ #'   (default 1000). `max_iter = 0` performs no update: with `start`, the model
+ #'   is evaluated at exactly those values, for example to score them with
+@@ -1196,8 +1248,14 @@
+ #' @param search How the starts are found. `"kmeans"` (the default) runs
+ #'   `n_starts` starts to convergence: Ward's clustering first, then k-means
+ #'   from random centres. `"emEM"` screens a pool of `n_screen` starts by a
+-#'   short EM run each and runs the best `n_starts` to convergence (Biernacki,
+-#'   Celeux & Govaert, 2003); the pool begins with the kmeans search's own
++#'   short EM run each and runs `n_starts` finalists to convergence
++#'   (Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
++#'   or supplied starting values) reserves one finalist slot if its screening
++#'   succeeds; the remaining slots take the highest screening likelihoods.
++#'   Thus `n_starts = 1` finalizes Ward's start whenever it screens
++#'   successfully, even if another screened start has a higher likelihood.
++#'   With a supplied start and `n_starts = 1`, screening is skipped entirely.
++#'   The pool begins with the kmeans search's own
+ #'   starts, drawn in the same order, followed by random partitions of the
+ #'   rows and random rows as class centres, and `get_results(fit, "starts")`
+ #'   gives every start of the pool with its `kind`, its `stage` and its
+@@ -1209,11 +1267,16 @@
+ #'   harder search finds such maxima more often. They are reported, not set
+ #'   aside: a variance at `min_variance` as a boundary fit
+ #'   (`latents_boundary`; `boundary = "exclude"` sets those starts aside),
+-#'   and a profile with fewer members than its own means and variances by a
+-#'   `latents_thin_profiles` warning. Global optimality is not guaranteed by
+-#'   either search.
++#'   and low Gaussian membership mass by a `latents_thin_profiles` heuristic
++#'   warning. `get_results(fit, "gaussian_diagnostics")` reports continuous
++#'   covariance and support measures without an automatic spike cutoff or
++#'   changing the selected start. Neither a warning's absence nor a repeated
++#'   likelihood establishes a regular or globally optimal solution.
+ #' @param n_screen For `search = "emEM"`, the number of starts screened, at
+ #'   least `n_starts`. `NULL` (the default) screens five times `n_starts`.
++#'   The protected first start counts toward the `n_starts` finalist budget;
++#'   increasing `n_screen` does not add finalist slots. A single supplied
++#'   start with `n_starts = 1` disables screening.
+ #'   A value with `search = "kmeans"`, or one below `n_starts`, raises
+ #'   `latents_bad_argument`.
+ #' @return A `multilpa` object containing `means`, `variances`, optional
+@@ -1642,7 +1705,7 @@ multilpa <- function(data, vars, id, n_profiles,
+   .latents_local_seed(seed)
+   # Center to reduce cancellation in weighted means when indicators have large
+   # offsets. This is a translation, with no density Jacobian or scale change.
+-  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
++  centers <- .multilpa_initialization_center(x, sampling_weights[group_index])
+   x <- sweep(x, 2L, centers, "-")
+   # Direct effects are fitted on centred covariates too: an intercept and the
+   # effect of a covariate far from zero are nearly collinear, which makes the
+@@ -1703,7 +1766,8 @@ multilpa <- function(data, vars, id, n_profiles,
+                          variance_model, min_variance, start_index,
+                          covariance_model, codes, n_categories, min_probability,
+                          hierarchical = start_index == 1L, extra = fitting_extra,
+-                         kind = start_kind(start_index))
++                         kind = start_kind(start_index),
++                         row_weights = sampling_weights[group_index])
+     }
+     # Every restart begins from the held values, so a random start cannot
+     # report a measurement solution that was neither estimated nor supplied.
+@@ -1933,9 +1997,19 @@ multilpa <- function(data, vars, id, n_profiles,
+       "A profile or group class has effective membership below one.",
+       class = "latents_small_classes", call = NULL))
+   }
++  # Classification can include categorical-only or retained empty rows;
++  # those rows do not support a Gaussian measurement density.
++  gaussian_rows <- rowSums(!is.na(x)) > 0L
++  gaussian_counts <- colSums(weighted_expectation$subject_posteriors[
++    gaussian_rows, seq_len(n_profiles), drop = FALSE])
+   .latents_warn_thin_profiles(
+-    effective_profile_counts,
+-    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure))
++    gaussian_counts,
++    .latents_profile_parameters(ncol(x), variance_model, covariance_model, structure,
++                                covariance_pattern = covariance_pattern, fixed = fixed))
++  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
++    parameters, x, subject_posteriors,
++    weights = if (is.null(sampling_weights)) NULL else sampling_weights[group_index],
++    min_variance = min_variance)
+   .latents_warn_poisson_limit(result$count_dispersion)
+   result
+ }
+@@ -2111,19 +2185,31 @@ multilpa <- function(data, vars, id, n_profiles,
+ 
+ #' The parameters of one profile's own Gaussian density
+ #'
+-#' Its means plus what its spread adds to the model: every variance or
++#' Its free means plus what its spread adds to the model: every variance or
+ #' covariance when profiles vary, nothing when they share one, and the
+ #' profile's share of a constrained structure (the parameters one more
+-#' profile adds).
++#' profile adds). Covariances held at zero by a pattern are excluded, as
++#' are held means; held variances cannot collapse during this fit.
+ #'
+ #' @param n_continuous Number of continuous indicators.
+ #' @param variance_model,covariance_model,structure As in [multilpa()].
++#' @param covariance_pattern The free covariance entries, or `NULL`.
++#' @param fixed The expanded names of held measurement blocks.
+ #' @return A single number; `0` when there are no continuous indicators or
+-#'   the spread is shared by every profile, so no profile has a variance of
+-#'   its own to collapse.
++#'   the spread is shared by every profile or held fixed, so no profile has
++#'   a free variance of its own to collapse.
+ #' @noRd
+ .latents_profile_parameters <- function(n_continuous, variance_model,
+-                                        covariance_model, structure = NULL) {
++                                        covariance_model, structure = NULL,
++                                        covariance_pattern = NULL,
++                                        fixed = character()) {
++  stopifnot(is.numeric(n_continuous), length(n_continuous) == 1L,
++            is.finite(n_continuous), n_continuous >= 0,
++            is.character(fixed), !anyNA(fixed),
++            is.null(covariance_pattern) ||
++              (is.matrix(covariance_pattern) && is.logical(covariance_pattern) &&
++                 identical(dim(covariance_pattern), rep(as.integer(n_continuous), 2L))))
++  if (n_continuous == 0L || any(c("variances", "measurement") %in% fixed)) return(0)
+   own_spread <- if (!is.null(structure)) {
+     .multilpa_structure_parameters(structure, 2L, n_continuous) -
+       .multilpa_structure_parameters(structure, 1L, n_continuous)
+@@ -2131,32 +2217,47 @@ multilpa <- function(data, vars, id, n_profiles,
+     if (identical(covariance_model, "full")) n_continuous * (n_continuous + 1) / 2 else
+       n_continuous
+   } else 0
+-  if (n_continuous == 0L || own_spread == 0) 0 else n_continuous + own_spread
++  if (own_spread == 0) return(0)
++  if (!is.null(covariance_pattern)) {
++    own_spread <- own_spread - .latents_pattern_zeros(covariance_pattern)
++  }
++  own_spread + if ("means" %in% fixed) 0L else n_continuous
+ }
+ 
+ #' Warn when a profile has fewer members than its own parameters
+ #'
+-#' A profile with class-specific variances and fewer effective members than
+-#' its density has parameters cannot determine those variances: its
+-#' covariance is singular or close to it, the signature of a degenerate or
+-#' spurious maximum (McLachlan & Peel, 2000, section 3.10). The estimate is
+-#' left as it is and the warning names the profiles and the remedies.
++#' This is a conservative membership-versus-parameter heuristic for profiles
++#' with class-specific spread. It is not a rank or identification test:
++#' positive soft memberships can yield full-rank covariance at arbitrarily
++#' small total mass, and a larger profile can be nearly flat. Under sampling
++#' weights the membership is normalized mass, not an independent sample count.
++#' The estimate is unchanged; continuous covariance diagnostics are reported
++#' separately without using a rejection threshold.
+ #'
+ #' @param effective_counts Effective membership of each profile.
+ #' @param n_parameters The output of `.latents_profile_parameters()`.
++#' @param context Optional text identifying a separately estimated measurement
++#'   block, such as `"at occasion 2"`.
+ #' @return The positions of the thin profiles, invisibly; a
+ #'   `latents_thin_profiles` warning when there are any.
+ #' @noRd
+-.latents_warn_thin_profiles <- function(effective_counts, n_parameters) {
++.latents_warn_thin_profiles <- function(effective_counts, n_parameters, context = NULL) {
++  stopifnot(is.numeric(effective_counts), is.numeric(n_parameters),
++            length(n_parameters) == 1L, is.finite(n_parameters), n_parameters >= 0,
++            is.null(context) ||
++              (is.character(context) && length(context) == 1L &&
++                 !is.na(context) && nzchar(context)))
+   thin <- which(effective_counts < n_parameters)
+   if (n_parameters == 0 || length(effective_counts) < 2L || length(thin) == 0L) {
+     return(invisible(integer()))
+   }
+   warning(warningCondition(sprintf(paste(
+-    "%s %s: %s members for %d means and variances%s; the solution may be",
+-    "spurious. Fit fewer profiles or shared variances."),
++    "%s %s%s: %s Gaussian membership mass for %d free means and variances%s.",
++    "This is a conservative diagnostic, not an identification test;",
++    "inspect the Gaussian covariance diagnostics."),
+     if (length(thin) == 1L) "Profile" else "Profiles",
+     paste(thin, collapse = ", "),
++    if (is.null(context)) "" else paste0(" ", context),
+     paste(format(round(effective_counts[thin], 1), nsmall = 1), collapse = ", "),
+     as.integer(n_parameters), if (length(thin) == 1L) "" else " each"),
+     class = "latents_thin_profiles", call = NULL))
+diff --git a/R/transitions.R b/R/transitions.R
+index b0ecbcc..9a883f6 100644
+--- a/R/transitions.R
++++ b/R/transitions.R
+@@ -392,6 +392,8 @@
+ #' @param n_categories Category counts per categorical indicator.
+ #' @param min_probability Lower bound on every fitted probability.
+ #' @param kind The kind of start, as for `.multilpa_initialize()`.
++#' @param row_weights Optional sampling weights in observation order, as for
++#'   `.multilpa_initialize()`.
+ #' @return Strictly positive initial parameters for EM.
+ #' @noRd
+ .multilpa_transition_initialize <- function(x, group_index, n_profiles, n_types,
+@@ -400,14 +402,14 @@
+                                             covariance_model = "diagonal",
+                                             codes = NULL, n_categories = NULL,
+                                             min_probability = 1e-10, extra = NULL,
+-                                            kind = "kmeans") {
++                                            kind = "kmeans", row_weights = NULL) {
+   # The first start is Ward's hierarchical clustering, as in multilpa().
+   parameters <- .multilpa_initialize(x, group_index, n_profiles, n_types,
+                                      variance_model, min_variance, start_index,
+                                      covariance_model, codes, n_categories,
+                                      min_probability,
+                                      hierarchical = start_index == 1L, extra = extra,
+-                                     kind = kind)
++                                     kind = kind, row_weights = row_weights)
+   initial <- parameters$profile_probabilities
+   persistence <- if (start_index == 1L) 0.7 else stats::runif(1L, 0.4, 0.9)
+   transition <- array(vapply(seq_len(n_types), function(type) {
+@@ -945,9 +947,14 @@ lta <- function(data, vars, id, n_profiles, time,
+       class = "latents_small_classes", call = NULL))
+   }
+   .latents_warn_thin_profiles(
+-    colSums(subject_posteriors),
++    # Empty and categorical-only rows do not inform Gaussian measurement,
++    # even when drop_empty = FALSE includes them in classification counts.
++    colSums(subject_posteriors[rowSums(!is.na(x)) > 0L, , drop = FALSE]),
+     .latents_profile_parameters(length(continuous), variance_model, covariance_model,
+                                 structure))
++  result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
++    parameters, x, result$subject_posteriors,
++    min_variance = min_variance)
+   result
+ }
+ 
+@@ -1061,6 +1068,7 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
+               x$log_likelihood, x$n_parameters, x$bic_groups))
+   cat(sprintf("Converged: %s after %d iterations; best of %d starts\n",
+               x$converged, x$iterations, nrow(x$starts)))
++  .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
+   .multilpa_print_primary(x, rows = rows)
+   invisible(x)
+ }
+diff --git a/equivalence/search/analyse-pilot.R b/equivalence/search/analyse-pilot.R
+index d2c2d75..214367d 100644
+--- a/equivalence/search/analyse-pilot.R
++++ b/equivalence/search/analyse-pilot.R
+@@ -1,31 +1,71 @@
+ # Rscript equivalence/search/analyse-pilot.R <pilot_dir>
+ # Per condition, number of classes and search: how often the reported
+-# solution is the best admissible maximum known for the dataset, how often it
++# solution is the best above-cutoff maximum known for the dataset, how often it
+ # is a spike, how far below it falls, and what it costs.
+ args <- commandArgs(trailingOnly = TRUE)
+ files <- list.files(args[1], "_[0-9]{3}[.]rds$", full.names = TRUE)
+ runs <- lapply(files, readRDS)
+-rows <- do.call(rbind, lapply(runs, `[[`, "rows"))
+-finals <- do.call(rbind, lapply(runs, `[[`, "finals"))
++# Legacy pilot files predate this metadata. Only their known condition names
++# establish whether a missing metric is inapplicable or was not measured.
++#' Normalize the Gaussian applicability metadata in a saved pilot table
++#' @param frame A pilot rows/finalists data frame, or `NULL`.
++#' @return The frame with a logical `has_gaussian` column, or `NULL`.
++#' @noRd
++normalize_metrics <- function(frame) {
++  stopifnot(is.null(frame) || is.data.frame(frame))
++  if (is.null(frame)) return(NULL)
++  stopifnot("condition" %in% names(frame))
++  if (!"has_gaussian" %in% names(frame)) frame$has_gaussian <- NA
++  unknown <- is.na(frame$has_gaussian)
++  frame$has_gaussian[unknown & frame$condition %in%
++    c("lpa_vvi_k3", "lpa_vvv_k2", "lpa_eee_k3", "ml_lpa")] <- TRUE
++  frame$has_gaussian[unknown & frame$condition == "lca_k3"] <- FALSE
++  frame
++}
++rows <- do.call(rbind, lapply(runs, function(run) normalize_metrics(run$rows)))
++finals <- do.call(rbind, lapply(runs, function(run) normalize_metrics(run$finals)))
++if (is.null(finals)) finals <- rows[FALSE, , drop = FALSE]
+ bound <- 0.01
+ tolerance <- function(value) 1e-6 * (1 + abs(value))
+-spike <- function(ratio) !is.na(ratio) & ratio < bound
++#' Distinguish measured, inapplicable and unmeasured benchmark diagnostics
++#' @param has_gaussian Logical applicability flag, possibly missing.
++#' @param ratio Numeric variance/eigenvalue metric, possibly missing.
++#' @param cutoff Finite positive descriptive benchmark cutoff.
++#' @return One character status per candidate. This does not select a fit.
++#' @noRd
++metric_status <- function(has_gaussian, ratio, cutoff = bound) {
++  stopifnot(is.logical(has_gaussian), is.numeric(ratio),
++            length(has_gaussian) == length(ratio), is.numeric(cutoff),
++            length(cutoff) == 1L, is.finite(cutoff), cutoff > 0)
++  ifelse(!is.na(has_gaussian) & !has_gaussian, "not_applicable",
++    ifelse(!is.na(has_gaussian) & has_gaussian & is.finite(ratio),
++      ifelse(ratio < cutoff, "spike", "above_cutoff"), "unclassified"))
++}
++rows$metric_status <- metric_status(rows$has_gaussian, rows$min_relative_variance)
++finals$metric_status <- metric_status(finals$has_gaussian, finals$min_relative_variance)
+ 
+-# The best admissible maximum known for a dataset and k: over every reported
+-# solution and every final emEM start that is not a spike.
++# The reference over reported solutions and measured final emEM starts.
++# Unmeasured Gaussian candidates never establish an above-cutoff reference.
+ key <- function(d) paste(d$condition, d$replicate, d$k)
+ candidates <- rbind(
+   data.frame(key = key(rows), log_likelihood = rows$log_likelihood,
+-             ratio = rows$min_relative_variance),
++             metric_status = rows$metric_status),
+   data.frame(key = key(finals), log_likelihood = finals$log_likelihood,
+-             ratio = finals$min_relative_variance))
+-admissible <- subset(candidates, !spike(ratio) & is.finite(log_likelihood))
+-best <- tapply(admissible$log_likelihood, admissible$key, max)
++             metric_status = finals$metric_status))
++reference <- subset(candidates, metric_status %in% c("above_cutoff", "not_applicable") &
++                      is.finite(log_likelihood))
++best <- tapply(reference$log_likelihood, reference$key, max)
+ rows$best <- unname(best[key(rows)])
+ rows$gap <- rows$best - rows$log_likelihood
+-rows$status <- ifelse(is.na(rows$log_likelihood), "error",
+-                ifelse(spike(rows$min_relative_variance), "spike",
+-                 ifelse(rows$gap <= tolerance(rows$best), "best", "miss")))
++rows$status <- ifelse(!is.finite(rows$log_likelihood), "error",
++                ifelse(rows$metric_status == "unclassified", "unclassified",
++                 ifelse(rows$metric_status == "spike", "spike",
++                 ifelse(rows$gap <= tolerance(rows$best), "best", "miss"))))
++metric_counts <- as.data.frame(table(source = c(rep("reported", nrow(rows)),
++                                                rep("finalist", nrow(finals))),
++  metric_status = c(rows$metric_status, finals$metric_status)))
++cat("Metric coverage (unclassified candidates cannot establish the reference):\n")
++print(subset(metric_counts, Freq > 0), row.names = FALSE)
+ 
+ summarise <- function(g) {
+   n <- nrow(g)
+@@ -33,6 +73,7 @@ summarise <- function(g) {
+   data.frame(condition = g$condition[1], k = g$k[1], fit = g$fit[1], datasets = n,
+              best = mean(g$status == "best"), miss = mean(g$status == "miss"),
+              spike = mean(g$status == "spike"),
++             unclassified = mean(g$status == "unclassified"), error = mean(g$status == "error"),
+              median_gap_when_missed = if (nrow(misses)) median(misses$gap) else NA_real_,
+              max_gap = if (nrow(misses)) max(misses$gap) else 0,
+              median_seconds = median(g$seconds))
+@@ -55,23 +96,33 @@ cat("\nOverall by search (all conditions and k):\n")
+ overall <- do.call(rbind, lapply(split(rows, rows$fit), function(g) {
+   data.frame(fit = g$fit[1], fits = nrow(g), best = mean(g$status == "best"),
+              miss = mean(g$status == "miss"), spike = mean(g$status == "spike"),
++             unclassified = mean(g$status == "unclassified"), error = mean(g$status == "error"),
+              median_seconds = median(g$seconds), total_seconds = sum(g$seconds))
+ }))
+ print(sorted_by_fit(overall, keys = character()), row.names = FALSE, digits = 3)
+ 
+-# Sensitivity to the admissibility bound: re-select each emEM fit's best final
+-# start under a stricter bound of 0.05.
++# Benchmark-only sensitivity: compare the measured finalists above each cutoff.
++# No fallback silently admits unmeasured or below-cutoff Gaussian candidates.
+ cat("\nemEM finals re-selected at bound 0.05 (share whose choice changes):\n")
+ changed <- do.call(rbind, lapply(split(finals, list(key(finals), finals$fit), drop = TRUE),
+                                  function(g) {
+   pick <- function(b) {
+-    ok <- is.na(g$min_relative_variance) | g$min_relative_variance >= b
+-    if (!any(ok)) ok <- rep(TRUE, nrow(g))
++    status <- metric_status(g$has_gaussian, g$min_relative_variance, b)
++    ok <- status %in% c("above_cutoff", "not_applicable") & is.finite(g$log_likelihood)
++    if (!any(ok)) return(NA_real_)
+     max(g$log_likelihood[ok])
+   }
+   data.frame(fit = g$fit[1], condition = g$condition[1], k = g$k[1],
+              changed = abs(pick(0.05) - pick(0.01)) > tolerance(pick(0.01)))
+ }))
+-print(aggregate(changed ~ fit + condition + k, data = changed, FUN = mean), row.names = FALSE)
+-saveRDS(list(rows = rows, table = table, overall = overall),
++if (!is.null(changed)) {
++  sensitivity <- do.call(rbind, lapply(split(changed,
++    list(changed$fit, changed$condition, changed$k), drop = TRUE), function(g) {
++      data.frame(fit = g$fit[1L], condition = g$condition[1L], k = g$k[1L],
++        changed = if (all(is.na(g$changed))) NA_real_ else mean(g$changed, na.rm = TRUE),
++        unclassified = sum(is.na(g$changed)), fits = nrow(g))
++    }))
++  print(sensitivity, row.names = FALSE)
++}
++saveRDS(list(rows = rows, table = table, overall = overall, metric_counts = metric_counts),
+         file.path(args[1], "summary.rds"))
+diff --git a/equivalence/search/pilot.R b/equivalence/search/pilot.R
+index d60f3f5..c8dec6d 100644
+--- a/equivalence/search/pilot.R
++++ b/equivalence/search/pilot.R
+@@ -64,14 +64,15 @@ simulate <- function(spec, seed) {
+ 
+ # The diagnostics a spike shows: the smallest expected class size, and the
+ # smallest class variance relative to the indicator's sample variance (on the
+-# standardized scale for full covariances), as the emEM admissibility rule
+-# measures it.
++# standardized scale for full covariances). These benchmark measurements do
++# not filter production solutions; current finalist tables may lack the metric.
+ describe <- function(fit, data, vars, seconds, label) {
++  has_gaussian <- !identical(spec$family, "lca")
+   if (inherits(fit, "error")) {
+     return(list(row = data.frame(fit = label, log_likelihood = NA_real_, converged = NA,
+                       boundary = NA, min_class = NA_real_, min_relative_variance = NA_real_,
+                       replicated = NA_integer_, seconds = seconds,
+-                      error = conditionMessage(fit)), finals = NULL))
++                      error = conditionMessage(fit), has_gaussian = has_gaussian), finals = NULL))
+   }
+   sizes <- colSums(fit$subject_posteriors)
+   numeric_vars <- vars[vapply(data[vars], is.numeric, TRUE)]
+@@ -81,19 +82,21 @@ describe <- function(fit, data, vars, seconds, label) {
+   } else NA_real_
+   starts <- get_results(fit, "starts")
+   finals <- if ("stage" %in% names(starts)) {
+-    # A categorical model has no variances, so its table has no such columns.
++    # Missing Gaussian finalist metrics are unmeasured, while an LCA metric
++    # is inapplicable. Preserve that distinction explicitly in saved records.
+     if (!"min_relative_variance" %in% names(starts)) {
+       starts$min_relative_variance <- NA_real_
+       starts$admissible <- NA
+     }
++    starts$has_gaussian <- has_gaussian
+     subset(starts, stage == "final", select = c(start, kind, log_likelihood, converged,
+-                                                min_relative_variance, admissible))
++                                                min_relative_variance, admissible, has_gaussian))
+   }
+   list(row = data.frame(fit = label, log_likelihood = fit$log_likelihood,
+              converged = isTRUE(fit$converged), boundary = isTRUE(fit$boundary),
+              min_class = min(sizes), min_relative_variance = ratio,
+              replicated = fit$n_best_replicated %||% NA_integer_,
+-             seconds = seconds, error = NA_character_),
++             seconds = seconds, error = NA_character_, has_gaussian = has_gaussian),
+        finals = if (!is.null(finals)) cbind(fit = label, finals))
+ }
+ 
+diff --git a/man/fit_staged.Rd b/man/fit_staged.Rd
+index 0826438..cc2a760 100644
+--- a/man/fit_staged.Rd
++++ b/man/fit_staged.Rd
+@@ -107,8 +107,14 @@ zero-padded numbers and ISO dates are accepted.}
+ \item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+ \code{n_starts} starts to convergence: Ward's clustering first, then k-means
+ from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
+-short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
+-Celeux & Govaert, 2003); the pool begins with the kmeans search's own
++short EM run each and runs \code{n_starts} finalists to convergence
++(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
++or supplied starting values) reserves one finalist slot if its screening
++succeeds; the remaining slots take the highest screening likelihoods.
++Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
++successfully, even if another screened start has a higher likelihood.
++With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
++The pool begins with the kmeans search's own
+ starts, drawn in the same order, followed by random partitions of the
+ rows and random rows as class centres, and \code{get_results(fit, "starts")}
+ gives every start of the pool with its \code{kind}, its \code{stage} and its
+@@ -120,12 +126,17 @@ with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+ harder search finds such maxima more often. They are reported, not set
+ aside: a variance at \code{min_variance} as a boundary fit
+ (\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
+-and a profile with fewer members than its own means and variances by a
+-\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
+-either search.}
++and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
++warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
++covariance and support measures without an automatic spike cutoff or
++changing the selected start. Neither a warning's absence nor a repeated
++likelihood establishes a regular or globally optimal solution.}
+ 
+ \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
+ least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
++The protected first start counts toward the \code{n_starts} finalist budget;
++increasing \code{n_screen} does not add finalist slots. A single supplied
++start with \code{n_starts = 1} disables screening.
+ A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
+ \code{latents_bad_argument}.}
+ }
+diff --git a/man/get_results.Rd b/man/get_results.Rd
+index d870590..e3e857f 100644
+--- a/man/get_results.Rd
++++ b/man/get_results.Rd
+@@ -273,6 +273,25 @@ Fits with discrete group classes also offer:
+ }
+ Tables specific to one family or object:
+ \describe{
++\item{\code{"gaussian_diagnostics"}}{Gaussian profile, membership-covariate,
++transition and cross-level fits that record these diagnostics. One row
++per Gaussian component and measurement context: \code{context}, \code{profile},
++\code{gaussian_mass}, \code{positive_rows}, \code{weight_effective_n},
++\code{min_variance_ratio}, \code{min_standardized_eigenvalue}, \code{boundary}.
++\code{gaussian_mass} sums posterior times normalized sampling weight over
++rows with at least one observed Gaussian indicator; \code{positive_rows}
++counts rows with positive contributions. \code{weight_effective_n} is the
++concentration measure \code{(sum(a)^2 / sum(a^2))} for those contributions,
++not an identification guarantee; Gaussian mass is not this effective
++sample size. \code{min_variance_ratio} is the smallest component variance
++divided by its observed sampling-weighted marginal variance on the
++fitted scale, including between-component variation.
++\code{min_standardized_eigenvalue} is the smallest eigenvalue of the
++component covariance after standardizing every indicator by its
++observed sampling-weighted marginal standard deviation. Missing reference
++variation gives \code{NA} ratios. \code{boundary} concerns the absolute variance
++or eigenvalue floor. These descriptive measures use no automatic spike
++cutoff and do not alter start selection.}
+ \item{\code{"profile_probabilities"}, \code{"stages"}}{A \code{multilpa} fit.
+ \code{"profile_probabilities"} has one row per group class and profile:
+ \code{group_class}, \code{profile}, \code{probability}, \code{group_class_probability}.
+@@ -300,7 +319,10 @@ likelihood, parameter count, every criterion under both sample-size
+ conventions, both entropies, the average posterior probability (AvePP)
+ summaries of each level (\code{avepp_min}, \code{avepp_max}, \code{avepp_mean},
+ \code{avepp_below} and the same four prefixed \code{group_}) and the convergence,
+-boundary, replication, warning and error diagnostics. Failed candidates
++boundary, replication, warning and error diagnostics, including
++\code{min_standardized_eigenvalue} and \code{min_gaussian_mass} where Gaussian
++diagnostics are available. These are descriptive summaries, without
++an automatic cutoff or change to candidate selection. Failed candidates
+ are kept with \code{NA} estimates and their error text. It takes \code{cutoff}
+ (default \code{0.8}): \code{avepp_below} and \code{group_avepp_below} count the classes
+ whose AvePP is below it. A class with no modally assigned unit has no
+diff --git a/man/latents-conditions.Rd b/man/latents-conditions.Rd
+index 2ff23d4..6555ec4 100644
+--- a/man/latents-conditions.Rd
++++ b/man/latents-conditions.Rd
+@@ -288,13 +288,19 @@ not valid at that parameter.}
+ \item{\code{latents_small_classes}}{A profile or group class has an effective
+ membership below one observation; or, in \code{\link[=three_step]{three_step()}} with \code{method = "ml"}, a class is carried by a single unit, so its standard error is
+ reported as \code{NA}.}
+-\item{\code{latents_thin_profiles}}{A profile with variances of its own has
+-fewer effective members than its density has parameters (its means
+-plus its variances or covariances), so those variances are poorly
+-determined and the solution may be a spurious maximum (McLachlan &
+-Peel, 2000, section 3.10). The estimate is returned unchanged; the
+-message names the profiles and suggests fewer profiles or a model
+-whose profiles share their variances.}
++\item{\code{latents_thin_profiles}}{A Gaussian component with free variances
++of its own has posterior membership mass below the number of free
++parameters in its Gaussian density. This is a heuristic prompt to
++inspect the solution, not a proof of singularity or nonidentification.
++Covariances held at zero and held means are excluded, and held
++variances do not trigger it. Memberships use normalized sampling
++weights and only rows with an observed Gaussian indicator; this mass
++is not an independent sample count or a weight effective sample size.
++Transition models check occasion-specific measurement separately;
++cross-level models check both Gaussian levels. The estimate is
++returned unchanged. See \code{get_results(fit, "gaussian_diagnostics")} for
++continuous covariance and support diagnostics; none supplies an
++automatic spike classification or an identification guarantee.}
+ \item{\code{latents_all_starts_boundary}}{\code{boundary = "exclude"} found every
+ start with a variance at \code{min_variance}, so none was set aside and the
+ best start across all of them is reported.}
+diff --git a/man/lta.Rd b/man/lta.Rd
+index 20af813..6d61bad 100644
+--- a/man/lta.Rd
++++ b/man/lta.Rd
+@@ -71,11 +71,13 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
+ \item{n_starts}{Positive integer number of EM starts (default 10). The
+ first start is deterministic: Ward's hierarchical clustering of the
+ standardized indicators (on at most 2000 evenly spaced rows), each cluster
+-described by its own means and spread, as in mclust's initialization. The
++described by its own means and spread. The
+ remaining starts are k-means from random centres. A supplied \code{start}
+ replaces the first start, and the remaining starts are random. With
+ \code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
+-is.}
++is. Rows from zero-weight units do not supply initial clustering or
++measurement parameters. For \code{search = "emEM"}, this is the finalist
++budget, including the protected first start (see \code{search}).}
+ 
+ \item{max_iter}{Nonnegative integer maximum number of EM updates per start
+ (default 5000, higher than the 1000 of \code{\link[=multilpa]{multilpa()}} to match the tighter
+@@ -213,8 +215,14 @@ enumerations and refits; it has no effect on data without such rows.}
+ \item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+ \code{n_starts} starts to convergence: Ward's clustering first, then k-means
+ from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
+-short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
+-Celeux & Govaert, 2003); the pool begins with the kmeans search's own
++short EM run each and runs \code{n_starts} finalists to convergence
++(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
++or supplied starting values) reserves one finalist slot if its screening
++succeeds; the remaining slots take the highest screening likelihoods.
++Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
++successfully, even if another screened start has a higher likelihood.
++With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
++The pool begins with the kmeans search's own
+ starts, drawn in the same order, followed by random partitions of the
+ rows and random rows as class centres, and \code{get_results(fit, "starts")}
+ gives every start of the pool with its \code{kind}, its \code{stage} and its
+@@ -226,12 +234,17 @@ with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+ harder search finds such maxima more often. They are reported, not set
+ aside: a variance at \code{min_variance} as a boundary fit
+ (\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
+-and a profile with fewer members than its own means and variances by a
+-\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
+-either search.}
++and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
++warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
++covariance and support measures without an automatic spike cutoff or
++changing the selected start. Neither a warning's absence nor a repeated
++likelihood establishes a regular or globally optimal solution.}
+ 
+ \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
+ least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
++The protected first start counts toward the \code{n_starts} finalist budget;
++increasing \code{n_screen} does not add finalist slots. A single supplied
++start with \code{n_starts = 1} disables screening.
+ A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
+ \code{latents_bad_argument}.}
+ }
+diff --git a/man/multilpa.Rd b/man/multilpa.Rd
+index 238132e..e314b9e 100644
+--- a/man/multilpa.Rd
++++ b/man/multilpa.Rd
+@@ -94,11 +94,13 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
+ \item{n_starts}{Positive integer number of EM starts (default 10). The
+ first start is deterministic: Ward's hierarchical clustering of the
+ standardized indicators (on at most 2000 evenly spaced rows), each cluster
+-described by its own means and spread, as in mclust's initialization. The
++described by its own means and spread. The
+ remaining starts are k-means from random centres. A supplied \code{start}
+ replaces the first start, and the remaining starts are random. With
+ \code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
+-is.}
++is. Rows from zero-weight units do not supply initial clustering or
++measurement parameters. For \code{search = "emEM"}, this is the finalist
++budget, including the protected first start (see \code{search}).}
+ 
+ \item{max_iter}{Nonnegative integer maximum number of EM updates per start
+ (default 1000). \code{max_iter = 0} performs no update: with \code{start}, the model
+@@ -545,8 +547,14 @@ that is absent, not numeric, missing or constant raises
+ \item{search}{How the starts are found. \code{"kmeans"} (the default) runs
+ \code{n_starts} starts to convergence: Ward's clustering first, then k-means
+ from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
+-short EM run each and runs the best \code{n_starts} to convergence (Biernacki,
+-Celeux & Govaert, 2003); the pool begins with the kmeans search's own
++short EM run each and runs \code{n_starts} finalists to convergence
++(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
++or supplied starting values) reserves one finalist slot if its screening
++succeeds; the remaining slots take the highest screening likelihoods.
++Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
++successfully, even if another screened start has a higher likelihood.
++With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
++The pool begins with the kmeans search's own
+ starts, drawn in the same order, followed by random partitions of the
+ rows and random rows as class centres, and \code{get_results(fit, "starts")}
+ gives every start of the pool with its \code{kind}, its \code{stage} and its
+@@ -558,12 +566,17 @@ with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
+ harder search finds such maxima more often. They are reported, not set
+ aside: a variance at \code{min_variance} as a boundary fit
+ (\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
+-and a profile with fewer members than its own means and variances by a
+-\code{latents_thin_profiles} warning. Global optimality is not guaranteed by
+-either search.}
++and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
++warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
++covariance and support measures without an automatic spike cutoff or
++changing the selected start. Neither a warning's absence nor a repeated
++likelihood establishes a regular or globally optimal solution.}
+ 
+ \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
+ least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
++The protected first start counts toward the \code{n_starts} finalist budget;
++increasing \code{n_screen} does not add finalist slots. A single supplied
++start with \code{n_starts = 1} disables screening.
+ A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
+ \code{latents_bad_argument}.}
+ }
+diff --git a/tests/testthat/test-review-lta.R b/tests/testthat/test-review-lta.R
+index 7d658f2..a5f5dee 100644
+--- a/tests/testthat/test-review-lta.R
++++ b/tests/testthat/test-review-lta.R
+@@ -31,7 +31,8 @@ review_lta_fit <- function(..., gaps = FALSE,
+     transition_covariates = transition_covariates, initial_covariates = "w",
+     occasions = "grid",
+     n_starts = 1L, max_iter = 0L, seed = 51L, ...),
+-          c("latents_unconverged", "latents_boundary", "latents_small_classes"))
++          c("latents_unconverged", "latents_boundary", "latents_small_classes",
++            "latents_thin_profiles"))
+ }
+ 
+ review_lta_exact <- function(theta, fit) {
+@@ -337,7 +338,8 @@ test_that("occasion covariance charts include mixed ordinal and count coordinate
+     fit <- quietly(lta(data, c("y", "x", "c", "o", "k"), "id", 3L, time = "time",
+       categorical = "c", ordinal = "o", count = "k", count_model = "negative_binomial",
+       missing = "fiml", measurement = "occasion", model = model, n_starts = 1L,
+-      max_iter = 0L, seed = 51L), c("latents_unconverged", "latents_boundary"))
++      max_iter = 0L, seed = 51L),
++      c("latents_unconverged", "latents_boundary", "latents_thin_profiles"))
+     theta <- coef(fit)
+     decoded <- .lta_unpack(theta, fit)
+     expect_equal(length(theta), fit$n_parameters, info = model)
+diff --git a/tests/testthat/test-staged-bootstrap.R b/tests/testthat/test-staged-bootstrap.R
+index 5de1f35..31a4f16 100644
+--- a/tests/testthat/test-staged-bootstrap.R
++++ b/tests/testthat/test-staged-bootstrap.R
+@@ -70,3 +70,140 @@ test_that("a staged bootstrap is reproducible from its seed", {
+   again <- .staged_bootstrap(fit, iter = 10L, seed = 5L)
+   expect_identical(first$standard_error, again$standard_error)
+ })
++
++# Inspect the fitted stages, rather than rebuilding bootstrap arguments in a
++# test: a dropped first-stage pool still gives plausible bootstrap estimates.
++.staged_bootstrap_refits <- function(fit, data, n_starts) {
++  refits <- list()
++  real <- multilpa
++  local_mocked_bindings(multilpa = function(...) {
++    result <- real(...)
++    refits[[length(refits) + 1L]] <<- result
++    result
++  })
++  quietly(.multilpa_bootstrap_replicates(fit, data, iter = 1L,
++                                         n_starts = n_starts,
++                                         max_iter = 20L, tol = 1e-6))
++  refits
++}
++
++test_that("a one-start staged bootstrap preserves the measurement screening pool", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, n_screen = 8L, search = "emEM",
++                             seed = 1L, max_iter = 20L))
++  expect_identical(fit$stage_one$n_screen, 8L)
++  expect_null(fit$n_screen)
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$n_screen, 8L)
++  expect_null(refits[[2L]]$n_screen)
++  expect_identical(refits[[1L]]$n_starts, 1L)
++  expect_identical(refits[[2L]]$n_starts, 1L)
++  expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++})
++
++test_that("staged bootstrap replays a supplied measurement's own search controls", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  measurement <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
++                                   n_starts = 1L, n_screen = 8L, search = "emEM",
++                                   acceleration = "none", select_start = "converged",
++                                   seed = 1L, max_iter = 20L))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             measurement = measurement, n_starts = 1L,
++                             search = "kmeans", seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$search, "emEM")
++  expect_identical(refits[[1L]]$n_screen, 8L)
++  expect_identical(refits[[1L]]$acceleration, "none")
++  expect_identical(refits[[1L]]$select_start, "converged")
++  expect_identical(refits[[2L]]$search, "kmeans")
++  expect_null(refits[[2L]]$n_screen)
++  expect_identical(refits[[1L]]$max_iter, 20L)
++  expect_identical(refits[[1L]]$tol, 1e-6)
++})
++
++test_that("a staged bootstrap start override resolves each stage's default pool", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, n_screen = 8L, search = "emEM",
++                             seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 2L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$n_starts, 2L)
++  expect_identical(refits[[2L]]$n_starts, 2L)
++  expect_identical(refits[[1L]]$n_screen, 10L)
++  expect_identical(refits[[2L]]$n_screen, 10L)
++})
++
++test_that("staged bootstrap accepts a measurement predating search records", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             n_starts = 1L, seed = 1L, max_iter = 20L))
++  fit$stage_one[c("search", "n_starts", "n_screen", "acceleration",
++                  "select_start", "boundary_policy")] <- NULL
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  expect_identical(refits[[1L]]$search, "kmeans")
++  expect_identical(refits[[1L]]$n_starts, 1L)
++  expect_null(refits[[1L]]$n_screen)
++  expect_identical(refits[[1L]]$acceleration, "squarem")
++  expect_identical(refits[[1L]]$select_start, "likelihood")
++  expect_identical(refits[[1L]]$max_iter, 20L)
++  expect_identical(refits[[1L]]$tol, 1e-6)
++})
++
++test_that("staged bootstrap rebuilds a supplied single-level measurement", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  measurement <- quietly(lpa(data, c("y1", "y2"), 2L,
++                              n_starts = 1L, n_screen = 8L, search = "emEM",
++                              seed = 1L, max_iter = 20L))
++  expect_true(measurement$single_level)
++  expect_false(measurement$id %in% names(data))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             measurement = measurement, n_starts = 1L,
++                             seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  if (length(refits) == 2L) {
++    expect_true(refits[[1L]]$single_level)
++    expect_identical(refits[[1L]]$n_screen, 8L)
++    expect_false(refits[[2L]]$single_level)
++    expect_identical(refits[[2L]]$id, "g")
++    expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++  }
++})
++
++test_that("staged bootstrap uses current data identifiers for supplied measurement", {
++  data <- .staged_fixture(n_groups = 12L, size = 4L, seed = 6L)
++  data$occasion <- rep(seq_len(4L), 12L)
++  original <- data.frame(original_id = data$g, original_time = data$occasion,
++                          y1 = data$y1, y2 = data$y2)
++  measurement <- quietly(multilpa(original, c("y1", "y2"), "original_id", 2L, 1L,
++                                   time = "original_time", n_starts = 1L,
++                                   n_screen = 8L, search = "emEM",
++                                   seed = 1L, max_iter = 20L))
++  expect_false(measurement$id %in% names(data))
++  expect_false(measurement$time %in% names(data))
++  fit <- quietly(fit_staged(data, c("y1", "y2"), "g", 2L, 2L,
++                             time = "occasion", measurement = measurement,
++                             n_starts = 1L, seed = 1L, max_iter = 20L))
++  set.seed(2L)
++  refits <- .staged_bootstrap_refits(fit, data, n_starts = 1L)
++  expect_length(refits, 2L)
++  if (length(refits) == 2L) {
++    expect_identical(refits[[1L]]$id, "g")
++    expect_identical(refits[[1L]]$time, "occasion")
++    expect_identical(refits[[1L]]$n_screen, 8L)
++    expect_identical(refits[[1L]]$search, "emEM")
++    expect_identical(refits[[2L]]$id, "g")
++    expect_identical(refits[[2L]]$time, "occasion")
++    expect_equal(refits[[2L]]$means, refits[[1L]]$means)
++  }
++})
+diff --git a/tests/testthat/test-thin-profiles.R b/tests/testthat/test-thin-profiles.R
+index f3a3499..65dbd2a 100644
+--- a/tests/testthat/test-thin-profiles.R
++++ b/tests/testthat/test-thin-profiles.R
+@@ -20,6 +20,67 @@ test_that("a profile's own parameters are its means and what its spread adds", {
+   expect_equal(.latents_profile_parameters(3L, "varying", "full", "EEE"), 0)
+ })
+ 
++test_that("thin-profile counts respect covariance patterns and held blocks", {
++  pattern <- diag(5L) > 0
++  pattern[1L, 2L] <- pattern[2L, 1L] <- TRUE
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           covariance_pattern = pattern), 11)
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           covariance_pattern = pattern,
++                                           fixed = "means"), 6)
++  expect_equal(.latents_profile_parameters(5L, "equal", "full", "EEE",
++                                           covariance_pattern = pattern), 0)
++  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
++                                           fixed = "means"), 5)
++  expect_equal(.latents_profile_parameters(5L, "varying", "full", "VVV",
++                                           fixed = "variances"), 0)
++  expect_equal(.latents_profile_parameters(5L, "varying", "diagonal",
++                                           fixed = c("means", "variances")), 0)
++})
++
++#' A separated two-profile fixture with five Gaussian indicators
++#' @param n_small Number of rows in the smaller profile.
++#' @return An 80-row data frame with columns a through e.
++thin_constraint_data <- function(n_small = 13L) {
++  stopifnot(n_small > 0L, n_small < 80L)
++  set.seed(73)
++  data <- as.data.frame(matrix(stats::rnorm(80L * 5L), 80L, 5L))
++  names(data) <- letters[1:5]
++  data[seq_len(n_small), ] <- data[seq_len(n_small), ] + 10
++  data
++}
++
++test_that("a patterned fit warns only below its actual free density count", {
++  data <- thin_constraint_data()
++  expect_no_warning(fit <- lpa(data, names(data), 2L, local_dependence = "a:b",
++                               n_starts = 1L, seed = 1))
++  expect_equal(fit$n_parameters, 23)
++  expect_equal(unname(fit$effective_profile_counts), c(13, 67))
++  expect_no_warning(held <- lpa(data, names(data), 2L, local_dependence = "a:b",
++                                start = starting_values(fit), fixed = "means",
++                                n_starts = 1L, seed = 1))
++  expect_equal(held$n_parameters, 13)
++  smaller <- thin_constraint_data(9L)
++  expect_warning(lpa(smaller, names(smaller), 2L, local_dependence = "a:b",
++                      n_starts = 1L, seed = 1),
++                 regexp = "Gaussian membership mass for 11 free means and variances",
++                 class = "latents_thin_profiles")
++})
++
++test_that("holding variances disables the collapse warning with means fixed or free", {
++  data <- thin_constraint_data(3L)
++  start <- list(means = rbind(rep(10, 5), rep(0, 5)),
++                variances = matrix(1, 2, 5),
++                profile_probabilities = matrix(c(3, 77) / 80, 1),
++                group_probabilities = 1)
++  invisible(lapply(list("variances", c("means", "variances")), function(fixed) {
++    expect_no_warning(fit <- lpa(data, names(data), 2L, start = start,
++                                 fixed = fixed, n_starts = 1L, seed = 1))
++    expect_equal(unname(fit$effective_profile_counts), c(3, 77))
++    expect_identical(unname(fit$variances), start$variances)
++  }))
++})
++
+ test_that("the warning names the thin profiles and stays silent otherwise", {
+   expect_warning(thin <- .latents_warn_thin_profiles(c(40, 3.9, 12), 4),
+                  class = "latents_thin_profiles")
+@@ -29,7 +90,8 @@ test_that("the warning names the thin profiles and stays silent otherwise", {
+   expect_no_warning(.latents_warn_thin_profiles(c(40, 30), 4))
+   message <- tryCatch(.latents_warn_thin_profiles(c(5.1, 40, 3.2), 8),
+                       latents_thin_profiles = conditionMessage)
+-  expect_true(startsWith(message, "Profiles 1, 3: 5.1, 3.2 members for 8"))
++  expect_true(startsWith(message, "Profiles 1, 3: 5.1, 3.2 Gaussian membership mass for 8"))
++  expect_match(message, "not an identification test", fixed = TRUE)
+ })
+ 
+ # The emEM search reaches the spurious profile of these data (3.9 members);
+diff --git a/R/gaussian-diagnostics.R b/R/gaussian-diagnostics.R
+new file mode 100644
+index 0000000..e8962ea
+--- /dev/null
++++ b/R/gaussian-diagnostics.R
+@@ -0,0 +1,113 @@
++#' Descriptive covariance and support diagnostics for Gaussian components
++#'
++#' Standardization uses the observed, sampling-weighted marginal variance
++#' (divisor sum of weights), including between-component variation. Neither
++#' the ratios nor membership measures classify a component as spurious or
++#' establish identification. Gaussian mass uses the fit's normalized sampling
++#' weights; its scale is not an independent sample count. Weight effective n
++#' is Kish's concentration measure for posterior times sampling weight.
++#'
++#' @param parameters Gaussian means, variances and optional covariances.
++#' @param data Observation-by-Gaussian-indicator matrix on the fitted scale.
++#' @param posteriors Unweighted observation-by-component probabilities.
++#' @param weights Nonnegative observation sampling weights, or `NULL`.
++#' @param min_variance Absolute variance or covariance eigenvalue floor.
++#' @param context Name of the density level or measurement block.
++#' @return A data frame with one row per Gaussian component, or no rows when
++#'   there are no Gaussian indicators. Missing reference variances give `NA`
++#'   ratios, rather than an implied regular or irregular classification.
++#' @noRd
++.latents_gaussian_diagnostics <- function(parameters, data, posteriors,
++                                          weights = NULL, min_variance = 1e-6,
++                                          context = "profiles") {
++  stopifnot(is.list(parameters), is.matrix(data), is.numeric(data),
++            is.matrix(posteriors), is.numeric(posteriors),
++            nrow(data) == nrow(posteriors),
++            is.null(weights) || (is.numeric(weights) &&
++              length(weights) == nrow(data) && all(is.finite(weights)) &&
++              all(weights >= 0)),
++            is.numeric(min_variance), length(min_variance) == 1L,
++            is.finite(min_variance), min_variance > 0,
++            is.character(context), length(context) == 1L, !is.na(context))
++  empty <- data.frame(context = character(), profile = character(),
++    gaussian_mass = numeric(), positive_rows = integer(),
++    weight_effective_n = numeric(), min_variance_ratio = numeric(),
++    min_standardized_eigenvalue = numeric(), boundary = logical())
++  if (ncol(data) == 0L) return(empty)
++  variances <- parameters$variances
++  stopifnot(is.matrix(variances), ncol(variances) == ncol(data),
++            nrow(variances) == ncol(posteriors),
++            all(is.finite(posteriors)), all(posteriors >= 0))
++  weights <- weights %||% rep(1, nrow(data))
++  gaussian_rows <- rowSums(!is.na(data)) > 0L
++  overall <- vapply(seq_len(ncol(data)), function(indicator) {
++    observed <- !is.na(data[, indicator]) & weights > 0
++    if (!any(observed)) return(NA_real_)
++    values <- data[observed, indicator]
++    weight <- weights[observed] / max(weights[observed])
++    # Subtract a supported origin before means to protect large offsets and
++    # exclude zero-weight outliers from both the origin and its arithmetic.
++    values <- values - values[1L]
++    center <- sum(values * weight) / sum(weight)
++    variance <- sum(weight * (values - center)^2) / sum(weight)
++    if (is.finite(variance) && variance > 0) variance else NA_real_
++  }, numeric(1))
++  labels <- rownames(variances) %||% paste0("profile_", seq_len(nrow(variances)))
++  rows <- lapply(seq_len(nrow(variances)), function(profile) {
++    contribution <- posteriors[, profile] * weights * gaussian_rows
++    positive <- contribution > 0
++    scaled <- if (any(positive)) contribution[positive] / max(contribution) else numeric()
++    effective_n <- if (length(scaled)) sum(scaled)^2 / sum(scaled^2) else 0
++    covariance <- if (is.null(parameters$covariances)) {
++      diag(variances[profile, ], ncol(data))
++    } else matrix(parameters$covariances[, , profile], ncol(data), ncol(data))
++    ratio <- if (all(is.finite(overall))) {
++      standard_deviation <- sqrt(overall)
++      standardized <- sweep(sweep(covariance, 1L, standard_deviation, "/"),
++                            2L, standard_deviation, "/")
++      min(eigen(standardized, symmetric = TRUE, only.values = TRUE)$values)
++    } else NA_real_
++    data.frame(context = context, profile = labels[profile],
++      gaussian_mass = sum(contribution), positive_rows = sum(positive),
++      weight_effective_n = effective_n,
++      min_variance_ratio = if (all(is.finite(overall)))
++        min(variances[profile, ] / overall) else NA_real_,
++      min_standardized_eigenvalue = ratio,
++      boundary = min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values) <=
++        min_variance * (1 + 1e-8), stringsAsFactors = FALSE)
++  })
++  do.call(rbind, rows)
++}
++
++#' Print the narrowest Gaussian direction without applying a cutoff
++#' @param table A Gaussian diagnostic table, or `NULL` for an older fit.
++#' @return `NULL`, invisibly. Called for its descriptive output.
++#' @noRd
++.latents_print_gaussian_diagnostics <- function(table) {
++  stopifnot(is.null(table) || is.data.frame(table))
++  if (is.null(table) || nrow(table) == 0L) return(invisible(NULL))
++  usable <- which(is.finite(table$min_standardized_eigenvalue))
++  if (length(usable) == 0L) {
++    cat("Gaussian covariance ratios unavailable: insufficient observed reference variation.\n")
++    return(invisible(NULL))
++  }
++  row <- usable[which.min(table$min_standardized_eigenvalue[usable])]
++  cat(sprintf(paste0("Smallest standardized Gaussian eigenvalue: %.4g (%s, %s); ",
++                     "Gaussian mass: %.4g; weight effective n: %.4g.\n"),
++              table$min_standardized_eigenvalue[row], table$context[row],
++              table$profile[row], table$gaussian_mass[row],
++              table$weight_effective_n[row]))
++  invisible(NULL)
++}
++
++#' Smallest available component diagnostic for a model comparison row
++#' @param fit A fitted model, or `NULL` for a failed candidate.
++#' @param column A numeric column of its Gaussian diagnostic table.
++#' @return A numeric scalar; `NA` when the diagnostic is unavailable.
++#' @noRd
++.latents_gaussian_minimum <- function(fit, column) {
++  stopifnot(is.null(fit) || is.list(fit), is.character(column), length(column) == 1L)
++  values <- fit$gaussian_diagnostics[[column]]
++  values <- values[is.finite(values)]
++  if (length(values) == 0L) NA_real_ else min(values)
++}
+diff --git a/tests/testthat/test-zero-weight-initialization.R b/tests/testthat/test-zero-weight-initialization.R
+new file mode 100644
+index 0000000..de76d5d
+--- /dev/null
++++ b/tests/testthat/test-zero-weight-initialization.R
+@@ -0,0 +1,144 @@
++# Excluded independent units must not change starting states or the internal
++# coordinate origin. Relative positive weights retain the established starts.
++
++test_that("zero-weight Gaussian outliers cannot consume a starting profile", {
++  set.seed(803)
++  active <- data.frame(y = c(rnorm(50, -3, 0.5), rnorm(50, 3, 0.5)), w = 1)
++  fit_at <- function(value) {
++    quietly(lpa(rbind(active, data.frame(y = value, w = 0)), "y", 2,
++                weights = "w", n_starts = 3, seed = 1))
++  }
++  reference <- fit_at(0)
++  vapply(c(1e4, 1e20), function(value) {
++    fitted <- fit_at(value)
++    expect_equal(fitted$log_likelihood, reference$log_likelihood, tolerance = 1e-12)
++    expect_identical(fitted$means, reference$means)
++    expect_identical(fitted$variances, reference$variances)
++    expect_equal(fitted$subject_posteriors[seq_len(nrow(active)), ],
++                 reference$subject_posteriors[seq_len(nrow(active)), ])
++    expect_equal(nrow(fitted$subject_posteriors), nrow(active) + 1L)
++    expect_equal(unname(rowSums(fitted$subject_posteriors)), rep(1, nrow(active) + 1L))
++    TRUE
++  }, logical(1))
++  expect_gt(diff(range(reference$means)), 5)
++})
++
++test_that("all start kinds use positive support for mixed and missing indicators", {
++  set.seed(107)
++  frame <- data.frame(a = rnorm(60), b = rnorm(60),
++                      category = factor(rep(c("a", "b", "c"), 20)),
++                      ordinal = ordered(rep(1:3, 20)), count = rpois(60, 3))
++  frame$a[c(2, 9)] <- NA
++  frame$b[c(3, 7)] <- NA
++  frame$category[c(1, 4)] <- NA
++  frame$ordinal[5] <- NA
++  frame$count[6] <- NA
++  x <- as.matrix(frame[c("a", "b")])
++  codes <- matrix(as.integer(frame$category), ncol = 1)
++  extra <- .latents_prepare_extra(frame, "ordinal", "count", "fiml")
++  extended_x <- rbind(c(1e20, -1e20), x, c(NA, 1e12))
++  extended_codes <- rbind(3L, codes, NA_integer_)
++  extended_frame <- frame[c(1, seq_len(nrow(frame)), 2), ]
++  extended_frame$count[c(1, nrow(extended_frame))] <- c(1e12, 0)
++  extended_extra <- .latents_prepare_extra(extended_frame, "ordinal", "count", "fiml")
++  groups <- rep(seq_len(15), each = 4)
++  extended_groups <- c(1L, groups + 1L, 17L)
++  vapply(c("ward", "kmeans", "partition", "centres"), function(kind) {
++    args <- list(n_profiles = 2, n_types = 2, variance_model = "varying",
++                 min_variance = 1e-6, start_index = 3,
++                 covariance_model = "full", n_categories = 3,
++                 hierarchical = identical(kind, "ward"),
++                 kind = if (identical(kind, "ward")) "kmeans" else kind)
++    set.seed(91)
++    reference <- do.call(.multilpa_initialize,
++                         c(list(x = x, group_index = groups, codes = codes,
++                                extra = extra), args))
++    reference_rng <- .Random.seed
++    set.seed(91)
++    fitted <- do.call(.multilpa_initialize,
++                      c(list(x = extended_x, group_index = extended_groups,
++                             codes = extended_codes, extra = extended_extra,
++                             row_weights = c(0, rep(c(1, 2), 30), 0)), args))
++    expect_identical(fitted, reference)
++    expect_identical(.Random.seed, reference_rng)
++    TRUE
++  }, logical(1))
++})
++
++test_that("all-positive weights leave initialization and its RNG unchanged", {
++  set.seed(118)
++  x <- matrix(rnorm(120), 60, 2)
++  initialize <- function(weights) {
++    .multilpa_initialize(x, rep(seq_len(15), each = 4), 2, 2, "varying",
++                         1e-6, 3, row_weights = weights)
++  }
++  set.seed(76)
++  plain <- initialize(NULL)
++  plain_rng <- .Random.seed
++  set.seed(76)
++  expect_identical(initialize(rep(c(0.5, 2), 30)), plain)
++  expect_identical(.Random.seed, plain_rng)
++  expect_identical(.multilpa_initialization_center(x), colMeans(x))
++  expect_identical(.multilpa_initialization_center(x, rep(1, nrow(x))), colMeans(x))
++})
++
++test_that("excluded groups retain the full observation and group layout", {
++  set.seed(223)
++  active <- data.frame(id = rep(seq_len(20), each = 4),
++                        a = rnorm(80, rep(c(-3, 3), 40), 0.6),
++                        b = rnorm(80, rep(c(-2, 2), 40), 0.6), w = 1)
++  fit_at <- function(value) {
++    data <- rbind(data.frame(id = 0, a = value, b = -value, w = 0), active)
++    quietly(multilpa(data, c("a", "b"), "id", 2, 2,
++                     weights = "w", n_starts = 3, max_iter = 20, seed = 7))
++  }
++  reference <- fit_at(0)
++  fitted <- fit_at(1e20)
++  expect_identical(fitted$means, reference$means)
++  expect_identical(fitted$variances, reference$variances)
++  expect_equal(fitted$log_likelihood, reference$log_likelihood, tolerance = 1e-12)
++  expect_equal(nrow(fitted$subject_posteriors), 81L)
++  expect_equal(nrow(fitted$group_posteriors), 21L)
++  expect_equal(unname(rowSums(fitted$group_posteriors)), rep(1, 21))
++})
++
++test_that("covariate and transition starts exclude zero-weight indicator outliers", {
++  set.seed(304)
++  active <- data.frame(id = rep(seq_len(30), each = 2), time = rep(1:2, 30),
++                        y = rnorm(60, rep(c(-3, 3), each = 30), 0.6),
++                        z = rnorm(60), w = 1)
++  extend <- function(value) {
++    rbind(active, data.frame(id = 31, time = 1:2,
++                             y = c(value, -value), z = c(0, 1), w = 0))
++  }
++  cov_fit <- function(value) {
++    quietly(lpa(extend(value), "y", 2, profile_covariates = "z", weights = "w",
++                n_starts = 3, max_iter = 0, seed = 5))
++  }
++  reference <- cov_fit(0)
++  fitted <- cov_fit(1e20)
++  expect_identical(fitted$means, reference$means)
++  expect_identical(fitted$variances, reference$variances)
++  expect_equal(fitted$log_likelihood, reference$log_likelihood, tolerance = 1e-12)
++  transition_fit <- function(value) {
++    quietly(lta(extend(value), "y", "id", 2, time = "time",
++                                n_group_classes = 1, weights = "w",
++                                n_starts = 3, max_iter = 0, seed = 5))
++  }
++  reference <- transition_fit(0)
++  fitted <- transition_fit(1e20)
++  expect_identical(fitted$means, reference$means)
++  expect_identical(fitted$variances, reference$variances)
++  expect_equal(fitted$log_likelihood, reference$log_likelihood, tolerance = 1e-12)
++  expect_equal(nrow(fitted$group_posteriors), 31L)
++})
++
++test_that("insufficient positive-weight indicator support fails clearly", {
++  data <- data.frame(y = c(NA_real_, NA_real_, 2, 3), z = 0:3, w = c(1, 1, 0, 0))
++  expect_error(quietly(lpa(data, c("y", "z"), 1, weights = "w", missing = "fiml")),
++                "observed row with positive", class = "latents_bad_data")
++  data <- data.frame(y = c(1, 1, 4), w = c(1, 1, 0))
++  expect_error(quietly(lpa(data, "y", 2, weights = "w", n_starts = 1)),
++                "distinct observed indicator.*positive sampling weight",
++                class = "latents_all_starts_failed")
++})
+diff --git a/tests/testthat/test-lta-covariance-boundary.R b/tests/testthat/test-lta-covariance-boundary.R
+new file mode 100644
+index 0000000..d0f6e0d
+--- /dev/null
++++ b/tests/testthat/test-lta-covariance-boundary.R
+@@ -0,0 +1,78 @@
++#' Generate Gaussian transition data with a controlled covariance geometry
++#' @param geometry A flat covariance, narrow marginal, or interior covariance.
++#' @return A three-occasion data frame with two well-separated profiles.
++lta_covariance_boundary_data <- function(geometry) {
++  stopifnot(geometry %in% c("flat", "narrow", "interior"))
++  set.seed(12)
++  n <- 180L
++  location <- sample(c(-5, 5), n, replace = TRUE)
++  z <- rnorm(n)
++  noise <- rnorm(n)
++  data.frame(
++    id = rep(seq_len(n / 3L), each = 3L), time = rep(seq_len(3L), n / 3L),
++    a = location + if (geometry == "narrow") .03 * z else z,
++    b = location + if (geometry == "flat") z + .03 * noise else noise)
++}
++
++test_that("general LTA detects a full covariance eigenvalue at its lower bound", {
++  data <- lta_covariance_boundary_data("flat")
++  invisible(lapply(c("invariant", "occasion"), function(measurement) {
++    expect_warning(fit <- lta(
++      data, c("a", "b"), "id", 2, time = "time", model = "VVV",
++      transitions = "occasion", measurement = measurement,
++      n_starts = 1, seed = 1, max_iter = 300, min_variance = .01),
++      class = "latents_boundary")
++    expect_true(fit$converged)
++    expect_false(fit$probability_boundary)
++    expect_true(fit$boundary)
++    expect_length(fit$measurement, if (measurement == "occasion") 3L else 1L)
++    invisible(lapply(fit$measurement, function(block) {
++      # Marginal variances are interior; only the correlated direction is bound.
++      expect_gt(min(block$variances), .1)
++      eigenvalues <- apply(block$covariances, 3L, function(covariance) {
++        min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values)
++      })
++      expect_equal(unname(eigenvalues), rep(.01, 2L), tolerance = 1e-10)
++    }))
++    expect_error(parameter_inference(fit), class = "latents_boundary_fit")
++    expect_error(vcov(fit), class = "latents_boundary_fit")
++  }))
++})
++
++test_that("general LTA retains diagonal variance boundary protection", {
++  data <- lta_covariance_boundary_data("narrow")
++  invisible(lapply(c("invariant", "occasion"), function(measurement) {
++    expect_warning(fit <- lta(
++      data, c("a", "b"), "id", 2, time = "time", model = "VVI",
++      transitions = "occasion", measurement = measurement,
++      n_starts = 1, seed = 1, max_iter = 300, min_variance = .01),
++      class = "latents_boundary")
++    expect_true(fit$converged)
++    expect_false(fit$probability_boundary)
++    expect_true(fit$boundary)
++    invisible(lapply(fit$measurement, function(block) {
++      expect_null(block$covariances)
++      expect_equal(unname(block$variances[, 1L]), rep(.01, 2L), tolerance = 1e-10)
++    }))
++    expect_error(parameter_inference(fit), class = "latents_boundary_fit")
++  }))
++})
++
++test_that("general LTA interior full covariances are not flagged as bound", {
++  data <- lta_covariance_boundary_data("interior")
++  invisible(lapply(c("invariant", "occasion"), function(measurement) {
++    expect_no_warning(fit <- lta(
++      data, c("a", "b"), "id", 2, time = "time", model = "VVV",
++      transitions = "occasion", measurement = measurement,
++      n_starts = 1, seed = 1, max_iter = 300, min_variance = .01))
++    expect_true(fit$converged)
++    expect_false(fit$probability_boundary)
++    expect_false(fit$boundary)
++    invisible(lapply(fit$measurement, function(block) {
++      eigenvalues <- apply(block$covariances, 3L, function(covariance) {
++        min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values)
++      })
++      expect_gt(min(eigenvalues), .1)
++    }))
++  }))
++})
+diff --git a/tests/testthat/test-cross-level-thin-profiles.R b/tests/testthat/test-cross-level-thin-profiles.R
+new file mode 100644
+index 0000000..b6e2455
+--- /dev/null
++++ b/tests/testthat/test-cross-level-thin-profiles.R
+@@ -0,0 +1,164 @@
++# The cross-level likelihood has two Gaussian measurement blocks; each is
++# checked using the normalized sampling weights used by its own M-step.
++
++#' Capture cross-level warnings without hiding unrelated condition classes
++#' @param ... Arguments passed to multilpa().
++#' @return The fitted model and its warning conditions.
++cross_level_capture_warnings <- function(...) {
++  notices <- list()
++  fit <- withCallingHandlers(multilpa(...), warning = function(notice) {
++    notices[[length(notices) + 1L]] <<- notice
++    invokeRestart("muffleWarning")
++  })
++  list(fit = fit, warnings = notices)
++}
++
++#' Separate a few groups at both Gaussian levels
++#' @param n_small Number of separated groups.
++#' @param group_sizes Number of ratings per group.
++#' @return A data frame with a group ID and two Gaussian indicators.
++cross_level_thin_data <- function(n_small = 3L, group_sizes = rep(2L, 40L)) {
++  stopifnot(n_small > 0L, n_small < length(group_sizes), all(group_sizes > 0L))
++  set.seed(7)
++  data <- data.frame(g = rep(seq_along(group_sizes), group_sizes),
++                     a = stats::rnorm(sum(group_sizes)),
++                     b = stats::rnorm(sum(group_sizes)))
++  data[data$g <= n_small, c("a", "b")] <-
++    data[data$g <= n_small, c("a", "b")] + 20
++  data$w <- ifelse(data$g <= n_small, 0.01, 1)
++  data
++}
++
++#' Keep only thin-profile conditions for their separate assertions
++#' @param captured Result of cross_level_capture_warnings().
++#' @return The thin-profile warning conditions.
++cross_level_thin_notices <- function(captured) {
++  Filter(function(notice) inherits(notice, "latents_thin_profiles"), captured$warnings)
++}
++
++test_that("cross-level profile support restores normalized sampling weights", {
++  data <- cross_level_thin_data()
++  invisible(lapply(c("full_cross_level", "restricted_cross_level"), function(family) {
++    captured <- cross_level_capture_warnings(
++      data, c("a", "b"), "g", 2L, 1L, family = family, weights = "w",
++      n_starts = 1L, seed = 1, max_iter = 300L)
++    fit <- captured$fit
++    notices <- cross_level_thin_notices(captured)
++    expect_true(fit$converged)
++    expect_false(fit$boundary)
++    expect_length(notices, 1L)
++    expect_match(conditionMessage(notices[[1L]]), "at the individual level")
++    expect_gt(min(colSums(fit$subject_posteriors)), 4)
++    weights <- unname(fit$sampling_weights[fit$sufficient_statistics$index])
++    expect_lt(min(colSums(fit$subject_posteriors * weights)), 1)
++    expect_equal(rowSums(fit$subject_posteriors), rep(1, nrow(data)))
++    expect_equal(unname(fit$group_posteriors), matrix(1, 40L, 1L))
++  }))
++})
++
++test_that("cross-level group Gaussian mixtures are checked exactly once", {
++  data <- cross_level_thin_data(group_sizes = rep(3L, 40L))
++  invisible(lapply(c("full_cross_level", "restricted_cross_level"), function(family) {
++    captured <- cross_level_capture_warnings(
++      data, c("a", "b"), "g", 1L, 2L, family = family,
++      between_variance = "varying", n_starts = 1L, seed = 1, max_iter = 300L)
++    fit <- captured$fit
++    notices <- cross_level_thin_notices(captured)
++    expect_true(fit$converged)
++    expect_false(fit$boundary)
++    expect_length(notices, 1L)
++    expect_match(conditionMessage(notices[[1L]]), "at the group level \\(group classes\\)")
++    expect_equal(sort(unname(colSums(fit$group_posteriors))), c(3, 37))
++    expect_equal(unname(fit$subject_posteriors), matrix(1, nrow(data), 1L))
++  }))
++})
++
++test_that("cross-level group support also restores sampling weights", {
++  data <- cross_level_thin_data(n_small = 6L)
++  captured <- cross_level_capture_warnings(
++    data, c("a", "b"), "g", 1L, 2L, family = "full_cross_level", weights = "w",
++    n_starts = 1L, seed = 1, max_iter = 300L)
++  fit <- captured$fit
++  notices <- cross_level_thin_notices(captured)
++  expect_true(fit$converged)
++  expect_length(notices, 1L)
++  expect_match(conditionMessage(notices[[1L]]), "at the group level")
++  expect_gt(min(colSums(fit$group_posteriors)), 4)
++  expect_lt(min(colSums(fit$group_posteriors * fit$sampling_weights)), 1)
++})
++
++test_that("shared cross-level spreads do not raise a thin-profile notice", {
++  data <- cross_level_thin_data(group_sizes = rep(3L, 40L))
++  invisible(lapply(c("full_cross_level", "restricted_cross_level"), function(family) {
++    captured <- cross_level_capture_warnings(
++      data, c("a", "b"), "g", 2L, 2L, family = family,
++      variance_model = "equal", between_variance = "equal",
++      n_starts = 1L, seed = 1, max_iter = 300L)
++    expect_true(captured$fit$converged)
++    expect_length(cross_level_thin_notices(captured), 0L)
++  }))
++})
++
++test_that("restricted support uses each factor's own weight normalization", {
++  data <- cross_level_thin_data(group_sizes = c(rep(10L, 3L), rep(2L, 37L)))
++  captured <- cross_level_capture_warnings(
++    data, c("a", "b"), "g", 2L, 1L, family = "restricted_cross_level", weights = "w",
++    n_starts = 1L, seed = 1, max_iter = 300L)
++  fit <- captured$fit
++  individual <- fit$gaussian_diagnostics[
++    fit$gaussian_diagnostics$context == "individual profiles", , drop = FALSE]
++  group <- fit$gaussian_diagnostics[
++    fit$gaussian_diagnostics$context == "group classes", , drop = FALSE]
++  raw_weights <- data$w
++  normalized_weights <- raw_weights * (nrow(data) / sum(raw_weights))
++  expect_equal(unname(individual$gaussian_mass),
++               unname(colSums(fit$subject_posteriors * normalized_weights)))
++  expect_equal(sum(individual$gaussian_mass), nrow(data))
++  expect_equal(unname(group$gaussian_mass), 40)
++  expect_length(cross_level_thin_notices(captured), 1L)
++})
++
++test_that("excluded groups do not determine full cross-level starts", {
++  data <- cross_level_thin_data(n_small = 15L)
++  data$w <- 1
++  data$w[data$g == 40L] <- 0
++  far <- data
++  far[far$g == 40L, c("a", "b")] <- 1e20
++  baseline <- cross_level_capture_warnings(
++    data, c("a", "b"), "g", 1L, 2L, family = "full_cross_level", weights = "w",
++    n_starts = 2L, seed = 1, max_iter = 300L)$fit
++  rng <- .Random.seed
++  moved <- cross_level_capture_warnings(
++    far, c("a", "b"), "g", 1L, 2L, family = "full_cross_level", weights = "w",
++    n_starts = 2L, seed = 1, max_iter = 300L)$fit
++  expect_true(baseline$converged)
++  expect_true(moved$converged)
++  expect_identical(.Random.seed, rng)
++  fields <- c("profile_means", "profile_variances", "composition", "group_means",
++              "group_mean_variances", "group_probabilities", "log_likelihood", "starts")
++  expect_identical(moved[fields], baseline[fields])
++  expect_equal(unname(rowSums(moved$group_posteriors)), rep(1, 40L))
++})
++
++test_that("excluded groups cannot conceal constant or insufficient positive support", {
++  data <- cross_level_thin_data(n_small = 15L)
++  data$a <- 0
++  data$w <- 1
++  data$w[data$g == 40L] <- 0
++  data$a[data$g == 40L] <- 1e4
++  captured <- cross_level_capture_warnings(
++    data, c("a", "b"), "g", 2L, 1L, family = "full_cross_level", weights = "w",
++    n_starts = 1L, seed = 1, max_iter = 300L)
++  expect_true(captured$fit$converged)
++  expect_true(captured$fit$boundary)
++  expect_equal(unname(captured$fit$profile_means[, "a"]), c(0, 0))
++  expect_equal(unname(captured$fit$profile_variances[, "a"]), rep(1e-6, 2L))
++  data <- data.frame(g = rep(1:3, each = 2L),
++                     a = c(0, 0, 0, 0, 3, 4),
++                     b = c(0, 0, 0, 0, 3, 4), w = c(1, 1, 1, 1, 0, 0))
++  expect_error(multilpa(data, c("a", "b"), "g", 2L, 1L,
++                        family = "full_cross_level", weights = "w",
++                        n_starts = 1L, seed = 1),
++                "distinct observed indicator.*positive sampling weight",
++                class = "latents_all_starts_failed")
++})
+diff --git a/tests/testthat/test-gaussian-diagnostics.R b/tests/testthat/test-gaussian-diagnostics.R
+new file mode 100644
+index 0000000..fac4b2a
+--- /dev/null
++++ b/tests/testthat/test-gaussian-diagnostics.R
+@@ -0,0 +1,138 @@
++#' Build a known-variance Gaussian diagnostic fixture
++#' @return Data, posteriors and two full-rank Gaussian parameter blocks.
++gaussian_diagnostics_fixture <- function() {
++  data <- rbind(c(-1, -1), c(-1, 1), c(1, -1), c(1, 1))
++  parameters <- list(
++    means = matrix(0, 2L, 2L),
++    variances = matrix(1, 2L, 2L,
++      dimnames = list(c("flat", "regular"), c("a", "b"))),
++    covariances = array(c(matrix(c(1, .999, .999, 1), 2L), diag(2L)),
++                        c(2L, 2L, 2L)))
++  list(data = data, posteriors = matrix(rep(c(.3, .7), each = 4L), 4L),
++       parameters = parameters)
++}
++
++test_that("Gaussian diagnostics describe a flat direction with moderate support", {
++  fixture <- gaussian_diagnostics_fixture()
++  parameters_before <- fixture$parameters
++  rows <- rep(seq_len(4L), 20L)
++  result <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data[rows, ], fixture$posteriors[rows, ],
++    context = "occasion 2")
++  expect_equal(result$profile, c("flat", "regular"))
++  expect_equal(result$context, rep("occasion 2", 2L))
++  expect_equal(result$gaussian_mass, c(24, 56))
++  expect_equal(result$positive_rows, rep(80L, 2L))
++  expect_equal(result$weight_effective_n, rep(80, 2L))
++  expect_equal(result$min_variance_ratio, c(1, 1))
++  expect_equal(result$min_standardized_eigenvalue, c(.001, 1), tolerance = 1e-12)
++  expect_false(any(result$boundary))
++  expect_identical(fixture$parameters, parameters_before)
++})
++
++test_that("standardized Gaussian ratios tolerate extreme changes of units", {
++  fixture <- gaussian_diagnostics_fixture()
++  reference <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors)
++  scales <- list(c(10, .1), c(-2, 3), rep(1e100, 2L), rep(1e-100, 2L),
++                 c(1e100, 1e-100))
++  invisible(lapply(scales, function(scale) {
++    parameters <- fixture$parameters
++    parameters$means <- sweep(parameters$means, 2L, scale, "*")
++    parameters$variances <- sweep(parameters$variances, 2L, scale^2, "*")
++    parameters$covariances <- array(vapply(seq_len(2L), function(profile) {
++      parameters$covariances[, , profile] * outer(scale, scale)
++    }, matrix(0, 2L, 2L)), c(2L, 2L, 2L))
++    result <- .latents_gaussian_diagnostics(
++      parameters, sweep(fixture$data, 2L, scale, "*"), fixture$posteriors)
++    # The absolute lower-bound flag deliberately depends on the chosen units.
++    columns <- c("gaussian_mass", "positive_rows", "weight_effective_n",
++                 "min_variance_ratio", "min_standardized_eigenvalue")
++    expect_equal(result[columns], reference[columns], tolerance = 1e-12)
++  }))
++})
++
++test_that("tiny positive posterior mass does not imply a singular covariance", {
++  fixture <- gaussian_diagnostics_fixture()
++  fixture$parameters$covariances[, , 1L] <- diag(2L)
++  posteriors <- matrix(rep(c(1e-12, 1 - 1e-12), each = 4L), 4L)
++  result <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, posteriors)
++  expect_equal(result$gaussian_mass[1L], 4e-12, tolerance = 1e-15)
++  expect_equal(result$weight_effective_n, rep(4, 2L))
++  expect_equal(result$positive_rows, rep(4L, 2L))
++  expect_equal(result$min_standardized_eigenvalue, c(1, 1))
++  expect_false(any(result$boundary))
++})
++
++test_that("normalized Gaussian mass and weight effective n remain distinct", {
++  fixture <- gaussian_diagnostics_fixture()
++  reference <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors, weights = rep(1, 4L),
++    context = "individual profiles")
++  # Normalizing to all eight units doubles active weights. Excluded extreme
++  # rows cannot supply Gaussian support, change ratios, or change Kish n.
++  appended <- .latents_gaussian_diagnostics(
++    fixture$parameters,
++    rbind(fixture$data, matrix(rep(c(1e100, -1e100), each = 4L), 4L)),
++    rbind(fixture$posteriors, fixture$posteriors),
++    weights = c(rep(2, 4L), rep(0, 4L)), context = "individual profiles")
++  expect_equal(appended$gaussian_mass, reference$gaussian_mass * 2)
++  expect_equal(appended$positive_rows, reference$positive_rows)
++  expect_equal(appended$weight_effective_n, reference$weight_effective_n)
++  expect_equal(appended$min_variance_ratio, reference$min_variance_ratio)
++  expect_equal(appended$min_standardized_eigenvalue,
++               reference$min_standardized_eigenvalue)
++  expect_equal(appended$context, reference$context)
++})
++
++test_that("Gaussian diagnostics mask missing rows but retain partial observations", {
++  fixture <- gaussian_diagnostics_fixture()
++  data <- fixture$data
++  data[1L, ] <- NA_real_
++  data[2L, 2L] <- NA_real_
++  data[3L, 1L] <- NA_real_
++  result <- .latents_gaussian_diagnostics(
++    fixture$parameters, data, fixture$posteriors, weights = c(5, 1, 2, 3))
++  expect_equal(result$gaussian_mass, c(1.8, 4.2))
++  expect_equal(result$positive_rows, rep(3L, 2L))
++  expect_equal(result$weight_effective_n, rep(36 / 14, 2L))
++  expect_equal(result$min_variance_ratio, rep(1 / .96, 2L))
++  no_gaussian <- .latents_gaussian_diagnostics(
++    list(), matrix(numeric(), 4L, 0L), fixture$posteriors,
++    context = "categorical only")
++  expect_s3_class(no_gaussian, "data.frame")
++  expect_equal(nrow(no_gaussian), 0L)
++  expect_identical(names(no_gaussian), names(result))
++})
++
++test_that("Gaussian diagnostics report unavailable reference variation explicitly", {
++  fixture <- gaussian_diagnostics_fixture()
++  fixture$data[, 2L] <- NA_real_
++  result <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors)
++  expect_true(all(is.na(result$min_variance_ratio)))
++  expect_true(all(is.na(result$min_standardized_eigenvalue)))
++  expect_equal(result$gaussian_mass, c(1.2, 2.8))
++  expect_output(.latents_print_gaussian_diagnostics(result),
++                "insufficient observed reference variation")
++  expect_output(.latents_print_gaussian_diagnostics(NULL), NA)
++})
++
++test_that("Gaussian diagnostic labels identify the component and density context", {
++  fixture <- gaussian_diagnostics_fixture()
++  individual <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors,
++    context = "individual profiles")
++  group <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors,
++    context = "group classes")
++  expect_equal(individual$profile, group$profile)
++  expect_equal(group$context, rep("group classes", 2L))
++  expect_output(.latents_print_gaussian_diagnostics(group),
++                "0.001 \\(group classes, flat\\)")
++  rownames(fixture$parameters$variances) <- NULL
++  unnamed <- .latents_gaussian_diagnostics(
++    fixture$parameters, fixture$data, fixture$posteriors)
++  expect_equal(unnamed$profile, c("profile_1", "profile_2"))
++})
+diff --git a/tests/testthat/test-gaussian-diagnostic-tables.R b/tests/testthat/test-gaussian-diagnostic-tables.R
+new file mode 100644
+index 0000000..90a6132
+--- /dev/null
++++ b/tests/testthat/test-gaussian-diagnostic-tables.R
+@@ -0,0 +1,166 @@
++#' A small separated Gaussian panel for public diagnostic-table checks
++#' @return Group IDs, occasions, a covariate and two continuous indicators.
++gaussian_table_data <- function() {
++  set.seed(3)
++  n <- 90L
++  location <- rep(c(-2, 2), each = n / 2L)
++  data.frame(id = rep(seq_len(n / 3L), each = 3L), time = rep(seq_len(3L), n / 3L),
++             a = rnorm(n) + location, b = rnorm(n) + location, z = rnorm(n))
++}
++
++test_that("ordinary and covariate fits expose the same Gaussian table in summaries", {
++  data <- gaussian_table_data()
++  fits <- list(
++    lpa(data, c("a", "b"), 2L, n_starts = 1L, seed = 1),
++    lpa(data, c("a", "b"), 2L, profile_covariates = "z", n_starts = 1L, seed = 1))
++  invisible(lapply(fits, function(fit) {
++    table <- get_results(fit, "gaussian_diagnostics")
++    expect_identical(table, fit$gaussian_diagnostics)
++    expect_identical(get_results(summary(fit), "gaussian_diagnostics"), table)
++    expect_equal(table$context, rep("profiles", 2L))
++    expect_equal(table$profile, paste0("profile_", seq_len(2L)))
++    expect_equal(table$gaussian_mass, unname(colSums(fit$subject_posteriors)))
++    reference_variance <- vapply(data[c("a", "b")], function(x) mean((x - mean(x))^2),
++                                 numeric(1))
++    expected <- apply(sweep(fit$variances, 2L, reference_variance, "/"), 1L, min)
++    expect_equal(table$min_standardized_eigenvalue, unname(expected))
++    expect_output(print(fit), "Smallest standardized Gaussian eigenvalue")
++    legacy <- fit
++    legacy$gaussian_diagnostics <- NULL
++    expect_false(any(grepl("Smallest standardized Gaussian eigenvalue",
++                           capture.output(print(legacy)), fixed = TRUE)))
++  }))
++})
++
++test_that("homogeneous and general LTA Gaussian diagnostics follow measurement occasions", {
++  data <- gaussian_table_data()
++  shared <- lta(data, c("a", "b"), "id", 2L, time = "time", n_starts = 1L, seed = 1)
++  occasion <- quietly(lta(
++    data, c("a", "b"), "id", 2L, time = "time", transitions = "occasion",
++    measurement = "occasion", n_starts = 1L, seed = 1, max_iter = 0L),
++    "latents_unconverged")
++  shared_table <- get_results(shared, "gaussian_diagnostics")
++  expect_identical(shared_table, shared$gaussian_diagnostics)
++  expect_identical(get_results(suppressMessages(summary(shared)), "gaussian_diagnostics"),
++                   shared_table)
++  expect_equal(shared_table$context, rep("profiles", 2L))
++  expect_equal(shared_table$gaussian_mass, unname(colSums(shared$subject_posteriors)))
++  occasion_table <- get_results(occasion, "gaussian_diagnostics")
++  expect_identical(occasion_table, occasion$gaussian_diagnostics)
++  # General LTA summaries are named table lists, rather than summary objects.
++  expect_identical(suppressMessages(summary(occasion))$gaussian_diagnostics, occasion_table)
++  expect_equal(occasion_table$context, rep(paste("occasion", 1:3), each = 2L))
++  expect_equal(occasion_table$profile, rep(paste0("profile_", 1:2), 3L))
++  invisible(lapply(seq_len(3L), function(time) {
++    rows <- data$time == time
++    index <- occasion_table$context == paste("occasion", time)
++    expect_equal(occasion_table$gaussian_mass[index],
++                 unname(colSums(occasion$subject_posteriors[rows, ])))
++    variances <- vapply(data[rows, c("a", "b")], function(x) mean((x - mean(x))^2),
++                        numeric(1))
++    expected <- apply(sweep(occasion$measurement[[time]]$variances, 2L, variances, "/"),
++                      1L, min)
++    expect_equal(occasion_table$min_standardized_eigenvalue[index], unname(expected))
++  }))
++  expect_output(print(shared), "Smallest standardized Gaussian eigenvalue")
++  expect_output(print(occasion), "Smallest standardized Gaussian eigenvalue")
++})
++
++test_that("weighted Gaussian tables use observed support and weighted reference variances", {
++  data <- gaussian_table_data()
++  data$weight <- rep(c(.25, 1, 2), 30L)
++  data$a[1L] <- NA_real_
++  data$b[2L] <- NA_real_
++  data[3L, c("a", "b")] <- NA_real_
++  weights <- data$weight * nrow(data) / sum(data$weight)
++  observed <- rowSums(!is.na(data[c("a", "b")])) > 0L
++  reference_variance <- vapply(data[c("a", "b")], function(values) {
++    available <- !is.na(values)
++    center <- sum(values[available] * weights[available]) / sum(weights[available])
++    sum(weights[available] * (values[available] - center)^2) / sum(weights[available])
++  }, numeric(1))
++  invisible(lapply(c(FALSE, TRUE), function(covariate) {
++    fit <- lpa(data, c("a", "b"), 2L, weights = "weight", missing = "fiml",
++               profile_covariates = if (covariate) "z" else character(),
++               n_starts = 1L, seed = 1L)
++    table <- get_results(fit, "gaussian_diagnostics")
++    contributions <- fit$subject_posteriors * weights * observed
++    expect_equal(table$gaussian_mass, unname(colSums(contributions)))
++    expect_equal(table$weight_effective_n,
++                 unname(colSums(contributions)^2 / colSums(contributions^2)))
++    expected <- apply(sweep(fit$variances, 2L, reference_variance, "/"), 1L, min)
++    expect_equal(table$min_standardized_eigenvalue, unname(expected))
++    expect_equal(table$positive_rows, unname(colSums(contributions > 0)))
++  }))
++})
++
++test_that("cross-level tables distinguish individual and group Gaussian densities", {
++  data <- gaussian_table_data()
++  invisible(lapply(c("full_cross_level", "restricted_cross_level"), function(family) {
++    fit <- quietly(multilpa(
++      data, c("a", "b"), "id", 2L, 2L, family = family,
++      between_variance = "varying", n_starts = 1L, seed = 1L, max_iter = 0L),
++      "latents_unconverged")
++    table <- get_results(fit, "gaussian_diagnostics")
++    expect_identical(table, fit$gaussian_diagnostics)
++    expect_identical(summary(fit)$gaussian_diagnostics, table)
++    expect_equal(table$context, rep(c("individual profiles", "group classes"), each = 2L))
++    individual <- table$context == "individual profiles"
++    group <- table$context == "group classes"
++    expect_equal(table$gaussian_mass[individual], unname(colSums(fit$subject_posteriors)))
++    expect_equal(table$gaussian_mass[group], unname(colSums(fit$group_posteriors)))
++    expect_equal(table$profile[individual], rownames(fit$profile_variances))
++    expect_equal(table$profile[group], rownames(fit$group_mean_variances))
++    expect_output(print(fit), "Smallest standardized Gaussian eigenvalue")
++  }))
++})
++
++test_that("moderate flat components remain visible without a new selection threshold", {
++  expect_no_warning(fit <- lpa(srl, names(srl), 4L, model = "VVV", seed = 1))
++  table <- get_results(fit, "gaussian_diagnostics")
++  expect_true(fit$converged)
++  expect_false(fit$boundary)
++  expect_gt(min(table$gaussian_mass), 20)
++  expect_lt(min(table$min_standardized_eigenvalue), .002)
++  expect_gt(min(table$min_standardized_eigenvalue), .001)
++  expect_output(print(fit), "Smallest standardized Gaussian eigenvalue: 0.001")
++  expect_equal(fit$log_likelihood, max(fit$starts$log_likelihood, na.rm = TRUE),
++               tolerance = 1e-6)
++})
++
++test_that("categorical models and old objects have no invented Gaussian diagnostics", {
++  data <- gaussian_table_data()
++  data$c <- factor(ifelse(data$a > 0, "high", "low"))
++  data$d <- factor(ifelse(data$b > 0, "high", "low"))
++  fits <- list(
++    quietly(lpa(data, c("c", "d"), 2L, categorical = c("c", "d"),
++                 n_starts = 1L, seed = 1L, max_iter = 0L), "latents_unconverged"),
++    quietly(lta(data, c("c", "d"), "id", 2L, categorical = c("c", "d"),
++                 time = "time", transitions = "occasion", n_starts = 1L,
++                 seed = 1L, max_iter = 0L), "latents_unconverged"))
++  invisible(lapply(fits, function(fit) {
++    expect_equal(nrow(fit$gaussian_diagnostics), 0L)
++    expect_false("gaussian_diagnostics" %in% names(suppressMessages(get_results(fit, "all"))))
++    expect_false(any(grepl("Smallest standardized Gaussian eigenvalue",
++                           capture.output(print(fit)), fixed = TRUE)))
++    expect_true(is.na(.latents_gaussian_minimum(fit, "min_standardized_eigenvalue")))
++  }))
++  legacy <- fits[[1L]]
++  legacy$gaussian_diagnostics <- NULL
++  expect_true(is.na(.latents_gaussian_minimum(legacy, "gaussian_mass")))
++})
++
++test_that("enumeration exposes continuous minima from the returned Gaussian fits", {
++  data <- gaussian_table_data()
++  grid <- enumerate_lpa(data, c("a", "b"), n_profiles = 1:2, model = "VVI",
++                        n_starts = 1L, seed = 1L)
++  expect_true(all(c("min_standardized_eigenvalue", "min_gaussian_mass") %in%
++                    names(grid$table)))
++  expected_eigenvalue <- vapply(grid$fits, function(fit) {
++    min(fit$gaussian_diagnostics$min_standardized_eigenvalue)
++  }, numeric(1))
++  expected_mass <- vapply(grid$fits, function(fit) min(fit$gaussian_diagnostics$gaussian_mass),
++                          numeric(1))
++  expect_equal(grid$table$min_standardized_eigenvalue, unname(expected_eigenvalue))
++  expect_equal(grid$table$min_gaussian_mass, unname(expected_mass))
++})
+diff --git a/tests/testthat/test-gaussian-warning-support.R b/tests/testthat/test-gaussian-warning-support.R
+new file mode 100644
+index 0000000..b0e4998
+--- /dev/null
++++ b/tests/testthat/test-gaussian-warning-support.R
+@@ -0,0 +1,72 @@
++#' A small thin Gaussian profile with covariate and categorical columns
++#' @return An 80-row data frame with three clearly separated Gaussian rows.
++gaussian_warning_support_data <- function() {
++  set.seed(73)
++  data <- as.data.frame(matrix(rnorm(80L * 5L), 80L, 5L))
++  names(data) <- letters[seq_len(5L)]
++  data[seq_len(3L), ] <- data[seq_len(3L), ] + 10
++  data$z <- rnorm(80L)
++  data$categ <- c(rep("rare", 3L), rep("common", 77L))
++  data
++}
++
++#' Capture Gaussian-support warnings from a public fit
++#' @param expr A public fitting expression.
++#' @return The fit and its emitted thin-profile warning conditions.
++gaussian_warning_support_capture <- function(expr) {
++  warnings <- list()
++  fit <- withCallingHandlers(expr, warning = function(condition) {
++    if (inherits(condition, "latents_thin_profiles")) {
++      warnings[[length(warnings) + 1L]] <<- condition
++    }
++    if (inherits(condition, .multilpa_expected_warnings)) invokeRestart("muffleWarning")
++  })
++  list(fit = fit, thin = warnings)
++}
++
++test_that("retained empty rows cannot hide ordinary or covariate Gaussian warnings", {
++  data <- gaussian_warning_support_data()
++  empty <- data[rep(1L, 300L), ]
++  empty[, letters[seq_len(5L)]] <- NA_real_
++  # Covariates remain observed even when no measurement is present.
++  empty$z <- rep(c(-1, 1), 150L)
++  invisible(lapply(c(FALSE, TRUE), function(covariate) {
++    fit <- function(frame) gaussian_warning_support_capture(lpa(
++      frame, letters[seq_len(5L)], 2L,
++      profile_covariates = if (covariate) "z" else character(),
++      n_starts = 1L, seed = 1L, max_iter = 1000L,
++      missing = "fiml", drop_empty = FALSE))
++    original <- fit(data)
++    appended <- fit(rbind(data, empty))
++    expect_true(original$fit$converged)
++    expect_true(appended$fit$converged)
++    expect_length(original$thin, 1L)
++    expect_length(appended$thin, 1L)
++    expect_equal(min(original$fit$gaussian_diagnostics$gaussian_mass), 3, tolerance = 1e-7)
++    expect_equal(min(appended$fit$gaussian_diagnostics$gaussian_mass), 3, tolerance = 1e-7)
++    expect_gt(min(appended$fit$effective_profile_counts), 10)
++    expect_equal(appended$fit$gaussian_diagnostics$gaussian_mass,
++                 unname(colSums(appended$fit$subject_posteriors[seq_len(80L), ])))
++  }))
++})
++
++test_that("categorical-only rows cannot hide ordinary or covariate Gaussian warnings", {
++  data <- gaussian_warning_support_data()
++  categorical_only <- data[rep(1L, 300L), ]
++  categorical_only[, letters[seq_len(5L)]] <- NA_real_
++  categorical_only$z <- rep(c(-1, 1), 150L)
++  invisible(lapply(c(FALSE, TRUE), function(covariate) {
++    captured <- gaussian_warning_support_capture(lpa(
++      rbind(data, categorical_only), c(letters[seq_len(5L)], "categ"), 2L,
++      categorical = "categ", profile_covariates = if (covariate) "z" else character(),
++      n_starts = 1L, seed = 1L, max_iter = 1000L, missing = "fiml"))
++    fit <- captured$fit
++    expect_true(fit$converged)
++    expect_length(captured$thin, 1L)
++    expect_gt(min(fit$effective_profile_counts), 10)
++    expect_equal(min(fit$gaussian_diagnostics$gaussian_mass), 3, tolerance = 1e-7)
++    expect_equal(fit$gaussian_diagnostics$gaussian_mass,
++                 unname(colSums(fit$subject_posteriors[seq_len(80L), ])))
++    expect_true(all(fit$gaussian_diagnostics$positive_rows <= 80L))
++  }))
++})
+diff --git a/tests/testthat/test-lta-thin-profiles.R b/tests/testthat/test-lta-thin-profiles.R
+new file mode 100644
+index 0000000..28d6415
+--- /dev/null
++++ b/tests/testthat/test-lta-thin-profiles.R
+@@ -0,0 +1,128 @@
++#' Capture thin-profile warnings from a fitted transition model
++#' @param expr A transition fitting expression.
++#' @return The fit and its thin-profile warning conditions.
++capture_lta_thin <- function(expr) {
++  thin <- list()
++  fit <- withCallingHandlers(expr, warning = function(condition) {
++    if (inherits(condition, "latents_thin_profiles")) {
++      thin[[length(thin) + 1L]] <<- condition
++    }
++    if (inherits(condition, .multilpa_expected_warnings)) invokeRestart("muffleWarning")
++  })
++  list(fit = fit, thin = thin)
++}
++
++#' Generate separated profiles at three irregular time values
++#' @param n_rare Number of rows in the rare profile.
++#' @return A data frame with grouping, time and two Gaussian indicators.
++lta_thin_data <- function(n_rare = 3L) {
++  stopifnot(n_rare > 0L, n_rare < 90L)
++  set.seed(1)
++  data.frame(g = rep(seq_len(30L), each = 3L),
++             t = rep(c(2, 4, 9), 30L),
++             a = c(rnorm(90L - n_rare), rnorm(n_rare, 20)),
++             b = c(rnorm(90L - n_rare), rnorm(n_rare, 20)))
++}
++
++test_that("empty LTA rows cannot hide thin Gaussian profiles under either empty policy", {
++  data <- lta_thin_data()
++  # A partly observed measurement still contributes to the density.
++  data$a[nrow(data)] <- NA_real_
++  empty <- data.frame(g = rep(31:130, each = 3L), t = rep(c(2, 4, 9), 100L),
++                      a = NA_real_, b = NA_real_)
++  invisible(lapply(c("homogeneous", "occasion"), function(transitions) {
++    invisible(lapply(c(TRUE, FALSE), function(drop_empty) {
++      fit <- function(frame) capture_lta_thin(lta(
++        frame, c("a", "b"), "g", 2, time = "t", missing = "fiml",
++        transitions = transitions, drop_empty = drop_empty,
++        n_starts = 1, seed = 1, max_iter = 500))
++      original <- fit(data)
++      appended <- fit(rbind(data, empty))
++      expect_length(original$thin, 1L)
++      expect_length(appended$thin, 1L)
++      expect_match(paste(vapply(appended$thin, conditionMessage, character(1)),
++                         collapse = " "), "3.0 Gaussian membership mass for 4")
++      expect_equal(sum(appended$fit$informative), 90L)
++      expect_gt(min(colSums(appended$fit$subject_posteriors)), 10)
++      expect_equal(appended$fit$log_likelihood, original$fit$log_likelihood,
++                   tolerance = 1e-7)
++    }))
++  }))
++})
++
++test_that("occasion Gaussian densities warn separately with occasion positions", {
++  data <- lta_thin_data(6L)
++  fit <- function(measurement) capture_lta_thin(lta(
++    data, c("a", "b"), "g", 2, time = "t", measurement = measurement,
++    transitions = "occasion", n_starts = 1, seed = 1, max_iter = 500))
++  occasion <- fit("occasion")
++  shared <- fit("invariant")
++  counts <- rowsum(occasion$fit$subject_posteriors, data$t)
++  expect_equal(unname(counts[, 2L]), rep(2, 3L), tolerance = 1e-8)
++  expect_length(occasion$thin, 3L)
++  messages <- vapply(occasion$thin, conditionMessage, character(1))
++  expect_true(all(vapply(seq_len(3L), function(label) {
++    any(grepl(sprintf("at occasion %s:", label), messages, fixed = TRUE))
++  }, logical(1))))
++  expect_length(shared$thin, 0L)
++})
++
++test_that("empty rows cannot inflate occasion-specific measurement support", {
++  data <- lta_thin_data(6L)
++  data$a[nrow(data)] <- NA_real_
++  empty <- data.frame(g = rep(31:130, each = 3L), t = rep(c(2, 4, 9), 100L),
++                      a = NA_real_, b = NA_real_)
++  invisible(lapply(c(TRUE, FALSE), function(drop_empty) {
++    result <- capture_lta_thin(lta(
++      rbind(data, empty), c("a", "b"), "g", 2, time = "t", missing = "fiml",
++      measurement = "occasion", drop_empty = drop_empty,
++      n_starts = 1, seed = 1, max_iter = 500))
++    expect_length(result$thin, 3L)
++    expect_true(all(grepl("2.0 Gaussian membership mass for 4",
++                         vapply(result$thin, conditionMessage, character(1)),
++                         fixed = TRUE)))
++    expect_equal(sum(result$fit$informative), 90L)
++  }))
++})
++
++test_that("LTA thin measurement warnings use scaled sampling memberships", {
++  invisible(lapply(c("invariant", "occasion"), function(measurement) {
++    # Nine raw rare memberships support a density, but their small weights do not.
++    data <- lta_thin_data(9L)
++    data$w <- ifelse(data$g >= 28L, 0.2, 1)
++    result <- capture_lta_thin(lta(
++      data, c("a", "b"), "g", 2, time = "t", weights = "w",
++      measurement = measurement, n_starts = 1, seed = 1, max_iter = 500))
++    weighted <- result$fit$subject_posteriors *
++      unname(result$fit$sampling_weights[as.character(data$g)])
++    expect_equal(min(colSums(result$fit$subject_posteriors)), 9, tolerance = 1e-7)
++    expect_lt(min(colSums(weighted)), 4)
++    expect_length(result$thin, if (measurement == "occasion") 3L else 1L)
++    # Conversely, a well-supported weighted profile must not warn merely
++    # because its unweighted membership is small.
++    data <- lta_thin_data()
++    data$w <- ifelse(data$g == 30L, 10, 1)
++    result <- capture_lta_thin(lta(
++      data, c("a", "b"), "g", 2, time = "t", weights = "w",
++      measurement = measurement, n_starts = 1, seed = 1, max_iter = 500))
++    expect_equal(min(colSums(result$fit$subject_posteriors)), 3, tolerance = 1e-7)
++    expect_length(result$thin, 0L)
++  }))
++})
++
++test_that("categorical-only LTA rows do not support a Gaussian density", {
++  data <- lta_thin_data(9L)
++  data$category <- factor(ifelse(data$g >= 28L, "rare", "common"))
++  data[data$g >= 29L, c("a", "b")] <- NA_real_
++  invisible(lapply(c("homogeneous", "occasion"), function(transitions) {
++    result <- capture_lta_thin(lta(
++      data, c("a", "b", "category"), "g", 2, time = "t",
++      categorical = "category", missing = "fiml", transitions = transitions,
++      n_starts = 1, seed = 1, max_iter = 500))
++    expect_gt(min(colSums(result$fit$subject_posteriors)), 8.9)
++    expect_true(all(result$fit$informative))
++    expect_length(result$thin, 1L)
++    expect_match(paste(vapply(result$thin, conditionMessage, character(1)),
++                       collapse = " "), "3.0 Gaussian membership mass for 4")
++  }))
++})

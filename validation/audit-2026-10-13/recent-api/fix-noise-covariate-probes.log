@@ -1,0 +1,111 @@
+List of 5
+ $ noise_entropy                     :List of 2
+  ..$ :List of 5
+  .. ..$ profiles              : int 1
+  .. ..$ grid_entropy          : num 0.877
+  .. ..$ comparison_entropy    : num 0.877
+  .. ..$ fit_entropy           :'data.frame':	2 obs. of  5 variables:
+  .. ..$ classification_entropy: num [1:2] 0.877 0.968
+  ..$ :List of 5
+  .. ..$ profiles              : int 2
+  .. ..$ grid_entropy          : num 0.968
+  .. ..$ comparison_entropy    : num 0.968
+  .. ..$ fit_entropy           :'data.frame':	2 obs. of  5 variables:
+  .. ..$ classification_entropy: num [1:2] 0.877 0.968
+ $ covariate_grid                    :List of 3
+  ..$ table:'data.frame':	2 obs. of  26 variables:
+  .. ..$ n_profiles       : int [1:2] 2 3
+  .. ..$ n_group_classes  : int [1:2] 1 1
+  .. ..$ model            : chr [1:2] "VVI" "VVI"
+  .. ..$ log_likelihood   : num [1:2] -1281 -1122
+  .. ..$ n_parameters     : int [1:2] 10 16
+  .. ..$ aic              : num [1:2] 2581 2276
+  .. ..$ kic              : num [1:2] 2594 2295
+  .. ..$ bic_groups       : num [1:2] 2618 2335
+  .. ..$ bic_individual   : num [1:2] 2618 2335
+  .. ..$ sabic_groups     : num [1:2] 2587 2284
+  .. ..$ sabic_individual : num [1:2] 2587 2284
+  .. ..$ caic_groups      : num [1:2] 2628 2351
+  .. ..$ caic_individual  : num [1:2] 2628 2351
+  .. ..$ awe_groups       : num [1:2] 2705 2474
+  .. ..$ awe_individual   : num [1:2] 2731 2518
+  .. ..$ icl_groups       : num [1:2] 2618 2335
+  .. ..$ icl_individual   : num [1:2] 2644 2379
+  .. ..$ clc_groups       : num [1:2] 2561 2244
+  .. ..$ clc_individual   : num [1:2] 2587 2288
+  .. ..$ profile_entropy  : num [1:2] 0.938 0.933
+  .. ..$ group_entropy    : num [1:2] NA NA
+  .. ..$ converged        : logi [1:2] TRUE TRUE
+  .. ..$ boundary         : logi [1:2] FALSE FALSE
+  .. ..$ n_best_replicated: int [1:2] NA NA
+  .. ..$ warnings         : chr [1:2] "" ""
+  .. ..$ error            : chr [1:2] NA NA
+  ..$ fits :List of 2
+  .. ..$ profiles2:List of 56
+  .. .. ..- attr(*, "class")= chr "multilpa_covariates"
+  .. ..$ profiles3:List of 56
+  .. .. ..- attr(*, "class")= chr "multilpa_covariates"
+  ..$ call : language enumerate_classes(data = d, vars = vars, id = NULL, n_profiles = n_profiles,      model = model, seed = 1, profil| __truncated__
+  ..- attr(*, "class")= chr "multilpa_enumeration"
+ $ covariate_fit_missing_replications:List of 2
+  ..$ names       : chr [1:56] "means" "variances" "log_likelihood" "group_log_likelihood" ...
+  ..$ replications: NULL
+ $ direct_covariates                 :Classes ‘latents_comparison’, ‘latents_table’ and 'data.frame':	2 obs. of  35 variables:
+  ..$ model            : chr [1:2] "a" "b"
+  ..$ n_profiles       : int [1:2] 2 3
+  ..$ n_group_classes  : int [1:2] 1 1
+  ..$ structure        : chr [1:2] "VVI" "VVI"
+  ..$ n_parameters     : int [1:2] 10 16
+  ..$ log_likelihood   : num [1:2] -1281 -1122
+  ..$ aic              : num [1:2] 2581 2276
+  ..$ kic              : num [1:2] 2594 2295
+  ..$ bic_groups       : num [1:2] 2618 2335
+  ..$ bic_individual   : num [1:2] 2618 2335
+  ..$ sabic_groups     : num [1:2] 2587 2284
+  ..$ sabic_individual : num [1:2] 2587 2284
+  ..$ caic_groups      : num [1:2] 2628 2351
+  ..$ caic_individual  : num [1:2] 2628 2351
+  ..$ awe_groups       : num [1:2] 2705 2474
+  ..$ awe_individual   : num [1:2] 2731 2518
+  ..$ icl_groups       : num [1:2] 2618 2335
+  ..$ icl_individual   : num [1:2] 2644 2379
+  ..$ clc_groups       : num [1:2] 2561 2244
+  ..$ clc_individual   : num [1:2] 2587 2288
+  ..$ profile_entropy  : num [1:2] 0.938 0.933
+  ..$ group_entropy    : num [1:2] NA NA
+  ..$ avepp_min        : num [1:2] 0.975 0.952
+  ..$ avepp_max        : num [1:2] 1 0.986
+  ..$ avepp_mean       : num [1:2] 0.987 0.973
+  ..$ avepp_below      : int [1:2] 0 0
+  ..$ group_avepp_min  : num [1:2] NA NA
+  ..$ group_avepp_max  : num [1:2] NA NA
+  ..$ group_avepp_mean : num [1:2] NA NA
+  ..$ group_avepp_below: int [1:2] NA NA
+  ..$ smallest_share   : num [1:2] 0.4586 0.0998
+  ..$ converged        : logi [1:2] TRUE TRUE
+  ..$ n_best_replicated: int [1:2] NA NA
+  ..$ delta_bic        : num [1:2] 283 0
+  ..$ bic_weight       : num [1:2] 3.26e-62 1.00
+  ..- attr(*, "title")= chr "Model comparison"
+  ..- attr(*, "display")=List of 11
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  .. ..$ :List of 4
+  ..- attr(*, "marks")= chr [1:2] "" "  <- lowest BIC"
+  ..- attr(*, "models")=List of 2
+  .. ..$ a:List of 56
+  .. .. ..- attr(*, "class")= chr "multilpa_covariates"
+  .. ..$ b:List of 56
+  .. .. ..- attr(*, "class")= chr "multilpa_covariates"
+ $ near_linear_knee                  :List of 3
+  ..$ at      : int 2
+  ..$ distance: num [1:4] 0.00 2.36e-07 3.93e-17 0.00
+  ..$ rising  : logi FALSE

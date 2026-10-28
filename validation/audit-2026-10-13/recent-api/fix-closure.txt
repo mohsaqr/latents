@@ -1,0 +1,61 @@
+RA-01: fixed — classifications follow comparison row filtering and order;
+zero-row comparisons return a typed empty classification table.
+RA-02: fixed — general LTA grid comparisons reuse shared information-criterion
+and posterior-summary formulas through a private read-only diagnostic view.
+No inference engine's accepted classes were broadened. Criteria agree with
+homogeneous and general fit BICs; smallest shares use appropriate posterior
+counts/weights. Empty Gaussian blocks are normalized across engines.
+RA-03: fixed — direct homogeneous/general transitions and membership-covariate
+models share supported comparison dispatch and classification reporting.
+RA-04: fixed — smallest-class plots retain covariance structure and separate
+series by group count plus structure. PNG reviewed; HTML preview available at
+tmp/audit-fix-previews/smallest-structures.html.
+RA-05: fixed — comparison catalogue adds classification only for families that
+support this comparison schema; regression comparison all returns its available
+comparison table without failing on an unsupported classification request.
+RA-06: fixed — family and transition grids implement all, returning candidates
+plus best. All-failed grids return their available candidates table; standalone
+best still raises the released failed-candidate condition. Criterion aliases
+and the released best spelling are preserved.
+RA-07: fixed — identity checks reconstruct original centered continuous values,
+include categorical codes and category labels, ordinal/count values, groups,
+row/group order, time, sampling weights, and centering transformation. General
+LTA's numerical centers are restored before comparison; different distribution
+specifications are not mistaken for different raw ordinal/count observations.
+RA-08: fixed in owned roxygen prose — the statistic and published calibration
+remain unchanged. It is named maximum perpendicular chord-distance knee and
+explicitly qualified as simplified Kneedle-inspired without smoothing or
+sensitivity thresholds; tiny positive bends may still yield a knee. Root's
+docs agent handles corresponding vignette/plot-help claims.
+RA-09: fixed — enumeration and comparison relative entropy use the complete
+posterior matrix, including the noise column, and agree with fit/classification
+entropy at both one-Gaussian-plus-noise and multiple-Gaussian-plus-noise counts.
+RA-10: fixed — membership-covariate candidates use NA for absent replication
+counts and resolve covariance codes from the older structure switches when
+these fits do not store covariance_structure.
+
+Verification completed:
+- Existing targeted tests: 637 passed assertions, 66 blocks; no failures,
+  errors, warnings, or skips (includes original knee calibration regression).
+- New tests/testthat/test-audit-recent-api.R: 40 passed assertions, 8 blocks;
+  no failures, errors, warnings, or skips.
+- Independent weighted, all-categorical, and count-transition comparisons
+  succeeded with BIC/classification assertions in fix-family-probe.R.
+- Original synthetic API probes rerun successfully for intended fixed behavior;
+  shifted raw data and renamed categories now raise incomparable-model errors.
+- git diff --check on owned tracked sources succeeded.
+
+No commits or generated man/NAMESPACE changes. Full package gates and final
+roxygen are delegated to root. These functional checks establish the concrete
+reported fixes, not correctness over every model/input/platform/statistical
+configuration.
+
+Final noise-share refinement requested by root:
+smallest_share retains the documented minimum Gaussian profile share, with
+all weighted posterior mass (including noise) in its denominator; Gaussian
+mass is not renormalized. The smallest-profile plot uses the same denominator
+and derives missing effective counts from stored posteriors for membership
+models/older fits. Added two noise-share assertions. Final focused+enumeration
+suite: 363 assertions/35 blocks, zero failures/errors/warnings/skips. Focused
+new file contributes 42 assertions/8 blocks. Separate smoke on saved converged
+membership fits confirmed the smallest plot works without effective counts.

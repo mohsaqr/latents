@@ -1,0 +1,12 @@
+            group   likelihood    posterior
+[1,] 2.357465e-22 5.684342e-14 9.509279e-34
+[2,] 0.000000e+00 1.136868e-13 4.950242e-34
+[3,] 1.110223e-16 5.684342e-14 1.110223e-16
+[4,] 2.357465e-22 5.684342e-14 6.054642e-33
+[1] "comparisons" "ledger"     
+
+compared   exempt  partial 
+      65       28       11 
+
+compared   exempt 
+      76       28 

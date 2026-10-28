@@ -1,0 +1,36 @@
+Release 0.96.1 claim registry reconciliation — 2026-10-20
+
+Changed tracked file: equivalence/CLAIMS.csv only.
+
+The outer equivalence suite found 26 stale exact-phrase registrations among
+67 claims. Inspection of all affected documentation paragraphs showed the
+same substantive claims in current source wording, usually rewrapped or
+rephrased. Reconciled those 26 phrase fields across seven source files.
+No claims were deleted, moved to another source, or reclassified as unbacked.
+Every reference, backing test filename/name and explanatory note is byte-for-
+byte unchanged after CSV parsing. No production code, documentation, test
+assertions, tolerances or fixtures changed in this repair.
+
+The one existing unbacked registration remains explicitly identified: Mplus's
+boundary-fixing convention. Its note still states that there is no numerical
+equivalence test for that convention. No additional unsupported claims were
+identified from the changed paragraphs; numerical backing tests are handled
+by the complete outer suite, not inferred from this phrase-only registry run.
+
+Focused verification, with pkgload::load_all and testthat::test_file:
+- Before: 4 test cases; 271 expectations; 245 passed, 26 failed,
+  zero errors, warnings or skips. Exit status 1.
+- After: 4 test cases; 271 expectations; all 271 passed,
+  zero failures, errors, warnings or skips. Exit status 0.
+- git diff --check for equivalence/CLAIMS.csv: clean.
+
+Retained evidence:
+- CLAIMS-before.csv: exact registry before the reconciliation.
+- before.log / before.rds / before-cases.csv: reproduced failure.
+- after.log / after.rds / after-cases.csv: corrected registry verification.
+- phrase-changes.csv: all 26 old/new phrases, source paths and current lines.
+- reconcile.R / reconcile.log: exact field changes and invariants.
+- run-claims.R: focused test runner used for both states.
+
+Parent release agent owns full-suite revalidation, root learning/handoff logs,
+staging, commits and CI. None of those actions were performed by this agent.

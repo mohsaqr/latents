@@ -1,0 +1,3 @@
+"file","test","message"
+"test-vignette-claims.R","the numbers in the latent profile workflow hold","Profile 6: 9.8 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."
+"test-vignette-claims.R","the numbers in the latent profile workflow hold","Profile 5: 14.7 members for 20 means and variances; the solution may be spurious. Fit fewer profiles or shared variances."

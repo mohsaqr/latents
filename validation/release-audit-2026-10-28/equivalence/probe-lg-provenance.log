@@ -1,0 +1,10 @@
+     type checked matched
+1  INPUTS      16      16
+2 OUTPUTS      16      16
+ r01  r02  r03  r04  r05  w01  w02  w03 
+TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE 
+              case               quantity latent_gold latents difference
+3 negative-control estimate Cluster(2)<-1     -0.8705 -0.8605       0.01
+  tolerance agrees
+3   5.2e-05  FALSE
+Output hashes and .rds/.dat parity checked here; production test checks input hashes only.

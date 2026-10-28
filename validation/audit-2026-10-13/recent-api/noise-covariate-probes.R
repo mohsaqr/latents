@@ -1,0 +1,23 @@
+pkgload::load_all(quiet=TRUE)
+quiet <- function(e) suppressWarnings(suppressMessages(e))
+cap <- function(e) tryCatch(e,error=function(c) list(error=conditionMessage(c),class=class(c)))
+set.seed(3)
+x <- rbind(matrix(rnorm(135*3,2),135,3),matrix(rnorm(135*3,-2),135,3),matrix(runif(30*3,-10,10),30,3))
+colnames(x)<-c("a","b","c")
+d<-as.data.frame(x)
+grid <- quiet(enumerate_lpa(d,c("a","b","c"),n_profiles=1:2,model="VVI",noise=TRUE,n_starts=2,seed=1))
+cmp<-compare_models(grid)
+results<-list(noise_entropy = lapply(1:2,function(p) {
+  f<-get_candidate(grid,p)
+  list(profiles=p, grid_entropy=as.data.frame(grid)$profile_entropy[p],
+       comparison_entropy=cmp$profile_entropy[p],fit_entropy=get_results(f,"entropy"),
+       classification_entropy=unique(get_results(cmp,"classification")$relative_entropy))
+}))
+results$covariate_grid<-cap(quiet(enumerate_lpa(d,c("a","b"),n_profiles=2:3,model="VVI",profile_covariates="c",n_starts=1,seed=1)))
+f1<-quiet(lpa(d,c("a","b"),n_profiles=2,profile_covariates="c",n_starts=1,seed=1))
+f2<-quiet(lpa(d,c("a","b"),n_profiles=3,profile_covariates="c",n_starts=1,seed=1))
+results$covariate_fit_missing_replications<-list(names=names(f1),replications=f1$n_best_replicated)
+results$direct_covariates<-cap(compare_models(a=f1,b=f2))
+results$near_linear_knee <- .latents_kneedle(1:4,c(100,99-1e-6,98,97))
+saveRDS(results,"validation/audit-2026-10-13/recent-api/noise-covariate-probes.rds")
+str(results,max.level=3)

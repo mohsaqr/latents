@@ -1,0 +1,1 @@
+Interrupted intentionally on parent instruction before completion. Windows socket-cleanup follow-up requires a fresh final snapshot. This partial run is not passing-suite evidence. Claims271 and depmix15 passed before interruption during enumeration; no final totals were produced.

@@ -1,0 +1,149 @@
+
+PROBE: bars intervals FALSE layers 
+    geom_hline       geom_col  geom_errorbar 
+   "GeomHline"      "GeomCol" "GeomErrorbar" 
+
+PROBE: profiles intervals FALSE layers 
+  geom_line  geom_point   geom_text 
+ "GeomLine" "GeomPoint"  "GeomText" 
+
+PROBE: centered all 
+[1] "profiles"      "bars"          "heatmap"       "probabilities"
+[5] "sizes"         "entropy"       "posteriors"    "avepp"        
+
+PROBE: noise generic entropy 
+ERROR: latents_unsupported_noise plot(what = "entropy") does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it. 
+
+PROBE: noise named entropy 
+                                                                                                       subtitle 
+"Each case's entropy relative to a flat posterior (0 = certain, 1 = flat); relative entropy = 1 - mean = 0.870" 
+                                                                                                         range1 
+                                                                                           "0.0182453661111822" 
+                                                                                                         range2 
+                                                                                             "1.04984290887664" 
+                                                                                                 posterior_sum1 
+                                                                                           "0.0547036392678916" 
+                                                                                                 posterior_sum2 
+                                                                                            "0.988531082002633" 
+
+PROBE: noise named AvePP 
+  column row average_posterior       assigned_label posterior_label text_colour
+1      1   1        0.93237114  Assigned 1 (n = 97)       Profile 1       white
+2      2   1        0.01167799  Assigned 1 (n = 97)       Profile 2      grey10
+3      1   2        0.02027104 Assigned 2 (n = 103)       Profile 1      grey10
+4      2   2        0.91975538 Assigned 2 (n = 103)       Profile 2       white
+  label
+1  0.93
+2  0.01
+3  0.02
+4  0.92
+
+PROBE: weighted entropy table versus plot 
+$table
+        level n_classes n_units entropy_sum relative_entropy
+1 individuals         2     200    14.12922        0.8980792
+2      groups         1     200     0.00000               NA
+
+$subtitle
+[1] "Each case's entropy relative to a flat posterior (0 = certain, 1 = flat); relative entropy = 1 - mean = 0.898"
+
+
+PROBE: binomial training predict identity 
+   training   newdata  n ratio
+1  7.491337 0.7491337 10    10
+2 14.778906 0.7389453 20    20
+3  7.114075 0.7114075 10    10
+4 13.473312 0.6736656 20    20
+5  8.663173 0.8663173 10    10
+6 15.903943 0.7951972 20    20
+
+PROBE: mixture missing data error class 
+ERROR: simpleError missing values in object 
+
+PROBE: mixture newdata missing predictor error class 
+ERROR: simpleError object 'x' not found 
+
+PROBE: mixture zero rows 
+[1] row    fitted
+<0 rows> (or 0-length row.names)
+
+PROBE: seed NULL RNG advances 
+[1] FALSE
+
+PROBE: seed integer restores RNG 
+[1] TRUE
+
+PROBE: docs plot method aliases 
+[1] "latents-plots"    "plot_profiles"    "plot_responses"   "plot_prevalence" 
+[5] "plot_diagnostics" "plot_transitions" "plot_tree"        "plot_enumeration"
+[9] "plot_views"      
+
+PROBE: legacy enumeration what abbreviations 
+ERROR: latents_unknown_criterion `enum` is not an information criterion in the enumeration grid. 
+
+PROBE: weighted tree agrees weighted counts 
+$tree
+            profile     share
+profile_11        1 0.4720917
+profile_2         2 0.5279083
+profile_111       1 0.4575277
+profile_21        2 0.5424723
+profile_112       1 0.4708982
+profile_22        2 0.5291018
+profile_113       1 0.4583611
+profile_23        2 0.5416389
+
+$key
+          profile      share
+profile_1       1 0.09746791
+profile_2       2 0.90253209
+
+
+PROBE: fitted predictor-only posterior ids unnecessary 
+  row class posterior probability_class_1
+1   1     1         1                   1
+2   2     1         1                   1
+
+PROBE: named plots on inherited subclass 
+ERROR: latents_nothing_to_plot plot_profiles() cannot draw a `my_lpa` fit, whose plot() offers . 
+
+PROBE: growth seeded simulation rows and RNG 
+$dim
+[1] 140   2
+
+$head
+     sim_1    sim_2
+1 2.857463 1.375045
+2 1.711493 3.365384
+3 5.110037 1.585329
+4 2.504905 3.542361
+5 2.890788 2.252207
+6 1.491023 2.138097
+
+$reproducible
+[1] TRUE
+
+$rng
+[1] TRUE
+
+
+PROBE: growth named diagnostics 
+ERROR: simpleError `x` must be a fitted model of this package 
+
+PROBE: growth no inference trajectories 
+$class
+[1] "ggplot2::ggplot" "ggplot"          "ggplot2::gg"     "S7_object"      
+[5] "gg"             
+
+$layer_types
+    geom_ribbon       geom_line  geom_linerange      geom_point       geom_text 
+   "GeomRibbon"      "GeomLine" "GeomLinerange"     "GeomPoint"      "GeomText" 
+
+
+PROBE: growth no inference random build 
+[1] "ggplot2::ggplot_built" "ggplot_built"          "ggplot2::gg"          
+[4] "S7_object"            
+
+PROBE: ported mixture plot has no draw side effect inside loop 
+     before  after_loop after_print 
+          0           0           1 

@@ -1,0 +1,37 @@
+Merged by replacing all eight rerun files in the original full suite, without double counting.
+   files    tests   passed   failed   errors warnings  skipped 
+     210     1827    12488        0        0        2       16 
+                         file
+          test-lta-parallel.R
+          test-lta-parallel.R
+ test-parallel-profile-pool.R
+ test-parallel-profile-pool.R
+ test-parallel-profile-pool.R
+ test-parallel-profile-pool.R
+           test-sensitivity.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+     test-parallel-recovery.R
+                                                                        test
+            both lta engines have identical forked starts and emEM screening
+ transition grids match serial and direct fits for both searches and engines
+       profile grids match serial and direct categorical and continuous fits
+             a recovered categorical grid start preserves all fitted results
+          a persistently killed categorical start leaves other starts intact
+                    losing every categorical start fails only that candidate
+              parallel seeds give the serial table for every refitted family
+             a killed fork task is retried once and recovers its exact value
+             a permanently killed fork task leaves other task results intact
+     ordinary errors in start code are recorded without a process-loss retry
+                 recovered flat starts preserve the complete transition grid
+        a recovered direct lta start preserves the undisturbed fitted object
+  a genuine transition start error is neither retried nor called worker loss
+       a permanently lost flat start is reported alongside fitted candidates
+           losing all starts fails only their candidate in a transition grid
+    emEM aggregates recovered screening and finalist losses into one warning

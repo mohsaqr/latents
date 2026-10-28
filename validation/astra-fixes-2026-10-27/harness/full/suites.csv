@@ -1,0 +1,16 @@
+"suite","status","compared","agreed","values","outputs_not_covered","warnings","seconds","reason","first_warning"
+"depmixs4","ran",482,482,29412,8,0,14.14,NA,NA
+"flexmix","ran",433,433,29933,0,0,18.72,NA,NA
+"glca","ran",362,362,57400,0,0,19.37,NA,NA
+"hard-depmixs4","ran",1190,1190,163548,8,0,179.8,NA,NA
+"hard-mclust","ran",1720,1720,91818,0,4,57.32,NA,"Profiles 1, 2, 3: 14.0, 13.0, 13.0 Gaussian membership mass for 20 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+"hard-polca","ran",1013,1013,118383,0,0,125.98,NA,NA
+"invariance","ran",826,826,38840,11,0,5.82,NA,NA
+"lcmm","ran",467,467,34865,0,0,43.52,NA,NA
+"mclust","ran",475,475,22412,0,0,21.01,NA,NA
+"mplus-twolevel-lca","ran",770,770,395792,0,0,144.47,NA,NA
+"multilevlca","ran",360,360,2041615,0,0,141.2,NA,NA
+"polca","ran",870,870,118857,0,0,86.99,NA,NA
+"published","ran",41,41,41,NA,0,241.38,NA,NA
+"refusals","ran",50,49,50,NA,0,2.02,NA,NA
+"stability","ran",9,9,9,NA,0,52.24,NA,NA

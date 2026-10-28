@@ -1,0 +1,35 @@
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+      case n_shared exact_loglik exact_iterations
+1 diagonal        2         TRUE             TRUE
+2     full        3         TRUE             TRUE
+3  pattern        3         TRUE             TRUE
+4   direct        3         TRUE             TRUE
+5    prior        2         TRUE             TRUE
+6    noise        3         TRUE             TRUE
+7    mixed        2         TRUE             TRUE
+8  missing        2         TRUE             TRUE
+$valid
+[1]  TRUE FALSE FALSE  TRUE  TRUE
+
+$stage
+[1] "final"    "screened" "final"    "final"    "screened"
+
+$best_start
+[1] 4
+
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+$n_starts
+[1] 1
+
+$n_screen
+NULL
+
+$iterations
+[1] 0
+
+$search
+[1] "emEM"
+
+[1] TRUE

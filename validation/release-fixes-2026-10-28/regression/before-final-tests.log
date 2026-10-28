@@ -1,0 +1,166 @@
+release-audit-regression: .1.234.5.678.9.abc.d.efgW..hij..W....kl...W....mn...W....op...
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. an excluded regression row cannot remove inference ('test-release-audit-regression.R:39:14') - The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+
+2. excluded groups cannot choose regression inference coordinates ('test-release-audit-regression.R:79:16') - The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+
+3. excluded groups cannot choose regression inference coordinates ('test-release-audit-regression.R:79:5') - The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+
+4. excluded groups cannot choose regression inference coordinates ('test-release-audit-regression.R:79:5') - The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-release-audit-regression.R:24:7'): shared regression disper
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── 2. Failure ('test-release-audit-regression.R:26:7'): shared regression disper
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── 3. Failure ('test-release-audit-regression.R:28:7'): shared regression disper
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA
+`expected`: 3.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── 4. Failure ('test-release-audit-regression.R:29:7'): shared regression disper
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── 5. Failure ('test-release-audit-regression.R:24:7'): shared regression disper
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── 6. Failure ('test-release-audit-regression.R:26:7'): shared regression disper
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+
+── 7. Failure ('test-release-audit-regression.R:28:7'): shared regression disper
+Expected `classes[[quantity]]` to equal `unname(expected)`.
+Differences:
+  `actual`:  NA  NA
+`expected`: 0.7 0.7
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-regression.R:28:7
+
+── 8. Failure ('test-release-audit-regression.R:29:7'): shared regression disper
+Expected `all(is.finite(classes[[paste0(quantity, "_std_error")]]))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(...) at test-release-audit-regression.R:29:7
+
+── 9. Failure ('test-release-audit-regression.R:24:7'): shared regression disper
+Expected `key %in% names(coef(fit))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(key %in% names(coef(fit))) at test-release-audit-regression.R:24:7
+
+── 10. Failure ('test-release-audit-regression.R:26:7'): shared regression dispe
+Expected `any(grepl("[.]all[.]class_", names(coef(fit))))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-regression.R:14:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-regression.R:15:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_false(any(grepl("[.]all[.]class_", names(coef(fit))))) at test-release-audit-regression.R:26:7
+  ... and 15 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Keep trying!
+                                                                 test failed
+1 shared regression dispersions retain public names and finite errors     16
+2                  an excluded regression row cannot remove inference      3
+3      excluded groups cannot choose regression inference coordinates      6
+  warning passed
+1       0      8
+2       1      4
+3       3     21

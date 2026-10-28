@@ -1,0 +1,17 @@
+arguments <- commandArgs(trailingOnly = TRUE)
+stopifnot(length(arguments) == 1L, arguments %in% c("before", "after"))
+output <- file.path("validation", "release-0.96.1-2026-10-20", "claims")
+Sys.setenv(NOT_CRAN = "true")
+pkgload::load_all(".", quiet = TRUE)
+cat("Registry fingerprint:", unname(tools::md5sum("equivalence/CLAIMS.csv")), "\n")
+cat("Package version:", read.dcf("DESCRIPTION", fields = "Version"), "\n")
+results <- testthat::test_file("equivalence/test-claims.R", reporter = "summary",
+                               stop_on_failure = FALSE)
+saveRDS(results, file.path(output, paste0(arguments, ".rds")))
+cases <- as.data.frame(results)
+utils::write.csv(cases[setdiff(names(cases), "result")],
+                 file.path(output, paste0(arguments, "-cases.csv")), row.names = FALSE)
+cat("\nTOTALS\n")
+print(colSums(cases[c("nb", "failed", "skipped", "error", "warning", "passed")]))
+cat("Cases:", nrow(cases), "\n")
+quit(status = as.integer(any(cases$failed > 0 | cases$error)))

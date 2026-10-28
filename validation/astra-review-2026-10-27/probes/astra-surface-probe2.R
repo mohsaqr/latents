@@ -1,0 +1,20 @@
+pkgload::load_all('.', quiet=TRUE)
+set.seed(1027)
+d <- data.frame(id=rep(1:20,each=5),x=rnorm(100),y=rnorm(100))
+.vars <- d
+attempt <- function(expr) {
+ x <- tryCatch(expr,error=identity)
+ if(inherits(x,'condition')) print(list(classes=class(x),message=conditionMessage(x))) else print(x$log_likelihood)
+}
+cat('DIRECT MULTILPA COLLISION\n')
+attempt(multilpa(.vars,vars=c('x','y'),id=NULL,n_profiles=1,n_starts=1,seed=1))
+cat('DIRECT MULTILCA COLLISION\n')
+.vars <- transform(d,x=as.integer(x>0),y=as.integer(y>0))
+attempt(multilca(.vars,vars=c('x','y'),id=NULL,n_profiles=1,n_starts=1,seed=1))
+cat('TWO LEVEL REGRESSION STRUCTURE\n')
+r <- suppressWarnings(mixture_regression(y~x,d,id='id',n_classes=2,n_group_classes=2,n_starts=2,seed=1))
+print(names(r)); print(r$spec[c('nesting','n_classes','n_group_classes')]);print(dim(r$expectation$group_tau))
+print(get_results(r,'fit'))
+cat('GROUP LEVEL REGRESSION CHECKS\n')
+r <- suppressWarnings(mixture_regression(y~x,d,id='id',n_classes=2,class_level='group',n_starts=2,seed=1))
+print(r$spec[c('nesting','n_classes','n_group_classes')]);print(get_results(diagnostics(r,plots=FALSE),'checks'))

@@ -1,0 +1,8 @@
+library(latents,lib.loc='/private/tmp/astra-review/lib')
+s<-readRDS('/tmp/astra-lta-1e+08.rds')
+pack<-function(f)latents:::.lta_pack(latents:::.lta_parameters(f),f$variance_model,f$extra_data)
+a<-pack(s$a);b<-pack(s$b);v<-vcov(s$a)
+print(c(n_theta=length(a),n_vcov=nrow(v)));print(head(names(a)));print(head(rownames(v)))
+print(sort(abs(a-b)/sqrt(diag(v)),decreasing=TRUE))
+print(s$a$means);print(s$b$means)
+print(c(original_boundary=s$a$boundary,padded_boundary=s$b$boundary,corrected_boundary=readRDS('/tmp/astra-lta-chart-corrected.rds')$boundary))

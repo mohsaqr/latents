@@ -1,0 +1,176 @@
+Recent enumeration / candidate / accessor API audit — 2026-10-13
+
+Scope: all 163 top-level functions in R/enumeration.R (31), selection.R (13),
+candidates.R (14), compare-models.R (6), get-data.R (40), accessors.R (35),
+additive-compare.R (10), lta-compare.R (14). Bodies, call contracts, current
+uncommitted diffs, HANDOFF.md, relevant LEARNINGS.md, and associated tests were
+reviewed. No applicable repository or ancestor AGENTS.md found. No production
+code or existing user edits were changed. An inventory row records static
+review, associated passing test suites, and whether a direct probe exists;
+associated tests are NOT a claim that every function was individually executed.
+No exhaustive proof over every input, model, statistical design, platform, or
+numerical edge case is claimed. The audit found reproducible combinations not
+covered by a passing suite. “No finding” means none found within this review.
+
+Validation: NOT_CRAN=true selected test_local filter enumeration|enumerate-verbs|
+get-data|additive-compare|lta-compare|tidy-classes|compat-0921: 73 test blocks,
+698 passed assertions, zero failures, errors, warnings, or skips. Independent
+public synthetic probes ran against the working tree. Tests and probes are
+saved in targeted-tests.rds, targeted-tests.log, probes.R/.rds/.log, and
+noise-covariate-probes.R/.rds/.log. Source-vs-HEAD diffs establish recency below.
+
+Actionable findings (all verified; RA-07 is a lower-priority contract gap):
+
+RA-01 [P2] Classification ignores rows removed from a comparison.
+Location: R/compare-models.R:434–436 (.latents_comparison_classification).
+Recency: new uncommitted function.
+Probe: cmp <- compare_models(grid); one <- head(cmp, 1);
+get_results(one, "classification") returns both profiles2_groups1 and
+profiles3_groups1, while one$model contains only profiles2_groups1.
+Cause: data-frame subsetting preserves attr(models), and classification loops
+through all names(models), unlike get_candidate's present-row intersection.
+Impact: diagnostics exported from a filtered comparison describe removed
+models; reordering the comparison also leaves classifications in stale order.
+Fix: restrict models to labels present in x$model, in the current row order.
+Regression: subset to one row, reverse rows, and assert exact model labels/order.
+
+RA-02 [P2] Newly supported transition-grid comparison crashes for general LTA.
+Location: R/compare-models.R:336 (calling .multilpa_enumeration_indices),
+R/enumeration.R:1533, R/diagnostics.R:59 (.multilpa_any_fit guard).
+Recency: new uncommitted grid comparison path; original general LTA fit predates it.
+Probe: enumerate_classes(d, c("y","z"), "g", time="t", n_profiles=2:3,
+n_group_classes=1, transitions="occasion", n_starts=1, seed=1) fits candidates;
+compare_models(the_grid) errors "`x` must be a fitted model of this package".
+Cause: .multilpa_compare_fits applies cross-sectional/homogeneous-fit helpers to
+multilpa_lta, which those helpers explicitly reject and whose stored data and
+count fields differ. Ordinal/count, occasion measurement, order=2, mover/stayer,
+and covariate transition models use this engine, so the gap extends beyond the
+single verified occasion example.
+Fix: implement family-aware comparison extraction/signature/classification or
+explicitly refuse unsupported families with a documented classed condition.
+Regression: compare general and homogeneous grids, then mismatch their data.
+
+RA-03 [P2] Direct fits from transitions and membership-covariate models are rejected.
+Location: R/compare-models.R:110–118.
+Recency: new uncommitted fit dispatch, narrower than its newly broadened docs.
+Probe: compare_models(a=get_candidate(homogeneous_transition_grid,2),
+b=get_candidate(homogeneous_transition_grid,3)) raises latents_bad_argument,
+although compare_models(the_same_grid) succeeds. Direct lpa fits with
+profile_covariates also raise latents_bad_argument.
+Cause: only class multilpa is routed to .multilpa_compare_fits; homogeneous
+transitions and membership fits have standalone classes multilpa_transitions
+and multilpa_covariates. Docs accept fits from multilpa()/get_candidate(), and
+new comparison classification expressly mentions transition models.
+Fix: dispatch all supported measurement families deliberately, addressing RA-02
+for the general engine; include supported membership classes in classification.
+Regression: compare the same models through a grid, get_candidate(), and direct fits.
+
+RA-04 [P2] Smallest-class plots join different covariance structures into one line.
+Location: R/selection.R:344,357–363 (.gg_selection_smallest).
+Recency: entire selection.R is new uncommitted code.
+Probe: a converged 2:3-profile, one-group-class grid crossing EEI and VVI has
+four candidates, but plot(grid,what="smallest") discards the model field and
+assigns every candidate to one "1 group class" curve. ggplot_build confirms
+one group at duplicated x=2 and x=3. The sample shares at x=2 are 0.00660 (EEI)
+and 0.09650 (VVI), joined vertically with no structure label.
+Impact: a default crossed-structure grid produces uninterpretable curves and
+conceals which structure supports a larger or smaller class.
+Fix: retain structure and distinguish it by facet/series, as deltas/heatmap do.
+Regression: cross EEI/VVI and require one series per group-count/structure pair.
+
+RA-05 [P2] get_results(comparison_of_regressions,"all") always errors.
+Location: R/get-data.R:712–718 and R/compare-models.R:425–432.
+Recency: new uncommitted comparison catalogue and classification support.
+Probe: compare two mixture_regression(y~z,d,n_classes=1/2) fits, then
+get_results(comparison,"all") raises latents_bad_argument: unsupported
+per-class classification. Asking for its default comparison table succeeds.
+Cause: catalogue always adds classification; "all" only swallows designated
+absent-table conditions, and regression classification raises bad_argument.
+Impact: "all" cannot return available tables for a supported comparison family.
+Fix: only catalogue supported classification, or use a specific absent-table
+condition; alternatively supply regression classification with compatible schema.
+Regression: "all" returns the comparison for both regression and profile families.
+
+RA-06 [P3] Consolidated help promises "all" for family/transition grids but methods refuse it.
+Location: R/get-data.R:211–213 and family-grid section at 271ff;
+R/additive-compare.R:254–260; R/lta-compare.R:444–450.
+Recency: new uncommitted documentation promise; runtime limitation exists in HEAD
+(get_results methods still match only candidates/best).
+Probe: get_results(additive_grid,"all") and get_results(transition_grid,"all")
+both error "'arg' should be one of candidates, best".
+Fix: implement the stated "all" contract or explicitly exempt these two grid
+families in their consolidated documentation. Keep released best aliases.
+Regression: execute documented "all" shape for every get_results S3 class.
+
+RA-07 [P3 / contract gap] Same-data guard omits centering offsets and categorical labels.
+Location: R/compare-models.R:302–306.
+Recency: new uncommitted signature.
+Verified probes: grand-centered fits on d and transform(d,y=y+100,z=z+100)
+are accepted as fitted to the same observations; categorical fits on low/high
+and no/yes category values are accepted when their integer encodings coincide.
+Cause: compares centered indicator_data and categorical_data codes, omitting
+centering/offsets and categorical_levels/values. These particular translation
+and relabeling examples yield mathematically equivalent likelihoods, so no
+incorrect BIC calculation is demonstrated; the defect is the stated raw-data
+identity/refusal guarantee. Do not present this as a proven invalid statistic.
+Fix: define identity in raw-data/model-frame terms or document accepted equivalence.
+Regression: explicitly specify expected handling of raw shifts/category relabeling.
+
+RA-08 [P2 / scientific naming] The reported Kneedle method is a simplified chord-distance rule.
+Location: R/selection.R:110–127; R/get-data.R:191–194 and derived help.
+Recency: new uncommitted implementation and claim.
+Verified source: Satopaa et al. (2011), Section III, steps 1 and 4–6:
+https://lass.cs.umass.edu/papers/pdf/simplex11.pdf
+The published algorithm smooths, detects local maxima, sets sensitivity-based
+thresholds, and requires a subsequent crossing. Current code chooses the global
+maximum normalized perpendicular chord distance with only a machine-precision
+cutoff. The near-linear curve x=1:4,y=c(100,99-1e-6,98,97) reports point 2 with
+distance 2.36e-7, regardless of practical bend strength. This is an adaptation,
+not a faithful implementation of the full cited algorithm.
+Fix: preserve the owner's intended/calibrated statistic and describe it as a
+maximum perpendicular chord-distance or simplified Kneedle-inspired rule;
+implement full Kneedle only if that is the actual intended contract.
+Regression: independently check normalization/distances, near-linear and
+multiple-bend curves; one published calibration example is insufficient to
+establish equivalence to the full algorithm.
+
+RA-09 [P2] Noise-model comparison entropy disagrees with the fit/classification entropy.
+Location: R/compare-models.R:337; R/enumeration.R:218–219.
+Recency: new uncommitted comparison implementation; grid implementation is
+preexisting (exact code confirmed in git show HEAD:R/enumeration.R:200–201).
+Probe: 300 rows of two Gaussian clusters plus 30 uniform outliers; noise=TRUE,
+profiles=1:2. Grid and comparison report profile_entropy NA for one Gaussian
+profile+noise, while get_results(fit,"entropy") reports 0.877411. For two
+Gaussian profiles+noise they report 0.9840137 versus 0.9675448 from the fit.
+Cause: entropy receives subject_posteriors containing Gaussian columns alone;
+those rows omit noise mass and do not sum to one. AvePP/classification use
+.multilpa_class_posteriors(), which includes the noise column.
+Fix: use the complete posterior helper for all classification entropies, or
+clearly define/recompute a conditional Gaussian-only diagnostic rather than
+feeding incomplete mass to ordinary relative entropy.
+Regression: grid, comparison, fit entropy, and comparison classification must
+agree for one-profile+noise and multi-profile+noise models.
+
+RA-10 [P2] Enumeration with membership covariates crashes after fitting.
+Location: R/enumeration.R:224 (n_best_replicated in candidate-row data.frame).
+Recency: preexisting — identical direct field read appears in HEAD at line 206.
+Probe: enumerate_lpa(d,c("a","b"),n_profiles=2:3,model="VVI",
+profile_covariates="c",n_starts=1,seed=1) errors "arguments imply differing
+number of rows: 1, 0". The same individual lpa fits succeed; their
+n_best_replicated is NULL by design, as covariate starts do not count replications.
+Cause: additional arguments pass the multilpa formal guard and successful
+covariate fits reach row assembly, which assumes replication count exists.
+Fix: use NA_integer_ fallback as the new comparison path already does; review
+other diagnostics for supported membership fits. If enumeration is intentionally
+unsupported, refuse it before fitting and update the documented dots contract.
+Regression: enumerate with profile/group covariates, verify candidate rows and
+classification, and ensure unsupported arguments receive classed entry refusals.
+
+Other notes: all candidate naming/alias/$/completion helpers were inspected,
+including absent components, failed candidates, old saved grids, count/name
+ambiguity and call forwarding. No further actionable issue was established in
+those functions. Additive and homogeneous LTA bootstrap nesting/simulation/refit
+paths passed associated tests and static checks, but this audit did not run a
+new large calibration simulation for every covariance, missingness and family
+combination. No performance claim or statistical coverage guarantee follows
+from the passing functional tests.

@@ -1,0 +1,82 @@
+additive-engine: .......
+additive-families: ....................
+additive-fit: .............
+additive-methods: ....
+audit-services-fixes: ...................
+cluster-robust-cr1: ..
+covariates: .....................
+cross-level: ........
+extra-indicators: S...
+growth-mixture: S.S
+inference-fixed-measurement: SS
+lta-general: SS..SSSSSS
+missing-covariance: .....
+mixture-regression-prediction-design: .
+mixture-regression: .....
+multilevel-growth: ..S
+negative-binomial-regression: ......
+noise: ..S
+numerical-safeguards: S
+ordinal-regression: .....SS
+post-submission-review: .....
+predict: ..
+prior: S
+review-families: SS
+review-growth-quadratic: .......
+structure-inference: S
+transition-inference: S
+vignette-claims: S
+weighted-logits: ...
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. fits agree with Latent GOLD 6.1 ('test-extra-indicators.R:31:3') - Reason: On CRAN
+
+2. analytic growth scores equal numerical derivatives ('test-growth-mixture.R:48:3') - Reason: On CRAN
+
+3. the growth mixture likelihood equals an independent dense likelihood ('test-growth-mixture.R:90:3') - Reason: On CRAN
+
+4. held-measurement standard errors match an independent numerical information ('test-inference-fixed-measurement.R:110:3') - Reason: On CRAN
+
+5. holding only the means leaves the variances estimated and correct ('test-inference-fixed-measurement.R:181:3') - Reason: On CRAN
+
+6. analytic scores equal numerical derivatives in every extension ('test-lta-general.R:63:3') - Reason: On CRAN
+
+7. occasion-specific measurement agrees with Mplus (bundled fixture) ('test-lta-general.R:89:3') - Reason: On CRAN
+
+8. covariate transitions and initial distribution match the exact path sum ('test-lta-general.R:145:3') - Reason: On CRAN
+
+9. occasion-varying transitions and measurement match the exact path sum ('test-lta-general.R:162:3') - Reason: On CRAN
+
+10. second-order transitions match the exact path sum and nest first order ('test-lta-general.R:177:3') - Reason: On CRAN
+
+11. covariate transitions agree with depmixS4 (bundled fixture) ('test-lta-general.R:212:3') - Reason: On CRAN
+
+12. occasion-varying transitions agree with LMest (bundled fixture) ('test-lta-general.R:231:3') - Reason: On CRAN
+
+13. mover-stayer: the stayer class never moves and matches the exact path sum ('test-lta-general.R:249:3') - Reason: On CRAN
+
+14. the likelihood equals the dense multilevel likelihood ('test-multilevel-growth.R:90:3') - Reason: On CRAN
+
+15. a noise fit reproduces mclust's EM from the same start ('test-noise.R:30:3') - Reason: On CRAN
+
+16. (code run outside of `test_that()`) ('test-numerical-safeguards.R:3:1') - Reason: On CRAN
+
+17. the analytic scores are the gradient of the log likelihood ('test-ordinal-regression.R:80:3') - Reason: On CRAN
+
+18. the likelihood is the dense mixture of plogis differences ('test-ordinal-regression.R:104:3') - Reason: On CRAN
+
+19. the MAP M-step matches mclust's EM step from the same posteriors ('test-prior.R:25:3') - Reason: On CRAN
+
+20. reviewed family scores and information match dense Gaussian derivatives ('test-review-families.R:21:3') - Reason: On CRAN
+
+21. all cross-level variance restrictions reproduce weighted raw formulas ('test-review-families.R:94:3') - Reason: On CRAN
+
+22. (code run outside of `test_that()`) ('test-structure-inference.R:8:1') - Reason: On CRAN
+
+23. (code run outside of `test_that()`) ('test-transition-inference.R:6:1') - Reason: On CRAN
+
+24. (code run outside of `test_that()`) ('test-vignette-claims.R:7:1') - Reason: On CRAN
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+     nb  failed   error warning skipped  passed 
+    163       0       0       0      20     143 

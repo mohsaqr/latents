@@ -1,0 +1,75 @@
+Plot/prediction audit fixes — 2026-10-13
+
+PD-01 CLOSED: R/plot-named.R applies the same noise refusal to explicitly
+requested entropy/posteriors/AvePP. Its default all returns supported sizes
+only. Correct-behavior noise tests pass; preview shows sizes and the refusal.
+
+PD-02 CLOSED: R/plot-gg.R tree shares and posterior cross-products use fitted
+sampling weights at their independent-unit level, expanded to fitted rows.
+End-to-end weighted row and weighted group trees now agree with the table's
+effective proportions to 1e-10. Unweighted existing tree tests still pass.
+
+PD-03 CLOSED: R/plot.R normalizes the released unique enumeration/tree view
+abbreviations and explicit NULL before applying the new criterion dispatch.
+Exact old/new calls remain covered by existing tests. New e/enum/t/tr/NULL
+regressions pass.
+
+PD-04 CODE/DOC SOURCE CLOSED; ROOT REGENERATION PENDING: Own plot methods and
+growth predict now use shared @rdname topics instead of @noRd. Shared plot
+help explicitly retains all fourteen formerly deleted method aliases and
+covers method-specific defaults/arguments. Root/recent_api agents annotate
+their other methods and root regenerates man/NAMESPACE. The root's final
+installed-help check should verify aliases and actual usages after roxygen.
+
+PD-05 CLOSED: Binomial count predictions preserve expected-success units.
+The new named-only trials argument (after ..., preserving released positional
+arguments) accepts scalar exposures, a row vector, or a column name. NULL
+uses fitted exposures, or infers exposures from new response columns. An
+aggregated response without those columns must supply trials; trials=1
+requests probabilities. Posterior explicit exposures must agree with the
+observed response. Bernoulli predictions ignore unused outcome columns.
+Tests cover inferred/explicit/vector/column/scalar/zero exposures, probability
+scale, fitted/new-row consistency, posterior agreement/refusal, missing trials
+in both response and class_response, and invalid inputs. All pass.
+
+PD-06 ROOT-OWNED: No vignette/NEWS changes in this worker. Root owns the new
+bootstrap p-value correction to (b+1)/(B+1) and invalid-replicate explanation.
+
+PD-07 CLOSED IN OWN SCOPE: Shared seed help distinguishes NULL advancing the
+stream from explicit-seed restoration. Mixture new-design/response evaluation
+errors are converted to latents_bad_data, matching the consolidated promise.
+New missing-column/NA/non-finite design tests pass. Simulation implementation
+already restored explicit seeds correctly and was retained.
+
+PD-08 CLOSED IN OWN SCOPE: .gg_draw_on_call() prints once then returns the same
+ggplot invisibly. The previously base mixture-regression path uses it; existing
+trajectory/growth paths retain their object-return behavior. Root uses the
+helper for previously base pooled/bootstrap methods. New tests count exactly
+one actual print per bare loop call, verify a nonempty graphics display list,
+check invisible return, and reuse the ggplot with further styling. All pass.
+
+Additional observations addressed:
+- Named plot wrappers walk the full S3 inheritance chain using
+  .multilpa_plot_method(); root uses the same helper in report.R. Regular,
+  named and all views of a downstream subclass pass.
+- bars now respect intervals=FALSE and avoid computing inference. A mocked
+  inference failure demonstrates it is never evaluated; no error-bar layer.
+- Shared named-plot help states its profile/class/transition scope rather than
+  implying every package family is accepted.
+- Numeric categorical-label coercion uses an explicit local warning handler;
+  the resulting invalid scores are diagnosed by the existing classed refusal.
+- Shared help explains plot-on-call invisibility and method-specific unused
+  argument warnings beside the general contract.
+- Root owns README regeneration and course-data wording clarification.
+
+Validation:
+- New tests/testthat/test-audit-plots-predictions.R: 82 assertions pass.
+- Final mixture-regression-prediction-design and mixture-regression tests pass.
+- Final plot-named, plot-gg, plot and predict rerun passes on corrected code.
+  A worker-test-only S3 mock issue was corrected, and subclass all became clean
+  once root's report lookup patch landed.
+- Preview: tmp/audit-plot-prediction-fixes.html (1.3 MB); source Rmd retained.
+  Render clean, no warnings. It includes weighted tree/table, interval-free
+  bars, subclass profiles, supported noise diagnostics, count predictions and
+  two bare-loop regression plots. Root handles any visual-review confirmation.
+- No commits, and no direct man/NAMESPACE generation by this worker.

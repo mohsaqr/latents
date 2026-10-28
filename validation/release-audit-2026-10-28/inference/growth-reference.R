@@ -1,0 +1,22 @@
+Sys.setenv(OPENBLAS_NUM_THREADS=1,OMP_NUM_THREADS=1,VECLIB_MAXIMUM_THREADS=1)
+pkgload::load_all('.',quiet=TRUE)
+set.seed(79)
+n <- 80L; m <- 5L
+d <- data.frame(id=rep(seq_len(n),each=m),time=rep(-2:2,n))
+d$y <- 2+.7*d$time+rep(rnorm(n,sd=1.2),each=m)+rnorm(n*m,sd=.8)
+str(d)
+f <- mixture_regression(y~time,d,n_classes=1,id='id',class_level='group',random=~1,n_starts=1,seed=9,tol=1e-12)
+means <- as.vector(tapply(d$y,d$id,mean))
+beta <- c(mean(d$y),sum(d$time*d$y)/sum(d$time^2))
+sigma2 <- sum((d$y-rep(means,each=m)-beta[2]*d$time)^2)/(n*(m-1))
+tau2 <- mean((means-mean(means))^2)-sigma2/m
+expected <- c(beta,sigma2,tau2)
+actual <- c(as.vector(f$params$beta),f$params$sigma2,unlist(f$params$random_covariance))
+print(data.frame(parameter=c('intercept','slope','residual variance','random variance'),expected,actual,absolute_error=abs(actual-expected)),digits=12,row.names=FALSE)
+stopifnot(max(abs(actual-expected))<1e-5)
+V <- matrix(tau2,m,m)+diag(sigma2,m)
+X <- cbind(1,-2:2)
+expected_beta_vcov <- solve(n*t(X)%*%solve(V,X))
+actual_beta_vcov <- vcov(f)[1:2,1:2]
+cat('coefficient vcov max absolute error:',max(abs(actual_beta_vcov-expected_beta_vcov)),'\n')
+stopifnot(max(abs(actual_beta_vcov-expected_beta_vcov))<1e-5)

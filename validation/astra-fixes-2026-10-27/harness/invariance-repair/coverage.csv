@@ -1,0 +1,911 @@
+"suite","fit","output","n_produced","n_compared","status","reason"
+"invariance","faithful VVV 2, rows permuted","profiles$mean",4,4,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profiles$variance",4,4,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profiles$standard_deviation",4,4,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profiles$mean_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profiles$variance_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, rows permuted","covariances$covariance",8,8,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profile_probabilities$probability",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","profile_probabilities$group_class_probability",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","counts$effective_count",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","counts$effective_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","posteriors$posterior",544,544,"compared",NA
+"invariance","faithful VVV 2, rows permuted","posteriors$modal",544,544,"compared",NA
+"invariance","faithful VVV 2, rows permuted","group_posteriors$group_size",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","group_posteriors$log_likelihood",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","group_posteriors$posterior",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","group_posteriors$modal",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","assignments$profile",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","assignments$group_class",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","assignments$uncertainty",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","assignments$posterior_profile_1",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","assignments$posterior_profile_2",272,272,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$n_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$proportion_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$estimated_n",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$estimated_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$average_posterior",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification$odds_correct_classification",3,3,"compared",NA
+"invariance","faithful VVV 2, rows permuted","average_posteriors$n_assigned",5,5,"compared",NA
+"invariance","faithful VVV 2, rows permuted","average_posteriors$average_posterior",5,5,"compared",NA
+"invariance","faithful VVV 2, rows permuted","classification_errors$probability",5,5,"compared",NA
+"invariance","faithful VVV 2, rows permuted","bch_weights$weight",816,816,"compared",NA
+"invariance","faithful VVV 2, rows permuted","entropy$n_units",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","entropy$entropy_sum",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","entropy$relative_entropy",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","replication$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$observed",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$expected",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$residual",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$statistic",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$df",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$p_value",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","residuals$p_adjusted",2,2,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$kic",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_observations",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_informative",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_profiles",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_group_classes",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, rows permuted","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","faithful VVV 2, rows permuted","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","faithful VVV 2, rows permuted","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, rows permuted","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","faithful VVV 2, rows permuted","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","faithful VVV 2, rows permuted","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, rows permuted","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, rows permuted","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, rows permuted","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, rows permuted","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, rows permuted","starts$start",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, rows permuted","starts$log_likelihood",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, rows permuted","starts$converged",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, rows permuted","starts$iterations",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, rows permuted","starts$boundary",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, rows permuted","data$eruptions",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, rows permuted","data$waiting",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profiles$mean",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profiles$variance",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profiles$standard_deviation",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profiles$mean_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profiles$variance_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","covariances$covariance",8,8,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profile_probabilities$probability",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","profile_probabilities$group_class_probability",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","counts$effective_count",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","counts$effective_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","posteriors$posterior",544,544,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","posteriors$modal",544,544,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","group_posteriors$group_size",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","group_posteriors$log_likelihood",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","group_posteriors$posterior",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","group_posteriors$modal",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","assignments$profile",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","assignments$group_class",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","assignments$uncertainty",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","assignments$posterior_profile_1",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","assignments$posterior_profile_2",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$n_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$proportion_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$estimated_n",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$estimated_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$average_posterior",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification$odds_correct_classification",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","average_posteriors$n_assigned",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","average_posteriors$average_posterior",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","classification_errors$probability",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","bch_weights$weight",816,816,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","entropy$n_units",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","entropy$entropy_sum",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","entropy$relative_entropy",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","replication$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$observed",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$expected",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$residual",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$statistic",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$df",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$p_value",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","residuals$p_adjusted",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$kic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_observations",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_informative",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_profiles",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_group_classes",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","starts$start",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","starts$log_likelihood",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","starts$converged",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","starts$iterations",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","starts$boundary",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","data$eruptions",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03)","data$waiting",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profiles$mean",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profiles$variance",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profiles$standard_deviation",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profiles$mean_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profiles$variance_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","covariances$covariance",8,8,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profile_probabilities$probability",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","profile_probabilities$group_class_probability",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","counts$effective_count",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","counts$effective_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","posteriors$posterior",544,544,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","posteriors$modal",544,544,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","group_posteriors$group_size",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","group_posteriors$log_likelihood",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","group_posteriors$posterior",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","group_posteriors$modal",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","assignments$profile",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","assignments$group_class",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","assignments$uncertainty",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","assignments$posterior_profile_1",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","assignments$posterior_profile_2",272,272,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$n_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$proportion_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$estimated_n",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$estimated_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$average_posterior",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification$odds_correct_classification",3,3,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","average_posteriors$n_assigned",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","average_posteriors$average_posterior",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","classification_errors$probability",5,5,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","bch_weights$weight",816,816,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","entropy$n_units",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","entropy$entropy_sum",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","entropy$relative_entropy",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","replication$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$observed",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$expected",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$residual",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$statistic",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$df",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$p_value",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","residuals$p_adjusted",2,2,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$kic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_observations",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_informative",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_profiles",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_group_classes",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","starts$start",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","starts$log_likelihood",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","starts$converged",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","starts$iterations",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","starts$boundary",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","data$eruptions",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, y -> a + c y with c = (1e-05, 1e+06)","data$waiting",272,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, every unit duplicated","profiles$mean",4,4,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profiles$variance",4,4,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profiles$standard_deviation",4,4,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profiles$mean_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profiles$variance_standard_error",4,4,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","covariances$covariance",8,8,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profile_probabilities$probability",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","profile_probabilities$group_class_probability",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","counts$effective_count",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","counts$effective_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","posteriors$posterior",1088,1088,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","posteriors$modal",1088,1088,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","group_posteriors$group_size",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","group_posteriors$log_likelihood",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","group_posteriors$posterior",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","group_posteriors$modal",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","assignments$profile",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","assignments$group_class",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","assignments$uncertainty",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","assignments$posterior_profile_1",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","assignments$posterior_profile_2",544,544,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$n_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$proportion_modal",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$estimated_n",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$estimated_proportion",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$average_posterior",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification$odds_correct_classification",3,3,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","average_posteriors$n_assigned",5,5,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","average_posteriors$average_posterior",5,5,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","classification_errors$probability",5,5,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","bch_weights$weight",1632,1632,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","entropy$n_units",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","entropy$entropy_sum",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","entropy$relative_entropy",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","replication$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$observed",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$expected",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$residual",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$effective_n",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$statistic",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$df",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$p_value",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","residuals$p_adjusted",2,2,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$kic",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_observations",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_informative",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_profiles",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_group_classes",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_parameters",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$log_likelihood",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$aic",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$bic_groups",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$bic_individual",1,1,"compared",NA
+"invariance","faithful VVV 2, every unit duplicated","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","faithful VVV 2, every unit duplicated","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","faithful VVV 2, every unit duplicated","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","faithful VVV 2, every unit duplicated","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","faithful VVV 2, every unit duplicated","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","faithful VVV 2, every unit duplicated","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, every unit duplicated","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, every unit duplicated","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, every unit duplicated","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, every unit duplicated","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","faithful VVV 2, every unit duplicated","starts$start",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, every unit duplicated","starts$log_likelihood",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, every unit duplicated","starts$converged",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, every unit duplicated","starts$iterations",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, every unit duplicated","starts$boundary",10,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","faithful VVV 2, every unit duplicated","data$eruptions",544,0,"exempt","the input data, returned as given"
+"invariance","faithful VVV 2, every unit duplicated","data$waiting",544,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profiles$mean",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profiles$variance",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profiles$standard_deviation",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profiles$mean_standard_error",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profiles$variance_standard_error",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","covariances$covariance",18,18,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profile_probabilities$probability",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","profile_probabilities$group_class_probability",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","counts$effective_count",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","counts$effective_proportion",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","posteriors$posterior",640,640,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","posteriors$modal",640,640,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","group_posteriors$group_size",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","group_posteriors$log_likelihood",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","group_posteriors$posterior",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","group_posteriors$modal",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","assignments$profile",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","assignments$group_class",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","assignments$uncertainty",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","assignments$posterior_profile_1",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","assignments$posterior_profile_2",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$n_modal",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$proportion_modal",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$estimated_n",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$estimated_proportion",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$average_posterior",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification$odds_correct_classification",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","average_posteriors$n_assigned",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","average_posteriors$average_posterior",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","classification_errors$probability",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","bch_weights$weight",720,720,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","entropy$n_units",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","entropy$entropy_sum",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","entropy$relative_entropy",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","replication$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$observed",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$expected",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$residual",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$effective_n",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$statistic",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$df",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$p_value",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","residuals$p_adjusted",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$aic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$kic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_observations",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_informative",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_profiles",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_group_classes",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_parameters",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$aic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$bic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$bic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","starts$start",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","starts$log_likelihood",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","starts$converged",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","starts$iterations",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","starts$boundary",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","data$y1",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","data$y2",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, rows permuted and groups renamed","data$y3",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, y -> a + c y","profiles$mean",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profiles$variance",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profiles$standard_deviation",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profiles$mean_standard_error",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profiles$variance_standard_error",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","covariances$covariance",18,18,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profile_probabilities$probability",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","profile_probabilities$group_class_probability",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","counts$effective_count",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","counts$effective_proportion",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","posteriors$posterior",640,640,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","posteriors$modal",640,640,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","group_posteriors$group_size",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","group_posteriors$log_likelihood",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","group_posteriors$posterior",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","group_posteriors$modal",80,80,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","assignments$profile",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","assignments$group_class",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","assignments$uncertainty",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","assignments$posterior_profile_1",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","assignments$posterior_profile_2",320,320,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$n_modal",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$proportion_modal",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$estimated_n",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$estimated_proportion",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$average_posterior",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification$odds_correct_classification",4,4,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","average_posteriors$n_assigned",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","average_posteriors$average_posterior",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","classification_errors$probability",8,8,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","bch_weights$weight",720,720,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","entropy$n_units",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","entropy$entropy_sum",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","entropy$relative_entropy",2,2,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","replication$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$observed",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$expected",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$residual",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$effective_n",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$statistic",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$df",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$p_value",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","residuals$p_adjusted",6,6,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$aic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$kic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_observations",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_informative",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_profiles",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_group_classes",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_parameters",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$log_likelihood",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$aic",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$bic_groups",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$bic_individual",1,1,"compared",NA
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","two-level VVI 2 x 2, y -> a + c y","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","two-level VVI 2 x 2, y -> a + c y","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","starts$start",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","starts$log_likelihood",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","starts$converged",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","starts$iterations",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","starts$boundary",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level VVI 2 x 2, y -> a + c y","data$school",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, y -> a + c y","data$y1",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, y -> a + c y","data$y2",320,0,"exempt","the input data, returned as given"
+"invariance","two-level VVI 2 x 2, y -> a + c y","data$y3",320,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, categories renamed","responses$probability",42,42,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","responses$threshold",42,42,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","responses$probability_standard_error",42,42,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","profile_probabilities$probability",3,3,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","profile_probabilities$group_class_probability",3,3,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","counts$effective_count",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","counts$effective_proportion",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","posteriors$posterior",354,354,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","posteriors$modal",354,354,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","group_posteriors$group_size",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","group_posteriors$log_likelihood",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","group_posteriors$posterior",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","group_posteriors$modal",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$profile",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$group_class",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$uncertainty",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$posterior_profile_1",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$posterior_profile_2",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","assignments$posterior_profile_3",118,118,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$n_modal",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$proportion_modal",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$estimated_n",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$estimated_proportion",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$average_posterior",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification$odds_correct_classification",4,4,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","average_posteriors$n_assigned",10,10,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","average_posteriors$average_posterior",10,10,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","classification_errors$probability",10,10,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","bch_weights$weight",472,472,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","entropy$n_units",2,2,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","entropy$entropy_sum",2,2,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","entropy$relative_entropy",2,2,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","replication$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$observed",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$expected",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$residual",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$effective_n",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$statistic",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$df",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$p_value",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","residuals$p_adjusted",63,63,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$aic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$kic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_observations",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_informative",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_profiles",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_group_classes",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_parameters",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$aic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$bic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$bic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, categories renamed","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","carcinoma 3 classes, categories renamed","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","carcinoma 3 classes, categories renamed","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","carcinoma 3 classes, categories renamed","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","carcinoma 3 classes, categories renamed","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","carcinoma 3 classes, categories renamed","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, categories renamed","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, categories renamed","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, categories renamed","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, categories renamed","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, categories renamed","starts$start",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, categories renamed","starts$log_likelihood",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, categories renamed","starts$converged",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, categories renamed","starts$iterations",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, categories renamed","starts$boundary",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","responses$probability",42,42,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","responses$threshold",42,42,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","responses$probability_standard_error",42,42,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","profile_probabilities$probability",3,3,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","profile_probabilities$group_class_probability",3,3,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","counts$effective_count",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","counts$effective_proportion",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","posteriors$posterior",354,354,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","posteriors$modal",354,354,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","group_posteriors$group_size",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","group_posteriors$log_likelihood",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","group_posteriors$posterior",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","group_posteriors$modal",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$profile",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$group_class",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$uncertainty",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$posterior_profile_1",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$posterior_profile_2",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","assignments$posterior_profile_3",118,118,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$n_modal",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$proportion_modal",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$estimated_n",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$estimated_proportion",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$average_posterior",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification$odds_correct_classification",4,4,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","average_posteriors$n_assigned",10,10,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","average_posteriors$average_posterior",10,10,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","classification_errors$probability",10,10,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","bch_weights$weight",472,472,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","entropy$n_units",2,2,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","entropy$entropy_sum",2,2,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","entropy$relative_entropy",2,2,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","replication$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$observed",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$expected",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$residual",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$effective_n",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$statistic",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$df",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$p_value",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","residuals$p_adjusted",63,63,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$aic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$kic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_observations",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_informative",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_profiles",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_group_classes",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_parameters",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$log_likelihood",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$aic",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$bic_groups",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$bic_individual",1,1,"compared",NA
+"invariance","carcinoma 3 classes, indicators renamed","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","carcinoma 3 classes, indicators renamed","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","carcinoma 3 classes, indicators renamed","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","carcinoma 3 classes, indicators renamed","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","carcinoma 3 classes, indicators renamed","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","carcinoma 3 classes, indicators renamed","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","starts$start",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","starts$log_likelihood",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","starts$converged",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","starts$iterations",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","starts$boundary",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","carcinoma 3 classes, indicators renamed","data$item A: x, [item A]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item B: x, [item B]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item C: x, [item C]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item D: x, [item D]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item E: x, [item E]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item F: x, [item F]",118,0,"exempt","the input data, returned as given"
+"invariance","carcinoma 3 classes, indicators renamed","data$item G: x, [item G]",118,0,"exempt","the input data, returned as given"
+"invariance","two-level 2 x 2, four zero-weight groups added","profiles$mean",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profiles$variance",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profiles$standard_deviation",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profiles$mean_standard_error",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profiles$variance_standard_error",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","covariances$covariance",8,8,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$gaussian_mass",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$positive_rows",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$weight_effective_n",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$min_variance_ratio",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$min_standardized_eigenvalue",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","gaussian_diagnostics$boundary",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profile_probabilities$probability",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","profile_probabilities$group_class_probability",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","counts$effective_count",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","counts$effective_proportion",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","posteriors$posterior",380,380,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","posteriors$modal",380,380,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","group_posteriors$group_size",38,38,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","group_posteriors$log_likelihood",38,38,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","group_posteriors$posterior",38,38,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","group_posteriors$modal",38,38,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","assignments$profile",190,190,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","assignments$group_class",190,190,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","assignments$uncertainty",190,190,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","assignments$posterior_profile_1",190,190,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","assignments$posterior_profile_2",190,190,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$n_modal",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$proportion_modal",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$estimated_n",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$estimated_proportion",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$average_posterior",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification$odds_correct_classification",4,4,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","average_posteriors$n_assigned",8,8,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","average_posteriors$average_posterior",8,8,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","classification_errors$probability",8,8,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","bch_weights$weight",330,330,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","entropy$n_units",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","entropy$entropy_sum",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","entropy$relative_entropy",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$n_starts",1,0,"exempt","this program's completed-start budget (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$n_screened",1,0,"exempt","this program's screened-start budget (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$n_converged",1,0,"exempt","this optimiser's converged-start count (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$n_failed",1,0,"exempt","this optimiser's failed-start count (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$n_best_replicated",1,0,"exempt","this optimiser's repeated-best count (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$share",1,0,"exempt","this optimiser's repeated-best share (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$tolerance",1,0,"exempt","this program's threshold for counting repeated starts (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$best_start",1,0,"exempt","which of this program's starts won (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","replication$log_likelihood",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$observed",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$expected",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$residual",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$effective_n",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$statistic",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$df",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$p_value",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","residuals$p_adjusted",2,2,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$log_likelihood",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$n_parameters",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$aic",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$kic",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$bic_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$bic_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$sabic_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$sabic_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$caic_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$caic_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$awe_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$awe_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$icl_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$icl_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$clc_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","information_criteria$clc_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_observations",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_informative",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_profiles",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_group_classes",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_parameters",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_parameters_with_measurement",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$log_likelihood",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$aic",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$bic_groups",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$bic_individual",1,1,"compared",NA
+"invariance","two-level 2 x 2, four zero-weight groups added","model$converged",1,0,"exempt","this optimiser's own stopping flag"
+"invariance","two-level 2 x 2, four zero-weight groups added","model$iterations",1,0,"exempt","this optimiser's iteration count"
+"invariance","two-level 2 x 2, four zero-weight groups added","model$boundary",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","model$small_classes",1,0,"exempt","this package's warning flag, with its own threshold (unit-tested)"
+"invariance","two-level 2 x 2, four zero-weight groups added","model$best_start",1,0,"exempt","which of this program's random starts won"
+"invariance","two-level 2 x 2, four zero-weight groups added","model$n_best_replicated",1,0,"exempt","how many of this program's random starts reached the best value"
+"invariance","two-level 2 x 2, four zero-weight groups added","stages$group_classes",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","stages$log_likelihood",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","stages$parameters",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","stages$parameters_with_measurement",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","stages$converged",1,0,"exempt","this program's search stages; another program's search is not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","starts$start",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","starts$log_likelihood",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","starts$converged",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","starts$iterations",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","starts$boundary",20,0,"exempt","this program's random-start trace; another program's starts are not comparable"
+"invariance","two-level 2 x 2, four zero-weight groups added","data$school",190,0,"exempt","the input data, returned as given"
+"invariance","two-level 2 x 2, four zero-weight groups added","data$w",190,0,"exempt","the input data, returned as given"
+"invariance","two-level 2 x 2, four zero-weight groups added","data$y1",190,0,"exempt","the input data, returned as given"
+"invariance","two-level 2 x 2, four zero-weight groups added","data$y2",190,0,"exempt","the input data, returned as given"

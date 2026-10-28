@@ -1,0 +1,83 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-review-1020-inference.R","review-1020-inference","empty groups do not evade robust validity or alter CR1",22,0,FALSE,FALSE,0,0.91,0.015,0.935,22
+"test-review-1020-inference.R","review-1020-inference","direct-effect inference transforms the full covariance across predictor origins",17,0,FALSE,FALSE,0,0.157,0.00799999999999999,0.18,17
+"test-review-1020-inference.R","review-1020-inference","direct-effect translation stays regular with missing indicators and sampling weights",5,0,FALSE,FALSE,0,0.169,0.005,0.178,5
+"test-review-1020-inference.R","review-1020-inference","irrelevant direct covariates cannot destabilize fitting or inference",6,0,FALSE,FALSE,0,0.0780000000000001,0.00399999999999999,0.0879999999999999,6
+"test-review-1020-inference.R","review-1020-inference","direct-effect charts use target-specific observations and preserve public covariates",9,0,FALSE,FALSE,0,0.0839999999999999,0.005,0.0980000000000001,9
+"test-review-1020-inference.R","review-1020-inference","covariate and both transition engines preserve robust inference under empty padding",18,0,FALSE,FALSE,0,2.775,0.055,2.855,18
+"test-review-1020-zero-weights.R","review-1020-zero-weights","zero-weight groups do not alter robust covariance across model families",12,0,FALSE,FALSE,0,0.754,0.00900000000000001,0.777,12
+"test-review-1020-zero-weights.R","review-1020-zero-weights","zero-weight groups do not satisfy minimum independent unit requirements",6,0,FALSE,FALSE,0,0.103,0.001,0.105,6
+"test-inference.R","inference","observed information reproduces analytic Gaussian standard errors",14,0,FALSE,FALSE,0,0.0680000000000005,0.005,0.0800000000000001,14
+"test-inference.R","inference","score and probability Jacobian agree with independent central differences",6,0,FALSE,FALSE,0,0.048,0.005,0.0590000000000002,6
+"test-inference.R","inference","inference refuses data mismatches and nonregular fits",14,0,FALSE,FALSE,0,0.0790000000000006,0.00199999999999997,0.085,14
+"test-inference.R","inference","full-covariance inference matches analytic multivariate Gaussian information",4,0,FALSE,FALSE,0,0.0389999999999997,0.001,0.0510000000000002,4
+"test-inference.R","inference","diagonal FIML standard errors use each indicator's observed sample size",2,0,FALSE,FALSE,0,0.0229999999999997,0.001,0.0259999999999998,2
+"test-inference.R","inference","full-covariance score and Jacobian match numerical derivatives with missingness",12,0,FALSE,FALSE,0,0.254,0.00900000000000001,0.273,12
+"test-inference.R","inference","centered inference is stable for indicators with large location offsets",2,0,FALSE,FALSE,0,0.0279999999999996,0.002,0.0340000000000007,2
+"test-direct-effects.R","direct-effects","a direct effect agrees with Latent GOLD",10,0,FALSE,FALSE,0,0.289,0.033,0.331,10
+"test-direct-effects.R","direct-effects","the direct-effect score is the gradient of the likelihood",2,0,FALSE,FALSE,0,0.0460000000000003,0.004,0.0580000000000007,2
+"test-direct-effects.R","direct-effects","EM converges as fast on a covariate far from zero",1,0,FALSE,FALSE,0,0.0600000000000005,0.004,0.0800000000000001,1
+"test-direct-effects.R","direct-effects","shifting a covariate moves the means; scaling it scales the effect",9,0,FALSE,FALSE,0,0.491000000000001,0.034,0.536,9
+"test-direct-effects.R","direct-effects","a direct effect nests the model without it and removes the covariate's association",4,0,FALSE,FALSE,0,0.404999999999999,0.023,0.428999999999999,4
+"test-direct-effects.R","direct-effects","a direct-effect fit predicts, refits and simulates with its covariates",8,0,FALSE,FALSE,0,0.181,0.011,0.199,8
+"test-direct-effects.R","direct-effects","direct effects the model cannot hold are refused by class",18,0,FALSE,FALSE,0,0.112,0.004,0.124000000000001,18
+"test-direct-effects.R","direct-effects","bootstrap replicates are refitted with the models' direct effects and patterns",6,0,FALSE,FALSE,0,0.951,0.023,0.979000000000001,6
+"test-direct-effects.R","direct-effects","a staged fit refuses a measurement with direct effects or chosen covariances",2,0,FALSE,FALSE,0,0.0620000000000012,0.001,0.0640000000000001,2
+"test-direct-effects.R","direct-effects","plots draw the cases of a direct-effect fit where its profile means are",5,0,FALSE,FALSE,0,0.462999999999999,0.017,0.512,5
+"test-inference-cache.R","inference-cache","a repeated inference reuses the information and gives the same result",4,0,FALSE,FALSE,0,0.0470000000000006,0.004,0.0540000000000003,4
+"test-inference-cache.R","inference-cache","anything the information depends on computes it anew",3,0,FALSE,FALSE,0,0.0950000000000006,0.004,0.100999999999999,3
+"test-inference-cache.R","inference-cache","the memo keeps the most recent entries and stores no failure",9,0,FALSE,FALSE,0,0.00899999999999856,0.002,0.0169999999999995,9
+"test-inference-cache.R","inference-cache","covariate and transition inference reuse their information too",5,0,FALSE,FALSE,0,0.202,0.01,0.212999999999999,5
+"test-inference-fixed-measurement.R","inference-fixed-measurement","a held-measurement fit reports exactly the parameters it estimated",13,0,FALSE,FALSE,0,0.106999999999999,0.006,0.125999999999999,13
+"test-inference-fixed-measurement.R","inference-fixed-measurement","an unheld fit takes the unconstrained path unchanged",9,0,FALSE,FALSE,0,0.0280000000000005,0.004,0.0389999999999997,9
+"test-inference-fixed-measurement.R","inference-fixed-measurement","inference refuses what a held fit cannot answer",6,0,FALSE,FALSE,0,0.0619999999999994,0.002,0.0650000000000013,6
+"test-inference-fixed-measurement.R","inference-fixed-measurement","fit_staged makes good on its promise of conditional standard errors",5,0,FALSE,FALSE,0,0.0559999999999992,0.004,0.0640000000000001,5
+"test-covariate-inference.R","covariate-inference","the analytic scores agree with a numerical gradient",2,0,FALSE,FALSE,0,0.0830000000000002,0.00900000000000001,0.0910000000000011,2
+"test-covariate-inference.R","covariate-inference","the table is tidy and covers every level",12,0,FALSE,FALSE,0,0.0359999999999996,0.004,0.0470000000000006,12
+"test-covariate-inference.R","covariate-inference","vcov is a named, symmetric matrix over the same parameters",5,0,FALSE,FALSE,0,0.00999999999999979,0.002,0.0170000000000012,5
+"test-covariate-inference.R","covariate-inference","vcov agrees with the tidy table on whichever scale is asked for",3,0,FALSE,FALSE,0,0.0140000000000011,0.001,0.0190000000000001,3
+"test-covariate-inference.R","covariate-inference","a named multiplicity correction is applied and nothing is corrected by stealth",7,0,FALSE,FALSE,0,0.0139999999999993,0.002,0.0239999999999991,7
+"test-covariate-inference.R","covariate-inference","the robust sandwich runs and differs from the observed information",5,0,FALSE,FALSE,0,0.0170000000000012,0.00199999999999995,0.0229999999999997,5
+"test-covariate-inference.R","covariate-inference","a broken contract is refused rather than answered",4,0,FALSE,FALSE,0,0.00899999999999856,0.001,0.011000000000001,4
+"test-covariate-inference.R","covariate-inference","confidence level widens the interval as asked",2,0,FALSE,FALSE,0,0.011000000000001,0.001,0.0150000000000006,2
+"test-transition-inference.R","transition-inference","the analytic score is the derivative of the forward-backward likelihood",7,0,FALSE,FALSE,0,6.471,0.378,6.919,7
+"test-transition-inference.R","transition-inference","transition score indexing also holds with three profiles",1,0,FALSE,FALSE,0,0.183999999999997,0.00800000000000001,0.194000000000003,1
+"test-transition-inference.R","transition-inference","coef(), vcov() and parameter_inference() name every parameter alike",8,0,FALSE,FALSE,0,0.369,0.016,0.393000000000001,8
+"test-transition-inference.R","transition-inference","the probability rows are internally consistent",4,0,FALSE,FALSE,0,2.873,0.18,3.058,4
+"test-transition-inference.R","transition-inference","inference refuses what it cannot answer, by class",3,0,FALSE,FALSE,0,0.0790000000000006,0.00300000000000011,0.0829999999999984,3
+"test-categorical-inference.R","categorical-inference","categorical coordinates round-trip through encode and decode",5,0,FALSE,FALSE,0,0.128999999999998,0.0109999999999999,0.143999999999998,5
+"test-categorical-inference.R","categorical-inference","the categorical score agrees with a numerical gradient",3,0,FALSE,FALSE,0,0.140000000000001,0.00900000000000012,0.151,3
+"test-categorical-inference.R","categorical-inference","the tidy table carries the response block at the measurement level",8,0,FALSE,FALSE,0,0.174,0.012,0.193000000000001,8
+"test-categorical-inference.R","categorical-inference","mixed continuous and categorical measurement is supported",6,0,FALSE,FALSE,0,0.0249999999999986,0.00299999999999989,0.0330000000000013,6
+"test-categorical-inference.R","categorical-inference","the wrong categorical data is refused",1,0,FALSE,FALSE,0,0.131,0.0089999999999999,0.143000000000001,1
+"test-categorical-inference.R","categorical-inference","the robust sandwich is available for categorical measurement",4,0,FALSE,FALSE,0,0.132000000000001,0.0110000000000001,0.145,4
+"test-lta-general.R","lta-general","the general engine reproduces the homogeneous lta() exactly",2,0,FALSE,FALSE,0,1.726,0.079,1.876,2
+"test-lta-general.R","lta-general","covariance structures in lta() nest and reproduce the default",5,0,FALSE,FALSE,0,0.204999999999998,0.012,0.219999999999999,5
+"test-lta-general.R","lta-general","tables, methods and refusals of the general model",10,0,FALSE,FALSE,0,0.373999999999999,0.014,0.392999999999997,10
+"test-lta-general.R","lta-general","EM alone reaches a stationary point (the quasi-Newton finish masks M-step bugs)",4,0,FALSE,FALSE,0,1.678,0.0450000000000002,1.726,4
+"test-lta-general.R","lta-general","covariance structures combine with the extensions and nest",9,0,FALSE,FALSE,0,1.838,0.113,1.945,9
+"test-lta-general.R","lta-general","chart scores of the extended model equal the likelihood's gradient",3,0,FALSE,FALSE,0,1.373,0.0959999999999999,1.442,3
+"test-math-inference-audit.R","math-inference-audit","mixed full covariance inference matches Gaussian and binomial information",6,0,FALSE,FALSE,0,0.0240000000000009,0.00300000000000011,0.0389999999999979,6
+"test-math-inference-audit.R","math-inference-audit","all-categorical full covariance inference has no Gaussian parameters",4,0,FALSE,FALSE,0,0.0359999999999978,0.00299999999999989,0.0470000000000006,4
+"test-math-inference-audit.R","math-inference-audit","full covariance inference is invariant to indicator units",2,0,FALSE,FALSE,0,0.0350000000000001,0.002,0.0390000000000015,2
+"test-math-inference-audit.R","math-inference-audit","Wald inference refuses active categorical probability constraints",2,0,FALSE,FALSE,0,0.00600000000000023,0.00099999999999989,0.00900000000000034,2
+"test-math-inference-audit.R","math-inference-audit","covariate inference supports empty membership coefficient blocks",8,0,FALSE,FALSE,0,0.0399999999999991,0.004,0.0509999999999984,8
+"test-math-inference-audit.R","math-inference-audit","covariate inference refuses nonregular fits and altered fitting data",9,0,FALSE,FALSE,0,0.0429999999999993,0.002,0.0480000000000018,9
+"test-math-inference-audit.R","math-inference-audit","covariate posteriors preserve priors under huge common density offsets",3,0,FALSE,FALSE,0,0.00400000000000134,0.00099999999999989,0.00999999999999801,3
+"test-math-inference-audit.R","math-inference-audit","covariate likelihood retains finite log priors below probability underflow",2,0,FALSE,FALSE,0,0.00199999999999889,0.00100000000000011,0.00600000000000023,2
+"test-math-inference-audit.R","math-inference-audit","large common logits and group evidence preserve multinomial normalization",4,0,FALSE,FALSE,0,0.00399999999999778,0.00100000000000011,0.00900000000000034,4
+"test-math-inference-audit.R","math-inference-audit","observed information rejects a negative definite Hessian",1,0,FALSE,FALSE,0,0.00600000000000023,0.00099999999999989,0.00700000000000145,1
+"test-weights.R","weights","integer weights reproduce the duplicated data under every structure",12,0,FALSE,FALSE,0,0.0710000000000015,0.006,0.0890000000000022,12
+"test-weights.R","weights","integer weights reproduce duplication for categorical and FIML fits",2,0,FALSE,FALSE,0,0.0479999999999983,0.002,0.0529999999999973,2
+"test-weights.R","weights","two-level weights weight groups, and reproduce duplicated groups",6,0,FALSE,FALSE,0,0.0449999999999982,0.004,0.0579999999999998,6
+"test-weights.R","weights","membership covariates take weights and reproduce duplication",3,0,FALSE,FALSE,0,0.059000000000001,0.004,0.0640000000000001,3
+"test-weights.R","weights","unit weights change nothing and weights are scale invariant",4,0,FALSE,FALSE,0,0.0629999999999988,0.00300000000000011,0.0700000000000003,4
+"test-weights.R","weights","weighted scores are the gradient of the weighted pseudo likelihood",5,0,FALSE,FALSE,0,0.16,0.01,0.174,5
+"test-weights.R","weights","weighted fits default to robust errors and refuse the others",6,0,FALSE,FALSE,0,0.0909999999999975,0.00299999999999989,0.0990000000000002,6
+"test-weights.R","weights","weights are validated and unsupported pairings refused",10,0,FALSE,FALSE,0,0.0309999999999988,0.00099999999999989,0.0329999999999977,10
+"test-weights.R","weights","a weighted fit says so when printed",3,0,FALSE,FALSE,0,0.0229999999999997,0.00099999999999989,0.0279999999999987,3
+"test-weights.R","weights","weighted transition fits reproduce duplicated persons",7,0,FALSE,FALSE,0,1.913,0.116,2.026,7
+"test-weights.R","weights","weighted transition scores are the gradient of the pseudo likelihood",1,0,FALSE,FALSE,0,0.549,0.03,0.594000000000001,1
+"test-weights.R","weights","weighted group-class families reproduce duplicated groups",8,0,FALSE,FALSE,0,0.708000000000002,0.024,0.740000000000002,8
+"test-weights.R","weights","weighted additive scores are the gradient and inference is robust",2,0,FALSE,FALSE,0,0.0899999999999999,0.00499999999999989,0.0959999999999965,2
+"test-weights.R","weights","weighted mixture regressions reproduce duplication at every nesting",7,0,FALSE,FALSE,0,0.097999999999999,0.00500000000000012,0.107999999999997,7

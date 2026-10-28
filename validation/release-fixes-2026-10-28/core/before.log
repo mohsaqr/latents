@@ -1,0 +1,51 @@
+release-audit-core: 1...2345..
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-release-audit-core.R:7:10'): zero-weight sentinel groups leav
+Error in `.additive_expectation(stats, merged)`: posterior rows must sum to one
+Backtrace:
+     ▆
+  1. └─fit(rbind(data, excluded)) at test-release-audit-core.R:13:3
+  2.   ├─base::suppressWarnings(...) at test-release-audit-core.R:7:10
+  3.   │ └─base::withCallingHandlers(...)
+  4.   └─latents::multilpa(...)
+  5.     └─base::eval(setup_call, setup_env) at latents/R/multilpa.R:1532:3
+  6.       └─base::eval(setup_call, setup_env)
+  7.         └─latents:::.multilpa_setup(...)
+  8.           └─latents:::.additive_fit(...) at latents/R/multilpa.R:1623:5
+  9.             └─latents:::.additive_collapsed_classes(...) at latents/R/additive.R:984:3
+ 10.               └─base::vapply(...) at latents/R/additive.R:780:3
+ 11.                 └─latents (local) FUN(X[[i]], ...)
+ 12.                   └─latents (local) indistinguishable(k, l) at latents/R/additive.R:783:5
+ 13.                     └─latents:::.additive_expectation(stats, merged) at latents/R/additive.R:778:5
+ 14.                       └─base::stopifnot(...) at latents/R/additive.R:300:3
+
+── 2. Failure ('test-release-audit-core.R:49:3'): one profile plus noise retains
+Expected `value("relative entropy")` to equal `entropy$relative_entropy[entropy$level == "individuals"]`.
+Differences:
+  `actual`:  NA
+`expected`: 0.9
+
+
+── 3. Failure ('test-release-audit-core.R:51:3'): one profile plus noise retains
+Expected `value("lowest average posterior")` to equal `min(classification$average_posterior)`.
+Differences:
+  `actual`:  NA
+`expected`: 1.0
+
+
+── 4. Failure ('test-release-audit-core.R:53:3'): one profile plus noise retains
+Expected `value("smallest class")` to equal `min(classification$estimated_proportion)`.
+Differences:
+  `actual`:                  
+`expected`: 0.166078305451941
+
+
+── 5. Failure ('test-release-audit-core.R:54:3'): one profile plus noise retains
+Expected `any(checks$status[checks$domain == "Classification"] == "n/a")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════

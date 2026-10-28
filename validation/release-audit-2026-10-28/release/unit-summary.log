@@ -1,0 +1,10 @@
+Initial sandbox full run:
+     nb  failed skipped   error warning  passed 
+  13324       0      22       6       0   13302 
+Nine-file rerun with socket/CPU-count access:
+     nb  failed skipped   error warning  passed 
+   1085       0      15       0       0    1070 
+Consolidated results (replace those nine files, do not double-count):
+     nb  failed skipped   error warning  passed 
+  13356       0      16       0       0   13340 
+Files: 220 test blocks: 1953 

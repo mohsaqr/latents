@@ -1,0 +1,42 @@
+Fitted a single-level latent class model.
+MULTILCA DATA EVALUATIONS 2 
+LCA DATA EVALUATIONS 1 
+              domain                           check       level     value
+1         Estimation            best start converged       model   1.00000
+2         Estimation  best log likelihood reached by       model   2.00000
+3         Estimation     starts failed or unfinished       model   0.00000
+4         Class size                  smallest class individuals   1.00000
+5         Class size   classes with no assigned unit individuals   0.00000
+6     Classification        lowest average posterior individuals   1.00000
+7 Local independence             bivariate residuals       model        NA
+8        Information log likelihood, parameters, BIC       model -70.09861
+            display criterion status
+1               yes               ok
+2     2 of 2 starts             info
+3            0 of 2               ok
+4            100.0%             info
+5            0 of 1               ok
+6   1.000 (class_1)             info
+7                                n/a
+8 -70.10, 2, 149.41             info
+                                                  detail    reference
+1                                                                    
+2                                                        Masyn (2013)
+3                                                                    
+4                                                                    
+5                                                                    
+6                                                        Nagin (2005)
+7                      not defined for this model family             
+8 meaningful only against other models: compare_models()             
+LEGACY DIAGNOSTICS
+Classification quality: 1 profile
+
+  Best likelihood      reached by 1 of 1 starts
+  Relative entropy     individuals NA
+  Smallest class       individuals 100.0 (100.0%)
+  Lowest avg posterior individuals 1.000
+  Largest residual     0.087  (x, y; profile_1)
+
+Tables: get_results(x, what = "entropy" | "classification" | 
+        "average_posteriors" | "residuals" | "replication" | "all"). plot(x) draws them.
+[1] TRUE

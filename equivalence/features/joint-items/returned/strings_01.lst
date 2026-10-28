@@ -1,0 +1,268 @@
+strings_01-lg.dat
+File name:	strings_01-lg.dat	
+File size:	20964 bytes  600 records	
+File date:	2026-Oct-20 9:08:52 PM	
+Syntax:	strings_01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+strings_01	2-Cluster	-2095.0153	4298.7785	4224.0307	4241.0307	17	22.5793	30	0.83	0.0935	0.6685	
+strings_01 - L² = 22.5793
+2-Cluster Syntax Model	
+					
+Number of cases	600				
+Number of parameters (Npar)	17				
+Random Seed	20261020				
+Best Start Seed	368114				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	30	p-value			
+L-squared (L²)	22.5793	0.83			
+X-squared	21.7424	0.86			
+Cressie-Read	21.9383	0.86			
+BIC (based on L²)	-169.3286				
+AIC (based on L²)	-37.4207				
+AIC3 (based on L²)	-67.4207				
+CAIC (based on L²)	-199.3286				
+SABIC (based on L²)	-74.0868				
+Dissimilarity Index	0.0686	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2095.0153				
+Log-prior	0.0000				
+Log-posterior	-2095.0153				
+BIC (based on LL)	4298.7785				
+AIC (based on LL)	4224.0307				
+AIC3 (based on LL)	4241.0307				
+CAIC (based on LL)	4315.7785				
+SABIC (based on LL)	4244.8082				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0935				
+Reduction of errors (Lambda)	0.8085				
+Entropy R-squared	0.6685				
+Standard R-squared	0.7258				
+Classification log-likelihood	-2232.8090				
+Entropy	137.7937				
+CLC	4465.6180				
+AWE	4734.1136				
+ICL-BIC	4574.3658				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	276.5592	30.6295	307.1887		
+2	25.4408	267.3705	292.8113		
+Total	302.0000	298.0000	600.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	266.0800	41.1087	307.1887		
+2	41.1087	251.7027	292.8113		
+Total	307.1887	292.8113	600.0000		
+					
+Files					
+Infile	C:\lgfeatures\joint-items\strings_01\strings_01-lg.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	150				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+outfile					
+file name	strings_01_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+p1	Nominal	3			
+high	high				
+low	low				
+mid	mid				
+p2	Nominal	2			
+no	no				
+yes	yes				
+u1	Nominal	2			
+agree	agree				
+disagree	disagree				
+u2	Nominal	2			
+agree	agree				
+disagree	disagree				
+u3	Nominal	2			
+agree	agree				
+disagree	disagree				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=150 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'strings_01_posteriors.txt' classification keep id;
+variables
+   dependent p1 nominal, p2 nominal, u1 nominal, u2 nominal, u3 nominal;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   p1 <- 1 + Cluster;
+   p2 <- 1 + Cluster;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   p1 <-> p2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	0.1028	1	0.75				
+Cluster(2)	<-	1			-0.0479	0.1495	-0.3206	0.75							
+															
+p1(high)	<-	1			0.0000	.	.	.	73.8412	2	9.2e-17				
+p1(low)	<-	1			1.3442	0.2335	5.7558	8.6e-9							
+p1(mid)	<-	1			-0.1358	0.2833	-0.4793	0.63							
+p1(high)	<-	Cluster(1)			0.0000	.	.	.	46.8392	2	6.7e-11				
+p1(low)	<-	Cluster(1)			0.0000	.	.	.							
+p1(mid)	<-	Cluster(1)			0.0000	.	.	.							
+p1(high)	<-	Cluster(2)			0.0000	.	.	.							
+p1(low)	<-	Cluster(2)			-3.0365	0.4767	-6.3695	1.9e-10							
+p1(mid)	<-	Cluster(2)			-2.1244	0.5159	-4.1176	3.8e-5							
+															
+p2(no)	<-	1			0.0000	.	.	.	8.3109	1	0.0040				
+p2(yes)	<-	1			-1.6985	0.5892	-2.8829	0.0040							
+p2(no)	<-	Cluster(1)			0.0000	.	.	.	4.4128	1	0.036				
+p2(yes)	<-	Cluster(1)			0.0000	.	.	.							
+p2(no)	<-	Cluster(2)			0.0000	.	.	.							
+p2(yes)	<-	Cluster(2)			1.3463	0.6409	2.1007	0.036							
+															
+u1(agree)	<-	1			0.0000	.	.	.	35.4807	1	2.6e-9				
+u1(disagree)	<-	1			-1.7128	0.2875	-5.9566	2.6e-9							
+u1(agree)	<-	Cluster(1)			0.0000	.	.	.	87.9439	1	6.7e-21				
+u1(disagree)	<-	Cluster(1)			0.0000	.	.	.							
+u1(agree)	<-	Cluster(2)			0.0000	.	.	.							
+u1(disagree)	<-	Cluster(2)			3.5932	0.3832	9.3778	6.7e-21							
+															
+u2(agree)	<-	1			0.0000	.	.	.	54.4646	1	1.6e-13				
+u2(disagree)	<-	1			-1.4122	0.1914	-7.3800	1.6e-13							
+u2(agree)	<-	Cluster(1)			0.0000	.	.	.	85.8016	1	2.0e-20				
+u2(disagree)	<-	Cluster(1)			0.0000	.	.	.							
+u2(agree)	<-	Cluster(2)			0.0000	.	.	.							
+u2(disagree)	<-	Cluster(2)			2.3398	0.2526	9.2629	2.0e-20							
+															
+u3(agree)	<-	1			0.0000	.	.	.	36.7065	1	1.4e-9				
+u3(disagree)	<-	1			-0.9261	0.1529	-6.0586	1.4e-9							
+u3(agree)	<-	Cluster(1)			0.0000	.	.	.	62.9736	1	2.1e-15				
+u3(disagree)	<-	Cluster(1)			0.0000	.	.	.							
+u3(agree)	<-	Cluster(2)			0.0000	.	.	.							
+u3(disagree)	<-	Cluster(2)			1.7552	0.2212	7.9356	2.1e-15							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+p1(high)	<->	p2(no)	|	Cluster(1)	0.0000	.	.	.	102.5536	4	2.8e-21	0.0662	2	0.97	
+p1(high)	<->	p2(yes)	|	Cluster(1)	0.0000	.	.	.							
+p1(low)	<->	p2(no)	|	Cluster(1)	0.0000	.	.	.							
+p1(low)	<->	p2(yes)	|	Cluster(1)	-0.2072	0.6367	-0.3255	0.74							
+p1(mid)	<->	p2(no)	|	Cluster(1)	0.0000	.	.	.							
+p1(mid)	<->	p2(yes)	|	Cluster(1)	2.2501	0.6286	3.5793	0.00034							
+p1(high)	<->	p2(no)	|	Cluster(2)	0.0000	.	.	.							
+p1(high)	<->	p2(yes)	|	Cluster(2)	0.0000	.	.	.							
+p1(low)	<->	p2(no)	|	Cluster(2)	0.0000	.	.	.							
+p1(low)	<->	p2(yes)	|	Cluster(2)	0.0123	0.5216	0.0235	0.98							
+p1(mid)	<->	p2(no)	|	Cluster(2)	0.0000	.	.	.							
+p1(mid)	<->	p2(yes)	|	Cluster(2)	2.4146	0.4301	5.6144	2.0e-8							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	0.1028	1	0.75	
+	
+p1	<-	 Cluster			Cluster	1	2	46.8392	2	6.7e-11	
+	
+p2	<-	 Cluster			Cluster	1	2	4.4128	1	0.036	
+	
+u1	<-	 Cluster			Cluster	1	2	87.9439	1	6.7e-21	
+	
+u2	<-	 Cluster			Cluster	1	2	85.8016	1	2.0e-20	
+	
+u3	<-	 Cluster			Cluster	1	2	62.9736	1	2.1e-15	
+Covariances / Associations	
+p1	<->	p2	|	Cluster	Cluster	1	2	0.0662	2	0.97	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5120	0.0374	0.4880	0.0374	 	 	
+p1	 	
+high	0.1483	0.0279	0.5787	0.0355	0.3583	0.0196	
+low	0.5523	0.0341	0.1071	0.0280	0.3350	0.0193	
+mid	0.2994	0.0291	0.3142	0.0302	0.3067	0.0188	
+p2	 	
+no	0.7156	0.0301	0.4378	0.0341	0.5800	0.0201	
+yes	0.2844	0.0301	0.5622	0.0341	0.4200	0.0201	
+u1	 	
+agree	0.8472	0.0372	0.1323	0.0334	0.4983	0.0204	
+disagree	0.1528	0.0372	0.8677	0.0334	0.5017	0.0204	
+u2	 	
+agree	0.8041	0.0301	0.2834	0.0355	0.5500	0.0203	
+disagree	0.1959	0.0301	0.7166	0.0355	0.4500	0.0203	
+u3	 	
+agree	0.7163	0.0311	0.3038	0.0334	0.5150	0.0204	
+disagree	0.2837	0.0311	0.6962	0.0334	0.4850	0.0204	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	 	 	 	 	 	 	 	 	
+ 	0.5120	0.0374	0.4880	0.0374	 	 	 	 	 	 	 	 	
+	
+ 	p1	
+ 	high		high		low		low		mid		mid		
+ 	p2	
+Cluster	no	s.e.	yes	s.e.	no	s.e.	yes	s.e.	no	s.e.	yes	s.e.	
+1	0.1254	0.0242	0.0229	0.0130	0.4808	0.0339	0.0715	0.0164	0.1094	0.0193	0.1900	0.0254	
+2	0.3398	0.0311	0.2389	0.0280	0.0625	0.0240	0.0445	0.0144	0.0355	0.0131	0.2788	0.0291	
+	
+ 	u1	
+Cluster	agree	s.e.	disagree	s.e.	 	 	 	 	 	 	 	 	
+1	0.8472	0.0372	0.1528	0.0372	 	 	 	 	 	 	 	 	
+2	0.1323	0.0334	0.8677	0.0334	 	 	 	 	 	 	 	 	
+	
+ 	u2	
+Cluster	agree	s.e.	disagree	s.e.	 	 	 	 	 	 	 	 	
+1	0.8041	0.0301	0.1959	0.0301	 	 	 	 	 	 	 	 	
+2	0.2834	0.0355	0.7166	0.0355	 	 	 	 	 	 	 	 	
+	
+ 	u3	
+Cluster	agree	s.e.	disagree	s.e.	 	 	 	 	 	 	 	 	
+1	0.7163	0.0311	0.2837	0.0311	 	 	 	 	 	 	 	 	
+2	0.3038	0.0334	0.6962	0.0334	 	 	 	 	 	 	 	 	

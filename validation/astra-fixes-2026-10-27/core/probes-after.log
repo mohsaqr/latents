@@ -1,0 +1,128 @@
+      beta.x       sigma2           ll 
+   0.4159812    3.5840188 -123.4308542 
+Mixture of gaussian regressions: 1 classes (one class per row)
+y ~ 0 + x
+60 rows | log likelihood -123.4309 | BIC 255.05 | entropy NA
+Converged: TRUE | iterations: 1 | best likelihood reached by 1 of 1 completed starts (1 run)
+
+  class_1
+x   0.416
+
+Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
+beta.(Intercept)           sigma2               ll 
+       2.1271982        0.9624063      -83.9867552 
+Mixture of gaussian regressions: 1 classes (one class per row)
+y ~ 1 + offset(o)
+60 rows | log likelihood -83.9868 | BIC 176.16 | entropy NA
+Converged: TRUE | iterations: 1 | best likelihood reached by 1 of 1 completed starts (1 run)
+
+            class_1
+(Intercept)   2.127
+
+Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
+[[1]]
+Mixture of gaussian regressions: 1 classes (one class per row)
+y ~ 0 + x
+60 rows | log likelihood -123.4309 | BIC 255.05 | entropy NA
+Converged: TRUE | iterations: 1 | best likelihood reached by 1 of 1 completed starts (1 run)
+
+  class_1
+x   0.416
+
+Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
+
+[[2]]
+Mixture of gaussian regressions: 1 classes (one class per row)
+y ~ 1 + offset(o)
+60 rows | log likelihood -83.9868 | BIC 176.16 | entropy NA
+Converged: TRUE | iterations: 1 | best likelihood reached by 1 of 1 completed starts (1 run)
+
+            class_1
+(Intercept)   2.127
+
+Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
+
+     base converged 
+-115.2865    1.0000 
+<latents_growth_mixture> Growth mixture model
+ A list of 18 components. Tables: get_results(x, what = ); raw list: str(unclass(x))
+$scale
+[1] 1e+05
+
+$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+$scale
+[1] 1e+08
+
+$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+$scale
+[1] 1e+10
+
+$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+$scale
+[1] 1e+20
+
+$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+$scale
+[1] 1e+100
+
+$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+[[1]]
+[[1]]$scale
+[1] 1e+05
+
+[[1]]$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+
+[[2]]
+[[2]]$scale
+[1] 1e+08
+
+[[2]]$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+
+[[3]]
+[[3]]$scale
+[1] 1e+10
+
+[[3]]$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+
+[[4]]
+[[4]]$scale
+[1] 1e+20
+
+[[4]]$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+
+[[5]]
+[[5]]$scale
+[1] 1e+100
+
+[[5]]$result
+       ll       gap converged 
+-115.2865    0.0000    1.0000 
+
+

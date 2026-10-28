@@ -1,0 +1,49 @@
+        level       outcome          term   parameter   estimate standard_error
+1 measurement     profile_1             x        mean  0.1012097     0.06585884
+2 measurement     profile_1             y        mean -0.1143967     0.06604452
+3 measurement     profile_2             x        mean  4.9481513     0.06635222
+4 measurement     profile_2             y        mean -4.1003177     0.06584784
+5 measurement        shared             x    variance  0.9683658     0.04574990
+6 measurement        shared             y    variance  0.9683658     0.04574990
+7     profile     profile_1 group_class_1 probability  0.5008101     0.02362389
+8     profile     profile_2 group_class_1 probability  0.4991899     0.02362389
+9       group group_class_1          <NA> probability  1.0000000     0.00000000
+   statistic   p_value p_adjusted    conf_low   conf_high
+1   1.536767 0.1243504  0.1243504 -0.02787127  0.23029064
+2  -1.732114 0.0832532  0.0832532 -0.24384154  0.01504822
+3  74.574012 0.0000000  0.0000000  4.81810331  5.07819924
+4 -62.269586 0.0000000  0.0000000 -4.22937707 -3.97125828
+5         NA        NA         NA  0.88272388  1.06231660
+6         NA        NA         NA  0.88272388  1.06231660
+7         NA        NA         NA  0.45463316  0.54697331
+8         NA        NA         NA  0.45302669  0.54536684
+9         NA        NA         NA  1.00000000  1.00000000
+        model scale max_estimate_error_in_SE max_relative_SE_error
+small     EII 1e-06             6.281962e-11          6.485923e-13
+large     EII 1e+06             6.281962e-11          6.914469e-13
+small1    VII 1e-06             1.210178e-07          1.294514e-08
+large1    VII 1e+06             4.444421e-14          4.012568e-12
+small2    EEI 1e-06             1.456471e-08          1.556952e-09
+large2    EEI 1e+06             5.447630e-14          1.930234e-12
+small3    VEI 1e-06             3.329509e-14          1.736389e-12
+large3    VEI 1e+06             5.489944e-14          1.451950e-12
+small4    EVI 1e-06             3.484845e-14          3.063994e-12
+large4    EVI 1e+06             2.627006e-09          2.971563e-10
+small5    VVI 1e-06             6.773024e-14          1.408873e-12
+large5    VVI 1e+06             7.777468e-07          1.174664e-07
+small6    EEE 1e-06             2.654906e-14          7.183143e-13
+large6    EEE 1e+06             1.111500e-08          1.187969e-09
+small7    VEE 1e-06             7.334009e-08          8.336769e-09
+large7    VEE 1e+06             4.118158e-14          1.939116e-12
+small8    EVE 1e-06             5.222118e-14          4.065415e-12
+large8    EVE 1e+06             3.574554e-14          2.220779e-12
+small9    VVE 1e-06             2.444312e-14          2.934541e-12
+large9    VVE 1e+06             5.264593e-14          3.247846e-12
+small10   EEV 1e-06             4.504657e-14          1.400879e-12
+large10   EEV 1e+06             7.187351e-14          2.082334e-12
+small11   VEV 1e-06             3.407487e-14          2.346123e-12
+large11   VEV 1e+06             2.271658e-14          3.844258e-12
+small12   EVV 1e-06             3.576620e-14          1.455058e-12
+large12   EVV 1e+06             5.089917e-14          2.672751e-12
+small13   VVV 1e-06             3.817119e-14          3.443246e-12
+large13   VVV 1e+06             3.186647e-14          2.162936e-12

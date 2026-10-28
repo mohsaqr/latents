@@ -1,0 +1,38 @@
+n_theta  n_vcov 
+     14      14 
+NULL
+[1] "mean.all.profile_1.y1"         "mean.all.profile_1.y2"        
+[3] "mean.all.profile_2.y1"         "mean.all.profile_2.y2"        
+[5] "log_variance.all.profile_1.y1" "log_variance.all.profile_1.y2"
+          transition.group_class_1.profile_1->profile_2.w 
+                                             1.577333e+00 
+          transition.group_class_1.profile_2->profile_1.w 
+                                             5.721397e-01 
+                        initial.group_class_1.profile_1.z 
+                                             1.995182e-01 
+transition.group_class_1.profile_2->profile_1.(Intercept) 
+                                             1.161741e-01 
+transition.group_class_1.profile_1->profile_2.(Intercept) 
+                                             9.288683e-02 
+              initial.group_class_1.profile_1.(Intercept) 
+                                             1.828739e-02 
+                            log_variance.all.profile_2.y1 
+                                             1.898795e-04 
+                            log_variance.all.profile_1.y1 
+                                             1.048576e-04 
+                                    mean.all.profile_2.y1 
+                                             5.706974e-05 
+                                    mean.all.profile_1.y1 
+                                             4.917880e-05 
+                            log_variance.all.profile_1.y2 
+                                             3.978053e-05 
+                            log_variance.all.profile_2.y2 
+                                             3.415886e-05 
+                                    mean.all.profile_1.y2 
+                                             3.129186e-05 
+                                    mean.all.profile_2.y2 
+                                             2.957908e-05 
+NULL
+NULL
+ original_boundary    padded_boundary corrected_boundary 
+             FALSE               TRUE               TRUE 

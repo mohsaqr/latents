@@ -1,0 +1,48 @@
+thin-profiles: ........12..3.W45..6..............
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. a patterned fit warns only below its actual free density count ('test-thin-profiles.R:64:3') - Profile 1: 9.0 members for 20 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-thin-profiles.R:26:3'): thin-profile counts respect covarianc
+Error in `.latents_profile_parameters(5L, "varying", "full", "VVV", covariance_pattern = pattern)`: unused argument (covariance_pattern = pattern)
+Backtrace:
+    ▆
+ 1. └─testthat::expect_equal(...) at test-thin-profiles.R:26:3
+ 2.   └─testthat::quasi_label(enquo(object), label)
+ 3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+── 2. Failure ('test-thin-profiles.R:55:3'): a patterned fit warns only below it
+Expected `... <- NULL` not to throw any warnings.
+Actually got a <latents_thin_profiles> with message:
+  Profile 1: 13.0 members for 20 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+
+── 3. Failure ('test-thin-profiles.R:59:3'): a patterned fit warns only below it
+Expected `... <- NULL` not to throw any warnings.
+Actually got a <latents_thin_profiles> with message:
+  Profile 1: 13.0 members for 20 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+
+── 4. Failure ('test-thin-profiles.R:64:3'): a patterned fit warns only below it
+Expected `lpa(...)` to throw a warning with class <latents_thin_profiles>.
+
+── 5. Failure ('test-thin-profiles.R:77:5'): holding variances disables the coll
+Expected `... <- NULL` not to throw any warnings.
+Actually got a <latents_thin_profiles> with message:
+  Profile 1: 3.0 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-thin-profiles.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_no_warning(...) at test-thin-profiles.R:77:5
+
+── 6. Failure ('test-thin-profiles.R:77:5'): holding variances disables the coll
+Expected `... <- NULL` not to throw any warnings.
+Actually got a <latents_thin_profiles> with message:
+  Profile 1: 3.0 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-thin-profiles.R:76:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_no_warning(...) at test-thin-profiles.R:77:5
+
+══ DONE ════════════════════════════════════════════════════════════════════════

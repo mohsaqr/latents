@@ -1,0 +1,7 @@
+pkgload::load_all('.',quiet=TRUE)
+source('validation/release-0.96.1-2026-10-20/covariance-followup/active-solver.R')
+old<-get('.multilpa_bounded_variances',asNamespace('latents'))
+assignInNamespace('.multilpa_bounded_variances',active_solver,'latents')
+eval(parse('validation/release-0.96.1-2026-10-20/covariance-followup/probe.R')[-1])
+eval(parse('validation/release-0.96.1-2026-10-20/covariance-followup/search.R')[-1])
+testthat::test_file('tests/testthat/test-review-core-audit.R')

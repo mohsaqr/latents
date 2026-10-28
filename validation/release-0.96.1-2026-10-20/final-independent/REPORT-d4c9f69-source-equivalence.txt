@@ -1,0 +1,80 @@
+Independent source-equivalence audit — d4c9f699525d9e07959463010e004b6362dcdaaf
+
+Disposition: ACCEPT the test/workflow-only follow-up and reuse of unchanged
+production-runtime evidence. Final publication remains conditional on the
+parent's final exact-commit checks. This note does not claim those current
+CI/full-unit/archive runs have completed.
+
+The complete outer suite EXECUTED cf1127f: 198 cases, 39 files, 5,419 passing
+expectations in one clean 30m27s run, zero failures/errors/warnings/skips.
+Its execution SHA has NOT been relabeled as d4c9f69.
+
+Independent full-input verification establishes:
+
+- Every one of the 91 production R files is byte-identical between that
+  execution and d4c9f69.
+- All outer tests, helpers, fixtures, data and other runtime inputs remain
+  identical. Of all 3,415 tracked input files, the same 3,413 are unchanged.
+- Exactly two files differ, matching the entire cf..d4 commit delta:
+  tests/testthat/test-engine-fixes.R and .github/workflows/R-CMD-check.yaml.
+  Neither is sourced as runtime input by the outer suite: load_all sources
+  test helpers, not unit test files; CI YAML is not R runtime input.
+- No tracked file was added or removed, and the tracked working tree is clean.
+
+Therefore the 5,419-pass run remains applicable to the final production
+runtime. Repeating it solely to relabel the execution commit would add no
+runtime coverage. New full-unit/package/CI runs appropriately validate the
+changed unit fixture and workflow; the parent is running those separately.
+The 566 affected-reference expectations are already included in the complete
+outer count and should not be added again as independent coverage.
+
+R4.1 fixture correction accepted independently
+
+The old course_engagement one-start fit had an occasion-specific rare move
+near the existing boundary guard. Its local fitted probability was 6.426e-6.
+A single-logit conditional profile improves the original likelihood while
+moving through p=8.697e-7 and toward zero. This establishes a fragile assumed
+interiority; it does not justify relaxing a valid boundary refusal.
+
+The replacement enumerates all 16 four-occasion binary paths with balanced
+replication and symmetric deterministic residuals. Independent runs under
+default/internal/BLAS matrix products are converged and nonboundary, with
+initial probability .5 and transitions .4960, well inside (.25,.75). Step
+0.01 versus 0.0001 changes SEs by 5.64747e-7; returned covariance/table SE
+consistency is exact. Original step sizes/tolerance assertions are unchanged,
+and a >1e-8 sensitivity assertion strengthens the test. The author's entire
+final engine-fixes file passes 26 expectations (targeted-final.log).
+
+No production inference guard, fitting method or numerical tolerance changed.
+Earlier source differences in bounded covariance, Vuong and socket cleanup
+are proven off this default-diagonal serial fixture's path by throwing mocks.
+Both old/new remote runs used R4.1.3 with the same package-cache key, but exact
+remote CPU/rounding details were not captured; no invented hardware attribution
+is made. Diagnosis and probe evidence: r41-fixture-followup/cross-review/REPORT.txt.
+
+Previously completed unchanged-runtime evidence
+
+At cf1127f: full unit 1,224 cases/8,138 passes; inner equivalence 64/405;
+affected references 33/566; complete outer 198/5,419; all zero failures,
+errors, warnings or skips. Native check has zero errors/warnings and one
+local time-verification NOTE; regular/donttest examples/vignettes pass and
+tests run separately. Lint is clean. Installed archive reproductions include
+actual SIGTERM worker failure with zero cleanup warnings or socket leaks.
+
+The accepted numerical, covariance and cleanup sources/fingerprints are
+unchanged. Their independent counterexamples and V2 acceptances remain valid.
+The earlier 324-manifest/286-packaged-file/all-306-tracked-archive verification
+and archive SHA belong to cf1127f and are preserved in REPORT-cf1127f.txt and
+integrity.json; the parent is rebuilding/rechecking the d4 archive to include
+the new unit-test bytes. No claim that the earlier archive has new test bytes
+is made. Source-equivalence evidence is separate from archive-byte identity.
+
+Exact d4c9f69 platform CI remains the final publication gate. The earlier cf
+R4.1 error is historical diagnosis, not a claimed success; earlier macOS and
+oldrel checks had Status: OK. Await the parent's new full-unit, native/archive
+and exact-commit CI results before declaring the complete release process done.
+
+Evidence: outer-final/source-equivalence-d4c9f69.json (all 91 hashes and exact
+2-file delta), outer-final/REPORT.txt, final-independent/REPORT-cf1127f.txt,
+r41-fixture-followup/cross-review/REPORT.txt. No tracked files edited by this
+reviewer; no commits, pushes or CI actions performed by this reviewer.

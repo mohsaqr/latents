@@ -1,0 +1,5 @@
+library(latents)
+activity <- c('browse','lectures','forum_read','forum_post','attendance')
+models <- enumerate_classes(course_engagement,activity,'student',n_profiles=1:6,n_group_classes=1:4,model='VVI',n_starts=3,seed=1)
+b <- get_results(models,'best')
+print(subset(b,criterion %in% c('bic','icl','awe') & convention=='groups'))

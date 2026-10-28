@@ -1,0 +1,15 @@
+  prior spikes fits
+1 FALSE      1   80
+2  TRUE      0   80
+        fit spikes fits
+1   emem_10     25   80
+2 kmeans_10     12   80
+   condition k prior         gap
+1 lpa_vvv_k2 2 FALSE  0.32464557
+2 lpa_vvi_k3 3 FALSE  0.06924491
+3 lpa_vvv_k2 3 FALSE 12.46757691
+4 lpa_vvi_k3 4 FALSE  3.26298055
+5 lpa_vvv_k2 2  TRUE  4.58049313
+6 lpa_vvi_k3 3  TRUE  2.67481658
+7 lpa_vvv_k2 3  TRUE 24.36676857
+8 lpa_vvi_k3 4  TRUE 10.62574664

@@ -1,0 +1,22 @@
+Sys.setenv(VECLIB_MAXIMUM_THREADS = 1, OMP_NUM_THREADS = 1, OPENBLAS_NUM_THREADS = 1)
+pkgload::load_all('.', quiet = TRUE)
+set.seed(73)
+d <- as.data.frame(matrix(rnorm(80 * 5), 80, 5))
+names(d) <- letters[1:5]
+d[1:13, ] <- d[1:13, ] + 10
+warnings_seen <- character()
+f <- withCallingHandlers(lpa(d, names(d), 2, local_dependence = 'a:b', n_starts = 1, seed = 1), warning = function(w) { warnings_seen <<- c(warnings_seen, paste(class(w)[1], conditionMessage(w))); invokeRestart('muffleWarning') })
+print(warnings_seen)
+print(f$effective_profile_counts)
+print(f$n_parameters)
+print(f$covariance_pattern)
+print(range(eigen(f$covariances[,,1], symmetric = TRUE)$values))
+print(range(eigen(f$covariances[,,2], symmetric = TRUE)$values))
+# fixed measurements with no variance estimated on the thin group
+start <- list(means = rbind(rep(10,5), rep(0,5)), variances = matrix(1,2,5), profile_probabilities = matrix(c(.05,.95),1), group_probabilities = 1)
+d2 <- rbind(d[1:3,], d[14:80,])
+w2 <- character()
+g <- withCallingHandlers(multilpa(d2, names(d2), id = NULL, n_profiles = 2, start=start, fixed=c('means','variances'), n_starts=1), warning=function(w) {w2 <<- c(w2,paste(class(w)[1],conditionMessage(w)));invokeRestart('muffleWarning')})
+print(w2)
+print(g$effective_profile_counts)
+print(g$n_parameters)

@@ -1,0 +1,16 @@
+API check: every validation call matches multilpa 0.97.4.
+running suite: refusals
+Equivalence run against multilpa 0.97.4 under R version 4.5.2 (2025-10-31)
+     suite status compared agreed values outputs_not_covered warnings seconds
+1 refusals    ran       50     50     50                  NA        0     2.9
+
+50 quantities (50 values) compared, 50 agreed, 0 disagreed
+
+     suite         source precision compared agreed worst_difference
+1 refusals refusal parity   machine       50     50                0
+  loosest_tolerance worst_tolerance_fraction
+1               0.5                        0
+
+50 quantities (50 values) compared, 50 agreed, 0 disagreed (0 explained by a known open defect)
+
+wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in validation/astra-fixes-2026-10-27/harness/refusals-repair

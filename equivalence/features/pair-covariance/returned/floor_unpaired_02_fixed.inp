@@ -1,0 +1,35 @@
+TITLE: latents pair covariance floor_unpaired_02_fixed;
+DATA: FILE = floor_unpaired_02_fixed.dat;
+VARIABLE:
+ NAMES = id y1 y2 y3 y4;
+ USEVARIABLES = y1 y2 y3 y4;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ CLASSES = c(2);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 200 40;
+ STITERATIONS = 40;
+ STSEED = 20261020;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %OVERALL%
+ %c#1%
+ [y1 y2 y3 y4];
+ y1 y2 y3;
+ y4@0.01;
+ y1 WITH y2;
+ %c#2%
+ [y1 y2 y3 y4];
+ y1 y2 y3 y4;
+ y1 WITH y2;
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = floor_unpaired_02_fixed-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = floor_unpaired_02_fixed-results.dat;

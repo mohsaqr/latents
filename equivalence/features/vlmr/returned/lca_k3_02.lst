@@ -1,0 +1,1942 @@
+lca_k3_02-lg.dat
+File name:	lca_k3_02-lg.dat	
+File size:	16915 bytes  1000 records	
+File date:	2026-Oct-20 9:41:29 PM	
+Syntax:	lca_k3_02.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	VLMR	p-value	Class.Err.	Entropy R²	
+Model1	1-Cluster	-4065.8021	8173.0507	8143.6042	8149.6042	6	696.3225	57	9.4e-111			0.0000	1.0000	
+Model2	2-Cluster	-3795.4199	7680.6406	7616.8397	7629.8397	13	155.5581	50	9.2e-13	540.7644	0.0000	0.1035	0.6327	
+Model3	3-Cluster	-3741.3080	7620.7711	7522.6160	7542.6160	20	47.3343	43	0.30	108.2238	0.0000	0.1575	0.6295	
+Model4	4-Cluster	-3735.5196	7657.5486	7525.0392	7552.0392	27	35.7575	36	0.48	11.5768	0.2237	0.2419	0.5690	
+Model1 - L² = 696.3225
+1-Cluster Syntax Model	
+					
+Number of cases	1000				
+Number of parameters (Npar)	6				
+Random Seed	309785				
+Best Start Seed	309785				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	57	p-value			
+L-squared (L²)	696.3225	9.4e-111			
+X-squared	1090.1969	6.1e-191			
+Cressie-Read	902.0779	2.4e-152			
+BIC (based on L²)	302.5804				
+AIC (based on L²)	582.3225				
+AIC3 (based on L²)	525.3225				
+CAIC (based on L²)	245.5804				
+SABIC (based on L²)	483.6156				
+Dissimilarity Index	0.3202	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4065.8021				
+Log-prior	0.0000				
+Log-posterior	-4065.8021				
+BIC (based on LL)	8173.0507				
+AIC (based on LL)	8143.6042				
+AIC3 (based on LL)	8149.6042				
+CAIC (based on LL)	8179.0507				
+SABIC (based on LL)	8153.9944				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-4065.8021				
+Entropy	0.0000				
+CLC	8131.6042				
+AWE	8232.4972				
+ICL-BIC	8173.0507				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	1000.0000	1000.0000			
+Total	1000.0000	1000.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	1000.0000	1000.0000			
+Total	1000.0000	1000.0000			
+					
+Files					
+Infile	C:\lgfeatures\vlmr\lca_k3_02\lca_k3_02-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1000				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+u5	Nominal	2			
+1	1				
+2	2				
+u6	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271042 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 1;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+										
+u1(1)	<-	1	0.0000	.	.	.	43.4380	1	4.4e-11	
+u1(2)	<-	1	-0.4263	0.0647	-6.5908	4.4e-11				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.				
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u2(1)	<-	1	0.0000	.	.	.	32.0447	1	1.5e-8	
+u2(2)	<-	1	-0.3640	0.0643	-5.6608	1.5e-8				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.				
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u3(1)	<-	1	0.0000	.	.	.	69.0297	1	9.7e-17	
+u3(2)	<-	1	-0.5451	0.0656	-8.3084	9.7e-17				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.				
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u4(1)	<-	1	0.0000	.	.	.	7.3777	1	0.0066	
+u4(2)	<-	1	-0.1724	0.0635	-2.7162	0.0066				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.				
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u5(1)	<-	1	0.0000	.	.	.	12.0509	1	0.00052	
+u5(2)	<-	1	-0.2209	0.0636	-3.4714	0.00052				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.				
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+										
+u6(1)	<-	1	0.0000	.	.	.	17.8476	1	2.4e-5	
+u6(2)	<-	1	-0.2696	0.0638	-4.2246	2.4e-5				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.				
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+Model2 - L² = 155.5581
+2-Cluster Syntax Model	
+					
+Number of cases	1000				
+Number of parameters (Npar)	13				
+Random Seed	309785				
+Best Start Seed	2473288				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	50	p-value			
+L-squared (L²)	155.5581	9.2e-13			
+X-squared	186.4545	1.3e-17			
+Cressie-Read	173.3775	1.6e-15			
+BIC (based on L²)	-189.8297				
+AIC (based on L²)	55.5581				
+AIC3 (based on L²)	5.5581				
+CAIC (based on L²)	-239.8297				
+SABIC (based on L²)	-31.0269				
+Dissimilarity Index	0.1498	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3795.4199				
+Log-prior	0.0000				
+Log-posterior	-3795.4199				
+BIC (based on LL)	7680.6406				
+AIC (based on LL)	7616.8397				
+AIC3 (based on LL)	7629.8397				
+CAIC (based on LL)	7693.6406				
+SABIC (based on LL)	7639.3518				
+					
+Vuong Likelihood-Ratio Test	 	p-value			
+LL of H0 model	-4065.8021				
+Diff in Number of Parameters	7				
+Mean of VLMR Distr.	8.8946				
+StdDev of VLMR Distr.	6.0329				
+-2LL Diff (VLMR)	540.7644	0.0000			
+-2LL Diff Adjusted (aVLMR)	529.8076	0.0000			
+Variance LL Diff	0.6521	0.0000			
+Z-Value Mean LL Diff	10.5879	0.0000			
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1035				
+Reduction of errors (Lambda)	0.7475				
+Entropy R-squared	0.6327				
+Standard R-squared	0.6855				
+Classification log-likelihood	-4043.9843				
+Entropy	248.5644				
+CLC	8087.9686				
+AWE	8306.5702				
+ICL-BIC	8177.7694				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	335.6568	74.1450	409.8018		
+2	29.3432	560.8550	590.1982		
+Total	365.0000	635.0000	1000.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	333.7363	76.0655	409.8018		
+2	76.0655	514.1326	590.1982		
+Total	409.8018	590.1982	1000.0000		
+					
+Files					
+Infile	C:\lgfeatures\vlmr\lca_k3_02\lca_k3_02-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	0				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1000				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+u4	Nominal	2			
+1	1				
+2	2				
+u5	Nominal	2			
+1	1				
+2	2				
+u6	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271042 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	6.6563	1	0.0099	
+Cluster(2)	<-	1	0.3648	0.1414	2.5800	0.0099				
+										
+u1(1)	<-	1	0.0000	.	.	.	21.0631	1	4.4e-6	
+u1(2)	<-	1	0.8679	0.1891	4.5895	4.4e-6				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	112.4012	1	2.9e-26	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-2.3826	0.2247	-10.6019	2.9e-26				
+										
+u2(1)	<-	1	0.0000	.	.	.	24.9424	1	5.9e-7	
+u2(2)	<-	1	1.0200	0.2042	4.9942	5.9e-7				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	115.3679	1	6.5e-27	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-2.5071	0.2334	-10.7409	6.5e-27				
+										
+u3(1)	<-	1	0.0000	.	.	.	11.0430	1	0.00089	
+u3(2)	<-	1	0.5355	0.1611	3.3231	0.00089				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	99.3712	1	2.1e-23	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-2.0259	0.2032	-9.9685	2.1e-23				
+										
+u4(1)	<-	1	0.0000	.	.	.	87.2413	1	9.6e-21	
+u4(2)	<-	1	-1.4475	0.1550	-9.3403	9.6e-21				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	96.4947	1	8.9e-23	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	2.0320	0.2069	9.8232	8.9e-23				
+										
+u5(1)	<-	1	0.0000	.	.	.	84.5306	1	3.8e-20	
+u5(2)	<-	1	-1.4245	0.1549	-9.1941	3.8e-20				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	92.3985	1	7.1e-22	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	1.9112	0.1988	9.6124	7.1e-22				
+										
+u6(1)	<-	1	0.0000	.	.	.	86.0074	1	1.8e-20	
+u6(2)	<-	1	-1.4905	0.1607	-9.2740	1.8e-20				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	91.6716	1	1.0e-21	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	1.9211	0.2006	9.5745	1.0e-21				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	6.6563	1	0.0099	
+	
+u1	<-	 Cluster	Cluster	1	2	112.4012	1	2.9e-26	
+	
+u2	<-	 Cluster	Cluster	1	2	115.3679	1	6.5e-27	
+	
+u3	<-	 Cluster	Cluster	1	2	99.3712	1	2.1e-23	
+	
+u4	<-	 Cluster	Cluster	1	2	96.4947	1	8.9e-23	
+	
+u5	<-	 Cluster	Cluster	1	2	92.3985	1	7.1e-22	
+	
+u6	<-	 Cluster	Cluster	1	2	91.6716	1	1.0e-21	
+Model3 - L² = 47.3343
+3-Cluster Syntax Model	
+						
+Number of cases	1000					
+Number of parameters (Npar)	20					
+Random Seed	356660					
+Best Start Seed	1687918					
+						
+Chi-squared Statistics						
+Degrees of freedom (df)	43	p-value				
+L-squared (L²)	47.3343	0.30				
+X-squared	48.7287	0.25				
+Cressie-Read	47.9551	0.28				
+BIC (based on L²)	-249.6992					
+AIC (based on L²)	-38.6657					
+AIC3 (based on L²)	-81.6657					
+CAIC (based on L²)	-292.6992					
+SABIC (based on L²)	-113.1288					
+Dissimilarity Index	0.0666	 				
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-3741.3080					
+Log-prior	0.0000					
+Log-posterior	-3741.3080					
+BIC (based on LL)	7620.7711					
+AIC (based on LL)	7522.6160					
+AIC3 (based on LL)	7542.6160					
+CAIC (based on LL)	7640.7711					
+SABIC (based on LL)	7557.2499					
+						
+Vuong Likelihood-Ratio Test	 	p-value				
+LL of H0 model	-3795.4199					
+Diff in Number of Parameters	7					
+Mean of VLMR Distr.	8.1139					
+StdDev of VLMR Distr.	7.7564					
+-2LL Diff (VLMR)	108.2238	0.0000				
+-2LL Diff Adjusted (aVLMR)	106.0310	0.0000				
+Variance LL Diff	0.1275	0.0119				
+Z-Value Mean LL Diff	4.7927	0.0000				
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1575					
+Reduction of errors (Lambda)	0.7150					
+Entropy R-squared	0.6295					
+Standard R-squared	0.6571					
+Classification log-likelihood	-4127.8366					
+Entropy	386.5287					
+CLC	8255.6733					
+AWE	8591.9835					
+ICL-BIC	8393.8284					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	314.3441	23.5133	24.9626	362.8199		
+2	24.2584	398.5945	24.4863	447.3392		
+3	17.3975	42.8923	129.5511	189.8409		
+Total	356.0000	465.0000	179.0000	1000.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	298.7182	33.2672	30.8346	362.8199		
+2	33.2672	369.7719	44.3001	447.3392		
+3	30.8346	44.3001	114.7062	189.8409		
+Total	362.8199	447.3392	189.8409	1000.0000		
+						
+Files						
+Infile	C:\lgfeatures\vlmr\lca_k3_02\lca_k3_02-lg.dat	
+						
+Options						
+threads	2					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	0					
+sets	200					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+output						
+parameters	first					
+standard errors	standard					
+identification	no					
+validation LL	no					
+sample size BIC	    1000					
+predictionstatistics	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+u1	Nominal	2				
+1	1					
+2	2					
+u2	Nominal	2				
+1	1					
+2	2					
+u3	Nominal	2				
+1	1					
+2	2					
+u4	Nominal	2				
+1	1					
+2	2					
+u5	Nominal	2				
+1	1					
+2	2					
+u6	Nominal	2				
+1	1					
+2	2					
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271042 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 3;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	4.7192	2	0.094	
+Cluster(2)	<-	1	0.2094	0.1310	1.5981	0.11				
+Cluster(3)	<-	1	-0.6477	0.4710	-1.3752	0.17				
+										
+u1(1)	<-	1	0.0000	.	.	.	27.2174	1	1.8e-7	
+u1(2)	<-	1	1.4273	0.2736	5.2170	1.8e-7				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	101.6718	2	8.4e-23	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-2.8220	0.3072	-9.1866	4.1e-20				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	-3.9945	1.6707	-2.3909	0.017				
+										
+u2(1)	<-	1	0.0000	.	.	.	22.9339	1	1.7e-6	
+u2(2)	<-	1	1.2062	0.2519	4.7889	1.7e-6				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	93.6902	2	4.5e-21	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-2.6476	0.2860	-9.2580	2.1e-20				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	-2.3702	0.3595	-6.5938	4.3e-11				
+										
+u3(1)	<-	1	0.0000	.	.	.	14.1924	1	0.00017	
+u3(2)	<-	1	0.7658	0.2033	3.7673	0.00017				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	108.2698	2	3.1e-24	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-2.1329	0.2409	-8.8528	8.5e-19				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	-2.5003	0.4498	-5.5586	2.7e-8				
+										
+u4(1)	<-	1	0.0000	.	.	.	71.5552	1	2.7e-17	
+u4(2)	<-	1	-1.3142	0.1554	-8.4590	2.7e-17				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	89.8207	2	3.1e-20	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	2.5739	0.3115	8.2619	1.4e-16				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	-0.2928	0.5503	-0.5321	0.59				
+										
+u5(1)	<-	1	0.0000	.	.	.	67.4982	1	2.1e-16	
+u5(2)	<-	1	-1.2752	0.1552	-8.2157	2.1e-16				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	107.9096	2	3.7e-24	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	2.4119	0.2644	9.1212	7.4e-20				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	-0.5171	0.9058	-0.5709	0.57				
+										
+u6(1)	<-	1	0.0000	.	.	.	74.9709	1	4.8e-18	
+u6(2)	<-	1	-1.3765	0.1590	-8.6586	4.8e-18				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	107.2844	2	5.1e-24	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	2.2425	0.2500	8.9703	3.0e-19				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	0.2072	0.3898	0.5314	0.60				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	2.5539	1	0.11	
+			Cluster	1	3	1.8912	1	0.17	
+			Cluster	2	3	3.1699	1	0.075	
+	
+u1	<-	 Cluster	Cluster	1	2	84.3930	1	4.1e-20	
+			Cluster	1	3	5.7162	1	0.017	
+			Cluster	2	3	0.4470	1	0.50	
+	
+u2	<-	 Cluster	Cluster	1	2	85.7115	1	2.1e-20	
+			Cluster	1	3	43.4780	1	4.3e-11	
+			Cluster	2	3	0.6359	1	0.43	
+	
+u3	<-	 Cluster	Cluster	1	2	78.3718	1	8.5e-19	
+			Cluster	1	3	30.8979	1	2.7e-8	
+			Cluster	2	3	0.5228	1	0.47	
+	
+u4	<-	 Cluster	Cluster	1	2	68.2594	1	1.4e-16	
+			Cluster	1	3	0.2831	1	0.59	
+			Cluster	2	3	33.0129	1	9.2e-9	
+	
+u5	<-	 Cluster	Cluster	1	2	83.1967	1	7.4e-20	
+			Cluster	1	3	0.3259	1	0.57	
+			Cluster	2	3	12.5315	1	0.00040	
+	
+u6	<-	 Cluster	Cluster	1	2	80.4661	1	3.0e-19	
+			Cluster	1	3	0.2824	1	0.60	
+			Cluster	2	3	38.1828	1	6.4e-10	
+Model4 - L² = 35.7575
+4-Cluster Syntax Model	
+Estimation Warnings! See Iteration Detail	
+							
+Number of cases	1000						
+Number of parameters (Npar)	27						
+Random Seed	419160						
+Best Start Seed	1978700						
+							
+Chi-squared Statistics							
+Degrees of freedom (df)	36	p-value					
+L-squared (L²)	35.7575	0.48					
+X-squared	34.7428	0.53					
+Cressie-Read	34.9200	0.52					
+BIC (based on L²)	-212.9217						
+AIC (based on L²)	-36.2425						
+AIC3 (based on L²)	-72.2425						
+CAIC (based on L²)	-248.9217						
+SABIC (based on L²)	-98.5836						
+Dissimilarity Index	0.0572	 					
+							
+Log-likelihood Statistics							
+Log-likelihood (LL)	-3735.5196						
+Log-prior	0.0000						
+Log-posterior	-3735.5196						
+BIC (based on LL)	7657.5486						
+AIC (based on LL)	7525.0392						
+AIC3 (based on LL)	7552.0392						
+CAIC (based on LL)	7684.5486						
+SABIC (based on LL)	7571.7951						
+							
+Vuong Likelihood-Ratio Test	 	p-value					
+LL of H0 model	-3741.3080						
+Diff in Number of Parameters	7						
+Mean of VLMR Distr.	6.6085						
+StdDev of VLMR Distr.	8.3452						
+-2LL Diff (VLMR)	11.5768	0.2237					
+-2LL Diff Adjusted (aVLMR)	11.3422	0.2323					
+Variance LL Diff	0.0123	0.8555					
+Z-Value Mean LL Diff	1.6489	0.0496					
+							
+							
+Classification Statistics	Cluster						
+Classification errors	0.2419						
+Reduction of errors (Lambda)	0.6178						
+Entropy R-squared	0.5690						
+Standard R-squared	0.5370						
+Classification log-likelihood	-4299.6536						
+Entropy	564.1340						
+CLC	8599.3072						
+AWE	9053.3259						
+ICL-BIC	8785.8166						
+							
+Cluster  Classification Table	Modal						
+Latent	1	2	3	4	Total		
+1	318.1451	24.4613	1.1947	23.3831	367.1842		
+2	23.4904	231.7869	47.1058	23.0427	325.4257		
+3	4.2331	57.9931	93.2448	2.6421	158.1130		
+4	6.1314	26.7588	1.4548	114.9322	149.2771		
+Total	352.0000	341.0000	143.0000	164.0000	1000.0000		
+							
+Cluster  Classification Table	Proportional						
+Latent	1	2	3	4	Total		
+1	306.4671	35.5616	5.1444	20.0110	367.1842		
+2	35.5616	191.4120	66.8583	31.5938	325.4257		
+3	5.1444	66.8583	80.4601	5.6501	158.1130		
+4	20.0110	31.5938	5.6501	92.0221	149.2771		
+Total	367.1842	325.4257	158.1130	149.2771	1000.0000		
+							
+Files							
+Infile	C:\lgfeatures\vlmr\lca_k3_02\lca_k3_02-lg.dat	
+							
+Options							
+threads	2						
+algorithm							
+tolerance	1e-12						
+emtolerance	1e-10						
+emiterations	5000						
+nriterations	500						
+algorithm	NR						
+MstepNR	no						
+startvalues							
+seed	0						
+sets	200						
+tolerance	1e-05						
+iterations	250						
+bayes							
+categorical	0						
+variances	0						
+latent	0						
+poisson	0						
+quadrature							
+nodes	10						
+missing	excludeall						
+output							
+parameters	first						
+standard errors	standard						
+identification	no						
+validation LL	no						
+sample size BIC	    1000						
+predictionstatistics	no						
+							
+Variable Detail							
+Latent							
+Cluster	Nominal	Case	4				
+ 							
+Dependent							
+u1	Nominal	2					
+1	1						
+2	2						
+u2	Nominal	2					
+1	1						
+2	2						
+u3	Nominal	2					
+1	1						
+2	2						
+u4	Nominal	2					
+1	1						
+2	2						
+u5	Nominal	2					
+1	1						
+2	2						
+u6	Nominal	2					
+1	1						
+2	2						
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20271042 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent
+      Cluster nominal 4;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	19.1183	3	0.00026	
+Cluster(2)	<-	1	-0.1207	0.8209	-0.1471	0.88				
+Cluster(3)	<-	1	-0.8426	1.3601	-0.6195	0.54				
+Cluster(4)	<-	1	-0.9001	0.3415	-2.6355	0.0084				
+										
+u1(1)	<-	1	0.0000	.	.	.	30.8971	1	2.7e-8	
+u1(2)	<-	1	1.3506	0.2430	5.5585	2.7e-8				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	11.5904	3	0.0089	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-2.2514	0.6615	-3.4037	0.00067				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	-4.1155	2.7133	-1.5168	0.13				
+u1(1)	<-	Cluster(4)	0.0000	.	.	.				
+u1(2)	<-	Cluster(4)	-45.5764	1000.0000	-0.0456	0.96				
+										
+u2(1)	<-	1	0.0000	.	.	.	36.0583	1	1.9e-9	
+u2(2)	<-	1	1.3107	0.2183	6.0049	1.9e-9				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	46.9969	3	3.5e-10	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-3.4420	1.6732	-2.0572	0.040				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	-2.1276	0.7529	-2.8259	0.0047				
+u2(1)	<-	Cluster(4)	0.0000	.	.	.				
+u2(2)	<-	Cluster(4)	-2.3914	0.3617	-6.6115	3.8e-11				
+										
+u3(1)	<-	1	0.0000	.	.	.	17.2629	1	3.3e-5	
+u3(2)	<-	1	0.7255	0.1746	4.1549	3.3e-5				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	42.1385	3	3.7e-9	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-1.9002	0.4256	-4.4650	8.0e-6				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	-2.4024	0.5125	-4.6873	2.8e-6				
+u3(1)	<-	Cluster(4)	0.0000	.	.	.				
+u3(2)	<-	Cluster(4)	-2.7197	0.6290	-4.3234	1.5e-5				
+										
+u4(1)	<-	1	0.0000	.	.	.	57.9754	1	2.7e-14	
+u4(2)	<-	1	-1.2975	0.1704	-7.6142	2.7e-14				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.	9.9095	3	0.019	
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	1.8681	0.6051	3.0870	0.0020				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	3.7918	2.6114	1.4520	0.15				
+u4(1)	<-	Cluster(4)	0.0000	.	.	.				
+u4(2)	<-	Cluster(4)	-0.3431	0.5589	-0.6139	0.54				
+										
+u5(1)	<-	1	0.0000	.	.	.	51.3253	1	7.8e-13	
+u5(2)	<-	1	-1.3238	0.1848	-7.1642	7.8e-13				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.	40.0902	3	1.0e-8	
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	2.1710	0.3908	5.5555	2.8e-8				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	2.8387	0.8015	3.5416	0.00040				
+u5(1)	<-	Cluster(4)	0.0000	.	.	.				
+u5(2)	<-	Cluster(4)	-1.2666	2.1700	-0.5837	0.56				
+										
+u6(1)	<-	1	0.0000	.	.	.	66.1627	1	4.2e-16	
+u6(2)	<-	1	-1.3670	0.1681	-8.1340	4.2e-16				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.	10.4075	3	0.015	
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	1.6289	0.5088	3.2014	0.0014				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	3.4069	2.4444	1.3938	0.16				
+u6(1)	<-	Cluster(4)	0.0000	.	.	.				
+u6(2)	<-	Cluster(4)	0.1691	0.3589	0.4711	0.64				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0216	1	0.88	
+			Cluster	1	3	0.3838	1	0.54	
+			Cluster	1	4	6.9461	1	0.0084	
+			Cluster	2	3	0.1137	1	0.74	
+			Cluster	2	4	0.5519	1	0.46	
+			Cluster	3	4	0.0021	1	0.96	
+	
+u1	<-	 Cluster	Cluster	1	2	11.5849	1	0.00067	
+			Cluster	1	3	2.3007	1	0.13	
+			Cluster	1	4	0.0021	1	0.96	
+			Cluster	2	3	0.5655	1	0.45	
+			Cluster	2	4	0.0019	1	0.97	
+			Cluster	3	4	0.0017	1	0.97	
+	
+u2	<-	 Cluster	Cluster	1	2	4.2319	1	0.040	
+			Cluster	1	3	7.9857	1	0.0047	
+			Cluster	1	4	43.7118	1	3.8e-11	
+			Cluster	2	3	0.6562	1	0.42	
+			Cluster	2	4	0.3831	1	0.54	
+			Cluster	3	4	0.1321	1	0.72	
+	
+u3	<-	 Cluster	Cluster	1	2	19.9365	1	8.0e-6	
+			Cluster	1	3	21.9709	1	2.8e-6	
+			Cluster	1	4	18.6922	1	1.5e-5	
+			Cluster	2	3	0.7056	1	0.40	
+			Cluster	2	4	1.4281	1	0.23	
+			Cluster	3	4	0.2061	1	0.65	
+	
+u4	<-	 Cluster	Cluster	1	2	9.5297	1	0.0020	
+			Cluster	1	3	2.1083	1	0.15	
+			Cluster	1	4	0.3769	1	0.54	
+			Cluster	2	3	0.6281	1	0.43	
+			Cluster	2	4	7.2110	1	0.0073	
+			Cluster	3	4	2.1507	1	0.14	
+	
+u5	<-	 Cluster	Cluster	1	2	30.8631	1	2.8e-8	
+			Cluster	1	3	12.5426	1	0.00040	
+			Cluster	1	4	0.3407	1	0.56	
+			Cluster	2	3	0.6109	1	0.43	
+			Cluster	2	4	2.4403	1	0.12	
+			Cluster	3	4	2.5026	1	0.11	
+	
+u6	<-	 Cluster	Cluster	1	2	10.2487	1	0.0014	
+			Cluster	1	3	1.9426	1	0.16	
+			Cluster	1	4	0.2219	1	0.64	
+			Cluster	2	3	0.6229	1	0.43	
+			Cluster	2	4	5.6212	1	0.018	
+			Cluster	3	4	1.6502	1	0.20	
+Iteration Detail
+   Starting set        log-posterior             L-squared            seed
+              2     -3735.5636835324         35.8457002665         2760683
+              1     -3735.5569065282         35.8321462581          419160
+              3     -3735.5299371426         35.7782074868          987844
+              4     -3737.2385007654         39.1953347325          472802
+              5     -3736.1358877056         36.9901086128          982994
+              6     -3735.5648964202         35.8481260421          812362
+              7     -3737.0909413062         38.9002158140         2502125
+              8     -3735.5487508972         35.8158349962          260414
+              9     -3737.7539015813         40.2261363643          706402
+             10     -3735.6295629984         35.9774591985         1330239
+             11     -3735.6357441112         35.9898214241         1349648
+             12     -3736.1742305697         37.0667943410          181035
+             13     -3736.7249393205         38.1682118427         1769810
+             14     -3735.6036398427         35.9256128870           75623
+             15     -3735.5877200742         35.8937733501         1793152
+             16     -3735.6780795214         36.0744922445          684122
+             17     -3735.5477884199         35.8139100415          728102
+             18     -3735.7333530534         36.1850393086         1828849
+             19     -3735.9380765146         36.5944862308          629406
+             20     -3735.6481582110         36.0146496237         1779992
+             21     -3735.6209794258         35.9602920533         2095541
+             22     -3737.3387724656         39.3958781328         1237054
+             23     -3735.5957782614         35.9098897244         2771401
+             24     -3735.8557155236         36.4297642490         1252156
+             25     -3738.0719028566         40.8621389148         2198365
+             26     -3736.8290082315         38.3763496646         1579202
+             28     -3735.5790633124         35.8764598265          664825
+             27     -3737.3705590763         39.4594513542         2172310
+             29     -3735.6038086517         35.9259505052          528247
+             30     -3735.6257584739         35.9698501495         2238308
+             31     -3737.4269315914         39.5721963845          575727
+             32     -3735.5662149163         35.8507630343          447367
+             33     -3737.6390754557         39.9964841131         2698254
+             34     -3736.5207200571         37.7597733158         1709169
+             35     -3735.6010767879         35.9204867776         2118873
+             36     -3735.5326405586         35.7836143190         2566924
+             37     -3735.5421765173         35.8026862363         1938748
+             38     -3735.5834293181         35.8851918379          908619
+             39     -3738.0399298920         40.7981929857         1493719
+             40     -3735.6509887249         36.0203106515         2760794
+             41     -3735.5901140780         35.8985613577          530374
+             42     -3735.6858131083         36.0899594182         1433609
+             43     -3735.6020934112         35.9225200241         2011022
+             44     -3736.9156096653         38.5495525322         1631208
+             45     -3735.5906422003         35.8996176023          877751
+             46     -3735.6466755107         36.0116842231          766412
+             47     -3735.5781584955         35.8746501927          905112
+             48     -3736.4668874004         37.6521080024          303676
+             49     -3735.8160254706         36.3503841429           87139
+             50     -3735.6953400514         36.1090133045         1885036
+             51     -3737.1407384774         38.9998101565         1676898
+             52     -3735.6602237843         36.0387807703         1656989
+             53     -3737.4362442734         39.5908217485         2543513
+             54     -3735.5770819842         35.8724971701         2672645
+             55     -3737.6021779998         39.9226892014         2735322
+             56     -3737.0151650636         38.7486633289         2578936
+             57     -3735.5776257219         35.8735846454          573111
+             58     -3736.4793033034         37.6769398085         1253179
+             59     -3735.6266990947         35.9717313910         1383010
+             60     -3737.0857459940         38.8898251898         2192369
+             61     -3735.6010868074         35.9205068165          142548
+             62     -3738.3860580990         41.4904493997         1702626
+             63     -3738.0817490007         40.8818312031         1273991
+             64     -3735.7249734989         36.1682801995         2745177
+             65     -3736.1479098181         37.0141528380          505276
+             66     -3736.2038143666         37.1259619348         1073102
+             67     -3735.6704265654         36.0591863325          736049
+             68     -3735.6922707863         36.1028747743         1497310
+             70     -3735.5897406161         35.8978144339         2429903
+             69     -3735.5712990705         35.8609313427          128283
+             71     -3735.5676237162         35.8535806342         2497583
+             72     -3735.8588916132         36.4361164280         2429093
+             73     -3735.5512191428         35.8207714872         2208371
+             74     -3736.8473652392         38.4130636802         1754994
+             75     -3735.5893049555         35.8969431126          150110
+             76     -3735.6234770510         35.9652873038         2335994
+             77     -3735.5402671106         35.7988674229          781777
+             78     -3735.7472609314         36.2128550644         1213060
+             79     -3735.5906510511         35.8996353038          542359
+             80     -3735.5459123667         35.8101579351          993110
+             81     -3737.0204926121         38.7593184259         1441682
+             82     -3735.5874201845         35.8931735707         1538058
+             83     -3735.9379236580         36.5941805177         1172807
+             84     -3735.6448136890         36.0079605796         1538711
+             85     -3735.5844797970         35.8872927957         1882352
+             86     -3735.6698595666         36.0580523349          117905
+             87     -3735.9468661627         36.6120655270         1493378
+             88     -3735.5400822338         35.7984976693          236376
+             89     -3735.6427635229         36.0038602474          114456
+             90     -3735.6074618222         35.9332568461          144000
+             91     -3737.2223359961         39.1630051940         1902632
+             92     -3735.5368972091         35.7921276198         2387889
+             93     -3737.1514360952         39.0212053921         2740891
+             94     -3735.7659239438         36.2501810892         1543316
+             95     -3735.5307939395         35.7799210807         1041062
+             96     -3735.5914882191         35.9013096398         2345055
+             97     -3736.4792242953         37.6767817923          620155
+             98     -3737.1070040016         38.9323412049         1666648
+            100     -3735.5748261441         35.8679854899         1608839
+             99     -3735.6497925519         36.0179183055           68469
+            101     -3737.2822231953         39.2827795923          264549
+            102     -3735.6383376394         35.9950084804         2111758
+            103     -3738.8673613099         42.4530558216         2719140
+            104     -3737.0917364184         38.9018060386         2766356
+            106     -3738.9155449194         42.5494230405         1956806
+            105     -3737.1557835803         39.0299003622          279334
+            107     -3735.5378384165         35.7940100347          168984
+            108     -3735.6214546161         35.9612424338         1438617
+            109     -3736.0193851259         36.7571034534          340131
+            110     -3736.0491308772         36.8165949562          714056
+            111     -3737.4325179284         39.5833690584         2281829
+            112     -3735.6190178090         35.9563688197          394106
+            113     -3735.5683640409         35.8550612834         1050502
+            114     -3736.1444921788         37.0073175594          848160
+            115     -3737.1594428793         39.0372189602         2711310
+            116     -3737.7595721892         40.2374775800         2766843
+            117     -3737.2574751583         39.2332835183         1219585
+            118     -3735.6143076723         35.9469485463         1007987
+            119     -3735.7048358994         36.1280050005         1720377
+            120     -3735.6696037749         36.0575407516          590442
+            121     -3736.1838118855         37.0859569727          108979
+            122     -3735.5299364187         35.7782060391          756859
+            123     -3735.7473219166         36.2129770348         1885270
+            124     -3738.5411149628         41.8005631272         1014794
+            125     -3735.5427811937         35.8038955890         2535245
+            127     -3735.5917138044         35.9017608104         2461843
+            126     -3737.0608354104         38.8400040225         1833227
+            129     -3736.3557456903         37.4298245822          564907
+            128     -3735.9914186303         36.7011704622         2509881
+            130     -3735.6603296153         36.0389924323          830152
+            131     -3738.4759525651         41.6702383318         2640293
+            132     -3735.8900073400         36.4983478817          566795
+            133     -3735.7317450318         36.1818232652          530773
+            134     -3735.7351321574         36.1885975164         1523233
+            135     -3735.5281025045         35.7745382107         1057667
+            136     -3737.1108843229         38.9401018475         2681495
+            137     -3739.0926114304         42.9035560625         1856271
+            138     -3735.5946255540         35.9075843097          519852
+            139     -3735.6640345232         36.0464022481          338594
+            140     -3735.5298750510         35.7780833036         1469073
+            141     -3738.3256833860         41.3696999736         1707412
+            142     -3736.7861192833         38.2905717683          518040
+            143     -3738.8015756564         42.3214845145         2538566
+            144     -3737.2545375154         39.2274082324         1900515
+            145     -3737.2159162971         39.1501657958         1590585
+            146     -3735.5584245545         35.8351823107          602800
+            147     -3737.0527935543         38.8239203103         2305176
+            148     -3737.1043598806         38.9270529628         2040021
+            149     -3737.4939014740         39.7061361496         2126150
+            150     -3735.6748911114         36.0681154246          235588
+            151     -3736.3969461355         37.5122254727          645265
+            152     -3735.6145291959         35.9473915935         2243611
+            153     -3738.0316016412         40.7815364841         1392117
+            154     -3735.9207752138         36.5598836293         2067884
+            155     -3736.3365696859         37.3914725735          123507
+            156     -3736.5087450374         37.7358232766         2765724
+            157     -3736.0864083404         36.8911498826           12252
+            158     -3735.6426488179         36.0036308375          901944
+            159     -3735.6058951894         35.9301235805          663844
+            160     -3737.1139263368         38.9461858753         2228528
+            161     -3735.5406506152         35.7996344320         1433409
+            163     -3736.9853679541         38.6890691100         1740932
+            162     -3735.5801795475         35.8786922968         2457427
+            164     -3735.5564250637         35.8311833291         1198043
+            165     -3735.5744962932         35.8673257880         1974249
+            166     -3735.7148947720         36.1481227458          452519
+            167     -3735.6383720036         35.9950772089         2776268
+            168     -3735.5627623571         35.8438579158         2202848
+            169     -3735.9948024488         36.7079380994           31548
+            170     -3737.0880325760         38.8943983537         2566183
+            171     -3735.5743810552         35.8670953121          307140
+            172     -3737.2230326123         39.1643984262         1103501
+            173     -3735.5684005860         35.8551343736          902359
+            174     -3735.8122352803         36.3428037623           87079
+            175     -3735.5710325101         35.8603982219          420897
+            176     -3735.5835716005         35.8854764028         2225791
+            177     -3735.5988120778         35.9159573573          621859
+            178     -3736.5095421490         37.7374174996         1218721
+            179     -3737.0784425092         38.8752182201         2377216
+            180     -3735.5293965639         35.7771263294          628511
+            181     -3737.0776096326         38.8735524668          631926
+            182     -3735.5853148275         35.8889628567         1747695
+            183     -3735.9396594446         36.5976520908          153778
+            184     -3735.8620764373         36.4424860763         2178782
+            185     -3735.6634033139         36.0451398294         1877896
+            186     -3735.9619980021         36.6423292060         2234440
+            187     -3735.6439293524         36.0061919066         1100211
+            188     -3735.5908634397         35.9000600812          556163
+            189     -3735.9375818662         36.5934969341          807021
+            190     -3735.6107154153         35.9397640322         2749223
+            191     -3736.0357873989         36.7899079995            2922
+            192     -3737.1844008330         39.0871348678         1118874
+            193     -3735.5610566281         35.8404464580         2310932
+            194     -3738.4441733688         41.6066799393         1216158
+            195     -3735.5383867196         35.7951066409         2435585
+            196     -3735.5342591985         35.7868515986         1978700
+            197     -3735.5846323109         35.8875978235           94771
+            198     -3735.5348129021         35.7879590060         1896397
+            199     -3735.5421026010         35.8025384036          575923
+            200     -3735.9269395019         36.5722122055          848751
+              2     -3735.5207924706         35.7599181429          628511
+              1     -3735.5202798183         35.7588928384         1057667
+              3     -3735.5198011398         35.7579354814         1469073
+              4     -3735.5197927934         35.7579187884          756859
+              5     -3735.5212314668         35.7607961352          987844
+              6     -3735.5198310222         35.7579952460         1041062
+              7     -3735.5223510948         35.7630353914         2566924
+              8     -3735.5196346111         35.7576024239         1978700
+              9     -3735.5213242486         35.7609816989         1896397
+             10     -3735.5243200213         35.7669732442         2387889
+             11     -3735.5229367372         35.7642066760          168984
+             12     -3735.5212250801         35.7607833618         2435585
+             13     -3735.5246954758         35.7677241533          236376
+             14     -3735.5235538402         35.7654408820          781777
+             15     -3735.5250797561         35.7684927140         1433409
+             16     -3735.5238562410         35.7660456837          575923
+             17     -3735.5255345881         35.7694023778         1938748
+             18     -3735.5255583526         35.7694499069         2535245
+             20     -3735.5244223526         35.7671779070          728102
+             19     -3735.5240687757         35.7664707531          993110
+   Iteration           log-posterior             L-squared       criterion
+              0     -3735.5196346111         35.7576024239
+   EM         5     -3735.5196333878         35.7575999772      0.00245041
+   EM        10     -3735.5196322411         35.7575976839      0.00235565
+   EM        15     -3735.5196311653         35.7575955322      0.00226526
+   EM        20     -3735.5196301549         35.7575935115      0.00217903
+   EM        25     -3735.5196292052         35.7575916120      0.00209677
+   EM        30     -3735.5196283114         35.7575898245      0.00201824
+   EM        35     -3735.5196274695         35.7575881406      0.00194326
+   EM        40     -3735.5196266755         35.7575865526      0.00187165
+   EM        45     -3735.5196259259         35.7575850534      0.00180325
+   EM        50     -3735.5196252173         35.7575836363      0.00173789
+   EM        55     -3735.5196245468         35.7575822954      0.00167544
+   EM        60     -3735.5196239116         35.7575810249      0.00161576
+   EM        65     -3735.5196233091         35.7575798198      0.00155871
+   EM        70     -3735.5196227368         35.7575786753      0.00150416
+   EM        75     -3735.5196221926         35.7575775870      0.00145201
+   EM        80     -3735.5196216746         35.7575765508      0.00140214
+   EM        85     -3735.5196211807         35.7575755632      0.00135444
+   EM        90     -3735.5196207094         35.7575746205      0.00130882
+   EM        95     -3735.5196202590         35.7575737197      0.00126517
+   EM       100     -3735.5196198280         35.7575728578      0.00122341
+   EM       105     -3735.5196194152         35.7575720321      0.00118345
+   EM       110     -3735.5196190193         35.7575712402      0.00114522
+   EM       115     -3735.5196186390         35.7575704797      0.00110863
+   EM       120     -3735.5196182735         35.7575697486      0.00107361
+   EM       125     -3735.5196179216         35.7575690449      0.00104009
+   EM       130     -3735.5196175826         35.7575683668      0.00100800
+   EM       135     -3735.5196172555         35.7575677127      0.00097728
+   EM       140     -3735.5196169396         35.7575670809      0.00094787
+   EM       145     -3735.5196166342         35.7575664702      0.00091971
+   EM       150     -3735.5196163387         35.7575658791      0.00089274
+   EM       155     -3735.5196160524         35.7575653065      0.00086691
+   EM       160     -3735.5196157748         35.7575647513      0.00084218
+   EM       165     -3735.5196155054         35.7575642125      0.00081849
+   EM       170     -3735.5196152437         35.7575636890      0.00079581
+   EM       175     -3735.5196149892         35.7575631801      0.00077407
+   EM       180     -3735.5196147416         35.7575626848      0.00075325
+   EM       185     -3735.5196145004         35.7575622026      0.00073628
+   EM       190     -3735.5196142654         35.7575617325      0.00074499
+   EM       195     -3735.5196140362         35.7575612741      0.00075317
+   EM       200     -3735.5196138125         35.7575608266      0.00076084
+   EM       205     -3735.5196135940         35.7575603897      0.00076803
+   EM       210     -3735.5196133805         35.7575599626      0.00077476
+   EM       215     -3735.5196131717         35.7575595450      0.00078106
+   EM       220     -3735.5196129674         35.7575591365      0.00078715
+   EM       225     -3735.5196127674         35.7575587365      0.00079288
+   EM       230     -3735.5196125716         35.7575583448      0.00079822
+   EM       235     -3735.5196123796         35.7575579609      0.00080318
+   EM       240     -3735.5196121915         35.7575575846      0.00080778
+   EM       245     -3735.5196120069         35.7575572155      0.00081248
+   EM       250     -3735.5196118258         35.7575568534      0.00081720
+   EM       255     -3735.5196116481         35.7575564979      0.00082157
+   EM       260     -3735.5196114736         35.7575561488      0.00082561
+   EM       265     -3735.5196113021         35.7575558060      0.00082933
+   EM       270     -3735.5196111337         35.7575554691      0.00083275
+   EM       275     -3735.5196109681         35.7575551379      0.00083587
+   EM       280     -3735.5196108053         35.7575548124      0.00083871
+   EM       285     -3735.5196106453         35.7575544922      0.00084128
+   EM       290     -3735.5196104878         35.7575541772      0.00084360
+   EM       295     -3735.5196103328         35.7575538674      0.00084568
+   EM       300     -3735.5196101803         35.7575535624      0.00084752
+   EM       305     -3735.5196100302         35.7575532622      0.00084914
+   EM       310     -3735.5196098825         35.7575529666      0.00085055
+   EM       315     -3735.5196097369         35.7575526756      0.00085176
+   EM       320     -3735.5196095936         35.7575523889      0.00085278
+   EM       325     -3735.5196094524         35.7575521065      0.00085361
+   EM       330     -3735.5196093133         35.7575518283      0.00085426
+   EM       335     -3735.5196091762         35.7575515542      0.00085475
+   EM       340     -3735.5196090412         35.7575512840      0.00085508
+   EM       345     -3735.5196089080         35.7575510177      0.00085526
+   EM       350     -3735.5196087768         35.7575507552      0.00085529
+   EM       355     -3735.5196086474         35.7575504965      0.00085518
+   EM       360     -3735.5196085198         35.7575502413      0.00085495
+   EM       365     -3735.5196083940         35.7575499898      0.00085462
+   EM       370     -3735.5196082700         35.7575497417      0.00085417
+   EM       375     -3735.5196081477         35.7575494970      0.00085360
+   EM       380     -3735.5196080270         35.7575492557      0.00085292
+   EM       385     -3735.5196079080         35.7575490177      0.00085214
+   EM       390     -3735.5196077906         35.7575487829      0.00085126
+   EM       395     -3735.5196076748         35.7575485512      0.00085028
+   EM       400     -3735.5196075605         35.7575483227      0.00084921
+   EM       405     -3735.5196074478         35.7575480972      0.00084805
+   EM       410     -3735.5196073365         35.7575478747      0.00084682
+   EM       415     -3735.5196072267         35.7575476552      0.00084550
+   EM       420     -3735.5196071184         35.7575474385      0.00084411
+   EM       425     -3735.5196070115         35.7575472248      0.00084265
+   EM       430     -3735.5196069061         35.7575470138      0.00084113
+   EM       435     -3735.5196068019         35.7575468056      0.00083954
+   EM       440     -3735.5196066992         35.7575466001      0.00083789
+   EM       445     -3735.5196065978         35.7575463972      0.00083619
+   EM       450     -3735.5196064977         35.7575461970      0.00083443
+   EM       455     -3735.5196063989         35.7575459994      0.00083262
+   EM       460     -3735.5196063013         35.7575458043      0.00083076
+   EM       465     -3735.5196062051         35.7575456118      0.00082885
+   EM       470     -3735.5196061100         35.7575454217      0.00082691
+   EM       475     -3735.5196060162         35.7575452341      0.00082492
+   EM       480     -3735.5196059236         35.7575450488      0.00082289
+   EM       485     -3735.5196058321         35.7575448660      0.00082083
+   EM       490     -3735.5196057419         35.7575446854      0.00081874
+   EM       495     -3735.5196056528         35.7575445072      0.00081661
+   EM       500     -3735.5196055648         35.7575443312      0.00081445
+   EM       505     -3735.5196054779         35.7575441575      0.00081226
+   EM       510     -3735.5196053921         35.7575439860      0.00081005
+   EM       515     -3735.5196053075         35.7575438166      0.00080781
+   EM       520     -3735.5196052239         35.7575436494      0.00080555
+   EM       525     -3735.5196051413         35.7575434843      0.00080327
+   EM       530     -3735.5196050598         35.7575433213      0.00080096
+   EM       535     -3735.5196049793         35.7575431603      0.00079864
+   EM       540     -3735.5196048999         35.7575430014      0.00079630
+   EM       545     -3735.5196048214         35.7575428445      0.00079395
+   EM       550     -3735.5196047439         35.7575426895      0.00079158
+   EM       555     -3735.5196046674         35.7575425365      0.00078919
+   EM       560     -3735.5196045919         35.7575423854      0.00078680
+   EM       565     -3735.5196045173         35.7575422362      0.00078439
+   EM       570     -3735.5196044436         35.7575420889      0.00078197
+   EM       575     -3735.5196043709         35.7575419434      0.00077955
+   EM       580     -3735.5196042990         35.7575417998      0.00077711
+   EM       585     -3735.5196042281         35.7575416579      0.00077467
+   EM       590     -3735.5196041581         35.7575415178      0.00077222
+   EM       595     -3735.5196040889         35.7575413795      0.00076976
+   EM       600     -3735.5196040206         35.7575412429      0.00076730
+   EM       605     -3735.5196039532         35.7575411080      0.00076483
+   EM       610     -3735.5196038866         35.7575409748      0.00076236
+   EM       615     -3735.5196038208         35.7575408432      0.00075989
+   EM       620     -3735.5196037558         35.7575407133      0.00075742
+   EM       625     -3735.5196036917         35.7575405850      0.00075494
+   EM       630     -3735.5196036283         35.7575404583      0.00075247
+   EM       635     -3735.5196035658         35.7575403332      0.00074999
+   EM       640     -3735.5196035040         35.7575402096      0.00074751
+   EM       645     -3735.5196034430         35.7575400876      0.00074503
+   EM       650     -3735.5196033827         35.7575399671      0.00074256
+   EM       655     -3735.5196033232         35.7575398481      0.00074008
+   EM       660     -3735.5196032644         35.7575397306      0.00073761
+   EM       665     -3735.5196032064         35.7575396145      0.00073514
+   EM       670     -3735.5196031491         35.7575394999      0.00073267
+   EM       675     -3735.5196030925         35.7575393867      0.00073021
+   EM       680     -3735.5196030366         35.7575392749      0.00072775
+   EM       685     -3735.5196029814         35.7575391645      0.00072529
+   EM       690     -3735.5196029269         35.7575390554      0.00072284
+   EM       695     -3735.5196028730         35.7575389477      0.00072039
+   EM       700     -3735.5196028198         35.7575388414      0.00071795
+   EM       705     -3735.5196027673         35.7575387363      0.00071551
+   EM       710     -3735.5196027155         35.7575386326      0.00071308
+   EM       715     -3735.5196026642         35.7575385301      0.00071065
+   EM       720     -3735.5196026136         35.7575384290      0.00070823
+   EM       725     -3735.5196025637         35.7575383290      0.00070582
+   EM       730     -3735.5196025143         35.7575382303      0.00070341
+   EM       735     -3735.5196024656         35.7575381329      0.00070101
+   EM       740     -3735.5196024175         35.7575380366      0.00069861
+   EM       745     -3735.5196023699         35.7575379415      0.00069622
+   EM       750     -3735.5196023230         35.7575378476      0.00069384
+   EM       755     -3735.5196022766         35.7575377549      0.00069147
+   EM       760     -3735.5196022308         35.7575376633      0.00068910
+   EM       765     -3735.5196021856         35.7575375729      0.00068674
+   EM       770     -3735.5196021409         35.7575374835      0.00068439
+   EM       775     -3735.5196020968         35.7575373953      0.00068205
+   EM       780     -3735.5196020532         35.7575373082      0.00067971
+   EM       785     -3735.5196020102         35.7575372221      0.00067739
+   EM       790     -3735.5196019677         35.7575371371      0.00067507
+   EM       795     -3735.5196019257         35.7575370531      0.00067276
+   EM       800     -3735.5196018843         35.7575369702      0.00067045
+   EM       805     -3735.5196018433         35.7575368883      0.00066816
+   EM       810     -3735.5196018029         35.7575368075      0.00066588
+   EM       815     -3735.5196017629         35.7575367276      0.00066360
+   EM       820     -3735.5196017235         35.7575366487      0.00066133
+   EM       825     -3735.5196016845         35.7575365708      0.00065907
+   EM       830     -3735.5196016461         35.7575364938      0.00065682
+   EM       835     -3735.5196016081         35.7575364178      0.00065458
+   EM       840     -3735.5196015705         35.7575363427      0.00065235
+   EM       845     -3735.5196015335         35.7575362686      0.00065013
+   EM       850     -3735.5196014968         35.7575361954      0.00064791
+   EM       855     -3735.5196014607         35.7575361230      0.00064571
+   EM       860     -3735.5196014250         35.7575360516      0.00064351
+   EM       865     -3735.5196013897         35.7575359810      0.00064132
+   EM       870     -3735.5196013548         35.7575359114      0.00063915
+   EM       875     -3735.5196013204         35.7575358425      0.00063698
+   EM       880     -3735.5196012864         35.7575357746      0.00063482
+   EM       885     -3735.5196012529         35.7575357074      0.00063267
+   EM       890     -3735.5196012197         35.7575356411      0.00063053
+   EM       895     -3735.5196011870         35.7575355756      0.00062840
+   EM       900     -3735.5196011546         35.7575355110      0.00062627
+   EM       905     -3735.5196011227         35.7575354471      0.00062416
+   EM       910     -3735.5196010912         35.7575353840      0.00062206
+   EM       915     -3735.5196010600         35.7575353217      0.00061996
+   EM       920     -3735.5196010292         35.7575352601      0.00061788
+   EM       925     -3735.5196009988         35.7575351993      0.00061580
+   EM       930     -3735.5196009688         35.7575351393      0.00061373
+   EM       935     -3735.5196009391         35.7575350800      0.00061168
+   EM       940     -3735.5196009099         35.7575350214      0.00060963
+   EM       945     -3735.5196008809         35.7575349636      0.00060759
+   EM       950     -3735.5196008524         35.7575349064      0.00060556
+   EM       955     -3735.5196008241         35.7575348500      0.00060354
+   EM       960     -3735.5196007963         35.7575347942      0.00060153
+   EM       965     -3735.5196007688         35.7575347392      0.00059953
+   EM       970     -3735.5196007416         35.7575346848      0.00059754
+   EM       975     -3735.5196007147         35.7575346311      0.00059555
+   EM       980     -3735.5196006882         35.7575345781      0.00059358
+   EM       985     -3735.5196006620         35.7575345257      0.00059161
+   EM       990     -3735.5196006361         35.7575344739      0.00058966
+   EM       995     -3735.5196006106         35.7575344228      0.00058771
+   EM      1000     -3735.5196005853         35.7575343724      0.00058577
+   EM      1005     -3735.5196005604         35.7575343225      0.00058385
+   EM      1010     -3735.5196005358         35.7575342733      0.00058193
+   EM      1015     -3735.5196005115         35.7575342246      0.00058002
+   EM      1020     -3735.5196004875         35.7575341766      0.00057811
+   EM      1025     -3735.5196004637         35.7575341291      0.00057622
+   EM      1030     -3735.5196004403         35.7575340823      0.00057434
+   EM      1035     -3735.5196004172         35.7575340360      0.00057246
+   EM      1040     -3735.5196003943         35.7575339903      0.00057060
+   EM      1045     -3735.5196003717         35.7575339451      0.00056874
+   EM      1050     -3735.5196003494         35.7575339005      0.00056689
+   EM      1055     -3735.5196003274         35.7575338565      0.00056505
+   EM      1060     -3735.5196003057         35.7575338130      0.00056322
+   EM      1065     -3735.5196002842         35.7575337700      0.00056140
+   EM      1070     -3735.5196002630         35.7575337276      0.00055959
+   EM      1075     -3735.5196002420         35.7575336857      0.00055778
+   EM      1080     -3735.5196002213         35.7575336443      0.00055599
+   EM      1085     -3735.5196002008         35.7575336034      0.00055420
+   EM      1090     -3735.5196001807         35.7575335630      0.00055242
+   EM      1095     -3735.5196001607         35.7575335231      0.00055065
+   EM      1100     -3735.5196001410         35.7575334837      0.00054889
+   EM      1105     -3735.5196001216         35.7575334448      0.00054713
+   EM      1110     -3735.5196001023         35.7575334063      0.00054539
+   EM      1115     -3735.5196000834         35.7575333684      0.00054365
+   EM      1120     -3735.5196000646         35.7575333309      0.00054192
+   EM      1125     -3735.5196000461         35.7575332939      0.00054020
+   EM      1130     -3735.5196000278         35.7575332573      0.00053849
+   EM      1135     -3735.5196000097         35.7575332211      0.00053679
+   EM      1140     -3735.5195999919         35.7575331855      0.00053509
+   EM      1145     -3735.5195999743         35.7575331502      0.00053341
+   EM      1150     -3735.5195999569         35.7575331154      0.00053173
+   EM      1155     -3735.5195999397         35.7575330810      0.00053006
+   EM      1160     -3735.5195999227         35.7575330471      0.00052839
+   EM      1165     -3735.5195999059         35.7575330135      0.00052674
+   EM      1170     -3735.5195998894         35.7575329804      0.00052509
+   EM      1175     -3735.5195998730         35.7575329477      0.00052345
+   EM      1180     -3735.5195998568         35.7575329154      0.00052182
+   EM      1185     -3735.5195998409         35.7575328834      0.00052020
+   EM      1190     -3735.5195998251         35.7575328519      0.00051858
+   EM      1195     -3735.5195998095         35.7575328208      0.00051698
+   EM      1200     -3735.5195997942         35.7575327900      0.00051538
+   EM      1205     -3735.5195997790         35.7575327596      0.00051378
+   EM      1210     -3735.5195997640         35.7575327296      0.00051220
+   EM      1215     -3735.5195997492         35.7575327000      0.00051062
+   EM      1220     -3735.5195997345         35.7575326707      0.00050905
+   EM      1225     -3735.5195997201         35.7575326418      0.00050749
+   EM      1230     -3735.5195997058         35.7575326133      0.00050594
+   EM      1235     -3735.5195996917         35.7575325850      0.00050439
+   EM      1240     -3735.5195996778         35.7575325572      0.00050285
+   EM      1245     -3735.5195996640         35.7575325297      0.00050132
+   EM      1250     -3735.5195996504         35.7575325025      0.00049980
+   EM      1255     -3735.5195996370         35.7575324757      0.00049828
+   EM      1260     -3735.5195996237         35.7575324491      0.00049677
+   EM      1265     -3735.5195996106         35.7575324230      0.00049527
+   EM      1270     -3735.5195995977         35.7575323971      0.00049377
+   EM      1275     -3735.5195995849         35.7575323716      0.00049229
+   EM      1280     -3735.5195995723         35.7575323463      0.00049080
+   EM      1285     -3735.5195995599         35.7575323214      0.00048933
+   EM      1290     -3735.5195995476         35.7575322968      0.00048786
+   EM      1295     -3735.5195995354         35.7575322725      0.00048641
+   EM      1300     -3735.5195995234         35.7575322485      0.00048495
+   EM      1305     -3735.5195995115         35.7575322247      0.00048351
+   EM      1310     -3735.5195994998         35.7575322013      0.00048207
+   EM      1315     -3735.5195994883         35.7575321782      0.00048064
+   EM      1320     -3735.5195994768         35.7575321553      0.00047921
+   EM      1325     -3735.5195994655         35.7575321328      0.00047780
+   EM      1330     -3735.5195994544         35.7575321105      0.00047638
+   EM      1335     -3735.5195994434         35.7575320885      0.00047498
+   EM      1340     -3735.5195994325         35.7575320667      0.00047358
+   EM      1345     -3735.5195994218         35.7575320452      0.00047219
+   EM      1350     -3735.5195994112         35.7575320240      0.00047081
+   EM      1355     -3735.5195994007         35.7575320031      0.00046943
+   EM      1360     -3735.5195993903         35.7575319824      0.00046806
+   EM      1365     -3735.5195993801         35.7575319619      0.00046670
+   EM      1370     -3735.5195993700         35.7575319417      0.00046534
+   EM      1375     -3735.5195993600         35.7575319218      0.00046399
+   EM      1380     -3735.5195993502         35.7575319021      0.00046264
+   EM      1385     -3735.5195993405         35.7575318826      0.00046130
+   EM      1390     -3735.5195993309         35.7575318634      0.00045997
+   EM      1395     -3735.5195993214         35.7575318444      0.00045865
+   EM      1400     -3735.5195993120         35.7575318257      0.00045733
+   EM      1405     -3735.5195993027         35.7575318072      0.00045602
+   EM      1410     -3735.5195992936         35.7575317889      0.00045471
+   EM      1415     -3735.5195992846         35.7575317708      0.00045341
+   EM      1420     -3735.5195992756         35.7575317530      0.00045211
+   EM      1425     -3735.5195992668         35.7575317353      0.00045083
+   EM      1430     -3735.5195992581         35.7575317179      0.00044955
+   EM      1435     -3735.5195992495         35.7575317008      0.00044827
+   EM      1440     -3735.5195992410         35.7575316838      0.00044700
+   EM      1445     -3735.5195992327         35.7575316670      0.00044574
+   EM      1450     -3735.5195992244         35.7575316504      0.00044448
+   EM      1455     -3735.5195992162         35.7575316341      0.00044323
+   EM      1460     -3735.5195992081         35.7575316179      0.00044198
+   EM      1465     -3735.5195992001         35.7575316020      0.00044074
+   EM      1470     -3735.5195991923         35.7575315862      0.00043951
+   EM      1475     -3735.5195991845         35.7575315706      0.00043828
+   EM      1480     -3735.5195991768         35.7575315552      0.00043706
+   EM      1485     -3735.5195991692         35.7575315401      0.00043584
+   EM      1490     -3735.5195991617         35.7575315251      0.00043463
+   EM      1495     -3735.5195991543         35.7575315102      0.00043343
+   EM      1500     -3735.5195991470         35.7575314956      0.00043223
+   EM      1505     -3735.5195991397         35.7575314811      0.00043103
+   EM      1510     -3735.5195991326         35.7575314669      0.00042985
+   EM      1515     -3735.5195991255         35.7575314528      0.00042866
+   EM      1520     -3735.5195991186         35.7575314388      0.00042749
+   EM      1525     -3735.5195991117         35.7575314251      0.00042632
+   EM      1530     -3735.5195991049         35.7575314115      0.00042515
+   EM      1535     -3735.5195990982         35.7575313981      0.00042399
+   EM      1540     -3735.5195990916         35.7575313848      0.00042284
+   EM      1545     -3735.5195990850         35.7575313717      0.00042169
+   EM      1550     -3735.5195990786         35.7575313588      0.00042054
+   EM      1555     -3735.5195990722         35.7575313460      0.00041941
+   EM      1560     -3735.5195990659         35.7575313334      0.00041827
+   EM      1565     -3735.5195990596         35.7575313209      0.00041714
+   EM      1570     -3735.5195990535         35.7575313086      0.00041602
+   EM      1575     -3735.5195990474         35.7575312965      0.00041491
+   EM      1580     -3735.5195990414         35.7575312845      0.00041379
+   EM      1585     -3735.5195990355         35.7575312726      0.00041269
+   EM      1590     -3735.5195990296         35.7575312609      0.00041159
+   EM      1595     -3735.5195990238         35.7575312493      0.00041049
+   EM      1600     -3735.5195990181         35.7575312379      0.00040940
+   EM      1605     -3735.5195990125         35.7575312266      0.00040831
+   EM      1610     -3735.5195990069         35.7575312155      0.00040723
+   EM      1615     -3735.5195990014         35.7575312045      0.00040616
+   EM      1620     -3735.5195989959         35.7575311936      0.00040508
+   EM      1625     -3735.5195989906         35.7575311828      0.00040402
+   EM      1630     -3735.5195989853         35.7575311722      0.00040296
+   EM      1635     -3735.5195989800         35.7575311618      0.00040190
+   EM      1640     -3735.5195989749         35.7575311514      0.00040085
+   EM      1645     -3735.5195989697         35.7575311412      0.00039980
+   EM      1650     -3735.5195989647         35.7575311311      0.00039876
+   EM      1655     -3735.5195989597         35.7575311211      0.00039773
+   EM      1660     -3735.5195989548         35.7575311113      0.00039669
+   EM      1665     -3735.5195989499         35.7575311015      0.00039567
+   EM      1670     -3735.5195989451         35.7575310919      0.00039464
+   EM      1675     -3735.5195989404         35.7575310824      0.00039363
+   EM      1680     -3735.5195989357         35.7575310731      0.00039261
+   EM      1685     -3735.5195989311         35.7575310638      0.00039161
+   EM      1690     -3735.5195989265         35.7575310547      0.00039060
+   EM      1695     -3735.5195989220         35.7575310456      0.00038960
+   EM      1700     -3735.5195989175         35.7575310367      0.00038861
+   EM      1705     -3735.5195989131         35.7575310279      0.00038762
+   EM      1710     -3735.5195989088         35.7575310192      0.00038664
+   EM      1715     -3735.5195989045         35.7575310106      0.00038566
+   EM      1720     -3735.5195989002         35.7575310021      0.00038468
+   EM      1725     -3735.5195988960         35.7575309937      0.00038371
+   EM      1730     -3735.5195988919         35.7575309854      0.00038274
+   EM      1735     -3735.5195988878         35.7575309773      0.00038178
+   EM      1740     -3735.5195988837         35.7575309692      0.00038082
+   EM      1745     -3735.5195988798         35.7575309612      0.00037987
+   EM      1750     -3735.5195988758         35.7575309533      0.00037892
+   EM      1755     -3735.5195988719         35.7575309455      0.00037797
+   EM      1760     -3735.5195988681         35.7575309378      0.00037703
+   EM      1765     -3735.5195988643         35.7575309302      0.00037609
+   EM      1770     -3735.5195988605         35.7575309227      0.00037516
+   EM      1775     -3735.5195988568         35.7575309153      0.00037423
+   EM      1780     -3735.5195988532         35.7575309080      0.00037331
+   EM      1785     -3735.5195988496         35.7575309008      0.00037239
+   EM      1790     -3735.5195988460         35.7575308936      0.00037148
+   EM      1795     -3735.5195988425         35.7575308866      0.00037056
+   EM      1800     -3735.5195988390         35.7575308796      0.00036966
+   EM      1805     -3735.5195988355         35.7575308728      0.00036875
+   EM      1810     -3735.5195988321         35.7575308660      0.00036786
+   EM      1815     -3735.5195988288         35.7575308592      0.00036696
+   EM      1820     -3735.5195988255         35.7575308526      0.00036607
+   EM      1825     -3735.5195988222         35.7575308461      0.00036518
+   EM      1830     -3735.5195988190         35.7575308396      0.00036430
+   EM      1835     -3735.5195988158         35.7575308332      0.00036342
+   EM      1840     -3735.5195988126         35.7575308269      0.00036255
+   EM      1845     -3735.5195988095         35.7575308207      0.00036168
+   EM      1850     -3735.5195988064         35.7575308145      0.00036081
+   EM      1855     -3735.5195988034         35.7575308084      0.00035995
+   EM      1860     -3735.5195988004         35.7575308024      0.00035909
+   EM      1865     -3735.5195987974         35.7575307965      0.00035823
+   EM      1870     -3735.5195987945         35.7575307907      0.00035738
+   EM      1875     -3735.5195987916         35.7575307849      0.00035653
+   EM      1880     -3735.5195987887         35.7575307792      0.00035569
+   EM      1885     -3735.5195987859         35.7575307735      0.00035485
+   EM      1890     -3735.5195987831         35.7575307679      0.00035401
+   EM      1895     -3735.5195987804         35.7575307624      0.00035318
+   EM      1900     -3735.5195987777         35.7575307570      0.00035235
+   EM      1905     -3735.5195987750         35.7575307516      0.00035153
+   EM      1910     -3735.5195987723         35.7575307463      0.00035071
+   EM      1915     -3735.5195987697         35.7575307411      0.00034989
+   EM      1920     -3735.5195987671         35.7575307359      0.00034908
+   EM      1925     -3735.5195987646         35.7575307308      0.00034826
+   EM      1930     -3735.5195987620         35.7575307258      0.00034746
+   EM      1935     -3735.5195987595         35.7575307208      0.00034665
+   EM      1940     -3735.5195987571         35.7575307158      0.00034586
+   EM      1945     -3735.5195987546         35.7575307110      0.00034506
+   EM      1950     -3735.5195987522         35.7575307062      0.00034427
+   EM      1955     -3735.5195987499         35.7575307014      0.00034348
+   EM      1960     -3735.5195987475         35.7575306967      0.00034269
+   EM      1965     -3735.5195987452         35.7575306921      0.00034191
+   EM      1970     -3735.5195987429         35.7575306875      0.00034113
+   EM      1975     -3735.5195987407         35.7575306830      0.00034036
+   EM      1980     -3735.5195987384         35.7575306786      0.00033958
+   EM      1985     -3735.5195987362         35.7575306742      0.00033882
+   EM      1990     -3735.5195987341         35.7575306698      0.00033805
+   EM      1995     -3735.5195987319         35.7575306655      0.00033729
+   EM      2000     -3735.5195987298         35.7575306613      0.00033653
+   EM      2005     -3735.5195987277         35.7575306571      0.00033578
+   EM      2010     -3735.5195987256         35.7575306529      0.00033502
+   EM      2015     -3735.5195987236         35.7575306488      0.00033428
+   EM      2020     -3735.5195987216         35.7575306448      0.00033353
+   EM      2025     -3735.5195987196         35.7575306408      0.00033279
+   EM      2030     -3735.5195987176         35.7575306369      0.00033205
+   EM      2035     -3735.5195987156         35.7575306330      0.00033131
+   EM      2040     -3735.5195987137         35.7575306291      0.00033058
+   EM      2045     -3735.5195987118         35.7575306253      0.00032985
+   EM      2050     -3735.5195987099         35.7575306216      0.00032913
+   EM      2055     -3735.5195987081         35.7575306179      0.00032840
+   EM      2060     -3735.5195987063         35.7575306142      0.00032769
+   EM      2065     -3735.5195987045         35.7575306106      0.00032697
+   EM      2070     -3735.5195987027         35.7575306070      0.00032626
+   EM      2075     -3735.5195987009         35.7575306035      0.00032555
+   EM      2080     -3735.5195986992         35.7575306000      0.00032484
+   EM      2085     -3735.5195986975         35.7575305966      0.00032413
+   EM      2090     -3735.5195986958         35.7575305932      0.00032343
+   EM      2095     -3735.5195986941         35.7575305898      0.00032273
+   EM      2100     -3735.5195986924         35.7575305865      0.00032204
+   EM      2105     -3735.5195986908         35.7575305832      0.00032135
+   EM      2110     -3735.5195986892         35.7575305800      0.00032066
+   EM      2115     -3735.5195986876         35.7575305768      0.00031997
+   EM      2120     -3735.5195986860         35.7575305737      0.00031929
+   EM      2125     -3735.5195986844         35.7575305705      0.00031861
+   EM      2130     -3735.5195986829         35.7575305675      0.00031793
+   EM      2135     -3735.5195986814         35.7575305644      0.00031726
+   EM      2140     -3735.5195986799         35.7575305614      0.00031659
+   EM      2145     -3735.5195986784         35.7575305585      0.00031592
+   EM      2150     -3735.5195986769         35.7575305555      0.00031525
+   EM      2155     -3735.5195986755         35.7575305526      0.00031459
+   EM      2160     -3735.5195986741         35.7575305498      0.00031393
+   EM      2165     -3735.5195986726         35.7575305470      0.00031327
+   EM      2170     -3735.5195986712         35.7575305442      0.00031262
+   EM      2175     -3735.5195986699         35.7575305414      0.00031196
+   EM      2180     -3735.5195986685         35.7575305387      0.00031132
+   EM      2185     -3735.5195986672         35.7575305360      0.00031067
+   EM      2190     -3735.5195986658         35.7575305334      0.00031003
+   EM      2195     -3735.5195986645         35.7575305308      0.00030938
+   EM      2200     -3735.5195986632         35.7575305282      0.00030875
+   EM      2205     -3735.5195986620         35.7575305256      0.00030811
+   EM      2210     -3735.5195986607         35.7575305231      0.00030748
+   EM      2215     -3735.5195986595         35.7575305206      0.00030685
+   EM      2220     -3735.5195986582         35.7575305181      0.00030622
+   EM      2225     -3735.5195986570         35.7575305157      0.00030560
+   EM      2230     -3735.5195986558         35.7575305133      0.00030497
+   EM      2235     -3735.5195986546         35.7575305109      0.00030435
+   EM      2240     -3735.5195986534         35.7575305086      0.00030374
+   EM      2245     -3735.5195986523         35.7575305063      0.00030312
+   EM      2250     -3735.5195986511         35.7575305040      0.00030251
+   EM      2255     -3735.5195986500         35.7575305017      0.00030190
+   EM      2260     -3735.5195986489         35.7575304995      0.00030130
+   EM      2265     -3735.5195986478         35.7575304973      0.00030069
+   EM      2270     -3735.5195986467         35.7575304951      0.00030009
+   EM      2275     -3735.5195986456         35.7575304930      0.00029949
+   EM      2280     -3735.5195986446         35.7575304908      0.00029889
+   EM      2285     -3735.5195986435         35.7575304887      0.00029830
+   EM      2290     -3735.5195986425         35.7575304867      0.00029771
+   EM      2295     -3735.5195986415         35.7575304846      0.00029712
+   EM      2300     -3735.5195986405         35.7575304826      0.00029653
+   EM      2305     -3735.5195986395         35.7575304806      0.00029595
+   EM      2310     -3735.5195986385         35.7575304786      0.00029536
+   EM      2315     -3735.5195986375         35.7575304767      0.00029478
+   EM      2320     -3735.5195986365         35.7575304748      0.00029421
+   EM      2325     -3735.5195986356         35.7575304729      0.00029363
+   EM      2330     -3735.5195986347         35.7575304710      0.00029306
+   EM      2335     -3735.5195986337         35.7575304692      0.00029249
+   EM      2340     -3735.5195986328         35.7575304673      0.00029192
+   EM      2345     -3735.5195986319         35.7575304655      0.00029136
+   EM      2350     -3735.5195986310         35.7575304637      0.00029079
+   EM      2355     -3735.5195986301         35.7575304620      0.00029023
+   EM      2360     -3735.5195986293         35.7575304602      0.00028967
+   EM      2365     -3735.5195986284         35.7575304585      0.00028912
+   EM      2370     -3735.5195986276         35.7575304568      0.00028856
+   EM      2375     -3735.5195986267         35.7575304551      0.00028801
+   EM      2380     -3735.5195986259         35.7575304535      0.00028746
+   EM      2385     -3735.5195986251         35.7575304518      0.00028691
+   EM      2390     -3735.5195986243         35.7575304502      0.00028637
+   EM      2395     -3735.5195986235         35.7575304486      0.00028583
+   EM      2400     -3735.5195986227         35.7575304470      0.00028529
+   EM      2405     -3735.5195986219         35.7575304455      0.00028475
+   EM      2410     -3735.5195986211         35.7575304440      0.00028421
+   EM      2415     -3735.5195986204         35.7575304424      0.00028368
+   EM      2420     -3735.5195986196         35.7575304409      0.00028314
+   EM      2425     -3735.5195986189         35.7575304395      0.00028261
+   EM      2430     -3735.5195986182         35.7575304380      0.00028209
+   EM      2435     -3735.5195986174         35.7575304365      0.00028156
+   EM      2440     -3735.5195986167         35.7575304351      0.00028104
+   EM      2445     -3735.5195986160         35.7575304337      0.00028052
+   EM      2450     -3735.5195986153         35.7575304323      0.00028000
+   EM      2455     -3735.5195986146         35.7575304309      0.00027948
+   EM      2460     -3735.5195986139         35.7575304296      0.00027896
+   EM      2465     -3735.5195986133         35.7575304282      0.00027845
+   EM      2470     -3735.5195986126         35.7575304269      0.00027794
+   EM      2475     -3735.5195986120         35.7575304256      0.00027743
+   EM      2480     -3735.5195986113         35.7575304243      0.00027692
+   EM      2485     -3735.5195986107         35.7575304230      0.00027642
+   EM      2490     -3735.5195986100         35.7575304218      0.00027591
+   EM      2495     -3735.5195986094         35.7575304205      0.00027541
+   EM      2500     -3735.5195986088         35.7575304193      0.00027491
+   EM      2505     -3735.5195986082         35.7575304181      0.00027442
+   EM      2510     -3735.5195986076         35.7575304169      0.00027392
+   EM      2515     -3735.5195986070         35.7575304157      0.00027343
+   EM      2520     -3735.5195986064         35.7575304145      0.00027294
+   EM      2525     -3735.5195986058         35.7575304134      0.00027245
+   EM      2530     -3735.5195986053         35.7575304122      0.00027196
+   EM      2535     -3735.5195986047         35.7575304111      0.00027147
+   EM      2540     -3735.5195986041         35.7575304100      0.00027099
+   EM      2545     -3735.5195986036         35.7575304089      0.00027051
+   EM      2550     -3735.5195986030         35.7575304078      0.00027003
+   EM      2555     -3735.5195986025         35.7575304067      0.00026955
+   EM      2560     -3735.5195986020         35.7575304056      0.00026907
+   EM      2565     -3735.5195986015         35.7575304046      0.00026860
+   EM      2570     -3735.5195986009         35.7575304036      0.00026813
+   EM      2575     -3735.5195986004         35.7575304025      0.00026766
+   EM      2580     -3735.5195985999         35.7575304015      0.00026719
+   EM      2585     -3735.5195985994         35.7575304005      0.00026672
+   EM      2590     -3735.5195985989         35.7575303995      0.00026625
+   EM      2595     -3735.5195985984         35.7575303986      0.00026579
+   EM      2600     -3735.5195985980         35.7575303976      0.00026533
+   EM      2605     -3735.5195985975         35.7575303967      0.00026487
+   EM      2610     -3735.5195985970         35.7575303957      0.00026441
+   EM      2615     -3735.5195985966         35.7575303948      0.00026395
+   EM      2620     -3735.5195985961         35.7575303939      0.00026350
+   EM      2625     -3735.5195985956         35.7575303930      0.00026305
+   EM      2630     -3735.5195985952         35.7575303921      0.00026260
+   EM      2635     -3735.5195985948         35.7575303912      0.00026215
+   EM      2640     -3735.5195985943         35.7575303903      0.00026170
+   EM      2645     -3735.5195985939         35.7575303895      0.00026125
+   EM      2650     -3735.5195985935         35.7575303886      0.00026081
+   EM      2655     -3735.5195985931         35.7575303878      0.00026037
+   EM      2660     -3735.5195985926         35.7575303870      0.00025992
+   EM      2665     -3735.5195985922         35.7575303861      0.00025949
+   EM      2670     -3735.5195985918         35.7575303853      0.00025905
+   EM      2675     -3735.5195985914         35.7575303845      0.00025861
+   EM      2680     -3735.5195985910         35.7575303837      0.00025818
+   EM      2685     -3735.5195985906         35.7575303830      0.00025774
+   EM      2690     -3735.5195985903         35.7575303822      0.00025731
+   EM      2695     -3735.5195985899         35.7575303814      0.00025688
+   EM      2700     -3735.5195985895         35.7575303807      0.00025646
+   EM      2705     -3735.5195985891         35.7575303799      0.00025603
+   EM      2710     -3735.5195985888         35.7575303792      0.00025560
+   EM      2715     -3735.5195985884         35.7575303785      0.00025518
+   EM      2720     -3735.5195985880         35.7575303778      0.00025476
+   EM      2725     -3735.5195985877         35.7575303771      0.00025434
+   EM      2730     -3735.5195985873         35.7575303764      0.00025392
+   EM      2735     -3735.5195985870         35.7575303757      0.00025351
+   EM      2740     -3735.5195985867         35.7575303750      0.00025309
+   EM      2745     -3735.5195985863         35.7575303743      0.00025268
+   EM      2750     -3735.5195985860         35.7575303737      0.00025226
+   EM      2755     -3735.5195985857         35.7575303730      0.00025185
+   EM      2760     -3735.5195985853         35.7575303724      0.00025144
+   EM      2765     -3735.5195985850         35.7575303717      0.00025104
+   EM      2770     -3735.5195985847         35.7575303711      0.00025063
+   EM      2775     -3735.5195985844         35.7575303705      0.00025023
+   EM      2780     -3735.5195985841         35.7575303699      0.00024982
+   EM      2785     -3735.5195985838         35.7575303693      0.00024942
+   EM      2790     -3735.5195985835         35.7575303687      0.00024902
+   EM      2795     -3735.5195985832         35.7575303681      0.00024862
+   EM      2800     -3735.5195985829         35.7575303675      0.00024822
+   EM      2805     -3735.5195985826         35.7575303669      0.00024783
+   EM      2810     -3735.5195985823         35.7575303663      0.00024743
+   EM      2815     -3735.5195985820         35.7575303658      0.00024704
+   EM      2820     -3735.5195985818         35.7575303652      0.00024665
+   EM      2825     -3735.5195985815         35.7575303647      0.00024626
+   EM      2830     -3735.5195985812         35.7575303641      0.00024587
+   EM      2835     -3735.5195985809         35.7575303636      0.00024548
+   EM      2840     -3735.5195985807         35.7575303630      0.00024510
+   EM      2845     -3735.5195985804         35.7575303625      0.00024471
+   EM      2850     -3735.5195985802         35.7575303620      0.00024433
+   EM      2855     -3735.5195985799         35.7575303615      0.00024395
+   EM      2860     -3735.5195985797         35.7575303610      0.00024357
+   EM      2865     -3735.5195985794         35.7575303605      0.00024319
+   EM      2870     -3735.5195985792         35.7575303600      0.00024281
+   EM      2875     -3735.5195985789         35.7575303595      0.00024244
+   EM      2880     -3735.5195985787         35.7575303590      0.00024206
+   EM      2885     -3735.5195985784         35.7575303586      0.00024169
+   EM      2890     -3735.5195985782         35.7575303581      0.00024131
+   EM      2895     -3735.5195985780         35.7575303576      0.00024094
+   EM      2900     -3735.5195985777         35.7575303572      0.00024057
+   EM      2905     -3735.5195985775         35.7575303567      0.00024021
+   EM      2910     -3735.5195985773         35.7575303563      0.00023984
+   EM      2915     -3735.5195985771         35.7575303558      0.00023947
+   EM      2920     -3735.5195985769         35.7575303554      0.00023911
+   EM      2925     -3735.5195985766         35.7575303550      0.00023874
+   EM      2930     -3735.5195985764         35.7575303545      0.00023838
+   EM      2935     -3735.5195985762         35.7575303541      0.00023802
+   EM      2940     -3735.5195985760         35.7575303537      0.00023766
+   EM      2945     -3735.5195985758         35.7575303533      0.00023731
+   EM      2950     -3735.5195985756         35.7575303529      0.00023695
+   EM      2955     -3735.5195985754         35.7575303525      0.00023659
+   EM      2960     -3735.5195985752         35.7575303521      0.00023624
+   EM      2965     -3735.5195985750         35.7575303517      0.00023589
+   EM      2970     -3735.5195985748         35.7575303513      0.00023553
+   EM      2975     -3735.5195985746         35.7575303509      0.00023518
+   EM      2980     -3735.5195985744         35.7575303506      0.00023483
+   EM      2985     -3735.5195985743         35.7575303502      0.00023449
+   EM      2990     -3735.5195985741         35.7575303498      0.00023414
+   EM      2995     -3735.5195985739         35.7575303495      0.00023379
+   EM      3000     -3735.5195985737         35.7575303491      0.00023345
+   EM      3005     -3735.5195985735         35.7575303488      0.00023310
+   EM      3010     -3735.5195985734         35.7575303484      0.00023276
+   EM      3015     -3735.5195985732         35.7575303481      0.00023242
+   EM      3020     -3735.5195985730         35.7575303477      0.00023208
+   EM      3025     -3735.5195985729         35.7575303474      0.00023174
+   EM      3030     -3735.5195985727         35.7575303471      0.00023141
+   EM      3035     -3735.5195985725         35.7575303467      0.00023107
+   EM      3040     -3735.5195985724         35.7575303464      0.00023073
+   EM      3045     -3735.5195985722         35.7575303461      0.00023040
+   EM      3050     -3735.5195985720         35.7575303458      0.00023007
+   EM      3055     -3735.5195985719         35.7575303455      0.00022973
+   EM      3060     -3735.5195985717         35.7575303452      0.00022940
+   EM      3065     -3735.5195985716         35.7575303449      0.00022907
+   EM      3070     -3735.5195985714         35.7575303446      0.00022875
+   EM      3075     -3735.5195985713         35.7575303443      0.00022842
+   EM      3080     -3735.5195985711         35.7575303440      0.00022809
+   EM      3085     -3735.5195985710         35.7575303437      0.00022777
+   EM      3090     -3735.5195985709         35.7575303434      0.00022744
+   EM      3095     -3735.5195985707         35.7575303431      0.00022712
+   EM      3100     -3735.5195985706         35.7575303428      0.00022680
+   EM      3105     -3735.5195985704         35.7575303426      0.00022648
+   EM      3110     -3735.5195985703         35.7575303423      0.00022616
+   EM      3115     -3735.5195985702         35.7575303420      0.00022584
+   EM      3120     -3735.5195985700         35.7575303417      0.00022552
+   EM      3125     -3735.5195985699         35.7575303415      0.00022521
+   EM      3130     -3735.5195985698         35.7575303412      0.00022489
+   EM      3135     -3735.5195985696         35.7575303410      0.00022458
+   EM      3140     -3735.5195985695         35.7575303407      0.00022426
+   EM      3145     -3735.5195985694         35.7575303405      0.00022395
+   EM      3150     -3735.5195985693         35.7575303402      0.00022364
+   EM      3155     -3735.5195985691         35.7575303400      0.00022333
+   EM      3160     -3735.5195985690         35.7575303397      0.00022302
+   EM      3165     -3735.5195985689         35.7575303395      0.00022271
+   EM      3170     -3735.5195985688         35.7575303393      0.00022240
+   EM      3175     -3735.5195985687         35.7575303390      0.00022210
+   EM      3180     -3735.5195985686         35.7575303388      0.00022179
+   EM      3185     -3735.5195985685         35.7575303386      0.00022149
+   EM      3190     -3735.5195985683         35.7575303384      0.00022118
+   EM      3195     -3735.5195985682         35.7575303381      0.00022088
+   EM      3200     -3735.5195985681         35.7575303379      0.00022058
+   EM      3205     -3735.5195985680         35.7575303377      0.00022028
+   EM      3210     -3735.5195985679         35.7575303375      0.00021998
+   EM      3215     -3735.5195985678         35.7575303373      0.00021968
+   EM      3220     -3735.5195985677         35.7575303371      0.00021939
+   EM      3225     -3735.5195985676         35.7575303369      0.00021909
+   EM      3230     -3735.5195985675         35.7575303367      0.00021879
+   EM      3235     -3735.5195985674         35.7575303365      0.00021850
+   EM      3240     -3735.5195985673         35.7575303363      0.00021821
+   EM      3245     -3735.5195985672         35.7575303361      0.00021791
+   EM      3250     -3735.5195985671         35.7575303359      0.00021762
+   EM      3255     -3735.5195985670         35.7575303357      0.00021733
+   EM      3260     -3735.5195985669         35.7575303355      0.00021704
+   EM      3265     -3735.5195985668         35.7575303353      0.00021675
+   EM      3270     -3735.5195985667         35.7575303351      0.00021646
+   EM      3275     -3735.5195985666         35.7575303350      0.00021618
+   EM      3280     -3735.5195985666         35.7575303348      0.00021589
+   EM      3285     -3735.5195985665         35.7575303346      0.00021561
+   EM      3290     -3735.5195985664         35.7575303344      0.00021532
+   EM      3295     -3735.5195985663         35.7575303343      0.00021504
+   EM      3300     -3735.5195985662         35.7575303341      0.00021476
+   EM      3305     -3735.5195985661         35.7575303339      0.00021447
+   EM      3310     -3735.5195985660         35.7575303338      0.00021419
+   EM      3315     -3735.5195985660         35.7575303336      0.00021391
+   EM      3320     -3735.5195985659         35.7575303334      0.00021363
+   EM      3325     -3735.5195985658         35.7575303333      0.00021336
+   EM      3330     -3735.5195985657         35.7575303331      0.00021308
+   EM      3335     -3735.5195985656         35.7575303330      0.00021280
+   EM      3340     -3735.5195985656         35.7575303328      0.00021253
+   EM      3345     -3735.5195985655         35.7575303327      0.00021225
+   EM      3350     -3735.5195985654         35.7575303325      0.00021198
+   EM      3355     -3735.5195985653         35.7575303324      0.00021171
+   EM      3360     -3735.5195985653         35.7575303322      0.00021143
+   EM      3365     -3735.5195985652         35.7575303321      0.00021116
+   EM      3370     -3735.5195985651         35.7575303319      0.00021089
+   EM      3375     -3735.5195985650         35.7575303318      0.00021062
+   EM      3380     -3735.5195985650         35.7575303316      0.00021035
+   EM      3385     -3735.5195985649         35.7575303315      0.00021009
+   EM      3390     -3735.5195985648         35.7575303314      0.00020982
+   EM      3395     -3735.5195985648         35.7575303312      0.00020955
+   EM      3400     -3735.5195985647         35.7575303311      0.00020929
+   EM      3405     -3735.5195985646         35.7575303310      0.00020902
+   EM      3410     -3735.5195985646         35.7575303308      0.00020876
+   EM      3415     -3735.5195985645         35.7575303307      0.00020850
+   EM      3420     -3735.5195985645         35.7575303306      0.00020823
+   EM      3425     -3735.5195985644         35.7575303305      0.00020797
+   EM      3430     -3735.5195985643         35.7575303303      0.00020771
+   EM      3435     -3735.5195985643         35.7575303302      0.00020745
+   EM      3440     -3735.5195985642         35.7575303301      0.00020719
+   EM      3445     -3735.5195985641         35.7575303300      0.00020694
+   EM      3450     -3735.5195985641         35.7575303299      0.00020668
+   EM      3455     -3735.5195985640         35.7575303297      0.00020642
+   EM      3460     -3735.5195985640         35.7575303296      0.00020617
+   EM      3465     -3735.5195985639         35.7575303295      0.00020591
+   EM      3470     -3735.5195985639         35.7575303294      0.00020566
+   EM      3475     -3735.5195985638         35.7575303293      0.00020540
+   EM      3480     -3735.5195985638         35.7575303292      0.00020515
+   EM      3485     -3735.5195985637         35.7575303291      0.00020490
+   EM      3490     -3735.5195985636         35.7575303290      0.00020465
+   EM      3495     -3735.5195985636         35.7575303289      0.00020440
+   EM      3500     -3735.5195985635         35.7575303288      0.00020415
+   EM      3505     -3735.5195985635         35.7575303287      0.00020390
+   EM      3510     -3735.5195985634         35.7575303286      0.00020365
+   EM      3515     -3735.5195985634         35.7575303285      0.00020340
+   EM      3520     -3735.5195985633         35.7575303284      0.00020315
+   EM      3525     -3735.5195985633         35.7575303283      0.00020291
+   EM      3530     -3735.5195985632         35.7575303282      0.00020266
+   EM      3535     -3735.5195985632         35.7575303281      0.00020242
+   EM      3540     -3735.5195985632         35.7575303280      0.00020217
+   EM      3545     -3735.5195985631         35.7575303279      0.00020193
+   EM      3550     -3735.5195985631         35.7575303278      0.00020169
+   EM      3555     -3735.5195985630         35.7575303277      0.00020144
+   EM      3560     -3735.5195985630         35.7575303276      0.00020120
+   EM      3565     -3735.5195985629         35.7575303275      0.00020096
+   EM      3570     -3735.5195985629         35.7575303274      0.00020072
+   EM      3575     -3735.5195985628         35.7575303274      0.00020048
+   EM      3580     -3735.5195985628         35.7575303273      0.00020025
+   EM      3585     -3735.5195985628         35.7575303272      0.00020001
+   EM      3590     -3735.5195985627         35.7575303271      0.00019977
+   EM      3595     -3735.5195985627         35.7575303270      0.00019953
+   EM      3600     -3735.5195985626         35.7575303269      0.00019930
+   EM      3605     -3735.5195985626         35.7575303269      0.00019906
+   EM      3610     -3735.5195985626         35.7575303268      0.00019883
+   EM      3615     -3735.5195985625         35.7575303267      0.00019860
+   EM      3620     -3735.5195985625         35.7575303266      0.00019836
+   EM      3625     -3735.5195985624         35.7575303266      0.00019813
+   EM      3630     -3735.5195985624         35.7575303265      0.00019790
+   EM      3635     -3735.5195985624         35.7575303264      0.00019767
+   EM      3640     -3735.5195985623         35.7575303263      0.00019744
+   EM      3645     -3735.5195985623         35.7575303263      0.00019721
+   EM      3650     -3735.5195985623         35.7575303262      0.00019698
+   EM      3655     -3735.5195985622         35.7575303261      0.00019675
+   EM      3660     -3735.5195985622         35.7575303260      0.00019652
+   EM      3665     -3735.5195985622         35.7575303260      0.00019630
+   EM      3670     -3735.5195985621         35.7575303259      0.00019607
+   EM      3675     -3735.5195985621         35.7575303258      0.00019584
+   EM      3680     -3735.5195985620         35.7575303258      0.00019562
+   EM      3685     -3735.5195985620         35.7575303257      0.00019539
+   EM      3690     -3735.5195985620         35.7575303257      0.00019517
+   EM      3695     -3735.5195985620         35.7575303256      0.00019495
+   EM      3700     -3735.5195985619         35.7575303255      0.00019472
+   EM      3705     -3735.5195985619         35.7575303255      0.00019450
+   EM      3710     -3735.5195985619         35.7575303254      0.00019428
+   EM      3715     -3735.5195985618         35.7575303253      0.00019406
+   EM      3720     -3735.5195985618         35.7575303253      0.00019384
+   EM      3725     -3735.5195985618         35.7575303252      0.00019362
+   EM      3730     -3735.5195985617         35.7575303252      0.00019340
+   EM      3735     -3735.5195985617         35.7575303251      0.00019318
+   EM      3740     -3735.5195985617         35.7575303250      0.00019296
+   EM      3745     -3735.5195985617         35.7575303250      0.00019275
+   EM      3750     -3735.5195985616         35.7575303249      0.00019253
+   EM      3755     -3735.5195985616         35.7575303249      0.00019232
+   EM      3760     -3735.5195985616         35.7575303248      0.00019210
+   EM      3765     -3735.5195985615         35.7575303248      0.00019188
+   EM      3770     -3735.5195985615         35.7575303247      0.00019167
+   EM      3775     -3735.5195985615         35.7575303247      0.00019146
+   EM      3780     -3735.5195985615         35.7575303246      0.00019124
+   EM      3785     -3735.5195985614         35.7575303246      0.00019103
+   EM      3790     -3735.5195985614         35.7575303245      0.00019082
+   EM      3795     -3735.5195985614         35.7575303245      0.00019061
+   EM      3800     -3735.5195985614         35.7575303244      0.00019040
+   EM      3805     -3735.5195985613         35.7575303244      0.00019019
+   EM      3810     -3735.5195985613         35.7575303243      0.00018998
+   EM      3815     -3735.5195985613         35.7575303243      0.00018977
+   EM      3820     -3735.5195985613         35.7575303242      0.00018956
+   EM      3825     -3735.5195985612         35.7575303242      0.00018935
+   EM      3830     -3735.5195985612         35.7575303241      0.00018914
+   EM      3835     -3735.5195985612         35.7575303241      0.00018894
+   EM      3840     -3735.5195985612         35.7575303240      0.00018873
+   EM      3845     -3735.5195985612         35.7575303240      0.00018853
+   EM      3850     -3735.5195985611         35.7575303240      0.00018832
+   EM      3855     -3735.5195985611         35.7575303239      0.00018812
+   EM      3860     -3735.5195985611         35.7575303239      0.00018791
+   EM      3865     -3735.5195985611         35.7575303238      0.00018771
+   EM      3870     -3735.5195985610         35.7575303238      0.00018751
+   EM      3875     -3735.5195985610         35.7575303237      0.00018730
+   EM      3880     -3735.5195985610         35.7575303237      0.00018710
+   EM      3885     -3735.5195985610         35.7575303237      0.00018690
+   EM      3890     -3735.5195985610         35.7575303236      0.00018670
+   EM      3895     -3735.5195985610         35.7575303236      0.00018650
+   EM      3900     -3735.5195985609         35.7575303235      0.00018630
+   EM      3905     -3735.5195985609         35.7575303235      0.00018610
+   EM      3910     -3735.5195985609         35.7575303235      0.00018590
+   EM      3915     -3735.5195985609         35.7575303234      0.00018570
+   EM      3920     -3735.5195985609         35.7575303234      0.00018550
+   EM      3925     -3735.5195985608         35.7575303234      0.00018531
+   EM      3930     -3735.5195985608         35.7575303233      0.00018511
+   EM      3935     -3735.5195985608         35.7575303233      0.00018491
+   EM      3940     -3735.5195985608         35.7575303233      0.00018472
+   EM      3945     -3735.5195985608         35.7575303232      0.00018452
+   EM      3950     -3735.5195985608         35.7575303232      0.00018433
+   EM      3955     -3735.5195985607         35.7575303232      0.00018413
+   EM      3960     -3735.5195985607         35.7575303231      0.00018394
+   EM      3965     -3735.5195985607         35.7575303231      0.00018375
+   EM      3970     -3735.5195985607         35.7575303231      0.00018355
+   EM      3975     -3735.5195985607         35.7575303230      0.00018336
+   EM      3980     -3735.5195985607         35.7575303230      0.00018317
+   EM      3985     -3735.5195985606         35.7575303230      0.00018298
+   EM      3990     -3735.5195985606         35.7575303229      0.00018279
+   EM      3995     -3735.5195985606         35.7575303229      0.00018260
+   EM      4000     -3735.5195985606         35.7575303229      0.00018241
+   EM      4005     -3735.5195985606         35.7575303228      0.00018222
+   EM      4010     -3735.5195985606         35.7575303228      0.00018203
+   EM      4015     -3735.5195985605         35.7575303228      0.00018184
+   EM      4020     -3735.5195985605         35.7575303228      0.00018165
+   EM      4025     -3735.5195985605         35.7575303227      0.00018147
+   EM      4030     -3735.5195985605         35.7575303227      0.00018128
+   EM      4035     -3735.5195985605         35.7575303227      0.00018109
+   EM      4040     -3735.5195985605         35.7575303226      0.00018091
+   EM      4045     -3735.5195985605         35.7575303226      0.00018072
+   EM      4050     -3735.5195985605         35.7575303226      0.00018054
+   EM      4055     -3735.5195985604         35.7575303226      0.00018035
+   EM      4060     -3735.5195985604         35.7575303225      0.00018017
+   EM      4065     -3735.5195985604         35.7575303225      0.00017998
+   EM      4070     -3735.5195985604         35.7575303225      0.00017980
+   EM      4075     -3735.5195985604         35.7575303225      0.00017962
+   EM      4080     -3735.5195985604         35.7575303224      0.00017943
+   EM      4083     -3735.5195985604         35.7575303224      0.00017933
+   Newton     1     -3735.5195985594         35.7575303205      0.00063314 
+   Newton     2     -3735.5195985594         35.7575303205      0.00000002 
+   Newton     3     -3735.5195985594         35.7575303205      0.00017443 
+   Newton     4     -3735.5195985594         35.7575303205      0.00017437 
+   Standard errors
+   WARNING: 1 boundary or non-identified parameter(s)
+   Preparing output
+
+   Wall clock time=6

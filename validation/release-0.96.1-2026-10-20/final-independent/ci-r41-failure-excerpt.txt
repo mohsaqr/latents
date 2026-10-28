@@ -1,0 +1,31 @@
+2026-10-20T16:08:32.2494839Z  ERROR
+2026-10-20T16:08:32.2517052Z Running the tests in ‘tests/testthat.R’ failed.
+2026-10-20T16:08:32.2517692Z Last 13 lines of output:
+2026-10-20T16:08:32.2518052Z   
+2026-10-20T16:08:32.2518885Z   ══ Failed tests ════════════════════════════════════════════════════════════════
+2026-10-20T16:08:32.2520130Z   ── Error ('test-engine-fixes.R:53:3'): transition parameter_inference() uses the caller's step in its table ──
+2026-10-20T16:08:32.2520719Z   <latents_boundary_fit/error/condition>
+2026-10-20T16:08:32.2521408Z   Error: A variance sits at min_variance or a transition or initial probability at zero; Wald inference does not apply.
+2026-10-20T16:08:32.2521960Z   Backtrace:
+2026-10-20T16:08:32.2522176Z       ▆
+2026-10-20T16:08:32.2522773Z    1. ├─latents::parameter_inference(fit, step = 0.01) at test-engine-fixes.R:53:3
+2026-10-20T16:08:32.2523789Z    2. └─latents:::parameter_inference.multilpa_lta(fit, step = 0.01) at latents/R/inference.R:788:3
+2026-10-20T16:08:32.2527085Z    3.   └─latents:::.lta_inference(x, vcov_type, step) at latents/R/lta-methods.R:390:3
+2026-10-20T16:08:32.2527830Z   
+2026-10-20T16:08:32.2528273Z   [ FAIL 1 | WARN 2 | SKIP 6 | PASS 8082 ]
+2026-10-20T16:08:32.2528747Z   Error:
+2026-10-20T16:08:32.2529095Z   ! Test failures.
+2026-10-20T16:08:32.2529477Z   Execution halted
+2026-10-20T16:08:32.5599380Z * checking for unstated dependencies in vignettes ... OK
+2026-10-20T16:08:32.5746441Z * checking package vignettes in ‘inst/doc’ ... OK
+2026-10-20T16:10:09.0599107Z * checking re-building of vignette outputs ... OK
+2026-10-20T16:10:09.0612319Z * checking for non-standard things in the check directory ... OK
+2026-10-20T16:10:09.0613232Z * checking for detritus in the temp directory ... OK
+2026-10-20T16:10:09.0626695Z * DONE
+2026-10-20T16:10:09.0627125Z 
+2026-10-20T16:10:09.0627445Z Status: 1 ERROR, 2 NOTEs
+2026-10-20T16:10:09.0628001Z See
+2026-10-20T16:10:09.0628948Z   ‘/home/runner/work/latents/latents/check/latents.Rcheck/00check.log’
+2026-10-20T16:10:09.0629530Z for details.
+2026-10-20T16:10:09.1091646Z 
+2026-10-20T16:10:09.1161237Z [36m── R CMD check results ───────────────────────────────────── latents 0.96.1 ────[39m

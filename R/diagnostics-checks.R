@@ -217,7 +217,10 @@
     classes <- c(individuals = ncol(x$subject_posteriors), groups = ncol(x$group_posteriors))
     return(classes[classes > 1L | names(classes) == "individuals"])
   }
-  individuals <- x$n_profiles %||% x$n_classes %||% NA_integer_
+  # Classification includes the noise alternative, which n_profiles omits.
+  # Read the same posterior columns that the entropy/classification tables use.
+  individuals <- if (.multilpa_any_fit(x)) ncol(.multilpa_class_posteriors(x)) else
+    x$n_profiles %||% x$n_classes %||% NA_integer_
   groups <- x$n_group_classes %||% 1L
   levels <- c(individuals = individuals)
   if (!isTRUE(x$single_level) && isTRUE(groups > 1L)) levels <- c(levels, groups = groups)

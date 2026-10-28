@@ -1,0 +1,13 @@
+library(latents)
+set.seed(83)
+n <- 400; k <- sample(1:2,n,TRUE)
+d <- data.frame(x=rnorm(n),y=rnorm(n,c(-1,1)[k],1),w=runif(n,.1,3))
+d$w[abs(d$y)<.3] <- 8
+x <- enumerate_regressions(y~x,d,n_classes=2,n_starts=2,seed=3,weights='w')
+f <- get_results(x,'model',n_classes=2)
+quality <- latents:::.latents_grid_quality_table(x)
+cl <- get_results(f,'classification')
+print(cl)
+cat('grid AvePP minimum:',quality$avepp_min,'fit-table AvePP minimum:',min(cl$mean_posterior[cl$assigned==cl$class]),'\n')
+print(quality)
+saveRDS(list(grid=x,fit=f),'/tmp/astra-regression-grid-probe.rds')

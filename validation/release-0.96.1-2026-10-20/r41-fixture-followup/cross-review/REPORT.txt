@@ -1,0 +1,75 @@
+Independent R4.1 caller-step fixture diagnosis — replacement ACCEPTED
+
+No production or test file was edited by this reviewer.
+
+Observed failure
+
+The cf1127f R4.1 installed check correctly refused Wald inference for a fit
+flagged as having a zero transition probability. Its caller-step regression
+assumed that a one-start, occasion-specific model of course_engagement was
+interior. The earlier a5f211f R4.1 check failed elsewhere but recorded no
+warning/failure in this particular test; it was not an all-green CI run.
+
+Independent diagnosis
+
+The original model uses 1,422 rows, 106 persons and 15 occasions. Locally its
+smallest transition probability is 6.426082e-6, at the thirteenth transition
+occasion, only 6.4 times the existing 1e-6 boundary guard. All other minimum
+occasion-transition probabilities exceed 0.034. Default model settings are
+varying diagonal variances with no structured covariance chart.
+
+Holding all other fitted parameters fixed and moving that single rare-move
+logit toward the boundary improves the ORIGINAL likelihood:
+
+  logit -11.955139: p = 6.426082e-6; reference LL -5293.183467038531.
+  logit -13.955139: p = 8.696805e-7; LL improves by 3.811266e-5.
+  logit -27.955139: p = 7.231649e-13; LL improves by 4.407785e-5.
+
+This is a conditional likelihood-profile statement, not a proof that every
+start has the same global mixture maximum. It establishes that the original
+test's current solution has a direction of improvement crossing the guard:
+slightly different optimizer arithmetic/stopping can legitimately classify
+its rare move as a boundary. An earlier pass does not establish interiority.
+
+The general LTA fitter, quasi-Newton control, inference boundary guard,
+course data and caller-step regression were unchanged between a5 and cf.
+Mocking all three changed numerical/cleanup helpers to throw still reproduces
+the original fit's identical local likelihood: bounded covariance, Vuong and
+socket cleanup are not reached by this one-start default-diagonal fit.
+Explicit seeding and file ordering also rule out the added later LMR/parallel
+tests changing this fixture's initial random seed. Both CI logs use R4.1.3
+and the same dependency-cache key. The remote CPU/BLAS rounding details were
+not captured sufficiently to attribute the exact old/new stopping difference;
+this review does not invent that attribution.
+
+Principled replacement
+
+The final deterministic fixture enumerates every one of the 16 binary state
+paths at four occasions, with ten copies per path and identical symmetric
+normal-quantile residuals per path. It uses state means +/-0.1 and residual
+scale 0.05. This is a designed interior transition problem, not a changed
+seed selected to evade the guard. Assertions explicitly require convergence,
+no boundary flags and initial/transition probabilities within (0.25,0.75).
+
+Independent runs under all three base-R matrix-product modes pass:
+
+  default/internal/blas LL = 620.1129242380422;
+  initial probability = 0.5000000000000;
+  transition probabilities = 0.4960078 to 0.4960179;
+  no fit/probability boundary, converged;
+  max SE change between steps 0.01 and 0.0001 = 5.64747e-7;
+  reported transition SE versus returned covariance discrepancy = EXACT zero.
+
+The original step sizes, 1e-12 covariance-consistency tolerance and inequality
+between the coarse/fine tables remain intact. A new >1e-8 sensitivity assertion
+gives a material margin beyond rounding. No production boundary rule, fitting
+method or inference tolerance is changed.
+
+Evidence: baseline-local.log, baseline-fit.rds, boundary-profile.log/.csv,
+final-fixture.log/.csv. The parent and author received acceptance promptly. The author's final complete
+engine-fixes file passes 26 expectations (engine-fixture-followup/targeted-final.log).
+
+Publication still requires the parent's final exact-commit CI. A test/workflow-
+only change does not justify repeating the complete 30-minute outer suite
+when all 91 production files and its runtime inputs remain identical, but its
+execution must remain labeled cf1127f with explicit source equivalence.

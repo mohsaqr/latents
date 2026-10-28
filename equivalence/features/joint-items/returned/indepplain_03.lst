@@ -1,0 +1,248 @@
+indepplain_03-lg.dat
+File name:	indepplain_03-lg.dat	
+File size:	14912 bytes  1000 records	
+File date:	2026-Oct-20 9:06:05 PM	
+Syntax:	indepplain_03.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+indepplain_03	2-Cluster	-3262.1480	6600.2812	6546.2959	6557.2959	11	20.3414	20	0.44	0.1129	0.6058	
+indepplain_03 - L² = 20.3414
+2-Cluster Syntax Model	
+					
+Number of cases	1000				
+Number of parameters (Npar)	11				
+Random Seed	20261020				
+Best Start Seed	995740				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	20	p-value			
+L-squared (L²)	20.3414	0.44			
+X-squared	20.5338	0.43			
+Cressie-Read	20.4429	0.43			
+BIC (based on L²)	-117.8137				
+AIC (based on L²)	-19.6586				
+AIC3 (based on L²)	-39.6586				
+CAIC (based on L²)	-137.8137				
+SABIC (based on L²)	-54.2926				
+Dissimilarity Index	0.0556	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3262.1480				
+Log-prior	0.0000				
+Log-posterior	-3262.1480				
+BIC (based on LL)	6600.2812				
+AIC (based on LL)	6546.2959				
+AIC3 (based on LL)	6557.2959				
+CAIC (based on LL)	6611.2812				
+SABIC (based on LL)	6565.3446				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1129				
+Reduction of errors (Lambda)	0.7694				
+Entropy R-squared	0.6058				
+Standard R-squared	0.6694				
+Classification log-likelihood	-3535.3369				
+Entropy	273.1889				
+CLC	7070.6738				
+AWE	7255.6444				
+ICL-BIC	7146.6591				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	453.1357	57.0734	510.2091		
+2	55.8643	433.9266	489.7909		
+Total	509.0000	491.0000	1000.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	427.5987	82.6104	510.2091		
+2	82.6104	407.1805	489.7909		
+Total	510.2091	489.7909	1000.0000		
+					
+Files					
+Infile	C:\lgfeatures\joint-items\indepplain_03\indepplain_03-lg.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	150				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	includeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1000				
+predictionstatistics	no				
+outfile					
+file name	indepplain_03_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+p1	Nominal	2			
+1	1				
+2	2				
+p2	Nominal	2			
+1	1				
+2	2				
+u1	Nominal	2			
+1	1				
+2	2				
+u2	Nominal	2			
+1	1				
+2	2				
+u3	Nominal	2			
+1	1				
+2	2				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=150 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'indepplain_03_posteriors.txt' classification keep id;
+variables
+   dependent p1 nominal, p2 nominal, u1 nominal, u2 nominal, u3 nominal;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   p1 <- 1 + Cluster;
+   p2 <- 1 + Cluster;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	0.1019	1	0.75	
+Cluster(2)	<-	1	-0.0408	0.1279	-0.3193	0.75				
+										
+p1(1)	<-	1	0.0000	.	.	.	44.3372	1	2.8e-11	
+p1(2)	<-	1	0.7844	0.1178	6.6586	2.8e-11				
+p1(1)	<-	Cluster(1)	0.0000	.	.	.	80.4331	1	3.0e-19	
+p1(2)	<-	Cluster(1)	0.0000	.	.	.				
+p1(1)	<-	Cluster(2)	0.0000	.	.	.				
+p1(2)	<-	Cluster(2)	-1.5766	0.1758	-8.9685	3.0e-19				
+										
+p2(1)	<-	1	0.0000	.	.	.	56.6186	1	5.3e-14	
+p2(2)	<-	1	0.9418	0.1252	7.5245	5.3e-14				
+p2(1)	<-	Cluster(1)	0.0000	.	.	.	85.9199	1	1.9e-20	
+p2(2)	<-	Cluster(1)	0.0000	.	.	.				
+p2(1)	<-	Cluster(2)	0.0000	.	.	.				
+p2(2)	<-	Cluster(2)	-1.6473	0.1777	-9.2693	1.9e-20				
+										
+u1(1)	<-	1	0.0000	.	.	.	56.1296	1	6.8e-14	
+u1(2)	<-	1	1.4370	0.1918	7.4920	6.8e-14				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.	129.4429	1	5.4e-30	
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-3.1993	0.2812	-11.3773	5.4e-30				
+										
+u2(1)	<-	1	0.0000	.	.	.	49.6690	1	1.8e-12	
+u2(2)	<-	1	0.9998	0.1419	7.0476	1.8e-12				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.	120.3483	1	5.3e-28	
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-2.2504	0.2051	-10.9703	5.3e-28				
+										
+u3(1)	<-	1	0.0000	.	.	.	45.6724	1	1.4e-11	
+u3(2)	<-	1	0.8505	0.1258	6.7581	1.4e-11				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.	99.0537	1	2.5e-23	
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	-1.8423	0.1851	-9.9526	2.5e-23				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.1019	1	0.75	
+	
+p1	<-	 Cluster	Cluster	1	2	80.4331	1	3.0e-19	
+	
+p2	<-	 Cluster	Cluster	1	2	85.9199	1	1.9e-20	
+	
+u1	<-	 Cluster	Cluster	1	2	129.4429	1	5.4e-30	
+	
+u2	<-	 Cluster	Cluster	1	2	120.3483	1	5.3e-28	
+	
+u3	<-	 Cluster	Cluster	1	2	99.0537	1	2.5e-23	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5102	0.0320	0.4898	0.0320	 	 	
+p1	 	
+1	0.3134	0.0253	0.6883	0.0268	0.4970	0.0158	
+2	0.6866	0.0253	0.3117	0.0268	0.5030	0.0158	
+p2	 	
+1	0.2805	0.0253	0.6694	0.0269	0.4710	0.0158	
+2	0.7195	0.0253	0.3306	0.0269	0.5290	0.0158	
+u1	 	
+1	0.1920	0.0298	0.8535	0.0287	0.5160	0.0158	
+2	0.8080	0.0298	0.1465	0.0287	0.4840	0.0158	
+u2	 	
+1	0.2690	0.0279	0.7774	0.0265	0.5180	0.0158	
+2	0.7310	0.0279	0.2226	0.0265	0.4820	0.0158	
+u3	 	
+1	0.2993	0.0264	0.7295	0.0265	0.5100	0.0158	
+2	0.7007	0.0264	0.2705	0.0265	0.4900	0.0158	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	
+ 	0.5102	0.0320	0.4898	0.0320	
+	
+ 	p1	
+Cluster	1	s.e.	2	s.e.	
+1	0.3134	0.0253	0.6866	0.0253	
+2	0.6883	0.0268	0.3117	0.0268	
+	
+ 	p2	
+Cluster	1	s.e.	2	s.e.	
+1	0.2805	0.0253	0.7195	0.0253	
+2	0.6694	0.0269	0.3306	0.0269	
+	
+ 	u1	
+Cluster	1	s.e.	2	s.e.	
+1	0.1920	0.0298	0.8080	0.0298	
+2	0.8535	0.0287	0.1465	0.0287	
+	
+ 	u2	
+Cluster	1	s.e.	2	s.e.	
+1	0.2690	0.0279	0.7310	0.0279	
+2	0.7774	0.0265	0.2226	0.0265	
+	
+ 	u3	
+Cluster	1	s.e.	2	s.e.	
+1	0.2993	0.0264	0.7007	0.0264	
+2	0.7295	0.0265	0.2705	0.0265	

@@ -1,0 +1,40 @@
+      beta.x       sigma2        refll        fitll    converged 
+   0.4159812    3.5840188 -123.4308542 -123.4308542    1.0000000 
+$beta
+    class_1
+x 0.4159812
+
+$common
+numeric(0)
+
+$sigma2
+[1] 3.584019
+
+$gamma
+     [,1]
+[1,]    0
+
+$separation
+[1] FALSE
+
+beta.(Intercept)           sigma2            refll            fitll 
+       2.1271982        0.9624063      -83.9867552      -83.9867552 
+       converged 
+       1.0000000 
+$beta
+             class_1
+(Intercept) 2.127198
+
+$common
+numeric(0)
+
+$sigma2
+[1] 0.9624063
+
+$gamma
+     [,1]
+[1,]    0
+
+$separation
+[1] FALSE
+

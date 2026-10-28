@@ -1,0 +1,7 @@
+weighted
+[1] TRUE
+categorical
+[1] TRUE
+count
+[1] TRUE
+Weighted, all-categorical, and count transition comparisons: passed

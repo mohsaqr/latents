@@ -1,0 +1,25 @@
+One informative group plus 95 empty groups:
+robust latents_too_few_groups/error/condition Robust and OPG inference need more groups than parameters; this fit has 1 groups and 2 parameters. 
+opg latents_too_few_groups/error/condition Robust and OPG inference need more groups than parameters; this fit has 1 groups and 2 parameters. 
+Five informative groups, before/after 95 empty groups:
+   estimate standard_error
+1 0.0226596     0.03272652
+2 0.0226596     0.03272652
+Direct effects after predictor translation z + 2026, w - 1000:
+Log likelihood: -577.206855026622 -577.206855026623 
+observed 
+  parameter      estimate original_se   shifted_se
+1         y -1831.7967393  0.05134998 120.87500645
+2       y:z     0.6696952  0.05295047   0.05295047
+3       y:w    -0.4758161  0.05219989   0.05219989
+robust 
+  parameter      estimate original_se   shifted_se
+1         y -1831.7967393  0.03850754 109.14692937
+2       y:z     0.6696952  0.04751388   0.04751388
+3       y:w    -0.4758161  0.04692498   0.04692498
+opg 
+  parameter      estimate original_se   shifted_se
+1         y -1831.7967393  0.07900694 139.65106457
+2       y:z     0.6696952  0.06173701   0.06173701
+3       y:w    -0.4758161  0.06079024   0.06079024
+Maximum relative lm normal-MLE covariance discrepancy: 3.535701e-14 

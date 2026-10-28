@@ -1,0 +1,85 @@
+
+══ Testing test-release-audit-lta.R ════════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 6 ]
+
+── Failure ('test-release-audit-lta.R:48:7'): general LTA covariance is equivariant to measurement units ──
+Expected `max(abs(actual - reference[[type]])/tcrossprod(scale))` < 1e-06.
+Actual comparison: 0.054623 >= 0.000001
+Difference: 0.054622 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-lta.R:37:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-lta.R:43:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-release-audit-lta.R:48:7
+
+── Failure ('test-release-audit-lta.R:52:7'): general LTA covariance is equivariant to measurement units ──
+Expected `actual_table$standard_error` to equal `reference_table$standard_error`.
+Differences:
+  `actual`: 0.330794 0.316061 0.227554 0.227356 0.237924
+`expected`: 0.330473 0.316119 0.227576 0.227496 0.237756
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-lta.R:37:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-lta.R:43:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-lta.R:52:7
+
+── Failure ('test-release-audit-lta.R:48:7'): general LTA covariance is equivariant to measurement units ──
+Expected `max(abs(actual - reference[[type]])/tcrossprod(scale))` < 1e-06.
+Actual comparison: 0.101246 >= 0.000001
+Difference: 0.101245 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-lta.R:37:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-lta.R:43:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-release-audit-lta.R:48:7
+
+── Failure ('test-release-audit-lta.R:52:7'): general LTA covariance is equivariant to measurement units ──
+Expected `actual_table$standard_error` to equal `reference_table$standard_error`.
+Differences:
+  `actual`: 0.334208 0.304889 0.222915 0.217097 0.239472
+`expected`: 0.333318 0.305191 0.222987 0.217336 0.239315
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-lta.R:37:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-lta.R:43:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-release-audit-lta.R:52:7
+
+── Error ('test-release-audit-lta.R:44:7'): general LTA covariance is equivariant to measurement units ──
+<latents_singular_information/error/condition>
+Error: The observed information is not positive definite.
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-release-audit-lta.R:37:3
+  2.   └─FUN(X[[i]], ...)
+  3.     └─base::lapply(...) at test-release-audit-lta.R:43:5
+  4.       └─FUN(X[[i]], ...)
+  5.         ├─stats::vcov(changed, type = type) at test-release-audit-lta.R:44:7
+  6.         └─latents:::vcov.multilpa_lta(changed, type = type)
+  7.           └─latents:::.lta_inference(...) at latents/R/lta-methods.R:548:3
+  8.             └─latents:::.inference_invert(chart_information, "min_le_eps_max") at latents/R/lta-inference.R:525:3
+  9.               └─latents:::.inference_positive_definite(information, rule, message) at latents/R/inference-service.R:162:3
+ 10.                 └─latents (local) refuse(message %||% "The observed information is not positive definite.") at latents/R/inference-service.R:133:9
+
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 6 ]

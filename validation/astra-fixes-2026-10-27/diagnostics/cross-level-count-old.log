@@ -1,0 +1,3 @@
+actual counts: 21 39 ; expected positive-support counts: 20 35 ; nobs: 55 
+Error: identical(actual, expected) is not TRUE
+Execution halted

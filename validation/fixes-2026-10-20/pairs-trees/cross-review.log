@@ -1,0 +1,10 @@
+Mixed pair/direct/ordinal/count LL difference: 0 
+observed  slope SEs: 0.04282361 0.04282361 
+opg  slope SEs: 0.05153108 0.05153108 
+robust  slope SEs: 0.04240332 0.04240332 
+Mixed conditioned chart dimensions: 60 17 17 17 
+rbind/subset/id-renaming provenance: PASS
+Vuong shear-transform maximum eigenvalue error: 3.03293e-12 
+CROSS REVIEW COMPLETE
+Mixed continuous/categorical pattern+ordinal/count refit LL error: 0 
+INTEGRATION CROSS REVIEW COMPLETE

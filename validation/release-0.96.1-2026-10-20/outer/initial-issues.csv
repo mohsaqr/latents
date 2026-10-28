@@ -1,0 +1,132 @@
+"file","test","type","message"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/inference.R: `sandwich::vcovCL()`; every robust standard error in the package carries to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/inference.R: `sqrt(G / (G - 1))` times Mplus's (0.8% larger with 60 groups). Groups are the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/inference.R: It is the estimator `glca` reports, so it reproduces that package's to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/inference.R: Mplus follows; the held probabilities are left out of the table (or, for a to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/inference.R: `scaling_correction` the MLR scaling correction factor `tr(A^-1 B) / q`, to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/get-data.R: `bic_rows` by rows as flexmix reports it), `""assignments""`, to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/get-data.R: statistics of each level leave out the same rows and groups, as Mplus to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: Parameter counts match `mclust`'s own for all fourteen. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: each M-step is mclust's own, so a fit from the same start reproduces to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: prior. Following mclust, the fit's `log_likelihood` is the *unpenalized* to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: proportion and the hypervolume), so its criteria equal mclust's. A random to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: `0`, as in mclust's classification: `subject_profiles` is `0` for an to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: EM implementations from the same start (mclust's `me()`) and is the choice to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: diagnostic plots, and of the effective class counts, as Mplus leaves them to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/multilpa.R: GOLD's default ordinal model, against which it is checked. Read the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/mixture-regression.R: repeated measures, `flexmix(y ~ x | id)`. Each group's evidence is the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/mixture-regression.R: own estimates the likelihood equals hlme's; the comparison is recorded in to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/mixture-regression.R: covariance, as `idiag = TRUE` in lcmm). to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/prior.R: exactly as `mclust::priorControl()` does for `mclust::Mclust()`. Pass the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/prior.R: conventions are retained for agreement with mclust; the controls therefore to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/prior.R: mclust's default `0.01`. Zero leaves the means unshrunk. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/transitions.R: Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/transitions.R: Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/transitions.R: Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/three-step.R: agrees with Latent GOLD 6.1's `step3 modal ml` latent Markov model to its to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-claims.R","every claim is still worded as registered in its source","expectation_failure","Expected R/three-step.R: `""observed""` the information Latent GOLD reports. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-enumeration-mplus.R","a grid fitted on two cores is identical to one fitted on one","expectation_error","Error in `checkForRemoteErrors(val)`: 2 nodes produced errors; first error: could not find function "".multilpa_enumeration_arguments"""

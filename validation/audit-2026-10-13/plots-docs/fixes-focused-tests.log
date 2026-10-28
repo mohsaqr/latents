@@ -1,0 +1,40 @@
+audit-plots-predictions: .........................1...................2
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-audit-plots-predictions.R:62:3'): released view abbreviations
+<latents_no_plot/error/condition>
+Error: This model family has no named plot views to draw.
+Backtrace:
+    ▆
+ 1. ├─expect_plots(plot(fit, what = "all", intervals = FALSE)) at test-audit-plots-predictions.R:62:3
+ 2. │ └─testthat::expect_s3_class(object, "latents_plots") at ./helper-plots.R:12:3
+ 3. │   └─testthat::quasi_label(enquo(object))
+ 4. │     └─rlang::eval_bare(expr, quo_get_env(quo))
+ 5. ├─base::plot(fit, what = "all", intervals = FALSE)
+ 6. └─latents:::plot.multilpa(fit, what = "all", intervals = FALSE)
+ 7.   └─latents:::.gg_every_view(x, match.call(), parent.frame()) at latents/R/plot.R:21:5
+
+── 2. Error ('test-audit-plots-predictions.R:136:3'): ported regression plots dr
+Error in `local_s3_method("print", plot_class, method)`: could not find function "local_s3_method"
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+plot-named: .............................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+plot-gg: .................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+mixture-regression: ..............................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+mixture-regression-prediction-design: ............
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+plot: ........................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.........................................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+predict: ...................
+
+══ DONE ════════════════════════════════════════════════════════════════════════

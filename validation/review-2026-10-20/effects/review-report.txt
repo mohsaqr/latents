@@ -1,0 +1,114 @@
+Effects and local-dependence review — 2026-10-20
+Reviewed source: HEAD e29a310, package version 0.96.0.
+Package source and project tracking files were not changed.
+
+Confirmed findings
+
+1. P2 — Covariate translation can disable every Wald standard error.
+   Location: R/inference.R:864–881, especially raw x$extra_data passed at 877.
+   Supporting scale-only handling: R/inference.R:903–914.
+
+   Fitting correctly centers the direct-effect covariates, but the inference
+   path centers only the outcomes and reconstructs information using the raw
+   covariates. Scaling by their standard deviations does not remove the
+   intercept/slope collinearity induced by a large covariate origin.
+
+   Reproduction: Rscript validation/review-2026-10-20/effects/confirm.R.
+   On 400 independent Gaussian observations with one profile, two outcomes,
+   and direct_effects = "y1 ~ z + w", z and w initially independent N(0,1),
+   the original fit has log likelihood -1116.26508119 and slope standard error
+   0.0487829449939. Replacing z by z + 1000 or z + 2026 changes neither the
+   model, maximum likelihood nor slopes (likelihood difference below 5e-13),
+   but parameter_inference() throws latents_singular_information. An
+   independent lm() reference, adjusted to the Gaussian MLE variance divisor,
+   retains exactly the same finite slope standard error. Intercept standard
+   error at z + 2026 is finite, 98.8372302229269.
+
+   Impact: legitimate numeric covariates with large origins (for example
+   calendar years with limited variation) lose otherwise estimable Wald
+   intervals and tests. get_results(fit, "direct_effects") consequently emits
+   a no-standard-errors notice and supplies NA error columns.
+
+   Recommended fix: construct information and group scores in the same
+   centered direct-covariate chart used by fitting. Translate the intercepts
+   into that chart, then back-transform the full covariance including the
+   intercept/slope cross terms. Add translation-invariance tests against the
+   one-profile lm reference, including standard/robust inference.
+
+2. P2 — A generated pair name silently overwrites another fitted indicator.
+   Location: R/local-dependence.R:214, with silent duplicate removal at
+   R/local-dependence.R:155–157 and entry use at 267–280.
+
+   The join always assigns frame[[pair$name]] without checking whether that
+   name already belongs to a separate input column. The subsequent name
+   rewrite uses setdiff(), which removes the duplicated indicator name.
+
+   Reproduction: confirm.R constructs 400 rows with four independent binary
+   columns named a, b, a:b, and c. lca(data, names(data), 1,
+   local_dependence = "a:b", n_starts = 1) returns vars c("a:b", "c") and
+   four parameters: the original third indicator has disappeared. Its log
+   likelihood is -828.8379. A collision-free manual joint indicator retaining
+   the original a:b and c has five parameters and log likelihood -1105.5966.
+   get_results(fit, "data") confirms the original a:b column was overwritten.
+
+   Impact: valid input column names can silently change the measurement data,
+   parameter count, likelihood and model-selection criteria. The assignment
+   also has potential to overwrite a same-named ID or covariate column.
+
+   Recommended fix: reserve and validate every generated joint-column name
+   against raw indicator, ID and covariate roles before fitting, or use
+   collision-free internal names with an explicit public-name mapping. Keep
+   the intentional idempotent handling of stored/prepared joint columns.
+
+3. P2 — Joining a numeric categorical pair bypasses label-collision validation.
+   Location: R/local-dependence.R:205–214.
+   Existing validation being bypassed: R/categorical.R:32–46.
+
+   The pair join converts original categories to character before the normal
+   categorical encoder can check for distinct numeric values with identical
+   printed labels. It therefore silently merges categories that ordinary
+   lca() explicitly refuses to merge.
+
+   Reproduction: Rscript validation/review-2026-10-20/effects/labels.R.
+   A binary-valued numeric a alternates between .3 and .1 + .2, which are two
+   distinct doubles but both print as "0.3"; b and c are binary. Ordinary
+   lca(data, names(data), 1) raises latents_bad_categorical and asks the caller
+   to round the input. Adding local_dependence = "a:b" succeeds, merges four
+   joint categories into two and reports two parameters / LL -277.2589.
+   Explicitly coding the two original a values as distinct category labels
+   preserves four joint categories and reports four parameters / LL -415.8883.
+
+   Impact: categorical data and likelihood change silently; original-value
+   identity is no longer recoverable from the pair metadata.
+
+   Recommended fix: apply the normal categorical value/type/label validation
+   to each original pair member before joining it. Alternatively join native
+   category codes and retain a one-to-one map to validated labels. Add a
+   parity regression test requiring the same refusal as unpaired lca().
+
+Verification and scope
+
+- Both existing test files passed with NOT_CRAN=true:
+  tests/testthat/test-direct-effects.R and test-local-dependence.R.
+  Log: targeted-tests.log.
+- Independently compared direct-effect standard errors against lm() Gaussian
+  MLE references; confirmed the base fit agrees to printed precision.
+- Independently checked nonadjacent disjoint continuous covariance pairs
+  against masked sample covariance using the MLE divisor; parameter count
+  and every covariance entry agree (invariants.R / invariants.log).
+- Missing-response direct-effect estimates agree with complete-case lm();
+  sampling-weighted missing-response estimates agree with weighted lm().
+- A model combining a categorical local-dependence pair, two direct effects,
+  a count indicator and an ordinal indicator fitted, predicted from original
+  columns, and supplied direct-effect inference successfully (confirm.R).
+- Multi-covariate rescalings up to 1e8 passed; initial concern about the normal
+  equations did not reproduce and is deliberately not reported as a defect.
+- Read R/direct-effects.R, R/local-dependence.R and their main likelihood,
+  M-step, inference, prediction, refit, enumeration, residual, plotting and
+  three-step/staging integration points. Existing tests include Latent GOLD
+  pinned values; no new external-program run was performed in this review.
+- This is a bounded review of these features, not a proof of correctness for
+  every model family, numerical configuration or unexercised integration.
+
+Artifacts: probe.R/.log, confirm.R/.log, labels.R/.log, invariants.R/.log,
+targeted-tests.log, and this report, all in this directory.

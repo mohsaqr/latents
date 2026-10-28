@@ -1,0 +1,107 @@
+RESULT IMPACT AND REQUIRED VIGNETTE CHECKS — 2026-10-22
+
+Status: HANDOFF ONLY. The user specifically requested that the next session
+check the vignettes. This audit has NOT been performed or marked complete.
+All20 current Rmd sources are listed in vignette-checklist.csv. Every full
+render and before/after output comparison is PENDING.
+
+What can change numerically
+1. Zero-weight units: corrected internal origins/start geometry can select a
+different solution, changing means, variances, memberships, likelihood,
+AIC/BIC and model choice in bug-affected fits. Same101-row reproduction:
+old LL -256.48558 versus corrected -152.61787 when the excluded outlier is
+10000. Corrected result agrees when the excluded value is0,10000or1e20.
+This is an intentional correctness change, not only a new warning.
+2. Full-covariance LTA at its eigenvalue floor: checked covariance estimates
+and LL are unchanged, but boundary changes FALSE to TRUE. Wald/vcov results
+previously returned are now refused. Tables can lose SE/p-value/CI columns'
+finite entries or display refusal messages; downstream procedures using the
+boundary flag require checking as well.
+3. Earlier staged-bootstrap correction: the measurement stage now replays
+its own search controls, pool and supported model options. Bug-affected
+bootstrap draws/estimates, standard errors and confidence intervals can
+change, and formerly broken supplied ID/time cases can now work. An
+unaffected two-start staged-bootstrap check preserved results and RNG.
+4. Thinness/free-parameter/Gaussian-support corrections: these are warning
+coverage/rationale fixes, not changes to the fitting objective. Previously
+saved unaffected LTA/cross-level examples retain estimates/LL. Warning
+presence and text can change; automation that branches on warnings needs
+review. These diagnostics are heuristic, not identification tests.
+5. Descriptive output: returned fits gain gaussian_diagnostics, fit printouts
+show the narrowest standardized covariance direction, summaries/get_results
+all include a new table, and enumeration includes min_standardized_eigenvalue
+and min_gaussian_mass. Printed text, table layouts, column selections,
+snapshots and rendered output can therefore change even if fitted numbers
+are identical. Check code using positional list/column indexing.
+6. Benchmark summaries: missing Gaussian finalist metrics are now explicitly
+unclassified/excluded from above-cutoff references rather than assumed safe.
+These study summaries can change; this does not reselect production fits.
+
+Evidence of unchanged results, and its limits
+- The known srl VVV4 seed1 example preserves EVERY preceding fit field and
+caller RNG exactly. Only the diagnostic field/output is added. See
+diagnostic-example.R/.log/.csv/.rds in this directory.
+- Saved LTA covariance/LL and cross-level old-field identities are retained
+in the probe subdirectories. These are finite examples, not proof for all
+possible inputs or every vignette.
+- Full unit:1352cases/9288recorded expectations,0failures/errors/skips,
+7existing fixture warnings. tests/equivalence:64cases/407expectations,
+0failures/errors/skips,2existing workflow warnings. Passing these suites
+DOES NOT certify all vignettes or all top-level external feature studies.
+- workflow-lpa.Rmd and workflow-lca.Rmd code was extracted and executed in
+tests/equivalence/test-vignette-claims.R. Their checked prose claims still
+pass: preferred model/class counts, BIC differences, proportions, BLRT,
+entropy and distal results as asserted there. Not every number/output is
+asserted, and neither article's complete rendered output was reviewed.
+- The sampling-weight example in vignettes/lpa.Rmd uses weights1and2, not
+zeros. That static inspection does not replace execution/output comparison.
+- No entire20-vignette rendering/comparison audit has been completed after
+these changes. Do not tell the user all vignette results are unchanged.
+
+Required next session: complete the vignette audit
+1. Read HANDOFF.md, LEARNINGS.md and this file. Preserve current uncommitted
+changes. Work from a fresh installation of the final working source and
+record package/source hashes, R/package versions, seeds and relevant options.
+2. Establish a trustworthy before-change baseline. HEAD12e0145 is the scope
+for all session corrections; the earlier fixed scratch library already
+contains the first set of corrections and is only a baseline for the later
+increment. Both may report version0.96.2, so version alone is not provenance.
+Use a verified preserved install/archive or an isolated reconstruction;
+do not reset/overwrite the working tree or use an unverified global install.
+3. Execute and fully render all20Rmd files, including the two workflow
+articles. Reuse article seeds/call order, execute evaluated chunks, record
+intentionally skipped/unevaluated chunks and cache use. Do not mistake stale
+knitr caches or checked-in site HTML for fresh execution. Do not lower starts,
+bootstrap counts or tolerances merely to get a faster passing render.
+4. Record per-vignette success/error, warnings/messages, key fitted objects,
+LL/AIC/BIC, selected model/K, means/variances/prevalences/classifications,
+SEs/CIs/p-values, bootstrap behavior and boundary flags. Compare labels by
+alignment where appropriate; distinguish numerical tolerance from substantive
+movement. Use independent rescoring or a focused probe when an unexpected
+fit difference appears.
+5. Review every hard-coded and inline numerical claim against recomputed
+objects. Check prose about singularity, identification, convergence,
+replication, default search and spike protection; warnings/tables and new
+Gaussian diagnostics should be described accurately.
+6. Compare rendered tables, figures, captions, legends and cross-references.
+Separate intended diagnostic/layout changes from numerical fitting changes.
+Pay particular attention to weights, full covariance/LTA inference,
+fit_staged/bootstrap, enumeration and code using get_results(all) or positional
+columns. Follow project visualization-review instructions if visual output is
+modified; preserve generated review artifacts.
+7. Explain each material difference before updating expected numbers. Fix
+stale prose/code/table handling only where evidence justifies it; never change
+tests or examples merely to hide a result discrepancy. Add regression checks
+for genuine new numerical failures. Do not silently change defaults, add
+handmade spike filters or introduce prior recommendations.
+8. Save a per-vignette before/after report and update the checklist. Mark
+complete only after all20have a documented disposition. Then run the checks
+appropriate to any additional source/doc changes. A separate full CRAN check,
+external feature sweep or controlled recovery study remains separate work.
+
+Execution constraints
+Shared10-coreMac/AccelerateBLAS: one BLAS thread, at most2workers for heavy
+work, no overlapping heavy benchmark/render jobs. Use nice priority where
+permitted. Existing parallel tests need local socket access. Full R CMD build
+must use clean staging rather than recursively copying the large checkout.
+No git commit/push/reset or release is authorized by this handoff.

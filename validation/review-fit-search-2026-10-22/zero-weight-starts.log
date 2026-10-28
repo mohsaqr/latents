@@ -1,0 +1,248 @@
+
+ ZERO y=0, kmeans10 LL -152.6178709085347 converged TRUE 
+means -3.025848028269757  3.006198851464688 variances 0.2455137718016206 0.3680014121341506 effective_counts 50.0021 50.9979 
+   start log_likelihood converged iterations error boundary
+1      1      -152.6179      TRUE          6  <NA>    FALSE
+2      2      -152.6179      TRUE          6  <NA>    FALSE
+3      3      -152.6179      TRUE          6  <NA>    FALSE
+4      4      -152.6179      TRUE          6  <NA>    FALSE
+5      5      -152.6179      TRUE          6  <NA>    FALSE
+6      6      -152.6179      TRUE          6  <NA>    FALSE
+7      7      -152.6179      TRUE          6  <NA>    FALSE
+8      8      -152.6179      TRUE          6  <NA>    FALSE
+9      9      -152.6179      TRUE          6  <NA>    FALSE
+10    10      -152.6179      TRUE          6  <NA>    FALSE
+WARNING: latents_small_classes A profile or group class has effective membership below one. 
+WARNING: latents_thin_profiles Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+
+ ZERO y=10000, kmeans10 LL -256.4855779545336 converged TRUE 
+means -0.009824588402651102  0.128031479162842743 variances 9.403154981796400 9.392691075532031 effective_counts 101 3.552705e-13 
+   start log_likelihood converged iterations error boundary
+1      1      -256.4856      TRUE          6  <NA>    FALSE
+2      2      -256.4856      TRUE          6  <NA>    FALSE
+3      3      -256.4856      TRUE          6  <NA>    FALSE
+4      4      -256.4856      TRUE          6  <NA>    FALSE
+5      5      -256.4856      TRUE          6  <NA>    FALSE
+6      6      -256.4856      TRUE          6  <NA>    FALSE
+7      7      -256.4856      TRUE          6  <NA>    FALSE
+8      8      -256.4856      TRUE          6  <NA>    FALSE
+9      9      -256.4856      TRUE          6  <NA>    FALSE
+10    10      -256.4856      TRUE          6  <NA>    FALSE
+WARNING: latents_small_classes A profile or group class has effective membership below one. 
+WARNING: latents_thin_profiles Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+
+ ZERO y=10000, kmeans100 LL -256.4855779545336 converged TRUE 
+means -0.009824588402651102  0.128031479162842743 variances 9.403154981796400 9.392691075532031 effective_counts 101 3.552705e-13 
+    start log_likelihood converged iterations error boundary
+1       1      -256.4856      TRUE          6  <NA>    FALSE
+2       2      -256.4856      TRUE          6  <NA>    FALSE
+3       3      -256.4856      TRUE          6  <NA>    FALSE
+4       4      -256.4856      TRUE          6  <NA>    FALSE
+5       5      -256.4856      TRUE          6  <NA>    FALSE
+6       6      -256.4856      TRUE          6  <NA>    FALSE
+7       7      -256.4856      TRUE          6  <NA>    FALSE
+8       8      -256.4856      TRUE          6  <NA>    FALSE
+9       9      -256.4856      TRUE          6  <NA>    FALSE
+10     10      -256.4856      TRUE          6  <NA>    FALSE
+11     11      -256.4856      TRUE          6  <NA>    FALSE
+12     12      -256.4856      TRUE          6  <NA>    FALSE
+13     13      -256.4856      TRUE          6  <NA>    FALSE
+14     14      -256.4856      TRUE          6  <NA>    FALSE
+15     15      -256.4856      TRUE          6  <NA>    FALSE
+16     16      -256.4856      TRUE          6  <NA>    FALSE
+17     17      -256.4856      TRUE          6  <NA>    FALSE
+18     18      -256.4856      TRUE          6  <NA>    FALSE
+19     19      -256.4856      TRUE          6  <NA>    FALSE
+20     20      -256.4856      TRUE          6  <NA>    FALSE
+21     21      -256.4856      TRUE          6  <NA>    FALSE
+22     22      -256.4856      TRUE          6  <NA>    FALSE
+23     23      -256.4856      TRUE          6  <NA>    FALSE
+24     24      -256.4856      TRUE          6  <NA>    FALSE
+25     25      -256.4856      TRUE          6  <NA>    FALSE
+26     26      -256.4856      TRUE          6  <NA>    FALSE
+27     27      -256.4856      TRUE          6  <NA>    FALSE
+28     28      -256.4856      TRUE          6  <NA>    FALSE
+29     29      -256.4856      TRUE          6  <NA>    FALSE
+30     30      -256.4856      TRUE          6  <NA>    FALSE
+31     31      -256.4856      TRUE          6  <NA>    FALSE
+32     32      -256.4856      TRUE          6  <NA>    FALSE
+33     33      -256.4856      TRUE          6  <NA>    FALSE
+34     34      -256.4856      TRUE          6  <NA>    FALSE
+35     35      -256.4856      TRUE          6  <NA>    FALSE
+36     36      -256.4856      TRUE          6  <NA>    FALSE
+37     37      -256.4856      TRUE          6  <NA>    FALSE
+38     38      -256.4856      TRUE          6  <NA>    FALSE
+39     39      -256.4856      TRUE          6  <NA>    FALSE
+40     40      -256.4856      TRUE          6  <NA>    FALSE
+41     41      -256.4856      TRUE          6  <NA>    FALSE
+42     42      -256.4856      TRUE          6  <NA>    FALSE
+43     43      -256.4856      TRUE          6  <NA>    FALSE
+44     44      -256.4856      TRUE          6  <NA>    FALSE
+45     45      -256.4856      TRUE          6  <NA>    FALSE
+46     46      -256.4856      TRUE          6  <NA>    FALSE
+47     47      -256.4856      TRUE          6  <NA>    FALSE
+48     48      -256.4856      TRUE          6  <NA>    FALSE
+49     49      -256.4856      TRUE          6  <NA>    FALSE
+50     50      -256.4856      TRUE          6  <NA>    FALSE
+51     51      -256.4856      TRUE          6  <NA>    FALSE
+52     52      -256.4856      TRUE          6  <NA>    FALSE
+53     53      -256.4856      TRUE          6  <NA>    FALSE
+54     54      -256.4856      TRUE          6  <NA>    FALSE
+55     55      -256.4856      TRUE          6  <NA>    FALSE
+56     56      -256.4856      TRUE          6  <NA>    FALSE
+57     57      -256.4856      TRUE          6  <NA>    FALSE
+58     58      -256.4856      TRUE          6  <NA>    FALSE
+59     59      -256.4856      TRUE          6  <NA>    FALSE
+60     60      -256.4856      TRUE          6  <NA>    FALSE
+61     61      -256.4856      TRUE          6  <NA>    FALSE
+62     62      -256.4856      TRUE          6  <NA>    FALSE
+63     63      -256.4856      TRUE          6  <NA>    FALSE
+64     64      -256.4856      TRUE          6  <NA>    FALSE
+65     65      -256.4856      TRUE          6  <NA>    FALSE
+66     66      -256.4856      TRUE          6  <NA>    FALSE
+67     67      -256.4856      TRUE          6  <NA>    FALSE
+68     68      -256.4856      TRUE          6  <NA>    FALSE
+69     69      -256.4856      TRUE          6  <NA>    FALSE
+70     70      -256.4856      TRUE          6  <NA>    FALSE
+71     71      -256.4856      TRUE          6  <NA>    FALSE
+72     72      -256.4856      TRUE          6  <NA>    FALSE
+73     73      -256.4856      TRUE          6  <NA>    FALSE
+74     74      -256.4856      TRUE          6  <NA>    FALSE
+75     75      -256.4856      TRUE          6  <NA>    FALSE
+76     76      -256.4856      TRUE          6  <NA>    FALSE
+77     77      -256.4856      TRUE          6  <NA>    FALSE
+78     78      -256.4856      TRUE          6  <NA>    FALSE
+79     79      -256.4856      TRUE          6  <NA>    FALSE
+80     80      -256.4856      TRUE          6  <NA>    FALSE
+81     81      -256.4856      TRUE          6  <NA>    FALSE
+82     82      -256.4856      TRUE          6  <NA>    FALSE
+83     83      -256.4856      TRUE          6  <NA>    FALSE
+84     84      -256.4856      TRUE          6  <NA>    FALSE
+85     85      -256.4856      TRUE          6  <NA>    FALSE
+86     86      -256.4856      TRUE          6  <NA>    FALSE
+87     87      -256.4856      TRUE          6  <NA>    FALSE
+88     88      -256.4856      TRUE          6  <NA>    FALSE
+89     89      -256.4856      TRUE          6  <NA>    FALSE
+90     90      -256.4856      TRUE          6  <NA>    FALSE
+91     91      -256.4856      TRUE          6  <NA>    FALSE
+92     92      -256.4856      TRUE          6  <NA>    FALSE
+93     93      -256.4856      TRUE          6  <NA>    FALSE
+94     94      -256.4856      TRUE          6  <NA>    FALSE
+95     95      -256.4856      TRUE          6  <NA>    FALSE
+96     96      -256.4856      TRUE          6  <NA>    FALSE
+97     97      -256.4856      TRUE          6  <NA>    FALSE
+98     98      -256.4856      TRUE          6  <NA>    FALSE
+99     99      -256.4856      TRUE          6  <NA>    FALSE
+100   100      -256.4856      TRUE          6  <NA>    FALSE
+
+ ZERO y=10000, supplied good start LL -152.6178709085347 converged TRUE 
+means -3.025848028269763  3.006198851464674 variances 0.2455137718016198 0.3680014121341511 effective_counts 50 51 
+  start log_likelihood converged iterations error boundary
+1     1      -152.6179      TRUE          3  <NA>    FALSE
+
+ ZERO y=10000, emEM10 LL -152.6178709085347 converged TRUE 
+means  3.006198851464674 -3.025848028269763 variances 0.3680014121341511 0.2455137718016198 effective_counts 51 50 
+   start log_likelihood converged iterations error boundary      kind    stage
+1      1      -256.4856      TRUE          6  <NA>    FALSE      ward    final
+2      2      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+3      3      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+4      4      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+5      5      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+6      6      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+7      7      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+8      8      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+9      9      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+10    10      -256.4856      TRUE          6  <NA>    FALSE    kmeans screened
+11    11      -222.8176     FALSE         21  <NA>    FALSE partition screened
+12    12      -152.6179      TRUE          9  <NA>    FALSE   centres    final
+13    13      -256.4856      TRUE          6  <NA>    FALSE partition screened
+14    14      -152.6179      TRUE          6  <NA>    FALSE   centres    final
+15    15      -256.4856      TRUE          6  <NA>    FALSE partition screened
+16    16      -152.6179      TRUE          6  <NA>    FALSE   centres    final
+17    17      -256.4856      TRUE          6  <NA>    FALSE partition screened
+18    18      -152.6179      TRUE          6  <NA>    FALSE   centres    final
+19    19      -152.6179      TRUE         21  <NA>    FALSE partition    final
+20    20      -152.6179      TRUE         15  <NA>    FALSE   centres    final
+21    21      -223.0596     FALSE         21  <NA>    FALSE partition screened
+22    22      -152.6179      TRUE          9  <NA>    FALSE   centres    final
+23    23      -256.4856      TRUE          6  <NA>    FALSE partition screened
+24    24      -152.6179      TRUE          6  <NA>    FALSE   centres    final
+25    25      -256.4856      TRUE          6  <NA>    FALSE partition screened
+26    26      -152.6179      TRUE         12  <NA>    FALSE   centres    final
+27    27      -256.4856      TRUE          6  <NA>    FALSE partition screened
+28    28      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+29    29      -152.6179     FALSE         21  <NA>    FALSE partition screened
+30    30      -152.6179      TRUE          9  <NA>    FALSE   centres screened
+31    31      -256.4856      TRUE          6  <NA>    FALSE partition screened
+32    32      -152.6179      TRUE          9  <NA>    FALSE   centres screened
+33    33      -256.4856      TRUE          6  <NA>    FALSE partition screened
+34    34      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+35    35      -256.4856      TRUE          6  <NA>    FALSE partition screened
+36    36      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+37    37      -256.4856      TRUE          6  <NA>    FALSE partition screened
+38    38      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+39    39      -256.4856      TRUE          6  <NA>    FALSE partition screened
+40    40      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+41    41      -161.8224     FALSE         21  <NA>    FALSE partition screened
+42    42      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+43    43      -222.7338     FALSE         21  <NA>    FALSE partition screened
+44    44      -152.6179      TRUE         15  <NA>    FALSE   centres screened
+45    45      -256.4856      TRUE          6  <NA>    FALSE partition screened
+46    46      -152.6179      TRUE          9  <NA>    FALSE   centres screened
+47    47      -256.4856      TRUE          6  <NA>    FALSE partition screened
+48    48      -152.6179      TRUE          6  <NA>    FALSE   centres screened
+49    49      -256.4856      TRUE          6  <NA>    FALSE partition screened
+50    50      -152.6179      TRUE         15  <NA>    FALSE   centres screened
+   screened_log_likelihood
+1                -256.4856
+2                -256.4856
+3                -256.4856
+4                -256.4856
+5                -256.4856
+6                -256.4856
+7                -256.4856
+8                -256.4856
+9                -256.4856
+10               -256.4856
+11               -222.8176
+12               -152.6179
+13               -256.4856
+14               -152.6179
+15               -256.4856
+16               -152.6179
+17               -256.4856
+18               -152.6179
+19               -152.6179
+20               -152.6179
+21               -223.0596
+22               -152.6179
+23               -256.4856
+24               -152.6179
+25               -256.4856
+26               -152.6179
+27               -256.4856
+28               -152.6179
+29               -152.6179
+30               -152.6179
+31               -256.4856
+32               -152.6179
+33               -256.4856
+34               -152.6179
+35               -256.4856
+36               -152.6179
+37               -256.4856
+38               -152.6179
+39               -256.4856
+40               -152.6179
+41               -161.8224
+42               -152.6179
+43               -222.7338
+44               -152.6179
+45               -256.4856
+46               -152.6179
+47               -256.4856
+48               -152.6179
+49               -256.4856
+50               -152.6179
+
+Same-N LL deficit 103.8677 base rescaled -152.6179 

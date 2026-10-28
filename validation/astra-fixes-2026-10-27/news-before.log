@@ -1,0 +1,83 @@
+Error in tools:::news2Rd("NEWS.md", out = "/private/tmp/astra-news-before.Rd") : 
+  Could not extract news from the following text chunks:
+
+Chunk   1:
+
+
+Chunk   2:
+
+
+Chunk   3:
+
+
+Chunk   4:
+
+
+Chunk   5:
+
+
+Chunk   6:
+`mclust` and `tidySEM` are no longer in `Suggests`; nothing shipped uses them.
+## Latent transition references
+`fit_transitions()` is now checked against the external references pinned by
+
+Chunk   7:
+
+
+Chunk   8:
+
+
+Chunk   9:
+
+
+Chunk  10:
+
+
+Chunk  11:
+
+
+Chunk  12:
+
+
+Chunk  13:
+```r
+
+Chunk  14:
+c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+       id = "student", n_profiles = 3, n_group_classes = 1,
+       centering = "person")
+
+Chunk  15:
+
+
+Chunk  16:
+
+
+Chunk  17:
+
+
+Chunk  18:
+
+
+Chunk  19:
+
+
+Chunk  20:
+`multilpa_bad_data` when it leaves an indicator constant --- which is what
+
+Chunk  21:
+
+
+Chunk  22:
+## All fourteen mclust covariance structures
+`volume`, `shape` and `orientation` are the three pieces a covariance
+
+Chunk  23:
+
+
+Chunk  24:
+`covariance_model` reached four.
+| `volume` | `shape` | `orientation` | model |
+| equal / v
+In addition: There were 50 or more warnings (use warnings() to see the first 50)
+Execution halted

@@ -1,0 +1,72 @@
+ONE PROFILE + NOISE
+        level n_classes n_units entropy_sum relative_entropy
+1 individuals         2     300    11.59008        0.9442635
+2      groups         1     300     0.00000               NA
+        level class n_modal proportion_modal estimated_n estimated_proportion
+1 individuals     1     252             0.84   250.17651            0.8339217
+2 individuals     0      48             0.16    49.82349            0.1660783
+  average_posterior odds_correct_classification
+1         0.9904360                    20.62403
+2         0.9877783                   405.82652
+          domain                    check       level value display criterion
+5 Classification         relative entropy individuals    NA                  
+6 Classification lowest average posterior individuals    NA                  
+  status                         detail reference
+5    n/a one class: nothing to classify          
+6    n/a one class: nothing to classify          
+WEIGHTED CLASSIFICATION GAP
+        level class n_modal proportion_modal estimated_n estimated_proportion
+1 individuals     1     150              0.5          30                  0.1
+2 individuals     2     150              0.5         270                  0.9
+  average_posterior odds_correct_classification
+1                 1                         Inf
+2                 1                         Inf
+      domain                          check       level value           display
+6 Class size modal vs estimated proportions individuals   0.4 largest gap 0.400
+  criterion status detail reference
+6             info                 
+     weighted_gap min_max_posterior 
+                0                 1 
+WEIGHTED CATEGORICAL
+        level n_classes n_units entropy_sum relative_entropy
+1 individuals         2     160    24.18344        0.7819417
+2      groups         1     160     0.00000               NA
+    profile indicator_1 indicator_2        kind     observed     expected
+1 profile_1           a           c categorical 4.344249e-06 1.165977e-16
+2 profile_1           a           b categorical 3.032408e-06 9.799898e-17
+3 profile_2           a           b categorical 2.590634e-06 2.632397e-17
+4 profile_2           a           c categorical 2.431594e-06 1.141606e-16
+5 profile_2           b           c categorical 2.349866e-06 1.168885e-16
+6 profile_1           b           c categorical 3.685586e-07 2.018984e-16
+      residual effective_n statistic df p_value p_adjusted
+1 4.344249e-06    87.95397        NA NA      NA         NA
+2 3.032408e-06    87.95397        NA NA      NA         NA
+3 2.590634e-06    72.04603        NA NA      NA         NA
+4 2.431594e-06    72.04603        NA NA      NA         NA
+5 2.349866e-06    72.04603        NA NA      NA         NA
+6 3.685586e-07    87.95397        NA NA      NA         NA
+               domain                      check level        value
+11 Local independence largest bivariate residual model 4.344249e-06
+           display  criterion status
+11 0.000 (6 pairs) not tested   info
+                                                                                     detail
+11 largest: a x c in profile_1; not tested under sampling weights: read them as descriptive
+                   reference
+11 Vermunt & Magidson (2005)
+PASS weighted categorical counts/test suppression.
+WEIGHTED MIXED COUNT
+    profile indicator_1 indicator_2  kind    observed expected    residual
+1 profile_2           c           y count -0.27387078        0 -0.27387078
+2 profile_1           a           y mixed  0.09144529        0  0.09144529
+3 profile_2           a           y mixed  0.08829140        0  0.08829140
+4 profile_1           c           y count -0.04163950        0 -0.04163950
+5 profile_2           a           c count  0.03831438        0  0.03831438
+6 profile_1           a           c count  0.01861387        0  0.01861387
+  effective_n statistic df p_value p_adjusted
+1    80.11787        NA NA      NA         NA
+2    79.88213        NA NA      NA         NA
+3    80.11787        NA NA      NA         NA
+4    79.88213        NA NA      NA         NA
+5    80.11787        NA NA      NA         NA
+6    79.88213        NA NA      NA         NA
+PASS all three indicator pairs returned for each profile; no unsupported tests.

@@ -1,0 +1,259 @@
+
+══ Testing test-three-step-ml.R ════════════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 15 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 17 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 18 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 21 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 24 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 25 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 26 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 27 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 29 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 30 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 31 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 32 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 33 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 34 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 35 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 36 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 38 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 39 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 40 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 41 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 43 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 43 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 43 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 43 ]
+
+── Failure ('test-three-step-ml.R:180:5'): ML uncertainty at a large origin matches known normal means ──
+Expected `unname(sqrt(colSums(influence^2)))` to equal `unname(reference)`.
+Differences:
+  `actual`: 3172399.6 3308096564.7
+`expected`:       0.1          0.6
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-three-step-ml.R:177:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-three-step-ml.R:180:5
+
+── Error ('test-three-step-ml.R:179:5'): ML uncertainty at a large origin matches known normal means ──
+<latents_singular_information/error/condition>
+Error: The information of the step-three model is singular; the class means are not identified.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-three-step-ml.R:177:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─latents:::.multilpa_step_ml_influence(fit, values, variance) at test-three-step-ml.R:179:5
+ 4.       └─base::tryCatch(...) at latents/R/three-step-ml.R:273:3
+ 5.         └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 6.           └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 7.             └─value[[3L]](cond)
+
+── Error ('test-three-step-ml.R:198:5'): public ML means and contrasts retain uncertainty at large outcome origins ──
+Error in `match.arg(contrast)`: 'arg' should be one of "none", "pairs"
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-three-step-ml.R:196:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     ├─base::do.call(...) at test-three-step-ml.R:198:5
+ 4.     └─latents (local) `<fn>`(...)
+ 5.       └─base::match.arg(contrast) at latents/R/three-step.R:311:3
+
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 43 ]
+
+══ Testing test-lmr.R ══════════════════════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 15 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 17 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 18 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 21 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 24 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 25 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 26 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 27 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 29 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 30 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 31 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 32 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 33 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 34 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 35 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 36 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 38 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 39 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 40 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 41 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 42 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 42 ]
+
+── Error ('test-lmr.R:133:3'): Imhof handles negative statistics and retains genuine small weights ──
+<latents_inaccurate_probability/error/condition>
+Error: The tail probability of the weighted chi-square distribution could not be integrated over [10000, 100000]: the integral is probably divergent (statistic -1, 1 weights); the p-value cannot be reported.
+Backtrace:
+     ▆
+  1. ├─testthat::expect_equal(.latents_imhof_upper(-1, 1), 1, tolerance = 1e-10) at test-lmr.R:133:3
+  2. │ └─testthat::quasi_label(enquo(object), label)
+  3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+  4. └─latents:::.latents_imhof_upper(-1, 1)
+  5.   └─base::vapply(...) at latents/R/lmr.R:130:3
+  6.     └─latents (local) FUN(X[[i]], ...)
+  7.       └─latents (local) segment(breaks[index], breaks[index + 1L]) at latents/R/lmr.R:131:5
+  8.         └─base::tryCatch(...) at latents/R/lmr.R:110:5
+  9.           └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 10.             └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 11.               └─value[[3L]](cond)
+ 12.                 └─latents (local) inaccurate(...) at latents/R/lmr.R:113:16
+
+── Error ('test-lmr.R:157:3'): Vuong weights are invariant to information coordinate units ──
+Error in `solve.default(alternative$information)`: system is computationally singular: reciprocal condition number = 1.07829e-32
+Backtrace:
+    ▆
+ 1. └─latents:::.latents_vuong_weights(...) at test-lmr.R:157:3
+ 2.   ├─base::solve(alternative$information) at latents/R/lmr.R:48:3
+ 3.   └─base::solve.default(alternative$information)
+
+── Failure ('test-lmr.R:177:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `is.na(result$note)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_true(is.na(result$note)) at test-lmr.R:177:7
+
+── Failure ('test-lmr.R:178:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$lr` to equal `reference$lr`.
+Differences:
+  `actual`:    NA
+`expected`: 202.5
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$lr, reference$lr, tolerance = 1e-07) at test-lmr.R:178:7
+
+── Failure ('test-lmr.R:179:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_mean` to equal `reference$reference_mean`.
+Differences:
+  `actual`:  NA
+`expected`: 4.2
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:179:7
+
+── Failure ('test-lmr.R:180:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$reference_sd` to equal `reference$reference_sd`.
+Differences:
+  `actual`:  NA
+`expected`: 3.2
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(...) at test-lmr.R:180:7
+
+── Failure ('test-lmr.R:181:7'): public LMR retains its reference distribution when indicator units change ──
+Expected `result$vlmr_p` to equal `reference$vlmr_p`.
+Differences:
+  `actual`:  NA
+`expected`: 0.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-lmr.R:173:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-lmr.R:175:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_equal(result$vlmr_p, reference$vlmr_p, tolerance = 1e-07) at test-lmr.R:181:7
+
+── Error ('test-lmr.R:176:7'): public LMR retains its reference distribution when indicator units change ──
+Error in `solve.default(alternative$information)`: system is computationally singular: reciprocal condition number = 6.59591e-17
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-lmr.R:173:3
+  2.   └─FUN(X[[i]], ...)
+  3.     └─base::lapply(...) at test-lmr.R:175:5
+  4.       └─FUN(X[[i]], ...)
+  5.         ├─latents::get_results(...) at test-lmr.R:176:7
+  6.         └─latents:::get_results.multilpa_enumeration(...) at latents/R/get-data.R:606:3
+  7.           └─latents:::.multilpa_dispatch_table(x, what, list(...)) at latents/R/get-data.R:640:3
+  8.             ├─base::do.call(...) at latents/R/get-data.R:734:3
+  9.             └─latents (local) `<fn>`(`<mltlp_nm>`)
+ 10.               └─base::lapply(...) at latents/R/lmr.R:252:3
+ 11.                 └─latents (local) FUN(X[[i]], ...)
+ 12.                   └─latents:::.latents_vuong_row(alternative$parts, null$parts) at latents/R/lmr.R:257:5
+ 13.                     └─latents:::.latents_vuong_weights(alternative, null) at latents/R/lmr.R:187:3
+ 14.                       ├─base::solve(alternative$information) at latents/R/lmr.R:48:3
+ 15.                       └─base::solve.default(alternative$information)
+
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 42 ]

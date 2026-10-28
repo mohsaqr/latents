@@ -28,11 +28,15 @@ test_that("the numbers in the latent profile workflow hold", {
   # "BIC is lowest for one profile, and the two-profile model is 4.7 points higher"
   expect_identical(which.min(eee$bic_individual), 1L)
   expect_equal(round(eee$bic_individual[2] - eee$bic_individual[1], 1), 4.7)
-  # "their BIC continues to fall up to six profiles" (no covariances)
-  falling <- vapply(c("EEI", "VVI"), function(structure) {
-    all(diff(candidates$bic_individual[candidates$model == structure]) < 0)
-  }, logical(1))
-  expect_true(all(falling))
+  # EEI falls through six; VVI's lowest BIC is a bound-active five-profile
+  # fit, followed by a rise at six. Do not describe that path as monotone.
+  eei <- candidates[candidates$model == "EEI", ]
+  vvi <- candidates[candidates$model == "VVI", ]
+  expect_true(all(diff(eei$bic_individual) < 0))
+  expect_equal(vvi$n_profiles[which.min(vvi$bic_individual)], 5)
+  expect_true(vvi$boundary[vvi$n_profiles == 5])
+  expect_gt(vvi$bic_individual[vvi$n_profiles == 6],
+             vvi$bic_individual[vvi$n_profiles == 5])
   # "The test rejects the one-profile model (p = 0.005)"
   expect_equal(as.data.frame(run$lrt)$p_value, 0.005)
   # "69% ... higher means on the first four ... 31% ... differ little in

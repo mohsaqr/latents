@@ -1,0 +1,25 @@
+  n_classes n_group_classes log_likelihood n_parameters      aic       bic
+1         1               1      -521.1621            2 1046.324 1052.9208
+2         2               1      -126.6610            5  263.322  279.8136
+   bic_rows    sabic       icl entropy smallest_share converged
+1 1052.9208 1046.585 1052.9208      NA            1.0      TRUE
+2  279.8136  263.973  279.8136       1            0.2      TRUE
+  n_best_replicated note best_bic
+1                 6 <NA>    FALSE
+2                 6 <NA>     TRUE
+   type group supported
+15 tree  tree      TRUE
+                                                                description
+15 How classes split as more are added, one plot per tree (see plot_tree())
+   reason
+15   <NA>
+  tree       level from_candidate from_class from_share to_candidate to_class
+1 tree individuals       classes1          1          1     classes2        1
+2 tree individuals       classes1          1          1     classes2        2
+  to_share mass share_of_from share_of_to
+1      0.2  0.2           0.2           1
+2      0.8  0.8           0.8           1
+Weighted fitted shares: 0.8 0.2 
+Unweighted fitted shares: 0.2 0.8 
+Tree shares: 0.2 0.8 
+Tree discrepancy: 0.6 

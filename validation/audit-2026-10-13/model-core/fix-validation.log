@@ -1,0 +1,40 @@
+   code min_eigenvalue   volume_gap    shape_gap
+1   EII       0.275275 0.000000e+00 0.000000e+00
+2   VII       0.100000 4.000500e-01 0.000000e+00
+3   EEI       0.100000 0.000000e+00 0.000000e+00
+4   VEI       0.100000 1.887806e-09 5.551115e-17
+5   EVI       0.100000 5.551115e-17 2.643035e-02
+6   VVI       0.100000 2.162278e-01 2.162278e+00
+7   EEE       0.100000 0.000000e+00 0.000000e+00
+8   VEE       0.100000 2.330770e-09 0.000000e+00
+9   EVE       0.100000 2.775558e-17 2.496984e-08
+10  VVE       0.100000 2.162278e-01 2.162278e+00
+11  EEV       0.100000 0.000000e+00 0.000000e+00
+12  VEV       0.100000 1.076987e-10 4.440892e-16
+13  EVV       0.100000 2.775558e-17 4.775145e-10
+14  VVV       0.100000 2.162278e-01 2.162278e+00
+         y id          z
+1 92.51009  1 -1.4805676
+2 98.33276  1  1.5771695
+3 92.43206  1 -0.9567445
+4 91.85484  1 -0.9200052
+5 92.41539  1 -1.9976421
+6 93.03153  1 -0.2722960
+        level   outcome        term   parameter   estimate standard_error
+1 measurement profile_1           y        mean -0.7614008      0.1682802
+2 measurement profile_2           y        mean  0.9242375      0.1665564
+3 measurement profile_1           y    variance  0.6068224      0.1314559
+4 measurement profile_2           y    variance  0.4906583      0.1153628
+5     profile profile_1 (Intercept) coefficient  0.2259431      0.4029220
+6     profile profile_1           z coefficient -0.4177366      0.1358712
+   statistic      p_value   p_adjusted   conf_low  conf_high
+1 -4.5246012 6.050948e-06 6.050948e-06 -1.0912239 -0.4315777
+2  5.5490972 2.871486e-08 2.871486e-08  0.5977930  1.2506819
+3         NA           NA           NA  0.3968861  0.9278062
+4         NA           NA           NA  0.3094896  0.7778793
+5  0.5607613 5.749603e-01 5.749603e-01 -0.5637695  1.0156556
+6 -3.0745033 2.108534e-03 2.108534e-03 -0.6840393 -0.1514338
+     coefficient.class_1.(Intercept) log_sigma.class_1
+[1,]                           2e-08      2.664535e-15
+     random.log_cholesky.shared.(Intercept):(Intercept)
+[1,]                                                  3

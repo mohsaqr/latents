@@ -1,0 +1,131 @@
+FUNCTION INVENTORY — 101 definitions. All source inspected; no production edit.
+Status definitions: REVIEWED = inspected control/data flow; EXERCISED = called directly in worker probes/targeted suites. Indirect helper coverage is file-level unless expressly stated. No finding does not mean formal proof.
+
+R/growth-mixture-plot.R — 10 functions
+Runtime context: Synthetic one-class random-intercept trajectories/random plot build; root full suite
+R/growth-mixture-plot.R:14	.growth_class_key	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:34	.growth_scales	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:47	plot.latents_growth_mixture	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases. Released method-help consolidation checked (PD-04 where applicable).
+R/growth-mixture-plot.R:77	.growth_observed_means	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:108	.growth_spread	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:127	.growth_plot_trajectories	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:222	.growth_plot_individuals	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:266	.growth_plot_coefficients	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:314	.growth_plot_random	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-plot.R:380	.growth_plot_classification	REVIEWED	No confirmed defect in inspected logic/available test cases.
+
+R/growth-mixture-simulate.R — 3 functions
+Runtime context: Synthetic seeded 140x2 growth simulation; root full suite
+R/growth-mixture-simulate.R:15	.growth_draw	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-simulate.R:56	simulate.latents_growth_mixture	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/growth-mixture-simulate.R:66	predict.latents_growth_mixture	REVIEWED	No confirmed defect in inspected logic/available test cases. Released method-help consolidation checked (PD-04 where applicable).
+
+R/mixture-regression-predict.R — 12 functions
+Runtime context: Existing prediction-design suite; independent binomial/seed/missingness probes
+R/mixture-regression-predict.R:16	.mixture_new_spec	REVIEWED	PD-05 preexisting binomial trial reset; PD-07 ordinary model-frame error classes
+R/mixture-regression-predict.R:96	.mixture_row_priors	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:113	predict.latents_mixture_regression	EXERCISED + REVIEWED	PD-05 preexisting prediction-unit inconsistency for aggregated binomial
+R/mixture-regression-predict.R:149	simulate.latents_mixture_regression	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:159	.mixture_draw	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:194	plot.latents_mixture_regression	EXERCISED + REVIEWED	PD-08 new draw/return compatibility change for ported non-trajectory plots. Released method-help consolidation checked (PD-04 where applicable).
+R/mixture-regression-predict.R:233	.mixture_plot_fitted	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:277	.mixture_model_data	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:285	.mixture_typical_rows	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:299	.mixture_plot_coefficients	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:323	.mixture_plot_posteriors	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/mixture-regression-predict.R:355	.mixture_class_scales	REVIEWED	No confirmed defect in inspected logic/available test cases.
+
+R/plot-docs.R — 0 functions
+Documentation-only source; contracts reviewed in review.txt.
+
+R/plot-gg.R — 45 functions
+Runtime context: Existing plot-gg, plot, plot-named suites; synthetic noise/weighted-tree probes
+R/plot-gg.R:30	.gg_require	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:44	.gg_available	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:54	.gg_theme	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:81	.gg_top_legend	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:90	.gg_percent	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:102	.gg_profile_key	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:125	.gg_scales	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:142	.gg_titles	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:155	.gg_spread	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:168	.gg_ink	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:177	.gg_probability_fill	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:186	.gg_probability_scale	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:196	.gg_tile_theme	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:206	.gg_group_class_text	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:221	.gg_mean_frame	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:262	.gg_series_plot	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:309	.gg_category_scores	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:327	.gg_categorical_summary_frame	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:353	.gg_view_profiles	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:392	.gg_view_bars	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:425	.gg_view_heatmap	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:458	.gg_view_response_heatmap	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:520	.gg_view_raincloud	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:624	.gg_view_responses	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:692	.gg_view_probabilities	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:729	.gg_view_sequences	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:801	.gg_view_transitions	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:846	.gg_view_sizes	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:879	.gg_case_values	EXERCISED + REVIEWED	PD-01 helper assumes normalized posteriors, named caller omits guard
+R/plot-gg.R:893	.gg_case_strip	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:944	.gg_view_posteriors	REVIEWED	PD-01 named caller can include noise assignments
+R/plot-gg.R:959	.gg_view_entropy	REVIEWED	PD-01 named caller can send unnormalized noise posteriors
+R/plot-gg.R:975	.gg_view_avepp	REVIEWED	PD-01 named caller can include noise assignments
+R/plot-gg.R:1022	.gg_observed_cases	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1036	.gg_view_parallel	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1094	.gg_ellipse	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1110	.gg_pair_covariance	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1119	.gg_view_pairs	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1235	.gg_enumeration_frame	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1258	.gg_view_enumeration	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1349	.gg_flow_band	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1370	.gg_view_tree	REVIEWED	PD-02 preexisting weighted proportions; flows below .001 pruned by design
+R/plot-gg.R:1534	.gg_plots	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1540	print.latents_plots	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-gg.R:1560	.gg_view_enumeration_quality	REVIEWED	No confirmed defect in inspected logic/available test cases.
+
+R/plot-named.R — 8 functions
+Runtime context: Existing plot-named suite; synthetic noise/subclass probes
+R/plot-named.R:16	.multilpa_plot_named_view	REVIEWED	Low-priority new inheritance-chain limitation for downstream subclasses
+R/plot-named.R:42	.multilpa_supplied_arguments	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-named.R:49	plot_profiles	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-named.R:63	plot_responses	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-named.R:74	plot_prevalence	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-named.R:84	plot_diagnostics	EXERCISED + REVIEWED	PD-01 new noise-guard bypass; low-priority supported-family wording
+R/plot-named.R:101	plot_transitions	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot-named.R:115	plot_tree	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+
+R/plot.R — 17 functions
+Runtime context: Existing plot, plot-gg, plot-named suites and synthetic probes
+R/plot.R:3	plot.multilpa	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases. Released method-help consolidation checked (PD-04 where applicable).
+R/plot.R:31	.multilpa_check_plot_statistic	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:42	.multilpa_check_plot_arguments	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:63	.multilpa_draw_view	REVIEWED	Low-priority carried-forward bars intervals scope; correct generic noise guard
+R/plot.R:109	.gg_every_view	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:149	.multilpa_require_case_posteriors	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:176	.multilpa_plot_observations	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:198	plot.multilpa_enumeration	EXERCISED + REVIEWED	PD-03 new loss of legacy view abbreviations; exact old named/positional calls pass Released method-help consolidation checked (PD-04 where applicable).
+R/plot.R:237	.multilpa_enumeration_plot_advice	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:245	.latents_grid_plot_advice	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:258	.latents_grid_criterion	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:274	plot_enumeration	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:373	.multilpa_distinct_criteria	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:390	plot.multilpa_covariates	REVIEWED	No confirmed defect in inspected logic/available test cases. Released method-help consolidation checked (PD-04 where applicable).
+R/plot.R:428	plot_views	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:467	.multilpa_mean_error_matrix	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/plot.R:499	.multilpa_response_error_table	REVIEWED	No confirmed defect in inspected logic/available test cases.
+
+R/predict-docs.R — 0 functions
+Documentation-only source; contracts reviewed in review.txt.
+
+R/predict.R — 6 functions
+Runtime context: Existing predict suite: training/FIML/centering/noise/categorical/new-group/density
+R/predict.R:6	predict.multilpa	EXERCISED + REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/predict.R:40	.multilpa_training_rows	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/predict.R:46	.multilpa_fit_data	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/predict.R:62	.multilpa_prediction_rows	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/predict.R:134	.multilpa_row_log_density	REVIEWED	No confirmed defect in inspected logic/available test cases.
+R/predict.R:148	.multilpa_prediction_table	REVIEWED	No confirmed defect in inspected logic/available test cases.
+

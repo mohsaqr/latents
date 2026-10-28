@@ -1,0 +1,14 @@
+                                 suite cases   nb failed error warning skipped
+ unit combined without duplicate files   968 6263      0     0       0       0
+               development equivalence    64  404      1     0       0       0
+ passed
+   6263
+    403
+Production source fingerprints unchanged.
+Equivalence failures:
+                 file     context
+38 test-lta-general.R lta-general
+                                                                        test nb
+38 mover-stayer: the stayer class never moves and matches the exact path sum  5
+   failed skipped error warning  user system  real passed
+38      1   FALSE FALSE       0 3.861  0.257 4.013      4

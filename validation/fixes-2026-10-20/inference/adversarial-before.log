@@ -1,0 +1,75 @@
+review-1020-inference: ..1..2......................34567..................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-review-1020-inference.R:14:7'): empty groups do not evade r
+Expected `parameter_inference(make_fit(padded, drop_empty = FALSE), vcov_type = type)` to throw a error with class <latents_too_few_groups>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-1020-inference.R:5:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-review-1020-inference.R:9:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_error(...) at test-review-1020-inference.R:14:7
+
+── 2. Error ('test-review-1020-inference.R:14:7'): empty groups do not evade rob
+<latents_singular_information/error/condition>
+Error: The outer product of the group scores is singular; OPG inference is unavailable. `vcov_type = "observed"` uses the curvature instead.
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-review-1020-inference.R:5:3
+  2.   └─FUN(X[[i]], ...)
+  3.     └─base::lapply(...) at test-review-1020-inference.R:9:5
+  4.       └─FUN(X[[i]], ...)
+  5.         ├─testthat::expect_error(...) at test-review-1020-inference.R:14:7
+  6.         │ └─testthat:::expect_condition_matching_(...)
+  7.         │   └─testthat:::quasi_capture(...)
+  8.         │     ├─testthat (local) .capture(...)
+  9.         │     │ └─base::withCallingHandlers(...)
+ 10.         │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+ 11.         ├─latents::parameter_inference(...)
+ 12.         └─latents:::parameter_inference.multilpa(...) at latents/R/inference.R:788:3
+ 13.           └─latents:::.multilpa_opg_inverse(scaled_cross) at latents/R/inference.R:963:7
+
+── 3. Failure ('test-review-1020-inference.R:140:3'): irrelevant direct covariat
+Expected `padded$converged` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 4. Failure ('test-review-1020-inference.R:141:3'): irrelevant direct covariat
+Expected `padded$log_likelihood` to equal `base$log_likelihood`.
+Differences:
+  `actual`: -649.6
+`expected`: -549.8
+
+
+── 5. Error ('test-review-1020-inference.R:142:3'): irrelevant direct covariates
+<latents_no_converge/error/condition>
+Error: Inference requires a converged fit.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-review-1020-inference.R:142:3
+ 2. │ └─testthat::quasi_label(enquo(object), label)
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─latents::parameter_inference(padded, vcov_type = "robust")
+ 5. └─latents:::parameter_inference.multilpa(padded, vcov_type = "robust") at latents/R/inference.R:788:3
+ 6.   └─latents:::.multilpa_check_regularity(x, vcov_type, boundary) at latents/R/inference.R:832:3
+
+── 6. Failure ('test-review-1020-inference.R:166:3'): direct-effect charts use t
+Expected `fit$converged` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 7. Error ('test-review-1020-inference.R:167:3'): direct-effect charts use tar
+<latents_no_converge/error/condition>
+Error: Inference requires a converged fit.
+Backtrace:
+    ▆
+ 1. ├─latents::parameter_inference(fit) at test-review-1020-inference.R:167:3
+ 2. └─latents:::parameter_inference.multilpa(fit) at latents/R/inference.R:788:3
+ 3.   └─latents:::.multilpa_check_regularity(x, vcov_type, boundary) at latents/R/inference.R:832:3
+
+══ DONE ════════════════════════════════════════════════════════════════════════

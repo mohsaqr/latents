@@ -1,0 +1,12 @@
+.libPaths(c("/private/tmp/latents-release-audit-20261028/lib", .libPaths()))
+library(latents)
+set.seed(812)
+dat <- data.frame(a = c(rnorm(100, -1), rnorm(100, 1)),
+                  b = c(rnorm(100, -1), rnorm(100, 1)))
+str(dat)
+fit <- lpa(dat, c("a", "b"), n_profiles = 2, n_starts = 2, seed = 3)
+out <- sensitivity(fit, seeds = 1:3, max_iter = 0, n_starts = 1)
+print(out)
+stopifnot(!any(out$converged), any(out$best))
+write.csv(out, "validation/release-audit-2026-10-28/release/sensitivity.csv", row.names = FALSE)
+cat("Confirmed: unfinished refit is labelled best=TRUE, optimum=1.\n")

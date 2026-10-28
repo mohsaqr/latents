@@ -1,0 +1,94 @@
+[
+  {
+    "file": ".github/workflows/equivalence.yaml",
+    "sha256": "97d0d38cf7e64339ac5a97bb6dba4a6a78e45d1a299257f278e6f499eeab1ab9"
+  },
+  {
+    "file": "equivalence/harness/README.md",
+    "sha256": "9404f15dda402c94b90eb1cb4f2362b3df544d46e8807765feaabfe16a00b7fc"
+  },
+  {
+    "file": "equivalence/harness/outputs.R",
+    "sha256": "ccceb4ed837085190bfb286ca1c88af0938616a8205000ef09b185a6672f6903"
+  },
+  {
+    "file": "equivalence/harness/registry.R",
+    "sha256": "4657a2581bb51400fabc68830ab2bfabad868b6bc8685492808b6ecebc3ac301"
+  },
+  {
+    "file": "equivalence/harness/run.R",
+    "sha256": "96d3c02432d319bffd2f1196ec18f850c57e15529478383209c4186eaa05f762"
+  },
+  {
+    "file": "equivalence/harness/suites/depmixs4.R",
+    "sha256": "95e9e7ddd4e3dabf2dc69b5e26db30ca14cf73ac71fce63b9d1c82e9db7b6581"
+  },
+  {
+    "file": "equivalence/harness/suites/flexmix.R",
+    "sha256": "3ef6df6fa015801557121950902ff0bee734581e28cb6f21d4a4ca919e2939fd"
+  },
+  {
+    "file": "equivalence/harness/suites/glca.R",
+    "sha256": "b5efc118a4e3cbb6f7a4c4762b58f486ca3bc99904c26b882b95defcbbf9f12a"
+  },
+  {
+    "file": "equivalence/harness/suites/hard-depmixs4.R",
+    "sha256": "f38d9d4b01d177af2eff9883ee7ba99f54a4268aabbc9c2720bb8d0fad1fe8ef"
+  },
+  {
+    "file": "equivalence/harness/suites/hard-mclust.R",
+    "sha256": "2d015b4803015e5be2e56580882a9c3fc6c2209d7445da6b9dd09a709875e83b"
+  },
+  {
+    "file": "equivalence/harness/suites/hard-polca.R",
+    "sha256": "99936fde986d9571a365dbb3f3f0937a398e7ec7d6e24c8384d2315fed71dc3e"
+  },
+  {
+    "file": "equivalence/harness/suites/invariance.R",
+    "sha256": "a17882adab1f2df6cdbf3aeb972170729747e1558128b546b0ac162298fc3dc0"
+  },
+  {
+    "file": "equivalence/harness/suites/lcmm.R",
+    "sha256": "d9bf85fde6908c7b905ecd39e2d9eb23ef90824bcdb6b83ac8643065d54543db"
+  },
+  {
+    "file": "equivalence/harness/suites/mclust.R",
+    "sha256": "da8537b3b5b0fdb50db4d9bdcd375a6b0bfb398c4184191f35fd0f7a6c9bf2fc"
+  },
+  {
+    "file": "equivalence/harness/suites/mplus-twolevel-lca.R",
+    "sha256": "78eeb5e4020f6582c7cbd3c872a403cc2d44275759887a1c9d6e8531ae891ef7"
+  },
+  {
+    "file": "equivalence/harness/suites/multilevlca.R",
+    "sha256": "82364f4a2b9c795accde22ecb8ad67c2965033602b622269b9ed25b0489bc69d"
+  },
+  {
+    "file": "equivalence/harness/suites/polca.R",
+    "sha256": "5c5f6e85e4a491a4eb01e6a9fb617e8debf5f87efa213c9ce1e2c8cf5ce3d240"
+  },
+  {
+    "file": "equivalence/harness/suites/published.R",
+    "sha256": "2e7a505a22db70073614e347f489d30ed9422e54760e1e3172b58782a974b7c4"
+  },
+  {
+    "file": "equivalence/harness/suites/refusals.R",
+    "sha256": "725690d8fbccaad61b71ad317568384fc3ca98c679fae4caa8fa199c26211d0c"
+  },
+  {
+    "file": "equivalence/harness/suites/stability.R",
+    "sha256": "9243ee31966bc5a82b8fd7b98deb33b3c86bfcdf5b918b401a433e511bd070d0"
+  },
+  {
+    "file": "equivalence/harness/test-harness.R",
+    "sha256": "75137979ea20079da89571c52c3691715762ef68c716fe8861cc3984df66f1df"
+  },
+  {
+    "file": "equivalence/harness/two-level-lca-reference.R",
+    "sha256": "3ece55d2203c1a2e90565b61aa3447eec7e3c4c98c431b6975332f93d36aa1a7"
+  },
+  {
+    "file": "tests/equivalence/test-growth-calendar-reference.R",
+    "sha256": "a6a9ee7d6dd50085b7e94b8ad4e0efb2240a98f48f673fe91614011c44510cc8"
+  }
+]

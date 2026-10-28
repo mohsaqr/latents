@@ -1,0 +1,4 @@
+Finding rows: 27, all expected IDs present and fixed.
+Native archive agrees byte-for-byte with 121 current production/help/metadata files.
+DESCRIPTION source fields agree after normal build wrapping; R adds only generated packaging/author fields.
+Source/test/document SHA256 inventory: final-source-sha256.csv.

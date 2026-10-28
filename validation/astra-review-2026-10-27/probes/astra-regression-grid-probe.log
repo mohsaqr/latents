@@ -1,0 +1,17 @@
+Classification (average posteriors)
+
+assigned  class    mean_posterior  n_assigned
+--------  -------  --------------  ----------
+class_1   class_1           0.945         346
+class_2   class_1           0.310          54
+class_1   class_2           0.055         346
+class_2   class_2           0.690          54
+grid AvePP minimum: 0.6876206 fit-table AvePP minimum: 0.6902239 
+  candidate n_profiles n_group_classes model log_likelihood n_parameters
+1  classes2          2               1  <NA>      -564.3765            7
+       aic      bic bic_rows    sabic      icl   entropy smallest_share
+1 1142.753 1170.693 1170.693 1148.482 1431.262 0.5300991      0.3255051
+  n_best_replicated note best_bic converged boundary profile_entropy
+1                 2 <NA>     TRUE      TRUE       NA       0.5300991
+  group_entropy avepp_min group_avepp_min
+1            NA 0.6876206              NA

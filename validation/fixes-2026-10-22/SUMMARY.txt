@@ -1,0 +1,85 @@
+Fixes for the five confirmed issues reviewed at 12e0145 (latents 0.96.2)
+2026-10-22
+
+Implemented
+
+1. Staged bootstrap refits measurement using that stage's own search controls
+   before refitting stage two. A one-start second stage no longer discards
+   the first stage's explicit emEM pool. Start-count overrides resolve the
+   appropriate pool independently for each stage. Supplied single-level
+   measurement and differently named identifier/time columns are supported.
+   Source: R/bootstrap-inference.R.
+
+2. Thin-profile parameter counts exclude covariances held at zero by a local
+   dependence pattern. Five Gaussian indicators and one covariance count as
+   eleven density parameters per profile, rather than twenty.
+   Source: R/multilpa.R.
+
+3. Held means are excluded from the count, and held variances disable the
+   collapse diagnostic. Fixed measurement is no longer falsely flagged.
+   Source: R/multilpa.R.
+
+4. Both LTA engines count only rows with an observed Gaussian indicator for
+   the Gaussian warning. All-empty and categorical-only rows cannot hide a
+   thin Gaussian profile, independently of the drop_empty reporting policy.
+   Weighted fits use the saved weighted E-step memberships rather than raw
+   individual posterior probabilities.
+   Sources: R/transitions.R, R/lta-engine.R.
+
+5. LTA occasion-specific measurement is checked per separately estimated
+   measurement block. Warnings identify the occasion position, consistent
+   with the occasion numbering of the measurement results table.
+   Source: R/lta-engine.R.
+
+Regression coverage
+
+- tests/testthat/test-thin-profiles.R: exact free-parameter counts for
+  patterns and held blocks; public patterned fits above and below the correct
+  count; patterned fits with held means; held variances with means fixed/free.
+- tests/testthat/test-lta-thin-profiles.R (new): both engines; both drop_empty
+  policies; empty and partly observed rows; per-occasion support; occasion
+  positions at irregular time values; sampling weights in both directions;
+  categorical-only rows. Unknown warnings remain visible to testthat.
+- tests/testthat/test-staged-bootstrap.R: actual bootstrap refit calls for
+  pool retention; differing supplied measurement controls; start overrides;
+  legacy fit records; supplied single-level and differently named grouped
+  measurements. Tests inspect real resample refits, not a reconstruction of
+  the former broken argument assembly.
+- tests/testthat/test-review-lta.R: explicitly allows the thin-profile
+  warning in its deliberately tiny per-occasion mathematics fixtures.
+  Other warnings remain visible; dedicated thin-profile tests assert the
+  diagnostic behavior. This file was rerun and replaces its initial result
+  when computing the final full-suite totals.
+
+Verification
+
+See verification-summary.txt for final full unit/equivalence counts, warnings
+and scope. Focused warning suites pass 90 assertions; staged-bootstrap passes
+57 assertions. Fresh installation and full package lint succeed.
+
+Four saved LTA before/after fit objects are identical() across both engines
+and both empty-row policies. An unaffected two-start staged bootstrap also
+produces identical estimates/messages and leaves an identical RNG state.
+See identities.log and identities.rds.
+
+The source archive was built from a clean staging copy of tracked working-tree
+files plus the new regression file, filtered by .Rbuildignore. All eleven changed
+package files were checked against that staging copy. The initial auxiliary
+full-directory build was stopped to avoid copying large ignored folders.
+
+The limited R CMD check skipped tests/examples/manual/vignette execution,
+because unit and equivalence suites were run separately. It has no errors
+and two warnings solely for deliberately unbuilt vignette outputs. No fresh
+complete CRAN check, full vignette rendering or standalone feature sweeps
+were run. Raw repository-index lookups were blocked by the sandbox.
+
+NEWS.md and the conditions help page describe the corrected behavior. The
+original review directory is retained as historical evidence of the bugs.
+Its final isolated test reconstructs the OLD bootstrap implementation; the
+new actual-path package regression replaces that reconstruction for checking
+the fixed bootstrap.
+
+No change was made to the previously documented ML optimization limitation,
+the secondary standalone harness portability concern or the pre-existing
+direct-effect conditioning limitation. The scope here is the five confirmed
+issues the user requested fixing. No commit, push, CI dispatch or release.

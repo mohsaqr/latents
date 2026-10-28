@@ -1,0 +1,13 @@
+options(warn = 1)
+library(latents)
+set.seed(251)
+g <- 60L; per <- 6L
+kind <- rep(c(-2, 2), each = g / 2)
+d <- data.frame(id=rep(seq_len(g), each=per), y1=rnorm(g*per,rep(kind,each=per)), y2=rnorm(g*per,rep(kind,each=per)), w=rep(c(rep(1,g-10), rep(0,10)),each=per))
+f <- multilpa(d,c('y1','y2'),'id',n_profiles=2,n_group_classes=2,family='restricted_cross_level',weights='w',n_starts=1,seed=1)
+print(str(f,max.level=1))
+print(get_results(f,'group_classes'))
+cl <- latents:::.latents_level_classification(f,'groups')
+print(cl)
+cat('expected count sum from fit:', sum(get_results(f,'group_classes')$count), 'diagnostics expected count:',sum(cl$estimated_n), 'diagnostics assigned count:',sum(cl$n_assigned),'nobs:',nobs(f),'\n')
+print(get_results(diagnostics(f,plots=FALSE),'checks'))

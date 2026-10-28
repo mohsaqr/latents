@@ -1,0 +1,498 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+10/20/2026   9:13 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: latents pair covariance two_eei_02;
+  DATA: FILE = two_eei_02.dat;
+  VARIABLE:
+   NAMES = id y1 y2;
+   USEVARIABLES = y1 y2;
+   IDVARIABLE = id;
+   MISSING = ALL(-999);
+   CLASSES = c(2);
+  ANALYSIS:
+   TYPE = MIXTURE;
+   ESTIMATOR = ML;
+   STARTS = 200 40;
+   STITERATIONS = 40;
+   STSEED = 20261020;
+   MITERATIONS = 10000;
+   LOGCRITERION = 0.00000001;
+   RLOGCRITERION = 0.000000001;
+   MCONVERGENCE = 0.000001;
+  MODEL:
+   %OVERALL%
+   y1 WITH y2;
+   %c#1%
+   [y1 y2];
+   %c#2%
+   [y1 y2];
+  OUTPUT: TECH1;
+  SAVEDATA:
+   FILE = two_eei_02-posteriors.dat;
+   SAVE = CPROBABILITIES;
+   FORMAT = F20.12;
+   RESULTS = two_eei_02-results.dat;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+latents pair covariance two_eei_02;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         500
+
+Number of dependent variables                                    2
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2
+
+Categorical latent variables
+   C
+
+Variables with special functions
+
+  ID variable           ID
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                               10000
+  Convergence criteria
+    Loglikelihood change                                 0.100D-07
+    Relative loglikelihood change                        0.100D-08
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent Variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+Random Starts Specifications
+  Number of initial stage random starts                        200
+  Number of final stage optimizations                           40
+  Number of initial stage iterations                            40
+  Initial stage convergence criterion                    0.100D+01
+  Random starts scale                                    0.500D+01
+  Random seed for generating random starts                20261020
+
+Input data file(s)
+  two_eei_02.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of missing data patterns             1
+     Number of y missing data patterns           1
+     Number of u missing data patterns           0
+
+
+COVARIANCE COVERAGE OF DATA
+
+Minimum covariance coverage value   0.100
+
+
+     PROPORTION OF DATA PRESENT FOR Y
+
+
+           Covariance Coverage
+              Y1            Y2
+              ________      ________
+ Y1             1.000
+ Y2             1.000         1.000
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    0.988       0.218      -2.755    0.20%      -0.430      0.318      0.849
+             500.000       2.459      -0.683       5.234    0.20%       1.342      2.488
+     Y2                    0.646       0.118      -3.009    0.20%      -0.599      0.241      0.628
+             500.000       1.951      -0.280       5.399    0.20%       0.983      1.864
+
+RANDOM STARTS RESULTS RANKED FROM THE BEST TO THE WORST LOGLIKELIHOOD VALUES
+
+Final stage loglikelihood values at local maxima, seeds, and initial stage start numbers:
+
+           -1646.779  397056           140
+           -1646.779  327912           154
+           -1646.779  65697            8
+           -1646.779  476779           18
+           -1646.779  975033           117
+           -1646.779  876714           144
+           -1646.779  296192           196
+           -1646.779  604683           84
+           -1646.779  171301           32
+           -1646.779  822707           60
+           -1646.779  893620           115
+           -1646.779  697321           126
+           -1646.779  582969           160
+           -1646.779  504994           145
+           -1646.779  358888           184
+           -1646.779  275465           73
+           -1646.779  250338           172
+           -1646.779  156136           49
+           -1646.779  38706            75
+           -1646.779  628635           21
+           -1646.779  727168           163
+           -1646.779  915652           112
+           -1646.779  626412           102
+           -1646.779  529469           141
+           -1646.779  37397            3
+           -1646.779  728450           54
+           -1646.779  53126            25
+           -1646.779  287083           195
+           -1646.779  47912            120
+           -1646.779  unperturbed      0
+           -1646.779  608970           159
+           -1646.779  729737           166
+           -1646.779  125258           14
+           -1646.779  986809           30
+           -1646.779  422752           62
+           -1646.779  737850           105
+           -1646.779  371752           134
+           -1646.779  191718           198
+           -1646.779  78611            114
+           -1646.779  81072            95
+
+
+
+THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED.  RERUN WITH AT LEAST TWICE THE
+RANDOM STARTS TO CHECK THAT THE BEST LOGLIKELIHOOD IS STILL OBTAINED AND REPLICATED.
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        8
+
+Loglikelihood
+
+          H0 Value                       -1646.779
+
+Information Criteria
+
+          Akaike (AIC)                    3309.558
+          Bayesian (BIC)                  3343.275
+          Sample-Size Adjusted BIC        3317.883
+            (n* = (n + 2) / 24)
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THE ESTIMATED MODEL
+
+    Latent
+   Classes
+
+       1        302.60528          0.60521
+       2        197.39472          0.39479
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1        302.60528          0.60521
+       2        197.39472          0.39479
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1              308          0.61600
+       2              192          0.38400
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.667
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.912    0.088
+    2   0.113    0.887
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.928    0.072
+    2   0.137    0.863
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      2.559    0.000
+    2     -1.837    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ Y1       WITH
+    Y2                 0.504      0.090      5.609      0.000
+
+ Means
+    Y1                -0.002      0.084     -0.024      0.981
+    Y2                 0.017      0.085      0.204      0.838
+
+ Variances
+    Y1                 0.955      0.091     10.539      0.000
+    Y2                 1.345      0.120     11.181      0.000
+
+Latent Class 2
+
+ Y1       WITH
+    Y2                 0.504      0.090      5.609      0.000
+
+ Means
+    Y1                 2.506      0.105     23.914      0.000
+    Y2                 1.610      0.121     13.306      0.000
+
+ Variances
+    Y1                 0.955      0.091     10.539      0.000
+    Y2                 1.345      0.120     11.181      0.000
+
+Categorical Latent Variables
+
+ Means
+    C#1                0.427      0.140      3.045      0.002
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.395E-03
+       (ratio of smallest to largest eigenvalue)
+
+
+LATENT CLASS INDICATOR MEANS AND PROBABILITIES FOR EACH LATENT CLASS
+
+     MEAN/PROBABILITY PROFILES FOR C
+                   Latent class
+                     1      2
+     Y1           -0.002  2.506
+     Y2            0.017  1.610
+
+
+EQUALITY TESTS OF MEANS ACROSS THE LATENT CLASSES
+
+                    Chi-Square     P-Value   Degrees of Freedom
+
+
+Y1
+  Overall test        567.928      0.000        1
+
+Y2
+  Overall test        103.788      0.000        1
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                    1             2
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1                 3
+ Y2                 4             5
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                    6             7
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1                 3
+ Y2                 4             5
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                    8             0
+
+
+     STARTING VALUES FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2
+              ________      ________
+               -0.580        -0.751
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1             1.229
+ Y2             0.000         0.975
+
+
+     STARTING VALUES FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                2.556         2.043
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1             1.229
+ Y2             0.000         0.975
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                0.000         0.000
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Entropy
+    Condition Number
+
+  Save file
+    two_eei_02-results.dat
+
+  Save file format           Free
+
+
+SAVEDATA INFORMATION
+
+
+  Save file
+    two_eei_02-posteriors.dat
+
+  Order and format of variables
+
+    Y1             F20.12
+    Y2             F20.12
+    CPROB1         F20.12
+    CPROB2         F20.12
+    MLCC           F20.12
+    ID             I4
+
+  Save file format
+    5F20.12 I4
+
+  Save file record length    10000
+
+  Save missing symbol        *
+
+
+     Beginning Time:  21:13:30
+        Ending Time:  21:13:32
+       Elapsed Time:  00:00:02
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

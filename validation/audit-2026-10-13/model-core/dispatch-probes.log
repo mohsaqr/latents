@@ -1,0 +1,38 @@
+$none_means
+             y
+[1,]  96.42578
+[2,] 103.06085
+
+$person_means
+             y
+[1,]  96.42578
+[2,] 103.06085
+
+$grand_means
+             y
+[1,]  96.42578
+[2,] 103.06085
+
+$same_none_person
+[1] TRUE
+
+$same_none_grand
+[1] TRUE
+
+$person_centering_field
+NULL
+
+$grand_centering_field
+NULL
+
+$manual_person_means
+             y
+[1,] -2.391015
+[2,]  2.555912
+
+$advertised_person_ll
+[1] -476.2394
+
+$manually_centered_ll
+[1] -288.3874
+

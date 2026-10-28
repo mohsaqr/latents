@@ -1,0 +1,73 @@
+
+row-bound prepared data
+[1] TRUE
+
+serialized prepared subset
+[1] TRUE
+
+raw joint-only fitting
+simpleError/error/condition: arguments imply differing number of rows: 8, 0
+
+raw joint-only prediction
+[1] TRUE
+
+omitted rows observation weight alignment
+$posterior_rows
+[1] 136
+
+$weight_length
+[1] 136
+
+$weights_agree
+[1] TRUE
+
+$shares
+[1] 0.746114 0.253886
+
+
+omitted rows group weight alignment
+$posterior_rows
+[1] 39
+
+$weight_length
+[1] 39
+
+$weights_agree
+[1] TRUE
+
+$shares
+  class_1   class_2 
+0.7448107 0.2551893 
+
+
+public omitted-row weighted tree observation
+$shares
+[1] 0.746114 0.253886
+
+$reference
+[1] 0.746114 0.253886
+
+$max_error
+[1] 0
+
+
+public omitted-row weighted tree group
+$shares
+[1] 0.7448107 0.2551893
+
+$reference
+  class_1   class_2 
+0.7448107 0.2551893 
+
+$max_error
+[1] 0
+
+
+prepared public prediction after subset
+latents_bad_data/error/condition: The generated joint indicator `a:b` conflicts with an existing column; rename that column before using `local_dependence`.
+
+prepared public prediction after merge
+latents_bad_data/error/condition: The generated joint indicator `a:b` conflicts with an existing column; rename that column before using `local_dependence`.
+
+prepared public prediction after rowbound_then_columns
+latents_bad_data/error/condition: The generated joint indicator `a:b` conflicts with an existing column; rename that column before using `local_dependence`.

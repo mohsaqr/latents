@@ -1,0 +1,40 @@
+Sys.setenv(NOT_CRAN='true')
+pkgload::load_all('.',quiet=TRUE)
+ns<-asNamespace('latents')
+set.seed(18)
+# Every covariance structure retains its constraints at an active floor.
+rot<-matrix(c(cos(.4),sin(.4),-sin(.4),cos(.4)),2)
+s<-list(diag(c(.001,10)),rot%*%diag(c(1,.01))%*%t(rot))
+w<-c(10,10)
+results<-lapply(latents:::.multilpa_structures(),function(code){
+ z<-latents:::.multilpa_structure_covariances(s,w,code,.1)
+ blocks<-lapply(1:2,function(k)matrix(z[,,k],2,2))
+ ev<-t(vapply(blocks,function(z)eigen(z,symmetric=TRUE,only.values=TRUE)$values,numeric(2)))
+ volume<-sqrt(apply(ev,1,prod));shape<-ev/volume
+ stopifnot(all(ev>=.1*(1-1e-9)))
+ if(substr(code,1,1)=='E')stopifnot(diff(range(volume))<1e-8)
+ if(substr(code,2,2)=='E')stopifnot(max(abs(shape[1,]-shape[2,]))<1e-8)
+ if(substr(code,3,3)=='E')stopifnot(max(abs(blocks[[1]]%*%blocks[[2]]-blocks[[2]]%*%blocks[[1]]))<1e-8)
+ data.frame(code,min_eigenvalue=min(ev),volume_gap=diff(range(volume)),shape_gap=max(abs(shape[1,]-shape[2,])))
+})
+print(do.call(rbind,results))
+# Validate centered covariate fitting and its own inference/data contracts.
+p<-readRDS('validation/audit-2026-10-13/model-core/dispatch-probes.rds')
+d<-latents:::.multilpa_cov_stored_data(p$person)
+stopifnot(identical(p$person$centering,'person'),max(abs(aggregate(p$person$indicator_data,list(p$person$group_index),sum)[,-1]))<1e-10)
+print(head(d))
+set.seed(40);id<-rep(1:50,each=8);z<-rnorm(400);k<-rbinom(400,1,plogis(.5*z));raw<-data.frame(id=id,z=z,y=100+rep(rnorm(50,sd=3),each=8)+2*k+rnorm(400,sd=.7))
+cf<-multilpa(raw,'y','id',2,n_group_classes=1,profile_covariates='z',centering='person',n_starts=1,seed=2,tol=1e-10)
+print(head(parameter_inference(cf,raw)))
+stopifnot(isTRUE(all.equal(parameter_inference(cf,raw),parameter_inference(cf),tolerance=1e-10)))
+# Extreme random-intercept scores: derivative w.r.t. log random SD is 3.
+spec<-list(x=matrix(1,3,1,dimnames=list(NULL,'(Intercept)')),z=matrix(numeric(),3,0),
+ random_design=matrix(1,3,1,dimnames=list(NULL,'(Intercept)')),y=c(2e8-1,2e8,2e8+1),
+ offset=rep(0,3),n=3,group_index=rep(1L,3),n_groups=1,n_classes=1,
+ variance='varying',random_covariance='equal',random_diagonal=TRUE,
+ w=matrix(1,1,1,dimnames=list(NULL,'(Intercept)')),intercept_only=TRUE)
+params<-list(beta=matrix(0,1,1),common=numeric(),sigma2=1,
+ random_covariance=list(matrix(1e16,1,1)),random_scale=1,gamma=matrix(0,1,1))
+scores<-latents:::.growth_scores(spec,latents:::.growth_statistics(spec),params)
+print(scores)
+stopifnot(abs(scores[1,3]-3)<1e-8)

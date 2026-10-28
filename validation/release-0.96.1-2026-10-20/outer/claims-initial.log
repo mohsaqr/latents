@@ -1,0 +1,139 @@
+claims: ................................................1.2.3.4.5.............6.7...8.9.a...b.c.d.e.....f...g.h...i.......j.....k.l.....m.n.o.p.q......................................................................................................................................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/inference.R: `sandwich::vcovCL()`; every robust standard error in the package carries to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 2. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/inference.R: `sqrt(G / (G - 1))` times Mplus's (0.8% larger with 60 groups). Groups are the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 3. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/inference.R: It is the estimator `glca` reports, so it reproduces that package's to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 4. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/inference.R: Mplus follows; the held probabilities are left out of the table (or, for a to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 5. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/inference.R: `scaling_correction` the MLR scaling correction factor `tr(A^-1 B) / q`, to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 6. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/get-data.R: `bic_rows` by rows as flexmix reports it), `"assignments"`, to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 7. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/get-data.R: statistics of each level leave out the same rows and groups, as Mplus to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 8. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/multilpa.R: Parameter counts match `mclust`'s own for all fourteen. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 9. Failure ('test-claims.R:41:5'): every claim is still worded as registered 
+Expected R/multilpa.R: each M-step is mclust's own, so a fit from the same start reproduces to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+
+── 10. Failure ('test-claims.R:41:5'): every claim is still worded as registered
+Expected R/multilpa.R: prior. Following mclust, the fit's `log_likelihood` is the *unpenalized* to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:38:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[67L]], dots[[2L]][[67L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:41:5
+  ... and 16 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one is perfect!

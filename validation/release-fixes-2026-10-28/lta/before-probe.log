@@ -1,0 +1,42 @@
+ scale vcov_status max_se_relative_error inference_status
+     1          OK                     0               OK
+ scale vcov_status max_se_relative_error inference_status
+  0.01          OK      1.1332059735e-09               OK
+ scale vcov_status max_se_relative_error inference_status
+ 0.001          OK     9.16495739101e-06               OK
+ scale vcov_status max_se_relative_error inference_status
+ 3e-04          OK     0.000996087064908               OK
+ scale vcov_status max_se_relative_error inference_status
+ 1e-04          OK       0.0276948654091               OK
+ scale                                        vcov_status max_se_relative_error
+ 3e-05 The observed information is not positive definite.                    NA
+                                   inference_status
+ The observed information is not positive definite.
+ scale                                        vcov_status max_se_relative_error
+ 1e-05 The observed information is not positive definite.                    NA
+                                   inference_status
+ The observed information is not positive definite.
+ scale vcov_status max_se_relative_error inference_status
+ 1e+05          OK     7.46291917153e-11               OK
+ scale                                        vcov_status max_se_relative_error
+ 1e+06 The observed information is not positive definite.                    NA
+                                   inference_status
+ The observed information is not positive definite.
+raw information eigenvalues: 6.409436 2.988064e+12 
+scaled information eigenvalues: 0.4930605 1.56957 
+stable inverse relative SE error vs original units: 1.1843e-08 
+maximum coef/profile mean mismatch: 0 
+coef and vcov names identical: TRUE 
+transition/initial standard errors at scale 1e-4:
+      block      from        to        term original_se scaled_se
+ transition profile_1 profile_2 (Intercept)   0.3304727 0.3307936
+ transition profile_1 profile_2           z   0.3161193 0.3160605
+ transition profile_2 profile_1 (Intercept)   0.2275758 0.2275544
+ transition profile_2 profile_1           z   0.2274956 0.2273556
+    initial      <NA> profile_1 (Intercept)   0.2377556 0.2379243
+ relative_difference
+        9.709863e-04
+       -1.858804e-04
+       -9.409477e-05
+       -6.154135e-04
+        7.091793e-04

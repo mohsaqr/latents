@@ -1,0 +1,18 @@
+  direction null_candidate alternative_candidate n_profiles n_group_classes
+1  profiles      profiles1             profiles2          2               1
+  model n_units parameters_added       lr vlmr_p adjusted_lr almr_p
+1   EEI     240                3 452.1687      0    426.2445      0
+  reference_mean reference_sd note
+1       4.220817     3.793443 <NA>
+  direction null_candidate alternative_candidate n_profiles n_group_classes
+1  profiles      profiles1             profiles2          2               1
+  model n_units parameters_added       lr vlmr_p adjusted_lr almr_p
+1   EEI     240                3 452.1687      0    426.2445      0
+  reference_mean reference_sd note
+1       4.220817     3.793443 <NA>
+  direction null_candidate alternative_candidate n_profiles n_group_classes
+1  profiles      profiles1             profiles2          2               1
+  model n_units parameters_added       lr vlmr_p adjusted_lr almr_p
+1   EEI     240                3 452.1687      0    426.2445      0
+  reference_mean reference_sd note
+1       4.220817     3.793443 <NA>

@@ -1,0 +1,562 @@
+                    vignette base                                        cur
+                    additive   ok                                         ok
+  case-engagement-covariates   ok                                         ok
+  case-engagement-evaluation   ok                                         ok
+    case-engagement-profiles   ok                                         ok
+ case-engagement-transitions   ok                                         ok
+                case-esm-lca   ok                                         ok
+           class-enumeration   ok                                         ok
+      class-enumeration-orig   ok ERROR: identical(thin, warned) is not TRUE
+                  covariates   ok                                         ok
+                 enumeration   ok                                         ok
+                  evaluation   ok                                         ok
+              growth-mixture   ok                                         ok
+                         lca   ok                                         ok
+                         lpa   ok                                         ok
+                         lta   ok                                         ok
+          mixture-regression   ok                                         ok
+             model-selection   ok                                         ok
+          trajectory-classes   ok                                         ok
+                   tree-plot   ok                                         ok
+                workflow-lca   ok                                         ok
+                workflow-lpa   ok                                         ok
+ sec_base sec_cur objects objects_changed md_lines_new md_lines_gone figures
+      9.8     9.8      29               0            0             0       5
+      6.6     6.6       5               1            3             0       0
+      5.8     5.8       5               0           19             9       0
+      1.6     1.6       3               0            1             0       2
+     10.2    10.2       5               0            0             0       9
+     17.4    17.4       5               0           20            10       3
+     67.1    67.4      47               3           95            57      30
+     74.4    41.1      45               4            0             0      30
+      1.2     1.2       7               1            3             0       0
+     15.9    15.9      30               2           90            53      27
+     13.8    12.1       4               0           75            37       3
+     47.2    48.6       6               0            0             0      10
+      1.8     1.8       7               0            0             0       2
+      1.4     1.4       4               0           10             1       2
+     23.9    23.9       7               0            1             0       9
+      3.5     3.4       8               0            0             0       3
+     31.6    31.4      38               2           78            52      17
+      5.3     5.1       9               0            0             0      10
+     36.7    36.2      29               0            0             0      10
+     40.4    39.5      13               1            1             1       7
+     80.1    83.5      11               1            7             5       9
+ figures_changed
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+               0
+
+===== case-engagement-covariates =====
+-- objects changed:
+                                                                               staged 
+"Component “stage_one”: Component “call”: target, current do not match when deparsed" 
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+#> Smallest standardized Gaussian eigenvalue: 0.2004 (profiles, profile_3); Gaussian mass: 347.4; weight effective n: 450.6.
+#> Smallest standardized Gaussian eigenvalue: 0.1932 (profiles, profile_1); Gaussian mass: 438; weight effective n: 572.7.
+
+===== case-engagement-evaluation =====
+-- md lines only in BASE:
+#>   group_avepp_mean group_avepp_below converged boundary n_best_replicated warnings error
+#> 1         0.980500                 0      TRUE    FALSE                 6           <NA>
+#> 2         0.984693                 0      TRUE    FALSE                 6           <NA>
+#> 3         0.922506                 0      TRUE    FALSE                 6           <NA>
+#> 4         0.913150                 0      TRUE    FALSE                 6           <NA>
+#> 5         0.981946                 0      TRUE    FALSE                 6           <NA>
+#> 6         0.986321                 0      TRUE    FALSE                 3           <NA>
+#> 7         0.922502                 0      TRUE    FALSE                 6           <NA>
+#> 8         0.920425                 0      TRUE    FALSE                 5           <NA>
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+#>   group_avepp_mean group_avepp_below converged boundary min_standardized_eigenvalue
+#> 1         0.980500                 0      TRUE    FALSE                   0.3714788
+#> 2         0.984693                 0      TRUE    FALSE                   0.1999744
+#> 3         0.922506                 0      TRUE    FALSE                   0.3748297
+#> 4         0.913150                 0      TRUE    FALSE                   0.2002771
+#> 5         0.981946                 0      TRUE    FALSE                   0.2710424
+#> 6         0.986321                 0      TRUE    FALSE                   0.0984473
+#> 7         0.922502                 0      TRUE    FALSE                   0.2720518
+#> 8         0.920425                 0      TRUE    FALSE                   0.1201822
+#>   min_gaussian_mass n_best_replicated warnings error
+#> 1           587.904                 6           <NA>
+#> 2           382.562                 6           <NA>
+#> 3           591.087                 6           <NA>
+#> 4           369.012                 6           <NA>
+#> 5           583.221                 6           <NA>
+#> 6           104.363                 3           <NA>
+#> 7           589.486                 6           <NA>
+#> 8           116.302                 5           <NA>
+
+===== case-engagement-profiles =====
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+
+===== case-esm-lca =====
+-- md lines only in BASE:
+#>   group_avepp_below converged boundary n_best_replicated warnings error
+#> 1                NA      TRUE    FALSE                 5           <NA>
+#> 2                NA      TRUE    FALSE                 2           <NA>
+#> 3                NA      TRUE    FALSE                 1           <NA>
+#> 4                 0      TRUE    FALSE                 4           <NA>
+#> 5                 0      TRUE    FALSE                 1           <NA>
+#> 6                 0      TRUE    FALSE                 1           <NA>
+#> 7                 0      TRUE    FALSE                 4           <NA>
+#> 8                 0      TRUE    FALSE                 1           <NA>
+#> 9                 0      TRUE    FALSE                 1           <NA>
+-- md lines only in CURRENT:
+#>   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                NA      TRUE    FALSE                          NA                NA
+#> 2                NA      TRUE    FALSE                          NA                NA
+#> 3                NA      TRUE    FALSE                          NA                NA
+#> 4                 0      TRUE    FALSE                          NA                NA
+#> 5                 0      TRUE    FALSE                          NA                NA
+#> 6                 0      TRUE    FALSE                          NA                NA
+#> 7                 0      TRUE    FALSE                          NA                NA
+#> 8                 0      TRUE    FALSE                          NA                NA
+#> 9                 0      TRUE    FALSE                          NA                NA
+#>   n_best_replicated warnings error
+#> 1                 5           <NA>
+#> 2                 2           <NA>
+#> 3                 1           <NA>
+#> 4                 4           <NA>
+#> 5                 1           <NA>
+#> 6                 1           <NA>
+#> 7                 4           <NA>
+#> 8                 1           <NA>
+#> 9                 1           <NA>
+
+===== class-enumeration =====
+-- objects changed:
+                                                    candidates 
+                     "Component “warnings”: 1 string mismatch" 
+                                                        models 
+  "Component “table”: Component “warnings”: 1 string mismatch" 
+                                                    srl_models 
+"Component “table”: Component “warnings”: 3 string mismatches" 
+-- md lines only in BASE:
+#> Warning: Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer
+#> profiles or shared variances.
+#>    group_avepp_below converged boundary n_best_replicated
+#> 1                 NA      TRUE    FALSE                 3
+#> 2                 NA      TRUE    FALSE                 3
+#> 3                 NA      TRUE    FALSE                 3
+#> 4                 NA      TRUE    FALSE                 3
+#> 5                 NA      TRUE    FALSE                 1
+#> 6                 NA      TRUE    FALSE                 1
+#> 7                 NA     FALSE       NA                NA
+#> 8                  0      TRUE    FALSE                 3
+#> 9                  0      TRUE    FALSE                 3
+#> 10                 0      TRUE    FALSE                 3
+#> 11                 0      TRUE    FALSE                 2
+#> 12                 0      TRUE    FALSE                 1
+#> 13                NA     FALSE       NA                NA
+#> 14                 0      TRUE    FALSE                 3
+#> 15                 0      TRUE    FALSE                 3
+#> 16                 0      TRUE    FALSE                 3
+#> 17                 0      TRUE    FALSE                 2
+#> 18                 0      TRUE    FALSE                 2
+#> 19                NA     FALSE       NA                NA
+#> 20                 0      TRUE    FALSE                 3
+#> 21                 0      TRUE    FALSE                 3
+#> 22                 0      TRUE    FALSE                 2
+#> 23                 0      TRUE    FALSE                 1
+#> 24                 0      TRUE    FALSE                 1
+#>                                                                                                                    warnings
+#> 1                                                                                                                          
+#> 2                                                                                                                          
+#> 3                                                                                                                          
+#> 4                                                                                                                          
+#> 5  Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+#> 6                                                                                                                          
+#> 7                                                                                                                          
+#> 8                                                                                                                          
+#> 9                                                                                                                          
+#> 10                                                                                                                         
+#> 11                                                                                                                         
+#> 12                                                                                                                         
+-- md lines only in CURRENT:
+#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
+#> 2                 NA      TRUE    FALSE                      0.3750            589.08
+#> 3                 NA      TRUE    FALSE                      0.1932            418.21
+#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 5                 NA      TRUE    FALSE                      0.0036              4.89
+#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 7                 NA     FALSE       NA                          NA                NA
+#> 8                  0      TRUE    FALSE                      0.3715            587.90
+#> 9                  0      TRUE    FALSE                      0.2000            382.59
+#> 10                 0      TRUE    FALSE                      0.2003            178.19
+#> 11                 0      TRUE    FALSE                      0.0636             36.89
+#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 13                NA     FALSE       NA                          NA                NA
+#> 14                 0      TRUE    FALSE                      0.3748            591.09
+#> 15                 0      TRUE    FALSE                      0.2003            368.95
+#> 16                 0      TRUE    FALSE                      0.1950            202.20
+#> 17                 0      TRUE    FALSE                      0.1681            141.26
+#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 19                NA     FALSE       NA                          NA                NA
+#> 20                 0      TRUE    FALSE                      0.3747            592.09
+#> 21                 0      TRUE    FALSE                      0.2007            369.16
+#> 22                 0      TRUE    FALSE                      0.1967            201.57
+#> 23                 0      TRUE    FALSE                      0.0994             61.45
+#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#>    n_best_replicated
+#> 1                  3
+#> 2                  3
+#> 3                  3
+#> 4                  3
+#> 5                  1
+#> 6                  1
+#> 7                 NA
+#> 8                  3
+#> 9                  3
+#> 10                 3
+#> 11                 2
+#> 12                 1
+
+===== class-enumeration-orig =====
+-- objects changed:
+                                                    candidates 
+                     "Component “warnings”: 1 string mismatch" 
+                                                        models 
+  "Component “table”: Component “warnings”: 1 string mismatch" 
+                                                    srl_models 
+"Component “table”: Component “warnings”: 3 string mismatches" 
+                                                          thin 
+           "Lengths (3, 0) differ (string compare on first 0)" 
+
+===== covariates =====
+-- objects changed:
+                                                                               staged 
+"Component “stage_one”: Component “call”: target, current do not match when deparsed" 
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
+#> Smallest standardized Gaussian eigenvalue: 0.3712 (profiles, profile_2); Gaussian mass: 587.7; weight effective n: 605.1.
+#> Smallest standardized Gaussian eigenvalue: 0.375 (profiles, profile_2); Gaussian mass: 588.5; weight effective n: 606.8.
+
+===== enumeration =====
+-- objects changed:
+                                                  candidates 
+                   "Component “warnings”: 1 string mismatch" 
+                                                      models 
+"Component “table”: Component “warnings”: 1 string mismatch" 
+-- md lines only in BASE:
+#> Warning: Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer
+#> profiles or shared variances.
+#>    group_avepp_below converged boundary n_best_replicated
+#> 1                 NA      TRUE    FALSE                 3
+#> 2                 NA      TRUE    FALSE                 3
+#> 3                 NA      TRUE    FALSE                 3
+#> 4                 NA      TRUE    FALSE                 3
+#> 5                 NA      TRUE    FALSE                 1
+#> 6                 NA      TRUE    FALSE                 1
+#> 7                 NA     FALSE       NA                NA
+#> 8                  0      TRUE    FALSE                 3
+#> 9                  0      TRUE    FALSE                 3
+#> 10                 0      TRUE    FALSE                 3
+#> 11                 0      TRUE    FALSE                 2
+#> 12                 0      TRUE    FALSE                 1
+#> 13                NA     FALSE       NA                NA
+#> 14                 0      TRUE    FALSE                 3
+#> 15                 0      TRUE    FALSE                 3
+#> 16                 0      TRUE    FALSE                 3
+#> 17                 0      TRUE    FALSE                 2
+#> 18                 0      TRUE    FALSE                 2
+#> 19                NA     FALSE       NA                NA
+#> 20                 0      TRUE    FALSE                 3
+#> 21                 0      TRUE    FALSE                 3
+#> 22                 0      TRUE    FALSE                 2
+#> 23                 0      TRUE    FALSE                 1
+#> 24                 0      TRUE    FALSE                 1
+#>                                                                                                                    warnings
+#> 1                                                                                                                          
+#> 2                                                                                                                          
+#> 3                                                                                                                          
+#> 4                                                                                                                          
+#> 5  Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+#> 6                                                                                                                          
+#> 7                                                                                                                          
+#> 8                                                                                                                          
+#> 9                                                                                                                          
+#> 10                                                                                                                         
+#> 11                                                                                                                         
+#> 12                                                                                                                         
+-- md lines only in CURRENT:
+#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
+#> 2                 NA      TRUE    FALSE                      0.3750            589.08
+#> 3                 NA      TRUE    FALSE                      0.1932            418.21
+#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 5                 NA      TRUE    FALSE                      0.0036              4.89
+#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 7                 NA     FALSE       NA                          NA                NA
+#> 8                  0      TRUE    FALSE                      0.3715            587.90
+#> 9                  0      TRUE    FALSE                      0.2000            382.59
+#> 10                 0      TRUE    FALSE                      0.2003            178.19
+#> 11                 0      TRUE    FALSE                      0.0636             36.89
+#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 13                NA     FALSE       NA                          NA                NA
+#> 14                 0      TRUE    FALSE                      0.3748            591.09
+#> 15                 0      TRUE    FALSE                      0.2003            368.95
+#> 16                 0      TRUE    FALSE                      0.1950            202.20
+#> 17                 0      TRUE    FALSE                      0.1681            141.26
+#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 19                NA     FALSE       NA                          NA                NA
+#> 20                 0      TRUE    FALSE                      0.3747            592.09
+#> 21                 0      TRUE    FALSE                      0.2007            369.16
+#> 22                 0      TRUE    FALSE                      0.1967            201.57
+#> 23                 0      TRUE    FALSE                      0.0994             61.45
+#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#>    n_best_replicated
+#> 1                  3
+#> 2                  3
+#> 3                  3
+#> 4                  3
+#> 5                  1
+#> 6                  1
+#> 7                 NA
+#> 8                  3
+#> 9                  3
+#> 10                 3
+#> 11                 2
+#> 12                 1
+
+===== evaluation =====
+-- md lines only in BASE:
+#>    group_avepp_below converged boundary n_best_replicated warnings error
+#> 1                 NA      TRUE    FALSE                 3           <NA>
+#> 2                 NA      TRUE    FALSE                 3           <NA>
+#> 3                 NA      TRUE    FALSE                 3           <NA>
+#> 4                  0      TRUE    FALSE                 3           <NA>
+#> 5                  0      TRUE    FALSE                 3           <NA>
+#> 6                  0      TRUE    FALSE                 3           <NA>
+#> 7                  0      TRUE    FALSE                 3           <NA>
+#> 8                  0      TRUE    FALSE                 3           <NA>
+#> 9                  0      TRUE    FALSE                 2           <NA>
+#> 10                NA      TRUE    FALSE                 3           <NA>
+#> 11                NA      TRUE    FALSE                 3           <NA>
+#> 12                NA      TRUE    FALSE                 3           <NA>
+#> 13                 0      TRUE    FALSE                 3           <NA>
+#> 14                 0      TRUE    FALSE                 3           <NA>
+#> 15                 0      TRUE    FALSE                 3           <NA>
+#> 16                 0      TRUE    FALSE                 3           <NA>
+#> 17                 0      TRUE    FALSE                 3           <NA>
+#> 18                 0      TRUE    FALSE                 3           <NA>
+#> 19                NA      TRUE    FALSE                 3           <NA>
+#> 20                NA      TRUE    FALSE                 3           <NA>
+#> 21                NA      TRUE    FALSE                 3           <NA>
+#> 22                 0      TRUE    FALSE                 3           <NA>
+#> 23                 0      TRUE    FALSE                 3           <NA>
+#> 24                 0      TRUE    FALSE                 3           <NA>
+#> 25                 0      TRUE    FALSE                 3           <NA>
+#> 26                 0      TRUE    FALSE                 3           <NA>
+#> 27                 0      TRUE    FALSE                 1           <NA>
+#> 28                NA      TRUE    FALSE                 3           <NA>
+#> 29                NA      TRUE    FALSE                 2           <NA>
+#> 30                NA      TRUE    FALSE                 1           <NA>
+#> 31                 0      TRUE    FALSE                 3           <NA>
+#> 32                 0      TRUE    FALSE                 1           <NA>
+#> 33                 0      TRUE    FALSE                 1           <NA>
+#> 34                 0      TRUE    FALSE                 3           <NA>
+#> 35                 0      TRUE    FALSE                 2           <NA>
+#> 36                 0      TRUE    FALSE                 1           <NA>
+-- md lines only in CURRENT:
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                    0.381446             605.3
+#> 2                 NA      TRUE    FALSE                    0.293230             431.2
+#> 3                 NA      TRUE    FALSE                    0.202251             214.3
+#> 4                  0      TRUE    FALSE                    0.387254             600.8
+#> 5                  0      TRUE    FALSE                    0.308371             398.4
+#> 6                  0      TRUE    FALSE                    0.216630             233.5
+#> 7                  0      TRUE    FALSE                    0.387126             602.3
+#> 8                  0      TRUE    FALSE                    0.310163             391.2
+#> 9                  0      TRUE    FALSE                    0.216316             250.8
+#> 10                NA      TRUE    FALSE                    0.375010             589.1
+#> 11                NA      TRUE    FALSE                    0.193164             418.2
+#> 12                NA      TRUE    FALSE                    0.189287             172.2
+#> 13                 0      TRUE    FALSE                    0.371479             587.9
+#> 14                 0      TRUE    FALSE                    0.199966             382.6
+#> 15                 0      TRUE    FALSE                    0.200271             178.2
+#> 16                 0      TRUE    FALSE                    0.374829             591.1
+#> 17                 0      TRUE    FALSE                    0.200296             369.0
+#> 18                 0      TRUE    FALSE                    0.194977             202.2
+#> 19                NA      TRUE    FALSE                    0.278459             606.5
+#> 20                NA      TRUE    FALSE                    0.278643             400.8
+#> 21                NA      TRUE    FALSE                    0.273416              79.5
+#> 22                 0      TRUE    FALSE                    0.278272             599.7
+#> 23                 0      TRUE    FALSE                    0.276968             360.2
+#> 24                 0      TRUE    FALSE                    0.273094              88.5
+#> 25                 0      TRUE    FALSE                    0.278167             602.4
+#> 26                 0      TRUE    FALSE                    0.276967             353.3
+#> 27                 0      TRUE    FALSE                    0.275798             109.1
+#> 28                NA      TRUE    FALSE                    0.269614             577.4
+#> 29                NA      TRUE    FALSE                    0.120344             112.7
+#> 30                NA      TRUE    FALSE                    0.000279              26.5
+#> 31                 0      TRUE    FALSE                    0.271043             583.2
+#> 32                 0      TRUE    FALSE                    0.098399             104.3
+#> 33                 0      TRUE    FALSE                    0.001958              26.3
+#> 34                 0      TRUE    FALSE                    0.272051             589.5
+#> 35                 0      TRUE    FALSE                    0.120312             116.3
+#> 36                 0      TRUE    FALSE                    0.012291              48.4
+#>    n_best_replicated warnings error
+#> 1                  3           <NA>
+#> 2                  3           <NA>
+
+===== lpa =====
+-- md lines only in BASE:
+#> 19 tables above, truncated to fit. get_results(x, what = ) returns any
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
+#> Smallest standardized Gaussian eigenvalue: 0.3759 (profiles, profile_2); Gaussian mass: 714.8; weight effective n: 563.8.
+#> -- gaussian_diagnostics --------------------------------------------
+#>   context   profile gaussian_mass positive_rows weight_effective_n min_variance_ratio
+#>  profiles profile_1         834.1          1422                852             0.3930
+#>  profiles profile_2         587.9          1422                606             0.3715
+#>  min_standardized_eigenvalue boundary
+#>                       0.3930    FALSE
+#>                       0.3715    FALSE
+#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
+
+===== lta =====
+-- md lines only in CURRENT:
+#> Smallest standardized Gaussian eigenvalue: 0.2091 (profiles, profile_3); Gaussian mass: 470.6; weight effective n: 589.6.
+
+===== model-selection =====
+-- objects changed:
+                                                  candidates 
+                   "Component “warnings”: 1 string mismatch" 
+                                                      models 
+"Component “table”: Component “warnings”: 1 string mismatch" 
+-- md lines only in BASE:
+#> Warning: Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer
+#> profiles or shared variances.
+#>    group_avepp_below converged boundary n_best_replicated
+#> 1                 NA      TRUE    FALSE                 3
+#> 2                 NA      TRUE    FALSE                 3
+#> 3                 NA      TRUE    FALSE                 3
+#> 4                 NA      TRUE    FALSE                 3
+#> 5                 NA      TRUE    FALSE                 1
+#> 6                 NA      TRUE    FALSE                 1
+#> 7                 NA     FALSE       NA                NA
+#> 8                  0      TRUE    FALSE                 3
+#> 9                  0      TRUE    FALSE                 3
+#> 10                 0      TRUE    FALSE                 3
+#> 11                 0      TRUE    FALSE                 2
+#> 12                 0      TRUE    FALSE                 1
+#> 13                NA     FALSE       NA                NA
+#> 14                 0      TRUE    FALSE                 3
+#> 15                 0      TRUE    FALSE                 3
+#> 16                 0      TRUE    FALSE                 3
+#> 17                 0      TRUE    FALSE                 2
+#> 18                 0      TRUE    FALSE                 2
+#> 19                NA     FALSE       NA                NA
+#> 20                 0      TRUE    FALSE                 3
+#> 21                 0      TRUE    FALSE                 3
+#> 22                 0      TRUE    FALSE                 2
+#> 23                 0      TRUE    FALSE                 1
+#> 24                 0      TRUE    FALSE                 1
+#>                                                                                                                    warnings
+#> 1                                                                                                                          
+#> 2                                                                                                                          
+#> 3                                                                                                                          
+#> 4                                                                                                                          
+#> 5  Profile 4: 4.9 members for 10 means and variances; the solution may be spurious. Fit fewer profiles or shared variances.
+#> 6                                                                                                                          
+#> 7                                                                                                                          
+#> 8                                                                                                                          
+#> 9                                                                                                                          
+#> 10                                                                                                                         
+#> 11                                                                                                                         
+#> 12                                                                                                                         
+-- md lines only in CURRENT:
+#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
+#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
+#> 2                 NA      TRUE    FALSE                      0.3750            589.08
+#> 3                 NA      TRUE    FALSE                      0.1932            418.21
+#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 5                 NA      TRUE    FALSE                      0.0036              4.89
+#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 7                 NA     FALSE       NA                          NA                NA
+#> 8                  0      TRUE    FALSE                      0.3715            587.90
+#> 9                  0      TRUE    FALSE                      0.2000            382.59
+#> 10                 0      TRUE    FALSE                      0.2003            178.19
+#> 11                 0      TRUE    FALSE                      0.0636             36.89
+#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 13                NA     FALSE       NA                          NA                NA
+#> 14                 0      TRUE    FALSE                      0.3748            591.09
+#> 15                 0      TRUE    FALSE                      0.2003            368.95
+#> 16                 0      TRUE    FALSE                      0.1950            202.20
+#> 17                 0      TRUE    FALSE                      0.1681            141.26
+#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 19                NA     FALSE       NA                          NA                NA
+#> 20                 0      TRUE    FALSE                      0.3747            592.09
+#> 21                 0      TRUE    FALSE                      0.2007            369.16
+#> 22                 0      TRUE    FALSE                      0.1967            201.57
+#> 23                 0      TRUE    FALSE                      0.0994             61.45
+#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#>    n_best_replicated
+#> 1                  3
+#> 2                  3
+#> 3                  3
+#> 4                  3
+#> 5                  1
+#> 6                  1
+#> 7                 NA
+#> 8                  3
+#> 9                  3
+#> 10                 3
+#> 11                 2
+#> 12                 1
+
+===== workflow-lca =====
+-- objects changed:
+                                                        models 
+"Component “call”: target, current do not match when deparsed" 
+-- md lines only in BASE:
+#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+-- md lines only in CURRENT:
+#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
+
+===== workflow-lpa =====
+-- objects changed:
+                                                        models 
+"Component “table”: Component “warnings”: 2 string mismatches" 
+-- md lines only in BASE:
+#> Warning: Profile 6: 9.8 members for 10 means and variances; the solution may be spurious.
+#> Fit fewer profiles or shared variances.
+#> Warning: Profile 5: 14.7 members for 20 means and variances; the solution may be
+#> spurious. Fit fewer profiles or shared variances.
+#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
+-- md lines only in CURRENT:
+#> Warning: Profile 6: 9.8 Gaussian membership mass for 10 free means and variances. This is
+#> a conservative diagnostic, not an identification test; inspect the Gaussian covariance
+#> diagnostics.
+#> Warning: Profile 5: 14.7 Gaussian membership mass for 20 free means and variances. This
+#> is a conservative diagnostic, not an identification test; inspect the Gaussian covariance
+#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
+#> Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.

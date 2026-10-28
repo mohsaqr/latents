@@ -1,0 +1,97 @@
+DIRECT MULTILPA COLLISION
+$classes
+[1] "latents_bad_data" "error"            "condition"       
+
+$message
+[1] "`data` must be a data frame, but `.vars` is a character vector of length 2."
+
+DIRECT MULTILCA COLLISION
+$classes
+[1] "latents_bad_data" "error"            "condition"       
+
+$message
+[1] "`data` must be a data frame, but `.vars` is a character vector of length 2."
+
+TWO LEVEL REGRESSION STRUCTURE
+ [1] "spec"              "params"            "expectation"      
+ [4] "log_likelihood"    "n_parameters"      "converged"        
+ [7] "iterations"        "history"           "starts"           
+[10] "n_best_replicated" "call"              "settings"         
+[13] "inference"        
+$nesting
+[1] "two-level"
+
+$n_classes
+[1] 2
+
+$n_group_classes
+[1] 2
+
+NULL
+Model fit
+
+Family          gaussian
+Nesting         two-level
+Classes         2
+Group classes   2
+Observations    100
+Groups          20
+Parameters      9
+Log likelihood  -127.66
+AIC             273.33
+BIC             282.29
+SABIC           254.54
+ICL             408.02
+Entropy         0.293
+Smallest class  38.7%
+Converged       yes
+GROUP LEVEL REGRESSION CHECKS
+$nesting
+[1] "group"
+
+$n_classes
+[1] 2
+
+$n_group_classes
+[1] 1
+
+              domain                           check       level        value
+1         Estimation            best start converged       model    1.0000000
+2         Estimation  best log likelihood reached by       model    2.0000000
+3         Estimation     starts failed or unfinished       model    0.0000000
+4         Class size                  smallest class individuals    0.3325826
+5         Class size   classes with no assigned unit individuals    0.0000000
+6     Classification                relative entropy individuals    0.3688492
+7     Classification        lowest average posterior individuals    0.7404764
+8 Local independence             bivariate residuals       model           NA
+9        Information log likelihood, parameters, BIC       model -129.0924257
+              display criterion status
+1                 yes               ok
+2       2 of 2 starts             info
+3 0 of 2 (1 screened)               ok
+4               33.3%             info
+5              0 of 2               ok
+6               0.369             info
+7     0.740 (class_2)             info
+8                                  n/a
+9  -129.09, 7, 279.15             info
+                                                  detail
+1                                                       
+2                                                       
+3                                                       
+4                                                       
+5                                                       
+6                                                       
+7                                                       
+8                      not defined for this model family
+9 meaningful only against other models: compare_models()
+                            reference
+1                                    
+2                        Masyn (2013)
+3                                    
+4                                    
+5                                    
+6 Clark & Muthen (2009); Masyn (2013)
+7                        Nagin (2005)
+8                                    
+9                                    

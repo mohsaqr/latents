@@ -1,0 +1,60 @@
+GET_TNA_LPA
+[1] "This fit carries no ordering. Refit with `time =` naming the column that gives each observation's position within its group."
+BIND_COLLISION
+fit LL -260.6665 
+ADDITIVE DEFAULT DIAGNOSTICS TABLE
+  n_starts n_screened n_converged n_failed n_best_replicated share    tolerance
+1        2          0           2        0                 2     1 0.0002607937
+  best_start log_likelihood
+1          1      -259.7937
+[1] "replication" "checks"     
+REGRESSION FIT CLASS AND CLASSIFICATION
+[1] "latents_mixture_regression"
+Classification (average posteriors)
+
+assigned  class    mean_posterior  n_assigned
+--------  -------  --------------  ----------
+class_1   class_1            0.78          64
+class_2   class_1            0.32          36
+class_1   class_2            0.22          64
+class_2   class_2            0.68          36
+              domain                           check       level        value
+1         Estimation            best start converged       model    1.0000000
+2         Estimation  best log likelihood reached by       model    2.0000000
+3         Estimation     starts failed or unfinished       model    0.0000000
+4         Class size                  smallest class individuals    0.3872916
+5         Class size   classes with no assigned unit individuals    0.0000000
+6     Classification                relative entropy individuals    0.2926441
+7     Classification        lowest average posterior individuals    0.6783764
+8 Local independence             bivariate residuals       model           NA
+9        Information log likelihood, parameters, BIC       model -127.6636050
+              display criterion status
+1                 yes               ok
+2       2 of 2 starts             info
+3 0 of 2 (1 screened)               ok
+4               38.7%             info
+5              0 of 2               ok
+6               0.293             info
+7     0.678 (class_2)             info
+8                                  n/a
+9  -127.66, 9, 282.29             info
+                                                  detail
+1                                                       
+2                                                       
+3                                                       
+4                                                       
+5                                                       
+6                                                       
+7                                                       
+8                      not defined for this model family
+9 meaningful only against other models: compare_models()
+                            reference
+1                                    
+2                        Masyn (2013)
+3                                    
+4                                    
+5                                    
+6 Clark & Muthen (2009); Masyn (2013)
+7                        Nagin (2005)
+8                                    
+9                                    

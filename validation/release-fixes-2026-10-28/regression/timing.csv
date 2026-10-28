@@ -1,0 +1,4 @@
+"test","real","failed","warning","passed"
+"shared regression dispersions retain public names and finite errors",0.643,0,0,24
+"an excluded regression row cannot remove inference",0.062,0,0,7
+"excluded groups cannot choose regression inference coordinates",0.751,0,0,27

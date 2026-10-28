@@ -1,0 +1,231 @@
+* using log directory ‘/private/tmp/latents-release-audit-20261028/latents.Rcheck’
+* using R version 4.5.2 (2025-10-31)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 16.0.0 (clang-1600.0.26.6)
+    GNU Fortran (GCC) 14.2.0
+* running under: macOS Tahoe 26.3.1
+* using session charset: UTF-8
+* using options ‘--no-tests --no-manual --ignore-vignettes --as-cran’
+* checking for file ‘latents/DESCRIPTION’ ... OK
+* this is package ‘latents’ version ‘0.98.0’
+* package encoding: UTF-8
+* checking CRAN incoming feasibility ...Warning: unable to access index for repository https://CRAN.R-project.org/src/contrib:
+  cannot open URL 'https://CRAN.R-project.org/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/bioc/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/bioc/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/data/annotation/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/data/annotation/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/data/experiment/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/data/experiment/src/contrib/PACKAGES'
+Warning in url(sprintf("%s/src/contrib/PACKAGES.gz", u), "rb") :
+  URL 'https://CRAN.R-project.org/src/contrib/PACKAGES.gz': status was 'Couldn't resolve host name'
+NB: need Internet access to use CRAN incoming checks
+ NOTE
+Maintainer: ‘Mohammed Saqr <saqr@saqr.me>’
+
+Package has a VignetteBuilder field but no prebuilt vignette index.
+
+Found the following (possibly) invalid URLs:
+  URL: https://doi.org/10.1111/j.0081-1750.2003.t01-1-00131.x
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: doi.org
+  URL: https://github.com/mohsaqr/latents
+    From: DESCRIPTION
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: github.com
+  URL: https://github.com/mohsaqr/latents/issues
+    From: DESCRIPTION
+          README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: github.com
+  URL: https://openesmdata.org
+    From: man/student_esm.Rd
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: openesmdata.org
+  URL: https://pak.dynasite.org/latents/
+    From: DESCRIPTION
+          NEWS.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/additive.html
+    From: man/multilpa.Rd
+          README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/case-engagement-covariates.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/case-engagement-profiles.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/case-engagement-transitions.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/case-esm-lca.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/class-enumeration.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/covariates.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/enumeration.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/evaluation.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/growth-mixture.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/lca.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/lpa.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/lta.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/mixture-regression.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/trajectory-classes.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/workflow-lca.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://pak.dynasite.org/latents/articles/workflow-lpa.html
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: pak.dynasite.org
+  URL: https://saqr.me
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: saqr.me
+  URL: https://sonsoles.me/
+    From: README.md
+    Status: Error
+    Message: libcurl error code 6:
+      	Could not resolve host: sonsoles.me
+
+Found the following (possibly) invalid ORCID iDs:
+  iD: 0000-0001-5881-3109	(from: DESCRIPTION)
+  iD: 0000-0002-9621-1392	(from: DESCRIPTION)
+* checking package namespace information ... OK
+* checking package dependencies ...Warning: unable to access index for repository https://CRAN.R-project.org/src/contrib:
+  cannot open URL 'https://CRAN.R-project.org/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/bioc/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/bioc/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/data/annotation/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/data/annotation/src/contrib/PACKAGES'
+Warning: unable to access index for repository https://bioconductor.org/packages/3.22/data/experiment/src/contrib:
+  cannot open URL 'https://bioconductor.org/packages/3.22/data/experiment/src/contrib/PACKAGES'
+ OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘latents’ can be installed ... [9s/15s] OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... [23s/23s] OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking LazyData ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking files in ‘vignettes’ ... SKIPPED
+* checking examples ... [14s/15s] OK
+* checking examples with --run-donttest ... [27s/27s] OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... SKIPPED
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+
+Status: 1 NOTE
+See
+  ‘/private/tmp/latents-release-audit-20261028/latents.Rcheck/00check.log’
+for details.
+

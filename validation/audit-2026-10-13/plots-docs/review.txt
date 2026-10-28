@@ -1,0 +1,195 @@
+Plotting, prediction, simulation and documentation audit — 2026-10-13
+
+Scope and evidence
+Reviewed all 101 top-level function definitions in R/plot*.R, R/predict*.R,
+R/mixture-regression-predict.R, R/growth-mixture-plot.R and
+R/growth-mixture-simulate.R, including their callers, argument contracts and
+matching help. Compared relevant behavior with committed 0.9.21 (a10a919)
+and current HEAD (618f8de); production files and user edits were not changed.
+The function inventory distinguishes static review from direct reproduction.
+A reviewed function without a finding is not a claim that every possible input
+or branch has been formally proved correct.
+
+Executed six existing focused test files with NOT_CRAN=true:
+test-plot-named.R, test-mixture-regression-prediction-design.R, test-predict.R,
+test-plot.R, test-plot-gg.R, test-compat-0921.R. All passed. Independent synthetic
+probes in probes.R identified issues outside those cases. findings-tests.R has
+six evidence tests, all passing (13 assertions), that intentionally assert the
+observed defects; these are reproductions, not a claim that behavior is correct.
+Both new enumeration documents rendered successfully with their hidden
+numerical guards enabled: enumeration.html and class-enumeration.html.
+Every shipped Rd file parsed and pkgdown::check_pkgdown() reported no problems.
+Pandoc emitted only its highlight-style deprecation warning during rendering.
+No subjective visual approval was requested because this audit changed no plot.
+
+Findings, in priority order
+
+PD-01 — P1 — New named diagnostics can report invalid statistics for noise fits.
+Location: R/plot-named.R:92-96; generic guard R/plot.R:66-68;
+calculation R/plot-gg.R:879-889 and R/plot-gg.R:959-973.
+plot(noise_fit, what='entropy'/'avepp'/'posteriors') correctly refuses through
+.multilpa_refuse_noise, explaining that Gaussian posterior rows do not sum to
+one. plot_diagnostics() directly calls the drawing helpers and bypasses that
+same restriction, including its default 'all' path. In the reproducible
+200-row two-profile synthetic case, Gaussian posterior row sums are
+0.0547–0.9885. The named entropy view reports uncertainty up to 1.0498, outside
+its declared [0,1] scale, and a plausible but invalid relative-entropy summary
+of 0.870; named AvePP likewise treats noise-assigned cases as real profiles.
+The new NEWS and shared help promise equality with the corresponding generic
+view, but this case contradicts it. Impact: invalid classification assessment
+without a refusal or warning. Remedy: apply the same noise guard before named
+case diagnostics; preserve the supported sizes view when appropriate.
+Evidence: findings-tests.R first test; probes.log noise sections.
+
+PD-02 — P2 — Weighted profile trees plot the wrong class proportions.
+Location: R/plot-gg.R:1393-1401 and subsequent child shares from colSums(flow).
+Tree flows use crossprod(posteriors_A, posteriors_B)/n_cases and unweighted
+posterior column sums. Fits with sampling weights report weighted effective
+counts, which every ordinary profile plot reads through .gg_profile_key().
+The independent synthetic weighted EEI fit has fitted shares 0.09747/0.90253,
+but its tree shows 0.47209/0.52791. This is substantive disagreement about class
+sizes, not just plotting placement. Older code already has the same defect;
+it is not introduced by the current edit. Remedy: obtain the fitted row/unit
+weights and weight posterior cross-products and shares consistently; add an
+end-to-end weighted-tree check against fitted counts.
+Evidence: findings-tests.R second test; probes.log weighted tree section.
+
+PD-03 — P2 — Enumeration view abbreviations accepted in 0.9.21 now fail.
+Location: R/plot.R:210-231. Baseline R/plot.R:345 used match.arg(what) with
+c('enumeration','tree'), so 'enum', 'e', 'tr' and 't' selected those views.
+Current code recognizes only the exact legacy words and passes abbreviations
+through as criterion names, yielding latents_unknown_criterion. Thus the broad
+NEWS.md:3-5 claim that every released argument remains accepted does not cover
+the released values R previously accepted. Exact old names and positional
+criterion calls are covered by existing tests and pass. Remedy: recognize
+unambiguous legacy view abbreviations before dispatch to the new criteria API.
+Evidence: findings-tests.R third test and baseline match.arg source.
+
+PD-04 — P2 — Consolidated plot help removes all released method help aliases.
+Location: R/plot.R:1, R/growth-mixture-plot.R:45,
+R/mixture-regression-predict.R:192 and the other plot methods use @noRd;
+man/latents-plots.Rd:4-13 contains only the topic and named-function aliases.
+Previously shipped ?plot.multilpa, ?plot.multilpa_enumeration,
+?plot.latents_growth_mixture, ?plot.latents_mixture_regression and other plot
+method topics no longer resolve. Function dispatch remains registered, but
+released help entry points, links/bookmarks and method signatures disappear.
+The new consolidated help describes method-only arguments such as time,
+facet, persons, max_persons, spread and level in prose without any method usage
+or formal parameter entries; users cannot inspect defaults there. This
+consolidation is an intentional recent change, but compatibility auditing of
+exports/examples alone misses the documentation API loss. Remedy: retain
+method aliases on the shared topic, and retain method usages or list all
+method-specific defaults clearly. Evidence: current aliases parsed in
+findings-tests.R; git show a10a919:man/plot.multilpa.Rd.
+
+PD-05 — P2 — Aggregated binomial prediction silently changes outcome scale.
+Location: R/mixture-regression-predict.R:46-49, 127-139;
+R/mixture-regression-methods.R:35-36; R/predict-docs.R:25-26.
+For a cbind(success,failure) binomial model, predict(fit) returns expected
+successes using stored trial counts. predict(fit, training_data) reconstructs
+without the response and forces trials=1, even if the two response columns
+are present. The same fitted rows now return per-trial probabilities. In the
+independent single-class synthetic example, training/newdata fitted ratios
+are exactly the row trial counts (10 or 20). There is no public trials
+argument to request expected successes for new exposures; the shared help
+simply calls the result the 'mean outcome'. This behavior predates the current
+changes. Remedy: explicitly define and document whether prediction returns
+success counts or probabilities; expose a new trial-count design if counts
+are supported, or consistently normalize both training and new predictions
+with a compatibility-conscious migration.
+Evidence: findings-tests.R fourth test; probes.log training prediction section.
+
+PD-06 — P2 documentation — New bootstrap example describes the wrong p-value.
+Location: vignettes/articles/class-enumeration.Rmd:455-461;
+implementation R/simulation-service.R:204-206.
+The article defines p as the share of simulated statistics at least as large
+as observed (b/B), but implementation uses (b+1)/(B+1) and refuses to report p
+when any replicate is invalid. The next sentence correctly gives minimum
+1/20 for B=19, which contradicts b/B's minimum zero. Remedy: explain the
+finite-simulation correction and preserve the failed-replicate refusal.
+The render succeeds because numerical guard chunks do not check this prose.
+
+PD-07 — P3 documentation — Consolidated prediction help overstates error and
+RNG contracts.
+Location: R/predict-docs.R:31 and 38-40; man/latents-predict.Rd:30.
+seed=NULL advances the caller's stream; only an explicit seed restores it.
+The unconditional restore promise was already present in old simulation help
+and is carried into the consolidation. For mixture regression, missing
+predictor/outcome values reach model.frame(..., na.fail) and produce ordinary
+simpleError, while missing columns produce ordinary 'object not found'
+errors; the consolidated Conditions paragraph promises latents_bad_data
+without restricting that promise to profile prediction. Remedy: clarify
+seed behavior and scope the condition guarantee, or consistently translate
+new-spec model-frame failures into the documented class.
+Evidence: findings-tests.R fifth test; probes.log missing-data/RNG sections.
+
+PD-08 — P2 — Ported base-graphics plots lose released draw/return behavior.
+Location: R/mixture-regression-predict.R:224-229; matching pooled/bootstrap
+ports are outside this worker's implementation scope. Baseline 0.9.21
+plot.latents_mixture_regression (non-trajectory cases) drew base graphics and
+returned invisible(x); current code returns a ggplot and relies on printing.
+A call inside a loop/function with an invisible result no longer draws at all,
+and consumers assigning the return now receive a different class. Returning
+ggplot is the intended current design and is documented, but it contradicts
+the unrestricted 'Code written for 0.9.21 keeps working' claim. HANDOFF.md
+already acknowledges this open issue. Remedy: explicitly decide the drawing
+contract before release, test a call inside a loop, and document the print()
+migration if retaining the new behavior. Users can preserve loop drawing with
+print(plot(fit)); an export/signature audit does not detect this contract loss.
+Evidence: baseline source graphics::par/switch/invisible(x), current returned
+plot, and probes.log 'ported mixture plot' section.
+
+Lower priority observations, not release-blocking findings
+- plot(fit, what='bars', intervals=FALSE) still computes/draws error bars
+  (R/plot.R:78-81), while profile/response views obey intervals. This is not a
+  new implementation bug: 0.9.21 explicitly scoped intervals to profiles and
+  responses. The consolidated help omits that scope, so clarify it or make bars
+  obey the common parameter.
+- Named plot wrappers inspect only class(x)[1], rather than the S3 inheritance
+  chain (R/plot-named.R:17). An object with class c('my_lpa','multilpa') still
+  passes .multilpa_any_fit but plot_profiles() refuses although plot() dispatches
+  through multilpa. This matters to downstream extensions; no package-built
+  class currently uses that unsupported subclass pattern in these tests.
+- plot_diagnostics() accepts profile/class/transition models only through
+  .multilpa_any_fit, not growth/regression/additive fits. Help's 'a fitted model'
+  wording and the 'every family carries those' comment are broader than the
+  implemented domain. Avoid implying all package families are accepted.
+- Course-activity documentation has mixed wording. README.Rmd:98 now correctly
+  says indicators are simulated continuous values intended to represent a
+  log-count scale; no raw counts/log1p transform are generated. Older case
+  articles call them 'simulated on log1p scale', which can describe the intended
+  scale but should use the same explicit clarification. data-raw/course-
+  engagement.R:30 is stronger and wrong: 'the shipped indicators are
+  log1p(count)'. NEWS historical natural-log/count claims should be treated as
+  historical notes rather than rewritten casually. No actual raw-count
+  generation exists in that data script.
+- README.md was rendered before candidate names/quality columns were added;
+  its printed grid tables omit the newly leading candidate and AvePP columns.
+  README.Rmd source is usable, but regenerate it to keep examples/output current.
+- Consolidated plot help's general 'unaccepted arguments raise errors'
+  statement is qualified later by the family-specific unused-argument warnings.
+  The qualification is correct, but should occur beside that statement.
+- A fitted model can plot with vcov_type='none' by obtaining trajectory
+  inference lazily; the independent growth trajectory/random probes succeed.
+  Explicit seeded growth simulation reproduces 140x2 outputs and restores RNG.
+
+Documentation coverage and practical limits
+The new vignette/article have inline numbers and hidden guards on chosen
+candidates, delta signs, categorical classification and boundary status.
+Rendering the two documents verifies these concrete claims against the current
+code. It does not independently establish the underlying statistical formulas.
+All shared help was inspected against actual formal arguments and outputs;
+all Rd files passed parsing and all local package link targets resolved (the
+remaining generic targets are base/stats help). The pkgdown config contains
+both enumeration article names and the consolidated plot/prediction topics and
+passes its checker. The unchanged older tutorial/case files received targeted
+API, data-description and plot/prediction cross-reference searches; they were
+not all rendered in this worker. No visual style/design change was made.
+
+Suggested order of remediation
+1. Guard named diagnostics for noise fits and add an end-to-end refusal test.
+2. Weight tree shares/flows consistently and add weighted proportion checks.
+3. Restore abbreviated released plot values and released help aliases/usages.
+4. Decide/document aggregated binomial prediction units and new trial design.
+5. Resolve the ported-plot drawing contract and test loop/function calls.
+6. Correct the new bootstrap p-value prose and qualify shared help contracts.

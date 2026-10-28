@@ -1,0 +1,18 @@
+Sys.setenv(OMP_NUM_THREADS='1', VECLIB_MAXIMUM_THREADS='1', NOT_CRAN='true')
+pkgload::load_all('.', quiet=TRUE)
+set.seed(1027)
+d <- data.frame(y=rep(2,60), x=seq(-2,3,length.out=60), o=rnorm(60))
+lapply(list(y~0+x, y~1+offset(o)),function(f){
+  ref <- lm(f,d); print(c(beta=coef(ref),sigma2=mean(residuals(ref)^2),ll=as.numeric(logLik(ref))))
+  print(tryCatch(mixture_regression(f,d,1,n_starts=0,vcov_type='none'),error=function(e)c(class=class(e)[1],message=conditionMessage(e))))
+})
+set.seed(1027)
+d <- data.frame(id=rep(1:30,each=4),time=rep(0:3,30),w=1)
+d$y <- rep(rnorm(30,sd=1),each=4)+.5*d$time+rnorm(120,sd=.5)
+fit <- function(z) tryCatch(suppressWarnings(mixture_regression(y~time,z,1,id='id',class_level='group',random=~1,n_starts=0,seed=5,weights='w',vcov_type='none')),error=function(e)e)
+b <- fit(d)
+print(c(base=as.numeric(logLik(b)),converged=b$converged)); str(b,max.level=1)
+lapply(c(1e5,1e8,1e10,1e20,1e100), function(s){
+ z<-d[1:16,];z$id<-rep(31:34,each=4);z$w<-0;z$y<-rep(c(-s,s),each=8)
+ p<-fit(rbind(d,z));print(list(scale=s,result=if(inherits(p,'error'))c(class=class(p)[1],message=conditionMessage(p))else c(ll=as.numeric(logLik(p)),gap=as.numeric(logLik(p)-logLik(b)),converged=p$converged)))
+})

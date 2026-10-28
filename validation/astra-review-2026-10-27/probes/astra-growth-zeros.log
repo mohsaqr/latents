@@ -1,0 +1,28 @@
+         seed          base        padded           gap        a_conv 
+ 1.000000e+00 -1.428064e+02 -1.428064e+02 -2.842171e-14  1.000000e+00 
+       b_conv 
+ 1.000000e+00 
+         seed          base        padded           gap        a_conv 
+ 2.000000e+00 -1.643419e+02 -1.643419e+02 -8.526513e-14  1.000000e+00 
+       b_conv 
+ 1.000000e+00 
+     seed      base    padded       gap    a_conv    b_conv 
+   3.0000 -151.0641 -151.0641    0.0000    1.0000    1.0000 
+         seed          base        padded           gap        a_conv 
+ 4.000000e+00 -1.535668e+02 -1.535668e+02 -1.136868e-13  1.000000e+00 
+       b_conv 
+ 1.000000e+00 
+     seed      base    padded       gap    a_conv    b_conv 
+   5.0000 -149.9093 -149.9093    0.0000    1.0000    1.0000 
+         seed          base        padded           gap        a_conv 
+ 6.000000e+00 -1.418439e+02 -1.418439e+02 -5.684342e-14  1.000000e+00 
+       b_conv 
+ 1.000000e+00 
+         seed          base        padded           gap        a_conv 
+ 7.000000e+00 -1.380390e+02 -1.380390e+02  2.842171e-14  1.000000e+00 
+       b_conv 
+ 1.000000e+00 
+         seed          base        padded           gap        a_conv 
+ 8.000000e+00 -1.577726e+02 -1.577726e+02 -5.684342e-14  1.000000e+00 
+       b_conv 
+ 1.000000e+00 

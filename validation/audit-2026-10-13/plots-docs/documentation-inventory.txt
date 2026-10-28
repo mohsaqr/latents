@@ -1,0 +1,84 @@
+DOCUMENTATION INVENTORY
+All current Rd files parsed; pkgdown configuration checker clean. The two new enumeration sources were rendered with hidden guards. Existing documents received source/API searches; they were not all rendered by this worker. Other model-specific contracts belong to the corresponding root audit workers.
+
+NEWS.md	RECENT CHANGES REVIEWED	0.9.21 and matching-named-plots claims contradicted by PD-01/PD-03; historical log-count wording noted.
+README.Rmd	SOURCE/API REVIEWED	Source math fix consistent across Rmd/md; rendered candidate tables stale after newest names/quality columns.
+README.md	SOURCE/API REVIEWED	Source math fix consistent across Rmd/md; rendered candidate tables stale after newest names/quality columns.
+_pkgdown.yml	CHECKED	pkgdown::check_pkgdown clean; new enumeration names and consolidated topics present.
+man/bootstrap_lrt.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/compare_models.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/course_engagement.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/descriptives.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/diagnostics.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/enumerate_classes.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/enumerate_lca.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/enumerate_lpa.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/enumerate_regressions.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/fit_staged.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/get_candidate.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/get_group_tna.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/get_results.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/get_tna.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/growth_schools.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/growth_scores.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/latents-conditions.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/latents-model-methods.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/latents-plots.Rd	PARSED + LINK-SCANNED	Shared plot topic inspected for arguments, aliases, defaults, compatibility: PD-04.
+man/latents-predict.Rd	PARSED + LINK-SCANNED	Shared predict/simulate output, condition, seed contracts: PD-05/PD-07.
+man/lca.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/lpa.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/lta.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/mixture_regression.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/multilca.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/multilpa.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/parameter_inference.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/parameter_inference.multilpa_transitions.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/pool_imputations.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/prior_control.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/r3step.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/report.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/sensitivity.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/srl.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/starting_values.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/student_esm.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/study_hours.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+man/three_step.Rd	PARSED + LINK-SCANNED	Matching plot/predict cross-references inspected; other model contracts delegated to corresponding model audit.
+vignettes/articles/additive.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/case-engagement-covariates.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/case-engagement-evaluation.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/case-engagement-profiles.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/case-engagement-transitions.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/case-esm-lca.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/class-enumeration.Rmd	RENDERED + SOURCE REVIEWED	Inline numeric guards passed; article bootstrap definition issue PD-06.
+vignettes/articles/covariates.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/evaluation.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/growth-mixture.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/mixture-regression.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/trajectory-classes.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/workflow-lca.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/articles/workflow-lpa.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/enumeration.Rmd	RENDERED + SOURCE REVIEWED	Inline numeric guards passed; criteria/count/delta/classification tables and plots exercised.
+vignettes/lca.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/lpa.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+vignettes/lta.Rmd	TARGETED SOURCE/API SEARCH	Existing Rmd: searches for plot/predict/removed API/metadata/data-description claims; no claim of full rerender.
+man/plot.latents_comparison.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.latents_family_enumeration.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.latents_growth_mixture.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.latents_mixture_regression.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.latents_pooled.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.latents_transition_enumeration.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_additive.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_bootstrap_lrt.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_covariates.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_cross_level.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_enumeration.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_lta.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot.multilpa_transitions.Rd	DELETED HELP TOPIC REVIEWED	No retained method alias in shared latents-plots topic (PD-04).
+man/plot_enumeration.Rd	DELETED HELP TOPIC REVIEWED	Named-function alias retained in shared topic; migration okay.
+man/plot_views.Rd	DELETED HELP TOPIC REVIEWED	Named-function alias retained in shared topic; migration okay.
+man/predict.latents_growth_mixture.Rd	DELETED HELP TOPIC REVIEWED	Predict/simulate aliases retained in shared latents-predict topic except growth predict (unsupported method, deliberately @noRd).
+man/predict.latents_mixture_regression.Rd	DELETED HELP TOPIC REVIEWED	Predict/simulate aliases retained in shared latents-predict topic except growth predict (unsupported method, deliberately @noRd).
+man/predict.multilpa.Rd	DELETED HELP TOPIC REVIEWED	Predict/simulate aliases retained in shared latents-predict topic except growth predict (unsupported method, deliberately @noRd).
+man/simulate.latents_growth_mixture.Rd	DELETED HELP TOPIC REVIEWED	Predict/simulate aliases retained in shared latents-predict topic except growth predict (unsupported method, deliberately @noRd).
+man/simulate.latents_mixture_regression.Rd	DELETED HELP TOPIC REVIEWED	Predict/simulate aliases retained in shared latents-predict topic except growth predict (unsupported method, deliberately @noRd).

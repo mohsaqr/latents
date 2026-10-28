@@ -1,0 +1,13 @@
+                                        file            object identical
+course_engagement data/course_engagement.rda course_engagement      TRUE
+                                  file         object identical
+growth_schools data/growth_schools.rda growth_schools      TRUE
+                                file        object identical
+growth_scores data/growth_scores.rda growth_scores      TRUE
+            file object identical
+srl data/srl.rda    srl      TRUE
+                            file      object identical
+student_esm data/student_esm.rda student_esm      TRUE
+                            file      object identical
+study_hours data/study_hours.rda study_hours      TRUE
+PASS: all installed package datasets match the current committed source objects exactly.

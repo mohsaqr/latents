@@ -1,0 +1,6 @@
+Consolidated external tests (replace two corrected test files):
+     nb  failed skipped   error warning  passed 
+    418       0       0       0       6     412 
+Retained references:
+     nb  failed skipped   error warning  passed 
+    441       0       0       0       0     441 

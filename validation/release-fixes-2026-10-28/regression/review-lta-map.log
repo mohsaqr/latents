@@ -1,0 +1,4 @@
+      type normalized_covariance_error
+1 observed                4.166195e-16
+2   robust                1.042977e-15
+3      opg                1.203905e-15

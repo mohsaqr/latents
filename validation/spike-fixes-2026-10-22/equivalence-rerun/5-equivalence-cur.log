@@ -1,0 +1,968 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | claims                                                         
+⠸ |         24 | claims                                                         
+⠦ |         67 | claims                                                         
+⠧ |        108 | claims                                                         
+⠹ |        143 | claims                                                         
+⠼ |        195 | claims                                                         
+⠹ |        243 | claims                                                         
+✔ |        271 | claims
+
+⠏ |          0 | depmixs4-standard-errors                                       
+⠋ |          1 | depmixs4-standard-errors                                       
+⠙ |          2 | depmixs4-standard-errors                                       
+⠴ |          6 | depmixs4-standard-errors                                       
+⠦ |          7 | depmixs4-standard-errors                                       
+⠙ |         12 | depmixs4-standard-errors                                       
+✔ |         15 | depmixs4-standard-errors [2.8s]
+
+⠏ |          0 | enumeration-mplus                                              
+⠋ |          1 | enumeration-mplus                                              
+⠙ |         22 | enumeration-mplus                                              
+⠦ |         47 | enumeration-mplus                                              
+⠇ |         49 | enumeration-mplus                                              
+✔ |         49 | enumeration-mplus [43.4s]
+
+⠏ |          0 | external-scripts                                               
+⠋ |          1 | external-scripts                                               
+⠙ |          2 | external-scripts                                               
+⠹ |          3 | external-scripts                                               
+⠸ |          4 | external-scripts                                               
+⠼ |          5 | external-scripts                                               
+⠦ |          7 | external-scripts                                               
+⠇ |          9 | external-scripts                                               
+⠋ |         11 | external-scripts                                               
+⠹ |         13 | external-scripts                                               
+⠴ |         16 | external-scripts                                               
+✔ |         20 | external-scripts [257.0s]
+
+⠏ |          0 | features-direct-effects                                        
+⠇ |         19 | features-direct-effects                                        
+⠇ |         69 | features-direct-effects                                        
+⠏ |        320 | features-direct-effects                                        
+⠸ |        584 | features-direct-effects                                        
+⠙ |        842 | features-direct-effects                                        
+⠦ |        1087 | features-direct-effects                                       
+⠋ |        1341 | features-direct-effects                                       
+⠧ |        1618 | features-direct-effects                                       
+⠋ |        1891 | features-direct-effects                                       
+⠹ |        2163 | features-direct-effects                                       
+⠙ |        2452 | features-direct-effects                                       
+⠙ |        2722 | features-direct-effects                                       
+⠹ |        2993 | features-direct-effects                                       
+⠸ |        3264 | features-direct-effects                                       
+⠇ |        3509 | features-direct-effects                                       
+⠦ |        3757 | features-direct-effects                                       
+⠴ |        4026 | features-direct-effects                                       
+⠼ |        4295 | features-direct-effects                                       
+⠴ |        4566 | features-direct-effects                                       
+⠴ |        4836 | features-direct-effects                                       
+⠼ |        5105 | features-direct-effects                                       
+⠸ |        5364 | features-direct-effects                                       
+⠦ |        5627 | features-direct-effects                                       
+⠙ | 2      5780 | features-direct-effects                                       
+⠙ | 2      5790 | features-direct-effects                                       
+⠼ | 2 1    5792 | features-direct-effects                                       
+⠴ | 2 2    5792 | features-direct-effects                                       
+⠦ | 2 2    5793 | features-direct-effects                                       
+⠧ | 2 2    6054 | features-direct-effects                                       
+✖ | 2 2    6125 | features-direct-effects [241.1s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-features-direct-effects.R:78:5'): latents reaches the best maximum either program found
+Expected heavy_02 latents -3106.986014 vs best reference -3098.486790 >= `-1e-06 * abs(mine$best_reference[[i]])`.
+Actual comparison: -8.499 < -0.003
+Difference: -8.496 < 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-features-direct-effects.R:77:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_gte(...) at test-features-direct-effects.R:78:5
+
+Failure ('test-features-direct-effects.R:86:3'): latents reaches the best maximum either program found
+Expected `all(compared$compared)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+heavy_02
+
+Warning ('test-features-direct-effects.R:139:33'): an independent implementation agrees on 84 more datasets
+Profile 2: 2.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+Backtrace:
+     ▆
+  1. ├─withr::with_seed(...) at test-features-direct-effects.R:138:3
+  2. │ └─withr::with_preserve_seed(...)
+  3. ├─base::do.call(...)
+  4. └─base::lapply(...)
+  5.   └─latents (local) FUN(X[[i]], ...)
+  6.     ├─latents (local) de_quietly(ref_check(design$grid[i, ], design$effect_sets)) at test-features-direct-effects.R:139:33
+  7.     │ └─base::withCallingHandlers(expr, latents_boundary = function(w) invokeRestart("muffleWarning"))
+  8.     └─latents (local) ref_check(design$grid[i, ], design$effect_sets)
+  9.       ├─base::suppressMessages(...)
+ 10.       │ └─base::withCallingHandlers(...)
+ 11.       └─latents::lpa(...)
+ 12.         ├─latents:::.multilpa_quiet_single_level(...) at latents/R/lpa.R:50:3
+ 13.         │ └─base::withCallingHandlers(...) at latents/R/lpa.R:244:3
+ 14.         └─latents::multilpa(...)
+ 15.           └─latents:::.latents_warn_thin_profiles(...) at latents/R/multilpa.R:2005:3
+
+Warning ('test-features-direct-effects.R:139:33'): an independent implementation agrees on 84 more datasets
+Profile 3: 3.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+Backtrace:
+     ▆
+  1. ├─withr::with_seed(...) at test-features-direct-effects.R:138:3
+  2. │ └─withr::with_preserve_seed(...)
+  3. ├─base::do.call(...)
+  4. └─base::lapply(...)
+  5.   └─latents (local) FUN(X[[i]], ...)
+  6.     ├─latents (local) de_quietly(ref_check(design$grid[i, ], design$effect_sets)) at test-features-direct-effects.R:139:33
+  7.     │ └─base::withCallingHandlers(expr, latents_boundary = function(w) invokeRestart("muffleWarning"))
+  8.     └─latents (local) ref_check(design$grid[i, ], design$effect_sets)
+  9.       ├─base::suppressMessages(...)
+ 10.       │ └─base::withCallingHandlers(...)
+ 11.       └─latents::lpa(...)
+ 12.         ├─latents:::.multilpa_quiet_single_level(...) at latents/R/lpa.R:50:3
+ 13.         │ └─base::withCallingHandlers(...) at latents/R/lpa.R:244:3
+ 14.         └─latents::multilpa(...)
+ 15.           └─latents:::.latents_warn_thin_profiles(...) at latents/R/multilpa.R:2005:3
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | features-joint-items                                           
+⠋ |          1 | features-joint-items                                           
+⠴ |          6 | features-joint-items                                           
+⠇ | 6       23 | features-joint-items                                           
+⠸ | 7       27 | features-joint-items                                           
+⠧ | 7       31 | features-joint-items                                           
+⠙ | 7       35 | features-joint-items                                           
+⠼ | 7       38 | features-joint-items                                           
+⠹ | 7       56 | features-joint-items                                           
+⠦ | 7       60 | features-joint-items                                           
+⠹ | 7       66 | features-joint-items                                           
+⠴ | 8       68 | features-joint-items                                           
+✖ | 9       74 | features-joint-items [489.0s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-features-joint-items.R:46:3'): two seeds of latents reach the same maximum, and no reference a higher one
+Expected `all(spread <= 2)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+twopair_mod_05
+
+Failure ('test-features-joint-items.R:48:3'): two seeds of latents reach the same maximum, and no reference a higher one
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 2
+`expected`: 0
+
+                           case  reference       quantity n  difference
+twopair_mod_05.1 twopair_mod_05 latentgold log_likelihood 1 0.000139377
+twopair_mod_05.9 twopair_mod_05      mplus log_likelihood 1 0.000139377
+                    tolerance
+twopair_mod_05.1 5.291776e-05
+twopair_mod_05.9 5.391776e-05
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(subset(ji_table, quantity == "log_likelihood")) at test-features-joint-items.R:48:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:69:3'): latents stops at the maximum it reports as converged
+Expected `nrow(short)` to be identical to 0L.
+Differences:
+  `actual`: 1
+`expected`: 0
+
+                         case  loglik_gap relative_loglik_gap posterior_gap
+twopair_mod_05 twopair_mod_05 0.000127672        4.375689e-08   0.007823064
+
+Failure ('test-features-joint-items.R:87:3'): BIC agrees with Latent GOLD and Mplus
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 2
+`expected`: 0
+
+                            case  reference quantity n   difference
+twopair_mod_05.3  twopair_mod_05 latentgold      bic 1 0.0002836734
+twopair_mod_05.11 twopair_mod_05      mplus      bic 1 0.0002836734
+                     tolerance
+twopair_mod_05.3  0.0001558355
+twopair_mod_05.11 0.0001578355
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(subset(ji_table, quantity %in% c("bic", "bic_individual"))) at test-features-joint-items.R:87:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:91:3'): class sizes, item and joint probabilities agree with Latent GOLD
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 3
+`expected`: 0
+
+                           case  reference            quantity  n   difference
+twopair_mod_05.5 twopair_mod_05 latentgold         class_sizes  3 0.0009880875
+twopair_mod_05.6 twopair_mod_05 latentgold  item_probabilities 12 0.0032806689
+twopair_mod_05.7 twopair_mod_05 latentgold joint_probabilities 24 0.0008499326
+                 tolerance
+twopair_mod_05.5   0.00016
+twopair_mod_05.6   0.00016
+twopair_mod_05.7   0.00016
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(...) at test-features-joint-items.R:91:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:99:3'): posteriors agree row by row with Latent GOLD and Mplus
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 2
+`expected`: 0
+
+                            case  reference   quantity    n  difference
+twopair_mod_05.4  twopair_mod_05 latentgold posteriors 2400 0.007840216
+twopair_mod_05.12 twopair_mod_05      mplus posteriors 2400 0.007839783
+                  tolerance
+twopair_mod_05.4    0.00056
+twopair_mod_05.12   0.00056
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(subset(ji_table, quantity == "posteriors")) at test-features-joint-items.R:99:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:103:3'): the probabilities implied by Mplus's posteriors agree
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 2
+`expected`: 0
+
+                            case reference            quantity  n   difference
+twopair_mod_05.13 twopair_mod_05     mplus         class_sizes  3 0.0009754103
+twopair_mod_05.14 twopair_mod_05     mplus joint_probabilities 24 0.0008755602
+                  tolerance
+twopair_mod_05.13   0.00016
+twopair_mod_05.14   0.00016
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(...) at test-features-joint-items.R:103:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:189:3'): poLCA on the joined item reaches latents' maximum and estimates
+Expected `nrow(failing)` to be identical to 0L.
+Differences:
+  `actual`: 4
+`expected`: 0
+
+                           case reference       quantity    n   difference
+twopair_mod_05.1 twopair_mod_05     polca log_likelihood    1 0.0000903652
+twopair_mod_05.2 twopair_mod_05     polca    class_sizes    3 0.0006493658
+twopair_mod_05.3 twopair_mod_05     polca  probabilities   36 0.0021851156
+twopair_mod_05.4 twopair_mod_05     polca     posteriors 2400 0.0052269008
+                    tolerance
+twopair_mod_05.1 3.017757e-06
+twopair_mod_05.2 1.300000e-04
+twopair_mod_05.3 1.300000e-04
+twopair_mod_05.4 6.000000e-04
+Backtrace:
+    ▆
+ 1. └─latents (local) expect_within(rows) at test-features-joint-items.R:189:3
+ 2.   └─testthat::expect_identical(...) at test-features-joint-items.R:27:3
+
+Failure ('test-features-joint-items.R:210:3'): the reference study: 140 more datasets against the independent EM
+Expected `all(study$latents_minus_reference > -ji_latents_loglik(study$log_likelihood))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+-1.035015e-05
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | features-ml-three-step                                         
+⠋ |          1 | features-ml-three-step                                         
+⠏ |         70 | features-ml-three-step                                         
+⠼ |        135 | features-ml-three-step                                         
+⠴ |        216 | features-ml-three-step                                         
+⠙ |        282 | features-ml-three-step                                         
+⠙ |        362 | features-ml-three-step                                         
+⠦ |        397 | features-ml-three-step                                         
+⠴ |        476 | features-ml-three-step                                         
+⠧ |        548 | features-ml-three-step                                         
+⠙ |        582 | features-ml-three-step                                         
+⠹ |        583 | features-ml-three-step                                         
+⠸ |        584 | features-ml-three-step                                         
+⠼ |        585 | features-ml-three-step                                         
+⠴ |        586 | features-ml-three-step                                         
+⠦ |        587 | features-ml-three-step                                         
+⠧ |        588 | features-ml-three-step                                         
+⠇ |        589 | features-ml-three-step                                         
+⠏ |        590 | features-ml-three-step                                         
+⠋ |        591 | features-ml-three-step                                         
+⠙ |        592 | features-ml-three-step                                         
+⠹ |        593 | features-ml-three-step                                         
+⠸ |        594 | features-ml-three-step                                         
+⠼ |        595 | features-ml-three-step                                         
+⠴ |        596 | features-ml-three-step                                         
+⠦ |        597 | features-ml-three-step                                         
+⠧ |        598 | features-ml-three-step                                         
+⠇ |        599 | features-ml-three-step                                         
+⠏ |        600 | features-ml-three-step                                         
+⠋ |        601 | features-ml-three-step                                         
+⠙ |        602 | features-ml-three-step                                         
+⠹ |        603 | features-ml-three-step                                         
+⠸ |        604 | features-ml-three-step                                         
+⠼ |        605 | features-ml-three-step                                         
+⠴ |        606 | features-ml-three-step                                         
+⠦ |        607 | features-ml-three-step                                         
+⠧ |        608 | features-ml-three-step                                         
+⠇ |        609 | features-ml-three-step                                         
+⠏ |        610 | features-ml-three-step                                         
+⠋ |        611 | features-ml-three-step                                         
+⠙ |        612 | features-ml-three-step                                         
+⠹ |        613 | features-ml-three-step                                         
+⠸ |        614 | features-ml-three-step                                         
+⠼ |        615 | features-ml-three-step                                         
+⠴ |        616 | features-ml-three-step                                         
+⠦ |        617 | features-ml-three-step                                         
+⠧ |        618 | features-ml-three-step                                         
+⠇ |        619 | features-ml-three-step                                         
+⠏ |        620 | features-ml-three-step                                         
+⠋ |        621 | features-ml-three-step                                         
+⠙ |        622 | features-ml-three-step                                         
+⠹ |        623 | features-ml-three-step                                         
+⠸ |        624 | features-ml-three-step                                         
+⠼ |        625 | features-ml-three-step                                         
+⠴ |        626 | features-ml-three-step                                         
+⠦ |        627 | features-ml-three-step                                         
+⠧ |        628 | features-ml-three-step                                         
+⠇ |        629 | features-ml-three-step                                         
+⠏ |        630 | features-ml-three-step                                         
+⠋ |        631 | features-ml-three-step                                         
+⠙ |        632 | features-ml-three-step                                         
+⠹ |        633 | features-ml-three-step                                         
+⠸ |        634 | features-ml-three-step                                         
+⠼ |        635 | features-ml-three-step                                         
+⠴ |        636 | features-ml-three-step                                         
+⠦ |        637 | features-ml-three-step                                         
+⠧ |        638 | features-ml-three-step                                         
+⠇ |        639 | features-ml-three-step                                         
+⠏ |        640 | features-ml-three-step                                         
+⠋ |        641 | features-ml-three-step                                         
+⠙ |        642 | features-ml-three-step                                         
+⠹ |        643 | features-ml-three-step                                         
+⠸ |        644 | features-ml-three-step                                         
+⠼ |        645 | features-ml-three-step                                         
+⠴ |        646 | features-ml-three-step                                         
+⠦ |        647 | features-ml-three-step                                         
+⠧ |        648 | features-ml-three-step                                         
+⠇ |        649 | features-ml-three-step                                         
+⠏ |        650 | features-ml-three-step                                         
+⠋ |        651 | features-ml-three-step                                         
+⠙ |        652 | features-ml-three-step                                         
+⠹ |        653 | features-ml-three-step                                         
+⠸ |        654 | features-ml-three-step                                         
+⠼ |        655 | features-ml-three-step                                         
+⠴ |        656 | features-ml-three-step                                         
+⠦ |        657 | features-ml-three-step                                         
+⠧ |        658 | features-ml-three-step                                         
+⠇ |        659 | features-ml-three-step                                         
+⠏ |        660 | features-ml-three-step                                         
+⠋ |        661 | features-ml-three-step                                         
+⠙ |        662 | features-ml-three-step                                         
+⠸ |        664 | features-ml-three-step                                         
+⠴ |        666 | features-ml-three-step                                         
+⠧ |        668 | features-ml-three-step                                         
+⠏ |        670 | features-ml-three-step                                         
+⠙ |        672 | features-ml-three-step                                         
+⠹ |        673 | features-ml-three-step                                         
+⠸ |        674 | features-ml-three-step                                         
+⠼ |        675 | features-ml-three-step                                         
+⠴ |        676 | features-ml-three-step                                         
+⠦ |        677 | features-ml-three-step                                         
+⠧ |        678 | features-ml-three-step                                         
+⠇ |        679 | features-ml-three-step                                         
+⠏ |        680 | features-ml-three-step                                         
+⠋ |        681 | features-ml-three-step                                         
+⠙ |        682 | features-ml-three-step                                         
+⠹ |        683 | features-ml-three-step                                         
+⠸ |        684 | features-ml-three-step                                         
+⠼ |        685 | features-ml-three-step                                         
+⠴ |        686 | features-ml-three-step                                         
+⠦ |        687 | features-ml-three-step                                         
+⠧ |        688 | features-ml-three-step                                         
+⠇ |        689 | features-ml-three-step                                         
+⠏ |        690 | features-ml-three-step                                         
+⠋ |        691 | features-ml-three-step                                         
+⠙ |        692 | features-ml-three-step                                         
+⠹ |        693 | features-ml-three-step                                         
+⠸ |        694 | features-ml-three-step                                         
+⠼ |        695 | features-ml-three-step                                         
+⠴ |        696 | features-ml-three-step                                         
+⠦ |        697 | features-ml-three-step                                         
+⠧ |        698 | features-ml-three-step                                         
+⠇ |        699 | features-ml-three-step                                         
+⠏ |        700 | features-ml-three-step                                         
+⠋ |        701 | features-ml-three-step                                         
+⠙ |        702 | features-ml-three-step                                         
+⠹ |        703 | features-ml-three-step                                         
+⠸ |        704 | features-ml-three-step                                         
+⠼ |        705 | features-ml-three-step                                         
+⠴ |        706 | features-ml-three-step                                         
+⠦ |        707 | features-ml-three-step                                         
+⠧ |        708 | features-ml-three-step                                         
+⠇ |        709 | features-ml-three-step                                         
+⠏ |        710 | features-ml-three-step                                         
+⠋ |        711 | features-ml-three-step                                         
+⠙ |        712 | features-ml-three-step                                         
+⠹ |        713 | features-ml-three-step                                         
+⠸ |        714 | features-ml-three-step                                         
+⠼ |        715 | features-ml-three-step                                         
+⠴ |        716 | features-ml-three-step                                         
+⠦ |        717 | features-ml-three-step                                         
+⠧ |        718 | features-ml-three-step                                         
+⠇ |        719 | features-ml-three-step                                         
+⠏ |        720 | features-ml-three-step                                         
+⠋ |        721 | features-ml-three-step                                         
+⠙ |        722 | features-ml-three-step                                         
+⠦ |        737 | features-ml-three-step                                         
+⠙ |        742 | features-ml-three-step                                         
+⠼ |        745 | features-ml-three-step                                         
+⠧ |        748 | features-ml-three-step                                         
+⠋ |        751 | features-ml-three-step                                         
+⠸ |        754 | features-ml-three-step                                         
+⠦ |        757 | features-ml-three-step                                         
+⠏ |        760 | features-ml-three-step                                         
+⠹ |        763 | features-ml-three-step                                         
+⠴ |        766 | features-ml-three-step                                         
+⠇ |        769 | features-ml-three-step                                         
+⠙ |        772 | features-ml-three-step                                         
+⠼ |        775 | features-ml-three-step                                         
+⠧ |        778 | features-ml-three-step                                         
+⠋ |        781 | features-ml-three-step                                         
+⠸ |        784 | features-ml-three-step                                         
+⠦ |        787 | features-ml-three-step                                         
+⠏ |        790 | features-ml-three-step                                         
+⠹ |        793 | features-ml-three-step                                         
+⠴ |        796 | features-ml-three-step                                         
+⠇ |        799 | features-ml-three-step                                         
+⠙ |        802 | features-ml-three-step                                         
+⠼ |        805 | features-ml-three-step                                         
+⠧ |        808 | features-ml-three-step                                         
+⠋ |        811 | features-ml-three-step                                         
+⠸ |        814 | features-ml-three-step                                         
+⠦ |        817 | features-ml-three-step                                         
+⠏ |        820 | features-ml-three-step                                         
+⠹ |        823 | features-ml-three-step                                         
+⠴ |        826 | features-ml-three-step                                         
+⠇ |        829 | features-ml-three-step                                         
+⠙ |        832 | features-ml-three-step                                         
+⠼ |        835 | features-ml-three-step                                         
+⠧ |        838 | features-ml-three-step                                         
+⠋ |        841 | features-ml-three-step                                         
+⠸ |        844 | features-ml-three-step                                         
+⠦ |        847 | features-ml-three-step                                         
+⠏ |        850 | features-ml-three-step                                         
+⠹ |        853 | features-ml-three-step                                         
+⠴ |        856 | features-ml-three-step                                         
+⠇ |        859 | features-ml-three-step                                         
+⠙ |        862 | features-ml-three-step                                         
+⠼ |        865 | features-ml-three-step                                         
+⠧ |        868 | features-ml-three-step                                         
+⠋ |        871 | features-ml-three-step                                         
+⠸ |        874 | features-ml-three-step                                         
+⠦ |        877 | features-ml-three-step                                         
+⠏ |        880 | features-ml-three-step                                         
+⠹ |        883 | features-ml-three-step                                         
+⠴ |        886 | features-ml-three-step                                         
+⠇ |        889 | features-ml-three-step                                         
+⠙ |        892 | features-ml-three-step                                         
+⠼ |        895 | features-ml-three-step                                         
+⠧ |        898 | features-ml-three-step                                         
+⠋ |        901 | features-ml-three-step                                         
+⠸ |        904 | features-ml-three-step                                         
+⠦ |        907 | features-ml-three-step                                         
+⠏ |        910 | features-ml-three-step                                         
+⠹ |        913 | features-ml-three-step                                         
+⠴ |        916 | features-ml-three-step                                         
+⠇ |        919 | features-ml-three-step                                         
+⠙ |        922 | features-ml-three-step                                         
+⠼ |        925 | features-ml-three-step                                         
+⠧ |        928 | features-ml-three-step                                         
+⠋ |        931 | features-ml-three-step                                         
+⠸ |        934 | features-ml-three-step                                         
+⠦ |        937 | features-ml-three-step                                         
+⠏ |        940 | features-ml-three-step                                         
+⠹ |        943 | features-ml-three-step                                         
+⠴ |        946 | features-ml-three-step                                         
+⠇ |        949 | features-ml-three-step                                         
+⠙ |        952 | features-ml-three-step                                         
+⠼ |        955 | features-ml-three-step                                         
+⠧ |        958 | features-ml-three-step                                         
+⠋ |        961 | features-ml-three-step                                         
+⠸ |        964 | features-ml-three-step                                         
+⠦ |        967 | features-ml-three-step                                         
+⠏ |        970 | features-ml-three-step                                         
+⠹ |        973 | features-ml-three-step                                         
+⠴ |        976 | features-ml-three-step                                         
+⠇ |        979 | features-ml-three-step                                         
+⠙ |        982 | features-ml-three-step                                         
+⠼ |        985 | features-ml-three-step                                         
+⠧ |        988 | features-ml-three-step                                         
+⠋ |        991 | features-ml-three-step                                         
+⠸ |        994 | features-ml-three-step                                         
+⠦ |        997 | features-ml-three-step                                         
+⠏ |        1000 | features-ml-three-step                                        
+⠹ |        1003 | features-ml-three-step                                        
+⠴ |        1006 | features-ml-three-step                                        
+⠇ |        1009 | features-ml-three-step                                        
+⠙ |        1012 | features-ml-three-step                                        
+⠼ |        1015 | features-ml-three-step                                        
+⠧ |        1018 | features-ml-three-step                                        
+⠋ |        1021 | features-ml-three-step                                        
+⠸ |        1024 | features-ml-three-step                                        
+⠦ |        1027 | features-ml-three-step                                        
+⠏ |        1030 | features-ml-three-step                                        
+⠹ |        1033 | features-ml-three-step                                        
+⠴ |        1036 | features-ml-three-step                                        
+⠇ |        1039 | features-ml-three-step                                        
+⠙ |        1042 | features-ml-three-step                                        
+⠼ |        1045 | features-ml-three-step                                        
+⠧ |        1048 | features-ml-three-step                                        
+⠋ |        1051 | features-ml-three-step                                        
+⠸ |        1054 | features-ml-three-step                                        
+⠦ |        1057 | features-ml-three-step                                        
+⠏ |        1060 | features-ml-three-step                                        
+⠹ |        1063 | features-ml-three-step                                        
+⠴ |        1066 | features-ml-three-step                                        
+⠇ |        1069 | features-ml-three-step                                        
+⠙ |        1072 | features-ml-three-step                                        
+⠼ |        1075 | features-ml-three-step                                        
+⠧ |        1078 | features-ml-three-step                                        
+⠋ |        1081 | features-ml-three-step                                        
+⠸ |        1084 | features-ml-three-step                                        
+⠦ |        1087 | features-ml-three-step                                        
+⠏ |        1090 | features-ml-three-step                                        
+⠹ |        1093 | features-ml-three-step                                        
+⠴ |        1096 | features-ml-three-step                                        
+⠇ |        1099 | features-ml-three-step                                        
+⠙ |        1102 | features-ml-three-step                                        
+⠼ |        1105 | features-ml-three-step                                        
+⠧ |        1108 | features-ml-three-step                                        
+⠋ |        1111 | features-ml-three-step                                        
+⠸ |        1114 | features-ml-three-step                                        
+⠦ |        1117 | features-ml-three-step                                        
+⠏ |        1120 | features-ml-three-step                                        
+⠹ |        1123 | features-ml-three-step                                        
+⠴ |        1126 | features-ml-three-step                                        
+⠇ |        1129 | features-ml-three-step                                        
+⠙ |        1132 | features-ml-three-step                                        
+⠼ |        1135 | features-ml-three-step                                        
+⠧ |        1138 | features-ml-three-step                                        
+⠋ |        1141 | features-ml-three-step                                        
+⠸ |        1144 | features-ml-three-step                                        
+⠦ |        1147 | features-ml-three-step                                        
+⠏ |        1150 | features-ml-three-step                                        
+⠹ |        1153 | features-ml-three-step                                        
+⠴ |        1156 | features-ml-three-step                                        
+⠇ |        1159 | features-ml-three-step                                        
+⠸ |        1174 | features-ml-three-step                                        
+⠦ |        1177 | features-ml-three-step                                        
+⠏ |        1180 | features-ml-three-step                                        
+⠹ |        1183 | features-ml-three-step                                        
+⠴ |        1186 | features-ml-three-step                                        
+⠇ |        1189 | features-ml-three-step                                        
+⠙ |        1192 | features-ml-three-step                                        
+⠼ |        1195 | features-ml-three-step                                        
+⠧ |        1198 | features-ml-three-step                                        
+⠋ |        1201 | features-ml-three-step                                        
+⠸ |        1204 | features-ml-three-step                                        
+⠦ |        1207 | features-ml-three-step                                        
+⠏ |        1210 | features-ml-three-step                                        
+⠹ |        1213 | features-ml-three-step                                        
+⠴ |        1216 | features-ml-three-step                                        
+⠇ |        1219 | features-ml-three-step                                        
+⠙ |        1222 | features-ml-three-step                                        
+⠼ |        1225 | features-ml-three-step                                        
+⠧ |        1228 | features-ml-three-step                                        
+⠋ |        1231 | features-ml-three-step                                        
+⠸ |        1234 | features-ml-three-step                                        
+⠦ |        1237 | features-ml-three-step                                        
+⠏ |        1240 | features-ml-three-step                                        
+⠹ |        1243 | features-ml-three-step                                        
+⠴ |        1246 | features-ml-three-step                                        
+⠇ |        1249 | features-ml-three-step                                        
+⠙ |        1252 | features-ml-three-step                                        
+⠼ |        1255 | features-ml-three-step                                        
+⠧ |        1258 | features-ml-three-step                                        
+⠋ |        1261 | features-ml-three-step                                        
+⠸ |        1264 | features-ml-three-step                                        
+⠦ |        1267 | features-ml-three-step                                        
+⠏ |        1270 | features-ml-three-step                                        
+⠹ |        1273 | features-ml-three-step                                        
+⠴ |        1276 | features-ml-three-step                                        
+⠇ |        1279 | features-ml-three-step                                        
+⠙ |        1282 | features-ml-three-step                                        
+⠼ |        1285 | features-ml-three-step                                        
+⠧ |        1288 | features-ml-three-step                                        
+⠋ |        1291 | features-ml-three-step                                        
+⠸ |        1294 | features-ml-three-step                                        
+⠦ |        1297 | features-ml-three-step                                        
+⠏ |        1300 | features-ml-three-step                                        
+⠹ |        1303 | features-ml-three-step                                        
+⠴ |        1306 | features-ml-three-step                                        
+⠇ |        1309 | features-ml-three-step                                        
+⠙ |        1312 | features-ml-three-step                                        
+⠼ |        1315 | features-ml-three-step                                        
+⠧ |        1318 | features-ml-three-step                                        
+⠋ |        1321 | features-ml-three-step                                        
+⠸ |        1324 | features-ml-three-step                                        
+⠦ |        1327 | features-ml-three-step                                        
+⠏ |        1330 | features-ml-three-step                                        
+⠹ |        1333 | features-ml-three-step                                        
+⠴ |        1336 | features-ml-three-step                                        
+⠇ |        1339 | features-ml-three-step                                        
+⠙ |        1342 | features-ml-three-step                                        
+⠼ |        1345 | features-ml-three-step                                        
+⠧ |        1348 | features-ml-three-step                                        
+⠋ |        1351 | features-ml-three-step                                        
+⠸ |        1354 | features-ml-three-step                                        
+⠦ |        1357 | features-ml-three-step                                        
+⠏ |        1360 | features-ml-three-step                                        
+⠹ |        1363 | features-ml-three-step                                        
+⠴ |        1366 | features-ml-three-step                                        
+⠇ |        1369 | features-ml-three-step                                        
+⠙ |        1372 | features-ml-three-step                                        
+⠼ |        1375 | features-ml-three-step                                        
+⠧ |        1378 | features-ml-three-step                                        
+⠋ |        1381 | features-ml-three-step                                        
+⠸ |        1384 | features-ml-three-step                                        
+⠦ |        1387 | features-ml-three-step                                        
+⠏ |        1390 | features-ml-three-step                                        
+⠹ |        1393 | features-ml-three-step                                        
+⠴ |        1396 | features-ml-three-step                                        
+⠇ |        1399 | features-ml-three-step                                        
+⠙ |        1402 | features-ml-three-step                                        
+⠼ |        1405 | features-ml-three-step                                        
+⠧ |        1408 | features-ml-three-step                                        
+⠋ |        1411 | features-ml-three-step                                        
+⠴ |        1416 | features-ml-three-step                                        
+⠇ |        1419 | features-ml-three-step                                        
+⠙ |        1422 | features-ml-three-step                                        
+⠼ |        1425 | features-ml-three-step                                        
+⠧ |        1428 | features-ml-three-step                                        
+⠋ |        1431 | features-ml-three-step                                        
+⠸ |        1434 | features-ml-three-step                                        
+⠦ |        1437 | features-ml-three-step                                        
+⠏ |        1440 | features-ml-three-step                                        
+⠹ |        1443 | features-ml-three-step                                        
+⠴ |        1446 | features-ml-three-step                                        
+⠇ |        1449 | features-ml-three-step                                        
+⠙ |        1452 | features-ml-three-step                                        
+⠼ |        1455 | features-ml-three-step                                        
+⠧ |        1458 | features-ml-three-step                                        
+⠋ |        1461 | features-ml-three-step                                        
+⠸ |        1464 | features-ml-three-step                                        
+⠦ |        1467 | features-ml-three-step                                        
+⠏ |        1470 | features-ml-three-step                                        
+⠹ |        1473 | features-ml-three-step                                        
+⠴ |        1476 | features-ml-three-step                                        
+⠇ |        1479 | features-ml-three-step                                        
+⠙ |        1482 | features-ml-three-step                                        
+⠼ |        1485 | features-ml-three-step                                        
+⠧ |        1488 | features-ml-three-step                                        
+⠋ |        1491 | features-ml-three-step                                        
+⠸ |        1494 | features-ml-three-step                                        
+⠦ |        1497 | features-ml-three-step                                        
+⠏ |        1500 | features-ml-three-step                                        
+⠹ |        1503 | features-ml-three-step                                        
+⠴ |        1506 | features-ml-three-step                                        
+⠇ |        1509 | features-ml-three-step                                        
+⠙ |        1512 | features-ml-three-step                                        
+⠼ |        1515 | features-ml-three-step                                        
+⠧ |        1518 | features-ml-three-step                                        
+⠋ |        1521 | features-ml-three-step                                        
+⠸ |        1524 | features-ml-three-step                                        
+⠦ |        1527 | features-ml-three-step                                        
+⠏ |        1530 | features-ml-three-step                                        
+⠹ |        1533 | features-ml-three-step                                        
+⠴ |        1536 | features-ml-three-step                                        
+⠇ |        1539 | features-ml-three-step                                        
+⠙ |        1542 | features-ml-three-step                                        
+⠼ |        1545 | features-ml-three-step                                        
+⠧ |        1548 | features-ml-three-step                                        
+⠋ |        1551 | features-ml-three-step                                        
+⠸ |        1554 | features-ml-three-step                                        
+⠦ |        1557 | features-ml-three-step                                        
+⠏ |        1560 | features-ml-three-step                                        
+⠹ |        1563 | features-ml-three-step                                        
+⠴ |        1566 | features-ml-three-step                                        
+⠇ |        1569 | features-ml-three-step                                        
+⠙ |        1572 | features-ml-three-step                                        
+⠼ |        1575 | features-ml-three-step                                        
+⠧ |        1578 | features-ml-three-step                                        
+⠋ |        1581 | features-ml-three-step                                        
+⠸ |        1584 | features-ml-three-step                                        
+⠦ |        1587 | features-ml-three-step                                        
+⠏ |        1590 | features-ml-three-step                                        
+⠹ |        1593 | features-ml-three-step                                        
+⠴ |        1596 | features-ml-three-step                                        
+⠇ |        1599 | features-ml-three-step                                        
+⠙ |        1602 | features-ml-three-step                                        
+⠼ |        1605 | features-ml-three-step                                        
+⠧ |        1608 | features-ml-three-step                                        
+⠋ |        1611 | features-ml-three-step                                        
+⠸ |        1614 | features-ml-three-step                                        
+⠦ |        1617 | features-ml-three-step                                        
+⠏ |        1620 | features-ml-three-step                                        
+⠹ |        1623 | features-ml-three-step                                        
+⠴ |        1626 | features-ml-three-step                                        
+⠇ |        1629 | features-ml-three-step                                        
+⠙ |        1632 | features-ml-three-step                                        
+⠼ |        1635 | features-ml-three-step                                        
+⠧ |        1638 | features-ml-three-step                                        
+⠋ |        1641 | features-ml-three-step                                        
+⠸ |        1644 | features-ml-three-step                                        
+⠦ |        1647 | features-ml-three-step                                        
+⠏ |        1650 | features-ml-three-step                                        
+⠹ |        1653 | features-ml-three-step                                        
+⠴ |        1656 | features-ml-three-step                                        
+⠇ |        1659 | features-ml-three-step                                        
+⠙ |        1662 | features-ml-three-step                                        
+⠼ |        1665 | features-ml-three-step                                        
+⠧ |        1668 | features-ml-three-step                                        
+⠋ |        1671 | features-ml-three-step                                        
+⠸ |        1674 | features-ml-three-step                                        
+⠦ |        1677 | features-ml-three-step                                        
+⠏ |        1680 | features-ml-three-step                                        
+⠹ |        1683 | features-ml-three-step                                        
+⠴ |        1686 | features-ml-three-step                                        
+⠇ |        1689 | features-ml-three-step                                        
+⠙ |        1692 | features-ml-three-step                                        
+⠼ |        1695 | features-ml-three-step                                        
+⠧ |        1698 | features-ml-three-step                                        
+⠋ |        1701 | features-ml-three-step                                        
+⠸ |        1704 | features-ml-three-step                                        
+⠦ |        1707 | features-ml-three-step                                        
+⠏ |        1710 | features-ml-three-step                                        
+⠹ |        1713 | features-ml-three-step                                        
+⠴ |        1716 | features-ml-three-step                                        
+⠇ |        1719 | features-ml-three-step                                        
+⠙ |        1722 | features-ml-three-step                                        
+⠼ |        1725 | features-ml-three-step                                        
+⠧ |        1728 | features-ml-three-step                                        
+⠋ |        1731 | features-ml-three-step                                        
+⠸ |        1734 | features-ml-three-step                                        
+⠦ |        1737 | features-ml-three-step                                        
+⠏ |        1740 | features-ml-three-step                                        
+⠹ |        1743 | features-ml-three-step                                        
+⠴ |        1746 | features-ml-three-step                                        
+⠇ |        1749 | features-ml-three-step                                        
+⠙ |        1752 | features-ml-three-step                                        
+⠼ |        1755 | features-ml-three-step                                        
+⠧ |        1758 | features-ml-three-step                                        
+⠋ |        1761 | features-ml-three-step                                        
+⠸ |        1764 | features-ml-three-step                                        
+⠦ |        1767 | features-ml-three-step                                        
+⠏ |        1770 | features-ml-three-step                                        
+⠹ |        1773 | features-ml-three-step                                        
+⠴ |        1776 | features-ml-three-step                                        
+⠇ |        1779 | features-ml-three-step                                        
+⠙ |        1782 | features-ml-three-step                                        
+⠼ |        1785 | features-ml-three-step                                        
+⠧ |        1788 | features-ml-three-step                                        
+⠋ |        1791 | features-ml-three-step                                        
+⠸ |        1794 | features-ml-three-step                                        
+⠦ |        1797 | features-ml-three-step                                        
+⠏ |        1800 | features-ml-three-step                                        
+⠹ |        1803 | features-ml-three-step                                        
+⠴ |        1806 | features-ml-three-step                                        
+⠇ |        1809 | features-ml-three-step                                        
+⠙ |        1812 | features-ml-three-step                                        
+⠼ |        1815 | features-ml-three-step                                        
+⠧ |        1818 | features-ml-three-step                                        
+⠋ |        1821 | features-ml-three-step                                        
+⠸ |        1824 | features-ml-three-step                                        
+⠦ |        1827 | features-ml-three-step                                        
+⠏ |        1830 | features-ml-three-step                                        
+⠹ |        1833 | features-ml-three-step                                        
+⠴ |        1836 | features-ml-three-step                                        
+⠇ |        1839 | features-ml-three-step                                        
+⠙ |        1842 | features-ml-three-step                                        
+⠼ |        1845 | features-ml-three-step                                        
+⠧ |        1848 | features-ml-three-step                                        
+⠋ |        1851 | features-ml-three-step                                        
+⠸ |        1854 | features-ml-three-step                                        
+⠦ |        1857 | features-ml-three-step                                        
+⠏ |        1860 | features-ml-three-step                                        
+⠹ |        1863 | features-ml-three-step                                        
+⠴ |        1866 | features-ml-three-step                                        
+⠇ |        1869 | features-ml-three-step                                        
+⠙ |        1872 | features-ml-three-step                                        
+⠼ |        1875 | features-ml-three-step                                        
+⠧ |        1878 | features-ml-three-step                                        
+⠋ |        1881 | features-ml-three-step                                        
+⠸ |        1884 | features-ml-three-step                                        
+⠦ |        1887 | features-ml-three-step                                        
+⠸ | 1      1903 | features-ml-three-step                                        
+⠋ | 2      1909 | features-ml-three-step                                        
+⠦ | 2      1915 | features-ml-three-step                                        
+⠏ | 2      1918 | features-ml-three-step                                        
+⠹ | 2      1921 | features-ml-three-step                                        
+⠴ | 2      1924 | features-ml-three-step                                        
+⠦ | 2      1935 | features-ml-three-step                                        
+⠏ | 2      1938 | features-ml-three-step                                        
+⠹ | 2      1941 | features-ml-three-step                                        
+⠴ | 2      1944 | features-ml-three-step                                        
+⠇ | 2      1947 | features-ml-three-step                                        
+⠙ | 2      1950 | features-ml-three-step                                        
+⠼ | 2      1953 | features-ml-three-step                                        
+⠧ | 2      1956 | features-ml-three-step                                        
+⠋ | 2      1959 | features-ml-three-step                                        
+⠸ | 2      1962 | features-ml-three-step                                        
+⠋ | 2      1969 | features-ml-three-step                                        
+⠋ | 2      1979 | features-ml-three-step                                        
+⠋ | 2      1989 | features-ml-three-step                                        
+⠦ | 2      1995 | features-ml-three-step                                        
+⠏ | 2      1998 | features-ml-three-step                                        
+⠴ | 2      2004 | features-ml-three-step                                        
+⠧ | 2      2006 | features-ml-three-step                                        
+⠏ | 2      2008 | features-ml-three-step                                        
+✖ | 2      2009 | features-ml-three-step [3087.1s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-features-ml-three-step.R:293:3'): the independent reference agrees on the sweep of 120 datasets
+Expected `nrow(bad) == 0L` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+vs reference (sweep), log likelihood shortfall: 1 of 239 outside tolerance: sweep_108 equal 0.0366 (tol 1e-06)
+Backtrace:
+    ▆
+ 1. └─latents (local) ml3_assert() at test-features-ml-three-step.R:293:3
+ 2.   └─base::lapply(...) at test-features-ml-three-step.R:52:3
+ 3.     └─latents (local) FUN(X[[i]], ...)
+ 4.       └─testthat::expect_true(...) at test-features-ml-three-step.R:55:5
+
+Failure ('test-features-ml-three-step.R:316:3'): on the sweep's multimodal cases latents reaches the best known maximum
+Expected `nrow(bad) == 0L` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+vs best known maximum, latents log likelihood shortfall: 1 of 12 outside tolerance: sweep_108 equal 0.0366 (tol 1e-06)
+Backtrace:
+    ▆
+ 1. └─latents (local) ml3_assert() at test-features-ml-three-step.R:316:3
+ 2.   └─base::lapply(...) at test-features-ml-three-step.R:52:3
+ 3.     └─latents (local) FUN(X[[i]], ...)
+ 4.       └─testthat::expect_true(...) at test-features-ml-three-step.R:55:5
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | features-pair-covariance                                       
+⠋ |          1 | features-pair-covariance                                       
+⠏ |         10 | features-pair-covariance                                       
+⠋ |         21 | features-pair-covariance                                       
+⠏ |         40 | features-pair-covariance                                       
+⠇ |         59 | features-pair-covariance                                       
+⠧ |         78 | features-pair-covariance                                       
+⠦ |         97 | features-pair-covariance                                       
+⠴ |        116 | features-pair-covariance                                       
+⠼ |        135 | features-pair-covariance                                       
+⠸ |        154 | features-pair-covariance                                       
+⠹ |        173 | features-pair-covariance                                       
+⠏ |        200 | features-pair-covariance                                       
+⠋ |        211 | features-pair-covariance                                       
+⠏ |        230 | features-pair-covariance                                       
+⠇ |        249 | features-pair-covariance                                       
+⠧ |        268 | features-pair-covariance                                       
+⠦ |        287 | features-pair-covariance                                       
+⠴ |        306 | features-pair-covariance                                       
+⠼ |        325 | features-pair-covariance                                       
+⠸ |        344 | features-pair-covariance                                       
+⠹ |        363 | features-pair-covariance                                       
+⠙ |        382 | features-pair-covariance                                       
+⠋ |        401 | features-pair-covariance                                       
+⠋ |        411 | features-pair-covariance                                       
+⠏ |        420 | features-pair-covariance                                       
+⠇ |        439 | features-pair-covariance                                       
+⠧ |        458 | features-pair-covariance                                       
+⠦ |        477 | features-pair-covariance                                       
+⠴ |        496 | features-pair-covariance                                       
+⠦ |        517 | features-pair-covariance                                       
+⠙ |        542 | features-pair-covariance                                       
+⠇ |        559 | features-pair-covariance                                       
+⠸ |        574 | features-pair-covariance                                       
+⠇ |        599 | features-pair-covariance                                       
+⠙ |        612 | features-pair-covariance                                       
+⠦ |        637 | features-pair-covariance                                       
+⠧ |        648 | features-pair-covariance                                       
+⠦ |        667 | features-pair-covariance                                       
+⠴ |        686 | features-pair-covariance                                       
+⠼ |        705 | features-pair-covariance                                       
+⠸ |        724 | features-pair-covariance                                       
+⠹ |        743 | features-pair-covariance                                       
+⠙ |        762 | features-pair-covariance                                       
+⠋ |        781 | features-pair-covariance                                       
+⠏ |        800 | features-pair-covariance                                       
+⠇ |        819 | features-pair-covariance                                       
+⠇ |        849 | features-pair-covariance                                       
+⠸ |        864 | features-pair-covariance                                       
+⠧ |        888 | features-pair-covariance                                       
+⠏ |        890 | features-pair-covariance                                       
+⠇ |        909 | features-pair-covariance                                       
+⠧ |        928 | features-pair-covariance                                       
+⠴ |        946 | features-pair-covariance                                       
+⠼ |        965 | features-pair-covariance                                       
+⠹ |        993 | features-pair-covariance                                       
+⠙ |        1012 | features-pair-covariance                                      
+⠙ |        1022 | features-pair-covariance                                      
+⠏ |        1040 | features-pair-covariance                                      
+⠧ |        1058 | features-pair-covariance                                      
+⠴ |        1076 | features-pair-covariance                                      
+⠸ |        1104 | features-pair-covariance                                      
+⠸ |        1114 | features-pair-covariance                                      
+⠴ |        1126 | features-pair-covariance                                      
+⠴ |        1136 | features-pair-covariance                                      
+⠧ |        1138 | features-pair-covariance                                      
+⠏ |        1140 | features-pair-covariance                                      
+⠸ |        1154 | features-pair-covariance                                      
+⠴ |        1156 | features-pair-covariance                                      
+⠦ |        1167 | features-pair-covariance                                      
+⠧ |        1178 | features-pair-covariance                                      
+⠇ |        1189 | features-pair-covariance                                      
+⠙ |        1192 | features-pair-covariance                                      
+⠏ |        1200 | features-pair-covariance                                      
+⠧ |        1208 | features-pair-covariance                                      
+⠴ |        1216 | features-pair-covariance                                      
+⠸ |        1224 | features-pair-covariance                                      
+⠦ |        1237 | features-pair-covariance                                      
+✔ |        1242 | features-pair-covariance [326.6s]
+
+⠏ |          0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠹ |   3      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠙ |   2      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠙ |   2      0 | features-vlmr                                                  
+⠹ |   3      0 | features-vlmr                                                  
+⠸ |   4      0 | features-vlmr                                                  
+⠼ |   5      0 | features-vlmr                                                  
+⠴ |   6      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠙ |   2      0 | features-vlmr                                                  
+⠹ |   3      0 | features-vlmr                                                  
+⠸ |   4      0 | features-vlmr                                                  
+⠼ |   5      0 | features-vlmr                                                  
+⠴ |   6      0 | features-vlmr                                                  
+⠋ |   1      0 | features-vlmr                                                  
+⠙ |   2      0 | features-vlmr                                                  
+⠹ |   3      0 | features-vlmr                                                  
+⠸ |   4      0 | features-vlmr                                                  
+⠼ |   5      0 | features-vlmr                                                  
+⠴ |   6      0 | features-vlmr                                                  

@@ -1,0 +1,26 @@
+'data.frame':	500 obs. of  3 variables:
+ $ x: num  -3.55 1.24 NA 2.39 1.3 ...
+ $ y: num  -2.95 NA -3.39 -3.76 -2.83 ...
+ $ w: num  0 0 0 0 0 0 0 0 0 0 ...
+NULL
+       x                y                 w          
+ Min.   :-3.547   Min.   :-5.2191   Min.   : 0.0000  
+ 1st Qu.: 1.035   1st Qu.:-3.4605   1st Qu.: 0.5293  
+ Median : 2.003   Median :-2.9521   Median : 1.0438  
+ Mean   : 1.981   Mean   :-2.9861   Mean   : 1.7626  
+ 3rd Qu.: 2.939   3rd Qu.:-2.5590   3rd Qu.: 2.1294  
+ Max.   : 6.815   Max.   :-0.8689   Max.   :31.0167  
+ NA's   :60       NA's   :75                         
+                 x         y
+profile_1 2.071558 -3.031731
+                 x         y
+profile_1 1.884706 0.4851125
+[[1]]
+       mean    variance      loglik 
+   2.071558    1.884706 -726.261208 
+
+[[2]]
+        mean     variance       loglik 
+  -3.0317311    0.4851125 -437.8064087 
+
+PASS: weighted one-class FIML means, ML variances and log likelihood match analytical values.

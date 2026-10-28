@@ -1,0 +1,18 @@
+vignette-claims: WWW...............WW.......W......
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. the numbers in the latent profile workflow hold ('test-vignette-claims.R:23:3') - A variance reached min_variance; this is a bound-active constrained fit.
+
+2. the numbers in the latent profile workflow hold ('test-vignette-claims.R:23:3') - Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+3. the numbers in the latent profile workflow hold ('test-vignette-claims.R:23:3') - Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+4. the numbers in the latent class workflow hold ('test-vignette-claims.R:65:3') - The fitted likelihood still carries a score worth 1.6% of a standard error; refit with a tighter `tol` before using Wald inference.
+
+5. the numbers in the latent class workflow hold ('test-vignette-claims.R:65:3') - The fitted likelihood still carries a score worth 1.6% of a standard error; refit with a tighter `tol` before using Wald inference.
+
+6. the numbers in the latent class workflow hold ('test-vignette-claims.R:84:3') - The fitted likelihood still carries a score worth 1.6% of a standard error; refit with a tighter `tol` before using Wald inference.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+     nb  failed skipped   error warning  passed 
+     34       0       0       0       6      28 

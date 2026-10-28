@@ -1,0 +1,19 @@
+astra-core: ..............................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                  test failed
+1  LTA charts use only covariates contributing to the likelihood (A02)      0
+2               excluded LTA probabilities cannot veto inference (A06)      0
+3 constant raw outcomes can have identified regression residuals (A03)      0
+4     zero-weight-only categories do not change the fitted model (A07)      0
+5     unidentified LTA bootstrap covariance rows are unavailable (A08)      0
+6             absent growth persons cannot contaminate starting values      0
+7   covariate and transition category support follows positive weights      0
+  error warning passed
+1 FALSE       0      7
+2 FALSE       0      4
+3 FALSE       0     18
+4 FALSE       0     31
+5 FALSE       0      4
+6 FALSE       0      5
+7 FALSE       0      9

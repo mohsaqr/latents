@@ -1,0 +1,61 @@
+review-1020-zero-weights: ...1...2...3......
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-review-1020-zero-weights.R:34:5'): zero-weight groups do no
+Expected `vcov(expanded, type = "robust")` to equal `vcov(original, type = "robust")`.
+Differences:
+actual vs expected
+                      [,1]         [,2]         [,3] [,4]
+- actual[1, ]   0.09176140  0.012735110  0.041373713    0
++ expected[1, ] 0.09272731  0.012869164  0.041809226    0
+- actual[2, ]   0.01273511  0.016209104 -0.009800860    0
++ expected[2, ] 0.01286916  0.016379726 -0.009904027    0
+- actual[3, ]   0.04137371 -0.009800860  0.275957140    0
++ expected[3, ] 0.04180923 -0.009904027  0.278861952    0
+  actual[4, ]   0.00000000  0.000000000  0.000000000    0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-1020-zero-weights.R:28:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-review-1020-zero-weights.R:34:5
+
+── 2. Failure ('test-review-1020-zero-weights.R:34:5'): zero-weight groups do no
+Expected `vcov(expanded, type = "robust")` to equal `vcov(original, type = "robust")`.
+Differences:
+actual vs expected
+                       [,1]          [,2]          [,3]
+- actual[1, ]   0.070373350  3.336547e-03  1.009365e-02
++ expected[1, ] 0.071114122  3.371669e-03  1.019990e-02
+- actual[2, ]   0.003336547  2.010465e-03 -4.750791e-05
++ expected[2, ] 0.003371669  2.031627e-03 -4.800799e-05
+- actual[3, ]   0.010093646 -4.750791e-05  1.527970e-02
++ expected[3, ] 0.010199895 -4.800799e-05  1.544053e-02
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-1020-zero-weights.R:28:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-review-1020-zero-weights.R:34:5
+
+── 3. Failure ('test-review-1020-zero-weights.R:34:5'): zero-weight groups do no
+Expected `vcov(expanded, type = "robust")` to equal `vcov(original, type = "robust")`.
+Differences:
+actual vs expected
+                         [,1]          [,2]          [,3]          [,4]
+- actual[1, ]    0.0703733502  0.0033365471 -0.0004550922  0.0150867886
++ expected[1, ]  0.0711141223  0.0033716686 -0.0004598827  0.0152455971
+- actual[2, ]    0.0033365471  0.0020104645 -0.0007365226  0.0002786305
++ expected[2, ]  0.0033716686  0.0020316273 -0.0007442755  0.0002815635
+- actual[3, ]   -0.0004550922 -0.0007365226  0.0064216099 -0.0026488368
++ expected[3, ] -0.0004598827 -0.0007442755  0.0064892058 -0.0026767195
+- actual[4, ]    0.0150867886  0.0002786305 -0.0026488368  0.0342369486
++ expected[4, ]  0.0152455971  0.0002815635 -0.0026767195  0.0345973383
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-1020-zero-weights.R:28:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-review-1020-zero-weights.R:34:5
+
+══ DONE ════════════════════════════════════════════════════════════════════════

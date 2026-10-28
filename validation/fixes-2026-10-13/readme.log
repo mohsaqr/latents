@@ -1,0 +1,69 @@
+
+
+processing file: README.Rmd
+1/63                     
+2/63 [setup]             
+3/63                     
+4/63 [installation]      
+5/63                     
+6/63 [indicators]        
+7/63 [inspect-data]      
+8/63                     
+9/63 [descriptives]      
+10/63                     
+11/63 [first-fit]         
+12/63                     
+13/63 [profile-plot]      
+14/63                     
+15/63 [probabilities]     
+16/63                     
+17/63 [assignments]       
+18/63                     
+19/63 [counts]            
+20/63                     
+21/63 [recovery]          
+22/63                     
+23/63 [starts]            
+24/63                     
+25/63 [seed-sensitivity]  
+26/63                     
+27/63 [residuals]         
+28/63                     
+29/63 [full-covariance]   
+30/63                     
+31/63 [enumeration]       
+32/63                     
+33/63 [retrieve-candidate]
+34/63                     
+35/63 [bootstrap]         
+36/63                     
+37/63 [inference]         
+38/63                     
+39/63 [covariates]        
+40/63                     
+41/63 [three-step]        
+42/63                     
+43/63 [missing-data]      
+44/63                     
+45/63 [sequences]         
+46/63                     
+47/63 [transitions]       
+48/63                     
+49/63 [categorical]       
+50/63                     
+51/63 [mixed]             
+52/63                     
+53/63 [staged]            
+54/63                     
+55/63 [mixture_regression]
+56/63                     
+57/63 [result-guide]      
+58/63                     
+59/63 [further-reading]   
+60/63                     
+61/63 [verification]      
+62/63                     
+63/63 [restore-options]   
+output file: README.md
+
+[1] "README.md"

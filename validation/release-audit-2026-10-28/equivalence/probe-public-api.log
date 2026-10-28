@@ -1,0 +1,92 @@
+'data.frame':	100 obs. of  1 variable:
+ $ y: num  0.0155 1.2436 -0.582 1.7604 -0.0277 ...
+
+DIRECT COLLIDING LABEL
+       model n_profiles n_group_classes structure n_parameters log_likelihood
+1      first          1               1       VVI            2      -142.6696
+2     second          2               1       VVI            5      -138.5449
+3 n_profiles          2               1       EEI            4      -140.2452
+       aic      kic bic_groups bic_individual sabic_groups sabic_individual
+1 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329
+2 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244
+3 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781
+  caic_groups caic_individual awe_groups awe_individual icl_groups
+1    296.5494        296.5494   309.7598       309.7598   294.5494
+2    305.1157        305.1157   383.9612       383.9612   345.9354
+3    302.9111        302.9111   349.1678       349.1678   318.7471
+  icl_individual clc_groups clc_individual profile_entropy group_entropy
+1       294.5494   285.3391       285.3391              NA            NA
+2       345.9354   322.9095       322.9095       0.6694809            NA
+3       318.7471   300.3264       300.3264       0.8569136            NA
+  avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max
+1        NA        NA         NA          NA              NA              NA
+2 0.5664048 0.9217079  0.7440563           1              NA              NA
+3 0.6761506 0.9797620  0.8279563           1              NA              NA
+  group_avepp_mean group_avepp_below smallest_share converged n_best_replicated
+1               NA                NA     1.00000000      TRUE                 1
+2               NA                NA     0.15639015      TRUE                 1
+3               NA                NA     0.06615192      TRUE                 1
+  delta_bic bic_weight
+1  0.000000 0.85121426
+2  5.566248 0.05264335
+3  4.361667 0.09614239
+
+FORWARDED COLLIDING LABEL
+   model n_profiles n_group_classes structure n_parameters log_likelihood
+1  first          1               1       VVI            2      -142.6696
+2 second          2               1       VVI            5      -138.5449
+       aic      kic bic_groups bic_individual sabic_groups sabic_individual
+1 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329
+2 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244
+  caic_groups caic_individual awe_groups awe_individual icl_groups
+1    296.5494        296.5494   309.7598       309.7598   294.5494
+2    305.1157        305.1157   383.9612       383.9612   345.9354
+  icl_individual clc_groups clc_individual profile_entropy group_entropy
+1       294.5494   285.3391       285.3391              NA            NA
+2       345.9354   322.9095       322.9095       0.6694809            NA
+  avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max
+1        NA        NA         NA          NA              NA              NA
+2 0.5664048 0.9217079  0.7440563           1              NA              NA
+  group_avepp_mean group_avepp_below smallest_share converged n_best_replicated
+1               NA                NA      1.0000000      TRUE                 1
+2               NA                NA      0.1563902      TRUE                 1
+  delta_bic bic_weight
+1  0.000000 0.94175703
+2  5.566248 0.05824297
+[1] "first"  "second"
+
+ALL MODEL TABLES
+ [1] "profiles"              "responses"             "covariances"          
+ [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               
+ [7] "posteriors"            "assignments"           "classification"       
+[10] "average_posteriors"    "classification_errors" "bch_weights"          
+[13] "entropy"               "replication"           "residuals"            
+[16] "information_criteria"  "model"                 "stages"               
+[19] "starts"                "data"                 
+
+DIAGNOSTIC CONSISTENCY
+        level n_classes n_units entropy_sum relative_entropy
+1 individuals         1     100           0               NA
+2      groups         1     100           0               NA
+
+POOLED COEFFICIENT/COVARIANCE/INTERVAL ALIGNMENT
+               measurement.mean.profile_1.y 
+                                 0.06241662 
+           measurement.variance.profile_1.y 
+                                 1.01763332 
+profile.probability.profile_1.group_class_1 
+                                 1.00000000 
+            group.probability.group_class_1 
+                                 1.00000000 
+                                                  2.5%    97.5%
+measurement.mean.profile_1.y                -0.1353278 0.260161
+measurement.variance.profile_1.y             0.7354827 1.299784
+profile.probability.profile_1.group_class_1  1.0000000 1.000000
+group.probability.group_class_1              1.0000000 1.000000
+GENERIC FORWARDER
+Model comparison
+
+Model   Profiles  k   LogLik     BIC  ΔBIC  Weight     ICL  Entropy  Min AvePP  < 0.8
+------  --------  -  -------  ------  ----  ------  ------  -------  ---------  -----
+first          1  2  -142.67  294.55  0.00   0.942  294.55                           
+second         2  5  -138.54  300.12  5.57   0.058  345.94     0.67       0.57      1

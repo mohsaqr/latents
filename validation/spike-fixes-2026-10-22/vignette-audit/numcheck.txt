@@ -1,0 +1,42 @@
+                    vignette base_numbers cur_numbers
+                    additive          442         442
+  case-engagement-covariates          267         279
+  case-engagement-evaluation          858         886
+    case-engagement-profiles          311         315
+ case-engagement-transitions          322         322
+                case-esm-lca         1296        1305
+           class-enumeration         5437        5531
+                  covariates          442         454
+                 enumeration         4905        4999
+                  evaluation         2101        2213
+              growth-mixture          394         394
+                         lca          486         486
+                         lpa          724         744
+                         lta          272         276
+          mixture-regression          440         440
+             model-selection         3752        3822
+          trajectory-classes          340         340
+                   tree-plot          224         224
+                workflow-lca          713         713
+                workflow-lpa          738         742
+ base_numbers_missing_in_cur examples
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           1       19
+                           0         
+                           0         
+                           0         
+                           0         
+                           0         
+                           1       35
+                           1       35

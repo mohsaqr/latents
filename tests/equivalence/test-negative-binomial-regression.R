@@ -35,7 +35,8 @@ test_that("one class is MASS::glm.nb", {
                tolerance = 1e-8)
   expect_equal(unname(fit$params$beta[, 1L]), unname(stats::coef(reference)),
                tolerance = 1e-6)
-  expect_equal(fit$params$sigma2, 1 / reference$theta, tolerance = 1e-5)
+  # latents names dispersions by class; glm.nb supplies an unnamed scalar.
+  expect_equal(unname(fit$params$sigma2), 1 / reference$theta, tolerance = 1e-5)
   # glm.nb's errors are Fisher's expected information with the dispersion
   # held fixed; ours are the observed information with it estimated, so they
   # agree to a few percent.

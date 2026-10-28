@@ -1,0 +1,66 @@
+Independent release audit — c065deca5bddda3ee4d504965a903d082207cc48
+
+Disposition: no additional code or artifact blocker found. Final release
+sign-off remains conditional on the fresh full-unit run, native package
+check and supported-platform CI completing successfully on this commit.
+This report does not claim those pending checks have passed.
+
+Read-only scope: reviewed a5f211f..HEAD, including covariance active-set
+solver, Vuong V2, regression changes, Windows worker installation shell,
+NEWS, DESCRIPTION, CRAN comments, prior independent counterexamples and
+accepted numerical/covariance V2 cross-reviews. No tracked file was edited.
+
+Integrity, verified independently rather than inferred from parent logs:
+
+- All 324 manifest files match their current bytes and committed Git blob
+  identities at c065dec. Tracked working tree is clean.
+- All 286 manifest files packaged in latents_0.96.1.tar.gz match committed
+  content; DESCRIPTION retains all source fields after normal build-time
+  DCF wrapping. The 38 excluded files are the intentional development
+  equivalence files, workflows and outer claims registry.
+- Archive SHA256:
+  7e7771e312850edf5d2d3a23808ce31a60d95a9c92784f73f3bfc753219f5166
+- R/lmr.R and test-lmr.R match this reviewer's previously accepted V2
+  fingerprints exactly. The final diff introduces no subsequent numerical
+  change beyond that accepted source.
+
+Validation provenance independently read from retained RDS/CSV results:
+
+- Current inner development equivalence: 64 cases, 405 passing expectations,
+  zero failures/errors/warnings/skips.
+- Current affected outer references: 33 cases, 566 passing expectations,
+  zero failures/errors/warnings/skips.
+- Both runs' production source manifests match all 91 current R files.
+- The 198-case/5,419-pass comprehensive outer run is broader historical
+  evidence from a5f211f. It must not be described as a rerun of final V2.
+  Current affected references and targeted independent V2 reviews supply
+  the explicit follow-up evidence without mislabeling that earlier run.
+
+Review conclusions:
+
+- Vuong V2 resolves both independently reproduced weight-deletion blockers.
+  It retains an exact empirical-Gram orthogonal chart and otherwise refuses
+  unresolved probabilities. Its tested numerical limitations remain in
+  numerical-followup/cross-review-v2/REPORT.txt.
+- Covariance V2's active-set convergence includes feasibility, stationarity,
+  dual signs and complementary slackness. The prior false-boundary blocker
+  has independent exact-oracle, reduced scalar, KKT and scaling evidence.
+- The final covariance solver preserves the statistical objective, family
+  constraints, floors and existing EM monotonicity guard. No test tolerance
+  was relaxed in the final follow-up.
+- Parallel tests now use a defined cross-platform termination signal and
+  two workers while preserving uneven task division. Windows installation
+  explicitly uses bash, so its R CMD INSTALL command is executed as intended.
+- NEWS and version 0.96.1 accurately describe the resulting corrections.
+
+Remaining release bookkeeping/gates:
+
+- Await the fresh full-unit, complete native-check and final exact-commit
+  platform results, including the newly exposed Windows/R4.1 paths.
+- Refresh CRAN comments with final measured counts/provenance once those
+  runs finish. At review time they still quote the earlier 8,104-pass unit
+  aggregation; those are valid historical results, not final V2 counts.
+- Any new tracked metadata edit changes the release commit and must be
+  reconciled with the exact-commit validation record before publication.
+
+Machine-readable evidence: integrity.json and validation-provenance.json.

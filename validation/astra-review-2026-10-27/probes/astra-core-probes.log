@@ -1,0 +1,112 @@
+      beta.x       sigma2           ll 
+   0.4159812    3.5840188 -123.4308542 
+                                                                                                                    class 
+                                                                                                       "latents_bad_data" 
+                                                                                                                  message 
+"The outcome takes the same value (2) in every row, so there is no variation for a Gaussian mixture regression to model." 
+beta.(Intercept)           sigma2               ll 
+       2.1271982        0.9624063      -83.9867552 
+                                                                                                                    class 
+                                                                                                       "latents_bad_data" 
+                                                                                                                  message 
+"The outcome takes the same value (2) in every row, so there is no variation for a Gaussian mixture regression to model." 
+[[1]]
+                                                                                                                    class 
+                                                                                                       "latents_bad_data" 
+                                                                                                                  message 
+"The outcome takes the same value (2) in every row, so there is no variation for a Gaussian mixture regression to model." 
+
+[[2]]
+                                                                                                                    class 
+                                                                                                       "latents_bad_data" 
+                                                                                                                  message 
+"The outcome takes the same value (2) in every row, so there is no variation for a Gaussian mixture regression to model." 
+
+     base converged 
+-115.2865    1.0000 
+<latents_growth_mixture> Growth mixture model
+ A list of 18 components. Tables: get_results(x, what = ); raw list: str(unclass(x))
+$scale
+[1] 1e+05
+
+$result
+           ll           gap     converged 
+-1.152865e+02 -1.847411e-13  1.000000e+00 
+
+$scale
+[1] 1e+08
+
+$result
+           ll           gap     converged 
+-1.152865e+02  4.263256e-14  1.000000e+00 
+
+$scale
+[1] 1e+10
+
+$result
+           ll           gap     converged 
+-1.152865e+02 -2.842171e-14  1.000000e+00 
+
+$scale
+[1] 1e+20
+
+$result
+           ll           gap     converged 
+-1.152865e+02 -1.563194e-13  1.000000e+00 
+
+$scale
+[1] 1e+100
+
+$result
+                                                                                                                               class 
+                                                                                                               "latents_em_decrease" 
+                                                                                                                             message 
+"EM likelihood decreased by 1.32e+04, beyond numerical roundoff. This is a defect; please report it with the call that produced it." 
+
+[[1]]
+[[1]]$scale
+[1] 1e+05
+
+[[1]]$result
+           ll           gap     converged 
+-1.152865e+02 -1.847411e-13  1.000000e+00 
+
+
+[[2]]
+[[2]]$scale
+[1] 1e+08
+
+[[2]]$result
+           ll           gap     converged 
+-1.152865e+02  4.263256e-14  1.000000e+00 
+
+
+[[3]]
+[[3]]$scale
+[1] 1e+10
+
+[[3]]$result
+           ll           gap     converged 
+-1.152865e+02 -2.842171e-14  1.000000e+00 
+
+
+[[4]]
+[[4]]$scale
+[1] 1e+20
+
+[[4]]$result
+           ll           gap     converged 
+-1.152865e+02 -1.563194e-13  1.000000e+00 
+
+
+[[5]]
+[[5]]$scale
+[1] 1e+100
+
+[[5]]$result
+                                                                                                                               class 
+                                                                                                               "latents_em_decrease" 
+                                                                                                                             message 
+"EM likelihood decreased by 1.32e+04, beyond numerical roundoff. This is a defect; please report it with the call that produced it." 
+
+

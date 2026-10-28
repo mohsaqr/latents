@@ -1,0 +1,213 @@
+                   
+                    FALSE TRUE
+  alias_or_constant     0    4
+  function            830  193
+Source files: 80 lines: 37181 
+Documentation files: 62 
+Public definitions without Rd alias:
+                           file                                         name
+                  R/accessors.R                       as.data.frame.multilpa
+                  R/accessors.R           as.data.frame.multilpa_enumeration
+                  R/accessors.R                   print.multilpa_enumeration
+                  R/accessors.R                         print.multilpa_start
+                  R/accessors.R                 as.data.frame.multilpa_start
+                  R/accessors.R            as.data.frame.multilpa_covariates
+           R/additive-compare.R       get_results.latents_family_enumeration
+           R/additive-compare.R     as.data.frame.latents_family_enumeration
+           R/additive-compare.R             print.latents_family_enumeration
+           R/additive-compare.R           summary.latents_family_enumeration
+           R/additive-compare.R              plot.latents_family_enumeration
+           R/additive-methods.R                get_results.multilpa_additive
+           R/additive-methods.R              as.data.frame.multilpa_additive
+           R/additive-methods.R                       coef.multilpa_additive
+           R/additive-methods.R                       vcov.multilpa_additive
+           R/additive-methods.R                    confint.multilpa_additive
+           R/additive-methods.R                     logLik.multilpa_additive
+           R/additive-methods.R                       nobs.multilpa_additive
+           R/additive-methods.R                    summary.multilpa_additive
+           R/additive-methods.R              print.summary_multilpa_additive
+           R/additive-methods.R      as.data.frame.summary_multilpa_additive
+           R/additive-methods.R                       plot.multilpa_additive
+                   R/additive.R                      print.multilpa_additive
+             R/compare-models.R                      plot.latents_comparison
+                 R/covariates.R                    print.multilpa_covariates
+                 R/covariates.R                  summary.multilpa_covariates
+                 R/covariates.R            print.summary_multilpa_covariates
+                 R/covariates.R    as.data.frame.summary_multilpa_covariates
+                R/cross-level.R             get_results.multilpa_cross_level
+                R/cross-level.R           as.data.frame.multilpa_cross_level
+                R/cross-level.R                   print.multilpa_cross_level
+                R/cross-level.R                 summary.multilpa_cross_level
+                R/cross-level.R                  logLik.multilpa_cross_level
+                R/cross-level.R                    nobs.multilpa_cross_level
+                R/cross-level.R                    plot.multilpa_cross_level
+                R/enumeration.R                 summary.multilpa_enumeration
+                R/enumeration.R           print.summary_multilpa_enumeration
+                R/enumeration.R   as.data.frame.summary_multilpa_enumeration
+                R/enumeration.R                 print.multilpa_bootstrap_lrt
+                R/enumeration.R               summary.multilpa_bootstrap_lrt
+                R/enumeration.R         print.summary_multilpa_bootstrap_lrt
+                R/enumeration.R         as.data.frame.multilpa_bootstrap_lrt
+                R/enumeration.R as.data.frame.summary_multilpa_bootstrap_lrt
+                R/enumeration.R                  plot.multilpa_bootstrap_lrt
+     R/growth-mixture-methods.R           get_results.latents_growth_mixture
+     R/growth-mixture-methods.R         as.data.frame.latents_growth_mixture
+     R/growth-mixture-methods.R                 print.latents_growth_mixture
+     R/growth-mixture-methods.R               summary.latents_growth_mixture
+     R/growth-mixture-methods.R         print.summary_latents_growth_mixture
+     R/growth-mixture-methods.R                  coef.latents_growth_mixture
+     R/growth-mixture-methods.R                  vcov.latents_growth_mixture
+     R/growth-mixture-methods.R               confint.latents_growth_mixture
+     R/growth-mixture-methods.R                logLik.latents_growth_mixture
+     R/growth-mixture-methods.R                  nobs.latents_growth_mixture
+        R/growth-mixture-plot.R                  plot.latents_growth_mixture
+    R/growth-mixture-simulate.R               predict.latents_growth_mixture
+              R/latents-table.R                          print.latents_table
+              R/latents-table.R                  as.data.frame.latents_table
+                R/lta-compare.R   get_results.latents_transition_enumeration
+                R/lta-compare.R as.data.frame.latents_transition_enumeration
+                R/lta-compare.R         print.latents_transition_enumeration
+                R/lta-compare.R       summary.latents_transition_enumeration
+                R/lta-compare.R          plot.latents_transition_enumeration
+                R/lta-methods.R                     get_results.multilpa_lta
+                R/lta-methods.R                   as.data.frame.multilpa_lta
+                R/lta-methods.R                           print.multilpa_lta
+                R/lta-methods.R                         summary.multilpa_lta
+                R/lta-methods.R                            coef.multilpa_lta
+                R/lta-methods.R                            vcov.multilpa_lta
+                R/lta-methods.R                          logLik.multilpa_lta
+                R/lta-methods.R                            nobs.multilpa_lta
+                R/lta-methods.R                            plot.multilpa_lta
+                    R/methods.R                               print.multilpa
+                    R/methods.R                             summary.multilpa
+                    R/methods.R               as.data.frame.summary_multilpa
+                    R/methods.R                       print.summary_multilpa
+ R/mixture-regression-methods.R       get_results.latents_mixture_regression
+ R/mixture-regression-methods.R     as.data.frame.latents_mixture_regression
+ R/mixture-regression-methods.R             print.latents_mixture_regression
+ R/mixture-regression-methods.R           summary.latents_mixture_regression
+ R/mixture-regression-methods.R     print.summary_latents_mixture_regression
+ R/mixture-regression-methods.R              coef.latents_mixture_regression
+ R/mixture-regression-methods.R              vcov.latents_mixture_regression
+ R/mixture-regression-methods.R           confint.latents_mixture_regression
+ R/mixture-regression-methods.R            logLik.latents_mixture_regression
+ R/mixture-regression-methods.R              nobs.latents_mixture_regression
+ R/mixture-regression-predict.R              plot.latents_mixture_regression
+                    R/plot-gg.R                          print.latents_plots
+                       R/plot.R                                plot.multilpa
+                       R/plot.R                    plot.multilpa_enumeration
+                       R/plot.R                     plot.multilpa_covariates
+           R/pool-imputations.R                   get_results.latents_pooled
+           R/pool-imputations.R                 as.data.frame.latents_pooled
+           R/pool-imputations.R                         print.latents_pooled
+           R/pool-imputations.R                       summary.latents_pooled
+           R/pool-imputations.R                          plot.latents_pooled
+                R/transitions.R           as.data.frame.multilpa_transitions
+                R/transitions.R                   print.multilpa_transitions
+                R/transitions.R                 summary.multilpa_transitions
+                R/transitions.R   as.data.frame.summary_multilpa_transitions
+                R/transitions.R           print.summary_multilpa_transitions
+                R/transitions.R                    plot.multilpa_transitions
+ line
+    3
+  695
+  712
+  869
+  890
+ 1010
+  254
+  274
+  281
+  294
+  300
+  187
+  209
+  220
+  237
+  252
+  267
+  274
+  324
+  337
+  351
+  374
+  777
+  180
+  405
+  419
+  443
+  471
+  357
+  425
+  432
+  449
+  455
+  462
+  475
+  489
+  661
+  724
+ 1370
+ 1407
+ 1446
+ 1462
+ 1469
+ 1476
+  647
+  665
+  672
+  711
+  721
+  732
+  737
+  744
+  754
+  761
+   47
+   66
+  183
+  194
+  444
+  462
+  469
+  483
+  489
+  207
+  225
+  232
+  258
+  264
+  273
+  280
+  287
+  357
+    3
+   82
+  145
+  304
+  482
+  503
+  512
+  549
+  558
+  571
+  578
+  585
+  600
+  609
+  194
+ 1540
+    3
+  198
+  390
+  333
+  342
+  349
+  368
+  393
+  963
+  970
+ 1004
+ 1043
+ 1050
+ 1091

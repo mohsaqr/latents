@@ -1,0 +1,77 @@
+astra-surface: 1Fitted a single-level latent class model.
+2...Fitted a single-level latent class model.
+.Fitted a single-level latent class model.
+..345678....9a
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-astra-surface.R:12:3'): call bindings cannot overwrite argume
+<latents_bad_data/error/condition>
+Error: `data` must be a data frame, but `.vars` is a character vector of length 2.
+Backtrace:
+    ▆
+ 1. └─base::eval(...) at test-astra-surface.R:12:3
+ 2.   └─base::eval(...)
+ 3.     └─latents::multilpa(...)
+ 4.       └─base::eval(setup_call, setup_env)
+ 5.         └─base::eval(setup_call, setup_env)
+ 6.           └─latents:::.multilpa_setup(...)
+ 7.             └─latents:::.latents_check_data_frame(data, substitute(data))
+
+── 2. Failure ('test-astra-surface.R:35:3'): multilca forces data, variables, co
+Expected `all(unlist(as.list(counts)) == 1L)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 3. Failure ('test-astra-surface.R:65:3'): sensitivity plots never call unfini
+Expected `unfinished$labels$title` to match regexp "No seed converged".
+Actual text:
+x | 3 of 3 seeds reached the best maximum
+
+── 4. Failure ('test-astra-surface.R:66:3'): sensitivity plots never call unfini
+Expected `unique(as.character(unfinished$data$status))` to be identical to "unfinished".
+Differences:
+`actual`:   "best maximum"
+`expected`: "unfinished"  
+
+
+── 5. Failure ('test-astra-surface.R:67:3'): sensitivity plots never call unfini
+Expected `unfinished$labels$caption` to match regexp "unfinished for seeds 1, 2, 3".
+Actual text:
+x | A seed reaches a maximum when its log likelihood is within 0.001 of it.
+
+── 6. Failure ('test-astra-surface.R:72:3'): sensitivity plots never call unfini
+Expected `mixed$labels$title` to match regexp "2 of 5 seeds reached the best converged maximum".
+Actual text:
+x | 5 of 5 seeds reached the best maximum
+
+── 7. Failure ('test-astra-surface.R:74:3'): sensitivity plots never call unfini
+Expected `as.character(first_panel$status)` to be identical to `c("unfinished", "best maximum", "best maximum", "a lower maximum")`.
+Differences:
+`actual`:   "best maximum" "best maximum" "best maximum" "best maximum"   
+`expected`: "unfinished"   "best maximum" "best maximum" "a lower maximum"
+
+
+── 8. Failure ('test-astra-surface.R:76:3'): sensitivity plots never call unfini
+Expected `first_panel$value` to equal `c(-2, 0, 1e-04, 2)`.
+Differences:
+  `actual`:  0.0 2.0 2.0 4.0
+`expected`: -2.0 0.0 0.0 2.0
+
+
+── 9. Failure ('test-astra-surface.R:90:3'): zero-iteration sensitivity refits r
+Expected `shown$labels$title` to match regexp "No seed converged".
+Actual text:
+x | 3 of 3 seeds reached the best maximum
+
+── 10. Failure ('test-astra-surface.R:91:3'): zero-iteration sensitivity refits 
+Expected `all(shown$data$status == "unfinished")` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════

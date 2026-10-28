@@ -1,0 +1,213 @@
+eei3_04-lg.dat
+File name:	eei3_04-lg.dat	
+File size:	35442 bytes  500 records	
+File date:	2026-Oct-20 9:02:28 PM	
+Syntax:	eei3_04.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+eei3_04	3-Cluster	-3201.6406	6521.3588	6441.2812	6460.2812	19	0.1079	0.7462	
+eei3_04 - LL = -3201.6406
+3-Cluster Syntax Model	
+						
+Number of cases	500					
+Number of parameters (Npar)	19					
+Activated Constraints	0					
+Random Seed	20261020					
+Best Start Seed	1857138					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-3201.6406					
+Log-prior	0.0000					
+Log-posterior	-3201.6406					
+BIC (based on LL)	6521.3588					
+AIC (based on LL)	6441.2812					
+AIC3 (based on LL)	6460.2812					
+CAIC (based on LL)	6540.3588					
+SABIC (based on LL)	6461.0516					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.1079					
+Reduction of errors (Lambda)	0.7967					
+Entropy R-squared	0.7462					
+Standard R-squared	0.7507					
+Classification log-likelihood	-3333.9623					
+Entropy	132.3216					
+CLC	6667.9245					
+AWE	6961.0796					
+ICL-BIC	6786.0021					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	85.1713	14.8501	0.0352	100.0566		
+2	9.7729	211.3973	13.4889	234.6591		
+3	0.0558	15.7526	149.4759	165.2843		
+Total	95.0000	242.0000	163.0000	500.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	82.3956	17.4198	0.2412	100.0566		
+2	17.4198	195.6016	21.6377	234.6591		
+3	0.2412	21.6377	143.4054	165.2843		
+Total	100.0566	234.6591	165.2843	500.0000		
+						
+Files						
+Infile	C:\lgfeatures\direct-effects\eei3_04\eei3_04-lg.dat	
+						
+Options						
+threads	2					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261020					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+output						
+parameters	first					
+standard errors	standard					
+identification	no					
+validation LL	no					
+sample size BIC	     500					
+predictionstatistics	no					
+write	eei3_04_write.txt	
+outfile						
+file name	eei3_04_posteriors.txt	
+classification	posterior					
+prediction	no					
+simulation	no					
+seed	0					
+individualcoefficients	no					
+logdensities	no					
+id	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+y1	Continuous					
+y2	Continuous					
+y3	Continuous					
+y4	Continuous					
+Independent						
+z	Num-Fixed	500				
+-3.6724444047	-3.6724444	-3.6724444				
+-3.4120473067	-3.4120473	-3.4120473				
+-3.2024143988	-3.2024144	-3.2024144				
+-2.8392936846	-2.8392937	-2.8392937				
+-2.7619418401	-2.7619418	-2.7619418				
+-2.6911943442	-2.6911943	-2.6911943				
+-2.5818599681	-2.58186	-2.58186				
+-2.5207030561	-2.5207031	-2.5207031				
+-2.4772255740	-2.4772256	-2.4772256				
+-2.4687197167	-2.4687197	-2.4687197				
+...						
+3.7841409195	3.7841409	3.7841409				
+3.8225984986	3.8225985	3.8225985				
+3.8363411531	3.8363412	3.8363412				
+3.8893517950	3.8893518	3.8893518				
+3.9322844361	3.9322844	3.9322844				
+4.1877035145	4.1877035	4.1877035				
+4.2805036632	4.2805037	4.2805037				
+4.8689338911	4.8689339	4.8689339				
+5.8966458809	5.8966459	5.8966459				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile write='eei3_04_write.txt';
+   outfile 'eei3_04_posteriors.txt' classification keep id;
+variables
+   independent z numeric;
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent Cluster nominal 3;
+equations
+   Cluster <- 1;
+   y1 <- 1 | Cluster;
+   y2 <- 1 | Cluster;
+   y3 <- 1 | Cluster + z;
+   y4 <- 1 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	25.6218	2	2.7e-6				
+Cluster(2)	<-	1			0.8524	0.1695	5.0293	4.9e-7							
+Cluster(3)	<-	1			0.5019	0.1687	2.9751	0.0029							
+															
+y1	<-	1	|	Cluster(1)	-1.6799	0.1209	-13.8975	6.6e-44	552.8572	3	1.7e-119	549.7129	2	4.3e-120	
+y1	<-	1	|	Cluster(2)	-0.1742	0.0875	-1.9915	0.046							
+y1	<-	1	|	Cluster(3)	1.8607	0.0995	18.7080	4.3e-78							
+															
+y2	<-	1	|	Cluster(1)	1.6178	0.1554	10.4072	2.3e-25	257.0353	3	2.0e-55	104.3427	2	2.2e-23	
+y2	<-	1	|	Cluster(2)	-0.0217	0.1033	-0.2097	0.83							
+y2	<-	1	|	Cluster(3)	1.3368	0.1138	11.7511	7.0e-32							
+															
+y3	<-	1	|	Cluster(1)	1.3512	0.1093	12.3581	4.4e-35	317.2140	3	1.9e-68	310.5239	2	3.7e-68	
+y3	<-	1	|	Cluster(2)	0.1245	0.0770	1.6173	0.11							
+y3	<-	1	|	Cluster(3)	-0.9904	0.0767	-12.9099	4.0e-38							
+y3	<-	z			0.8593	0.0280	30.6889	8.0e-207	941.8081	1	8.0e-207				
+															
+y4	<-	1	|	Cluster(1)	-1.1509	0.1273	-9.0375	1.6e-19	163.3635	3	3.4e-35	152.3663	2	8.2e-34	
+y4	<-	1	|	Cluster(2)	0.0710	0.0776	0.9150	0.36							
+y4	<-	1	|	Cluster(3)	0.7253	0.0823	8.8085	1.3e-18							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1					0.8694	0.0860	10.1058	5.2e-24	102.1269	1	5.2e-24				
+y2					1.5421	0.1192	12.9425	2.6e-38	167.5075	1	2.6e-38				
+y3					0.7049	0.0580	12.1614	5.0e-34	147.9007	1	5.0e-34				
+y4					0.9561	0.0671	14.2422	5.0e-46	202.8402	1	5.0e-46				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	25.2940	1	4.9e-7	
+					Cluster	1	3	8.8513	1	0.0029	
+					Cluster	2	3	6.6187	1	0.010	
+	
+y1	<-	1	|	Cluster	Cluster	1	2	111.7495	1	4.1e-26	
+					Cluster	1	3	491.3046	1	7.4e-109	
+					Cluster	2	3	314.4459	1	2.3e-70	
+	
+y2	<-	1	|	Cluster	Cluster	1	2	73.6081	1	9.5e-18	
+					Cluster	1	3	2.0625	1	0.15	
+					Cluster	2	3	71.5595	1	2.7e-17	
+	
+y3	<-	1	|	Cluster	Cluster	1	2	97.1148	1	6.5e-23	
+					Cluster	1	3	305.2432	1	2.4e-68	
+					Cluster	2	3	109.5280	1	1.2e-25	
+	
+y4	<-	1	|	Cluster	Cluster	1	2	70.0596	1	5.8e-17	
+					Cluster	1	3	152.3567	1	5.3e-35	
+					Cluster	2	3	30.4331	1	3.5e-8	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	Overall	s.e.	
+Size	0.2001	0.0249	0.4693	0.0312	0.3306	0.0275	 	 	
+y1	 	
+Mean	-1.6799	0.1209	-0.1742	0.0875	1.8607	0.0995	0.1972	0.0715	
+y2	 	
+Mean	1.6178	0.1554	-0.0217	0.1033	1.3368	0.1138	0.7555	0.0646	
+y3	 	
+Mean	1.8009	0.1074	0.5743	0.0744	-0.5406	0.0766	0.4512	0.0529	
+y4	 	
+Mean	-1.1509	0.1273	0.0710	0.0776	0.7253	0.0823	0.0428	0.0528	

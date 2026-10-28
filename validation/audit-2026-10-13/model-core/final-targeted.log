@@ -1,0 +1,26 @@
+review-core-audit: ................................................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+review-growth-quadratic: .......
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                     test
+1  covariate centering records the model and preserves raw-data inference
+2     covariate centering composes with FIML, full covariance and weights
+3  all covariance structures retain their defining constraints at a floor
+4  structured floor-active profile models converge without an EM decrease
+5   constrained prior updates retain volume and shape at their own floors
+6 positive-definite starts outside the covariance family are not retained
+  failed passed error warning
+1      0      9 FALSE       0
+2      0      4 FALSE       0
+3      0     47 FALSE       0
+4      0     21 FALSE       0
+5      0      6 FALSE       0
+6      0      9 FALSE       0
+                                                                       test
+1 the growth quadratic preserves the random-intercept within-person scatter
+2 extreme growth scores retain the random variance and residual derivatives
+  failed passed error warning
+1      0      4 FALSE       0
+2      0      3 FALSE       0

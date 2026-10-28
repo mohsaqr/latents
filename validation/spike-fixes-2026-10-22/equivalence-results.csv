@@ -1,0 +1,65 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-additive-engine.R","additive-engine","compact density equals the full-covariance Cholesky density",2,0,FALSE,FALSE,0,0.0080000000000382,0.00100000000000122,0.0109999999999673,2
+"test-additive-engine.R","additive-engine","group posteriors are normalized and match Bayes' rule on dense densities",4,0,FALSE,FALSE,0,0.00900000000001455,0.00199999999999889,0.01400000000001,4
+"test-additive-engine.R","additive-engine","intercept moments match joint-Gaussian conditioning",1,0,FALSE,FALSE,0,0.0109999999999673,0.00100000000000122,0.0110000000000809,1
+"test-additive-families.R","additive-families","scores equal numerical derivatives for every family structure",3,0,FALSE,FALSE,0,0.0579999999999927,0.00200000000000244,0.0750000000000455,3
+"test-additive-families.R","additive-families","fitted points are stationary and EM is monotone in the new families",12,0,FALSE,FALSE,0,0.367000000000075,0.0169999999999995,0.38900000000001,12
+"test-additive-families.R","additive-families","shared means are pooled by precision when classes are unequal",4,0,FALSE,FALSE,0,0.0320000000000391,0.00199999999999889,0.0360000000000582,4
+"test-additive-families.R","additive-families","class-specific within variances: compact density equals dense",1,0,FALSE,FALSE,0,0.0219999999999345,0,0.0230000000000246,1
+"test-additive-fit.R","additive-fit","the fitted point is stationary for the dense likelihood",6,0,FALSE,FALSE,0,0.868999999999915,0.0120000000000005,0.88799999999992,6
+"test-additive-fit.R","additive-fit","the between-variance score equals a numerical derivative",2,0,FALSE,FALSE,0,0.00900000000001455,0.00100000000000122,0.0100000000001046,2
+"test-additive-fit.R","additive-fit","with between variances held at zero, EM matches the group-level mixture",5,0,FALSE,FALSE,0,0.0410000000000537,0.00200000000000244,0.0819999999999936,5
+"test-additive-methods.R","additive-methods","analytic scores equal numerical derivatives away from the optimum",2,0,FALSE,FALSE,0,0.0389999999999873,0.00300000000000011,0.0539999999999736,2
+"test-additive-methods.R","additive-methods","observed information matches an independent numerical Hessian",2,0,FALSE,FALSE,0,0.134999999999991,0.00700000000000145,0.156000000000063,2
+"test-audit-services-fixes.R","audit-services-fixes","weighted Gaussian residuals use the fitted distribution's weights",3,0,FALSE,FALSE,0,0.00900000000001455,0.00100000000000122,0.0430000000000064,3
+"test-audit-services-fixes.R","audit-services-fixes","weighted categorical residuals use weighted cell counts",2,0,FALSE,FALSE,0,0.0080000000000382,0.000999999999997669,0.0249999999999773,2
+"test-audit-services-fixes.R","audit-services-fixes","Rubin pooling handles both zero-variance limits",8,0,FALSE,FALSE,0,0.0099999999999909,0.00400000000000134,0.0320000000000391,8
+"test-audit-services-fixes.R","audit-services-fixes","R3STEP estimates and errors are invariant to predictor units",6,0,FALSE,FALSE,0,0.271000000000072,0.004999999999999,0.278999999999996,6
+"test-cluster-robust-cr1.R","cluster-robust-cr1","the sandwich equals sandwich::vcovCL() with its default adjustment",1,0,FALSE,FALSE,0,0.0099999999999909,0.00300000000000011,0.05600000000004,1
+"test-cluster-robust-cr1.R","cluster-robust-cr1","a one-class robust regression reproduces sandwich::vcovCL()",1,0,FALSE,FALSE,0,0.00600000000008549,0.00100000000000122,0.00700000000006185,1
+"test-covariates.R","covariates","one-step covariates recover slopes and have consistent diagnostics",21,0,FALSE,FALSE,0,0.103999999999928,0.0139999999999993,0.23599999999999,21
+"test-cross-level.R","cross-level","full cross-level likelihood equals the published formula",4,0,FALSE,FALSE,0,0.102999999999952,0.00600000000000023,0.143000000000029,4
+"test-cross-level.R","cross-level","restricted cross-level is the product of its two profile models",3,0,FALSE,FALSE,0,0.173000000000002,0.004999999999999,0.201999999999998,3
+"test-cross-level.R","cross-level","the full cross-level EM reaches a stationary point of the formula",1,0,FALSE,FALSE,0,0.611999999999966,0.00500000000000256,0.616999999999962,1
+"test-extra-indicators.R","extra-indicators","fits agree with Latent GOLD 6.1",14,0,FALSE,FALSE,0,16.3950000000001,0.405999999999999,16.9640000000001,14
+"test-extra-indicators.R","extra-indicators","the ordinal M-step maximizes its concave objective",3,0,FALSE,FALSE,0,0.0119999999999436,0.000999999999997669,0.0699999999999363,3
+"test-growth-mixture.R","growth-mixture","analytic growth scores equal numerical derivatives",4,0,FALSE,FALSE,0,2.96899999999994,0.0249999999999986,3.00400000000002,4
+"test-growth-mixture.R","growth-mixture","observed standard errors equal the inverse numerical Hessian",1,0,FALSE,FALSE,0,0.377000000000066,0.00600000000000023,0.392000000000053,1
+"test-growth-mixture.R","growth-mixture","the growth mixture likelihood equals an independent dense likelihood",9,0,FALSE,FALSE,0,2.61599999999999,0.0539999999999985,2.76999999999998,9
+"test-inference-fixed-measurement.R","inference-fixed-measurement","held-measurement standard errors match an independent numerical information",7,0,FALSE,FALSE,0,0.812999999999988,0.0189999999999984,0.889999999999986,7
+"test-inference-fixed-measurement.R","inference-fixed-measurement","holding only the means leaves the variances estimated and correct",8,0,FALSE,FALSE,0,1.7170000000001,0.0339999999999989,1.85200000000009,8
+"test-lta-general.R","lta-general","analytic scores equal numerical derivatives in every extension",3,0,FALSE,FALSE,0,16.713,0.492999999999999,17.611,3
+"test-lta-general.R","lta-general","occasion-specific measurement agrees with Mplus (bundled fixture)",2,0,FALSE,FALSE,0,1.14100000000008,0.065999999999999,1.22300000000007,2
+"test-lta-general.R","lta-general","missing indicators (FIML) in the extended model match the exact path sum",2,0,FALSE,FALSE,0,0.743999999999915,0.0139999999999993,0.769000000000005,2
+"test-lta-general.R","lta-general","covariate transitions and initial distribution match the exact path sum",6,0,FALSE,FALSE,0,0.576999999999998,0.0139999999999993,0.601999999999975,6
+"test-lta-general.R","lta-general","occasion-varying transitions and measurement match the exact path sum",5,0,FALSE,FALSE,0,1.25099999999998,0.0240000000000009,1.29700000000003,5
+"test-lta-general.R","lta-general","second-order transitions match the exact path sum and nest first order",4,0,FALSE,FALSE,0,1.29099999999994,0.0300000000000011,1.34500000000003,4
+"test-lta-general.R","lta-general","covariate transitions agree with depmixS4 (bundled fixture)",3,0,FALSE,FALSE,0,0.434000000000083,0.0150000000000006,0.456999999999994,3
+"test-lta-general.R","lta-general","occasion-varying transitions agree with LMest (bundled fixture)",2,0,FALSE,FALSE,0,0.433999999999969,0.0150000000000006,0.45799999999997,2
+"test-lta-general.R","lta-general","mover-stayer: the stayer class never moves and matches the exact path sum",6,0,FALSE,FALSE,0,4.02300000000002,0.102,4.21000000000004,6
+"test-missing-covariance.R","missing-covariance","full covariance FIML agrees with independent direct Gaussian likelihood",5,0,FALSE,FALSE,0,0.0329999999999018,0.00300000000000011,0.0389999999999873,5
+"test-mixture-regression-prediction-design.R","mixture-regression-prediction-design","a single group slope is optimized as a slope rather than an intercept",1,0,FALSE,FALSE,0,0.00299999999992906,0.00100000000000122,0.00499999999999545,1
+"test-mixture-regression.R","mixture-regression","one class reduces to lm() and glm()",5,0,FALSE,FALSE,0,0.0219999999999345,0.00300000000000011,0.0270000000000437,5
+"test-multilevel-growth.R","multilevel-growth","the analytic cluster scores are the likelihood's gradient",2,0,FALSE,FALSE,0,1.36099999999999,0.017000000000003,1.39999999999998,2
+"test-multilevel-growth.R","multilevel-growth","the likelihood equals the dense multilevel likelihood",3,0,FALSE,FALSE,0,1.39400000000001,0.0160000000000018,1.43299999999999,3
+"test-negative-binomial-regression.R","negative-binomial-regression","one class is MASS::glm.nb",4,0,FALSE,FALSE,0,0.02699999999993,0.00200000000000244,0.0320000000000391,4
+"test-negative-binomial-regression.R","negative-binomial-regression","the likelihood is the dense NB mixture and the scores its gradient",2,0,FALSE,FALSE,0,0.80600000000004,0.0199999999999996,0.836999999999989,2
+"test-noise.R","noise","the hypervolume is mclust's",2,0,FALSE,FALSE,0,0.0080000000000382,0.00199999999999889,0.0579999999999927,2
+"test-noise.R","noise","a noise fit reproduces mclust's EM from the same start",8,0,FALSE,FALSE,0,0.04200000000003,0.00400000000000134,0.0510000000000446,8
+"test-numerical-safeguards.R","numerical-safeguards","an unbalanced-group update agrees with exhaustive assignments",5,0,FALSE,FALSE,0,0.0120000000000573,0.00199999999999889,0.0169999999999391,5
+"test-ordinal-regression.R","ordinal-regression","one class is MASS::polr(method = ""logistic"")",5,0,FALSE,FALSE,0,0.0460000000000491,0.004999999999999,0.0570000000000164,5
+"test-ordinal-regression.R","ordinal-regression","the analytic scores are the gradient of the log likelihood",4,0,FALSE,FALSE,0,4.63099999999997,0.25,4.95500000000004,4
+"test-ordinal-regression.R","ordinal-regression","the likelihood is the dense mixture of plogis differences",3,0,FALSE,FALSE,0,4.95000000000005,0.264000000000003,5.28499999999997,3
+"test-post-submission-review.R","post-submission-review","one-class binary regression agrees with an ordinary logistic GLM",3,0,FALSE,FALSE,0,0.0130000000000337,0.00200000000000244,0.0170000000000528,3
+"test-post-submission-review.R","post-submission-review","trajectory estimates include offsets and errors are on the response scale",2,0,FALSE,FALSE,0,0.0099999999999909,0.00100000000000122,0.0130000000000337,2
+"test-predict.R","predict","predictions match mclust's E-step at the same parameters",2,0,FALSE,FALSE,0,0.04099999999994,0.00100000000000122,0.0439999999999827,2
+"test-prior.R","prior","the MAP M-step matches mclust's EM step from the same posteriors",12,0,FALSE,FALSE,0,0.0219999999999345,0.00400000000000134,0.0330000000000155,12
+"test-review-families.R","review-families","reviewed family scores and information match dense Gaussian derivatives",15,0,FALSE,FALSE,0,22.5809999999999,0.276999999999997,23.558,15
+"test-review-families.R","review-families","all cross-level variance restrictions reproduce weighted raw formulas",56,0,FALSE,FALSE,0,7.55799999999999,0.112000000000002,8.02700000000004,56
+"test-review-growth-quadratic.R","review-growth-quadratic","the growth quadratic preserves the random-intercept within-person scatter",4,0,FALSE,FALSE,0,0.0120000000000573,0.00300000000000011,0.0169999999999391,4
+"test-review-growth-quadratic.R","review-growth-quadratic","extreme growth scores retain the random variance and residual derivatives",3,0,FALSE,FALSE,0,0.00599999999997181,0.00199999999999889,0.0099999999999909,3
+"test-structure-inference.R","structure-inference","constrained-structure standard errors match an independent Hessian",56,0,FALSE,FALSE,0,2.86900000000003,0.0539999999999985,3.02600000000007,56
+"test-transition-inference.R","transition-inference","standard errors match a Hessian of the likelihood alone",2,0,FALSE,FALSE,0,4.529,0.154,4.90899999999999,2
+"test-vignette-claims.R","vignette-claims","the numbers in the latent profile workflow hold",14,0,FALSE,FALSE,2,82.6129999999999,1.447,85.122,12
+"test-vignette-claims.R","vignette-claims","the numbers in the latent class workflow hold",13,0,FALSE,FALSE,0,38.0229999999999,3.535,41.9330000000001,13
+"test-weighted-logits.R","weighted-logits","binary soft counts give the weighted logistic regression",3,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999997669,0.00799999999992451,3

@@ -1,0 +1,327 @@
+sweep_018-data.txt
+File name:	sweep_018-data.txt	
+File size:	113316 bytes  1000 records	
+File date:	2026-Oct-20 10:02:37 PM	
+Syntax:	sweep_018.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	
+sweep_018_vr	4-Cluster	-7161.3987	14378.0594	14338.7974	14346.7974	8	
+sweep_018_er	4-Cluster	-7507.4030	15049.3447	15024.8059	15029.8059	5	
+sweep_018_vr - LL = -7161.3987
+4-Cluster Syntax Model	
+							
+Number of cases	1000						
+Number of parameters (Npar)	8						
+Activated Constraints	0						
+Robustness Effect	2.8678						
+Random Seed	239624						
+Best Start Seed	239624						
+							
+Log-likelihood Statistics							
+Log-likelihood (LL)	-7161.3987						
+Log-prior	0.0000						
+Log-posterior	-7161.3987						
+BIC (based on LL)	14378.0594						
+AIC (based on LL)	14338.7974						
+AIC3 (based on LL)	14346.7974						
+CAIC (based on LL)	14386.0594						
+SABIC (based on LL)	14352.6510						
+							
+							
+Classification Statistics	Cluster						
+Classification errors	0.3975						
+Reduction of errors (Lambda)	0.4352						
+Entropy R-squared	0.3237						
+Standard R-squared	0.2906						
+Classification log-likelihood	-8079.9692						
+Entropy	918.5705						
+CLC	16159.9384						
+AWE	16294.4624						
+ICL-BIC	16215.2004						
+							
+Cluster  Classification Table	Modal						
+Latent	1	2	3	4	Total		
+1	35.5474	10.2043	138.7518	71.4171	255.9207		
+2	20.8381	64.0229	30.2328	12.7214	127.8152		
+3	20.6145	0.7728	211.6464	69.6092	302.6428		
+4	0.0000	0.0000	22.3690	291.2523	313.6213		
+Total	77.0000	75.0000	403.0000	445.0000	1000.0000		
+							
+Cluster  Classification Table	Proportional						
+Latent	1	2	3	4	Total		
+1	79.7051	29.3486	94.9673	51.8997	255.9207		
+2	29.3486	65.7274	23.4883	9.2509	127.8152		
+3	94.9673	23.4883	131.6778	52.5095	302.6428		
+4	51.8997	9.2509	52.5095	199.9612	313.6213		
+Total	255.9207	127.8152	302.6428	313.6213	1000.0000		
+							
+Files							
+Infile	C:\lgfeatures\ml-three-step\sweep_018\sweep_018-data.txt	
+							
+Options							
+algorithm							
+tolerance	1e-12						
+emtolerance	1e-10						
+emiterations	10000						
+nriterations	1000						
+algorithm	NR						
+MstepNR	no						
+startvalues							
+seed	0						
+sets	16						
+tolerance	1e-05						
+iterations	50						
+bayes							
+categorical	0						
+variances	0						
+latent	0						
+poisson	0						
+quadrature							
+nodes	10						
+missing	excludeall						
+step3							
+classification	modal						
+adjustment	ML						
+simultaneous	no						
+aggregate	no						
+output							
+parameters	first						
+standard errors	robust						
+identification	no						
+validation LL	no						
+sample size BIC	    1000						
+predictionstatistics	no						
+write	sweep_018_vr.txt	
+							
+Variable Detail							
+Latent							
+Cluster	Nominal	Case	4				
+ 							
+Variables							
+y	Continuous						
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model
+      write='sweep_018_vr.txt';
+variables
+   dependent y continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 Cluster#3 Cluster#4 );
+equations
+   y <- 1 + Cluster;
+   y | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y	<-	1			413.0140	11.0665	37.3212	7.4e-305	1392.8747	1	7.4e-305				
+y	<-	Cluster(1)			0.0000	.	.	.	516.4899	3	1.3e-111				
+y	<-	Cluster(2)			163.7423	25.6234	6.3903	1.7e-10							
+y	<-	Cluster(3)			6.2864	12.4435	0.5052	0.61							
+y	<-	Cluster(4)			-73.6330	10.9001	-6.7553	1.4e-11							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Cluster(1)	10700.2813	4473.5014	2.3919	0.017	131.7010	4	1.7e-27	96.6959	3	8.0e-21	
+y			|	Cluster(2)	41408.3798	8341.8899	4.9639	6.9e-7							
+y			|	Cluster(3)	3856.4417	445.9709	8.6473	5.3e-18							
+y			|	Cluster(4)	394.9900	67.1182	5.8850	4.0e-9							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+y	<-	 Cluster			Cluster	1	2	40.8364	1	1.7e-10	
+					Cluster	1	3	0.2552	1	0.61	
+					Cluster	1	4	45.6339	1	1.4e-11	
+					Cluster	2	3	62.7817	1	2.3e-15	
+					Cluster	2	4	142.8810	1	6.2e-33	
+					Cluster	3	4	260.6407	1	1.2e-58	
+Variances	
+y			|	Cluster	Cluster	1	2	8.9361	1	0.0028	
+					Cluster	1	3	2.2595	1	0.13	
+					Cluster	1	4	5.3234	1	0.021	
+					Cluster	2	3	20.4465	1	6.1e-6	
+					Cluster	2	4	24.1656	1	8.8e-7	
+					Cluster	3	4	60.8518	1	6.2e-15	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	4	s.e.	Overall	s.e.	
+Size	0.2938	.	0.1563	.	0.2962	.	0.2537	.	 	 	
+y	 	
+Mean	413.0140	11.0665	576.7563	19.6001	419.3004	4.6241	339.3810	2.0480	421.7845	3.8961	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	4	s.e.	
+ 	0.2938	.	0.1563	.	0.2962	.	0.2537	.	
+	
+ 	y	
+Cluster	Mean	s.e.	 	 	 	 	 	 	
+1	413.0140	11.0665	 	 	 	 	 	 	
+2	576.7563	19.6001	 	 	 	 	 	 	
+3	419.3004	4.6241	 	 	 	 	 	 	
+4	339.3810	2.0480	 	 	 	 	 	 	
+	
+ 	Cluster_Modal	
+Cluster	Cluster#1	s.e.	Cluster#2	s.e.	Cluster#3	s.e.	Cluster#4	s.e.	
+1	0.9124	.	0.0541	.	0.0029	.	0.0307	.	
+2	0.0000	.	0.9470	.	0.0530	.	0.0000	.	
+3	0.0038	.	0.0303	.	0.9371	.	0.0287	.	
+4	0.1096	.	0.0123	.	0.0485	.	0.8296	.	
+sweep_018_er - LL = -7507.4030
+4-Cluster Syntax Model	
+							
+Number of cases	1000						
+Number of parameters (Npar)	5						
+Activated Constraints	0						
+Robustness Effect	3.0426						
+Random Seed	239624						
+Best Start Seed	239624						
+							
+Log-likelihood Statistics							
+Log-likelihood (LL)	-7507.4030						
+Log-prior	0.0000						
+Log-posterior	-7507.4030						
+BIC (based on LL)	15049.3447						
+AIC (based on LL)	15024.8059						
+AIC3 (based on LL)	15029.8059						
+CAIC (based on LL)	15054.3447						
+SABIC (based on LL)	15033.4644						
+							
+							
+Classification Statistics	Cluster						
+Classification errors	0.6172						
+Reduction of errors (Lambda)	0.1231						
+Entropy R-squared	0.1383						
+Standard R-squared	0.1040						
+Classification log-likelihood	-8677.8367						
+Entropy	1170.4337						
+CLC	17355.6734						
+AWE	17439.7509						
+ICL-BIC	17390.2122						
+							
+Cluster  Classification Table	Modal						
+Latent	1	2	3	4	Total		
+1	150.4466	10.2625	92.9710	57.0156	310.6957		
+2	12.1428	70.2089	36.3120	2.3258	120.9895		
+3	138.8610	15.2435	103.0330	48.4987	305.6361		
+4	136.5496	4.2851	62.6840	59.1599	262.6786		
+Total	438.0000	100.0000	295.0000	167.0000	1000.0000		
+							
+Cluster  Classification Table	Proportional						
+Latent	1	2	3	4	Total		
+1	102.4211	21.0302	99.2789	87.9654	310.6957		
+2	21.0302	61.3812	25.1753	13.4029	120.9895		
+3	99.2789	25.1753	97.7991	83.3828	305.6361		
+4	87.9654	13.4029	83.3828	77.9275	262.6786		
+Total	310.6957	120.9895	305.6361	262.6786	1000.0000		
+							
+Files							
+Infile	C:\lgfeatures\ml-three-step\sweep_018\sweep_018-data.txt	
+							
+Options							
+algorithm							
+tolerance	1e-12						
+emtolerance	1e-10						
+emiterations	10000						
+nriterations	1000						
+algorithm	NR						
+MstepNR	no						
+startvalues							
+seed	0						
+sets	16						
+tolerance	1e-05						
+iterations	50						
+bayes							
+categorical	0						
+variances	0						
+latent	0						
+poisson	0						
+quadrature							
+nodes	10						
+missing	excludeall						
+step3							
+classification	modal						
+adjustment	ML						
+simultaneous	no						
+aggregate	no						
+output							
+parameters	first						
+standard errors	robust						
+identification	no						
+validation LL	no						
+sample size BIC	    1000						
+predictionstatistics	no						
+write	sweep_018_er.txt	
+							
+Variable Detail							
+Latent							
+Cluster	Nominal	Case	4				
+ 							
+Variables							
+y	Continuous						
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model
+      write='sweep_018_er.txt';
+variables
+   dependent y continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 Cluster#3 Cluster#4 );
+equations
+   y <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y	<-	1	397.1959	5.9171	67.1268	4.0e-981	4506.0126	1	4.0e-981	
+y	<-	Cluster(1)	0.0000	.	.	.	242.0482	3	3.4e-52	
+y	<-	Cluster(2)	179.8637	28.9970	6.2028	5.5e-10				
+y	<-	Cluster(3)	22.8053	6.9430	3.2846	0.0010				
+y	<-	Cluster(4)	-38.2270	6.4474	-5.9291	3.0e-9				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y			11451.4731	1661.6110	6.8918	5.5e-12	47.4968	1	5.5e-12	
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+y	<-	 Cluster	Cluster	1	2	38.4751	1	5.5e-10	
+			Cluster	1	3	10.7888	1	0.0010	
+			Cluster	1	4	35.1537	1	3.0e-9	
+			Cluster	2	3	30.2214	1	3.9e-8	
+			Cluster	2	4	65.0365	1	7.4e-16	
+			Cluster	3	4	122.0228	1	2.3e-28	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	4	s.e.	Overall	s.e.	
+Size	0.2938	.	0.1563	.	0.2962	.	0.2537	.	 	 	
+y	 	
+Mean	397.1959	5.9171	577.0596	26.9556	420.0013	4.9026	358.9689	2.9873	422.3624	4.2719	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	4	s.e.	
+ 	0.2938	.	0.1563	.	0.2962	.	0.2537	.	
+	
+ 	y	
+Cluster	Mean	s.e.	 	 	 	 	 	 	
+1	397.1959	5.9171	 	 	 	 	 	 	
+2	577.0596	26.9556	 	 	 	 	 	 	
+3	420.0013	4.9026	 	 	 	 	 	 	
+4	358.9689	2.9873	 	 	 	 	 	 	
+	
+ 	Cluster_Modal	
+Cluster	Cluster#1	s.e.	Cluster#2	s.e.	Cluster#3	s.e.	Cluster#4	s.e.	
+1	0.9124	.	0.0541	.	0.0029	.	0.0307	.	
+2	0.0000	.	0.9470	.	0.0530	.	0.0000	.	
+3	0.0038	.	0.0303	.	0.9371	.	0.0287	.	
+4	0.1096	.	0.0123	.	0.0485	.	0.8296	.	

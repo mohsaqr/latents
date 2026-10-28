@@ -1,0 +1,24 @@
+Matched spike comparison, checked 2026-10-22
+
+Recomputed saved results only; no model fits rerun. Same 80 VVI/VVV dataset/model cells: 20 replicates each at true K and K+1 for two conditions. Benchmark-only spike definition: smallest standardized covariance eigenvalue / relative marginal variance < .01. Counts measure selected fits, not warnings or proven false classes.
+
+mclust 6.1.2, hierarchical initialization, no prior: 1/80 (1.25%).
+latents kmeans_10: 12/80 (15%).
+latents emEM_10: 25/80 (31.25%).
+mclust optional priorControl: 0/80, a different estimation objective.
+
+mclust unregularized median LL deficit from the non-spike latents finite benchmark reference at K+1: VVI 3.26298, VVV12.46758. Its reported LL is not re-evaluated here at its estimates (previous checks found a small one-E-step reporting lag). Initialization, search budgets, stopping and singularity rules differ, preventing causal attribution or a universal package ranking.
+
+The mclust original rows are archived in mclust-benchmark-inputs.rds; matched data in mclust-comparison.csv; compare-packages.R asserts counts and produces the summary. The first script assertion compared integer counts to double literals using identical(); it was corrected to numeric equality and rerun successfully.
+
+Mplus: separate earlier starts-study audit found9/12 matched K+1 outputs printed at least one variance0.000,11/12 derivative-product warnings. Rounded zeros are not exact eigenvalue measurements and these are different datasets from the 80-cell table. Do not combine those figures into a matched package ranking. See equivalence/starts-study/codex/REVIEW.md:97.
+
+Latent GOLD: vendor documentation describes default Bayes constants for variances to avoid boundary solutions, which changes estimation to posterior-mode rather than ordinary ML. We do not have a matched80-cell spike-rate estimate for it. No rate established here for MoEClust, OpenMx or other backends. tidyLPA forwards estimation to a selected backend; it is not a separate independent spike-prevention method.
+
+Official documentation checked:
+https://mclust-org.github.io/mclust/reference/mclustBIC.html
+https://mclust-org.github.io/mclust-book/chapters/07_miscellanea.html
+https://www.statisticalinnovations.com/courses/introduction-to-latent-class-analysis/lessons/session-1-introduction-to-latent-class-cluster-models/topic/i-boundary-identification-and-local-solution-issues/
+https://www.statisticalinnovations.com/wp-content/uploads/LG6061manual.pdf
+https://data-edu.github.io/tidyLPA/reference/estimate_profiles.html
+https://www.statmodel.com/HTML_UG/chapter14V8.htm

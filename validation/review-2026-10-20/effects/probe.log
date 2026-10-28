@@ -1,0 +1,53 @@
+
+base
+     y1:z      y1:w 
+0.3511800 0.6649496 
+log_likelihood      converged 
+     -1116.265          1.000 
+
+one covariate in large units
+        y1:z         y1:w 
+3.511800e-01 6.649496e-05 
+log_likelihood      converged 
+     -1116.265          1.000 
+
+one covariate in small units
+      y1:z       y1:w 
+   0.35118 6649.49623 
+log_likelihood      converged 
+     -1116.265          1.000 
+
+shifted
+     y1:z      y1:w 
+0.3511800 0.6649496 
+log_likelihood      converged 
+     -1116.265          1.000 
+
+Base inference
+        level       outcome          term     parameter   estimate
+1 measurement     profile_1            y1          mean 1.02035678
+2 measurement     profile_1            y2          mean 0.06806199
+3 measurement     profile_1            y1      variance 0.93366603
+4 measurement     profile_1            y2      variance 0.97453753
+5 measurement        shared          y1:z direct_effect 0.35118000
+6 measurement        shared          y1:w direct_effect 0.66494962
+7     profile     profile_1 group_class_1   probability 1.00000000
+8       group group_class_1          <NA>   probability 1.00000000
+  standard_error statistic      p_value   p_adjusted    conf_low conf_high
+1     0.04868299 20.959207 1.546405e-97 1.546405e-97  0.92493989 1.1157737
+2     0.04935933  1.378908 1.679230e-01 1.679230e-01 -0.02868052 0.1648045
+3     0.06602016        NA           NA           NA  0.81283523 1.0724587
+4     0.06891021        NA           NA           NA  0.84841732 1.1194059
+5     0.04878294  7.198827 6.073259e-13 6.073259e-13  0.25556718 0.4467928
+6     0.04729556 14.059451 6.740706e-45 6.740706e-45  0.57225203 0.7576472
+7     0.00000000        NA           NA           NA  1.00000000 1.0000000
+8     0.00000000        NA           NA           NA  1.00000000 1.0000000
+
+Shifted inference
+<latents_singular_information: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.>
+
+Name collision plain parameter count, fit parameter count, original vars and fitted vars
+[1] 4
+[1] 4
+[1] "a"   "b"   "a:b" "c"  
+[1] "a:b" "c"  

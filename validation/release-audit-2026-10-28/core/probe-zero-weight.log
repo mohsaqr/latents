@@ -1,0 +1,15 @@
+'data.frame':	120 obs. of  3 variables:
+ $ id: int  1 1 1 1 2 2 2 2 3 3 ...
+ $ x : num  -0.99 0.467 -1.09 0.453 -0.492 ...
+ $ w : num  1 1 1 1 1 1 1 1 1 1 ...
+NULL
+            family magnitude      base                          extra
+1          profile     1e+03 -178.7927              -178.792663181382
+2          profile     1e+06 -178.7927              -178.792663181382
+3          profile     1e+09 -178.7927              -178.792663181382
+4         additive     1e+03 -178.4893              -178.489305915028
+5         additive     1e+06 -178.4893 posterior rows must sum to one
+6         additive     1e+09 -178.4893 posterior rows must sum to one
+7 full_cross_level     1e+03 -200.1118              -200.111814591354
+8 full_cross_level     1e+06 -200.1118              -200.111814591354
+9 full_cross_level     1e+09 -200.1118              -200.111814591354

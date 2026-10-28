@@ -1,0 +1,5 @@
+{
+  "tests/equivalence/test-negative-binomial-regression.R": "b65be64c97909acc114d1186db9c4071b9e54094f924f1028c5c9c642f0fb942",
+  "tests/equivalence/test-vignette-claims.R": "11e955e86285072184f8e276db46a584fd052e88f8eb9e44f34bd2978aa80ddd",
+  "vignettes/articles/workflow-lpa.Rmd": "bfc9026a717d7a03ed385bba1fa4366b78ab785da1f10fba70799c2ccee9a863"
+}

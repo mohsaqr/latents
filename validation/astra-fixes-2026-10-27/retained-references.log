@@ -1,0 +1,56 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | claims                                                         
+⠸ |         14 | claims                                                         
+⠹ |         43 | claims                                                         
+⠸ |         74 | claims                                                         
+⠙ |         92 | claims                                                         
+⠹ |        123 | claims                                                         
+⠴ |        146 | claims                                                         
+⠸ |        174 | claims                                                         
+⠦ |        207 | claims                                                         
+⠇ |        239 | claims                                                         
+⠸ |        274 | claims                                                         
+✔ |        275 | claims [1.0s]
+
+⠏ |          0 | missing-patterns                                               
+⠹ |          3 | missing-patterns                                               
+⠹ |         13 | missing-patterns                                               
+⠹ |         23 | missing-patterns                                               
+⠹ |         33 | missing-patterns                                               
+⠹ |         43 | missing-patterns                                               
+⠹ |         53 | missing-patterns                                               
+⠦ |         57 | missing-patterns                                               
+⠋ |         61 | missing-patterns                                               
+⠼ |         65 | missing-patterns                                               
+⠇ |         69 | missing-patterns                                               
+⠹ |         73 | missing-patterns                                               
+⠸ |         74 | missing-patterns                                               
+⠼ |         75 | missing-patterns                                               
+⠴ |         76 | missing-patterns                                               
+⠦ |         77 | missing-patterns                                               
+⠙ |         82 | missing-patterns                                               
+✔ |         92 | missing-patterns [105.8s]
+
+⠏ |          0 | mplus-inference                                                
+⠋ |          1 | mplus-inference                                                
+⠹ |          3 | mplus-inference                                                
+⠴ |          6 | mplus-inference                                                
+⠦ |          7 | mplus-inference                                                
+⠇ |          9 | mplus-inference                                                
+✔ |         10 | mplus-inference
+
+⠏ |          0 | mplus-lmr                                                      
+✔ |          2 | mplus-lmr
+
+⠏ |          0 | mplus-mixture-weights                                          
+⠹ |          3 | mplus-mixture-weights                                          
+✔ |          9 | mplus-mixture-weights
+
+⠏ |          0 | mplus-robust                                                   
+✔ |          6 | mplus-robust
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 108.4 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 394 ]

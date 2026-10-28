@@ -1,0 +1,7 @@
+Sys.setenv(NOT_CRAN = 'true', OMP_NUM_THREADS = '1', VECLIB_MAXIMUM_THREADS = '1')
+args <- commandArgs(TRUE)
+if (length(args)) library(latents, lib.loc = args[[1]]) else pkgload::load_all('.', quiet=TRUE)
+library(testthat)
+r <- test_file('tests/testthat/test-astra-core.R', reporter='summary', package='latents', stop_on_failure=FALSE)
+saveRDS(r, if(length(args)) 'validation/astra-fixes-2026-10-27/core/before-results.rds' else 'validation/astra-fixes-2026-10-27/core/after-results.rds')
+print(as.data.frame(r)[, c('test','failed','error','warning','passed')])

@@ -1,0 +1,10 @@
+"suite","status","compared","agreed","values","outputs_not_covered","warnings","seconds","reason","first_warning"
+"twolevel-lpa","ran",1231,1231,134822,0,0,52.74,NA,NA
+"covariates","ran",577,577,41761,0,0,28.2,NA,NA
+"lta-general","ran",102,102,9539,0,0,43.62,NA,NA
+"lta-mixed","ran",358,358,50755,0,0,22.46,NA,NA
+"ordinal-count","ran",486,486,26814,0,0,13.92,NA,NA
+"three-step","ran",271,271,897,0,0,34.13,NA,NA
+"predict-newdata","ran",57,57,7571,0,0,4.63,NA,NA
+"robust-se","ran",541,541,24390,0,0,7.28,NA,NA
+"pool-imputations","ran",92,92,2396,0,0,5.72,NA,NA

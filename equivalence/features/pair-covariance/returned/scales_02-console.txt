@@ -1,0 +1,7 @@
+
+     Mplus VERSION 9 DEMO (Mac)
+     MUTHEN & MUTHEN
+
+     Running input file 'scales_02.inp'...
+
+ An error has occurred, refer to 'scales_02.out'

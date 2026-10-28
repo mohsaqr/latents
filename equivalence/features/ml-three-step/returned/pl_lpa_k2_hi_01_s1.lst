@@ -1,0 +1,170 @@
+pl_lpa_k2_hi_01_s1-data.txt
+File name:	pl_lpa_k2_hi_01_s1-data.txt	
+File size:	56726 bytes  500 records	
+File date:	2026-Oct-20 9:39:38 PM	
+Syntax:	pl_lpa_k2_hi_01_s1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+pl_lpa_k2_hi_01_s1	2-Cluster	-3156.3932	6418.4348	6346.7864	6363.7864	17	0.0227	0.9127	
+pl_lpa_k2_hi_01_s1 - LL = -3156.3932
+2-Cluster Syntax Model	
+					
+Number of cases	500				
+Number of parameters (Npar)	17				
+Activated Constraints	0				
+Random Seed	20261020				
+Best Start Seed	777793				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3156.3932				
+Log-prior	0.0000				
+Log-posterior	-3156.3932				
+BIC (based on LL)	6418.4348				
+AIC (based on LL)	6346.7864				
+AIC3 (based on LL)	6363.7864				
+CAIC (based on LL)	6435.4348				
+SABIC (based on LL)	6364.4757				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0227				
+Reduction of errors (Lambda)	0.9426				
+Entropy R-squared	0.9127				
+Standard R-squared	0.9297				
+Classification log-likelihood	-3185.6826				
+Entropy	29.2894				
+CLC	6371.3652				
+AWE	6633.6619				
+ICL-BIC	6477.0136				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	295.9539	6.2959	302.2497		
+2	5.0461	192.7041	197.7503		
+Total	301.0000	199.0000	500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	293.8489	8.4008	302.2497		
+2	8.4008	189.3495	197.7503		
+Total	302.2497	197.7503	500.0000		
+					
+Files					
+Infile	C:\lgfeatures\ml-three-step\pl_lpa_k2_hi_01_s1\pl_lpa_k2_hi_01_s1-data.txt	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	10000				
+nriterations	1000				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	no				
+identification	no				
+validation LL	no				
+sample size BIC	     500				
+predictionstatistics	no				
+outfile					
+file name	pl_lpa_k2_hi_01_s1_post.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+y4	Continuous				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first profile;
+   outfile 'pl_lpa_k2_hi_01_s1_post.txt' classification keep id y;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous, y4 continuous;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y4 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+   y4 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+Cluster(2)	<-	1			-0.4242	.	.	.				
+												
+y1	<-	1			-0.0237	.	.	.				
+y1	<-	Cluster(1)			0.0000	.	.	.				
+y1	<-	Cluster(2)			2.1787	.	.	.				
+												
+y2	<-	1			0.0135	.	.	.				
+y2	<-	Cluster(1)			0.0000	.	.	.				
+y2	<-	Cluster(2)			2.2326	.	.	.				
+												
+y3	<-	1			0.0588	.	.	.				
+y3	<-	Cluster(1)			0.0000	.	.	.				
+y3	<-	Cluster(2)			-2.2685	.	.	.				
+												
+y4	<-	1			-0.0629	.	.	.				
+y4	<-	Cluster(1)			0.0000	.	.	.				
+y4	<-	Cluster(2)			1.2888	.	.	.				
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	Cluster(1)	0.9979	.	.	.				
+y1			|	Cluster(2)	0.9234	.	.	.				
+y2			|	Cluster(1)	0.9175	.	.	.				
+y2			|	Cluster(2)	1.0177	.	.	.				
+y3			|	Cluster(1)	1.0690	.	.	.				
+y3			|	Cluster(2)	1.2574	.	.	.				
+y4			|	Cluster(1)	0.9677	.	.	.				
+y4			|	Cluster(2)	1.0408	.	.	.				
+Profile
+ 	Cluster	 	 	
+ 	1	2	Overall	
+Size	0.6045	0.3955	 	
+y1	 	
+Mean	-0.0237	2.1549	0.8379	
+y2	 	
+Mean	0.0135	2.2461	0.8965	
+y3	 	
+Mean	0.0588	-2.2096	-0.8383	
+y4	 	
+Mean	-0.0629	1.2259	0.4468	

@@ -1,0 +1,21 @@
+astra-diagnostics: ................................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                       test
+1        cross-level diagnostics exclude zero weights at both mapped levels
+2        both LTA engines obey empty-row policy and zero-weight eligibility
+3      regression diagnostics use the real classification levels and counts
+4  every newly supported family has entropy as the primary diagnostic table
+5    weighted regression quality views agree with their candidate summaries
+6  hierarchical growth diagnostics retain person and cluster classification
+7           weighted growth diagnostics and grid views use eligible persons
+8 older weighted cross-level objects explicitly mark an unavailable row map
+  failed error passed
+1      0 FALSE     10
+2      0 FALSE     15
+3      0 FALSE      7
+4      0 FALSE     21
+5      0 FALSE     10
+6      0 FALSE      4
+7      0 FALSE      6
+8      0 FALSE      7

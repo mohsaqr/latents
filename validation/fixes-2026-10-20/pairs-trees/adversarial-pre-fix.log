@@ -1,0 +1,61 @@
+ℹ Loading latents
+
+══ Testing test-review-pairs-trees.R ═══════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 15 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 17 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 18 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 21 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 23 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 24 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 25 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 26 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 27 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 29 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 30 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 31 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 32 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 33 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 34 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 35 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 36 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 37 ]Fitted a single-level latent class model.
+
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 37 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 37 ]
+
+── Failure ('test-review-pairs-trees.R:108:3'): joining preserves original indicator identity validation ──
+Expected `lca(...)` to throw a error with class <latents_bad_data>.
+
+── Failure ('test-review-pairs-trees.R:111:3'): joining preserves original indicator identity validation ──
+Expected `lca(...)` to throw a error with class <latents_bad_data>.
+
+── Failure ('test-review-pairs-trees.R:114:3'): joining preserves original indicator identity validation ──
+Expected `multilpa(...)` to throw a error with class <latents_bad_categorical>.
+
+── Failure ('test-review-pairs-trees.R:118:3'): joining preserves original indicator identity validation ──
+Expected `multilpa(...)` to throw a error with class <latents_bad_data>.
+
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 37 ]

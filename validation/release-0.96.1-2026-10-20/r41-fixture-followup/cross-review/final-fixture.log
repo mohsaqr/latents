@@ -1,0 +1,12 @@
+     mode                LL boundary probability_boundary converged
+  default 620.1129242380422    FALSE                FALSE      TRUE
+ internal 620.1129242380422    FALSE                FALSE      TRUE
+     blas 620.1129242380422    FALSE                FALSE      TRUE
+        min_initial        max_initial     min_transition     max_transition
+ 0.5000000000002066 0.5000000000002066 0.4960078130608113 0.4960179219275353
+ 0.5000000000000122 0.5000000000000122 0.4960078139496047 0.4960179236165791
+ 0.5000000000002066 0.5000000000002066 0.4960078130608113 0.4960179219275353
+       step_difference table_cov_error
+ 5.647471392200565e-07               0
+ 5.647475088688125e-07               0
+ 5.647471392200565e-07               0

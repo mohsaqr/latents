@@ -1,0 +1,16 @@
+$raw_weights
+[1] 6.405119e+307 6.400000e+307 6.400000e+307 6.400000e+307  0.000000e+00
+
+$construction_bound
+[1] 4.551111e+294
+
+$alternative_error
+[1] 1.054961e+308
+
+$null_error
+[1] 0
+
+$rounding
+[1] 1.054961e+308
+
+[1] 0 0 0 0 0

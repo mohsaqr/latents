@@ -1,0 +1,30 @@
+'data.frame':	400 obs. of  5 variables:
+ $ x    : num  -1.121 -1.282 -2.039 -0.938 -0.51 ...
+ $ z    : num  -0.465 0.594 0.822 1.559 -1.446 ...
+ $ r    : num  -0.535 0.648 -1.338 -0.859 1.579 ...
+ $ truth: int  2 2 1 1 2 2 1 1 2 1 ...
+ $ y    : num  -0.119 0.558 -3.843 -1.745 -1.699 ...
+[1] TRUE
+  class_1   class_2 
+0.7130096 0.7130096 
+coefficient.class_1.(Intercept)           coefficient.class_1.x 
+                      0.8600777                       2.0523791 
+coefficient.class_2.(Intercept)           coefficient.class_2.x 
+                     -1.5004996                      -0.9515700 
+           coefficient.common.r           log_sigma.all.class_1 
+                      0.5882506                      -0.1691302 
+ membership.class_2.(Intercept) 
+                     -0.3144792 
+Classes
+
+Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+-------  -----  --------  -------------  --------------  -----------
+Class 1  0.578    231.19            242           0.884             
+Class 2  0.422    168.81            158           0.891             
+Error in .flexmix_package_estimates(fixture, .flexmix_design(fixture,  : 
+  every package estimate must be found in its tables
+[1] "Error in .flexmix_package_estimates(fixture, .flexmix_design(fixture,  : \n  every package estimate must be found in its tables\n"
+attr(,"class")
+[1] "try-error"
+attr(,"condition")
+<simpleError in .flexmix_package_estimates(fixture, .flexmix_design(fixture,     data), obtained): every package estimate must be found in its tables>

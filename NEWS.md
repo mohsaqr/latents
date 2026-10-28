@@ -1,4 +1,27 @@
-# latents 0.98.0
+# latents 0.98.1
+
+## Further release audit repairs (2026-10-28)
+
+* Equal-variance Gaussian and equal-dispersion negative-binomial mixture
+  regressions again report their residual standard deviations or dispersions
+  and standard errors. Class names on the internal variances had changed the
+  shared parameter's name, leaving the result-table lookup empty, even with
+  one class.
+* General-engine LTA covariance calculations now differentiate and invert in
+  standardized parameter coordinates for observed, robust and OPG inference.
+  Small outcome units could distort standard errors or cause a false
+  singular-information refusal; large units could also cause that refusal.
+* Zero-weight regression units are excluded from inference transformations
+  and scores, as they already were from fitting. Extreme values on excluded
+  units could otherwise erase standard errors. Additive models normalize
+  their posteriors more stably, so excluded groups with large finite values
+  no longer abort an otherwise valid fit.
+* `compare_models()` retains every model and its ordering through wrappers
+  forwarding `...`, including models named `n_profiles`, `n_group_classes`
+  or `cutoff`. These labels could silently drop a model and change BIC weights.
+* Diagnostics count the noise component as a classification alternative.
+  One Gaussian profile plus noise now receives classification checks instead
+  of being described as having nothing to classify.
 
 ## Upgrading from CRAN 0.9.21
 

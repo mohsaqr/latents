@@ -1,0 +1,75 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-lta-parallel.R","lta-parallel","lta appends and validates cores without moving existing arguments",9,0,FALSE,FALSE,0,0.066,0.002,0.079,9
+"test-lta-parallel.R","lta-parallel","both lta engines have identical forked starts and emEM screening",1,0,TRUE,FALSE,0,0.004,0,0.005,0
+"test-lta-parallel.R","lta-parallel","transition grids match serial and direct fits for both searches and engines",1,0,TRUE,FALSE,0,0.005,0.001,0.006,0
+"test-lta-parallel.R","lta-parallel","serialized transition workers carry caller data and start controls",20,0,FALSE,FALSE,0,38.631,0.224,39.173,20
+"test-lta-parallel.R","lta-parallel","flat task dispatch is longest first and respects the worker budget",20,0,FALSE,FALSE,0,0.0200000000000031,0.00700000000000001,0.0419999999999945,20
+"test-lta-parallel.R","lta-parallel","transition enumeration uses one unnested pool per search phase",16,0,FALSE,FALSE,0,0.373999999999995,0.011,0.463999999999999,16
+"test-lta-parallel.R","lta-parallel","unseeded transition setup draws in the same parent grid order as lta",6,0,FALSE,FALSE,0,0.247,0.00700000000000001,0.332000000000001,6
+"test-lta-parallel.R","lta-parallel","longest-first tasks replay classed conditions in input order",3,0,FALSE,FALSE,0,0.00399999999999778,0.001,0.0069999999999979,3
+"test-lta-parallel.R","lta-parallel","covariance qualifications count every screened and continued start once",8,0,FALSE,FALSE,0,0.0459999999999994,0.003,0.0930000000000035,8
+"test-lta-parallel.R","lta-parallel","covariance qualifications survive failure of every transition start",12,0,FALSE,FALSE,0,0.0229999999999961,0.00399999999999995,0.0690000000000026,12
+"test-lta-parallel.R","lta-parallel","transition enumeration propagates a lost flat start worker",2,0,FALSE,FALSE,0,0.0100000000000051,0.001,0.0339999999999989,2
+"test-lta-parallel.R","lta-parallel","direct general lta workers serialize both emEM stages without caller globals",3,0,FALSE,FALSE,0,0.398999999999994,0.004,0.419000000000004,3
+"test-parallel-candidates.R","parallel-candidates","lost profile and family candidates use the ordinary failed-candidate row",16,0,FALSE,FALSE,0,0.0790000000000006,0.00800000000000001,0.149999999999999,16
+"test-parallel-profile-pool.R","parallel-profile-pool","profile grids match serial and direct categorical and continuous fits",1,0,TRUE,FALSE,0,0.000999999999997669,0.001,0.000999999999997669,0
+"test-parallel-profile-pool.R","parallel-profile-pool","profile enumeration shares one unnested start pool per search phase",37,0,FALSE,FALSE,0,0.385000000000005,0.017,0.518999999999998,37
+"test-parallel-profile-pool.R","parallel-profile-pool","profile start dispatch is longest first without exceeding cores",9,0,FALSE,FALSE,0,0.110999999999997,0.005,0.160000000000004,9
+"test-parallel-profile-pool.R","parallel-profile-pool","serialized profile worker payloads own caller data and search controls",7,0,FALSE,FALSE,0,0.742000000000004,0.012,0.960999999999999,7
+"test-parallel-profile-pool.R","parallel-profile-pool","membership covariate grids retain candidate parallelism and serial starts",7,0,FALSE,FALSE,0,0.459000000000003,0.011,0.612000000000002,7
+"test-parallel-profile-pool.R","parallel-profile-pool","joined categorical pairs retain exact candidate fits and worker payloads",8,0,FALSE,FALSE,0,0.278999999999996,0.00800000000000001,0.396000000000001,8
+"test-parallel-profile-pool.R","parallel-profile-pool","group-class family enumeration retains its public direct fits",2,0,FALSE,FALSE,0,0.0499999999999972,0.002,0.0900000000000034,2
+"test-parallel-profile-pool.R","parallel-profile-pool","unseeded profile starts draw in the direct fits' parent grid order",9,0,FALSE,FALSE,0,0.357000000000006,0.00900000000000001,0.478999999999999,9
+"test-parallel-profile-pool.R","parallel-profile-pool","a recovered categorical grid start preserves all fitted results",1,0,TRUE,FALSE,0,0.000999999999997669,0,0.00199999999999534,0
+"test-parallel-profile-pool.R","parallel-profile-pool","a persistently killed categorical start leaves other starts intact",1,0,TRUE,FALSE,0,0.00100000000000477,0,0.00199999999999534,0
+"test-parallel-profile-pool.R","parallel-profile-pool","losing every categorical start fails only that candidate",1,0,TRUE,FALSE,0,0,0.001,0.000999999999997669,0
+"test-parallel-profile-pool.R","parallel-profile-pool","direct profile fitting evaluates a supplied cores expression once",2,0,FALSE,FALSE,0,0.0110000000000028,0.001,0.0219999999999985,2
+"test-parallel-recovery.R","parallel-recovery","a killed fork task is retried once and recovers its exact value",1,0,TRUE,FALSE,0,0.000999999999997669,0,0.00199999999999534,0
+"test-parallel-recovery.R","parallel-recovery","a permanently killed fork task leaves other task results intact",1,0,TRUE,FALSE,0,0,0,0.00199999999999534,0
+"test-parallel-recovery.R","parallel-recovery","a socket retry loses only the task that kills its worker",4,0,FALSE,FALSE,0,0.0169999999999959,0.00800000000000001,0.556999999999995,4
+"test-parallel-recovery.R","parallel-recovery","ordinary errors in start code are recorded without a process-loss retry",1,0,TRUE,FALSE,0,0.00100000000000477,0.001,0.00199999999999534,0
+"test-parallel-recovery.R","parallel-recovery","recovered flat starts preserve the complete transition grid",1,0,TRUE,FALSE,0,0.000999999999997669,0,0.000999999999997669,0
+"test-parallel-recovery.R","parallel-recovery","a recovered direct lta start preserves the undisturbed fitted object",1,0,TRUE,FALSE,0,0.00100000000000477,0,0.000999999999997669,0
+"test-parallel-recovery.R","parallel-recovery","a genuine transition start error is neither retried nor called worker loss",1,0,TRUE,FALSE,0,0.000999999999997669,0.001,0.00200000000000244,0
+"test-parallel-recovery.R","parallel-recovery","a permanently lost flat start is reported alongside fitted candidates",1,0,TRUE,FALSE,0,0,0,0.00200000000000244,0
+"test-parallel-recovery.R","parallel-recovery","losing all starts fails only their candidate in a transition grid",1,0,TRUE,FALSE,0,0.000999999999997669,0,0.00200000000000244,0
+"test-parallel-recovery.R","parallel-recovery","emEM aggregates recovered screening and finalist losses into one warning",1,0,TRUE,FALSE,0,0.000999999999997669,0.001,0.00200000000000244,0
+"test-parallel-report.R","parallel-report","worker-loss phase reports combine once without hiding task warnings",16,0,FALSE,FALSE,0,0.0169999999999959,0.003,0.027000000000001,16
+"test-parallel-report.R","parallel-report","a direct screened search combines its two mapper warnings",4,0,FALSE,FALSE,0,0.00399999999999778,0.001,0.00799999999999557,4
+"test-parallel.R","parallel","a profile grid on several cores is identical to one core",2,0,FALSE,FALSE,0,0.370000000000005,0.023,0.981999999999999,2
+"test-parallel.R","parallel","transition and family grids on several cores are identical to one core",2,0,FALSE,FALSE,0,1.146,0.025,2.65,2
+"test-parallel.R","parallel","candidates' warnings reach the caller in grid order, as on one core",3,0,FALSE,FALSE,0,0.490000000000002,0.035,1.199,3
+"test-parallel.R","parallel","the socket backend returns values and conditions in order",3,0,FALSE,FALSE,0,0.0129999999999981,0.00700000000000001,0.179000000000002,3
+"test-parallel.R","parallel","cores is validated by class, and one core is lapply",6,0,FALSE,FALSE,0,0.0139999999999958,0.001,0.0159999999999982,6
+"test-parallel.R","parallel","forked workers are refused only on macOS with Accelerate's BLAS",4,0,FALSE,FALSE,0,0.00600000000000023,0.003,0.0129999999999981,4
+"test-parallel.R","parallel","a forked worker killed by a signal becomes a failed candidate",3,0,FALSE,FALSE,0,0.0069999999999979,0.02,0.0320000000000036,3
+"test-parallel.R","parallel","a socket worker that dies becomes a failed candidate",3,0,FALSE,FALSE,0,0.0120000000000005,0.00800000000000001,0.549999999999997,3
+"test-parallel.R","parallel","one fit's starts on several cores give the same fit as one core",4,0,FALSE,FALSE,0,0.836999999999996,0.08,1.77,4
+"test-parallel.R","parallel","a fit refuses a `cores` that is not a whole number of at least 1",2,0,FALSE,FALSE,0,0.00500000000000256,0,0.00600000000000023,2
+"test-parallel.R","parallel","socket cleanup cannot replace a worker failure or leak remaining connections",5,0,FALSE,FALSE,0,0.00600000000000023,0.001,0.00799999999999557,5
+"test-parallel.R","parallel","cleanup closes a live socket even when another node is already closed",4,0,FALSE,FALSE,0,0.0100000000000051,0.003,0.146999999999998,4
+"test-parallel.R","parallel","every enumeration path sends its data, not the caller's variable, to workers",1,0,FALSE,FALSE,0,0.260999999999996,0.00900000000000001,0.329999999999998,1
+"test-parallel.R","parallel","the shared pool dispatches longest tasks first within its worker budget",5,0,FALSE,FALSE,0,0.00900000000000034,0.003,0.0140000000000029,5
+"test-parallel.R","parallel","collected task conditions retain their classes and original task order",7,0,FALSE,FALSE,0,0.00600000000000023,0.002,0.0110000000000028,7
+"test-parallel.R","parallel","the socket pool sends forced task inputs and dynamically balances them",5,0,FALSE,FALSE,0,0.00800000000000267,0.003,0.0140000000000029,5
+"test-parallel.R","parallel","a serialized task collector captures only its forced task function",3,0,FALSE,FALSE,0,0.00300000000000011,0.002,0.0069999999999979,3
+"test-parallel.R","parallel","socket restart and retry startup failures retain completed chunks",6,0,FALSE,FALSE,0,0.0069999999999979,0.002,0.0129999999999981,6
+"test-parallel.R","parallel","initial socket startup failure remains a classed infrastructure error",1,0,FALSE,FALSE,0,0.00200000000000244,0.001,0.00300000000000011,1
+"test-parallel.R","parallel","a fork retry that cannot spawn retains earlier recovered tasks",3,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00600000000000023,3
+"test-parallel.R","parallel","a terminal loss callback error cannot hide the worker warning",3,0,FALSE,FALSE,0,0.00200000000000244,0,0.00399999999999778,3
+"test-parallel.R","parallel","socket chunk recovery retries only unfinished tasks on a fresh smaller cluster",6,0,FALSE,FALSE,0,0.00500000000000256,0.002,0.0109999999999957,6
+"test-parallel.R","parallel","an uncaught task R error retains its class and is never retried",4,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00600000000000023,4
+"test-parallel.R","parallel","broken socket workers are retired before replacement pools start",11,0,FALSE,FALSE,0,0.0150000000000006,0.004,0.0770000000000053,11
+"test-parallel.R","parallel","socket PID registration failures close idle workers before failing",2,0,FALSE,FALSE,0,0.00399999999999778,0.001,0.00500000000000256,2
+"test-parallel.R","parallel","unretired socket workers prevent replacement and give a classed failure",4,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00400000000000489,4
+"test-parallel.R","parallel","a seeded multilevel LCA grid prepared on workers is identical to one core",7,0,FALSE,FALSE,0,2.631,0.201,7.549,7
+"test-review-0970-parallel.R","review-0970-parallel","C1 seeded socket tasks inherit all three parent RNG kinds",420,0,FALSE,FALSE,0,0.736000000000004,0.157,1.098,420
+"test-review-0970-parallel.R","review-0970-parallel","C1 family and whole-profile fallback candidates preserve seeded fits",11,0,FALSE,FALSE,0,0.295000000000002,0.0110000000000001,0.414999999999999,11
+"test-review-0970-parallel.R","review-0970-parallel","C1 live socket family enumeration agrees under L'Ecuyer-CMRG",1,0,FALSE,FALSE,0,0.0779999999999959,0.004,0.359999999999999,1
+"test-review-0970-parallel.R","review-0970-parallel","C2 Windows retirement accepts exited workers and rejects live survivors",7,0,FALSE,FALSE,0,0.0169999999999959,0.00300000000000011,0.0249999999999986,7
+"test-review-0970-parallel.R","review-0970-parallel","C3 socket abnormal exits abort workers while normal exits stop them",6,0,FALSE,FALSE,0,0.007000000000005,0.002,0.00999999999999801,6
+"test-review-0970-parallel.R","review-0970-parallel","C3 isolated fork abnormal exits kill only their owned child",8,0,FALSE,FALSE,0,0.00799999999999557,0.002,0.0140000000000029,8
+"test-review-0970-parallel.R","review-0970-parallel","C4 socket recovery attempts every task at most twice",5,0,FALSE,FALSE,0,0.00600000000000023,0.002,0.00999999999999801,5
+"test-review-0970-parallel.R","review-0970-parallel","C5a converted family warnings remain failed candidate rows",6,0,FALSE,FALSE,0,0.00900000000000034,0.002,0.0150000000000006,6
+"test-review-0970-parallel.R","review-0970-parallel","C5b collected conditions precede uncaught errors in grid order",20,0,FALSE,FALSE,0,0.0159999999999982,0.00299999999999989,0.0210000000000008,20
+"test-review-0970-parallel.R","review-0970-parallel","worker execution settings restore on errors and interrupts without a seed",6,0,FALSE,FALSE,0,0.00600000000000023,0.002,0.0110000000000028,6

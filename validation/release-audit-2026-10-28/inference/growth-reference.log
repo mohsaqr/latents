@@ -1,0 +1,10 @@
+'data.frame':	400 obs. of  3 variables:
+ $ id  : int  1 1 1 1 1 2 2 2 2 2 ...
+ $ time: int  -2 -1 0 1 2 -2 -1 0 1 2 ...
+ $ y   : num  0.789 2.776 3.141 4.846 4.337 ...
+         parameter       expected         actual    absolute_error
+         intercept 1.975520713228 1.975520713228 2.22044604925e-16
+             slope 0.694097005105 0.694097005105 7.77156117238e-15
+ residual variance 0.645909880844 0.645909881032 1.88035476079e-10
+   random variance 1.817894546828 1.817894546181 6.46897424517e-10
+coefficient vcov max absolute error: 7.636621e-12 

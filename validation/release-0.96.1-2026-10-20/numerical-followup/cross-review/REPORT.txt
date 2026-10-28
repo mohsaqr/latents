@@ -1,0 +1,62 @@
+Independent read-only cross-review — conditioning-aware Vuong follow-up
+
+Disposition: do not release the current conditioning-dependent cleanup.
+No tracked source/test/reference file was changed by this reviewer.
+
+The triangular solve direction, dimensions, signed-Gram construction and
+propagation of a componentwise information error through R^-1 are consistent.
+The problem is the interpretation of the resulting uncertainty bound:
+being smaller than a potentially large bound does not establish that an
+eigenvalue is numerically zero. Genuine small reference weights are deleted.
+
+Blocking known-answer counterexample
+
+set.seed(83)
+Q <- qr.Q(qr(matrix(rnorm(400 * 5), 400, 5)))
+alternative <- list(scores = Q, information = diag(5))
+T <- diag(4)
+T[1, 2] <- 1
+T[2, 2] <- 1e-4
+delta <- 1e-8
+null <- list(scores = Q[, 1:4] %*% T * sqrt(1 + delta),
+             information = crossprod(T))
+
+The true reference weights are one unit weight, four -delta weights and
+four zeros. At q = 0 the exact upper probability is
+pf(4 * delta, 1, 4, lower.tail = FALSE), equal to 0.999850000001.
+The proposed producer deletes all four negative weights and returns
+probability 1, an error of 1.5e-4. The null information's eigenvalue ratio
+is 2.5e-9, above the public regularity cutoff of 1e-10.
+
+At separation 1e-3/delta 1e-10, the same deletion yields 1 rather than
+0.999985. Well-conditioned charts in this probe preserve the genuine
+negative weights. See known-weight-probe.csv/.log for all 12 cases.
+
+These are internal known-answer producer probes. No fitted public-model
+trigger is claimed or required to establish the probability error.
+
+Nonfinite and unresolved finite bounds
+
+With set.seed(83), Q = qr.Q(qr(matrix(rnorm(80), 20, 4))), and the same
+four-dimensional chart at separation 1e-7, an alternative with scores
+Q %*% T * 1.1e154 and information crossprod(T), compared to a null with
+zero scores and unit information, has four finite positive computed
+weights near 1.21e308. The propagated weight error overflows to Inf;
+rounding becomes Inf and all reference weights are silently set to zero.
+See overflow-bound-detail.log. At scale 8e153 the finite bound 1.05496e308
+also exceeds and deletes all genuine approximately 6.4e307 weights
+(nonfinite-bound-detail.log). This chart fails public regularity, so this
+is an internal robustness concern without a claimed public trigger.
+
+Suggested resolution
+
+Use a sufficiently accurate chart/factorization to preserve genuine
+weights, or report a typed unresolved comparison when their signs or
+probability cannot be certified. An enlarged uncertainty bound must not
+be treated as evidence of exact zero. Guard nonfinite/unresolvable
+propagated bounds explicitly. Preserve the original exact nested tests,
+well-conditioned genuine-small-weight cases and all Imhof tests. The
+new near-collinear tests can permit a documented typed refusal when the
+reference cannot be resolved in that chart.
+
+The parent and numerical author received the exact examples and evidence.

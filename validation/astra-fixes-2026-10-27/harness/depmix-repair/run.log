@@ -1,0 +1,84 @@
+API check: every validation call matches multilpa 0.97.4.
+running suite: depmixs4
+converged at iteration 11 with logLik: -1457.504 
+converged at iteration 38 with logLik: -1960.506 
+converged at iteration 16 with logLik: -1123.725 
+converged at iteration 8 with logLik: -1860.582 
+running suite: hard-depmixs4
+converged at iteration 67 with logLik: -5199.608 
+converged at iteration 70 with logLik: -5199.608 
+converged at iteration 67 with logLik: -5199.608 
+converged at iteration 66 with logLik: -5199.608 
+converged at iteration 76 with logLik: -5199.608 
+converged at iteration 79 with logLik: -3366.31 
+converged at iteration 69 with logLik: -3366.31 
+converged at iteration 85 with logLik: -3366.31 
+converged at iteration 92 with logLik: -3366.31 
+converged at iteration 67 with logLik: -3366.31 
+converged at iteration 95 with logLik: -3120.098 
+converged at iteration 96 with logLik: -3120.098 
+converged at iteration 110 with logLik: -3120.098 
+converged at iteration 93 with logLik: -3120.098 
+converged at iteration 112 with logLik: -3120.098 
+converged at iteration 27 with logLik: -3209.833 
+converged at iteration 26 with logLik: -3209.833 
+converged at iteration 26 with logLik: -3209.833 
+converged at iteration 31 with logLik: -3209.833 
+converged at iteration 23 with logLik: -3209.833 
+converged at iteration 28 with logLik: -2948.286 
+converged at iteration 28 with logLik: -2948.286 
+converged at iteration 26 with logLik: -2948.286 
+converged at iteration 26 with logLik: -2948.286 
+converged at iteration 28 with logLik: -2948.286 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+converged at iteration 31 with logLik: 3605.761 
+converged at iteration 34 with logLik: 3605.761 
+converged at iteration 37 with logLik: 3605.761 
+converged at iteration 42 with logLik: 3605.761 
+converged at iteration 33 with logLik: 3605.761 
+converged at iteration 35 with logLik: -3387.745 
+converged at iteration 37 with logLik: -3387.745 
+converged at iteration 34 with logLik: -3387.745 
+converged at iteration 37 with logLik: -3387.745 
+converged at iteration 35 with logLik: -3387.745 
+converged at iteration 1381 with logLik: -2917.115 
+converged at iteration 1535 with logLik: -2917.115 
+converged at iteration 1399 with logLik: -2917.476 
+converged at iteration 875 with logLik: -2917.115 
+converged at iteration 1185 with logLik: -2917.476 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+Equivalence run against multilpa 0.97.4 under R version 4.5.2 (2025-10-31)
+          suite status compared agreed values outputs_not_covered warnings
+1      depmixs4    ran      482    482  29444                   0        0
+2 hard-depmixs4    ran     1190   1190 163580                   0        0
+  seconds
+1   13.34
+2  163.40
+
+1672 quantities (193024 values) compared, 1672 agreed, 0 disagreed
+
+          suite         source precision compared agreed worst_difference
+1      depmixs4 depmixS4 1.5.1   machine      482    482     2.303634e-06
+2 hard-depmixs4 depmixS4 1.5.1   machine     1190   1190     9.401557e-05
+  loosest_tolerance worst_tolerance_fraction
+1               0.5                0.7107236
+2               0.5                0.5472430
+
+1672 quantities (193024 values) compared, 1672 agreed, 0 disagreed (0 explained by a known open defect)
+
+wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in validation/astra-fixes-2026-10-27/harness/depmix-repair

@@ -1,0 +1,16 @@
+$installed_functions
+[1] 1219
+
+$source_functions
+[1] 1219
+
+$missing_installed
+character(0)
+
+$extra_installed
+character(0)
+
+$changed
+character(0)
+
+PASS: installed final archive and current source have identical function formals and bodies. No models rerun.

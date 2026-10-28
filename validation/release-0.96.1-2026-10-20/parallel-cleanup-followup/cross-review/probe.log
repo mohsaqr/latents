@@ -1,0 +1,46 @@
+$value
+$value[[1]]
+[1] 1
+
+$value[[2]]
+[1] 2
+
+$value[[3]]
+[1] 3
+
+
+$warnings
+character(0)
+
+$connections
+[1] 3
+
+$value
+<simpleError in checkForRemoteErrors(val): one node produced an error: independent original worker error>
+
+$warnings
+character(0)
+
+$connections
+[1] 3
+
+$value
+<latents_parallel_failure: A worker process failed and the candidates were lost (error reading from connection). Run again with fewer `cores`, or `cores = 1`.>
+
+$warnings
+character(0)
+
+$connections
+[1] 3
+
+$value
+NULL
+
+$warnings
+character(0)
+
+$connections
+[1] 3
+
+NULL
+Independent cleanup probes passed: normal/remote-error/dead-worker/mocked-shutdown, no warnings, no leaked connections, unrelated connection preserved.

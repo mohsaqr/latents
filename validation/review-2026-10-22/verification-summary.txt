@@ -1,0 +1,10 @@
+latents 0.96.2, HEAD 12e0145; review 2026-10-22
+Unit suite (socket/search reruns replace sandbox-blocked files): 1306 test blocks in 152 files; nb 8880; failed 0; skipped 0; error 0; warning 11; passed 8869
+All eleven unit warnings are thin-profile notices on deliberately small fixtures.
+Socket/search rerun: 271 expectations; zero failures/errors/warnings/skips.
+tests/equivalence: 64 test blocks in 29 files; nb 407; failed 0; skipped 0; error 0; warning 2; passed 405
+New isolated regression assertions (currently expose five confirmed defects): 5 test blocks in 1 files; nb 12; failed 5; skipped 0; error 0; warning 0; passed 7
+Lint: zero findings. Fresh install and source build succeeded.
+Limited R CMD check: zero errors; two warnings for deliberately unbuilt vignette outputs.
+No full vignette rendering, PDF manual, complete CRAN check or full standalone feature sweeps rerun.
+Numerical probes: 56/56 all-retained emEM/kmeans fits identical; eight extension paths preserve shared starts; 120 bounded variance cases completed.

@@ -1,0 +1,50 @@
+Suggested correct-behavior regression tests (these are repair targets;
+findings-tests.R separately asserts the current defect reproductions).
+
+PD-01: On a real fitted noise model, expect_error(plot_diagnostics(x,
+what='entropy'/'avepp'/'posteriors'), class='latents_unsupported_noise'),
+matching generic plot(x, what=...). Decide whether what='all' refuses or
+returns only sizes; explicitly test that outcome. Build returned plots so
+out-of-range removal warnings cannot hide invalid calculations.
+
+PD-02: Fit a weighted grid with asymmetric weights and two adjacent profile
+counts. Compare each tree bar share with fitted effective_profile_counts /
+sum(effective_profile_counts). Check weighted flow row/column marginals equal
+the weighted parent/child shares. Include two-level unit weights, not only
+single-level row weights.
+
+PD-03: Using the same grid, compare plot(x, what='enum'), what='e', what='tr'
+and what='t' with exact legacy names; include positional criterion, exact
+old/new calls, invalid criteria and the conflict case with criterion supplied.
+
+PD-04: Check tools::Rd_db('latents') aliases retain all released plot-method
+names; assert that ?plot.multilpa etc resolve. Include predict growth's
+released help alias if full help backwards compatibility is intended. Check
+method-specific arguments/defaults remain discoverable on the shared topic.
+
+PD-05: Fit cbind(success,failure) binomial with varying exposures. Specify
+intended expected-count versus probability units. Assert identical units for
+predict(fit) and predict(fit, training_rows), both response and class_response.
+If a new trials design is supported, assert response==trials*class-averaged
+probability on new rows without their actual outcomes.
+
+PD-06: Guard documentation against a simple synthetic bootstrap where b=0
+and B=19: expected p=.05. Define the corrected formula in the prose; render
+again. Include an invalid replicate case that must withhold p, not shrink the
+denominator. Do not conflate Monte Carlo minimum p with statistical power.
+
+PD-07: Assert NULL seed advances the RNG, integer seed restores it, and no
+pre-existing RNG state remains absent after explicit-seed simulation.
+Condition tests should match the actual supported promise: translate mixture
+model-frame errors if guaranteeing latents_bad_data, otherwise restrict that
+claim in the help. Test missing predictors/outcomes, unseen factor levels and
+an evaluated non-finite transformed predictor separately.
+
+PD-08: Open a graphics device, call each ported plot from within a loop or
+function, and assert whether drawing happens according to the decided contract.
+Test the return class/visibility explicitly. If returning unprinted ggplots
+is intentional, document and verify print(plot(x)) migration examples.
+
+Lower priority: Assert bars' intervals argument scope in help; add subclass
+S3-dispatch consistency between plot_profiles() and plot(); enumerate which
+model families are accepted by each named plot.

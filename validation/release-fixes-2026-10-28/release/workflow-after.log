@@ -1,0 +1,36 @@
+Library: /private/tmp/latents-release-fixes-20261028/lib/latents 
+'data.frame':	300 obs. of  5 variables:
+ $ cognitive_strategies: num  5.31 5.85 6.62 5.69 4.38 ...
+ $ intrinsic_value     : num  5.67 6.44 6.67 6.56 5.56 ...
+ $ self_efficacy       : num  5.78 6 6.22 6.33 4.89 ...
+ $ self_regulation     : num  5.33 5.78 6.33 5.56 4.78 ...
+ $ test_anxiety        : num  4 4 3.25 4.5 4 3.5 3 3.5 3.25 3 ...
+Warning messages:
+1: A variance reached min_variance; this is a bound-active constrained fit. 
+2: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics. 
+3: Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics. 
+   model n_profiles bic_individual converged boundary
+1    EEI          1       2551.550      TRUE    FALSE
+2    EEI          2       1904.713      TRUE    FALSE
+3    EEI          3       1640.869      TRUE    FALSE
+4    EEI          4       1573.917      TRUE    FALSE
+5    EEI          5       1520.721      TRUE    FALSE
+6    EEI          6       1489.547      TRUE    FALSE
+7    VVI          1       2551.550      TRUE    FALSE
+8    VVI          2       1898.371      TRUE    FALSE
+9    VVI          3       1654.002      TRUE    FALSE
+10   VVI          4       1610.669      TRUE    FALSE
+11   VVI          5       1426.529      TRUE     TRUE
+12   VVI          6       1591.779      TRUE    FALSE
+13   EEE          1       1345.444      TRUE    FALSE
+14   EEE          2       1350.148      TRUE    FALSE
+15   EEE          3       1368.679      TRUE    FALSE
+16   EEE          4       1381.027      TRUE    FALSE
+17   EEE          5       1395.170      TRUE    FALSE
+18   EEE          6       1410.690      TRUE    FALSE
+19   VVV          1       1345.444      TRUE    FALSE
+20   VVV          2       1384.217      TRUE    FALSE
+21   VVV          3       1422.295      TRUE    FALSE
+22   VVV          4       1496.268      TRUE    FALSE
+23   VVV          5       1557.703      TRUE    FALSE
+24   VVV          6       1604.294      TRUE    FALSE

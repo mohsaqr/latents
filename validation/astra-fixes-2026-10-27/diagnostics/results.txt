@@ -1,0 +1,39 @@
+Astra fixes A09, A10, A16, A17
+
+Implementation:
+- R/diagnostics-checks.R: one family-aware posterior/weight/eligibility adapter;
+  general LTA obeys drop_empty and excludes zero weights; cross-level models
+  use the index stored in sufficient_statistics; regression levels use spec;
+  growth models report persons and clusters. Classification/entropy/AvePP use
+  the same eligible units. Legacy missing-map levels retain explicit n/a.
+- R/report.R: every newly supported family stores entropy as its primary table,
+  plus classification and average-posteriors tables. Updated documentation.
+- R/grid-views.R: regression/growth quality plots use the same weighted eligible
+  posterior adapter as diagnostics and candidate model summaries.
+- tests/testthat/test-astra-diagnostics.R: eight synthetic regression cases.
+- tests/testthat/test-review-1027-diagnostics.R: replace outdated assertion that
+  a cross-level row-to-group map is absent; it exists in sufficient statistics.
+
+Verification, R 4.5.2, NOT_CRAN=true, one OMP/BLAS thread:
+- Same new test file against the review's old installed library:
+  12 assertion failures, 7 test errors, 2 passes (8 cases total).
+- Current implementation: 8 cases, 78 assertions passed, 0 failures/errors.
+- Existing diagnostics, tidy-diagnostics, review-1027-diagnostics, grid-contract,
+  report-surface, plot-named: 61 cases, 757 assertions, 0 failures/errors/skips.
+- Logs, runners and saved test results are retained in this directory.
+- tmp/astra-diagnostics.html rendered successfully (self-contained, 818 KB).
+  It contains weighted cross-level reports, both empty-row policies for general
+  LTA, regression nesting reports and corrected weighted enumeration plots.
+  Visual user review remains for the coordinating agent; no visual approval
+  is claimed. Source: tmp/astra-diagnostics.Rmd.
+
+No NEWS, generated Rd, project notes, commits or external writes were made.
+
+Follow-up requested by coordinator: the public cross-level group_classes table
+also counted zero-weight groups in n_assigned. R/cross-level.R now filters the
+modal counts by positive sampling weight. The retained old-library probe
+cross-level-count-old.log gives 21/39 assigned versus the correct 20/35 over
+55 positive-weight groups. Two additional regression assertions require both
+the per-class counts and their total to agree with that positive support.
+Final follow-up verification: 8 cases, 80 assertions passed, 0 failures/errors.
+The earlier related-file run remains 61 cases / 757 passing assertions.

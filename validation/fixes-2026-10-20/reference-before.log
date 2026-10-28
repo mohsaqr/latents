@@ -1,0 +1,13 @@
+lta-general: ..............................1.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-lta-general.R:293:3'): mover-stayer: the stayer class never
+Expected `fit$log_likelihood` to equal `exact`.
+Differences:
+  `actual`: -899.1
+`expected`:    NaN
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+     nb  failed   error warning skipped  passed 
+     32       1       0       0       0      31 

@@ -1,0 +1,20 @@
+BASE LL -151.1068 MEANS -3.025848 3.006199 VARS 0.2455138 0.3680014 
+WARNING: A profile or group class has effective membership below one. 
+WARNING: Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+ZERO 10000 LL -256.4856 MEANS -0.009824588 0.1280315 VARS 9.403155 9.392691 
+WARNING: A profile or group class has effective membership below one. 
+WARNING: Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+ZERO 1e+10 LL -256.4856 MEANS -0.00982444 0.03175572 VARS 9.403155 9.404003 
+WARNING: A profile or group class has effective membership below one. 
+WARNING: Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+ZERO 1e+16 LL -256.6038 MEANS 0.125 -1.015625 VARS 9.425195 8.386628 
+WARNING: 1 of 10 starts failed; see get_results(fit, "starts"). 
+WARNING: A profile or group class has effective membership below one. 
+WARNING: Profile 2: 0.0 members for 2 means and variances; the solution may be spurious. Fit fewer profiles or shared variances. 
+ZERO 1e+20 LL -875.5553 MEANS 1408 -1152 VARS 1982464 1327104 
+Ward checked 5000 
+Ward checked 10000 
+Ward checked 15000 
+Ward checked 20000 
+Ward checked 25000 
+Ward checked 30000 

@@ -1,0 +1,233 @@
+pl_lca_k3_lo_01_s1-data.txt
+File name:	pl_lca_k3_lo_01_s1-data.txt	
+File size:	28716 bytes  800 records	
+File date:	2026-Oct-20 9:39:28 PM	
+Syntax:	pl_lca_k3_lo_01_s1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+pl_lca_k3_lo_01_s1	3-Cluster	-3203.0076	6539.7075	6446.0153	6466.0153	20	49.3754	43	0.23	0.2263	0.4780	
+pl_lca_k3_lo_01_s1 - L² = 49.3754
+3-Cluster Syntax Model	
+						
+Number of cases	800					
+Number of parameters (Npar)	20					
+Random Seed	20261020					
+Best Start Seed	841838					
+						
+Chi-squared Statistics						
+Degrees of freedom (df)	43	p-value				
+L-squared (L²)	49.3754	0.23				
+X-squared	49.4952	0.23				
+Cressie-Read	49.2888	0.24				
+BIC (based on L²)	-238.0629					
+AIC (based on L²)	-36.6246					
+AIC3 (based on L²)	-79.6246					
+CAIC (based on L²)	-281.0629					
+SABIC (based on L²)	-101.5140					
+Dissimilarity Index	0.1035	 				
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-3203.0076					
+Log-prior	0.0000					
+Log-posterior	-3203.0076					
+BIC (based on LL)	6539.7075					
+AIC (based on LL)	6446.0153					
+AIC3 (based on LL)	6466.0153					
+CAIC (based on LL)	6559.7075					
+SABIC (based on LL)	6476.1964					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.2263					
+Reduction of errors (Lambda)	0.4841					
+Entropy R-squared	0.4780					
+Standard R-squared	0.4728					
+Classification log-likelihood	-3615.1145					
+Entropy	412.1069					
+CLC	7230.2290					
+AWE	7557.6135					
+ICL-BIC	7363.9212					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	139.8335	22.6137	32.7852	195.2324		
+2	29.7149	87.4396	38.5463	155.7008		
+3	24.4516	32.9467	391.6685	449.0668		
+Total	194.0000	143.0000	463.0000	800.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	117.3217	35.1735	42.7373	195.2324		
+2	35.1735	74.5526	45.9748	155.7008		
+3	42.7373	45.9748	360.3547	449.0668		
+Total	195.2324	155.7008	449.0668	800.0000		
+						
+Files						
+Infile	C:\lgfeatures\ml-three-step\pl_lca_k3_lo_01_s1\pl_lca_k3_lo_01_s1-data.txt	
+						
+Options						
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	10000					
+nriterations	1000					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261020					
+sets	100					
+tolerance	1e-05					
+iterations	250					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+output						
+parameters	first					
+standard errors	no					
+identification	no					
+validation LL	no					
+sample size BIC	     800					
+predictionstatistics	no					
+outfile						
+file name	pl_lca_k3_lo_01_s1_post.txt	
+classification	posterior					
+prediction	no					
+simulation	no					
+seed	0					
+individualcoefficients	no					
+logdensities	no					
+id	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Dependent						
+u1	Nominal	2				
+1	1					
+2	2					
+u2	Nominal	2				
+1	1					
+2	2					
+u3	Nominal	2				
+1	1					
+2	2					
+u4	Nominal	2				
+1	1					
+2	2					
+u5	Nominal	2				
+1	1					
+2	2					
+u6	Nominal	2				
+1	1					
+2	2					
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=10000 nriterations=1000;
+   startvalues
+      seed=20261020 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first profile;
+   outfile 'pl_lca_k3_lo_01_s1_post.txt' classification keep id y;
+variables
+   dependent u1 nominal, u2 nominal, u3 nominal, u4 nominal, u5 nominal, u6 nominal;
+   latent Cluster nominal 3;
+equations
+   Cluster <- 1;
+   u1 <- 1 + Cluster;
+   u2 <- 1 + Cluster;
+   u3 <- 1 + Cluster;
+   u4 <- 1 + Cluster;
+   u5 <- 1 + Cluster;
+   u6 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+Cluster(2)	<-	1	-0.2263	.	.	.				
+Cluster(3)	<-	1	0.8330	.	.	.				
+										
+u1(1)	<-	1	0.0000	.	.	.				
+u1(2)	<-	1	1.3483	.	.	.				
+u1(1)	<-	Cluster(1)	0.0000	.	.	.				
+u1(2)	<-	Cluster(1)	0.0000	.	.	.				
+u1(1)	<-	Cluster(2)	0.0000	.	.	.				
+u1(2)	<-	Cluster(2)	-1.4815	.	.	.				
+u1(1)	<-	Cluster(3)	0.0000	.	.	.				
+u1(2)	<-	Cluster(3)	-2.2972	.	.	.				
+										
+u2(1)	<-	1	0.0000	.	.	.				
+u2(2)	<-	1	0.8882	.	.	.				
+u2(1)	<-	Cluster(1)	0.0000	.	.	.				
+u2(2)	<-	Cluster(1)	0.0000	.	.	.				
+u2(1)	<-	Cluster(2)	0.0000	.	.	.				
+u2(2)	<-	Cluster(2)	-1.1730	.	.	.				
+u2(1)	<-	Cluster(3)	0.0000	.	.	.				
+u2(2)	<-	Cluster(3)	-1.9800	.	.	.				
+										
+u3(1)	<-	1	0.0000	.	.	.				
+u3(2)	<-	1	0.3801	.	.	.				
+u3(1)	<-	Cluster(1)	0.0000	.	.	.				
+u3(2)	<-	Cluster(1)	0.0000	.	.	.				
+u3(1)	<-	Cluster(2)	0.0000	.	.	.				
+u3(2)	<-	Cluster(2)	0.9147	.	.	.				
+u3(1)	<-	Cluster(3)	0.0000	.	.	.				
+u3(2)	<-	Cluster(3)	-0.9154	.	.	.				
+										
+u4(1)	<-	1	0.0000	.	.	.				
+u4(2)	<-	1	-0.5374	.	.	.				
+u4(1)	<-	Cluster(1)	0.0000	.	.	.				
+u4(2)	<-	Cluster(1)	0.0000	.	.	.				
+u4(1)	<-	Cluster(2)	0.0000	.	.	.				
+u4(2)	<-	Cluster(2)	-25.3040	.	.	.				
+u4(1)	<-	Cluster(3)	0.0000	.	.	.				
+u4(2)	<-	Cluster(3)	1.3286	.	.	.				
+										
+u5(1)	<-	1	0.0000	.	.	.				
+u5(2)	<-	1	-1.1352	.	.	.				
+u5(1)	<-	Cluster(1)	0.0000	.	.	.				
+u5(2)	<-	Cluster(1)	0.0000	.	.	.				
+u5(1)	<-	Cluster(2)	0.0000	.	.	.				
+u5(2)	<-	Cluster(2)	1.1592	.	.	.				
+u5(1)	<-	Cluster(3)	0.0000	.	.	.				
+u5(2)	<-	Cluster(3)	2.0294	.	.	.				
+										
+u6(1)	<-	1	0.0000	.	.	.				
+u6(2)	<-	1	-1.4434	.	.	.				
+u6(1)	<-	Cluster(1)	0.0000	.	.	.				
+u6(2)	<-	Cluster(1)	0.0000	.	.	.				
+u6(1)	<-	Cluster(2)	0.0000	.	.	.				
+u6(2)	<-	Cluster(2)	1.9174	.	.	.				
+u6(1)	<-	Cluster(3)	0.0000	.	.	.				
+u6(2)	<-	Cluster(3)	2.2948	.	.	.				
+Profile
+ 	Cluster	 	 	 	
+ 	1	2	3	Overall	
+Size	0.2440	0.1946	0.5613	 	
+u1	 	
+1	0.2061	0.5332	0.7209	0.5587	
+2	0.7939	0.4668	0.2791	0.4412	
+u2	 	
+1	0.2915	0.5707	0.7487	0.6025	
+2	0.7085	0.4293	0.2513	0.3975	
+u3	 	
+1	0.4061	0.2150	0.6307	0.4950	
+2	0.5939	0.7850	0.3693	0.5050	
+u4	 	
+1	0.6312	1.0000	0.3119	0.5238	
+2	0.3688	0.0000	0.6881	0.4762	
+u5	 	
+1	0.7568	0.4940	0.2902	0.4438	
+2	0.2432	0.5060	0.7098	0.5562	
+u6	 	
+1	0.8090	0.3837	0.2991	0.4400	
+2	0.1910	0.6163	0.7009	0.5600	

@@ -1,0 +1,51 @@
+'data.frame':	450 obs. of  2 variables:
+ $ x: num  0.9644 4.4823 0.32 5.2954 -0.0889 ...
+ $ y: num  -0.791 -3.192 -3.555 -4.049 0.319 ...
+NULL
+ [1] "level"          "outcome"        "term"           "parameter"     
+ [5] "estimate"       "standard_error" "statistic"      "p_value"       
+ [9] "p_adjusted"     "conf_low"       "conf_high"     
+NULL
+        model scale converged inference
+base      EII 1e+00      TRUE        ok
+small     EII 1e-06      TRUE        ok
+large     EII 1e+06      TRUE        ok
+base1     VII 1e+00      TRUE        ok
+small1    VII 1e-06      TRUE        ok
+large1    VII 1e+06      TRUE        ok
+base2     EEI 1e+00      TRUE        ok
+small2    EEI 1e-06      TRUE        ok
+large2    EEI 1e+06      TRUE        ok
+base3     VEI 1e+00      TRUE        ok
+small3    VEI 1e-06      TRUE        ok
+large3    VEI 1e+06      TRUE        ok
+base4     EVI 1e+00      TRUE        ok
+small4    EVI 1e-06      TRUE        ok
+large4    EVI 1e+06      TRUE        ok
+base5     VVI 1e+00      TRUE        ok
+small5    VVI 1e-06      TRUE        ok
+large5    VVI 1e+06      TRUE        ok
+base6     EEE 1e+00      TRUE        ok
+small6    EEE 1e-06      TRUE        ok
+large6    EEE 1e+06      TRUE        ok
+base7     VEE 1e+00      TRUE        ok
+small7    VEE 1e-06      TRUE        ok
+large7    VEE 1e+06      TRUE        ok
+base8     EVE 1e+00      TRUE        ok
+small8    EVE 1e-06      TRUE        ok
+large8    EVE 1e+06      TRUE        ok
+base9     VVE 1e+00      TRUE        ok
+small9    VVE 1e-06      TRUE        ok
+large9    VVE 1e+06      TRUE        ok
+base10    EEV 1e+00      TRUE        ok
+small10   EEV 1e-06      TRUE        ok
+large10   EEV 1e+06      TRUE        ok
+base11    VEV 1e+00      TRUE        ok
+small11   VEV 1e-06      TRUE        ok
+large11   VEV 1e+06      TRUE        ok
+base12    EVV 1e+00      TRUE        ok
+small12   EVV 1e-06      TRUE        ok
+large12   EVV 1e+06      TRUE        ok
+base13    VVV 1e+00      TRUE        ok
+small13   VVV 1e-06      TRUE        ok
+large13   VVV 1e+06      TRUE        ok

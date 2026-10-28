@@ -1,0 +1,28 @@
+Recomputing retained reference case: c01_continuous_varying
+Recomputing retained reference case: c02_continuous_equal
+Recomputing retained reference case: c03_full_covariance
+Recomputing retained reference case: c04_categorical
+Recomputing retained reference case: c05_mixed
+Recomputing retained reference case: c06_missing_fiml
+Recomputing retained reference case: c07_covariates
+Recomputing retained reference case: c08_bivariate_residuals
+Recomputing retained reference case: c12_course_engagement
+Recomputing retained reference case: c09_three_step
+Recomputing retained reference case: c10_lta
+Recomputing retained reference case: c11_lta_mixture
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+                    case agree disagree not comparable missing unparsed
+  c01_continuous_varying    63        0              0       0        0
+    c02_continuous_equal    57        0              0       0        0
+     c03_full_covariance    15        0              0       0        0
+         c04_categorical    15        0              0       0        0
+               c05_mixed    23        0              0       0        0
+        c06_missing_fiml    15        0              0       0        0
+          c07_covariates    58        0              1       0        0
+ c08_bivariate_residuals    30        0              0       0        0
+          c09_three_step    30        0             10       0        0
+                 c10_lta    16        0              0       0        0
+         c11_lta_mixture    19        0              0       0        0
+   c12_course_engagement    35        0              0       0        0
+376 agree, 0 disagree, 11 not comparable, 0 missing, 0 unparsed 
+Compared with retained external output; no new external-program run.

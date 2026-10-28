@@ -1,0 +1,1239 @@
+
+══ Testing test-release-audit-comparison.R ═════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 2 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 3 ]
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"             
+`names(attr(expected, 'models'))`: "first" "n_profiles" "third"
+
+`attr(actual, 'models')$n_profiles` is absent
+`attr(expected, 'models')$n_profiles` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                     model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third               2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] n_profiles          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third               2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"             
+`expected$model`: "first" "n_profiles" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"             
+`names(attr(expected, 'models'))`: "first" "n_profiles" "third"
+
+`attr(actual, 'models')$n_profiles` is absent
+`attr(expected, 'models')$n_profiles` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                     model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third               2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] n_profiles          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third               2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"             
+`expected$model`: "first" "n_profiles" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:28:5'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `appended` to be identical to `expected`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "second"             
+`names(attr(expected, 'models'))`: "first" "second" "n_profiles"
+
+`attr(actual, 'models')$n_profiles` is absent
+`attr(expected, 'models')$n_profiles` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                     model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.94175703
+- actual[2, ]   second              2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05824297
++ expected[1, ] first               1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] second              2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] n_profiles          2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "second"             
+`expected$model`: "first" "second" "n_profiles"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "VVI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 5  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -138.544919886081                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 287.089839772162                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.089839772162                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 300.115690702102                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 300.115690702102                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 284.324434686844                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 284.324434686844                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 305.115690702102                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 305.115690702102                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 383.961213972202                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 383.961213972202                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 345.935363042262                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 345.935363042262                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 322.909512112321                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 322.909512112321                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.669480929698475                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.566404814474144                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA 0.921707881079008                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.744056347776576                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.156390150209496                   
+`expected$smallest_share`: 1 0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 5.56624788618706                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.941757031655967 0.0582429683440333                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_identical(appended, expected) at test-release-audit-comparison.R:28:5
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"                  
+`names(attr(expected, 'models'))`: "first" "n_group_classes" "third"
+
+`attr(actual, 'models')$n_group_classes` is absent
+`attr(expected, 'models')$n_group_classes` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                          model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third                    2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] n_group_classes          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third                    2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"                  
+`expected$model`: "first" "n_group_classes" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"                  
+`names(attr(expected, 'models'))`: "first" "n_group_classes" "third"
+
+`attr(actual, 'models')$n_group_classes` is absent
+`attr(expected, 'models')$n_group_classes` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                          model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third                    2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] n_group_classes          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third                    2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"                  
+`expected$model`: "first" "n_group_classes" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:28:5'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `appended` to be identical to `expected`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "second"                  
+`names(attr(expected, 'models'))`: "first" "second" "n_group_classes"
+
+`attr(actual, 'models')$n_group_classes` is absent
+`attr(expected, 'models')$n_group_classes` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                          model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.94175703
+- actual[2, ]   second                   2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05824297
++ expected[1, ] first                    1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] second                   2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] n_group_classes          2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "second"                  
+`expected$model`: "first" "second" "n_group_classes"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "VVI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 5  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -138.544919886081                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 287.089839772162                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.089839772162                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 300.115690702102                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 300.115690702102                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 284.324434686844                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 284.324434686844                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 305.115690702102                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 305.115690702102                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 383.961213972202                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 383.961213972202                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 345.935363042262                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 345.935363042262                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 322.909512112321                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 322.909512112321                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.669480929698475                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.566404814474144                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA 0.921707881079008                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.744056347776576                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.156390150209496                   
+`expected$smallest_share`: 1 0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 5.56624788618706                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.941757031655967 0.0582429683440333                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_identical(appended, expected) at test-release-audit-comparison.R:28:5
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"         
+`names(attr(expected, 'models'))`: "first" "cutoff" "third"
+
+`attr(actual, 'models')$cutoff` is absent
+`attr(expected, 'models')$cutoff` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                 model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third           2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] cutoff          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third           2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"         
+`expected$model`: "first" "cutoff" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:23:7'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `actual` to be identical to `reference`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "third"         
+`names(attr(expected, 'models'))`: "first" "cutoff" "third"
+
+`attr(actual, 'models')$cutoff` is absent
+`attr(expected, 'models')$cutoff` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                 model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.89851510
+- actual[2, ]   third           2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.10148490
++ expected[1, ] first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] cutoff          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] third           2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "third"         
+`expected$model`: "first" "cutoff" "third"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "EEI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 4  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -140.245214572833                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 288.490429145665                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.490429145665                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 298.911109889618                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 298.911109889618                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 286.278105077411                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 286.278105077411                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 302.911109889618                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 302.911109889618                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 349.167777102056                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 349.167777102056                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 318.747096358103                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 318.747096358103                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 300.326415614151                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 300.326415614151                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.856913603453875                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.676150617905296                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA  0.97976195904249                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.827956288473893                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.0661519213438549                   
+`expected$smallest_share`: 1  0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 4.36166707370234                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.898515104005164  0.101484895994836                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-release-audit-comparison.R:21:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─testthat::expect_identical(actual, reference) at test-release-audit-comparison.R:23:7
+
+── Failure ('test-release-audit-comparison.R:28:5'): comparison wrappers preserve restored model labels and BIC weights ──
+Expected `appended` to be identical to `expected`.
+Differences:
+`attr(actual, 'models')` is length 2
+`attr(expected, 'models')` is length 3
+
+`names(attr(actual, 'models'))`:   "first" "second"         
+`names(attr(expected, 'models'))`: "first" "second" "cutoff"
+
+`attr(actual, 'models')$cutoff` is absent
+`attr(expected, 'models')$cutoff` is an S3 object of class <multilpa>, a list
+
+  `attr(actual, 'row.names')`: 1 2  
+`attr(expected, 'row.names')`: 1 2 3
+
+actual vs expected
+                 model n_profiles n_group_classes structure n_parameters log_likelihood      aic      kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below smallest_share converged n_best_replicated delta_bic bic_weight
+- actual[1, ]   first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.94175703
+- actual[2, ]   second          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05824297
++ expected[1, ] first           1               1       VVI            2      -142.6696 289.3391 294.3391   294.5494       294.5494     288.2329         288.2329    296.5494        296.5494   309.7598       309.7598   294.5494       294.5494   285.3391       285.3391              NA            NA        NA        NA         NA          NA              NA              NA               NA                NA     1.00000000      TRUE                 1  0.000000 0.85121426
++ expected[2, ] second          2               1       VVI            5      -138.5449 287.0898 295.0898   300.1157       300.1157     284.3244         284.3244    305.1157        305.1157   383.9612       383.9612   345.9354       345.9354   322.9095       322.9095       0.6694809            NA 0.5664048 0.9217079  0.7440563           1              NA              NA               NA                NA     0.15639015      TRUE                 1  5.566248 0.05264335
++ expected[3, ] cutoff          2               1       EEI            4      -140.2452 288.4904 295.4904   298.9111       298.9111     286.2781         286.2781    302.9111        302.9111   349.1678       349.1678   318.7471       318.7471   300.3264       300.3264       0.8569136            NA 0.6761506 0.9797620  0.8279563           1              NA              NA               NA                NA     0.06615192      TRUE                 1  4.361667 0.09614239
+
+`actual$model`:   "first" "second"         
+`expected$model`: "first" "second" "cutoff"
+
+  `actual$n_profiles`: 1 2  
+`expected$n_profiles`: 1 2 2
+
+  `actual$n_group_classes`: 1 1  
+`expected$n_group_classes`: 1 1 1
+
+`actual$structure`:   "VVI" "VVI"      
+`expected$structure`: "VVI" "VVI" "EEI"
+
+  `actual$n_parameters`: 2 5  
+`expected$n_parameters`: 2 5 4
+
+  `actual$log_likelihood`: -142.66955122197 -138.544919886081                  
+`expected$log_likelihood`: -142.66955122197 -138.544919886081 -140.245214572833
+
+  `actual$aic`: 289.339102443939 287.089839772162                 
+`expected$aic`: 289.339102443939 287.089839772162 288.490429145665
+
+  `actual$kic`: 294.339102443939 295.089839772162                 
+`expected$kic`: 294.339102443939 295.089839772162 295.490429145665
+
+  `actual$bic_groups`: 294.549442815915 300.115690702102                 
+`expected$bic_groups`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$bic_individual`: 294.549442815915 300.115690702102                 
+`expected$bic_individual`: 294.549442815915 300.115690702102 298.911109889618
+
+  `actual$sabic_groups`: 288.232940409812 284.324434686844                 
+`expected$sabic_groups`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$sabic_individual`: 288.232940409812 284.324434686844                 
+`expected$sabic_individual`: 288.232940409812 284.324434686844 286.278105077411
+
+  `actual$caic_groups`: 296.549442815915 305.115690702102                 
+`expected$caic_groups`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$caic_individual`: 296.549442815915 305.115690702102                 
+`expected$caic_individual`: 296.549442815915 305.115690702102 302.911109889618
+
+  `actual$awe_groups`: 309.759783187892 383.961213972202                 
+`expected$awe_groups`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$awe_individual`: 309.759783187892 383.961213972202                 
+`expected$awe_individual`: 309.759783187892 383.961213972202 349.167777102056
+
+  `actual$icl_groups`: 294.549442815915 345.935363042262                 
+`expected$icl_groups`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$icl_individual`: 294.549442815915 345.935363042262                 
+`expected$icl_individual`: 294.549442815915 345.935363042262 318.747096358103
+
+  `actual$clc_groups`: 285.339102443939 322.909512112321                 
+`expected$clc_groups`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$clc_individual`: 285.339102443939 322.909512112321                 
+`expected$clc_individual`: 285.339102443939 322.909512112321 300.326415614151
+
+  `actual$profile_entropy`: NA 0.669480929698475                  
+`expected$profile_entropy`: NA 0.669480929698475 0.856913603453875
+
+  `actual$group_entropy`: NA NA   
+`expected$group_entropy`: NA NA NA
+
+  `actual$avepp_min`: NA 0.566404814474144                  
+`expected$avepp_min`: NA 0.566404814474144 0.676150617905296
+
+  `actual$avepp_max`: NA 0.921707881079008                 
+`expected$avepp_max`: NA 0.921707881079008 0.97976195904249
+
+  `actual$avepp_mean`: NA 0.744056347776576                  
+`expected$avepp_mean`: NA 0.744056347776576 0.827956288473893
+
+  `actual$avepp_below`: NA 1  
+`expected$avepp_below`: NA 1 1
+
+  `actual$group_avepp_min`: NA NA   
+`expected$group_avepp_min`: NA NA NA
+
+  `actual$group_avepp_max`: NA NA   
+`expected$group_avepp_max`: NA NA NA
+
+  `actual$group_avepp_mean`: NA NA   
+`expected$group_avepp_mean`: NA NA NA
+
+  `actual$group_avepp_below`: NA NA   
+`expected$group_avepp_below`: NA NA NA
+
+  `actual$smallest_share`: 1 0.156390150209496                   
+`expected$smallest_share`: 1 0.156390150209496 0.0661519213438549
+
+`actual$converged`:   TRUE TRUE     
+`expected$converged`: TRUE TRUE TRUE
+
+  `actual$n_best_replicated`: 1 1  
+`expected$n_best_replicated`: 1 1 1
+
+  `actual$delta_bic`: 0 5.56624788618706                 
+`expected$delta_bic`: 0 5.56624788618706 4.36166707370234
+
+  `actual$bic_weight`: 0.941757031655967 0.0582429683440333                   
+`expected$bic_weight`:  0.85121425881168 0.0526433501035642 0.0961423910847558
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-release-audit-comparison.R:15:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_identical(appended, expected) at test-release-audit-comparison.R:28:5
+
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 3 ]
+Error:
+! Test failures.
+Execution halted

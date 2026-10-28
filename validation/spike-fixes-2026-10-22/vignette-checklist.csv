@@ -1,0 +1,21 @@
+vignette,code_and_claim_checks,full_render,before_after_output_comparison,prose_tables_figures_review
+vignettes/articles/additive.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/case-engagement-covariates.Rmd,knit ok,DONE,objects identical; new eigenvalue print lines,prose unchanged; figures n/a
+vignettes/articles/case-engagement-evaluation.Rmd,knit ok,DONE,objects identical; 2 new enumeration columns in tables,prose unchanged
+vignettes/articles/case-engagement-profiles.Rmd,knit ok,DONE,objects identical; new eigenvalue print line,prose and figures unchanged
+vignettes/articles/case-engagement-transitions.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/case-esm-lca.Rmd,knit ok,DONE,objects identical; new enumeration columns,prose and figures unchanged
+vignettes/articles/class-enumeration.Rmd,FAILED with current package (hidden check grepl("members for")); fixed to "membership mass for",DONE,objects identical except reworded thin-profile warning strings,prose and figures unchanged
+vignettes/articles/covariates.Rmd,knit ok,DONE,objects identical; new eigenvalue print lines,prose unchanged
+vignettes/articles/evaluation.Rmd,knit ok,DONE,objects identical; new enumeration columns,prose and figures unchanged
+vignettes/articles/growth-mixture.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/mixture-regression.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/model-selection.Rmd,knit ok,DONE,objects identical except reworded warning string; new columns,prose and figures unchanged
+vignettes/articles/trajectory-classes.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/tree-plot.Rmd,knit ok,DONE,no change,no change
+vignettes/articles/workflow-lca.Rmd,knit ok,DONE,objects identical; "35 columns" -> "37 columns",prose and figures unchanged
+vignettes/articles/workflow-lpa.Rmd,knit ok,DONE,objects identical except reworded warning strings,prose and figures unchanged
+vignettes/enumeration.Rmd,knit ok,DONE,objects identical except reworded warning string; new columns,prose and figures unchanged
+vignettes/lca.Rmd,knit ok,DONE,no change,no change
+vignettes/lpa.Rmd,knit ok,DONE,objects identical; new print line and gaussian_diagnostics table in summary (19 -> 20 tables),prose and figures unchanged
+vignettes/lta.Rmd,knit ok,DONE,objects identical; new eigenvalue print line,prose and figures unchanged

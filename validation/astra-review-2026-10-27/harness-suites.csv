@@ -1,0 +1,4 @@
+"suite","status","compared","agreed","values","outputs_not_covered","warnings","seconds","reason","first_warning"
+"mclust","ran",465,465,22402,45,0,19.6,NA,NA
+"invariance","ran",898,894,38912,0,0,6.32,NA,NA
+"refusals","ran",50,50,50,NA,0,2.42,NA,NA

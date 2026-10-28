@@ -1,0 +1,4 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-enumeration-mplus.R","enumeration-mplus","every candidate of a grid reproduces Mplus at its number of classes",46,0,FALSE,FALSE,0,22.754,1.556,24.835,46
+"test-enumeration-mplus.R","enumeration-mplus","compare_models() BIC weights follow Mplus's BIC",2,0,FALSE,FALSE,0,13.486,1.16,14.877,2
+"test-enumeration-mplus.R","enumeration-mplus","a grid fitted on two cores is identical to one fitted on one",1,0,FALSE,FALSE,0,4.259,0.321,8.72300000000001,1

@@ -1,0 +1,33 @@
+Independent mixed-pair residual reference repair — 2026-10-27
+
+Changed only .reference_residuals() in equivalence/harness/outputs.R and
+added its self-test at the end of equivalence/harness/test-harness.R.
+
+The strict coverage gate exposed 16 partial numeric residual columns across
+two mixed Gaussian/categorical transition fixtures. The independent
+reference previously returned only Gaussian pairs. It now includes every
+Gaussian/category pair with category codes defined by the reference's
+category levels and Pearson correlations from stats::cov.wt(method="ML")
+using independent depmixS4 posterior weights. Correlations are centred on
+weighted observed means, expected correlations are zero under local
+independence, and inferential statistics/p-values remain explicitly NA.
+
+New self-test: 21 successful assertions. The correlation oracle uses
+ordinary stats::cor() on integer-replicated observations for quarter-unit
+posterior weights, independently checking missingness, category order,
+complete pair coverage, effective sample mass and unavailable empty pairs.
+All harness self-tests pass.
+
+Strict run command:
+LATENTS_EQUIVALENCE_OUTPUT=validation/astra-fixes-2026-10-27/harness/depmix-repair LATENTS_EQUIVALENCE_REQUIRE_ALL=true VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NOT_CRAN=true Rscript equivalence/harness/run.R depmixs4 hard-depmixs4
+
+Result: exit 0; depmixs4 482/482 quantities, 29,444 values;
+hard-depmixs4 1,190/1,190 quantities, 163,580 values. Total 1,672/1,672
+quantities and 193,024 values; zero discrepancies, zero warnings, zero
+partial or uncovered outputs. All affected residual columns now compare
+6/6 rows, up from 2/6. No exemptions added and no tolerance changed.
+
+The remaining generic reference-table consumers are Gaussian-only or
+categorical-only fixtures; their previously existing pair calculations are
+unchanged. Production R/ source was not edited. The isolated output path
+preserves evidence of the parent's full run.

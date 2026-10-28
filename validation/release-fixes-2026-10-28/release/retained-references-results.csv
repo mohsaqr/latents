@@ -1,0 +1,23 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.0040000000000191,0.000999999999999446,0.007000000000005,3
+"test-claims.R","claims","every claim is still worded as registered in its source",136,0,FALSE,FALSE,0,0.177000000000021,0.0539999999999985,0.343000000000018,136
+"test-claims.R","claims","every backed claim names a test that exists",134,0,FALSE,FALSE,0,0.119999999999948,0.0510000000000002,0.284999999999968,134
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.00300000000004275,0.000999999999999446,0.0040000000000191,2
+"test-latentgold-families.R","latentgold-families","every group-class family reproduces Latent GOLD at its finest quadrature",25,0,FALSE,FALSE,0,250.714,5.329,258.215,25
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m01",5,0,FALSE,FALSE,0,0.263000000000034,0.0120000000000005,0.302999999999997,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m02",5,0,FALSE,FALSE,0,0.428999999999974,0.0210000000000008,0.476999999999975,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m03",5,0,FALSE,FALSE,0,0.227999999999952,0.00799999999999912,0.305000000000064,5
+"test-latentgold-wider.R","latentgold-wider","the kit is the one Latent GOLD was run on",1,0,FALSE,FALSE,0,0.00499999999999545,0.00399999999999778,0.0929999999999609,1
+"test-latentgold-wider.R","latentgold-wider","mixture regressions and weighted fits reproduce Latent GOLD",3,0,FALSE,FALSE,0,45.149,2.074,47.544,3
+"test-latentgold.R","latentgold","every Latent GOLD case agrees with the current package",3,0,FALSE,FALSE,0,35.684,1.331,37.427,3
+"test-missing-patterns.R","missing-patterns","the five patterns' data are what the kit describes",2,0,FALSE,FALSE,0,0.00599999999997181,0.00199999999999889,0.0110000000000809,2
+"test-missing-patterns.R","missing-patterns","likelihood, sample size, BIC, entropy and AvePP reproduce Mplus",50,0,FALSE,FALSE,0,35.2040000000001,0.324999999999999,35.8720000000001,50
+"test-missing-patterns.R","missing-patterns","likelihood and every row's posteriors reproduce Latent GOLD",20,0,FALSE,FALSE,0,36.953,0.385999999999999,38.278,20
+"test-missing-patterns.R","missing-patterns","class counts reproduce Mplus's counts based on posterior probabilities",5,0,FALSE,FALSE,0,34.719,0.271000000000001,35.211,5
+"test-missing-patterns.R","missing-patterns","the programs' sample sizes differ only by the rows with nothing observed",4,0,FALSE,FALSE,0,0.0099999999999909,0.00199999999999889,0.0159999999999627,4
+"test-missing-patterns.R","missing-patterns","m5's group level reproduces Mplus: clusters, posteriors and statistics",11,0,FALSE,FALSE,0,6.95999999999992,0.0449999999999982,7.0630000000001,11
+"test-mplus-inference.R","mplus-inference","ordinary ML Hessian standard errors reproduce genuine Mplus9 results",6,0,FALSE,FALSE,0,0.152000000000044,0.00700000000000145,0.194999999999936,6
+"test-mplus-inference.R","mplus-inference","full-covariance FIML Hessian standard errors reproduce genuine Mplus9",4,0,FALSE,FALSE,0,0.218000000000075,0.00300000000000011,0.247999999999934,4
+"test-mplus-lmr.R","mplus-lmr","the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11",2,0,FALSE,FALSE,0,0.0040000000000191,0.00199999999999889,0.0109999999999673,2
+"test-mplus-mixture-weights.R","mplus-mixture-weights","a weighted mixture reproduces Mplus's pseudo likelihood, posteriors and robust SEs",9,0,FALSE,FALSE,0,0.999000000000024,0.0339999999999989,1.13,9
+"test-mplus-robust.R","mplus-robust","robust standard errors reproduce genuine Mplus MLR results",6,0,FALSE,FALSE,0,0.04099999999994,0.00300000000000011,0.0550000000000637,6

@@ -1,0 +1,16 @@
+API check: every validation call matches multilpa 0.98.0.
+running suite: flexmix
+Equivalence run against multilpa 0.98.0 under R version 4.5.2 (2025-10-31)
+    suite status compared agreed values outputs_not_covered warnings seconds
+1 flexmix    ran      433    433  29933                   0        0   19.71
+
+433 quantities (29933 values) compared, 433 agreed, 0 disagreed
+
+    suite         source precision compared agreed worst_difference
+1 flexmix flexmix 2.3.20   machine      433    433     2.903725e-07
+  loosest_tolerance worst_tolerance_fraction
+1               0.5                0.2903725
+
+433 quantities (29933 values) compared, 433 agreed, 0 disagreed (0 explained by a known open defect)
+
+wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in validation/release-fixes-2026-10-28/regression/flexmix

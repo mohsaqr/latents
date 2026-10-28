@@ -1,0 +1,51 @@
+Release 0.96.1 final CI platform evidence
+Exact commit: d4c9f699525d9e07959463010e004b6362dcdaaf
+Completed matrix job logs: 6/6
+All six platform checks passed.
+All values below are read from the actual per-platform job logs.
+
+macos-latest (release) — R version 4.6.1 (2026-06-24)
+  Job 118743461680: success; check OK; 0 errors, 0 warnings, 0 NOTEs.
+  Unit expectations: 8136 passed, 0 failed, 0 warnings; 4 tests skipped.
+  Skips: • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743461680
+
+windows-latest (release) — R version 4.6.1 (2026-06-24 ucrt)
+  Job 118743461986: success; check 1 NOTE; 0 errors, 0 warnings, 1 NOTEs.
+  Unit expectations: 8124 passed, 0 failed, 0 warnings; 9 tests skipped.
+  Skips: • On Windows (5): 'test-parallel.R:29:3', 'test-parallel.R:44:3',; 'test-parallel.R:59:3', 'test-parallel.R:118:3', 'test-parallel.R:143:3'; • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'
+  NOTE topics: * checking for detritus in the temp directory ... NOTE
+  NOTE details: * checking for detritus in the temp directory ... NOTE | Found the following files/directories: | 'Rscript123023e62f'
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743461986
+
+ubuntu-latest (devel) — R Under development (unstable) (2026-10-19 r90719)
+  Job 118743462041: success; check OK; 0 errors, 0 warnings, 0 NOTEs.
+  Unit expectations: 8133 passed, 0 failed, 0 warnings; 4 tests skipped.
+  Skips: • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743462041
+
+ubuntu-latest (release) — R version 4.6.1 (2026-06-24)
+  Job 118743462229: success; check OK; 0 errors, 0 warnings, 0 NOTEs.
+  Unit expectations: 8133 passed, 0 failed, 0 warnings; 4 tests skipped.
+  Skips: • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743462229
+
+ubuntu-latest (4.1) — R version 4.1.3 (2022-03-10)
+  Job 118743462311: success; check 2 NOTEs; 0 errors, 0 warnings, 2 NOTEs.
+  Unit expectations: 8090 passed, 0 failed, 0 warnings; 6 tests skipped.
+  Skips: • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'; • {mice} is not installed (2): 'test-pool-imputations.R:35:3',; 'test-pool-imputations.R:110:3'
+  NOTE topics: * checking package dependencies ... NOTE; * checking installed package size ... NOTE
+  NOTE details: * checking package dependencies ... NOTE | Package suggested but not available for checking: ‘mice’; * checking installed package size ... NOTE | installed size is  8.1Mb | sub-directories of 1Mb or more: | R      3.7Mb | doc    3.0Mb | help   1.0Mb
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743462311
+
+ubuntu-latest (oldrel-1) — R version 4.5.3 (2026-03-11)
+  Job 118743462399: success; check OK; 0 errors, 0 warnings, 0 NOTEs.
+  Unit expectations: 8133 passed, 0 failed, 0 warnings; 4 tests skipped.
+  Skips: • R/ sources are not available (1): 'test-tidy-core.R:273:3'; • package sources are not available (1): 'test-review-1015-accessors.R:121:3'; • package sources not available (1): 'test-tidy-core.R:311:3'; • the Latent GOLD kit is not available (1): 'test-three-step-ml.R:141:3'
+  URL: https://github.com/mohsaqr/latents/actions/runs/39456155958/job/118743462399
+
+Equivalence run 39456160271 (inner suite then retained references/claims):
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 405 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 390 ]
+Lint run 39456165092: Successful; No lints found.
+Prior failed/cancelled candidates are preserved in separate directories.

@@ -1,0 +1,139 @@
+astra-core: ..123.456789ab.cd.efgh
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-astra-core.R:34:3'): LTA charts use only covariates contrib
+Expected `padded$log_likelihood` to equal `original$log_likelihood`.
+Differences:
+  `actual`: -228.4
+`expected`: -227.0
+
+
+── 2. Failure ('test-astra-core.R:36:3'): LTA charts use only covariates contrib
+Expected `pack(padded)` to equal `pack(original)`.
+Differences:
+     actual     | expected                 
+ [1] -1.6831185 - -1.6831151 [1]           
+ [2] -1.0599383 - -1.0599361 [2]           
+ [3] 1.4727296  - 1.4727326  [3]           
+ [4] 0.9274465  - 0.9274484  [4]           
+ [5] -1.0745591 - -1.0745412 [5]           
+ [6] -1.4906677 - -1.4906607 [6]           
+ [7] -1.5560707 - -1.5560960 [7]           
+ [8] -1.2491770 - -1.2491816 [8]           
+ [9] -0.0571588 - -0.0634728 [9]           
+[10] 0.0000064  - 0.0820216  [10]          
+ ... ...          ...        and 4 more ...
+
+
+── 3. Error ('test-astra-core.R:37:3'): LTA charts use only covariates contribut
+<latents_boundary_fit/error/condition>
+Error: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(vcov(padded), vcov(original), tolerance = 1e-07) at test-astra-core.R:37:3
+ 2. │ └─testthat::quasi_label(enquo(object), label)
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─stats::vcov(padded)
+ 5. └─latents:::vcov.multilpa_lta(padded)
+ 6.   └─latents:::.lta_inference(...)
+
+── 4. Failure ('test-astra-core.R:57:3'): excluded LTA probabilities cannot veto
+Expected `padded$boundary` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+── 5. Error ('test-astra-core.R:58:3'): excluded LTA probabilities cannot veto i
+<latents_boundary_fit/error/condition>
+Error: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(vcov(padded), vcov(original), tolerance = 1e-07) at test-astra-core.R:58:3
+ 2. │ └─testthat::quasi_label(enquo(object), label)
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─stats::vcov(padded)
+ 5. └─latents:::vcov.multilpa_lta(padded)
+ 6.   └─latents:::.lta_inference(...)
+
+── 6. Error ('test-astra-core.R:73:7'): constant raw outcomes can have identifie
+<latents_bad_data/error/condition>
+Error: The outcome takes the same value (2) in every row, so there is no variation for a Gaussian mixture regression to model.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-core.R:70:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-astra-core.R:72:5
+ 4.       └─latents (local) FUN(X[[i]], ...)
+ 5.         └─latents::mixture_regression(...) at test-astra-core.R:73:7
+ 6.           └─latents:::.mixture_spec(...)
+
+── 7. Failure ('test-astra-core.R:105:5'): zero-weight-only categories do not ch
+Expected `actual$n_parameters` to equal `original$n_parameters`.
+Differences:
+  `actual`: 4.0
+`expected`: 3.0
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-core.R:94:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(actual$n_parameters, original$n_parameters) at test-astra-core.R:105:5
+
+── 8. Failure ('test-astra-core.R:106:5'): zero-weight-only categories do not ch
+Expected `actual$bic` to equal `original$bic`.
+Differences:
+  `actual`: 231.4
+`expected`: 227.3
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-core.R:94:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(actual$bic, original$bic, tolerance = 1e-12) at test-astra-core.R:106:5
+
+── 9. Failure ('test-astra-core.R:107:5'): zero-weight-only categories do not ch
+Expected `actual$log_likelihood` to equal `original$log_likelihood`.
+Differences:
+  `actual`: -107.5055681597
+`expected`: -107.5055681537
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-core.R:94:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(...) at test-astra-core.R:107:5
+
+── 10. Failure ('test-astra-core.R:108:5'): zero-weight-only categories do not c
+Expected `actual$categorical_levels` to equal `original$categorical_levels`.
+Differences:
+`actual$a`:   "a" "absent-category" "b"
+`expected$a`: "a"                   "b"
+
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-astra-core.R:94:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─testthat::expect_equal(actual$categorical_levels, original$categorical_levels) at test-astra-core.R:108:5
+  ... and 7 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                                                                  test failed
+1  LTA charts use only covariates contributing to the likelihood (A02)      2
+2               excluded LTA probabilities cannot veto inference (A06)      1
+3 constant raw outcomes can have identified regression residuals (A03)      0
+4     zero-weight-only categories do not change the fitted model (A07)      4
+5     unidentified LTA bootstrap covariance rows are unavailable (A08)      2
+6             absent growth persons cannot contaminate starting values      0
+7   covariate and transition category support follows positive weights      2
+  error warning passed
+1  TRUE       0      2
+2  TRUE       0      1
+3  TRUE       0      0
+4  TRUE       0      0
+5 FALSE       0      2
+6  TRUE       0      0
+7  TRUE       0      0

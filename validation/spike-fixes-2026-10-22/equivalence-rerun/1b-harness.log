@@ -1,0 +1,84 @@
+API check: every validation call matches multilpa 0.96.2.
+running suite: depmixs4
+converged at iteration 11 with logLik: -1457.504 
+converged at iteration 38 with logLik: -1960.506 
+converged at iteration 16 with logLik: -1123.725 
+converged at iteration 8 with logLik: -1860.582 
+running suite: glca
+running suite: mclust
+running suite: mplus-twolevel-lca
+running suite: multilevlca
+running suite: polca
+running suite: published
+running suite: stability
+Equivalence run against multilpa 0.96.2 under R version 4.5.2 (2025-10-31)
+               suite status compared agreed warnings seconds
+1           depmixs4    ran       38     38        0    1.44
+2               glca    ran      153    153        0   10.48
+3             mclust    ran       86     86        0    6.53
+4 mplus-twolevel-lca    ran      150    150        0   28.92
+5        multilevlca    ran      123    123        0   35.77
+6              polca    ran      421    421        0   53.76
+7          published    ran       41     41        0  348.28
+8          stability    ran        6      6        0   35.85
+
+1018 quantities compared, 1018 agreed, 0 disagreed
+
+                suite
+1            depmixs4
+2                glca
+3              mclust
+4         multilevlca
+6               polca
+5           stability
+13             mclust
+14             mclust
+16             mclust
+15 mplus-twolevel-lca
+11        multilevlca
+7           published
+8           published
+9           published
+10          published
+12          published
+17          published
+                                                             source precision
+1                                                          depmixS4   machine
+2                                                        glca 1.4.2   machine
+3                                                      mclust 6.1.2   machine
+4                                                 multilevLCA 2.1.6   machine
+6                                                     poLCA 1.6.0.1   machine
+5                                   multilpa, refitted across seeds   machine
+13                                      mclust vignette, clustering   printed
+14                              mclust vignette, density estimation   printed
+16                   Scrucca et al. (2023) mclust book, Example 3.2   printed
+15                                      Mplus 8.8 (UG example 10.7)   printed
+11           Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747   printed
+7                    Agresti & Lang (1993) Biometrics 49(1) Table 2   printed
+8      Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32   printed
+9  Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6   printed
+10                       Linzer & Lewis (2011) JSS 42(10) pp. 21-22   printed
+12                    McCutcheon (1987) Latent Class Analysis, Sage   printed
+17                Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4   printed
+   compared agreed worst_difference loosest_tolerance
+1        38     38     2.129345e-07             1e-05
+2       153    153     1.506292e-07             1e-04
+3        77     77     1.765969e-07             5e-01
+4       120    120     5.275972e-05             5e-01
+6       421    421     2.662945e-05             5e-01
+5         6      6     0.000000e+00             5e-01
+13        3      3     5.913316e-01             1e+00
+14        3      3     5.331782e-01             1e+00
+16        3      3     8.354732e-01             1e+00
+15      150    150     3.081309e-03             5e-01
+11        3      3     8.816422e-01             1e+00
+7         3      3     7.657521e-01             1e+00
+8         6      6     8.435677e-01             1e+00
+9        12     12     9.382416e-01             1e+00
+10        9      9     7.114471e-01             1e+00
+12        5      5     7.445945e-01             1e+00
+17        6      6     1.641260e-04             1e+00
+
+1018 quantities compared, 1018 agreed, 0 disagreed, worst difference 9.382e-01
+
+wrote equivalence/harness/report.csv, equivalence/harness/suites.csv, equivalence/harness/REPORT.md and equivalence/harness/SESSION.txt

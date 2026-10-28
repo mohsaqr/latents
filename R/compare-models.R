@@ -112,7 +112,10 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
   }, logical(1))
   if (any(model_controls)) {
     restored <- controls[model_controls]
-    supplied <- as.list(sys.call())[-1L]
+    # Expand forwarded dots before counting positions. Match against a
+    # dots-only signature so named controls retain the caller's order.
+    supplied <- as.list(match.call(definition = function(...) NULL,
+                                   call = sys.call(), envir = parent.frame()))[-1L]
     supplied_names <- names(supplied) %||% rep("", length(supplied))
     positions <- c(which(!supplied_names %in% names(controls)),
                     match(names(restored), supplied_names))

@@ -1,0 +1,151 @@
+nice: setpriority: Operation not permitted
+running suite: mclust
+running suite: invariance
+running suite: refusals
+Equivalence run against multilpa 0.97.4 under R version 4.5.2 (2025-10-31)
+       suite status compared agreed values outputs_not_covered warnings seconds
+1     mclust    ran      465    465  22402                  45        0   19.60
+2 invariance    ran      898    894  38912                   0        0    6.32
+3   refusals    ran       50     50     50                  NA        0    2.42
+
+1413 quantities (61364 values) compared, 1409 agreed, 4 disagreed
+
+45 output column(s) neither compared nor exempted:
+     suite                         fit                        output n_produced
+42  mclust  thyroid, VVI, 3 components          replication$n_starts          1
+43  mclust  thyroid, VVI, 3 components        replication$n_screened          1
+44  mclust  thyroid, VVI, 3 components       replication$n_converged          1
+45  mclust  thyroid, VVI, 3 components          replication$n_failed          1
+46  mclust  thyroid, VVI, 3 components replication$n_best_replicated          1
+47  mclust  thyroid, VVI, 3 components             replication$share          1
+48  mclust  thyroid, VVI, 3 components         replication$tolerance          1
+49  mclust  thyroid, VVI, 3 components        replication$best_start          1
+50  mclust  thyroid, VVI, 3 components    replication$log_likelihood          1
+147 mclust    acidity, E, 2 components          replication$n_starts          1
+148 mclust    acidity, E, 2 components        replication$n_screened          1
+149 mclust    acidity, E, 2 components       replication$n_converged          1
+150 mclust    acidity, E, 2 components          replication$n_failed          1
+151 mclust    acidity, E, 2 components replication$n_best_replicated          1
+152 mclust    acidity, E, 2 components             replication$share          1
+153 mclust    acidity, E, 2 components         replication$tolerance          1
+154 mclust    acidity, E, 2 components        replication$best_start          1
+155 mclust    acidity, E, 2 components    replication$log_likelihood          1
+242 mclust faithful, EEE, 3 components          replication$n_starts          1
+243 mclust faithful, EEE, 3 components        replication$n_screened          1
+244 mclust faithful, EEE, 3 components       replication$n_converged          1
+245 mclust faithful, EEE, 3 components          replication$n_failed          1
+246 mclust faithful, EEE, 3 components replication$n_best_replicated          1
+247 mclust faithful, EEE, 3 components             replication$share          1
+248 mclust faithful, EEE, 3 components         replication$tolerance          1
+249 mclust faithful, EEE, 3 components        replication$best_start          1
+250 mclust faithful, EEE, 3 components    replication$log_likelihood          1
+346 mclust  thyroid, VVV, 3 components          replication$n_starts          1
+347 mclust  thyroid, VVV, 3 components        replication$n_screened          1
+348 mclust  thyroid, VVV, 3 components       replication$n_converged          1
+349 mclust  thyroid, VVV, 3 components          replication$n_failed          1
+350 mclust  thyroid, VVV, 3 components replication$n_best_replicated          1
+351 mclust  thyroid, VVV, 3 components             replication$share          1
+352 mclust  thyroid, VVV, 3 components         replication$tolerance          1
+353 mclust  thyroid, VVV, 3 components        replication$best_start          1
+354 mclust  thyroid, VVV, 3 components    replication$log_likelihood          1
+557 mclust faithful, VVV, 2 components          replication$n_starts          1
+558 mclust faithful, VVV, 2 components        replication$n_screened          1
+559 mclust faithful, VVV, 2 components       replication$n_converged          1
+560 mclust faithful, VVV, 2 components          replication$n_failed          1
+561 mclust faithful, VVV, 2 components replication$n_best_replicated          1
+562 mclust faithful, VVV, 2 components             replication$share          1
+563 mclust faithful, VVV, 2 components         replication$tolerance          1
+564 mclust faithful, VVV, 2 components        replication$best_start          1
+565 mclust faithful, VVV, 2 components    replication$log_likelihood          1
+     suite                         fit                        output n_produced
+42  mclust  thyroid, VVI, 3 components          replication$n_starts          1
+43  mclust  thyroid, VVI, 3 components        replication$n_screened          1
+44  mclust  thyroid, VVI, 3 components       replication$n_converged          1
+45  mclust  thyroid, VVI, 3 components          replication$n_failed          1
+46  mclust  thyroid, VVI, 3 components replication$n_best_replicated          1
+47  mclust  thyroid, VVI, 3 components             replication$share          1
+48  mclust  thyroid, VVI, 3 components         replication$tolerance          1
+49  mclust  thyroid, VVI, 3 components        replication$best_start          1
+50  mclust  thyroid, VVI, 3 components    replication$log_likelihood          1
+147 mclust    acidity, E, 2 components          replication$n_starts          1
+148 mclust    acidity, E, 2 components        replication$n_screened          1
+149 mclust    acidity, E, 2 components       replication$n_converged          1
+150 mclust    acidity, E, 2 components          replication$n_failed          1
+151 mclust    acidity, E, 2 components replication$n_best_replicated          1
+152 mclust    acidity, E, 2 components             replication$share          1
+153 mclust    acidity, E, 2 components         replication$tolerance          1
+154 mclust    acidity, E, 2 components        replication$best_start          1
+155 mclust    acidity, E, 2 components    replication$log_likelihood          1
+242 mclust faithful, EEE, 3 components          replication$n_starts          1
+243 mclust faithful, EEE, 3 components        replication$n_screened          1
+244 mclust faithful, EEE, 3 components       replication$n_converged          1
+245 mclust faithful, EEE, 3 components          replication$n_failed          1
+246 mclust faithful, EEE, 3 components replication$n_best_replicated          1
+247 mclust faithful, EEE, 3 components             replication$share          1
+248 mclust faithful, EEE, 3 components         replication$tolerance          1
+249 mclust faithful, EEE, 3 components        replication$best_start          1
+250 mclust faithful, EEE, 3 components    replication$log_likelihood          1
+346 mclust  thyroid, VVV, 3 components          replication$n_starts          1
+347 mclust  thyroid, VVV, 3 components        replication$n_screened          1
+348 mclust  thyroid, VVV, 3 components       replication$n_converged          1
+349 mclust  thyroid, VVV, 3 components          replication$n_failed          1
+350 mclust  thyroid, VVV, 3 components replication$n_best_replicated          1
+351 mclust  thyroid, VVV, 3 components             replication$share          1
+352 mclust  thyroid, VVV, 3 components         replication$tolerance          1
+353 mclust  thyroid, VVV, 3 components        replication$best_start          1
+354 mclust  thyroid, VVV, 3 components    replication$log_likelihood          1
+557 mclust faithful, VVV, 2 components          replication$n_starts          1
+558 mclust faithful, VVV, 2 components        replication$n_screened          1
+559 mclust faithful, VVV, 2 components       replication$n_converged          1
+560 mclust faithful, VVV, 2 components          replication$n_failed          1
+561 mclust faithful, VVV, 2 components replication$n_best_replicated          1
+562 mclust faithful, VVV, 2 components             replication$share          1
+563 mclust faithful, VVV, 2 components         replication$tolerance          1
+564 mclust faithful, VVV, 2 components        replication$best_start          1
+565 mclust faithful, VVV, 2 components    replication$log_likelihood          1
+    n_compared      status reason
+42           0 not covered   <NA>
+43           0 not covered   <NA>
+44           0 not covered   <NA>
+45           0 not covered   <NA>
+46           0 not covered   <NA>
+47           0 not covered   <NA>
+48           0 not covered   <NA>
+49           0 not covered   <NA>
+50           0 not covered   <NA>
+147          0 not covered   <NA>
+148          0 not covered   <NA>
+149          0 not covered   <NA>
+150          0 not covered   <NA>
+151          0 not covered   <NA>
+152          0 not covered   <NA>
+153          0 not covered   <NA>
+154          0 not covered   <NA>
+155          0 not covered   <NA>
+242          0 not covered   <NA>
+243          0 not covered   <NA>
+244          0 not covered   <NA>
+245          0 not covered   <NA>
+246          0 not covered   <NA>
+247          0 not covered   <NA>
+248          0 not covered   <NA>
+249          0 not covered   <NA>
+250          0 not covered   <NA>
+346          0 not covered   <NA>
+347          0 not covered   <NA>
+348          0 not covered   <NA>
+349          0 not covered   <NA>
+350          0 not covered   <NA>
+351          0 not covered   <NA>
+352          0 not covered   <NA>
+353          0 not covered   <NA>
+354          0 not covered   <NA>
+557          0 not covered   <NA>
+558          0 not covered   <NA>
+559          0 not covered   <NA>
+560          0 not covered   <NA>
+561          0 not covered   <NA>
+562          0 not covered   <NA>
+563          0 not covered   <NA>
+564          0 not covered   <NA>
+565          0 not covered   <NA>

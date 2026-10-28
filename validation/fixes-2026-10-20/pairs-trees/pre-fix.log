@@ -1,0 +1,191 @@
+ℹ Loading latents
+
+══ Testing test-review-pairs-trees.R ═══════════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 1 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 2 ]Fitted a single-level latent class model.
+
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 3 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 4 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 5 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 6 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 7 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 8 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 9 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 10 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 11 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 12 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 13 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 11 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 12 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 13 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 14 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 15 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 16 | WARN 0 | SKIP 0 | PASS 14 ]
+[ FAIL 17 | WARN 0 | SKIP 0 | PASS 14 ]
+
+── Failure ('test-review-pairs-trees.R:8:3'): generated pair names cannot replace caller columns ──
+Expected `.latents_join_pairs(data, pairs)` to throw a error with class <latents_bad_data>.
+
+── Failure ('test-review-pairs-trees.R:10:3'): generated pair names cannot replace caller columns ──
+Expected `lca(...)` to throw a error with class <latents_bad_data>.
+
+── Failure ('test-review-pairs-trees.R:33:5'): paired inputs receive the original categorical validation ──
+Expected `fit(frame, TRUE)` to throw a error with class <latents_bad_categorical>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_error(fit(frame, TRUE), class = "latents_bad_categorical") at test-review-pairs-trees.R:33:5
+
+── Failure ('test-review-pairs-trees.R:33:5'): paired inputs receive the original categorical validation ──
+Expected `fit(frame, TRUE)` to throw a error with class <latents_bad_categorical>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_error(fit(frame, TRUE), class = "latents_bad_categorical") at test-review-pairs-trees.R:33:5
+
+── Failure ('test-review-pairs-trees.R:33:5'): paired inputs receive the original categorical validation ──
+Expected `fit(frame, TRUE)` to throw a error with class <latents_bad_categorical>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_error(fit(frame, TRUE), class = "latents_bad_categorical") at test-review-pairs-trees.R:33:5
+
+── Failure ('test-review-pairs-trees.R:33:5'): paired inputs receive the original categorical validation ──
+Expected `fit(frame, TRUE)` to throw a error with class <latents_bad_categorical>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_error(fit(frame, TRUE), class = "latents_bad_categorical") at test-review-pairs-trees.R:33:5
+
+── Failure ('test-review-pairs-trees.R:34:5'): paired inputs receive the original categorical validation ──
+Expected `fit(frame, FALSE)` to throw a error with class <latents_bad_categorical>.
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_error(fit(frame, FALSE), class = "latents_bad_categorical") at test-review-pairs-trees.R:34:5
+
+── Error ('test-review-pairs-trees.R:25:10'): paired inputs receive the original categorical validation ──
+Error in ``[[<-.data.frame`(`*tmp*`, pair$name, value = structure(1:16, levels = c("1:0", "2:0", "3:1", "4:1", "5:0", "6:0", "7:1", "8:1", "9:0", "10:0", "11:1", "12:1", "13:0", "14:0", "15:1", "16:1"), class = "factor"))`: replacement has 16 rows, data has 8
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-review-pairs-trees.R:32:3
+  2.   └─FUN(X[[i]], ...)
+  3.     ├─testthat::expect_error(fit(frame, TRUE), class = "latents_bad_categorical") at test-review-pairs-trees.R:33:5
+  4.     │ └─testthat:::expect_condition_matching_(...)
+  5.     │   └─testthat:::quasi_capture(...)
+  6.     │     ├─testthat (local) .capture(...)
+  7.     │     │ └─base::withCallingHandlers(...)
+  8.     │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+  9.     └─fit(frame, TRUE)
+ 10.       └─latents::lca(...) at test-review-pairs-trees.R:25:10
+ 11.         ├─latents:::.multilpa_quiet_single_level(...) at latents/R/lpa.R:105:3
+ 12.         │ └─base::withCallingHandlers(...) at latents/R/lpa.R:244:3
+ 13.         └─latents::multilca(...)
+ 14.           ├─base::do.call(multilpa, arguments) at latents/R/multilca.R:57:3
+ 15.           └─latents (local) `<fn>`(...)
+ 16.             └─latents:::.latents_fit_local_dependence(...) at latents/R/multilpa.R:1262:5
+ 17.               └─latents:::.latents_join_pairs(arguments$data, joined_pairs) at latents/R/local-dependence.R:267:3
+ 18.                 └─base::Reduce(...) at latents/R/local-dependence.R:173:3
+ 19.                   └─latents (local) f(init, x[[i]])
+ 20.                     ├─base::`[[<-`(`*tmp*`, pair$name, value = `<fct>`) at latents/R/local-dependence.R:214:5
+ 21.                     └─base::`[[<-.data.frame`(`*tmp*`, pair$name, value = `<fct>`) at latents/R/local-dependence.R:214:5
+
+── Failure ('test-review-pairs-trees.R:56:3'): joined data remain idempotent, serializable, predictable and refittable ──
+Expected `refit$n_parameters` to be identical to `fit$n_parameters`.
+Differences:
+`actual` is an integer vector (4)
+`expected` is a double vector (4)
+
+
+── Error ('test-review-pairs-trees.R:63:3'): joined data remain idempotent, serializable, predictable and refittable ──
+<latents_bad_data/error/condition>
+Error: `a:b` has the categories `0.3:FALSE`, `1:TRUE`, `1:FALSE`, which the fit never saw, so it has no estimated probability.
+Backtrace:
+     ▆
+  1. ├─testthat::expect_error(...) at test-review-pairs-trees.R:63:3
+  2. │ └─testthat:::expect_condition_matching_(...)
+  3. │   └─testthat:::quasi_capture(...)
+  4. │     ├─testthat (local) .capture(...)
+  5. │     │ └─base::withCallingHandlers(...)
+  6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+  7. ├─stats::predict(fit, bad, type = "posterior")
+  8. └─latents:::predict.multilpa(fit, bad, type = "posterior")
+  9.   └─latents:::.multilpa_prediction_rows(object, newdata) at latents/R/predict.R:9:3
+ 10.     ├─base::matrix(...) at latents/R/predict.R:112:5
+ 11.     └─base::vapply(...) at latents/R/predict.R:112:5
+ 12.       └─latents (local) FUN(X[[i]], ...)
+ 13.         └─latents (local) bad_data(...) at latents/R/predict.R:117:9
+
+── Failure ('test-review-pairs-trees.R:74:3'): tree adapters respect row, group and person posterior weights ──
+Expected `draw$weights` to equal `fit$spec$row_weights`.
+Differences:
+  `actual`: 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 and 90 more...
+`expected`: 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25            ...
+
+
+── Failure ('test-review-pairs-trees.R:78:3'): tree adapters respect row, group and person posterior weights ──
+Expected `flows$to_share[order(flows$to_class)]` to equal `expected`.
+Differences:
+  `actual`: 0.20 0.80
+`expected`: 0.80 0.20
+
+
+── Failure ('test-review-pairs-trees.R:79:3'): tree adapters respect row, group and person posterior weights ──
+Expected `flows$mass[order(flows$to_class)]` to equal `expected`.
+Differences:
+  `actual`: 0.20 0.80
+`expected`: 0.80 0.20
+
+
+── Failure ('test-review-pairs-trees.R:86:3'): tree adapters respect row, group and person posterior weights ──
+Expected `.latents_tree_posteriors(group_fit, "individuals")$weights` to equal `group_fit$spec$sampling_weights`.
+Differences:
+  `actual`: 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 and 90 more...
+`expected`: 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25            ...
+
+
+── Failure ('test-review-pairs-trees.R:90:3'): tree adapters respect row, group and person posterior weights ──
+Expected `.latents_tree_posteriors(two, "individuals")$weights` to equal `two$spec$row_weights`.
+Differences:
+  `actual`: 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 and 240 more...
+`expected`: 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25             ...
+
+
+── Failure ('test-review-pairs-trees.R:91:3'): tree adapters respect row, group and person posterior weights ──
+Expected `.latents_tree_posteriors(two, "groups")$weights` to equal `two$spec$sampling_weights`.
+Differences:
+  `actual`: 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 and 90 more...
+`expected`: 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25 0.25            ...
+
+
+── Error ('test-review-pairs-trees.R:92:3'): tree adapters respect row, group and person posterior weights ──
+<latents_no_valid_start/error/condition>
+Error: Every one of the 3 starts degenerated: a class emptied or a residual variance collapsed. Fewer classes or more starts may help.
+Backtrace:
+    ▆
+ 1. ├─base::suppressWarnings(...) at test-review-pairs-trees.R:92:3
+ 2. │ └─base::withCallingHandlers(...)
+ 3. └─latents::mixture_regression(...)
+ 4.   ├─latents:::.mixture_with_seed(...) at latents/R/mixture-regression.R:372:5
+ 5.   └─latents:::.growth_fit(...) at latents/R/mixture-regression.R:372:5
+ 6.     └─latents:::.growth_select(spec, stats, results, select_start) at latents/R/growth-mixture.R:294:3
+
+[ FAIL 17 | WARN 0 | SKIP 0 | PASS 14 ]

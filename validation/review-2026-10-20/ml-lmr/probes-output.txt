@@ -1,0 +1,70 @@
+
+--- Negative q known-answer upper tail, lambda=1 ---
+ERROR latents_inaccurate_probability/error/condition: The tail probability of the weighted chi-square distribution could not be integrated over [10000, 100000]: the integral is probably divergent (statistic -1, 1 weights); the p-value cannot be reported.
+
+--- Negative q known-answer upper tail, lambda=-1 ---
+ERROR latents_inaccurate_probability/error/condition: The tail probability of the weighted chi-square distribution could not be integrated over [10000, 100000]: the integral is probably divergent (statistic -1, 1 weights); the p-value cannot be reported.
+
+--- Negative q known-answer upper tail, lambda=(1,-1) ---
+ERROR latents_inaccurate_probability/error/condition: The tail probability of the weighted chi-square distribution could not be integrated over [10000, 100000]: the integral is probably divergent (statistic -1, 2 weights); the p-value cannot be reported.
+
+--- Vuong eigenvalues, regular nested case ---
+[1] -2.108999e-08 -5.646331e-16 -5.646331e-16  6.798293e-17  6.798293e-17
+[6]  2.108999e-08  1.000000e+00  1.000000e+00
+
+--- Same regular nested case after one coordinate changed to units of 1e8 ---
+ERROR simpleError/error/condition: system is computationally singular: reciprocal condition number = 8.93656e-17
+
+--- ML known-answer hard-assignment influence at offset 0 ---
+[1] 0.02101978 0.39638209
+
+--- ML known-answer hard-assignment influence at offset 1e12 ---
+[1] 1.006412e+13 1.094350e+19
+
+--- Public base LMR ---
+  direction null_candidate alternative_candidate n_profiles n_group_classes
+1  profiles      profiles1             profiles2          2               1
+  model n_units parameters_added       lr vlmr_p adjusted_lr almr_p
+1   EEI     300                3 336.1164      0    317.5581      0
+  reference_mean reference_sd note
+1       4.418811     3.286323 <NA>
+
+--- Public scaled candidate convergence ---
+  n_profiles converged log_likelihood
+1          1      TRUE      -12262.54
+2          2      TRUE      -12094.48
+
+--- Public scaled parameter inference ---
+        level       outcome          term   parameter     estimate
+1 measurement     profile_1             a        mean 1.127098e+07
+2 measurement     profile_1             b        mean 1.575192e+07
+3 measurement        shared             a    variance 3.384994e+16
+4 measurement        shared             b    variance 3.229783e+16
+5     profile     profile_1 group_class_1 probability 1.000000e+00
+6       group group_class_1          <NA> probability 1.000000e+00
+  standard_error statistic   p_value p_adjusted      conf_low    conf_high
+1   1.064004e+07  1.059299 0.2894638  0.2894638 -9.583117e+06 3.212508e+07
+2   1.039324e+07  1.515593 0.1296224  0.1296224 -4.618458e+06 3.612230e+07
+3   1.942926e+15        NA        NA         NA  3.024826e+16 3.788047e+16
+4   1.994617e+15        NA        NA         NA  2.861579e+16 3.645365e+16
+5   0.000000e+00        NA        NA         NA  1.000000e+00 1.000000e+00
+6   0.000000e+00        NA        NA         NA  1.000000e+00 1.000000e+00
+
+--- Public scaled LMR ---
+ERROR simpleError/error/condition: system is computationally singular: reciprocal condition number = 7.87581e-17
+
+--- Public ML base outcome ---
+Distal outcome by class (ml, varying variances, 95% CI)
+
+Class  Mean        95% CI     SE  Variance  Effective n
+-----  ----  ------------  -----  --------  -----------
+    1  0.28  [0.10, 0.45]  0.090      1.12       145.80
+    2  2.08  [1.91, 2.24]  0.084      1.07       154.20
+
+--- Public ML offset outcome ---
+Distal outcome by class (ml, varying variances, 95% CI)
+
+Class              Mean                               95% CI       SE  Variance  Effective n
+-----  ----------------  -----------------------------------  -------  --------  -----------
+    1  1000000000000.28  [999999995731.54, 1000000004269.02]  2177.97      1.12       145.80
+    2  1000000000002.08  [999999991838.00, 1000000008166.15]  4165.42      1.07       154.20

@@ -1,0 +1,11 @@
+[1] TRUE
+coefficient.class_1.(Intercept)           coefficient.class_1.x 
+                      2.1363520                       0.7805055 
+          log_sigma.all.class_1 
+                     -0.0735860 
+    class share count n_assigned mean_posterior sigma sigma_std_error prior
+1 class_1     1   120        120              1    NA              NA     1
+  prior_std_error
+1               0
+expected_sigma.class_1 
+             0.9290562 

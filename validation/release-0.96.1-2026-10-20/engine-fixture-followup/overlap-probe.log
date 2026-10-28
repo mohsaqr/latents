@@ -1,0 +1,10 @@
+SPREAD 0.5 MODE default LL 620.1129 boundary FALSE converged TRUE transitions 0.4960078 0.4960179 initial 0.5 0.5 SEdiff 5.647471e-07 
+SPREAD 0.5 MODE internal LL 620.1129 boundary FALSE converged TRUE transitions 0.4960078 0.4960179 initial 0.5 0.5 SEdiff 5.647475e-07 
+SPREAD 0.5 MODE blas LL 620.1129 boundary FALSE converged TRUE transitions 0.4960078 0.4960179 initial 0.5 0.5 SEdiff 5.647471e-07 
+SPREAD 0.7 MODE default LL 491.7584 boundary FALSE converged TRUE transitions 0.4040656 0.4101624 initial 0.5000001 0.5000001 SEdiff 0.0003282592 
+SPREAD 0.7 MODE internal LL 491.7584 boundary FALSE converged TRUE transitions 0.4040651 0.4101621 initial 0.5000001 0.5000001 SEdiff 0.000328258 
+SPREAD 0.7 MODE blas LL 491.7584 boundary FALSE converged TRUE transitions 0.4040656 0.4101624 initial 0.5000001 0.5000001 SEdiff 0.0003282592 
+Error: A variance sits at min_variance or a transition or initial probability at zero; Wald inference does not apply.
+In addition: Warning message:
+A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld. 
+Execution halted

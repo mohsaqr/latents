@@ -1,0 +1,7 @@
+One complete run, no result replacement or aggregation:
+     nb  failed   error warning skipped  passed 
+   5419       0       0       0       0    5419 
+Cases: 198 
+Test files: 39 
+Snapshot commit: cf1127fa66283826ed421d028999b5ac23e1901d 
+PASS: every case passed without failures, errors, warnings or skips.

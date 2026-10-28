@@ -1,0 +1,184 @@
+vvi_one_k2_s_02-lg.dat
+File name:	vvi_one_k2_s_02-lg.dat	
+File size:	3400 bytes  60 records	
+File date:	2026-Oct-20 9:06:06 PM	
+Syntax:	vvi_one_k2_s_02.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+vvi_one_k2_s_02	2-Cluster	-281.9368	625.2889	593.8737	608.8737	15	0.0055	0.9743	
+vvi_one_k2_s_02 - LL = -281.9368
+2-Cluster Syntax Model	
+					
+Number of cases	60				
+Number of parameters (Npar)	15				
+Activated Constraints	0				
+Random Seed	20261020				
+Best Start Seed	188163				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-281.9368				
+Log-prior	0.0000				
+Log-posterior	-281.9368				
+BIC (based on LL)	625.2889				
+AIC (based on LL)	593.8737				
+AIC3 (based on LL)	608.8737				
+CAIC (based on LL)	640.2889				
+SABIC (based on LL)	578.1099				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0055				
+Reduction of errors (Lambda)	0.9884				
+Entropy R-squared	0.9743				
+Standard R-squared	0.9810				
+Classification log-likelihood	-283.0030				
+Entropy	1.0661				
+CLC	566.0059				
+AWE	733.8363				
+ICL-BIC	627.4211				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	30.9989	0.3301	31.3290		
+2	0.0011	28.6699	28.6710		
+Total	31.0000	29.0000	60.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	31.0453	0.2837	31.3290		
+2	0.2837	28.3872	28.6710		
+Total	31.3290	28.6710	60.0000		
+					
+Files					
+Infile	C:\lgfeatures\pair-covariance\vvi_one_k2_s_02\vvi_one_k2_s_02-lg.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261020				
+sets	200				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	      60				
+predictionstatistics	no				
+write	vvi_one_k2_s_02_write.txt	
+outfile					
+file name	vvi_one_k2_s_02_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261020 sets=200 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile write='vvi_one_k2_s_02_write.txt';
+   outfile 'vvi_one_k2_s_02_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent
+      Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y3 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+   y2 <-> y3 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	0.1147	1	0.73				
+Cluster(2)	<-	1			-0.0887	0.2617	-0.3387	0.73							
+															
+y1	<-	1			0.3337	0.1771	1.8843	0.060	3.5504	1	0.060				
+y1	<-	Cluster(1)			0.0000	.	.	.	140.8597	1	1.7e-32				
+y1	<-	Cluster(2)			2.6605	0.2242	11.8684	1.7e-32							
+															
+y2	<-	1			-0.1331	0.2100	-0.6340	0.53	0.4019	1	0.53				
+y2	<-	Cluster(1)			0.0000	.	.	.	78.5404	1	7.8e-19				
+y2	<-	Cluster(2)			2.8989	0.3271	8.8623	7.8e-19							
+															
+y3	<-	1			-0.0208	0.2291	-0.0907	0.93	0.0082	1	0.93				
+y3	<-	Cluster(1)			0.0000	.	.	.	78.7327	1	7.1e-19				
+y3	<-	Cluster(2)			2.6638	0.3002	8.8731	7.1e-19							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	Cluster(1)	0.9489	0.2470	3.8421	0.00012	27.8835	2	8.8e-7	1.9282	1	0.16	
+y1			|	Cluster(2)	0.5485	0.1504	3.6476	0.00026							
+y2			|	Cluster(1)	1.3206	0.3420	3.8612	0.00011	28.8212	2	5.5e-7	0.7536	1	0.39	
+y2			|	Cluster(2)	1.8326	0.4849	3.7794	0.00016							
+y3			|	Cluster(1)	1.5370	0.4217	3.6447	0.00027	27.2774	2	1.2e-6	0.9784	1	0.32	
+y3			|	Cluster(2)	1.0415	0.2753	3.7834	0.00015							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y2	<->	y3	|	Cluster(1)	1.1814	0.3489	3.3856	0.00071	18.9429	2	7.7e-5	18.9256	1	1.4e-5	
+y2	<->	y3	|	Cluster(2)	-0.8410	0.3029	-2.7761	0.0055							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	0.1147	1	0.73	
+	
+y1	<-	 Cluster			Cluster	1	2	140.8597	1	1.7e-32	
+	
+y2	<-	 Cluster			Cluster	1	2	78.5404	1	7.8e-19	
+	
+y3	<-	 Cluster			Cluster	1	2	78.7327	1	7.1e-19	
+Variances	
+y1			|	Cluster	Cluster	1	2	1.9282	1	0.16	
+y2			|	Cluster	Cluster	1	2	0.7536	1	0.39	
+y3			|	Cluster	Cluster	1	2	0.9784	1	0.32	
+Covariances / Associations	
+y2	<->	y3	|	Cluster	Cluster	1	2	18.9256	1	1.4e-5	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5222	0.0653	0.4778	0.0653	 	 	
+y1	 	
+Mean	0.3337	0.1771	2.9942	0.1413	1.6050	0.2051	
+y2	 	
+Mean	-0.1331	0.2100	2.7658	0.2533	1.2521	0.2471	
+y3	 	
+Mean	-0.0208	0.2291	2.6430	0.1914	1.2521	0.2262	

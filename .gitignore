@@ -5,8 +5,19 @@ CHANGES.md
 CLAUDE.md
 AGENTS.md
 AGENT-NOTE-*.md
-cran-comments.md
+cran-comments*.md
 README.html
+
+# Handoff snapshots kept beside validation evidence
+validation/**/*[Hh][Aa][Nn][Dd][Oo][Ff][Ff]*.md
+validation/**/previous-handoff.txt
+
+# Local plans, drafts, agent transcripts and installed libraries
+SEARCH-PLAN.md
+joint-results.rds
+Tutorial_docs/latents-APM-software-note.*
+equivalence/starts-study/logs/codex.log
+rlib/
 
 # Build and check output
 *.tar.gz

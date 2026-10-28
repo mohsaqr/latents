@@ -1,0 +1,91 @@
+        n   persons occasions        LL converged  boundary 
+ 1422.000   106.000    15.000 -5293.183     1.000     0.000 
+ [1] "call"                      "vars"                     
+ [3] "continuous"                "categorical"              
+ [5] "categorical_levels"        "id"                       
+ [7] "time"                      "group_ids"                
+ [9] "group_index"               "time_values"              
+[11] "n_profiles"                "n_group_classes"          
+[13] "n_groups"                  "n_observations"           
+[15] "n_occasions"               "transitions"              
+[17] "transition_covariates"     "initial_covariates"       
+[19] "measurement_model"         "variance_model"           
+[21] "measurement"               "initial_coefficients"     
+[23] "transition_coefficients"   "second_order_coefficients"
+[25] "order"                     "missing"                  
+[27] "covariance_model"          "covariance_structure"     
+[29] "stayer"                    "mover_stayer"             
+[31] "group_probabilities"       "designs"                  
+[33] "layout"                    "occasion_of_row"          
+[35] "centers"                   "x"                        
+[37] "codes"                     "n_categories"             
+[39] "subject_posteriors"        "group_posteriors"         
+[41] "expectation"               "log_likelihood"           
+[43] "n_parameters"              "aic"                      
+[45] "bic"                       "bic_individual"           
+[47] "n_informative"             "informative"              
+[49] "n_informative_groups"      "converged"                
+[51] "iterations"                "log_likelihood_history"   
+[53] "boundary"                  "probability_boundary"     
+[55] "starts"                    "n_best_replicated"        
+[57] "min_variance"              "min_probability"          
+[59] "arguments"                 "ordinal"                  
+[61] "count"                     "drop_empty"               
+, , group_class_1
+
+            profile_1
+(Intercept) 0.5325156
+
+, , profile_1, group_class_1
+
+            destination_1
+occasion_2      -2.718086
+occasion_3      -1.532259
+occasion_4      -1.637530
+occasion_5      -1.176728
+occasion_6      -1.898628
+occasion_7      -2.965907
+occasion_8      -2.004506
+occasion_9      -3.212608
+occasion_10     -1.665500
+occasion_11     -1.702177
+occasion_12     -2.472744
+occasion_13     -1.745938
+occasion_14     -1.863691
+occasion_15     -2.434688
+
+, , profile_2, group_class_1
+
+            destination_1
+occasion_2      -1.890656
+occasion_3      -2.227081
+occasion_4      -1.142527
+occasion_5      -1.280786
+occasion_6      -1.880822
+occasion_7      -1.534531
+occasion_8      -1.190388
+occasion_9      -1.553743
+occasion_10     -1.392692
+occasion_11     -1.387409
+occasion_12     -1.054061
+occasion_13     -3.319845
+occasion_14    -11.955139
+occasion_15     -1.827543
+
+attr(,"n_occasion_intercepts")
+[1] 14
+[[1]]
+[[1]]$min_initial
+[1] 0.3699304
+
+[[1]]$min_moves
+ [1] 6.191457e-02 9.734480e-02 1.628015e-01 2.174165e-01 1.302639e-01
+ [6] 4.899006e-02 1.187306e-01 3.869401e-02 1.590251e-01 1.541811e-01
+[11] 7.779118e-02 3.489664e-02 6.426082e-06 8.056549e-02
+
+
+[1] "varying"
+[1] "diagonal"
+NULL
+ [1] -5327.578 -5297.499 -5294.358 -5293.624 -5293.396 -5293.304 -5293.258
+ [8] -5293.231 -5293.215 -5293.204 -5293.197 -5293.193 -5293.183

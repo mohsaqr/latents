@@ -1,0 +1,6 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-review-regressions.R","review-regressions","full-covariance LTA identifies an active eigenvalue bound",4,0,FALSE,FALSE,0,0.307,0.004,0.315,4
+"test-review-regressions.R","review-regressions","an excluded outlier does not derail all default starts",2,0,FALSE,FALSE,0,0.504,0.012,0.522,2
+"test-review-regressions.R","review-regressions","non-Gaussian rows cannot hide a thin Gaussian profile",2,0,FALSE,FALSE,0,0.0410000000000001,0.003,0.0449999999999999,2
+"test-review-regressions.R","review-regressions","cross-level thinness uses weighted Gaussian support",3,0,FALSE,FALSE,0,0.0129999999999999,0.002,0.018,3
+"test-review-regressions.R","review-regressions","cross-level thinness also checks the group Gaussian mixture",2,0,FALSE,FALSE,0,0.0719999999999998,0.002,0.0760000000000001,2

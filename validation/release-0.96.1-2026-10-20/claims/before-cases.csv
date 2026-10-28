@@ -1,0 +1,5 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.0229999999999999,0.004,0.031,3
+"test-claims.R","claims","every claim is still worded as registered in its source",134,26,FALSE,FALSE,0,0.42,0.071,0.598,108
+"test-claims.R","claims","every backed claim names a test that exists",132,0,FALSE,FALSE,0,0.106,0.049,0.218,132
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.002,0.000999999999999973,0.004,2

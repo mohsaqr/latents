@@ -1,0 +1,334 @@
+API check: every validation call matches multilpa 0.97.4.
+running suite: depmixs4
+converged at iteration 11 with logLik: -1457.504 
+converged at iteration 38 with logLik: -1960.506 
+converged at iteration 16 with logLik: -1123.725 
+converged at iteration 8 with logLik: -1860.582 
+running suite: flexmix
+running suite: glca
+running suite: hard-depmixs4
+converged at iteration 67 with logLik: -5199.608 
+converged at iteration 70 with logLik: -5199.608 
+converged at iteration 67 with logLik: -5199.608 
+converged at iteration 66 with logLik: -5199.608 
+converged at iteration 76 with logLik: -5199.608 
+converged at iteration 79 with logLik: -3366.31 
+converged at iteration 69 with logLik: -3366.31 
+converged at iteration 85 with logLik: -3366.31 
+converged at iteration 92 with logLik: -3366.31 
+converged at iteration 67 with logLik: -3366.31 
+converged at iteration 95 with logLik: -3120.098 
+converged at iteration 96 with logLik: -3120.098 
+converged at iteration 110 with logLik: -3120.098 
+converged at iteration 93 with logLik: -3120.098 
+converged at iteration 112 with logLik: -3120.098 
+converged at iteration 27 with logLik: -3209.833 
+converged at iteration 26 with logLik: -3209.833 
+converged at iteration 26 with logLik: -3209.833 
+converged at iteration 31 with logLik: -3209.833 
+converged at iteration 23 with logLik: -3209.833 
+converged at iteration 28 with logLik: -2948.286 
+converged at iteration 28 with logLik: -2948.286 
+converged at iteration 26 with logLik: -2948.286 
+converged at iteration 26 with logLik: -2948.286 
+converged at iteration 28 with logLik: -2948.286 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+converged at iteration 18 with logLik: -2599.908 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+converged at iteration 31 with logLik: 3605.761 
+converged at iteration 34 with logLik: 3605.761 
+converged at iteration 37 with logLik: 3605.761 
+converged at iteration 42 with logLik: 3605.761 
+converged at iteration 33 with logLik: 3605.761 
+converged at iteration 35 with logLik: -3387.745 
+converged at iteration 37 with logLik: -3387.745 
+converged at iteration 34 with logLik: -3387.745 
+converged at iteration 37 with logLik: -3387.745 
+converged at iteration 35 with logLik: -3387.745 
+converged at iteration 1381 with logLik: -2917.115 
+converged at iteration 1535 with logLik: -2917.115 
+converged at iteration 1399 with logLik: -2917.476 
+converged at iteration 875 with logLik: -2917.115 
+converged at iteration 1185 with logLik: -2917.476 
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+running suite: hard-mclust
+  4 warning(s), first: Profiles 1, 2, 3: 14.0, 13.0, 13.0 Gaussian membership mass for 20 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+running suite: hard-polca
+running suite: invariance
+running suite: lcmm
+running suite: mclust
+running suite: mplus-twolevel-lca
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+running suite: multilevlca
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+running suite: polca
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+running suite: published
+running suite: refusals
+running suite: stability
+Equivalence run against multilpa 0.97.4 under R version 4.5.2 (2025-10-31)
+                suite status compared agreed  values outputs_not_covered
+1            depmixs4    ran      482    482   29412                   8
+2             flexmix    ran      433    433   29933                   0
+3                glca    ran      362    362   57400                   0
+4       hard-depmixs4    ran     1190   1190  163548                   8
+5         hard-mclust    ran     1720   1720   91818                   0
+6          hard-polca    ran     1013   1013  118383                   0
+7          invariance    ran      826    826   38840                  11
+8                lcmm    ran      467    467   34865                   0
+9              mclust    ran      475    475   22412                   0
+10 mplus-twolevel-lca    ran      770    770  395792                   0
+11        multilevlca    ran      360    360 2041615                   0
+12              polca    ran      870    870  118857                   0
+13          published    ran       41     41      41                  NA
+14           refusals    ran       50     49      50                  NA
+15          stability    ran        9      9       9                  NA
+   warnings seconds
+1         0   14.14
+2         0   18.72
+3         0   19.37
+4         0  179.80
+5         4   57.32
+6         0  125.98
+7         0    5.82
+8         0   43.52
+9         0   21.01
+10        0  144.47
+11        0  141.20
+12        0   86.99
+13        0  241.38
+14        0    2.02
+15        0   52.24
+
+9068 quantities (3142975 values) compared, 9067 agreed, 1 disagreed
+
+27 output column(s) neither compared nor exempted:
+             suite                                            fit
+409       depmixs4                      mixed-2-profile, 2 states
+410       depmixs4                      mixed-2-profile, 2 states
+411       depmixs4                      mixed-2-profile, 2 states
+412       depmixs4                      mixed-2-profile, 2 states
+413       depmixs4                      mixed-2-profile, 2 states
+414       depmixs4                      mixed-2-profile, 2 states
+415       depmixs4                      mixed-2-profile, 2 states
+416       depmixs4                      mixed-2-profile, 2 states
+1863 hard-depmixs4                    category-on-floor, 2 states
+1864 hard-depmixs4                    category-on-floor, 2 states
+1865 hard-depmixs4                    category-on-floor, 2 states
+1866 hard-depmixs4                    category-on-floor, 2 states
+1867 hard-depmixs4                    category-on-floor, 2 states
+1868 hard-depmixs4                    category-on-floor, 2 states
+1869 hard-depmixs4                    category-on-floor, 2 states
+1870 hard-depmixs4                    category-on-floor, 2 states
+5958    invariance two-level 2 x 2, four zero-weight groups added
+5959    invariance two-level 2 x 2, four zero-weight groups added
+5960    invariance two-level 2 x 2, four zero-weight groups added
+5961    invariance two-level 2 x 2, four zero-weight groups added
+5962    invariance two-level 2 x 2, four zero-weight groups added
+5963    invariance two-level 2 x 2, four zero-weight groups added
+5964    invariance two-level 2 x 2, four zero-weight groups added
+5965    invariance two-level 2 x 2, four zero-weight groups added
+5966    invariance two-level 2 x 2, four zero-weight groups added
+5967    invariance two-level 2 x 2, four zero-weight groups added
+5968    invariance two-level 2 x 2, four zero-weight groups added
+                              output n_produced
+409               residuals$observed          6
+410               residuals$expected          6
+411               residuals$residual          6
+412            residuals$effective_n          6
+413              residuals$statistic          6
+414                     residuals$df          6
+415                residuals$p_value          6
+416             residuals$p_adjusted          6
+1863              residuals$observed          6
+1864              residuals$expected          6
+1865              residuals$residual          6
+1866           residuals$effective_n          6
+1867             residuals$statistic          6
+1868                    residuals$df          6
+1869               residuals$p_value          6
+1870            residuals$p_adjusted          6
+5958            posteriors$posterior        380
+5959                posteriors$modal        380
+5960     group_posteriors$group_size         38
+5961 group_posteriors$log_likelihood         38
+5962      group_posteriors$posterior         38
+5963          group_posteriors$modal         38
+5964             assignments$profile        190
+5965         assignments$group_class        190
+5966         assignments$uncertainty        190
+5967 assignments$posterior_profile_1        190
+5968 assignments$posterior_profile_2        190
+
+                suite
+1            depmixs4
+3             flexmix
+4                glca
+2       hard-depmixs4
+9         hard-mclust
+5          hard-polca
+14         hard-polca
+6          invariance
+7                lcmm
+8                lcmm
+10             mclust
+11 mplus-twolevel-lca
+12        multilevlca
+15              polca
+16           refusals
+13          stability
+23             mclust
+24             mclust
+26             mclust
+25 mplus-twolevel-lca
+21        multilevlca
+17          published
+18          published
+19          published
+20          published
+22          published
+27          published
+                                                             source precision
+1                                                    depmixS4 1.5.1   machine
+3                                                    flexmix 2.3.20   machine
+4                                                        glca 1.4.2   machine
+2                                                    depmixS4 1.5.1   machine
+9                                                      mclust 6.1.2   machine
+5                                                        invariance   machine
+14                                                    poLCA 1.6.0.1   machine
+6                                                        invariance   machine
+7                                          latents (unit-scale fit)   machine
+8                                                        lcmm 2.2.1   machine
+10                                                     mclust 6.1.2   machine
+11                                      Mplus 8.8 (UG example 10.7)   machine
+12                                                multilevLCA 2.1.6   machine
+15                                                    poLCA 1.6.0.1   machine
+16                                                   refusal parity   machine
+13                                  multilpa, refitted across seeds   machine
+23                                      mclust vignette, clustering   printed
+24                              mclust vignette, density estimation   printed
+26                   Scrucca et al. (2023) mclust book, Example 3.2   printed
+25                                      Mplus 8.8 (UG example 10.7)   printed
+21           Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747   printed
+17                   Agresti & Lang (1993) Biometrics 49(1) Table 2   printed
+18     Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32   printed
+19 Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6   printed
+20                       Linzer & Lewis (2011) JSS 42(10) pp. 21-22   printed
+22                    McCutcheon (1987) Latent Class Analysis, Sage   printed
+27                Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4   printed
+   compared agreed worst_difference loosest_tolerance worst_tolerance_fraction
+1       482    482     2.303634e-06            0.5000             7.107236e-01
+3       433    433     2.903725e-07            0.5000             2.903725e-01
+4       362    362     9.943802e-07            0.5000             9.943802e-01
+2      1190   1190     9.401557e-05            0.5000             5.472430e-01
+9      1720   1720     8.157567e-06            0.5000             8.157567e-02
+5        84     84     5.180971e-08            0.5000             5.180971e-04
+14      929    929     6.967073e-07            0.5000             8.266898e-02
+6       826    826     1.959961e-08            0.5000             7.857679e-03
+7        10     10     1.323639e-10            0.0001             1.323639e-06
+8       457    457     9.885609e-04            0.5000             3.295203e-01
+10      466    466     5.098217e-05            0.5000             5.098217e-01
+11      173    173     1.947316e-06            0.5000             6.607083e-01
+12      357    357     7.073499e-07            0.5000             4.649701e-01
+15      870    870     8.423667e-06            0.5000             8.494076e-01
+16       50     49     1.000000e+00            0.5000             2.000000e+00
+13        9      9     0.000000e+00            0.5000             0.000000e+00
+23        3      3     5.913316e-01            1.0000             5.913316e-01
+24        3      3     5.331782e-01            1.0000             5.331782e-01
+26        3      3     8.354732e-01            1.0000             8.354732e-01
+25      597    597     1.000000e+00           50.5000             9.523564e-01
+21        3      3     8.816422e-01            1.0000             8.816422e-01
+17        3      3     7.657521e-01            1.0000             7.657521e-01
+18        6      6     8.435682e-01            1.0000             8.435682e-01
+19       12     12     9.382416e-01            1.0000             9.382416e-01
+20        9      9     7.114471e-01            1.0000             7.114471e-01
+22        5      5     7.445945e-01            1.0000             7.445945e-01
+27        6      6     1.641260e-04            1.0000             3.282519e-01
+
+9068 quantities (3142975 values) compared, 9067 agreed, 1 disagreed (0 explained by a known open defect)
+
+Disagreements not explained by a known open defect:
+        suite
+9039 refusals
+                                                                       quantity
+9039 no rows: mixture_regression refuses with latents_bad_data (got: unclassed)
+     reference obtained difference tolerance
+9039         1        0          1       0.5
+
+Outputs not completely compared or exempted:
+             suite                                            fit
+409       depmixs4                      mixed-2-profile, 2 states
+410       depmixs4                      mixed-2-profile, 2 states
+411       depmixs4                      mixed-2-profile, 2 states
+412       depmixs4                      mixed-2-profile, 2 states
+413       depmixs4                      mixed-2-profile, 2 states
+414       depmixs4                      mixed-2-profile, 2 states
+415       depmixs4                      mixed-2-profile, 2 states
+416       depmixs4                      mixed-2-profile, 2 states
+1863 hard-depmixs4                    category-on-floor, 2 states
+1864 hard-depmixs4                    category-on-floor, 2 states
+1865 hard-depmixs4                    category-on-floor, 2 states
+1866 hard-depmixs4                    category-on-floor, 2 states
+1867 hard-depmixs4                    category-on-floor, 2 states
+1868 hard-depmixs4                    category-on-floor, 2 states
+1869 hard-depmixs4                    category-on-floor, 2 states
+1870 hard-depmixs4                    category-on-floor, 2 states
+5958    invariance two-level 2 x 2, four zero-weight groups added
+5959    invariance two-level 2 x 2, four zero-weight groups added
+5960    invariance two-level 2 x 2, four zero-weight groups added
+5961    invariance two-level 2 x 2, four zero-weight groups added
+5962    invariance two-level 2 x 2, four zero-weight groups added
+5963    invariance two-level 2 x 2, four zero-weight groups added
+5964    invariance two-level 2 x 2, four zero-weight groups added
+5965    invariance two-level 2 x 2, four zero-weight groups added
+5966    invariance two-level 2 x 2, four zero-weight groups added
+5967    invariance two-level 2 x 2, four zero-weight groups added
+5968    invariance two-level 2 x 2, four zero-weight groups added
+                              output n_produced n_compared  status
+409               residuals$observed          6          2 partial
+410               residuals$expected          6          2 partial
+411               residuals$residual          6          2 partial
+412            residuals$effective_n          6          2 partial
+413              residuals$statistic          6          2 partial
+414                     residuals$df          6          2 partial
+415                residuals$p_value          6          2 partial
+416             residuals$p_adjusted          6          2 partial
+1863              residuals$observed          6          2 partial
+1864              residuals$expected          6          2 partial
+1865              residuals$residual          6          2 partial
+1866           residuals$effective_n          6          2 partial
+1867             residuals$statistic          6          2 partial
+1868                    residuals$df          6          2 partial
+1869               residuals$p_value          6          2 partial
+1870            residuals$p_adjusted          6          2 partial
+5958            posteriors$posterior        380        300 partial
+5959                posteriors$modal        380        300 partial
+5960     group_posteriors$group_size         38         30 partial
+5961 group_posteriors$log_likelihood         38         30 partial
+5962      group_posteriors$posterior         38         30 partial
+5963          group_posteriors$modal         38         30 partial
+5964             assignments$profile        190        150 partial
+5965         assignments$group_class        190        150 partial
+5966         assignments$uncertainty        190        150 partial
+5967 assignments$posterior_profile_1        190        150 partial
+5968 assignments$posterior_profile_2        190        150 partial
+
+wrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in validation/astra-fixes-2026-10-27/harness/full

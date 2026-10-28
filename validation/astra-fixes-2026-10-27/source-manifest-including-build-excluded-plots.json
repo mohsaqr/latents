@@ -1,0 +1,1790 @@
+[
+  {
+    "file": ".Rbuildignore",
+    "sha256": "e4e4d9bc55a67aeba6d5a0fef2f025ea0d6202251bc426bacd8b7c4bd62fc3e6"
+  },
+  {
+    "file": ".gitignore",
+    "sha256": "cf3159d8f0dc82e2ea30085a4057ae5664a258db3ce42d03d1e7c2cc19c9eb5c"
+  },
+  {
+    "file": ".lintr",
+    "sha256": "1ee4400cb5bdb44d1a1fdcb4f965c23da35044d076b41d68c68c61fe9f81d1bb"
+  },
+  {
+    "file": "DESCRIPTION",
+    "sha256": "50920a82acfb8886e064c6e167001af9fdf69ac51854dd7a1520e15bb823acb0"
+  },
+  {
+    "file": "NAMESPACE",
+    "sha256": "ce304ed613eb4c82c111ff245f4c6ef3e58d5f313f04dcbdf48b816fe040de22"
+  },
+  {
+    "file": "NEWS.md",
+    "sha256": "a3a2c6c67a0395e0da8c85fde81aae0201ce823042a607ff16ad7c433b243161"
+  },
+  {
+    "file": "R/acceleration.R",
+    "sha256": "ebae8775c6eae4b0f8e1d1cecd0ec1ebcef3ecaadd1eed127b6047ae1058b8bc"
+  },
+  {
+    "file": "R/accessors.R",
+    "sha256": "cc5c0287a6419ed28724b2d21fbe353cc04f98b506e1d7c9d62e640253fddfa4"
+  },
+  {
+    "file": "R/additive-compare.R",
+    "sha256": "63297fa105f38f301d21cc8a7fd03c170ac2fcbe220e1942557bb6d791689726"
+  },
+  {
+    "file": "R/additive-inference.R",
+    "sha256": "2cfbe894b9fb4f66da920b86ccea22aaee1623950f38b1ba11745f1746f2170c"
+  },
+  {
+    "file": "R/additive-methods.R",
+    "sha256": "fdb9ab42ae9e4c9b0454a28dd8c2e8c79599b8856ff3c9ea86e7f0d4d94c7be1"
+  },
+  {
+    "file": "R/additive.R",
+    "sha256": "a7b99abec7254846ad1c708126b5ca094c22fb66f526bfafcf93667100c5757d"
+  },
+  {
+    "file": "R/alignment-service.R",
+    "sha256": "bbe71ae227d0b136669929ee135dcdd1debaabde8c385509f3ddd429cf62b2c3"
+  },
+  {
+    "file": "R/bivariate-residuals.R",
+    "sha256": "b09b3eb85c968e07c65e9277c8eea04eca49cb16247c378111406d8eabfbf9c9"
+  },
+  {
+    "file": "R/bootstrap-inference.R",
+    "sha256": "3b374539621e9ab07212a00e7374328453b6cac7ddaf596fb19b3b7c2e6ee778"
+  },
+  {
+    "file": "R/candidates.R",
+    "sha256": "568391be6fbfeaca18bdac9dd1b5c54d9d445a4c006139ccbae4f0503e7b6c2b"
+  },
+  {
+    "file": "R/categorical.R",
+    "sha256": "527ae940d0531f8fc63a3c74e70babb78f53033ebdde5280380d7aed69ec49ba"
+  },
+  {
+    "file": "R/centering.R",
+    "sha256": "bda5884c2d89ca293c0016f2dbf21bc2516e0f2f7dbf71f51e12a0d366ec3ae4"
+  },
+  {
+    "file": "R/classification-entropy.R",
+    "sha256": "7f4c2daef7e838bfccdb5c8e4ee4f6a62bbf77eae2227c8f3bb6d85bfb91d289"
+  },
+  {
+    "file": "R/compare-models.R",
+    "sha256": "9c6e6d6915ab4766a5a6bd584e2e71f5961c18fef27ccc99c008d1d97063d4fa"
+  },
+  {
+    "file": "R/condition-calls.R",
+    "sha256": "6dab1c63b625090a6fcdd605ba5dc0011fc2fea091b8fd25f1840b9753f2076e"
+  },
+  {
+    "file": "R/conditions.R",
+    "sha256": "cb47fac706cb496f39f364d14502241ee5d2df3ef3e41c4b5deffc93e2964ffc"
+  },
+  {
+    "file": "R/covariance-structure.R",
+    "sha256": "c281c292121f168c8a8dd3274efb65f7c403723e5f0d902e1fb3045fa64f1c90"
+  },
+  {
+    "file": "R/covariate-inference.R",
+    "sha256": "c7a7c6011eb60ae2e1509b766a0c45b8098373dd1410ff74fe8e7daefa5bc8b8"
+  },
+  {
+    "file": "R/covariates.R",
+    "sha256": "f84c66210998cc8d2773b198c24fceca37e5afbc0cc240ccc99f613fa920fc4f"
+  },
+  {
+    "file": "R/cross-level.R",
+    "sha256": "22069a05a751050e4531d54c83adb0724ce9645ec1995054e6dfffca34a61bba"
+  },
+  {
+    "file": "R/data.R",
+    "sha256": "219290cb0e9c0296547691ae4067f6d168dc7b7ec262c5c74e67d513b561960b"
+  },
+  {
+    "file": "R/descriptives.R",
+    "sha256": "326d74f6ab3b8f2e32149eed69937bca6e8434d41d446013bdf8be6d5921fb24"
+  },
+  {
+    "file": "R/diagnostics-checks.R",
+    "sha256": "dd297575f1c1593e3dcf8d563809b8b5773e1447170f23d8fae7c910a244f198"
+  },
+  {
+    "file": "R/diagnostics.R",
+    "sha256": "ed4c70c9d96c54a1b1cf4afdb31e7b2f6b3870db9a5777b08c5e9067cba98901"
+  },
+  {
+    "file": "R/direct-effects.R",
+    "sha256": "acdb1b3bc44fa8e4d1117cf8d6f3d733b82670b720ea617fd5837f214f3ed07d"
+  },
+  {
+    "file": "R/enumeration-type.R",
+    "sha256": "ebf6473e418e48bdaa9a071ba92845e2b8ecad28158b0a7daad5ac2c14ac84b3"
+  },
+  {
+    "file": "R/enumeration.R",
+    "sha256": "4f771a84b40b1fd45c914bc322a836c92b47e78104518a3a12730249460d6780"
+  },
+  {
+    "file": "R/extra-indicators.R",
+    "sha256": "33a833f2061c0744570b6ec047ba4b663837477f93271602ffa830cd94a763fb"
+  },
+  {
+    "file": "R/fixed-measurement.R",
+    "sha256": "ef253201dd0c5754cd9143ff5b6bc2ba1d4fab668b7d2a29bfa11453419f50ea"
+  },
+  {
+    "file": "R/gaussian-diagnostics.R",
+    "sha256": "3548906419c90ab2d6ac0e3cdca3e92b3aface5b8b10c0b90ed3c27063a40da1"
+  },
+  {
+    "file": "R/gaussian-moments.R",
+    "sha256": "6872c7e0d3bd6489c065d8f6de070a8df1516c1c895117f16ce82b3ddf5e011d"
+  },
+  {
+    "file": "R/get-data.R",
+    "sha256": "da9f5d9f9178cb23d56b88f9ffe9cbc300e2a156b841fdaa9375166a01bb80dc"
+  },
+  {
+    "file": "R/grid-views.R",
+    "sha256": "aff88f0e82868577beffc33da362dd7b7bd04e466e867af9769178db90dfec98"
+  },
+  {
+    "file": "R/growth-mixture-correlated.R",
+    "sha256": "cc94c714f52390a8e9d82651c17a8895025aab270eb781aa96083d6f65326996"
+  },
+  {
+    "file": "R/growth-mixture-engine.R",
+    "sha256": "2afdf0bb9c62438e16bdf54386c891cbb3a619d921bdc9cde70d0c556624369e"
+  },
+  {
+    "file": "R/growth-mixture-inference.R",
+    "sha256": "be9af6b140c554e2f19c04cce2594cc2c225151930ca08abf0617f5cdfe08c12"
+  },
+  {
+    "file": "R/growth-mixture-methods.R",
+    "sha256": "958ef22422a627790cd9df4ddd33ce0b5f6ccad527cc61249d62f0c85cdaa29e"
+  },
+  {
+    "file": "R/growth-mixture-parameter-inference.R",
+    "sha256": "38c79b345484c3e7a7105cf91691e4278c17a54fec157855ac509464ef4af957"
+  },
+  {
+    "file": "R/growth-mixture-plot.R",
+    "sha256": "65a3538ab37c07722149c59d3a25454a2cc93d29a20225d920fc567ee20ee42f"
+  },
+  {
+    "file": "R/growth-mixture-predict.R",
+    "sha256": "f1627b033396b838f2431581ece815c3e6107e3a0c74cb3b747319d6b0bc996d"
+  },
+  {
+    "file": "R/growth-mixture-simulate.R",
+    "sha256": "100315a54fa0b33785144b489e5fced3194601f969aa9cd7939e449231110841"
+  },
+  {
+    "file": "R/growth-mixture.R",
+    "sha256": "36573718d3bccdb9c073ff110d9259eee7fd4584ce3e90378ca5c8d01fa32567"
+  },
+  {
+    "file": "R/inference-service.R",
+    "sha256": "1a23f0cc62f66f6090344876141ea84c0b154a01ece078319edaf0082df468ab"
+  },
+  {
+    "file": "R/inference.R",
+    "sha256": "4f5ed877c9cdcc085d681d9f3af4ea159830846c5d3e9ce2a3a8abf48f2eb429"
+  },
+  {
+    "file": "R/input-checks.R",
+    "sha256": "91a595792500ae5f560dc7ea705fa7b4237231865293a01b96143f248ac9893e"
+  },
+  {
+    "file": "R/kernel-blocks.R",
+    "sha256": "c75d7b19a9df555cc3f82785c70e87365f5818a0af44e3e7cd95c6ca27a68559"
+  },
+  {
+    "file": "R/kernel-em.R",
+    "sha256": "0e9b21a764a53db022d955379fdf146df55fcdefcedb86a21329bc6e14115e92"
+  },
+  {
+    "file": "R/kernel-structures.R",
+    "sha256": "dceafbb25f25029a8d6b38a0194faf1285cdaa598045397b33b21ade83f44ddf"
+  },
+  {
+    "file": "R/latents-table.R",
+    "sha256": "4b741c20bfea5ee915157eb0ed5298ff2f961f36306fd8e1f8e1722e0b556d41"
+  },
+  {
+    "file": "R/lmr.R",
+    "sha256": "db072c1bfb35356bc58b08eb4adc9865b169be6852adb1273f0d734f00ccd3ea"
+  },
+  {
+    "file": "R/local-dependence.R",
+    "sha256": "9551c80d3037dbff3cc6fe0ce4432e7360ee1812c56ced5777e1740f7f8a7bbd"
+  },
+  {
+    "file": "R/lpa.R",
+    "sha256": "b008a086c7848ff467c0c83015c4ffaacef2b69cd604f44292dcab4efcd33fa1"
+  },
+  {
+    "file": "R/lta-bootstrap.R",
+    "sha256": "183ebad0d9cc40a052a553f2433aeb6b1bc8028b596c8a3639b2eff6942606ad"
+  },
+  {
+    "file": "R/lta-compare.R",
+    "sha256": "98400eff29de89bd84a399c81d1daa69cfbd67787923dbaac62d0973c45a7f12"
+  },
+  {
+    "file": "R/lta-engine.R",
+    "sha256": "b5343c7334b6b6642013c8a713603cf2e74e9a4f25a3b0042e239656d9476834"
+  },
+  {
+    "file": "R/lta-inference.R",
+    "sha256": "51f6cbf9e27ba4546d0b140996fcd7ff8684d1d6c5105c65bfdbddb921d27e65"
+  },
+  {
+    "file": "R/lta-methods.R",
+    "sha256": "a79e2864a228408999439dac0a69af86f323860ead69fb198cee47dd5938f69b"
+  },
+  {
+    "file": "R/lta-starts.R",
+    "sha256": "67bbccb9e46f51645ed67c20f7db082b5753509219846a88631b09ef4f25d100"
+  },
+  {
+    "file": "R/lta-three-step.R",
+    "sha256": "265a08dd1227313034dab55122d427f52bb9f27b3c9e8f17a797c1a19fec274d"
+  },
+  {
+    "file": "R/methods-documentation.R",
+    "sha256": "6f4d7e1a830f2ad6a029e2331922b354b0f8c5600c71695abb2a759cb463e39a"
+  },
+  {
+    "file": "R/methods.R",
+    "sha256": "02351417e333cf7e75ec98b5726f180aeaf8ea9ae6ba6dedf7cbcaf8a5c71072"
+  },
+  {
+    "file": "R/mixture-regression-engine.R",
+    "sha256": "52e5c918e9703692a553950be05dce0c3a5d521aa83d139fd3e0c87182eb8e7b"
+  },
+  {
+    "file": "R/mixture-regression-enumerate.R",
+    "sha256": "641c825c238e2008362eed0775937388ff5ed8fc2531c750dc91bb4bfbff9ded"
+  },
+  {
+    "file": "R/mixture-regression-inference.R",
+    "sha256": "844ec6dd890664c89b52dee718734843c08902798d10cc8a54bb5e26e9bdbb9c"
+  },
+  {
+    "file": "R/mixture-regression-methods.R",
+    "sha256": "d3a127290cbeed65ef4ec6111beb568ef17a1de1d4164b75b5377b23a3404248"
+  },
+  {
+    "file": "R/mixture-regression-ordinal.R",
+    "sha256": "25d116752470dc365ba23e716024884bac759c1c0f2fd39bc4a8fb6df266c720"
+  },
+  {
+    "file": "R/mixture-regression-predict.R",
+    "sha256": "627143d2168170fb70bae316ae441d9de17ad25df472ff09d4c6781d4d664d79"
+  },
+  {
+    "file": "R/mixture-regression-starts.R",
+    "sha256": "26c3e6f89ed38d7236ddd87b83854ac87c614af7345378f4108551aa1ca7a709"
+  },
+  {
+    "file": "R/mixture-regression.R",
+    "sha256": "8bc1641db88f456d42bb363ee3a65caa40faf1ca31f016c37f5ccd32e6bcd284"
+  },
+  {
+    "file": "R/multilca.R",
+    "sha256": "113e61e9650f62b90706c13722a86c62cd69da393f48b5cf68811a43aa5d2922"
+  },
+  {
+    "file": "R/multilpa-pool.R",
+    "sha256": "06de1255ecc22a64acf5abfb197148cd662cdb99c8f4df847a3e0c1bb3b9596d"
+  },
+  {
+    "file": "R/multilpa-starts.R",
+    "sha256": "1d0a3d4cc83c3818a1c811d6946aa8cf926026f59a16c43f4ece23ed50c30384"
+  },
+  {
+    "file": "R/multilpa.R",
+    "sha256": "073cba4016d792c48336b4f4c5ec46c421c51ee2b5648e721e3b7d66e31a9247"
+  },
+  {
+    "file": "R/noise.R",
+    "sha256": "5b80a8280acf78d8380a9f7854996991e21ea6ea2434fa3bccc3e9953605d131"
+  },
+  {
+    "file": "R/parallel-report.R",
+    "sha256": "1ad2c1e6591e073024a0d49ee9f0032dba7f8c751832eac7694c253b2018c2b7"
+  },
+  {
+    "file": "R/parallel.R",
+    "sha256": "5d89b9a60261857c1558f8dcc83fb341a48684b5e2ffcf489c174eab102b4d2e"
+  },
+  {
+    "file": "R/plot-docs.R",
+    "sha256": "d965a6c32f6336b136520445d837fd0c926f5436039c63c0b807357e1183f5e2"
+  },
+  {
+    "file": "R/plot-gg.R",
+    "sha256": "aa25bf322b30ba5a55d8374d19ea4add3c78aff1f7d4b3f6ac060644f9a628fc"
+  },
+  {
+    "file": "R/plot-named.R",
+    "sha256": "4e07e432ec36d7742b2faa3a67fd589b506e53d32b464632172a8462fea9f6ab"
+  },
+  {
+    "file": "R/plot.R",
+    "sha256": "5fe68069a22b2dd388e52191316aa04fd0493177300a4725a6c0ab22f979f70c"
+  },
+  {
+    "file": "R/pool-imputations.R",
+    "sha256": "f0e284ded9e7396358d3e0e46778b99e26417834fd528c23f9fbb57150ac9319"
+  },
+  {
+    "file": "R/predict-docs.R",
+    "sha256": "4002e86c16f91d9892520bd5996ceb415de61af653fd791d9a41be69c5fd60af"
+  },
+  {
+    "file": "R/predict.R",
+    "sha256": "7b689ac059256b7d8f6267123d62f4273f1df94b83a8c5fc5ecd72fd02eb9e24"
+  },
+  {
+    "file": "R/prior.R",
+    "sha256": "047d1d7f53d167d62f925ad2f50b44d02060d08b83b594efa739bfc75aeb466d"
+  },
+  {
+    "file": "R/report.R",
+    "sha256": "22117439429a0eb2d74897f6dd8c96053166d44fe3ebf66afd50c8029ae6b2b4"
+  },
+  {
+    "file": "R/robust.R",
+    "sha256": "1aa29d0e0f35e2cac8a41f450a5071ac2f2b3908133ebcadd8c1bd357158fb57"
+  },
+  {
+    "file": "R/scaling.R",
+    "sha256": "00592376e9c612b68b83ed35a20c7de6b82e2aa1826c71d35e359ac18f162d07"
+  },
+  {
+    "file": "R/search.R",
+    "sha256": "80c65721b7b3abfc62c6652d28d1c49a0d04c5cee68c3a5b63c3dab0e4d6e7e1"
+  },
+  {
+    "file": "R/selection.R",
+    "sha256": "219e3cccde406c7ba63f9ad459b19504a8c696d3e9bbf293b1c1d91cdc813e42"
+  },
+  {
+    "file": "R/sensitivity.R",
+    "sha256": "e39bd8ef14de7632838734ebf379f5fdb5875933c17cbed41ee801be870cce63"
+  },
+  {
+    "file": "R/sequences.R",
+    "sha256": "4de03b17b84c0a7d6a89737c4099a7a760b5689b547f039674100c99b86edd6e"
+  },
+  {
+    "file": "R/simulation-service.R",
+    "sha256": "dd9e1847188456a6485c607000e70b88d756647688812047244fbabbb1c87c54"
+  },
+  {
+    "file": "R/start-pool.R",
+    "sha256": "302567f0cc47118a1ab191b70833652ba132fa8ea6dfa52e3c68e0608aff25a6"
+  },
+  {
+    "file": "R/structure-inference.R",
+    "sha256": "8e28a9791b227c13c4dfe10f54960c4e2c26e566eeac9184c021cd4c412a9140"
+  },
+  {
+    "file": "R/three-step-ml.R",
+    "sha256": "5282fe22d68b11379ee21753811f65c28180f851fc1d508084f52f53503d74bb"
+  },
+  {
+    "file": "R/three-step.R",
+    "sha256": "c538f2ea34a1b2b430bcb8f6927c96053b560f75fdea7f7dbd969c2d69874db9"
+  },
+  {
+    "file": "R/tna.R",
+    "sha256": "9799eef1067acb6366bacb37943e0f93159c44be62cb9cac3cddda27c37d831e"
+  },
+  {
+    "file": "R/trajectory-views.R",
+    "sha256": "f555e9727ec0b6534cbe875509da08169c60af95e2be79444fa106b3045f5945"
+  },
+  {
+    "file": "R/transition-inference.R",
+    "sha256": "973fa9cb2353334b7d949841f67cddf4d3f64080224f2c2540cf47bb03ba99d0"
+  },
+  {
+    "file": "R/transitions.R",
+    "sha256": "eccb864e6aca36d93722f7b6beefeb08e040ce7d705c5bcfa28e809c2d261cd2"
+  },
+  {
+    "file": "R/tree.R",
+    "sha256": "ef53a420213430a507a2d381bb733986ba04a699c9afb388370c341e1e568c0b"
+  },
+  {
+    "file": "R/utils.R",
+    "sha256": "36dc8a0bd567f77a4747c18998a9e6108baea9d309cbaec1007c0b584849e5d7"
+  },
+  {
+    "file": "R/weights.R",
+    "sha256": "f1edab391e7728842c610c7658e22a2de56fd42d4291e0765a0427832270f83b"
+  },
+  {
+    "file": "README.Rmd",
+    "sha256": "cf454715f9284b5e4a3a50eef53969c0030d9253eaf07b3d3f27a46f2c4b3b74"
+  },
+  {
+    "file": "README.md",
+    "sha256": "4baa297d8790cb1ee41f1bf8be74fa17875a14231d1fbd13bfb34a507e8e2491"
+  },
+  {
+    "file": "ROADMAP.md",
+    "sha256": "c7b73b9dd9794a218dcd60f9917a9c6730d0350bc7f5717988531bdfc1ce370e"
+  },
+  {
+    "file": "_pkgdown.yml",
+    "sha256": "f12275961654e838bfcaa8de2ae90cfc229b05606738c59ab612688d814b13fe"
+  },
+  {
+    "file": "data/course_engagement.rda",
+    "sha256": "7cc9b9c79c03cd2d7f2061037cfc6444f8f12a823afa4169465fe68683c6f892"
+  },
+  {
+    "file": "data/growth_schools.rda",
+    "sha256": "384b927cc81c19d4a1691d0808cc7c99f67c9d3661936a24bbe5a65295b0ebb7"
+  },
+  {
+    "file": "data/growth_scores.rda",
+    "sha256": "37897746470d458f49ba08c5d0723297d62cb29b53c2e32a410dc52e61668c66"
+  },
+  {
+    "file": "data/srl.rda",
+    "sha256": "c4a6ab475ca22cddb376c89e1e70c1f4f2aee55c9e1a1f3620b9ffb904f273aa"
+  },
+  {
+    "file": "data/student_esm.rda",
+    "sha256": "6609026b34d74187b719b9e17f35719ef0a3b8885bf66eb20c5a995dbc0cc36f"
+  },
+  {
+    "file": "data/study_hours.rda",
+    "sha256": "cd7a91be5cb5f80aefbd3e527a9237b41039e5f83fe15e75a8be5eaaa51e0055"
+  },
+  {
+    "file": "inst/WORDLIST",
+    "sha256": "cd59985b77f9c75d613ee28341ded5eef2550484674eec6bf1767725f4d0f839"
+  },
+  {
+    "file": "man/bootstrap_lrt.Rd",
+    "sha256": "e6d4d8de24fb698c956dd86fb7f875e84ee1ca9d71bff5fa72a5c60da459a4b5"
+  },
+  {
+    "file": "man/compare_models.Rd",
+    "sha256": "ab1ea6bd147a1c372f2ea3a29407920b50cd1d403aad0b786348b6460d53c351"
+  },
+  {
+    "file": "man/course_engagement.Rd",
+    "sha256": "0fc8389729ad50a666e20b80a0e10b0748fbc98253308b52f21dbb7f49ca8711"
+  },
+  {
+    "file": "man/descriptives.Rd",
+    "sha256": "59b0d7cb0eca72c2d538f8e6ae936f76d2eacc2663a8a867aefc4f1286aaab6f"
+  },
+  {
+    "file": "man/diagnostics.Rd",
+    "sha256": "48efe90156ea968304cf0495acf65da8b2bbe1a2e81ca330287557892d97f9a5"
+  },
+  {
+    "file": "man/enumerate_classes.Rd",
+    "sha256": "1bc571488c680e82f015f801502e19d29f51e07a8cd793fe45732076c99c5d00"
+  },
+  {
+    "file": "man/enumerate_lca.Rd",
+    "sha256": "94d2e5e2d077bc7f2d257ce45cf48a3dc278b13a723f163078c438d5c30e3a05"
+  },
+  {
+    "file": "man/enumerate_lpa.Rd",
+    "sha256": "1d0961ee3cc00f0568555f665ab68f3c27b3014457d21aecaef08a4f157909e7"
+  },
+  {
+    "file": "man/enumerate_regressions.Rd",
+    "sha256": "ac5eb4e4f9e7d7c3a70a855a4d1a94f22d4c81d08b8e6b75266ac81335b3a395"
+  },
+  {
+    "file": "man/figures/README-categorical-1.png",
+    "sha256": "5e04f121ed1a93aacaddf89b52a88a0ec0c3fac8bc2a937385b6407566e6cfad"
+  },
+  {
+    "file": "man/figures/README-enumeration-1.png",
+    "sha256": "61cbfe6690815e05294f10d27f014b76a1475d9ff1fcd76bf17e9fef492e5619"
+  },
+  {
+    "file": "man/figures/README-probabilities-1.png",
+    "sha256": "6e3835d86bd2c30ca51a5390efff060753097d96dbf9ea3960c78df38d967271"
+  },
+  {
+    "file": "man/figures/README-profile-plot-1.png",
+    "sha256": "9629a7e9c2bacd2fcae638dc92111dba572682b72eed921ffff54a61a5e6cf54"
+  },
+  {
+    "file": "man/figures/README-transitions-1.png",
+    "sha256": "6f57aedea91e5f9985b29a5ff49e6d843a49b6eb65a593e780cb367cf0f6b29c"
+  },
+  {
+    "file": "man/figures/logo.png",
+    "sha256": "f74dd7559c0c7d04a1e7336a13a5a37fb9aff073258f601fe45881035fb3688a"
+  },
+  {
+    "file": "man/fit_staged.Rd",
+    "sha256": "a74d0f1783fe68f35149652fa1c9bb7750b42e4715a9397cdab9f1a869a3870a"
+  },
+  {
+    "file": "man/get_candidate.Rd",
+    "sha256": "181b660ddcff51df66c8eba0d4951de91dacc773e47d5ae127be2430b2dde311"
+  },
+  {
+    "file": "man/get_group_tna.Rd",
+    "sha256": "7af80025e02182e7dc2b001eb519ddd8ca4b91544b8c34bc10c91dfddd8159c9"
+  },
+  {
+    "file": "man/get_results.Rd",
+    "sha256": "47451c0337e027aaf910916acfd03aedd6f358e08b5f1a79c265b77b4913a7f4"
+  },
+  {
+    "file": "man/get_tna.Rd",
+    "sha256": "020b1cafe5549fba99b37eabfb9a35b8ed6257159e0053bd313ab7fc7957a4dc"
+  },
+  {
+    "file": "man/growth_schools.Rd",
+    "sha256": "5c0c0f6ec37a74eb9b4ddb6bddb8e6836bee55c0ff239e2841f0838cabc371a6"
+  },
+  {
+    "file": "man/growth_scores.Rd",
+    "sha256": "ea81bff9ef92317f5db8594ca9e7a8342c61f3d4e33bc63edbd73610b5d83349"
+  },
+  {
+    "file": "man/latents-conditions.Rd",
+    "sha256": "a7a1bf7243cce7c7ef5a1291905fb60aea622696b3c6bb9eaee3bbac7ab453fa"
+  },
+  {
+    "file": "man/latents-model-methods.Rd",
+    "sha256": "94feef21bd5baebd84d1a92b0abb7b9688efed733f2dcf4406d0ee30d03db317"
+  },
+  {
+    "file": "man/latents-plots.Rd",
+    "sha256": "340126a77ed9bc33b1515c3e2c24871c841ea4a0b1997da79fa293568de89b64"
+  },
+  {
+    "file": "man/latents-predict.Rd",
+    "sha256": "2542aaa193075d76189e6d373a8eb9e59a05b3d9b0123a08dfab229d3b763249"
+  },
+  {
+    "file": "man/lca.Rd",
+    "sha256": "837a006954b392d078c34ce786e0e4ef4a0afb31b1a219e803ad10d0b709bbe0"
+  },
+  {
+    "file": "man/lpa.Rd",
+    "sha256": "757abc6c2454af21ba4aebe3927a452afae194d45bf23551378c1a9db7bf57fd"
+  },
+  {
+    "file": "man/lta.Rd",
+    "sha256": "5e103135420f448fed167d21b2bba886f854c9353152e33ea75e17f59bba8153"
+  },
+  {
+    "file": "man/mixture_regression.Rd",
+    "sha256": "9c7146789fc38dd7351cecd3a273b6194d0517fa1e427c1b8fe4b823029a790c"
+  },
+  {
+    "file": "man/multilca.Rd",
+    "sha256": "1972742bd630cd03b6ccc83c6d303413f2f3bbd06e204d757501a7f2dc556e35"
+  },
+  {
+    "file": "man/multilpa.Rd",
+    "sha256": "8c8cb73b88614d49c0b7821cd3ebc4e0fcf4848a668f71871bd786e8b0391fa9"
+  },
+  {
+    "file": "man/parameter_inference.Rd",
+    "sha256": "ececc6aff21fd16c7df81e709f5f1735de257d8066ac4838456ac7a206d1d312"
+  },
+  {
+    "file": "man/parameter_inference.multilpa_transitions.Rd",
+    "sha256": "4c652f6ce457a5afcebc1a017865b1e12ae756e5ed5f03c25e3e2d5567f90b66"
+  },
+  {
+    "file": "man/pool_imputations.Rd",
+    "sha256": "2164d2200dc5c7465d6cdf497cb336755129a7f724d940865dadb860ac2ca9ad"
+  },
+  {
+    "file": "man/prior_control.Rd",
+    "sha256": "f56fea76e9a6a69d6a983b3db84041de3cad7ba31155a972baebaf118d840e93"
+  },
+  {
+    "file": "man/r3step.Rd",
+    "sha256": "d9c4dc5e60cbc367b831390311f3a257a96cb9c7b08873fd6404cc546f9fcbec"
+  },
+  {
+    "file": "man/report.Rd",
+    "sha256": "dc7692c0f6641df003f3cf7ddbc65b0a565d09e6949f7a3b8b6737e28be6e826"
+  },
+  {
+    "file": "man/sensitivity.Rd",
+    "sha256": "78e5e65751a1e34b1a3e0c5eb9c2cf44e4be8ea159fb56936a7de03ed31e895c"
+  },
+  {
+    "file": "man/srl.Rd",
+    "sha256": "027249b14bb8bfa76e98a98a78abd0efc807b1ef09d634e8b1f6f184bdb02ffe"
+  },
+  {
+    "file": "man/starting_values.Rd",
+    "sha256": "86871245f75796998c6f11c6b6501e372d33dd9ce54492652ee232e83c2275ad"
+  },
+  {
+    "file": "man/student_esm.Rd",
+    "sha256": "912da278e661bfa052d242d2efc3ab487ebf565fdfcb6636f9152df64040eaf6"
+  },
+  {
+    "file": "man/study_hours.Rd",
+    "sha256": "ff8148d7b6f70127bd6ff23291e7404761915f84dea1d2c0a89a8c6263b1b69e"
+  },
+  {
+    "file": "man/three_step.Rd",
+    "sha256": "a22ca75f5248affbfaed768c6f7fe45b4ec59b76fa2283f1e6ecdd1dbc9c012c"
+  },
+  {
+    "file": "multilpa.Rproj",
+    "sha256": "a1a7660973835d4a7de7bc083877bf44efd453ddccbb1bb70d2f0bff07dac076"
+  },
+  {
+    "file": "tests/fixtures/mplus/twolevel-categorical.rds",
+    "sha256": "d49c2a96a35fb5fc3cff7938c0d743e9056653a5a33f0a0c0a485097860b7263"
+  },
+  {
+    "file": "tests/fixtures/mplus/twolevel-covariates.rds",
+    "sha256": "a06ebef5ce6b4e9ccd8a0a23ed1afeb7b43dedf4a2892c7f179cd939a0d3336a"
+  },
+  {
+    "file": "tests/fixtures/mplus/twolevel-synthetic-varying.rds",
+    "sha256": "2cef9f778c5597f72245401df82c24d565bac70579dac182c15c72a6db437978"
+  },
+  {
+    "file": "tests/testthat.R",
+    "sha256": "0447d566559b1ce7f2dd7c82537ce51f4117a543bc90b8d389643b55ec4f6d3e"
+  },
+  {
+    "file": "tests/testthat/.DS_Store",
+    "sha256": "aa44efa796fa435eefaac336194940c4cf9c71f6c7b5bec5afe9a255ff613881"
+  },
+  {
+    "file": "tests/testthat/Rplots.pdf",
+    "sha256": "2231ea4a6ce06e8035d5a13995d44fd406b86d76295160caa130b0e5578a41c4"
+  },
+  {
+    "file": "tests/testthat/_problems/test-categorical-suspect-62.R",
+    "sha256": "cc8aa4945f0b20719fe88ad93b209d42980f82c92d019acce65668c7be121f2b"
+  },
+  {
+    "file": "tests/testthat/_problems/test-get-data-167.R",
+    "sha256": "dc83ffd1f5803aa800bbf3474eb82f76067c6438b3ea11aea56318e16ef1c4be"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-104.R",
+    "sha256": "2decb92f76424800a3a5a21d6af06f62b1af6b582eabfcda44cd1a6563293f16"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-157.R",
+    "sha256": "f7ef5fa607ff6dfc6353499fff45603470f9a17db59377f5aed86f6ac446464c"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-170.R",
+    "sha256": "38e3536566f0d8f16824fc0c0c7ea7bf6dff3721318605911c42ada24eab8363"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-484.R",
+    "sha256": "095dfd105b06b5ee46226fb6bb725b5c108f64fe63844b4e7d161dab8d25b308"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-51.R",
+    "sha256": "45ab78c92bb6638b649edca37d011871283805b7451b503b10d2b40935167044"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-590.R",
+    "sha256": "d108537b0fabffcdc72e815238ae41d5fbf9168750f95d065984041c60d99b9f"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-63.R",
+    "sha256": "ada5d8178bc9fe3ea0531a4641c317ddf1512f2aa9d1efe9ae36fd1b506f7f4a"
+  },
+  {
+    "file": "tests/testthat/_problems/test-parallel-78.R",
+    "sha256": "1215cb4b6a87677ecd8d56de58bcca6fbfe5766d83731292247d3c4e335dc4ef"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-100.R",
+    "sha256": "59611aa9e0f20eddc5d3d155b5640649f230a555cf0ae7f2f8a487070ecb818e"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-103.R",
+    "sha256": "6694a78861460767bc23803bb04de26fd690b101ea8f02fae72f3d8488cc4b04"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-104.R",
+    "sha256": "d1aed767e5db178692a3bce8cbb450aec4505e458a3532dc896d6b61f74000fe"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-129.R",
+    "sha256": "c4dfda340e213a0e30ede8a68b40d442ccbad47cf50600858523d1311be48581"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-130.R",
+    "sha256": "2435c08026b001d9cc542a6512d73b55649eab310431a1375211a4d06e80b456"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-148.R",
+    "sha256": "222198ea02ae036b167639c42c60f08f4a62954ae1dd0ff971344a13146dfdd4"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-157.R",
+    "sha256": "219914f8123910486e5ac3e5d5276e06ca4e7cb96880c79bea7185e46803e695"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-194.R",
+    "sha256": "5a147a7514c15e855f3f0ff8c304bb6dce1a4e9a80be6d6bef1973ffd25afa28"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-195.R",
+    "sha256": "80df70f8780fa6c264dc0b1de09b6c18f1b5135dd98fa3ef3c872e7d6b93f090"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-196.R",
+    "sha256": "be5d784f26841a78ca50db615047dd2fd04372ecb00b1962910ac1f924dfdda8"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-64.R",
+    "sha256": "67d686abcf4ef95639a87ea6e0b516726d5382607e1bc4686290d6106b95d8a6"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-66.R",
+    "sha256": "5553e8c55c9b3fd9e84eeefd0f3094ff19545c3df8f479ec4cc95b29d0edc35e"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-73.R",
+    "sha256": "de1c9e810990ce8ff933e2b1905713fddbc2126c48fa774bb485dcf18b6b9182"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-88.R",
+    "sha256": "a2e1088e994a66f0a31537be20b9a97cddce9db9c831d4541d1f4d280f45137a"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-90.R",
+    "sha256": "d6c80b8584d668d4e435cb7101ed411bc9024c33362d3a7a3d893db7fc48dbcc"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-91.R",
+    "sha256": "2f488c40ef900b059a7ab01c3dd5b48cd68737f0c36f94950e763493218741e6"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-94.R",
+    "sha256": "71cf638d3bc0567bae8f1e3d10c094941d99b9da3640ac03c5a8e89c550120c9"
+  },
+  {
+    "file": "tests/testthat/_problems/test-review-1027-diagnostics-97.R",
+    "sha256": "1c133f7dc365a2262aa03073ffdff1fb36cc6dedf791c927d83477724f928bca"
+  },
+  {
+    "file": "tests/testthat/_problems/test-search-175.R",
+    "sha256": "3c82d3c23e31a3c334e42cfee741f0b491d78464b5319d3eefc72a6ebcac019c"
+  },
+  {
+    "file": "tests/testthat/_problems/test-tidy-diagnostics-189.R",
+    "sha256": "70c1f36d1718bf8e0be5e739d4e1801c40ec7993e826ad8e5fdbbdc87686d5a0"
+  },
+  {
+    "file": "tests/testthat/_problems/test-tidy-diagnostics-224.R",
+    "sha256": "0862031442079671f7028b787e9c1dd5944c656c86e84dfa4b10a00891a8e1be"
+  },
+  {
+    "file": "tests/testthat/_problems/test-tidy-diagnostics-225.R",
+    "sha256": "da07534997fd6732c027fcae68f4f0f35d8e9efd32fa2ef58e38c117e186ac98"
+  },
+  {
+    "file": "tests/testthat/_snaps/additive-fit.md",
+    "sha256": "80ede8c25fd284e20f6138715621ae7e1ebae575da205097057f67074051a229"
+  },
+  {
+    "file": "tests/testthat/_snaps/mixture-regression.md",
+    "sha256": "06dfede5a936ff756a08ebd228d40828bb72344698829cda9ebc757225d9269a"
+  },
+  {
+    "file": "tests/testthat/fixtures/ml3-equal-rare-class.rds",
+    "sha256": "85fe6ce6ec494bd4cf6049ce9b1af2c48115be9ee69026efcc54b585dbef31c2"
+  },
+  {
+    "file": "tests/testthat/helper-additive-data.R",
+    "sha256": "392255301f1669a81133681bfa0a9d8c708dcb0a17d066c3ac2e661f10382b7d"
+  },
+  {
+    "file": "tests/testthat/helper-draw.R",
+    "sha256": "580459755e70e9de362d151d3706ee5e43aa9b2bf55c425ffd29a02cd8f7e00d"
+  },
+  {
+    "file": "tests/testthat/helper-expected-warnings.R",
+    "sha256": "350c26a03bdfd94ffc241a5abdc81a4002881613e2fb5a84483f650c45603daf"
+  },
+  {
+    "file": "tests/testthat/helper-lta-log-reference.R",
+    "sha256": "a2a802877f912763ca6d32cadd046961961abe309a5fdb068f5f3d545ec5cba7"
+  },
+  {
+    "file": "tests/testthat/helper-plots.R",
+    "sha256": "db6f7adfa5f27651aef14be58dec83674a730bea187f234c39764556cad412cd"
+  },
+  {
+    "file": "tests/testthat/helper-small-data.R",
+    "sha256": "d7fa1c979cf3a437046803545b12dad2a6c00bb37678107aee0d6fcca034a05c"
+  },
+  {
+    "file": "tests/testthat/test-acceleration.R",
+    "sha256": "35e9cc7914d28548ed4053d5331007e97b40aa89e20e0cbf7c4028588290fc06"
+  },
+  {
+    "file": "tests/testthat/test-additive-compare.R",
+    "sha256": "69dd0f613a05a838efa5c8f8cee69b4529b42b48dc474759cd80e160f4b0218f"
+  },
+  {
+    "file": "tests/testthat/test-additive-engine.R",
+    "sha256": "17231cd7c318ee529e9760342bb896913617153aacfabb42a81e211b2d1483c7"
+  },
+  {
+    "file": "tests/testthat/test-additive-families.R",
+    "sha256": "eb054ca62cd8006c2a39f1fb94b5952b11d0c8de1f3d9cf84f2930f68e4129fe"
+  },
+  {
+    "file": "tests/testthat/test-additive-fit.R",
+    "sha256": "e438b58780ddf4e0e476f48280ac1c632c106c132bf24443c918e671f865ce47"
+  },
+  {
+    "file": "tests/testthat/test-additive-methods.R",
+    "sha256": "58649b10aff08e6cd94761d6e8c03c3f7593f691142560b6ba50bf4599424eec"
+  },
+  {
+    "file": "tests/testthat/test-alignment-service.R",
+    "sha256": "04e049fb85a98244a889ba3eecfd9b30829cc4b3470f3de7a13b1fb46a0cc2e6"
+  },
+  {
+    "file": "tests/testthat/test-api-compat-0921.R",
+    "sha256": "634139c43529b492ffe0253fa38e791ccc05d4259cd5b7b0855de30b355221bf"
+  },
+  {
+    "file": "tests/testthat/test-assignment-alignment.R",
+    "sha256": "e03e5ef938274e0421fb21d75f1800051e37880b7d7c8f9c6b82d1e5cc0d4619"
+  },
+  {
+    "file": "tests/testthat/test-astra-core.R",
+    "sha256": "01d1485b6e1cb712b60dd4218df3d79ba03f466894b2dcddd85b35ba367a10ba"
+  },
+  {
+    "file": "tests/testthat/test-astra-diagnostics.R",
+    "sha256": "d19b5a6c56660a0675f21e1c99123620d7341e071a666d75e6696f27ae29de07"
+  },
+  {
+    "file": "tests/testthat/test-astra-surface.R",
+    "sha256": "bb5d5ccb09fba5f5a4c9639f05cb100648390fcfe14a965c484f09cfe358ec1e"
+  },
+  {
+    "file": "tests/testthat/test-audit-core-repairs.R",
+    "sha256": "7abbf87c4fd72b18105728d5a01f5d02a8debbe15c0caac83be29d7c83099040"
+  },
+  {
+    "file": "tests/testthat/test-audit-drawing-integration.R",
+    "sha256": "6e57f3df145d6badc6dcfb393dcf668e23db498c33c91521458f3cab30257f6e"
+  },
+  {
+    "file": "tests/testthat/test-audit-extension-repairs.R",
+    "sha256": "c8e472cd6ac1657d9d6d0043c01858d0cffea874682d0657090c50664ff5512d"
+  },
+  {
+    "file": "tests/testthat/test-audit-inference-repairs.R",
+    "sha256": "30aac911e9c4c08765278d7f1ba558a6efa4dc98ae1007bb6c958b1b47200141"
+  },
+  {
+    "file": "tests/testthat/test-audit-ml3-optimizer.R",
+    "sha256": "d5f4d0fa3b63c152e75389b7cc9af858326ca7b767fae7a856ddd5ea8ec10694"
+  },
+  {
+    "file": "tests/testthat/test-audit-nb-alignment-repairs.R",
+    "sha256": "fe9fc07d74a6443ab302b48bc3f40fe2b76e8836e2e913189861a878536e9497"
+  },
+  {
+    "file": "tests/testthat/test-audit-plots-predictions.R",
+    "sha256": "af8f1108b6373e904186ea357abf0785e54a55c26f34c5451afad0c842bceb81"
+  },
+  {
+    "file": "tests/testthat/test-audit-recent-api.R",
+    "sha256": "ed6071102760334dc7deffce6237fdb5b6a30dad7de5fd60626d6cf50c31b54d"
+  },
+  {
+    "file": "tests/testthat/test-audit-reporting-repairs.R",
+    "sha256": "e342340b70ae6ce19c17f8d6548527f0910587eda492e28fb91901660e63ecc8"
+  },
+  {
+    "file": "tests/testthat/test-audit-services-fixes.R",
+    "sha256": "5ded1f9c84237ada36c3b1eb70c337974bf679255d01d8e1dc9fc9b270dcc2c9"
+  },
+  {
+    "file": "tests/testthat/test-audit-validation-fork-safety.R",
+    "sha256": "8f6c2e64281b53317f1dc96c70cf8a5bdd1936068ce0d0eacd4f07b11edd2317"
+  },
+  {
+    "file": "tests/testthat/test-bivariate-residuals.R",
+    "sha256": "c61a6cf16191a93ff7b2475c9edd31058ad39b2b9f3af01d6acb66671027e8db"
+  },
+  {
+    "file": "tests/testthat/test-bootstrap-constraints.R",
+    "sha256": "be12aa5849bd8c0526fa76e4bf8ade499152f295f1337cce2132dcf05efc20af"
+  },
+  {
+    "file": "tests/testthat/test-bootstrap-inference.R",
+    "sha256": "7d420693e51829e81b85381358e5383ae4ee5dfef051921b86e6b44a7a6ca3ad"
+  },
+  {
+    "file": "tests/testthat/test-bootstrap-lrt-extended.R",
+    "sha256": "e6d8003c0eed4b1c9ac07d1f009f98dd4a1a2c1ccd1331b5cf7a4437ac2ccade"
+  },
+  {
+    "file": "tests/testthat/test-boundary-exclude.R",
+    "sha256": "e4c94560de7e6bc03d943626c7b62306fec8dc079d57dfff08b47722e7b7eec2"
+  },
+  {
+    "file": "tests/testthat/test-categorical-inference.R",
+    "sha256": "258ef57cac486ee51eac5a36c72495120dc41ee5f56a81c9bf475b0dbcefd0de"
+  },
+  {
+    "file": "tests/testthat/test-categorical-suspect.R",
+    "sha256": "b5e13b0379508fa9ebd2ba6b5fa675a7249c993ec00da7207f784c5b9a4187b9"
+  },
+  {
+    "file": "tests/testthat/test-categorical.R",
+    "sha256": "2d8f11666972b608d989af65b3d67f39dff9c8c2a9c1f926a0f5707c9e238025"
+  },
+  {
+    "file": "tests/testthat/test-centering.R",
+    "sha256": "b405938566eb77b922a33cee263818ca9851074c1e6efdfb3fdf7ae7988e608e"
+  },
+  {
+    "file": "tests/testthat/test-cluster-robust-cr1.R",
+    "sha256": "924d0a857f361e970f07e4b20d697cea82977575f78ab8f981e88fb5cba92dd2"
+  },
+  {
+    "file": "tests/testthat/test-compat-0921.R",
+    "sha256": "cd270158666ba14cf7c01668447f5e0b1e65d35f15485921e30d658e26002845"
+  },
+  {
+    "file": "tests/testthat/test-convenience.R",
+    "sha256": "14ee4e459a3aa9262a1711270ea263ed6e58b56fbc97c9c49bb15d669b1e3fc5"
+  },
+  {
+    "file": "tests/testthat/test-covariance-structure.R",
+    "sha256": "e101a2be148284f9f355aca0648db793fcf9bca8552e446db15bcec4f90d7844"
+  },
+  {
+    "file": "tests/testthat/test-covariate-fold.R",
+    "sha256": "0c80fd23b38d7346ef03ee29c7b1fc20e7507121541d4cebf16b9569685b07fc"
+  },
+  {
+    "file": "tests/testthat/test-covariate-inference.R",
+    "sha256": "a2cb06bad1dd9933a8e9b4dc326f16e0071be86383767e2eb8a5a512906d9f24"
+  },
+  {
+    "file": "tests/testthat/test-covariate-measurement.R",
+    "sha256": "0590a08a71aa431466f01ddd204ff2bb701153fc8842f66fabba7fa018b2988a"
+  },
+  {
+    "file": "tests/testthat/test-covariate-missing.R",
+    "sha256": "2c9095b981947f3a787a10c9a5cc43c8e99fc8b24b374e21fa1d1f5be4d3778c"
+  },
+  {
+    "file": "tests/testthat/test-covariate-separation.R",
+    "sha256": "d7f4889e8ea2ce0f462bd1887cb7b0958298d601e866b9f53fe3082bb63a3928"
+  },
+  {
+    "file": "tests/testthat/test-covariate-slopes.R",
+    "sha256": "3f2b59faeb2811f9e392ae9618e3bd4650bd9c6ea437f2e81f08f97c41a6dd0f"
+  },
+  {
+    "file": "tests/testthat/test-covariate-surface.R",
+    "sha256": "d4940c49ce856f044849baa3321197b23ad062d083490428e69c7f87509dcbd1"
+  },
+  {
+    "file": "tests/testthat/test-covariates.R",
+    "sha256": "7986b0b113daa47f84de7198aca21b693ccd0955e3c6d80859b0e49e61b1b60c"
+  },
+  {
+    "file": "tests/testthat/test-cross-level-thin-profiles.R",
+    "sha256": "5d9d532cf77704d747a4f2cd8899cb6bcb256662f9e8c6f20e6061f26de01571"
+  },
+  {
+    "file": "tests/testthat/test-cross-level.R",
+    "sha256": "bba82bb4207c789f1aa458961a21c5198e53977cd06c4e37f6849e64803c4846"
+  },
+  {
+    "file": "tests/testthat/test-data-student-esm.R",
+    "sha256": "4a5ec94fa0fac3d507f4024274b5546437c93fb90acd3e9575eb73f2b9f0042d"
+  },
+  {
+    "file": "tests/testthat/test-data.R",
+    "sha256": "b0c18ec86693392cd4ec4952d94cecab72ce62ee09ea51d539c065452c119eeb"
+  },
+  {
+    "file": "tests/testthat/test-default-search.R",
+    "sha256": "908c851acd54bbf2503a90d3cc587c7dd7940c76a2d3c0661f0b64d72c96ef13"
+  },
+  {
+    "file": "tests/testthat/test-descriptives-safety.R",
+    "sha256": "6dded9b971a22509c5a080f617bf98d523eaab70fcbdfff3c5ff3a3c6fda27a9"
+  },
+  {
+    "file": "tests/testthat/test-diagnostics.R",
+    "sha256": "f3a070e219c14cd007e6ad9a5d85be5ae9c42a009714653b3d4a5500fe054cfd"
+  },
+  {
+    "file": "tests/testthat/test-direct-effects.R",
+    "sha256": "cb3eedb1a7a8ed7234307e490375e6aa9b7ae2fd0c9064612a147c3460865b18"
+  },
+  {
+    "file": "tests/testthat/test-engine-fixes.R",
+    "sha256": "2a53dc3aa9dd0da1e304ce8b322e6fc4ce6f1dba836357b33bfabf56e225ce21"
+  },
+  {
+    "file": "tests/testthat/test-enumerate-verbs.R",
+    "sha256": "9313e2b24db19e7f4d3da06b745d60373816ed57d56e3f862815283d7e64cceb"
+  },
+  {
+    "file": "tests/testthat/test-enumeration-type.R",
+    "sha256": "27a2de94d82e5bb22131b38bca613fbf01cf98494ed89a98e8b718f23eae0ec5"
+  },
+  {
+    "file": "tests/testthat/test-enumeration.R",
+    "sha256": "0d81dbaf942eedfdbb281b00ed6fa296fc989fa3e079da124fea7752eb6ea571"
+  },
+  {
+    "file": "tests/testthat/test-evaluate-only-start.R",
+    "sha256": "a9a879d8249c178e7ed6dfaf5ecf425e8aaab149585f5b57cc9f6da5c504b62f"
+  },
+  {
+    "file": "tests/testthat/test-evaluate-only.R",
+    "sha256": "4c71e8b690efc6c528324e514defb96a99e4dc9ec0acbaa3915de38663a8bcc0"
+  },
+  {
+    "file": "tests/testthat/test-extra-indicators.R",
+    "sha256": "3fa584e4a197403fa5d6c8e623998538a15a9862563b2f8d0676fb81913066b2"
+  },
+  {
+    "file": "tests/testthat/test-features-direct-effects.R",
+    "sha256": "bd204afd78dbb4341b58849ad230f261b8a1feb7e806d30cef009c52903e7248"
+  },
+  {
+    "file": "tests/testthat/test-features-joint-items.R",
+    "sha256": "6219f56b7e1da1e02481eba0341b76d8890ad8d035f2c281ef200300735ce334"
+  },
+  {
+    "file": "tests/testthat/test-features-ml-three-step.R",
+    "sha256": "c31f885d46dd27178fbe2667257424a94c3417c79ead4b03f12784a3ebc13b48"
+  },
+  {
+    "file": "tests/testthat/test-features-pair-covariance.R",
+    "sha256": "c90a947b734e8fc6c7ba3bdf5e76ee00fd506f112a4a443fc7a0233e489599f4"
+  },
+  {
+    "file": "tests/testthat/test-features-vlmr.R",
+    "sha256": "a72ff15873af6ccaf91fa275e9023d7f148d8464dbaf78059878cda78da4df59"
+  },
+  {
+    "file": "tests/testthat/test-fit-verbs.R",
+    "sha256": "c72094c8ac57c430581edfa6abcd4177eddadc0d4e879192cc59fd7182283ae4"
+  },
+  {
+    "file": "tests/testthat/test-fixed-measurement.R",
+    "sha256": "c477539d69308dda0c27ac9ea1a56610a239b4e564e864240ba348305f6d9044"
+  },
+  {
+    "file": "tests/testthat/test-gaussian-diagnostic-tables.R",
+    "sha256": "42e624e539443fe2b8cc2853f73fab8393716375344ee954e4bfff289c9c6b6d"
+  },
+  {
+    "file": "tests/testthat/test-gaussian-diagnostics.R",
+    "sha256": "c51fb2a976d6c04e022ae2b1523fcb54ad3c31df93e566a22f439c9990501d42"
+  },
+  {
+    "file": "tests/testthat/test-gaussian-warning-support.R",
+    "sha256": "bb489941163fbaad3bc11daa7abcea11552b00074cd651f616168406b655d90d"
+  },
+  {
+    "file": "tests/testthat/test-get-data.R",
+    "sha256": "ac73cb4cda67a5e3a01d943b35dac3da15118ea60673435c9ab72c5551915a5b"
+  },
+  {
+    "file": "tests/testthat/test-grid-contract.R",
+    "sha256": "66096d05f125f4cd6ac8e82b72160d6285becbdc8b33ab6be9058eb5b1fb8b77"
+  },
+  {
+    "file": "tests/testthat/test-growth-correlated.R",
+    "sha256": "7f0e53e6f885868fd656e8e83392073514cd58229aaf5e92ae0f92a4cd42746f"
+  },
+  {
+    "file": "tests/testthat/test-growth-mixture.R",
+    "sha256": "9312284cb8280d6362ca57f9fee135857f690e0e0e97472fcc3cd8c20a9acb0a"
+  },
+  {
+    "file": "tests/testthat/test-growth-parameter-inference.R",
+    "sha256": "3fbe99ed6e5bdfc0461874175ed5a483d2d916e0f31f48943f97aa33625f51b8"
+  },
+  {
+    "file": "tests/testthat/test-growth-predict.R",
+    "sha256": "f54be563774a90fd7bfa4eb207a2699f54ed9d2bea4801dc4e9155a9c7ac436c"
+  },
+  {
+    "file": "tests/testthat/test-growth-r3step.R",
+    "sha256": "bbe37ada04c4089431c2723c23a055649d7e5f56caadff95a79a4ce2b8c8300a"
+  },
+  {
+    "file": "tests/testthat/test-inference-cache.R",
+    "sha256": "0d5ed3ab58da18b1bc900009193c943178c051210c5d3817dc51d3682ff5daa8"
+  },
+  {
+    "file": "tests/testthat/test-inference-fixed-measurement.R",
+    "sha256": "5c3b6da93ddff980af9cd3dd35718ccc76adee30a58c2ef31253825fa5c27b9d"
+  },
+  {
+    "file": "tests/testthat/test-inference.R",
+    "sha256": "71d59880d567579d9159d86ff9d933e0dffed34e9b5c2e7318866a74f2903a7b"
+  },
+  {
+    "file": "tests/testthat/test-informative-rows.R",
+    "sha256": "ba56ed066a34210ff2d95d1e61445ebaccdb8d09c5788b8fa6b2142dfb7a3d8f"
+  },
+  {
+    "file": "tests/testthat/test-kernel.R",
+    "sha256": "58e71c50b2ac5b231a53bd948dfbc8278365fb46b80f0672823ef86ef1a58f8e"
+  },
+  {
+    "file": "tests/testthat/test-latents-controls.R",
+    "sha256": "64a1d1670dae0c8ef101a6ab747ccd52b0b86a17b3d4ec52ac2de5a23ef6bc80"
+  },
+  {
+    "file": "tests/testthat/test-lmr.R",
+    "sha256": "ccbc427e2f8ad3c0c949ebe2d858f23698495f134d845941278335343f870f20"
+  },
+  {
+    "file": "tests/testthat/test-local-dependence.R",
+    "sha256": "a28079aee7145724a95f606505af6f81e8a96254919c34724e73f9750af628b2"
+  },
+  {
+    "file": "tests/testthat/test-lta-acceleration.R",
+    "sha256": "6d7ead62dc6701de0551c7f9184f3f063072afd1c454e3dda972f07890cbdf60"
+  },
+  {
+    "file": "tests/testthat/test-lta-bootstrap.R",
+    "sha256": "10cbe1c7010b29124a91750853161d0c6c0f1d12ed14233fb19f96be8f86547d"
+  },
+  {
+    "file": "tests/testthat/test-lta-compare.R",
+    "sha256": "573f9e61ef099bacd34ae2182b951e95043fa57be6169b4608a6eaa1f2754011"
+  },
+  {
+    "file": "tests/testthat/test-lta-covariance-boundary.R",
+    "sha256": "ae29ad98852bca270d8e0603903fe33b7ce1ab54b92a5386da6bb22ade36895c"
+  },
+  {
+    "file": "tests/testthat/test-lta-general.R",
+    "sha256": "eef1000648d62f3d742bf2540ae34533a0d028da7d1d388485b3be79223e34b6"
+  },
+  {
+    "file": "tests/testthat/test-lta-parallel.R",
+    "sha256": "59cb09112c10a370e088590f6b8cef0151cd0c9fbe3393cf4523a2360ab59d0d"
+  },
+  {
+    "file": "tests/testthat/test-lta-thin-profiles.R",
+    "sha256": "4eae6a2f5039ddfcb2b1930063def1a24fc24eec435c6f887d2d055bb9fa5edc"
+  },
+  {
+    "file": "tests/testthat/test-lta-three-step.R",
+    "sha256": "169a683f200afc20edb18290e22efd612d6f6ca2a82f5840851bd753d0c06d34"
+  },
+  {
+    "file": "tests/testthat/test-math-core-audit.R",
+    "sha256": "d8ec08778948ec720c9bc3307db1890d20442575c6dfcca1f5a437b7c0f692b8"
+  },
+  {
+    "file": "tests/testthat/test-math-extensions-audit.R",
+    "sha256": "f36fe2cf1cfc2e82aa6311093cc74b59f028d58aca11366531149c660dbc3efa"
+  },
+  {
+    "file": "tests/testthat/test-math-inference-audit.R",
+    "sha256": "3177497194904497c29763a755d4c5dd565617a1887b195469ab3e494b036a62"
+  },
+  {
+    "file": "tests/testthat/test-math-plot-audit.R",
+    "sha256": "497e8b083c2b343a206cc94dacda9b153a8f425b66ea3424cd0043b34e326b2c"
+  },
+  {
+    "file": "tests/testthat/test-math-results-audit.R",
+    "sha256": "92f9cc8c12ce1ded492e2f4e96a9035464d6707c2fda6bcd7ac42af837bfb5d9"
+  },
+  {
+    "file": "tests/testthat/test-missing-covariance.R",
+    "sha256": "32e49a1f48019f8e724a9b11ecc97eb384388adcc06f853366fe600c87bdcbca"
+  },
+  {
+    "file": "tests/testthat/test-mixture-regression-labels.R",
+    "sha256": "5eedb79488017acf072251c0978a7fc62428b933336c549416258bee03b0901d"
+  },
+  {
+    "file": "tests/testthat/test-mixture-regression-prediction-design.R",
+    "sha256": "003dbe7d2d034874964b0672b1091ba1e364e574045bf944603703a4f02a9a64"
+  },
+  {
+    "file": "tests/testthat/test-mixture-regression.R",
+    "sha256": "5e889cf98635b80af5c41f779146a1acedf731979fd29cb164895b19855d89f3"
+  },
+  {
+    "file": "tests/testthat/test-multilca.R",
+    "sha256": "c484e7bfa9922e68382286d192add6cd58243639f66e1d1b399128833078dfd3"
+  },
+  {
+    "file": "tests/testthat/test-multilevel-growth.R",
+    "sha256": "6c63986ee11eeecc2a4fd8979167f26951874d00d95b1bdc8ad024576406c230"
+  },
+  {
+    "file": "tests/testthat/test-multilpa.R",
+    "sha256": "1a48b1454c8a9bf62cf421dca576ad6c66c42472c84644fda1cad8812dabb89b"
+  },
+  {
+    "file": "tests/testthat/test-negative-binomial-regression.R",
+    "sha256": "d4e4643eb3263f173cae1e4ba42a539fd44de3782bb80f7cefc47d52b2130dff"
+  },
+  {
+    "file": "tests/testthat/test-noise.R",
+    "sha256": "f0100c872793614708132dd074d733f411622fa46fef086c3237e46647bc4205"
+  },
+  {
+    "file": "tests/testthat/test-numerical-safeguards.R",
+    "sha256": "bd4149042ac539ae8709eec1e83b451a236449270b127f9130f36aa48fbc1e27"
+  },
+  {
+    "file": "tests/testthat/test-ordinal-regression.R",
+    "sha256": "6db03c071e635258b854cf9e303856b5792fcfb9e42fd9a4a749ab4d8d76ef35"
+  },
+  {
+    "file": "tests/testthat/test-parallel-candidates.R",
+    "sha256": "ba156963d41544639bf508e88c09e640e16b154def119a0bf341176c83d67bca"
+  },
+  {
+    "file": "tests/testthat/test-parallel-profile-pool.R",
+    "sha256": "1e1ace012f50c6fcdada724218d7ced2a2ede46938fd637ec0985c66bd4e3e43"
+  },
+  {
+    "file": "tests/testthat/test-parallel-recovery.R",
+    "sha256": "df33e51ddfb0aed53aef9261b23117ad0e5594fa9c9976dd973c79d39f25160f"
+  },
+  {
+    "file": "tests/testthat/test-parallel-report.R",
+    "sha256": "42b30a148336bb1b84661ed375940550b094c036279ebbb92aa7528386579409"
+  },
+  {
+    "file": "tests/testthat/test-parallel.R",
+    "sha256": "d4874a1cb4c1c75b6169c7218a0118dd8ede773df266382f748c5e6d53aaf674"
+  },
+  {
+    "file": "tests/testthat/test-plot-categorical-summaries.R",
+    "sha256": "80a62150fe23cb24be35b279d6875b182b901c56bddb0a51ec8f35fdb86664be"
+  },
+  {
+    "file": "tests/testthat/test-plot-gg.R",
+    "sha256": "c98a6c445915c37d5100dff1336310085367d07ef3b6e8e150cd2b4759554a47"
+  },
+  {
+    "file": "tests/testthat/test-plot-named.R",
+    "sha256": "15f31c5abc3c8fdc441b03f6297e2754b52d9485cdcc8b92cad4beebdbaf298f"
+  },
+  {
+    "file": "tests/testthat/test-plot-polish.R",
+    "sha256": "42a1cca2b711155521852547f39eb56052fc298142fe12f2497962b05c44afc6"
+  },
+  {
+    "file": "tests/testthat/test-plot.R",
+    "sha256": "37391a2345576c922c3e65e317378e2278fd32ee432316a731609b5686a08ac0"
+  },
+  {
+    "file": "tests/testthat/test-pool-imputations.R",
+    "sha256": "e51502bd2187045ad84923dbc93a59b95c39ab8f9840a7f09144eb2e45eb372b"
+  },
+  {
+    "file": "tests/testthat/test-post-submission-review.R",
+    "sha256": "24bedf3f7ba329ca733aeac97e9cc6c9d560681f15b0c71ef4f7b17e0b2caa66"
+  },
+  {
+    "file": "tests/testthat/test-posterior-rounding.R",
+    "sha256": "d772ecd9556bb4af8991dc8eb975c8acfdea7d9d8b1638d41c07dea479c90753"
+  },
+  {
+    "file": "tests/testthat/test-predict.R",
+    "sha256": "620015244dfd43df9a0c37e94a5a3dee65dd9fb1472a4c07316f78812b496b4d"
+  },
+  {
+    "file": "tests/testthat/test-prior.R",
+    "sha256": "b314e1a56fbba957b08d73c3be5fb3b964408726486fb909cde7d5fa50e72414"
+  },
+  {
+    "file": "tests/testthat/test-release-items.R",
+    "sha256": "2f9cb2c7b3c00d9e6e2a13bec7730a6e47b52fbe05ab563b23e693815d1dfa6a"
+  },
+  {
+    "file": "tests/testthat/test-report-surface.R",
+    "sha256": "c5ca61fe9ecfdcb849a87080d75c827ee7da42ad6aa34b3ed5fa6c15b8912c33"
+  },
+  {
+    "file": "tests/testthat/test-review-0970-estimation.R",
+    "sha256": "3857b5a63b670a45746a5ece86a81f99d57183b0429d4bf16c7e6d371fa8cdc8"
+  },
+  {
+    "file": "tests/testthat/test-review-0970-parallel.R",
+    "sha256": "f89e0e9e4ffe7b9344fe787c4c1fc0d42865c6fdafeda104d067bdd959c293b7"
+  },
+  {
+    "file": "tests/testthat/test-review-0971-fixes.R",
+    "sha256": "b03de85379d1c2e6ab4724959e5137b8500985a77a4cd8b69ea80eb78270fb4f"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-accessors.R",
+    "sha256": "2bea22d78e5cafda82aba685c4dde3aaab987b74716909c3b5aef9b7c1618058"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-core.R",
+    "sha256": "cb4af7004a932a657ed1a8ffab10b3e92f8fb9fa45b5dd13ab8a8d97ee4d9460"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-covariates.R",
+    "sha256": "6adcd8d69b72ca893a39dfcce3878f81d272765447c72a3daecc4636af21e287"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-families.R",
+    "sha256": "b51d0b91410e75400c9b4eed6d2239788e8de18cccb55310211674917398d164"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-inference.R",
+    "sha256": "24e10d2319cfac48d7fd66dddf65f7b7b959450e87a3b7e0b230861aa2095d74"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-lead.R",
+    "sha256": "a885a6f0b8ab8e0d9b85af64db3c5f87cfd7467b83af9eae3b947fd2dbac38d8"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-plots.R",
+    "sha256": "1a5716a2409f5ce412597628a7e9190af12feaf4593e07cd38489d752d38e1b3"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-regression.R",
+    "sha256": "93652daac9d98c74d4bd5683553dcf5b4768a4e3e7e56ed5d96b133c51bd6b4f"
+  },
+  {
+    "file": "tests/testthat/test-review-1015-transitions.R",
+    "sha256": "42b8fd9a0ca1d1b950af65e41b1a16ca0afddbb7af50b502627ffb1ecb8b5402"
+  },
+  {
+    "file": "tests/testthat/test-review-1020-inference.R",
+    "sha256": "63840aef266109a82f277408da7cf07585d0ed51a98b2b0e4845226f8f9dca10"
+  },
+  {
+    "file": "tests/testthat/test-review-1020-integration.R",
+    "sha256": "902d44e1d1bcfc6eeec13cb22e0baee8de7c1e430f87569797328f05d56a280e"
+  },
+  {
+    "file": "tests/testthat/test-review-1020-zero-weights.R",
+    "sha256": "34b65a1fffa379d6caefc3dea3145f707f562891b5c77c31b5504b024201d7fd"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-additive-r2.R",
+    "sha256": "22bdfd9647f8cdf0d74ed0c7c9f95ef6bab230a20ccf29dd8edb44a915ef7948"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-additive.R",
+    "sha256": "52365c9813b266e3f8b34949baa23e00666ef58f8d5d645d0aad1bf02503f57a"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-categorical-r2.R",
+    "sha256": "c1d539e8b7fc0e863bf0eb124436ff584359765fbc5bbcf04ee978f63aa480ae"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-categorical.R",
+    "sha256": "8700c46939ff259b0a6da1e295e98a1e54d87b6f109c18723128f43ed8fe24ef"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-codex.R",
+    "sha256": "56c40da2c7a1b8eb460f3aa40bb6de8881a1ad30d718be88a8eaeaad77280a12"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-constancy.R",
+    "sha256": "dc6828867f285dccac9b69ec463016e833bc36437765b28bf7eaef4f971c9665"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-empty-rows.R",
+    "sha256": "dfb176c7abed4bf734bae9838cc20963e932bbd8fd5d36ef06de7899896d3791"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-growth-r2.R",
+    "sha256": "5b9129f82e4ca984dabedb3470817567419396470645d645dac63d4d39eda6db"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-growth.R",
+    "sha256": "98b95696c3b25bbd4fefff4265dde57b893f7d2c47b020a78a6eccd6713e8703"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-inference-r2.R",
+    "sha256": "5697189e87a673fcee133f5697e3d38743a86dde526f4fb57e753f1bdebaddb0"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-inference.R",
+    "sha256": "72815eee8e42276fbbc37d06ae202461812d1c1001ceb4d701f2dae7ef4d9638"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-kernel-r2.R",
+    "sha256": "2ec3ab9a058fcb48b846995f634a1b77c326a4c070150e5510a4ae6725fdfb5b"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-kernel.R",
+    "sha256": "59a330b80f8653320896de18b0710398142e408b1c44382cbda2bf64a7857f22"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-labels.R",
+    "sha256": "745cdda86770d9d8e41e2cdcb7c9dd9269ea500bc7bff407ce79fe51fd0ae4d0"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-lta-open.R",
+    "sha256": "00bdb15fd142cf51681f88dc18309165daee7593d56ecd005042883d75aa407d"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-lta-r2.R",
+    "sha256": "645000a779667e7cdd3fd62d638f5ebf7a0e7519712bdf21bd795a81d4eef4d4"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-lta.R",
+    "sha256": "3f3bef577c1952ffa07193088e9a58187cced3a79c8f949d562a44c08b9f915e"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-mixreg-r2.R",
+    "sha256": "d44861f0221f4b327d7e6d3d51e273281f0011beadda7d79ba59db1bf2734268"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-mixreg.R",
+    "sha256": "1fc523b411100c0e832defa7679b83b201e9d7e339394e8e5b3738d96819ef98"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-multilevel-r2.R",
+    "sha256": "faacfc1779e6bb077c812535b685e10265d3d249cfdc8131b658c63a7826f85b"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-multilevel.R",
+    "sha256": "81d508530dd2adc7f9fc4d0cbd0a730fda021369fef5cd89066ccacad94400f9"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-refusals.R",
+    "sha256": "997faa30c4d73b8adfde6cc0a712082f4ca2827e2e82f6a71b55a5a6e746450a"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-selection-r2.R",
+    "sha256": "0c47998b7e9bc32ee431b5c8dbbe788fb92810c7d3f6c2b7ba8cc6b49e8ad124"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-selection.R",
+    "sha256": "83000f7003aa11386e71ef68fe65c05614634931c9e744c2d9def10f48a65b74"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-zero-weight-checks.R",
+    "sha256": "48425363c92170a724faccbc2d45d5a7c7a075e3404e194d9c484606bf4d869b"
+  },
+  {
+    "file": "tests/testthat/test-review-1026-zero-weight-likelihood.R",
+    "sha256": "bc1ac40b9e97cbe377e541f1819f55f0e79107b00d1f2d6f7a3dfd74c9114205"
+  },
+  {
+    "file": "tests/testthat/test-review-1027-condition-calls.R",
+    "sha256": "663a5786ff5661934a79e59db1ddb2a10ac52b832d6e17f29d76e1d2c69beb71"
+  },
+  {
+    "file": "tests/testthat/test-review-1027-diagnostics.R",
+    "sha256": "7c3f12cd3289754d760c6bff1db16af940007eccf47877eacd42b32d17fd6739"
+  },
+  {
+    "file": "tests/testthat/test-review-1027-error-contract.R",
+    "sha256": "464b87b5d10bb19387db112e00b4b63d1a733ea907f142e8d1526e5f43e3b8c7"
+  },
+  {
+    "file": "tests/testthat/test-review-1027-replication.R",
+    "sha256": "195a9404c889734fb0def9d3ea50670041443623594a3c597b7fd4b670cb009e"
+  },
+  {
+    "file": "tests/testthat/test-review-core-audit.R",
+    "sha256": "f284f2df92326a70a238091da8c42e4c8d2163e276bb601e1b842dc2143f22a0"
+  },
+  {
+    "file": "tests/testthat/test-review-extra.R",
+    "sha256": "09fbc575a0ffbcb8ac6f46b5e67ec9228f505451eefce1f195b41c9d1cccbf38"
+  },
+  {
+    "file": "tests/testthat/test-review-families.R",
+    "sha256": "64354e5b41b0085190b57decc015478d8a171a617a571c46f6f49dc64e2bc383"
+  },
+  {
+    "file": "tests/testthat/test-review-followup.R",
+    "sha256": "b47090e45a451f4886b2948ca315ba5792302ff60790036ef26fa606ef9597f1"
+  },
+  {
+    "file": "tests/testthat/test-review-integration.R",
+    "sha256": "01da9c3b7e1cc7b2b8debf44bc067d37fa3a0fc0fb970508105a09d79f944dd4"
+  },
+  {
+    "file": "tests/testthat/test-review-lta.R",
+    "sha256": "5df2937ca6c329f7f1ac9c7ae13ae53f0cf41becaadf46fe0ea9530555a935f2"
+  },
+  {
+    "file": "tests/testthat/test-review-pairs-trees.R",
+    "sha256": "f0d9ef49e890c17ffa8047c896a75ca1990f1c803c4dfca73e05ee3f1d99bc28"
+  },
+  {
+    "file": "tests/testthat/test-review-regression.R",
+    "sha256": "a5145253b8b2feb4f280ef79475a13960b548b6120325648faa9a78b558ddd7e"
+  },
+  {
+    "file": "tests/testthat/test-review-structures.R",
+    "sha256": "20b82ad78785fd9a57c1627682a0c268214868ed9b62050ac0b4987ff3f22dd4"
+  },
+  {
+    "file": "tests/testthat/test-robust.R",
+    "sha256": "da32dba6ca9f2e3d296358c3f5cc5697972d46eee22961e2884cec11c254b265"
+  },
+  {
+    "file": "tests/testthat/test-scaling-invariance.R",
+    "sha256": "639fb7f1e1c28c1b0342839dad7f212c83ae0d4b514f5d0174e7b0487bc0f291"
+  },
+  {
+    "file": "tests/testthat/test-scaling.R",
+    "sha256": "eddc50c9b829dc765a346362bfe2f9abfe575ea74ddefd940394797510b76287"
+  },
+  {
+    "file": "tests/testthat/test-search.R",
+    "sha256": "c0ad6162fe799304f2cbb645024b9e2ef8c0d896e184a924bf3e72f6fe4f84ca"
+  },
+  {
+    "file": "tests/testthat/test-seeds.R",
+    "sha256": "7bdab496c68841e5707d6054f03c183b278bafa9f5f766bb2d929e379a2a8d18"
+  },
+  {
+    "file": "tests/testthat/test-sensitivity.R",
+    "sha256": "3c7bc1c3eed20e10fb995be8fa562acf7bbe433f232357b53d3bc12e2dfa01fc"
+  },
+  {
+    "file": "tests/testthat/test-sequences.R",
+    "sha256": "a08cd5af014d8bf4b3eebddb8f60c7f1bc3f099863c68fa8551d1e480a522b79"
+  },
+  {
+    "file": "tests/testthat/test-single-level.R",
+    "sha256": "d47757a43095fea3b9533eaec5787a96d8ea2eb85dafe65d8d97fe4c92cce483"
+  },
+  {
+    "file": "tests/testthat/test-staged-bootstrap.R",
+    "sha256": "200735a4ca4cf933a9ae217cc3e8578fae93ce03a91d8b068d9bc2e2ef2d9a4e"
+  },
+  {
+    "file": "tests/testthat/test-staged-identity.R",
+    "sha256": "91efa45ff8a6eacf6ae432f3f3561704b4010c3a31147dc9fba91aa078253eb3"
+  },
+  {
+    "file": "tests/testthat/test-start-helpers.R",
+    "sha256": "8060126d5d21ad4743c9b984443f3ab32bc10fb02727d0dd9d709e5988b78115"
+  },
+  {
+    "file": "tests/testthat/test-start-kmeans-warning.R",
+    "sha256": "b37679e5feda406cbab3168cd8d901ad5105e426a2a62eb5c7d2a4a2cadf4075"
+  },
+  {
+    "file": "tests/testthat/test-structure-inference.R",
+    "sha256": "1048999dcc12abd3dd82bc54eae2237804b3c5b50203940c83627b49b9baaf8a"
+  },
+  {
+    "file": "tests/testthat/test-thin-profiles.R",
+    "sha256": "e7cd952bef6b950c3e5773aff2e4e241d4afdf5cb5c22da5247c8663396ead13"
+  },
+  {
+    "file": "tests/testthat/test-three-step-clusters.R",
+    "sha256": "d02fdc4672b38550ebc32eaf2afab63b8e3b99fee223ab30b9feb58f95ed3b8d"
+  },
+  {
+    "file": "tests/testthat/test-three-step-ml.R",
+    "sha256": "0c89002ee9b8846eb6a689d4396c3ecab4d6fbd0bffd7704f7256082b0ab6739"
+  },
+  {
+    "file": "tests/testthat/test-three-step.R",
+    "sha256": "fecc7c3fcb4931e0df21132b7be831e06aa13214f4f00c80bcbcdb24e2859d87"
+  },
+  {
+    "file": "tests/testthat/test-tidy-accessors.R",
+    "sha256": "7ebae1473bbfaca741ed0a3b5458173f67502cd4b12f61d29ee5a9dbb30304ec"
+  },
+  {
+    "file": "tests/testthat/test-tidy-classes.R",
+    "sha256": "a16e8e49e73e3558ef6cf3c113612a40dd1d614abb1973c06d8c0f36ad2ec51a"
+  },
+  {
+    "file": "tests/testthat/test-tidy-core.R",
+    "sha256": "76cf16dce3cd0a116ed8f0a288254fc463353b18b5055c9d906e643d9f52131c"
+  },
+  {
+    "file": "tests/testthat/test-tidy-diagnostics.R",
+    "sha256": "e22b1bb87ec9bb8e7ec758732b77b97b30cbb10c486ff777996b9e00879d8b4d"
+  },
+  {
+    "file": "tests/testthat/test-tidy-examples.R",
+    "sha256": "0c2b55efd497f2a5e3599d8440f9635b19e47691fae8c3356e9e70733ee0a2f6"
+  },
+  {
+    "file": "tests/testthat/test-tidy-inference.R",
+    "sha256": "ff904983e63fbef1d7544043b9aec3689dbdcc17914745e35d9c63a095f041ba"
+  },
+  {
+    "file": "tests/testthat/test-tidy-sequences.R",
+    "sha256": "20446912adfee436ee56fe3903be2ddfd297d3898bdf52a134926ee168267130"
+  },
+  {
+    "file": "tests/testthat/test-tidy-three-step.R",
+    "sha256": "aa9a4c0b36542a2c3b83c5ae94d21fb2b6616965a4d43df96e0dfbfcaadbf5fd"
+  },
+  {
+    "file": "tests/testthat/test-tna-fits.R",
+    "sha256": "b2daeda3e88eb09a74b80ad398327ee172ec45dcd1507adc0838cd18791fea7d"
+  },
+  {
+    "file": "tests/testthat/test-tna.R",
+    "sha256": "9b67b8a08673c829bbe8487709eddde64c48ec3e19b2cd9e3006da23a9a38d15"
+  },
+  {
+    "file": "tests/testthat/test-transition-inference.R",
+    "sha256": "fd866f250b5ca865738418cc06e1794192554d33ba673be2404b043d4e2fff63"
+  },
+  {
+    "file": "tests/testthat/test-transitions-numerics.R",
+    "sha256": "c20d5e48dcfb2836c61eab0e852caf89a05f73f1e5d4e2256b7ce41f6d937bdd"
+  },
+  {
+    "file": "tests/testthat/test-transitions.R",
+    "sha256": "9dffa022dc109d028224bbbac0eab8023aa880a552a1da8c3d3e1c1b33aa872a"
+  },
+  {
+    "file": "tests/testthat/test-tree.R",
+    "sha256": "2506b079a765bbf1e5eaf2a0cb6f5a66827ae2d90754b1917b3d30e0d02ec695"
+  },
+  {
+    "file": "tests/testthat/test-weighted-logits.R",
+    "sha256": "6bc8097bc4585e16f00e9a6e4f32f7b6716ad9b8a42361fcb6f3dec9c5a029da"
+  },
+  {
+    "file": "tests/testthat/test-weights.R",
+    "sha256": "2b3f1964655875d4295ed4ef70e1a376230f2a77756cba8752e07324d1c854af"
+  },
+  {
+    "file": "tests/testthat/test-zero-weight-initialization.R",
+    "sha256": "213fa09f430200690b92d993e0ef2a604d001687f34fde1011db8892ac0dcda1"
+  },
+  {
+    "file": "todo.MD",
+    "sha256": "9b75ec6fb7e58574cbce2779ab24181724deea688f188740f78b475bcd5ac0ec"
+  },
+  {
+    "file": "vignettes/articles/additive.Rmd",
+    "sha256": "48ba32b37141dd60e754aefd22fe6bf8bff846a9775c178b49c2647e6906972c"
+  },
+  {
+    "file": "vignettes/articles/case-engagement-covariates.Rmd",
+    "sha256": "92acc6bda48824e0ecc750def490cace5cff9a836ffded251517ed63b95bd0f6"
+  },
+  {
+    "file": "vignettes/articles/case-engagement-evaluation.Rmd",
+    "sha256": "95fe6a8c3f6ec8c0f13123bae70fb4f4cf9747523127bf892d4cbd2ffa99487b"
+  },
+  {
+    "file": "vignettes/articles/case-engagement-profiles.Rmd",
+    "sha256": "2422c8700b6f19f25cc88329c6d82cc22131b38f46e00716ed19c84301d0cc51"
+  },
+  {
+    "file": "vignettes/articles/case-engagement-transitions.Rmd",
+    "sha256": "30d0f97248b9ce5d2590300eb138d0f86e283098f61df9471f1585fa7e16ee8b"
+  },
+  {
+    "file": "vignettes/articles/case-esm-lca.Rmd",
+    "sha256": "6001a29f9b0da02c1000142d480dd85242b26786202407717eeb7e76cbabd8fd"
+  },
+  {
+    "file": "vignettes/articles/class-enumeration.Rmd",
+    "sha256": "f847369d83a7225db4adcb36ccfbb764c6836b9dafbbaf525c6c585ba7e0f37d"
+  },
+  {
+    "file": "vignettes/articles/covariates.Rmd",
+    "sha256": "571f3cb86c6b69cb0efc92ca2c69d88ab663e069a7c46b13a2b6175b083fd5fa"
+  },
+  {
+    "file": "vignettes/articles/evaluation.Rmd",
+    "sha256": "dc8479e388aedcb3e7392084e675d907e103b3ca366fbfe52d5c0292a616338f"
+  },
+  {
+    "file": "vignettes/articles/growth-mixture.Rmd",
+    "sha256": "2edb554f4bae21fcd226a684a3a2ef317388d2d57537fd5efe642e4e46f009ff"
+  },
+  {
+    "file": "vignettes/articles/mixture-regression.Rmd",
+    "sha256": "ec929dd471c20d98046775a1cc534e1f0854d62ac8f82c94761b08e1288debee"
+  },
+  {
+    "file": "vignettes/articles/model-selection.Rmd",
+    "sha256": "8b4688bed87bbc574021d7b53b92eeebd24604f147bf8dbf4929991d9edd05cd"
+  },
+  {
+    "file": "vignettes/articles/trajectory-classes.Rmd",
+    "sha256": "886104cdb2f0fdcee15e68f2c8064f5c7b0fb70119d7e568bcd186a8669fe7b1"
+  },
+  {
+    "file": "vignettes/articles/tree-plot.Rmd",
+    "sha256": "da18617a130f5099ffbfd967a5891bed89dbe102427ef4fdce9f50068100416f"
+  },
+  {
+    "file": "vignettes/articles/workflow-lca.Rmd",
+    "sha256": "939963e2b94af068e3c16be41136f15ef4e9f0a2bb261fa1635ae524c7248a98"
+  },
+  {
+    "file": "vignettes/articles/workflow-lpa.Rmd",
+    "sha256": "59f0a2cfb45b98414b8123baafe2724cb4829afe4a5921512e3129651faffc66"
+  },
+  {
+    "file": "vignettes/enumeration.Rmd",
+    "sha256": "1133c60b46c76d8fb9ebf9edd5e185ecbe83a93eb5e228545e6ae5c3d0afb3fd"
+  },
+  {
+    "file": "vignettes/figure/probabilities-1.png",
+    "sha256": "984d218b12106353392914896ab74d5fccbc7eac1be0b3f6aad5d65c1a4fa9c7"
+  },
+  {
+    "file": "vignettes/lca.Rmd",
+    "sha256": "c91955c71b9b8502f753aa5676c9f754a5241b4fd7bd50ece51f999d7c273f87"
+  },
+  {
+    "file": "vignettes/lpa.Rmd",
+    "sha256": "bdc691321684b9a1ecc016e21739e09681f2146982e91c128f6676f81b95dbf9"
+  },
+  {
+    "file": "vignettes/lta.Rmd",
+    "sha256": "d2f85376a90708e3581994cf34d3016b0e677e34c9a4ffea4903d13e08c3120d"
+  }
+]

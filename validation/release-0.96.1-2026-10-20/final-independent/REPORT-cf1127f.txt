@@ -1,0 +1,108 @@
+Independent final release audit — cf1127fa66283826ed421d028999b5ac23e1901d
+
+Disposition: local implementation/artifact validation passes, but release
+sign-off is BLOCKED by a newly observed R4.1 full-check test error. This
+read-only audit does not classify its cause as a production defect or test
+fixture issue. The parent must diagnose it and obtain passing final CI.
+
+No tracked source, test, reference or workflow file was edited by this reviewer.
+The parent owns commit/push/CI, tracking logs and release publication.
+
+Verified current-source validation
+
+- Complete unit suite: 1,224 cases, 8,138 passing expectations.
+- Inner development equivalence: 64 cases, 405 passing expectations.
+- COMPLETE outer equivalence: 198 cases, 39 files, 5,419 passing expectations
+  in one clean 30m27s run. No merged/replaced results or relaxed tolerances.
+- Each suite has zero failures, errors, warnings or skips. The 566 affected
+  external-reference expectations rerun earlier are included in the complete
+  outer suite and must not be added again as disjoint coverage.
+- Unit/inner/affected-source manifests match all 91 current production files.
+  The complete final outer run verifies all 3,415 original and scratch input
+  files remain identical to their initial SHA256 hashes.
+- Native package check: zero errors/warnings, one environmental time-verification
+  NOTE. The check runs regular/donttest examples and vignette rebuilds; tests
+  and the PDF manual are omitted there, with complete tests run separately.
+- Configured lint is clean.
+
+Independent package integrity
+
+All 324 manifest files match working bytes and committed Git content. The
+286 manifest files included in the archive match their committed contents.
+An independent scan of all tracked archive members verifies 305 raw files
+against Git blobs; DESCRIPTION preserves every source field after standard
+DCF wrapping, giving 306 checked tracked files including DESCRIPTION. The 38 manifest
+exclusions are intentional development equivalence/workflow/registry files.
+Tracked working tree is clean.
+
+Archive SHA256:
+a0bb76047e2134631fc25adbb8a2e41ff1a5984cf8db2e522bd07fa951a15f5e
+
+The final LMR and parallel source/test files match their accepted independent
+cross-review fingerprints. Covariance V2 is unchanged since its accepted
+source commit. There is no numerical source drift after those reviews.
+
+Review conclusions
+
+- Vuong V2 resolves the independently reproduced genuine-weight deletion and
+  nonfinite-bound blockers. Exact empirical-Gram information uses its actual
+  score subspace; general unresolved weights produce a typed unavailable
+  probability. Independent nonnested projector examples retain all expected
+  signed weights. No expanded uncertainty bound is treated as proof of zero.
+- Covariance V2 fixes false active-constraint convergence. The independent
+  exact oracle, scalar reductions, KKT certificates, all-zero cases and scale
+  transformations support feasibility and optimality. Family constraints,
+  variance floors and the existing EM monotonicity guard are preserved.
+- Socket cleanup independently handles each node and always closes its owned
+  connection, preserving the original worker error. Real normal/error/death
+  and mocked shutdown-failure probes returned to the three baseline
+  connections after GC with no warnings; unrelated connections stayed open.
+  The complete parallel test file passes 37 expectations.
+- The final archive was installed into an isolated library and exercised by
+  installed-public-proofs.log: original SE/padding invariance, weighted tree
+  shares 0.8/0.2, typed pair/category refusals, and actual worker death all
+  pass. Its SIGTERM regression preserves the typed parallel failure with
+  zero cleanup warnings and no leaked sockets. install-final-archive.log
+  confirms the checked archive installed successfully.
+- NEWS and version 0.96.1 match the final repairs. Final CRAN comments already
+  identify the current 8,138/405/566 measured results and distinguish pending
+  CI; the parent can now replace their pending complete-outer sentence with
+  the final 5,419-pass result and later record the final CI outcome.
+
+Remaining publication gate and limits
+
+The exact-cf1127f logs establish macOS release and Linux oldrel completed
+with Status: OK (zero errors/warnings/notes); equivalence and lint succeeded.
+A NEW Linux R4.1 full-check failure appears in 118721853315-failure.log:
+
+  test-engine-fixes.R:53, transition parameter_inference() caller-step test:
+  latents_boundary_fit — a variance/probability is on its boundary, so Wald
+  inference is refused. The installed suite records 8,082 passes, one error,
+  two test warnings and six skips; package status is one ERROR/two NOTEs.
+
+This was found after the initially pending-CI snapshot, and the parent was
+notified immediately. Final source publication requires diagnosis and passing
+CI, with provenance reconciled after any fix. The other three main-check
+jobs were not complete in the cached record at review time; no result is
+presumed. See ci-r41-failure-excerpt.txt. The complete local 5,419-pass outer
+run remains valid evidence for cf1127f, but does not override a failing CI gate.
+
+Numerically unresolved comparison charts intentionally return unavailable
+probabilities. The known finite precision limit in the independent near-
+collinear probe is documented in numerical-followup/cross-review-v2/REPORT.txt.
+Original licensed external programs were not rerun: current package fits
+were compared with retained outputs and installed open-source packages.
+These checks establish strong scoped evidence, not a proof of no future bugs.
+
+Evidence
+
+outer-final/REPORT.txt, summary.log, results.rds and final-integrity.json
+final-independent/integrity.json and current-local-validation.rds
+final-independent/ci-status-at-audit.csv
+installed-public-proofs.log and install-final-archive.log
+numerical-followup/cross-review-v2/REPORT.txt
+covariance-followup/cross-review-v2/REPORT.md
+parallel-cleanup-followup/cross-review/REPORT.txt
+
+The earlier c065dec audit and intentionally interrupted outer snapshot are
+preserved as historical evidence and contribute no final passing totals.

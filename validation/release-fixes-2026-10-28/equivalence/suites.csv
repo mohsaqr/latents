@@ -1,0 +1,25 @@
+"suite","status","compared","agreed","values","outputs_not_covered","warnings","seconds","reason","first_warning"
+"covariates","ran",577,577,41761,0,0,29.02,NA,NA
+"depmixs4","ran",462,462,27804,0,0,11.52,NA,NA
+"flexmix","ran",433,433,29933,0,0,18.48,NA,NA
+"glca","ran",362,362,57400,0,0,27.3,NA,NA
+"hard-depmixs4","ran",1140,1140,154530,0,0,181.11,NA,NA
+"hard-mclust","ran",1635,1635,67048,0,4,90.54,NA,"Profiles 1, 2, 3: 14.0, 13.0, 13.0 Gaussian membership mass for 20 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+"hard-polca","ran",958,958,89873,0,0,139.85,NA,NA
+"invariance","ran",796,796,31192,0,0,6.74,NA,NA
+"lcmm","ran",467,467,34865,0,0,43.13,NA,NA
+"lta-general","ran",102,102,9539,0,0,39.37,NA,NA
+"lta-mixed","ran",358,358,50755,0,0,22.09,NA,NA
+"mclust","ran",450,450,16717,0,0,18.12,NA,NA
+"mplus-twolevel-lca","ran",770,770,395792,0,0,154.12,NA,NA
+"multilevlca","ran",360,360,2041615,0,0,150.83,NA,NA
+"ordinal-count","ran",486,486,26814,0,0,17.27,NA,NA
+"polca","ran",820,820,86185,0,0,96.44,NA,NA
+"pool-imputations","ran",92,92,2396,0,0,5.28,NA,NA
+"predict-newdata","ran",57,57,7571,0,0,5.06,NA,NA
+"published","ran",41,41,41,NA,0,269.66,NA,NA
+"refusals","ran",50,50,50,NA,0,1.89,NA,NA
+"robust-se","ran",541,541,24390,0,0,8.03,NA,NA
+"stability","ran",9,9,9,NA,0,49.93,NA,NA
+"three-step","ran",271,271,897,0,0,33.43,NA,NA
+"twolevel-lpa","ran",1231,1231,134822,0,0,48.73,NA,NA

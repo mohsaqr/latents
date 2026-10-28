@@ -1,0 +1,15 @@
+ offset error max_se_ratio max_mean_error
+  1e+06  <NA> 9.999951e-01   8.804069e-12
+  1e+08  <NA> 1.000530e+00   3.966925e-09
+  1e+09  <NA> 9.991064e-01   3.376925e-08
+  1e+10  <NA> 1.099239e+00   7.490250e-07
+  1e+11  <NA> 6.866482e-01   8.973644e-06
+  1e+12  <NA> 4.948610e+04   2.351670e-04
+
+Scaled-coordinate comparison (same public fits):
+  n_units parameters_added       lr       vlmr_p adjusted_lr almr_p
+1     300                3 336.1164 5.551115e-17    317.5581      0
+  reference_mean reference_sd
+1       4.418811     3.286323
+
+Negative LR public candidate cases: 0 

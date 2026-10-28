@@ -1,0 +1,6 @@
+Installed unit-suite line coverage: 95.2468%
+Function definitions with observed expression hits: 994 / 1023
+Function definitions without hits in this coverage run: 29
+Coverage measures installed unit tests only, not equivalence tests, help examples or audit probes.
+Passing instrumented statements do not establish branch coverage or numerical correctness.
+The raw coverage output succeeded, saved both results and reported coverage; the first wrapper ended on an unsupported by='file' summary argument. That argument is corrected in run-coverage.R. No tests were rerun to repair the summary. 

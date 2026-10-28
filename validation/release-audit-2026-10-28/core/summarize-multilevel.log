@@ -1,0 +1,7 @@
+                  family likelihood_gap
+1                profile   3.637979e-12
+2               additive   0.000000e+00
+3             dispersion   1.818989e-12
+4    additive_dispersion   0.000000e+00
+5       full_cross_level   3.637979e-12
+6 restricted_cross_level   7.275958e-12

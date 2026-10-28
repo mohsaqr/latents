@@ -1,0 +1,7 @@
+* checking for file ‘/private/tmp/astra-review/source/DESCRIPTION’ ... OK
+* preparing ‘latents’:
+* checking DESCRIPTION meta-information ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+* building ‘latents_0.97.4.tar.gz’
+

@@ -1,0 +1,1116 @@
+Package: 0.98.0 
+Location: /private/tmp/latents-release-audit-20261028/lib/latents 
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_0.98.0
+
+loaded via a namespace (and not attached):
+[1] compiler_4.5.2
+acceleration: .............................
+additive-compare: .............................
+additive-engine: ..............................
+additive-families: ........................
+additive-fit: ...........................................
+additive-methods: ..................................................................................
+alignment-service: ................................................................
+api-compat-0921: ...............Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+.............................
+assignment-alignment: ..........................
+astra-core: ...............................................................................
+astra-diagnostics: ................................................................................
+astra-surface: Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+..Fitted a single-level latent class model.
+.Fitted a single-level latent class model.
+....Fitted a single-level latent class model.
+.Fitted a single-level latent class model.
+..............
+audit-core-repairs: ................................................................
+audit-drawing-integration: ......
+audit-extension-repairs: ...................................................................
+audit-inference-repairs: ......................................................................................
+audit-ml3-optimizer: .............................
+audit-nb-alignment-repairs: ....................
+audit-plots-predictions: ......................................................................................
+audit-recent-api: ............................................
+audit-reporting-repairs: ..............Fitted a single-level latent profile model.
+...........
+audit-services-fixes: ...............................
+audit-validation-fork-safety: .........................................................................................
+bivariate-residuals: .........................................
+bootstrap-constraints: .....................
+bootstrap-inference: ..................................................................
+bootstrap-lrt-extended: ........................
+boundary-exclude: ...................
+categorical-inference: ...........................
+categorical-suspect: ...............
+categorical: ...........................................................................
+centering: ...................................No standard errors in this table: Robust and OPG inference need more groups than parameters; this fit has 20 groups and 30 parameters.
+.
+cluster-robust-cr1: ........
+compat-0921: ..........
+convenience: ...........................................Diagnostics: Two-level latent profile analysis, 2 profiles, 2 group classes
+1 check needs attention: pairs dependent within a class
+
+Estimation
+  ok     best start converged                                yes                      
+  info   best log likelihood reached by                      4 of 4 starts            
+  ok     starts failed or unfinished                         0 of 4                   
+  ok     estimates at a bound                                no                       
+
+Class size
+  info   smallest class                         individuals  33.4% (n = 92, class 2)  
+  info   modal vs estimated proportions         individuals  largest gap 0.002        
+  ok     classes with no assigned unit          individuals  0 of 2                   
+  info   smallest class                         groups       25.0% (n = 5, class 1)   
+  info   modal vs estimated proportions         groups       largest gap 0.000        
+  ok     classes with no assigned group         groups       0 of 2                   
+
+Classification
+  info   relative entropy                       individuals  0.948                    
+  info   lowest average posterior               individuals  0.982 (class 2)          
+  info   lowest odds of correct classification  individuals  42.0 (class 1)           
+  info   relative entropy                       groups       0.998                    
+  info   lowest average posterior               groups       1.000 (class 2)          
+  info   lowest odds of correct classification  groups       1124.5 (class 2)         
+
+Local independence
+  check  pairs dependent within a class                      7 of 20 tested pairs     BH-adjusted p < 0.05
+         largest: lectures x attendance in profile_1, residual 0.297, adjusted p <1e-04; consider local_dependence = or a full covariance model
+
+Information
+  info   log likelihood, parameters, BIC                     -1604.31, 23, 3277.51    
+
+Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
+......................Two-level latent profile analysis: 2 profiles, 2 group classes
+Individuals: 274; groups: 20; parameters: 23; converged: TRUE
+Log likelihood: -1604.305408; AIC: 3254.611
+BIC (groups): 3277.513; BIC (individuals): 3337.713
+Best likelihood replicated in 4/4 starts (absolute tolerance 0.00137).
+
+-- profiles --------------------------------------------------------
+ profile  indicator    mean variance standard_deviation mean_standard_error
+       1     browse  0.5536   0.5480             0.7403             0.05534
+       1   lectures  0.4504   0.7856             0.8863             0.06703
+       1 forum_read  0.6130   0.4676             0.6838             0.05161
+       1 forum_post  0.5855   0.6044             0.7775             0.05920
+       1 attendance  0.6368   0.4435             0.6659             0.05128
+       2     browse -0.8147   0.5550             0.7450             0.08412
+       2   lectures -0.6100   0.5829             0.7635             0.08086
+       2 forum_read -0.8932   0.3781             0.6149             0.06826
+       2 forum_post -0.8917   0.3466             0.5887             0.06414
+       2 attendance -0.9629   0.3876             0.6226             0.06730
+ variance_standard_error
+                 0.05795
+                 0.08340
+                 0.04960
+                 0.06517
+                 0.04877
+                 0.09182
+                 0.08663
+                 0.05952
+                 0.05491
+                 0.05856
+
+-- responses -------------------------------------------------------
+   (no rows)
+
+-- covariances -----------------------------------------------------
+ profile  indicator indicator_2 covariance
+       1     browse      browse     0.5480
+       1   lectures      browse     0.0000
+       1 forum_read      browse     0.0000
+       1 forum_post      browse     0.0000
+       1 attendance      browse     0.0000
+       1     browse    lectures     0.0000
+       1   lectures    lectures     0.7856
+       1 forum_read    lectures     0.0000
+       1 forum_post    lectures     0.0000
+       1 attendance    lectures     0.0000
+   ... 40 more rows.  get_results(x, what = "covariances")
+
+-- gaussian_diagnostics --------------------------------------------
+  context   profile gaussian_mass positive_rows weight_effective_n
+ profiles profile_1        182.48           274             185.34
+ profiles profile_2         91.52           274              94.42
+ min_variance_ratio min_standardized_eigenvalue boundary
+             0.4461                      0.4461    FALSE
+             0.3453                      0.3453    FALSE
+
+-- profile_probabilities -------------------------------------------
+ group_class profile probability group_class_probability
+           1       1      0.1252                  0.2502
+           1       2      0.8748                  0.2502
+           2       1      0.8482                  0.7498
+           2       2      0.1518                  0.7498
+
+-- counts ----------------------------------------------------------
+       level class effective_count effective_proportion
+ individuals     1         182.479               0.6660
+ individuals     2          91.521               0.3340
+      groups     1           5.004               0.2502
+      groups     2          14.996               0.7498
+
+-- posteriors ------------------------------------------------------
+ row group profile posterior modal
+   1     1       1 9.998e-01  TRUE
+   2     1       1 9.784e-01  TRUE
+   3     1       1 1.325e-06 FALSE
+   4     1       1 2.383e-06 FALSE
+   5     1       1 8.368e-06 FALSE
+   6     1       1 2.995e-05 FALSE
+   7     1       1 1.241e-05 FALSE
+   8     1       1 3.708e-06 FALSE
+   9     1       1 2.079e-06 FALSE
+  10     1       1 5.472e-06 FALSE
+   ... 538 more rows.  get_results(x, what = "posteriors")
+
+-- group_posteriors ------------------------------------------------
+ group group_size log_likelihood group_class posterior modal
+     1         13         -61.17           1 1.000e+00  TRUE
+     2         13         -71.74           1 1.000e+00  TRUE
+     3         14         -75.70           1 1.866e-12 FALSE
+     4         13         -65.78           1 5.635e-12 FALSE
+     5         14         -79.12           1 1.000e+00  TRUE
+     6         12         -81.14           1 3.827e-03 FALSE
+     7         15         -88.06           1 1.228e-12 FALSE
+     8         14         -85.44           1 9.998e-01  TRUE
+     9         14         -82.83           1 1.397e-12 FALSE
+    10         15         -81.50           1 1.000e+00  TRUE
+   ... 30 more rows.  get_results(x, what = "group_posteriors")
+
+-- assignments -----------------------------------------------------
+ student browse lectures forum_read forum_post attendance profile group_class
+       1   0.73    -0.08       0.30       0.67       0.72       1           1
+       1   0.68     0.53      -0.02      -0.55       0.70       1           1
+       1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1
+       1   0.64    -1.02      -1.62      -1.20      -1.26       2           1
+       1  -0.94    -0.37      -0.71      -0.28      -1.52       2           1
+       1  -0.36    -0.46      -0.77      -0.43      -1.34       2           1
+       1   0.38    -1.85      -0.84      -1.09      -1.12       2           1
+       1  -1.44     0.66      -0.67      -1.67      -1.00       2           1
+       1  -0.76    -0.43      -1.04      -0.69      -1.37       2           1
+       1   0.26    -0.95      -0.51      -1.89      -1.45       2           1
+ uncertainty posterior_profile_1 posterior_profile_2
+   1.877e-04           9.998e-01           0.0001877
+   2.158e-02           9.784e-01           0.0215779
+   1.325e-06           1.325e-06           0.9999987
+   2.383e-06           2.383e-06           0.9999976
+   8.368e-06           8.368e-06           0.9999916
+   2.995e-05           2.995e-05           0.9999700
+   1.241e-05           1.241e-05           0.9999876
+   3.708e-06           3.708e-06           0.9999963
+   2.079e-06           2.079e-06           0.9999979
+   5.472e-06           5.472e-06           0.9999945
+   ... 264 more rows.  get_results(x, what = "assignments")
+
+-- classification --------------------------------------------------
+       level class n_modal proportion_modal estimated_n estimated_proportion
+ individuals     1     183           0.6679     182.479               0.6660
+ individuals     2      91           0.3321      91.521               0.3340
+      groups     1       5           0.2500       5.004               0.2502
+      groups     2      15           0.7500      14.996               0.7498
+ average_posterior odds_correct_classification
+            0.9882                       41.97
+            0.9820                      108.62
+            1.0000                    96845.28
+            0.9997                     1124.54
+
+-- average_posteriors ----------------------------------------------
+       level assigned_class class n_assigned average_posterior
+ individuals              1     1        183         9.882e-01
+ individuals              1     2        183         1.181e-02
+ individuals              2     1         91         1.803e-02
+ individuals              2     2         91         9.820e-01
+      groups              1     1          5         1.000e+00
+      groups              1     2          5         3.094e-05
+      groups              2     1         15         2.967e-04
+      groups              2     2         15         9.997e-01
+
+-- classification_errors -------------------------------------------
+       level true_class assigned_class probability
+ individuals          1              1   9.910e-01
+ individuals          1              2   8.989e-03
+ individuals          2              1   2.361e-02
+ individuals          2              2   9.764e-01
+      groups          1              1   9.991e-01
+      groups          1              2   8.892e-04
+      groups          2              1   1.032e-05
+      groups          2              2   1.000e+00
+
+-- bch_weights -----------------------------------------------------
+       level unit assigned_class class    weight
+ individuals    1              1     1  1.009292
+ individuals    1              1     2 -0.009292
+ individuals    2              1     1  1.009292
+ individuals    2              1     2 -0.009292
+ individuals    3              2     1 -0.024410
+ individuals    3              2     2  1.024410
+ individuals    4              2     1 -0.024410
+ individuals    4              2     2  1.024410
+ individuals    5              2     1 -0.024410
+ individuals    5              2     2  1.024410
+   ... 578 more rows.  get_results(x, what = "bch_weights")
+
+-- entropy ---------------------------------------------------------
+       level n_classes n_units entropy_sum relative_entropy
+ individuals         2     274     9.78737           0.9485
+      groups         2      20     0.03232           0.9977
+
+-- replication -----------------------------------------------------
+ n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+        4          0           4        0                 4     1   0.00137
+ best_start log_likelihood
+          1          -1604
+
+-- residuals -------------------------------------------------------
+   profile indicator_1 indicator_2     kind observed expected residual
+ profile_2  forum_read  attendance gaussian   0.3363        0   0.3363
+ profile_1    lectures  attendance gaussian   0.2965        0   0.2965
+ profile_2  forum_read  forum_post gaussian   0.2725        0   0.2725
+ profile_2      browse  attendance gaussian   0.2511        0   0.2511
+ profile_1  forum_read  attendance gaussian   0.2431        0   0.2431
+ profile_2      browse  forum_read gaussian   0.2324        0   0.2324
+ profile_1      browse  attendance gaussian   0.2117        0   0.2117
+ profile_2      browse    lectures gaussian  -0.1953        0  -0.1953
+ profile_2  forum_post  attendance gaussian   0.1918        0   0.1918
+ profile_2      browse  forum_post gaussian   0.1627        0   0.1627
+ effective_n statistic df   p_value p_adjusted
+       91.52     3.292 NA 9.932e-04  9.932e-04
+      182.48     4.095 NA 4.214e-05  4.214e-05
+       91.52     2.630 NA 8.538e-03  8.538e-03
+       91.52     2.414 NA 1.576e-02  1.576e-02
+      182.48     3.323 NA 8.910e-04  8.910e-04
+       91.52     2.228 NA 2.591e-02  2.591e-02
+      182.48     2.879 NA 3.990e-03  3.990e-03
+       91.52    -1.861 NA 6.271e-02  6.271e-02
+       91.52     1.827 NA 6.774e-02  6.774e-02
+       91.52     1.544 NA 1.225e-01  1.225e-01
+   ... 10 more rows.  get_results(x, what = "residuals")
+
+-- information_criteria --------------------------------------------
+ log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+          -1604           23 3255 3281       3278           3338         3207
+ sabic_individual caic_groups caic_individual awe_groups awe_individual
+             3265        3301            3361       3435           3555
+ icl_groups icl_individual clc_groups clc_individual
+       3297           3357       3228           3228
+
+-- model -----------------------------------------------------------
+ n_observations n_informative n_groups n_profiles n_group_classes centering
+            274           274       20          2               2      none
+ scaling covariance_structure n_parameters n_parameters_with_measurement
+    none                  VVI           23                            23
+ log_likelihood  aic bic_groups bic_individual converged iterations boundary
+          -1604 3255       3278           3338      TRUE          9    FALSE
+ small_classes best_start n_best_replicated weights
+         FALSE          1                 4    <NA>
+
+-- stages ----------------------------------------------------------
+ stage group_classes fixed log_likelihood parameters
+ joint             2  <NA>          -1604         23
+ parameters_with_measurement converged
+                          23      TRUE
+
+-- starts ----------------------------------------------------------
+ start log_likelihood converged iterations error boundary
+     1          -1604      TRUE          9  <NA>    FALSE
+     2          -1604      TRUE         12  <NA>    FALSE
+     3          -1604      TRUE          9  <NA>    FALSE
+     4          -1604      TRUE         15  <NA>    FALSE
+
+-- data ------------------------------------------------------------
+ student browse lectures forum_read forum_post attendance
+       1   0.73    -0.08       0.30       0.67       0.72
+       1   0.68     0.53      -0.02      -0.55       0.70
+       1  -1.51    -0.51      -0.91      -0.80      -0.97
+       1   0.64    -1.02      -1.62      -1.20      -1.26
+       1  -0.94    -0.37      -0.71      -0.28      -1.52
+       1  -0.36    -0.46      -0.77      -0.43      -1.34
+       1   0.38    -1.85      -0.84      -1.09      -1.12
+       1  -1.44     0.66      -0.67      -1.67      -1.00
+       1  -0.76    -0.43      -1.04      -0.69      -1.37
+       1   0.26    -0.95      -0.51      -1.89      -1.45
+   ... 264 more rows.  get_results(x, what = "data")
+
+21 tables above, truncated to fit. get_results(x, what = ) returns any
+of them whole, and get_results(x, what = "all") returns every one.
+
+    variable   n n_missing       mean        sd   min  max n_distinct n_groups
+1     browse 274         0 0.09656934 0.9850906 -2.70 2.02        193       20
+2   lectures 274         0 0.09616788 0.9856685 -2.26 3.10        193       20
+3 forum_read 274         0 0.10992701 0.9725263 -2.57 2.23        191       20
+4 forum_post 274         0 0.09208029 1.0036905 -2.28 3.02        194       20
+5 attendance 274         0 0.10248175 0.9988710 -2.35 2.41        189       20
+        icc
+1 0.2152257
+2 0.1309955
+3 0.2653993
+4 0.2539587
+5 0.3141635
+
+Diagnostics: Two-level latent profile analysis, 2 profiles, 2 group classes
+1 check needs attention: pairs dependent within a class
+
+Estimation
+  ok     best start converged                                yes                      
+  info   best log likelihood reached by                      4 of 4 starts            
+  ok     starts failed or unfinished                         0 of 4                   
+  ok     estimates at a bound                                no                       
+
+Class size
+  info   smallest class                         individuals  33.4% (n = 92, class 2)  
+  info   modal vs estimated proportions         individuals  largest gap 0.002        
+  ok     classes with no assigned unit          individuals  0 of 2                   
+  info   smallest class                         groups       25.0% (n = 5, class 1)   
+  info   modal vs estimated proportions         groups       largest gap 0.000        
+  ok     classes with no assigned group         groups       0 of 2                   
+
+Classification
+  info   relative entropy                       individuals  0.948                    
+  info   lowest average posterior               individuals  0.982 (class 2)          
+  info   lowest odds of correct classification  individuals  42.0 (class 1)           
+  info   relative entropy                       groups       0.998                    
+  info   lowest average posterior               groups       1.000 (class 2)          
+  info   lowest odds of correct classification  groups       1124.5 (class 2)         
+
+Local independence
+  check  pairs dependent within a class                      7 of 20 tested pairs     BH-adjusted p < 0.05
+         largest: lectures x attendance in profile_1, residual 0.297, adjusted p <1e-04; consider local_dependence = or a full covariance model
+
+Information
+  info   log likelihood, parameters, BIC                     -1604.31, 23, 3277.51    
+
+Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
+...Two-level latent profile analysis: 2 profiles, 2 group classes
+Individuals: 274; groups: 20; parameters: 23; converged: TRUE
+Log likelihood: -1604.341561; AIC: 3254.683
+BIC (groups): 3277.585; BIC (individuals): 3337.785
+Best likelihood replicated in 1/4 starts (absolute tolerance 0.00137).
+
+-- profiles --------------------------------------------------------
+ profile  indicator    mean variance standard_deviation mean_standard_error
+       1     browse  0.5543   0.5484             0.7405             0.05543
+       1   lectures  0.4550   0.7827             0.8847             0.06710
+       1 forum_read  0.6160   0.4668             0.6832             0.05165
+       1 forum_post  0.5897   0.6015             0.7755             0.05916
+       1 attendance  0.6419   0.4389             0.6625             0.05120
+       2     browse -0.8035   0.5676             0.7534             0.08521
+       2   lectures -0.6094   0.5812             0.7623             0.08057
+       2 forum_read -0.8850   0.3839             0.6196             0.06895
+       2 forum_post -0.8864   0.3503             0.5919             0.06462
+       2 attendance -0.9581   0.3888             0.6235             0.06733
+ variance_standard_error
+                 0.05809
+                 0.08320
+                 0.04955
+                 0.06484
+                 0.04834
+                 0.09420
+                 0.08613
+                 0.06091
+                 0.05611
+                 0.05868
+
+-- responses -------------------------------------------------------
+   (no rows)
+
+-- covariances -----------------------------------------------------
+ profile  indicator indicator_2 covariance
+       1     browse      browse     0.5484
+       1   lectures      browse     0.0000
+       1 forum_read      browse     0.0000
+       1 forum_post      browse     0.0000
+       1 attendance      browse     0.0000
+       1     browse    lectures     0.0000
+       1   lectures    lectures     0.7827
+       1 forum_read    lectures     0.0000
+       1 forum_post    lectures     0.0000
+       1 attendance    lectures     0.0000
+   ... 40 more rows.  get_results(x, what = "covariances")
+
+-- gaussian_diagnostics --------------------------------------------
+  context   profile gaussian_mass positive_rows weight_effective_n
+ profiles profile_1        182.03           274             184.97
+ profiles profile_2         91.97           274              94.96
+ min_variance_ratio min_standardized_eigenvalue boundary
+             0.4415                      0.4415    FALSE
+             0.3490                      0.3490    FALSE
+
+-- profile_probabilities -------------------------------------------
+ group_class profile probability group_class_probability
+           1       1      0.1217                  0.2502
+           1       2      0.8783                  0.2502
+           2       1      0.8452                  0.7498
+           2       2      0.1548                  0.7498
+
+-- counts ----------------------------------------------------------
+       level class effective_count effective_proportion
+ individuals     1         182.032               0.6643
+ individuals     2          91.968               0.3357
+      groups     1           5.004               0.2502
+      groups     2          14.996               0.7498
+
+-- posteriors ------------------------------------------------------
+ row group profile posterior modal
+   1     1       1 9.998e-01  TRUE
+   2     1       1 9.748e-01  TRUE
+   3     1       1 1.220e-06 FALSE
+   4     1       1 1.985e-06 FALSE
+   5     1       1 7.449e-06 FALSE
+   6     1       1 2.656e-05 FALSE
+   7     1       1 1.057e-05 FALSE
+   8     1       1 3.389e-06 FALSE
+   9     1       1 1.873e-06 FALSE
+  10     1       1 4.536e-06 FALSE
+   ... 538 more rows.  get_results(x, what = "posteriors")
+
+-- group_posteriors ------------------------------------------------
+ group group_size log_likelihood group_class posterior modal
+     1         13         -61.24           1 1.000e+00  TRUE
+     2         13         -71.71           1 1.000e+00  TRUE
+     3         14         -75.80           1 1.461e-12 FALSE
+     4         13         -65.80           1 4.156e-12 FALSE
+     5         14         -79.09           1 1.000e+00  TRUE
+     6         12         -81.11           1 3.539e-03 FALSE
+     7         15         -88.11           1 1.053e-12 FALSE
+     8         14         -85.44           1 9.998e-01  TRUE
+     9         14         -82.82           1 1.081e-12 FALSE
+    10         15         -81.57           1 1.000e+00  TRUE
+   ... 30 more rows.  get_results(x, what = "group_posteriors")
+
+-- assignments -----------------------------------------------------
+ student browse lectures forum_read forum_post attendance profile group_class
+       1   0.73    -0.08       0.30       0.67       0.72       1           1
+       1   0.68     0.53      -0.02      -0.55       0.70       1           1
+       1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1
+       1   0.64    -1.02      -1.62      -1.20      -1.26       2           1
+       1  -0.94    -0.37      -0.71      -0.28      -1.52       2           1
+       1  -0.36    -0.46      -0.77      -0.43      -1.34       2           1
+       1   0.38    -1.85      -0.84      -1.09      -1.12       2           1
+       1  -1.44     0.66      -0.67      -1.67      -1.00       2           1
+       1  -0.76    -0.43      -1.04      -0.69      -1.37       2           1
+       1   0.26    -0.95      -0.51      -1.89      -1.45       2           1
+ uncertainty posterior_profile_1 posterior_profile_2
+   2.356e-04           9.998e-01           0.0002356
+   2.520e-02           9.748e-01           0.0252046
+   1.220e-06           1.220e-06           0.9999988
+   1.985e-06           1.985e-06           0.9999980
+   7.449e-06           7.449e-06           0.9999926
+   2.656e-05           2.656e-05           0.9999734
+   1.057e-05           1.057e-05           0.9999894
+   3.389e-06           3.389e-06           0.9999966
+   1.873e-06           1.873e-06           0.9999981
+   4.536e-06           4.536e-06           0.9999955
+   ... 264 more rows.  get_results(x, what = "assignments")
+
+-- classification --------------------------------------------------
+       level class n_modal proportion_modal estimated_n estimated_proportion
+ individuals     1     183           0.6679     182.032               0.6643
+ individuals     2      91           0.3321      91.968               0.3357
+      groups     1       5           0.2500       5.004               0.2502
+      groups     2      15           0.7500      14.996               0.7498
+ average_posterior odds_correct_classification
+            0.9865                       37.03
+            0.9836                      118.51
+            1.0000                    87972.10
+            0.9997                     1238.16
+
+-- average_posteriors ----------------------------------------------
+       level assigned_class class n_assigned average_posterior
+ individuals              1     1        183         9.865e-01
+ individuals              1     2        183         1.346e-02
+ individuals              2     1         91         1.643e-02
+ individuals              2     2         91         9.836e-01
+      groups              1     1          5         1.000e+00
+      groups              1     2          5         3.407e-05
+      groups              2     1         15         2.694e-04
+      groups              2     2         15         9.997e-01
+
+-- classification_errors -------------------------------------------
+       level true_class assigned_class probability
+ individuals          1              1   9.918e-01
+ individuals          1              2   8.212e-03
+ individuals          2              1   2.678e-02
+ individuals          2              2   9.732e-01
+      groups          1              1   9.992e-01
+      groups          1              2   8.076e-04
+      groups          2              1   1.136e-05
+      groups          2              2   1.000e+00
+
+-- bch_weights -----------------------------------------------------
+       level unit assigned_class class   weight
+ individuals    1              1     1  1.00851
+ individuals    1              1     2 -0.00851
+ individuals    2              1     1  1.00851
+ individuals    2              1     2 -0.00851
+ individuals    3              2     1 -0.02775
+ individuals    3              2     2  1.02775
+ individuals    4              2     1 -0.02775
+ individuals    4              2     2  1.02775
+ individuals    5              2     1 -0.02775
+ individuals    5              2     2  1.02775
+   ... 578 more rows.  get_results(x, what = "bch_weights")
+
+-- entropy ---------------------------------------------------------
+       level n_classes n_units entropy_sum relative_entropy
+ individuals         2     274    10.02545           0.9472
+      groups         2      20     0.02985           0.9978
+
+-- replication -----------------------------------------------------
+ n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+        4          0           4        0                 1  0.25   0.00137
+ best_start log_likelihood
+          1          -1604
+
+-- residuals -------------------------------------------------------
+   profile indicator_1 indicator_2     kind observed expected residual
+ profile_2  forum_read  attendance gaussian   0.3384        0   0.3384
+ profile_1    lectures  attendance gaussian   0.2936        0   0.2936
+ profile_2  forum_read  forum_post gaussian   0.2752        0   0.2752
+ profile_2      browse  attendance gaussian   0.2541        0   0.2541
+ profile_1  forum_read  attendance gaussian   0.2409        0   0.2409
+ profile_2      browse  forum_read gaussian   0.2397        0   0.2397
+ profile_1      browse  attendance gaussian   0.2123        0   0.2123
+ profile_2  forum_post  attendance gaussian   0.1931        0   0.1931
+ profile_2      browse    lectures gaussian  -0.1921        0  -0.1921
+ profile_2      browse  forum_post gaussian   0.1675        0   0.1675
+ effective_n statistic df   p_value p_adjusted
+       91.97     3.323 NA 8.921e-04  8.921e-04
+      182.03     4.047 NA 5.177e-05  5.177e-05
+       91.97     2.664 NA 7.719e-03  7.719e-03
+       91.97     2.450 NA 1.427e-02  1.427e-02
+      182.03     3.288 NA 1.010e-03  1.010e-03
+       91.97     2.306 NA 2.110e-02  2.110e-02
+      182.03     2.884 NA 3.923e-03  3.923e-03
+       91.97     1.844 NA 6.517e-02  6.517e-02
+       91.97    -1.834 NA 6.659e-02  6.659e-02
+       91.97     1.595 NA 1.108e-01  1.108e-01
+   ... 10 more rows.  get_results(x, what = "residuals")
+
+-- information_criteria --------------------------------------------
+ log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+          -1604           23 3255 3281       3278           3338         3207
+ sabic_individual caic_groups caic_individual awe_groups awe_individual
+             3265        3301            3361       3436           3556
+ icl_groups icl_individual clc_groups clc_individual
+       3298           3358       3229           3229
+
+-- model -----------------------------------------------------------
+ n_observations n_informative n_groups n_profiles n_group_classes centering
+            274           274       20          2               2      none
+ scaling covariance_structure n_parameters n_parameters_with_measurement
+    none                  VVI           23                            23
+ log_likelihood  aic bic_groups bic_individual converged iterations boundary
+          -1604 3255       3278           3338      TRUE          4    FALSE
+ small_classes best_start n_best_replicated weights
+         FALSE          1                 1    <NA>
+
+-- stages ----------------------------------------------------------
+ stage group_classes fixed log_likelihood parameters
+ joint             2  <NA>          -1604         23
+ parameters_with_measurement converged
+                          23      TRUE
+
+-- starts ----------------------------------------------------------
+ start log_likelihood converged iterations error boundary
+     1          -1604      TRUE          4  <NA>    FALSE
+     2          -1604      TRUE          5  <NA>    FALSE
+     3          -1604      TRUE          4  <NA>    FALSE
+     4          -1604      TRUE          9  <NA>    FALSE
+
+-- data ------------------------------------------------------------
+ student browse lectures forum_read forum_post attendance
+       1   0.73    -0.08       0.30       0.67       0.72
+       1   0.68     0.53      -0.02      -0.55       0.70
+       1  -1.51    -0.51      -0.91      -0.80      -0.97
+       1   0.64    -1.02      -1.62      -1.20      -1.26
+       1  -0.94    -0.37      -0.71      -0.28      -1.52
+       1  -0.36    -0.46      -0.77      -0.43      -1.34
+       1   0.38    -1.85      -0.84      -1.09      -1.12
+       1  -1.44     0.66      -0.67      -1.67      -1.00
+       1  -0.76    -0.43      -1.04      -0.69      -1.37
+       1   0.26    -0.95      -0.51      -1.89      -1.45
+   ... 264 more rows.  get_results(x, what = "data")
+
+21 tables above, truncated to fit. get_results(x, what = ) returns any
+of them whole, and get_results(x, what = "all") returns every one.
+
+    variable   n n_missing       mean        sd   min  max n_distinct n_groups
+1     browse 274         0 0.09656934 0.9850906 -2.70 2.02        193       20
+2   lectures 274         0 0.09616788 0.9856685 -2.26 3.10        193       20
+3 forum_read 274         0 0.10992701 0.9725263 -2.57 2.23        191       20
+4 forum_post 274         0 0.09208029 1.0036905 -2.28 3.02        194       20
+5 attendance 274         0 0.10248175 0.9988710 -2.35 2.41        189       20
+        icc
+1 0.2152257
+2 0.1309955
+3 0.2653993
+4 0.2539587
+5 0.3141635
+
+Diagnostics: Two-level latent profile analysis, 2 profiles, 2 group classes
+1 check needs attention: pairs dependent within a class
+
+Estimation
+  ok     best start converged                                yes                      
+  info   best log likelihood reached by                      1 of 4 starts            
+  ok     starts failed or unfinished                         0 of 4                   
+  ok     estimates at a bound                                no                       
+
+Class size
+  info   smallest class                         individuals  33.6% (n = 92, class 2)  
+  info   modal vs estimated proportions         individuals  largest gap 0.004        
+  ok     classes with no assigned unit          individuals  0 of 2                   
+  info   smallest class                         groups       25.0% (n = 5, class 1)   
+  info   modal vs estimated proportions         groups       largest gap 0.000        
+  ok     classes with no assigned group         groups       0 of 2                   
+
+Classification
+  info   relative entropy                       individuals  0.947                    
+  info   lowest average posterior               individuals  0.984 (class 2)          
+  info   lowest odds of correct classification  individuals  37.0 (class 1)           
+  info   relative entropy                       groups       0.998                    
+  info   lowest average posterior               groups       1.000 (class 2)          
+  info   lowest odds of correct classification  groups       1238.2 (class 2)         
+
+Local independence
+  check  pairs dependent within a class                      7 of 20 tested pairs     BH-adjusted p < 0.05
+         largest: lectures x attendance in profile_1, residual 0.294, adjusted p <1e-04; consider local_dependence = or a full covariance model
+
+Information
+  info   log likelihood, parameters, BIC                     -1604.34, 23, 3277.58    
+
+Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
+..................
+covariance-structure: .......................................................................................................................................................................
+covariate-fold: ..............................
+covariate-inference: ........................................
+covariate-measurement: ..............................................
+covariate-missing: ........................
+covariate-separation: ............
+covariate-slopes: ....................
+covariate-surface: ........................................
+covariates: .......................
+cross-level-thin-profiles: ................................................
+cross-level: ..............
+data-student-esm: .....................
+data: ..........................................................................
+default-search: ............................
+descriptives-safety: .....................................
+diagnostics: .....................................................................................No standard errors in this table: Inference requires a converged fit.
+................................................
+direct-effects: ...............................................Fitted a single-level latent profile model.
+..................
+engine-fixes: .No standard errors in this table: parameter_inference() does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it.
+.No standard errors in this table: parameter_inference() does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it.
+........................
+enumerate-verbs: ..............................
+enumeration-type: ..........................................................................................................................
+enumeration: ..................................................................................................................................................................................................................................................................................................................................
+evaluate-only-start: ...................
+evaluate-only: .....................
+extra-indicators: ....................................................
+features-direct-effects: ...........................................................................Fitted a single-level latent profile model.
+.......
+features-joint-items: .............................................................
+features-ml-three-step: .....................................................................................
+features-pair-covariance: .....................................................................
+features-vlmr: ................................................................................................................................................................................
+fit-verbs: ...............................................................................................................................................................................................................................................................
+fixed-measurement: .......................................................................
+gaussian-diagnostic-tables: .............................................................................
+gaussian-diagnostics: .........................................
+gaussian-warning-support: ............................
+get-data: ......................................................................................................................................................................................................................................
+grid-contract: .............................................................................................................................................................................................................................................
+growth-correlated: .........................
+growth-mixture: ..........................................................................................................................
+growth-parameter-inference: .......................................
+growth-predict: .....................
+growth-r3step: ................
+inference-cache: .....................
+inference-fixed-measurement: .................................
+inference: ......................................................
+informative-rows: .........................................................
+kernel: ..................................................
+latents-controls: .............................................................
+lmr: ......................................................................................................................................
+local-dependence: .........................................Fitted a single-level latent profile model.
+....................
+lta-acceleration: .............................................................
+lta-bootstrap: ......................................................................................................
+lta-compare: ...............................
+lta-covariance-boundary: ....................................................
+lta-general: ...................................
+lta-parallel: .........SS.....................................................................................Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+.Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+....
+lta-thin-profiles: ....................................................
+lta-three-step: ......................
+math-core-audit: ........................................
+math-extensions-audit: .......................
+math-inference-audit: .........................................
+math-plot-audit: ..............
+math-results-audit: .......................
+missing-covariance: ..................................................
+mixture-regression-labels: .......
+mixture-regression-prediction-design: ............
+mixture-regression: ................................................................................
+multilca: ..No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+....No standard errors in this table: Inference requires a converged fit.
+...........
+multilevel-growth: .................................
+multilpa: ...................................................................................................................................................................
+negative-binomial-regression: .................
+noise: ......................
+numerical-safeguards: ...................
+ordinal-regression: ......................................
+parallel-candidates: Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+.Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+...............
+parallel-profile-pool: S...............................................................................SSS..
+parallel-recovery: SSSSSSSSSS
+parallel-report: ....................
+parallel: Preparing 6 candidates on 2 workers.
+1Preparing 2 candidates on 2 workers.
+23S.............S4.......SPreparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+.............................................................5
+plot-categorical-summaries: ......................................................................................................................................
+plot-gg: ........................................................
+plot-named: ..........................................................................................................................................
+plot-polish: .............................................................................................................
+plot: ........................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.....................................................................................................
+pool-imputations: ...............................................................................
+post-submission-review: ..................................................No standard errors in this table: parameter_inference() does not account for a noise component yet: its Gaussian profiles' posteriors do not sum to one, and the result would be for a different model. Refit with `noise = FALSE` for it.
+..........
+posterior-rounding: .......
+predict: ...................
+prior: .........................
+release-core: ..........................................................................
+release-engine: .......................................................................................................................................
+release-inference: ........................................................................................................
+release-items: ............................
+release-regression: ....................................................................................................
+release-surface: ........................................................................................
+release-transitions: ...................................................................................
+release-units: ...............................
+report-surface: .......................................`geom_line()`: Each group consists of only one observation.
+i Do you need to adjust the group aesthetic?
+.
+review-0970-estimation: ............................
+review-0970-parallel: ...........................................................................................................................................................................................................................................................................................................................................................................................................................................Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+...Done in under a minute.
+.S..........................................................
+review-0971-fixes: .............Fitted a single-level latent profile model.
+.................
+review-1015-accessors: ..................................
+review-1015-core: ...................................
+review-1015-covariates: .................................
+review-1015-families: .......Fitted a single-level latent profile model.
+..............................
+review-1015-inference: .......................................
+review-1015-lead: ...................
+review-1015-plots: .................................................
+review-1015-regression: ...............................
+review-1015-transitions: ......................................
+review-1020-inference: .............................................................................
+review-1020-integration: ...........
+review-1020-zero-weights: ..................
+review-1026-additive-r2: ................................
+review-1026-additive: ..................................................................................
+review-1026-categorical-r2: ............................
+review-1026-categorical: ...........................................................
+review-1026-codex: .........................................................................
+review-1026-constancy: ............
+review-1026-empty-rows: ..............
+review-1026-growth-r2: ...................................................................
+review-1026-growth: ...................................
+review-1026-inference-r2: .........................................
+review-1026-inference: ...............................................................
+review-1026-kernel-r2: ......................................................
+review-1026-kernel: ......................................................................................................
+review-1026-labels: ......................................................................
+review-1026-lta-open: .............................................
+review-1026-lta-r2: ...............................................
+review-1026-lta: ...................................
+review-1026-mixreg-r2: ....................................................................................
+review-1026-mixreg: ........................................................
+review-1026-multilevel-r2: .............................................
+review-1026-multilevel: .......................................................
+review-1026-refusals: ..............S
+review-1026-selection-r2: .........................................
+review-1026-selection: ..................................................................
+review-1026-zero-weight-checks: ....................
+review-1026-zero-weight-likelihood: ...................
+review-1027-condition-calls: ........................................................
+review-1027-diagnostics: ........................................................................................................................................................
+review-1027-error-contract: ........................................................................................................................................................................................................................
+review-1027-replication: .............................
+review-core-audit: ...........................................................................................................
+review-extra: .............................
+review-families: ........................................................................
+review-followup: .........................................
+review-integration: .......................................
+review-lta: .....................................................................................................................................................................................................................................................................................................................................................
+review-pairs-trees: ..........................................................
+review-regression: ..................................................
+review-structures: ....................................................................................
+robust: ...................................
+scaling-invariance: .....................................
+scaling: ...............................
+search: ..........................................................................................................................................................................6..............................................................
+seeds: ..........................
+sensitivity: ........................................................................S
+sequences: ....................................................
+single-level: ..............................
+staged-bootstrap: .........................................................
+staged-identity: ......................................................
+start-helpers: .......................
+start-kmeans-warning: .
+structure-inference: ..........................................
+thin-profiles: .......................................
+three-step-clusters: .........................................
+three-step-ml: .....................................................................
+three-step: ..........................................................................
+tidy-accessors: ..........................................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+........................................................................................
+tidy-classes: .............................................................
+tidy-core: ................................................................
+tidy-diagnostics: .........................................................
+tidy-examples: ..
+tidy-inference: ..........................................................
+tidy-sequences: ..........................
+tidy-three-step: .............................................................................
+tna-fits: ...........
+tna: ..............................................................
+transition-inference: .......................
+transitions-numerics: ............................No standard errors in this table: Inference requires a converged fit.
+...................
+transitions: .................................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........No standard errors in this table: Inference requires a converged fit.
+.No standard errors in this table: Inference requires a converged fit.
+......................No standard errors in this table: Inference requires a converged fit.
+...No standard errors in this table: Inference requires a converged fit.
+..................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........
+tree: ...................................................................................................................................
+weighted-logits: .....
+weights: ............................................................................
+zero-weight-initialization: ........................................
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. both lta engines have identical forked starts and emEM screening ('test-lta-parallel.R:61:3') - Reason: This BLAS cannot run safely in forked workers
+
+2. transition grids match serial and direct fits for both searches and engines ('test-lta-parallel.R:88:3') - Reason: This BLAS cannot run safely in forked workers
+
+3. profile grids match serial and direct categorical and continuous fits ('test-parallel-profile-pool.R:66:3') - Reason: This BLAS cannot run safely in forked workers
+
+4. a recovered categorical grid start preserves all fitted results ('test-parallel-profile-pool.R:370:3') - Reason: This BLAS cannot run safely in forked workers
+
+5. a persistently killed categorical start leaves other starts intact ('test-parallel-profile-pool.R:394:3') - Reason: This BLAS cannot run safely in forked workers
+
+6. losing every categorical start fails only that candidate ('test-parallel-profile-pool.R:420:3') - Reason: This BLAS cannot run safely in forked workers
+
+7. a killed fork task is retried once and recovers its exact value ('test-parallel-recovery.R:57:3') - Reason: This BLAS cannot run safely in forked workers
+
+8. a permanently killed fork task leaves other task results intact ('test-parallel-recovery.R:83:3') - Reason: This BLAS cannot run safely in forked workers
+
+9. a socket retry loses only the task that kills its worker ('test-parallel-recovery.R:108:5') - Reason: Socket ports unavailable: creation of server socket failed: port 11898 cannot be opened
+
+10. ordinary errors in start code are recorded without a process-loss retry ('test-parallel-recovery.R:127:3') - Reason: This BLAS cannot run safely in forked workers
+
+11. recovered flat starts preserve the complete transition grid ('test-parallel-recovery.R:152:3') - Reason: This BLAS cannot run safely in forked workers
+
+12. a recovered direct lta start preserves the undisturbed fitted object ('test-parallel-recovery.R:176:3') - Reason: This BLAS cannot run safely in forked workers
+
+13. a genuine transition start error is neither retried nor called worker loss ('test-parallel-recovery.R:203:3') - Reason: This BLAS cannot run safely in forked workers
+
+14. a permanently lost flat start is reported alongside fitted candidates ('test-parallel-recovery.R:228:3') - Reason: This BLAS cannot run safely in forked workers
+
+15. losing all starts fails only their candidate in a transition grid ('test-parallel-recovery.R:258:3') - Reason: This BLAS cannot run safely in forked workers
+
+16. emEM aggregates recovered screening and finalist losses into one warning ('test-parallel-recovery.R:281:3') - Reason: This BLAS cannot run safely in forked workers
+
+17. the socket backend returns values and conditions in order ('test-parallel.R:87:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11898 cannot be opened
+
+18. a socket worker that dies becomes a failed candidate ('test-parallel.R:148:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11898 cannot be opened
+
+19. cleanup closes a live socket even when another node is already closed ('test-parallel.R:226:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11898 cannot be opened
+
+20. C1 live socket family enumeration agrees under L'Ecuyer-CMRG ('test-review-0970-parallel.R:115:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11898 cannot be opened
+
+21. more cores than the machine has are capped with a classed warning ('test-review-1026-refusals.R:68:3') - Reason: !is.finite(available) || available < 1L is TRUE
+
+22. parallel seeds give the serial table for every refitted family ('test-sensitivity.R:280:3') - Reason: This BLAS cannot run safely in forked workers
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-parallel.R:49:3'): a profile grid on several cores is identic
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+     ▆
+  1. └─latents::enumerate_classes(...) at test-parallel.R:49:3
+  2.   └─latents:::.multilpa_enumerate_fits(...)
+  3.     └─worker_report$collect(...)
+  4.       ├─base::withCallingHandlers(...)
+  5.       └─latents (local) fun()
+  6.         └─latents:::.latents_pool_setup(...)
+  7.           └─latents:::.latents_map_candidates(...)
+  8.             └─latents (local) run_pass(indices[positions], collected, workers)
+  9.               └─base::lapply(...)
+ 10.                 └─latents (local) FUN(X[[i]], ...)
+ 11.                   └─base::tryCatch(...)
+ 12.                     └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 13.                       └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 14.                         └─value[[3L]](cond)
+
+── 2. Error ('test-parallel.R:61:29'): transition and family grids on several co
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-parallel.R:61:3
+  2.   └─latents (local) FUN(X[[i]], ...)
+  3.     └─latents::enumerate_classes(...) at test-parallel.R:61:29
+  4.       ├─latents:::.latents_report_once(...)
+  5.       │ └─base::withCallingHandlers(...)
+  6.       └─latents:::.lta_enumerate(...)
+  7.         └─worker_report$collect(...)
+  8.           ├─base::withCallingHandlers(...)
+  9.           └─latents (local) fun()
+ 10.             └─latents:::.latents_pool_setup(...)
+ 11.               └─latents:::.latents_map_candidates(...)
+ 12.                 └─latents (local) run_pass(indices[positions], collected, workers)
+ 13.                   └─base::lapply(...)
+ 14.                     └─latents (local) FUN(X[[i]], ...)
+ 15.                       └─base::tryCatch(...)
+ 16.                         └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 17.                           └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 18.                             └─value[[3L]](cond)
+
+── 3. Error ('test-parallel.R:76:23'): candidates' warnings reach the caller in 
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-parallel.R:76:3
+  2.   └─latents (local) FUN(X[[i]], ...)
+  3.     ├─latents (local) collect_conditions(...) at test-parallel.R:76:23
+  4.     │ └─base::withCallingHandlers(...) at test-parallel.R:15:3
+  5.     └─latents::enumerate_lpa(...)
+  6.       ├─latents:::.latents_candidate_data(...)
+  7.       │ └─base::lapply(...)
+  8.       ├─latents:::.multilpa_quiet_single_level(...)
+  9.       │ └─base::withCallingHandlers(...)
+ 10.       └─latents::enumerate_classes(...)
+ 11.         └─latents:::.multilpa_enumerate_fits(...)
+ 12.           └─worker_report$collect(...)
+ 13.             ├─base::withCallingHandlers(...)
+ 14.             └─latents (local) fun()
+ 15.               └─latents:::.latents_pool_setup(...)
+ 16.                 └─latents:::.latents_map_candidates(...)
+ 17.                   └─latents (local) run_pass(indices[positions], collected, workers)
+ 18.                     └─base::lapply(...)
+ 19.                       └─latents (local) FUN(X[[i]], ...)
+ 20.                         └─base::tryCatch(...)
+ 21.                           └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 22.                             └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 23.                               └─value[[3L]](cond)
+
+── 4. Error ('test-parallel.R:169:3'): one fit's starts on several cores give th
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+    ▆
+ 1. └─latents::multilca(...) at test-parallel.R:169:3
+ 2.   └─base::eval(fitting_call, fitting_env)
+ 3.     └─base::eval(fitting_call, fitting_env)
+ 4.       └─latents::multilpa(...)
+ 5.         └─latents:::.multilpa_run_plan(plan, plan$cores)
+ 6.           └─base::tryCatch(...)
+ 7.             └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 8.               └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 9.                 └─value[[3L]](cond)
+
+── 5. Error ('test-parallel.R:592:5'): a seeded multilevel LCA grid prepared on 
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+     ▆
+  1. ├─base::withCallingHandlers(...) at test-parallel.R:598:3
+  2. └─latents (local) lca_grid(cores = 2)
+  3.   └─latents::enumerate_classes(...) at test-parallel.R:592:5
+  4.     └─latents:::.multilpa_enumerate_fits(...)
+  5.       └─worker_report$collect(...)
+  6.         ├─base::withCallingHandlers(...)
+  7.         └─latents (local) fun()
+  8.           └─latents:::.latents_pool_setup(...)
+  9.             └─latents:::.latents_map_candidates(...)
+ 10.               └─latents (local) run_pass(indices[positions], collected, workers)
+ 11.                 └─base::lapply(...)
+ 12.                   └─latents (local) FUN(X[[i]], ...)
+ 13.                     └─base::tryCatch(...)
+ 14.                       └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 15.                         └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 16.                           └─value[[3L]](cond)
+
+── 6. Error ('test-search.R:179:3'): emEM gives the same fit on one core and on 
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11898 cannot be opened).
+Backtrace:
+     ▆
+  1. ├─latents:::quietly(...) at test-search.R:179:3
+  2. │ └─base::withCallingHandlers(...) at ./helper-expected-warnings.R:39:3
+  3. └─latents::lpa(...)
+  4.   ├─latents:::.multilpa_quiet_single_level(...)
+  5.   │ └─base::withCallingHandlers(...)
+  6.   └─latents::multilpa(...)
+  7.     └─latents:::.multilpa_run_plan(plan, plan$cores)
+  8.       └─base::tryCatch(...)
+  9.         └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 10.           └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 11.             └─value[[3L]](cond)
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+Elapsed: 1054.368 seconds
+     nb  failed skipped   error warning  passed 
+  13324       0      22       6       0   13302 

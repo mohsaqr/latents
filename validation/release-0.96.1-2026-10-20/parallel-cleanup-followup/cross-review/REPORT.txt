@@ -1,0 +1,23 @@
+Independent socket-cleanup cross-review — ACCEPTED
+
+The new helper stops each node through its own single-node cluster and
+always attempts to close that node's owned connection. A failed DONE send
+cannot stop cleanup of subsequent nodes or replace the original mapper
+error. Cleanup does not globally close unrelated connections or suppress
+warnings. Repeated cleanup catches harmless invalid-connection errors.
+
+Independent probes in probe.R/.log passed with actual socket access:
+
+- Normal three-candidate mapping returns the expected ordered values.
+- An explicit remote worker error preserves its original message.
+- A real worker terminating itself with SIGTERM returns the expected
+  latents_parallel_failure condition and its connection-read reason.
+- A mocked stopCluster that errors on every single-node shutdown still
+  receives one attempt per node and closes every owned connection. An
+  unrelated connection remains open. Repeated cleanup is harmless.
+- After every case and a forced garbage collection, the process returns
+  to its three standard baseline connections and records zero warnings.
+
+No tracked source/test/reference file was modified by this reviewer.
+Local acceptance does not claim fresh Windows CI has passed; that remains
+the parent's exact-commit gate after final installation/snapshot refresh.

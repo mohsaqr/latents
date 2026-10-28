@@ -1,0 +1,77 @@
+WEIGHTED RESIDUALS
+    profile indicator_1 indicator_2     kind  observed expected  residual
+1 profile_1           a           b gaussian 0.1656756        0 0.1656756
+  effective_n statistic df    p_value p_adjusted
+1         120  1.808728 NA 0.07049329 0.07049329
+Independent weighted residual correlation: -0.7503829 
+Converged: TRUE sampling weights: 0.1818182 1.818182 
+ONE CLASS IDENTICAL IMPUTATIONS
+        level       outcome          term   parameter   estimate standard_error
+1 measurement     profile_1             a        mean 0.02548115     0.09366004
+2 measurement     profile_1             b        mean 0.05999783     0.09471555
+3 measurement     profile_1             a    variance 1.05266428     0.13589837
+4 measurement     profile_1             b    variance 1.07652416     0.13897867
+5     profile     profile_1 group_class_1 probability 1.00000000     0.00000000
+6       group group_class_1          <NA> probability 1.00000000     0.00000000
+  statistic   p_value p_adjusted   conf_low conf_high  df      within between
+1 0.2720600 0.7855759  0.7855759 -0.1580891 0.2090514 Inf 0.008772202       0
+2 0.6334528 0.5264380  0.5264380 -0.1256412 0.2456369 Inf 0.008971035       0
+3        NA        NA         NA  0.7863084 1.3190202 Inf 0.018468368       0
+4        NA        NA         NA  0.8041310 1.3489174 Inf 0.019315071       0
+5        NA        NA         NA  1.0000000 1.0000000 Inf 0.000000000       0
+6        NA        NA         NA  1.0000000 1.0000000 Inf 0.000000000       0
+  riv fmi
+1   0   0
+2   0   0
+3   0   0
+4   0   0
+5 NaN NaN
+6 NaN NaN
+  m    model n_profiles n_group_classes all_converged log_likelihood_min
+1 2 multilpa          1               1          TRUE           -348.049
+  log_likelihood_max relabelled fmi_max fmi_median
+1           -348.049          0     NaN         NA
+RUBIN ZERO WITHIN VARIANCE
+  level outcome        term   parameter estimate standard_error statistic
+1 group group_1 (Intercept) probability        1              0        NA
+  p_value p_adjusted conf_low conf_high  df within between riv fmi
+1      NA         NA        1         1 Inf      0       0 NaN NaN
+DESCRIPTIVES MATRIX COLUMN
+  variable  n n_missing mean       sd min max n_distinct n_groups icc
+1        a 12         0  6.5 3.605551   1  12         12        4  NA
+BOOTSTRAP DATA OVERRIDE
+$error
+[1] "data must reproduce the original indicator data, including row order and names."
+
+$class
+[1] "latents_bad_inference_data" "error"                     
+[3] "condition"                 
+
+    parameter original_point wrong_point correct_se   wrong_se se_ratio
+1        mean     0.09182595  0.09182595 0.09420350  0.9420350       10
+2        mean     0.06058304  0.06058304 0.06227297  0.6227297       10
+3    variance     0.85113299  0.85113299 0.12509504 12.5095038      100
+4    variance     0.84090431  0.84090431 0.14016628 14.0166280      100
+5 probability     1.00000000  1.00000000 0.00000000  0.0000000      NaN
+6 probability     1.00000000  1.00000000 0.00000000  0.0000000      NaN
+  wrong_ci_low wrong_ci_high
+1   -0.5823771      2.333314
+2   -0.1679430      1.615378
+3   66.1044274    107.200630
+4   59.0748025    102.801208
+5    1.0000000      1.000000
+6    1.0000000      1.000000
+R3STEP PREDICTOR UNITS
+        level   outcome        term   estimate standard_error statistic
+1 individuals profile_1 (Intercept)  0.1809057      0.1206912  1.498914
+2 individuals profile_1           z -1.5062959      0.1638361 -9.193922
+       p_value   p_adjusted    conf_low  conf_high
+1 1.338961e-01           NA -0.05564473  0.4174561
+2 3.787747e-20 3.787747e-20 -1.82740868 -1.1851831
+$error
+[1] "Observed information is not positive definite or is numerically singular; Wald inference is unavailable."
+
+$class
+[1] "latents_singular_information" "error"                       
+[3] "condition"                   
+

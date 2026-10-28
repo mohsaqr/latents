@@ -1,0 +1,3 @@
+"suite","status","compared","agreed","values","outputs_not_covered","warnings","seconds","reason","first_warning"
+"depmixs4","ran",482,482,29444,0,0,13.34,NA,NA
+"hard-depmixs4","ran",1190,1190,163580,0,0,163.4,NA,NA

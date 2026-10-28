@@ -1,0 +1,48 @@
+Independent read-only review of frozen Vuong follow-up V2
+
+Disposition: ACCEPT the V2 repair of the previously reported blockers.
+No tracked source, test or reference file was edited by this reviewer.
+
+Independently rerun test-lmr.R: 134 passing expectations, zero failures,
+errors, warnings or skips. The original seed-8 exact nested reference and
+well-conditioned genuine 1e-10 producer-weight assertions remain unchanged.
+
+Independent adversarial probes (probe.log, known-weights.csv):
+
+- All 12 genuine-negative-weight/chart cases either retain their four
+  negative weights or raise latents_inaccurate_probability. The three
+  cases previously turned into probability one now raise that condition.
+- Both finite-overwhelming and infinite propagated-bound examples now
+  raise latents_inaccurate_probability. Finite reference weights are not
+  erased to produce a degenerate distribution.
+- Three nonnested empirical-Gram score spaces with orthogonal rotations
+  0.2, 1e-6 and 1e-10 retain the theoretical nine weights: one +1 and four
+  pairs +/-sin(angle). Maximum absolute error is 7.8e-16.
+- Returned general near-collinear charts retain their true signed weights.
+  The most ill-conditioned returned case in this probe has probability
+  error 1.345e-6 near p = 0.9985. This is a finite precision limitation;
+  this review does not claim universal 1e-10 probability accuracy for every
+  accepted chart.
+
+Mathematical/code inspection:
+
+- Exact empirical-Gram recognition compares the supplied raw information
+  to a computed score cross-product before diagonal chart scaling, ignoring
+  names but preserving dimensions. There is no approximate-match tolerance
+  that could overwrite a genuinely different supplied information matrix.
+- Under this explicit identity, the orthogonal score basis has the same
+  projector as information-whitened scores. Relative alternative/null span
+  orientation remains present; nonnested score spaces are not presumed
+  nested. Rank and span uncertainty receive explicit bounds.
+- General triangular whitening has the correct solve direction; the
+  signed-Gram construction and information-error propagation dimensions
+  and sign conventions are consistent.
+- Additional whitening uncertainty causes typed refusal for unresolved
+  nonzero weights. It no longer enlarges the numerical-zero threshold.
+- Nonfinite signed matrices/error bounds and bounds overwhelming the
+  reference are checked before final zero cleanup or probability evaluation.
+  Unresolved references cannot silently become all-zero references.
+
+Exact-commit platform CI and the parent's remaining release checks remain
+necessary. This local read-only acceptance covers the identified V2 math
+follow-up and its independent counterexamples; it is not a bug-free proof.

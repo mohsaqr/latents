@@ -1,0 +1,4 @@
+R/plot-gg.R:313:15: style: [undesirable_function_linter] Avoid undesirable function "suppressWarnings". As an alternative, diagnose the warning instead of silencing it.
+    scores <- suppressWarnings(as.numeric(colnames(block)))
+              ^~~~~~~~~~~~~~~~
+Lint count: 1 
