@@ -1,4 +1,4 @@
-# latents 0.97.5
+# latents 0.98.0
 
 ## Upgrading from CRAN 0.9.21
 
@@ -27,6 +27,24 @@ in full further down.
   `search = "emEM"` ("Default start search").
 * **Mixture regressions with `common = "intercept"`.** The argument had no
   effect in 0.9.21; it is now refused.
+
+## Latent GOLD: mixture regression and sampling weights (2026-10-28)
+
+Mixture regressions (Gaussian, Poisson, logistic; model-based and robust
+standard errors) and sampling weights in `mixture_regression()`, `lpa()`,
+`lta()` and two-level `multilpa()` were compared with Latent GOLD 6.1: 172
+estimates, standard errors, log likelihoods and parameter counts, all within
+its printed rounding (`equivalence/latentgold-wider/`). The comparison found:
+
+* `coef()` of an `lta()` fit run by the general engine (sampling weights,
+  transition or initial covariates, occasion-varying transitions, second
+  order) returned each continuous mean minus the indicator's grand mean, the
+  engine's internal coordinates. It now returns the means in the data's
+  units, as the profile table always did. `vcov()`, standard errors and every
+  table were unaffected.
+* `mixture_regression()` stored its class variances under the names of their
+  positions before the classes were relabelled. No reported number used the
+  names.
 
 ## Release review (2026-10-27)
 

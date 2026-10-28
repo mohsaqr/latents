@@ -19,7 +19,8 @@ test_that("response whiskers are the inference table's own bounds", {
               paste(table$outcome, table$term, sep = "\r"))
   # A probability held at its bound has no row, and so no whisker.
   reported <- !is.na(at)
-  expect_gte(sum(reported), 4L)
+  # Three of the six on x86 BLAS, four on arm64 macOS.
+  expect_gte(sum(reported), 3L)
   expect_true(all(is.na(drawn$lower[!reported])))
   # A probability's interval is built on the logit scale, so it is not the
   # symmetric estimate +/- 1.96 SE the plot used to draw.

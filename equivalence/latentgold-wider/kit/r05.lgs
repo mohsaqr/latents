@@ -1,0 +1,28 @@
+//LG6.1//
+version = 6.1
+infile 'r05.dat'
+
+model
+title 'r05';
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors=robust;
+   outfile 'r05_posteriors.txt' classification keep id;
+variables
+   samplingweight w rescale;
+   dependent y continuous;
+   independent x, z;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1 + z;
+   y <- 1 | Cluster + x | Cluster;
+   y | Cluster;
+end model

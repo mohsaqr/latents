@@ -99,6 +99,7 @@ test_that("a permanently killed fork task leaves other task results intact", {
 
 test_that("a socket retry loses only the task that kills its worker", {
   skip_on_cran()
+  skip_if_cores_limited()
   skip_on_os("windows")
   # Use the same port probe as the other live socket tests in this suite.
   port <- get("defaultClusterOptions", envir = asNamespace("parallel"))$port

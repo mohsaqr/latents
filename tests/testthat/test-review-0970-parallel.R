@@ -83,7 +83,7 @@ test_that("C1 seeded socket tasks inherit all three parent RNG kinds", {
       actual <- .latents_map_candidates(1:2, draw, 2L, backend = "socket")
       expect_identical(actual, expected, info = paste(unlist(kind), collapse = "/"))
       expect_identical(.Random.seed, state)
-      expect_identical(RNGkind(), unname(unlist(kind)))
+      expect_identical(head(RNGkind(), 3L), unname(unlist(kind)))
     }))
   })
 })

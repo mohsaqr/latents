@@ -212,9 +212,10 @@ test_that("an overfitted large-origin gaussian mixture fails only with a classed
 test_that("an aliased constant column with an inexact mean adds nothing", {
   frame <- .review_mixreg_data(n = 99L)
   frame$constant <- 0.1
-  # The premise: the column mean rounds, so a spread-is-zero test misses it.
-  column <- as.matrix(frame["constant"])
-  expect_gt(max(abs(column - colMeans(column))), 0)
+  # Where colMeans() accumulates in double precision (arm64 macOS) the mean of
+  # 0.1 rounds, so a spread-is-zero test would miss the column; where it uses
+  # extended precision (x86 Linux, Windows) the mean is exact. The fit must
+  # ignore the column either way.
   for_family <- function(response, family) {
     plain <- mixture_regression(stats::reformulate("x", response), frame, 1,
                                 family = family, n_starts = 0, vcov_type = "none")

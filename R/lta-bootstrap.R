@@ -134,7 +134,7 @@
 #' @noRd
 .lta_bootstrap_estimates <- function(x) {
   if (inherits(x, "multilpa_transitions")) return(.multilpa_transition_encode(x, "natural"))
-  theta <- .lta_pack(.lta_parameters(x), x$variance_model, x$extra_data)
+  theta <- .lta_theta(x)
   names(theta) <- .lta_names(x)
   theta[sub("\\..*$", "", names(theta)) %in% c("transition", "initial", "transition2")]
 }

@@ -83,6 +83,7 @@ test_that("both lta engines have identical forked starts and emEM screening", {
 
 test_that("transition grids match serial and direct fits for both searches and engines", {
   skip_on_cran()
+  skip_if_cores_limited()
   skip_on_os("windows")
   skip_if(!.latents_fork_safe(), "This BLAS cannot run safely in forked workers")
   panel <- lta_parallel_panel()
@@ -161,7 +162,7 @@ test_that("serialized transition workers carry caller data and start controls", 
       time = lta_worker_time, n_profiles = 2:3, n_group_classes = 1:2,
       n_starts = lta_worker_starts, search = lta_worker_search,
       transitions = lta_worker_transitions,
-      max_iter = 20L, seed = 12L, cores = 8L)), globalenv()))
+      max_iter = 20L, seed = 12L, cores = 2L)), globalenv()))
     expect_true(all(is.na(result$value$table$error)))
     expect_true(all(is.finite(result$value$table$log_likelihood)))
     expect_length(result$value$fits, 4L)

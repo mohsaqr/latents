@@ -1,0 +1,167 @@
+w02.dat
+File name:	w02.dat	
+File size:	43910 bytes  1600 records	
+File date:	2026-Oct-28 5:45:34 PM	
+Syntax:	w02.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+w02	2-State	-4321.0221	8707.9503	8664.0442	8675.0442	11	.	.	
+w02 - LL = -4321.0221
+2-State Syntax Model	
+					
+Number of cases	400.0000				
+Number of time points	1600.0000				
+Number of parameters (Npar)	11				
+Activated Constraints	0				
+Design Effect	1.2485				
+Robustness Effect	1.2485				
+Random Seed	20261101				
+Best Start Seed	1886100				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4321.0221				
+Log-prior	0.0000				
+Log-posterior	-4321.0221				
+BIC (based on LL)	8707.9503				
+AIC (based on LL)	8664.0442				
+AIC3 (based on LL)	8675.0442				
+CAIC (based on LL)	8718.9503				
+SABIC (based on LL)	8673.0466				
+					
+					
+Classification Statistics	State				
+Classification errors	0.0624				
+Reduction of errors (Lambda)	0.8398				
+Entropy R-squared	0.7713				
+Standard R-squared	0.8090				
+Classification log-likelihood	-4549.9185				
+Entropy	228.8964				
+CLC	9099.8371				
+AWE	9264.6493				
+ICL-BIC	9165.7432				
+					
+State  Classification Table	Modal				
+Latent	1	2	Total		
+1	930.8683	48.1696	979.0380		
+2	51.6751	569.2870	620.9620		
+Total	982.5434	617.4566	1600.0000		
+					
+State  Classification Table	Proportional				
+Latent	1	2	Total		
+1	906.3678	72.6701	979.0380		
+2	72.6701	548.2919	620.9620		
+Total	979.0380	620.9620	1600.0000		
+					
+Files					
+Infile	C:\lgwider\w02.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261101				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	robust				
+identification	no				
+validation LL	no				
+sample size BIC	     400				
+predictionstatistics	no				
+outfile					
+file name	w02_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+State	Nominal	Dynamic	2		
+ 					
+Case ID	id	400			
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors=robust;
+   outfile 'w02_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   samplingweight w rescale;
+   dependent y1 continuous, y2 continuous;
+   latent State nominal dynamic 2;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+   y1 | State;
+   y2 | State;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+State[=0](1)	<-	1			0.0000	.	.	.	9.0652	1	0.0026				
+State[=0](2)	<-	1			-0.4118	0.1368	-3.0109	0.0026							
+															
+State(1)	<-	1	|	State[-1](1)	0.0000	.	.	.	197.4193	2	1.4e-43	189.4637	1	4.2e-43	
+State(2)	<-	1	|	State[-1](1)	-1.8118	0.1470	-12.3225	6.8e-35							
+State(1)	<-	1	|	State[-1](2)	0.0000	.	.	.							
+State(2)	<-	1	|	State[-1](2)	1.2002	0.1429	8.3983	4.5e-17							
+															
+y1	<-	1			-0.7459	0.0360	-20.7016	3.4e-95	428.5542	1	3.4e-95				
+y1	<-	State(1)			0.0000	.	.	.	1154.8292	1	4.0e-253				
+y1	<-	State(2)			1.6894	0.0497	33.9828	4.0e-253							
+															
+y2	<-	1			0.5078	0.0340	14.9318	2.0e-50	222.9583	1	2.0e-50				
+y2	<-	State(1)			0.0000	.	.	.	462.0545	1	1.7e-102				
+y2	<-	State(2)			-1.1678	0.0543	-21.4955	1.7e-102							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	State(1)	0.5663	0.0321	17.6429	1.2e-69	476.6383	2	3.2e-104	0.9720	1	0.32	
+y1			|	State(2)	0.5130	0.0422	12.1603	5.1e-34							
+y2			|	State(1)	0.6512	0.0323	20.1651	2.0e-90	578.0173	2	3.1e-126	0.4816	1	0.49	
+y2			|	State(2)	0.6926	0.0510	13.5825	5.1e-42							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+State[=0]	<-	1			State[=0]	1	2	9.0652	1	0.0026	
+	
+State	<-	1	|	State[-1]	State[-1]	1	2	189.4637	1	4.2e-43	
+					State	1	2	197.4193	2	1.4e-43	
+	
+y1	<-	 State			State	1	2	1154.8292	1	4.0e-253	
+	
+y2	<-	 State			State	1	2	462.0545	1	1.7e-102	
+Variances	
+y1			|	State	State	1	2	0.9720	1	0.32	
+y2			|	State	State	1	2	0.4816	1	0.49	

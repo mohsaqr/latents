@@ -1,0 +1,198 @@
+r05.dat
+File name:	r05.dat	
+File size:	26200 bytes  800 records	
+File date:	2026-Oct-28 5:45:34 PM	
+Syntax:	r05.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+r05	2-Cluster	-1156.9806	2367.4381	2329.9612	2337.9612	8	0.1305	0.5405	
+r05 - LL = -1156.9806
+2-Cluster Syntax Model	
+					
+Number of cases	800.0000				
+Number of parameters (Npar)	8				
+Activated Constraints	0				
+Design Effect	1.2015				
+Robustness Effect	1.2015				
+Random Seed	20261101				
+Best Start Seed	2759409				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1156.9806				
+Log-prior	0.0000				
+Log-posterior	-1156.9806				
+BIC (based on LL)	2367.4381				
+AIC (based on LL)	2329.9612				
+AIC3 (based on LL)	2337.9612				
+CAIC (based on LL)	2375.4381				
+SABIC (based on LL)	2342.0336				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1305				
+Reduction of errors (Lambda)	0.6441				
+Entropy R-squared	0.5405				
+Standard R-squared	0.5934				
+Classification log-likelihood	-1398.5498				
+Entropy	241.5692				
+CLC	2797.0996				
+AWE	2928.0534				
+ICL-BIC	2850.5765				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	471.6962	34.9080	506.6042		
+2	69.5020	223.8937	293.3958		
+Total	541.1982	258.8018	800.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	431.0535	75.5507	506.6042		
+2	75.5507	217.8451	293.3958		
+Total	506.6042	293.3958	800.0000		
+					
+Model Classification Statistics	Cluster				
+Classification errors	0.3219				
+Reduction of errors (Lambda)	0.1222				
+Entropy R-squared	0.0900				
+Standard R-squared	0.1133				
+					
+Files					
+Infile	C:\lgwider\r05.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261101				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	robust				
+identification	no				
+validation LL	no				
+sample size BIC	     800				
+predictionstatistics	no				
+outfile					
+file name	r05_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y	Continuous				
+Independent					
+x	Num-Fixed	787			
+-2.8902	-2.8902	-2.8902			
+-2.3792	-2.3792	-2.3792			
+-2.371	-2.371	-2.371			
+-2.3191	-2.3191	-2.3191			
+-2.304	-2.304	-2.304			
+-2.2756	-2.2756	-2.2756			
+-2.209	-2.209	-2.209			
+-2.1769	-2.1769	-2.1769			
+-2.1364	-2.1364	-2.1364			
+-2.1294	-2.1294	-2.1294			
+...					
+2.6472	2.6472	2.6472			
+2.7859	2.7859	2.7859			
+2.7923	2.7923	2.7923			
+2.8545	2.8545	2.8545			
+2.8588	2.8588	2.8588			
+2.9304	2.9304	2.9304			
+2.951	2.951	2.951			
+3.3618	3.3618	3.3618			
+3.5222	3.5222	3.5222			
+z	Num-Fixed	793			
+-3.1721	-3.1721	-3.1721			
+-3.0101	-3.0101	-3.0101			
+-2.8906	-2.8906	-2.8906			
+-2.6969	-2.6969	-2.6969			
+-2.5962	-2.5962	-2.5962			
+-2.5716	-2.5716	-2.5716			
+-2.5694	-2.5694	-2.5694			
+-2.5497	-2.5497	-2.5497			
+-2.5247	-2.5247	-2.5247			
+-2.4787	-2.4787	-2.4787			
+...					
+2.2698	2.2698	2.2698			
+2.3374	2.3374	2.3374			
+2.3376	2.3376	2.3376			
+2.549	2.549	2.549			
+2.6047	2.6047	2.6047			
+2.6427	2.6427	2.6427			
+2.6764	2.6764	2.6764			
+2.7227	2.7227	2.7227			
+3.0194	3.0194	3.0194			
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors=robust;
+   outfile 'r05_posteriors.txt' classification keep id;
+variables
+   samplingweight w rescale;
+   dependent y continuous;
+   independent x, z;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1 + z;
+   y <- 1 | Cluster + x | Cluster;
+   y | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	12.2574	1	0.00046				
+Cluster(2)	<-	1			-0.5966	0.1704	-3.5011	0.00046							
+Cluster(1)	<-	z			0.0000	.	.	.	32.9430	1	9.5e-9				
+Cluster(2)	<-	z			0.7659	0.1334	5.7396	9.5e-9							
+															
+y	<-	1	|	Cluster(1)	0.9779	0.0419	23.3133	3.3e-120	595.7850	2	4.2e-130	141.5741	1	1.2e-32	
+y	<-	1	|	Cluster(2)	-0.6440	0.1341	-4.8035	1.6e-6							
+y	<-	x	|	Cluster(1)	0.5106	0.0406	12.5877	2.5e-36	501.1337	2	1.5e-109	92.7831	1	5.8e-22	
+y	<-	x	|	Cluster(2)	1.4263	0.0824	17.3066	4.2e-67							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Cluster(1)	0.4196	0.0395	10.6185	2.4e-26	188.1020	2	1.4e-41	10.1262	1	0.0015	
+y			|	Cluster(2)	1.0342	0.1795	5.7624	8.3e-9							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	12.2574	1	0.00046	
+Cluster	<-	 z			Cluster	1	2	32.9430	1	9.5e-9	
+	
+y	<-	1	|	Cluster	Cluster	1	2	141.5741	1	1.2e-32	
+y	<-	 x	|	Cluster	Cluster	1	2	92.7831	1	5.8e-22	
+Variances	
+y			|	Cluster	Cluster	1	2	10.1262	1	0.0015	

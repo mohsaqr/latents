@@ -54,7 +54,7 @@ suite_multilevlca <- function() {
     "multilevLCA", "numDeriv",
     reason = "the third independent two-level implementation, the dataTOY and dataIEA data, and the reference observed information")
   stack_cases(list(
-    .multilevlca_case(3L, 2L), .multilevlca_case(2L, 2L), .multilevlca_case(3L, 3L),
+    .multilevlca_case(3L, 2L), .multilevlca_case(2L, 2L), .multilevlca_case(3L, 3L, tolerance = c(default = 1e-5)),
     .multilevlca_published()))
 }
 
@@ -89,8 +89,14 @@ suite_multilevlca <- function() {
 #' Compare one dataTOY configuration against multilevLCA
 #' @param profiles Number of lower-level latent classes.
 #' @param group_classes Number of higher-level latent classes.
+#' @param tolerance Named tolerances for [compare_fit()]. The 3 x 3 model sits on
+#'   the flat ridge described at [.multilevlca_fit()]: both programs stop on it
+#'   where the log-likelihood no longer changes in double precision, and on
+#'   x86 Linux the package stopped 1.6e-6 to 3.5e-6 along it in the group
+#'   posteriors and the quantities built on them (CI, 2026-10-28; arm64 macOS
+#'   agreed to 1e-6). That case is held to 1e-5.
 #' @return A `harness_case`.
-.multilevlca_case <- function(profiles, group_classes) {
+.multilevlca_case <- function(profiles, group_classes, tolerance = numeric()) {
   observed <- get(utils::data(list = "dataTOY", package = "multilevLCA",
                               envir = environment()), envir = environment())
   items <- paste0("Y_", seq_len(10))
@@ -128,7 +134,7 @@ suite_multilevlca <- function() {
                      tolerance = 0.5)
     }
     case <- compare_fit(
-      label, fit, built$reference,
+      label, fit, built$reference, tolerance = tolerance,
       extra = rbind(
         compare_values(sprintf("%s: log-likelihood shortfall against multilevLCA", label),
                        0, max(shortfall, 0), tolerance = 1e-5),

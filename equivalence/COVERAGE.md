@@ -48,7 +48,7 @@ compared.
 | `lca()` | none calls the wrapper; engine covered by poLCA (harness `polca`) through `multilpa(categorical=)` | harness | item probabilities, LL, class shares | 1e-4 | partial (wrapper never called externally) |
 | `multilca()` | as `lca()`; engine covered by glca, multilevLCA, Mplus ex10.7 | harness | as above | 1e-4 | partial (wrapper never called externally) |
 | `lta()` | depmixS4, Mplus LTA, LMest, LG, Muthén & Asparouhov (2022) | `E/test-jstats-lta.R`, `E/lta-extensions/`, `T/test-lta-general.R`, LG c10/c11 | see `lta()` options | see below | covered |
-| `mixture_regression()` | flexmix, lcmm, MASS, stats, sandwich | `E/test-mixture-regression-flexmix.R`, `E/test-growth-*-lcmm.R`, `T/` | see options | see below | covered |
+| `mixture_regression()` | flexmix, lcmm, MASS, stats, sandwich, LG 6.1 | `E/test-mixture-regression-flexmix.R`, `E/test-growth-*-lcmm.R`, `E/test-latentgold-wider.R`, `T/` | see options | see below | covered |
 | `enumerate_classes()`, `enumerate_lpa()`, `enumerate_lca()`, `enumerate_regressions()` | Mplus 9 Demo, one run per k | `E/test-enumeration-mplus.R` (`lpa_vvi_01` k = 1–5, `lca_binary_01` k = 1–4) | LL, n_par, BIC per candidate; BIC minimum | printed precision; only where Mplus replicated its best | covered (`enumerate_regressions()` internal only) |
 | `three_step()` | tidySEM, LG `step3` | `E/test-tidysem-bch.R`, `E/three-step/compare-tidysem.R`, `E/latentgold/` c09 | BCH/modal/proportional estimates | exact / 5e-5 | partial (SEs not comparable) |
 | `r3step()` | LG `step3 modal ml` | `E/latentgold/` c09, `E/test-latentgold-step3-markov.R` | LL, logits, SEs | 5e-5 / 5.1e-5 | covered |
@@ -87,7 +87,7 @@ compared.
 | `acceleration` | mclust (`"none"` in noise test), all others default squarem | `E/test-mclust-noise.R` | via LL | — | covered (both values used) |
 | `start` | mclust | `E/test-mclust.R` (`max_iter = 0` at mclust's estimate) | LL at given values | 1e-10 | covered |
 | `fixed` | in-house enumeration | `T/test-inference-fixed-measurement.R` "held-measurement standard errors match an independent numerical information" | LL, SEs | 1e-10 / 1e-6 | covered |
-| `weights` | Mplus 9 `WEIGHT` (MLR) | `E/test-mplus-mixture-weights.R` (three-profile mixture); `E/weights/` via `E/test-external-scripts.R` | pseudo LL, posteriors, estimates, robust SEs (CR1 factor documented) | 1e-4 | covered (no two-level weights) |
+| `weights` | Mplus 9 `WEIGHT` (MLR); LG 6.1 `samplingweight` | `E/test-mplus-mixture-weights.R` (three-profile mixture); `E/weights/` via `E/test-external-scripts.R`; `E/test-latentgold-wider.R` (w01 single level, w03 two-level) | pseudo LL, posteriors, estimates, robust SEs (CR1 factor documented) | 1e-4; LG 5.2e-5 (printed) | covered |
 | `centering` | none | internal only: `tests/testthat/test-centering.R` | — | — | none |
 | `scaling` | Mplus DEFINE: STANDARDIZE; Mplus on person-standardized data | `E/test-mplus-standardize.R`, `E/test-mplus-person-scaling.R` | LL, estimates (up to the n vs n − 1 constant), posteriors | printed precision | covered |
 | `drop_empty` | Mplus (TRUE); LG `missing includeall` (FALSE) | `E/test-missing-patterns.R`; `E/test-montecarlo.R` (`lpa_missing`, 5% empty rows) | N, counts, group N, entropy/AvePP; FALSE counts against LG | 0.05 counts; 5e-4 | covered |
@@ -114,7 +114,7 @@ compared.
 | `order = 2` | in-house path sum | `T/test-lta-general.R` "second-order transitions match the exact path sum…" | LL | 1e-9 | partial (in-house only) |
 | `mover_stayer` | in-house path sum | `T/test-lta-general.R` "mover-stayer…" | LL | 1e-9 | partial (in-house only) |
 | `ordinal`, `count`, `count_model`, `count_dispersion` | none | — | — | — | none |
-| `weights` | none | internal only: `test-weights.R` (duplication) | — | — | none |
+| `weights` | LG 6.1 `samplingweight`, Markov | `E/test-latentgold-wider.R` (w02) | pseudo LL, n_par, means, variances, initial and transition logits, robust SEs | 5.2e-5 (printed) | covered |
 | `drop_empty`, `min_probability`, `select_start` | none | internal only | — | — | none |
 
 ### `mixture_regression()` options
@@ -136,10 +136,10 @@ compared.
 | `random_covariance = "varying"` | in-house dense likelihood (no hlme counterpart) | `T/test-growth-mixture.R` | LL | — | partial (in-house only) |
 | `residual_correlation` ar / brownian, `residual_time` | lcmm `cor = AR()/BM()` | `E/test-growth-correlated-lcmm.R` | LL at hlme's estimates, optimum, n_par | 1e-8, 1e-4 | covered (`residual_time` only at its default) |
 | `cluster` (multilevel growth) | in-house dense likelihood | `T/test-multilevel-growth.R` "the likelihood equals the dense multilevel likelihood" | LL | 1e-10 | partial (in-house only) |
-| `vcov_type = "observed"` | `glm`, `MASS` one-class SEs | `T/test-mixture-regression.R`, `T/test-post-submission-review.R` | SEs | 1e-5 to 5% | partial (one-class limit only; mixture SEs: numDeriv in `T/test-growth-mixture.R`) |
-| `vcov_type = "robust"` | `sandwich::vcovCL` | `T/test-cluster-robust-cr1.R` "a one-class robust regression reproduces sandwich::vcovCL()" | SEs | 1e-4 | partial (one class only) |
+| `vcov_type = "observed"` | `glm`, `MASS` one-class SEs; LG 6.1 (two-class Gaussian, Poisson, logistic) | `T/test-mixture-regression.R`, `T/test-post-submission-review.R`, `E/test-latentgold-wider.R` (r01, r03, r04) | SEs | 1e-5 to 5%; LG 5.2e-5 (printed) | covered |
+| `vcov_type = "robust"` | `sandwich::vcovCL`; LG 6.1 `standarderrors=robust` | `T/test-cluster-robust-cr1.R` "a one-class robust regression reproduces sandwich::vcovCL()"; `E/test-latentgold-wider.R` (r02, two classes) | SEs | 1e-4; LG 5.2e-5 (printed) | covered |
 | `vcov_type = "opg"` | none | — | — | — | none |
-| `weights` | none | internal only: `test-weights.R` | — | — | none |
+| `weights` | LG 6.1 `samplingweight` | `E/test-latentgold-wider.R` (r05) | pseudo LL, coefficients, membership logits, variances, robust SEs | 5.2e-5 (printed) | covered |
 | `missing = "omit"`, `select_start` | none | internal only | — | — | none |
 
 ## 2. Model families
@@ -229,7 +229,7 @@ compared.
 | `missing = "fiml"` in `lta()` | LG 6.1 Markov; in-house path sum | `E/test-montecarlo-extended.R`; `T/test-lta-general.R` | 2.5e-4; 1e-9 | covered |
 | `drop_empty = TRUE` | Mplus | `E/test-missing-patterns.R` | exact N; 0.05 counts | covered |
 | `drop_empty = FALSE` | LG `missing includeall` | `E/test-missing-patterns.R`; `E/test-montecarlo.R` (counts) | 5e-4 | covered |
-| `weights` | Mplus `WEIGHT` (mixture, MLR) | `E/test-mplus-mixture-weights.R`; `E/weights/` (via `E/test-external-scripts.R`) | 1e-4 | partial (no two-level, no `lta()`/regression) |
+| `weights` | Mplus `WEIGHT` (mixture, MLR); LG 6.1 `samplingweight` | `E/test-mplus-mixture-weights.R`; `E/weights/` (via `E/test-external-scripts.R`); `E/test-latentgold-wider.R` (lpa, lta, two-level, regression) | 1e-4; 5.2e-5 | covered |
 | `centering` | none | internal only: `test-centering.R` | — | none |
 | `scaling` | Mplus STANDARDIZE; Mplus on person-standardized data | `E/test-mplus-standardize.R`, `E/test-mplus-person-scaling.R` | printed precision | covered |
 | Categorical binary / nominal | Mplus, poLCA, glca, LG | sections 1–2 | 1e-4 | covered |

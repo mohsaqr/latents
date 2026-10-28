@@ -1,0 +1,26 @@
+//LG6.1//
+version = 6.1
+infile 'r03.dat'
+
+model
+title 'r03';
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'r03_posteriors.txt' classification keep id;
+variables
+   dependent y poisson;
+   independent x, z;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1 + z;
+   y <- 1 | Cluster + x | Cluster;
+end model

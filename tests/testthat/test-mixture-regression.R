@@ -98,6 +98,16 @@ test_that("a two-class Gaussian mixture recovers the generating regressions", {
   expect_equal(classes$sigma, c(5, 7), tolerance = 0.15)
 })
 
+test_that("relabelled classes keep their dispersions' names", {
+  # Classes are reordered after the fit; the variances were reordered but kept
+  # the names of their old positions.
+  data <- simulate_rows(n = 600L, seed = 1L)
+  fit <- mixture_regression(y ~ x, data, 2, n_starts = 10, seed = 1)
+  expect_named(fit$params$sigma2, colnames(fit$params$beta))
+  classes <- get_results(fit, "classes")
+  expect_equal(unname(sqrt(fit$params$sigma2)), classes$sigma, tolerance = 1e-12)
+})
+
 test_that("standard errors match a numerical Hessian of the likelihood", {
   skip_on_cran()
   rows <- simulate_rows()

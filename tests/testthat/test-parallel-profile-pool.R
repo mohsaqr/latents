@@ -64,6 +64,7 @@ profile_pool_arguments <- function(data, kind) {
 
 test_that("profile grids match serial and direct categorical and continuous fits", {
   profile_pool_skip_forks()
+  skip_if_cores_limited()
   data <- profile_pool_data()
   invisible(lapply(c("categorical", "EEE", "VVI"), function(kind) {
     arguments <- profile_pool_arguments(data, kind)
@@ -137,6 +138,7 @@ test_that("profile enumeration shares one unnested start pool per search phase",
 })
 
 test_that("profile start dispatch is longest first without exceeding cores", {
+  skip_if_cores_limited()
   data <- profile_pool_data()
   mapper <- .latents_map_candidates
   requested <- list()

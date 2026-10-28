@@ -482,7 +482,7 @@
       "or initial probability at zero; Wald inference does not apply."),
       class = "latents_boundary_fit", call = NULL))
   }
-  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
+  theta <- .lta_theta(fit)
   names(theta) <- .lta_names(fit)
   # Only the identified coordinates are differenced and inverted: a flat or
   # product-only logit, or the measurement block of an empty occasion, would
@@ -610,6 +610,18 @@
     }, function(pair) (pair - 1L) %% fit$n_profiles + 1L))
   names_all <- .lta_names(fit)
   names_all[Reduce(`|`, lapply(stems, startsWith, x = names_all), logical(length(names_all)))]
+}
+
+#' A fit's estimates in the engine's coordinates
+#'
+#' The packed vector the likelihood, scores and EM work with: continuous means
+#' centred on `fit$centers`. [coef()] reports the same vector with the means
+#' in the data's units.
+#' @param fit A general transition fit (`multilpa_lta`).
+#' @return A numeric vector in [.lta_names()] order.
+#' @noRd
+.lta_theta <- function(fit) {
+  .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
 }
 
 #' The fit's parameters on the centred scale the engine works on

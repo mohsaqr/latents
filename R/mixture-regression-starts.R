@@ -391,6 +391,8 @@
   params$beta <- params$beta[, class_order, drop = FALSE]
   colnames(params$beta) <- paste0("class_", seq_len(spec$n_classes))
   params$sigma2 <- params$sigma2[class_order]
+  # The dispersions follow their classes, and so do their names.
+  if (length(params$sigma2) == spec$n_classes) names(params$sigma2) <- colnames(params$beta)
   if (!is.null(params$thresholds)) {
     params$thresholds <- params$thresholds[, class_order, drop = FALSE]
     colnames(params$thresholds) <- colnames(params$beta)

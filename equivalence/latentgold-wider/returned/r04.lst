@@ -1,0 +1,207 @@
+r04.dat
+File name:	r04.dat	
+File size:	33544 bytes  1500 records	
+File date:	2026-Oct-28 5:47:27 PM	
+Syntax:	r04.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+r04	2-Cluster	-882.7874	1799.7975	1777.5748	1783.5748	6	1765.5748	294	5.2e-208	0.1419	0.5263	
+r04 - L² = 1765.5748
+2-Cluster Syntax Model	
+					
+Number of cases	300				
+Number of replications	1500				
+Number of parameters (Npar)	6				
+Random Seed	20261101				
+Best Start Seed	1875316				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	294	p-value			
+L-squared (L²)	1765.5748	5.2e-208			
+X-squared	8306.0701	3.9e-1530			
+Cressie-Read	4046.4515	9.3e-651			
+BIC (based on L²)	88.6628				
+AIC (based on L²)	1177.5748				
+AIC3 (based on L²)	883.5748				
+CAIC (based on L²)	-205.3372				
+SABIC (based on L²)	1021.0571				
+Dissimilarity Index	0.9275	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-882.7874				
+Log-prior	0.0000				
+Log-posterior	-882.7874				
+BIC (based on LL)	1799.7975				
+AIC (based on LL)	1777.5748				
+AIC3 (based on LL)	1783.5748				
+CAIC (based on LL)	1805.7975				
+SABIC (based on LL)	1780.7691				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1419				
+Reduction of errors (Lambda)	0.6476				
+Entropy R-squared	0.5263				
+Standard R-squared	0.5851				
+Classification log-likelihood	-978.5746				
+Entropy	95.7872				
+CLC	1957.1492				
+AWE	2043.5946				
+ICL-BIC	1991.3719				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	99.1060	21.6719	120.7779		
+2	20.8940	158.3281	179.2221		
+Total	120.0000	180.0000	300.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	90.8401	29.9378	120.7779		
+2	29.9378	149.2844	179.2221		
+Total	120.7779	179.2221	300.0000		
+					
+Model Classification Statistics	Cluster				
+Classification errors	0.3147				
+Reduction of errors (Lambda)	0.2183				
+Entropy R-squared	0.1347				
+Standard R-squared	0.1691				
+					
+Files					
+Infile	C:\lgwider\r04.dat	
+					
+Options					
+threads	2				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261101				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     300				
+predictionstatistics	no				
+outfile					
+file name	r04_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Case ID	id	300			
+Dependent					
+y	Nominal	2			
+0	0				
+1	1				
+Independent					
+x	Num-Fixed	1473			
+-2.9754	-2.9754	-2.9754			
+-2.6752	-2.6752	-2.6752			
+-2.6543	-2.6543	-2.6543			
+-2.6515	-2.6515	-2.6515			
+-2.4725	-2.4725	-2.4725			
+-2.4694	-2.4694	-2.4694			
+-2.4542	-2.4542	-2.4542			
+-2.4497	-2.4497	-2.4497			
+-2.4459	-2.4459	-2.4459			
+-2.4128	-2.4128	-2.4128			
+...					
+2.4305	2.4305	2.4305			
+2.4434	2.4434	2.4434			
+2.5137	2.5137	2.5137			
+2.5506	2.5506	2.5506			
+2.6518	2.6518	2.6518			
+2.8185	2.8185	2.8185			
+2.8616	2.8616	2.8616			
+3.1202	3.1202	3.1202			
+3.3816	3.3816	3.3816			
+z	Num-Fixed	299			
+-2.5953	-2.5953	-2.5953			
+-2.5687	-2.5687	-2.5687			
+-2.2251	-2.2251	-2.2251			
+-1.9545	-1.9545	-1.9545			
+-1.8897	-1.8897	-1.8897			
+-1.8535	-1.8535	-1.8535			
+-1.7881	-1.7881	-1.7881			
+-1.7863	-1.7863	-1.7863			
+-1.7628	-1.7628	-1.7628			
+-1.7627	-1.7627	-1.7627			
+...					
+1.718	1.718	1.718			
+1.7475	1.7475	1.7475			
+1.8132	1.8132	1.8132			
+1.937	1.937	1.937			
+2.0013	2.0013	2.0013			
+2.0369	2.0369	2.0369			
+2.0886	2.0886	2.0886			
+2.3487	2.3487	2.3487			
+2.6593	2.6593	2.6593			
+Syntax
+options
+   maxthreads=2;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'r04_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   dependent y nominal coding=first;
+   independent x, z;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1 + z;
+   y <- 1 | Cluster + x | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	2.9245	1	0.087				
+Cluster(2)	<-	1			0.5308	0.3104	1.7101	0.087							
+Cluster(1)	<-	z			0.0000	.	.	.	19.8355	1	8.4e-6				
+Cluster(2)	<-	z			-1.0568	0.2373	-4.4537	8.4e-6							
+															
+y(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	141.0464	2	2.4e-31	112.5073	1	2.8e-26	
+y(1)	<-	1	|	Cluster(1)	-0.8544	0.1869	-4.5728	4.8e-6							
+y(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+y(1)	<-	1	|	Cluster(2)	0.9831	0.1256	7.8249	5.1e-15							
+y(0)	<-	x	|	Cluster(1)	0.0000	.	.	.	123.6638	2	1.4e-27	14.3703	1	0.00015	
+y(1)	<-	x	|	Cluster(1)	1.4697	0.1769	8.3092	9.6e-17							
+y(0)	<-	x	|	Cluster(2)	0.0000	.	.	.							
+y(1)	<-	x	|	Cluster(2)	0.6978	0.0969	7.1996	6.0e-13							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	2.9245	1	0.087	
+Cluster	<-	 z			Cluster	1	2	19.8355	1	8.4e-6	
+	
+y	<-	1	|	Cluster	Cluster	1	2	112.5073	1	2.8e-26	
+y	<-	 x	|	Cluster	Cluster	1	2	14.3703	1	0.00015	

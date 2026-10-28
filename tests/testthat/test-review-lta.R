@@ -97,7 +97,7 @@ test_that("all general LTA extensions match independent path likelihoods and sco
     list(gaps = TRUE, transitions = "occasion", n_group_classes = 2L))
   lapply(variants, function(arguments) {
     fit <- do.call(review_lta_fit, arguments)
-    theta <- coef(fit)
+    theta <- .lta_theta(fit)
     theta[] <- sin(seq_along(theta)) / 3
     # Evaluate away from an optimized point: no stationary score can hide a
     # missing block. Finite coordinates keep all exact-path masses positive.
@@ -174,7 +174,7 @@ test_that("every covariance structure uses the correct observed Gaussian margina
       n_starts = 1L, max_iter = 0L, seed = 62L), c("latents_unconverged", "latents_boundary"))
     block <- fit$measurement[[1L]]
     block$means <- sweep(block$means, 2L, fit$centers, "-")
-    theta <- coef(fit)
+    theta <- .lta_theta(fit)
     decoded <- .lta_unpack(theta, fit)
     expect_equal(length(theta), fit$n_parameters, info = model)
     expect_equal(unname(decoded$measurement[[1L]]$means), unname(block$means), info = model)
@@ -263,7 +263,7 @@ test_that("negative-binomial LTA optimization respects floors and reaches statio
     expect_true(fit$converged)
     expect_true(all(fit$measurement[[1L]]$count_dispersion >= .latents_min_dispersion))
     expect_true(all(diff(fit$log_likelihood_history) >= -1e-8))
-    expect_lt(max(abs(colSums(.lta_group_scores(coef(fit), fit)))), 1e-3)
+    expect_lt(max(abs(colSums(.lta_group_scores(.lta_theta(fit), fit)))), 1e-3)
   })
 })
 
@@ -285,7 +285,7 @@ test_that("a quasi-Newton stop at the maximum (L-BFGS-B code 52) counts as conve
       count_dispersion = c("varying", "equal")[case[2L]],
       transitions = "occasion", n_starts = 1L, seed = 2L), "latents_boundary")
     expect_true(fit$converged)
-    expect_lt(max(abs(colSums(.lta_group_scores(coef(fit), fit)))), 1e-3)
+    expect_lt(max(abs(colSums(.lta_group_scores(.lta_theta(fit), fit)))), 1e-3)
   }))
 })
 
@@ -340,7 +340,7 @@ test_that("occasion covariance charts include mixed ordinal and count coordinate
       missing = "fiml", measurement = "occasion", model = model, n_starts = 1L,
       max_iter = 0L, seed = 51L),
       c("latents_unconverged", "latents_boundary", "latents_thin_profiles"))
-    theta <- coef(fit)
+    theta <- .lta_theta(fit)
     decoded <- .lta_unpack(theta, fit)
     expect_equal(length(theta), fit$n_parameters, info = model)
     expect_equal(.lta_pack(decoded, fit$variance_model, fit$extra_data), unname(theta),
@@ -381,7 +381,7 @@ test_that("ordinal/count-only LTA supports all tables and likelihood reconstruct
   expect_identical(nrow(tables$profiles), 0L)
   expect_equal(length(coef(fit)), fit$n_parameters)
   e <- .lta_expectation(fit$x, fit$codes, fit$layout, fit$designs,
-    .lta_unpack(coef(fit), fit), fit$occasion_of_row, extra = fit$extra_data)
+    .lta_unpack(.lta_theta(fit), fit), fit$occasion_of_row, extra = fit$extra_data)
   expect_equal(e$log_likelihood, fit$log_likelihood, tolerance = 1e-11)
   expect_invisible(.lta_check_data(fit, data))
   simulated <- .lta_simulate(fit, data)
@@ -405,7 +405,7 @@ test_that("every non-Gaussian LTA measurement exposes tables, coefficients, refi
       expect_true(all(vapply(tables, is.data.frame, logical(1))))
       expect_identical(nrow(tables$profiles), 0L)
       expect_equal(length(coef(fit)), fit$n_parameters)
-      parameters <- .lta_unpack(coef(fit), fit)
+      parameters <- .lta_unpack(.lta_theta(fit), fit)
       e <- .lta_expectation(fit$x, fit$codes, fit$layout, fit$designs, parameters,
                             fit$occasion_of_row, extra = fit$extra_data)
       expect_equal(e$log_likelihood, fit$log_likelihood, tolerance = 1e-11)

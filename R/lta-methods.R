@@ -31,7 +31,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     NULL
   })
   names_all <- .lta_names(fit)
-  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
+  theta <- .lta_theta(fit)
   selected <- startsWith(names_all, paste0(block, "."))
   # name layout: block.group_class.profile(s).term ; a term may contain dots,
   # so the pieces differ in length and are read by position, never bound.
@@ -524,8 +524,16 @@ as.data.frame.summary_multilpa_lta <- function(x, row.names = NULL, optional = F
 #' @noRd
 #' @export
 coef.multilpa_lta <- function(object, ...) {
-  stats::setNames(.lta_pack(.lta_parameters(object), object$variance_model,
-                            object$extra_data),
+  # .lta_parameters() gives means in the engine's centred coordinates, which
+  # inference needs; the user's are the data's own units.
+  parameters <- .lta_parameters(object)
+  if (length(object$continuous) > 0L) {
+    parameters$measurement <- lapply(parameters$measurement, function(block) {
+      block$means <- sweep(block$means, 2L, object$centers, "+")
+      block
+    })
+  }
+  stats::setNames(.lta_pack(parameters, object$variance_model, object$extra_data),
                   .lta_names(object))
 }
 

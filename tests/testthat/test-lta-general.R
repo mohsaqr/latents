@@ -61,6 +61,12 @@ test_that("tables, methods and refusals of the general model", {
   expect_true(all(vapply(tables, is.data.frame, logical(1))))
   expect_identical(nrow(tables$assignments), nrow(lta_small))
   expect_identical(names(coef(fit)), rownames(vcov(fit)))
+  # coef() reports means in the data's units, as the profile table does (it
+  # used to return the engine's means, centred on the indicator's mean).
+  profiles <- get_results(fit, "profiles")
+  expect_gt(abs(fit$centers[["y"]]), 0.05)
+  expect_equal(unname(coef(fit)[c("mean.all.profile_1.y", "mean.all.profile_2.y")]),
+               profiles$mean[order(profiles$profile)], tolerance = 1e-12)
   expect_identical(nobs(fit), 60L)
   expect_output(print(fit), "transitions on z")
   expect_s3_class(parameter_inference(fit), "data.frame")
@@ -89,7 +95,8 @@ test_that("EM alone reaches a stationary point (the quasi-Newton finish masks M-
                          transitions = "occasion", n_starts = 1, seed = 1, max_iter = 5),
                      c("latents_boundary", "latents_unconverged")))
   lapply(fits, \(fit) {
-    em <- .lta_em(fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(coef(fit), fit),
+    # EM runs in the engine's centred coordinates, not coef()'s data units.
+    em <- .lta_em(fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(.lta_theta(fit), fit),
                   fit$occasion_of_row, fit$variance_model, 1e-6, NULL, 1e-10,
                   20000L, 1e-14)
     expect_true(all(diff(em$history) >= -1e-8 * (1 + abs(em$history[-1L]))))
