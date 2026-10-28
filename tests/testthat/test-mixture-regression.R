@@ -1,5 +1,9 @@
 # mixture_regression(): likelihood, estimation, inference, accessors and refusals.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 simulate_rows <- function(n = 300L, seed = 1L) {
   latents:::.mixture_with_seed(seed, {
     class <- 1L + (stats::runif(n) < 0.4)

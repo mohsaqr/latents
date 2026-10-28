@@ -1,3 +1,7 @@
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("native group identifiers retain the independently calculated ICC", {
   data <- data.frame(id = rep(c(0.3, 0.1 + 0.2), each = 3L),
                      y = c(0, 1, 2, 10, 11, 12))

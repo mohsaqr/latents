@@ -1,4 +1,9 @@
 # Correct-behavior regressions for independent audit probes of the public API.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 audit_api_frame <- function() {
   withr::local_seed(101)
   data.frame(g = rep(1:20, each = 4), t = rep(1:4, 20),

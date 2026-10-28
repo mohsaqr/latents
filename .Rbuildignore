@@ -13,7 +13,7 @@
 ^\.claude$
 ^data-raw$
 ^\.github$
-^cran-comments\.md$
+^cran-comments.*\.md$
 ^\.lintr$
 ^codex_docs$
 ^local_testing_and_equivalence$

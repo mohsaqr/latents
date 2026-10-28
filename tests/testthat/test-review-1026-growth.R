@@ -5,6 +5,10 @@
 # lcmm::hlme(cor = AR / BM) (Proust-Lima, Philipps and Liquet 2017), and
 # invariants (class relabelling, time origin, outcome scale).
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_growth_data <- function(n = 70L, seed = 21L, classes = 2L) {
   withr::with_seed(seed, {
     times <- 0:4

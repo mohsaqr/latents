@@ -84,9 +84,10 @@
 #'                                  n_classes = 1:3, n_starts = 3, seed = 1)
 #' classes
 #' \donttest{
+#' # Four replicates keep the example fast; a report needs several hundred.
 #' with_test <- enumerate_regressions(score ~ hours, data = study_hours,
 #'                                    n_classes = 1:2, n_starts = 3, seed = 1,
-#'                                    bootstrap = 19)
+#'                                    bootstrap = 4)
 #' as.data.frame(with_test)
 #' }
 #' @export

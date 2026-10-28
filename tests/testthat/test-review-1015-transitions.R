@@ -1,6 +1,10 @@
 # Review 2026-10-15 of the transition-model files: regressions for the
 # defects that review confirmed (each failed before its fix).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_panel <- local({
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

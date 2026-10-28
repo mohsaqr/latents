@@ -1,4 +1,9 @@
 # Review regressions use serialized socket payloads when ports are unavailable.
+
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_parallel_data <- function() {
   data.frame(person = rep(seq_len(12L), each = 6L),
     y = sin(seq_len(72L)) + rep(seq_len(12L) / 8, each = 6L),

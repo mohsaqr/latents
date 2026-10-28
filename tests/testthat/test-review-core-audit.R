@@ -1,6 +1,10 @@
 # Regressions from the 2026-10-13 function audit: preprocessing contracts and
 # covariance-family invariants must also hold where a variance floor is active.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 core_audit_centering_data <- function() {
   set.seed(40)
   id <- rep(seq_len(50), each = 8)

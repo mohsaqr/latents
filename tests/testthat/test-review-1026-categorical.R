@@ -3,6 +3,10 @@
 # against hand computation, numDeriv; invariants. The poLCA and Rmpfr
 # comparisons are in equivalence/test-review-1026-oracles.R.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_two_class_items <- function(n, seed) {
   withr::local_seed(seed)
   class <- sample(1:2, n, TRUE, prob = c(.4, .6))

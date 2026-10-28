@@ -1,6 +1,10 @@
 # Regressions from the 2026-10-15 review of the covariate, three-step, staged
 # and pooling verbs. Each test failed before its repair.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_r3step_data <- function() {
   set.seed(21)
   g <- rep(seq_len(50), each = 12)

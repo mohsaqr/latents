@@ -5,6 +5,10 @@
 # The comparisons with Latent GOLD, Mplus and an independent implementation
 # are in equivalence/test-features-ml-three-step.R.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 features_ml_data <- function(seed = 3L, n = 300L, separation = 2.4, k = 2L) {
   set.seed(seed)
   truth <- sample.int(k, n, replace = TRUE, prob = c(0.45, 0.35, 0.2)[seq_len(k)])

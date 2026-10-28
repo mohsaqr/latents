@@ -3,6 +3,10 @@
 # starting_values(), diagnostics() and bootstrap_lrt(). Each block names the
 # finding it guards; each fails on the code before the fix.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 surface_lpa <- function() {
   lpa(srl, names(srl), n_profiles = 2, n_starts = 2, seed = 1)
 }

@@ -5,6 +5,10 @@
 # comparisons with Latent GOLD, Mplus and poLCA are in
 # equivalence/test-features-joint-items.R.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 joint_items_data <- function(seed = 11L, n = 300L) {
   if (exists(".Random.seed", globalenv())) {
     saved <- get(".Random.seed", globalenv())

@@ -1,4 +1,9 @@
 # End-to-end regressions for the 2026-10-13 plotting/prediction audit.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 audit_plot_data <- function() {
   set.seed(1310)
   data <- data.frame(g = rep(seq_len(20L), each = 10L),

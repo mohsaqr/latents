@@ -6,6 +6,10 @@
 # reparametrized: b' = T b with T = [[1, -o/c], [0, 1/c]], so every reported
 # quantity must equal the exact image of the fit in t.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r2_growth_data <- function(n = 90L, seed = 3L) {
   withr::with_seed(seed, {
     class <- stats::rbinom(n, 1L, 0.45) + 1L

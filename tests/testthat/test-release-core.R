@@ -1,6 +1,10 @@
 # Pre-release review 2026-10-27, cluster "core": CORE-2, CORE-3, CORE-4,
 # CORE-5 and CORE-7.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 # A weighted fit and the same fit with one appended row of weight zero.
 release_core_ordinal_data <- function() {
   .latents_local_seed(4)

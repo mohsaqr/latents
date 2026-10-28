@@ -2,6 +2,10 @@
 # equivalence/test-growth-predict-lcmm.R; these tests use an independent dense
 # implementation (full marginal covariance per person) and invariants.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 predict_fixture <- function(n = 80L, seed = 4L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

@@ -1,5 +1,9 @@
 # Astra review: active support, regression degeneracy, and transition inference.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 astra_lta_data <- function() {
   .latents_local_seed(21)
   do.call(rbind, lapply(seq_len(35), function(i) {

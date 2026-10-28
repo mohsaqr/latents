@@ -2,6 +2,10 @@
 # Each test failed on the code before its fix (checked by running this file
 # against a copy of the package with the old lines restored).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 # K2-1 -----------------------------------------------------------------------
 
 test_that("K2-1: the VEI shape sums carry no variance bound", {

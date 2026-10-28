@@ -1,6 +1,10 @@
 # A profile with fewer effective members than its own means and variances is
 # reported by a `latents_thin_profiles` warning; its estimate is not changed.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 thin_profile_data <- function(scale = 1) {
   set.seed(3)
   truth <- sample.int(3L, 360L, replace = TRUE, prob = c(0.45, 0.35, 0.2))

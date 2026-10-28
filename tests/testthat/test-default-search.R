@@ -3,6 +3,10 @@
 # the fits of 0.96.2 is checked against the recorded panel by
 # equivalence/search/; here, the resolution and its propagation.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 default_search_items <- c("cognitive_strategies", "intrinsic_value", "self_efficacy")
 default_search_quietly <- function(expr) suppressWarnings(expr)
 

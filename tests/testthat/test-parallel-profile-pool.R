@@ -1,3 +1,7 @@
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 profile_pool_data <- function() {
   .latents_local_seed(1854L)
   group <- rep(seq_len(12L), each = 6L)

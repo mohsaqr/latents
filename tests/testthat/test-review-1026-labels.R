@@ -4,6 +4,10 @@
 # pairs two labels writes `:` and `%` inside each as `%3A` and `%25`, so the
 # pair still splits at its one bare `:`.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 label_fit_data <- function() {
   withr::local_seed(1)
   data <- data.frame(g = rep(seq_len(20), each = 5),

@@ -114,7 +114,7 @@
     old_seed <- if (had_seed) get(".Random.seed", envir = globalenv())
     old_warn <- getOption("warn")
     on.exit({
-      suppressWarnings(do.call(RNGkind, as.list(old_kind))) # nolint: undesirable_function_linter.
+      suppressWarnings(do.call(RNGkind, as.list(old_kind))) # nolint: undesirable_function_linter, object_name_linter.
       if (had_seed) assign(".Random.seed", old_seed, envir = globalenv()) else
         if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
           rm(".Random.seed", envir = globalenv())

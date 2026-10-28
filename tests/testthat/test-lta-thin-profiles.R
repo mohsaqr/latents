@@ -1,6 +1,11 @@
 #' Capture thin-profile warnings from a fitted transition model
 #' @param expr A transition fitting expression.
 #' @return The fit and its thin-profile warning conditions.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 capture_lta_thin <- function(expr) {
   thin <- list()
   fit <- withCallingHandlers(expr, warning = function(condition) {

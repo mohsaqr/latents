@@ -4,6 +4,10 @@
 # weights, the membership-logit M-step and the covariate scores and
 # information against numerical derivatives (Vermunt 2003, 2008).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_ml_data <- function(seed = 11, n_groups = 12, size = 4) {
   withr::local_seed(seed)
   g <- rep(seq_len(n_groups), each = size)

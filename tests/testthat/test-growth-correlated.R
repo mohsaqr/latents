@@ -4,6 +4,10 @@
 # out independently, scores against numerical gradients, the empirical Bayes
 # formula with the process, a boundary case and the refusals.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 correlated_fixture <- function(n = 120L, seed = 8L, process_sd = 0.8) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

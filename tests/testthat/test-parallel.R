@@ -397,6 +397,8 @@ test_that("initial socket startup failure remains a classed infrastructure error
 })
 
 test_that("a fork retry that cannot spawn retains earlier recovered tasks", {
+  # Windows has no fork, so `parallel` has no mcparallel() to mock.
+  skip_on_os("windows")
   creations <- 0L
   local_mocked_bindings(
     mcparallel = function(expr, ...) {
@@ -414,6 +416,8 @@ test_that("a fork retry that cannot spawn retains earlier recovered tasks", {
 })
 
 test_that("a terminal loss callback error cannot hide the worker warning", {
+  # Windows has no fork, so `parallel` has no mcparallel() to mock.
+  skip_on_os("windows")
   local_mocked_bindings(
     mclapply = function(X, ...) rep(list(NULL), length(X)),
     mcparallel = function(...) stop("unable to fork"),

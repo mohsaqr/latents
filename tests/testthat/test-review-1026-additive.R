@@ -3,6 +3,10 @@
 # charts. References are independent: dense multivariate normal densities,
 # numerical derivatives, brute-force likelihoods and mclust's parameter counts.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_additive_draw <- function(seed, n_groups = 60L) {
   old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old_seed)) rm(".Random.seed", envir = globalenv()) else

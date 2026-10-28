@@ -4,6 +4,10 @@
 # pi(s_1) prod_t A_t(s_{t-1}, s_t) prod_t f(y_t | s_t), with an occasion that
 # has no observed indicator contributing f = 1.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_lta_data <- function(n = 30L, n_occasions = 3L, seed = 1L, stay = 0.75) {
   withr::with_seed(seed, {
     do.call(rbind, lapply(seq_len(n), function(i) {

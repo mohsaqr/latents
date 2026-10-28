@@ -1,6 +1,10 @@
 # The Vuong-Lo-Mendell-Rubin test (Vuong 1989; Lo, Mendell and Rubin 2001)
 # as Latent GOLD implements it (Vermunt 2024).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("the Imhof tail matches exact weighted chi-square probabilities", {
   # One weight, or equal weights, give a scaled chi-square.
   invisible(lapply(c(0.05, 0.5, 3, 9, 30), \(q) {

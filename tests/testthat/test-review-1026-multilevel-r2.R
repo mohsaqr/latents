@@ -4,6 +4,10 @@
 # counts. Each block fails on the code before the fix (see the round-2 report,
 # validation/review-2026-10-26/round-2/multilevel.md).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r2_two_level <- function(n_groups = 24L, n_rows = 6L, seed = 3L) {
   withr::with_seed(seed, {
     group_class <- sample(1:2, n_groups, TRUE)

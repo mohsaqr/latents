@@ -1,4 +1,9 @@
 # These small panels exercise both transition engines without a large fixture.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 lta_parallel_panel <- function() {
   .latents_local_seed(8401L)
   panel <- data.frame(person = rep(seq_len(12L), each = 5L),

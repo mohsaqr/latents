@@ -8,6 +8,10 @@
 # R2-LTA-6 interior empty occasions count only the identified product;
 # and the sampling-weighted entropy of a transition enumeration grid.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r2_lta_data <- function(n = 80L, n_occasions = 4L, seed = 21L) {
   withr::with_seed(seed, {
     do.call(rbind, lapply(seq_len(n), function(i) {

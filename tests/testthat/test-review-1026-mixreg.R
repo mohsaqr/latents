@@ -7,6 +7,10 @@
 # least-squares shortcut with an empty or rank-deficient class, and an aliased
 # constant column whose rounded mean is not exact.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 .review_mixreg_data <- function(n = 240L, seed = 2026L) {
   .latents_local_seed(seed)
   frame <- data.frame(x = stats::rnorm(n), z = stats::rnorm(n))

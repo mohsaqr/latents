@@ -1,3 +1,7 @@
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("enumeration retains failures and both BIC conventions", {
   set.seed(12)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))

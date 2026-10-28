@@ -1,6 +1,10 @@
 # Regression tests for the round-2 review of 2026-10-26, categorical and
 # extra indicators (validation/review-2026-10-26/round-2/categorical.md).
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 # --- C2-1: a shared negative-binomial dispersion is not forced to its floor --
 
 r2_shared_counts <- function() {

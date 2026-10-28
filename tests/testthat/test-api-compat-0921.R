@@ -1,4 +1,9 @@
 # Released signatures are deliberately hard-coded, independently of HEAD.
+
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("0.9.21 formal positions are retained", {
   released <- list(
     multilpa = c("data", "vars", "id", "n_profiles", "n_group_classes",

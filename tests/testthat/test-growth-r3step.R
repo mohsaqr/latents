@@ -3,6 +3,10 @@
 # classification errors held fixed. References: the same likelihood written
 # out independently here, maximized by optim; equivariance in the covariate.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r3step_fixture <- function(n = 240L, seed = 8L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

@@ -1,6 +1,10 @@
 # Regression checks from the independent package-wide audit. Known answers
 # are raw binomial/Gaussian formulas or invariances, rather than saved outputs.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("Gaussian dispersion identifies labels when means are held equal", {
   withr::local_seed(882)
   z <- stats::rnorm(1000)

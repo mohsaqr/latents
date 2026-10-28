@@ -1,5 +1,9 @@
 # Adversarial interaction regressions, 2026-10-26 (round 3).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("ordinary category labels cannot become partial joint observations", {
   data <- data.frame(
     a = factor(rep(c("a:x", "b:x", "a::"), c(40, 30, 30))),

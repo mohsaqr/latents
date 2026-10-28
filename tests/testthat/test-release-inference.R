@@ -2,6 +2,10 @@
 # INF-1, INF-2, INF-3 (covariate fits and the multilpa dots), INF-4, INF-6
 # and INF-7. Each test fails on the code before the fix.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 .release_engagement_vars <- c("browse", "lectures", "forum_read", "forum_post",
                               "attendance")
 

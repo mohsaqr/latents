@@ -5,6 +5,10 @@
 # equivalence/test-features-direct-effects.R. Data are drawn in base R here
 # (simulab is not a declared dependency of the package's tests).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 de_unit_data <- function(seed = 7, n = 400, b = c(0.8, -0.6)) {
   withr::with_seed(seed, {
     class <- sample.int(2L, n, replace = TRUE, prob = c(0.55, 0.45))

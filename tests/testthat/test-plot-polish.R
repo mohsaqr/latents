@@ -4,6 +4,10 @@
 # for a single-level grid, the compact enumeration print, the LCA header and
 # the single-class intercept label.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 .polish_draw <- function(expr) {
   grDevices::pdf(NULL)
   on.exit(grDevices::dev.off(), add = TRUE)

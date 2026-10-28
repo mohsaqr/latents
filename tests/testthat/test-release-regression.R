@@ -2,6 +2,10 @@
 # growth mixtures and additive fits. Each block fails on the code before the
 # fix (REG-1..8, API-1/2/4/5/6, INF-3).
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 release_three_class_data <- function(seed = 1L, n = 120L) {
   set.seed(seed)
   x <- stats::rnorm(n)

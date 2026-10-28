@@ -1,5 +1,9 @@
 # Growth mixture models: mixture_regression(random = ).
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 growth_fixture_data <- function(n = 160L, seed = 21L) {
   set.seed(seed)
   times <- 0:5

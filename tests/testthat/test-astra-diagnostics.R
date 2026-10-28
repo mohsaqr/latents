@@ -1,5 +1,10 @@
 # Astra A09/A10/A16/A17: classification eligibility, nesting and weights must
 # agree in the fitted-model tables, diagnostics and enumeration plot data.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 astra_diagnostic_fits <- local({
   saved <- NULL
   function() {

@@ -1,6 +1,10 @@
 # Round-2 review of mixture_regression() (2026-10-26): N1 to N8.
 # validation/review-2026-10-26/round-2/mixreg.md
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r2_membership_data <- function(n = 400, seed = 14) {
   set.seed(seed)
   d <- data.frame(x = stats::rnorm(n), t = stats::rnorm(n))

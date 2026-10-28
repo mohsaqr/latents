@@ -1,6 +1,10 @@
 # Regressions from the 2026-10-15 review of the group-class families, the
 # cross-level families and the ordinal/count indicators.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 review_1015_weighted <- local({
   data <- additive_draw(
     list(means = rbind(c(0, 0), c(3, 2.5)), between = rbind(c(0.5, 0.5), c(0.5, 0.5)),

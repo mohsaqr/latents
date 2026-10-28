@@ -3,6 +3,11 @@
 # separate scale for each indicator. Counts and categories are never rescaled.
 # The structure panel compares finite trajectories before numerical plateaus;
 # the CORE-1, mixed and replication cases below run to convergence.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 .release_engine_fit <- function(data, vars = names(data), ...) {
   suppressWarnings(lpa(data, vars, n_profiles = 2, n_starts = 3,
                        seed = 3, ...))

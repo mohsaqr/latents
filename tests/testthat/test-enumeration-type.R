@@ -1,3 +1,7 @@
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 enumeration_type_data <- function() {
   .latents_local_seed(731L)
   data <- data.frame(person = rep(seq_len(12L), each = 6L),

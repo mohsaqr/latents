@@ -4,6 +4,10 @@
 # `search = "kmeans"` (every field of 36 fits, the RNG state on exit) is
 # checked against the recorded 0.96.1 panel by equivalence/search/.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 search_toy <- function(rate = 0.9) {
   target <- 1 / (1 - rate)
   list(evaluate = function(state) list(log_likelihood = -sum((state - target)^2)),

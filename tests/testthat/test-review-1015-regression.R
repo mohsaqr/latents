@@ -1,3 +1,6 @@
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
 
 # ---- Review 2026-10-15: mixture regressions and growth mixtures ----
 

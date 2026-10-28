@@ -2,6 +2,10 @@
 # the fit's own tables, class matching undoes a relabelling, and the person
 # bootstrap is reproducible and refuses what it does not cover.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 inference_fixture <- function(n = 160L, seed = 3L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

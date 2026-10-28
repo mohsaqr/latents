@@ -3,6 +3,10 @@
 # value, so a rejected input printed, through a host that deparses the call in
 # full, every value of the data set.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 condition_data <- function() {
   withr::local_seed(20261027)
   data.frame(id = rep(seq_len(400L), each = 5L), t = rep(1:5, 400L),

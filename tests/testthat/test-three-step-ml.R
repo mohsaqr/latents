@@ -2,6 +2,10 @@
 # Vermunt 2013): the assigned class is an indicator with the step-one
 # classification errors held fixed, the outcome normal within each class.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 ml_data <- function(seed = 11, n_groups = 80, per = 10) {
   set.seed(seed)
   n <- n_groups * per

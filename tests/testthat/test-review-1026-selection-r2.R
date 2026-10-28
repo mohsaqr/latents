@@ -2,6 +2,10 @@
 # Each test fails on the code before its fix; see
 # validation/review-2026-10-26/round-2/selection.md.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 r2_items <- function(n = 300L, seed = 11L) {
   set.seed(seed)
   classes <- sample(1:2, n, TRUE)

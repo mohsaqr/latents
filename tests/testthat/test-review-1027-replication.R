@@ -2,6 +2,10 @@
 # shown where a user looks, not only in summary(). print() used to show the
 # winning start's index as "best start: 5/10", which reads as a count.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 replication_fit <- function(n_starts = 10L) {
   withr::local_seed(20261027)
   data <- data.frame(id = rep(seq_len(100L), each = 4L),

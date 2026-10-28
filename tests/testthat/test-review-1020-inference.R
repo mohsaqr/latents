@@ -1,3 +1,7 @@
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 test_that("empty groups do not evade robust validity or alter CR1", {
   set.seed(792)
   make_fit <- function(data, ...) quietly(multilpa(data, "y", "g", 1, 1,

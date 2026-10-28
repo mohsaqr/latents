@@ -3,6 +3,10 @@
 # equivalence/test-latentgold-step3-markov.R; here, an independent likelihood
 # that sums over every path, equivariance, and the refusals.
 
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 markov_fixture <- function(n = 200L, occasions = 4L, seed = 12L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

@@ -1,4 +1,9 @@
 # Numeric category summaries use fitted response probabilities, even with FIML.
+
+# More than 2 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 .categorical_summary_fixture <- function(n_profiles = 2L, missing = FALSE,
                                          mixed = FALSE, covariates = FALSE) {
   set.seed(123)

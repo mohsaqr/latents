@@ -4,6 +4,10 @@
 # with every variance at the bound, which "exclude" sets aside. The tests use
 # the kmeans search, whose starts these data were chosen for.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 boundary_data <- function() {
   set.seed(3)
   data.frame(y1 = c(stats::rnorm(60, 0), stats::rnorm(60, 4), 15),

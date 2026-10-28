@@ -3,6 +3,10 @@
 # `what = "all"` cannot disagree, that a refused argument is named instead of
 # dropped, and that a summary serves back exactly what its fit produced.
 
+# More than 1.5 s under CRAN's settings: skipped there to keep the check within
+# its time limit; it runs in CI and locally.
+skip_on_cran()
+
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 two_level <- function(...) {
