@@ -1,4 +1,4 @@
-# latents 0.97.4 (development version)
+# latents 0.97.5
 
 ## Upgrading from CRAN 0.9.21
 
