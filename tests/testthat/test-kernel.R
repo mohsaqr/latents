@@ -96,18 +96,25 @@ test_that("the start runner records failures and refuses when all fail", {
 test_that("the quasi-Newton finish keeps a point only when it improves", {
   value <- function(v) sum((v - c(1, -2))^2)
   gradient <- function(v) 2 * (v - c(1, -2))
+  control <- list(maxit = 100L, factr = 10, pgtol = 0)
   finish <- .latents_quasi_newton(c(0, 0), c(-Inf, -Inf), value, gradient, 1e-10,
-                                  list(maxit = 100L, factr = 10, pgtol = 0))
+                                  control, scale = 1)
   expect_true(finish$improved)
   expect_equal(finish$par, c(1, -2), tolerance = 1e-6)
   bounded <- .latents_quasi_newton(c(0, 0), c(-Inf, 0), value, gradient, 1e-10,
-                                   list(maxit = 100L, factr = 10, pgtol = 0))
+                                   control, scale = 1)
   expect_equal(bounded$par, c(1, 0), tolerance = 1e-6)
   # Started at the optimum it stays there.
   settled <- .latents_quasi_newton(c(1, -2), c(-Inf, -Inf), value, gradient, 1e-10,
-                                   list(maxit = 100L, factr = 10, pgtol = 0))
+                                   control, scale = 1)
   expect_true(settled$converged)
   expect_identical(settled$par, c(1, -2))
+  # A change of units adds a constant to the objective; the search, and the
+  # value it reports, follow it exactly.
+  shifted <- .latents_quasi_newton(c(0, 0), c(-Inf, -Inf), function(v) value(v) + 1e6,
+                                   gradient, 1e-10, control, scale = 1)
+  expect_equal(shifted$par, finish$par, tolerance = 1e-10)
+  expect_equal(shifted$value, finish$value + 1e6)
 })
 
 test_that("the measurement block's two normalizers agree to rounding", {

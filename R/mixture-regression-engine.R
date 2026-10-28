@@ -499,6 +499,15 @@
                        stop_on_nonfinite = TRUE, stop_scale = stop_scale)
 }
 
+#' The outcomes a mixture regression likelihood sums over
+#'
+#' One per row of positive weight: the scale of the EM stopping rule and of
+#' the replication tolerance.
+#' @noRd
+.mixture_observed <- function(spec) {
+  if (is.null(spec$row_weights)) length(spec$y) else sum(spec$row_weights > 0)
+}
+
 #' Run EM from a starting point
 #'
 #' @param spec The model specification.
@@ -514,10 +523,8 @@
                        .mixture_maximization(spec, point, expectation)
                      },
                      max_iter, tol,
-                     # A unit-free stop (review 2026-10-26 round 2, K2-6): one
-                     # outcome per row of positive weight.
-                     .mixture_em_settings(stop_scale = if (is.null(spec$row_weights))
-                       length(spec$y) else sum(spec$row_weights > 0)))
+                     # A unit-free stop (review 2026-10-26 round 2, K2-6).
+                     .mixture_em_settings(stop_scale = .mixture_observed(spec)))
   params <- fit$state
   expectation <- fit$expectation
   converged <- fit$converged

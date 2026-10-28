@@ -9,10 +9,12 @@ compare_vars <- c("y1", "y2")
 
 test_that("enumeration crosses families, restrictions and class counts", {
   skip_on_cran()
-  grid <- enumerate_classes(compare_data, compare_vars, "group",
-                            family = c("additive", "dispersion",
-                                       "additive_dispersion"),
-                            n_group_classes = 1:2, seed = 1, n_starts = 1)
+  # The data have one within variance, so two dispersion classes collapse.
+  grid <- quietly(enumerate_classes(compare_data, compare_vars, "group",
+                                    family = c("additive", "dispersion",
+                                               "additive_dispersion"),
+                                    n_group_classes = 1:2, seed = 1, n_starts = 1),
+                  classes = "latents_weak_class")
   expect_s3_class(grid, "latents_family_enumeration")
   table <- get_results(grid)
   # Two class counts x (additive x2 + dispersion x1 + additive-dispersion x2).
@@ -89,8 +91,9 @@ test_that("bootstrap refuses non-nested or mismatched group-class fits", {
   skip_on_cran()
   additive <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
                        family = "additive", seed = 1, n_starts = 1)
-  dispersion <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
-                         family = "dispersion", seed = 1, n_starts = 1)
+  dispersion <- quietly(multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
+                                 family = "dispersion", seed = 1, n_starts = 1),
+                        classes = "latents_weak_class")
   expect_error(bootstrap_lrt(additive, dispersion, iter = 3),
                class = "latents_bad_argument")
   expect_error(bootstrap_lrt(additive, additive, iter = 3),

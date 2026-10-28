@@ -25,12 +25,16 @@
 #' @param initial Ordered, wrapped starting values drawn during setup.
 #' @param runner,finaliser Namespace functions for one start and finalisation.
 #' @param run_vars Names of the setup inputs needed on workers.
+#' @param n_observed The observed values the EM stopping rule counts: with
+#'   `context$tol` it gives the start-selection tie (see
+#'   `.multilpa_select_start()`).
 #' @return A prepared fitting plan shared by lta and enumeration.
 #' @noRd
-.lta_plan <- function(context, initial, runner, finaliser, run_vars) {
+.lta_plan <- function(context, initial, runner, finaliser, run_vars, n_observed) {
   stopifnot("runner inputs are present" = all(run_vars %in% names(context)))
   list(initial = initial, n_starts = context$n_starts,
        screen = context$screen, select_start = context$select_start,
+       tie = context$tol * max(1, n_observed),
        run = .lta_bind_context(runner, context[run_vars], record = TRUE),
        finalise = .lta_bind_context(finaliser, context),
        structure_log = if (!is.null(context$structure))
@@ -46,7 +50,7 @@
 .lta_run_plan <- function(plan, cores) {
   starts <- tryCatch(.latents_run_starts(
     plan$n_starts, plan$run, plan$select_start, initial = plan$initial,
-    cores = cores, screen = plan$screen), error = function(error) {
+    cores = cores, screen = plan$screen, tie = plan$tie), error = function(error) {
       .lta_report_failed_plan(plan, error)
       stop(error)
     })

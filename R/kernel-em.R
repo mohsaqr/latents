@@ -95,6 +95,23 @@
   as.numeric(sum(counts))
 }
 
+#' How close to the best log likelihood a start must end to replicate it
+#'
+#' `1e-6` per observed value. A change of units shifts every start's log
+#' likelihood by the same amount, so a tolerance on their gaps must not scale
+#' with `|log L|`, as `1e-6 * (1 + |log L|)` did; one per observed value is
+#' unit-free and about as wide for data in ordinary units. It is wider than
+#' the EM stopping step, because a start stopped by that rule can still lie
+#' several steps below a maximum it approaches slowly.
+#'
+#' @param n_observed The observed values the likelihood sums over (the
+#'   `stop_scale` of the family's EM).
+#' @return A single positive number.
+#' @noRd
+.latents_replication_tolerance <- function(n_observed) {
+  1e-6 * max(1, n_observed)
+}
+
 #' The likelihood change below which an EM step has settled
 #' @param settings From `.latents_em_settings()`.
 #' @param tol Relative convergence tolerance.
@@ -342,6 +359,8 @@
 #'   `prepare` or already prepared `initial` values.
 #' @param initial `NULL`, or ordered wrapped values from
 #'   `.latents_prepare_starts()`, prepared in the caller's seed scope.
+#' @param tie `NULL`, or the fit's EM stopping threshold (`tol` per observed
+#'   value): starts closer than this are tied (see `.multilpa_select_start()`).
 #' @return A list with `attempts`, `valid`, `scores`, `converged` and
 #'   `best_start`; with `screen`, also `stage` and `screened_scores`.
 #' @noRd
@@ -349,10 +368,11 @@
                                 score = function(attempt) {
                                   attempt$expectation$log_likelihood
                                 }, interior = NULL, prepare = NULL,
-                                cores = 1L, screen = NULL, initial = NULL) {
+                                cores = 1L, screen = NULL, initial = NULL,
+                                tie = NULL) {
   if (!is.null(screen)) {
     return(.latents_run_screened(n_starts, run, select_start, score, interior,
-                                 prepare, cores, screen, initial))
+                                 prepare, cores, screen, initial, tie))
   }
   force(run)
   attempts <- if (is.null(prepare) && is.null(initial)) {
@@ -366,7 +386,7 @@
       .latents_start_attempt(run, start_index, initial[[start_index]])
     }, cores)
   }
-  .latents_select_starts(attempts, select_start, score, interior)
+  .latents_select_starts(attempts, select_start, score, interior, tie)
 }
 
 #' Prepare starting values in their original random-number order
@@ -429,13 +449,13 @@
 
 #' Select among complete start attempts
 #' @param attempts Complete attempts in their original start order.
-#' @param select_start,score,interior As for `.latents_run_starts()`.
+#' @param select_start,score,interior,tie As for `.latents_run_starts()`.
 #' @return As `.latents_run_starts()` without screening fields.
 #' @noRd
 .latents_select_starts <- function(attempts, select_start,
                                    score = function(attempt) {
                                      attempt$expectation$log_likelihood
-                                   }, interior = NULL) {
+                                   }, interior = NULL, tie = NULL) {
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
   if (!any(valid)) {
     stop(.latents_start_failure(sprintf(
@@ -454,7 +474,8 @@
   }
   list(attempts = attempts, valid = valid, scores = scores,
        converged = converged,
-       best_start = .multilpa_select_start(scores, converged, select_start, flags))
+       best_start = .multilpa_select_start(scores, converged, select_start, flags,
+                                           tie = tie))
 }
 
 #' Screen a pool of starts and run the best to the end (emEM)
@@ -477,7 +498,7 @@
 #' @param n_starts Number of starts run to the end.
 #' @param run A function of the start index, its initial values, `pause` and
 #'   `resume`, returning an attempt that carries a `checkpoint` when paused.
-#' @param select_start,score,interior,prepare,cores,initial As for
+#' @param select_start,score,interior,prepare,cores,initial,tie As for
 #'   `.latents_run_starts()`.
 #' @param screen A list of `n_pool` (starts screened, at least `n_starts`),
 #'   `iterations` (the screening budget) and `protect` (pool indices that go
@@ -488,7 +509,8 @@
 #'   (`"final"` or `"screened"`) and `screened_scores`.
 #' @noRd
 .latents_run_screened <- function(n_starts, run, select_start, score, interior,
-                                  prepare, cores, screen, initial = NULL) {
+                                  prepare, cores, screen, initial = NULL,
+                                  tie = NULL) {
   stopifnot(
     "screening needs `prepare` or `initial`" =
       is.function(prepare) || is.list(initial),
@@ -518,7 +540,7 @@
     }, cores)
   })
   .latents_select_screened(screened, continued, finalists, ranked$screened_scores,
-                            select_start, score, interior)
+                            select_start, score, interior, tie)
 }
 
 #' Screen one prepared start and retain only its resumable state
@@ -581,14 +603,14 @@
 #' @param continued Complete attempts in `finalists` order.
 #' @param finalists Indices of starts carried to completion.
 #' @param screened_scores Screened likelihoods in original pool order.
-#' @param select_start,score,interior As for `.latents_run_starts()`.
+#' @param select_start,score,interior,tie As for `.latents_run_starts()`.
 #' @return As `.latents_run_starts()` with screening fields.
 #' @noRd
 .latents_select_screened <- function(screened, continued, finalists,
                                      screened_scores, select_start,
                                      score = function(attempt) {
                                        attempt$expectation$log_likelihood
-                                     }, interior = NULL) {
+                                     }, interior = NULL, tie = NULL) {
   pool <- seq_along(screened)
   attempts <- lapply(screened, function(attempt) {
     attempt$checkpoint <- NULL
@@ -625,7 +647,7 @@
   result <- list(attempts = attempts, valid = valid, scores = scores,
                  converged = converged, stage = stage, screened_scores = screened_scores,
                  best_start = .multilpa_select_start(eligible_scores, converged & final_valid,
-                                                     select_start, flags))
+                                                     select_start, flags, tie = tie))
   # A finalist replaces its screened attempt, but both phases contributed
   # covariance M-steps to the fit's qualification. Keep those counts separately.
   logs <- lapply(c(screened, continued), attr, which = "lta_structure_log")
@@ -649,27 +671,46 @@
 #'   them first.
 #' @param value Negative log likelihood as a function of the coordinates.
 #' @param gradient Its gradient.
-#' @param tol Relative convergence tolerance for the code-52 check.
+#' @param tol Convergence tolerance for the code-52 check, per observed value
+#'   as in the EM stopping rule.
 #' @param control `optim()` control list.
+#' @param scale The number of observed values the likelihood sums over (the
+#'   family's `stop_scale`).
+#' @param parscale `NULL`, or `optim()`'s `parscale`: one typical magnitude per
+#'   coordinate, the reference standard deviation for a coordinate in the
+#'   units of the data.
 #' @return A list with `par`, `value` (the negative log likelihood there),
 #'   `converged`, `improved` (whether the finish was kept) and `start_value`.
 #' @noRd
-.latents_quasi_newton <- function(theta, lower, value, gradient, tol, control) {
+.latents_quasi_newton <- function(theta, lower, value, gradient, tol, control,
+                                  scale, parscale = NULL) {
   theta <- pmax(theta, lower)
   start_value <- value(theta)
-  found <- stats::optim(theta, value, gradient, method = "L-BFGS-B",
-                        lower = lower, control = control)
+  # L-BFGS-B stops on a change relative to |f|, and a change of units moves f
+  # by a constant (the density Jacobian). Minimizing the change from the start
+  # plus `scale` measures the stop against the observed values instead, which
+  # is unit-free and about |log L| for data in ordinary units.
+  shifted <- function(v) value(v) - start_value + scale
+  if (!is.null(parscale)) control$parscale <- parscale
+  search <- function(from) {
+    found <- stats::optim(from, shifted, gradient, method = "L-BFGS-B",
+                          lower = lower, control = control)
+    # Evaluated again, not shifted back: (f - f0 + s) + f0 - s can round one
+    # ulp above f0 at a point that did not move, which would read as a loss.
+    found$value <- value(found$par)
+    found
+  }
+  found <- search(theta)
   if (!is.finite(found$value) || found$value > start_value) {
     return(list(par = theta, value = start_value, converged = FALSE,
                 improved = FALSE, start_value = start_value))
   }
   converged <- found$convergence == 0L
   if (identical(found$convergence, 52L)) {
-    again <- stats::optim(found$par, value, gradient, method = "L-BFGS-B",
-                          lower = lower, control = control)
+    again <- search(found$par)
     if (is.finite(again$value) && again$value <= found$value) {
       converged <- again$convergence == 0L ||
-        found$value - again$value <= tol * (1 + abs(again$value))
+        found$value - again$value <= tol * max(1, scale)
       found <- again
     }
   }

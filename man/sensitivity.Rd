@@ -56,8 +56,7 @@ that fitted it).}
 \item{tolerance}{How far below an optimum's best log likelihood a refit may
 lie and still count as reaching that optimum: each optimum is anchored at
 its best value and spans at most \code{tolerance}. Defaults to the reference
-fit's replication tolerance (for a growth mixture,
-\code{1e-6 * (1 + abs(logLik))}).}
+fit's replication tolerance, 1e-6 per observed value.}
 
 \item{cores}{Number of processor cores (default 1). The seeds are refitted
 in parallel, one seed per worker at a time, each refit on one core. Every

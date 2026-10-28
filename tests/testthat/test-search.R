@@ -218,7 +218,10 @@ test_that("every fit path runs the emEM search and records it", {
                               time = "sequence", mover_stayer = TRUE, seed = 1,
                               n_starts = 2, search = "emEM"),
     staged = fit_staged(course_engagement, engagement, "course", n_profiles = 2,
-                        n_group_classes = 2, seed = 1, n_starts = 2, search = "emEM")))
+                        n_group_classes = 2, seed = 1, n_starts = 2, search = "emEM")),
+    # The indicators are standardised within each course, so every course mean
+    # is 0 and two additive classes of them coincide.
+    classes = c(.multilpa_expected_warnings, "latents_weak_class"))
   invisible(lapply(names(fits), function(path) {
     fit <- fits[[path]]
     expect_identical(fit$search, "emEM", info = path)

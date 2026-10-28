@@ -467,6 +467,15 @@
   names(.mixture_structure_pack(structure, zero))
 }
 
+#' The measurements a growth mixture likelihood sums over
+#'
+#' Those of the persons of positive weight: the scale of the EM stopping
+#' rule, the quasi-Newton finish and the replication tolerance.
+#' @noRd
+.growth_observed <- function(spec, stats) {
+  sum(stats$n[which((spec$sampling_weights %||% rep(1, length(stats$n))) > 0)])
+}
+
 #' EM for the growth mixture model from one start
 #' @return A list with `params`, `expectation`, `converged`, `iterations`,
 #'   `history` and `degenerate`.
@@ -477,10 +486,8 @@
                        .growth_maximization(spec, stats, point, expectation)
                      },
                      max_iter, tol,
-                     # A unit-free stop (review 2026-10-26 round 2, K2-6): the
-                     # measurements of the persons of positive weight.
-                     .mixture_em_settings(stop_scale = sum(stats$n[
-                       which((spec$sampling_weights %||% rep(1, length(stats$n))) > 0)])))
+                     # A unit-free stop (review 2026-10-26 round 2, K2-6).
+                     .mixture_em_settings(stop_scale = .growth_observed(spec, stats)))
   params <- fit$state
   expectation <- fit$expectation
   sizes <- colSums(expectation$posterior)

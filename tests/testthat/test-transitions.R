@@ -212,8 +212,10 @@ test_that("the fitted quantities satisfy their own definitions", {
   expect_equal(unname(rowSums(fit$group_posteriors)), rep(1, 9L))
   expect_equal(sum(fit$group_probabilities), 1)
   expect_true(all(fit$transition_probabilities > 0))
-  # EM cannot decrease the likelihood it maximizes.
-  expect_false(is.unsorted(fit$log_likelihood_history))
+  # EM cannot decrease the likelihood it maximizes, beyond rounding at
+  # convergence (a few ulps of the log likelihood).
+  expect_true(all(diff(fit$log_likelihood_history) >=
+                    -8 * .Machine$double.eps * abs(fit$log_likelihood)))
   expect_equal(fit$log_likelihood, sum(fit$group_log_likelihood))
   # Every expected transition count is one transition of one group.
   expect_equal(sum(fit$transition_counts), sum(fit$sequence_lengths - 1L))

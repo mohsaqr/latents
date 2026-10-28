@@ -176,10 +176,12 @@ test_that("enumeration plots choose criteria with `what`, and 0.9.21's `criterio
     team = rep(seq_len(40), each = 6),
     climate = rep(stats::rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
       stats::rnorm(240))
+  # The teams differ in mean only, so two dispersion classes coincide.
   families <- quietly(enumerate_classes(ratings, "climate", "team",
                                         family = c("additive", "dispersion"),
                                         n_group_classes = 1:2, n_starts = 1,
-                                        seed = 1))
+                                        seed = 1),
+                      classes = c(.multilpa_expected_warnings, "latents_weak_class"))
   transitions <- quietly(enumerate_classes(
     subset(course_engagement, student <= 40), c("browse", "lectures"),
     "student", time = "sequence", n_profiles = 2:3, n_group_classes = 1,

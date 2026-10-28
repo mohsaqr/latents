@@ -207,6 +207,8 @@ test_that("multilpa(time = ) refuses numbers stored as text in the wrong order",
   expect_error(multilpa(long, "y", "id", n_profiles = 2, time = "text", n_starts = 1,
                         seed = 1), class = "latents_bad_time")
   long$padded <- sprintf("%02d", long$t)
-  fit <- multilpa(long, "y", "id", n_profiles = 2, time = "padded", n_starts = 1, seed = 1)
+  # Six sequences: a class with less than one member is expected.
+  fit <- quietly(multilpa(long, "y", "id", n_profiles = 2, time = "padded", n_starts = 1,
+                          seed = 1))
   expect_identical(unique(get_results(fit, "sequences")$time), sprintf("%02d", 1:11))
 })

@@ -183,6 +183,16 @@ test_that("collapsed group classes are flagged, warned and refused inference (AD
   expect_true(fit$collapsed_classes)
   expect_true("latents_weak_class" %in% conditions)
   expect_error(.additive_inference(fit, "observed"), class = "latents_boundary_fit")
+  # EM leaves the pair a little apart on the flat ridge, by an amount that
+  # depends on which start wins; the likelihood test flags it from any seed
+  # (the parameter test alone caught one seed in twelve).
+  flagged <- vapply(c(1L, 3L, 7L), function(seed) {
+    collapsed <- quietly(multilpa(data, c("y1", "y2"), "g", n_group_classes = 2L,
+                                  family = "dispersion", n_starts = 6L, seed = seed),
+                         classes = "latents_weak_class")
+    isTRUE(collapsed$collapsed_classes)
+  }, logical(1))
+  expect_true(all(flagged))
 })
 
 test_that("a boundary fit stops within the documented 0.002 standard errors (ADD2-6)", {

@@ -542,14 +542,23 @@
 #' variance positive except those held at zero, which the extrapolation leaves
 #' at exactly zero because they never move.
 #'
+#' The coordinates are reference standard deviations (means) and their
+#' squares (variances), so the extrapolation, and with it the maximum a start
+#' reaches, does not depend on the units of the ratings.
+#'
 #' @param zero H x d logical matrix of between variances held at zero.
+#' @param scales From `.additive_reference_scales()`.
 #' @return A list of `flatten`, `restore` and `valid` for `.latents_em_settings()`.
 #' @noRd
-.additive_accelerator <- function(zero) {
+.additive_accelerator <- function(zero, scales) {
   blocks <- c("means", "between", "within", "weights")
+  n_classes <- nrow(zero)
+  units <- c(rep(scales, each = n_classes), rep(scales^2, each = n_classes),
+             rep(scales^2, each = n_classes), rep(1, n_classes))
   list(
-    flatten = function(parameters) unlist(parameters[blocks], use.names = FALSE),
+    flatten = function(parameters) unlist(parameters[blocks], use.names = FALSE) / units,
     restore = function(template, values) {
+      values <- values * units
       sizes <- lengths(template[blocks])
       ends <- cumsum(sizes)
       template[blocks] <- lapply(seq_along(blocks), function(k) {
@@ -565,6 +574,36 @@
         all(parameters$weights > 0) && all(parameters$between[!zero] > 0) &&
         all(parameters$between[zero] == 0)
     })
+}
+
+#' The ratings a group-class likelihood sums over
+#'
+#' Every rating of a group of positive weight (the additive model has complete
+#' ratings): the scale of the EM stopping rule, the boundary search and the
+#' replication tolerance.
+#' @param stats From `.additive_prepare()`.
+#' @noRd
+.additive_observed <- function(stats) {
+  length(stats$vars) *
+    sum(stats$sizes[(stats$sampling_weights %||% rep(1, stats$n_groups)) > 0])
+}
+
+#' Reference standard deviations of the ratings, from the group statistics
+#'
+#' The total spread over the rows of groups of positive weight: the pooled
+#' within-group scatter plus the spread of the group averages about the grand
+#' mean. Constant indicators are refused at preparation, so each is positive.
+#' @param stats From `.additive_prepare()`.
+#' @return One standard deviation per indicator.
+#' @noRd
+.additive_reference_scales <- function(stats) {
+  used <- (stats$sampling_weights %||% rep(1, stats$n_groups)) > 0
+  sizes <- stats$sizes[used]
+  averages <- stats$averages[used, , drop = FALSE]
+  grand <- colSums(averages * sizes) / sum(sizes)
+  squares <- colSums(stats$scatter[used, , drop = FALSE]) +
+    colSums(sweep(averages, 2L, grand)^2 * sizes)
+  sqrt(squares / (sum(sizes) - 1))
 }
 
 #' EM for a group-class family from one starting point
@@ -595,11 +634,11 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(
-      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero),
-      # A unit-free stop (review 2026-10-26 round 2, K2-6): every rating of a
-      # group of positive weight (the additive model has complete ratings).
-      stop_scale = length(stats$vars) *
-        sum(stats$sizes[(stats$sampling_weights %||% rep(1, stats$n_groups)) > 0])),
+      accelerate = if (isTRUE(accelerate)) {
+        .additive_accelerator(zero, .additive_reference_scales(stats))
+      },
+      # A unit-free stop (review 2026-10-26 round 2, K2-6).
+      stop_scale = .additive_observed(stats)),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -651,7 +690,14 @@
   }, numeric(1))
   candidates <- Reduce(`|`, coordinates[score_at_zero <= 0], none)
   if (!any(candidates)) return(interior)
-  slack <- sqrt(.Machine$double.eps) * (1 + abs(fit$expectation$log_likelihood))
+  # A derivative with respect to a variance is in inverse squared units of the
+  # data; times the indicator's reference variance it is unit-free, and is
+  # compared with a slack per observed rating, so the boundary found does not
+  # depend on the units (and nor does the likelihood comparison below).
+  n_observed <- .additive_observed(stats)
+  slack <- sqrt(.Machine$double.eps) * max(1, n_observed)
+  reference_variances <- matrix(.additive_reference_scales(stats)^2, n_classes,
+                                n_indicators, byrow = TRUE)
   refit <- function(mask, point) {
     point$between[mask] <- 0
     c(.additive_em(stats, point, structure, min_variance, max_iter, tol, mask),
@@ -662,8 +708,9 @@
   # Releasing coordinates shrinks the held set, so this ends within
   # length(coordinates) rounds.
   repeat {
-    score <- .additive_between_score(stats, boundary$parameters,
-                                     boundary$expectation$posterior, "varying")
+    score <- reference_variances *
+      .additive_between_score(stats, boundary$parameters,
+                              boundary$expectation$posterior, "varying")
     held_scores <- vapply(coordinates, function(mask) {
       if (all(boundary$zero[mask])) sum(score[mask]) else -Inf
     }, numeric(1))
@@ -680,7 +727,7 @@
   boundary$iterations <- fit$iterations + boundary$iterations
   boundary$history <- c(fit$history, boundary$history)
   better <- boundary$expectation$log_likelihood >=
-    fit$expectation$log_likelihood - tol * (1 + abs(fit$expectation$log_likelihood))
+    fit$expectation$log_likelihood - tol * max(1, n_observed)
   if (isTRUE(boundary$kkt) && better && any(boundary$zero)) boundary else interior
 }
 
@@ -692,13 +739,24 @@
 #' classes), so the rule does not depend on the origin or units of the
 #' ratings. Their weights are then not identified (review 2026-10-26 round 2,
 #' ADD2-5).
+#'
+#' EM approaches such a pair along a flat ridge and rarely brings the two to
+#' 1e-8: one fit in twelve seeds of a collapsing dispersion fit did. Given the
+#' group statistics, a pair also collapses when the data cannot tell the two
+#' apart: setting both to their weight-averaged parameters lowers the log
+#' likelihood by no more than `likelihood_tolerance` (the replication
+#' tolerance, 1e-6 per observed rating), which is unit-free.
 #' @param parameters Group-class parameters with H x d `means`, `between` and
-#'   `within`, rows named by class.
+#'   `within`, rows named by class, and `weights` when `stats` is given.
 #' @param tolerance Relative tolerance.
+#' @param stats `NULL`, or the group statistics from `.additive_prepare()`.
+#' @param likelihood_tolerance The largest loss of log likelihood from merging
+#'   a pair that still counts as collapsed; used with `stats`.
 #' @return A character vector, one `"a = b"` label per collapsed pair; empty
 #'   when none (always for one class).
 #' @noRd
-.additive_collapsed_classes <- function(parameters, tolerance = 1e-8) {
+.additive_collapsed_classes <- function(parameters, tolerance = 1e-8, stats = NULL,
+                                        likelihood_tolerance = NULL) {
   n_classes <- nrow(parameters$means)
   if (n_classes < 2L) return(character())
   scale <- sqrt(colMeans(parameters$within) + colMeans(parameters$between))
@@ -706,14 +764,28 @@
   close <- function(block, k, l, reference) {
     all(abs(block[k, ] - block[l, ]) <= tolerance * reference)
   }
+  fitted <- if (!is.null(stats)) .additive_expectation(stats, parameters)$log_likelihood
+  indistinguishable <- function(k, l) {
+    if (is.null(stats)) return(FALSE)
+    share <- parameters$weights[c(k, l)] / sum(parameters$weights[c(k, l)])
+    merged <- parameters
+    merged[c("means", "between", "within")] <- lapply(
+      parameters[c("means", "between", "within")], function(block) {
+        block[c(k, l), ] <- matrix(colSums(block[c(k, l), , drop = FALSE] * share),
+                                   2L, ncol(block), byrow = TRUE)
+        block
+      })
+    fitted - .additive_expectation(stats, merged)$log_likelihood <= likelihood_tolerance
+  }
   same <- vapply(seq_len(ncol(pairs)), function(p) {
     k <- pairs[1L, p]
     l <- pairs[2L, p]
-    close(parameters$means, k, l, scale) &&
+    (close(parameters$means, k, l, scale) &&
       close(parameters$within, k, l,
             pmax(parameters$within[k, ], parameters$within[l, ])) &&
       close(parameters$between, k, l,
-            pmax(parameters$between[k, ], parameters$between[l, ]))
+            pmax(parameters$between[k, ], parameters$between[l, ]))) ||
+      indistinguishable(k, l)
   }, logical(1))
   labels <- rownames(parameters$means) %||% paste0("group_class_", seq_len(n_classes))
   sprintf("%s = %s", labels[pairs[1L, same]], labels[pairs[2L, same]])
@@ -840,7 +912,8 @@
     if (max_iter > 0L) {
       .additive_polish(stats, fit, structure, min_variance, max_iter, tol)
     } else c(fit, list(zero = none, kkt = NA))
-  }, select_start = "likelihood", screen = screen)
+  }, select_start = "likelihood", screen = screen,
+  tie = tol * max(1, .additive_observed(stats)))
   found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
@@ -890,7 +963,7 @@
   n_parameters <- .additive_count_parameters(n_group_classes, length(vars),
                                              structure)
   log_likelihood <- expectation$log_likelihood
-  tolerance <- 1e-6 * (1 + abs(log_likelihood))
+  tolerance <- .latents_replication_tolerance(.additive_observed(stats))
   starts <- data.frame(
     start = seq_along(attempts),
     log_likelihood = ifelse(valid, scores, NA_real_),
@@ -908,7 +981,8 @@
   # Effective membership counts the groups of positive weight only (ADD2-2).
   small_classes <- any(colSums(expectation$posterior[
     .additive_used_groups(stats), , drop = FALSE]) < 1)
-  collapsed <- .additive_collapsed_classes(parameters)
+  collapsed <- .additive_collapsed_classes(parameters, stats = stats,
+                                           likelihood_tolerance = tolerance)
   result <- list(
     call = call, family = family, structure = structure,
     between_variance = between_variance, vars = vars, id = id,
@@ -972,10 +1046,12 @@
   }
   if (length(collapsed) > 0L) {
     warning(warningCondition(sprintf(paste(
-      "Group classes have collapsed onto identical parameters (%s, equal to",
-      "1e-8 relative): the fit has fewer distinct classes than requested and",
-      "the weights of the collapsed classes are not identified. Fit fewer",
-      "group classes."), paste(collapsed, collapse = "; ")),
+      "Group classes have collapsed (%s): their parameters coincide, or",
+      "setting them equal changes the log likelihood by less than the",
+      "replication tolerance, so the data cannot tell them apart. The fit has",
+      "fewer distinct classes than requested and the weights of the collapsed",
+      "classes are not identified. Fit fewer group classes."),
+      paste(collapsed, collapse = "; ")),
       class = "latents_weak_class", call = NULL))
   }
   result

@@ -672,9 +672,23 @@
   # below its maximum with transitions 1e-4 off. The finish is therefore run
   # to L-BFGS-B's own tight rule, as before 0.9.13; `tol` still governs EM and
   # the code-52 check.
+  # Means are searched in reference standard deviations, so the path does
+  # not depend on the units of the indicators.
+  row_weights <- .lta_row_weights(spec$layout, spec$sampling_weights, nrow(spec$x))
+  parscale <- rep(1, length(theta))
+  means <- startsWith(names_all, "mean.")
+  if (any(means)) {
+    parscale[means] <- rep(.latents_reference_scales(
+      spec$x, row_weights, parameters$measurement[[1L]]$variances),
+      length.out = sum(means))
+  }
   finish <- .latents_quasi_newton(
     theta, lower, value, gradient, tol,
-    list(maxit = 5000L, factr = 10, pgtol = 0))
+    list(maxit = 5000L, factr = 10, pgtol = 0),
+    scale = .latents_observed_values(spec$x, spec$codes,
+                                     .latents_extra_matrix(spec$extra_data),
+                                     row_weights = row_weights),
+    parscale = parscale)
   if (!finish$improved) {
     return(list(parameters = parameters, log_likelihood = -finish$start_value,
                 gradient = max(abs(gradient(finish$par))), converged = FALSE))

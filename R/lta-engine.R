@@ -790,6 +790,7 @@
                     resume = NULL, acceleration = "squarem") {
   # The inner logit Newton steps of the transition M-step leave more rounding
   # in the likelihood than a closed-form step, hence the looser guard.
+  row_weights <- .lta_row_weights(layout, sampling_weights, nrow(x))
   fit <- .latents_em(
     parameters,
     evaluate = function(point) {
@@ -804,12 +805,13 @@
     },
     max_iter = max_iter, tol = tol,
     settings = .latents_em_settings(
-      decrease_tolerance = 1e-8, accelerate = .lta_accelerator(acceleration, general = TRUE),
+      decrease_tolerance = 1e-8,
+      accelerate = .lta_accelerator(acceleration, x, parameters,
+                                    general = TRUE, row_weights = row_weights),
       # A unit-free stop (review 2026-10-26 round 2, K2-6): the observed values
       # of the rows whose sequence has positive weight.
       stop_scale = .latents_observed_values(
-        x, codes, .latents_extra_matrix(extra),
-        row_weights = .lta_row_weights(layout, sampling_weights, nrow(x)))),
+        x, codes, .latents_extra_matrix(extra), row_weights = row_weights)),
     pause = pause, resume = resume)
   result <- list(parameters = fit$state, expectation = fit$expectation,
                  converged = fit$converged, iterations = fit$iterations,
@@ -1046,7 +1048,10 @@
              c("x", "codes", "layout", "designs", "occasion_of_row",
                "variance_model", "min_variance", "n_categories", "min_probability",
                "max_iter", "tol", "covariance_model", "structure",
-               "sampling_weights", "extra", "acceleration", "spec"))
+               "sampling_weights", "extra", "acceleration", "spec"),
+             n_observed = .latents_observed_values(
+               x, codes, .latents_extra_matrix(extra),
+               row_weights = .lta_row_weights(layout, sampling_weights, nrow(x))))
 }
 
 #' Run one general transition start, including its numerical finish
@@ -1136,7 +1141,7 @@
                           covariance_model, structure,
                           final_stage = .latents_final_stage(found),
                           sampling_weights = sampling_weights, occupied = occupied, used = used,
-                          empty_origins = empty_origins)
+                          empty_origins = empty_origins, extra = extra)
     result$starts <- .latents_search_columns(result$starts, found, n_starts)
     record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
     result[names(record)] <- record
@@ -1443,8 +1448,12 @@
                         covariance_model = "diagonal", structure = NULL,
                         final_stage = rep(TRUE, length(attempts)),
                         sampling_weights = NULL, occupied = NULL, used = NULL,
-                        empty_origins = NULL) {
+                        empty_origins = NULL, extra = NULL) {
   occupied <- occupied %||% rep(TRUE, layout$n_occasions)
+  # The observed values of the EM stopping rule (`.lta_em()`).
+  replication_tolerance <- .latents_replication_tolerance(.latents_observed_values(
+    x, codes, .latents_extra_matrix(extra),
+    row_weights = .lta_row_weights(layout, sampling_weights, nrow(x))))
   profile_names <- paste0("profile_", seq_len(n_profiles))
   class_names <- c(paste0("group_class_", seq_len(n_group_classes - mover_stayer)),
                    if (mover_stayer) "stayers")
@@ -1567,7 +1576,8 @@
                                        character(1)),
                         selected = seq_along(attempts) == best_start),
     n_best_replicated = sum(valid & final_stage & abs(scores - log_likelihood) <=
-                              1e-6 * (1 + abs(log_likelihood))),
+                              replication_tolerance),
+    replication_tolerance = replication_tolerance,
     min_variance = min_variance, min_probability = min_probability,
     # The specification, so the fit can be refitted (bootstrap) or nested.
     arguments = list(vars = vars, id = id, time = time, n_profiles = as.integer(n_profiles),

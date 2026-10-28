@@ -80,9 +80,17 @@ test_that("transition SQUAREM maps round-trip and reject invalid probabilities",
             group_probabilities = c(0.4, 0.6),
             initial_probabilities = matrix(c(0.3, 0.7, 0.7, 0.3), 2),
             transition_probabilities = array(c(0.8, 0.3, 0.2, 0.7), c(2, 2, 2)))
-  accelerator <- .lta_accelerator("squarem")
-  expect_identical(accelerator$restore(p, accelerator$flatten(p)), p)
+  x <- matrix(c(-3, -1, 1, 3), ncol = 1L)
+  accelerator <- .lta_accelerator("squarem", x, p)
+  expect_equal(accelerator$restore(p, accelerator$flatten(p)), p, tolerance = 1e-15)
   expect_true(accelerator$valid(p))
+  # The coordinates are in standard deviations of the data, so the same
+  # parameters in other units give the same point.
+  scaled <- p
+  scaled$means <- p$means * 1000
+  scaled$variances <- p$variances * 1000^2
+  expect_equal(.lta_accelerator("squarem", x * 1000, scaled)$flatten(scaled),
+               accelerator$flatten(p), tolerance = 1e-14)
   bad <- p
   bad$initial_probabilities[1, 1] <- 0
   expect_false(accelerator$valid(bad))
@@ -132,10 +140,19 @@ test_that("general SQUAREM maps preserve every updated block and the stayer mask
     transition2 = array(0, c(3, 1, 4, 2)),
     group_probabilities = c(0.6, 0.4), stayer = c(FALSE, TRUE))
   attr(parameters$transition, "n_occasion_intercepts") <- 2L
-  accelerator <- .lta_accelerator("squarem", general = TRUE)
+  x <- matrix(c(-3, -1, 1, 3), ncol = 1L)
+  accelerator <- .lta_accelerator("squarem", x, parameters, general = TRUE)
   values <- accelerator$flatten(parameters)
   expect_length(values, 2 * (2 + 2 + 4) + 4 + 12 + 24 + 2)
-  expect_identical(accelerator$restore(parameters, values), parameters)
+  expect_equal(accelerator$restore(parameters, values), parameters, tolerance = 1e-15)
+  scaled <- parameters
+  scaled$measurement <- lapply(parameters$measurement, function(block) {
+    block$means <- block$means / 1000
+    block$variances <- block$variances / 1000^2
+    block
+  })
+  expect_equal(.lta_accelerator("squarem", x / 1000, scaled, general = TRUE)$flatten(scaled),
+               values, tolerance = 1e-14)
   expect_true(accelerator$valid(parameters))
   bad <- parameters
   bad$transition2[1] <- Inf

@@ -115,8 +115,15 @@ test_that("zero-weight units beyond the weighted occasions leave an occasion-mea
 
 test_that("the transitions table leaves out moves only zero-weight units make (TRANS-4)", {
   skip_on_cran()
-  reference <- release_fit(release_panel, weights = "wt", transitions = "occasion")
-  extended <- release_fit(release_zero_weight, weights = "wt", transitions = "occasion")
+  # One start: with two, both reach this maximum in opposite labellings, and
+  # rounding (the padded fit carries unused logits for occasions 5 and 6)
+  # decides which is reported.
+  one_start <- function(data) {
+    quietly(lta(data, vars = c("y1", "y2"), id = "id", n_profiles = 2, time = "time",
+                n_starts = 1, seed = 1, weights = "wt", transitions = "occasion"))
+  }
+  reference <- one_start(release_panel)
+  extended <- one_start(release_zero_weight)
   expect_equal(extended$log_likelihood, reference$log_likelihood, tolerance = 1e-8)
   table <- get_results(extended, "transitions")
   expect_false(anyNA(table$probability))

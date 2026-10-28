@@ -41,7 +41,7 @@
               inherits(plan, "latents_multilpa_plan"))
   starts <- tryCatch(.latents_run_starts(
     plan$n_starts, plan$run, plan$select_start, initial = plan$initial,
-    cores = cores, screen = plan$screen, interior = plan$interior),
+    cores = cores, screen = plan$screen, interior = plan$interior, tie = plan$tie),
     error = function(error) {
       .multilpa_report_failed_plan(plan, error)
       stop(error)
@@ -192,10 +192,7 @@
       if (is.null(sampling_weights)) n_groups else sum(sampling_weights > 0)
     small_classes <- any(effective_profile_counts < 1) ||
       any(effective_group_counts < 1)
-    # A start that stops by the EM rule can still lie several steps below
-    # the maximum when EM is slow, so replication allows 1e-6 per observed
-    # value: unit-free like the old 1e-6 * (1 + |log L|), and about as wide.
-    replication_tolerance <- 1e-6 * max(1, .latents_observed_values(
+    replication_tolerance <- .latents_replication_tolerance(.latents_observed_values(
       x, codes, .latents_extra_matrix(extra),
       row_weights = if (is.null(sampling_weights)) NULL else
         sampling_weights[group_index]))

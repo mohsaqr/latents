@@ -115,23 +115,30 @@ test_that("imputations that come back relabelled are aligned inside the verb", {
   frame$y1 <- stats::rnorm(n, c(0, 2.5)[state])
   frame$y2 <- stats::rnorm(n, c(0, 2)[state])
   frame$z[stats::runif(n) < stats::plogis(-2 + 0.8 * frame$y1)] <- NA
-  # The imputation seed is chosen so that one imputation's EM labels its
-  # profiles the other way round. With `seed = 1` that was imputation 5 until
-  # the unit-free EM stop and the relative variance bound (review 2026-10-26
-  # round 2, K2-6 and K2-2), after which all
-  # five came back with the same labels and the test no longer exercised the
-  # alignment; `seed = 4` has one relabelled imputation.
+  # One imputation is given with its rows in reverse order: the same data and
+  # likelihood, but the deterministic first start numbers its profiles the
+  # other way round, so that fit comes back relabelled whatever the search.
+  # (Chance relabelling under one imputation seed broke twice as the engine
+  # changed.)
   imputed <- mice::mice(frame, m = 5, printFlag = FALSE, seed = 4)
-  pooled <- .pool_quietly(pool_imputations(imputed, c("y1", "y2"), "g", 2L,
-                                           n_group_classes = 1L,
-                                           profile_covariates = "z",
-                                           n_starts = 2, seed = 1))
-  # On these data one imputation's EM labels its profiles the other way round. Pooled without alignment, its slope enters with
-  # the opposite sign and the between-imputation variance swamps the rest.
+  completed <- lapply(seq_len(5L), function(index) mice::complete(imputed, index))
+  reversed <- completed
+  reversed[[3L]] <- reversed[[3L]][rev(seq_len(n)), ]
+  pool <- function(sets) {
+    .pool_quietly(pool_imputations(sets, c("y1", "y2"), "g", 2L,
+                                   n_group_classes = 1L, profile_covariates = "z",
+                                   n_starts = 2, seed = 1))
+  }
+  pooled <- pool(reversed)
   expect_gte(summary(pooled)$relabelled, 1L)
+  # Pooled without alignment, the relabelled slope would enter with the
+  # opposite sign and the between-imputation variance swamp the rest; aligned,
+  # the pooled table is that of the same imputations in their own row order.
   slope <- subset(as.data.frame(pooled), term == "z")
   expect_gt(abs(slope$estimate), 1)
   expect_lt(slope$fmi, 0.5)
+  expect_equal(slope, subset(as.data.frame(pool(completed)), term == "z"),
+               tolerance = 1e-6, ignore_attr = TRUE)
 })
 
 test_that("covariate-free fits are pooled too", {

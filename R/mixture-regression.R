@@ -445,7 +445,8 @@ mixture_regression <- function(formula, data, n_classes,
   carrying <- .mixture_carrying_spec(spec)
   results <- .mixture_with_seed(seed, .mixture_run_starts(
     carrying, as.integer(n_starts), as.integer(max_iter), tol))
-  fit <- .mixture_select(carrying, results, select_start)
+  fit <- .mixture_select(carrying, results, select_start,
+                        tie = tol * max(1, .mixture_observed(carrying)))
   if (carrying$n < spec$n) {
     fit$spec <- spec
     fit$expectation <- .mixture_expectation(spec, fit$params, weighted = FALSE)

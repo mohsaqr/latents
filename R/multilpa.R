@@ -2016,7 +2016,11 @@ multilpa <- function(data, vars, id, n_profiles,
     c("x", "group_index", "variance_model", "min_variance", "max_iter", "tol",
       "covariance_model", "codes", "n_categories", "min_probability", "held",
       "structure", "prior_parameters", "acceleration", "sampling_weights",
-      "fitting_extra", "covariance_pattern"))
+      "fitting_extra", "covariance_pattern"),
+    n_observed = .latents_observed_values(
+      x, codes, .latents_extra_matrix(fitting_extra),
+      row_weights = if (is.null(sampling_weights)) NULL else
+        sampling_weights[group_index]))
   plan$interior <- if (exclude_boundary) .lta_bind_context(
     .multilpa_start_interior, list(min_variance = min_variance))
   plan$cores <- cores

@@ -41,20 +41,54 @@
 #' @return The flatten, restore and valid functions for the EM kernel.
 #' @noRd
 .multilpa_accelerator <- function(x, parameters, row_weights = NULL, extra = NULL) {
+  scales <- .latents_reference_scales(x, row_weights, parameters$variances)
+  chart <- .multilpa_restore_parameters(
+    parameters, rep(1, length(.multilpa_flatten_parameters(parameters))))
+  units <- .multilpa_flatten_parameters(.latents_scale_chart(chart, scales, extra))
+  list(flatten = function(point) .multilpa_flatten_parameters(point) / units,
+       restore = function(point, values) {
+         .multilpa_restore_parameters(point, values * units)
+       },
+       valid = .multilpa_valid_parameters)
+}
+
+#' Reference standard deviations of the continuous indicators
+#'
+#' Observed values in rows of positive sampling weight. A constant or singly
+#' observed column has no empirical unit; its variance block supplies a
+#' positive reference instead.
+#' @param x Continuous indicators (rows by columns).
+#' @param row_weights Optional sampling weights in row order.
+#' @param variances A profiles-by-columns variance matrix for the fallback.
+#' @return One positive scale per column of `x`.
+#' @noRd
+.latents_reference_scales <- function(x, row_weights = NULL, variances = NULL) {
   rows <- if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0
   scales <- vapply(seq_len(ncol(x)), function(column) {
     stats::sd(x[rows, column], na.rm = TRUE)
   }, numeric(1))
-  # A constant or singly observed column has no empirical unit. Its bound
-  # supplies a positive reference in variance units instead.
   unusable <- !is.finite(scales) | scales <= 0
   if (any(unusable)) {
-    scales[unusable] <- sqrt(colMeans(parameters$variances)[unusable])
+    scales[unusable] <- sqrt(colMeans(as.matrix(variances))[unusable])
   }
-  chart <- .multilpa_restore_parameters(
-    parameters, rep(1, length(.multilpa_flatten_parameters(parameters))))
-  chart$means <- sweep(chart$means, 2L, scales, "*")
-  chart$variances <- sweep(chart$variances, 2L, scales^2, "*")
+  scales
+}
+
+#' Put the Gaussian blocks of a unit-valued parameter list in data units
+#'
+#' Means carry one standard deviation, variances its square, covariances the
+#' product of two, and direct effects outcome over predictor units; every
+#' other block keeps 1.
+#' @param chart A parameter list whose updatable values are all 1.
+#' @param scales From `.latents_reference_scales()`.
+#' @param extra Optional extra-indicator and direct-effect carrier.
+#' @return `chart` with those blocks rescaled.
+#' @noRd
+.latents_scale_chart <- function(chart, scales, extra = NULL) {
+  if (!is.null(chart$means)) chart$means <- sweep(chart$means, 2L, scales, "*")
+  if (!is.null(chart$variances)) {
+    chart$variances <- sweep(chart$variances, 2L, scales^2, "*")
+  }
   if (!is.null(chart$covariances)) {
     chart$covariances <- sweep(chart$covariances, c(1L, 2L), outer(scales, scales), "*")
   }
@@ -62,12 +96,7 @@
     chart$direct_effects[] <- scales[extra$direct$effects$column] /
       extra$direct$scales
   }
-  units <- .multilpa_flatten_parameters(chart)
-  list(flatten = function(point) .multilpa_flatten_parameters(point) / units,
-       restore = function(point, values) {
-         .multilpa_restore_parameters(point, values * units)
-       },
-       valid = .multilpa_valid_parameters)
+  chart
 }
 
 #' Refill a parameter list's updatable blocks from a flat vector
@@ -156,22 +185,36 @@
 #'
 #' General states carry one measurement block per measurement occasion and
 #' unconstrained initial/transition logits. The fixed stayer mask is retained
-#' by restore and never extrapolated.
+#' by restore and never extrapolated. As in `.multilpa_accelerator()`, the
+#' Gaussian blocks are extrapolated in reference standard deviations, so the
+#' path does not depend on the units of the indicators; the logits are already
+#' fitted on centred and scaled covariates (`.lta_chart_designs()`).
 #' @param acceleration SQUAREM or plain EM.
+#' @param x Continuous indicators (rows by columns).
+#' @param parameters The starting state, defining the block shapes.
 #' @param general Whether the state uses logits and nested measurement blocks.
+#' @param row_weights Optional sampling weights in row order.
 #' @return NULL or the flatten, restore and valid functions for the EM kernel.
 #' @noRd
-.lta_accelerator <- function(acceleration, general = FALSE) {
+.lta_accelerator <- function(acceleration, x, parameters, general = FALSE,
+                             row_weights = NULL) {
   if (identical(acceleration, "none")) return(NULL)
-  if (!general) return(list(flatten = .multilpa_flatten_parameters,
-                           restore = .multilpa_restore_parameters,
-                           valid = .multilpa_valid_parameters))
+  if (!general) return(.multilpa_accelerator(x, parameters))
   blocks <- c("measurement", "initial", "transition", "transition2",
               "group_probabilities")
-  list(flatten = function(point) .multilpa_flatten_parameters(point, blocks),
-       restore = function(point, values) .multilpa_restore_parameters(point, values, blocks),
+  flatten <- function(point) .multilpa_flatten_parameters(point, blocks)
+  scales <- .latents_reference_scales(x, row_weights,
+                                      parameters$measurement[[1L]]$variances)
+  chart <- .multilpa_restore_parameters(parameters, rep(1, length(flatten(parameters))),
+                                        blocks)
+  chart$measurement <- lapply(chart$measurement, .latents_scale_chart, scales = scales)
+  units <- flatten(chart)
+  list(flatten = function(point) flatten(point) / units,
+       restore = function(point, values) {
+         .multilpa_restore_parameters(point, values * units, blocks)
+       },
        valid = function(point) {
-         all(is.finite(.multilpa_flatten_parameters(point, blocks))) &&
+         all(is.finite(flatten(point))) &&
            .multilpa_valid_parameters(list(group_probabilities = point$group_probabilities)) &&
            all(vapply(point$measurement, .multilpa_valid_parameters, logical(1)))
        })

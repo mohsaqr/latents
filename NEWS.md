@@ -10,8 +10,8 @@ in full further down.
   relative to `|log L|`: the same data multiplied by 0.001 and by 1e-6 gave
   log likelihoods 654 and 37,700 below the fit in the original units, with
   only a boundary warning. Both rules are now unit-free ("Fits that do not
-  depend on the units of the data"), and so is SQUAREM in `multilpa()`
-  ("SQUAREM and replication in any units").
+  depend on the units of the data"), and so are SQUAREM and the
+  quasi-Newton finishes ("SQUAREM and replication in any units").
 * **Occasion labels such as `T1` ... `T10`.** 0.9.21 ordered them
   alphabetically (`T1`, `T10`, `T2`, ...), so `lta()` and `multilpa(time =)`
   fitted the occasions in the wrong order. Such labels are now refused with
@@ -104,22 +104,54 @@ kept because 0.9.21 code reads it.
   and with it the maximum a start reached, depended on the units. With
   `test_anxiety` of `srl` multiplied by 1000 (VVV, four profiles, five
   starts, seed 3) the fit and its grand-scaled refit differed by 4.92 in
-  log likelihood. SQUAREM now steps in standard-deviation units and the two
-  agree to 1e-12. This applies to `multilpa()`, `lpa()`, `lca()` and
-  `multilca()`; `lta()` keeps its previous steps for now. Plain EM was already unit-free and is unchanged bit for
-  bit. Accelerated fits can stop at a different iteration and, from some
-  starts, at a different maximum: on the package's 192 recorded reference
-  fits, 179 log likelihoods moved by less than 1e-6, 9 by up to 1e-4, three
-  rose (by 0.19, 0.84 and 2.29) and one, a short staged fit, fell by
-  0.0006.
+  log likelihood. SQUAREM now steps in standard-deviation units in
+  `multilpa()` (and so `lpa()`, `lca()` and `multilca()`), both `lta()`
+  engines and the additive family, and the two fits agree to 1e-12. Plain
+  EM was already unit-free and is unchanged bit for bit. Accelerated fits
+  can stop at a different iteration and, from some starts, at a different
+  maximum: on the package's 192 recorded reference fits, 179 log
+  likelihoods moved by less than 1e-6, 9 by up to 1e-4, three rose (by
+  0.19, 0.84 and 2.29) and one, a short staged fit, fell by 0.0006.
+* The quasi-Newton finish of the general `lta()` engine (covariates,
+  occasion-specific transitions, weights, mover-stayer, second order) and of
+  growth mixtures stopped relative to `|log L|`, which a change of units
+  moves, and searched the means in the units of the data. With the
+  indicators multiplied by 0.001, a mover-stayer fit of `course_engagement`
+  stopped up to 0.028 below the maximum it reaches in the original units.
+  Both now stop on the change per observed value, the general `lta()`
+  engine searches the means in standard deviations, and the fit is the
+  same in any units.
+* Starts whose log likelihoods are within the fit's own precision, `tol`
+  times the number of observed values (the change at which its EM stops),
+  are now treated as tied, and the earliest converged one among them is
+  reported, in every family. The window used to be a relative `1e-10` of
+  `|log L|`, which a change of units moves and which at `|log L|` in the
+  thousands spans 4e-7: a weakly separated transition model fitted with
+  `tol = 1e-12` reported a start 3.2e-7 below another, a gap depmixS4's EM
+  then recovered from the reported point. With the default `tol = 1e-8` the
+  window is wider than before, so between starts that agree to the precision
+  asked for the earlier one is now reported more often.
+* The additive family's search for between-group variances at zero
+  compared a derivative with respect to a variance, which has units, with a
+  slack proportional to `|log L|`. It now compares the derivative in
+  reference-variance units with a slack per observed rating, and accepts a
+  boundary fit within `tol` per observed rating, as EM stops.
+* Group classes of the additive family that the data cannot tell apart are
+  now flagged as collapsed when setting them equal lowers the log
+  likelihood by less than the replication tolerance, not only when their
+  parameters agree to 1e-8. EM approaches such a pair along a flat ridge and
+  rarely brings it that close: a dispersion fit whose classes differ only in
+  means was flagged from one seed in twelve, and its inference then failed
+  with a singular information instead of the collapsed-class refusal. It is
+  now flagged from every seed tried (`latents_weak_class`).
 * A start counts as reaching the best log likelihood when it is within
   `1e-6` times the number of observed values of it, no longer
   `1e-6 * (1 + |log L|)`, which moved 40-fold with the units for the same
   gaps between starts. For data in ordinary units the two are of the same
-  size, so the counts printed for such fits barely change. The tolerance is stored
-  as `replication_tolerance`. This applies to the same four verbs; `lta()`
-  and the additive, covariate, cross-level and growth families keep the
-  previous rule for now.
+  size, so the counts printed for such fits barely change. Every family
+  uses this rule and stores it as `replication_tolerance`, which
+  `sensitivity()` reads; the general `lta()` engine, mixture regressions
+  and growth mixtures did not store one before.
 
 ## Astra review repairs
 

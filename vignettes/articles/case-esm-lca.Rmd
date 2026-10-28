@@ -255,10 +255,10 @@ get_results(mixed, "profile_probabilities")
 ```
 
 With affect included, the profiles become profiles of mood. Profile 1 has mean
-ratings of 3.59 for happy, 3.33 for relaxed and 4.33 for exhausted; profile 2
-has 5.85, 5.59 and 2.55. The activities now differ less and in a different
-way: time with friends is reported at 0.084 of profile-1 prompts and 0.188 of
-profile-2 prompts, social media at 0.315 and 0.269. Good mood goes with social
+ratings of 5.85 for happy, 5.59 for relaxed and 2.55 for exhausted; profile 2
+has 3.59, 3.33 and 4.33. The activities now differ less and in a different
+way: time with friends is reported at 0.188 of profile-1 prompts and 0.084 of
+profile-2 prompts, social media at 0.269 and 0.315. Good mood goes with social
 time more than with media use. The student classes remain distinct: 0.874 of
 the prompts of class 1 fall in the low-mood profile, and 0.833 of those of
 class 2 in the good-mood profile. The profiles a model finds are set by the

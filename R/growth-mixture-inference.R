@@ -269,9 +269,9 @@
 #'
 #' EM is reliable from far away and slow near the maximum; L-BFGS-B with the
 #' analytic gradient finishes from EM's point. Variances keep their floors as
-#' bounds. Convergence is judged by the relative change of the log
-#' likelihood; L-BFGS-B's line-search stop (code 52) at the maximum is
-#' checked by one restart, as for transition fits.
+#' bounds. Convergence is judged by the change of the log likelihood per
+#' measurement, as in EM; L-BFGS-B's line-search stop (code 52) at the
+#' maximum is checked by one restart, as for transition fits.
 #'
 #' @return A list with `params`, `converged` and `log_likelihood`.
 #' @noRd
@@ -292,7 +292,8 @@
   # Polished to near machine precision whatever `tol` is: with the analytic
   # gradient it is cheap, and `tol` judges convergence below.
   finish <- .latents_quasi_newton(theta, lower, value, gradient, tol,
-                                  list(maxit = 2000L, factr = 10, pgtol = 0))
+                                  list(maxit = 2000L, factr = 10, pgtol = 0),
+                                  scale = .growth_observed(spec, stats))
   if (!finish$improved) {
     return(list(params = params, converged = FALSE,
                 log_likelihood = -finish$start_value))

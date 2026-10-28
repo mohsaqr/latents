@@ -143,12 +143,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     updated$between_variances <- between$variances
     updated
   }
-  # A unit-free stop (review 2026-10-26 round 2, K2-6): the observed values
-  # of the rows and of the group means that carry positive weight.
-  stop_scale <- .latents_observed_values(
-    x, row_weights = if (is.null(sampling_weights)) NULL else
-      sampling_weights[group_index]) +
-    .latents_observed_values(group_means, row_weights = sampling_weights)
+  # A unit-free stop (review 2026-10-26 round 2, K2-6).
+  stop_scale <- .cross_level_observed(x, group_index, group_means, sampling_weights)
   fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol,
                      settings = .latents_em_settings(stop_scale = stop_scale),
                      pause = pause, resume = resume)
@@ -235,7 +231,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
       .cross_level_em(x, group_index, group_means, start %||% resume$state,
                       variance_model, between_variance, min_variance, max_iter,
                       tol, sampling_weights, pause = pause, resume = resume)
-    }, select_start = "likelihood", screen = screen), n_starts)
+    }, select_start = "likelihood", screen = screen,
+    tie = tol * max(1, .cross_level_observed(x, group_index, group_means,
+                                             sampling_weights))), n_starts,
+    .cross_level_observed(x, group_index, group_means, sampling_weights))
     best$search_record <- .latents_search_record(search, n_starts, screen,
                                                  "likelihood", "allow")
     # Weighted posteriors are counts; each unit is reported by its own.
@@ -270,12 +269,24 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   result
 }
 
+#' The observed values a full cross-level likelihood sums over
+#'
+#' The rows and the group means that carry positive weight: the scale of the
+#' EM stopping rule and of the replication tolerance.
+#' @noRd
+.cross_level_observed <- function(x, group_index, group_means, sampling_weights) {
+  .latents_observed_values(
+    x, row_weights = if (is.null(sampling_weights)) NULL else
+      sampling_weights[group_index]) +
+    .latents_observed_values(group_means, row_weights = sampling_weights)
+}
+
 #' Keep the best start of the full cross-level EM, with every start's record
 #'
 #' Failed starts are kept in the record and announced with a
 #' `latents_failed_starts` warning, as in every other family.
 #' @noRd
-.cross_level_select <- function(starts, n_starts) {
+.cross_level_select <- function(starts, n_starts, n_observed) {
   found <- starts
   attempts <- starts$attempts
   valid <- starts$valid
@@ -284,10 +295,11 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   best_start <- starts$best_start
   best <- attempts[[best_start]]
   # The replication count of every other family: starts run to the end whose
-  # likelihood is within 1e-6 (1 + |L|) of the reported one (RP-1).
+  # likelihood is within 1e-6 per observed value of the reported one (RP-1).
   reported <- scores[best_start]
+  best$replication_tolerance <- .latents_replication_tolerance(n_observed)
   best$n_best_replicated <- sum(valid & .latents_final_stage(found) &
-                                  abs(scores - reported) <= 1e-6 * (1 + abs(reported)))
+                                  abs(scores - reported) <= best$replication_tolerance)
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; the start records keep their errors.",
@@ -419,6 +431,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     group_sizes = stats::setNames(stats$sizes, stats$ids),
     converged = isTRUE(fitted$converged), iterations = fitted$iterations,
     n_best_replicated = fitted$n_best_replicated,
+    replication_tolerance = fitted$replication_tolerance,
     log_likelihood_history = fitted$history, boundary = boundary,
     starts = fitted$starts, sufficient_statistics = stats,
     min_variance = min_variance,

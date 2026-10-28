@@ -44,8 +44,7 @@ utils::globalVariables(c("seed", "status"))
 #' @param tolerance How far below an optimum's best log likelihood a refit may
 #'   lie and still count as reaching that optimum: each optimum is anchored at
 #'   its best value and spans at most `tolerance`. Defaults to the reference
-#'   fit's replication tolerance (for a growth mixture,
-#'   `1e-6 * (1 + abs(logLik))`).
+#'   fit's replication tolerance, 1e-6 per observed value.
 #' @param cores Number of processor cores (default 1). The seeds are refitted
 #'   in parallel, one seed per worker at a time, each refit on one core. Every
 #'   refit sets its own seed, so the result is identical to `cores = 1`.
@@ -361,7 +360,7 @@ plot.latents_sensitivity <- function(x, main = NULL, subtitle = NULL, ...) {
       mean(match(max.col(matched$posterior, ties.method = "first"), matched$order) ==
              reference)
     },
-    tolerance = 1e-6 * (1 + abs(x$log_likelihood)))
+    tolerance = x$replication_tolerance %||% (1e-6 * (1 + abs(x$log_likelihood))))
 }
 
 #' Number the distinct maxima a set of log likelihoods reached

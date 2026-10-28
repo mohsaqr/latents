@@ -212,9 +212,11 @@
 #' @param spec The model specification.
 #' @param results EM results from `.mixture_run_starts()`.
 #' @param select_start Selection rule.
+#' @param tie The start-selection tie, `tol` per outcome (see
+#'   `.multilpa_select_start()`).
 #' @return An object of class `latents_mixture_regression` without inference.
 #' @noRd
-.mixture_select <- function(spec, results, select_start) {
+.mixture_select <- function(spec, results, select_start, tie = NULL) {
   log_likelihood <- vapply(results, function(r) r$expectation$log_likelihood,
                            numeric(1))
   converged <- vapply(results, `[[`, logical(1), "converged")
@@ -236,7 +238,7 @@
   candidates <- which(usable)
   best <- candidates[.multilpa_select_start(log_likelihood[candidates],
                                             converged[candidates],
-                                            select_start)]
+                                            select_start, tie = tie)]
   chosen <- results[[best]]
   if (!chosen$converged) {
     warning(warningCondition(sprintf(paste(
@@ -282,8 +284,9 @@
   best_value <- log_likelihood[best]
   completed <- vapply(results, function(r) identical(r$stage, "completed"),
                       logical(1))
+  replication_tolerance <- .latents_replication_tolerance(.mixture_observed(spec))
   replicated <- sum(usable & completed &
-                      abs(log_likelihood - best_value) <= 1e-6 * (1 + abs(best_value)))
+                      abs(log_likelihood - best_value) <= replication_tolerance)
   starts <- data.frame(
     start = seq_along(results),
     kind = c("residuals", rep("random", length(results) - 1L)),
@@ -297,7 +300,7 @@
     n_parameters = .mixture_count_parameters(spec),
     converged = chosen$converged, iterations = chosen$iterations,
     history = chosen$history, starts = starts,
-    n_best_replicated = replicated),
+    n_best_replicated = replicated, replication_tolerance = replication_tolerance),
     class = "latents_mixture_regression")
 }
 

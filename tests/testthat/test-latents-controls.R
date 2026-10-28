@@ -53,6 +53,16 @@ test_that("the start rule takes the best converged start only when asked", {
   tied <- c(-5, -5 - 1e-13, -5)
   expect_identical(.multilpa_select_start(tied, c(FALSE, TRUE, TRUE)), 2L)
   expect_identical(.multilpa_select_start(tied, c(TRUE, TRUE, TRUE)), 1L)
+  # With the fit's own precision (`tol` per observed value) as the tie, two
+  # starts 3.2e-7 apart are different points when the fit resolves 3e-9, and
+  # tied when it resolves 7e-6, whatever |log L| is.
+  close <- c(-4275.8274056, -4275.8274056 + 3.2e-7)
+  expect_identical(.multilpa_select_start(close, c(TRUE, TRUE), tie = 3e-9), 2L)
+  expect_identical(.multilpa_select_start(close, c(TRUE, TRUE), tie = 7e-6), 1L)
+  expect_identical(.multilpa_select_start(close - 1e6, c(TRUE, TRUE), tie = 3e-9), 2L)
+  # Without a tie the relative 1e-10 window of earlier versions applies.
+  expect_identical(.multilpa_select_start(close, c(TRUE, TRUE)), 1L)
+  expect_error(.multilpa_select_start(close, c(TRUE, TRUE), tie = -1))
 })
 
 test_that("the start rule is invariant to failed starts and refuses bad input", {

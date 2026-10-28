@@ -59,9 +59,14 @@
 #' Restarts of a mixture routinely reach the same optimum under different label
 #' permutations, and then differ only in the last bits of the likelihood.
 #' Picking by `which.max()` alone makes the reported labelling turn on
-#' floating-point noise, so the maximum is taken up to a relative tolerance far
-#' below any difference that could matter, a converged start is preferred among
-#' those tied, and then the earliest.
+#' floating-point noise, so the maximum is taken up to the fit's own
+#' precision, a converged start is preferred among those tied, and then the
+#' earliest. The precision is `tie`, the change in log likelihood at which the
+#' fit's EM stops (`tol` per observed value), which does not depend on the
+#' units of the data. Without it the window is a relative `1e-10` of the
+#' maximum, which a change of units moves and which, at `|log L|` in the
+#' thousands, spans 4e-7: wide enough to report a start measurably below
+#' another when a fit is run to `tol = 1e-12`.
 #'
 #' @param log_likelihood Numeric vector, one entry per start; `-Inf` for a
 #'   start that failed.
@@ -73,11 +78,13 @@
 #'   the starts with no variance at its lower bound. When supplied, only those
 #'   starts are candidates, and the rule chooses among them; when none is
 #'   flagged, every start is, with a `latents_all_starts_boundary` warning.
+#' @param tie `NULL`, or the largest difference in log likelihood treated as
+#'   a tie (the fit's EM stopping threshold, `tol` per observed value).
 #' @return A single integer index.
 #' @noRd
 .multilpa_select_start <- function(log_likelihood, converged,
                                    rule = c("likelihood", "converged"),
-                                   interior = NULL) {
+                                   interior = NULL, tie = NULL) {
   rule <- match.arg(rule)
   stopifnot(
     "`log_likelihood` must be numeric" = is.numeric(log_likelihood),
@@ -87,7 +94,10 @@
       any(is.finite(log_likelihood)),
     "`interior` must be NULL or logical and match `log_likelihood`" =
       is.null(interior) || (is.logical(interior) &&
-        length(interior) == length(log_likelihood) && !anyNA(interior))
+        length(interior) == length(log_likelihood) && !anyNA(interior)),
+    "`tie` must be NULL or a single non-negative number" =
+      is.null(tie) || (is.numeric(tie) && length(tie) == 1L && is.finite(tie) &&
+                         tie >= 0)
   )
   usable <- is.finite(log_likelihood)
   if (!is.null(interior)) {
@@ -105,7 +115,8 @@
     which(settled)
   } else which(usable)
   best <- max(log_likelihood[candidates])
-  tied <- candidates[log_likelihood[candidates] >= best - 1e-10 * (1 + abs(best))]
+  window <- tie %||% (1e-10 * (1 + abs(best)))
+  tied <- candidates[log_likelihood[candidates] >= best - window]
   preferred <- tied[converged[tied]]
   if (length(preferred) > 0L) preferred[1L] else tied[1L]
 }

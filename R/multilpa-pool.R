@@ -151,12 +151,14 @@
       if (inherits(ranked[[i]]$value, "error")) stop(ranked[[i]]$value)
       attempts <- lapply(finished[[i]], `[[`, "value")
       found <- if (is.null(plan$screen)) {
-        .latents_select_starts(attempts, plan$select_start, interior = plan$interior)
+        .latents_select_starts(attempts, plan$select_start, interior = plan$interior,
+                               tie = plan$tie)
       } else {
         .latents_select_screened(lapply(screened[[i]], `[[`, "value"),
                                   attempts, ranked[[i]]$value$finalists,
                                   ranked[[i]]$value$screened_scores,
-                                  plan$select_start, interior = plan$interior)
+                                  plan$select_start, interior = plan$interior,
+                                  tie = plan$tie)
       }
       .multilpa_finish_plan(plan, found)
     }, error = function(error) {

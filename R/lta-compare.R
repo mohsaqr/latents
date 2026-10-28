@@ -500,12 +500,12 @@
       if (inherits(ranked[[i]]$value, "error")) stop(ranked[[i]]$value)
       attempts <- lapply(finished[[i]], `[[`, "value")
       found <- if (is.null(plan$screen)) {
-        .latents_select_starts(attempts, plan$select_start)
+        .latents_select_starts(attempts, plan$select_start, tie = plan$tie)
       } else {
         .latents_select_screened(lapply(screened[[i]], `[[`, "value"),
                                   attempts, ranked[[i]]$value$finalists,
                                   ranked[[i]]$value$screened_scores,
-                                  plan$select_start)
+                                  plan$select_start, tie = plan$tie)
       }
       .lta_finish_plan(plan, found)
     }, error = function(error) {

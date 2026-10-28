@@ -200,8 +200,8 @@
   }
   if (isTRUE(x$collapsed_classes)) {
     stop(errorCondition(paste(
-      "Group classes have collapsed onto identical parameters, so their weights",
-      "are not identified."), class = "latents_boundary_fit", call = NULL))
+      "Group classes have collapsed (the data cannot tell them apart), so their",
+      "weights are not identified."), class = "latents_boundary_fit", call = NULL))
   }
   if (any(x$group_probabilities <= 1e-6) || isTRUE(x$small_classes)) {
     stop(errorCondition(

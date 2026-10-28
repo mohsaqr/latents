@@ -356,6 +356,14 @@
                                  row_weights = sampling_weights[group_index])
   x <- designs$x
   center <- designs$center
+  # Starts closer than the EM stopping threshold are tied (see
+  # `.multilpa_select_start()`); the replication tolerance below counts the
+  # same observed values.
+  n_observed <- .latents_observed_values(
+    x, designs$codes, .latents_extra_matrix(designs$extra),
+    row_weights = if (is.null(sampling_weights)) NULL else
+      sampling_weights[group_index])
+  tie <- tol * max(1, n_observed)
   control <- list(variance_model = variance_model, min_variance = min_variance,
                   max_iter = max_iter, tol = tol,
                   covariance_model = covariance_model,
@@ -381,7 +389,7 @@
     }, select_start = select_start, screen = screen,
     interior = if (identical(boundary, "exclude")) function(result) {
       !.multilpa_covariance_boundary(result$parameters, min_variance)
-    })
+    }, tie = tie)
   }
   attempts <- if (is.null(found)) lapply(seq_len(n_starts), function(start_index) {
     tryCatch(.multilpa_cov_start(start_index, x, group_index, n_profiles,
@@ -423,7 +431,7 @@
   }, logical(1))
   best_index <- if (is.null(found)) {
     .multilpa_select_start(starts$log_likelihood, starts$converged,
-                           select_start, interior)
+                           select_start, interior, tie = tie)
   } else found$best_start
   best <- attempts[[best_index]]
   # Weighted posteriors are counts for the M-step; each unit is classified by
@@ -465,11 +473,11 @@
   record <- .latents_search_record(search, n_starts, screen, select_start, boundary)
   result[names(record)] <- record
   # The replication count multilpa() reports, by the same rule: starts run to
-  # the end whose likelihood is within 1e-6 (1 + |L|) of the reported one
-  # (review 2026-10-26 round 2, RP-1).
+  # the end whose likelihood is within 1e-6 per observed value of the
+  # reported one (review 2026-10-26 round 2, RP-1).
   final <- if (is.null(starts$stage)) rep(TRUE, nrow(starts)) else
     starts$stage == "final"
-  tolerance <- 1e-6 * (1 + abs(result$log_likelihood))
+  tolerance <- .latents_replication_tolerance(n_observed)
   result$n_best_replicated <- sum(final & is.finite(starts$log_likelihood) &
     abs(starts$log_likelihood - result$log_likelihood) <= tolerance)
   result$replication_tolerance <- tolerance

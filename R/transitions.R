@@ -382,7 +382,7 @@
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             min_variance > 0, variance_model %in% c("varying", "equal"))
   .multilpa_transition_validate(x, layout, parameters)
-  accelerator <- .lta_accelerator(acceleration)
+  accelerator <- .lta_accelerator(acceleration, x, parameters)
   fit <- .latents_em(
     parameters,
     evaluate = function(point) {
@@ -963,7 +963,8 @@ lta <- function(data, vars, id, n_profiles, time,
   .lta_plan(context, initial, .lta_run_start, .lta_finalise,
              c("x", "layout", "variance_model", "min_variance", "max_iter", "tol",
                "covariance_model", "codes", "n_categories", "min_probability",
-               "structure", "acceleration"))
+               "structure", "acceleration"),
+             n_observed = .latents_observed_values(x, codes))
 }
 
 #' Run one homogeneous transition start
@@ -1058,6 +1059,8 @@ lta <- function(data, vars, id, n_profiles, time,
     empty_rows <- any(parameters$empty_transition_rows)
     small_classes <- any(colSums(subject_posteriors) < 1) ||
       any(colSums(group_posteriors) < 1)
+    replication_tolerance <- .latents_replication_tolerance(
+      .latents_observed_values(x, codes))
     result <- c(parameters, list(
       call = call, vars = vars, continuous = continuous,
       continuous_types = vapply(data[continuous], typeof, character(1)),
@@ -1103,9 +1106,8 @@ lta <- function(data, vars, id, n_profiles, time,
       effective_profile_counts = colSums(subject_posteriors[counted_rows, , drop = FALSE]),
       effective_group_counts = colSums(group_posteriors[counted_groups, , drop = FALSE]),
       n_best_replicated = sum(valid & .latents_final_stage(found) &
-                                abs(scores - log_likelihood) <=
-                                1e-6 * (1 + abs(log_likelihood))),
-      replication_tolerance = 1e-6 * (1 + abs(log_likelihood))),
+                                abs(scores - log_likelihood) <= replication_tolerance),
+      replication_tolerance = replication_tolerance),
       .latents_search_record(search, n_starts, screen, select_start, "allow"),
       list(max_iter = as.integer(max_iter), tol = tol, acceleration = acceleration))
     class(result) <- "multilpa_transitions"

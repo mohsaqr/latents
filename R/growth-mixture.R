@@ -338,7 +338,8 @@
     result$history <- c(result$history, result$expectation$log_likelihood)
     result
   })
-  .growth_select(spec, stats, results, select_start)
+  .growth_select(spec, stats, results, select_start,
+                 tie = tol * max(1, .growth_observed(spec, stats)))
 }
 
 #' Put a growth mixture on standard coordinates for fitting
@@ -694,8 +695,10 @@
 }
 
 #' Choose among growth-mixture starts and assemble the fit
+#' @param tie The start-selection tie, `tol` per measurement (see
+#'   `.multilpa_select_start()`).
 #' @noRd
-.growth_select <- function(spec, stats, results, select_start) {
+.growth_select <- function(spec, stats, results, select_start, tie = NULL) {
   usable_result <- function(r) is.null(r$failed)
   log_likelihood <- vapply(results, function(r) if (usable_result(r))
     r$expectation$log_likelihood else -Inf, numeric(1))
@@ -712,7 +715,8 @@
   }
   candidates <- which(usable)
   best <- candidates[.multilpa_select_start(log_likelihood[candidates],
-                                            converged[candidates], select_start)]
+                                            converged[candidates], select_start,
+                                            tie = tie)]
   chosen <- results[[best]]
   if (!chosen$converged) {
     warning(warningCondition(sprintf(paste(
@@ -759,6 +763,7 @@
     iterations = vapply(results, function(r) r$iterations %||% 0L, integer(1)),
     stage = vapply(results, function(r) r$stage %||% "failed", character(1)),
     degenerate = degenerate, selected = seq_along(results) == best)
+  replication_tolerance <- .latents_replication_tolerance(.growth_observed(spec, stats))
   structure(list(
     spec = spec, stats = stats, params = params, expectation = expectation,
     log_likelihood = expectation$log_likelihood,
@@ -768,8 +773,8 @@
     converged = chosen$converged, iterations = chosen$iterations,
     history = chosen$history, starts = starts,
     n_best_replicated = sum(usable & completed &
-                              abs(log_likelihood - best_value) <=
-                              1e-6 * (1 + abs(best_value)))),
+                              abs(log_likelihood - best_value) <= replication_tolerance),
+    replication_tolerance = replication_tolerance),
     class = "latents_growth_mixture")
 }
 
