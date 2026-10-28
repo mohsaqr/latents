@@ -59,8 +59,8 @@
 \arguments{
 \item{object}{A fitted model: from \code{\link[=multilpa]{multilpa()}} (class \code{multilpa}), a
 covariate model (\code{multilpa_covariates}), a latent transition model
-(\code{multilpa_transitions}), or pooled imputations (\code{latents_pooled},
-\code{vcov()} only).}
+(\code{multilpa_transitions}), or pooled imputations (\code{latents_pooled}:
+\code{coef()}, \code{vcov()} and \code{confint()}).}
 
 \item{data}{Optional. The data frame the model was fitted to. When omitted
 it is rebuilt from what the fit stores (indicators, identifiers, occasions
@@ -90,7 +90,11 @@ columns are then zero (covariate models).}
 
 \item{...}{For \code{vcov()} and \code{confint()} of a \code{multilpa} fit, and \code{confint()}
 of a covariate model, passed to \code{\link[=parameter_inference]{parameter_inference()}} (for example
-\code{method = "bootstrap"}, \code{vcov_type = "robust"} or \code{step}). Ignored
+\code{method = "bootstrap"}, \code{vcov_type = "robust"} or \code{step}); an argument
+\code{\link[=parameter_inference]{parameter_inference()}} does not take is refused with
+\code{latents_bad_argument}. \code{vcov()} of a covariate model warns
+\code{latents_unused_argument} for an argument it does not take, and refuses
+\code{method = "bootstrap"} with \code{latents_unsupported_inference}. Ignored
 otherwise.}
 
 \item{parm}{Optional coefficient names or indices; defaults to every
@@ -112,7 +116,8 @@ For a single-level fit these groups are its individual observations.
 \description{
 \code{coef()}, \code{vcov()}, \code{confint()}, \code{logLik()} and \code{nobs()} for multilevel
 profile and class models (\code{\link[=multilpa]{multilpa()}}), covariate models, latent transition
-models and, for \code{vcov()}, pooled imputations. Mixture regressions, growth
+models and, for \code{coef()}, \code{vcov()} and \code{confint()}, pooled imputations.
+Mixture regressions, growth
 mixtures and the additive, cross-level and general transition families
 document the same methods with their \code{\link[=get_results]{get_results()}} page.
 }

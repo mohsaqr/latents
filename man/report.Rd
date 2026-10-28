@@ -14,7 +14,12 @@ report(
 )
 }
 \arguments{
-\item{x}{A fitted model of this package.}
+\item{x}{A profile, class or transition fit: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}},
+\code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} (with or without membership covariates), or
+from \code{\link[=lta]{lta()}} with time-homogeneous transitions. A fit of another family
+(a mixture regression, growth mixture, general transition, additive or
+cross-level model) raises \code{latents_not_a_fit}; its own \code{summary()},
+\code{\link[=diagnostics]{diagnostics()}} and \code{plot()} report it.}
 
 \item{data}{Optional. The data the model was fitted to; a fit carries the
 columns it was built from.}

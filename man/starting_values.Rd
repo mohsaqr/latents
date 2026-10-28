@@ -17,7 +17,8 @@ blocks the model uses: \code{means} with \code{variances} or \code{covariances} 
 continuous indicators, \code{response_probabilities} for categorical ones. An
 all-categorical model needs no Gaussian block. Other elements are
 ignored. A missing block raises \code{latents_bad_start}; a fit with a noise
-component raises \code{latents_unsupported_noise}.}
+component raises \code{latents_unsupported_noise}; anything that is not a
+list raises \code{latents_bad_argument}.}
 
 \item{covariance}{\code{"auto"} (the default) keeps \code{covariances} when the
 object carries them, \code{"drop"} always returns the diagonal

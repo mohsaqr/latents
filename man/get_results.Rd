@@ -258,6 +258,11 @@ with a noise component, as for \code{"classification_errors"}.}
 \code{entropy_sum}, \code{relative_entropy}. Under sampling weights
 \code{entropy_sum} is \verb{sum_i w_i e_i} and \code{relative_entropy}
 \verb{1 - sum_i w_i e_i / (sum_i w_i log K)}; \code{n_units} stays a count.}
+\item{\code{"replication"}}{One row: \code{n_starts} (starts run to the end),
+\code{n_best_replicated} (those whose log likelihood is within \code{tolerance}
+of the best), \code{share}, \code{tolerance}, \code{best_start} (the winning start's
+index) and \code{log_likelihood}. A best solution reached by one start of
+several may not be the global maximum: refit with more starts.}
 \item{\code{"residuals"}}{Bivariate residuals for every pair of indicators,
 checking within-profile independence: \code{profile}, \code{indicator_1},
 \code{indicator_2}, \code{kind} (\code{"gaussian"}, \code{"categorical"}, \code{"mixed"} or
@@ -458,7 +463,7 @@ variances, response probabilities, profile probabilities and, one row
 per profile and ordered pair of continuous indicators, its covariances
 (\code{profile}, \code{indicator}, \code{indicator_2}, \code{covariance}).}
 \item{\code{"entropy"}, \code{"classification"}, \code{"average_posteriors"},
-\code{"residuals"}}{A \code{\link[=diagnostics]{diagnostics()}} object: the tables of the same names
+\code{"residuals"}, \code{"replication"}}{A \code{\link[=diagnostics]{diagnostics()}} object: the tables of the same names
 described above.}
 }
 }
@@ -470,7 +475,11 @@ list of every table (without \code{"recovery"}, which needs \code{data} and \cod
 Tables with intervals take \code{level}, and \code{vcov_type} (\code{"observed"},
 \code{"robust"} or \code{"opg"}; \code{NULL} reuses the type stored with a regression
 fit). These objects also have \code{coef()}, \code{vcov(type = )},
-\code{confint(parm = , level = )}, \code{logLik()} and \code{nobs()} methods.
+\code{confint(parm = , level = )}, \code{logLik()} and \code{nobs()} methods. \code{confint()}
+of a mixture regression or growth mixture uses the covariance stored with
+the fit and refuses any other argument with \code{latents_bad_argument} (an
+interval on another covariance is \code{get_results(x, "coefficients", vcov_type = )}); \code{vcov()} warns \code{latents_unused_argument} for an argument
+it does not take, such as \verb{vcov_type =} in place of \verb{type =}.
 \describe{
 \item{Mixture regressions (\code{\link[=mixture_regression]{mixture_regression()}})}{\code{"coefficients"}
 (one row per class and term, with Wald statistics, \code{p_adjusted} by
@@ -483,12 +492,18 @@ of independent units, \code{bic_rows} by the number of rows, as flexmix
 reports it), \code{"assignments"}, \code{"groups"}, \code{"fitted"}, \code{"starts"}
 (\code{stage} \code{"screened"} or \code{"completed"}), \code{"classification"} and
 \code{"recovery"} (\code{by = "class"} or \code{"group_class"}).}
-\item{Growth mixtures (\code{mixture_regression(random = )})}{The tables
-above plus \code{"random"} (random-effect variances, standard deviations
+\item{Growth mixtures (\code{mixture_regression(random = )})}{
+\code{"coefficients"}, \code{"classes"} (each class's share with its interval,
+\code{expected_persons}, \code{assigned_persons}, \code{average_posterior} and
+\code{residual_sd}), \code{"membership"}, \code{"fit"}, \code{"assignments"} (one row per
+person: \code{class}, \code{probability} and one \verb{posterior_*} column per
+class), \code{"starts"} and \code{"recovery"}, as for a mixture regression, plus
+\code{"random"} (random-effect variances, standard deviations
 and correlations, with intervals on the log and Fisher-z scales),
 \code{"random_effects"} (one row per person), \code{"trajectories"} (each class's
 mean trajectory with a band) and \code{"individual"} (each person's
-predicted curve); the last two take \code{time}. A multilevel growth mixture
+predicted curve); the last two take \code{time}. They have no \code{"groups"},
+\code{"fitted"} or \code{"classification"} table. A multilevel growth mixture
 adds \code{"group_classes"} and \code{"clusters"}, and its \code{"fit"} uses the number
 of clusters in \code{bic} (persons in \code{bic_persons}).}
 \item{Additive fits (\code{multilpa(family = "additive")})}{\code{"parameters"}

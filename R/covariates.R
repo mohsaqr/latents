@@ -301,8 +301,12 @@
   # convergence, failed starts, a class below one member, a profile with fewer
   # members than its parameters) describe that start, not the model returned:
   # the covariate model checks its own estimate for each of them below. Those classes alone are muffled; any other warning,
-  # about the data for example, reaches the caller.
-  base_estimation <- c("latents_boundary", "latents_unconverged",
+  # about the data for example, reaches the caller. The base fit is also the
+  # unconditional model, whose degrees-of-freedom count can call a model
+  # unidentified that its covariates identify; that count is the only
+  # latents_unidentified raised as a warning (every other is an error, which
+  # a warning handler does not touch).
+  base_estimation <- c("latents_unidentified", "latents_boundary", "latents_unconverged",
                        "latents_failed_starts", "latents_all_starts_boundary",
                        "latents_small_classes", "latents_thin_profiles")
   base <- withCallingHandlers(multilpa(data, vars, id, n_profiles, n_group_classes,
@@ -561,6 +565,8 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
 summary.multilpa_covariates <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   # One builder for the fit and for its summary, so `get_results(x, "model")`
   # and the printed header cannot describe the same fit differently.
   model <- .multilpa_covariate_fit_frame(object)
@@ -648,6 +654,7 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
     original <- object$categorical_values[[name]]
     value <- .latents_restore_partial(original[object$categorical_data[, name]],
                                       object$categorical_data, name)
+    value <- .multilpa_restore_excluded(value, original)
     pair <- object$local_dependence
     joined <- match(name, pair$name)
     attr(value, "latents_pair") <- if (!is.na(joined))
@@ -889,8 +896,9 @@ nobs.multilpa_covariates <- function(object, ...) {
        categorical_values = .multilpa_categorical_values(
          data, categorical, measurement$encoded),
        extra = .latents_set_count_model(
-         .latents_prepare_extra(data, ordinal, count, missing), count_model,
-         count_dispersion))
+         .latents_prepare_extra(data, ordinal, count, missing,
+                                contributing = .multilpa_contributing_rows(data, row_weights)),
+         count_model, count_dispersion))
 }
 
 #' Run one covariate EM start to convergence

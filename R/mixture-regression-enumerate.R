@@ -55,10 +55,13 @@
 #'   views a regression grid offers).
 #' @section Conditions:
 #'   A model whose fit raises `latents_no_valid_start` or `latents_bad_data`
-#'   at some count gets a row of `NA` with the condition message in `note`;
-#'   other errors stop the enumeration. Invalid `n_classes`,
-#'   `n_group_classes`, `bootstrap` or `bootstrap_starts` fail the argument
-#'   checks. `latents_bad_argument` for an invalid `seed`, for `n_classes`,
+#'   at some count gets a row of `NA` with the condition message in `note`
+#'   (and `print()` says how many); when every model fails with the same
+#'   `latents_bad_data` error (a column that does not exist), that error is
+#'   raised instead. Other errors stop the enumeration.
+#'   `latents_bad_argument` for invalid `n_classes`, `n_group_classes`,
+#'   `bootstrap` or `bootstrap_starts`, for an invalid `seed`, for an argument
+#'   in `...` that [mixture_regression()] does not have, for `n_classes`,
 #'   `n_group_classes` or `vcov_type` passed through `...`, for a bootstrap
 #'   test whose outcome is not a plain column name, and from `get_results()`
 #'   for a model that is not in the grid or could not be fitted.
@@ -91,7 +94,7 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                              n_group_classes = 1L, bootstrap = 0L,
                              bootstrap_starts = 3L, seed = NULL, ...) {
   data_expression <- substitute(data)
-  stopifnot(
+  .latents_require(
     "`n_classes` must be positive whole numbers" =
       is.numeric(n_classes) && length(n_classes) >= 1L &&
       all(vapply(n_classes, .mixture_is_count, logical(1))),
@@ -108,6 +111,15 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
   )
   .multilpa_check_seed(seed)
   arguments <- list(...)
+  # A misspelt argument would fail every cell with base R's "unused argument"
+  # error, whose call held mixture_regression()'s body and the data by value
+  # (API-1); name it back instead, as enumerate_classes() does.
+  supplied <- names(arguments) %||% rep("", length(arguments))
+  unknown <- !nzchar(supplied) | !supplied %in% names(formals(mixture_regression))
+  if (any(unknown)) {
+    .multilpa_reject_extra_arguments(arguments[unknown], "enumerate_regressions()",
+      "Its `...` takes named arguments of mixture_regression(), such as `family`, `id` or `common`.")
+  }
   if (bootstrap > 0 && !is.null(arguments$weights)) {
     .latents_refuse_weights(paste(
       "the bootstrap likelihood ratio test: it draws samples from the fitted",
@@ -134,6 +146,9 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                vcov_type = "none"), arguments))
       fit
     })
+    # A defect of the data (a column that does not exist) fails every cell for
+    # one reason no class count changes: it is raised, not tabulated (API-2).
+    .latents_refuse_shared_data_error(fits)
     table <- do.call(rbind, Map(function(fit, row) {
       .mixture_enumeration_row(fit, grid$n_classes[row],
                               grid$n_group_classes[row])
@@ -156,7 +171,9 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
 #' Fit one grid cell, keeping a failure as a note rather than an abort
 #'
 #' Only the conditions a fit legitimately raises for an unsupportable count
-#' are caught; anything else is a defect and propagates.
+#' are caught; anything else is a defect and propagates. `do.call()` records
+#' the arguments by value, so a propagating error is raised again with its
+#' call bounded: it never carries the data (condition-calls.R).
 #' @noRd
 .mixture_try_fit <- function(formula, data, n_classes, n_group_classes,
                             arguments) {
@@ -166,7 +183,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                            vcov_type = "none"), arguments)
   tryCatch(do.call(mixture_regression, call_arguments),
            latents_no_valid_start = .latents_bounded_condition,
-           latents_bad_data = .latents_bounded_condition)
+           latents_bad_data = .latents_bounded_condition,
+           error = function(condition) stop(.latents_bounded_condition(condition)))
 }
 
 #' One enumeration row
@@ -298,14 +316,15 @@ as.data.frame.latents_regression_enumeration <- function(x, row.names = NULL,
 }
 
 #' @rdname enumerate_regressions
-#' @param what `"fit"` for the comparison table, `"model"` for one fitted
-#'   model.
+#' @param what `"fit"` (the default) for the comparison table, `"model"` for
+#'   one fitted model, `"tree"` for the class tree, or `"all"` for the named
+#'   list of the two tables (`fit` and `tree`). Any other name raises
+#'   `latents_bad_argument`.
 #' @export
-get_results.latents_regression_enumeration <- function(x, what = c("fit", "model", "tree"),
+get_results.latents_regression_enumeration <- function(x, what = "fit",
                                                    n_classes = NULL,
                                                    n_group_classes = 1L, ...) {
-  what <- match.arg(what)
-  if (identical(what, "fit")) return(x$table)
+  what <- .multilpa_match_table(what, c("fit", "model", "tree"))
   if (identical(what, "tree")) {
     # The tree counts its classes as `n_profiles`, as every grid's tree does.
     extra <- list(...)
@@ -313,8 +332,16 @@ get_results.latents_regression_enumeration <- function(x, what = c("fit", "model
     if (!missing(n_group_classes)) extra$n_group_classes <- n_group_classes
     return(.latents_tree_results(x, extra))
   }
-  stopifnot("`n_classes` must name one fitted class count" =
-              .mixture_is_count(n_classes %||% NA_real_))
+  .multilpa_reject_extra_arguments(list(...), "get_results()", paste(
+    "A regression grid's \"model\" takes `n_classes` and `n_group_classes`;",
+    "its \"fit\" table takes no argument."))
+  if (identical(what, "fit")) return(x$table)
+  if (identical(what, "all")) {
+    # The grid's tables; "model" is one fitted model, not a table.
+    return(list(fit = x$table, tree = .latents_tree_results(x, list())))
+  }
+  .latents_require("`n_classes` must name one fitted class count" =
+                     .mixture_is_count(n_classes %||% NA_real_))
   row <- which(x$grid$n_classes == n_classes &
                  x$grid$n_group_classes == n_group_classes)
   if (length(row) != 1L || inherits(x$fits[[row]], "condition")) {
@@ -368,6 +395,11 @@ print.latents_regression_enumeration <- function(x, digits = 4L, ...) {
                                "best_bic"),
                              names(x$table))]
   print(shown, digits = digits, row.names = FALSE)
+  failed <- !is.na(x$table$note)
+  if (any(failed)) {
+    cat(sprintf(paste("\n%d model(s) could not be fitted; the `note` column of",
+                      "as.data.frame(x) gives the reason.\n"), sum(failed)))
+  }
   cat("\nOne model: get_results(x, \"model\", n_classes = ).\n")
   invisible(x)
 }

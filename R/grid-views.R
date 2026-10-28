@@ -244,28 +244,27 @@
               cutoff > 0 && cutoff <= 1)
   grid <- .latents_grid_table(x)
   fits <- unname(.subset2(x, "fits"))
-  posteriors_of <- function(level) {
+  pieces_of <- function(level) {
     lapply(fits, function(fit) {
-      if (is.null(fit) || inherits(fit, "condition")) return(NULL)
-      if (identical(kind, "regressions")) {
-        return(.latents_regression_posteriors(fit, level))
+      absent <- list(posteriors = NULL, weights = NULL)
+      if (is.null(fit) || inherits(fit, "condition")) return(absent)
+      actual <- level
+      if (identical(kind, "regressions") &&
+          inherits(fit, "latents_mixture_regression") &&
+          identical(fit$spec$nesting, "group")) {
+        if (identical(level, "groups")) return(absent)
+        actual <- "groups"
       }
-      if (identical(level, "groups")) .multilpa_classified_group_posteriors(fit) else
-        .multilpa_classified_posteriors(fit)
+      if (!actual %in% names(.latents_classifying_levels(fit))) return(absent)
+      .latents_classification_inputs(fit, actual)
     })
   }
-  # Under sampling weights a profile, class or transition fit's entropy and
-  # AvePP are weighted as its own tables weight them (review 2026-10-26
-  # round 2, S-3, S-4); a regression fit's posteriors are read unweighted.
-  level_weights <- function(level) {
-    lapply(fits, function(fit) {
-      if (is.null(fit) || inherits(fit, "condition") ||
-          identical(kind, "regressions")) return(NULL)
-      posteriors <- .multilpa_level_posteriors(fit, level)
-      if (is.null(posteriors)) NULL else
-        .multilpa_level_weights(fit, level, nrow(posteriors))
-    })
-  }
+  individual_pieces <- pieces_of("individuals")
+  group_pieces <- pieces_of("groups")
+  posteriors_of <- function(level) lapply(if (identical(level, "groups"))
+    group_pieces else individual_pieces, `[[`, "posteriors")
+  level_weights <- function(level) lapply(if (identical(level, "groups"))
+    group_pieces else individual_pieces, `[[`, "weights")
   entropy_of <- function(posteriors, weights) {
     unlist(Map(function(p, w) {
       if (is.null(p)) NA_real_ else .multilpa_relative_entropy(p, w)

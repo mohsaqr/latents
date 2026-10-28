@@ -79,7 +79,8 @@ such as \code{vcov_type}. \code{vcov()} takes none and warns
 (\code{latents_unused_argument}) about any it is given.}
 
 \item{parm}{Parameters to report, as names or positions of the natural
-coefficients; all by default.}
+coefficients; all by default. A name or position that is not one of them
+raises \code{latents_bad_argument}.}
 }
 \value{
 A base \code{data.frame} with one row per natural parameter and the

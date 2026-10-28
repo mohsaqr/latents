@@ -57,7 +57,9 @@ clusters of a multilevel growth mixture (\code{cluster}).}
 
 \item{common}{\code{NULL}, or the predictor terms whose coefficients are
 shared by every class: variable names such as \code{"age"}, or a one-sided
-formula such as \code{~ age}. Each term must appear in \code{formula}.}
+formula such as \code{~ age}. Each term must appear in \code{formula}. The
+intercept cannot be shared: \code{"intercept"} or \code{~ 1} alone raises
+\code{latents_bad_argument}.}
 
 \item{membership}{Covariates predicting class membership (a multinomial
 logit, the first class as the reference): variable names such as
@@ -112,10 +114,15 @@ the CR1 factor \code{G / (G - 1)}, clustered on the top-level unit, or on \code{
 \item{weights}{\code{NULL}, or the name of a numeric column of \code{data} with a
 sampling weight per independent unit: per row without \code{id}, per \code{id}
 group otherwise (constant within it). Pseudo maximum likelihood with the
-weights scaled to sum to the number of units; \code{vcov_type} defaults to
-\code{"robust"} and refuses \code{"observed"} and \code{"opg"}. The information
-criteria use the weighted log likelihood; the entropy term of ICL sums
-the units' own posteriors unweighted, as in the profile models.}
+weights scaled to sum to the units of positive weight; \code{vcov_type}
+defaults to \code{"robust"} and refuses \code{"observed"} and \code{"opg"}. The
+information criteria use the weighted log likelihood, and the entropy
+term of ICL is weighted by the sampling weights, as the likelihood is. A
+unit of weight zero is absent from the fit: from every start, estimate,
+sample size and criterion; it keeps its row and posterior. A row of
+weight zero whose factor level (or ordinal outcome category) no row of
+positive weight has is left out, with a \code{latents_rows_dropped} warning,
+since the model has no parameter for that level.}
 
 \item{random}{\code{NULL} (default; no random effects), or the random effects
 within classes: variable names such as \code{"time"} (a random intercept and
@@ -271,16 +278,20 @@ binary specifications are refused.
 
 \section{Conditions}{
 
-\code{latents_bad_argument} for an inconsistent specification;
-\code{latents_bad_data} for an outcome outside the family's support or a
-covariate that varies within a group where it may not;
+\code{latents_bad_argument} for an inconsistent specification (including a
+\code{common} that names no predictor term);
+\code{latents_bad_data} for an outcome outside the family's support, a
+covariate that varies within a group where it may not, or a factor
+predictor with a single value among the fitted (positive-weight) rows;
 \code{latents_not_identified} for a binary outcome with one trial per class
 assignment, or an ordinal mixture with one outcome per class assignment
 and two categories, no predictors, or fewer distinct covariate patterns
 times C - 1 than free parameters; \code{latents_missing_data} for missing
 values under
 \code{missing = "error"}; \code{latents_rows_dropped} (warning) under
-\code{missing = "omit"}; \code{latents_no_valid_start} when every start
+\code{missing = "omit"}, and for rows of weight zero carrying a factor level
+or outcome category that no row of positive weight has;
+\code{latents_no_valid_start} when every start
 degenerated; \code{latents_unconverged} (warning) when the selected start did
 not converge; \code{latents_degenerate_start} (warning) when some starts
 degenerated; \code{latents_separation} (warning) for extreme fitted logits or

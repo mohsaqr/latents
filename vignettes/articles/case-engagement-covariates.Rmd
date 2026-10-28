@@ -261,7 +261,7 @@ staged <- fit_staged(
 staged
 ```
 
-In the staged solution, Profile 1 represents intermediate activity, Profile 2 represents lower activity, and Profile 3 represents higher activity. Their estimated `attendance` means are 0.197, -0.978, and 1.075, respectively. The numerical labels happen to match those of the earlier joint model, which separate fits do not guarantee, and the same broad engagement patterns remain recognizable. The estimated means differ slightly because the profiles were obtained under a different estimation procedure.
+In the staged solution, Profile 1 represents intermediate activity, Profile 2 represents lower activity, and Profile 3 represents higher activity. Their estimated `attendance` means are 0.197, -0.977, and 1.075, respectively. The numerical labels happen to match those of the earlier joint model, which separate fits do not guarantee, and the same broad engagement patterns remain recognizable. The estimated means differ slightly because the profiles were obtained under a different estimation procedure.
 
 The parameters estimated at each stage can be examined through the `"stages"` results table:
 

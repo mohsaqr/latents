@@ -418,13 +418,13 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
               is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   # Nothing is held at a bound here and a bound-active fit is refused, so
   # "fix" and "error" agree wherever a table is returned.
-  match.arg(boundary)
-  adjust <- match.arg(adjust)
-  if (identical(match.arg(method), "bootstrap")) {
+  .latents_match_formal(boundary)
+  adjust <- .latents_match_formal(adjust)
+  if (identical(.latents_match_formal(method), "bootstrap")) {
     return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
                                    seed, adjust))
   }
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_match_formal(vcov_type)
   inference <- .multilpa_transition_covariance(x, data, step, vcov_type)
   estimates <- .multilpa_transition_encode(x, "natural")
   covariance <- inference$covariance
@@ -605,7 +605,9 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
     (length(continuous) == 0L ||
        same(as.matrix(data[continuous]), x$indicator_data))
   if (ok && length(x$categorical %||% character()) > 0L) {
-    encoded <- .multilpa_encode_categorical(data[x$categorical])
+    contributing <- if (is.null(x$sampling_weights)) NULL else
+      unname(x$sampling_weights)[x$group_index] > 0
+    encoded <- .multilpa_encode_categorical(data[x$categorical], contributing)
     ok <- same(encoded$codes, x$categorical_data) &&
       identical(encoded$levels, x$categorical_levels)
   }
@@ -629,8 +631,8 @@ vcov.multilpa_transitions <- function(object, data = NULL, step = 1e-4,
   # into `...` and return the observed-information covariance without a word.
   .latents_warn_unused_arguments(list(...), "vcov()",
                                  "Choose the covariance with `vcov_type =`.")
-  vcov_type <- match.arg(vcov_type)
-  scale <- match.arg(scale)
+  vcov_type <- .latents_match_formal(vcov_type)
+  scale <- .latents_match_formal(scale)
   inference <- .multilpa_transition_covariance(object, data, step, vcov_type)
   if (identical(scale, "unconstrained")) {
     covariance <- inference$covariance_unconstrained
@@ -647,7 +649,8 @@ vcov.multilpa_transitions <- function(object, data = NULL, step = 1e-4,
 
 #' @rdname parameter_inference.multilpa_transitions
 #' @param parm Parameters to report, as names or positions of the natural
-#'   coefficients; all by default.
+#'   coefficients; all by default. A name or position that is not one of them
+#'   raises `latents_bad_argument`.
 #' @export
 confint.multilpa_transitions <- function(object, parm, level = 0.95, data = NULL,
                                          ...) {
@@ -657,5 +660,7 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, data = NULL
   dimnames(bounds) <- list(names_used, paste0(
     format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), " %"))
   if (missing(parm)) return(bounds)
-  bounds[parm, , drop = FALSE]
+  # A name or position that is not an estimate is refused with the class the
+  # sibling methods raise, not a subscript error or an empty table (INF-5).
+  bounds[.mixture_confint_rows(parm, names_used), , drop = FALSE]
 }

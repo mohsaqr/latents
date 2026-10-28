@@ -356,12 +356,8 @@ utils::globalVariables(c(
 .gg_category_scores <- function(blocks) {
   stopifnot(is.list(blocks))
   lapply(names(blocks), function(indicator) {
-    block <- blocks[[indicator]]
-    scores <- withCallingHandlers(as.numeric(colnames(block)), warning = function(w) {
-      invokeRestart("muffleWarning")
-    })
-    if (length(scores) != ncol(block) || any(!is.finite(scores)) ||
-        anyDuplicated(scores)) {
+    scores <- .gg_label_scores(blocks[[indicator]])
+    if (is.null(scores)) {
       stop(errorCondition(sprintf(
         paste("Categorical profile summaries need distinct finite numeric category",
               "labels; `%s` does not have them. Use `what = \"responses\"` instead."),
@@ -369,6 +365,31 @@ utils::globalVariables(c(
     }
     scores
   })
+}
+
+#' One categorical block's labels as scores, or `NULL` when they are not
+#' @param block A profiles-by-categories probability matrix.
+#' @return The numeric labels when they are distinct and finite; else `NULL`.
+#' @noRd
+.gg_label_scores <- function(block) {
+  # A label such as "yes" is not a number; that is the answer sought here,
+  # not an anomaly, so the coercion warning is muffled and the NA tested.
+  scores <- withCallingHandlers(as.numeric(colnames(block)), warning = function(w) {
+    invokeRestart("muffleWarning")
+  })
+  if (length(scores) != ncol(block) || any(!is.finite(scores)) ||
+      anyDuplicated(scores)) {
+    return(NULL)
+  }
+  scores
+}
+
+#' Do every categorical block's labels score as numbers?
+#' @param blocks The fit's `response_probabilities`.
+#' @return A single logical.
+#' @noRd
+.gg_scorable_categories <- function(blocks) {
+  all(vapply(blocks, function(block) !is.null(.gg_label_scores(block)), logical(1)))
 }
 
 #' Summarize the fitted categorical distributions on their score scale
@@ -454,8 +475,13 @@ utils::globalVariables(c(
       position = dodge, width = 0.22, linewidth = 0.4, colour = "grey20",
       na.rm = TRUE)
   }
+  # Each bar ends in its profile's marker, the shape the other profile views
+  # use, so the profiles are told apart without the fill colour alone.
+  plot <- plot + ggplot2::geom_point(
+    ggplot2::aes(shape = profile_label, group = profile_label),
+    position = dodge, size = 2.4, colour = "grey15", stroke = 0.5)
   plot +
-    .gg_scales(key, "fill", legend = TRUE) +
+    .gg_scales(key, c("fill", "shape"), legend = TRUE) +
     .gg_titles(main, subtitle, "Profile means",
                sprintf("%d profiles; %s scale; bars start at zero%s",
                        x$n_profiles,

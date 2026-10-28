@@ -25,14 +25,16 @@ test_that("lpa() and lca() record the call the caller wrote, so update() refits"
   expect_identical(refit$n_observations, nrow(srl))
 
   activities <- c("time_with_friends", "on_social_media")
+  # Two classes on two binary items are not identified (Goodman 1974).
   classes <- quietly(lca(student_esm, activities, n_classes = 2, n_starts = 1,
-                         seed = 1))
+                         seed = 1), classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   expect_identical(as.character(classes$call[[1L]]), "lca")
   expect_identical(classes$call$n_classes, 2)
   # The direct two-level verb still reports its own call.
   direct <- quietly(multilca(subset(student_esm, day <= 1), activities,
                              id = "student", n_profiles = 2,
-                             n_group_classes = 1, n_starts = 1, seed = 1))
+                             n_group_classes = 1, n_starts = 1, seed = 1),
+                    classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   expect_identical(as.character(direct$call[[1L]]), "multilca")
 })
 

@@ -118,13 +118,13 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
                              vcov_type = c("observed", "robust", "opg"),
                              adjust = .multilpa_p_adjust_methods) {
-  stopifnot(
+  .latents_require(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1)
   vcov_defaulted <- missing(vcov_type)
-  vcov_type <- match.arg(vcov_type)
-  adjust <- match.arg(adjust)
+  vcov_type <- .latents_match_formal(vcov_type)
+  adjust <- .latents_match_formal(adjust)
   completed <- .multilpa_completed_data(imputed)
   call <- match.call()
   fits <- lapply(seq_along(completed), function(index) {
@@ -346,7 +346,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 #' @export
 get_results.latents_pooled <- function(x, what = c("estimates", "imputations", "fits"),
                                        ...) {
-  what <- match.arg(what)
+  what <- .latents_match_formal(what)
   x[[what]]
 }
 
@@ -380,6 +380,8 @@ print.latents_pooled <- function(x, digits = 4L, rows = 20L, ...) {
 #' @noRd
 #' @export
 summary.latents_pooled <- function(object, ...) {
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   fits <- object$fits
   identity_profiles <- paste(seq_len(object$n_profiles), collapse = ",")
   identity_groups <- paste(seq_len(object$n_group_classes), collapse = ",")
@@ -400,6 +402,84 @@ summary.latents_pooled <- function(object, ...) {
 #' @export
 vcov.latents_pooled <- function(object, ...) {
   object$covariance
+}
+
+#' The pooled estimates, named as [vcov()] names them
+#'
+#' Without it `coef()` fell to the default method and returned `NULL`
+#' (review 2026-10-27, INF-7).
+#' @param object A `latents_pooled` result.
+#' @param ... Unused; warned about.
+#' @return A named numeric vector, one element per pooled parameter, in the
+#'   order of `vcov(object)`.
+#' @noRd
+#' @export
+coef.latents_pooled <- function(object, ...) {
+  .latents_warn_unused_arguments(list(...), "coef()",
+                                 "The pooled estimates have no options.")
+  stats::setNames(object$estimates$estimate, .multilpa_pooled_names(object))
+}
+
+#' The pooled t intervals, at any level
+#'
+#' Rubin's intervals `Q +/- t_df((1 + level) / 2) * sqrt(T)`, with each
+#' parameter's own degrees of freedom, so `level = x$level` reproduces the
+#' `conf_low` and `conf_high` of the estimates table. Without this method
+#' `confint()` fell to the default and returned an empty matrix (review
+#' 2026-10-27, INF-7).
+#' @param object A `latents_pooled` result.
+#' @param parm Parameters, as names (those of `coef()`) or positions; all by
+#'   default.
+#' @param level Confidence level.
+#' @param ... Unused; warned about.
+#' @return A matrix with one row per parameter and the lower and upper limits
+#'   as columns, named as [stats::confint()] names them.
+#' @noRd
+#' @export
+confint.latents_pooled <- function(object, parm, level = 0.95, ...) {
+  .latents_require(
+    "`level` must be a single number in (0, 1)" =
+      is.numeric(level) && length(level) == 1L && is.finite(level) &&
+      level > 0 && level < 1)
+  .latents_warn_unused_arguments(list(...), "confint()",
+                                 "Choose the interval with `level =` and `parm =`.")
+  estimates <- object$estimates
+  names_all <- .multilpa_pooled_names(object)
+  critical <- stats::qt((1 + level) / 2, estimates$df)
+  intervals <- cbind(estimates$estimate - critical * estimates$standard_error,
+                     estimates$estimate + critical * estimates$standard_error)
+  dimnames(intervals) <- list(names_all, paste0(
+    format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%"))
+  if (missing(parm)) return(intervals)
+  ## The class confint.multilpa() raises for the same mistake.
+  bad_parm <- function() {
+    stop(errorCondition(
+      "`parm` must identify existing parameters by name or index.",
+      class = "latents_bad_argument", call = NULL))
+  }
+  if (is.numeric(parm)) {
+    if (anyNA(parm) || any(!is.finite(parm)) || any(parm < 1) ||
+        any(parm > length(names_all)) || any(parm != floor(parm))) {
+      bad_parm()
+    }
+    parm <- names_all[parm]
+  }
+  if (!is.character(parm) || anyNA(parm) || !all(parm %in% names_all)) bad_parm()
+  intervals[parm, , drop = FALSE]
+}
+
+#' Names of the pooled parameters, one per row of the estimates table
+#'
+#' The names `vcov()` carries, which `.multilpa_rubin_covariance()` checked
+#' row for row against the tables the estimates were pooled from.
+#' @param object A `latents_pooled` result.
+#' @return A character vector.
+#' @noRd
+.multilpa_pooled_names <- function(object) {
+  names_all <- rownames(object$covariance)
+  stopifnot("the pooled covariance must name every pooled estimate" =
+              length(names_all) == nrow(object$estimates))
+  names_all
 }
 
 #' @rdname latents-plots

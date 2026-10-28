@@ -57,7 +57,8 @@ test_that("categorical profile residuals compare to their own product probabilit
   expect_equal(incomplete$effective_n, 500)
   expect_equal(incomplete$df, 1)
   data$a[1L] <- "unknown"
-  expect_error(get_results(object, "residuals", data = data), "levels absent")
+  expect_error(get_results(object, "residuals", data = data),
+               class = "latents_bad_inference_data")
 })
 
 test_that("Gaussian residuals use the complete rows of each pair", {

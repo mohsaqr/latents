@@ -91,5 +91,5 @@ test_that("when every start is at the bound the best is kept, with a classed war
 
 test_that("an unknown boundary value is refused", {
   expect_error(boundary_fit(boundary_data(), boundary = "nonsense"),
-               "should be one of")
+               class = "latents_bad_argument")
 })

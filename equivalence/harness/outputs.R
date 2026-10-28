@@ -24,6 +24,19 @@
 #   compare_fit()       the three above, plus the ledger: for every output
 #                       column, how many values were produced, how many were
 #                       compared, and, for anything not compared, the reason.
+#   compare_fit_tables() the same for a fit whose expected tables the suite
+#                       writes itself (families reference_tables() does not
+#                       build: additive, cross-level, general transition).
+#   compare_verb(),     the same ledger for tables a verb returns rather than
+#   table_ledger()      a fit's catalogue (three_step, r3step,
+#                       pool_imputations, predict, parameter_inference, the
+#                       enumeration's lmr table). keyed_table() declares the
+#                       keys of a table whose columns the catalogue rules
+#                       would misread; every other column is then a value.
+#
+# reference_tables() handles sampling weights (the package's documented
+# rescaling and positive-support convention), membership coefficients,
+# ordinal and count indicators, and their residual kinds.
 #
 # The ledger is the point. A column that is neither compared nor exempted with
 # a stated reason is `not covered`, and `run.R` fails on it.
@@ -52,12 +65,31 @@
   data = "the input data, returned as given",
   starts = "this program's random-start trace; another program's starts are not comparable",
   stages = "this program's search stages; another program's search is not comparable",
+  `replication$n_starts` = "this program's completed-start budget (unit-tested)",
+  `replication$n_screened` = "this program's screened-start budget (unit-tested)",
+  `replication$n_converged` = "this optimiser's converged-start count (unit-tested)",
+  `replication$n_failed` = "this optimiser's failed-start count (unit-tested)",
+  `replication$n_best_replicated` = "this optimiser's repeated-best count (unit-tested)",
+  `replication$share` = "this optimiser's repeated-best share (unit-tested)",
+  `replication$tolerance` = "this program's threshold for counting repeated starts (unit-tested)",
+  `replication$best_start` = "which of this program's starts won (unit-tested)",
   `model$converged` = "this optimiser's own stopping flag",
   `model$iterations` = "this optimiser's iteration count",
   `model$best_start` = "which of this program's random starts won",
   `model$n_best_replicated` = "how many of this program's random starts reached the best value",
   `model$boundary` = "this package's warning flag, with its own threshold (unit-tested)",
-  `model$small_classes` = "this package's warning flag, with its own threshold (unit-tested)")
+  `model$small_classes` = "this package's warning flag, with its own threshold (unit-tested)",
+  # A membership-covariate fit's one-row table.
+  `model$extreme_logits` = "this package's warning flag, with its own threshold (unit-tested)",
+  `model$n_starts` = "this program's completed-start budget (unit-tested)",
+  # The one-row `fit` table of the additive, cross-level and general
+  # transition families carries the same bookkeeping under another name.
+  `fit$converged` = "this optimiser's own stopping flag",
+  `fit$iterations` = "this optimiser's iteration count",
+  `fit$boundary` = "this package's warning flag, with its own threshold (unit-tested)",
+  `fit$kkt` = "this optimiser's check of its own first-order conditions (unit-tested)",
+  `fit$n_starts` = "this program's completed-start budget (unit-tested)",
+  `fit$n_best_replicated` = "how many of this program's random starts reached the best value")
 
 #' Columns named like an identifier that are values in a particular table
 #'
@@ -66,10 +98,16 @@
 .output_value_columns <- list(random_effects = "time")
 
 #' The key columns of one output table
+#'
+#' A table that declares its keys ([keyed_table()]) is keyed by them alone.
+#' Otherwise the keys are the identifier-named columns and the text columns.
+#'
 #' @param table A table from `get_results()`.
 #' @param name Its catalogue name.
 #' @return A character vector of column names.
 .output_keys <- function(table, name) {
+  declared <- attr(table, "harness_keys")
+  if (!is.null(declared)) return(declared)
   if (identical(name, "assignments")) return(".row")
   labels <- names(table)[!vapply(table, function(column) {
     is.numeric(column) || is.logical(column)
@@ -78,10 +116,94 @@
           .output_value_columns[[name]] %||% character())
 }
 
+#' The value columns of one output table
+#'
+#' Without declared keys, a text column labels its row, so the values are the
+#' numeric and logical columns that are not keys. A table with declared keys
+#' has no labelling columns: every other column is a value, a text one
+#' included (a modal class reported as `"profile_2"`, a note), and is compared
+#' exactly.
+#'
+#' @param table A table.
+#' @param name Its catalogue name.
+#' @return A character vector of column names.
+.output_values <- function(table, name) {
+  candidates <- setdiff(names(table), c(.output_keys(table, name), ".row"))
+  keep <- if (is.null(attr(table, "harness_keys"))) {
+    vapply(table[candidates], function(column) is.numeric(column) || is.logical(column),
+           logical(1))
+  } else {
+    !vapply(table[candidates], is.list, logical(1))
+  }
+  candidates[keep]
+}
+
+#' Declare the columns that identify a row of a table
+#'
+#' Verb results are not catalogue tables, and their columns do not follow the
+#' catalogue's naming: `predict()` reports the modal profile in a `profile`
+#' column, which the catalogue rules would take for a key, and
+#' `pool_imputations()` keys its per-imputation rows by an integer
+#' `imputation`. Declaring the keys makes every other column a value that has
+#' to be compared or exempted.
+#'
+#' @param table A `data.frame`, possibly with a class of its own.
+#' @param keys Names of the columns that identify a row, jointly unique.
+#' @return A plain `data.frame` (classes and attributes dropped) carrying the
+#'   keys in its `harness_keys` attribute.
+keyed_table <- function(table, keys) {
+  stopifnot("`table` must be a data.frame" = is.data.frame(table),
+            "`keys` must name at least one column" =
+              is.character(keys) && length(keys) > 0L && !anyNA(keys))
+  absent <- setdiff(keys, names(table))
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf("keys not in the table: %s", paste(absent, collapse = ", ")),
+                        class = "multilpa_bad_ledger", call = NULL))
+  }
+  plain <- list2DF(lapply(as.list(table), function(column) {
+    if (is.factor(column)) as.character(column) else column
+  }), nrow = nrow(table))
+  .check_unique_keys(plain, keys, "the table")
+  attr(plain, "harness_keys") <- keys
+  plain
+}
+
+#' Refuse keys that do not identify the rows
+#'
+#' A join on keys that repeat pairs rows arbitrarily, and a comparison over
+#' it would mean nothing.
+#'
+#' @param table A table.
+#' @param keys Its key columns.
+#' @param what A description for the message.
+#' @return `NULL`, invisibly.
+.check_unique_keys <- function(table, keys, what) {
+  absent <- setdiff(keys, names(table))
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf("%s lacks the key columns %s", what,
+                                paste(absent, collapse = ", ")),
+                        class = "multilpa_bad_ledger", call = NULL))
+  }
+  if (nrow(table) > 0L && anyDuplicated(table[keys]) > 0L) {
+    stop(errorCondition(sprintf("%s: the keys %s do not identify its rows", what,
+                                paste(keys, collapse = ", ")),
+                        class = "multilpa_bad_ledger", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' Every table a fit reports, as compared here
 #'
 #' `assignments` gains a `.row` key, and loses the columns that echo the input
 #' (the indicators and the identifier), which are data rather than output.
+#'
+#' The additive, cross-level and general transition families report the modal
+#' class as a label (`"group_class_2"`), not a number. Under the catalogue
+#' rules a text column labels its row, so those labels would never be
+#' compared: in `assignments` (keyed by position) they would not be counted at
+#' all. Their `assignments` and `groups` tables therefore declare their keys
+#' (position; the group identifier), which makes the labels values that are
+#' compared exactly. Every other family keeps the catalogue rules.
 #'
 #' @param fit A fitted model of the package.
 #' @return A named list of `data.frame`s.
@@ -95,8 +217,17 @@ fit_tables <- function(fit) {
     tables$assignments <- data.frame(.row = seq_len(nrow(assignments)), assignments,
                                      check.names = FALSE)
   }
+  if (inherits(fit, .labelled_class_families)) {
+    if (!is.null(tables$assignments)) {
+      tables$assignments <- keyed_table(tables$assignments, ".row")
+    }
+    if (!is.null(tables$groups)) tables$groups <- keyed_table(tables$groups, fit$id)
+  }
   tables
 }
+
+#' Families whose unit tables report the modal class as a text label
+.labelled_class_families <- c("multilpa_additive", "multilpa_cross_level", "multilpa_lta")
 
 #' Every value a fit reports, one row per table column
 #'
@@ -109,9 +240,7 @@ fit_outputs <- function(fit) {
                 all(vapply(fit, is.data.frame, logical(1)))) fit else fit_tables(fit)
   rows <- lapply(names(tables), function(name) {
     table <- tables[[name]]
-    values <- setdiff(names(table)[vapply(table, function(column) {
-      is.numeric(column) || is.logical(column)
-    }, logical(1))], .output_keys(table, name))
+    values <- .output_values(table, name)
     if (length(values) == 0L || nrow(table) == 0L) return(NULL)
     data.frame(output = paste0(name, "$", values), table = name, column = values,
                n_values = nrow(table), stringsAsFactors = FALSE)
@@ -135,7 +264,10 @@ fit_outputs <- function(fit) {
 #' same sign in both; such a pair agrees exactly. Every other pair is compared
 #' on the relative scale, `|r - o| / max(|r|, 1)`, which is the absolute
 #' difference for a probability and the relative one for a large quantity.
-#' Logical columns must match exactly.
+#' Logical columns must match exactly. Text columns (a modal class label, a
+#' note) must match exactly too, missing in both counting as a match; their
+#' row reports `reference = 1`, `obtained` 1 or 0 for the worst cell matching
+#' or not, and quotes the first mismatching pair in `quantity`.
 #'
 #' @param quantity Label for the row.
 #' @param reference,obtained Vectors of equal length.
@@ -151,6 +283,11 @@ compare_block <- function(quantity, reference, obtained, tolerance, output = NA_
     "`tolerance` must be one positive number" =
       is.numeric(tolerance) && length(tolerance) == 1L && is.finite(tolerance) &&
         tolerance > 0)
+  textual <- function(x) is.character(x) || is.factor(x)
+  if (textual(reference) || textual(obtained)) {
+    return(.compare_text_block(quantity, as.character(reference), as.character(obtained),
+                               output))
+  }
   exact <- is.logical(reference) || is.logical(obtained)
   reference <- as.numeric(reference)
   obtained <- as.numeric(obtained)
@@ -180,6 +317,26 @@ compare_block <- function(quantity, reference, obtained, tolerance, output = NA_
              reference = picked[[1L]], obtained = picked[[2L]],
              difference = picked[[3L]], tolerance = tolerance, agrees = agrees,
              output = output, n_values = n, stringsAsFactors = FALSE)
+}
+
+#' Compare every cell of a text column exactly
+#' @param quantity Label for the row.
+#' @param reference,obtained Character vectors of equal length.
+#' @param output The `table$column` key, or `NA`.
+#' @return A one-row `data.frame` shaped like [compare_block()]'s.
+.compare_text_block <- function(quantity, reference, obtained, output) {
+  n <- length(reference)
+  matched <- (is.na(reference) & is.na(obtained)) |
+    (!is.na(reference) & !is.na(obtained) & reference == obtained)
+  first <- which(!matched)[1L]
+  note <- if (is.na(first)) "" else
+    sprintf(", first mismatch %s against %s", encodeString(reference[[first]], quote = '"'),
+            encodeString(obtained[[first]], quote = '"'))
+  data.frame(quantity = sprintf("%s (%d values, text%s)", quantity, n, note),
+             reference = 1, obtained = if (is.na(first)) 1 else 0,
+             difference = if (is.na(first)) 0 else 1, tolerance = 0.5,
+             agrees = n > 0L && is.na(first), output = output, n_values = n,
+             stringsAsFactors = FALSE)
 }
 
 #' Look up the tolerance for one output column
@@ -224,6 +381,16 @@ compare_block <- function(quantity, reference, obtained, tolerance, output = NA_
 #' @param tolerance Named tolerances, as for [.output_tolerance()].
 #' @return A comparison `data.frame` with `output` and `n_values` columns.
 compare_tables <- function(label, obtained, expected, tolerance = .output_default_tolerances) {
+  # The replication table repeats the fitted likelihood. Check it against
+  # the independent reference too; only search bookkeeping is exempt. Some
+  # reference suites call their one-row model table `fit`, others `model`.
+  if (!is.null(obtained$replication) && is.null(expected$replication)) {
+    likelihood <- expected$model$log_likelihood %||% expected$fit$log_likelihood %||%
+      expected$information_criteria$log_likelihood
+    if (length(likelihood) == 1L) {
+      expected$replication <- data.frame(log_likelihood = likelihood)
+    }
+  }
   rows <- lapply(names(expected), function(name) {
     want <- expected[[name]]
     have <- obtained[[name]]
@@ -231,6 +398,13 @@ compare_tables <- function(label, obtained, expected, tolerance = .output_defaul
     if (is.null(have)) {
       return(compare_values(sprintf("%s: %s is reported", label, name),
                             1, 0, tolerance = 0.5))
+    }
+    # Keys a table declares (keyed_table()) bind both sides, so the
+    # comparison takes the same value columns the inventory counts.
+    declared <- attr(have, "harness_keys") %||% attr(want, "harness_keys")
+    if (!is.null(declared)) {
+      attr(want, "harness_keys") <- declared
+      .check_unique_keys(want, declared, sprintf("%s: the expected %s", label, name))
     }
     keys <- intersect(.output_keys(want, name), names(have))
     if (nrow(want) == 1L && nrow(have) == 1L) {
@@ -242,12 +416,9 @@ compare_tables <- function(label, obtained, expected, tolerance = .output_defaul
     }
     stopifnot("an expected table must share a key with the fitted one" =
                 length(keys) > 0L)
-    # Values are the numeric and logical columns; text columns label the row.
-    values <- setdiff(intersect(names(want), names(have)),
-                      union(keys, .output_keys(want, name)))
-    values <- values[vapply(want[values], function(column) {
-      is.numeric(column) || is.logical(column)
-    }, logical(1))]
+    # Values are the numeric and logical columns, text columns labelling the
+    # row, unless the table declares its keys (see .output_values()).
+    values <- setdiff(intersect(.output_values(want, name), names(have)), keys)
     as_key <- function(frame) {
       frame[keys] <- lapply(frame[keys], function(column) {
         if (is.numeric(column)) format(column, digits = 15, trim = TRUE) else
@@ -258,9 +429,11 @@ compare_tables <- function(label, obtained, expected, tolerance = .output_defaul
     joined <- merge(as_key(want[c(keys, values)]), as_key(have[c(keys, values)]),
                     by = keys, all.x = TRUE, suffixes = c(".reference", ".obtained"),
                     sort = TRUE)
-    found <- stats::complete.cases(joined[keys]) &
-      !is.na(match(do.call(paste, c(joined[keys], sep = "\r")),
-                   do.call(paste, c(as_key(have)[keys], sep = "\r"))))
+    # A missing key is a value like any other (parameter_inference() gives
+    # group-class probabilities `term = NA`): merge() pairs NA with NA, and the
+    # pasted keys match "NA" with "NA", so such a row counts as found.
+    found <- !is.na(match(do.call(paste, c(joined[keys], sep = "\r")),
+                          do.call(paste, c(as_key(have)[keys], sep = "\r"))))
     present <- compare_values(sprintf("%s: %s rows the reference has, found in the fit",
                                       label, name),
                               nrow(want), sum(found), tolerance = 0.5)
@@ -360,6 +533,95 @@ output_ledger <- function(fit_label, inventory, comparisons, exempt = character(
 }
 
 # ---------------------------------------------------------------------------
+# Verb results: the same ledger for tables that are not a fit's catalogue
+# ---------------------------------------------------------------------------
+#
+# three_step(), r3step(), pool_imputations(), predict(),
+# parameter_inference() and get_results(enumeration, "lmr") return tables
+# that get_results(fit, "all") never lists, so fit_outputs() cannot inventory
+# them and their comparisons would sit outside the not-covered gate. A suite
+# names those tables itself, and every value column of each is accounted for
+# exactly as a fit's are: compared in full, exempted with a reason, or a
+# failure of the run.
+
+#' Account for every value of verb tables
+#'
+#' @param label Label of the verb call, as used in the comparisons (it fills
+#'   the ledger's `fit` column).
+#' @param tables Named list of the verb's tables, names being how the
+#'   comparisons' `output` keys call them (`"three_step"` for
+#'   `"three_step$estimate"`). Declare the keys of a table whose columns do
+#'   not follow the catalogue naming with [keyed_table()].
+#' @param comparisons The comparisons made for these tables.
+#' @param exempt Named reasons, keyed by `table$column` or by table.
+#' @return A ledger `data.frame` like [output_ledger()]'s.
+table_ledger <- function(label, tables, comparisons, exempt = character()) {
+  if (!is.list(tables) || is.data.frame(tables) || length(tables) == 0L ||
+      is.null(names(tables)) || any(!nzchar(names(tables))) ||
+      !all(vapply(tables, is.data.frame, logical(1)))) {
+    stop(errorCondition(sprintf("%s: `tables` must be a named list of data.frames", label),
+                        class = "multilpa_bad_ledger", call = NULL))
+  }
+  # An empty result has nothing to account for, and would pass vacuously.
+  empty <- names(tables)[vapply(tables, function(table) nrow(table) == 0L, logical(1))]
+  if (length(empty) > 0L) {
+    stop(errorCondition(sprintf("%s: verb tables with no rows cannot be accounted for: %s",
+                                label, paste(empty, collapse = ", ")),
+                        class = "multilpa_bad_ledger", call = NULL))
+  }
+  output_ledger(label, fit_outputs(tables), comparisons, exempt)
+}
+
+#' Compare verb tables with expected ones, and account for every value
+#'
+#' @param label Label for the rows.
+#' @param obtained Named list of the verb's tables (see [table_ledger()]).
+#' @param expected Named list of tables in the same shapes, built from the
+#'   reference; a table's declared keys are taken from `obtained`.
+#' @param tolerance Named tolerances (`table$column`, `table`, `default`),
+#'   merged over [.output_default_tolerances].
+#' @param exempt Named reasons for outputs the reference cannot provide.
+#' @param extra Further comparison rows, counted through their `output`.
+#' @return A `harness_case`.
+compare_verb <- function(label, obtained, expected, tolerance = numeric(),
+                         exempt = character(), extra = NULL) {
+  .compare_case(label, obtained, expected, tolerance, exempt, extra,
+                inventory = NULL)
+}
+
+#' Compare a fit of any family with tables a suite built itself
+#'
+#' The path for the families [reference_tables()] does not build (the
+#' additive, cross-level and general transition families, growth and
+#' regression mixtures): the suite writes the expected tables, and every
+#' output of `fit_tables(fit)` is accounted for as [compare_fit()] does.
+#'
+#' @inheritParams compare_verb
+#' @param fit The fitted model.
+#' @return A `harness_case`.
+compare_fit_tables <- function(label, fit, expected, tolerance = numeric(),
+                               exempt = character(), extra = NULL) {
+  obtained <- fit_tables(fit)
+  .compare_case(label, obtained, expected, tolerance, exempt, extra,
+                inventory = fit_outputs(obtained))
+}
+
+#' The comparison and ledger shared by the verb and fit paths
+#' @param inventory `NULL` for verb tables (inventoried by [table_ledger()]),
+#'   or a fit's inventory from [fit_outputs()].
+#' @return A `harness_case`.
+.compare_case <- function(label, obtained, expected, tolerance, exempt, extra, inventory) {
+  tolerances <- .output_default_tolerances
+  tolerances[names(tolerance)] <- tolerance
+  expected <- .drop_exempt(expected, exempt)
+  comparisons <- compare_tables(label, obtained, expected, tolerances)
+  if (!is.null(extra)) comparisons <- rbind(comparisons, .with_output_columns(extra))
+  ledger <- if (is.null(inventory)) table_ledger(label, obtained, comparisons, exempt) else
+    output_ledger(label, inventory, comparisons, exempt)
+  harness_case(comparisons, ledger)
+}
+
+# ---------------------------------------------------------------------------
 # Reference tables, written from their definitions
 # ---------------------------------------------------------------------------
 
@@ -381,7 +643,9 @@ output_ledger <- function(fit_label, inventory, comparisons, exempt = character(
 #' @param responses Named list of profiles-by-categories matrices whose column
 #'   names are the fit's category labels.
 #' @param standard_errors List with any of `mean`, `variance` (matrices like
-#'   `means`) and `probability` (a list like `responses`).
+#'   `means`), `probability` (a list like `responses`), `location` (a
+#'   profiles-by-ordinal-indicators matrix), `count_mean` and
+#'   `count_dispersion` (matrices like `count_means`).
 #' @param profile_probabilities Group-classes-by-profiles matrix.
 #' @param group_probabilities Group-class probabilities.
 #' @param group_posteriors Groups-by-group-classes matrix, rows named by group.
@@ -395,6 +659,30 @@ output_ledger <- function(fit_label, inventory, comparisons, exempt = character(
 #'   group class, computed from the reference's own estimates. Needed for the
 #'   entropy-charged criteria of a model with several group classes; with one
 #'   group class it is the row posterior entropy and need not be given.
+#' @param weights For a fit with sampling weights: one raw sampling weight per
+#'   independent unit (each group of a two-level fit, each row of a
+#'   single-level one), named by the unit's group label or in the order the
+#'   units first appear. [reference_tables()] applies the package's documented
+#'   convention (`?multilpa`, `weights`): weights rescaled to sum to the number
+#'   of units of positive weight, and a unit of weight zero in no sample size,
+#'   entropy or classification table, though its posteriors are reported.
+#'   `log_likelihood` must then be the pseudo log likelihood under those
+#'   rescaled weights, `sum_j w_j log L_j`.
+#' @param coefficients For a membership-covariate fit: a list with `profile`
+#'   (terms by profiles) and, for group covariates, `group` (terms by group
+#'   classes) matrices of multinomial logits, one column per class in the
+#'   reference's class order and against any baseline; rows named by the fit's
+#'   term labels, where a term naming a group class (`"x:group_class_2"`,
+#'   `profile_slopes = "group_class"`) uses the reference's group-class
+#'   numbering. Logits are identified up to a constant per term, so
+#'   [reference_tables()] re-expresses them against the fit's baseline, its
+#'   last class.
+#' @param ordinal Named list of profiles-by-categories probability matrices of
+#'   the ordinal indicators, column names the fit's category labels in order.
+#' @param count_means Profiles-by-indicators matrix of count means, with
+#'   indicator names.
+#' @param count_dispersion Matrix like `count_means` of negative-binomial
+#'   dispersions (`alpha` of `mu + alpha mu^2`).
 #' @return A list of class `harness_reference`.
 harness_reference <- function(log_likelihood, n_parameters, posteriors, rows = NULL,
                               groups = NULL, means = NULL, variances = NULL,
@@ -402,7 +690,14 @@ harness_reference <- function(log_likelihood, n_parameters, posteriors, rows = N
                               standard_errors = NULL, profile_probabilities = NULL,
                               group_probabilities = NULL, group_posteriors = NULL,
                               group_log_likelihood = NULL, data = NULL,
-                              row_conditional_entropy = NULL) {
+                              row_conditional_entropy = NULL, weights = NULL,
+                              coefficients = NULL, ordinal = NULL, count_means = NULL,
+                              count_dispersion = NULL) {
+  matrix_list <- function(x) {
+    is.null(x) || (is.list(x) && !is.null(names(x)) &&
+                     all(vapply(x, function(block) is.null(block) ||
+                                  (is.matrix(block) && is.numeric(block)), logical(1))))
+  }
   stopifnot(
     "`log_likelihood` must be one finite number" =
       is.numeric(log_likelihood) && length(log_likelihood) == 1L && is.finite(log_likelihood),
@@ -413,7 +708,21 @@ harness_reference <- function(log_likelihood, n_parameters, posteriors, rows = N
       is.null(row_conditional_entropy) ||
       (is.numeric(row_conditional_entropy) &&
          length(row_conditional_entropy) == nrow(posteriors) &&
-         all(is.finite(row_conditional_entropy))))
+         all(is.finite(row_conditional_entropy))),
+    "`weights` must be NULL or finite non-negative weights, some positive" =
+      is.null(weights) || (is.numeric(weights) && all(is.finite(weights)) &&
+                             all(weights >= 0) && any(weights > 0)),
+    "`coefficients` must be a named list of numeric matrices with row names" =
+      matrix_list(coefficients) &&
+      all(vapply(coefficients, function(block) !is.null(rownames(block)), logical(1))),
+    "`ordinal` must be a named list of numeric matrices with category names" =
+      matrix_list(ordinal) &&
+      all(vapply(ordinal, function(block) !is.null(colnames(block)), logical(1))),
+    "`count_means` must be a numeric matrix with indicator names" =
+      is.null(count_means) || (is.matrix(count_means) && !is.null(colnames(count_means))),
+    "`count_dispersion` must match `count_means`" =
+      is.null(count_dispersion) ||
+      (!is.null(count_means) && identical(dim(count_dispersion), dim(count_means))))
   structure(list(log_likelihood = log_likelihood, n_parameters = n_parameters,
                  posteriors = unname(posteriors),
                  rows = rows %||% seq_len(nrow(posteriors)), groups = groups,
@@ -423,27 +732,41 @@ harness_reference <- function(log_likelihood, n_parameters, posteriors, rows = N
                  group_probabilities = group_probabilities,
                  group_posteriors = group_posteriors,
                  group_log_likelihood = group_log_likelihood, data = data,
-                 row_conditional_entropy = row_conditional_entropy),
+                 row_conditional_entropy = row_conditional_entropy, weights = weights,
+                 coefficients = coefficients, ordinal = ordinal, count_means = count_means,
+                 count_dispersion = count_dispersion),
             class = "harness_reference")
 }
 
 #' Put a reference's classes in the fit's order
 #'
-#' Profiles are matched on the measurement parameters, then group classes on
-#' the profile mix within each group class, each by exhaustive search.
+#' Profiles are matched on the measurement parameters (means, response,
+#' ordinal category and count-mean blocks), then group classes on the profile
+#' mix within each group class, each by exhaustive search. A
+#' membership-covariate fit has no profile mix, and its group classes are
+#' matched on the group posteriors instead. The fit's estimates are read for
+#' this matching only.
 #'
 #' @param reference A `harness_reference`.
 #' @param fit The fitted model.
-#' @return The reference with every class-indexed element permuted.
+#' @return The reference with every class-indexed element permuted, and the
+#'   group-class labels inside coefficient term names renumbered.
 align_reference <- function(reference, fit) {
-  signature <- function(means, responses) {
-    do.call(cbind, c(if (!is.null(means)) list(unname(as.matrix(means))),
-                     lapply(responses, function(block) unname(as.matrix(block)))))
+  signature <- function(blocks) {
+    blocks <- Filter(Negate(is.null), blocks)
+    if (length(blocks) == 0L) NULL else
+      do.call(cbind, lapply(blocks, function(block) unname(as.matrix(block))))
   }
-  ours <- signature(if (!is.null(reference$means)) fit$means[, colnames(reference$means),
-                                                              drop = FALSE],
-                    fit$response_probabilities[names(reference$responses)])
-  theirs <- signature(reference$means, reference$responses)
+  fit_ordinal <- lapply(stats::setNames(nm = names(reference$ordinal)), function(item) {
+    .ordinal_probabilities(fit$ordinal_intercepts[[item]], fit$ordinal_locations[, item])
+  })
+  ours <- signature(c(
+    list(if (!is.null(reference$means)) fit$means[, colnames(reference$means), drop = FALSE]),
+    fit$response_probabilities[names(reference$responses)], fit_ordinal,
+    list(if (!is.null(reference$count_means))
+      log(fit$count_means[, colnames(reference$count_means), drop = FALSE]))))
+  theirs <- signature(c(list(reference$means), reference$responses, reference$ordinal,
+                        list(if (!is.null(reference$count_means)) log(reference$count_means))))
   order_profiles <- if (is.null(theirs)) seq_len(fit$n_profiles) else
     align_classes(ours, theirs)
   permute_rows <- function(m) if (is.null(m)) NULL else m[order_profiles, , drop = FALSE]
@@ -453,10 +776,18 @@ align_reference <- function(reference, fit) {
     reference$covariances <- reference$covariances[, , order_profiles, drop = FALSE]
   }
   reference$responses <- lapply(reference$responses, permute_rows)
+  reference$ordinal <- lapply(reference$ordinal, permute_rows)
+  reference$count_means <- permute_rows(reference$count_means)
+  reference$count_dispersion <- permute_rows(reference$count_dispersion)
   reference$standard_errors <- lapply(reference$standard_errors, function(block) {
     if (is.list(block)) lapply(block, permute_rows) else permute_rows(block)
   })
   reference$posteriors <- reference$posteriors[, order_profiles, drop = FALSE]
+  if (!is.null(reference$coefficients$profile)) {
+    reference$coefficients$profile <-
+      reference$coefficients$profile[, order_profiles, drop = FALSE]
+  }
+  order_groups <- NULL
   if (!is.null(reference$profile_probabilities)) {
     reference$profile_probabilities <-
       reference$profile_probabilities[, order_profiles, drop = FALSE]
@@ -465,20 +796,78 @@ align_reference <- function(reference, fit) {
                                     unname(reference$profile_probabilities))
       reference$profile_probabilities <-
         reference$profile_probabilities[order_groups, , drop = FALSE]
-      reference$group_probabilities <- reference$group_probabilities[order_groups]
-      if (!is.null(reference$group_posteriors)) {
-        reference$group_posteriors <- reference$group_posteriors[, order_groups, drop = FALSE]
-      }
+    }
+  } else if (inherits(fit, "multilpa_covariates") &&
+               ncol(reference$group_posteriors %||% matrix(0, 0L, 1L)) > 1L &&
+               !is.null(fit$group_posteriors)) {
+    # Both in the order the groups first appear in the data, as
+    # reference_tables() orders them (the fit names its rows by each group's
+    # first data row, not by the group label).
+    theirs_groups <- reference$group_posteriors
+    if (!is.null(reference$groups) && !is.null(rownames(theirs_groups))) {
+      theirs_groups <- theirs_groups[as.character(unique(reference$groups)), , drop = FALSE]
+    }
+    order_groups <- align_classes(t(unname(fit$group_posteriors)), t(unname(theirs_groups)))
+  }
+  if (!is.null(order_groups)) {
+    reference$group_probabilities <- reference$group_probabilities[order_groups]
+    if (!is.null(reference$group_posteriors)) {
+      reference$group_posteriors <- reference$group_posteriors[, order_groups, drop = FALSE]
+    }
+    if (!is.null(reference$coefficients$group)) {
+      reference$coefficients$group <-
+        reference$coefficients$group[, order_groups, drop = FALSE]
+    }
+    if (!is.null(reference$coefficients$profile)) {
+      rownames(reference$coefficients$profile) <- .renumber_group_classes(
+        rownames(reference$coefficients$profile), order_groups)
     }
   }
   reference
 }
 
+#' Renumber the group classes named inside coefficient terms
+#'
+#' Under `profile_slopes = "group_class"` a profile logit's terms are
+#' `group_class_h` and `x:group_class_h`. When the reference's group class `i`
+#' is the fit's class `j` (`order[j] == i`), its terms are renamed to `j`.
+#'
+#' @param terms Term labels in the reference's numbering.
+#' @param order The group-class permutation from [align_classes()].
+#' @return The labels in the fit's numbering.
+.renumber_group_classes <- function(terms, order) {
+  pattern <- "(^|:)group_class_([0-9]+)($|:)"
+  vapply(terms, function(term) {
+    found <- regmatches(term, regexec(pattern, term))[[1L]]
+    if (length(found) == 0L) return(term)
+    renumbered <- match(as.integer(found[[3L]]), order)
+    sub(pattern, sprintf("\\1group_class_%d\\3", renumbered), term)
+  }, character(1), USE.NAMES = FALSE)
+}
+
+#' Ordinal category probabilities, from the adjacent-category definition
+#'
+#' `log P(k | c) = a_k + eta_c (k - 1) - log sum_m exp(a_m + eta_c (m - 1))`,
+#' with `a_1 = 0` (`?multilpa`, `ordinal`).
+#'
+#' @param intercepts The `a_2, ..., a_K`.
+#' @param locations One `eta_c` per profile.
+#' @return A profiles-by-categories matrix.
+.ordinal_probabilities <- function(intercepts, locations) {
+  scores <- seq_len(length(intercepts) + 1L) - 1
+  logits <- outer(locations, scores) +
+    matrix(c(0, intercepts), length(locations), length(scores), byrow = TRUE)
+  top <- apply(logits, 1L, max)
+  shifted <- exp(logits - top)
+  shifted / rowSums(shifted)
+}
+
 #' Classification entropy, `-sum p log p`, with `0 log 0 = 0`
 #' @param p A posterior matrix.
 #' @return A single number.
-.reference_entropy <- function(p) {
-  -sum(ifelse(p > 0, p * log(p), 0))
+.reference_entropy <- function(p, weights = NULL) {
+  if (is.null(weights)) return(-sum(ifelse(p > 0, p * log(p), 0)))
+  -sum(weights * rowSums(ifelse(p > 0, p * log(p), 0)))
 }
 
 #' The classification tables of one level, from its posteriors
@@ -488,28 +877,40 @@ align_reference <- function(reference, fit) {
 #' `sqrt(.Machine$double.eps)`, the package's documented convention, and `NA`
 #' where a class has no modal member or a share of zero or one.
 #'
+#' Under sampling weights (`?get_results`, "classification" to "entropy")
+#' every quantity that estimates the population is weighted: class sizes and
+#' shares are weighted posterior totals, average posteriors weighted means,
+#' the error matrix `sum_i w_i p_it 1(W_i = s) / sum_i w_i p_it`, the BCH
+#' weights its inverse, the entropy `sum_i w_i e_i` and the relative entropy
+#' `1 - sum_i w_i e_i / (sum_i w_i log K)`; modal counts and `n_units` stay
+#' counts.
+#'
 #' @param p Posteriors of the classified units.
 #' @param level `"individuals"` or `"groups"`.
 #' @param units Unit labels for the BCH table.
+#' @param weights `NULL`, or the rescaled sampling weight of each row of `p`.
 #' @return A named list of tables.
-.reference_level_tables <- function(p, level, units) {
+.reference_level_tables <- function(p, level, units, weights = NULL) {
   k <- ncol(p)
   classes <- seq_len(k)
+  w <- weights %||% rep(1, nrow(p))
   modal <- max.col(p, ties.method = "first")
   n_modal <- tabulate(modal, nbins = k)
   average <- t(vapply(classes, function(assigned) {
-    if (n_modal[[assigned]] == 0L) rep(NA_real_, k) else
-      colMeans(p[modal == assigned, , drop = FALSE])
+    rows <- modal == assigned
+    total <- sum(w[rows])
+    if (n_modal[[assigned]] == 0L || total <= 0) rep(NA_real_, k) else
+      colSums(p[rows, , drop = FALSE] * w[rows]) / total
   }, numeric(k)))
-  estimated <- colSums(p)
-  share <- estimated / nrow(p)
+  estimated <- colSums(p * w)
+  share <- estimated / sum(w)
   diagonal <- diag(average)
   odds <- ifelse(is.na(diagonal) | share <= 0 | share >= 1, NA_real_,
           ifelse(diagonal >= 1 - sqrt(.Machine$double.eps), Inf,
                  (diagonal / (1 - diagonal)) / (share / (1 - share))))
   errors <- t(vapply(classes, function(true_class) {
-    vapply(classes, function(assigned) sum(p[modal == assigned, true_class]),
-           numeric(1)) / sum(p[, true_class])
+    vapply(classes, function(assigned) sum((w * p[, true_class])[modal == assigned]),
+           numeric(1)) / sum(w * p[, true_class])
   }, numeric(k)))
   pairs <- expand.grid(assigned = classes, true = classes)
   inverse <- tryCatch(solve(errors), error = function(condition) NULL)
@@ -537,9 +938,10 @@ align_reference <- function(reference, fit) {
                  weight = as.vector(t(inverse[modal, , drop = FALSE])))
     },
     entropy = data.frame(level = level, n_classes = k, n_units = nrow(p),
-                         entropy_sum = .reference_entropy(p),
+                         entropy_sum = .reference_entropy(p, weights),
                          relative_entropy = if (k > 1L)
-                           1 - .reference_entropy(p) / (nrow(p) * log(k)) else NA_real_))
+                           1 - .reference_entropy(p, weights) / (sum(w) * log(k)) else
+                             NA_real_))
 }
 
 #' Every information criterion, from its definition
@@ -576,14 +978,34 @@ align_reference <- function(reference, fit) {
 #' Within-profile residual association for every pair of indicators
 #'
 #' Gaussian pairs: the posterior-weighted residual correlation against the
-#' model-implied one, Fisher-z statistic. Categorical pairs: the
+#' model-implied one, Fisher-z statistic. Categorical pairs (categorical or
+#' ordinal indicators, an ordinal one's categories being its levels): the
 #' posterior-weighted two-way table against the product of the profile's
-#' margins, Pearson chi-square, both tables summarised by Cramer's V. Written
-#' from the definitions in `?get_results`, not from the package's code.
+#' margins, Pearson chi-square, both tables summarised by Cramer's V. Mixed
+#' Gaussian/category pairs, and `count` pairs (any pair with a count
+#' indicator), use the posterior-weighted Pearson correlation of the two
+#' observed values, a category entering as its number, centred on their
+#' weighted means. Local independence implies zero correlation; there is no
+#' reference test distribution for these pairs. Under sampling weights every
+#' posterior is multiplied by its row's weight, and `statistic`, `df`,
+#' `p_value` and `p_adjusted` are `NA`: design-based inference is not
+#' implemented. Written from the definitions in `?get_results`, not from the
+#' package's code.
 #'
+#' @param reference The reference, for its posteriors, data and Gaussian
+#'   estimates.
+#' @param continuous,categorical,counts Indicator names of each kind;
+#'   `categorical` includes the ordinal indicators.
+#' @param levels Named list of the category labels of `categorical`.
+#' @param blocks Named list of profiles-by-categories probability matrices of
+#'   `categorical`.
+#' @param row_weights `NULL`, or the rescaled sampling weight of every row.
 #' @return A `data.frame` keyed by `profile`, `indicator_1`, `indicator_2`.
-.reference_residuals <- function(reference, continuous, categorical, levels) {
-  p <- reference$posteriors
+.reference_residuals <- function(reference, continuous, categorical, levels,
+                                 blocks = reference$responses, counts = character(),
+                                 row_weights = NULL) {
+  weighted <- !is.null(row_weights)
+  p <- if (weighted) reference$posteriors * row_weights else reference$posteriors
   data <- reference$data
   cramer <- function(table) {
     total <- sum(table)
@@ -595,6 +1017,36 @@ align_reference <- function(reference, fit) {
            (total * smaller))
   }
   clamp <- function(r) pmin(pmax(r, -0.999999), 0.999999)
+  # A category enters a correlation as its number, in category order.
+  numeric_values <- function(pair) {
+    vapply(pair, function(name) {
+      if (name %in% categorical) as.numeric(match(as.character(data[[name]]), levels[[name]])) else
+        as.numeric(data[[name]])
+    }, numeric(nrow(data)))
+  }
+  correlation_rows <- function(pairs, kind, k, label) {
+    lapply(seq_len(ncol(pairs)), function(index) {
+      pair <- pairs[, index]
+      values <- numeric_values(pair)
+      complete <- stats::complete.cases(values)
+      weights <- p[complete, k]
+      effective <- sum(weights)
+      # cov.wt normalizes the weights and centres on weighted means. The
+      # normalization cancels in the correlation; no fitted Gaussian mean
+      # is used for the descriptive mixed-pair association.
+      covariance <- if (effective > 0) {
+        stats::cov.wt(values[complete, , drop = FALSE], wt = weights, method = "ML")$cov
+      } else matrix(0, 2L, 2L)
+      observed <- if (all(diag(covariance) > 0)) {
+        stats::cov2cor(covariance)[1L, 2L]
+      } else NA_real_
+      data.frame(profile = label, indicator_1 = pair[[1L]], indicator_2 = pair[[2L]],
+                 kind = kind, observed = observed, expected = 0,
+                 residual = observed, effective_n = effective,
+                 statistic = NA_real_, df = NA_integer_, p_value = NA_real_)
+    })
+  }
+  in_data_order <- function(names_wanted) names(data)[names(data) %in% names_wanted]
   rows <- lapply(seq_len(ncol(p)), function(k) {
     label <- sprintf("profile_%d", k)
     gaussian <- if (length(continuous) >= 2L) {
@@ -610,7 +1062,8 @@ align_reference <- function(reference, fit) {
         observed <- observed_cov[1L, 2L] / sqrt(prod(diag(observed_cov)))
         expected <- implied[1L, 2L] / sqrt(prod(diag(implied)))
         effective <- sum(w)
-        statistic <- (atanh(clamp(observed)) - atanh(clamp(expected))) * sqrt(effective - 3)
+        statistic <- if (weighted) NA_real_ else
+          (atanh(clamp(observed)) - atanh(clamp(expected))) * sqrt(effective - 3)
         data.frame(profile = label, indicator_1 = pair[[1L]], indicator_2 = pair[[2L]],
                    kind = "gaussian", observed = observed, expected = expected,
                    residual = observed - expected, effective_n = effective,
@@ -628,21 +1081,33 @@ align_reference <- function(reference, fit) {
         a <- factor(as.character(data[[first]][complete]), levels[[first]])
         b <- factor(as.character(data[[second]][complete]), levels[[second]])
         observed <- as.matrix(stats::xtabs(w ~ a + b))
-        expected <- sum(w) * outer(reference$responses[[first]][k, levels[[first]]],
-                                   reference$responses[[second]][k, levels[[second]]])
+        expected <- sum(w) * outer(blocks[[first]][k, levels[[first]]],
+                                   blocks[[second]][k, levels[[second]]])
         positive <- expected > 0
-        statistic <- if (any(!positive & observed > 0)) Inf else
+        statistic <- if (weighted) NA_real_ else if (any(!positive & observed > 0)) Inf else
           sum((observed[positive] - expected[positive])^2 / expected[positive])
-        degrees <- (nrow(observed) - 1L) * (ncol(observed) - 1L)
+        degrees <- if (weighted) NA_integer_ else
+          as.integer((nrow(observed) - 1L) * (ncol(observed) - 1L))
         data.frame(profile = label, indicator_1 = first, indicator_2 = second,
                    kind = "categorical", observed = cramer(observed),
                    expected = cramer(expected),
                    residual = cramer(observed) - cramer(expected), effective_n = sum(w),
-                   statistic = statistic, df = as.integer(degrees),
+                   statistic = statistic, df = degrees,
                    p_value = stats::pchisq(statistic, degrees, lower.tail = FALSE))
       })
     }
-    pieces <- c(gaussian, nominal)
+    mixed <- if (length(continuous) > 0L && length(categorical) > 0L) {
+      pairs <- utils::combn(in_data_order(c(continuous, categorical)), 2L)
+      cross_kind <- xor(pairs[1L, ] %in% continuous, pairs[2L, ] %in% continuous)
+      correlation_rows(pairs[, cross_kind, drop = FALSE], "mixed", k, label)
+    }
+    counted <- in_data_order(c(continuous, categorical, counts))
+    count <- if (length(counts) > 0L && length(counted) >= 2L) {
+      pairs <- utils::combn(counted, 2L)
+      with_count <- pairs[1L, ] %in% counts | pairs[2L, ] %in% counts
+      correlation_rows(pairs[, with_count, drop = FALSE], "count", k, label)
+    }
+    pieces <- c(gaussian, nominal, mixed, count)
     if (length(pieces) == 0L) NULL else do.call(rbind, pieces)
   })
   out <- do.call(rbind, rows)
@@ -657,7 +1122,11 @@ align_reference <- function(reference, fit) {
 #' Mass over rows with a Gaussian value; Kish's effective n
 #' of the posteriors; the smallest variance and the smallest eigenvalue of the
 #' covariance, each relative to the observed marginal variance (divisor n);
-#' and whether that eigenvalue sits at the variance floor.
+#' and whether that eigenvalue sits at the variance floor. Under sampling
+#' weights (`?get_results`, `gaussian_diagnostics`) each row's contribution is
+#' its posterior times its rescaled weight, the marginal variance is the
+#' sampling-weighted one (divisor the weight total), and a row of weight zero
+#' is not counted.
 #'
 #' `positive_rows` is the exact value: a Gaussian density is positive
 #' everywhere, so every row with a Gaussian value has a positive posterior in
@@ -667,17 +1136,29 @@ align_reference <- function(reference, fit) {
 #' zero). Disagreement here is a finding about that column, not tolerance to
 #' tune.
 #'
+#' @param row_weights `NULL`, or the rescaled sampling weight of every row.
 #' @return A `data.frame` keyed by `context` and `profile`.
-.reference_gaussian_diagnostics <- function(reference, continuous, min_variance) {
+.reference_gaussian_diagnostics <- function(reference, continuous, min_variance,
+                                            row_weights = NULL) {
   data <- as.matrix(reference$data[continuous])
   p <- reference$posteriors
   with_value <- rowSums(!is.na(data)) > 0L
-  overall <- apply(data, 2L, function(column) {
-    column <- column[!is.na(column)]
-    mean((column - mean(column))^2)
-  })
+  overall <- if (is.null(row_weights)) {
+    apply(data, 2L, function(column) {
+      column <- column[!is.na(column)]
+      mean((column - mean(column))^2)
+    })
+  } else {
+    with_value <- with_value & row_weights > 0
+    vapply(seq_len(ncol(data)), function(j) {
+      used <- !is.na(data[, j]) & row_weights > 0
+      w <- row_weights[used]
+      centre <- sum(w * data[used, j]) / sum(w)
+      sum(w * (data[used, j] - centre)^2) / sum(w)
+    }, numeric(1))
+  }
   do.call(rbind, lapply(seq_len(ncol(p)), function(k) {
-    contribution <- p[, k] * with_value
+    contribution <- p[, k] * with_value * (row_weights %||% 1)
     positive <- contribution > 0
     scaled <- contribution[positive] / max(contribution)
     covariance <- if (!is.null(reference$covariances))
@@ -697,6 +1178,14 @@ align_reference <- function(reference, fit) {
 
 #' Build every table a reference can supply, in the fit's shapes
 #'
+#' Beyond the measurement tables, a reference can supply the `ordinal` table
+#' (category probabilities; each profile's location derived from them by the
+#' adjacent-category definition, `eta_c = (d_K - d_1) / (K - 1)` with
+#' `d_k = log P(k | c) - log P(k | last profile)`), the `count_means` table,
+#' and for a membership-covariate fit the `coefficients` table in place of
+#' `profile_probabilities`. A weighted fit takes the reference's weights
+#' through the package's documented convention (see [harness_reference()]).
+#'
 #' @param reference An aligned `harness_reference`.
 #' @param fit The fitted model, for its dimensions, labels and settings only;
 #'   no estimate is read from it.
@@ -704,9 +1193,13 @@ align_reference <- function(reference, fit) {
 #'   reasons) the outputs left out because the reference cannot supply them.
 reference_tables <- function(reference, fit) {
   stopifnot("`reference` must come from harness_reference()" =
-              inherits(reference, "harness_reference"),
-            "sampling weights are not handled by the reference tables" =
-              is.null(fit$sampling_weights))
+              inherits(reference, "harness_reference"))
+  weighted <- !is.null(fit$sampling_weights)
+  if (!identical(weighted, !is.null(reference$weights))) {
+    stop(errorCondition(paste(
+      "a weighted fit needs the reference's sampling weights, and an unweighted",
+      "fit must not be given any"), class = "multilpa_bad_reference", call = NULL))
+  }
   p <- reference$posteriors
   k <- ncol(p)
   rows <- reference$rows
@@ -717,6 +1210,7 @@ reference_tables <- function(reference, fit) {
   informative <- if (is.null(data)) rep(TRUE, n_rows) else
     rowSums(!is.na(data[intersect(fit$vars, names(data))])) > 0L
   tables <- list()
+  exempt <- character()
 
   if (!is.null(reference$means)) {
     grid <- expand.grid(profile = seq_len(k), indicator = continuous,
@@ -761,22 +1255,40 @@ reference_tables <- function(reference, fit) {
       out
     }))
   }
-
-  gamma <- reference$profile_probabilities %||% matrix(colMeans(p), 1L)
-  n_group_classes <- nrow(gamma)
-  delta <- reference$group_probabilities %||% rep(1, n_group_classes)
-  tables$profile_probabilities <- data.frame(
-    group_class = rep(seq_len(n_group_classes), times = k),
-    profile = rep(seq_len(k), each = n_group_classes),
-    probability = as.vector(gamma), group_class_probability = rep(delta, times = k))
+  tables$ordinal <- .reference_ordinal(reference, k)
+  tables$count_means <- .reference_counts(reference, k)
 
   group_of_row <- reference$groups %||% rows
   group_ids <- unique(group_of_row)
   zg <- reference$group_posteriors %||%
     matrix(1, length(group_ids), 1L, dimnames = list(as.character(group_ids), NULL))
   zg <- zg[as.character(group_ids), , drop = FALSE]
+  # Sampling weights, rescaled as the package rescales them; a unit of weight
+  # zero keeps its posteriors but is in no count, entropy or sample size.
+  unit_weights <- if (weighted) .reference_unit_weights(reference$weights, group_ids)
+  row_weights <- if (weighted) unname(unit_weights[as.character(group_of_row[rows])])
+  classified_row <- informative & (if (weighted) row_weights > 0 else TRUE)
   informative_group <- as.character(group_ids) %in%
-    as.character(unique(group_of_row[rows[informative]]))
+    as.character(unique(group_of_row[rows[classified_row]]))
+  if (weighted) informative_group <- informative_group & unit_weights > 0
+
+  if (inherits(fit, "multilpa_covariates")) {
+    # Class membership is a regression here, so there is no profile mix.
+    n_group_classes <- ncol(zg)
+    if (is.null(reference$coefficients)) {
+      exempt[["coefficients"]] <- "the reference supplies no membership coefficients"
+    } else {
+      tables$coefficients <- .reference_coefficients(reference$coefficients)
+    }
+  } else {
+    gamma <- reference$profile_probabilities %||% matrix(colMeans(p), 1L)
+    n_group_classes <- nrow(gamma)
+    delta <- reference$group_probabilities %||% rep(1, n_group_classes)
+    tables$profile_probabilities <- data.frame(
+      group_class = rep(seq_len(n_group_classes), times = k),
+      profile = rep(seq_len(k), each = n_group_classes),
+      probability = as.vector(gamma), group_class_probability = rep(delta, times = k))
+  }
 
   tables$posteriors <- data.frame(row = rep(rows, times = k), profile = rep(seq_len(k), each = n_rows),
                                   posterior = as.vector(p),
@@ -800,15 +1312,22 @@ reference_tables <- function(reference, fit) {
   assignments[sprintf("posterior_profile_%d", seq_len(k))] <- as.data.frame(p)
   tables$assignments <- assignments
 
-  individual <- .reference_level_tables(p[informative, , drop = FALSE], "individuals",
-                                        rows[informative])
+  individual <- .reference_level_tables(p[classified_row, , drop = FALSE], "individuals",
+                                        rows[classified_row], row_weights[classified_row])
   group <- .reference_level_tables(zg[informative_group, , drop = FALSE], "groups",
-                                   as.character(group_ids)[informative_group])
-  for (name in names(individual)) {
-    tables[[name]] <- rbind(individual[[name]], group[[name]])
-  }
+                                   as.character(group_ids)[informative_group],
+                                   unname(unit_weights[informative_group]))
+  # One group class classifies nothing at the group level: the fit leaves its
+  # group posteriors and the group rows of the classification tables out of
+  # `get_results(x, "all")`, keeping the group rows of `counts` and `entropy`
+  # (`?get_results`; package review API-9).
+  group_level <- if (ncol(zg) > 1L) names(group) else c("counts", "entropy")
+  if (ncol(zg) == 1L) tables$group_posteriors <- NULL
+  tables[names(individual)] <- lapply(names(individual), function(name) {
+    rbind(individual[[name]], if (name %in% group_level) group[[name]])
+  })
 
-  n_individuals <- sum(informative)
+  n_individuals <- sum(classified_row)
   n_groups <- sum(informative_group)
   # ICL, AWE and CLC charge the entropy of the complete-data classification,
   # H(group classes) + sum_i E_C[H(X_i | C, y_i)] over the classified groups
@@ -816,25 +1335,31 @@ reference_tables <- function(reference, fit) {
   # posterior entropy. A transition model keeps each level's own entropy.
   # Without the rows' within-class entropies a model with several group
   # classes has no reference for the three, and they are exempted by name, so
-  # they can never agree by default.
-  exempt <- character()
+  # they can never agree by default. Under sampling weights each unit's term
+  # is multiplied by its weight.
+  row_entropy <- function() {
+    .reference_entropy(p[classified_row, , drop = FALSE], row_weights[classified_row])
+  }
+  group_entropy <- function() {
+    .reference_entropy(zg[informative_group, , drop = FALSE],
+                       unname(unit_weights[informative_group]))
+  }
   entropies <- if (inherits(fit, "multilpa_transitions")) {
-    c(individuals = .reference_entropy(p[informative, , drop = FALSE]),
-      groups = .reference_entropy(zg[informative_group, , drop = FALSE]))
+    c(individuals = row_entropy(), groups = group_entropy())
   } else {
     complete <- if (ncol(zg) == 1L) {
-      .reference_entropy(p[informative, , drop = FALSE])
+      row_entropy()
     } else if (!is.null(reference$row_conditional_entropy)) {
-      .reference_entropy(zg[informative_group, , drop = FALSE]) +
-        sum(reference$row_conditional_entropy[informative])
+      group_entropy() + sum((row_weights %||% 1) * reference$row_conditional_entropy *
+                              classified_row)
     } else {
       charged <- paste0("information_criteria$",
                         c(outer(c("awe", "icl", "clc"), c("groups", "individual"),
                                 paste, sep = "_")))
-      exempt <- stats::setNames(rep(paste(
+      exempt <- c(exempt, stats::setNames(rep(paste(
         "the reference supplies no row entropies within the group classes",
         "(`row_conditional_entropy`), which the complete-data entropy of a",
-        "model with several group classes needs"), length(charged)), charged)
+        "model with several group classes needs"), length(charged)), charged))
       NA_real_
     }
     c(individuals = complete, groups = complete)
@@ -854,13 +1379,26 @@ reference_tables <- function(reference, fit) {
                              bic_groups = tables$information_criteria$bic_groups,
                              bic_individual = tables$information_criteria$bic_individual,
                              .row = 1L)
+  if (!is.null(tables$coefficients)) {
+    tables$model$n_profile_covariates <- .reference_covariate_count(reference$coefficients$profile)
+    tables$model$n_group_covariates <- .reference_covariate_count(reference$coefficients$group)
+  }
 
   if (!is.null(data)) {
-    tables$residuals <- .reference_residuals(reference, continuous, categorical,
-                                             fit$categorical_levels)
+    # An ordinal indicator pairs as a categorical one, its levels its
+    # categories. The package pairs the categorical indicators first and the
+    # ordinal ones after them, each in the fit's order
+    # (.multilpa_discrete_items()), whatever their order in `vars`.
+    ordinal <- names(reference$ordinal)
+    paired <- c(categorical, ordinal[order(match(ordinal, fit$ordinal %||% ordinal))])
+    tables$residuals <- .reference_residuals(
+      reference, continuous, paired,
+      c(fit$categorical_levels, lapply(reference$ordinal, colnames)),
+      blocks = c(reference$responses, reference$ordinal),
+      counts = colnames(reference$count_means) %||% character(), row_weights = row_weights)
     if (length(continuous) > 0L) {
       tables$gaussian_diagnostics <- .reference_gaussian_diagnostics(
-        reference, continuous, fit$min_variance %||% 1e-6)
+        reference, continuous, fit$min_variance %||% 1e-6, row_weights)
     }
   }
   # Outputs this reference cannot speak to are left out here, and named in the
@@ -869,6 +1407,101 @@ reference_tables <- function(reference, fit) {
   tables <- .drop_exempt(Filter(Negate(is.null), tables), exempt)
   attr(tables, "exempt") <- exempt
   tables
+}
+
+#' One rescaled sampling weight per unit
+#'
+#' The package rescales the weights to sum to the number of units of positive
+#' weight (`?multilpa`, `weights`).
+#'
+#' @param weights Raw weights, named by unit or in unit order.
+#' @param group_ids The units, in the reference's order.
+#' @return The rescaled weights, named by unit.
+.reference_unit_weights <- function(weights, group_ids) {
+  labels <- as.character(group_ids)
+  if (!is.null(names(weights))) weights <- weights[labels]
+  if (length(weights) != length(labels) || anyNA(weights)) {
+    stop(errorCondition("the reference's weights must cover every unit once",
+                        class = "multilpa_bad_reference", call = NULL))
+  }
+  stats::setNames(unname(weights) * sum(weights > 0) / sum(weights), labels)
+}
+
+#' The membership coefficient table, against the fit's baseline
+#'
+#' Multinomial logits are identified up to a constant per term, so each
+#' block is re-expressed against its last class (the package's baseline) by
+#' subtracting that column, which is then dropped.
+#'
+#' @param coefficients The aligned `coefficients` of a `harness_reference`.
+#' @return A `data.frame` with `level`, `outcome`, `term`, `parameter` and
+#'   `estimate`.
+.reference_coefficients <- function(coefficients) {
+  prefixes <- c(profile = "profile", group = "group_class")
+  blocks <- Filter(Negate(is.null), coefficients[intersect(names(prefixes), names(coefficients))])
+  do.call(rbind, lapply(names(blocks), function(level) {
+    block <- blocks[[level]]
+    against_last <- block[, -ncol(block), drop = FALSE] - block[, ncol(block)]
+    data.frame(level = level,
+               outcome = rep(sprintf("%s_%d", prefixes[[level]], seq_len(ncol(against_last))),
+                             each = nrow(against_last)),
+               term = rep(rownames(block), times = ncol(against_last)),
+               parameter = "logit", estimate = as.vector(against_last),
+               stringsAsFactors = FALSE)
+  }))
+}
+
+#' How many covariates a coefficient block's terms name
+#' @param block Terms-by-classes matrix, or `NULL`.
+#' @return A whole number: the distinct covariates, intercepts (and the
+#'   group-class intercepts of `profile_slopes = "group_class"`) not counted.
+.reference_covariate_count <- function(block) {
+  if (is.null(block)) return(0L)
+  covariates <- sub("(^|:)group_class_[0-9]+$", "", rownames(block))
+  length(setdiff(unique(covariates), c("(Intercept)", "")))
+}
+
+#' The ordinal table, from the reference's category probabilities
+#' @param reference An aligned `harness_reference`.
+#' @param k Number of profiles.
+#' @return A `data.frame`, or `NULL` when the reference has no ordinal block.
+.reference_ordinal <- function(reference, k) {
+  if (length(reference$ordinal) == 0L) return(NULL)
+  do.call(rbind, lapply(names(reference$ordinal), function(item) {
+    block <- reference$ordinal[[item]]
+    categories <- ncol(block)
+    # log P(k | c) - log P(k | last) = eta_c (k - 1) - (normalisers), so the
+    # location is the slope across categories; exactly zero for the last.
+    against_last <- log(block) - matrix(log(block[k, ]), k, categories, byrow = TRUE)
+    location <- (against_last[, categories] - against_last[, 1L]) / (categories - 1L)
+    out <- data.frame(profile = rep(seq_len(k), times = categories), indicator = item,
+                      category = rep(colnames(block), each = k),
+                      probability = as.vector(block),
+                      location = rep(unname(location), times = categories),
+                      stringsAsFactors = FALSE)
+    se <- reference$standard_errors$location
+    if (!is.null(se)) out$location_standard_error <- rep(unname(se[, item]), times = categories)
+    out
+  }))
+}
+
+#' The count table, from the reference's means and dispersions
+#' @param reference An aligned `harness_reference`.
+#' @param k Number of profiles.
+#' @return A `data.frame`, or `NULL` when the reference has no counts.
+.reference_counts <- function(reference, k) {
+  means <- reference$count_means
+  if (is.null(means)) return(NULL)
+  items <- colnames(means)
+  column <- function(m) as.vector(m[, items, drop = FALSE])
+  out <- data.frame(profile = rep(seq_len(k), times = length(items)),
+                    indicator = rep(items, each = k), mean = column(means),
+                    stringsAsFactors = FALSE)
+  if (!is.null(reference$count_dispersion)) out$dispersion <- column(reference$count_dispersion)
+  se <- reference$standard_errors
+  if (!is.null(se$count_mean)) out$standard_error <- column(se$count_mean)
+  if (!is.null(se$count_dispersion)) out$dispersion_standard_error <- column(se$count_dispersion)
+  out
 }
 
 #' Leave exempted outputs out of the expected tables

@@ -113,7 +113,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   }
   # At least two replicates, as bootstrap_lrt() documents and the profile
   # models require (review 2026-10-26 round 2, ADD2-7).
-  stopifnot("`iter` must be a single integer of at least 2" =
+  .latents_require("`iter` must be a single integer of at least 2" =
               is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 2 &&
               iter == floor(iter) && iter <= .Machine$integer.max,
             "`n_starts` must be a single positive integer" = is.null(n_starts) ||
@@ -317,6 +317,8 @@ print.latents_family_enumeration <- function(x, ...) {
 #' @param object A `latents_family_enumeration` result.
 #' @export
 summary.latents_family_enumeration <- function(object, ...) {
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   .latents_named_table(object)
 }
 

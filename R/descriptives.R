@@ -10,9 +10,12 @@
 #' variable's mean. It does not rule out group classes that differ in other
 #' variables, in profile prevalence, or in other features of the distributions.
 #'
-#' @param x A data frame, or a fitted model of this package, whose own `vars`
-#'   and `id` are then used. A single-level fit has no groups, so its table
-#'   has no `n_groups` or `icc`.
+#' @param x A data frame, or a profile, class or transition fit (from
+#'   [lpa()], [lca()], [multilpa()], [multilca()], or [lta()] with
+#'   time-homogeneous transitions), whose own `vars` and `id` are then used. A
+#'   single-level fit has no groups, so its table has no `n_groups` or `icc`.
+#'   Anything else, including a fit of another family, raises
+#'   `latents_not_a_fit`; describe the data frame it was fitted to instead.
 #' @param vars Character vector of column names to describe; repeated names
 #'   are described once. Columns must be vectors: matrix-valued columns raise
 #'   `latents_bad_data`. For a data frame, defaults to every numeric column
@@ -79,10 +82,27 @@ descriptives <- function(x, ...) {
   UseMethod("descriptives")
 }
 
+#' @noRd
+#' @export
+descriptives.default <- function(x, ...) {
+  # Any other object reached UseMethod()'s unclassed "no applicable method";
+  # a fit of a family without indicators to describe is told what to pass.
+  .latents_require_fit(x, substitute(x), expected = paste(
+    "a data frame, or", .latents_profile_fit_text),
+    hint = "Describe the data frame it was fitted to: descriptives(data, vars = ).")
+}
+
 #' @rdname descriptives
 #' @export
 descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
-  stopifnot("`vars` must be column names of `x`" =
+  absent <- if (is.character(vars)) setdiff(vars, names(x)) else character()
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf("`vars` names %s, which `x` does not have.%s",
+                                .latents_name_list(absent),
+                                .latents_did_you_mean(absent, names(x))),
+                        class = "latents_bad_data", call = NULL))
+  }
+  .latents_require("`vars` must be column names of `x`" =
               is.null(vars) || (is.character(vars) && all(vars %in% names(x))),
             "`id` must be a single column name of `x`" =
               is.null(id) || (is.character(id) && length(id) == 1L && id %in% names(x)),
@@ -109,9 +129,18 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
 #' @rdname descriptives
 #' @export
 descriptives.multilpa <- function(x, by = NULL, ...) {
-  stopifnot("`by` must be \"profile\" or \"group_class\"" =
-              is.null(by) || (is.character(by) && length(by) == 1L &&
-                                by %in% c("profile", "group_class")))
+  if (!(is.null(by) || (is.character(by) && length(by) == 1L &&
+                        by %in% c("profile", "group_class")))) {
+    # A column name here is the usual slip: the fit's indicators are already
+    # its own, and only the grouping is chosen.
+    stop(errorCondition(sprintf(paste(
+      "For a fitted model, `by` must be \"profile\" or \"group_class\", not %s.",
+      "The fit describes its own indicators; to describe chosen columns, pass the",
+      "data frame: descriptives(data, vars = ...)."),
+      if (is.character(by)) sprintf("\"%s\"", paste(by, collapse = "\", \"")) else
+        .latents_describe(by)),
+      class = "latents_bad_argument", call = NULL))
+  }
   # `vars` and `id` are the fit's own, so there is nothing further to pass on;
   # a supplied one would otherwise collide with them or be dropped unread.
   .multilpa_reject_extra_arguments(

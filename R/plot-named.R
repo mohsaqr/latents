@@ -238,18 +238,22 @@
 #' @param verb The calling function's name, for the message.
 #' @return `NULL`, invisibly, when `x` is a fitted model.
 #' @noRd
-.gg_require_fit <- function(x, verb) {
+.gg_require_fit <- function(x, verb, expression = NULL) {
   if (!is.na(.latents_plot_kind(x))) return(invisible(NULL))
-  advice <- if (inherits(x, "multilpa_enumeration")) {
+  label <- .latents_argument_label(expression, "x")
+  advice <- if (inherits(x, .latents_enumeration_classes)) {
     " Plot a grid with plot_enumeration(), plot_selection() or plot_tree()."
+  } else if (inherits(x, "latents_sensitivity")) {
+    sprintf(" Draw it with plot(%s).", label)
+  } else if (is.data.frame(x)) {
+    sprintf(paste(" The plot is drawn from the fitted model itself, not from its data",
+                  "or a table taken from it: pass the fit, as in %s(fit)."), verb)
   } else if (any(grepl("^(latents|multilpa)_", class(x)))) {
     " Use plot() for this result's own views."
   } else ""
-  stop(errorCondition(sprintf(paste(
-    "%s() takes a fitted model of this package (a profile, class, transition,",
-    "growth, mixture-regression, group-class family, cross-level or pooled",
-    "fit), not a `%s` object.%s"),
-    verb, class(x)[1L], advice), class = "latents_bad_argument", call = NULL))
+  stop(errorCondition(sprintf("%s() needs a fitted model, but `%s` is %s.%s",
+                              verb, label, .latents_describe(x), advice),
+                      class = c("latents_not_a_fit", "latents_bad_argument"), call = NULL))
 }
 
 #' Draw several views of a fit, naming the views that do not apply
@@ -323,7 +327,7 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           subtitle = NULL,
                           what = c("lines", "bars", "heatmap", "raincloud",
                                    "parallel", "pairs", "all")) {
-  .gg_require_fit(x, "plot_profiles")
+  .gg_require_fit(x, "plot_profiles", substitute(x))
   what <- match.arg(what)
   statistic <- match.arg(statistic)
   scale <- match.arg(scale)
@@ -345,7 +349,7 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
 plot_responses <- function(x, category = "last", intervals = TRUE,
                            labels = TRUE, data = NULL, main = NULL,
                            subtitle = NULL) {
-  .gg_require_fit(x, "plot_responses")
+  .gg_require_fit(x, "plot_responses", substitute(x))
   .latents_draw_named(x, "plot_responses", "",
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
@@ -354,7 +358,7 @@ plot_responses <- function(x, category = "last", intervals = TRUE,
 #' @export
 plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
                            subtitle = NULL) {
-  .gg_require_fit(x, "plot_sequences")
+  .gg_require_fit(x, "plot_sequences", substitute(x))
   .latents_draw_named(x, "plot_sequences", "",
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
@@ -362,7 +366,7 @@ plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
 #' @rdname latents-plots
 #' @export
 plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
-  .gg_require_fit(x, "plot_prevalence")
+  .gg_require_fit(x, "plot_prevalence", substitute(x))
   .latents_draw_named(x, "plot_prevalence", "",
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
@@ -374,7 +378,7 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
                                          "group_posteriors", "group_entropy",
                                          "group_avepp"),
                              main = NULL, subtitle = NULL) {
-  .gg_require_fit(x, "plot_diagnostics")
+  .gg_require_fit(x, "plot_diagnostics", substitute(x))
   what <- match.arg(what)
   .gg_require()
   # The other fitted models draw their posteriors in their own plot(), as
@@ -415,7 +419,7 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
 #' @rdname latents-plots
 #' @export
 plot_transitions <- function(x, main = NULL, subtitle = NULL) {
-  .gg_require_fit(x, "plot_transitions")
+  .gg_require_fit(x, "plot_transitions", substitute(x))
   .latents_draw_named(x, "plot_transitions", "",
                       .multilpa_supplied_arguments(match.call(), environment()))
 }

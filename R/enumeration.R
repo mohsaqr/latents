@@ -234,14 +234,19 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
     }
     n_group_classes <- 1L
   }
-  stopifnot(is.data.frame(data), is.character(vars),
+  .latents_check_data_frame(data, substitute(data))
+  .latents_require(
+            "`vars` must be a character vector of column names" = is.character(vars),
             "`id` must be a single column name, or NULL for single-level models" =
               single_level || (is.character(id) && length(id) == 1L),
-            is.numeric(n_profiles), length(n_profiles) > 0L,
-            all(is.finite(n_profiles)), all(n_profiles >= 1), all(n_profiles == as.integer(n_profiles)),
-            is.numeric(n_group_classes), length(n_group_classes) > 0L,
-            all(is.finite(n_group_classes)), all(n_group_classes >= 1),
-            all(n_group_classes == as.integer(n_group_classes)),
+            "`n_profiles` must be one or more positive whole numbers" =
+              is.numeric(n_profiles) && length(n_profiles) > 0L &&
+              all(is.finite(n_profiles)) && all(n_profiles >= 1) &&
+              all(n_profiles == as.integer(n_profiles)),
+            "`n_group_classes` must be one or more positive whole numbers" =
+              is.numeric(n_group_classes) && length(n_group_classes) > 0L &&
+              all(is.finite(n_group_classes)) && all(n_group_classes >= 1) &&
+              all(n_group_classes == as.integer(n_group_classes)),
             "`model` must be \"basic\", \"all\", covariance model codes, or NULL" =
               is.null(model) || (is.character(model) &&
                                    length(model) > 0L &&
@@ -471,7 +476,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @param x An enumeration grid from [enumerate_classes()] (a profile, latent
 #'   class, transition or group-class family grid), or a comparison from
 #'   [compare_models()]. On a family grid, give the name, or `n_group_classes`
-#'   with `model`.
+#'   with `model`. A grid of mixture regressions from
+#'   [enumerate_regressions()] is not taken (`latents_bad_argument`):
+#'   `get_results(grid, "model", n_classes = )` returns one of its models.
 #' @param n_profiles Number of individual profiles of the candidate, the
 #'   candidate's name (`"profiles3_groups4"`), or its two class counts
 #'   (`c(3, 4)`). For a comparison, the row label, as its `model` column shows
@@ -514,6 +521,18 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
     if (missing(n_profiles)) return(.latents_compared_model(x))
     return(.latents_compared_model(x, n_profiles))
   }
+  # A grid of mixture regressions counts classes, not profiles and group
+  # classes, and has its own accessor; it reached the profile-grid checks
+  # below and failed one of them unclassed (review 2026-10-27).
+  if (inherits(x, "latents_regression_enumeration")) {
+    stop(errorCondition(paste(
+      "get_candidate() takes a profile, class, transition or family grid;",
+      "take one model from a grid of mixture regressions with",
+      "get_results(x, \"model\", n_classes = )."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  .latents_require_fit(x, substitute(x), .latents_enumeration_classes,
+                       "an enumeration result (from enumerate_classes(), enumerate_lpa() or enumerate_lca())")
   # A name, or a pair of counts, names the candidate on its own. (A
   # group-class family grid names candidates without `n_profiles`.)
   if (!missing(n_profiles) && (is.character(n_profiles) || length(n_profiles) == 2L)) {
@@ -631,9 +650,13 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L, model = NULL) {
   # Forwarded as a call, so an argument the caller left out stays missing;
   # the function itself is inserted, so a `get_candidate` defined by the
   # caller cannot stand in for it.
-  call <- match.call()
-  call[[1L]] <- get_candidate
-  eval(call, parent.frame())
+  # The head is a name bound to the function, and the arguments symbols bound
+  # to the caller's values, so the call never deparses a body or the data.
+  env <- new.env(parent = parent.frame())
+  env$get_candidate <- get_candidate
+  call <- .latents_bind_values(match.call(), env, parent.frame())
+  call[[1L]] <- quote(get_candidate)
+  eval(call, env)
 }
 
 #' @noRd
@@ -641,6 +664,9 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L, model = NULL) {
 summary.multilpa_enumeration <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_enumeration` result" =
               inherits(object, "multilpa_enumeration"))
+  # 0.9.21 ignored any argument without a word; it is still summarised, and
+  # the warning names what was not used (review 2026-10-27).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   grid <- .multilpa_enumeration_grid(object)
   result <- list(best = .multilpa_enumeration_minima(grid),
                  candidates = grid,
@@ -1337,6 +1363,9 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = NULL, max_iter = NULL,
                                  tol = NULL, seed = NULL) {
+  .latents_require_fit(null_model, substitute(null_model), .latents_model_classes)
+  .latents_require_fit(alternative_model, substitute(alternative_model),
+                       .latents_model_classes)
   if (.latents_is_weighted(null_model) || .latents_is_weighted(alternative_model)) {
     .latents_refuse_weights(paste(
       "`bootstrap_lrt()`: the parametric bootstrap draws samples from the",
@@ -1361,7 +1390,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                    n_starts, max_iter, tol, seed, match.call()))
   }
   covariate_family <- inherits(null_model, "multilpa_covariates")
-  stopifnot(
+  .latents_require(
     "both models must be multilpa() fits of one family, with or without membership covariates" =
       (inherits(null_model, "multilpa") && inherits(alternative_model, "multilpa")) ||
       (covariate_family && inherits(alternative_model, "multilpa_covariates")))
@@ -1382,14 +1411,20 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     .multilpa_cov_stored_data(alternative_model)
   } else .multilpa_number_single_level(null_model,
                                        .multilpa_resolve_data(null_model, data))
-  stopifnot(is.data.frame(data), is.numeric(iter), length(iter) == 1L,
-            is.finite(iter), iter >= 2L, iter == as.integer(iter),
-            is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
-              is.finite(n_starts) && n_starts >= 1 && n_starts == as.integer(n_starts)),
-            is.null(max_iter) || (is.numeric(max_iter) && length(max_iter) == 1L &&
-              is.finite(max_iter) && max_iter >= 1 && max_iter == as.integer(max_iter)),
-            is.null(tol) || (is.numeric(tol) && length(tol) == 1L && is.finite(tol) &&
-              tol > 0))
+  .latents_check_data_frame(data)
+  .latents_require(
+    "`iter` must be a single whole number of at least two" =
+      is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 2L &&
+      iter == as.integer(iter),
+    "`n_starts` must be NULL or a single positive whole number" =
+      is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
+        is.finite(n_starts) && n_starts >= 1 && n_starts == as.integer(n_starts)),
+    "`max_iter` must be NULL or a single positive whole number" =
+      is.null(max_iter) || (is.numeric(max_iter) && length(max_iter) == 1L &&
+        is.finite(max_iter) && max_iter >= 1 && max_iter == as.integer(max_iter)),
+    "`tol` must be NULL or a single positive number" =
+      is.null(tol) || (is.numeric(tol) && length(tol) == 1L && is.finite(tol) &&
+        tol > 0))
   # Each model is refitted as it was fitted (its search, starts, stopping
   # rule, acceleration, selection and boundary policy), so the reference
   # distribution comes from the procedure that produced the statistic: a
@@ -1663,6 +1698,9 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
 summary.multilpa_bootstrap_lrt <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_bootstrap_lrt` result" =
               inherits(object, "multilpa_bootstrap_lrt"))
+  # 0.9.21 ignored any argument without a word; it is still summarised, and
+  # the warning names what was not used (review 2026-10-27).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   result <- list(test = .multilpa_bootstrap_test_frame(object),
                  replicates = object$replicates,
                  n_boundary = sum(object$replicates$boundary %in% TRUE),
@@ -1820,8 +1858,10 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
 #' choice of model can change. `multilpa()` refuses such data with a classed
 #' error; an enumeration used to return a grid of failed cells instead, with
 #' no condition, so a misspelled column cost every fit and came back as a
-#' table of `NA`s. Failures that differ between candidates, or that concern
-#' the model rather than the data, stay in the grid as before.
+#' table of `NA`s. An invalid argument that every candidate shares (weights,
+#' `min_variance`) is refused the same way. Failures that differ between
+#' candidates, or that concern the model rather than the data, stay in the
+#' grid as before.
 #'
 #' @param values Each candidate's result: a fit or an error condition.
 #' @return `NULL`, invisibly, unless every candidate failed with the same data
@@ -1833,8 +1873,11 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     return(invisible(NULL))
   }
   first <- failures[[1L]]
+  # An invalid argument (a `weights` column that is not there, a negative
+  # `min_variance`) is shared by every candidate in the same way (API-2).
   data_errors <- c("latents_bad_data", "latents_bad_categorical",
-                   "latents_missing_data")
+                   "latents_missing_data", "latents_bad_weights",
+                   "latents_bad_argument")
   shared <- inherits(first, data_errors) && all(vapply(failures, function(value) {
     identical(class(value), class(first)) &&
       identical(conditionMessage(value), conditionMessage(first))

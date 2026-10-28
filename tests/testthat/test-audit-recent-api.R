@@ -93,8 +93,12 @@ test_that("comparison identity retains original centered values and category lab
                        z = ifelse(z > 0, "high", "low"))
   renamed <- transform(labels, y = ifelse(y == "high", "yes", "no"),
                         z = ifelse(z == "high", "yes", "no"))
-  a <- quietly(lca(labels, c("y", "z"), n_classes = 2, n_starts = 1, seed = 1))
-  b <- quietly(lca(renamed, c("y", "z"), n_classes = 2, n_starts = 1, seed = 1))
+  # Two classes of two binary items are not identified (CORE-5); the
+  # comparison is refused on the labels either way.
+  expect_warning(a <- quietly(lca(labels, c("y", "z"), n_classes = 2, n_starts = 1,
+                                  seed = 1)), class = "latents_unidentified")
+  expect_warning(b <- quietly(lca(renamed, c("y", "z"), n_classes = 2, n_starts = 1,
+                                  seed = 1)), class = "latents_unidentified")
   expect_error(compare_models(a, b), class = "latents_incomparable_models")
 })
 

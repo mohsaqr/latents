@@ -1,5 +1,53 @@
 # Starting values, start selection and class ordering for mixture_regression().
 
+#' Restrict a specification to the units that carry positive sampling weight
+#'
+#' A unit of weight zero is absent (ML-1): the deterministic residual start,
+#' the neutral variance, the random labels and the selection among starts must
+#' see the same sample as the weighted likelihood, or padding the data with
+#' zero-weight rows changes which maximum is reported. The random labels are
+#' drawn for these units only, so the random stream does not depend on how many
+#' zero-weight units there are. Fits without zero weights are returned
+#' unchanged.
+#'
+#' @param spec A regression or growth specification.
+#' @return The specification restricted to the rows of positive weight, and to
+#'   the `id` groups that carry them.
+#' @noRd
+.mixture_carrying_spec <- function(spec) {
+  if (is.null(spec$sampling_weights)) return(spec)
+  rows <- spec$row_weights > 0
+  if (all(rows)) return(spec)
+  grouped <- !is.null(spec$group_index)
+  # The units the weights belong to: the `id` groups, or else the rows.
+  used <- if (grouped) spec$sampling_weights > 0 else rows
+  stopifnot("a weighted fit has units of positive weight" = any(used),
+            "one weight per unit" = length(used) == length(spec$sampling_weights))
+  out <- spec
+  row_vectors <- c("y", "trials", "log_normalizer", "offset", "row_weights",
+                   "kept_rows", "residual_times")
+  invisible(lapply(intersect(row_vectors, names(out)), function(name) {
+    out[[name]] <<- out[[name]][rows]
+  }))
+  row_matrices <- c("x", "z", "random_design", "model_data")
+  invisible(lapply(intersect(row_matrices, names(out)), function(name) {
+    out[[name]] <<- out[[name]][rows, , drop = FALSE]
+  }))
+  # Membership designs are per group under `class_level = "group"`, per row
+  # otherwise; the second level's design is always per group.
+  out$w <- if (identical(spec$nesting, "group")) spec$w[used, , drop = FALSE] else
+    spec$w[rows, , drop = FALSE]
+  if (grouped) {
+    out$v <- spec$v[used, , drop = FALSE]
+    out$group_levels <- spec$group_levels[used]
+    out$group_index <- match(spec$group_index[rows], which(used))
+    out$n_groups <- sum(used)
+  }
+  out$sampling_weights <- spec$sampling_weights[used]
+  out$n <- sum(rows)
+  out
+}
+
 #' Neutral parameters to seed the first M-step
 #' @param spec The model specification.
 #' @return A parameter list.

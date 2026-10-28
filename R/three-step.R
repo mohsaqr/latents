@@ -40,20 +40,76 @@
 }
 
 #' Require a first-stage fit whose classification error is not predictor-dependent
-#' @param object A fitted model of this package.
+#'
+#' The profile-level three-step verbs take a covariate-free [multilpa()] fit
+#' (class `multilpa`) or an [lta()] fit with homogeneous first-order
+#' transitions (class `multilpa_transitions`); trajectory models are checked
+#' by `.trajectory_check_three_step()` before this is reached. Every other
+#' fitted model of the package is named and refused with
+#' `latents_unsupported_three_step`, so a fit of the package is never told it
+#' is not one (review 2026-10-27, INF-2); anything else is not a fit and gets
+#' `latents_not_a_fit`.
+#'
+#' @param object The `x` passed to [three_step()] or [r3step()].
 #' @return `NULL`, invisibly, or `latents_unsupported_three_step`.
 #' @noRd
 .multilpa_check_three_step_fit <- function(object) {
-  stopifnot("`x` must be a fitted model of this package" =
-              .multilpa_any_fit(object))
+  unsupported <- function(...) {
+    stop(errorCondition(paste(...), class = "latents_unsupported_three_step",
+                        call = NULL))
+  }
   if (inherits(object, "multilpa_covariates")) {
-    stop(errorCondition(paste(
+    unsupported(
       "Three-step correction is unavailable for a fit that already uses",
       "membership covariates: this method has no classification-error",
       "adjustment conditional on those covariates. Fit the measurement model",
-      "without membership covariates before using three_step() or r3step()."),
-      class = "latents_unsupported_three_step", call = NULL))
+      "without membership covariates before using three_step() or r3step().")
   }
+  if (inherits(object, "multilpa_lta")) {
+    arguments <- object$arguments
+    if (length(arguments$initial_covariates) > 0L ||
+        length(arguments$transition_covariates) > 0L || isTRUE(object$mover_stayer)) {
+      unsupported(
+        "The step-one transition model has covariates (or a stayer class): its",
+        "classification errors are conditional on them, which the fixed error",
+        "matrix of the three-step correction does not allow. Fit the step-one",
+        "model without them.")
+    }
+    unsupported(
+      "three_step() and r3step(covariates = ) are implemented for the transition",
+      "model lta() fits with its default homogeneous first-order transitions,",
+      "invariant measurement and continuous or categorical indicators; this fit",
+      "comes from the general transition engine (occasion-varying or",
+      "second-order transitions, occasion-specific measurement, or ordinal or",
+      "count indicators). Use r3step(initial_covariates = ,",
+      "transition_covariates = ) for covariates of the initial profile and the",
+      "transitions, or fit the default transition model for a profile-level",
+      "analysis.")
+  }
+  if (inherits(object, "multilpa_additive")) {
+    unsupported(
+      "three_step() and r3step() are not implemented for a group-class family",
+      "without individual profiles (multilpa(family = \"additive\"),",
+      "\"dispersion\" or \"additive_dispersion\"). Fit the model with",
+      "`family = \"profiles\"` for a three-step analysis.")
+  }
+  if (inherits(object, "multilpa_cross_level")) {
+    unsupported(
+      "three_step() and r3step() are not implemented for a cross-level model",
+      "(multilpa(family = \"restricted_cross_level\") or",
+      "\"full_cross_level\"). Fit the model with `family = \"profiles\"` for",
+      "a three-step analysis.")
+  }
+  if (inherits(object, "latents_mixture_regression")) {
+    unsupported(
+      "three_step() and r3step() relate an outcome or covariates to person",
+      "classes, and this mixture regression classifies observations. Fit it",
+      "with `id` and `class_level = \"group\"` for a three-step analysis.")
+  }
+  .latents_require_fit(object, accepted = c("multilpa", "multilpa_transitions"),
+                       expected = paste("a covariate-free fit from multilpa() or",
+                                        "lta(), or a trajectory model from",
+                                        "mixture_regression()"))
   invisible(NULL)
 }
 
@@ -189,13 +245,19 @@
 #' the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
 #' Vermunt 2016).
 #'
-#' @param x A covariate-free fitted [multilpa()] or [lta()] model, or a
-#'   trajectory model that classifies persons ([mixture_regression()] with
-#'   `class_level = "group"`, with or without `random` effects) fitted without
-#'   `membership` covariates. Fits with membership covariates and multilevel
-#'   growth mixtures (`cluster`) are refused with
-#'   `latents_unsupported_three_step`: the correction uses a fixed,
-#'   unconditional classification-error matrix and independent units.
+#' @param x A covariate-free fit from [multilpa()] (`family = "profiles"`,
+#'   the default) or from [lta()] with its default homogeneous first-order
+#'   transitions and invariant measurement, or a trajectory model that
+#'   classifies persons ([mixture_regression()] with `class_level = "group"`,
+#'   with or without `random` effects) fitted without `membership`
+#'   covariates. Fits with membership covariates and multilevel growth
+#'   mixtures (`cluster`) are refused with `latents_unsupported_three_step`:
+#'   the correction uses a fixed, unconditional classification-error matrix
+#'   and independent units. The other families of [multilpa()], [lta()] fits
+#'   from the general transition engine (occasion-varying, second-order or
+#'   covariate transitions, occasion-specific measurement, a stayer class,
+#'   ordinal or count indicators) and mixture regressions with observation
+#'   classes are refused with `latents_unsupported_three_step` too.
 #' @param data The data frame carrying the outcome, in the fit's row order.
 #'   Columns shared with the fit are checked row by row; a frame with too
 #'   little identifying information raises a warning that alignment cannot be
@@ -241,8 +303,8 @@
 #'   with the columns `level`, `method`, `class`, `reference_class`,
 #'   `estimate` (the mean of `class` minus the mean of `reference_class`),
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`, as in [r3step()]. A contrast with zero standard error has
-#'   `NA_real_` statistic and p-values.
+#'   `conf_high`, as in [r3step()]. A contrast with zero or missing standard
+#'   error has `NA_real_` statistic and p-values.
 #'
 #'   The result's `vcov_type` attribute records the variance used; for
 #'   `contrast = "pairs"` the `adjust` attribute records the correction
@@ -262,7 +324,12 @@
 #'   variance has rank at most `G - 1`: it is zero with a single group and
 #'   singular with as many groups as classes. Both cases are refused with
 #'   `latents_too_few_groups`; `vcov_type = "independent"` gives the
-#'   unclustered variance.
+#'   unclustered variance. For the same reason a class carried by a single
+#'   unit (all its weight in one group, or under `vcov_type = "independent"`
+#'   in one observation; Kish's effective number of carrying units below 1.5)
+#'   has no standard error, whichever the method: its standard error, its
+#'   interval and those of the contrasts involving it are `NA`, with a
+#'   `latents_small_classes` warning.
 #'
 #'   With `method = "ml"` the assigned class is an indicator of the true
 #'   class whose error probabilities are those of step one, and the outcome is
@@ -282,9 +349,8 @@
 #'   internal seed, so the result does not depend on the random seed and the
 #'   caller's `.Random.seed` is restored. R's hidden Box-Muller normal cache
 #'   cannot be restored; see [base::Random]. The standard errors are the
-#'   sandwich of that likelihood, clustered as for the other methods; a
-#'   class carried by a single unit has none (`NA`, with a
-#'   `latents_small_classes` warning). Maximum likelihood
+#'   sandwich of that likelihood, clustered as for the other methods, and a
+#'   class carried by a single unit has none, as above. Maximum likelihood
 #'   relies on the normal distribution within classes: when the outcome is
 #'   skewed, or its variance differs between classes while `variance =
 #'   "equal"`, ML can shift the class means, and BCH is the more robust choice
@@ -352,7 +418,13 @@ three_step <- function(x, data, outcome,
   vcov_type <- match.arg(vcov_type)
   .multilpa_refuse_noise(x, "three_step()")
   if (.latents_is_weighted(x)) .latents_refuse_weights("`three_step()` yet")
-  stopifnot(
+  .latents_check_data_frame(data, substitute(data))
+  if (is.character(outcome) && length(outcome) == 1L && !outcome %in% names(data)) {
+    stop(errorCondition(sprintf("`outcome` names `%s`, which `data` does not have.%s",
+                                outcome, .latents_did_you_mean(outcome, names(data))),
+                        class = "latents_bad_data", call = NULL))
+  }
+  .latents_require(
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
       is.character(outcome) && length(outcome) == 1L && outcome %in% names(data),
@@ -417,6 +489,10 @@ three_step <- function(x, data, outcome,
   influence <- sweep(weights * outer(centered, centered_estimates, "-"),
                      2L, totals, "/")
   clustered <- .multilpa_step_clusters(influence, pieces, vcov_type)
+  # A class whose weight sits in one independent unit has a summed influence
+  # of zero in that unit by the definition of its mean, so its sandwich is 0
+  # by construction, not an estimate; the ML path already says so (INF-1).
+  clustered <- .multilpa_step_thin_classes(clustered, weights, pieces, vcov_type)
 
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
@@ -467,6 +543,51 @@ three_step <- function(x, data, outcome,
             "having done so.")
     })
   clustered * sqrt(.inference_cluster_factor(nrow(clustered)))
+}
+
+#' Withhold the standard error of a class carried by a single unit
+#'
+#' The sandwich of a class mean sums each independent unit's influence,
+#' `sum_i w_ik (y_i - mu_k) / T_k` over the unit's observations. When every
+#' observation with weight in class `k` lies in one unit, that unit's sum is
+#' zero by the definition of `mu_k`, so the variance is zero by construction
+#' rather than estimated, and a contrast with that class would borrow the
+#' other class's variance alone. The units carrying a class are counted by
+#' Kish's effective number, `(sum r)^2 / sum r^2` of the absolute weights
+#' summed within each unit (absolute because BCH weights can be negative):
+#' 1 for one unit, 2 for two equal ones. Below 1.5 the class's column is set
+#' to `NA`, with a `latents_small_classes` warning, the rule the ML step-three
+#' model applies to its responsibilities.
+#'
+#' @param clustered The scaled unit contributions from
+#'   `.multilpa_step_clusters()`, one column per class.
+#' @param carrying Units-by-classes weights saying how much of each class an
+#'   observation carries: the method's weights, or the ML responsibilities.
+#' @param pieces The list from `.multilpa_level_assignments()`.
+#' @param vcov_type `"cluster"` or `"independent"`.
+#' @return `clustered`, with the columns of thinly carried classes `NA`.
+#' @noRd
+.multilpa_step_thin_classes <- function(clustered, carrying, pieces, vcov_type) {
+  carried <- abs(carrying)
+  if (identical(vcov_type, "cluster")) {
+    carried <- rowsum(carried, pieces$group_index, reorder = FALSE)
+  }
+  carriers <- colSums(carried)^2 / colSums(carried^2)
+  thin <- !(carriers >= 1.5)
+  if (any(thin)) {
+    several <- sum(thin) > 1L
+    warning(warningCondition(sprintf(paste(
+      "%s %s %s carried by a single %s, so %s standard error%s cannot be",
+      "estimated and %s reported as NA."),
+      if (several) "Classes" else "Class", paste(which(thin), collapse = ", "),
+      if (several) "are each" else "is",
+      if (identical(vcov_type, "cluster")) "group" else "observation",
+      if (several) "their" else "its", if (several) "s" else "",
+      if (several) "are" else "is"),
+      class = "latents_small_classes", call = NULL))
+    clustered[, thin] <- NA_real_
+  }
+  clustered
 }
 
 #' Pairwise differences between class outcome means
@@ -571,13 +692,19 @@ three_step <- function(x, data, outcome,
 #' their step-one values; regressing the modal class directly attenuates the
 #' coefficients (Vermunt 2010; Asparouhov and Muthen 2014).
 #'
-#' @param x A covariate-free fitted [multilpa()] or [lta()] model, or a
-#'   trajectory model from [mixture_regression()] that classifies persons
-#'   (with or without `random`), whose person classes are then predicted.
-#'   Fits with membership covariates and multilevel growth mixtures
-#'   (`cluster`) are refused with `latents_unsupported_three_step`: the
-#'   correction uses a fixed, unconditional classification-error matrix and
-#'   independent units.
+#' @param x A covariate-free fit from [multilpa()] (`family = "profiles"`,
+#'   the default) or from [lta()] with its default homogeneous first-order
+#'   transitions and invariant measurement, or a trajectory model from
+#'   [mixture_regression()] that classifies persons (with or without
+#'   `random`), whose person classes are then predicted. Fits with membership
+#'   covariates and multilevel growth mixtures (`cluster`) are refused with
+#'   `latents_unsupported_three_step`: the correction uses a fixed,
+#'   unconditional classification-error matrix and independent units. The
+#'   other families of [multilpa()], general transition fits of [lta()] and
+#'   mixture regressions with observation classes are refused with
+#'   `latents_unsupported_three_step` too, except that a covariate-free
+#'   general transition fit takes `initial_covariates` and
+#'   `transition_covariates`.
 #' @param data The data frame carrying the covariates, in the fit's row order.
 #'   Columns shared with the fit are checked row by row; a frame with too
 #'   little identifying information raises a warning that alignment cannot be
@@ -734,18 +861,21 @@ r3step <- function(x, data, covariates = character(),
   trajectory <- .trajectory_is_fit(x)
   if (!trajectory) .multilpa_refuse_noise(x, "r3step()")
   if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
-  stopifnot(
-    "`data` must be a data frame" = is.data.frame(data),
-    "`covariates` must name columns of `data`" =
-      is.character(covariates) && length(covariates) >= 1L &&
-      all(covariates %in% names(data)),
+  # Classed as three_step() classes the same mistakes (review 2026-10-27, INF-6).
+  .latents_check_data_frame(data, substitute(data))
+  .latents_require(
+    "`covariates` must be a character vector naming at least one column of `data`" =
+      is.character(covariates) && length(covariates) >= 1L && !anyNA(covariates))
+  .r3step_check_columns(data, covariates, "covariates")
+  .latents_require(
     "`covariates` must be numeric" =
       all(vapply(data[covariates], is.numeric, logical(1))),
     "`covariates` must not be missing" = !anyNA(data[covariates]),
     "`covariates` must be finite" =
       all(vapply(data[covariates], function(value) all(is.finite(value)), logical(1))),
     "`ci_level` must be a single number in (0, 1)" =
-      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1,
+      is.numeric(ci_level) && length(ci_level) == 1L && is.finite(ci_level) &&
+      ci_level > 0 && ci_level < 1,
     "`by_group_class` must be TRUE or FALSE" =
       is.logical(by_group_class) && length(by_group_class) == 1L &&
       !is.na(by_group_class)
@@ -905,6 +1035,21 @@ r3step <- function(x, data, covariates = character(),
   invisible(NULL)
 }
 
+#' Refuse covariate names that `data` does not have
+#' @param data A data frame.
+#' @param columns The names given.
+#' @param argument The argument's name, for the message.
+#' @return `NULL`, invisibly, or `latents_bad_data`.
+#' @noRd
+.r3step_check_columns <- function(data, columns, argument) {
+  absent <- setdiff(columns, names(data))
+  if (length(absent) == 0L) return(invisible(NULL))
+  stop(errorCondition(sprintf(
+    "`%s` names %s, which `data` does not have.%s", argument,
+    .latents_name_list(absent), .latents_did_you_mean(absent, names(data))),
+    class = "latents_bad_data", call = NULL))
+}
+
 #' r3step() with covariates of the initial profile and of the transitions
 #' @return The table of `.lta_three_step()`.
 #' @noRd
@@ -927,14 +1072,17 @@ r3step <- function(x, data, covariates = character(),
   }
   if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
   named <- function(value) is.character(value) && !anyNA(value) && !anyDuplicated(value)
-  stopifnot(
-    "`data` must be a data frame" = is.data.frame(data),
+  .latents_check_data_frame(data)
+  .latents_require(
     "`initial_covariates` must be distinct column names of `data`" =
-      named(initial_covariates) && all(initial_covariates %in% names(data)),
+      named(initial_covariates),
     "`transition_covariates` must be distinct column names of `data`" =
-      named(transition_covariates) && all(transition_covariates %in% names(data)),
+      named(transition_covariates),
     "`ci_level` must be a single number in (0, 1)" =
-      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1)
+      is.numeric(ci_level) && length(ci_level) == 1L && is.finite(ci_level) &&
+      ci_level > 0 && ci_level < 1)
+  .r3step_check_columns(data, initial_covariates, "initial_covariates")
+  .r3step_check_columns(data, transition_covariates, "transition_covariates")
   .lta_three_step(x, data, initial_covariates, transition_covariates, ci_level,
                   vcov_type, adjust)
 }

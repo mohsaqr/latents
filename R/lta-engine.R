@@ -20,7 +20,11 @@
                                 paste(sprintf("`%s`", missing_columns), collapse = ", ")),
                         class = "latents_bad_data", call = NULL))
   }
-  frame <- data[, covariates, drop = FALSE]
+  # A factor level no row takes (common after subset()) would give an
+  # all-zero indicator, refused as collinear; glm() drops it, and so does this
+  # (TRANS-7). Every row is read, so a refit or a check on the same data
+  # builds the same columns.
+  frame <- droplevels(data[, covariates, drop = FALSE])
   if (anyNA(frame)) {
     stop(errorCondition("Transition and initial covariates must be complete.",
                         class = "latents_bad_data", call = NULL))
@@ -119,10 +123,13 @@
 #'
 #' @param designs Raw designs from `.lta_designs()`.
 #' @param layout Sequence layout.
+#' @param used Active initial and move masks from `.lta_used_rows()`, or NULL.
 #' @return A list with `initial` and `transition`, each holding
 #'   `n_intercepts`, `centre` and `scale` (one per covariate column).
 #' @noRd
-.lta_design_chart <- function(designs, layout) {
+.lta_design_chart <- function(designs, layout, used = NULL) {
+  used <- used %||% list(initial = rep(TRUE, nrow(designs$initial)),
+                         moves = layout$within)
   part <- function(design, n_intercepts) {
     covariates <- design[, seq_len(ncol(design)) > n_intercepts, drop = FALSE]
     centre <- colMeans(covariates)
@@ -133,9 +140,9 @@
          scale = ifelse(is.finite(spread) & spread > 0, spread, 1))
   }
   moves <- do.call(rbind, lapply(seq_along(designs$transition), function(index) {
-    designs$transition[[index]][layout$within[, index + 1L], , drop = FALSE]
+    designs$transition[[index]][used$moves[, index + 1L], , drop = FALSE]
   }))
-  list(initial = part(designs$initial, 1L),
+  list(initial = part(designs$initial[used$initial, , drop = FALSE], 1L),
        transition = part(moves, .lta_n_intercepts(colnames(moves), layout$n_occasions)))
 }
 
@@ -672,6 +679,13 @@
                 group_posteriors = expectation$group_posteriors,
                 joint = lapply(expectation$joint, function(j) j[rows, , drop = FALSE]),
                 gaussian_moments = expectation$gaussian_moments[[t]])
+    # An occasion reached only by units of weight zero carries no weighted
+    # membership: its block is absent from the likelihood (flat, uncounted
+    # by .lta_identified_blocks()), so it keeps its values, as a trailing
+    # occasion with nothing observed does in effect (TRANS-3).
+    if (isTRUE(expectation$weighted) && !(sum(sub$subject_posteriors) > 0)) {
+      return(parameters$measurement[[t]])
+    }
     # Weighted posteriors sum to the weighted row count, which the shared
     # variance blocks divide by; unweighted, that count is the row count.
     if (isTRUE(expectation$weighted)) sub$n_total <- sum(sub$subject_posteriors)
@@ -914,8 +928,12 @@
                                               min_probability,
                                               other = c(ordinal, count),
                                               weights = weights)
+  # Ordinal categories and the count checks are judged on the rows of
+  # positive weight, as in multilpa() (review 2026-10-27, CORE-2).
   extra <- .latents_set_count_model(
-    .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
+    .latents_prepare_extra(data, ordinal, count, missing,
+                           contributing = .multilpa_contributing_rows(data, weights)),
+    count_model, count_dispersion)
   x <- measurement$x
   codes <- measurement$codes
   n_categories <- measurement$n_categories
@@ -978,15 +996,15 @@
   }
   occasion_of_row <- integer(nrow(x))
   occasion_of_row[layout$slot[!is.na(layout$slot)]] <- col(layout$slot)[!is.na(layout$slot)]
+  used <- .lta_used_rows(layout, x, codes, extra, sampling_weights)
   raw_designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
                               .lta_covariate_matrix(data, initial_covariates), transitions,
                               order = order,
-                              used = .lta_used_rows(layout, x, codes, extra,
-                                                    sampling_weights))
+                              used = used)
   # EM and the quasi-Newton finish run on centred and scaled covariates, so the
   # search depends neither on a covariate's units nor on its origin (LTA-F5);
   # the coefficients are mapped back to the supplied units at the end.
-  chart <- .lta_design_chart(raw_designs, layout)
+  chart <- .lta_design_chart(raw_designs, layout, used)
   designs <- .lta_chart_designs(raw_designs, chart)
   n_measurement <- if (identical(measurement_model, "occasion")) layout$n_occasions else 1L
   .latents_local_seed(seed)
@@ -1086,6 +1104,17 @@
     converged <- starts$converged
     best_start <- starts$best_start
     best <- attempts[[best_start]]
+    # An origin no expected move leaves has flat logits that EM left at their
+    # start values: they are fixed at zero (equal probabilities), flagged and
+    # not counted (TRANS-1). The likelihood does not move, but the expectation
+    # is recomputed so every table reads the parameters reported.
+    empty_origins <- .lta_empty_origins(best$expectation, best$parameters$stayer,
+                                        n_profiles)
+    if (any(empty_origins$first) || any(empty_origins$second)) {
+      best$parameters <- .lta_zero_empty_origins(best$parameters, empty_origins)
+      best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
+                                           occasion_of_row, sampling_weights, extra)
+    }
     # The weighted posteriors are counts; each person is classified by their
     # own posterior, while the likelihood stays the weighted one.
     weighted_expectation <- best$expectation
@@ -1106,7 +1135,8 @@
                           min_probability, call, order, mover_stayer, missing,
                           covariance_model, structure,
                           final_stage = .latents_final_stage(found),
-                          sampling_weights = sampling_weights, occupied = occupied)
+                          sampling_weights = sampling_weights, occupied = occupied, used = used,
+                          empty_origins = empty_origins)
     result$starts <- .latents_search_columns(result$starts, found, n_starts)
     record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
     result[names(record)] <- record
@@ -1171,6 +1201,9 @@
     profile_parameters <- .latents_profile_parameters(
       length(measurement$continuous), variance_model, covariance_model, structure)
     invisible(lapply(seq_len(n_measurement), function(index) {
+      # The block of an occasion nothing of positive weight observes is flat
+      # and not counted (.lta_identified_blocks()), so it is not thin either.
+      if (n_measurement > 1L && !occupied[index]) return(NULL)
       rows <- gaussian_rows & (n_measurement == 1L | occasion_of_row == index)
       .latents_warn_thin_profiles(
         colSums(weighted_expectation$subject_posteriors[rows, , drop = FALSE]),
@@ -1305,6 +1338,67 @@
        second = second)
 }
 
+#' Transition origins that no expected move leaves
+#'
+#' A profile that no unit of positive weight occupies before a later occasion
+#' (in a group class) has no expected move out of it, so the likelihood does
+#' not depend on its outgoing logits: they are flat, as the homogeneous
+#' engine's uniform rows are (`latents_empty_transition_row`). Under second
+#' order the same holds for an origin pair of profiles. Read from the final
+#' weighted expectation, so a unit of weight zero informs no origin.
+#'
+#' @param expectation The weighted expectation of the fit's parameters.
+#' @param stayer One logical per group class; a stayer class has no free
+#'   transition logits, so none of its origins is reported.
+#' @param n_profiles Number of profiles.
+#' @return A list with `first` (profiles by group classes) and `second`
+#'   (profile pairs by group classes, `NULL` without second order), logical.
+#' @noRd
+.lta_empty_origins <- function(expectation, stayer, n_profiles) {
+  empty <- function(moves, n_origins) {
+    vapply(seq_along(expectation$moments), function(h) {
+      if (isTRUE(stayer[h])) return(rep(FALSE, n_origins))
+      # Arrays are units x origins x destinations, one per move.
+      totals <- Reduce(`+`, lapply(expectation$moments[[h]][[moves]], function(pair) {
+        apply(pair, 2L, sum)
+      }), numeric(n_origins))
+      !(totals > 0)
+    }, logical(n_origins))
+  }
+  second <- !is.null(expectation$moments[[1L]]$pairs2)
+  list(first = matrix(empty("pairs", n_profiles), n_profiles),
+       second = if (second) matrix(empty("pairs2", n_profiles^2), n_profiles^2) else NULL)
+}
+
+#' Fix the logits of empty transition origins at zero
+#'
+#' Their likelihood is flat, so EM leaves them at their start values, which
+#' would then be reported as estimates. Zero logits give the destinations of
+#' an empty origin equal probabilities, the homogeneous engine's uniform row,
+#' whatever the start.
+#'
+#' @param parameters Parameters on the engine's chart.
+#' @param empty The list from `.lta_empty_origins()`.
+#' @return The parameters with those logits set to zero.
+#' @noRd
+.lta_zero_empty_origins <- function(parameters, empty) {
+  zero <- function(coefficients, origins) {
+    if (is.null(origins) || !any(origins)) return(coefficients)
+    # `origins` is origin x group class, the last two dimensions of the
+    # coefficients; repeating each cell over the first two marks every logit
+    # of an empty origin.
+    stopifnot("empty origins must match the transition coefficients" =
+                identical(dim(origins), dim(coefficients)[3:4]))
+    coefficients[rep(origins, each = prod(dim(coefficients)[1:2]))] <- 0
+    coefficients
+  }
+  parameters$transition <- zero(parameters$transition, empty$first)
+  if (!is.null(parameters$transition2)) {
+    parameters$transition2 <- zero(parameters$transition2, empty$second)
+  }
+  parameters
+}
+
 #' Measurement blocks the likelihood depends on
 #'
 #' Under occasion-specific measurement, every row of an occasion with no
@@ -1348,7 +1442,8 @@
                         order = 1L, mover_stayer = FALSE, missing = "error",
                         covariance_model = "diagonal", structure = NULL,
                         final_stage = rep(TRUE, length(attempts)),
-                        sampling_weights = NULL, occupied = NULL) {
+                        sampling_weights = NULL, occupied = NULL, used = NULL,
+                        empty_origins = NULL) {
   occupied <- occupied %||% rep(TRUE, layout$n_occasions)
   profile_names <- paste0("profile_", seq_len(n_profiles))
   class_names <- c(paste0("group_class_", seq_len(n_group_classes - mover_stayer)),
@@ -1372,6 +1467,11 @@
                                         ncol(designs$initial), length(free$first), order,
                                         as.integer(mover_stayer), covariance_model,
                                         structure, length(free$second))
+  # The flat logits of an empty origin (.lta_empty_origins()) are not counted:
+  # K - 1 destinations on each counted column, per empty origin and class.
+  n_parameters <- as.integer(n_parameters -
+    (n_profiles - 1L) * (sum(empty_origins$first) * length(free$first) +
+                           sum(empty_origins$second) * length(free$second)))
   log_likelihood <- expectation$log_likelihood
   subject_posteriors <- expectation$subject_posteriors
   group_posteriors <- expectation$group_posteriors
@@ -1405,7 +1505,7 @@
       paste0(pairs$previous, "->", pairs$current), class_names)
   }
   probability_boundary <- .lta_probability_boundary(expectation, layout,
-                                                    parameters$stayer)
+                                                    parameters$stayer, used = used)
   boundary <- probability_boundary || any(vapply(parameters$measurement, function(block) {
     .multilpa_covariance_boundary(block, min_variance)
   }, logical(1)))
@@ -1414,6 +1514,8 @@
     categorical = setdiff(vars, c(measurement$continuous, measurement$other)),
     categorical_levels = measurement$encoded$levels,
     id = id, time = time, group_ids = groups$ids, group_index = groups$index,
+    # The identifiers as supplied (typed), for the assignments' data columns.
+    group_values = groups$values,
     time_values = .multilpa_time_values(data, time, id, vars),
     n_profiles = as.integer(n_profiles), n_group_classes = as.integer(n_group_classes),
     n_groups = groups$n, n_observations = nrow(x), n_occasions = layout$n_occasions,
@@ -1446,9 +1548,21 @@
     # Which occasions observe anything: they decide which logits and
     # measurement blocks are identified (.lta_identified_coordinates()).
     occupied = occupied,
+    # Origins (profiles; pairs under second order) by group class that no
+    # expected move leaves: their logits are flat (.lta_empty_origins()).
+    empty_transition_rows = matrix(empty_origins$first %||% FALSE, n_profiles,
+                                   n_group_classes,
+                                   dimnames = list(profile_names, class_names)),
+    empty_second_order_rows = if (is.null(empty_origins$second)) NULL else
+      matrix(empty_origins$second, n_profiles^2, n_group_classes,
+             dimnames = list(NULL, class_names)),
     starts = data.frame(start = seq_along(attempts),
                         log_likelihood = ifelse(valid, scores, NA_real_),
                         converged = converged,
+                        iterations = vapply(seq_along(attempts), function(i) {
+                          if (valid[i]) as.integer(attempts[[i]]$iterations %||% NA_integer_)
+                          else NA_integer_
+                        }, integer(1)),
                         error = vapply(attempts, function(a) a$error %||% NA_character_,
                                        character(1)),
                         selected = seq_along(attempts) == best_start),
@@ -1481,6 +1595,15 @@
       paste("A variance or covariance eigenvalue reached min_variance;",
             "this is a bound-active fit."),
       class = "latents_boundary", call = NULL))
+  }
+  if (any(result$empty_transition_rows) || any(result$empty_second_order_rows)) {
+    warning(warningCondition(paste(
+      "A profile is never occupied before a later occasion, so no move leaves",
+      "it and its outgoing logits are not identified. They are fixed at zero",
+      "(equal probabilities), are not counted in n_parameters, AIC or BIC, and",
+      "are flagged estimated = FALSE in get_results(fit, \"transitions\") and",
+      "parameter_inference(fit)."),
+      class = "latents_empty_transition_row", call = NULL))
   }
   # As in the homogeneous engine: a class that has emptied (a stayer class no
   # one belongs to, say) is reported, not left to look like an estimate.

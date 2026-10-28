@@ -87,10 +87,10 @@
 #' @noRd
 .multilpa_information_criteria <- function(x, definitions = FALSE,
                                  format = c("wide", "long")) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
-            "`definitions` must be TRUE or FALSE" =
+  .latents_require_fit(x)
+  .latents_require("`definitions` must be TRUE or FALSE" =
               isTRUE(definitions) || isFALSE(definitions))
-  format <- match.arg(format)
+  format <- .latents_match_arg(format, c("wide", "long"), "format")
   if (isTRUE(definitions) && identical(format, "wide")) {
     stop(errorCondition(
       "`definitions` describes one criterion per row, which the wide form has not. Use format = \"long\".",
@@ -244,7 +244,7 @@
 .multilpa_classification_table <- function(x, level = c("individuals",
                                                         "groups", "both")) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
-  level <- match.arg(level)
+  level <- .latents_match_arg(level, c("individuals", "groups", "both"), "level")
   posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
     .multilpa_classification_summary(
@@ -291,7 +291,7 @@
 #' @noRd
 .multilpa_average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
-  level <- match.arg(level)
+  level <- .latents_match_arg(level, c("individuals", "groups", "both"), "level")
   posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
     .multilpa_average_posterior_rows(

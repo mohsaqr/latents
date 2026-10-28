@@ -240,6 +240,20 @@
        expectation = expectation)
 }
 
+#' Restrict growth fitting to persons that carry positive sampling weight
+#'
+#' All starts, including pooled regression, trajectory clustering and random
+#' covariance starts, must see the same sample as the likelihood. The final
+#' expectation is restored on every supplied person for the returned object.
+#' @param spec A growth specification; sampling weights are person-level.
+#' @return The specification restricted to positive-weight persons.
+#' @noRd
+.growth_carrying_spec <- function(spec) {
+  stopifnot(length(spec$sampling_weights %||% rep(1, spec$n_groups)) == spec$n_groups,
+            is.null(spec$cluster))
+  .mixture_carrying_spec(spec)
+}
+
 #' Fit the growth mixture model from several starts
 #'
 #' Every start of the model without random effects becomes a start here;
@@ -249,6 +263,14 @@
 #' @return The fitted `latents_growth_mixture` object (without inference).
 #' @noRd
 .growth_fit <- function(spec, n_starts, max_iter, tol, select_start) {
+  if (!is.null(spec$sampling_weights) && any(spec$sampling_weights <= 0)) {
+    fit <- .growth_fit(.growth_carrying_spec(spec), n_starts, max_iter, tol, select_start)
+    fit$spec <- spec
+    fit$stats <- .growth_statistics(spec)
+    fit$expectation <- .growth_expectation(spec, fit$stats, fit$params)
+    fit$log_likelihood <- fit$expectation$log_likelihood
+    return(fit)
+  }
   stats <- .growth_statistics(spec)
   # EM to a loose tolerance, then the quasi-Newton finish to `tol`: EM for a
   # mixed model crawls near its maximum.
@@ -333,7 +355,7 @@
 #' decreased" (round 2, GR2-1 to GR2-4).
 #'
 #' The model is therefore fitted on standard coordinates and mapped back
-#' exactly by [.growth_unstandardize_fit()]: the outcome becomes
+#' exactly by `.growth_unstandardize_fit()`: the outcome becomes
 #' `(y - offset - center) / scale`, and every column of the class-specific,
 #' common and random designs except an intercept is centred and divided by its
 #' standard deviation. A column is centred only where an intercept absorbs the
@@ -391,7 +413,7 @@
 #' the coordinates of the fitted standard parameters.
 #'
 #' @param spec A growth specification in the data's units.
-#' @param standard The transform from [.growth_standardize()].
+#' @param standard The transform from `.growth_standardize()`.
 #' @return The specification in standard coordinates.
 #' @noRd
 .growth_apply_standard <- function(spec, standard) {
@@ -423,7 +445,7 @@
 #' `N = scale M^-1` and `G = N G* N'`.
 #'
 #' @param names The random design's column names.
-#' @param standard The transform from [.growth_standardize()].
+#' @param standard The transform from `.growth_standardize()`.
 #' @return The q x q matrix `N`.
 #' @noRd
 .growth_random_map <- function(names, standard) {
@@ -444,7 +466,7 @@
 #' @param beta Class-specific coefficients (columns of x by classes).
 #' @param common Common coefficients.
 #' @param x_names,z_names The design column names.
-#' @param standard The transform from [.growth_standardize()].
+#' @param standard The transform from `.growth_standardize()`.
 #' @return A list with `beta` and `common` in the data's units.
 #' @noRd
 .growth_unstandardize_coefficients <- function(beta, common, x_names, z_names, standard) {
@@ -474,13 +496,13 @@
 
 #' Map growth-mixture parameters from standard coordinates to the data's
 #'
-#' Coefficients by [.growth_unstandardize_coefficients()], each random-effect
-#' covariance as `N G* N'` ([.growth_random_map()]), residual variances by
+#' Coefficients by `.growth_unstandardize_coefficients()`, each random-effect
+#' covariance as `N G* N'` (`.growth_random_map()`), residual variances by
 #' `scale^2` and a residual process's standard deviation by `scale`; class
 #' shares, rates and the proportional-covariance ratios are unchanged.
 #'
 #' @param params A parameter list in standard coordinates.
-#' @param standard The list from [.growth_standardize()].
+#' @param standard The list from `.growth_standardize()`.
 #' @param spec The specification in the data's units (for the column names).
 #' @return The parameter list in the data's units.
 #' @noRd
@@ -519,7 +541,7 @@
 #'
 #' Each person's class log densities move by `-n_i log scale`, which leaves
 #' the posteriors unchanged; the random-effect posterior means and
-#' covariances map by `N` ([.growth_random_map()]). Computing the E-step in
+#' covariances map by `N` (`.growth_random_map()`). Computing the E-step in
 #' standard coordinates keeps it accurate when the data's coordinates are
 #' ill-conditioned (a calendar-year random slope).
 #'
@@ -553,7 +575,7 @@
 #' Return a growth mixture fitted in standard coordinates to the data's units
 #'
 #' The parameters are mapped back exactly and the E-step is carried over
-#' ([.growth_map_expectation()]). The log likelihood differs from the
+#' (`.growth_map_expectation()`). The log likelihood differs from the
 #' standard-scale one by a constant, `-(sum of row weights) log scale`, so each
 #' start's value and the iteration history move by the same shift and keep
 #' their order. The standard parameters and transform are kept in
@@ -561,7 +583,7 @@
 #'
 #' @param fit The fit made on `standard$spec`.
 #' @param spec The original specification (with any residual-process fields).
-#' @param standard The list from [.growth_standardize()].
+#' @param standard The list from `.growth_standardize()`.
 #' @return The fit in the data's units.
 #' @noRd
 .growth_unstandardize_fit <- function(fit, spec, standard) {
@@ -584,7 +606,7 @@
 
 #' Map growth-mixture parameters from the data's coordinates to standard ones
 #'
-#' The exact inverse of [.growth_unstandardize_params()], for parameters that
+#' The exact inverse of `.growth_unstandardize_params()`, for parameters that
 #' were set in the data's units (by a caller, or a fit made before the
 #' standard coordinates existed).
 #'
@@ -755,7 +777,7 @@
 #'
 #' Judged on the free matrices (one per class, or the shared one, which for a
 #' proportional covariance is the last class's) in the standard coordinates
-#' the model is fitted in ([.growth_standardize()]), where the random design's
+#' the model is fitted in (`.growth_standardize()`), where the random design's
 #' columns have unit spread: a random effect's conditional variance (its
 #' squared Cholesky diagonal) at the floor, a correlation within 0.005 of
 #' +-1, or a smallest eigenvalue below 1e-6 of the largest, of the covariance

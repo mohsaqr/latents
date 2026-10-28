@@ -11,9 +11,11 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
   stopifnot("`x` must be a `multilpa` fit" = inherits(x, "multilpa"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
-  what <- match.arg(what)
-  scale <- match.arg(scale)
-  statistic <- match.arg(statistic)
+  what <- if (missing(what)) .multilpa_default_view(x) else
+    .latents_match_arg(what, eval(formals(plot.multilpa)$what), "what")
+  scale <- .latents_match_arg(scale, c("raw", "standardized"), "scale")
+  statistic <- .latents_match_arg(statistic, c("mean", "median", "mode"),
+                                  "statistic")
   .multilpa_check_plot_statistic(what, statistic)
   .gg_require()
   if (identical(what, "all")) {
@@ -503,9 +505,11 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
             "each unit's covariates. Use parameter_inference() for the logits."),
       class = "latents_nothing_to_plot", call = NULL))
   }
-  what <- match.arg(what)
-  scale <- match.arg(scale)
-  statistic <- match.arg(statistic)
+  what <- if (missing(what)) .multilpa_default_view(x) else
+    .latents_match_arg(what, eval(formals(plot.multilpa_covariates)$what), "what")
+  scale <- .latents_match_arg(scale, c("raw", "standardized"), "scale")
+  statistic <- .latents_match_arg(statistic, c("mean", "median", "mode"),
+                                  "statistic")
   .multilpa_check_plot_statistic(what, statistic)
   .gg_require()
   if (identical(what, "all")) {
@@ -515,6 +519,35 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
                       category = category, labels = labels,
                       intervals = intervals, cell_labels = cell_labels,
                       main = main, subtitle = subtitle, statistic = statistic)
+}
+
+#' The view `plot()` draws when it is not given `what`
+#'
+#' The profile summaries of a fit whose every indicator is categorical score
+#' the categories by their labels, and labels such as "no"/"yes" have no
+#' scores. The default view of such a fit -- the package's own LCA example --
+#' refused, naming `what = "responses"` as the remedy (review 2026-10-27), so
+#' that is what it draws. An explicit `what = "profiles"` and
+#' [plot_profiles()] still refuse, as documented.
+#' @param x A fitted model.
+#' @return `"profiles"` or `"responses"`.
+#' @noRd
+.multilpa_default_view <- function(x) {
+  if (.multilpa_scored_profiles(x)) "profiles" else "responses"
+}
+
+#' Can the profile summaries be drawn for this fit?
+#'
+#' They can wherever there is a continuous indicator, and for an
+#' all-categorical fit only when every indicator's category labels are
+#' distinct finite numbers.
+#' @param x A fitted model.
+#' @return A single logical.
+#' @noRd
+.multilpa_scored_profiles <- function(x) {
+  length(.multilpa_continuous_names(x)) > 0L ||
+    length(x$response_probabilities) == 0L ||
+    .gg_scorable_categories(x$response_probabilities)
 }
 
 #' @rdname latents-plots

@@ -167,8 +167,8 @@ awe_groups_pick <- pick("awe", "groups")
 aic_pick <- with(subset(best, criterion == "aic"), candidate)
 # The code below names these candidates; stop if the results ever change.
 stopifnot(bic_groups_pick == "profiles4_groups3",
-          icl_groups_pick == "profiles4_groups2",
-          awe_groups_pick == "profiles3_groups2",
+          icl_groups_pick == "profiles2_groups3",
+          awe_groups_pick == "profiles2_groups2",
           aic_pick == "profiles6_groups4")
 ```
 
@@ -211,6 +211,11 @@ with the suffix `_groups` treat the `r n_students` students as the
 independent units, and criteria with the suffix `_individual` the
 `r format(n_enrolments, big.mark = ",")` enrolments (Lukočienė, Varriale and
 Vermunt, 2010). A single convention should be used throughout an analysis.
+
+For ICL and AWE, either convention charges the complete-data classification
+entropy: uncertainty about group classes plus the conditional uncertainty
+about profiles within those classes. The sample-size convention changes the
+parameter penalty, not which classification level contributes uncertainty.
 
 The candidate that minimizes each criterion:
 
@@ -428,7 +433,7 @@ compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
 The same candidates specified by their numbers of classes, with labels:
 
 ```{r compare-counts}
-compare_models(models, bic = c(4, 3), icl = c(4, 2), awe = c(3, 2))
+compare_models(models, bic = c(4, 3), icl = c(2, 3), awe = c(2, 2))
 ```
 
 All candidates with four profiles, which isolates the contribution of the

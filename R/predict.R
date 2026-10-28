@@ -59,7 +59,9 @@ predict.multilpa_transitions <- function(object, ...) {
 #' The fitted rows, prepared as the fit prepared them
 #' @noRd
 .multilpa_training_rows <- function(object) {
-  .multilpa_prediction_rows(object, .multilpa_fit_data(object))
+  .multilpa_prediction_rows(object, .multilpa_fit_data(object),
+                            contributing = if (is.null(object$sampling_weights)) NULL else
+                              unname(object$sampling_weights)[object$group_index] > 0)
 }
 
 #' The data frame a fit was made from, as it was handed in
@@ -77,10 +79,12 @@ predict.multilpa_transitions <- function(object, ...) {
 #'
 #' @param object A `multilpa` fit.
 #' @param newdata A data frame.
+#' @param contributing Optional training-row mask; excluded training values may
+#'   lack a modeled categorical response. New-data prediction uses every row.
 #' @return A list of the continuous matrix `x`, categorical `codes` (or
 #'   `NULL`), `group_index`, the group labels `groups`, and `rows`.
 #' @noRd
-.multilpa_prediction_rows <- function(object, newdata) {
+.multilpa_prediction_rows <- function(object, newdata, contributing = NULL) {
   bad_data <- function(message) {
     stop(errorCondition(message, class = "latents_bad_data", call = NULL))
   }
@@ -100,6 +104,7 @@ predict.multilpa_transitions <- function(object, ...) {
   }
   n <- nrow(newdata)
   if (n == 0L) bad_data("`newdata` has no rows.")
+  checked <- contributing %||% rep(TRUE, n)
   if (!all(vapply(newdata[continuous], function(value) {
     is.numeric(value) && is.null(dim(value))
   }, logical(1)))) {
@@ -119,7 +124,7 @@ predict.multilpa_transitions <- function(object, ...) {
       half <- paired & !is.na(value) & .latents_partial_levels(c(
         object$categorical_levels[[indicator]], as.character(value)))[
           -seq_along(object$categorical_levels[[indicator]])]
-      unseen <- !is.na(value) & is.na(code) & !half
+      unseen <- !is.na(value) & is.na(code) & !half & checked
       if (any(unseen)) {
         bad_data(sprintf(paste(
           "`%s` has the categor%s %s, which the fit never saw, so it has no",
@@ -135,10 +140,13 @@ predict.multilpa_transitions <- function(object, ...) {
     codes <- .multilpa_attach_partial(codes, newdata[categorical],
                                       object$categorical_levels[categorical])
   }
-  extra <- .latents_prepare_extra_like(object, newdata)
+  # A training row of weight zero may hold an ordinal value, or a missing
+  # one, that the fit never modelled: it is coded NA and not checked.
+  extra <- .latents_prepare_extra_like(object, newdata, contributing = contributing)
+  extra_values <- .latents_extra_matrix(extra)
   if (identical(object$missing %||% "error", "error") &&
-      (anyNA(x) || (!is.null(codes) && anyNA(codes)) ||
-       anyNA(.latents_extra_matrix(extra)))) {
+      (anyNA(x) || (!is.null(codes) && anyNA(codes[checked, , drop = FALSE])) ||
+       (!is.null(extra_values) && anyNA(extra_values[checked, , drop = FALSE])))) {
     bad_data(paste(
       "`newdata` has missing indicator values, and the fit was made with",
       "`missing = \"error\"`. Refit with `missing = \"fiml\"` to classify",

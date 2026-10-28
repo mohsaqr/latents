@@ -169,9 +169,11 @@ test_that("a fit with no continuous indicator predicts under any centring and sc
   set.seed(9)
   data <- data.frame(g = rep(1:10, each = 5), c = sample(c("a", "b", "c"), 50, TRUE))
   invisible(lapply(c("none", "grand", "person"), function(level) {
-    fit <- multilpa(data, "c", "g", n_profiles = 2, n_group_classes = 1,
+    # Two profiles on one three-category item are not identified.
+    fit <- quietly(multilpa(data, "c", "g", n_profiles = 2, n_group_classes = 1,
                     categorical = "c", centering = if (level == "person") "grand" else level,
-                    scaling = level, n_starts = 2, seed = 1)
+                    scaling = level, n_starts = 2, seed = 1),
+                   classes = "latents_unidentified")
     expect_identical(nrow(predict(fit, data)), nrow(data))
   }))
 })

@@ -243,10 +243,10 @@ The higher-level structure is inspected through the probabilities of the observa
 ``` r
 get_results(fit, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1       0.786                   0.675
-#> 2           1       2       0.214                   0.675
-#> 3           2       1       0.170                   0.325
-#> 4           2       2       0.830                   0.325
+#> 1           1       1       0.170                   0.325
+#> 2           1       2       0.830                   0.325
+#> 3           2       1       0.786                   0.675
+#> 4           2       2       0.214                   0.675
 plot_prevalence(fit)
 ```
 
@@ -255,7 +255,7 @@ plot_prevalence(fit)
 <p class="caption">plot of chunk probabilities</p>
 </div>
 
-The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 79% probability to the more engaged profile, whereas student class 2 assigns approximately 83% probability to the less engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
+The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 83% probability to the less engaged profile, whereas student class 2 assigns approximately 79% probability to the more engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
 
 The `group_class_probability` column contains the estimates of $\eta_h$, or the proportion of students in each class. These are group-level proportions. They should be distinguished from enrolment-level profile proportions, particularly when students contribute different numbers of observations.
 
@@ -282,12 +282,12 @@ head(get_results(fit, "assignments", data = course_engagement))
 #> 5       1     16        5  -0.94    -0.37      -0.71      -0.28      -1.52          -0.67
 #> 6       1     29        6  -0.36    -0.46      -0.77      -0.43      -1.34          -0.40
 #>   engagement student_type profile group_class uncertainty posterior_profile_1
-#> 1    engaged     wavering       1           2    4.44e-04            1.00e+00
-#> 2    engaged     wavering       1           2    1.49e-02            9.85e-01
-#> 3 disengaged     wavering       2           2    2.42e-06            2.42e-06
-#> 4 disengaged     wavering       2           2    3.86e-06            3.86e-06
-#> 5 disengaged     wavering       2           2    5.75e-06            5.75e-06
-#> 6 disengaged     wavering       2           2    2.28e-05            2.28e-05
+#> 1    engaged     wavering       1           1    4.44e-04            1.00e+00
+#> 2    engaged     wavering       1           1    1.49e-02            9.85e-01
+#> 3 disengaged     wavering       2           1    2.42e-06            2.42e-06
+#> 4 disengaged     wavering       2           1    3.86e-06            3.86e-06
+#> 5 disengaged     wavering       2           1    5.75e-06            5.75e-06
+#> 6 disengaged     wavering       2           1    2.28e-05            2.28e-05
 #>   posterior_profile_2
 #> 1            0.000444
 #> 2            0.014854
@@ -311,8 +311,8 @@ get_results(fit, "counts")
 #>         level class effective_count effective_proportion
 #> 1 individuals     1           834.1                0.587
 #> 2 individuals     2           587.9                0.413
-#> 3      groups     1            71.5                0.675
-#> 4      groups     2            34.5                0.325
+#> 3      groups     1            34.5                0.325
+#> 4      groups     2            71.5                0.675
 ```
 
 Effective class counts are obtained by summing posterior membership probabilities. They need not be integers and differ conceptually from counts based on modal assignments. Small effective classes may provide limited information for estimating means, variances, and membership parameters, and should be evaluated for stability and substantive plausibility.
@@ -330,10 +330,10 @@ get_results(fit, "assignments", data = course_engagement,
 #> 2     profile     2   engagement disengaged 569     0.9726
 #> 3     profile     1   engagement    engaged 820     0.9797
 #> 4     profile     2   engagement    engaged  17     0.0203
-#> 5 group_class     1 student_type  committed  61     0.9839
-#> 6 group_class     2 student_type  committed   1     0.0161
-#> 7 group_class     1 student_type   wavering  10     0.2273
-#> 8 group_class     2 student_type   wavering  34     0.7727
+#> 5 group_class     1 student_type  committed   1     0.0161
+#> 6 group_class     2 student_type  committed  61     0.9839
+#> 7 group_class     1 student_type   wavering  34     0.7727
+#> 8 group_class     2 student_type   wavering  10     0.2273
 ```
 
 The enrolment-level comparison uses `engagement`, and the student-level comparison uses `student_type`, counting each student once. Agreement is interpreted after allowing for arbitrary label permutations. This analysis describes recovery under the specific simulation conditions; in empirical data, validation instead relies on the fitted structure, diagnostics, substantive evidence, and, where available, replication.
@@ -351,9 +351,9 @@ get_results(fit, "starts")
 #> 1      1          -8440      TRUE          9  <NA>    FALSE
 #> 2      2          -8440      TRUE         12  <NA>    FALSE
 #> 3      3          -8440      TRUE          9  <NA>    FALSE
-#> 4      4          -8440      TRUE         12  <NA>    FALSE
+#> 4      4          -8440      TRUE          9  <NA>    FALSE
 #> 5      5          -8440      TRUE          9  <NA>    FALSE
-#> 6      6          -8440      TRUE         12  <NA>    FALSE
+#> 6      6          -8440      TRUE          9  <NA>    FALSE
 #> 7      7          -8440      TRUE          9  <NA>    FALSE
 #> 8      8          -8440      TRUE         12  <NA>    FALSE
 #> 9      9          -8440      TRUE          9  <NA>    FALSE
@@ -420,23 +420,23 @@ dependent <- multilpa(
 )
 compare_models(diagonal = fit, full = dependent)
 #> Model comparison
-#> 
+#>
 #> Model     Profiles  Group classes   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> --------  --------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------
-#> diagonal         2              2  23  -8439.82  16986.89  160.14   0.000  17168.49     0.94       0.98      0           0.94             0.97
-#> full             2              2  43  -8313.11  16826.75    0.00   1.000  17123.11     0.91       0.97      0           0.94             0.97
+#> diagonal         2              2  23  -8439.82  16986.89  160.14   0.000  17175.69     0.94       0.98      0           0.94             0.97
+#> full             2              2  43  -8313.11  16826.75    0.00   1.000  17128.35     0.91       0.97      0           0.94             0.97
 get_results(dependent, "residuals", by = "overall")
 #>    profile indicator_1 indicator_2     kind observed expected residual effective_n statistic
-#> 1  overall    lectures  attendance gaussian  0.20502  0.20502 1.76e-06        1422  6.94e-05
-#> 2  overall      browse  attendance gaussian  0.20383  0.20382 1.57e-06        1422  6.16e-05
-#> 3  overall      browse    lectures gaussian -0.01381 -0.01381 1.51e-06        1422  5.69e-05
-#> 4  overall  forum_post  attendance gaussian  0.18790  0.18790 1.49e-06        1422  5.82e-05
-#> 5  overall    lectures  forum_post gaussian  0.02007  0.02007 1.40e-06        1422  5.29e-05
-#> 6  overall      browse  forum_post gaussian -0.01867 -0.01867 1.24e-06        1422  4.67e-05
-#> 7  overall    lectures  forum_read gaussian  0.00885  0.00885 1.17e-06        1422  4.39e-05
-#> 8  overall  forum_read  attendance gaussian  0.24179  0.24179 7.72e-07        1422  3.09e-05
-#> 9  overall      browse  forum_read gaussian  0.07442  0.07442 5.60e-07        1422  2.12e-05
-#> 10 overall  forum_read  forum_post gaussian  0.02435  0.02435 4.90e-07        1422  1.85e-05
+#> 1  overall  forum_post  attendance gaussian  0.18790  0.18790 1.06e-08        1422  4.13e-07
+#> 2  overall  forum_read  forum_post gaussian  0.02435  0.02435 9.66e-09        1422  3.64e-07
+#> 3  overall      browse  forum_post gaussian -0.01867 -0.01867 7.66e-09        1422  2.88e-07
+#> 4  overall  forum_read  attendance gaussian  0.24179  0.24179 6.82e-09        1422  2.73e-07
+#> 5  overall      browse  attendance gaussian  0.20383  0.20383 5.24e-09        1422  2.06e-07
+#> 6  overall    lectures  forum_post gaussian  0.02007  0.02007 4.81e-09        1422  1.81e-07
+#> 7  overall      browse  forum_read gaussian  0.07442  0.07442 4.11e-09        1422  1.56e-07
+#> 8  overall    lectures  attendance gaussian  0.20502  0.20502 3.02e-09        1422  1.19e-07
+#> 9  overall    lectures  forum_read gaussian  0.00885  0.00885 2.62e-09        1422  9.88e-08
+#> 10 overall      browse    lectures gaussian -0.01381 -0.01381 2.09e-09        1422  7.86e-08
 #>    df p_value p_adjusted
 #> 1  NA       1          1
 #> 2  NA       1          1
@@ -466,7 +466,7 @@ candidates <- enumerate_classes(
   n_starts = 10, seed = 1
 )
 candidates
-#> Class enumeration: 9 candidate models
+#> Class enumeration: 9 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic
 #>  profiles2_groups1          2               1   VVI          -8615           21 17272
 #>  profiles3_groups1          3               1   VVI          -8537           32 17137
@@ -481,12 +481,12 @@ candidates
 #>       17328          17383          17537           0.922            NA     0.974     0.982
 #>       17222          17306          18017           0.772            NA     0.832     0.964
 #>       17203          17314          18359           0.735            NA     0.803     0.849
-#>       16987          17047          17168           0.938         0.940     0.982     0.985
-#>       16892          16983          17640           0.790         0.943     0.849     0.979
-#>       16872          16994          18021           0.739         0.937     0.792     0.858
-#>       16959          17024          17142           0.940         0.816     0.982     0.986
-#>       16874          16973          17622           0.792         0.797     0.845     0.978
-#>       16852          16985          18014           0.739         0.823     0.801     0.854
+#>       16987          17047          17176           0.938         0.940     0.982     0.985
+#>       16892          16983          17646           0.790         0.943     0.849     0.979
+#>       16872          16994          18028           0.739         0.937     0.792     0.858
+#>       16959          17024          17180           0.940         0.816     0.982     0.986
+#>       16874          16973          17663           0.792         0.797     0.845     0.978
+#>       16852          16985          18045           0.739         0.823     0.800     0.854
 #>  avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below
 #>       0.978           0              NA              NA               NA                NA
 #>       0.886           0              NA              NA               NA                NA
@@ -496,7 +496,7 @@ candidates
 #>       0.835           1           0.975           0.990            0.983                 0
 #>       0.984           0           0.900           0.962            0.923                 0
 #>       0.892           0           0.864           0.977            0.913                 0
-#>       0.836           0           0.874           0.981            0.923                 0
+#>       0.836           0           0.861           0.981            0.922                 0
 #>  converged boundary n_best_replicated
 #>       TRUE    FALSE                10
 #>       TRUE    FALSE                10
@@ -507,6 +507,7 @@ candidates
 #>       TRUE    FALSE                10
 #>       TRUE    FALSE                10
 #>       TRUE    FALSE                10
+#> Every column, unrounded: as.data.frame(x).
 #> No candidate is selected automatically. Compare one convention consistently.
 get_results(candidates, "best")
 #>    criterion  convention         candidate n_profiles n_group_classes model value
@@ -518,12 +519,12 @@ get_results(candidates, "best")
 #> 6      sabic individuals profiles4_groups3          4               3   VVI 16823
 #> 7       caic      groups profiles4_groups3          4               3   VVI 16903
 #> 8       caic individuals profiles3_groups3          3               3   VVI 17011
-#> 9        awe      groups profiles3_groups2          3               2   VVI 17169
-#> 10       awe individuals profiles2_groups3          2               3   VVI 17398
-#> 11       icl      groups profiles4_groups2          4               2   VVI 16881
-#> 12       icl individuals profiles2_groups3          2               3   VVI 17142
-#> 13       clc      groups profiles4_groups3          4               3   VVI 16656
-#> 14       clc individuals profiles2_groups3          2               3   VVI 16960
+#> 9        awe      groups profiles2_groups2          2               2   VVI 17292
+#> 10       awe individuals profiles2_groups2          2               2   VVI 17412
+#> 11       icl      groups profiles2_groups3          2               3   VVI 17115
+#> 12       icl individuals profiles2_groups2          2               2   VVI 17176
+#> 13       clc      groups profiles2_groups3          2               3   VVI 16998
+#> 14       clc individuals profiles2_groups3          2               3   VVI 16998
 plot_enumeration(candidates)
 ```
 
@@ -643,7 +644,7 @@ Three-step procedures retain an established measurement solution and account for
 ``` r
 three_step(fit, data = course_engagement, outcome = "previous_grade")
 #> Distal outcome by class (bch, 95% CI)
-#> 
+#>
 #> Class   Mean          95% CI     SE  Effective n
 #> -----  -----  --------------  -----  -----------
 #>     1   0.22  [ 0.15,  0.29]  0.035       810.27
@@ -732,12 +733,12 @@ over_time <- multilpa(
 )
 head(get_results(over_time, "sequences", format = "wide"))
 #>   group group_class sequence_1 sequence_2 sequence_3 sequence_4 sequence_5 sequence_6
-#> 1     1           2          1          1          2          2          2          2
-#> 2     2           2          2          2          2          2          2          2
-#> 3     3           1          1          1          1          1          1          1
-#> 4     4           1          1          1          1          1          1          1
-#> 5     5           2          2          2          2          2          2          2
-#> 6     6           1          1          2          2          2          1          1
+#> 1     1           1          1          1          2          2          2          2
+#> 2     2           1          2          2          2          2          2          2
+#> 3     3           2          1          1          1          1          1          1
+#> 4     4           2          1          1          1          1          1          1
+#> 5     5           1          2          2          2          2          2          2
+#> 6     6           2          1          2          2          2          1          1
 #>   sequence_7 sequence_8 sequence_9 sequence_10 sequence_11 sequence_12 sequence_13 sequence_14
 #> 1          2          2          2           2           2           2           2        <NA>
 #> 2          2          2          2           2           2           2           2        <NA>
@@ -769,20 +770,20 @@ moves <- lta(
 )
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1       0.816       0.78                   0.648
-#> 2           1       2       0.184       0.22                   0.648
-#> 3           2       1       0.276       0.23                   0.352
-#> 4           2       2       0.724       0.77                   0.352
+#> 1           1       1       0.276       0.23                   0.352
+#> 2           1       2       0.724       0.77                   0.352
+#> 3           2       1       0.816       0.78                   0.648
+#> 4           2       2       0.184       0.22                   0.648
 get_results(moves, "transitions")
 #>   group_class from to probability expected_count stable estimated group_class_probability
-#> 1           1    1  1      0.8778          586.7   TRUE      TRUE                   0.648
-#> 2           1    1  2      0.1222           81.7  FALSE      TRUE                   0.648
-#> 3           1    2  1      0.4131           76.3  FALSE      TRUE                   0.648
-#> 4           1    2  2      0.5869          108.4   TRUE      TRUE                   0.648
-#> 5           2    1  1      0.7421           80.2   TRUE      TRUE                   0.352
-#> 6           2    1  2      0.2579           27.9  FALSE      TRUE                   0.352
-#> 7           2    2  1      0.0693           24.6  FALSE      TRUE                   0.352
-#> 8           2    2  2      0.9307          330.3   TRUE      TRUE                   0.352
+#> 1           1    1  1      0.7420           80.1   TRUE      TRUE                   0.352
+#> 2           1    1  2      0.2580           27.9  FALSE      TRUE                   0.352
+#> 3           1    2  1      0.0692           24.6  FALSE      TRUE                   0.352
+#> 4           1    2  2      0.9308          330.2   TRUE      TRUE                   0.352
+#> 5           2    1  1      0.8778          586.8   TRUE      TRUE                   0.648
+#> 6           2    1  2      0.1222           81.7  FALSE      TRUE                   0.648
+#> 7           2    2  1      0.4130           76.3  FALSE      TRUE                   0.648
+#> 8           2    2  2      0.5870          108.4   TRUE      TRUE                   0.648
 plot_transitions(moves)
 ```
 
@@ -822,18 +823,18 @@ get_results(lca, "responses")
 #> 2        2 time_with_friends       no      0.8324     1.603                    0.01525
 #> 3        1 time_with_friends      yes      0.0632        NA                    0.01281
 #> 4        2 time_with_friends      yes      0.1676        NA                    0.01525
-#> 5        1   on_social_media       no      0.3365    -0.679                    0.04591
+#> 5        1   on_social_media       no      0.3364    -0.679                    0.04592
 #> 6        2   on_social_media       no      0.9235     2.491                    0.02663
-#> 7        1   on_social_media      yes      0.6635        NA                    0.04591
+#> 7        1   on_social_media      yes      0.6636        NA                    0.04592
 #> 8        2   on_social_media      yes      0.0765        NA                    0.02663
-#> 9        1    tv_video_games       no      0.6313     0.538                    0.02891
+#> 9        1    tv_video_games       no      0.6313     0.538                    0.02892
 #> 10       2    tv_video_games       no      0.8664     1.870                    0.01605
-#> 11       1    tv_video_games      yes      0.3687        NA                    0.02891
+#> 11       1    tv_video_games      yes      0.3687        NA                    0.02892
 #> 12       2    tv_video_games      yes      0.1336        NA                    0.01605
 #> 13       1    listened_music       no      0.6464     0.603                    0.03167
-#> 14       2    listened_music       no      0.9406     2.762                    0.01419
+#> 14       2    listened_music       no      0.9406     2.762                    0.01420
 #> 15       1    listened_music      yes      0.3536        NA                    0.03167
-#> 16       2    listened_music      yes      0.0594        NA                    0.01419
+#> 16       2    listened_music      yes      0.0594        NA                    0.01420
 #> 17       1            sports       no      0.9406     2.762                    0.01208
 #> 18       2            sports       no      0.9159     2.388                    0.01053
 #> 19       1            sports      yes      0.0594        NA                    0.01208
@@ -871,19 +872,19 @@ mixed <- multilpa(
 )
 get_results(mixed)
 #>   profile indicator mean variance standard_deviation mean_standard_error
-#> 1       1     happy 3.90    1.963              1.401                  NA
-#> 2       1   relaxed 3.66    1.946              1.395                  NA
-#> 3       1 exhausted 4.10    2.842              1.686                  NA
-#> 4       2     happy 5.98    0.659              0.812                  NA
-#> 5       2   relaxed 5.77    1.016              1.008                  NA
-#> 6       2 exhausted 2.32    1.976              1.406                  NA
+#> 1       1     happy 3.90    1.963              1.401              0.0653
+#> 2       1   relaxed 3.66    1.946              1.395              0.0601
+#> 3       1 exhausted 4.10    2.842              1.686              0.0696
+#> 4       2     happy 5.98    0.659              0.812              0.0396
+#> 5       2   relaxed 5.77    1.016              1.008              0.0536
+#> 6       2 exhausted 2.32    1.976              1.406              0.0672
 #>   variance_standard_error
-#> 1                      NA
-#> 2                      NA
-#> 3                      NA
-#> 4                      NA
-#> 5                      NA
-#> 6                      NA
+#> 1                  0.1076
+#> 2                  0.1043
+#> 3                  0.1503
+#> 4                  0.0414
+#> 5                  0.0742
+#> 6                  0.1379
 ```
 
 This specification treats the affect ratings as approximately Gaussian within profiles. The measurement table describes their means and variances, while `get_results(mixed, "responses")` provides the activity-response probabilities. Including affect changes the dimensions represented by the model and can consequently change the substantive meaning of its profiles.
@@ -923,12 +924,12 @@ regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes =
                                   n_starts = 3, seed = 1)
 get_results(regressions, "coefficients")
 #> Regression coefficients (95% CI)
-#> 
+#>
 #> Class    Term       Estimate          95% CI      p
 #> -------  ---------  --------  --------------  -----
-#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  Intercept     34.36  [32.95, 35.77]  <.001
 #> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
-#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  Intercept     54.90  [52.76, 57.04]  <.001
 #> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 ```
 
@@ -941,13 +942,13 @@ The package provides a consistent result interface across supported model famili
 
 ``` r
 names(get_results(fit, "all"))
-#>  [1] "profiles"              "responses"             "covariances"          
-#>  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"               
-#>  [7] "posteriors"            "group_posteriors"      "assignments"          
+#>  [1] "profiles"              "responses"             "covariances"
+#>  [4] "gaussian_diagnostics"  "profile_probabilities" "counts"
+#>  [7] "posteriors"            "group_posteriors"      "assignments"
 #> [10] "classification"        "average_posteriors"    "classification_errors"
-#> [13] "bch_weights"           "entropy"               "residuals"            
-#> [16] "information_criteria"  "model"                 "stages"               
-#> [19] "starts"                "data"
+#> [13] "bch_weights"           "entropy"               "replication"
+#> [16] "residuals"             "information_criteria"  "model"
+#> [19] "stages"                "starts"                "data"
 ```
 
 Result tables are returned as base R data frames. `get_results(fit, "all")` returns them as a named list, `summary(fit)` provides a printed overview, and `report(fit)` combines summaries, diagnostics, and plots. These interfaces support both detailed inspection and preparation of tables for reporting.

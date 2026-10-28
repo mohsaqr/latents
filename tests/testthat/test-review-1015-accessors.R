@@ -58,7 +58,7 @@ test_that("diagnostics() and report() work on a fit with a noise component", {
   expect_error(get_results(quality, "residuals"), class = "latents_unsupported_noise")
   expect_output(print(quality), "not available")
   expect_output(suppressMessages(report(fit, plots = FALSE, rows = 1L)),
-                "Classification quality")
+                "Diagnostics: ")
 })
 
 test_that("summary print names single-level and class models as print() does", {
@@ -94,7 +94,8 @@ test_that("empty measurement tables keep their standard-error columns", {
   frame$posted <- factor(ifelse(frame$forum_post > 0, "yes", "no"))
   categorical <- quietly(multilpa(frame, vars = "posted", id = "student",
                                   categorical = "posted", n_profiles = 2,
-                                  n_group_classes = 1, n_starts = 2, seed = 1))
+                                  n_group_classes = 1, n_starts = 2, seed = 1),
+                         classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   profiles <- suppressMessages(get_results(categorical, "profiles"))
   expect_identical(nrow(profiles), 0L)
   expect_identical(names(profiles),

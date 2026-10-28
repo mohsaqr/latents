@@ -18,13 +18,19 @@ three_step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model, or a
-trajectory model that classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with
-\code{class_level = "group"}, with or without \code{random} effects) fitted without
-\code{membership} covariates. Fits with membership covariates and multilevel
-growth mixtures (\code{cluster}) are refused with
-\code{latents_unsupported_three_step}: the correction uses a fixed,
-unconditional classification-error matrix and independent units.}
+\item{x}{A covariate-free fit from \code{\link[=multilpa]{multilpa()}} (\code{family = "profiles"},
+the default) or from \code{\link[=lta]{lta()}} with its default homogeneous first-order
+transitions and invariant measurement, or a trajectory model that
+classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"},
+with or without \code{random} effects) fitted without \code{membership}
+covariates. Fits with membership covariates and multilevel growth
+mixtures (\code{cluster}) are refused with \code{latents_unsupported_three_step}:
+the correction uses a fixed, unconditional classification-error matrix
+and independent units. The other families of \code{\link[=multilpa]{multilpa()}}, \code{\link[=lta]{lta()}} fits
+from the general transition engine (occasion-varying, second-order or
+covariate transitions, occasion-specific measurement, a stayer class,
+ordinal or count indicators) and mixture regressions with observation
+classes are refused with \code{latents_unsupported_three_step} too.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order.
 Columns shared with the fit are checked row by row; a frame with too
@@ -81,8 +87,8 @@ model; the \code{variance} attribute records the choice. For \code{contrast = "p
 with the columns \code{level}, \code{method}, \code{class}, \code{reference_class},
 \code{estimate} (the mean of \code{class} minus the mean of \code{reference_class}),
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. A contrast with zero standard error has
-\code{NA_real_} statistic and p-values.
+\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. A contrast with zero or missing standard
+error has \code{NA_real_} statistic and p-values.
 
 The result's \code{vcov_type} attribute records the variance used; for
 \code{contrast = "pairs"} the \code{adjust} attribute records the correction
@@ -115,7 +121,12 @@ for \code{G} units (groups, or observations under \code{vcov_type = "independent
 variance has rank at most \code{G - 1}: it is zero with a single group and
 singular with as many groups as classes. Both cases are refused with
 \code{latents_too_few_groups}; \code{vcov_type = "independent"} gives the
-unclustered variance.
+unclustered variance. For the same reason a class carried by a single
+unit (all its weight in one group, or under \code{vcov_type = "independent"}
+in one observation; Kish's effective number of carrying units below 1.5)
+has no standard error, whichever the method: its standard error, its
+interval and those of the contrasts involving it are \code{NA}, with a
+\code{latents_small_classes} warning.
 
 With \code{method = "ml"} the assigned class is an indicator of the true
 class whose error probabilities are those of step one, and the outcome is
@@ -135,9 +146,8 @@ random draws from a fixed
 internal seed, so the result does not depend on the random seed and the
 caller's \code{.Random.seed} is restored. R's hidden Box-Muller normal cache
 cannot be restored; see \link[base:Random]{base::Random}. The standard errors are the
-sandwich of that likelihood, clustered as for the other methods; a
-class carried by a single unit has none (\code{NA}, with a
-\code{latents_small_classes} warning). Maximum likelihood
+sandwich of that likelihood, clustered as for the other methods, and a
+class carried by a single unit has none, as above. Maximum likelihood
 relies on the normal distribution within classes: when the outcome is
 skewed, or its variance differs between classes while \code{variance = "equal"}, ML can shift the class means, and BCH is the more robust choice
 (Bakk and Vermunt 2016).

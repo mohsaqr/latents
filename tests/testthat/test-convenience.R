@@ -168,7 +168,7 @@ test_that("diagnostics gathers the verbs without changing what they return", {
   expect_identical(get_results(quality, "residuals"),
                    get_results(fit, "residuals"))
   expect_error(get_results(quality, "nonsense"))
-  expect_output(print(quality), "Classification quality")
+  expect_output(print(quality), "^Diagnostics: ")
   expect_invisible(print(quality))
 })
 
@@ -187,7 +187,7 @@ test_that("report prints everything and returns the fit", {
   fit <- .convenience_fit()
   draw({
     expect_identical(quietly(report(fit, plots = FALSE)), fit)
-    expect_output(report(fit, plots = FALSE), "Classification quality")
+    expect_output(report(fit, plots = FALSE), "Diagnostics: ")
     expect_output(report(fit, plots = FALSE), "-- profiles", fixed = TRUE)
     # Drawing the bars computes intervals from the fit's own data, so a loosely
     # converged fit is told so even through a convenience verb. The warning is

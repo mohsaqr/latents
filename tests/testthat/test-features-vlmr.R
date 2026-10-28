@@ -185,8 +185,10 @@ test_that("unavailable comparisons keep their row with the reason", {
   set.seed(5)
   data <- data.frame(u1 = rep(1:2, each = 20), u2 = rep(1:2, each = 20),
                      u3 = sample(1:2, 40, TRUE))
+  # Three classes on three binary items are not identified (Goodman 1974).
   grid <- quietly(enumerate_lca(data, c("u1", "u2", "u3"), n_classes = 1:3, n_starts = 3,
-                                seed = 1))
+                                seed = 1),
+                  classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   table <- get_results(grid, "lmr")
   expect_identical(nrow(table), 2L)
   expect_true(all(is.na(as.matrix(table[vlmr_columns]))))

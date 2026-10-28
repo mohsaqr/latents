@@ -370,7 +370,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
                                                     max_iter = 1000L, tol = 1e-8,
                                                     seed = NULL,
                                                     boundary = c("error", "fix")) {
-  stopifnot(
+  if (!is.null(data)) .latents_check_data_frame(data, substitute(data))
+  .latents_require(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1
@@ -380,7 +381,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   ## coordinates cannot express and nothing to send to the bootstrap. The
   ## argument is accepted so that every method of the generic has the generic's
   ## formals, and refused rather than silently ignored.
-  if (!identical(match.arg(method), "wald")) {
+  if (!identical(.latents_match_formal(method), "wald")) {
     stop(errorCondition(paste(
       "`method = \"bootstrap\"` is not implemented for a covariate fit. Its",
       "covariance structures are the four the Wald coordinates already",
@@ -391,11 +392,11 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   # person-centred or person-scaled fit has sandwich errors only, as the
   # covariate-free fit has (review 2026-10-26 round 2, INF2-2).
   vcov_defaulted <- missing(vcov_type)
-  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), .latents_match_formal(vcov_type),
                                       vcov_defaulted)
   vcov_type <- .multilpa_transformed_vcov(x, vcov_type, vcov_defaulted)
-  adjust <- match.arg(adjust)
-  boundary <- match.arg(boundary)
+  adjust <- .latents_match_formal(adjust)
+  boundary <- .latents_match_formal(boundary)
   covariance <- .multilpa_cov_covariance(x, data, step, vcov_type, boundary)
   held <- if (identical(boundary, "fix")) .multilpa_response_bound(x)$natural else
     character()
@@ -469,7 +470,9 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
         present <- if (name %in% may_be_missing) column[!is.na(column)] else column
         is.numeric(column) && is.null(dim(column)) && all(is.finite(present))
       }, logical(1))) ||
-      (!fiml && anyNA(data[categorical])) ||
+      (!fiml && anyNA(data[
+        (object$sampling_weights %||% rep(1, object$n_groups))[object$group_index] > 0,
+        categorical, drop = FALSE])) ||
       !identical(match(data[[object$id]], object$group_values), object$group_index)) {
     stop(errorCondition(
       "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
@@ -654,13 +657,27 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
                                      vcov_type = c("observed", "robust", "opg"),
                                      scale = c("natural", "unconstrained"),
                                      boundary = c("error", "fix"), ...) {
-  scale <- match.arg(scale)
+  # A covariance asked for under another name fell into `...` and the
+  # observed-information covariance came back without a word (review
+  # 2026-10-27, INF-3), as it once did for the transition fits. A bootstrap
+  # is refused as parameter_inference() refuses it for this family.
+  extra <- list(...)
+  supplied <- names(extra) %||% rep("", length(extra))
+  if ("method" %in% supplied && !identical(extra$method, "wald")) {
+    stop(errorCondition(paste(
+      "`method = \"bootstrap\"` is not implemented for a covariate fit, whose",
+      "covariance is the Wald covariance; choose it with `vcov_type =`."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
+  .latents_warn_unused_arguments(extra[supplied != "method"], "vcov()",
+                                 "Choose the covariance with `vcov_type =`.")
+  scale <- .latents_match_formal(scale)
   vcov_defaulted <- missing(vcov_type)
-  type <- .latents_weighted_vcov(.latents_is_weighted(object), match.arg(vcov_type),
+  type <- .latents_weighted_vcov(.latents_is_weighted(object), .latents_match_formal(vcov_type),
                                  vcov_defaulted)
   covariance <- .multilpa_cov_covariance(
     object, data, step, .multilpa_transformed_vcov(object, type, vcov_defaulted),
-    match.arg(boundary))
+    .latents_match_formal(boundary))
   if (identical(scale, "unconstrained")) {
     ## The kind in the name has to name the scale, or a log variance is served
     ## under a name that says `variance`.
@@ -1018,7 +1035,7 @@ coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained
                                      ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))
-  scale <- match.arg(scale)
+  scale <- .latents_match_formal(scale)
   theta <- .multilpa_cov_encode(object)
   if (identical(scale, "unconstrained")) {
     return(stats::setNames(
@@ -1038,9 +1055,9 @@ coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained
 confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL,
                                         ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
-              inherits(object, "multilpa_covariates"),
-            "`data` must be a data frame when supplied" =
-              is.null(data) || is.data.frame(data))
+              inherits(object, "multilpa_covariates"))
+  if (!is.null(data)) .latents_check_data_frame(data, substitute(data))
+  .multilpa_reject_inference_arguments(list(...), "confint()")
   inference <- parameter_inference(object, data, level = level, ...)
   names_all <- .multilpa_cov_parameter_names(object)
   intervals <- cbind(inference$conf_low, inference$conf_high)

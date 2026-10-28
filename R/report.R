@@ -1,12 +1,50 @@
-#' Classification diagnostics of a fitted model
+#' Diagnostics of a fitted model
 #'
-#' Gathers the four classification tables of [get_results()] (`"entropy"`,
-#' `"classification"`, `"average_posteriors"` and `"residuals"`) for a fitted
-#' model, prints one line per diagnostic, and by default draws the
-#' classification plots. The diagnostics are relative entropy, estimated class
-#' sizes, average posterior probabilities of the assigned classes, and the
-#' bivariate residuals that check the within-profile independence the model
-#' assumes.
+#' Reports what a fitted model's estimation and classification look like, in
+#' five domains. The values are reported, not judged against cut-offs: the
+#' published ones (an average posterior of .70, odds of correct
+#' classification of 5, a smallest class of 5 percent; Nagin, 2005) are rules
+#' of thumb rather than derived criteria, and whether a value is adequate
+#' depends on the study. A status marks only what is a fact about the fit.
+#'
+#' * **Estimation**: whether the best start converged; how many of the
+#'   starts run to the end reached the best log likelihood (a maximum reached
+#'   by one start is not replicated; Masyn, 2013); starts that failed or did
+#'   not finish (screened starts, short by design, are reported apart); and
+#'   estimates at a bound.
+#' * **Class size**, at each level the fit classifies: the smallest class,
+#'   the largest gap between modal and model-estimated class proportions, and
+#'   classes to which no unit is assigned.
+#' * **Classification**: relative entropy (Ramaswamy et al., 1993), which
+#'   describes classification precision and is not a criterion for the number
+#'   of classes (Clark & Muthen, 2009); the lowest average posterior
+#'   probability of the assigned class and the lowest odds of correct
+#'   classification (Nagin, 2005).
+#' * **Local independence**: the indicator pairs whose bivariate residual is
+#'   significant at 0.05 after Benjamini-Hochberg adjustment (Vermunt &
+#'   Magidson, 2005), with the largest.
+#' * **Information**: the log likelihood, number of parameters and BIC, which
+#'   are read against other models with [compare_models()].
+#'
+#' A status is `"fail"` (the estimate is not usable: the best start did not
+#' converge, or a class is estimated from less than one unit), `"check"` (a
+#' fact that needs looking at: starts that failed or did not finish,
+#' estimates at a bound, a class with no assigned unit, dependent indicator
+#' pairs), `"ok"` (that fact does not hold), `"info"` (a value reported
+#' without a verdict) or `"n/a"` (the quantity does not apply, with the
+#' reason). Classification uses the fit's posterior probabilities, eligible
+#' units and sampling weights; no model estimate is changed. Profile, class
+#' and transition fits are reported in
+#' full; the additive, cross-level, mixture-regression and growth families
+#' are reported on what they estimate, and a quantity they cannot support is
+#' `"n/a"`.
+#'
+#' Every family supplies entropy, classification and average-posterior tables
+#' at the levels it classifies, with the start record (`"replication"`).
+#' Group-classified regressions report the group level; hierarchical regression
+#' and growth models report both levels. All-empty transition rows follow the
+#' fitted `drop_empty` policy, and zero-weight units are never classified.
+#' Bivariate residuals are gathered for families that support them.
 #'
 #' @param x A fitted model of this package.
 #' @param data Optional. The data the model was fitted to. A fit carries the
@@ -22,19 +60,42 @@
 #'   tables is set from whether the fit has discrete group classes.
 #' @param ... Not used. For `diagnostics()` and `plot()`, any further argument
 #'   raises `latents_bad_argument`; style the returned plots with ggplot2.
-#' @return An object of class `multilpa_diagnostics`. Its tables are read with
-#'   `get_results(result, what = )`, where `what` is `"entropy"`,
-#'   `"classification"`, `"average_posteriors"`, `"residuals"` or `"all"`. A
+#' @return An object of class `multilpa_diagnostics`. Its checks table,
+#'   `get_results(result, "checks")`, has one row per check: `domain`, `check`, `level`, `value` (numeric), `display` (as
+#'   printed), `criterion`, `status`, `detail` and `reference`. Its other
+#'   tables are read with `get_results(result, what = )`, where `what` is
+#'   `"checks"`, `"entropy"`,
+#'   `"classification"`, `"average_posteriors"`, `"residuals"`,
+#'   `"replication"` or `"all"`. A
 #'   model family without bivariate residuals leaves that table out of
 #'   `"all"`, and asking for it by name raises `latents_no_group_classes`; a
 #'   fit with a noise component has none either, and raises
 #'   `latents_unsupported_noise`.
 #'
-#'   `print()` prints one line per diagnostic (relative entropy, smallest
-#'   class, lowest average posterior and largest residual, at each level the
-#'   fit has) and returns the object invisibly. `plot()` returns the four
+#'   `print()` prints the checks grouped by domain, after a line naming those
+#'   that need attention, and returns the object invisibly. `plot()` returns the four
 #'   classification plots as a `latents_plots` list of ggplot objects, which
-#'   draws all four when printed. `as.data.frame()` returns the entropy table.
+#'   draws all four when printed. `as.data.frame()` returns the entropy table,
+#'   as it did before the checks existed. `summary()` returns the object
+#'   itself, which is already the summary of the fit's classification.
+#' @references
+#' Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
+#' variables not included in the analysis. Unpublished manuscript.
+#'
+#' Masyn, K. E. (2013). Latent class analysis and finite mixture modeling. In
+#' T. D. Little (Ed.), *The Oxford handbook of quantitative methods* (Vol. 2,
+#' pp. 551-611). Oxford University Press.
+#'
+#' Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
+#' University Press.
+#'
+#' Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+#' An empirical pooling approach for estimating marketing mix elasticities
+#' with PIMS data. *Marketing Science*, 12(1), 103-124.
+#' \doi{10.1287/mksc.12.1.103}
+#'
+#' Vermunt, J. K., & Magidson, J. (2005). *Latent GOLD 4.0 user's guide*.
+#' Statistical Innovations.
 #' @seealso [get_results()] for these and the other tables, [descriptives()]
 #'   for the variables before fitting, and [summary()] for the estimates.
 #' @examples
@@ -44,37 +105,75 @@
 #'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
 #'   seed = 1
 #' )
-#' quality <- diagnostics(fit)
+#' quality <- diagnostics(fit, plots = FALSE)
 #' quality
+#' get_results(quality, "checks")
 #' get_results(quality, what = "classification")
 #' get_results(diagnostics(fit, by = "overall"), what = "residuals")
 #' @export
 diagnostics <- function(x, data = NULL, plots = TRUE,
                         by = c("profile", "overall"), ...) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
-            "`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
+  .latents_require_fit(x, substitute(x), .latents_model_classes,
+                       "a fitted model of this package")
+  .latents_require("`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
   .multilpa_reject_extra_arguments(
     list(...), "diagnostics()",
     paste("The only argument of a gathered table it forwards is `by`;",
           "ask get_results() for that table directly for anything else."))
-  by <- match.arg(by)
-  data <- .multilpa_resolve_data(x, data)
-  has_groups <- !is.null(x$group_posteriors)
-  level <- if (has_groups) "both" else "individuals"
-  result <- list(
-    entropy = .multilpa_entropy_table(x),
-    classification = .multilpa_classification_table(x, level = level),
-    average_posteriors = .multilpa_average_posteriors(x, level = level),
+  by <- .latents_match_arg(by, c("profile", "overall"), "by")
+  # A profile, class or transition fit has every classification table; the
+  # other families have their own classification and fit tables, from which
+  # the checks are read, and no bivariate residuals.
+  classified <- .multilpa_any_fit(x)
+  residual_reason <- "not defined for this model family"
+  result <- if (classified) list() else .latents_family_diagnostic_tables(x)
+  if (classified) {
+    data <- .multilpa_resolve_data(x, data)
+    level <- if (.multilpa_has_group_classes(x)) "both" else "individuals"
+    result$entropy <- .multilpa_entropy_table(x)
+    result$classification <- .multilpa_classification_table(x, level = level)
+    result$average_posteriors <- .multilpa_average_posteriors(x, level = level)
     # Residuals need a discrete group-class model and no noise component; a
-    # fit without them has no such table, as `get_results(x, "all")` says, and
-    # the other three diagnostics are still reported.
-    residuals = tryCatch(.multilpa_bivariate_residuals(x, data, by = by),
-                         latents_no_group_classes = function(condition) NULL,
-                         latents_unsupported_noise = function(condition) NULL),
-    fit = x)
+    # fit without them reports the check as not available, with the reason.
+    result$residuals <- tryCatch(
+      .multilpa_bivariate_residuals(x, data, by = by),
+      latents_no_group_classes = function(condition) {
+        residual_reason <<- conditionMessage(condition)
+        NULL
+      },
+      latents_unsupported_noise = function(condition) {
+        residual_reason <<- "not available for a fit with a noise component"
+        NULL
+      })
+  }
+  result$replication <- .multilpa_replication_table(x)
+  result$checks <- .latents_diagnostic_checks(x, result$residuals, residual_reason)
+  result$fit <- x
   class(result) <- "multilpa_diagnostics"
-  if (isTRUE(plots) && .gg_available()) print(plot(result))
+  if (isTRUE(plots) && .gg_available()) {
+    if (classified) {
+      print(plot(result))
+    } else {
+      message("This model family has no classification plots; plot() of the fit draws its own views.")
+    }
+  }
   result
+}
+
+#' Does a fit classify its groups into discrete group classes?
+#'
+#' Every fit of the profile family stores group posteriors, including a
+#' single-level fit (one row per observation) and a fit with one group class
+#' (one column). Neither classifies anything at the group level: the "groups"
+#' row of a classification table was a single class holding every group, with
+#' an average posterior of one by construction (review 2026-10-27). Only a
+#' group posterior with two or more columns is a group classification.
+#' @param x A fitted model of this package.
+#' @return A single logical.
+#' @noRd
+.multilpa_has_group_classes <- function(x) {
+  !isTRUE(x$single_level) && !is.null(x$group_posteriors) &&
+    NCOL(x$group_posteriors) > 1L
 }
 
 #' @rdname diagnostics
@@ -92,17 +191,41 @@ as.data.frame.multilpa_diagnostics <- function(x, row.names = NULL,
   result
 }
 
+#' @noRd
+#' @export
+summary.multilpa_diagnostics <- function(object, ...) {
+  stopifnot("`object` must be a `multilpa_diagnostics` object" =
+              inherits(object, "multilpa_diagnostics"))
+  .multilpa_reject_extra_arguments(list(...), "summary()", .multilpa_summary_advice())
+  # The diagnostics are already the tabular reading of a fit: printing them is
+  # their summary, and get_results() reads their tables. summary.default
+  # listed the internal components, the fit among them, as a Length/Class/Mode
+  # table instead (review 2026-10-27).
+  object
+}
+
 #' @rdname diagnostics
 #' @export
 print.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   fit <- x$fit
+  # A diagnostics object saved before the checks existed prints as it did.
+  if (!is.null(x$checks)) {
+    header <- utils::capture.output(print(fit))
+    header <- header[nzchar(trimws(header))]
+    cat(sprintf("Diagnostics: %s\n", sub(":", ",", trimws(header[[1L]]), fixed = TRUE)))
+    .latents_print_checks(x$checks)
+    cat("\nEvery check with its reference: get_results(x, \"checks\"). Other tables: get_results(x, what = ).\n")
+    return(invisible(x))
+  }
   cat(sprintf("Classification quality: %d profile%s", fit$n_profiles,
               if (identical(as.integer(fit$n_profiles), 1L)) "" else "s"))
   one_group_class <- is.null(fit$n_group_classes) ||
     identical(as.integer(fit$n_group_classes), 1L)
   if (!one_group_class) cat(sprintf(", %d group classes", fit$n_group_classes))
   cat("\n\n")
+  cat(sprintf("  %-20s %s\n", "Best likelihood",
+              .multilpa_replication_phrase(fit, subject = "")))
   # `split()` orders alphabetically, which would print groups before
   # individuals on one line and after it on the next. The reporting order is
   # fixed once here so every line reads the same way.
@@ -130,7 +253,15 @@ print.multilpa_diagnostics <- function(x, ...) {
   averages <- x$average_posteriors
   assigned <- averages[averages$assigned_class == averages$class, , drop = FALSE]
   line("Lowest avg posterior", per_level(assigned, function(rows, level) {
-    sprintf("%s %.3f", level, min(rows$average_posterior))
+    # A class to which no unit is assigned has no average posterior; the
+    # minimum is over the classes that have members, and the empty ones are
+    # named rather than turning the whole level into NA.
+    empty <- rows$class[is.na(rows$average_posterior)]
+    if (length(empty) == nrow(rows)) return(sprintf("%s none assigned", level))
+    lowest <- sprintf("%s %.3f", level, min(rows$average_posterior, na.rm = TRUE))
+    if (length(empty) == 0L) return(lowest)
+    sprintf("%s (class %s: no %s assigned)", lowest, paste(empty, collapse = ", "),
+            if (identical(level, "groups")) "group" else "unit")
   }))
   if (is.null(x$residuals)) {
     line("Largest residual",
@@ -143,9 +274,87 @@ print.multilpa_diagnostics <- function(x, ...) {
                  worst$indicator_2, worst$profile))
   }
   cat("\nTables: get_results(x, what = \"entropy\" | \"classification\" |",
-      "\n        \"average_posteriors\" | \"residuals\" | \"all\").",
+      "\n        \"average_posteriors\" | \"residuals\" | \"replication\" | \"all\").",
       "plot(x) draws them.\n")
   invisible(x)
+}
+
+#' How often the starts reached the best log likelihood
+#'
+#' A start counts when it ran to the end and its log likelihood is within
+#' `replication_tolerance` of the best (the rule of the fit's own count). A
+#' best solution reached by one start of several is a warning sign: the
+#' likelihood may have higher maxima no start found.
+#' @param x A fitted model.
+#' @return A one-row data frame: `n_starts` (run to the end), `n_converged`,
+#'   `n_failed` (no log likelihood), `n_best_replicated`, `share`, `tolerance`,
+#'   `best_start`, `log_likelihood`.
+#' @noRd
+.multilpa_replication_table <- function(x) {
+  n_starts <- x$n_starts %||% (if (is.null(x$starts)) NA_integer_ else nrow(x$starts))
+  replicated <- x$n_best_replicated %||% NA_integer_
+  starts <- x$starts
+  counted <- is.data.frame(starts) && all(c("log_likelihood", "converged") %in% names(starts))
+  n_screened <- 0L
+  if (counted && "stage" %in% names(starts)) {
+    # A family that screens starts (short runs that choose which to finish)
+    # records them beside the finished ones; only a finished start can have
+    # converged, failed or reached the best, so only those are counted.
+    # Stages differ by family ("completed", "final", "full", "failed"); only
+    # "screened" marks a short probe that was never meant to finish.
+    finished <- !starts$stage %in% "screened"
+    n_screened <- sum(!finished)
+    starts <- starts[finished, , drop = FALSE]
+    n_starts <- nrow(starts)
+  }
+  n_failed <- if (counted) {
+    sum(!is.finite(starts$log_likelihood) |
+          (if ("stage" %in% names(starts)) starts$stage %in% "failed" else FALSE))
+  } else NA_integer_
+  n_converged <- if (counted) {
+    sum(is.finite(starts$log_likelihood) & starts$converged %in% TRUE &
+          (if ("stage" %in% names(starts)) !starts$stage %in% "failed" else TRUE))
+  } else NA_integer_
+  # The finished starts are counted from the start record itself, so the
+  # counts never exceed the total.
+  if (counted) n_starts <- nrow(starts)
+  data.frame(n_starts = as.integer(n_starts), n_screened = as.integer(n_screened),
+             n_converged = as.integer(n_converged),
+             n_failed = as.integer(n_failed), n_best_replicated = as.integer(replicated),
+             share = if (isTRUE(n_starts > 0)) replicated / n_starts else NA_real_,
+             tolerance = x$replication_tolerance %||% NA_real_,
+             best_start = as.integer(x$best_start %||% NA_integer_),
+             log_likelihood = x$log_likelihood)
+}
+
+#' The replication count as a phrase for printed output
+#' @param x A fitted model.
+#' @return One string.
+#' @noRd
+.multilpa_replication_phrase <- function(x, subject = "best log likelihood ") {
+  table <- .multilpa_replication_table(x)
+  if (is.na(table$n_best_replicated) || is.na(table$n_starts)) {
+    return(sprintf("best start: %s", format(table$best_start)))
+  }
+  phrase <- sprintf("%sreached by %d of %d starts", subject, table$n_best_replicated,
+                    table$n_starts)
+  notes <- character()
+  if (!is.na(table$n_converged) && table$n_starts > 1L) {
+    unconverged <- table$n_starts - table$n_converged - table$n_failed
+    notes <- c(notes, sprintf("%d converged", table$n_converged),
+               if (unconverged > 0L) sprintf("%d stopped at max_iter", unconverged),
+               if (table$n_failed > 0L) sprintf("%d failed", table$n_failed))
+  }
+  if (identical(x$search, "emEM") && !is.null(x$n_screen)) {
+    notes <- c(notes, sprintf("emEM: %d screened", as.integer(x$n_screen)))
+  } else if (isTRUE(table$n_screened > 0L)) {
+    notes <- c(notes, sprintf("%d more screened", table$n_screened))
+  }
+  if (table$n_best_replicated == 1L && table$n_starts > 1L) {
+    notes <- c(notes, "found once: refit with more starts to confirm it")
+  }
+  if (length(notes) > 0L) phrase <- sprintf("%s (%s)", phrase, paste(notes, collapse = "; "))
+  phrase
 }
 
 #' Refuse arguments a forwarding verb cannot pass on
@@ -232,7 +441,12 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' the classification diagnostics, then draws every plot view the fit
 #' supports.
 #'
-#' @param x A fitted model of this package.
+#' @param x A profile, class or transition fit: from [lpa()], [lca()],
+#'   [multilpa()] or [multilca()] (with or without membership covariates), or
+#'   from [lta()] with time-homogeneous transitions. A fit of another family
+#'   (a mixture regression, growth mixture, general transition, additive or
+#'   cross-level model) raises `latents_not_a_fit`; its own `summary()`,
+#'   [diagnostics()] and `plot()` report it.
 #' @param data Optional. The data the model was fitted to; a fit carries the
 #'   columns it was built from.
 #' @param plots `TRUE` (the default) draws the plots. `FALSE` prints only.
@@ -263,14 +477,16 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' @export
 report <- function(x, data = NULL, plots = TRUE,
                    by = c("profile", "overall"), rows = 10L, ...) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
-            "`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
+  .latents_require_fit(x, substitute(x), hint = paste(
+    "report() reads the profile, class and transition tables; summary(),",
+    "diagnostics() and plot() of the fit report this family."))
+  .latents_require("`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
   # Checked here as well as in diagnostics(), so a refused argument is refused
   # before three sections have already been printed.
   .multilpa_reject_extra_arguments(
     list(...), "report()",
     "It forwards `by` to diagnostics() and `rows` to print(summary(x)).")
-  by <- match.arg(by)
+  by <- .latents_match_arg(by, c("profile", "overall"), "by")
   data <- .multilpa_resolve_data(x, data)
   print(summary(x), rows = rows)
   cat("\n")
@@ -335,8 +551,7 @@ report <- function(x, data = NULL, plots = TRUE,
     if (identical(view, "profiles") &&
         length(.multilpa_continuous_names(x)) == 0L &&
         length(x$response_probabilities) > 0L) {
-      return(tryCatch({ .gg_category_scores(x$response_probabilities); TRUE },
-                      latents_bad_argument = function(e) FALSE))
+      return(.multilpa_scored_profiles(x))
     }
     # The heatmap draws the response probabilities when there are no means.
     if (identical(view, "heatmap") && length(x$response_probabilities) > 0L) {

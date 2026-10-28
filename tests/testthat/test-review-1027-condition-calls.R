@@ -54,7 +54,9 @@ test_that("the arguments of a call are bound to symbols, evaluated once in the c
 
 test_that("every fitting verb refuses a non data frame with a small classed error", {
   data <- condition_data()
-  grid <- lca(data, c("a", "b"), n_classes = 2, n_starts = 1, seed = 1)
+  # Any fit serves as the wrong `data`; this one is not identified (CORE-5).
+  expect_warning(grid <- lca(data, c("a", "b"), n_classes = 2, n_starts = 1, seed = 1),
+                 class = "latents_unidentified")
   attempts <- list(
     multilpa = function() multilpa(grid, vars = "y", id = "id", n_profiles = 2),
     multilca = function() multilca(grid, vars = c("a", "b"), id = "id", n_profiles = 2,

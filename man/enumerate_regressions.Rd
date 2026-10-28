@@ -21,13 +21,7 @@ enumerate_regressions(
 
 \method{as.data.frame}{latents_regression_enumeration}(x, row.names = NULL, optional = FALSE, ...)
 
-\method{get_results}{latents_regression_enumeration}(
-  x,
-  what = c("fit", "model", "tree"),
-  n_classes = NULL,
-  n_group_classes = 1L,
-  ...
-)
+\method{get_results}{latents_regression_enumeration}(x, what = "fit", n_classes = NULL, n_group_classes = 1L, ...)
 
 \method{summary}{latents_regression_enumeration}(object, ...)
 
@@ -62,8 +56,10 @@ in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
 
 \item{row.names, optional}{Not used; part of the generic.}
 
-\item{what}{\code{"fit"} for the comparison table, \code{"model"} for one fitted
-model.}
+\item{what}{\code{"fit"} (the default) for the comparison table, \code{"model"} for
+one fitted model, \code{"tree"} for the class tree, or \code{"all"} for the named
+list of the two tables (\code{fit} and \code{tree}). Any other name raises
+\code{latents_bad_argument}.}
 
 \item{object}{A \code{latents_regression_enumeration} object.}
 
@@ -117,10 +113,13 @@ large invalid share is worth reporting with the result.
 \section{Conditions}{
 
 A model whose fit raises \code{latents_no_valid_start} or \code{latents_bad_data}
-at some count gets a row of \code{NA} with the condition message in \code{note};
-other errors stop the enumeration. Invalid \code{n_classes},
-\code{n_group_classes}, \code{bootstrap} or \code{bootstrap_starts} fail the argument
-checks. \code{latents_bad_argument} for an invalid \code{seed}, for \code{n_classes},
+at some count gets a row of \code{NA} with the condition message in \code{note}
+(and \code{print()} says how many); when every model fails with the same
+\code{latents_bad_data} error (a column that does not exist), that error is
+raised instead. Other errors stop the enumeration.
+\code{latents_bad_argument} for invalid \code{n_classes}, \code{n_group_classes},
+\code{bootstrap} or \code{bootstrap_starts}, for an invalid \code{seed}, for an argument
+in \code{...} that \code{\link[=mixture_regression]{mixture_regression()}} does not have, for \code{n_classes},
 \code{n_group_classes} or \code{vcov_type} passed through \code{...}, for a bootstrap
 test whose outcome is not a plain column name, and from \code{get_results()}
 for a model that is not in the grid or could not be fitted.

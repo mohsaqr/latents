@@ -2,6 +2,7 @@
 % Please edit documentation in R/tna.R
 \name{get_group_tna}
 \alias{get_group_tna}
+\alias{get_group_tna.default}
 \alias{get_group_tna.multilpa_transitions}
 \alias{get_group_tna.multilpa_lta}
 \alias{get_group_tna.multilpa}
@@ -9,6 +10,8 @@
 \title{Build one transition network per latent group class}
 \usage{
 get_group_tna(x, ...)
+
+\method{get_group_tna}{default}(x, ...)
 
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
 

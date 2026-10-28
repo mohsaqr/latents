@@ -76,6 +76,13 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 
 #' Model-implied probabilities averaged over the groups observed at each
 #' occasion (transitions) or over groups (initial distribution)
+#'
+#' A move no unit of positive weight makes (an occasion reached only by units
+#' of weight zero) is absent from the likelihood, so it is left out of the
+#' table, as it would be had those units not been supplied (TRANS-4).
+#' `estimated` is `FALSE` for a row that rests on a logit the likelihood does
+#' not identify (`.lta_identified_coordinates()`): the move into an empty
+#' occasion, or out of an empty origin.
 #' @noRd
 .lta_probability_table <- function(fit, what) {
   parameters <- .lta_parameters(fit)
@@ -97,6 +104,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     length(fit$transition_covariates) > 0L
   transition_occasions <- if ((fit$order %||% 1L) >= 2L) 1L else
     seq_along(fit$designs$transition)
+  weights <- .lta_occasion_weights(fit, transition_occasions, unit_weights)
+  transition_occasions <- transition_occasions[weights > 0]
+  weights <- weights[weights > 0]
+  identified <- stats::setNames(.lta_identified_coordinates(fit), .lta_names(fit))
   rows <- lapply(seq_len(fit$n_group_classes), function(h) {
     per_occasion <- lapply(transition_occasions, function(t) {
       active <- fit$layout$within[, t + 1L]
@@ -107,17 +118,22 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                                        dim(parameters$transition)[1:3]))
       .lta_group_mean(exp(log_p), unit_weights[active])
     })
-    weights <- vapply(transition_occasions, function(t) {
-      sum((unit_weights %||% 1) * fit$layout$within[, t + 1L])
-    }, numeric(1))
-    if (!by_occasion) per_occasion <- list(Reduce(`+`, Map(`*`, per_occasion, weights)) /
-                                             sum(weights))
+    terms <- lapply(transition_occasions, function(t) .lta_terms_used(fit, t, unit_weights))
+    if (!by_occasion) {
+      per_occasion <- list(Reduce(`+`, Map(`*`, per_occasion, weights)) / sum(weights))
+      terms <- list(unique(unlist(terms)))
+    }
     do.call(rbind, lapply(seq_along(per_occasion), function(t) {
       cells <- expand.grid(from = seq_len(n_states), to = seq_len(n_states))
+      estimated <- vapply(seq_len(n_states), function(k) {
+        .lta_logits_identified(identified, "transition", classes[h], profiles[k],
+                               profiles[-k], terms[[t]])
+      }, logical(1))
       data.frame(group_class = classes[h],
-                 occasion = if (by_occasion) t + 1L else NA_integer_,
+                 occasion = if (by_occasion) transition_occasions[t] + 1L else NA_integer_,
                  from = profiles[cells$from], to = profiles[cells$to],
                  probability = per_occasion[[t]][cbind(cells$from, cells$to)],
+                 estimated = estimated[cells$from],
                  stringsAsFactors = FALSE)
     }))
   })
@@ -135,11 +151,14 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   n_states <- fit$n_profiles
   profiles <- paste0("profile_", seq_len(n_states))
   classes <- names(fit$group_probabilities)
+  occasions <- seq_along(fit$designs$transition)[-1L]
+  weights <- .lta_occasion_weights(fit, occasions, unit_weights)
+  occasions <- occasions[weights > 0]
+  weights <- weights[weights > 0]
+  identified <- stats::setNames(.lta_identified_coordinates(fit), .lta_names(fit))
+  terms <- unique(unlist(lapply(occasions, .lta_terms_used, fit = fit,
+                                unit_weights = unit_weights)))
   do.call(rbind, lapply(seq_len(fit$n_group_classes), function(h) {
-    occasions <- seq_along(fit$designs$transition)[-1L]
-    weights <- vapply(occasions, function(t) {
-      sum((unit_weights %||% 1) * fit$layout$within[, t + 1L])
-    }, numeric(1))
     averaged <- Reduce(`+`, Map(function(t, w) {
       active <- fit$layout$within[, t + 1L]
       log_p <- if (isTRUE(parameters$stayer[h])) {
@@ -150,13 +169,69 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
       .lta_group_mean(exp(log_p), unit_weights[active]) * w
     }, occasions, weights)) / sum(weights)
     cells <- expand.grid(to = seq_len(n_states), pair = seq_len(n_states^2))
+    previous <- (cells$pair - 1L) %/% n_states + 1L
+    from <- (cells$pair - 1L) %% n_states + 1L
+    estimated <- vapply(seq_len(n_states^2), function(pair) {
+      i <- (pair - 1L) %/% n_states + 1L
+      j <- (pair - 1L) %% n_states + 1L
+      .lta_logits_identified(identified, "transition2", classes[h],
+                             paste0(profiles[i], "->", profiles[j]), profiles[-j], terms)
+    }, logical(1))
     data.frame(group_class = classes[h],
-               previous = profiles[(cells$pair - 1L) %/% n_states + 1L],
-               from = profiles[(cells$pair - 1L) %% n_states + 1L],
+               previous = profiles[previous],
+               from = profiles[from],
                to = profiles[cells$to],
                probability = averaged[cbind(cells$pair, cells$to)],
+               estimated = estimated[cells$pair],
                stringsAsFactors = FALSE)
   }))
+}
+
+#' Weight of the moves into each occasion
+#'
+#' The groups whose span covers the move, summed with their sampling weights
+#' (counted once each when unweighted). A move only units of weight zero make
+#' weighs nothing and is absent from the likelihood.
+#' @param fit A `multilpa_lta` fit.
+#' @param occasions Indices into `fit$designs$transition` (the move into
+#'   occasion `t + 1`).
+#' @param unit_weights Sampling weight of each group, or `NULL`.
+#' @return One number per occasion.
+#' @noRd
+.lta_occasion_weights <- function(fit, occasions, unit_weights) {
+  vapply(occasions, function(t) {
+    sum((unit_weights %||% 1) * fit$layout$within[, t + 1L])
+  }, numeric(1))
+}
+
+#' Transition design terms that a move into an occasion reads
+#' @param fit A `multilpa_lta` fit.
+#' @param t Index into `fit$designs$transition`.
+#' @param unit_weights Sampling weight of each group, or `NULL`.
+#' @return The names of the design columns not zero on every group whose span
+#'   covers the move (and that has positive weight).
+#' @noRd
+.lta_terms_used <- function(fit, t, unit_weights) {
+  positive <- if (is.null(unit_weights)) TRUE else unit_weights > 0
+  active <- fit$layout$within[, t + 1L] & positive
+  design <- fit$designs$transition[[t]][active, , drop = FALSE]
+  colnames(design)[colSums(abs(design)) > 0]
+}
+
+#' Are the logits behind one origin's row of probabilities identified?
+#' @param identified Named logical, from `.lta_identified_coordinates()`.
+#' @param kind `"transition"` or `"transition2"`.
+#' @param class_label,origin_label The group class and origin as named.
+#' @param destinations The destination profiles other than staying.
+#' @param terms The design terms the row reads.
+#' @return A single logical: `TRUE` when every such logit is identified (and
+#'   for a stayer class, which has none).
+#' @noRd
+.lta_logits_identified <- function(identified, kind, class_label, origin_label,
+                                   destinations, terms) {
+  wanted <- as.vector(outer(sprintf("%s.%s.%s->%s.", kind, class_label, origin_label,
+                                    destinations), terms, paste0))
+  all(identified[intersect(wanted, names(identified))])
 }
 
 #' Average a groups-first array over its groups
@@ -201,6 +276,67 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   }))
 }
 
+#' The fit as the shared assignment and alignment helpers read it
+#'
+#' `.multilpa_model_frame()`, `.multilpa_check_alignment()` and
+#' `.multilpa_recovery_frame()` read a fit's identifiers, occasions, stored
+#' indicators (with their centring) and group classes under the names the
+#' profile and homogeneous transition fits use; this gives them those fields,
+#' so the general fit's assignments follow the one documented layout.
+#' @param fit A `multilpa_lta` fit.
+#' @return A list of those fields.
+#' @noRd
+.lta_assignment_view <- function(fit) {
+  continuous <- length(fit$continuous) > 0L
+  list(id = fit$id, group_values = fit$group_values %||% fit$group_ids,
+       group_index = fit$group_index, time = fit$time, time_values = fit$time_values,
+       weights = fit$weights, sampling_weights = fit$sampling_weights,
+       vars = fit$vars, n_observations = fit$n_observations,
+       indicator_data = if (continuous) fit$x else NULL,
+       centering_offsets = if (continuous)
+         matrix(fit$centers, 1L, dimnames = list(NULL, colnames(fit$x))) else NULL,
+       categorical_data = fit$codes, categorical_levels = fit$categorical_levels,
+       extra_data = fit$extra_data, ordinal = fit$ordinal, count = fit$count,
+       group_classes = max.col(fit$group_posteriors, ties.method = "first"))
+}
+
+#' One row per observation with its assigned profile and group class
+#'
+#' The layout of `get_results(fit, "assignments")` for every fit: the data
+#' columns, `profile`, `group_class`, `uncertainty` and one
+#' `posterior_profile_*` column per profile; with `truth`, the recovery table.
+#' @param fit A `multilpa_lta` fit.
+#' @param data The fitting data (with any further columns), or `NULL` for the
+#'   columns the fit carries.
+#' @param truth Column names of `data` holding known labels, or `NULL`.
+#' @return A base `data.frame`.
+#' @noRd
+.lta_assignments <- function(fit, data = NULL, truth = NULL) {
+  view <- .lta_assignment_view(fit)
+  frame <- if (is.null(data)) .multilpa_model_frame(view) else {
+    .latents_require("`data` must be a data frame" = is.data.frame(data))
+    data
+  }
+  .multilpa_check_row_count(view, frame)
+  .multilpa_check_alignment(view, frame)
+  posteriors <- as.data.frame(unname(fit$subject_posteriors))
+  names(posteriors) <- sprintf("posterior_profile_%d", seq_len(fit$n_profiles))
+  added <- data.frame(profile = max.col(fit$subject_posteriors, ties.method = "first"),
+                      group_class = view$group_classes[fit$group_index],
+                      uncertainty = pmax(1 - apply(fit$subject_posteriors, 1L, max), 0))
+  clashes <- intersect(names(frame), c(names(added), names(posteriors)))
+  if (length(clashes) > 0L) {
+    stop(errorCondition(sprintf(
+      "`data` already has a column named %s, which the assignments would overwrite.",
+      paste(sprintf("`%s`", clashes), collapse = ", ")),
+      class = "latents_bad_data", call = NULL))
+  }
+  result <- cbind(frame, added, posteriors)
+  row.names(result) <- NULL
+  if (is.null(truth)) return(result)
+  .multilpa_recovery_frame(result, truth, view)
+}
+
 #' Build one table of a general transition fit
 #' @noRd
 .lta_table <- function(fit, what, level = 0.95, vcov_type = "observed") {
@@ -236,17 +372,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                                     ((fit$sampling_weights %||% rep(1, nrow(fit$group_posteriors)))[
                                       .multilpa_informative_groups(fit)]))),
                                stringsAsFactors = FALSE),
-    assignments = {
-      profile <- max.col(fit$subject_posteriors, ties.method = "first")
-      group_class <- max.col(fit$group_posteriors, ties.method = "first")
-      cbind(data.frame(row = seq_len(fit$n_observations)),
-            stats::setNames(data.frame(fit$group_ids[fit$group_index],
-                                       stringsAsFactors = FALSE), fit$id),
-            data.frame(occasion = fit$occasion_of_row, profile = profiles[profile],
-                       posterior = fit$subject_posteriors[cbind(seq_along(profile), profile)],
-                       group_class = classes[group_class[fit$group_index]],
-                       stringsAsFactors = FALSE))
-    },
+    assignments = .lta_assignments(fit),
     fit = data.frame(n_profiles = fit$n_profiles, n_group_classes = fit$n_group_classes,
                      transitions = fit$transitions,
                      transition_covariates = paste(fit$transition_covariates, collapse = ", "),
@@ -264,22 +390,26 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 #' @export
 get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
                                      vcov_type = c("observed", "robust", "opg"), ...) {
-  stopifnot("`level` must be a single finite number in (0, 1)" =
+  .latents_require("`level` must be a single finite number in (0, 1)" =
     is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
-  what <- match.arg(what, c(.lta_tables(x), "all"))
-  # No table of this fit takes a further argument. A released call that passed
-  # one (`estimated = FALSE`, say) still gets its table, but is told the
-  # argument changed nothing rather than left to read the table as filtered.
-  .latents_warn_unused_arguments(
-    list(...), "get_results()",
-    "The tables of a general transition fit take only `what`, `level` and `vcov_type`.")
-  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
-                                      missing(vcov_type))
+  # The one exact matcher of every family: an unknown name is a classed
+  # refusal listing the tables, not match.arg()'s unclassed error (TRANS-5).
+  what <- .multilpa_match_table(what, .lta_tables(x))
+  # `assignments` alone takes further arguments; any other is refused, as the
+  # profile families refuse it, rather than dropped (API-4).
+  extra <- list(...)
+  .multilpa_check_table_arguments(what, if (identical(what, "assignments"))
+    c("data", "truth") else character(), extra)
+  vcov_type <- .latents_weighted_vcov(
+    .latents_is_weighted(x),
+    .latents_match_arg(vcov_type, c("observed", "robust", "opg"), "vcov_type"),
+    missing(vcov_type))
   if (identical(what, "all")) {
     return(stats::setNames(lapply(.lta_tables(x), function(name) {
       .lta_table(x, name, level, vcov_type)
     }), .lta_tables(x)))
   }
+  if (identical(what, "assignments")) return(do.call(.lta_assignments, c(list(x), extra)))
   .lta_table(x, what, level, vcov_type)
 }
 
@@ -319,11 +449,76 @@ print.multilpa_lta <- function(x, ...) {
   invisible(x)
 }
 
-#' @noRd
+#' Summary of a general transition fit
+#'
+#' Every table the fit offers, built once, under a class whose print shows
+#' them section by section and whose `get_results()` serves them back, as the
+#' other fits' summaries do (API-6).
 #' @param object A `multilpa_lta` fit.
+#' @param ... `level` and `vcov_type`, for the coefficient tables; anything
+#'   else raises `latents_bad_argument`.
+#' @return A `summary_multilpa_lta` object.
+#' @noRd
 #' @export
 summary.multilpa_lta <- function(object, ...) {
-  get_results.multilpa_lta(object, "all")
+  extra <- list(...)
+  supplied <- names(extra) %||% rep("", length(extra))
+  .multilpa_reject_extra_arguments(
+    extra[is.na(match(supplied, c("level", "vcov_type")))], "summary()",
+    "A transition fit's summary takes `level` and `vcov_type`.")
+  structure(list(
+    n_profiles = object$n_profiles, n_group_classes = object$n_group_classes,
+    n_groups = object$n_groups, n_observations = object$n_observations,
+    n_occasions = object$n_occasions, n_parameters = object$n_parameters,
+    log_likelihood = object$log_likelihood, aic = object$aic, bic = object$bic,
+    bic_individual = object$bic_individual, converged = object$converged,
+    boundary = object$boundary,
+    empty_transition_rows = any(object$empty_transition_rows) ||
+      any(object$empty_second_order_rows),
+    tables = do.call(get_results.multilpa_lta, c(list(object, "all"), extra))),
+    class = "summary_multilpa_lta")
+}
+
+#' @noRd
+#' @export
+print.summary_multilpa_lta <- function(x, digits = 4L, rows = 10L, ...) {
+  .latents_require("`x` must be a `summary_multilpa_lta` object" =
+                     inherits(x, "summary_multilpa_lta"))
+  .multilpa_check_print_arguments(digits, rows)
+  cat(sprintf("Latent transition model: %d profiles and %d group %s\n",
+              x$n_profiles, x$n_group_classes,
+              if (x$n_group_classes == 1L) "class" else "classes"))
+  cat(sprintf("Observations: %d; groups: %d; up to %d occasions\n",
+              x$n_observations, x$n_groups, x$n_occasions))
+  cat(sprintf("Parameters: %d; converged: %s\n", x$n_parameters, x$converged))
+  cat(sprintf("Log likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
+              x$log_likelihood, x$aic, x$bic, x$bic_individual))
+  if (!isTRUE(x$converged)) cat("WARNING: best start did not converge.\n")
+  if (isTRUE(x$boundary)) cat("WARNING: the fit is at a boundary.\n")
+  if (isTRUE(x$empty_transition_rows)) {
+    cat("WARNING: a transition origin is never left; its logits are not estimated.\n")
+  }
+  .multilpa_print_tables(x$tables, rows = rows, digits = digits)
+  .multilpa_print_table_footer(x$tables)
+  invisible(x)
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_lta <- function(x, what = NULL, ...) {
+  # The summary serves the tables it was built with, so get_results() on it
+  # and on the fit are the same table.
+  what <- .multilpa_match_table(what, names(x$tables))
+  .multilpa_check_table_arguments(what, character(), list(...))
+  if (identical(what, "all")) return(x$tables)
+  x$tables[[what]]
+}
+
+#' @noRd
+#' @param row.names,optional Unused; part of the generic.
+#' @export
+as.data.frame.summary_multilpa_lta <- function(x, row.names = NULL, optional = FALSE, ...) {
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' @noRd
@@ -343,7 +538,7 @@ vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...
   .latents_warn_unused_arguments(list(...), "vcov()",
                                  "Choose the covariance with `type =`.")
   .lta_inference(object, .latents_weighted_vcov(.latents_is_weighted(object),
-                                                match.arg(type), missing(type)))$vcov
+                                                .latents_match_formal(type), missing(type)))$vcov
 }
 
 #' @noRd
@@ -387,19 +582,19 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              max_iter = 5000L, tol = 1e-10,
                                              seed = NULL,
                                              boundary = c("error", "fix")) {
-  stopifnot("`level` must be a single finite number in (0, 1)" =
+  .latents_require("`level` must be a single finite number in (0, 1)" =
     is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
   # Transition inference holds nothing at a bound, and a fit with an active
   # bound is refused (`latents_boundary_fit`) either way; so "fix" and "error"
   # agree wherever a table is returned.
-  match.arg(boundary)
-  adjust <- match.arg(adjust)
-  if (identical(match.arg(method), "bootstrap")) {
+  .latents_match_formal(boundary)
+  adjust <- .latents_match_formal(adjust)
+  if (identical(.latents_match_formal(method), "bootstrap")) {
     return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
                                    seed, adjust))
   }
   if (!is.null(data)) .lta_check_data(x, data)
-  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), .latents_match_formal(vcov_type),
                                       missing(vcov_type))
   inference <- .lta_inference(x, vcov_type, step)
   table <- rbind(

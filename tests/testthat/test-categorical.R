@@ -148,7 +148,7 @@ test_that("categorical indicators support observed-data maximum likelihood", {
   incomplete$v4[sample(nrow(dat), 40L)] <- NA
   expect_error(multilpa(incomplete, vars, "school", 2, 2,
                           categorical = vars, n_starts = 1, seed = 1),
-               "missing or non-finite")
+               "`v1` and `v4` have missing values", class = "latents_bad_data")
   fit <- multilpa(incomplete, vars, "school", 2, 2,
                     categorical = vars, missing = "fiml",
                     n_starts = 1, seed = 1)

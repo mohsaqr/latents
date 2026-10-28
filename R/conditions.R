@@ -12,11 +12,24 @@
 #'     name, an indicator that is not a numeric vector, an indicator that is
 #'     constant or entirely unobserved, missing or non-finite values under
 #'     `missing = "error"`, or a missing group identifier.}
+#'   \item{`latents_unweightable_level`}{[diagnostics()] of a weighted fit
+#'     whose level cannot be weighted (a cross-level fit stores its weights per
+#'     group and no map from rows to groups). It is caught inside
+#'     `diagnostics()`, which reports that level's checks as `n/a`.}
+#'   \item{`latents_not_a_fit`}{A verb that works on a fitted model received
+#'     something else (a data frame, an enumeration, a vector), or a fitted
+#'     model of a family the verb does not take; the message says what it
+#'     received. It is also a `latents_bad_argument`.}
 #'   \item{`latents_bad_argument`}{An argument has an invalid value: a scalar
 #'     such as `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`
 #'     or `min_variance`; a `seed` or `seeds` that is not a whole number
 #'     accepted by `set.seed()`; a `what` naming a table or view the object
-#'     does not have; or an argument the verb or table does not use.}
+#'     does not have, or a `what` that is `NA`, not text or more than one
+#'     name; an enumerated option such as `missing`, `boundary`,
+#'     `select_start`, `acceleration`, `centering`, `scaling`,
+#'     `variance_model`, `covariance_model`, `vcov_type` or `adjust` given a
+#'     value that is not one of its choices; or an argument the verb or table
+#'     does not use.}
 #'   \item{`latents_bad_time`}{`time` is missing, or repeats a position within
 #'     a group.}
 #'   \item{`latents_bad_categorical`}{A categorical indicator cannot be
@@ -47,7 +60,11 @@
 #'   \item{`latents_unidentified`}{The requested model is not identified from
 #'     the data: more profiles than distinct observed indicator rows, more
 #'     group classes than groups, or more than one group class with only one
-#'     profile or only singleton groups.}
+#'     profile or only singleton groups. Raised as a warning, and the fit
+#'     returned, for a model of complete categorical and ordinal indicators
+#'     with one group class that has more free parameters than free cells of
+#'     its table (negative degrees of freedom); a model with membership
+#'     covariates is not judged by that count.}
 #'   \item{`latents_all_starts_failed`}{Every EM start failed, so no fit was
 #'     produced. The message gives the distinct start errors.}
 #'   \item{`latents_empty_profile`}{A profile has no observed responses for an
@@ -198,9 +215,15 @@
 #'     on a directly fixed fit whose original free starts cannot be
 #'     replayed.}
 #'   \item{`latents_unsupported_three_step`}{[three_step()] or [r3step()] was
-#'     called on a membership-covariate fit, whose classification errors
-#'     depend on the predictors; the correction uses one unconditional error
-#'     matrix.}
+#'     called on a fit the correction does not cover: a membership-covariate
+#'     fit, whose classification errors depend on the predictors (the
+#'     correction uses one unconditional error matrix); a multilevel growth
+#'     mixture; a general [lta()] fit (occasion-varying, second-order or
+#'     covariate transitions, occasion-specific measurement, a stayer class,
+#'     or ordinal or count indicators), except that [r3step()] takes
+#'     `initial_covariates` and `transition_covariates` for a covariate-free
+#'     one; an additive, dispersion or cross-level [multilpa()] fit; or a
+#'     mixture regression with observation classes.}
 #'   \item{`latents_unsupported_bootstrap`}{[bootstrap_lrt()] was called on a
 #'     person-centred fit, for which raw data cannot be simulated under the
 #'     null model because the group baselines were removed before
@@ -302,9 +325,10 @@
 #'     share of rows in such groups. When every group is like that, the fit is
 #'     refused with `latents_bad_data` instead.}
 #'   \item{`latents_small_classes`}{A profile or group class has an effective
-#'     membership below one observation; or, in [three_step()] with `method =
-#'     "ml"`, a class is carried by a single unit, so its standard error is
-#'     reported as `NA`.}
+#'     membership below one observation; or, in [three_step()] with any
+#'     `method`, a class is carried by a single unit (fewer than 1.5 effective
+#'     carrying units, by Kish's formula), so its standard error is reported
+#'     as `NA`.}
 #'   \item{`latents_thin_profiles`}{A Gaussian component with free variances
 #'     of its own has posterior membership mass below the number of free
 #'     parameters in its Gaussian density. This is a heuristic prompt to
@@ -347,8 +371,12 @@
 #'   \item{`latents_empty_transition_row`}{A profile is never occupied before
 #'     a final occasion, so its transition row is uniform by construction
 #'     rather than estimated; `get_results(fit, "transitions", estimated =
-#'     FALSE)` lists such rows. The transition-network handoff also warns when
-#'     it includes such a row.}
+#'     FALSE)` lists such rows. The general [lta()] engine raises it too, for
+#'     an origin profile (or pair, under `order = 2`) that no move leaves: its
+#'     logits are fixed at zero and flagged `estimated = FALSE` in
+#'     `get_results(fit, "transitions")` and [parameter_inference()]. In both
+#'     engines such a row is not counted in `n_parameters`, AIC or BIC. The
+#'     transition-network handoff also warns when it includes such a row.}
 #'   \item{`latents_unidentified_occasion`}{An [lta()] fit with
 #'     `transitions = "occasion"` has an occasion at which no row observes an
 #'     indicator, followed by an occasion that does. The moves into and out of
@@ -373,8 +401,9 @@
 #'     fitting this is treated as a rejected step; it reaches the caller only
 #'     for parameter values supplied by hand.}
 #'   \item{`latents_unused_argument`}{A method that accepts `...` (several
-#'     `plot()` methods, `vcov()`, `predict()` and [descriptives()] of a data
-#'     frame) was given an argument it does not use. The call proceeds and
+#'     `plot()` methods, `summary()` of fits and grids released in 0.9.21,
+#'     `vcov()`, `predict()` and [descriptives()] of a data frame) was given
+#'     an argument it does not use. The call proceeds and
 #'     the warning names the argument.}
 #'   \item{`latents_unused_category`}{An ordinal indicator is a factor with
 #'     levels never observed in the data. Their intercepts diverge, so Wald

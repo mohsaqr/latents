@@ -234,8 +234,10 @@
 #' arguments named here.
 #' \describe{
 #'   \item{Fitted profile and class models}{From [multilpa()], [multilca()],
-#'     [lpa()], [lca()] and covariate models: `"profiles"`
-#'     (default), `"bars"`, `"heatmap"`, `"raincloud"`, `"parallel"`,
+#'     [lpa()], [lca()] and covariate models: `"profiles"` (the default; a
+#'     fit whose indicators are all categorical with non-numeric category
+#'     labels, which the profile summaries cannot score, draws `"responses"`
+#'     by default), `"bars"`, `"heatmap"`, `"raincloud"`, `"parallel"`,
 #'     `"pairs"` (each profile's 95% covariance ellipse), `"responses"`,
 #'     `"probabilities"` (not for covariate models), `"sequences"` (fits with
 #'     `time`; `cell_labels = TRUE` prints the profile in each cell),

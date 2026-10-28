@@ -779,11 +779,12 @@
 #'   `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
 #'   scale (variances in their own units, probabilities as probabilities). A
 #'   parameter whose null value lies on the boundary of its space (a variance,
-#'   a probability, a covariance diagonal) has `NA` `statistic`, `p_value` and
-#'   `p_adjusted`, but still has an interval. All class probabilities are
-#'   reported; their sum constraints make the natural covariance singular.
-#'   Wald intervals for probabilities are formed on the logit scale and for
-#'   variances (and covariance diagonals) on the log scale, then
+#'   a probability, a covariance diagonal, a count mean) has `NA` `statistic`,
+#'   `p_value` and `p_adjusted`, but still has an interval. All class
+#'   probabilities are reported; their sum constraints make the natural
+#'   covariance singular. Wald intervals for probabilities are formed on the
+#'   logit scale and for variances (and covariance diagonals) and count means
+#'   on the log scale, then
 #'   back-transformed, so they stay within the parameter's range; every other
 #'   interval is `estimate +/- z * standard_error`. `confint()` returns the
 #'   same intervals. A probability at or below 1e-6 is treated as on its bound
@@ -842,6 +843,12 @@
 #'   (a posterior mode, where the score is not zero), and either path raises
 #'   `latents_unsupported_noise` for a fit with a noise component. A fit whose
 #'   score is still far from zero gives a `latents_unconverged` warning.
+#'   An invalid `level`, `step`, `iter`, `n_starts`, `max_iter` or `tol`
+#'   raises `latents_bad_argument`, and a `data` that is not a data frame
+#'   `latents_bad_data`. A fitted mixture regression is refused with
+#'   `latents_bad_argument` naming `get_results(x, "coefficients")`, which
+#'   reports its standard errors and tests; an object that is not a fitted
+#'   model raises `latents_not_a_fit`.
 #'
 #'   `method = "bootstrap"` also raises `latents_unsupported_inference` for an
 #'   additive or covariate fit, and for a
@@ -887,6 +894,28 @@ parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
 
 #' @rdname parameter_inference
 #' @export
+parameter_inference.default <- function(x, ...) {
+  # A fit of this package without a method is told so, not that it is not a
+  # fit of this package (review 2026-10-27, INF-2).
+  if (inherits(x, "latents_mixture_regression")) {
+    stop(errorCondition(paste(
+      "parameter_inference() does not take a fitted mixture regression (from",
+      "mixture_regression()): its coefficients, standard errors and tests are",
+      "get_results(x, \"coefficients\"), and confint() and vcov() give its",
+      "intervals and covariance."), class = "latents_bad_argument", call = NULL))
+  }
+  if (inherits(x, .latents_model_classes)) {
+    stop(errorCondition(sprintf(
+      "parameter_inference() does not take %s.", .latents_describe(x)),
+      class = "latents_bad_argument", call = NULL))
+  }
+  # Every family of fit has a method or is refused above, so anything else is
+  # not a fit at all.
+  .latents_require_fit(x, substitute(x), expected = "a fitted model of this package")
+}
+
+#' @rdname parameter_inference
+#' @export
 parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust", "opg"),
                              adjust = .multilpa_p_adjust_methods,
@@ -895,21 +924,27 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
                              seed = NULL, boundary = c("error", "fix")) {
   stopifnot(inherits(x, "multilpa"))
   .multilpa_refuse_noise(x, "parameter_inference()")
-  boundary <- match.arg(boundary)
+  boundary <- .latents_match_formal(boundary)
+  # Classed, as three_step() and sensitivity() class the same mistakes
+  # (review 2026-10-27, INF-6).
+  if (!is.null(data)) .latents_check_data_frame(data, substitute(data))
   data <- .multilpa_resolve_data(x, data)
-  stopifnot(is.data.frame(data),
-            is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
-            is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
+  .latents_require(
+    "`level` must be a single number in (0, 1)" =
+      is.numeric(level) && length(level) == 1L && is.finite(level) &&
+      level > 0 && level < 1,
+    "`step` must be a single positive number" =
+      is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   vcov_defaulted <- missing(vcov_type)
   vcov_type <- .latents_weighted_vcov(!is.null(x$sampling_weights),
-                                      match.arg(vcov_type), vcov_defaulted)
-  adjust <- match.arg(adjust)
-  method <- match.arg(method)
+                                      .latents_match_formal(vcov_type), vcov_defaulted)
+  adjust <- .latents_match_formal(adjust)
+  method <- .latents_match_formal(method)
   # A seed set.seed() would not take is refused on either path, so the
   # argument means the same thing whichever method is asked for.
   .multilpa_check_seed(seed)
   if (identical(method, "bootstrap")) {
-    stopifnot(
+    .latents_require(
       "`iter` must be a single integer of at least two" =
         is.numeric(iter) && length(iter) == 1L && is.finite(iter) &&
         iter >= 2 && iter == floor(iter),
@@ -1232,7 +1267,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
 #' @importFrom stats coef
 coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
   stopifnot(inherits(object, "multilpa"))
-  .multilpa_coefficients(object, match.arg(scale))
+  .multilpa_coefficients(object, .latents_match_formal(scale))
 }
 
 #' @rdname latents-model-methods
@@ -1240,7 +1275,8 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 #' @importFrom stats vcov
 vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
   stopifnot(inherits(object, "multilpa"))
-  scale <- match.arg(scale)
+  .multilpa_reject_inference_arguments(list(...), "vcov()")
+  scale <- .latents_match_formal(scale)
   # `data` is no longer required: a fit carries the columns it was built from,
   # and `parameter_inference()` falls back to them.
   information <- parameter_inference(object, data, ...)
@@ -1263,8 +1299,12 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @export
 #' @importFrom stats confint
 confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
-  stopifnot(inherits(object, "multilpa"), is.numeric(level), length(level) == 1L,
-            is.finite(level), level > 0, level < 1)
+  stopifnot(inherits(object, "multilpa"))
+  .latents_require(
+    "`level` must be a single number in (0, 1)" =
+      is.numeric(level) && length(level) == 1L && is.finite(level) &&
+      level > 0 && level < 1)
+  .multilpa_reject_inference_arguments(list(...), "confint()")
   estimates <- coef.multilpa(object)
   ## One call, not one through `vcov()`: the bootstrap interval is the
   ## percentile interval this table already carries, and reaching it through
@@ -1307,6 +1347,27 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   intervals <- intervals[parm, , drop = FALSE]
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
   intervals
+}
+
+#' Refuse an argument that `parameter_inference()` does not take
+#'
+#' `vcov()` and `confint()` pass `...` on to [parameter_inference()], where a
+#' misnamed argument (`type = "robust"`, the name the transition and
+#' regression fits use) stopped with R's unclassed "unused argument" error.
+#' It is refused here with `latents_bad_argument` instead, naming it.
+#' @param extra `list(...)` as the method received it.
+#' @param verb The method, for the message.
+#' @return `NULL`, invisibly, or `latents_bad_argument`.
+#' @noRd
+.multilpa_reject_inference_arguments <- function(extra, verb) {
+  taken <- setdiff(names(formals(parameter_inference)), c("x", "data"))
+  supplied <- names(extra) %||% rep("", length(extra))
+  # Partial names are matched as parameter_inference() matches them.
+  known <- nzchar(supplied) & !is.na(pmatch(supplied, taken, duplicates.ok = TRUE))
+  .multilpa_reject_extra_arguments(
+    extra[!known], verb,
+    paste("Its other arguments go to parameter_inference(); choose the",
+          "covariance with `vcov_type =`."))
 }
 
 #' Check that a fit admits Wald inference at all
@@ -1457,8 +1518,13 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       class = "latents_bad_inference_data", call = NULL))
   }
   codes <- NULL
+  # Rows of weight zero do not enter the likelihood, so their categorical and
+  # ordinal values are re-encoded as the fit encoded them (CORE-2).
+  contributing <- if (is.null(object$sampling_weights)) NULL else
+    unname(object$sampling_weights)[object$group_index] > 0
   if (length(object$categorical %||% character()) > 0L) {
-    encoded <- .multilpa_encode_categorical(data[, object$categorical, drop = FALSE])
+    encoded <- .multilpa_encode_categorical(data[, object$categorical, drop = FALSE],
+                                            contributing = contributing)
     codes <- encoded$codes
     if (!identical(unname(codes), unname(object$categorical_data)) ||
         !identical(encoded$levels, object$categorical_levels)) {
@@ -1469,7 +1535,8 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   }
   if (!is.null(object$extra_data)) {
     extra <- .latents_prepare_extra(data, object$ordinal, object$count,
-                                    object$missing %||% "error")
+                                    object$missing %||% "error",
+                                    contributing = contributing)
     # A carrier can hold direct effects alone, with no indicator to compare.
     if (length(c(object$ordinal, object$count)) > 0L &&
         (!identical(unname(extra$ordinal), unname(object$extra_data$ordinal)) ||

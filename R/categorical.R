@@ -7,10 +7,10 @@
 #' @param min_categories Minimum number of observed categories; fitting uses
 #'   two, while preparing prediction subsets uses zero.
 #' @param contributing `NULL`, or one logical per element of `value`: `FALSE`
-#'   for a row of sampling weight zero. The categories are still read off
-#'   every row, so each row has a code, but `min_categories` is counted on the
-#'   contributing rows only: a row that enters no likelihood cannot supply the
-#'   second category of an indicator (review 2026-10-26, ML-2).
+#'   for a row of sampling weight zero. Ordinary categories are discovered on
+#'   contributing rows only; an excluded-only category has no fitted response
+#'   probability and is encoded as NA on the excluded rows. Declared joined-item
+#'   grids retain their full set of combinations.
 #' @return The observed categories, in their native type and declared order;
 #'   joined local-dependence items retain their full category grid.
 #' @noRd
@@ -30,36 +30,27 @@
     stop(errorCondition(sprintf("Categorical indicator `%s` contains non-finite values.", indicator),
                         class = "latents_bad_categorical", call = NULL))
   }
-  levels_observed <- if (is.factor(value)) {
-    # The joined item's declared levels include unobserved combinations,
-    # each of which has an estimated probability at the model's floor. Its
-    # markers of half-observed rows ("a::", ":::b") are not categories: such
-    # a row is a set of joint categories (`.latents_partial_map()`).
-    if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) {
-      declared <- levels(value)
-      declared[!.latents_partial_levels(declared)]
-    } else levels(droplevels(value))
-  } else sort(unique(value[!is.na(value)]))
-  if (length(levels_observed) < min_categories) {
-    stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
-                        class = "latents_bad_categorical", call = NULL))
-  }
-  # A joined item keeps its full grid whatever was observed, so only a plain
-  # indicator is counted again on the rows that carry weight.
-  if (!is.null(contributing) && !all(contributing) &&
-      length(attr(value, "latents_pair", exact = TRUE)) != 2L) {
+  carried <- value
+  excluded <- !is.null(contributing) && !all(contributing)
+  if (!is.null(contributing)) {
     stopifnot("`contributing` must hold one logical per value" =
                 is.logical(contributing) && !anyNA(contributing) &&
                 length(contributing) == length(value))
-    carried <- value[contributing & !is.na(value)]
-    n_carried <- if (is.factor(carried)) nlevels(droplevels(carried)) else
-      length(unique(carried))
-    if (n_carried < min_categories) {
-      stop(errorCondition(sprintf(paste(
-        "Categorical indicator `%s` has fewer than two observed categories in",
-        "the rows of positive weight."), indicator),
-        class = "latents_bad_categorical", call = NULL))
-    }
+    carried <- value[contributing]
+  }
+  levels_observed <- if (is.factor(value)) {
+    # A declared joined item keeps its full grid, including combinations
+    # not observed on a particular sample; partial markers are not categories.
+    if (length(attr(value, "latents_pair", exact = TRUE)) == 2L) {
+      declared <- levels(value)
+      declared[!.latents_partial_levels(declared)]
+    } else levels(droplevels(carried))
+  } else sort(unique(carried[!is.na(carried)]))
+  if (length(levels_observed) < min_categories) {
+    stop(errorCondition(sprintf(
+      "Categorical indicator `%s` has fewer than two observed categories%s.",
+      indicator, if (excluded) " in the rows of positive weight" else ""),
+      class = "latents_bad_categorical", call = NULL))
   }
   # Categories are reported, aligned and mapped back to values by their
   # labels, so two distinct values with one label (0.3 and 0.1 + 0.2 both
@@ -250,8 +241,27 @@
     # Factor subsetting drops custom attributes. Keep the explicit pair
     # provenance: labels alone can also be ordinary user categories.
     attr(values, "latents_pair") <- attr(column, "latents_pair", exact = TRUE)
+    # An excluded-only category is not a fitted category, but its original
+    # value still belongs in get_results(fit, "data"). Keep just those sparse
+    # values, outside the model's category dictionary and parameter count.
+    excluded <- which(!is.na(column) & is.na(encoded$codes[, name]))
+    if (length(excluded) > 0L &&
+        length(attr(column, "latents_pair", exact = TRUE)) != 2L) {
+      attr(values, "latents_excluded") <- list(rows = excluded, values = column[excluded])
+    }
     values
   }), categorical)
+}
+
+#' Restore original categorical values excluded from the fitted support
+#' @param value A reconstructed categorical column.
+#' @param original The fit's typed dictionary, with optional sparse originals.
+#' @return The column with excluded-only original values restored.
+#' @noRd
+.multilpa_restore_excluded <- function(value, original) {
+  excluded <- attr(original, "latents_excluded", exact = TRUE)
+  if (!is.null(excluded)) value[excluded$rows] <- excluded$values
+  value
 }
 
 #' Conditional log density of categorical indicators

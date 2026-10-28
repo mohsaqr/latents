@@ -9,18 +9,24 @@
 #' review round 2) is differentiated there, where the problem is
 #' well-conditioned whatever the units and origins of the data, and carried
 #' to the reported coordinates by the Jacobian of the exact map:
-#' `V = J V* J'` and `I = J^-T I* J^-1` ([.growth_standard_jacobian()]).
+#' `V = J V* J'` and `I = J^-T I* J^-1` (`.growth_standard_jacobian()`).
 #'
 #' @param fit A `latents_growth_mixture` fit.
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
 #' @return A list with `theta`, `vcov`, `vcov_type`, `information` and
-#'   `score_norm` (the largest absolute total score at the estimate).
+#'   `score_norm` (the largest absolute total score at the estimate). A
+#'   coordinate held on its bound (`fit$residual_boundary`) has no standard
+#'   error: its row and column of `vcov` are `NA`, so its own standard error
+#'   and interval are `NA` while the delta method of every other quantity
+#'   uses the free block only (`.mixture_delta()`).
 #' @noRd
 .growth_inference <- function(fit, vcov_type = c("observed", "robust", "opg")) {
   vcov_type <- match.arg(vcov_type)
   if (is.null(fit$standard)) {
-    return(.growth_inference_at(fit$spec, fit$stats, fit$params,
-                                fit$residual_boundary, vcov_type))
+    inference <- .growth_inference_at(fit$spec, fit$stats, fit$params,
+                                      fit$residual_boundary, vcov_type)
+    inference$vcov <- .growth_unreported_held(inference$vcov, fit$residual_boundary)
+    return(inference)
   }
   view <- .growth_standard_view(fit)
   inner <- .growth_inference_at(view$spec, view$stats, view$params,
@@ -32,15 +38,35 @@
   vcov <- jacobian %*% inner$vcov %*% t(jacobian)
   information <- t(inverse) %*% inner$information %*% inverse
   dimnames(vcov) <- dimnames(information) <- list(names(theta), names(theta))
-  list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,
+  list(theta = theta, vcov = .growth_unreported_held(vcov, fit$residual_boundary),
+       vcov_type = vcov_type, information = information,
        score_norm = max(abs(crossprod(inverse, inner$total_score))))
+}
+
+#' Mark the coordinates held on a bound as having no variance
+#'
+#' They are held at zero variance while the covariance is computed and
+#' carried to the reported coordinates (a missing value would spread through
+#' the matrix products), and only then set to `NA`: a variance of zero would
+#' report a standard error of zero and an interval of zero width, as if the
+#' held value were known exactly (review 2026-10-27, REG-3).
+#' @param vcov A named covariance matrix.
+#' @param held Names of the held coordinates, or `NULL`.
+#' @return `vcov` with the held rows and columns `NA`.
+#' @noRd
+.growth_unreported_held <- function(vcov, held) {
+  held <- intersect(held %||% character(), rownames(vcov))
+  if (length(held) == 0L) return(vcov)
+  vcov[held, ] <- NA_real_
+  vcov[, held] <- NA_real_
+  vcov
 }
 
 #' Covariance of growth mixture estimates at one parametrization
 #' @param spec,stats,params The specification, statistics and parameters.
 #' @param held Coordinates held on a bound (no variance).
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
-#' @return As [.growth_inference()], plus `total_score`.
+#' @return As `.growth_inference()`, plus `total_score`.
 #' @noRd
 .growth_inference_at <- function(spec, stats, params, held, vcov_type) {
   theta <- .growth_pack(spec, params)
@@ -71,7 +97,8 @@
   dimnames(information) <- list(names(theta), names(theta))
   # Coordinates a correlated fit left on a floor, a bound or a flat ridge are
   # held there: the others' covariance is that of the free block, and the
-  # held ones get zero variance (their own rows are reported without one).
+  # held ones get zero variance here, set to NA once the covariance is in the
+  # reported coordinates (.growth_unreported_held()).
   free <- !names(theta) %in% (held %||% character())
   inverse <- matrix(0, length(theta), length(theta))
   inverse[free, free] <- .mixture_invert(information[free, free, drop = FALSE])
@@ -91,7 +118,7 @@
 #' to the one in standard coordinates
 #'
 #' Block diagonal. The coefficients map linearly
-#' ([.growth_unstandardize_coefficients()]); log residual standard
+#' (`.growth_unstandardize_coefficients()`); log residual standard
 #' deviations, log proportional scales, the residual process's log rate and
 #' log standard deviation and the membership logits move by constants or not
 #' at all; each log-Cholesky chart maps through `G = N G* N'`. For the chart,
@@ -105,7 +132,7 @@
 #' @param params,standard_params The parameters in both.
 #' @param standard The transform.
 #' @return A square matrix, rows the data's coordinates, columns the standard
-#'   ones, both in [.growth_names()] order.
+#'   ones, both in `.growth_names()` order.
 #' @noRd
 .growth_standard_jacobian <- function(spec, standard_spec, params, standard_params,
                                       standard) {
@@ -174,6 +201,9 @@
 #' @noRd
 .growth_resolve_inference <- function(x, vcov_type = NULL) {
   stored <- x$inference
+  if (!is.null(vcov_type)) {
+    vcov_type <- .latents_match_arg(vcov_type, c("observed", "robust", "opg"), "vcov_type")
+  }
   wanted <- vcov_type %||% stored$vcov_type %||% if (.latents_is_weighted(x))
     "robust" else "observed"
   wanted <- .latents_weighted_vcov(.latents_is_weighted(x), wanted, is.null(vcov_type))
@@ -820,10 +850,11 @@
 get_results.latents_growth_mixture <- function(x, what = "coefficients", level = 0.95,
                                                vcov_type = NULL, time = NULL,
                                                data = NULL, truth = NULL, ...) {
-  what <- match.arg(what, c(.growth_tables(x), "recovery", "all"))
-  stopifnot("`level` must be a single number in (0, 1)" =
-              is.numeric(level) && length(level) == 1L && is.finite(level) &&
-              level > 0 && level < 1)
+  .multilpa_reject_extra_arguments(list(...), "get_results()", paste(
+    "A growth mixture's tables take `level`, `vcov_type` and `time`, and",
+    "`what = \"recovery\"` also `data` and `truth`."))
+  what <- .multilpa_match_table(what, c(.growth_tables(x), "recovery"))
+  .mixture_require_level(level)
   if (identical(what, "all")) {
     return(stats::setNames(lapply(.growth_tables(x), function(w) {
       .growth_table(x, w, level, vcov_type, time)
@@ -837,7 +868,8 @@ get_results.latents_growth_mixture <- function(x, what = "coefficients", level =
 #' @export
 as.data.frame.latents_growth_mixture <- function(x, row.names = NULL, optional = FALSE,
                                                  what = "coefficients", ...) {
-  get_results(x, what = what, ...)
+  # get_results() names any argument its tables do not take.
+  get_results.latents_growth_mixture(x, what = what, ...)
 }
 
 #' @noRd
@@ -893,6 +925,9 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
 #' @noRd
 #' @export
 summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NULL, ...) {
+  .multilpa_reject_extra_arguments(list(...), "summary()",
+                                   "It takes `level` and `vcov_type`.")
+  .mixture_require_level(level)
   tables <- c("fit", "classes", if (!is.null(object$spec$cluster)) "group_classes",
               "coefficients", "random", "membership")
   structure(stats::setNames(lapply(tables, function(w) {
@@ -911,6 +946,20 @@ print.summary_latents_growth_mixture <- function(x, digits = 4L, ...) {
 }
 
 #' @noRd
+#' @export
+get_results.summary_latents_growth_mixture <- function(x, what = "coefficients", ...) {
+  .mixture_summary_results(x, what, list(...))
+}
+
+#' @noRd
+#' @param row.names,optional Unused; part of the generic.
+#' @export
+as.data.frame.summary_latents_growth_mixture <- function(x, row.names = NULL,
+                                                         optional = FALSE, ...) {
+  .mixture_summary_results(x, "coefficients", list(...), "as.data.frame()")
+}
+
+#' @noRd
 #' @param object A `latents_growth_mixture` fit.
 #' @export
 coef.latents_growth_mixture <- function(object, ...) .growth_pack(object$spec, object$params)
@@ -919,6 +968,10 @@ coef.latents_growth_mixture <- function(object, ...) .growth_pack(object$spec, o
 #' @param type As `vcov_type`.
 #' @export
 vcov.latents_growth_mixture <- function(object, type = NULL, ...) {
+  # `vcov_type = "robust"`, the name mixture_regression() uses, used to fall
+  # into `...` and return the stored covariance without a word (INF-3).
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "Choose the covariance with `type =`.")
   .growth_resolve_inference(object, type)$vcov
 }
 
@@ -926,6 +979,10 @@ vcov.latents_growth_mixture <- function(object, type = NULL, ...) {
 #' @param parm Parameter names or positions; all by default.
 #' @export
 confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
+  .multilpa_reject_extra_arguments(list(...), "confint()", paste(
+    "It uses the covariance stored with the fit; for another, use",
+    "get_results(x, \"coefficients\", vcov_type = )."))
+  .mixture_require_level(level)
   inference <- .growth_resolve_inference(object)
   table <- .inference_wald(unname(inference$theta),
                          sqrt(pmax(diag(inference$vcov), 0)), level)

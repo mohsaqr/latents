@@ -42,8 +42,9 @@
 #' @export
 multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
   if (missing(id)) .multilpa_missing_id("multilca", "`lca()`")
-  stopifnot("`vars` must be a character vector of column names" =
-              is.character(vars) && length(vars) >= 1L && !anyNA(vars))
+  .latents_check_data_frame(data, substitute(data))
+  .latents_require("`vars` must be a character vector of column names" =
+                     is.character(vars) && length(vars) >= 1L && !anyNA(vars))
   # Forward `n_group_classes` only when it was given, so that `id = NULL`
   # resolves to one group class exactly as it does in multilpa().
   extra <- list(...)
@@ -51,15 +52,16 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
   # the set rather than replacing it, so every indicator stays categorical.
   categorical <- .latents_lca_categorical(vars, extra)
   extra$categorical <- NULL
-  # Forward the caller's own expressions rather than their values, so the
-  # call multilpa() records (and any condition raised while validating the
-  # input) names the caller's objects instead of embedding the data.
+  # Use the promises already forced above and the evaluated dots. Replaying
+  # the caller's expressions would run data generators and controls twice.
+  # Bind these values to symbols so no forwarded condition carries the data.
+  arguments <- c(list(data = data, vars = vars, id = id, n_profiles = n_profiles,
+                       categorical = categorical), extra)
+  if (!missing(n_group_classes)) arguments$n_group_classes <- n_group_classes
   fitting_env <- new.env(parent = parent.frame())
   fitting_env$multilpa <- multilpa
-  fitting_call <- .latents_bind_values(match.call(expand.dots = TRUE), fitting_env,
-                                       parent.frame())
-  fitting_call[[1L]] <- quote(multilpa)
-  fitting_call$categorical <- categorical
+  fitting_call <- .latents_bind_values(as.call(c(list(quote(multilpa)), arguments)),
+                                       fitting_env, parent.frame(), values = arguments)
   fit <- eval(fitting_call, fitting_env)
   # Report the call the caller wrote, as multilpa() does for its own calls.
   fit$call <- match.call()
@@ -77,9 +79,9 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
 #' @return A character vector of indicator names.
 #' @noRd
 .latents_lca_categorical <- function(vars, extra) {
-  stopifnot("`categorical` must be a character vector of column names" =
-              is.null(extra$categorical) ||
-              (is.character(extra$categorical) && !anyNA(extra$categorical)))
+  .latents_require("`categorical` must be a character vector of column names" =
+                     is.null(extra$categorical) ||
+                     (is.character(extra$categorical) && !anyNA(extra$categorical)))
   unknown <- setdiff(extra$categorical, vars)
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(

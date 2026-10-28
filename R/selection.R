@@ -397,14 +397,13 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
                                                          "replication unavailable",
                                                          "on a boundary", "not converged",
                                                          "not fitted")),
-                      tile_label = ifelse(is.na(grid$log_likelihood), "x",
-                                          ifelse(is.na(grid$n_best_replicated), "",
-                                                 sprintf("%dx", grid$n_best_replicated))),
+                      tile_label = .latents_trust_label(status, grid$n_best_replicated),
                       stringsAsFactors = FALSE)
   several_models <- length(unique(frame$model[!is.na(frame$model)])) > 1L
   plot <- ggplot2::ggplot(frame, ggplot2::aes(n_profiles, n_group_label, fill = status)) +
     ggplot2::geom_tile(colour = "white", linewidth = 1.2) +
-    ggplot2::geom_text(ggplot2::aes(label = tile_label), size = 3.2) +
+    ggplot2::geom_text(ggplot2::aes(label = tile_label), size = 2.9,
+                       lineheight = 0.85) +
     ggplot2::scale_fill_manual(values = c("best replicated" = "#009E73",
                                           "best found once" = "#F0E442",
                                           "replication unavailable" = "#56B4E9",
@@ -417,10 +416,29 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
   if (several_models) plot <- plot + ggplot2::facet_wrap(ggplot2::vars(model))
   .latents_selection_look(
     plot, main, subtitle, "Convergence and repeated maxima",
-    paste("Label: how many random starts reached the best log likelihood;",
-          "blank = unavailable; x = not fitted. Replication does not prove a global maximum."),
+    paste("Tile: the status, and how many random starts reached the best log",
+          "likelihood. Replication does not prove a global maximum."),
     sprintf("Number of %s", .latents_grid_views(x)$word), legend = TRUE) +
     ggplot2::theme(panel.grid = ggplot2::element_blank())
+}
+
+#' The text of a trust tile: its status in words, then its replication count
+#'
+#' The tile fill names the status through the legend; the text says it again,
+#' so no status is told from another by colour alone. An unconverged
+#' candidate and a best found once both read "1x" under the count alone
+#' (review 2026-10-27).
+#' @param status The status of each candidate, as the trust view names it.
+#' @param replicated How many starts reached each candidate's best.
+#' @return One label per candidate.
+#' @noRd
+.latents_trust_label <- function(status, replicated) {
+  words <- c("best replicated" = "replicated", "best found once" = "once",
+             "replication unavailable" = "n/a", "on a boundary" = "boundary",
+             "not converged" = "not conv.", "not fitted" = "not fitted")
+  count <- ifelse(is.na(replicated) | status %in% "not fitted", "",
+                  sprintf("\n%dx", as.integer(replicated)))
+  paste0(unname(words[status]), count)
 }
 
 #' Draw one model-selection view

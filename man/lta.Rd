@@ -60,8 +60,10 @@ its group. Required. Values must be complete and unique within each
 group. They are ordered as \code{\link[=sort]{sort()}} orders them: numbers numerically, a
 factor by its levels, and character strings alphabetically. Numbers
 stored as text whose alphabetical order is not their numeric order
-(\code{"2"}, \code{"10"}) raise \code{latents_bad_time} (also \code{latents_bad_data});
-zero-padded numbers and ISO dates are accepted.}
+(\code{"2"}, \code{"10"}), and numbered labels sharing their text around the
+number whose alphabetical order is not the numbers' (\code{"T2"}, \code{"T10"};
+\code{"week 2"}, \code{"week 10"}), raise \code{latents_bad_time} (also
+\code{latents_bad_data}); zero-padded numbers and ISO dates are accepted.}
 
 \item{n_group_classes}{Positive integer number of latent group classes
 (default 1). One gives an ordinary latent transition model; more than one
@@ -163,20 +165,27 @@ that occasion it enters only through its product with the move out. Its logits a
 then reported with \code{estimated = FALSE} and no standard error, and are not
 counted in \code{n_parameters}, AIC or BIC; likewise the second-order logits
 when nothing is observed from occasion 3 on, and the measurement block
-of an empty occasion under \code{measurement = "occasion"}.}
+of an empty occasion under \code{measurement = "occasion"}. Under either
+setting, a profile that is never occupied before a later occasion
+(in a group class) has no move out of it: its outgoing logits are fixed
+at zero (equal probabilities), flagged \code{estimated = FALSE}, not counted,
+and \code{latents_empty_transition_row} is raised, as the homogeneous model
+reports its uniform row.}
 
 \item{transition_covariates}{Names of columns whose values shift the
 transition probabilities through a multinomial logit per origin profile:
 the log odds of moving to each other profile rather than staying. A
 column may change over occasions; the value at the destination occasion
-is used. Factors are expanded to indicator columns. With \code{occasions = "grid"}, a move into a position the group skipped has no row to read the
+is used. Factors are expanded to indicator columns, after dropping
+levels the data do not use (as \code{\link[stats:glm]{stats::glm()}} does). With \code{occasions = "grid"}, a move into a position the group skipped has no row to read the
 covariates from, and the fit raises \code{latents_bad_data}; use
 \code{occasions = "observed"}, or add the skipped rows with their covariate
 values (their indicators may be missing under \code{missing = "fiml"}).}
 
 \item{initial_covariates}{Names of columns that shift the initial profile
 distribution (a multinomial logit, reference: the last profile), read at
-each group's first occasion.}
+each group's first occasion. Factors are expanded as for
+\code{transition_covariates}.}
 
 \item{measurement}{\code{"invariant"} (the default) keeps the profiles' means,
 variances and response probabilities equal across occasions;
@@ -291,7 +300,12 @@ With \code{transitions = "occasion"}, \code{transition_covariates},
 \code{multilpa_lta} object, read with \code{\link[=get_results]{get_results()}}: transition and initial
 logit coefficients with Wald standard errors (observed, robust or OPG,
 from analytic scores), model-implied transition probabilities per
-occasion, and profiles per occasion. Missing indicators
+occasion (with an \code{estimated} column, \code{FALSE} for a row resting on a
+logit the likelihood does not identify; a move only units of weight zero
+make is left out), profiles per occasion, and the assignments in the
+layout every fit shares (taking \code{data} and \code{truth}). Any other argument
+to its tables raises \code{latents_bad_argument}, and \code{summary()} collects
+them (taking \code{level} and \code{vcov_type}). Missing indicators
 (\code{missing = "fiml"}) and covariance structures are supported; diagonal
 fits are finished by a quasi-Newton search on the exact likelihood,
 others by EM. Agreement with Mplus (User's Guide examples 8.13, 8.14;
@@ -315,7 +329,8 @@ occasions: the probability of moving from one profile to another does not
 depend on the occasion or on earlier profiles. Measurement parameters are
 shared across occasions and across group classes. A profile that no group
 occupies before its final occasion leaves its transition row without
-information; the row is then uniform by construction, not estimated. Such
+information; the row is then uniform by construction, not estimated, and
+its probabilities are not counted in \code{n_parameters}, AIC or BIC. Such
 a row raises a warning when the model is fitted, is flagged by the
 \code{estimated} column of the transition table and is listed by
 \code{get_results(fit, "transitions", estimated = FALSE)}. Profile labels are

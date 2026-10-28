@@ -322,6 +322,48 @@ test_that("the ledger accounts for every output and refuses a stale claim", {
                class = "multilpa_bad_ledger")
 })
 
+test_that("the runner rejects partial coverage and required-suite skips", {
+  inventory <- data.frame(output = "t$value", table = "t", column = "value",
+                          n_values = 3L)
+  compared <- compare_block("one of three", 1, 1, 1e-8, output = "t$value")
+  run <- list(suites = data.frame(status = "ran"),
+              comparisons = transform(compared, known_open = NA_character_),
+              coverage = output_ledger("fit", inventory, compared),
+              known_open = data.frame(status = character()))
+  expect_identical(run$coverage$status, "partial")
+  expect_false(.equivalence_passes(run))
+  all_values <- compare_block("all three", 1:3, 1:3, 1e-8, output = "t$value")
+  run$comparisons <- transform(all_values, known_open = NA_character_)
+  run$coverage <- output_ledger("fit", inventory, all_values)
+  expect_true(.equivalence_passes(run, require_all = TRUE))
+  run$suites$status <- "skipped"
+  expect_true(.equivalence_passes(run))
+  expect_false(.equivalence_passes(run, require_all = TRUE))
+  run$suites$status <- "failed"
+  expect_false(.equivalence_passes(run))
+  run$suites$status <- "ran"
+  run$comparisons$agrees <- FALSE
+  expect_false(.equivalence_passes(run))
+  run$comparisons$known_open <- "registered"
+  expect_true(.equivalence_passes(run))
+  run$known_open <- data.frame(status = "stale")
+  expect_false(.equivalence_passes(run))
+})
+
+test_that("replication likelihood is independently checked, not exempted", {
+  obtained <- list(model = data.frame(log_likelihood = -10),
+                   replication = data.frame(n_starts = 4L, log_likelihood = -11))
+  expected <- list(model = data.frame(log_likelihood = -10))
+  compared <- compare_tables("replication", obtained, expected)
+  likelihood <- subset(compared, output %in% "replication$log_likelihood")
+  expect_equal(nrow(likelihood), 1L)
+  expect_false(likelihood$agrees)
+  ledger <- output_ledger("replication", fit_outputs(obtained), compared)
+  expect_identical(ledger$status[ledger$output == "replication$n_starts"], "exempt")
+  expect_identical(ledger$status[ledger$output == "replication$log_likelihood"], "compared")
+  expect_false("replication$log_likelihood" %in% names(.output_exemptions))
+})
+
 test_that("a known open defect is reported by id, and a stale entry is caught", {
   comparisons <- data.frame(suite = c("s", "s", "s"), quantity = c("a: x", "b: y", "c: z"),
                             agrees = c(FALSE, FALSE, TRUE), stringsAsFactors = FALSE)
@@ -463,6 +505,348 @@ test_that("several group classes: the complete-data entropy, or an exemption by 
   left <- names(missing$tables$information_criteria)
   expect_false(any(sub("^information_criteria[$]", "", charged) %in% left))
   expect_true(all(c("bic_groups", "bic_individual", "aic") %in% left))
+})
+
+test_that("mixed residual references cover every pair using weighted category codes", {
+  data <- data.frame(category = factor(rep(c("z", "a", "b"), 4L),
+                                        levels = c("z", "a", "b")),
+                     y1 = as.numeric(seq_len(12L)),
+                     y2 = c(3, 1, 5, 2, 8, 4, 7, 6, 9, 12, 10, 11))
+  data$y1[[2L]] <- NA_real_
+  data$y2[[5L]] <- NA_real_
+  probability <- rep(c(0.25, 0.75), 6L)
+  reference <- list(data = data, posteriors = cbind(probability, 1 - probability),
+                     means = matrix(0, 2L, 2L, dimnames = list(NULL, c("y1", "y2"))),
+                     variances = matrix(1, 2L, 2L, dimnames = list(NULL, c("y1", "y2"))))
+  residuals <- .reference_residuals(reference, c("y1", "y2"), "category",
+                                     list(category = levels(data$category)))
+  expect_equal(nrow(residuals), 6L)
+  mixed <- subset(residuals, kind == "mixed")
+  expect_equal(nrow(mixed), 4L)
+  expect_identical(unique(mixed$indicator_1), "category")
+  expect_setequal(mixed$indicator_2, c("y1", "y2"))
+  # An independent oracle: quarter-unit posterior weights become integer
+  # replications, whose ordinary Pearson correlation must agree exactly.
+  invisible(lapply(seq_len(nrow(mixed)), function(index) {
+    row <- mixed[index, ]
+    state <- as.integer(sub("profile_", "", row$profile))
+    complete <- stats::complete.cases(data[c("category", row$indicator_2)])
+    rows <- rep(which(complete), as.integer(4 * reference$posteriors[complete, state]))
+    correlation <- stats::cor(as.integer(data$category[rows]), data[[row$indicator_2]][rows])
+    expect_equal(row$observed, correlation, tolerance = 1e-14)
+    expect_equal(row$residual, correlation, tolerance = 1e-14)
+    expect_equal(row$effective_n, sum(reference$posteriors[complete, state]))
+  }))
+  expect_true(all(mixed$expected == 0))
+  expect_true(all(is.na(as.matrix(mixed[c("statistic", "df", "p_value", "p_adjusted")]))))
+  # No Gaussian pair exists here: the mixed reference must still return its
+  # own rows, including an explicit unavailable correlation for empty data.
+  reference$data$y1[] <- NA_real_
+  empty <- .reference_residuals(reference, "y1", "category",
+                                list(category = levels(data$category)))
+  expect_equal(nrow(empty), 2L)
+  expect_true(all(is.na(empty$residual)))
+  expect_true(all(empty$effective_n == 0))
+})
+
+# --------------------------------------------------------------------------
+# Verb tables (EQ-20): three_step(), r3step(), pool_imputations(), predict(),
+# parameter_inference() and the enumeration's lmr table are not a fit's
+# catalogue, so they reach the gate through table_ledger() / compare_verb().
+
+# A run as run_equivalence() assembles it, for .equivalence_passes().
+harness_run_of <- function(case) {
+  list(suites = data.frame(status = "ran"),
+       comparisons = transform(case$comparisons, known_open = NA_character_),
+       coverage = case$ledger, known_open = data.frame(status = character()))
+}
+# A verb result shaped like three_step()'s, with an integer key column.
+verb_obtained <- list(three_step = keyed_table(
+  data.frame(level = "individuals", class = 1:3, estimate = c(0.5, 1.5, 2.5),
+             standard_error = c(0.1, 0.2, 0.3)), c("level", "class")))
+
+test_that("a verb column nobody compared fails the gate", {
+  expected <- list(three_step = data.frame(level = "individuals", class = 1:3,
+                                           estimate = c(0.5, 1.5, 2.5)))
+  case <- compare_verb("three step", verb_obtained, expected)
+  status <- stats::setNames(case$ledger$status, case$ledger$output)
+  expect_identical(unname(status[c("three_step$estimate", "three_step$standard_error")]),
+                   c("compared", "not covered"))
+  expect_true(all(case$comparisons$agrees))
+  expect_false(.equivalence_passes(harness_run_of(case)))
+  # Exempted with a reason, the same column passes; every value is accounted.
+  exempted <- compare_verb("three step", verb_obtained, expected,
+                           exempt = c(`three_step$standard_error` = "no reference SE"))
+  expect_identical(exempted$ledger$status[exempted$ledger$output == "three_step$standard_error"],
+                   "exempt")
+  expect_true(.equivalence_passes(harness_run_of(exempted), require_all = TRUE))
+})
+
+test_that("a partly compared verb column fails the gate", {
+  # The reference covers two of the three classes: the third is unchecked.
+  expected <- list(three_step = data.frame(level = "individuals", class = 1:2,
+                                           estimate = c(0.5, 1.5),
+                                           standard_error = c(0.1, 0.2)))
+  case <- compare_verb("three step", verb_obtained, expected)
+  expect_true(all(case$comparisons$agrees))
+  expect_true(all(case$ledger$status == "partial"))
+  expect_false(.equivalence_passes(harness_run_of(case)))
+})
+
+test_that("a sabotaged verb reference fails the gate", {
+  expected <- list(three_step = data.frame(level = "individuals", class = 1:3,
+                                           estimate = c(0.5, 1.5, 2.5),
+                                           standard_error = c(0.1, 0.2, 0.3)))
+  faithful_case <- compare_verb("three step", verb_obtained, expected)
+  expect_true(.equivalence_passes(harness_run_of(faithful_case), require_all = TRUE))
+  sabotaged <- expected
+  sabotaged$three_step$standard_error[[3L]] <- 0.3 + 1e-4
+  case <- compare_verb("three step", verb_obtained, sabotaged)
+  expect_false(case$comparisons$agrees[case$comparisons$output %in% "three_step$standard_error"])
+  expect_identical(unique(case$ledger$status), "compared")
+  expect_false(.equivalence_passes(harness_run_of(case)))
+  # A text value under declared keys is compared exactly.
+  labelled <- list(predict = keyed_table(data.frame(row = 1:2, profile = c("profile_1", "profile_2")),
+                                         "row"))
+  wrong <- list(predict = data.frame(row = 1:2, profile = c("profile_1", "profile_1")))
+  text <- compare_verb("predict", labelled, wrong)
+  expect_false(text$comparisons$agrees[text$comparisons$output %in% "predict$profile"])
+  expect_match(text$comparisons$quantity[text$comparisons$output %in% "predict$profile"],
+               "first mismatch \"profile_1\" against \"profile_2\"", fixed = TRUE)
+})
+
+test_that("an uncovered verb column fails a whole run, not just its ledger", {
+  root <- file.path(scratch, "verb-run")
+  suites <- file.path(root, "equivalence", "harness", "suites")
+  dir.create(suites, recursive = TRUE)
+  dir.create(file.path(root, "R"))
+  writeLines("# no sources", file.path(root, "R", "empty.R"))
+  writeLines(c(
+    'suite_verb <- function() {',
+    '  obtained <- list(r3step = keyed_table(data.frame(term = c("(Intercept)", "x"),',
+    '    estimate = c(-1, 2), standard_error = c(0.5, 0.4)), "term"))',
+    '  expected <- list(r3step = data.frame(term = c("(Intercept)", "x"), estimate = c(-1, 2)))',
+    '  case <- compare_verb("r3step", obtained, expected)',
+    '  case$comparisons$source <- "a reference"',
+    '  case',
+    '}'), file.path(suites, "verb.R"))
+  run <- suppressMessages(run_equivalence(root = root, check_api = FALSE))
+  coverage <- as.data.frame(run, what = "coverage")
+  expect_identical(coverage$status[coverage$output == "r3step$standard_error"], "not covered")
+  expect_identical(as.data.frame(run, what = "suites")$outputs_not_covered, 1L)
+  expect_false(.equivalence_passes(run))
+})
+
+test_that("declared keys make every other column a value, and must identify rows", {
+  # predict()'s `profile` is the modal class: a value, which the catalogue
+  # rules would take for a key.
+  prediction <- data.frame(row = 1:3, unit = 4:6, profile = c(1L, 2L, 1L),
+                           posterior = c(0.9, 0.8, 0.7))
+  expect_false("predict$profile" %in% fit_outputs(list(predict = prediction))$output)
+  keyed <- keyed_table(prediction, "row")
+  expect_setequal(fit_outputs(list(predict = keyed))$output,
+                  c("predict$unit", "predict$profile", "predict$posterior"))
+  # Classes and attributes of a verb's result are dropped; factors become text.
+  styled <- structure(transform(prediction, label = factor(c("a", "b", "a"))),
+                      class = c("latents_table", "data.frame"), extra = "x")
+  plain <- keyed_table(styled, "row")
+  expect_identical(class(plain), "data.frame")
+  expect_null(attr(plain, "extra"))
+  expect_type(plain$label, "character")
+  expect_error(keyed_table(prediction, "unit_typo"), class = "multilpa_bad_ledger")
+  expect_error(keyed_table(rbind(prediction, prediction), "profile"),
+               class = "multilpa_bad_ledger")
+  # The expected side must be keyed as uniquely as the obtained side.
+  doubled <- list(predict = rbind(prediction, prediction))
+  expect_error(compare_verb("predict", list(predict = keyed), doubled),
+               class = "multilpa_bad_ledger")
+  expect_error(table_ledger("v", list(predict = keyed[0, ]), compare_values("q", 1, 1, 1)),
+               class = "multilpa_bad_ledger")
+  expect_error(table_ledger("v", keyed, compare_values("q", 1, 1, 1)),
+               class = "multilpa_bad_ledger")
+})
+
+# --------------------------------------------------------------------------
+# Reference tables for weights, coefficients, ordinal and count indicators.
+
+test_that("the weights branch reproduces a weighted fit from mclust::me.weighted", {
+  skip_if_not_installed("mclust")
+  data <- datasets::faithful
+  set.seed(20)
+  data$w <- round(stats::runif(nrow(data), 0.2, 3), 2)
+  # Three units of weight zero: in no count, entropy or sample size.
+  data$w[c(5L, 50L, 150L)] <- 0
+  data$unit <- seq_len(nrow(data))
+  vars <- c("eruptions", "waiting")
+  fit <- multilpa(data, vars = vars, id = "unit", n_profiles = 2, n_group_classes = 1,
+                  weights = "w", n_starts = 4, seed = 1, tol = 1e-14, max_iter = 20000)
+  x <- as.matrix(data[vars])
+  # mclust's weighted EM (diagonal, varying: VVI), from a split of the data,
+  # run to its fixed point.
+  start <- cbind(as.numeric(data$eruptions <= 3), as.numeric(data$eruptions > 3))
+  em <- mclust::me.weighted(x, modelName = "VVI", z = start, weights = data$w,
+                            control = mclust::emControl(tol = c(1e-14, 1e-14),
+                                                        itmax = c(1e5, 1e5)))
+  means <- t(em$parameters$mean)
+  variances <- t(apply(em$parameters$variance$sigma, 3L, diag))
+  colnames(means) <- colnames(variances) <- vars
+  # Densities and posteriors at mclust's estimates, in base R. me.weighted's
+  # own `loglik` is on none of the package's scales, so the pseudo log
+  # likelihood sum_j w_j log L_j is taken here with the weights rescaled to
+  # sum to the number of units of positive weight (?multilpa, `weights`).
+  joint <- vapply(1:2, function(k) {
+    log(em$parameters$pro[k]) +
+      rowSums(stats::dnorm(x, matrix(means[k, ], nrow(x), 2L, byrow = TRUE),
+                           matrix(sqrt(variances[k, ]), nrow(x), 2L, byrow = TRUE),
+                           log = TRUE))
+  }, numeric(nrow(x)))
+  top <- apply(joint, 1L, max)
+  log_density <- top + log(rowSums(exp(joint - top)))
+  rescaled <- data$w * sum(data$w > 0) / sum(data$w)
+  build <- function(weights) {
+    harness_reference(sum(rescaled * log_density), 9, exp(joint - log_density),
+                      means = means, variances = variances,
+                      profile_probabilities = matrix(em$parameters$pro, 1L),
+                      group_probabilities = 1, data = data[vars], weights = weights)
+  }
+  no_se <- c(`profiles$mean_standard_error` = "no standard errors in this self-test",
+             `profiles$variance_standard_error` = "no standard errors in this self-test")
+  case <- compare_fit("faithful, weighted", fit, build(data$w), exempt = no_se)
+  # Both EMs run to 1e-14: estimates agree to about 1e-8, inside the 1e-6
+  # default and the 1e-4 OCC bound (outputs.R).
+  expect_true(all(case$comparisons$agrees))
+  expect_false(any(case$ledger$status %in% c("partial", "not covered")))
+  expect_true(.equivalence_passes(harness_run_of(case), require_all = TRUE))
+  counts <- reference_tables(align_reference(build(data$w), fit), fit)$counts
+  expect_equal(sum(counts$effective_count[counts$level == "individuals"]), 269)
+  expect_true(all(c("counts$effective_count", "classification$estimated_n",
+                    "bch_weights$weight", "entropy$entropy_sum") %in%
+                    case$ledger$output[case$ledger$status == "compared"]))
+  # Sabotage: the reference ignoring the weights must fail, on counts too.
+  unweighted <- compare_fit("faithful, weights ignored", fit,
+                            build(rep(1, nrow(data))), exempt = no_se)
+  expect_false(all(unweighted$comparisons$agrees[
+    unweighted$comparisons$output %in% "counts$effective_count"]))
+  expect_false(.equivalence_passes(harness_run_of(unweighted)))
+  # A weighted fit with no reference weights is refused, not compared.
+  unlabelled <- build(data$w)
+  unlabelled$weights <- NULL
+  expect_error(reference_tables(unlabelled, fit), class = "multilpa_bad_reference")
+})
+
+test_that("membership logits are re-expressed against the fit's last class", {
+  # A reference whose classes are in another order and whose logits are
+  # against its first class; terms name its own group-class numbering.
+  logits <- cbind(profile_1 = c(0, 0, 0, 0), profile_2 = c(1, -2, 0.5, 0.25),
+                  profile_3 = c(-1, 3, 0.75, -0.5))
+  rownames(logits) <- c("group_class_1", "group_class_2", "x:group_class_1", "x:group_class_2")
+  table <- .reference_coefficients(list(profile = logits))
+  expect_identical(unique(table$outcome), c("profile_1", "profile_2"))
+  expect_equal(table$estimate[table$outcome == "profile_1"], logits[, 1L] - logits[, 3L],
+               ignore_attr = TRUE)
+  # Invariance: adding a constant per term (another baseline) changes nothing.
+  shifted <- .reference_coefficients(list(profile = logits + c(5, -1, 2, 7)))
+  expect_equal(shifted$estimate, table$estimate, tolerance = 1e-14)
+  # Group classes 1 and 2 swapped: the terms are renumbered with them.
+  expect_identical(.renumber_group_classes(rownames(logits), c(2L, 1L)),
+                   c("group_class_2", "group_class_1", "x:group_class_2", "x:group_class_1"))
+  expect_identical(.reference_covariate_count(logits), 1L)
+  expect_identical(.reference_covariate_count(
+    matrix(c(0, 0, 1, 2), 2L, dimnames = list(c("(Intercept)", "z"), c("a", "b")))), 1L)
+})
+
+test_that("ordinal locations and count tables follow their definitions", {
+  intercepts <- c(0.4, -0.3, 0.2)
+  locations <- c(-1.2, 0.6, 0)
+  probabilities <- .ordinal_probabilities(intercepts, locations)
+  expect_equal(rowSums(probabilities), rep(1, 3L), tolerance = 1e-15)
+  colnames(probabilities) <- c("low", "mid", "high", "top")
+  count_means <- matrix(c(1.5, 4, 9), 3L, dimnames = list(NULL, "visits"))
+  reference <- harness_reference(
+    -10, 8, matrix(1 / 3, 4L, 3L), ordinal = list(rating = probabilities),
+    count_means = count_means, count_dispersion = count_means / 10,
+    standard_errors = list(location = matrix(c(0.1, 0.2, NA), 3L,
+                                             dimnames = list(NULL, "rating")),
+                           count_mean = count_means / 100))
+  ordinal <- .reference_ordinal(reference, 3L)
+  expect_equal(nrow(ordinal), 12L)
+  # The location is recovered from the probabilities alone, the last at 0.
+  expect_equal(ordinal$location[ordinal$category == "low"], locations, tolerance = 1e-12)
+  expect_identical(ordinal$location[ordinal$profile == 3L], rep(0, 4L))
+  expect_equal(ordinal$location_standard_error[ordinal$category == "top"], c(0.1, 0.2, NA))
+  counts <- .reference_counts(reference, 3L)
+  expect_identical(names(counts), c("profile", "indicator", "mean", "dispersion",
+                                    "standard_error"))
+  expect_equal(counts$standard_error, c(1.5, 4, 9) / 100)
+})
+
+test_that("one group class reports no group-level classification", {
+  case <- harness_entropy_case(1L)
+  expect_null(case$tables$group_posteriors)
+  expect_identical(unique(case$tables$classification$level), "individuals")
+  expect_identical(unique(case$tables$bch_weights$level), "individuals")
+  expect_setequal(case$tables$entropy$level, c("individuals", "groups"))
+  several <- harness_entropy_case(2L, seq(0.1, 1.2, length.out = 12L))
+  expect_setequal(several$tables$classification$level, c("individuals", "groups"))
+  expect_false(is.null(several$tables$group_posteriors))
+})
+
+# --------------------------------------------------------------------------
+# The additive, cross-level and general transition families.
+
+test_that("labelled-class families have their modal labels and bookkeeping accounted", {
+  set.seed(5)
+  teams <- 24L
+  type <- rep(1:2, length.out = teams)
+  data <- do.call(rbind, lapply(seq_len(teams), function(j) {
+    k <- sample(1:2, 5L, replace = TRUE, prob = if (type[j] == 1L) c(0.85, 0.15) else c(0.15, 0.85))
+    data.frame(team = sprintf("t%02d", j), y1 = stats::rnorm(5L, c(-1.5, 1.5)[k], 0.6),
+               y2 = stats::rnorm(5L, c(-1, 1)[k], 0.6))
+  }))
+  fit <- multilpa(data, c("y1", "y2"), "team", n_profiles = 2, n_group_classes = 2,
+                  family = "full_cross_level", seed = 1, n_starts = 1)
+  tables <- fit_tables(fit)
+  inventory <- fit_outputs(tables)
+  # The modal classes are text labels: values, compared exactly.
+  expect_true(all(c("assignments$profile", "assignments$group_class",
+                    "groups$group_class") %in% inventory$output))
+  # Bookkeeping in the one-row `fit` table is exempt by default.
+  ledger <- output_ledger("cross-level", inventory, compare_values("q", 1, 1, 1))
+  expect_identical(ledger$status[ledger$output %in% c("fit$converged", "fit$boundary")],
+                   c("exempt", "exempt"))
+  # A suite's own tables go through the same ledger, and a wrong label fails.
+  expected <- list(assignments = tables$assignments)
+  swapped <- expected
+  swapped$assignments$profile <- ifelse(swapped$assignments$profile == "profile_1",
+                                        "profile_2", "profile_1")
+  same <- compare_fit_tables("cross-level", fit, expected)
+  wrong <- compare_fit_tables("cross-level", fit, swapped)
+  expect_true(same$comparisons$agrees[same$comparisons$output %in% "assignments$profile"])
+  expect_false(wrong$comparisons$agrees[wrong$comparisons$output %in% "assignments$profile"])
+  expect_identical(same$ledger$status[same$ledger$output == "composition$share"],
+                   "not covered")
+  expect_false(.equivalence_passes(harness_run_of(same)))
+})
+
+test_that("a row whose key is missing is found and compared, not counted absent", {
+  # parameter_inference() gives group-class probabilities `term = NA`.
+  obtained <- list(pi = keyed_table(
+    data.frame(parameter = c("pi", "pi"), term = c("x", NA), estimate = c(1, 2)),
+    c("parameter", "term")))
+  close <- list(pi = data.frame(parameter = c("pi", "pi"), term = c("x", NA),
+                                estimate = c(1, 2) + 1e-12))
+  case <- compare_verb("na key", obtained, close, tolerance = c(default = 1e-9))
+  expect_true(.equivalence_passes(harness_run_of(case)))
+  # The NA row is still compared: a wrong value in it fails.
+  wrong <- close
+  wrong$pi$estimate[2L] <- 3
+  expect_false(.equivalence_passes(harness_run_of(
+    compare_verb("na key", obtained, wrong, tolerance = c(default = 1e-9)))))
+  # And a reference row the fit lacks is still reported missing.
+  extra <- list(pi = rbind(close$pi, data.frame(parameter = "pi", term = "z",
+                                                estimate = 4)))
+  expect_false(.equivalence_passes(harness_run_of(
+    compare_verb("na key", obtained, extra, tolerance = c(default = 1e-9)))))
 })
 
 cat("\nHarness self-tests complete.\n")

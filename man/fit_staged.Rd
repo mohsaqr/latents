@@ -108,9 +108,14 @@ within its group, such as a wave, occasion or course number. It is not
 used in estimation; it is stored for \code{get_results(x, "sequences")},
 \code{get_results(x, "sequence_summary")} and \code{plot(what = "sequences")}.
 Values must be complete and unique within each group, and are ordered as
-\code{\link[=sort]{sort()}} orders them. Numbers stored as text whose alphabetical order is
-not their numeric order (\code{"2"}, \code{"10"}) raise \code{latents_bad_time};
-zero-padded numbers and ISO dates are accepted.}
+\code{\link[=sort]{sort()}} orders them: numbers numerically, a factor by its levels, and
+character strings alphabetically. Numbers stored as text whose
+alphabetical order is not their numeric order (\code{"2"}, \code{"10"}), and
+numbered labels sharing their text around the number whose alphabetical
+order is not the numbers' (\code{"T2"}, \code{"T10"}; \code{"week 2"}, \code{"week 10"}),
+raise \code{latents_bad_time} (also \code{latents_bad_data}); give the order with
+\code{factor(levels = )} or zero-pad the numbers. Zero-padded numbers and ISO
+dates are accepted.}
 
 \item{search}{How the starts are found: \code{NULL} (the default), \code{"kmeans"}
 or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one

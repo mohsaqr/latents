@@ -20,11 +20,24 @@ group column are invalid: too few rows, a duplicated or absent column
 name, an indicator that is not a numeric vector, an indicator that is
 constant or entirely unobserved, missing or non-finite values under
 \code{missing = "error"}, or a missing group identifier.}
+\item{\code{latents_unweightable_level}}{\code{\link[=diagnostics]{diagnostics()}} of a weighted fit
+whose level cannot be weighted (a cross-level fit stores its weights per
+group and no map from rows to groups). It is caught inside
+\code{diagnostics()}, which reports that level's checks as \code{n/a}.}
+\item{\code{latents_not_a_fit}}{A verb that works on a fitted model received
+something else (a data frame, an enumeration, a vector), or a fitted
+model of a family the verb does not take; the message says what it
+received. It is also a \code{latents_bad_argument}.}
 \item{\code{latents_bad_argument}}{An argument has an invalid value: a scalar
 such as \code{n_profiles}, \code{n_group_classes}, \code{n_starts}, \code{max_iter}, \code{tol}
 or \code{min_variance}; a \code{seed} or \code{seeds} that is not a whole number
 accepted by \code{set.seed()}; a \code{what} naming a table or view the object
-does not have; or an argument the verb or table does not use.}
+does not have, or a \code{what} that is \code{NA}, not text or more than one
+name; an enumerated option such as \code{missing}, \code{boundary},
+\code{select_start}, \code{acceleration}, \code{centering}, \code{scaling},
+\code{variance_model}, \code{covariance_model}, \code{vcov_type} or \code{adjust} given a
+value that is not one of its choices; or an argument the verb or table
+does not use.}
 \item{\code{latents_bad_time}}{\code{time} is missing, or repeats a position within
 a group.}
 \item{\code{latents_bad_categorical}}{A categorical indicator cannot be
@@ -57,7 +70,11 @@ usually because it was made by an older version.}
 \item{\code{latents_unidentified}}{The requested model is not identified from
 the data: more profiles than distinct observed indicator rows, more
 group classes than groups, or more than one group class with only one
-profile or only singleton groups.}
+profile or only singleton groups. Raised as a warning, and the fit
+returned, for a model of complete categorical and ordinal indicators
+with one group class that has more free parameters than free cells of
+its table (negative degrees of freedom); a model with membership
+covariates is not judged by that count.}
 \item{\code{latents_all_starts_failed}}{Every EM start failed, so no fit was
 produced. The message gives the distinct start errors.}
 \item{\code{latents_empty_profile}}{A profile has no observed responses for an
@@ -212,9 +229,15 @@ carry, whose profile labels cannot yet be aligned between two fits, or
 on a directly fixed fit whose original free starts cannot be
 replayed.}
 \item{\code{latents_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
-called on a membership-covariate fit, whose classification errors
-depend on the predictors; the correction uses one unconditional error
-matrix.}
+called on a fit the correction does not cover: a membership-covariate
+fit, whose classification errors depend on the predictors (the
+correction uses one unconditional error matrix); a multilevel growth
+mixture; a general \code{\link[=lta]{lta()}} fit (occasion-varying, second-order or
+covariate transitions, occasion-specific measurement, a stayer class,
+or ordinal or count indicators), except that \code{\link[=r3step]{r3step()}} takes
+\code{initial_covariates} and \code{transition_covariates} for a covariate-free
+one; an additive, dispersion or cross-level \code{\link[=multilpa]{multilpa()}} fit; or a
+mixture regression with observation classes.}
 \item{\code{latents_unsupported_bootstrap}}{\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} was called on a
 person-centred fit, for which raw data cannot be simulated under the
 null model because the group baselines were removed before
@@ -320,8 +343,10 @@ pattern, and a profile can collapse onto them. The message gives the
 share of rows in such groups. When every group is like that, the fit is
 refused with \code{latents_bad_data} instead.}
 \item{\code{latents_small_classes}}{A profile or group class has an effective
-membership below one observation; or, in \code{\link[=three_step]{three_step()}} with \code{method = "ml"}, a class is carried by a single unit, so its standard error is
-reported as \code{NA}.}
+membership below one observation; or, in \code{\link[=three_step]{three_step()}} with any
+\code{method}, a class is carried by a single unit (fewer than 1.5 effective
+carrying units, by Kish's formula), so its standard error is reported
+as \code{NA}.}
 \item{\code{latents_thin_profiles}}{A Gaussian component with free variances
 of its own has posterior membership mass below the number of free
 parameters in its Gaussian density. This is a heuristic prompt to
@@ -363,8 +388,12 @@ that the class is close to separated, so the estimate is driven by
 scaling, a sparse class or separation rather than by the data.}
 \item{\code{latents_empty_transition_row}}{A profile is never occupied before
 a final occasion, so its transition row is uniform by construction
-rather than estimated; \code{get_results(fit, "transitions", estimated = FALSE)} lists such rows. The transition-network handoff also warns when
-it includes such a row.}
+rather than estimated; \code{get_results(fit, "transitions", estimated = FALSE)} lists such rows. The general \code{\link[=lta]{lta()}} engine raises it too, for
+an origin profile (or pair, under \code{order = 2}) that no move leaves: its
+logits are fixed at zero and flagged \code{estimated = FALSE} in
+\code{get_results(fit, "transitions")} and \code{\link[=parameter_inference]{parameter_inference()}}. In both
+engines such a row is not counted in \code{n_parameters}, AIC or BIC. The
+transition-network handoff also warns when it includes such a row.}
 \item{\code{latents_unidentified_occasion}}{An \code{\link[=lta]{lta()}} fit with
 \code{transitions = "occasion"} has an occasion at which no row observes an
 indicator, followed by an occasion that does. The moves into and out of
@@ -389,8 +418,9 @@ process variance far larger than the residual variance). During
 fitting this is treated as a rejected step; it reaches the caller only
 for parameter values supplied by hand.}
 \item{\code{latents_unused_argument}}{A method that accepts \code{...} (several
-\code{plot()} methods, \code{vcov()}, \code{predict()} and \code{\link[=descriptives]{descriptives()}} of a data
-frame) was given an argument it does not use. The call proceeds and
+\code{plot()} methods, \code{summary()} of fits and grids released in 0.9.21,
+\code{vcov()}, \code{predict()} and \code{\link[=descriptives]{descriptives()}} of a data frame) was given
+an argument it does not use. The call proceeds and
 the warning names the argument.}
 \item{\code{latents_unused_category}}{An ordinal indicator is a factor with
 levels never observed in the data. Their intercepts diverge, so Wald

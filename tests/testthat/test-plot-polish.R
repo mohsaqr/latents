@@ -42,8 +42,11 @@ test_that("the profile plot draws intervals, and the raincloud the data", {
   set.seed(3)
   ggplot2::ggplot_build(plot(fit, what = "raincloud"))
   expect_identical(stats::runif(1), before)
-  categorical <- quietly(multilca(student_esm, c("sports", "walking"), id = NULL,
-                                  n_profiles = 2, n_starts = 1, seed = 1))
+  # Two classes of two binary items are not identified (CORE-5).
+  expect_warning(categorical <- quietly(multilca(student_esm, c("sports", "walking"),
+                                                 id = NULL, n_profiles = 2,
+                                                 n_starts = 1, seed = 1)),
+                 class = "latents_unidentified")
   expect_error(plot(categorical, what = "raincloud"),
                class = "latents_no_continuous")
 })

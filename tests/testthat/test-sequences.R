@@ -130,7 +130,7 @@ test_that("the summary counts each class's groups and their lengths", {
 test_that("a broken ordering is refused rather than silently reshaped", {
   data <- .sequence_fixture()
   expect_error(.sequence_fit(data, time = "absent"),
-               "`time` must name a column of `data`")
+               "`time` names `absent`", class = "latents_bad_data")
   missing_time <- data
   missing_time$wave[3L] <- NA
   expect_error(.sequence_fit(missing_time, time = "wave"),

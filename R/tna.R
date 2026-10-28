@@ -46,6 +46,12 @@ get_tna <- function(x, ...) {
 
 #' @rdname get_tna
 #' @export
+get_tna.default <- function(x, ...) {
+  .latents_require_fit(x, substitute(x))
+}
+
+#' @rdname get_tna
+#' @export
 get_tna.multilpa_transitions <- function(x, ...) {
   .multilpa_require_tna()
   aggregate <- .multilpa_aggregate_transitions(x)
@@ -84,6 +90,12 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #' @export
 get_group_tna <- function(x, ...) {
   UseMethod("get_group_tna")
+}
+
+#' @rdname get_group_tna
+#' @export
+get_group_tna.default <- function(x, ...) {
+  .latents_require_fit(x, substitute(x))
 }
 
 #' @rdname get_group_tna

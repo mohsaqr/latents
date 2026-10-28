@@ -168,8 +168,8 @@ get_results(lca, "profile_probabilities")
 ```
 
 The low-media profile holds 73.7% of prompts and the media-heavy profile
-26.3%. The student classes differ sharply in their mix. In class 2, which holds
-58.4% of students, 0.974 of prompts fall in the low-media profile. In class 1,
+26.3%. The student classes differ sharply in their mix. In class 1, which holds
+58.4% of students, 0.974 of prompts fall in the low-media profile. In class 2,
 with 41.6% of students, the media-heavy profile is the more common, at 0.565.
 Media-heavy leisure is therefore concentrated in a minority of students, and
 for them it is the usual pattern, while most students almost never report it.
@@ -180,8 +180,8 @@ The probability plot compares the two mixes.
 plot_prevalence(lca)
 ```
 
-Class 2 runs close to one on the low-media profile and close to zero on the
-media-heavy one; class 1 divides its prompts more evenly, with the larger
+Class 1 runs close to one on the low-media profile and close to zero on the
+media-heavy one; class 2 divides its prompts more evenly, with the larger
 share on the media-heavy profile.
 
 ## Classification certainty
@@ -254,14 +254,14 @@ get_results(mixed, "responses")
 get_results(mixed, "profile_probabilities")
 ```
 
-With affect included, the profiles become profiles of mood. Profile 2 has mean
-ratings of 5.85 for happy, 5.59 for relaxed and 2.55 for exhausted; profile 1
-has 3.59, 3.33 and 4.33. The activities now differ less and in a different
-way: time with friends is reported at 0.188 of profile-2 prompts and 0.084 of
-profile-1 prompts, social media at 0.269 and 0.315. Good mood goes with social
-time more than with media use. The student classes remain distinct: 0.833 of
-the prompts of class 1 fall in the good-mood profile, and 0.874 of those of
-class 2 in the low-mood profile. The profiles a model finds are set by the
+With affect included, the profiles become profiles of mood. Profile 1 has mean
+ratings of 3.59 for happy, 3.33 for relaxed and 4.33 for exhausted; profile 2
+has 5.85, 5.59 and 2.55. The activities now differ less and in a different
+way: time with friends is reported at 0.084 of profile-1 prompts and 0.188 of
+profile-2 prompts, social media at 0.315 and 0.269. Good mood goes with social
+time more than with media use. The student classes remain distinct: 0.874 of
+the prompts of class 1 fall in the low-mood profile, and 0.833 of those of
+class 2 in the good-mood profile. The profiles a model finds are set by the
 indicators it is given, so the choice of indicators is part of the question.
 
 ## Interpretation

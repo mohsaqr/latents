@@ -18,7 +18,8 @@
 #                         classification table are unchanged
 #   data duplicated       estimates unchanged, standard errors divided by
 #                         sqrt(2), likelihood and counts doubled
-#   zero-weight units     nothing changes
+#   zero-weight units     fitted quantities unchanged; added prediction rows
+#                         checked by an independent Bayes calculation
 #   predictor + 2000      slopes and their errors unchanged; the intercept
 #                         moves by -2000 x slope, with the delta-method error
 #
@@ -228,6 +229,9 @@ suite_invariance <- function() {
     bic_groups <- bic_groups - 2 * delta
     bic_individual <- bic_individual - 2 * delta
   })
+  if (!is.null(tables$replication)) {
+    tables$replication$log_likelihood <- tables$replication$log_likelihood + delta
+  }
   tables
 }
 
@@ -308,6 +312,9 @@ suite_invariance <- function() {
     bic_groups <- tables$information_criteria$bic_groups
     bic_individual <- tables$information_criteria$bic_individual
   })
+  if (!is.null(tables$replication)) {
+    tables$replication$log_likelihood <- 2 * tables$replication$log_likelihood
+  }
   tables
 }
 
@@ -451,6 +458,87 @@ suite_invariance <- function() {
   list(category_case, item_case)
 }
 
+#' Expected predictions for new, excluded groups under the baseline model
+#'
+#' Zero weights leave estimation and aggregate classification summaries alone,
+#' but the package still reports the new persons' and groups' predictions.
+#' Evaluate these independently from the original diagonal-Gaussian parameters:
+#' f(y_i | h) = sum_k pi_hk f_k(y_i),
+#' P(h | y_g) is proportional to eta_h prod_i f(y_i | h), and
+#' P(k | y_g) = sum_h P(h | y_g) pi_hk f_k(y_i) / f(y_i | h).
+#' No E-step, predict method, or output from the padded fit is used.
+#'
+#' @param tables Baseline expected tables.
+#' @param fit Baseline fitted parameters, before excluded groups are appended.
+#' @param extra The new groups' raw observations.
+#' @param group The group identifier column.
+#' @param indicators Gaussian indicator columns, in parameter-matrix order.
+#' @param n_original Number of rows before padding.
+#' @return Expected tables extended to every supplied person and group.
+.expect_excluded_gaussian_groups <- function(tables, fit, extra, group, indicators,
+                                              n_original) {
+  stopifnot(is.null(fit$covariances), length(fit$categorical) == 0L,
+            ncol(fit$means) == length(indicators), nrow(extra) > 0L)
+  n_profiles <- nrow(fit$means)
+  n_group_classes <- length(fit$group_probabilities)
+  group_ids <- unique(extra[[group]])
+  group_index <- match(extra[[group]], group_ids)
+  n_groups <- length(group_ids)
+  log_density <- vapply(seq_len(n_profiles), function(k) {
+    contributions <- vapply(seq_along(indicators), function(j) {
+      value <- extra[[indicators[j]]]
+      density <- stats::dnorm(value, fit$means[k, j], sqrt(fit$variances[k, j]),
+                              log = TRUE)
+      density[is.na(value)] <- 0
+      density
+    }, numeric(nrow(extra)))
+    rowSums(matrix(contributions, nrow(extra), length(indicators)))
+  }, numeric(nrow(extra)))
+  normalize <- function(log_weights) {
+    maximum <- apply(log_weights, 1L, max)
+    weights <- exp(sweep(log_weights, 1L, maximum, "-"))
+    total <- rowSums(weights)
+    list(probability = weights / total, log_total = maximum + log(total))
+  }
+  within <- lapply(seq_len(n_group_classes), function(h) {
+    normalize(sweep(log_density, 2L, log(fit$profile_probabilities[h, ]), "+"))
+  })
+  group_log <- vapply(seq_len(n_group_classes), function(h) {
+    log(fit$group_probabilities[h]) + vapply(seq_len(n_groups), function(g) {
+      sum(within[[h]]$log_total[group_index == g])
+    }, numeric(1))
+  }, numeric(n_groups))
+  between <- normalize(group_log)
+  posterior <- Reduce(`+`, lapply(seq_len(n_group_classes), function(h) {
+    within[[h]]$probability * between$probability[group_index, h]
+  }))
+  profile_modal <- max.col(posterior, ties.method = "first")
+  group_modal <- max.col(between$probability, ties.method = "first")
+  rows <- n_original + seq_len(nrow(extra))
+  posteriors <- data.frame(
+    row = rep(rows, times = n_profiles), group = rep(extra[[group]], times = n_profiles),
+    profile = rep(seq_len(n_profiles), each = nrow(extra)),
+    posterior = as.vector(posterior),
+    modal = as.vector(col(posterior) == profile_modal))
+  group_posteriors <- data.frame(
+    group = rep(group_ids, times = n_group_classes),
+    group_size = rep(tabulate(group_index, n_groups), times = n_group_classes),
+    log_likelihood = rep(between$log_total, times = n_group_classes),
+    group_class = rep(seq_len(n_group_classes), each = n_groups),
+    posterior = as.vector(between$probability),
+    modal = as.vector(col(between$probability) == group_modal))
+  assignments <- data.frame(.row = rows, profile = profile_modal,
+                             group_class = group_modal[group_index],
+                             uncertainty = 1 - apply(posterior, 1L, max))
+  assignments[sprintf("posterior_profile_%d", seq_len(n_profiles))] <-
+    as.data.frame(posterior)
+  tables$posteriors <- rbind(tables$posteriors, posteriors[names(tables$posteriors)])
+  tables$group_posteriors <- rbind(tables$group_posteriors,
+                                   group_posteriors[names(tables$group_posteriors)])
+  tables$assignments <- rbind(tables$assignments, assignments[names(tables$assignments)])
+  tables
+}
+
 #' Zero-weight units change nothing (review item ML-1)
 .invariance_weights <- function() {
   set.seed(11L)
@@ -476,6 +564,8 @@ suite_invariance <- function() {
   expected <- tables
   expected$model$n_observations <- nrow(padded)
   expected$model$n_groups <- length(unique(padded$school))
+  expected <- .expect_excluded_gaussian_groups(expected, original, extra, "school",
+                                               spec$vars, nrow(data))
   list(.invariance_compare("two-level 2 x 2, four zero-weight groups added",
                            .invariance_refit(spec, padded, expected), expected))
 }

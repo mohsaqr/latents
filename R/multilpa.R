@@ -704,9 +704,9 @@
   # likelihood's relative change, which is mclust's rule. SQUAREM needs a
   # likelihood objective, so a prior fit takes plain steps.
   accelerator <- if (isTRUE(accelerate_em) && is.null(prior)) {
-    list(flatten = .multilpa_flatten_parameters,
-         restore = .multilpa_restore_parameters,
-         valid = .multilpa_valid_parameters)
+    .multilpa_accelerator(x, parameters,
+      row_weights = if (is.null(sampling_weights)) NULL else
+        sampling_weights[group_index], extra = extra)
   }
   fit <- .latents_em(
     parameters,
@@ -755,13 +755,17 @@
 #' @noRd
 .multilpa_time_values <- function(data, time, id, vars = character()) {
   if (is.null(time)) return(NULL)
-  stopifnot(
+  .latents_require(
     "`time` must be NULL or a single column name" =
-      is.character(time) && length(time) == 1L && !is.na(time),
-    "`time` must name a column of `data`" = time %in% names(data),
+      is.character(time) && length(time) == 1L && !is.na(time))
+  if (!time %in% names(data)) {
+    stop(errorCondition(sprintf("`time` names `%s`, which `data` does not have.%s", time,
+                                .latents_did_you_mean(time, names(data))),
+                        class = "latents_bad_data", call = NULL))
+  }
+  .latents_require(
     "`time` must not be one of `vars` or the `id` column" =
-      !identical(time, id) && !time %in% vars
-  )
+      !identical(time, id) && !time %in% vars, .class = "latents_bad_data")
   values <- data[[time]]
   if (anyNA(values)) {
     stop(errorCondition("`time` must not contain missing values.",
@@ -985,7 +989,14 @@
 #'   amount, as happens when a membership logit drifts along a flat ridge of
 #'   the likelihood; only the converged start is a maximum on which
 #'   [parameter_inference()] can be based. `summary()` and
-#'   `get_results(fit, "starts")` show every start.
+#'   `get_results(fit, "starts")` show every start. The reported replication
+#'   count includes final-stage starts within `1e-6 * max(1, n_observed)` of
+#'   the selected log likelihood, where `n_observed` counts observed indicator
+#'   values in rows of positive sampling weight, as in the EM stopping rule.
+#'   This absolute likelihood-gap tolerance is independent of measurement
+#'   units and of `tol`, since a start stopped by the EM rule can still lie
+#'   several steps below its maximum. It is stored as
+#'   `replication_tolerance` and does not select a start.
 #' @param boundary Whether a start with a variance at `min_variance` (a
 #'   covariance eigenvalue, under full covariance) may be reported. `"allow"`
 #'   (the default) permits it, as Mplus does, with a `latents_boundary`
@@ -1048,7 +1059,12 @@
 #'   for such a fit.
 #' @param acceleration `"squarem"` (the default) accelerates EM with SQUAREM
 #'   (Varadhan & Roland, 2008): each cycle extrapolates along the last two EM
-#'   steps and ends with an ordinary EM step, and falls back to plain EM when
+#'   steps in unit-free coordinates (means divided by reference standard
+#'   deviations, variances and covariances by the corresponding products;
+#'   probabilities unchanged). Reference spreads use observed values in rows
+#'   of positive sampling weight. Changing this acceleration chart can change
+#'   iteration counts and the local maximum reached relative to earlier
+#'   versions. Each cycle ends with an ordinary EM step and falls back when
 #'   the extrapolated point would lower the likelihood, so the iteration stays
 #'   monotone. Convergence is assessed over a whole cycle, so it is never
 #'   looser than plain EM's. `"none"` runs plain EM, which follows the same
@@ -1090,7 +1106,13 @@
 #'   or always giving the same value) raises `latents_bad_data`. Under
 #'   `EEI`, `VEI`, `EVI`, `VVI`, `EEE`, `VEE`, `EVV` and `VVV`, whose family
 #'   is unchanged when each indicator is rescaled, grand scaling changes only
-#'   the units of the estimates. Under the spherical `EII` and `VII`, which
+#'   the units of the estimates and adds the density Jacobian to each start's
+#'   log likelihood. SQUAREM uses unit-free coordinates, so its search path
+#'   is equivariant in exact arithmetic when variance bounds are inactive or
+#'   transformed with the model. Rounding near convergence can still change
+#'   iteration counts, and nearly tied starts can change the selected labelling.
+#'   A scalar variance or eigenvalue floor is not generally preserved by
+#'   unequal indicator rescaling. Under the spherical `EII` and `VII`, which
 #'   impose one variance on every indicator, and under `EEV`, `VEV`, `EVE` and
 #'   `VVE`, which share eigenvalues or eigenvectors across profiles (neither
 #'   survives rescaling the indicators by different factors), it changes the
@@ -1187,9 +1209,14 @@
 #'   used in estimation; it is stored for `get_results(x, "sequences")`,
 #'   `get_results(x, "sequence_summary")` and `plot(what = "sequences")`.
 #'   Values must be complete and unique within each group, and are ordered as
-#'   [sort()] orders them. Numbers stored as text whose alphabetical order is
-#'   not their numeric order (`"2"`, `"10"`) raise `latents_bad_time`;
-#'   zero-padded numbers and ISO dates are accepted.
+#'   [sort()] orders them: numbers numerically, a factor by its levels, and
+#'   character strings alphabetically. Numbers stored as text whose
+#'   alphabetical order is not their numeric order (`"2"`, `"10"`), and
+#'   numbered labels sharing their text around the number whose alphabetical
+#'   order is not the numbers' (`"T2"`, `"T10"`; `"week 2"`, `"week 10"`),
+#'   raise `latents_bad_time` (also `latents_bad_data`); give the order with
+#'   `factor(levels = )` or zero-pad the numbers. Zero-padded numbers and ISO
+#'   dates are accepted.
 #' @param fixed Character vector naming measurement blocks to hold at the
 #'   values in `start` instead of estimating them: any of `"means"`,
 #'   `"variances"` and `"response_probabilities"`, or `"measurement"` for every
@@ -1287,7 +1314,14 @@
 #'   many times and the criteria stay on the sample's scale. A unit of weight
 #'   zero is not part of the sample: it changes no estimate, likelihood,
 #'   sample size, entropy or criterion, sets neither the grand offset nor the
-#'   grand scale of `centering`/`scaling = "grand"`, and is not classified. Standard errors are sandwich estimates:
+#'   grand scale of `centering`/`scaling = "grand"`, and is not classified.
+#'   Nor does it define a category: a categorical, ordinal or paired
+#'   (`local_dependence`) value seen only on units of weight zero is not a
+#'   category of the fit and has no parameter, and an indicator constant among
+#'   the units of positive weight is refused whatever those units hold. Under
+#'   `missing = "error"`, a missing categorical, ordinal or count value on a
+#'   unit of weight zero is not refused; a missing continuous value is.
+#'   Standard errors are sandwich estimates:
 #'   `parameter_inference()` defaults to `vcov_type = "robust"` and refuses
 #'   `"observed"` and `"opg"` (`latents_unsupported_weights`), and
 #'   `method = "bootstrap"` resamples the units with their weights.
@@ -1396,7 +1430,11 @@
 #'   conditional Gaussian sufficient statistics and observed marginal
 #'   densities. More than one group class requires more than one profile and at
 #'   least one group with more than one individual; these checks are necessary
-#'   but do not establish identification. By default the highest finite
+#'   but do not establish identification. A model of complete categorical and
+#'   ordinal indicators alone, with one group class, warns
+#'   (`latents_unidentified`) when it has more free parameters than its
+#'   contingency table has free cells (negative degrees of freedom), which no
+#'   data can identify (Goodman, 1974). By default the highest finite
 #'   likelihood across starts is returned, even if that start did not converge;
 #'   `select_start = "converged"` prefers a converged start, and `converged`
 #'   and `starts` show which was chosen. Profile and group-class labels are
@@ -1404,6 +1442,10 @@
 #' @references Vermunt, J. K. (2003). Multilevel latent class models.
 #'   Sociological Methodology, 33, 213--239.
 #'   doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+#'
+#'   Goodman, L. A. (1974). Exploratory latent structure analysis using both
+#'   identifiable and unidentifiable models. Biometrika, 61(2), 215--231.
+#'   doi:10.1093/biomet/61.2.215.
 #'
 #'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 #'   non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
@@ -1540,10 +1582,10 @@ multilpa <- function(data, vars, id, n_profiles,
     return(.latents_fit_local_dependence(.call, environment(),
                                          local_dependence))
   }
-  family <- match.arg(family)
+  family <- .latents_match_formal(family)
   cores <- .latents_check_cores(cores)
-  count_model <- match.arg(count_model)
-  count_dispersion <- match.arg(count_dispersion)
+  count_model <- .latents_match_formal(count_model)
+  count_dispersion <- .latents_match_formal(count_dispersion)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
     supplied <- setdiff(names(.call)[-1L], .cross_level_arguments())
     if (length(supplied) > 0L || missing(id) || is.null(id) || missing(n_profiles)) {
@@ -1556,9 +1598,9 @@ multilpa <- function(data, vars, id, n_profiles,
         class = "latents_bad_argument", call = NULL))
     }
     return(.cross_level_fit(data, vars, id, n_profiles, n_group_classes, family,
-                            match.arg(variance_model),
+                            .latents_match_formal(variance_model),
                             if (missing(between_variance)) "varying" else
-                              match.arg(between_variance),
+                              .latents_match_formal(between_variance),
                             n_starts, max_iter, tol, min_variance, seed,
                             .call, weights = weights,
                             search = .latents_check_search(search) %||% "kmeans",
@@ -1580,7 +1622,7 @@ multilpa <- function(data, vars, id, n_profiles,
     }
     return(.additive_fit(data, vars, id, n_group_classes,
                          if (missing(between_variance)) NULL else
-                           match.arg(between_variance),
+                           .latents_match_formal(between_variance),
                          n_starts, max_iter, tol, min_variance, seed,
                          .call, family = family, weights = weights,
                          search = .latents_check_search(search) %||% "kmeans",
@@ -1592,17 +1634,17 @@ multilpa <- function(data, vars, id, n_profiles,
       "(`family = \"additive\"`); the profile model does not have it."),
       class = "latents_bad_argument", call = NULL))
   }
-  select_start <- match.arg(select_start)
-  boundary <- match.arg(boundary)
+  select_start <- .latents_match_formal(select_start)
+  boundary <- .latents_match_formal(boundary)
   # Read once here: `boundary` is reused below for the selected fit's flag.
   exclude_boundary <- identical(boundary, "exclude")
-  acceleration <- match.arg(acceleration)
+  acceleration <- .latents_match_formal(acceleration)
   search <- .latents_check_search(search)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
-  .latents_check_data_frame(data)
-  stopifnot(
+  .latents_check_data_frame(data, substitute(data))
+  .latents_require(
     "`vars` must be a character vector of column names" =
       is.character(vars),
     "`id` must be a single column name, or NULL for a single-level fit" =
@@ -1657,13 +1699,13 @@ multilpa <- function(data, vars, id, n_profiles,
     shape <- pieces$shape
     orientation <- pieces$orientation
   }
-  variance_model <- match.arg(variance_model)
-  covariance_model <- match.arg(covariance_model)
-  missing <- match.arg(missing)
-  centering <- match.arg(centering)
-  scaling <- match.arg(scaling)
+  variance_model <- .latents_match_formal(variance_model)
+  covariance_model <- .latents_match_formal(covariance_model)
+  missing <- .latents_match_formal(missing)
+  centering <- .latents_match_formal(centering)
+  scaling <- .latents_match_formal(scaling)
   .multilpa_check_drop_empty(drop_empty)
-  profile_slopes <- match.arg(profile_slopes)
+  profile_slopes <- .latents_match_formal(profile_slopes)
   if (identical(profile_slopes, "group_class") && length(profile_covariates) == 0L) {
     stop(errorCondition(paste(
       "`profile_slopes = \"group_class\"` lets profile-covariate slopes differ",
@@ -1783,8 +1825,12 @@ multilpa <- function(data, vars, id, n_profiles,
                                             missing, min_probability,
                                             other = c(ordinal, count),
                                             weights = weights)
+  # Ordinal categories and the count checks are judged on the rows of
+  # positive weight, as the other indicators are (review 2026-10-27, CORE-2).
   extra <- .latents_set_count_model(
-    .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
+    .latents_prepare_extra(data, ordinal, count, missing,
+                           contributing = .multilpa_contributing_rows(data, weights)),
+    count_model, count_dispersion)
   if (!is.null(direct_terms)) {
     extra <- .latents_add_direct(extra, .latents_prepare_direct(
       data, direct_terms, vars, measurement$continuous))
@@ -1855,6 +1901,18 @@ multilpa <- function(data, vars, id, n_profiles,
   # that, rather than as a generic complaint about the start's contents.
   fixed <- .multilpa_validate_fixed(fixed, start, covariance_model, ncol(x),
                                     n_categories)
+  # Identification by counting: a complete table of discrete indicators has
+  # fewer free cells than the model has parameters (review 2026-10-27, CORE-5).
+  if (ncol(x) == 0L && n_group_classes == 1L && !isTRUE(noise)) {
+    .multilpa_warn_negative_df(
+      if (is.null(codes)) NULL else codes[carried_rows, , drop = FALSE], n_categories,
+      .latents_extra_rows(extra, which(carried_rows)),
+      .multilpa_count_parameters(n_profiles, n_group_classes, 0L, n_categories,
+                                 variance_model, covariance_model) +
+        .latents_extra_n_parameters(extra, n_profiles) -
+        .multilpa_fixed_parameters(fixed, n_profiles, 0L, n_categories,
+                                   variance_model, covariance_model))
+  }
   # A noise start carries its proportion beside the profile probabilities;
   # it is taken out here so the ordinary validation sees the ordinary shape.
   noise_start <- NULL
@@ -1967,6 +2025,115 @@ multilpa <- function(data, vars, id, n_profiles,
   plan
 }
 
+#' Warn when a discrete-indicator model has negative degrees of freedom
+#'
+#' A latent class model of complete categorical (and ordinal) indicators is a
+#' model of their contingency table, which has `prod(categories) - 1` free
+#' cell probabilities. With more free parameters than that, the degrees of
+#' freedom are negative and the model is not identified: different class sizes
+#' and response probabilities reproduce the same table (Goodman, 1974). This
+#' is a counting condition, necessary but not sufficient: a model with
+#' non-negative degrees of freedom can still be locally unidentified. It is
+#' judged only where the count is exact -- no continuous, count or
+#' direct-effect part, one group class, every row of positive weight complete
+#' -- and leaves every other model as it was.
+#'
+#' @param codes Categorical codes of the rows of positive weight, or `NULL`.
+#' @param n_categories Categories per categorical indicator, or `NULL`.
+#' @param extra Prepared ordinal and count indicators of the same rows, or
+#'   `NULL`.
+#' @param n_parameters The model's free parameters.
+#' @return `NULL`, invisibly; raises a `latents_unidentified` warning when the
+#'   degrees of freedom are negative.
+#' @references Goodman, L. A. (1974). Exploratory latent structure analysis
+#'   using both identifiable and unidentifiable models. Biometrika, 61(2),
+#'   215-231.
+#' @noRd
+.multilpa_warn_negative_df <- function(codes, n_categories, extra, n_parameters) {
+  ordinal <- extra$ordinal
+  counted <- is.null(extra) ||
+    ((ncol(extra$count) %||% 0L) == 0L && is.null(extra$direct))
+  # A half-observed pair row has an NA code, so it too makes the table
+  # incomplete.
+  if (!counted || (is.null(codes) && is.null(ordinal)) ||
+      anyNA(codes) || anyNA(ordinal)) {
+    return(invisible(NULL))
+  }
+  # In doubles: a product of many indicators' categories overflows an integer.
+  cells <- prod(as.numeric(c(n_categories, extra$ordinal_categories)))
+  degrees <- cells - 1 - n_parameters
+  if (degrees >= 0) return(invisible(NULL))
+  warning(warningCondition(sprintf(paste(
+    "The model is not identified: it has %d free parameters, but its",
+    "indicators' %s response patterns leave only %s free cell probabilities",
+    "(%s degrees of freedom). Its class sizes and response probabilities are",
+    "not determined by the data; fit fewer classes or use more indicators."),
+    as.integer(n_parameters), format(cells, big.mark = ","),
+    format(cells - 1, big.mark = ","), format(degrees)),
+    class = "latents_unidentified", call = NULL))
+  invisible(NULL)
+}
+
+#' `match.arg()` on a formal of the calling function
+#'
+#' Reads the choices from the caller's formals, as `match.arg(arg)` does, and
+#' matches with `.latents_match_arg()`, so an invalid value raises
+#' `latents_bad_argument` naming the argument and its choices where base
+#' `match.arg()` raised an unclassed error about `'arg'` (review 2026-10-27,
+#' CORE-7).
+#' @param arg The argument, written as the bare name of a formal of the caller.
+#' @return The matched choice, a single string.
+#' @noRd
+.latents_match_formal <- function(arg) {
+  name <- deparse(substitute(arg))
+  caller <- sys.function(sys.parent())
+  choices <- eval(formals(caller)[[name]], envir = environment(caller))
+  .latents_match_arg(arg, choices, name)
+}
+
+#' Check that the indicators and the group column exist and are distinct
+#'
+#' Each broken contract has its own message naming the columns concerned,
+#' with the likely spelling of a misspelt one.
+#' @param data The data frame.
+#' @param vars The indicator names.
+#' @param id The group column (a synthetic column for single-level fits).
+#' @return `NULL`, invisibly, or `latents_bad_data`.
+#' @noRd
+.multilpa_check_columns <- function(data, vars, id) {
+  refuse <- function(message) {
+    stop(errorCondition(message, class = "latents_bad_data", call = NULL))
+  }
+  if (nrow(data) < 2L) {
+    refuse(sprintf("`data` has %d %s; a fit needs at least two.", nrow(data),
+                   if (nrow(data) == 1L) "row" else "rows"))
+  }
+  if (length(vars) < 1L || anyNA(vars)) refuse("`vars` must name at least one column, and no NA.")
+  repeated <- unique(vars[duplicated(vars)])
+  if (length(repeated) > 0L) {
+    refuse(sprintf("`vars` lists %s more than once.", .latents_name_list(repeated)))
+  }
+  doubled <- unique(names(data)[duplicated(names(data))])
+  if (length(doubled) > 0L) {
+    refuse(sprintf("`data` has more than one column named %s.", .latents_name_list(doubled)))
+  }
+  absent <- setdiff(vars, names(data))
+  if (length(absent) > 0L) {
+    refuse(sprintf("`vars` names %s, which `data` does not have.%s",
+                   .latents_name_list(absent), .latents_did_you_mean(absent, names(data))))
+  }
+  if (length(id) != 1L || is.na(id)) refuse("`id` must be a single column name.")
+  if (id %in% vars) {
+    refuse(sprintf("`id` (`%s`) is also listed in `vars`; the group column cannot be an indicator.",
+                   id))
+  }
+  if (!id %in% names(data)) {
+    refuse(sprintf("`id` names `%s`, which `data` does not have.%s", id,
+                   .latents_did_you_mean(id, names(data))))
+  }
+  invisible(NULL)
+}
+
 #' Validate the scalar arguments of a fit
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
@@ -1974,14 +2141,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                     n_group_classes, n_starts, max_iter, tol,
                                     min_variance, min_probability, seed,
                                     categorical) {
-  if (nrow(data) < 2L || length(vars) < 1L || anyNA(vars) ||
-      anyDuplicated(vars) || anyDuplicated(names(data)) ||
-      length(id) != 1L || is.na(id) || id %in% vars ||
-      !all(c(vars, id) %in% names(data))) {
-    stop(errorCondition(
-      "Supply at least two rows, unique existing indicators, and one distinct group column.",
-      class = "latents_bad_data", call = NULL))
-  }
+  .multilpa_check_columns(data, vars, id)
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
   invisible(lapply(names(counts), function(field) {
@@ -2053,23 +2213,25 @@ multilpa <- function(data, vars, id, n_profiles,
       min_probability, max(n_categories)),
       class = "latents_bad_categorical", call = NULL))
   }
-  if (!is.null(codes) && missing == "error" && anyNA(codes)) {
-    stop(errorCondition("Indicators contain missing or non-finite values.",
-                        class = "latents_bad_data", call = NULL))
+  if (!is.null(codes)) {
+    .latents_refuse_missing_values(codes[contributing, , drop = FALSE], missing)
   }
   frame <- data[, continuous, drop = FALSE]
-  if (!all(vapply(frame, is.numeric, logical(1))) ||
-      any(vapply(frame, function(value) !is.null(dim(value)), logical(1)))) {
-    stop(errorCondition(
-      "Every indicator must be a numeric vector; factors are not continuous indicators.",
+  not_numeric <- names(frame)[!vapply(frame, function(value) {
+    is.numeric(value) && is.null(dim(value))
+  }, logical(1))]
+  if (length(not_numeric) > 0L) {
+    kinds <- vapply(frame[not_numeric], function(value) class(value)[[1L]], character(1))
+    stop(errorCondition(sprintf(paste(
+      "%s %s not numeric (%s). A continuous indicator must be a numeric vector;",
+      "declare categorical ones in `categorical`, or fit them with lca() or multilca()."),
+      .latents_name_list(not_numeric), if (length(not_numeric) == 1L) "is" else "are",
+      paste(sprintf("%s: %s", not_numeric, kinds), collapse = ", ")),
       class = "latents_bad_data", call = NULL))
   }
   x <- matrix(as.matrix(frame), nrow = nrow(data), ncol = length(continuous),
               dimnames = list(NULL, continuous))
-  if (any(is.infinite(x)) || any(is.nan(x)) || (missing == "error" && anyNA(x))) {
-    stop(errorCondition("Indicators contain missing or non-finite values.",
-                        class = "latents_bad_data", call = NULL))
-  }
+  .latents_refuse_missing_values(x, missing)
   carried <- x[contributing, , drop = FALSE]
   if (any(colSums(!is.na(carried)) == 0L)) {
     stop(errorCondition(

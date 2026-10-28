@@ -216,7 +216,8 @@ test_that("the argument contract is enforced before anything is refitted", {
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 0L), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 1.5), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, tolerance = -1), "positive number")
-  expect_error(sensitivity(data.frame(a = 1), seeds = 1:3), "fitted `multilpa`")
+  expect_error(sensitivity(data.frame(a = 1), seeds = 1:3), "a data frame",
+               class = "latents_not_a_fit")
 })
 
 test_that("agreement refuses data whose rows no longer match the reference", {

@@ -1,5 +1,5 @@
-# Equivalence tests compare latents with other implementations. They live in
-# tests/equivalence/, are excluded from the package build, and run only here.
+# Equivalence tests and the full-output harness compare latents with independent
+# references. These development checks are excluded from the package build.
 on:
   push:
     branches: [main, master]
@@ -17,6 +17,11 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       NOT_CRAN: true
+      LATENTS_EQUIVALENCE_REQUIRE_ALL: true
+      LATENTS_EQUIVALENCE_OUTPUT: tmp/equivalence
+      OMP_NUM_THREADS: 1
+      OPENBLAS_NUM_THREADS: 1
+      VECLIB_MAXIMUM_THREADS: 1
 
     steps:
       - uses: actions/checkout@v5
@@ -37,6 +42,40 @@ jobs:
             any::sandwich
             any::knitr
             any::rmarkdown
+            any::glca
+            any::poLCA
+            any::multilevLCA
+            any::depmixS4
+            any::flexmix
+            any::lcmm
+            any::nnet
+            any::nlme
+            any::lme4
+            any::mvtnorm
+            any::LMest
+            any::VGAM
+            any::mice
+            any::CompQuadForm
+            any::tidySEM
+            any::ordinal
+
+      - name: Install current package for worker processes
+        run: R CMD INSTALL .
+        shell: bash
+
+      - name: Test the equivalence harness
+        run: Rscript equivalence/harness/test-harness.R
+
+      - name: Compare every registered reference suite and output
+        run: Rscript equivalence/harness/run.R
+
+      - name: Retain full-output comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-output-equivalence
+          path: tmp/equivalence/
+          if-no-files-found: ignore
 
       - name: Run equivalence tests
         run: |

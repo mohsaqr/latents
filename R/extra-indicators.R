@@ -22,20 +22,43 @@
 
 #' Prepare ordinal and count indicators
 #'
+#' The checks that ask whether an indicator carries information -- its
+#' categories, how many are observed, whether a count is ever non-zero,
+#' whether it is observed at all -- are made on the rows of positive sampling
+#' weight only, as `.multilpa_prepare_indicators()` makes them for the other
+#' indicators. A row of weight zero is absent from the fit, so dropping it and
+#' keeping it give the same categories, the same parameters and the same
+#' refusals (review 2026-10-27, CORE-2). The checks that protect the
+#' arithmetic (whole, finite, non-negative values) still see every row.
+#'
 #' @param data The data frame of the fit.
 #' @param ordinal,count Names of the ordinal and count indicators.
-#' @param missing `"error"` or `"fiml"`.
+#' @param missing `"error"` or `"fiml"`. Under `"error"`, a missing ordinal or
+#'   count value is refused on a contributing row only, as a missing
+#'   categorical value is.
+#' @param contributing `NULL`, or one logical per row of `data`: `FALSE` for a
+#'   row of sampling weight zero (see `.multilpa_contributing_rows()`). The
+#'   categories of a numeric ordinal indicator are the values seen on
+#'   contributing rows; a value seen only on rows of weight zero has no fitted
+#'   probability and is coded `NA` there, as an excluded-only categorical value
+#'   is. The categories of a factor are its declared levels either way.
 #' @return `NULL` when neither is given; otherwise a list with `ordinal` (an
 #'   integer code matrix, codes 1..K), `ordinal_levels` (the category labels
 #'   per indicator), `ordinal_categories` (K per indicator) and `count` (a
 #'   numeric matrix of non-negative integers).
 #' @noRd
 .latents_prepare_extra <- function(data, ordinal = character(),
-                                   count = character(), missing = "error") {
+                                   count = character(), missing = "error",
+                                   contributing = NULL) {
   if (length(ordinal) == 0L && length(count) == 0L) return(NULL)
-  levels_of <- function(value) {
-    if (is.factor(value)) levels(value) else .latents_ordinal_labels(sort(unique(value)))
-  }
+  contributing <- contributing %||% rep(TRUE, nrow(data))
+  stopifnot("`contributing` must hold one logical per row" =
+              is.logical(contributing) && !anyNA(contributing) &&
+              length(contributing) == nrow(data))
+  excluded <- !all(contributing)
+  # The native values whose labels are the categories of a numeric indicator:
+  # those of the rows that enter the likelihood.
+  native_values <- function(value) sort(unique(value[contributing & !is.na(value)]))
   ordinal_levels <- stats::setNames(lapply(ordinal, function(name) {
     value <- data[[name]]
     observed <- value[!is.na(value)]
@@ -47,25 +70,28 @@
         "its categories are ordered by factor level or by value."), name),
         class = "latents_bad_data", call = NULL))
     }
-    levels_of(value)
+    if (is.factor(value)) levels(value) else .latents_ordinal_labels(native_values(value))
   }), ordinal)
   ordinal_codes <- if (length(ordinal) == 0L) NULL else
     matrix(vapply(ordinal, function(name) {
       value <- data[[name]]
-      as.integer(if (is.numeric(value)) match(value, sort(unique(value))) else
+      as.integer(if (is.numeric(value)) match(value, native_values(value)) else
         match(as.character(value), ordinal_levels[[name]]))
     }, integer(nrow(data))), nrow(data), length(ordinal),
     dimnames = list(NULL, ordinal))
+  carried_codes <- if (is.null(ordinal_codes)) NULL else
+    ordinal_codes[contributing, , drop = FALSE]
   categories <- lengths(ordinal_levels)
   # A factor can carry levels nobody chose, so identification is checked on
   # the categories actually observed, not on the levels.
   observed_categories <- vapply(ordinal, function(name) {
-    length(unique(ordinal_codes[!is.na(ordinal_codes[, name]), name]))
+    length(unique(carried_codes[!is.na(carried_codes[, name]), name]))
   }, integer(1))
   if (any(observed_categories < 2L)) {
     stop(errorCondition(sprintf(
-      "Ordinal indicator %s has fewer than two observed categories.",
-      paste(sprintf("`%s`", ordinal[observed_categories < 2L]), collapse = ", ")),
+      "Ordinal indicator %s has fewer than two observed categories%s.",
+      paste(sprintf("`%s`", ordinal[observed_categories < 2L]), collapse = ", "),
+      if (excluded) " in the rows of positive weight" else ""),
       class = "latents_bad_data", call = NULL))
   }
   # A declared category nobody chose has no data for its intercept, which
@@ -81,7 +107,7 @@
       "first, for example with droplevels()."),
       paste(sprintf("`%s`", unused), collapse = ", "),
       paste(vapply(unused, function(name) {
-        seen <- unique(ordinal_codes[!is.na(ordinal_codes[, name]), name])
+        seen <- unique(carried_codes[!is.na(carried_codes[, name]), name])
         paste(sprintf("`%s`", ordinal_levels[[name]][-seen]), collapse = ", ")
       }, character(1)), collapse = "; ")),
       class = "latents_unused_category", call = NULL))
@@ -97,23 +123,32 @@
           "Count indicator `%s` must hold non-negative whole numbers.", name),
           class = "latents_bad_data", call = NULL))
       }
-      if (length(observed) > 0L && all(observed == 0)) {
-        stop(errorCondition(sprintf(
-          "Count indicator `%s` is zero throughout; a Poisson mean is not identified.",
-          name), class = "latents_bad_data", call = NULL))
+      carried <- value[contributing & !is.na(value)]
+      if (length(carried) > 0L && all(carried == 0)) {
+        stop(errorCondition(sprintf(paste(
+          "Count indicator `%s` is zero throughout%s; a Poisson mean is not",
+          "identified."), name, if (excluded) " the rows of positive weight" else ""),
+          class = "latents_bad_data", call = NULL))
       }
       as.numeric(value)
     }, numeric(nrow(data))), nrow(data), length(count),
     dimnames = list(NULL, count))
-  if (identical(missing, "error") && (anyNA(ordinal_codes) || anyNA(counts))) {
-    stop(errorCondition("Indicators contain missing or non-finite values.",
-                        class = "latents_bad_data", call = NULL))
+  # An excluded-only ordinal value is NA by construction, not a missing
+  # response, so the missing-value contract judges the rows that carry weight,
+  # as it does for categorical codes; counts follow the same rule, so a row of
+  # weight zero is absent for every indicator type alike.
+  if (!is.null(ordinal_codes)) .latents_refuse_missing_values(carried_codes, missing)
+  if (!is.null(counts)) {
+    .latents_refuse_missing_values(counts[contributing, , drop = FALSE], missing)
   }
-  observed <- c(if (is.null(ordinal_codes)) NULL else colSums(!is.na(ordinal_codes)),
-                if (is.null(counts)) NULL else colSums(!is.na(counts)))
+  observed <- c(if (is.null(ordinal_codes)) NULL else colSums(!is.na(carried_codes)),
+                if (is.null(counts)) NULL else
+                  colSums(!is.na(counts[contributing, , drop = FALSE])))
   if (any(observed == 0L)) {
-    stop(errorCondition("Every indicator must have observed values.",
-                        class = "latents_bad_data", call = NULL))
+    stop(errorCondition(if (excluded)
+      "Every indicator needs an observed row with positive sampling weight." else
+      "Every indicator must have observed values.",
+      class = "latents_bad_data", call = NULL))
   }
   result <- list(ordinal = ordinal_codes, ordinal_levels = ordinal_levels,
                  ordinal_categories = as.integer(categories), count = counts)
@@ -122,7 +157,7 @@
   native <- stats::setNames(lapply(ordinal, function(name) {
     value <- data[[name]]
     if (!is.numeric(value)) return(NULL)
-    values <- sort(unique(value))
+    values <- native_values(value)
     if (anyDuplicated(as.character(values))) values else NULL
   }), ordinal)
   if (any(!vapply(native, is.null, logical(1)))) result$ordinal_values <- native
@@ -822,13 +857,22 @@
 #'
 #' @param object A fit carrying `extra_data`.
 #' @param newdata A data frame with the fit's indicator columns.
+#' @param contributing `NULL`, or one logical per row of `newdata`, `FALSE`
+#'   for a training row of sampling weight zero. Such a row may hold an
+#'   ordinal value outside the fit's categories (see
+#'   `.latents_prepare_extra()`); it is coded `NA` there. New data leave it
+#'   `NULL`, so every row is checked.
 #' @return Prepared indicators on the fit's categories, or `NULL`. A category
-#'   the fit never saw, or an invalid count, raises `latents_bad_data`.
+#'   the fit never saw on a checked row, or an invalid count, raises
+#'   `latents_bad_data`.
 #' @noRd
-.latents_prepare_extra_like <- function(object, newdata) {
+.latents_prepare_extra_like <- function(object, newdata, contributing = NULL) {
   extra <- object$extra_data
   if (is.null(extra)) return(NULL)
   n <- nrow(newdata)
+  checked <- contributing %||% rep(TRUE, n)
+  stopifnot("`contributing` must hold one logical per row" =
+              is.logical(checked) && !anyNA(checked) && length(checked) == n)
   ordinal <- if (is.null(extra$ordinal)) NULL else
     matrix(vapply(colnames(extra$ordinal), function(name) {
       value <- newdata[[name]]
@@ -840,7 +884,7 @@
       native <- extra$ordinal_values[[name]]
       code <- if (is.numeric(value) && !is.null(native)) match(value, native) else
         match(as.character(value), extra$ordinal_levels[[name]])
-      unseen <- !is.na(value) & is.na(code)
+      unseen <- !is.na(value) & is.na(code) & checked
       if (any(unseen)) {
         stop(errorCondition(sprintf(
           "`%s` has the categor%s %s, which the fit never saw.", name,

@@ -16,7 +16,7 @@
     vcov_type <- if (.latents_is_weighted(x)) "robust" else "observed"
   }
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x),
-    match.arg(vcov_type, c("observed", "robust", "opg")), FALSE)
+    .latents_match_arg(vcov_type, c("observed", "robust", "opg"), "vcov_type"), FALSE)
   if (!is.null(x$inference) && identical(x$inference$vcov_type, vcov_type)) {
     return(x$inference)
   }
@@ -185,12 +185,15 @@
     colSums(prior * weight) / sum(weight)
   }, numeric(spec$n_classes))
   probability <- matrix(probability, spec$n_classes)
+  # A group of weight zero is not classified (ML-1), as in the classes table.
+  assigned_groups <- if (is.null(spec$sampling_weights)) rho else
+    rho[spec$sampling_weights > 0, , drop = FALSE]
   table <- data.frame(
     group_class = rep(group_names, each = spec$n_classes),
     class = rep(class_names, spec$n_group_classes),
     probability = as.vector(probability),
     group_share = rep(colSums(weighted_rho) / sum(weighted_rho), each = spec$n_classes),
-    n_groups_assigned = rep(tabulate(max.col(rho, ties.method = "first"),
+    n_groups_assigned = rep(tabulate(max.col(assigned_groups, ties.method = "first"),
                                      spec$n_group_classes),
                             each = spec$n_classes))
   if (ncol(spec$w) == 0L) {
@@ -374,10 +377,11 @@
       "fitted to, and `truth`, the column holding the known classes."),
       class = "latents_bad_argument", call = NULL))
   }
-  stopifnot(
+  .latents_require(
     "`data` must be a data frame" = is.data.frame(data),
     "`truth` must be a single column name of `data`" =
-      is.character(truth) && length(truth) == 1L && truth %in% names(data))
+      is.character(truth) && length(truth) == 1L && !is.na(truth) &&
+      truth %in% names(data), .class = "latents_bad_data")
   if (max(spec$kept_rows) > nrow(data)) {
     stop(errorCondition(paste(
       "`data` has fewer rows than the fit used; pass the data frame the",
@@ -526,11 +530,12 @@ get_results.latents_mixture_regression <- function(x, what = "coefficients", lev
                                        vcov_type = NULL, data = NULL,
                                        truth = NULL,
                                        by = c("class", "group_class"), ...) {
-  what <- match.arg(what, c(.mixture_tables(), "all"))
-  by <- match.arg(by)
-  stopifnot("`level` must be a single number in (0, 1)" =
-              is.numeric(level) && length(level) == 1L && level > 0 &&
-              level < 1)
+  .multilpa_reject_extra_arguments(list(...), "get_results()", paste(
+    "A mixture regression's tables take `level` and `vcov_type`, and",
+    "`what = \"recovery\"` also `data`, `truth` and `by`."))
+  what <- .multilpa_match_table(what, .mixture_tables())
+  by <- .latents_match_formal(by)
+  .mixture_require_level(level)
   if (identical(what, "all")) {
     tables <- setdiff(.mixture_tables(), "recovery")
     return(stats::setNames(lapply(tables, function(name) {
@@ -546,8 +551,25 @@ get_results.latents_mixture_regression <- function(x, what = "coefficients", lev
 as.data.frame.latents_mixture_regression <- function(x, row.names = NULL, optional = FALSE,
                                          what = "coefficients", level = 0.95,
                                          vcov_type = NULL, ...) {
+  .multilpa_reject_extra_arguments(list(...), "as.data.frame()", paste(
+    "It takes `what`, `level` and `vcov_type`; get_results(x, what = ) has",
+    "every table and its arguments."))
   get_results.latents_mixture_regression(x, what = what, level = level,
                                          vcov_type = vcov_type)
+}
+
+#' Refuse a confidence level outside (0, 1)
+#'
+#' A level outside the interval used to return inverted intervals (a
+#' negative level) or `NaN` with only a base warning (review 2026-10-27,
+#' REG-6).
+#' @param level The caller's `level`.
+#' @return `NULL`, invisibly; raises `latents_bad_argument`.
+#' @noRd
+.mixture_require_level <- function(level) {
+  .latents_require("`level` must be a single number in (0, 1)" =
+                     is.numeric(level) && length(level) == 1L && is.finite(level) &&
+                     level > 0 && level < 1)
 }
 
 #' @noRd
@@ -590,6 +612,9 @@ print.latents_mixture_regression <- function(x, digits = 4L, ...) {
 #' @noRd
 #' @export
 summary.latents_mixture_regression <- function(object, level = 0.95, vcov_type = NULL, ...) {
+  .multilpa_reject_extra_arguments(list(...), "summary()",
+                                   "It takes `level` and `vcov_type`.")
+  .mixture_require_level(level)
   tables <- c("fit", "coefficients", "classes", "membership", "group_classes")
   structure(stats::setNames(lapply(tables, function(name) {
     .mixture_table(object, name, level, vcov_type)
@@ -609,6 +634,42 @@ print.summary_latents_mixture_regression <- function(x, digits = 4L, ...) {
 }
 
 #' @noRd
+#' @export
+get_results.summary_latents_mixture_regression <- function(x, what = "coefficients", ...) {
+  .mixture_summary_results(x, what, list(...))
+}
+
+#' @noRd
+#' @param row.names,optional Unused; part of the generic.
+#' @export
+as.data.frame.summary_latents_mixture_regression <- function(x, row.names = NULL,
+                                                             optional = FALSE, ...) {
+  .mixture_summary_results(x, "coefficients", list(...), "as.data.frame()")
+}
+
+#' One table of a regression or growth summary
+#'
+#' A summary already holds its tables at the level and covariance it was made
+#' with, so it takes no other argument.
+#' @param x A `summary_latents_mixture_regression` or
+#'   `summary_latents_growth_mixture`.
+#' @param what A table name, or `"all"` for the named list of them.
+#' @param extra `list(...)` as the method received it.
+#' @param verb The verb, for the refusal.
+#' @return A table, or the named list of every table.
+#' @noRd
+.mixture_summary_results <- function(x, what, extra, verb = "get_results()") {
+  .multilpa_reject_extra_arguments(extra, verb, paste(
+    "A summary holds its tables at the level and covariance it was made",
+    "with; pass `level` or `vcov_type` to summary()."))
+  what <- .multilpa_match_table(what, names(x))
+  if (identical(what, "all")) return(stats::setNames(lapply(names(x), function(name) {
+    x[[name]]
+  }), names(x)))
+  x[[what]]
+}
+
+#' @noRd
 #' @param object A fit from [mixture_regression()].
 #' @export
 coef.latents_mixture_regression <- function(object, ...) {
@@ -619,6 +680,10 @@ coef.latents_mixture_regression <- function(object, ...) {
 #' @param type Covariance type for `vcov()`; as `vcov_type`.
 #' @export
 vcov.latents_mixture_regression <- function(object, type = NULL, ...) {
+  # `vcov_type = "robust"`, the name mixture_regression() uses, used to fall
+  # into `...` and return the stored covariance without a word (INF-3).
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "Choose the covariance with `type =`.")
   .mixture_resolve_inference(object, type)$vcov
 }
 
@@ -626,6 +691,10 @@ vcov.latents_mixture_regression <- function(object, type = NULL, ...) {
 #' @param parm Parameter names or positions; all by default.
 #' @export
 confint.latents_mixture_regression <- function(object, parm, level = 0.95, ...) {
+  .multilpa_reject_extra_arguments(list(...), "confint()", paste(
+    "It uses the covariance stored with the fit; for another, use",
+    "get_results(x, \"coefficients\", vcov_type = )."))
+  .mixture_require_level(level)
   inference <- .mixture_resolve_inference(object, NULL)
   theta <- inference$theta
   std_error <- sqrt(pmax(diag(inference$vcov), 0))

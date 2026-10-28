@@ -227,7 +227,7 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
 #' @importFrom stats simulate
 #' @export
 simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, ...) {
-  stopifnot("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
+  .latents_require("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
   .mixture_with_seed(seed, {
     draws <- lapply(seq_len(nsim), function(i) .mixture_draw(object))
     stats::setNames(as.data.frame(draws), paste0("sim_", seq_len(nsim)))

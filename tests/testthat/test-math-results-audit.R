@@ -44,8 +44,10 @@ test_that("categorical bootstraps preserve probability constraints and data iden
                   b = sample(c("c", "d"), 200, TRUE))
   small <- multilpa(d, c("a", "b"), "g", 1, 1, categorical = c("a", "b"),
                     min_probability = .1, n_starts = 1)
-  large <- multilpa(d, c("a", "b"), "g", 2, 1, categorical = c("a", "b"),
-                    min_probability = .1, n_starts = 1, seed = 1)
+  # Two classes on two binary items are not identified (Goodman 1974).
+  large <- quietly(multilpa(d, c("a", "b"), "g", 2, 1, categorical = c("a", "b"),
+                            min_probability = .1, n_starts = 1, seed = 1),
+                   classes = "latents_unidentified")
   changed <- d
   changed$a <- ifelse(d$a == "a", "renamed-a", "renamed-b")
   expect_error(bootstrap_lrt(small, large, changed, iter = 2), "categorical levels")
@@ -59,7 +61,8 @@ test_that("categorical bootstraps preserve probability constraints and data iden
     real_fit(..., min_probability = min_probability)
   })
   result <- quietly(bootstrap_lrt(small, large, d, iter = 2,
-                                           n_starts = 1, max_iter = 2000, seed = 5))
+                                           n_starts = 1, max_iter = 2000, seed = 5),
+                    classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   expect_equal(bounds, rep(.1, 4))
   expect_equal(nrow(result$replicates), 2L)
 })
@@ -71,18 +74,21 @@ test_that("a categorical bootstrap accepts the observations FIML integrated out"
   small <- multilpa(d, c("a", "b"), "g", 1, 1, categorical = c("a", "b"),
                     missing = "fiml", n_starts = 1)
   large <- quietly(multilpa(d, c("a", "b"), "g", 2, 1, categorical = c("a", "b"),
-                            missing = "fiml", n_starts = 1, seed = 1))
+                            missing = "fiml", n_starts = 1, seed = 1),
+                   classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   # This used to be refused. Both fits integrated the missing value out, so
   # the replicates carry the same missing cell and are refitted the same way.
   test <- quietly(bootstrap_lrt(small, large, d, iter = 2, seed = 1),
-                  classes = c(.multilpa_expected_warnings, "latents_failed_replicates"))
+                  classes = c(.multilpa_expected_warnings, "latents_failed_replicates",
+                              "latents_unidentified"))
   expect_identical(nrow(get_results(test, "replicates")), 2L)
   # Without FIML the same missing value is still refused.
   complete_small <- multilpa(d[-1L, ], c("a", "b"), "g", 1, 1,
                              categorical = c("a", "b"), n_starts = 1)
   complete_large <- quietly(multilpa(d[-1L, ], c("a", "b"), "g", 2, 1,
                                      categorical = c("a", "b"), n_starts = 1,
-                                     seed = 1))
+                                     seed = 1),
+                            classes = c(.multilpa_expected_warnings, "latents_unidentified"))
   expect_error(bootstrap_lrt(complete_small, complete_large, d, iter = 2),
                class = "latents_bad_inference_data")
 })

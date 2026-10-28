@@ -507,7 +507,11 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
                                weight = unname(x$group_probabilities),
                                count = unname(colSums(x$group_posteriors *
                                                         (x$sampling_weights %||% 1))),
-                               n_assigned = tabulate(assigned, length(class_names)),
+                               # Excluded groups retain posteriors but belong to
+                               # no classification count (Astra A09).
+                               n_assigned = tabulate(assigned[
+                                 (x$sampling_weights %||% rep(1, length(assigned))) > 0],
+                                 length(class_names)),
                                stringsAsFactors = FALSE),
     composition = {
       cells <- expand.grid(group_class = seq_len(nrow(x$composition)),
@@ -574,6 +578,8 @@ print.multilpa_cross_level <- function(x, ...) {
 #' @param object A `multilpa_cross_level` fit.
 #' @export
 summary.multilpa_cross_level <- function(object, ...) {
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   get_results.multilpa_cross_level(object, "all")
 }
 

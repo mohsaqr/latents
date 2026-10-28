@@ -2,14 +2,15 @@
 #'
 #' `coef()`, `vcov()`, `confint()`, `logLik()` and `nobs()` for multilevel
 #' profile and class models ([multilpa()]), covariate models, latent transition
-#' models and, for `vcov()`, pooled imputations. Mixture regressions, growth
+#' models and, for `coef()`, `vcov()` and `confint()`, pooled imputations.
+#' Mixture regressions, growth
 #' mixtures and the additive, cross-level and general transition families
 #' document the same methods with their [get_results()] page.
 #'
 #' @param object A fitted model: from [multilpa()] (class `multilpa`), a
 #'   covariate model (`multilpa_covariates`), a latent transition model
-#'   (`multilpa_transitions`), or pooled imputations (`latents_pooled`,
-#'   `vcov()` only).
+#'   (`multilpa_transitions`), or pooled imputations (`latents_pooled`:
+#'   `coef()`, `vcov()` and `confint()`).
 #' @param scale `"natural"`, the default, or `"unconstrained"`. Natural
 #'   coefficients are in the units `coef()` reports: means and variances in the
 #'   indicators' units, probabilities as probabilities, with the covariance
@@ -38,7 +39,11 @@
 #'   columns are then zero (covariate models).
 #' @param ... For `vcov()` and `confint()` of a `multilpa` fit, and `confint()`
 #'   of a covariate model, passed to [parameter_inference()] (for example
-#'   `method = "bootstrap"`, `vcov_type = "robust"` or `step`). Ignored
+#'   `method = "bootstrap"`, `vcov_type = "robust"` or `step`); an argument
+#'   [parameter_inference()] does not take is refused with
+#'   `latents_bad_argument`. `vcov()` of a covariate model warns
+#'   `latents_unused_argument` for an argument it does not take, and refuses
+#'   `method = "bootstrap"` with `latents_unsupported_inference`. Ignored
 #'   otherwise.
 #' @return `coef()`: a named numeric vector. `vcov()`: a named symmetric matrix
 #'   over the same parameters. `confint()`: a matrix with one row per parameter

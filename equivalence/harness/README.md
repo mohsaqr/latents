@@ -27,6 +27,18 @@ The run exits non-zero when a suite fails, a quantity disagrees without a
 registered open defect to explain it, an output is neither compared nor
 exempted, or a register entry no longer matches anything.
 
+Partially compared columns also fail: every value must be checked or the
+whole column explicitly exempted with a reason. The replication table's
+likelihood is compared against the reference likelihood; its start counts,
+index and replication threshold are documented search-bookkeeping exemptions.
+The CI workflow runs the harness self-tests and all registered suites with
+`LATENTS_EQUIVALENCE_REQUIRE_ALL=true`, which also fails on a skipped suite.
+Local exploratory runs keep skips visible without treating an unavailable
+optional reference as an error unless that environment flag is set.
+CI writes fresh evidence to `tmp/equivalence/` using
+`LATENTS_EQUIVALENCE_OUTPUT`; it never uploads the tracked historical reports
+when setup or the API preflight fails before a new run is produced.
+
 ## Every output, not one or two measures
 
 Until 2026-10-26 each suite chose by hand what to compare, and the choices were
@@ -182,6 +194,15 @@ together with a `compare.R` that checks the package against each.
 | `depmixs4` | depmixS4 1.5.1 | Latent transitions: forward-backward posteriors, two-slice transition counts and per-sequence likelihoods. Standard errors use depmixS4's constrained inverse with numDeriv in place of its `fdHess`, which is 1-15% off on these fits (0.287 against 0.072 for a mean near zero). |
 | `invariance`, `refusals` | The package against itself under known transformations, and its entry points against each other | Equivariance and refusal parity, which no external program can establish. |
 | `hard-mclust`, `hard-polca`, `hard-depmixs4` | The same three references on data built to be difficult | Each case makes two claims. (A) Started at the reference's mode, the package reproduces every output there. (B) The package's own search reaches at least the reference's maximum. The fixtures cover near-empty and rare classes, heavy overlap, r = 0.99, variance ratios of 100, a 1e6 offset, units of 1e-4 and 1e5, 40 rows for 62 parameters, ties, sparse and floored categories, 6 to 8 categories, near-saturated models, reversed categories, near-absorbing and structurally zero transitions, two-occasion and unequal sequences, and an extra state. On hard data the references needed more care than the package: mclust's and depmixS4's EM stop short of their fixed points; the numerical Hessian's 10% first step leaves the parameter space; mclust refuses a covariance with condition number 1.7e18; depmixS4 hits `maxit` without a warning. In five cases the package found a higher maximum than the reference, which the reference's own EM then confirmed. |
+| `twolevel-lpa` | Latent GOLD 6.1 retained output (five continuous two-level cases) and a from-scratch two-level Gaussian likelihood carried to its fixed point | Every output of the continuous two-level profile model at both levels -- posteriors, group posteriors, classification tables, criteria and Wald inference -- under varying, equal and full covariance and FIML. |
+| `covariates` | poLCA, glca and multilevLCA (one step) and depmixS4 `mix`, each refined by Newton steps on a base-R likelihood | The membership-covariate model: profile and group covariates, shared and group-class slopes, count and Gaussian indicators, and the standard errors of `parameter_inference()`. |
+| `lta-general` | depmixS4 1.5.1 with multinomial-logit prior and transition models, and a numDeriv Hessian of its own likelihood | The general transition engine: covariate and occasion-specific initial and transition logits, their Wald columns, and posteriors. |
+| `lta-mixed` | LMest `lmestMixed()` and a from-scratch mixed latent Markov recursion (Van de Pol and Langeheine 1990) | Transition models with group classes: group posteriors, class-specific initial and transition probabilities and their inference. |
+| `ordinal-count` | depmixS4, VGAM, MASS `polr` and base-R likelihoods | Ordinal (adjacent-category) and count (Poisson, negative binomial) indicators, alone and mixed with Gaussian ones, with and without FIML. |
+| `three-step` | base R, depmixS4, sandwich, tidySEM and numDeriv, from the step-one posteriors onward | `three_step()` BCH, proportional, modal and ML, and `r3step()`, including clustered errors, contrasts and multiplicity adjustments. |
+| `predict-newdata` | mclust `estep`/`dens`, poLCA scoring, flexmix `predict`, and the base-R two-level likelihood, at the package's estimates | `predict()` on held-out rows and new groups, for every `type`. |
+| `robust-se` | A from-scratch base-R likelihood with numDeriv scores, mclust on faithful, and `sandwich::vcovCL` as a calibration | Robust (CR1) and outer-product standard errors at one and two levels and for covariate fits, with every column of `parameter_inference()`. |
+| `pool-imputations` | mice `pool.scalar()` (Rubin 1987) and from-scratch mixture likelihoods for each imputation | `pool_imputations()`: pooled estimates, total variance, degrees of freedom, intervals and p-values, after relabelling across imputations. |
 
 ## Three claims that a converged-to-converged comparison cannot separate
 
@@ -246,3 +267,9 @@ recorded because they are real and understood.
 | `equivalence/deferred.R`, `equivalence/fixtures.R` | Shared by the Mplus scripts: `deferred_verb()` loads a feature moved to `future/` so the comparison that would restore it still runs; `mplus_fixture()` resolves a fixture to `tests/fixtures/` or `equivalence/fixtures/` by who reads it. |
 | `equivalence/three-step/` | The BCH correction against tidySEM's independent construction of the same weights. Its README also records the Monte Carlo checks of the three-step methods. |
 | `validation/simulab-recovery/` | Not equivalence evidence and not moved: a Monte Carlo recovery study, which measures bias and coverage rather than agreement with a fixed number. |
+
+The zero-weight invariance case also checks predictions for every appended
+person and group, using an independent Gaussian Bayes calculation under the
+baseline parameters. Mixed Gaussian/categorical residual rows are compared
+against independent posterior-weighted correlations, including their explicitly
+unavailable inferential columns. These rows are compared, not exempted.

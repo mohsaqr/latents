@@ -114,7 +114,7 @@ get_results(fit, "classification")
 
 The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 479 enrolments are assigned to the intermediate-activity Profile 1, with an average posterior probability of 0.853. By comparison, the 576 enrolments assigned to the lower-activity Profile 2 have a much higher average posterior probability of 0.978. This indicates that enrolments classified into Profile 1 are, on average, more ambiguous than those classified into Profile 2.
 
-A similar pattern appears at the student level. Students assigned to Class 3 have an average posterior probability of 0.864, whereas those assigned to Class 2 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
+A similar pattern appears at the student level. Students assigned to Class 3 have an average posterior probability of 0.864, whereas those assigned to Class 1 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
 
 These differences matter for subsequent analyses because modal class assignments treat the most likely class as if it were observed without error. When average posterior probabilities are lower, that simplification discards more of the uncertainty contained in the posterior distribution. Later analyses should therefore retain or adjust for classification uncertainty.
 
@@ -174,7 +174,7 @@ get_results(candidates, "candidates")
 
 Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 16874.1. When residual covariances are allowed to vary freely within profiles, however, the preferred profile count changes. The two-profile, three-class full-covariance model has a BIC of 16800.6, the lowest value among the models in the candidate grid, and its best likelihood is reproduced across all six starting values. The three-profile, three-class full-covariance model has a higher BIC of 16867.3.
 
-Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered by only three of the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
+Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered by only one of the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
 
 Taken together, these results show that support for the original three-profile, three-class specification depends on the assumptions made about within-profile covariance. Under the diagonal model, the three-by-three solution is preferred within the candidate set. Once residual correlations are estimated directly, a two-profile, three-class model receives stronger BIC support. The original three-by-three model should therefore be regarded as a working representation whose support depends on the measurement assumptions.
 
@@ -212,7 +212,7 @@ The `parameter_inference()` function calculates standard errors and confidence i
 parameter_inference(fit)
 ```
 
-For the higher-activity Profile 3, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. The intermediate-activity Profile 1 has an interval from 0.155 to 0.357, while the lower-activity Profile 2 has an interval from $-0.993$ to $-0.887$.
+For the higher-activity Profile 3, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. The intermediate-activity Profile 1 has an interval from 0.155 to 0.358, while the lower-activity Profile 2 has an interval from $-0.993$ to $-0.887$.
 
 Within the original three-profile, three-class specification, these intervals show clear separation among the attendance means. This provides evidence that the fitted profiles differ substantially in their expected levels of attendance under that model. However, the precision of these estimates should not be interpreted as resolving the model-specification uncertainty identified in the covariance comparison. The confidence intervals quantify uncertainty in the profile means conditional on the three-by-three model; they do not address whether a different covariance structure or profile count provides a preferable representation of the data.
 

@@ -215,13 +215,14 @@ get_results.multilpa_additive <- function(x, what = "parameters", level = 0.95,
                                           vcov_type = c("observed", "robust", "opg"),
                                           adjust = .multilpa_p_adjust_methods,
                                           data = NULL, truth = NULL, ...) {
-  what <- match.arg(what, c(.additive_tables(), "recovery", "all"))
-  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+  .multilpa_reject_extra_arguments(list(...), "get_results()", paste(
+    "An additive fit's tables take `level`, `vcov_type` and `adjust`, and",
+    "`what = \"recovery\"` also `data` and `truth`."))
+  what <- .multilpa_match_table(what, c(.additive_tables(), "recovery"))
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), .latents_match_formal(vcov_type),
                                       missing(vcov_type))
-  adjust <- match.arg(adjust)
-  stopifnot("`level` must be a single number in (0, 1)" =
-              is.numeric(level) && length(level) == 1L && level > 0 &&
-              level < 1)
+  adjust <- .latents_match_formal(adjust)
+  .mixture_require_level(level)
   if (identical(what, "all")) {
     return(stats::setNames(lapply(.additive_tables(), function(name) {
       .additive_table(x, name, level, vcov_type, adjust)
@@ -246,7 +247,7 @@ as.data.frame.multilpa_additive <- function(x, row.names = NULL, optional = FALS
 #' @export
 coef.multilpa_additive <- function(object, scale = c("natural", "unconstrained"),
                                    ...) {
-  scale <- match.arg(scale)
+  scale <- .latents_match_formal(scale)
   class_names <- names(object$group_probabilities)
   theta <- .additive_pack(
     list(means = unname(object$means), between = unname(object$between_variances),
@@ -263,9 +264,15 @@ coef.multilpa_additive <- function(object, scale = c("natural", "unconstrained")
 #' @export
 vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg"),
                                    scale = c("natural", "unconstrained"), ...) {
-  scale <- match.arg(scale)
+  # `vcov_type = "robust"`, the name parameter_inference() uses, used to fall
+  # into `...` and return the observed-information covariance without a word
+  # (INF-3).
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "Choose the covariance with `type =`.")
+  scale <- .latents_match_arg(scale, c("natural", "unconstrained"), "scale")
   inference <- .additive_inference(object, .latents_weighted_vcov(
-    .latents_is_weighted(object), match.arg(type), missing(type)))
+    .latents_is_weighted(object),
+    .latents_match_arg(type, c("observed", "robust", "opg"), "type"), missing(type)))
   if (identical(scale, "unconstrained")) return(inference$vcov)
   class_names <- names(object$group_probabilities)
   jacobian <- .additive_natural(inference$theta, length(class_names), object$vars,
@@ -278,14 +285,23 @@ vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg")
 #' @export
 confint.multilpa_additive <- function(object, parm, level = 0.95,
                                       type = c("observed", "robust", "opg"), ...) {
+  .multilpa_reject_extra_arguments(list(...), "confint()",
+                                   "Choose the covariance with `type =`.")
+  .mixture_require_level(level)
   table <- .additive_parameter_table(object, .additive_inference(object,
-    .latents_weighted_vcov(.latents_is_weighted(object), match.arg(type), missing(type))),
+    .latents_weighted_vcov(.latents_is_weighted(object),
+                           .latents_match_arg(type, c("observed", "robust", "opg"), "type"),
+                           missing(type))),
                                      level)
   bounds <- cbind(table$conf_low, table$conf_high)
   percent <- paste(format(100 * c((1 - level) / 2, 1 - (1 - level) / 2),
                           trim = TRUE, scientific = FALSE, digits = 3), "%")
   dimnames(bounds) <- list(names(coef(object)), percent)
-  if (!missing(parm)) bounds <- bounds[parm, , drop = FALSE]
+  # A name or position that is not an estimate is refused, as for the other
+  # families, rather than returned as an NA row or a subscript error (INF-5).
+  if (!missing(parm)) {
+    bounds <- bounds[.mixture_confint_rows(parm, rownames(bounds)), , drop = FALSE]
+  }
   bounds
 }
 
@@ -310,10 +326,10 @@ parameter_inference.multilpa_additive <- function(
     vcov_type = c("observed", "robust", "opg"),
     adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"),
     ...) {
-  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), .latents_match_formal(vcov_type),
                                       missing(vcov_type))
-  adjust <- match.arg(adjust)
-  method <- match.arg(method)
+  adjust <- .latents_match_formal(adjust)
+  method <- .latents_match_formal(method)
   if (identical(method, "bootstrap")) {
     stop(errorCondition(
       "Bootstrap inference is not yet available for `family = \"additive\"`.",
@@ -360,8 +376,11 @@ parameter_inference.multilpa_additive <- function(
 summary.multilpa_additive <- function(object, level = 0.95,
                                       vcov_type = c("observed", "robust", "opg"),
                                       ...) {
+  .multilpa_reject_extra_arguments(list(...), "summary()",
+                                   "It takes `level` and `vcov_type`.")
+  .mixture_require_level(level)
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(object),
-                                      match.arg(vcov_type), missing(vcov_type))
+                                      .latents_match_formal(vcov_type), missing(vcov_type))
   tables <- c("fit", "parameters", "group_classes")
   structure(stats::setNames(lapply(tables, function(name) {
     .additive_table(object, name, level, vcov_type)
@@ -386,7 +405,13 @@ print.summary_multilpa_additive <- function(x, digits = 4L, ...) {
 #' @export
 as.data.frame.summary_multilpa_additive <- function(x, row.names = NULL,
                                                     optional = FALSE, ...) {
-  x$parameters
+  .mixture_summary_results(x, "parameters", list(...), "as.data.frame()")
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_additive <- function(x, what = "parameters", ...) {
+  .mixture_summary_results(x, what, list(...))
 }
 
 #' Class key: label with share, colour and shape, largest class first
@@ -415,7 +440,7 @@ plot.multilpa_additive <- function(x, what = c("means", "variances", "intercepts
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
-  what <- match.arg(what)
+  what <- .latents_match_formal(what)
   .gg_require()
   key <- .additive_key(x)
   # The refusal notice is replaced by the caption below, so only that one

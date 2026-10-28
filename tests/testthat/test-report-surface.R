@@ -40,7 +40,8 @@ test_that("report() forwards `by` through to the residual it prints", {
   skip_on_cran()
   fit <- .surface_fit()
   printed <- utils::capture.output(report(fit, plots = FALSE, by = "overall"))
-  residual_line <- grep("Largest residual", printed, value = TRUE)
+  # The local-independence check prints its largest pair, pooled here.
+  residual_line <- grep("largest: ", printed, value = TRUE)
   expect_length(residual_line, 1L)
   expect_true(grepl("overall", residual_line, fixed = TRUE))
   expect_false(grepl("profile_", residual_line, fixed = TRUE))

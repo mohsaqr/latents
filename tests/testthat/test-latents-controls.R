@@ -65,7 +65,7 @@ test_that("the start rule is invariant to failed starts and refuses bad input", 
                         vars = c("browse", "lectures"), id = "student",
                         n_profiles = 2, n_group_classes = 1, n_starts = 1,
                         select_start = "best"),
-               "should be one of")
+               class = "latents_bad_argument")
 })
 
 test_that("select_start reaches every fitting path", {

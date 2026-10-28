@@ -43,8 +43,11 @@ pair_pattern_holds <- function(fit, pairs) {
   all(vapply(matrices, function(s) {
     # Symmetric to rounding here; exact symmetry is asserted by the
     # equivalence suite (equivalence/features/pair-covariance/FINDINGS.md).
+    # The M-step clamps an eigenvalue to the floor exactly, but eigen()
+    # recomputes it from the rebuilt matrix to within a few ulps.
     all(s[!free] == 0) && max(abs(s - t(s))) <= 4 * .Machine$double.eps * max(abs(s)) &&
-      min(eigen(s, symmetric = TRUE, only.values = TRUE)$values) >= fit$min_variance
+      min(eigen(s, symmetric = TRUE, only.values = TRUE)$values) >=
+        fit$min_variance * (1 - 8 * .Machine$double.eps)
   }, logical(1))) &&
     (!identical(fit$variance_model, "equal") ||
        all(vapply(matrices, identical, logical(1), matrices[[1L]])))

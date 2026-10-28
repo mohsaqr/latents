@@ -98,8 +98,10 @@ test_that("categorical profiles reject ambiguous scores and standardized units",
     broken <- fit
     broken$categorical_levels$a <- scores
     colnames(broken$response_probabilities$a) <- scores
-    expect_error(plot(broken, intervals = FALSE), "numeric|finite|distinct|unique",
-                 class = "latents_bad_argument")
+    # The default view falls back to "responses" (API-3); the profile view
+    # itself must still refuse scores that cannot be read as numbers.
+    expect_error(plot(broken, what = "profiles", intervals = FALSE),
+                 "numeric|finite|distinct|unique", class = "latents_bad_argument")
     expect_false("profiles" %in% .multilpa_supported_views(broken))
   }))
   expect_true("profiles" %in% .multilpa_supported_views(fit))

@@ -1,4 +1,232 @@
-# latents (development version)
+# latents 0.97.4 (development version)
+
+## Upgrading from CRAN 0.9.21
+
+Refit a model made with 0.9.21 when one of these applies; each is described
+in full further down.
+
+* **Gaussian indicators recorded in small units** (a proportion, metres, a
+  rate). 0.9.21 floored variances at an absolute `1e-6` and stopped EM
+  relative to `|log L|`: the same data multiplied by 0.001 and by 1e-6 gave
+  log likelihoods 654 and 37,700 below the fit in the original units, with
+  only a boundary warning. Both rules are now unit-free ("Fits that do not
+  depend on the units of the data"), and so is SQUAREM in `multilpa()`
+  ("SQUAREM and replication in any units").
+* **Occasion labels such as `T1` ... `T10`.** 0.9.21 ordered them
+  alphabetically (`T1`, `T10`, `T2`, ...), so `lta()` and `multilpa(time =)`
+  fitted the occasions in the wrong order. Such labels are now refused with
+  `latents_bad_time`; give the order with `factor(levels = )` or zero-pad
+  the numbers.
+* **Sampling weights with zeros.** A unit of weight zero is now absent from
+  every count, criterion, entropy and start ("Sampling weights").
+* **Several group classes.** Start 1 of a multilevel model is now
+  deterministic and can number the classes the other way round ("Class
+  numbering of multilevel models").
+* **ICL, AWE and CLC** charge the entropy of the complete classification
+  ("Information criteria"), and EII, EEI and EEE default to
+  `search = "emEM"` ("Default start search").
+* **Mixture regressions with `common = "intercept"`.** The argument had no
+  effect in 0.9.21; it is now refused.
+
+## Release review (2026-10-27)
+
+A whole-package review confirmed 40 defects. The repairs below each have a
+regression test; SQUAREM and the replication count are in the next section.
+The enumeration's `criteria` table, which duplicates part of its grid, is
+kept because 0.9.21 code reads it.
+
+### Results that change
+
+* A latent transition origin that no expected move leaves (an empty row)
+  reported its starting values as estimates and counted them as parameters.
+  Its probabilities are now equal, flagged `estimated = FALSE`, left out of
+  `n_parameters`, AIC and BIC (by K - 1 per empty row), and warned with
+  `latents_empty_transition_row`. Wald inference reports `NA` for them and
+  keeps the rest of the table, which it used to refuse as singular.
+* A three-step class carried by a single group (or, under `vcov_type =
+  "independent"`, a single unit) reported a standard error of about 1e-16
+  and a zero-width interval under BCH, proportional and modal assignment, and
+  its pairwise contrasts p = 0. They are now `NA`, with
+  `latents_small_classes`.
+* `sensitivity()` of an `lta()` fit refits with the fit's own `tol` and
+  `max_iter`; it used `lta()`'s defaults.
+* Zero-weight units no longer choose the starts or the maximum of a mixture
+  regression or growth mixture, and a level or category seen only on
+  zero-weight rows adds no parameter (regressions, ordinal indicators and
+  `local_dependence` pairs).
+* An autoregressive growth residual held on its bound reports `NA` for its
+  standard error and interval, not zero.
+* `diagnostics()` of a single-level fit, or of a two-level fit with one
+  group class, no longer has the trivial "groups" row in its classification
+  and average-posterior tables, and `get_results(fit, "all")` follows it.
+
+### Refusals and warnings
+
+* A latent class model with more free parameters than response patterns
+  allow warns `latents_unidentified` (Goodman, 1974); its estimates are
+  unchanged.
+* `confint()`, `get_results()` and `summary()` of regression, growth and
+  additive fits refuse a level outside (0, 1), which used to give an
+  inverted interval, and refuse arguments they do not take. `vcov()` warns
+  `latents_unused_argument` for arguments it ignores, and refuses
+  `method = "bootstrap"` on covariate fits instead of returning the Wald
+  matrix. `summary()` of a fit, an enumeration or a bootstrap LRT warns for
+  an argument it ignores (`summary(fit, digits = 3)` used to do nothing).
+* `get_results()` refuses an abbreviated table name.
+* More input mistakes raise classed conditions: three-step contracts,
+  unsupported three-step families, and the option checks of `multilpa()`
+  (`latents_bad_argument`).
+
+### Other changes
+
+* `summary()` of a general LTA fit is a result object: read its table with
+  `get_results(summary(fit), "table")`. Its transition and second-order
+  tables gain an `estimated` column, and its assignments take the shared
+  layout.
+* `coef()` and `confint()` methods for pooled imputations; the intervals are
+  Rubin's t intervals with each parameter's degrees of freedom.
+* The default plot of an all-categorical fit with text category labels draws
+  the response probabilities instead of failing.
+
+### Known issue
+
+* A covariate fit stops on the change in log likelihood, which along a flat
+  direction of the logit coefficients cannot place them closer than about
+  1e-6 to the maximum, and tightening `tol` does not help. On the
+  equivalence data the coefficients differ from a reference optimiser by
+  2.6e-6, against standard errors of 0.16 to 0.82. A stop on the score of
+  the coefficients would remove this.
+
+## SQUAREM and replication in any units
+
+* SQUAREM extrapolated on the raw parameters, whose means are in the
+  indicators' units and variances in their squares, so its step length,
+  and with it the maximum a start reached, depended on the units. With
+  `test_anxiety` of `srl` multiplied by 1000 (VVV, four profiles, five
+  starts, seed 3) the fit and its grand-scaled refit differed by 4.92 in
+  log likelihood. SQUAREM now steps in standard-deviation units and the two
+  agree to 1e-12. This applies to `multilpa()`, `lpa()`, `lca()` and
+  `multilca()`; `lta()` keeps its previous steps for now. Plain EM was already unit-free and is unchanged bit for
+  bit. Accelerated fits can stop at a different iteration and, from some
+  starts, at a different maximum: on the package's 192 recorded reference
+  fits, 179 log likelihoods moved by less than 1e-6, 9 by up to 1e-4, three
+  rose (by 0.19, 0.84 and 2.29) and one, a short staged fit, fell by
+  0.0006.
+* A start counts as reaching the best log likelihood when it is within
+  `1e-6` times the number of observed values of it, no longer
+  `1e-6 * (1 + |log L|)`, which moved 40-fold with the units for the same
+  gaps between starts. For data in ordinary units the two are of the same
+  size, so the counts printed for such fits barely change. The tolerance is stored
+  as `replication_tolerance`. This applies to the same four verbs; `lta()`
+  and the additive, covariate, cross-level and growth families keep the
+  previous rule for now.
+
+## Astra review repairs
+
+* Zero-weight people no longer determine the covariate coordinates or boundary
+  checks of an LTA fit. Ordinary categorical levels are discovered on positive
+  support; excluded-only categories do not add parameters or change BIC.
+  Unidentified transition coefficients have unavailable bootstrap covariance
+  rows and columns as well as unavailable standard errors.
+* A constant Gaussian response is accepted when its design or offset leaves
+  residual variation. Argument forwarding uses distinct internal bindings and
+  evaluates each supplied expression once, including through `multilca()`.
+* Diagnostics and regression enumeration use the fitted family's contributing
+  units, sampling weights and classification levels. Newly supported diagnostics
+  families expose the documented entropy and classification tables. Unfinished
+  sensitivity refits remain visible and are not labelled as replicated maxima.
+* Enumeration examples use the current complete-data entropy convention and
+  updated ICL/AWE winners. The full-output equivalence harness checks the new
+  replication likelihood, fails partial output coverage, and runs all reference
+  suites in CI with explicit failures for unavailable dependencies.
+
+## Class numbering of multilevel models
+
+* Start 1 now takes its group classes from Ward's clustering of the groups'
+  profile compositions, as its profiles already came from Ward's clustering,
+  so it no longer depends on the seed. A model with more than one group
+  class can reach the same maximum as in earlier versions with its group
+  classes, and sometimes its profiles, numbered the other way round: the
+  log likelihood and estimates are unchanged, only the labels swap. Scripts
+  that refer to a class by its number should check which class it now is.
+
+## diagnostics() as a structured report
+
+* `diagnostics()` reports a fit in five domains (estimation, class size,
+  classification, local independence, information), one row per quantity
+  with its value, a status and, where one defines it, its reference: how
+  many starts reached the best log likelihood, starts that failed or did not
+  finish, estimates at a bound, the smallest class, classes with no assigned
+  unit, relative entropy, the lowest average posterior and odds of correct
+  classification, and the bivariate residuals significant at 0.05 after
+  Benjamini-Hochberg adjustment. Values are reported without cut-offs: the
+  published ones (AvePP .70, OCC 5, a 5% smallest class) are rules of thumb,
+  and the package does not impose them. A status marks only facts: a best
+  start that did not converge or a class estimated from less than one unit
+  (`fail`); failed or unfinished starts, estimates at a bound, a class with no
+  assigned unit, or dependent indicator pairs (`check`). The print names
+  those first. `get_results(diagnostics(fit), "checks")` is the table; every
+  value is read from a table the fit already computes, and no estimate
+  changes. `as.data.frame()` of the result is still the entropy table.
+* `diagnostics()` now reports on additive, cross-level, mixture-regression
+  and growth-mixture fits, which it used to refuse; a quantity a family
+  cannot support is `n/a` with the reason. A one-class fit and a class with
+  no assigned unit no longer print `NA`.
+* Starts that a search screens (short runs by design) are reported apart from
+  finished starts, never as unconverged.
+
+## A readable result when it is printed or clicked
+
+* A fitted latent class model prints its class sizes (and group-class sizes)
+  and a wide table of response probabilities, one row per indicator category
+  and one column per class, rounded to three decimals; it used to print a
+  long table of probabilities and thresholds at full precision.
+* `str()` of a fit, an enumeration or a `diagnostics()` result is two lines:
+  the result's header and where its tables are. A host that shows `str()`
+  before `print()` when an object is clicked (Beatrina, RStudio's
+  Environment pane) used to show some ninety components of internals first.
+  `str(unclass(x))` still shows the raw list.
+
+## How often the best solution was reached
+
+* `print()` of a fit and `diagnostics()` now say how many starts reached the
+  best log likelihood ("best log likelihood reached by 4 of 10 starts"), and
+  flag a best solution found by a single start. `print()` used to show the
+  winning start's index as "best start: 5/10", which read as a count; the
+  count itself was only in `summary()`. The numbers are in
+  `get_results(fit, "replication")` and `get_results(diagnostics(fit),
+  "replication")`.
+
+## Clearer refusals
+
+* Every common input mistake is now refused with a `latents_*` condition
+  class, no call, and a message that names what is wrong and how to fix it.
+  Of 56 mistakes across the exported verbs, 23 used to raise a bare
+  `simpleError`; none does now (contract test
+  `test-review-1027-error-contract.R`).
+* A misspelt, missing or repeated column, and an `id` listed among `vars`,
+  each have their own message, with the likely spelling: "`vars` names `Z`,
+  which `data` does not have. Did you mean `z`?" (the four used to share
+  "Supply at least two rows, unique existing indicators, and one distinct
+  group column."). The same for `id`, `time`, a three-step `outcome` and
+  `descriptives(vars = )`.
+* Missing values name the indicators and their counts and point to
+  `missing = "fiml"`; infinite and NaN values are reported separately,
+  because FIML treats only `NA` as missing. A non-numeric indicator in a
+  profile model names the column and its class and points to `categorical`
+  or `lca()`.
+* Passing a fitted model or an enumeration where the data belong now says so
+  by the caller's own name: "`data` must be a data frame, but `grid` is an
+  enumeration result ... Pass the data frame the model is to be fitted on."
+  Passing data where a fitted model belongs raises the new class
+  `latents_not_a_fit` (also a `latents_bad_argument`), saying what was
+  passed; `parameter_inference()`, `get_tna()` and `get_group_tna()` gain
+  default methods that do the same instead of R's "no applicable method".
+* The plot verbs (`plot_diagnostics()`, `plot_profiles()` and the rest)
+  name the object they were given and, for a data frame, say that the plot
+  is drawn from the fitted model itself.
+* `candidate_fit()` no longer evaluates a call headed by `get_candidate`'s
+  body with the arguments by value, so its conditions carry no data.
 
 ## Conditions never carry the data (0.97.4)
 

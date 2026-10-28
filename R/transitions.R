@@ -462,9 +462,11 @@
 #'
 #' Occasions are ordered by `sort()`, which orders character strings
 #' alphabetically. Positions written as `"1"`, ..., `"10"` would put `"10"`
-#' second and fit transitions between the wrong occasions without a word.
-#' Strings whose alphabetical order is already right (zero-padded numbers,
-#' ISO dates, labels) are accepted.
+#' second and fit transitions between the wrong occasions without a word. The
+#' same holds for numbered labels that share their text around the number,
+#' `"T1"`, ..., `"T10"` or `"week 1"`, ..., `"week 10"` (TRANS-8). Strings
+#' whose alphabetical order is already right (zero-padded numbers, ISO dates,
+#' `"T1"` to `"T9"`) and labels that do not share a stem are accepted.
 #'
 #' @param values The time values.
 #' @param time The time column name, for the message.
@@ -472,15 +474,31 @@
 #' @noRd
 .lta_check_time_order <- function(values, time) {
   if (!is.character(values)) return(invisible(NULL))
+  lexical <- sort(unique(values))
   # type.convert() turns the strings into numbers only when all of them parse.
   numbers <- utils::type.convert(values, as.is = TRUE)
-  if (!is.numeric(numbers) || !all(is.finite(numbers))) return(invisible(NULL))
-  lexical <- sort(unique(values))
-  if (!is.unsorted(numbers[match(lexical, values)])) return(invisible(NULL))
+  if (is.numeric(numbers) && all(is.finite(numbers))) {
+    if (!is.unsorted(numbers[match(lexical, values)])) return(invisible(NULL))
+    stop(errorCondition(sprintf(paste(
+      "`%s` holds numbers stored as text, which sort alphabetically (\"10\"",
+      "before \"2\") and would put the occasions out of order. Convert it with",
+      "as.numeric() first."), time),
+      class = c("latents_bad_time", "latents_bad_data"), call = NULL))
+  }
+  # One run of digits between a prefix and a suffix that every value shares.
+  pattern <- "^(\\D*)(\\d+)(\\D*)$"
+  if (!all(grepl(pattern, lexical))) return(invisible(NULL))
+  prefixes <- unique(sub(pattern, "\\1", lexical))
+  suffixes <- unique(sub(pattern, "\\3", lexical))
+  if (length(prefixes) != 1L || length(suffixes) != 1L) return(invisible(NULL))
+  embedded <- as.numeric(sub(pattern, "\\2", lexical))
+  if (!is.unsorted(embedded)) return(invisible(NULL))
+  first <- which(diff(embedded) < 0)[[1L]]
   stop(errorCondition(sprintf(paste(
-    "`%s` holds numbers stored as text, which sort alphabetically (\"10\"",
-    "before \"2\") and would put the occasions out of order. Convert it with",
-    "as.numeric() first."), time),
+    "`%s` holds numbered labels, which sort alphabetically (\"%s\" before",
+    "\"%s\") and would put the occasions out of order. Give the order with",
+    "factor(levels = ), or zero-pad the numbers (\"T01\", ..., \"T10\")."), time,
+    lexical[[first]], lexical[[first + 1L]]),
     class = c("latents_bad_time", "latents_bad_data"), call = NULL))
 }
 
@@ -547,8 +565,10 @@
 #'   group. They are ordered as [sort()] orders them: numbers numerically, a
 #'   factor by its levels, and character strings alphabetically. Numbers
 #'   stored as text whose alphabetical order is not their numeric order
-#'   (`"2"`, `"10"`) raise `latents_bad_time` (also `latents_bad_data`);
-#'   zero-padded numbers and ISO dates are accepted.
+#'   (`"2"`, `"10"`), and numbered labels sharing their text around the
+#'   number whose alphabetical order is not the numbers' (`"T2"`, `"T10"`;
+#'   `"week 2"`, `"week 10"`), raise `latents_bad_time` (also
+#'   `latents_bad_data`); zero-padded numbers and ISO dates are accepted.
 #' @param n_group_classes Positive integer number of latent group classes
 #'   (default 1). One gives an ordinary latent transition model; more than one
 #'   fits a mixture of transition models over groups.
@@ -581,19 +601,26 @@
 #'   then reported with `estimated = FALSE` and no standard error, and are not
 #'   counted in `n_parameters`, AIC or BIC; likewise the second-order logits
 #'   when nothing is observed from occasion 3 on, and the measurement block
-#'   of an empty occasion under `measurement = "occasion"`.
+#'   of an empty occasion under `measurement = "occasion"`. Under either
+#'   setting, a profile that is never occupied before a later occasion
+#'   (in a group class) has no move out of it: its outgoing logits are fixed
+#'   at zero (equal probabilities), flagged `estimated = FALSE`, not counted,
+#'   and `latents_empty_transition_row` is raised, as the homogeneous model
+#'   reports its uniform row.
 #' @param transition_covariates Names of columns whose values shift the
 #'   transition probabilities through a multinomial logit per origin profile:
 #'   the log odds of moving to each other profile rather than staying. A
 #'   column may change over occasions; the value at the destination occasion
-#'   is used. Factors are expanded to indicator columns. With `occasions =
+#'   is used. Factors are expanded to indicator columns, after dropping
+#'   levels the data do not use (as [stats::glm()] does). With `occasions =
 #'   "grid"`, a move into a position the group skipped has no row to read the
 #'   covariates from, and the fit raises `latents_bad_data`; use
 #'   `occasions = "observed"`, or add the skipped rows with their covariate
 #'   values (their indicators may be missing under `missing = "fiml"`).
 #' @param initial_covariates Names of columns that shift the initial profile
 #'   distribution (a multinomial logit, reference: the last profile), read at
-#'   each group's first occasion.
+#'   each group's first occasion. Factors are expanded as for
+#'   `transition_covariates`.
 #' @param measurement `"invariant"` (the default) keeps the profiles' means,
 #'   variances and response probabilities equal across occasions;
 #'   `"occasion"` estimates them separately at each occasion.
@@ -668,7 +695,12 @@
 #'   `multilpa_lta` object, read with [get_results()]: transition and initial
 #'   logit coefficients with Wald standard errors (observed, robust or OPG,
 #'   from analytic scores), model-implied transition probabilities per
-#'   occasion, and profiles per occasion. Missing indicators
+#'   occasion (with an `estimated` column, `FALSE` for a row resting on a
+#'   logit the likelihood does not identify; a move only units of weight zero
+#'   make is left out), profiles per occasion, and the assignments in the
+#'   layout every fit shares (taking `data` and `truth`). Any other argument
+#'   to its tables raises `latents_bad_argument`, and `summary()` collects
+#'   them (taking `level` and `vcov_type`). Missing indicators
 #'   (`missing = "fiml"`) and covariance structures are supported; diagonal
 #'   fits are finished by a quasi-Newton search on the exact likelihood,
 #'   others by EM. Agreement with Mplus (User's Guide examples 8.13, 8.14;
@@ -679,7 +711,8 @@
 #'   depend on the occasion or on earlier profiles. Measurement parameters are
 #'   shared across occasions and across group classes. A profile that no group
 #'   occupies before its final occasion leaves its transition row without
-#'   information; the row is then uniform by construction, not estimated. Such
+#'   information; the row is then uniform by construction, not estimated, and
+#'   its probabilities are not counted in `n_parameters`, AIC or BIC. Such
 #'   a row raises a warning when the model is fitted, is flagged by the
 #'   `estimated` column of the transition table and is listed by
 #'   `get_results(fit, "transitions", estimated = FALSE)`. Profile labels are
@@ -736,6 +769,7 @@ lta <- function(data, vars, id, n_profiles, time,
                             drop_empty = TRUE, search = c("kmeans", "emEM"),
                             n_screen = NULL,
                             acceleration = c("squarem", "none"), cores = 1L) {
+  .latents_check_data_frame(data, substitute(data))
   # Setup forces the public arguments and draws every start in its seed frame.
   # It is called with the formals as symbols so that a condition raised while
   # validating the input names the arguments instead of embedding the data.
@@ -983,9 +1017,6 @@ lta <- function(data, vars, id, n_profiles, time,
     group_posteriors <- best$expectation$group_posteriors
     dimnames(subject_posteriors) <- list(rownames(data), profile_names)
     dimnames(group_posteriors) <- list(groups$ids, type_names)
-    n_parameters <- .multilpa_count_transition_parameters(
-      n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
-      covariance_model, structure)
     log_likelihood <- best$expectation$log_likelihood
     transition_counts <- array(
       vapply(best$expectation$sequence, `[[`, numeric(n_profiles * n_profiles),
@@ -998,6 +1029,13 @@ lta <- function(data, vars, id, n_profiles, time,
     parameters$empty_transition_rows <- matrix(
       apply(transition_counts, c(1L, 3L), sum) <= 0, n_profiles, n_group_classes,
       dimnames = list(profile_names, type_names))
+    # An empty row is uniform by construction, so its K - 1 probabilities are
+    # not free parameters and are not counted in AIC or BIC (TRANS-1), as the
+    # general engine does not count the flat logits of an empty origin.
+    n_parameters <- .multilpa_count_transition_parameters(
+      n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
+      covariance_model, structure) -
+      as.integer(n_profiles - 1L) * sum(parameters$empty_transition_rows)
     starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
       attempt <- attempts[[start_index]]
       data.frame(start = start_index, log_likelihood = scores[start_index],
@@ -1094,8 +1132,8 @@ lta <- function(data, vars, id, n_profiles, time,
     if (empty_rows) {
       warning(warningCondition(paste(
         "A profile is never occupied before a final occasion; its",
-        "transition row is uniform by construction, not estimated.",
-        "List the affected rows with",
+        "transition row is uniform by construction, not estimated, and not",
+        "counted in n_parameters, AIC or BIC. List the affected rows with",
         "get_results(fit, \"transitions\", estimated = FALSE)."),
         class = "latents_empty_transition_row", call = NULL))
     }
@@ -1251,6 +1289,8 @@ nobs.multilpa_transitions <- function(object, ...) {
 #' @export
 summary.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   fields <- c("call", "n_observations", "n_groups", "n_profiles",
               "n_group_classes", "n_occasions", "occasions", "balanced",
               "variance_model", "covariance_model", "missing", "means",

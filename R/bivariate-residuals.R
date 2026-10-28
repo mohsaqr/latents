@@ -12,7 +12,7 @@
 #' @noRd
 .multilpa_bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall"),
                                adjust = .multilpa_p_adjust_methods) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .latents_require_fit(x)
   .multilpa_refuse_noise(x, "Bivariate residuals")
   data <- .multilpa_resolve_data(x, data)
   stopifnot("`data` must be a data frame" = is.data.frame(data))
@@ -160,28 +160,41 @@
 #' indicators with the category probabilities of their adjacent-category
 #' model; both are read from `data` by their category labels. A half-observed
 #' pair row of a joined `local_dependence` item has no joint category and is
-#' left out of that item's tables.
+#' left out of that item's tables. A row of sampling weight zero may hold a
+#' category the fit excluded from its support (seen on no row of positive
+#' weight); it carries no weight in any table, and is coded `NA`.
 #' @param x A fitted model.
 #' @param data The data, in fitting order.
 #' @return A named list, one entry per discrete indicator: `codes` (one
 #'   integer per row, `NA` when unobserved) and `probabilities` (profiles by
-#'   categories).
+#'   categories). A category the fit never saw on a row of positive weight
+#'   raises `latents_bad_inference_data`.
 #' @noRd
 .multilpa_discrete_items <- function(x, data) {
+  sampling <- .multilpa_level_weights(x, "individuals", x$n_observations)
+  contributing <- if (is.null(sampling)) rep(TRUE, nrow(data)) else sampling > 0
   categorical <- x$categorical %||% character()
   nominal <- lapply(stats::setNames(categorical, categorical), function(name) {
     value <- data[[name]]
     levels_for <- x$categorical_levels[[name]]
     codes <- match(as.character(value), levels_for)
     half <- .latents_partial_levels(c(levels_for, as.character(value)))[-seq_along(levels_for)]
-    stopifnot("Categorical indicators contain levels absent from the fit" =
-                !any(is.na(codes) & !is.na(value) & !half))
+    unseen <- is.na(codes) & !is.na(value) & !half
+    if (any(unseen & contributing)) {
+      stop(errorCondition(sprintf(paste(
+        "`%s` has the categor%s %s, which the fit never saw; `data` must be",
+        "the data the model was fitted to."), name,
+        if (length(unique(value[unseen & contributing])) > 1L) "ies" else "y",
+        paste(sprintf("`%s`", unique(as.character(value[unseen & contributing]))),
+              collapse = ", ")),
+        class = "latents_bad_inference_data", call = NULL))
+    }
     list(codes = codes, probabilities = x$response_probabilities[[name]])
   })
   extra <- x$extra_data
   ordinal_names <- colnames(extra$ordinal) %||% character()
   ordinal <- if (length(ordinal_names) == 0L) list() else {
-    prepared <- .latents_prepare_extra_like(x, data)
+    prepared <- .latents_prepare_extra_like(x, data, contributing = contributing)
     stats::setNames(lapply(seq_along(ordinal_names), function(j) {
       list(codes = prepared$ordinal[, j],
            probabilities = exp(.latents_ordinal_log_probabilities(
@@ -264,8 +277,10 @@
     .latents_direct_shift(.multilpa_center_like(x, as.matrix(data[continuous])),
                           x$extra_data, x)
   count_names <- colnames(x$extra_data$count) %||% character()
+  sampling <- .multilpa_level_weights(x, "individuals", x$n_observations)
   counts <- if (length(count_names) == 0L) NULL else
-    .latents_prepare_extra_like(x, data)$count
+    .latents_prepare_extra_like(x, data, contributing = if (is.null(sampling)) NULL else
+      sampling > 0)$count
   coded <- if (length(discrete) == 0L) NULL else
     matrix(as.numeric(unlist(lapply(discrete, `[[`, "codes"), use.names = FALSE)),
            nrow(data), length(discrete), dimnames = list(NULL, names(discrete)))

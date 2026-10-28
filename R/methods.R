@@ -68,14 +68,8 @@ print.multilpa <- function(x, rows = 20L, ...) {
   cat(sprintf("Log likelihood: %.6f | AIC: %.3f | %s: %.3f\n",
               x$log_likelihood, x$aic,
               if (isTRUE(x$single_level)) "BIC" else "BIC (groups)", x$bic))
-  if (identical(x$search, "emEM") && !is.null(x$n_screen)) {
-    cat(sprintf(paste("Converged: %s | iterations: %d | best start: %d",
-                      "(emEM: %d screened, %d run to the end)\n"),
-                x$converged, x$iterations, x$best_start, x$n_screen, x$n_starts))
-  } else {
-    cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",
-                x$converged, x$iterations, x$best_start, nrow(x$starts)))
-  }
+  cat(sprintf("Converged: %s | iterations: %d | %s\n", x$converged, x$iterations,
+              .multilpa_replication_phrase(x)))
   if (!is.null(x$n_informative) && x$n_informative < x$n_observations) {
     cat(sprintf("%d row(s) carry no observed indicator; the individual-level BIC uses %d.\n",
                 x$n_observations - x$n_informative, x$n_informative))
@@ -99,6 +93,12 @@ print.multilpa <- function(x, rows = 20L, ...) {
 #' @export
 summary.multilpa <- function(object, ...) {
   stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
+  # The summary collects the fit's tables as they are; none of them takes a
+  # `level` or `vcov_type`, so a supplied one (or a misspelt anything) was
+  # dropped without a word under a call that asked for something else
+  # (review 2026-10-27). 0.9.21 accepted and ignored them, so the summary is
+  # still built, and the warning names what it did not use.
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   # Built field by field rather than by subsetting the fit with a vector of
   # names: subsetting a list by a name it does not carry yields a `NULL`
   # element keyed `NA`, so an absent field became an unnamed hole in the
@@ -162,6 +162,16 @@ summary.multilpa <- function(object, ...) {
   result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa"
   result
+}
+
+#' What a summary takes instead of an argument it does not use
+#' @return One sentence for `.multilpa_reject_extra_arguments()` or
+#'   `.latents_warn_unused_arguments()`.
+#' @noRd
+.multilpa_summary_advice <- function() {
+  paste("It takes no further arguments: print(summary(x), digits = , rows = )",
+        "sets the printing, and get_results(x, what = ) takes each table's own",
+        "arguments.")
 }
 
 #' @noRd

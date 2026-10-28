@@ -269,7 +269,7 @@
   required <- c(a$vars, a$id, a$time, a$transition_covariates, a$initial_covariates,
                 fit$weights)
   refuse <- function() stop(errorCondition(
-    "`data` must reproduce the indicators, groups, occasions and covariates of both fits.",
+    "`data` must reproduce the indicators, groups, occasions and covariates of the fit.",
     class = "latents_bad_inference_data", call = NULL))
   if (!is.data.frame(data) || nrow(data) != fit$n_observations ||
       !all(required %in% names(data))) refuse()
@@ -279,10 +279,12 @@
     if (!isTRUE(all.equal(unname(supplied_weights), unname(fit$sampling_weights),
                           tolerance = 1e-12))) refuse()
   }
+  contributing <- if (is.null(fit$sampling_weights)) NULL else
+    unname(fit$sampling_weights)[fit$group_index] > 0
   if (!inherits(fit, "multilpa_lta")) {
     .multilpa_check_transition_data(fit, data)
     if (length(fit$categorical) &&
-        !identical(.multilpa_encode_categorical(data[fit$categorical])$levels,
+        !identical(.multilpa_encode_categorical(data[fit$categorical], contributing)$levels,
                    fit$categorical_levels)) refuse()
     if (!identical(.multilpa_time_values(data, a$time, a$id, a$vars),
                    fit$time_values)) refuse()
@@ -295,9 +297,10 @@
                          .lta_covariate_matrix(data, a$initial_covariates), a$transitions)
   x <- sweep(as.matrix(data[fit$continuous]), 2L, fit$centers, "-")
   encoded <- if (!length(fit$categorical)) NULL else
-    .multilpa_encode_categorical(data[fit$categorical])
+    .multilpa_encode_categorical(data[fit$categorical], contributing)
   codes <- encoded$codes
-  extra <- .latents_prepare_extra(data, fit$ordinal, fit$count, a$missing)
+  extra <- .latents_prepare_extra(data, fit$ordinal, fit$count, a$missing,
+                                  contributing = contributing)
   same <- function(left, right) isTRUE(all.equal(left, right, check.attributes = FALSE,
                                                 tolerance = 0))
   if (!identical(groups$ids, fit$group_ids) || !identical(groups$index, fit$group_index) ||
@@ -316,7 +319,7 @@
                                max_iter, tol, seed, call) {
   positive_integer <- function(value) is.numeric(value) && length(value) == 1L &&
     is.finite(value) && value >= 1 && value <= .Machine$integer.max && value == floor(value)
-  stopifnot("`iter` must be a positive integer" = positive_integer(iter),
+  .latents_require("`iter` must be a positive integer" = positive_integer(iter),
             "`n_starts` must be a positive integer" =
               is.null(n_starts) || positive_integer(n_starts),
             "`max_iter` must be a nonnegative integer" =
@@ -328,6 +331,14 @@
       "bootstrap_lrt() for transition models needs `data`: the simulation keeps",
       "its groups, occasions and covariates."), class = "latents_bad_argument",
       call = NULL))
+  }
+  # As compare_models() and the profile families' bootstrap_lrt() refuse it:
+  # the two fits must count their sample alike (TRANS-9).
+  if (!identical(.lta_arguments(null_model)$drop_empty %||% TRUE,
+                 .lta_arguments(alternative_model)$drop_empty %||% TRUE)) {
+    stop(errorCondition(
+      "The two transition fits were made with different `drop_empty`.",
+      class = "latents_incomparable_models", call = NULL))
   }
   if (!.lta_nested(null_model, alternative_model)) {
     stop(errorCondition(paste(
@@ -482,9 +493,9 @@
     final_tasks, costs, cores, nrow(grid)))
   on.exit(.latents_pool_progress(verbose, "Done in %s.", .latents_format_duration(
     proc.time()[["elapsed"]] - started)), add = TRUE)
-  runs <- lapply(indices, function(i) {
+  finals <- lapply(indices, function(i) {
     plan <- candidates[[i]]$value
-    final <- .latents_collect_conditions(function() tryCatch({
+    .latents_collect_conditions(function() tryCatch({
       if (inherits(plan, "error")) stop(plan)
       if (inherits(ranked[[i]]$value, "error")) stop(ranked[[i]]$value)
       attempts <- lapply(finished[[i]], `[[`, "value")
@@ -501,6 +512,13 @@
       if (!inherits(plan, "error")) .lta_report_failed_plan(plan, error)
       .lta_candidate_error(error)
     }))
+  })
+  # A defect of the shared input (a misspelled `time` column, say) fails every
+  # candidate alike; it is raised, as lta() raises it, rather than returned
+  # as a grid of NA rows (API-2).
+  .latents_refuse_shared_data_error(lapply(finals, `[[`, "value"))
+  runs <- lapply(indices, function(i) {
+    final <- finals[[i]]
     conditions <- c(candidates[[i]]$conditions,
                     unlist(lapply(screened[[i]], `[[`, "conditions"), recursive = FALSE),
                     ranked[[i]]$conditions,
@@ -571,6 +589,12 @@ print.latents_transition_enumeration <- function(x, ...) {
                   "log_likelihood", "n_parameters", "bic", "aic", "entropy",
                   "converged", "boundary")],
         digits = 4, row.names = FALSE)
+  # A failed candidate is an NA row; say so, as the profile grid does (API-2).
+  failed <- !is.na(table$error)
+  if (any(failed)) {
+    cat(sprintf(paste("%d candidate(s) failed to fit; the `error` column of",
+                      "as.data.frame(x) gives the reason.\n"), sum(failed)))
+  }
   cat("Pick one by its name: get_candidate(x, \"<candidate>\").\n")
   invisible(x)
 }
@@ -579,6 +603,8 @@ print.latents_transition_enumeration <- function(x, ...) {
 #' @param object A `latents_transition_enumeration` result.
 #' @export
 summary.latents_transition_enumeration <- function(object, ...) {
+  # A dropped argument used to vanish without a word (review 2026-10-27, API-4).
+  .latents_warn_unused_arguments(list(...), "summary()", .multilpa_summary_advice())
   .latents_named_table(object)
 }
 

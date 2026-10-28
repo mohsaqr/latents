@@ -86,11 +86,7 @@
   }
   x <- matrix(as.numeric(as.matrix(frame)), nrow = nrow(data),
               ncol = length(vars), dimnames = list(NULL, vars))
-  if (!all(is.finite(x))) {
-    stop(errorCondition(
-      "Indicators contain missing or non-finite values; the additive model requires complete ratings.",
-      class = "latents_bad_data", call = NULL))
-  }
+  if (!all(is.finite(x))) .latents_refuse_missing_values(x, fiml_available = FALSE)
   groups <- .multilpa_prepare_groups(data[[id]])
   # Sampling weights, one per group, travel with the statistics: every
   # posterior-weighted sum the M-step and the scores form is weighted by them.

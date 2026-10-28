@@ -118,8 +118,8 @@ test_that("covariate fits refuse an abbreviated prevalence with the reason", {
   expect_error(plot(fit, what = "prob"), class = "latents_nothing_to_plot")
   expect_error(plot(fit, what = "probabilities"),
                class = "latents_nothing_to_plot")
-  # "p" stays ambiguous, as match.arg() makes it.
-  expect_error(plot(fit, what = "p"), "should be one of")
+  # "p" stays ambiguous, as match.arg() makes it, and is now a classed refusal.
+  expect_error(plot(fit, what = "p"), class = "latents_bad_argument")
 })
 
 test_that("a centred fit's case-level views are refused as nothing to plot", {

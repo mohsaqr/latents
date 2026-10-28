@@ -114,7 +114,9 @@
 #'   clusters of a multilevel growth mixture (`cluster`).
 #' @param common `NULL`, or the predictor terms whose coefficients are
 #'   shared by every class: variable names such as `"age"`, or a one-sided
-#'   formula such as `~ age`. Each term must appear in `formula`.
+#'   formula such as `~ age`. Each term must appear in `formula`. The
+#'   intercept cannot be shared: `"intercept"` or `~ 1` alone raises
+#'   `latents_bad_argument`.
 #' @param membership Covariates predicting class membership (a multinomial
 #'   logit, the first class as the reference): variable names such as
 #'   `"age"`, or a one-sided formula (`~ 1`, the default, for none).
@@ -158,10 +160,15 @@
 #' @param weights `NULL`, or the name of a numeric column of `data` with a
 #'   sampling weight per independent unit: per row without `id`, per `id`
 #'   group otherwise (constant within it). Pseudo maximum likelihood with the
-#'   weights scaled to sum to the number of units; `vcov_type` defaults to
-#'   `"robust"` and refuses `"observed"` and `"opg"`. The information
-#'   criteria use the weighted log likelihood; the entropy term of ICL sums
-#'   the units' own posteriors unweighted, as in the profile models.
+#'   weights scaled to sum to the units of positive weight; `vcov_type`
+#'   defaults to `"robust"` and refuses `"observed"` and `"opg"`. The
+#'   information criteria use the weighted log likelihood, and the entropy
+#'   term of ICL is weighted by the sampling weights, as the likelihood is. A
+#'   unit of weight zero is absent from the fit: from every start, estimate,
+#'   sample size and criterion; it keeps its row and posterior. A row of
+#'   weight zero whose factor level (or ordinal outcome category) no row of
+#'   positive weight has is left out, with a `latents_rows_dropped` warning,
+#'   since the model has no parameter for that level.
 #'
 #' @param random `NULL` (default; no random effects), or the random effects
 #'   within classes: variable names such as `"time"` (a random intercept and
@@ -204,16 +211,20 @@
 #'   [vcov()], [confint()], [logLik()] and [nobs()] also apply.
 #'
 #' @section Conditions:
-#'   `latents_bad_argument` for an inconsistent specification;
-#'   `latents_bad_data` for an outcome outside the family's support or a
-#'   covariate that varies within a group where it may not;
+#'   `latents_bad_argument` for an inconsistent specification (including a
+#'   `common` that names no predictor term);
+#'   `latents_bad_data` for an outcome outside the family's support, a
+#'   covariate that varies within a group where it may not, or a factor
+#'   predictor with a single value among the fitted (positive-weight) rows;
 #'   `latents_not_identified` for a binary outcome with one trial per class
 #'   assignment, or an ordinal mixture with one outcome per class assignment
 #'   and two categories, no predictors, or fewer distinct covariate patterns
 #'   times C - 1 than free parameters; `latents_missing_data` for missing
 #'   values under
 #'   `missing = "error"`; `latents_rows_dropped` (warning) under
-#'   `missing = "omit"`; `latents_no_valid_start` when every start
+#'   `missing = "omit"`, and for rows of weight zero carrying a factor level
+#'   or outcome category that no row of positive weight has;
+#'   `latents_no_valid_start` when every start
 #'   degenerated; `latents_unconverged` (warning) when the selected start did
 #'   not converge; `latents_degenerate_start` (warning) when some starts
 #'   degenerated; `latents_separation` (warning) for extreme fitted logits or
@@ -319,7 +330,8 @@ mixture_regression <- function(formula, data, n_classes,
   missing <- match.arg(missing)
   select_start <- match.arg(select_start)
   vcov_type <- match.arg(vcov_type)
-  stopifnot(
+  .latents_check_data_frame(data, substitute(data))
+  .latents_require(
     "`formula` must be a two-sided formula" =
       inherits(formula, "formula") && length(formula) == 3L,
     "`data` must be a data frame" = is.data.frame(data),
@@ -373,7 +385,8 @@ mixture_regression <- function(formula, data, n_classes,
   }
   spec <- .mixture_spec(formula, data, n_classes, family, id, class_level,
                        n_group_classes, common, membership, group_membership,
-                       variance, min_variance, missing, random, cluster)
+                       variance, min_variance, missing, random, cluster,
+                       support = .mixture_row_support(data, weights))
   if (!is.null(weights)) {
     spec <- .mixture_weight_spec(spec, data, weights, min_variance)
     if (!identical(vcov_type, "none")) {
@@ -426,9 +439,17 @@ mixture_regression <- function(formula, data, n_classes,
     }
     return(fit)
   }
+  # A unit of weight zero is absent: every start, and the selection among
+  # them, sees the units of positive weight only (as the growth mixture does).
+  # Its posterior is then restored from the selected estimates.
+  carrying <- .mixture_carrying_spec(spec)
   results <- .mixture_with_seed(seed, .mixture_run_starts(
-    spec, as.integer(n_starts), as.integer(max_iter), tol))
-  fit <- .mixture_select(spec, results, select_start)
+    carrying, as.integer(n_starts), as.integer(max_iter), tol))
+  fit <- .mixture_select(carrying, results, select_start)
+  if (carrying$n < spec$n) {
+    fit$spec <- spec
+    fit$expectation <- .mixture_expectation(spec, fit$params, weighted = FALSE)
+  }
   fit$call <- match.call()
   fit$settings <- list(n_starts = as.integer(n_starts),
                        max_iter = as.integer(max_iter), tol = tol,
@@ -504,16 +525,42 @@ mixture_regression <- function(formula, data, n_classes,
   spec$row_weights <- unit_weights[unit_index]
   spec$weights <- weights
   if (identical(spec$family, "gaussian") && !is.null(min_variance)) {
-    supported <- spec$y[spec$row_weights > 0]
-    if (max(supported) == min(supported)) {
-      stop(errorCondition(paste(
-        "The outcome takes the same value in every row of positive weight,",
-        "so there is no variation for a Gaussian mixture regression to model."),
-        class = "latents_bad_data", call = NULL))
-    }
-    spec$min_variance <- min_variance * max(stats::var(supported), .Machine$double.xmin)
+    carrying <- spec$row_weights > 0
+    reference <- .mixture_gaussian_reference(
+      spec$y[carrying], spec$offset[carrying],
+      cbind(spec$x, spec$z)[carrying, , drop = FALSE])
+    spec$min_variance <- min_variance * reference
   }
   spec
+}
+
+#' Reference variance and constant-response check for Gaussian regression
+#'
+#' A constant raw response need not have zero residual variance: an offset or
+#' a design without an intercept can leave nonzero residuals. Refuse only a
+#' constant adjusted response the design can fit identically. For a constant
+#' raw response the adjusted spread (or its squared level without an intercept)
+#' supplies a positive, outcome-unit-aware variance reference.
+#' @param y,offset Response and fixed offset on rows of positive weight.
+#' @param design The full regression design on those rows.
+#' @return A positive variance reference in outcome-squared units.
+#' @noRd
+.mixture_gaussian_reference <- function(y, offset, design) {
+  stopifnot(is.numeric(y), length(y) > 0L, length(offset) == length(y),
+            is.matrix(design), nrow(design) == length(y))
+  adjusted <- y - offset
+  constant <- max(adjusted) == min(adjusted)
+  if (constant && ("(Intercept)" %in% colnames(design) || adjusted[[1L]] == 0)) {
+    stop(errorCondition(paste(
+      "The outcome after its offset takes the same value in every row of positive weight,",
+      "and the regression fits that constant exactly, leaving no residual variation."),
+      class = "latents_bad_data", call = NULL))
+  }
+  reference <- stats::var(y)
+  if (!is.finite(reference) || reference <= 0) {
+    reference <- if (constant) mean(adjusted^2) else stats::var(adjusted)
+  }
+  max(reference, .Machine$double.xmin)
 }
 
 #' Is a value a single positive whole number?
@@ -542,12 +589,18 @@ mixture_regression <- function(formula, data, n_classes,
 #' the membership designs and the group index, after one complete-case pass
 #' over every variable the model uses.
 #'
+#' @param support `NULL`, or one logical per row of `data`: `FALSE` for a row
+#'   of sampling weight zero. Factor levels and ordinal categories are then
+#'   those of the rows of positive weight, and a zero-weight row carrying a
+#'   level none of them has is left out (`latents_rows_dropped`): no weighted
+#'   observation informs its parameter, which would otherwise be counted in
+#'   the BIC and make the robust covariance rank deficient.
 #' @return A list consumed by the engine; see the fields assigned below.
 #' @noRd
 .mixture_spec <- function(formula, data, n_classes, family, id, class_level,
                          n_group_classes, common, membership,
                          group_membership, variance, min_variance, missing,
-                         random = NULL, cluster = NULL) {
+                         random = NULL, cluster = NULL, support = NULL) {
   bad_argument <- function(message) {
     stop(errorCondition(message, class = "latents_bad_argument", call = NULL))
   }
@@ -611,8 +664,24 @@ mixture_regression <- function(formula, data, n_classes,
       class = "latents_rows_dropped", call = NULL))
   }
   kept_rows <- which(complete)
+  formulas <- list(formula, membership, group_membership, random)
+  outside <- if (is.null(support)) rep(FALSE, length(kept_rows)) else
+    .mixture_outside_support(data[kept_rows, , drop = FALSE],
+                             support[kept_rows], formulas,
+                             ordinal = identical(family, "ordinal"))
+  kept_rows <- kept_rows[!outside]
   data <- data[kept_rows, , drop = FALSE]
   n <- nrow(data)
+  # Refuse a one-level factor before announcing the dropped rows, so a
+  # subgroup selected by zero weights is told the real reason only.
+  .mixture_require_levels(data, formulas, weighted = !is.null(support))
+  if (any(outside)) {
+    warning(warningCondition(sprintf(paste(
+      "Left out %d row%s of weight zero carrying a factor level or outcome",
+      "category that no row of positive weight has: the model has no",
+      "parameter for it."), sum(outside), if (sum(outside) > 1L) "s" else ""),
+      class = "latents_rows_dropped", call = NULL))
+  }
 
   frame <- stats::model.frame(formula, data = data, na.action = stats::na.fail,
                               drop.unused.levels = TRUE)
@@ -624,18 +693,6 @@ mixture_regression <- function(formula, data, n_classes,
                         class = "latents_bad_data", call = NULL))
   }
   response <- .mixture_response(stats::model.response(frame), family)
-  # A Gaussian outcome with no variation leaves every class a residual variance
-  # of zero whatever the model, so no start can succeed; say that, rather than
-  # that the starts degenerated, which advised fewer classes or more starts.
-  # The range is tested exactly, as for constant indicators: repeated 0.1 has
-  # a computed standard deviation of 1.4e-17, not zero.
-  if (identical(family, "gaussian") && length(response$y) > 0L &&
-      max(response$y) == min(response$y)) {
-    stop(errorCondition(sprintf(paste(
-      "The outcome takes the same value (%s) in every row, so there is no",
-      "variation for a Gaussian mixture regression to model."),
-      format(response$y[[1L]])), class = "latents_bad_data", call = NULL))
-  }
   ordinal <- identical(family, "ordinal")
   if (ordinal && !isTRUE(attr(model_terms, "intercept") == 1L)) {
     bad_argument(paste("An ordinal regression's thresholds take the intercept's",
@@ -705,7 +762,8 @@ mixture_regression <- function(formula, data, n_classes,
                         class = "latents_bad_data", call = NULL))
   }
 
-  y_variance <- if (identical(family, "gaussian")) stats::var(response$y) else 1
+  y_variance <- if (identical(family, "gaussian"))
+    .mixture_gaussian_reference(response$y, offset, full_design) else 1
   clusters <- if (is.null(cluster)) NULL else
     .growth_cluster_spec(data[[cluster]], group_index, row_membership,
                          group_membership_design$matrix, n_group_classes)
@@ -756,6 +814,110 @@ mixture_regression <- function(formula, data, n_classes,
   spec
 }
 
+#' Which rows of a weighted fit carry positive weight
+#'
+#' Read before the weights are validated, so that only an exact zero marks a
+#' row as absent; a missing or negative weight is left for
+#' `.latents_sampling_weights()` to refuse.
+#' @param data The data frame passed to the fit.
+#' @param weights `NULL`, or the weight argument as given.
+#' @return `NULL` when no row has weight zero, otherwise one logical per row
+#'   of `data`, `FALSE` for a row of weight zero.
+#' @noRd
+.mixture_row_support <- function(data, weights) {
+  if (!is.character(weights) || length(weights) != 1L || is.na(weights) ||
+      !weights %in% names(data) || !is.numeric(data[[weights]])) {
+    return(NULL)
+  }
+  value <- data[[weights]]
+  supported <- is.na(value) | value != 0
+  if (all(supported)) NULL else supported
+}
+
+#' Zero-weight rows whose categorical values the rows of positive weight lack
+#'
+#' Checks every factor, character or logical variable of the model frames
+#' (the predictors, the membership covariates and the random effects), and an
+#' ordinal outcome.
+#' @param data The complete rows.
+#' @param carrying One logical per row, `FALSE` for weight zero.
+#' @param formulas The model's formulas; `NULL` entries are skipped.
+#' @param ordinal Whether the outcome is ordinal (its categories then count).
+#' @return One logical per row, `TRUE` for a row to leave out.
+#' @noRd
+.mixture_outside_support <- function(data, carrying, formulas, ordinal) {
+  none <- rep(FALSE, nrow(data))
+  # With no row of positive weight there is no support to restrict to: the
+  # weights check refuses the fit (`latents_bad_weights`) once the design is
+  # built, as it did before zero-weight rows were dropped.
+  if (all(carrying) || !any(carrying)) return(none)
+  columns <- .mixture_categorical_columns(data, formulas, ordinal = ordinal,
+                                          logical = TRUE)
+  Reduce(`|`, lapply(columns, function(column) {
+    !carrying & !(column %in% column[carrying])
+  }), none)
+}
+
+#' The categorical variables of the model's formulas
+#'
+#' @param data The rows to evaluate the formulas on.
+#' @param formulas The model's formulas; `NULL` entries are skipped.
+#' @param ordinal Whether an ordinal outcome counts (otherwise the outcome is
+#'   left out).
+#' @param logical Whether logical variables count.
+#' @return A named list of the factor and character (and, with `logical`,
+#'   logical) columns of the model frames, named by the variable.
+#' @noRd
+.mixture_categorical_columns <- function(data, formulas, ordinal = FALSE,
+                                         logical = FALSE) {
+  unlist(lapply(Filter(Negate(is.null), formulas), function(formula) {
+    frame <- stats::model.frame(formula, data, na.action = stats::na.pass)
+    categorical <- vapply(frame, function(column) {
+      is.null(dim(column)) && (is.factor(column) || is.character(column) ||
+                                 (logical && is.logical(column)))
+    }, logical(1))
+    response <- attr(attr(frame, "terms"), "response")
+    if (isTRUE(response > 0L)) categorical[response] <- ordinal
+    as.list(frame[categorical])
+  }), recursive = FALSE)
+}
+
+#' Refuse a factor predictor with a single observed level
+#'
+#' A factor or character predictor (in the regression, membership or
+#' random-effects formula) needs two distinct values among the rows fitted:
+#' with one there is nothing to contrast, and base R's model matrix stops
+#' with an unclassed error. With sampling weights the fitted rows are those
+#' of positive weight (and any zero-weight row sharing their levels), so a
+#' subgroup selected by zero weights whose indicator is in the formula lands
+#' here.
+#' @param data The fitted rows.
+#' @param formulas The model's formulas; `NULL` entries are skipped.
+#' @param weighted Whether rows of weight zero were left out first (only
+#'   changes the message).
+#' @return `NULL`, invisibly; raises `latents_bad_data`.
+#' @noRd
+.mixture_require_levels <- function(data, formulas, weighted = FALSE) {
+  columns <- .mixture_categorical_columns(data, formulas)
+  single <- vapply(columns, function(column) {
+    length(unique(as.character(column))) < 2L
+  }, logical(1))
+  if (any(single)) {
+    offending <- unique(names(columns)[single])
+    several <- length(offending) > 1L
+    stop(errorCondition(sprintf(paste(
+      "%s %s a single value among the %s rows, so %s nothing to contrast.",
+      "Drop %s from the model or fit the subgroup without it."),
+      paste(sprintf("`%s`", offending), collapse = ", "),
+      if (several) "take" else "takes",
+      if (weighted) "fitted (positive-weight)" else "fitted",
+      if (several) "they have" else "it has",
+      if (several) "them" else "it"),
+      class = "latents_bad_data", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' The design columns of the terms shared by every class
 #'
 #' A `common` term is matched to a term of `formula` by the variables it
@@ -768,7 +930,8 @@ mixture_regression <- function(formula, data, n_classes,
 #' @param model_terms The terms of the fitted formula.
 #' @param full_design Its model matrix (with the `assign` attribute).
 #' @return A character vector of column names of `full_design`; raises
-#'   `latents_bad_argument` for a term `formula` does not have.
+#'   `latents_bad_argument` for a term `formula` does not have, or for a
+#'   `common` with no term at all (a shared intercept).
 #' @noRd
 .mixture_common_columns <- function(common, model_terms, full_design) {
   term_keys <- function(terms) {
@@ -780,6 +943,15 @@ mixture_regression <- function(formula, data, n_classes,
   }
   common_terms <- stats::terms(common)
   labels <- attr(common_terms, "term.labels")
+  if (length(labels) == 0L) {
+    # `"intercept"` and `~ 1` used to be accepted and to change nothing: the
+    # intercept stayed class-specific without a word (REG-8).
+    stop(errorCondition(paste(
+      "`common` names no predictor term. An intercept shared by every class",
+      "is not supported (`\"intercept\"` and `~ 1` ask for one); give the",
+      "predictor terms whose coefficients the classes share, or leave",
+      "`common = NULL`."), class = "latents_bad_argument", call = NULL))
+  }
   position <- match(term_keys(common_terms), term_keys(model_terms))
   if (anyNA(position)) {
     stop(errorCondition(sprintf(paste(

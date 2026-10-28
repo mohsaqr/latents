@@ -199,7 +199,7 @@ get_results(fit, "profile_probabilities")
 plot_prevalence(fit)
 ```
 
-The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 79% probability to the more engaged profile, whereas student class 2 assigns approximately 83% probability to the less engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
+The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 83% probability to the less engaged profile, whereas student class 2 assigns approximately 79% probability to the more engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
 
 The `group_class_probability` column contains the estimates of $\eta_h$, or the proportion of students in each class. These are group-level proportions. They should be distinguished from enrolment-level profile proportions, particularly when students contribute different numbers of observations.
 

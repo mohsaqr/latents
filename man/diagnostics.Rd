@@ -5,7 +5,7 @@
 \alias{as.data.frame.multilpa_diagnostics}
 \alias{print.multilpa_diagnostics}
 \alias{plot.multilpa_diagnostics}
-\title{Classification diagnostics of a fitted model}
+\title{Diagnostics of a fitted model}
 \usage{
 diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 
@@ -39,28 +39,74 @@ raises \code{latents_bad_argument}; style the returned plots with ggplot2.}
 to the returned table.}
 }
 \value{
-An object of class \code{multilpa_diagnostics}. Its tables are read with
-\code{get_results(result, what = )}, where \code{what} is \code{"entropy"},
-\code{"classification"}, \code{"average_posteriors"}, \code{"residuals"} or \code{"all"}. A
+An object of class \code{multilpa_diagnostics}. Its checks table,
+\code{get_results(result, "checks")}, has one row per check: \code{domain}, \code{check}, \code{level}, \code{value} (numeric), \code{display} (as
+printed), \code{criterion}, \code{status}, \code{detail} and \code{reference}. Its other
+tables are read with \code{get_results(result, what = )}, where \code{what} is
+\code{"checks"}, \code{"entropy"},
+\code{"classification"}, \code{"average_posteriors"}, \code{"residuals"},
+\code{"replication"} or \code{"all"}. A
 model family without bivariate residuals leaves that table out of
 \code{"all"}, and asking for it by name raises \code{latents_no_group_classes}; a
 fit with a noise component has none either, and raises
 \code{latents_unsupported_noise}.
 
-\code{print()} prints one line per diagnostic (relative entropy, smallest
-class, lowest average posterior and largest residual, at each level the
-fit has) and returns the object invisibly. \code{plot()} returns the four
+\code{print()} prints the checks grouped by domain, after a line naming those
+that need attention, and returns the object invisibly. \code{plot()} returns the four
 classification plots as a \code{latents_plots} list of ggplot objects, which
-draws all four when printed. \code{as.data.frame()} returns the entropy table.
+draws all four when printed. \code{as.data.frame()} returns the entropy table,
+as it did before the checks existed. \code{summary()} returns the object
+itself, which is already the summary of the fit's classification.
 }
 \description{
-Gathers the four classification tables of \code{\link[=get_results]{get_results()}} (\code{"entropy"},
-\code{"classification"}, \code{"average_posteriors"} and \code{"residuals"}) for a fitted
-model, prints one line per diagnostic, and by default draws the
-classification plots. The diagnostics are relative entropy, estimated class
-sizes, average posterior probabilities of the assigned classes, and the
-bivariate residuals that check the within-profile independence the model
-assumes.
+Reports what a fitted model's estimation and classification look like, in
+five domains. The values are reported, not judged against cut-offs: the
+published ones (an average posterior of .70, odds of correct
+classification of 5, a smallest class of 5 percent; Nagin, 2005) are rules
+of thumb rather than derived criteria, and whether a value is adequate
+depends on the study. A status marks only what is a fact about the fit.
+}
+\details{
+\itemize{
+\item \strong{Estimation}: whether the best start converged; how many of the
+starts run to the end reached the best log likelihood (a maximum reached
+by one start is not replicated; Masyn, 2013); starts that failed or did
+not finish (screened starts, short by design, are reported apart); and
+estimates at a bound.
+\item \strong{Class size}, at each level the fit classifies: the smallest class,
+the largest gap between modal and model-estimated class proportions, and
+classes to which no unit is assigned.
+\item \strong{Classification}: relative entropy (Ramaswamy et al., 1993), which
+describes classification precision and is not a criterion for the number
+of classes (Clark & Muthen, 2009); the lowest average posterior
+probability of the assigned class and the lowest odds of correct
+classification (Nagin, 2005).
+\item \strong{Local independence}: the indicator pairs whose bivariate residual is
+significant at 0.05 after Benjamini-Hochberg adjustment (Vermunt &
+Magidson, 2005), with the largest.
+\item \strong{Information}: the log likelihood, number of parameters and BIC, which
+are read against other models with \code{\link[=compare_models]{compare_models()}}.
+}
+
+A status is \code{"fail"} (the estimate is not usable: the best start did not
+converge, or a class is estimated from less than one unit), \code{"check"} (a
+fact that needs looking at: starts that failed or did not finish,
+estimates at a bound, a class with no assigned unit, dependent indicator
+pairs), \code{"ok"} (that fact does not hold), \code{"info"} (a value reported
+without a verdict) or \code{"n/a"} (the quantity does not apply, with the
+reason). Classification uses the fit's posterior probabilities, eligible
+units and sampling weights; no model estimate is changed. Profile, class
+and transition fits are reported in
+full; the additive, cross-level, mixture-regression and growth families
+are reported on what they estimate, and a quantity they cannot support is
+\code{"n/a"}.
+
+Every family supplies entropy, classification and average-posterior tables
+at the levels it classifies, with the start record (\code{"replication"}).
+Group-classified regressions report the group level; hierarchical regression
+and growth models report both levels. All-empty transition rows follow the
+fitted \code{drop_empty} policy, and zero-weight units are never classified.
+Bivariate residuals are gathered for families that support them.
 }
 \examples{
 fit <- multilpa(
@@ -69,10 +115,30 @@ fit <- multilpa(
   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
   seed = 1
 )
-quality <- diagnostics(fit)
+quality <- diagnostics(fit, plots = FALSE)
 quality
+get_results(quality, "checks")
 get_results(quality, what = "classification")
 get_results(diagnostics(fit, by = "overall"), what = "residuals")
+}
+\references{
+Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
+variables not included in the analysis. Unpublished manuscript.
+
+Masyn, K. E. (2013). Latent class analysis and finite mixture modeling. In
+T. D. Little (Ed.), \emph{The Oxford handbook of quantitative methods} (Vol. 2,
+pp. 551-611). Oxford University Press.
+
+Nagin, D. S. (2005). \emph{Group-based modeling of development}. Harvard
+University Press.
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities
+with PIMS data. \emph{Marketing Science}, 12(1), 103-124.
+\doi{10.1287/mksc.12.1.103}
+
+Vermunt, J. K., & Magidson, J. (2005). \emph{Latent GOLD 4.0 user's guide}.
+Statistical Innovations.
 }
 \seealso{
 \code{\link[=get_results]{get_results()}} for these and the other tables, \code{\link[=descriptives]{descriptives()}}

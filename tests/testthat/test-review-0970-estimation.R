@@ -13,8 +13,10 @@ test_that("joined categorical items estimate the full category grid", {
   expect_equal(posterior$probability_profile_1, 1)
   expect_equal(predict(fit, newdata = data, type = "posterior"),
                predict(fit, type = "posterior"))
-  mixture <- quietly(lca(data, c("a", "b"), 2, n_starts = 1, seed = 1,
-                         local_dependence = "a:b"))
+  # Two classes of one joined four-category item are not identified (CORE-5).
+  expect_warning(mixture <- quietly(lca(data, c("a", "b"), 2, n_starts = 1, seed = 1,
+                                        local_dependence = "a:b")),
+                 class = "latents_unidentified")
   expect_equal(mixture$n_parameters, 2 * 3 + 1)
   expect_equal(unname(mixture$response_probabilities[["a:b"]][, "1:1"]),
                rep(mixture$min_probability, 2), tolerance = 0)

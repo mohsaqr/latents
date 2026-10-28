@@ -506,6 +506,25 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
              reason = character(), stringsAsFactors = FALSE)
 }
 
+#' Whether a run meets the same acceptance rules as the command-line runner
+#'
+#' A partially compared column is incomplete even if its compared values
+#' agree. Explicit exemptions apply to complete columns; they cannot silently
+#' excuse a subset of a column. CI also requires every requested suite to run.
+#' @param run A result of `run_equivalence()`.
+#' @param require_all Whether skipped suites are failures.
+#' @return One logical value.
+.equivalence_passes <- function(run, require_all = FALSE) {
+  stopifnot(is.list(run), is.logical(require_all), length(require_all) == 1L,
+            !is.na(require_all))
+  comparisons <- run$comparisons
+  !any(run$suites$status == "failed") &&
+    (!require_all || all(run$suites$status == "ran")) &&
+    !any(!comparisons$agrees & is.na(comparisons$known_open)) &&
+    !any(run$coverage$status %in% c("partial", "not covered")) &&
+    !any(run$known_open$status == "stale")
+}
+
 #' Run one suite and record what happened to it
 #'
 #' A suite that raises `multilpa_suite_skipped` is recorded as skipped with its
@@ -552,7 +571,8 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
     data.frame(outcome$value, seconds = elapsed, stringsAsFactors = FALSE)
   ledger <- if (is.null(outcome$ledger)) NULL else
     data.frame(suite = name, outcome$ledger, stringsAsFactors = FALSE)
-  not_covered <- if (is.null(ledger)) NA_integer_ else sum(ledger$status == "not covered")
+  not_covered <- if (is.null(ledger)) NA_integer_ else
+    sum(ledger$status %in% c("partial", "not covered"))
   status <- data.frame(
     suite = name, status = outcome$state,
     compared = if (is.null(comparisons)) 0L else nrow(comparisons),
@@ -619,7 +639,9 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
 #' @return A `data.frame` with one row per recorded component and columns
 #'   `component` and `value`.
 .equivalence_session <- function(status, opened, closed, coverage) {
-  external <- c("mclust", "glca", "poLCA", "multilevLCA", "depmixS4", "tidySEM")
+  external <- c("mclust", "glca", "poLCA", "multilevLCA", "depmixS4", "tidySEM",
+                "flexmix", "lcmm", "LMest", "VGAM", "MASS", "mice", "sandwich",
+                "numDeriv")
   version_of <- vapply(external, function(name) {
     if (requireNamespace(name, quietly = TRUE)) as.character(utils::packageVersion(name)) else "not installed"
   }, character(1))
@@ -733,7 +755,7 @@ print.multilpa_equivalence <- function(x, ...) {
   cat(sprintf("\n%d quantities (%d values) compared, %d agreed, %d disagreed\n",
               nrow(x$comparisons), sum(x$comparisons$n_values),
               sum(x$comparisons$agrees), sum(!x$comparisons$agrees)))
-  uncovered <- subset(x$coverage %||% .empty_ledger(), status == "not covered")
+  uncovered <- subset(x$coverage %||% .empty_ledger(), status %in% c("partial", "not covered"))
   if (nrow(uncovered) > 0L) {
     cat(sprintf("\n%d output column(s) neither compared nor exempted:\n", nrow(uncovered)))
     print(uncovered[c("suite", "fit", "output", "n_produced")])
@@ -907,7 +929,7 @@ seed_stability <- function(label, fit_one, seeds, tolerance = .equivalence_toler
                sprintf("%.1f%%", 100 * sum(pmin(part$n_compared, part$n_produced)[
                  part$status != "exempt"]) / max(produced, 1))))
   })
-  uncovered <- ledger[ledger$status == "not covered", , drop = FALSE]
+  uncovered <- ledger[ledger$status %in% c("partial", "not covered"), , drop = FALSE]
   c("", "## Output coverage", "",
     "Every output column of every fit a suite compared, read from the package's own",
     "catalogue (`get_results(fit, \"all\")`), must be compared or exempted with a",

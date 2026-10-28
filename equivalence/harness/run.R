@@ -20,7 +20,9 @@
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 source(file.path("equivalence", "harness", "registry.R"))
 
-directory <- file.path("equivalence", "harness")
+directory <- Sys.getenv("LATENTS_EQUIVALENCE_OUTPUT",
+                         unset = file.path("equivalence", "harness"))
+dir.create(directory, recursive = TRUE, showWarnings = FALSE)
 requested <- commandArgs(trailingOnly = TRUE)
 
 # Check every validation script against the loaded package's signatures before
@@ -63,10 +65,10 @@ if (nrow(new_failures) > 0L) {
   cat("\nDisagreements not explained by a known open defect:\n")
   print(new_failures[c("suite", "quantity", "reference", "obtained", "difference", "tolerance")])
 }
-uncovered <- subset(coverage, status == "not covered")
+uncovered <- subset(coverage, status %in% c("partial", "not covered"))
 if (nrow(uncovered) > 0L) {
-  cat("\nOutputs neither compared nor exempted:\n")
-  print(uncovered[c("suite", "fit", "output", "n_produced")])
+  cat("\nOutputs not completely compared or exempted:\n")
+  print(uncovered[c("suite", "fit", "output", "n_produced", "n_compared", "status")])
 }
 stale <- subset(register, status == "stale")
 if (nrow(stale) > 0L) {
@@ -88,7 +90,10 @@ suites <- as.data.frame(run, what = "suites")
 # A known open defect does not fail the run; a new disagreement, a failed
 # suite, an output nobody accounted for, or a register entry that no longer
 # matches anything does.
-if (any(suites$status == "failed") || nrow(new_failures) > 0L ||
-    nrow(uncovered) > 0L || nrow(stale) > 0L) {
+require_all <- identical(Sys.getenv("LATENTS_EQUIVALENCE_REQUIRE_ALL"), "true")
+if (require_all && any(suites$status == "skipped")) {
+  cat("\nRequired suites were skipped; see suites.csv for the missing dependency or fixture.\n")
+}
+if (!.equivalence_passes(run, require_all = require_all)) {
   quit(status = 1L, save = "no")
 }

@@ -177,9 +177,14 @@ within its group, such as a wave, occasion or course number. It is not
 used in estimation; it is stored for \code{get_results(x, "sequences")},
 \code{get_results(x, "sequence_summary")} and \code{plot(what = "sequences")}.
 Values must be complete and unique within each group, and are ordered as
-\code{\link[=sort]{sort()}} orders them. Numbers stored as text whose alphabetical order is
-not their numeric order (\code{"2"}, \code{"10"}) raise \code{latents_bad_time};
-zero-padded numbers and ISO dates are accepted.}
+\code{\link[=sort]{sort()}} orders them: numbers numerically, a factor by its levels, and
+character strings alphabetically. Numbers stored as text whose
+alphabetical order is not their numeric order (\code{"2"}, \code{"10"}), and
+numbered labels sharing their text around the number whose alphabetical
+order is not the numbers' (\code{"T2"}, \code{"T10"}; \code{"week 2"}, \code{"week 10"}),
+raise \code{latents_bad_time} (also \code{latents_bad_data}); give the order with
+\code{factor(levels = )} or zero-pad the numbers. Zero-padded numbers and ISO
+dates are accepted.}
 
 \item{fixed}{Character vector naming measurement blocks to hold at the
 values in \code{start} instead of estimating them: any of \code{"means"},
@@ -259,7 +264,14 @@ differ when an unconverged start exceeds a converged one by a negligible
 amount, as happens when a membership logit drifts along a flat ridge of
 the likelihood; only the converged start is a maximum on which
 \code{\link[=parameter_inference]{parameter_inference()}} can be based. \code{summary()} and
-\code{get_results(fit, "starts")} show every start.}
+\code{get_results(fit, "starts")} show every start. The reported replication
+count includes final-stage starts within \code{1e-6 * max(1, n_observed)} of
+the selected log likelihood, where \code{n_observed} counts observed indicator
+values in rows of positive sampling weight, as in the EM stopping rule.
+This absolute likelihood-gap tolerance is independent of measurement
+units and of \code{tol}, since a start stopped by the EM rule can still lie
+several steps below its maximum. It is stored as
+\code{replication_tolerance} and does not select a start.}
 
 \item{prior}{\code{NULL} (the default) for maximum likelihood, or a
 \code{\link[=prior_control]{prior_control()}} object for maximum a posteriori estimation of the
@@ -313,7 +325,12 @@ for such a fit.}
 
 \item{acceleration}{\code{"squarem"} (the default) accelerates EM with SQUAREM
 (Varadhan & Roland, 2008): each cycle extrapolates along the last two EM
-steps and ends with an ordinary EM step, and falls back to plain EM when
+steps in unit-free coordinates (means divided by reference standard
+deviations, variances and covariances by the corresponding products;
+probabilities unchanged). Reference spreads use observed values in rows
+of positive sampling weight. Changing this acceleration chart can change
+iteration counts and the local maximum reached relative to earlier
+versions. Each cycle ends with an ordinary EM step and falls back when
 the extrapolated point would lower the likelihood, so the iteration stays
 monotone. Convergence is assessed over a whole cycle, so it is never
 looser than plain EM's. \code{"none"} runs plain EM, which follows the same
@@ -406,7 +423,14 @@ so integer weights give the fit to the data with each unit repeated that
 many times and the criteria stay on the sample's scale. A unit of weight
 zero is not part of the sample: it changes no estimate, likelihood,
 sample size, entropy or criterion, sets neither the grand offset nor the
-grand scale of \code{centering}/\code{scaling = "grand"}, and is not classified. Standard errors are sandwich estimates:
+grand scale of \code{centering}/\code{scaling = "grand"}, and is not classified.
+Nor does it define a category: a categorical, ordinal or paired
+(\code{local_dependence}) value seen only on units of weight zero is not a
+category of the fit and has no parameter, and an indicator constant among
+the units of positive weight is refused whatever those units hold. Under
+\code{missing = "error"}, a missing categorical, ordinal or count value on a
+unit of weight zero is not refused; a missing continuous value is.
+Standard errors are sandwich estimates:
 \code{parameter_inference()} defaults to \code{vcov_type = "robust"} and refuses
 \code{"observed"} and \code{"opg"} (\code{latents_unsupported_weights}), and
 \code{method = "bootstrap"} resamples the units with their weights.
@@ -468,7 +492,13 @@ zero or undefined (under \code{"person"}, a unit observed once on an indicator
 or always giving the same value) raises \code{latents_bad_data}. Under
 \code{EEI}, \code{VEI}, \code{EVI}, \code{VVI}, \code{EEE}, \code{VEE}, \code{EVV} and \code{VVV}, whose family
 is unchanged when each indicator is rescaled, grand scaling changes only
-the units of the estimates. Under the spherical \code{EII} and \code{VII}, which
+the units of the estimates and adds the density Jacobian to each start's
+log likelihood. SQUAREM uses unit-free coordinates, so its search path
+is equivariant in exact arithmetic when variance bounds are inactive or
+transformed with the model. Rounding near convergence can still change
+iteration counts, and nearly tied starts can change the selected labelling.
+A scalar variance or eigenvalue floor is not generally preserved by
+unequal indicator rescaling. Under the spherical \code{EII} and \code{VII}, which
 impose one variance on every indicator, and under \code{EEV}, \code{VEV}, \code{EVE} and
 \code{VVE}, which share eigenvalues or eigenvectors across profiles (neither
 survives rescaling the indicators by different factors), it changes the
@@ -662,7 +692,11 @@ Only initialization fills missing values with indicator means; EM uses
 conditional Gaussian sufficient statistics and observed marginal
 densities. More than one group class requires more than one profile and at
 least one group with more than one individual; these checks are necessary
-but do not establish identification. By default the highest finite
+but do not establish identification. A model of complete categorical and
+ordinal indicators alone, with one group class, warns
+(\code{latents_unidentified}) when it has more free parameters than its
+contingency table has free cells (negative degrees of freedom), which no
+data can identify (Goodman, 1974). By default the highest finite
 likelihood across starts is returned, even if that start did not converge;
 \code{select_start = "converged"} prefers a converged start, and \code{converged}
 and \code{starts} show which was chosen. Profile and group-class labels are
@@ -683,6 +717,10 @@ get_results(fit, what = "profile_probabilities")
 Vermunt, J. K. (2003). Multilevel latent class models.
 Sociological Methodology, 33, 213--239.
 doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+
+Goodman, L. A. (1974). Exploratory latent structure analysis using both
+identifiable and unidentifiable models. Biometrika, 61(2), 215--231.
+doi:10.1093/biomet/61.2.215.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.

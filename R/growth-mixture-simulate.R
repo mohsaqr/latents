@@ -65,7 +65,7 @@
 #' @rdname latents-predict
 #' @export
 simulate.latents_growth_mixture <- function(object, nsim = 1, seed = NULL, ...) {
-  stopifnot("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
+  .latents_require("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
   .mixture_with_seed(seed, {
     draws <- lapply(seq_len(nsim), function(i) .growth_draw(object))
     stats::setNames(as.data.frame(draws), paste0("sim_", seq_len(nsim)))

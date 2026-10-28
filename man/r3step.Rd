@@ -18,13 +18,19 @@ r3step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model, or a
-trajectory model from \code{\link[=mixture_regression]{mixture_regression()}} that classifies persons
-(with or without \code{random}), whose person classes are then predicted.
-Fits with membership covariates and multilevel growth mixtures
-(\code{cluster}) are refused with \code{latents_unsupported_three_step}: the
-correction uses a fixed, unconditional classification-error matrix and
-independent units.}
+\item{x}{A covariate-free fit from \code{\link[=multilpa]{multilpa()}} (\code{family = "profiles"},
+the default) or from \code{\link[=lta]{lta()}} with its default homogeneous first-order
+transitions and invariant measurement, or a trajectory model from
+\code{\link[=mixture_regression]{mixture_regression()}} that classifies persons (with or without
+\code{random}), whose person classes are then predicted. Fits with membership
+covariates and multilevel growth mixtures (\code{cluster}) are refused with
+\code{latents_unsupported_three_step}: the correction uses a fixed,
+unconditional classification-error matrix and independent units. The
+other families of \code{\link[=multilpa]{multilpa()}}, general transition fits of \code{\link[=lta]{lta()}} and
+mixture regressions with observation classes are refused with
+\code{latents_unsupported_three_step} too, except that a covariate-free
+general transition fit takes \code{initial_covariates} and
+\code{transition_covariates}.}
 
 \item{data}{The data frame carrying the covariates, in the fit's row order.
 Columns shared with the fit are checked row by row; a frame with too

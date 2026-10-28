@@ -8,6 +8,7 @@
 \alias{parameter_inference.multilpa_cross_level}
 \alias{parameter_inference.latents_growth_mixture}
 \alias{parameter_inference}
+\alias{parameter_inference.default}
 \alias{parameter_inference.multilpa}
 \alias{parameter_inference.multilpa_lta}
 \title{Tidy inference for a covariate fit}
@@ -72,6 +73,8 @@ parameter_inference(
   seed = NULL,
   boundary = c("error", "fix")
 )
+
+\method{parameter_inference}{default}(x, ...)
 
 \method{parameter_inference}{multilpa}(
   x,
@@ -216,11 +219,12 @@ columns \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}),
 \code{p_adjusted}, \code{conf_low} and \code{conf_high}. Estimates are on the natural
 scale (variances in their own units, probabilities as probabilities). A
 parameter whose null value lies on the boundary of its space (a variance,
-a probability, a covariance diagonal) has \code{NA} \code{statistic}, \code{p_value} and
-\code{p_adjusted}, but still has an interval. All class probabilities are
-reported; their sum constraints make the natural covariance singular.
-Wald intervals for probabilities are formed on the logit scale and for
-variances (and covariance diagonals) on the log scale, then
+a probability, a covariance diagonal, a count mean) has \code{NA} \code{statistic},
+\code{p_value} and \code{p_adjusted}, but still has an interval. All class
+probabilities are reported; their sum constraints make the natural
+covariance singular. Wald intervals for probabilities are formed on the
+logit scale and for variances (and covariance diagonals) and count means
+on the log scale, then
 back-transformed, so they stay within the parameter's range; every other
 interval is \verb{estimate +/- z * standard_error}. \code{confint()} returns the
 same intervals. A probability at or below 1e-6 is treated as on its bound
@@ -307,9 +311,10 @@ simulation of 1000 datasets per design, Wald intervals covered
 separated ones, whose standard errors were 6-30\% too small
 (validation/GROWTH_SIMULATION.md in the source repository); the
 bootstrap is preferable for weakly separated classes. A class
-whose random-effect covariance is degenerate raises
-\code{latents_boundary_fit} under \code{boundary = "error"}; under \code{"fix"} its
-random-effect rows have no standard error or interval. \code{data}, when
+whose random-effect covariance is degenerate, or (with correlated
+residuals) a residual standard deviation or residual process held on its
+bound, raises \code{latents_boundary_fit} under \code{boundary = "error"}, naming
+which; under \code{"fix"} those rows have no standard error or interval. \code{data}, when
 given, must be the fitted data; \code{step} is not used (the information is
 the derivative of the analytic score).
 
@@ -356,6 +361,12 @@ groups than free parameters. The Wald path raises
 (a posterior mode, where the score is not zero), and either path raises
 \code{latents_unsupported_noise} for a fit with a noise component. A fit whose
 score is still far from zero gives a \code{latents_unconverged} warning.
+An invalid \code{level}, \code{step}, \code{iter}, \code{n_starts}, \code{max_iter} or \code{tol}
+raises \code{latents_bad_argument}, and a \code{data} that is not a data frame
+\code{latents_bad_data}. A fitted mixture regression is refused with
+\code{latents_bad_argument} naming \code{get_results(x, "coefficients")}, which
+reports its standard errors and tests; an object that is not a fitted
+model raises \code{latents_not_a_fit}.
 
 \code{method = "bootstrap"} also raises \code{latents_unsupported_inference} for an
 additive or covariate fit, and for a

@@ -47,8 +47,10 @@ test_that("homogeneous and general LTA Gaussian diagnostics follow measurement o
   expect_equal(shared_table$gaussian_mass, unname(colSums(shared$subject_posteriors)))
   occasion_table <- get_results(occasion, "gaussian_diagnostics")
   expect_identical(occasion_table, occasion$gaussian_diagnostics)
-  # General LTA summaries are named table lists, rather than summary objects.
-  expect_identical(suppressMessages(summary(occasion))$gaussian_diagnostics, occasion_table)
+  # A general LTA summary serves its tables through get_results(), as every
+  # other summary does (release review API-6).
+  expect_identical(get_results(suppressMessages(summary(occasion)), "gaussian_diagnostics"),
+                   occasion_table)
   expect_equal(occasion_table$context, rep(paste("occasion", 1:3), each = 2L))
   expect_equal(occasion_table$profile, rep(paste0("profile_", 1:2), 3L))
   invisible(lapply(seq_len(3L), function(time) {
@@ -132,9 +134,13 @@ test_that("categorical models and old objects have no invented Gaussian diagnost
   data <- gaussian_table_data()
   data$c <- factor(ifelse(data$a > 0, "high", "low"))
   data$d <- factor(ifelse(data$b > 0, "high", "low"))
+  # Two classes of two binary items are not identified (CORE-5).
+  expect_warning(profile_fit <- quietly(lpa(data, c("c", "d"), 2L, categorical = c("c", "d"),
+                                            n_starts = 1L, seed = 1L, max_iter = 0L),
+                                        "latents_unconverged"),
+                 class = "latents_unidentified")
   fits <- list(
-    quietly(lpa(data, c("c", "d"), 2L, categorical = c("c", "d"),
-                 n_starts = 1L, seed = 1L, max_iter = 0L), "latents_unconverged"),
+    profile_fit,
     quietly(lta(data, c("c", "d"), "id", 2L, categorical = c("c", "d"),
                  time = "time", transitions = "occasion", n_starts = 1L,
                  seed = 1L, max_iter = 0L), "latents_unconverged"))

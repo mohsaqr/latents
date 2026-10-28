@@ -164,7 +164,7 @@ test_that("a starting-value set and a diagnostics object have catalogues", {
   quality <- diagnostics(fit)
   expect_named(get_results(quality, "all"),
                c("entropy", "classification", "average_posteriors",
-                 "residuals"))
+                 "residuals", "replication", "checks"))
   expect_identical(get_results(quality, "entropy"), get_results(fit, "entropy"))
   # The gathered table is named for what it holds, not for the individual
   # posteriors it used to collide with.
@@ -318,15 +318,15 @@ test_that("a fit prints its means one row per profile, not one per cell", {
 
   printed <- utils::capture.output(print(fit))
   expect_true(any(grepl("attendance", printed, fixed = TRUE)))
-  # How big each profile is, beside what it looks like, matched on the label.
-  expect_true(any(grepl("proportion", printed, fixed = TRUE)))
+  # How big each profile is, above what it looks like, matched on the label
+  # (since 2026-10-27 a sizes line, then one row per indicator).
   sizes <- get_results(fit, "counts")
   individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
-  # The count is printed to the column's precision; its value truncated to two
-  # decimals is a prefix of the printed number whatever its size.
-  shown <- formatC(trunc(individuals$effective_count[1L] * 100) / 100,
-                   format = "f", digits = 2)
+  shown <- sprintf("profile_%s %.1f%% (%.0f)", individuals$class[1L],
+                   100 * individuals$effective_proportion[1L],
+                   individuals$effective_count[1L])
   expect_true(any(grepl(shown, printed, fixed = TRUE)))
+  expect_true(any(grepl("^Class sizes", printed)))
   # The spread columns belong to the long table, and are pointed at, not shown.
   expect_false(any(grepl("standard_deviation", printed, fixed = TRUE)))
   expect_true(any(grepl("get_results(x, \"profiles\")", printed, fixed = TRUE)))

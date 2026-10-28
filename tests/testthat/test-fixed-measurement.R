@@ -124,7 +124,9 @@ test_that("every measurement model can be held, exactly and with the right count
       quietly(multilpa(data, case$vars, "school", n_profiles = 2L,
         n_group_classes = classes, categorical = case$categorical,
         covariance_model = case$covariance_model, n_starts = 1, seed = 1,
-        max_iter = 50, ...))
+        max_iter = 50, ...),
+        # Two profiles on the two categorical items alone are not identified.
+        classes = c(.multilpa_expected_warnings, "latents_unidentified"))
     }
     stage_one <- fit_one(1L)
     held <- fit_one(2L, start = starting_values(stage_one, what = "measurement"),

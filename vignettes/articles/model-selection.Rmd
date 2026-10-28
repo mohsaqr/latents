@@ -191,11 +191,14 @@ available. Setting `drop_empty = FALSE` restores the counting rules of latents
 
 ```{r missing}
 set.seed(3)
-incomplete <- course_engagement
-empty <- sample(nrow(incomplete), 150)
-incomplete[empty, activity] <- NA
-partial <- setdiff(sample(nrow(incomplete), 150), empty)
-incomplete[partial, "attendance"] <- NA
+empty <- sample(nrow(course_engagement), 150)
+partial <- setdiff(sample(nrow(course_engagement), 150), empty)
+incomplete <- transform(course_engagement,
+                        browse = replace(browse, empty, NA),
+                        lectures = replace(lectures, empty, NA),
+                        forum_read = replace(forum_read, empty, NA),
+                        forum_post = replace(forum_post, empty, NA),
+                        attendance = replace(attendance, c(empty, partial), NA))
 incomplete_fit <- multilpa(incomplete, activity, "student", n_profiles = 3,
                            n_group_classes = 2, model = "VVI",
                            missing = "fiml", n_starts = 3, seed = 1)

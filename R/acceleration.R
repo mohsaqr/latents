@@ -28,6 +28,48 @@
   unlist(blocks, use.names = FALSE)
 }
 
+#' SQUAREM coordinates in reference standard-deviation units
+#'
+#' Only the acceleration chart changes: the E-step, M-step and covariance
+#' constraints still operate in the supplied units. Non-Gaussian blocks keep
+#' their existing coordinates. The reference spread is fixed across starts
+#' and resumed cycles, using observed rows of positive sampling weight.
+#' @param x Centred continuous indicators.
+#' @param parameters A parameter list defining the block shapes.
+#' @param row_weights Optional sampling weights in row order.
+#' @param extra Optional extra-indicator and direct-effect carrier.
+#' @return The flatten, restore and valid functions for the EM kernel.
+#' @noRd
+.multilpa_accelerator <- function(x, parameters, row_weights = NULL, extra = NULL) {
+  rows <- if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0
+  scales <- vapply(seq_len(ncol(x)), function(column) {
+    stats::sd(x[rows, column], na.rm = TRUE)
+  }, numeric(1))
+  # A constant or singly observed column has no empirical unit. Its bound
+  # supplies a positive reference in variance units instead.
+  unusable <- !is.finite(scales) | scales <= 0
+  if (any(unusable)) {
+    scales[unusable] <- sqrt(colMeans(parameters$variances)[unusable])
+  }
+  chart <- .multilpa_restore_parameters(
+    parameters, rep(1, length(.multilpa_flatten_parameters(parameters))))
+  chart$means <- sweep(chart$means, 2L, scales, "*")
+  chart$variances <- sweep(chart$variances, 2L, scales^2, "*")
+  if (!is.null(chart$covariances)) {
+    chart$covariances <- sweep(chart$covariances, c(1L, 2L), outer(scales, scales), "*")
+  }
+  if (!is.null(chart$direct_effects)) {
+    chart$direct_effects[] <- scales[extra$direct$effects$column] /
+      extra$direct$scales
+  }
+  units <- .multilpa_flatten_parameters(chart)
+  list(flatten = function(point) .multilpa_flatten_parameters(point) / units,
+       restore = function(point, values) {
+         .multilpa_restore_parameters(point, values * units)
+       },
+       valid = .multilpa_valid_parameters)
+}
+
 #' Refill a parameter list's updatable blocks from a flat vector
 #'
 #' The inverse of `.multilpa_flatten_parameters()`: every array, matrix and

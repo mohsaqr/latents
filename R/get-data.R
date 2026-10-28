@@ -110,6 +110,11 @@
 #'     `entropy_sum`, `relative_entropy`. Under sampling weights
 #'     `entropy_sum` is `sum_i w_i e_i` and `relative_entropy`
 #'     `1 - sum_i w_i e_i / (sum_i w_i log K)`; `n_units` stays a count.}
+#'   \item{`"replication"`}{One row: `n_starts` (starts run to the end),
+#'     `n_best_replicated` (those whose log likelihood is within `tolerance`
+#'     of the best), `share`, `tolerance`, `best_start` (the winning start's
+#'     index) and `log_likelihood`. A best solution reached by one start of
+#'     several may not be the global maximum: refit with more starts.}
 #'   \item{`"residuals"`}{Bivariate residuals for every pair of indicators,
 #'     checking within-profile independence: `profile`, `indicator_1`,
 #'     `indicator_2`, `kind` (`"gaussian"`, `"categorical"`, `"mixed"` or
@@ -310,7 +315,7 @@
 #'     per profile and ordered pair of continuous indicators, its covariances
 #'     (`profile`, `indicator`, `indicator_2`, `covariance`).}
 #'   \item{`"entropy"`, `"classification"`, `"average_posteriors"`,
-#'     `"residuals"`}{A [diagnostics()] object: the tables of the same names
+#'     `"residuals"`, `"replication"`}{A [diagnostics()] object: the tables of the same names
 #'     described above.}
 #' }
 #'
@@ -320,7 +325,12 @@
 #' Tables with intervals take `level`, and `vcov_type` (`"observed"`,
 #' `"robust"` or `"opg"`; `NULL` reuses the type stored with a regression
 #' fit). These objects also have `coef()`, `vcov(type = )`,
-#' `confint(parm = , level = )`, `logLik()` and `nobs()` methods.
+#' `confint(parm = , level = )`, `logLik()` and `nobs()` methods. `confint()`
+#' of a mixture regression or growth mixture uses the covariance stored with
+#' the fit and refuses any other argument with `latents_bad_argument` (an
+#' interval on another covariance is `get_results(x, "coefficients",
+#' vcov_type = )`); `vcov()` warns `latents_unused_argument` for an argument
+#' it does not take, such as `vcov_type =` in place of `type =`.
 #' \describe{
 #'   \item{Mixture regressions ([mixture_regression()])}{`"coefficients"`
 #'     (one row per class and term, with Wald statistics, `p_adjusted` by
@@ -333,12 +343,18 @@
 #'     reports it), `"assignments"`, `"groups"`, `"fitted"`, `"starts"`
 #'     (`stage` `"screened"` or `"completed"`), `"classification"` and
 #'     `"recovery"` (`by = "class"` or `"group_class"`).}
-#'   \item{Growth mixtures (`mixture_regression(random = )`)}{The tables
-#'     above plus `"random"` (random-effect variances, standard deviations
+#'   \item{Growth mixtures (`mixture_regression(random = )`)}{
+#'     `"coefficients"`, `"classes"` (each class's share with its interval,
+#'     `expected_persons`, `assigned_persons`, `average_posterior` and
+#'     `residual_sd`), `"membership"`, `"fit"`, `"assignments"` (one row per
+#'     person: `class`, `probability` and one `posterior_*` column per
+#'     class), `"starts"` and `"recovery"`, as for a mixture regression, plus
+#'     `"random"` (random-effect variances, standard deviations
 #'     and correlations, with intervals on the log and Fisher-z scales),
 #'     `"random_effects"` (one row per person), `"trajectories"` (each class's
 #'     mean trajectory with a band) and `"individual"` (each person's
-#'     predicted curve); the last two take `time`. A multilevel growth mixture
+#'     predicted curve); the last two take `time`. They have no `"groups"`,
+#'     `"fitted"` or `"classification"` table. A multilevel growth mixture
 #'     adds `"group_classes"` and `"clusters"`, and its `"fit"` uses the number
 #'     of clusters in `bic` (persons in `bic_persons`).}
 #'   \item{Additive fits (`multilpa(family = "additive")`)}{`"parameters"`
@@ -893,8 +909,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_match_table <- function(what, choices) {
   if (is.null(what)) return(choices[1L])
-  stopifnot("`what` must be a single table name, or NULL for the first one" =
-              is.character(what) && length(what) == 1L && !is.na(what))
+  .latents_require("`what` must be a single table name, or NULL for the first one" =
+                     is.character(what) && length(what) == 1L && !is.na(what))
   if (identical(what, "all") || what %in% choices) return(what)
   # An earlier name of a table still finds it, so scripts written against a
   # released version keep working.
@@ -1043,11 +1059,25 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
       covariances = .multilpa_table(.multilpa_start_covariance_frame)))
   }
   if (inherits(x, "multilpa_diagnostics")) {
-    return(list(
+    # The entropy table stays the default (as in 0.9.21); the checks follow.
+    tables <- list(
       entropy = .multilpa_table(function(x) x$entropy),
       classification = .multilpa_table(function(x) x$classification),
       average_posteriors = .multilpa_table(function(x) x$average_posteriors),
-      residuals = .multilpa_table(.multilpa_diagnostic_residuals)))
+      residuals = .multilpa_table(.multilpa_diagnostic_residuals),
+      # A diagnostics object saved before 0.97.5 has no stored table.
+      replication = .multilpa_table(function(x) {
+        x$replication %||% .multilpa_replication_table(x$fit)
+      }),
+      checks = .multilpa_table(function(x) x$checks))
+    # The family tables a fit did not produce (a family without the profile
+    # classification tables, or an object saved before the checks) are absent.
+    present <- c(checks = !is.null(x$checks), entropy = !is.null(x$entropy),
+                 classification = !is.null(x$classification),
+                 average_posteriors = !is.null(x$average_posteriors),
+                 residuals = !is.null(x$fit) && .multilpa_any_fit(x$fit),
+                 replication = TRUE)
+    return(tables[present[names(tables)]])
   }
   if (.multilpa_any_summary(x)) return(.multilpa_stored_catalogue(x))
   stopifnot("`x` must be an object of this package" = .multilpa_any_fit(x))
@@ -1115,7 +1145,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   list(
     profiles = .multilpa_table(
       function(x, data = NULL, scale = c("raw", "standardized"))
-        .multilpa_profile_frame(x, data = data, scale = match.arg(scale),
+        .multilpa_profile_frame(x, data = data,
+                                scale = .latents_match_arg(scale, c("raw", "standardized"),
+                                                           "scale"),
                                 standard_errors = TRUE),
       c("data", "scale")),
     responses = .multilpa_table(
@@ -1158,18 +1190,22 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 .multilpa_unit_catalogue <- function(x) {
   posteriors <- list(posteriors = .multilpa_table(
     function(x, format = c("long", "wide"))
-      .multilpa_posterior_frame(x, match.arg(format)),
+      .multilpa_posterior_frame(x, .latents_match_arg(format, c("long", "wide"), "format")),
     "format"))
   assignments <- list(assignments = .multilpa_table(
     function(x, data = NULL, truth = NULL)
       .multilpa_hide_fabricated_id(
         x, .multilpa_assignments(x, data = data, truth = truth)),
     c("data", "truth")))
+  # A single-level fit, or one with one group class, classifies nothing at
+  # the group level: its group posteriors stay available by name but are left
+  # out of "all" and summary() (API-9).
   c(posteriors,
     list(group_posteriors = .multilpa_table(
       function(x, format = c("long", "wide"))
-        .multilpa_group_posterior_frame(x, match.arg(format)),
-      "format")),
+        .multilpa_group_posterior_frame(
+          x, .latents_match_arg(format, c("long", "wide"), "format")),
+      "format", in_all = .multilpa_has_group_classes(x))),
     assignments)
 }
 
@@ -1190,16 +1226,19 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     classification_errors = by_level(.multilpa_classification_errors),
     bch_weights = by_level(.multilpa_bch_weights),
     entropy = .multilpa_table(.multilpa_entropy_table),
+    replication = .multilpa_table(.multilpa_replication_table),
     residuals = .multilpa_table(
       function(x, data = NULL, by = c("profile", "overall"),
                adjust = .multilpa_p_adjust_methods)
-        .multilpa_bivariate_residuals(x, data = data, by = match.arg(by),
-                                      adjust = match.arg(adjust)),
+        .multilpa_bivariate_residuals(
+          x, data = data, by = .latents_match_arg(by, c("profile", "overall"), "by"),
+          adjust = .latents_match_arg(adjust, .multilpa_p_adjust_methods, "adjust")),
       c("data", "by", "adjust")),
     information_criteria = .multilpa_table(
       function(x, definitions = FALSE, format = c("wide", "long"))
-        .multilpa_information_criteria(x, definitions = definitions,
-                                       format = match.arg(format)),
+        .multilpa_information_criteria(
+          x, definitions = definitions,
+          format = .latents_match_arg(format, c("wide", "long"), "format")),
       c("definitions", "format")),
     model = .multilpa_table(.multilpa_fit_frame))
 }
@@ -1212,7 +1251,8 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   shared <- list(
     sequences = .multilpa_table(
       function(x, format = c("long", "wide"))
-        .multilpa_sequences(x, format = match.arg(format)),
+        .multilpa_sequences(x, format = .latents_match_arg(format, c("long", "wide"),
+                                                           "format")),
       "format"),
     sequence_summary = .multilpa_table(.multilpa_sequence_summary))
   if (!inherits(x, "multilpa_transitions")) return(shared)
@@ -1257,7 +1297,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_default_level <- function(x, level) {
   if (!is.null(level)) return(level)
-  if (is.null(x$group_posteriors)) "individuals" else "both"
+  # The rule `diagnostics()` applies: a single-level fit, or one with one
+  # group class, has no group-level classification to report (API-9).
+  if (.multilpa_has_group_classes(x)) "both" else "individuals"
 }
 
 #' The bivariate residuals a diagnostics object holds, or the reason it has none
@@ -1378,6 +1420,47 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   wide
 }
 
+#' Response probabilities one row per indicator category, one column per class
+#' @param x A fitted model with categorical indicators.
+#' @return A data frame: `indicator`, `category`, then `profile_1`, ...
+#' @noRd
+.multilpa_wide_responses <- function(x) {
+  long <- .multilpa_response_frame(x)
+  key <- paste(long$indicator, long$category, sep = "\r")
+  keys <- unique(key)
+  first <- match(keys, key)
+  profiles <- sort(unique(long$profile))
+  columns <- lapply(profiles, function(profile) {
+    mine <- long$profile == profile
+    long$probability[mine][match(keys, key[mine])]
+  })
+  names(columns) <- paste0("profile_", profiles)
+  data.frame(indicator = long$indicator[first], category = long$category[first],
+             columns, check.names = FALSE, stringsAsFactors = FALSE)
+}
+
+#' Print the estimated class sizes, and the group-class sizes of a two-level fit
+#' @param x A fitted model.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_print_class_sizes <- function(x) {
+  sizes <- .multilpa_count_frame(x)
+  line <- function(level, label, prefix) {
+    rows <- sizes[sizes$level == level, , drop = FALSE]
+    if (nrow(rows) == 0L) return(invisible(NULL))
+    cat(sprintf("%-14s%s\n", label, paste(sprintf("%s%s %.1f%% (%.0f)", prefix, rows$class,
+                                                   100 * rows$effective_proportion,
+                                                   rows$effective_count),
+                                           collapse = "   ")))
+  }
+  cat("\n")
+  line("individuals", "Class sizes", "profile_")
+  if (!isTRUE(x$single_level) && !identical(as.integer(x$n_group_classes), 1L)) {
+    line("groups", "Group classes", "group_class_")
+  }
+  invisible(NULL)
+}
+
 #' Print a fit's primary table under its header
 #'
 #' A fitted model auto-prints its own estimates. The alternative is a header
@@ -1405,27 +1488,45 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   ## The Gaussian measurement is printed one row per profile. Everything else
   ## keeps the catalogue's own shape, which is already one row per thing.
   if (identical(name, "profiles") && nrow(table) > 0L) {
+    ## How big each profile is comes first: a mean is read differently when it
+    ## describes two percent of the sample. The means follow one row per
+    ## indicator and one column per profile, as a class model's probabilities
+    ## do, so many indicators lengthen the table instead of wrapping it.
+    .multilpa_print_class_sizes(x)
+    # Read by position from the wide table, never by name: an indicator may
+    # itself be called "profile".
     wide <- .multilpa_wide_means(x)
-    ## How big each profile is belongs beside what it looks like: a mean is read
-    ## differently when it describes two percent of the sample. Matched on the
-    ## class label rather than on row order, which the two tables need not share.
-    sizes <- .multilpa_count_frame(x)
-    individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
-    at <- match(wide$profile, individuals$class)
-    wide$count <- individuals$effective_count[at]
-    wide$proportion <- individuals$effective_proportion[at]
-    cat("\n")
-    if (rows > 0) print(utils::head(wide, rows), row.names = FALSE)
-    if (nrow(wide) > rows) {
-      cat(sprintf("   ... %d more profiles.\n", nrow(wide) - rows))
+    indicators <- names(wide)[-1L]
+    means <- data.frame(indicator = indicators, stringsAsFactors = FALSE)
+    invisible(lapply(seq_len(nrow(wide)), function(index) {
+      means[[paste0("profile_", wide[[1L]][[index]])]] <<-
+        round(vapply(wide[index, -1L], as.numeric, numeric(1)), 3L)
+    }))
+    cat("\nMeans\n")
+    if (rows > 0) print(utils::head(means, rows), row.names = FALSE)
+    if (nrow(means) > rows) {
+      cat(sprintf("   ... %d more indicators.  get_results(x, \"profiles\")\n",
+                  nrow(means) - rows))
     }
-    cat("\nVariances and standard errors: get_results(x, \"profiles\").",
-        "\nEvery other table: get_results(x, what = ), or get_results(x, \"all\").\n")
+    cat("\nVariances and standard errors: get_results(x, \"profiles\").\n",
+        "Every other table: get_results(x, what = ), or get_results(x, \"all\").\n", sep = "")
     return(invisible(NULL))
   }
   if (nrow(table) == 0L && length(x$categorical %||% character()) > 0L) {
-    table <- .multilpa_response_frame(x)
-    name <- "responses"
+    # A class model reads as a profile of response probabilities: one row per
+    # indicator category, one column per class, under the class sizes.
+    .multilpa_print_class_sizes(x)
+    wide <- .multilpa_wide_responses(x)
+    numeric_columns <- vapply(wide, is.numeric, logical(1))
+    wide[numeric_columns] <- lapply(wide[numeric_columns], round, digits = 3L)
+    cat("\nResponse probabilities\n")
+    if (rows > 0) print(utils::head(wide, rows), row.names = FALSE)
+    if (nrow(wide) > rows) {
+      cat(sprintf("   ... %d more rows.  get_results(x, \"responses\")\n", nrow(wide) - rows))
+    }
+    cat("\nThresholds and standard errors: get_results(x, \"responses\").\n",
+        "Every other table: get_results(x, what = ), or get_results(x, \"all\").\n", sep = "")
+    return(invisible(NULL))
   }
   if (nrow(table) == 0L) return(invisible(NULL))
   cat("\n")

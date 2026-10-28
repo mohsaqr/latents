@@ -274,9 +274,10 @@
 #'   separated ones, whose standard errors were 6-30% too small
 #'   (validation/GROWTH_SIMULATION.md in the source repository); the
 #'   bootstrap is preferable for weakly separated classes. A class
-#'   whose random-effect covariance is degenerate raises
-#'   `latents_boundary_fit` under `boundary = "error"`; under `"fix"` its
-#'   random-effect rows have no standard error or interval. `data`, when
+#'   whose random-effect covariance is degenerate, or (with correlated
+#'   residuals) a residual standard deviation or residual process held on its
+#'   bound, raises `latents_boundary_fit` under `boundary = "error"`, naming
+#'   which; under `"fix"` those rows have no standard error or interval. `data`, when
 #'   given, must be the fitted data; `step` is not used (the information is
 #'   the derivative of the analytic score).
 #' @rdname parameter_inference
@@ -287,16 +288,16 @@ parameter_inference.latents_growth_mixture <- function(
     adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"),
     iter = 199L, n_starts = 10L, max_iter = 1000L, tol = 1e-8, seed = NULL,
     boundary = c("error", "fix")) {
-  stopifnot(
+  .latents_require(
     "`level` must be a single finite number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1,
     "`iter` must be a single whole number of at least 2" =
       is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 2 &&
       iter == floor(iter))
-  adjust <- match.arg(adjust)
-  method <- match.arg(method)
-  boundary <- match.arg(boundary)
+  adjust <- .latents_match_formal(adjust)
+  method <- .latents_match_formal(method)
+  boundary <- .latents_match_formal(boundary)
   .multilpa_check_seed(seed)
   if (!is.null(data)) .trajectory_check_data(x, data)
   if (!isTRUE(x$converged)) {
@@ -305,17 +306,24 @@ parameter_inference.latents_growth_mixture <- function(
   }
   natural <- .growth_natural_parameters(x)
   if (any(natural$degenerate) && identical(boundary, "error")) {
-    stop(errorCondition(paste(
-      "A random-effect covariance is degenerate, so its parameters sit on a",
-      "bound and have no Wald or bootstrap distribution worth reporting. Use",
-      "`boundary = \"fix\"` to report the other parameters."),
+    # Name what is on the bound: a random-effect covariance, or (with
+    # correlated residuals) a residual SD or the residual process.
+    blocks <- unique(natural$labels$block[natural$degenerate])
+    causes <- c(
+      if (any(startsWith(blocks, "random_"))) "a random-effect covariance is degenerate",
+      if ("residual_sd" %in% blocks) "a residual standard deviation is at its floor",
+      if ("residual_process" %in% blocks) "the residual process is on its bound")
+    stop(errorCondition(sprintf(paste(
+      "In this fit %s, so those parameters sit on a bound and have no Wald or",
+      "bootstrap distribution worth reporting. Use `boundary = \"fix\"` to",
+      "report the other parameters."), paste(causes, collapse = " and ")),
       class = "latents_boundary_fit", call = NULL))
   }
   if (identical(method, "bootstrap")) {
     result <- .mixture_with_seed(seed, .growth_bootstrap_inference(
       x, natural, level, as.integer(iter), n_starts, max_iter, tol, adjust))
   } else {
-    vcov_type <- if (missing(vcov_type)) NULL else match.arg(vcov_type)
+    vcov_type <- if (missing(vcov_type)) NULL else .latents_match_formal(vcov_type)
     inference <- .growth_resolve_inference(x, vcov_type)
     spec <- x$spec
     rows <- lapply(seq_len(nrow(natural$labels)), function(row) {

@@ -504,7 +504,9 @@
   # J moves an intercept by its covariates' slopes and nothing else, and a
   # covariate column is uncounted only with its whole block, so the identified
   # block of J is closed: J and J^-1 restrict to it exactly.
-  chart <- .lta_design_chart(fit$designs, fit$layout)
+  used <- .lta_used_rows(fit$layout, fit$x, fit$codes, fit$extra_data,
+                         unname(fit$sampling_weights))
+  chart <- .lta_design_chart(fit$designs, fit$layout, used)
   internal <- fit
   internal$designs <- .lta_chart_designs(fit$designs, chart)
   phi <- .lta_pack(.lta_map_coefficients(.lta_parameters(fit), chart, "to_chart"),
@@ -576,7 +578,38 @@
   second <- kind == "transition2"
   identified[first] <- term[first] %in% terms[counted$first]
   identified[second] <- term[second] %in% terms[counted$second]
+  # The logits out of an origin no expected move leaves are flat
+  # (.lta_empty_origins()); a fit saved before 0.97.5 records none.
+  identified[(first | second) & names_all %in% .lta_empty_origin_names(fit)] <- FALSE
   identified
+}
+
+#' Estimation-scale names of the logits out of empty transition origins
+#' @param fit A `multilpa_lta` fit.
+#' @return A character vector of `.lta_names()` entries, possibly empty.
+#' @noRd
+.lta_empty_origin_names <- function(fit) {
+  profiles <- paste0("profile_", seq_len(fit$n_profiles))
+  name_block <- function(empty, kind, origin_label, origins_of) {
+    if (is.null(empty) || !any(empty)) return(character())
+    cells <- which(empty, arr.ind = TRUE)
+    classes <- colnames(empty)
+    unlist(lapply(seq_len(nrow(cells)), function(i) {
+      origin <- cells[i, 1L]
+      destinations <- setdiff(seq_len(fit$n_profiles), origins_of(origin))
+      sprintf("%s.%s.%s->%s.", kind, classes[cells[i, 2L]], origin_label(origin),
+              profiles[destinations])
+    }))
+  }
+  stems <- c(
+    name_block(fit$empty_transition_rows, "transition", function(k) profiles[k],
+               function(k) k),
+    name_block(fit$empty_second_order_rows, "transition2", function(pair) {
+      paste0(profiles[(pair - 1L) %/% fit$n_profiles + 1L], "->",
+             profiles[(pair - 1L) %% fit$n_profiles + 1L])
+    }, function(pair) (pair - 1L) %% fit$n_profiles + 1L))
+  names_all <- .lta_names(fit)
+  names_all[Reduce(`|`, lapply(stems, startsWith, x = names_all), logical(length(names_all)))]
 }
 
 #' The fit's parameters on the centred scale the engine works on
@@ -655,28 +688,33 @@
 
 #' Does any fitted initial or transition probability sit at zero?
 #'
-#' Read over every group and every occasion it is observed at; a probability
+#' Read only where the weighted observed likelihood uses the probability; a probability
 #' below 1e-6 marks a move (or start) that never occurs, whose logit has no
 #' finite maximum.
 #' @noRd
-.lta_probability_boundary <- function(expectation, layout, stayer = NULL) {
+.lta_probability_boundary <- function(expectation, layout, stayer = NULL, used = NULL) {
+  used <- used %||% list(initial = rep(TRUE, nrow(layout$slot)), moves = layout$within)
+  initial_min <- function(log_initial) {
+    if (!any(used$initial)) return(1)
+    min(exp(log_initial[used$initial, , drop = FALSE]))
+  }
   # A stayer class's zero moves are structural, not estimated: skip them.
   stayer <- stayer %||% rep(FALSE, length(expectation$per_class))
   any(vapply(seq_along(expectation$per_class), function(h) {
     class_terms <- expectation$per_class[[h]]
     if (isTRUE(stayer[h])) {
-      return(min(exp(class_terms$log_initial)) < 1e-6)
+      return(initial_min(class_terms$log_initial) < 1e-6)
     }
-    initial <- min(exp(class_terms$log_initial))
+    initial <- initial_min(class_terms$log_initial)
     first_occasions <- if (length(class_terms$log_transition2) > 0L) 1L else
       seq_along(class_terms$log_transition)
     moves <- vapply(first_occasions, function(t) {
-      active <- layout$within[, t + 1L]
+      active <- used$moves[, t + 1L]
       if (!any(active)) return(1)
       min(exp(class_terms$log_transition[[t]][active, , , drop = FALSE]))
     }, numeric(1))
     second <- vapply(seq_along(class_terms$log_transition2), function(t) {
-      active <- layout$within[, t + 2L]
+      active <- used$moves[, t + 2L]
       if (!any(active)) return(1)
       min(exp(class_terms$log_transition2[[t]][active, , , drop = FALSE]))
     }, numeric(1))

@@ -1,3 +1,5 @@
+utils::globalVariables(c("seed", "status"))
+
 #' Refit a model under several seeds
 #'
 #' Refits the model under each of several random seeds and returns one row
@@ -37,7 +39,8 @@
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
 #'   used.
 #' @param max_iter,tol Passed to each refit. Default to the reference fit's
-#'   (for an [lta()] fit, to the defaults of [lta()]).
+#'   (for a fit that does not record them, to the defaults of the function
+#'   that fitted it).
 #' @param tolerance How far below an optimum's best log likelihood a refit may
 #'   lie and still count as reaching that optimum: each optimum is anchored at
 #'   its best value and spans at most `tolerance`. Defaults to the reference
@@ -50,7 +53,8 @@
 #'   Windows and on macOS with Apple's Accelerate BLAS, as in [multilpa()];
 #'   socket workers load the installed copy of the package. More cores than
 #'   seeds are not used.
-#' @return A base `data.frame`, one row per seed, with columns `seed`,
+#' @return A `data.frame` of class `latents_sensitivity` (which `plot()`
+#'   draws), one row per seed, with columns `seed`,
 #'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
 #'   maximum found across the seeds, 2 for the next distinct one, and so on),
 #'   `best` (whether this seed reached optimum 1) and `agreement` (the
@@ -91,10 +95,11 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       "refitting this family needs arguments the shared refit does not carry."),
       class = "latents_unsupported_sensitivity", call = NULL))
   }
-  stopifnot(
-    "`x` must be a fitted `multilpa` model, an `lta()` fit or a growth mixture" =
-      inherits(x, c("multilpa", "multilpa_transitions", "multilpa_lta",
-                    "latents_growth_mixture")),
+  .latents_require_fit(x, substitute(x),
+                       c("multilpa", "multilpa_transitions", "multilpa_lta",
+                         "latents_growth_mixture"),
+                       "a fitted profile, class, transition or growth mixture model")
+  .latents_require(
     "`n_starts` must be a single positive whole number, or NULL" =
       is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
         is.finite(n_starts) && n_starts >= 1 &&
@@ -152,9 +157,10 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
   agreement <- vapply(refits, function(fit) {
     if (inherits(fit, "condition")) NA_real_ else family$agreement(fit)
   }, numeric(1))
-  optimum <- .multilpa_optimum_index(likelihood, tolerance %||% family$tolerance)
+  tolerance <- tolerance %||% family$tolerance
+  optimum <- .multilpa_optimum_index(likelihood, tolerance)
 
-  data.frame(
+  result <- data.frame(
     seed = as.integer(seeds),
     log_likelihood = likelihood,
     converged = converged,
@@ -163,6 +169,99 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     best = optimum == 1L,
     agreement = agreement,
     row.names = NULL, stringsAsFactors = FALSE)
+  # Still a data frame: the class adds plot(), and the tolerance the
+  # optimum index used is kept for it.
+  attr(result, "tolerance") <- tolerance
+  class(result) <- c("latents_sensitivity", "data.frame")
+  result
+}
+
+#' @rdname sensitivity
+#' @param row.names,optional Ignored; as for [as.data.frame()].
+#' @param ... Further arguments to the coercion and plotting methods are
+#'   ignored; style the returned plot with ggplot2.
+#' @return For `as.data.frame()`, the table as a plain `data.frame`.
+#' @export
+as.data.frame.latents_sensitivity <- function(x, row.names = NULL, optional = FALSE, ...) {
+  attr(x, "tolerance") <- NULL
+  class(x) <- "data.frame"
+  x
+}
+
+#' @rdname sensitivity
+#' @param main,subtitle Title and subtitle; `NULL` for the defaults.
+#' @return For `plot()`, a ggplot object: for each seed, how far its log
+#'   likelihood lies below the best converged refit and its agreement with
+#'   the reference fit. Unfinished refits are distinguished from converged
+#'   maxima. If none converged, the highest observed log likelihood is the
+#'   reference instead, and no seed is described as reaching a maximum.
+#' @export
+plot.latents_sensitivity <- function(x, main = NULL, subtitle = NULL, ...) {
+  .gg_require()
+  table <- as.data.frame(x)
+  fitted <- is.finite(table$log_likelihood)
+  if (!any(fitted)) {
+    stop(errorCondition("No refit succeeded, so there is nothing to plot.",
+                        class = c("latents_nothing_to_plot", "latents_bad_argument"),
+                        call = NULL))
+  }
+  converged <- fitted & table$converged %in% TRUE
+  tolerance <- attr(x, "tolerance") %||% 0
+  best <- max(table$log_likelihood[if (any(converged)) converged else fitted])
+  reached <- converged & abs(table$log_likelihood - best) <= tolerance
+  status <- ifelse(!fitted, "failed",
+                   ifelse(!converged, "unfinished",
+                           ifelse(reached, "best maximum", "a lower maximum")))
+  status <- factor(status, levels = c("best maximum", "a lower maximum", "unfinished", "failed"))
+  seed <- factor(table$seed, levels = unique(table$seed))
+  likelihood_panel <- if (any(converged)) "Log likelihood below the best converged refit" else
+    "Log likelihood below the highest observed value"
+  frame <- rbind(
+    data.frame(seed = seed, status = status, panel = likelihood_panel,
+               value = best - table$log_likelihood),
+    data.frame(seed = seed, status = status, panel = "Agreement with the reference fit",
+               value = table$agreement))
+  frame$panel <- factor(frame$panel, levels = c(likelihood_panel,
+                                                "Agreement with the reference fit"))
+  frame <- frame[!is.na(frame$value), , drop = FALSE]
+  # A failed refit has no value to draw; it keeps its place on the seed axis
+  # (the scale does not drop it) and is named in the caption.
+  failed_seeds <- table$seed[!fitted]
+  unfinished_seeds <- table$seed[fitted & !converged]
+  main <- main %||% if (any(converged)) {
+    sprintf("%d of %d seeds reached the best converged maximum", sum(reached), nrow(table))
+  } else "No seed converged: finite refits are unfinished"
+  subtitle <- subtitle %||% paste(
+    "Each seed refits the model; the top panel compares its log likelihood",
+    "with the reference named on that panel, the bottom its classification agreement.")
+  colours <- c("best maximum" = .gg_okabe_ito[[3L]], "a lower maximum" = .gg_okabe_ito[[5L]],
+               "unfinished" = .gg_okabe_ito[[2L]],
+               "failed" = .gg_reserved_grey)
+  shapes <- c("best maximum" = 21L, "a lower maximum" = 24L, "unfinished" = 23L, "failed" = 4L)
+  plot <- ggplot2::ggplot(frame, ggplot2::aes(seed, value, colour = status, fill = status,
+                                              shape = status)) +
+    ggplot2::geom_point(size = 2.6, stroke = 0.6) +
+    ggplot2::facet_wrap(~panel, ncol = 1L, scales = "free_y") +
+    ggplot2::scale_colour_manual(values = colours, drop = FALSE, name = NULL) +
+    ggplot2::scale_fill_manual(values = colours, drop = FALSE, name = NULL) +
+    ggplot2::scale_shape_manual(values = shapes, drop = FALSE, name = NULL) +
+    ggplot2::scale_x_discrete(drop = FALSE) +
+    ggplot2::labs(title = main, subtitle = subtitle, x = "Seed", y = NULL,
+                  caption = paste(c(
+                    if (any(converged)) sprintf(
+                      "Only converged refits within %.3g of the best converged log likelihood count as reaching its maximum.",
+                      tolerance),
+                    if (length(unfinished_seeds) > 0L) sprintf(
+                      "Refit unfinished for seed%s %s; its finite values are shown, not counted as maxima.",
+                      if (length(unfinished_seeds) > 1L) "s" else "",
+                      paste(unfinished_seeds, collapse = ", ")),
+                    if (length(failed_seeds) > 0L) sprintf(
+                      "Refit failed (no value to draw) for seed%s %s.",
+                      if (length(failed_seeds) > 1L) "s" else "",
+                      paste(failed_seeds, collapse = ", "))), collapse = "\n")) +
+    .gg_theme() +
+    ggplot2::theme(legend.position = "bottom")
+  plot
 }
 
 #' How sensitivity() refits a profile model and compares its assignments
@@ -219,8 +318,13 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
   reference <- modal(x)
   starts <- as.integer(n_starts %||% x$n_starts %||% max(nrow(x$starts), 1L))
   list(
+    # The reference fit's own controls, as for a profile fit: with lta()'s
+    # defaults hard-coded instead, a fit made with another `tol` or
+    # `max_iter` did not reproduce under its own seed (INF-4). lta() fits
+    # record both; the defaults of lta() remain for one that does not.
     refit = function(seed) {
-      .lta_refit(x, data, starts, max_iter %||% 5000L, tol %||% 1e-10, seed = seed)
+      .lta_refit(x, data, starts, max_iter %||% x$max_iter %||% 5000L,
+                 tol %||% x$tol %||% 1e-10, seed = seed)
     },
     agreement = function(fit) {
       order <- .multilpa_match_order(.lta_profile_signature(x, x),

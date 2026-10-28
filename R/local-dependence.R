@@ -171,10 +171,17 @@
 #' @param rebuild_existing Regenerate an existing joint column from its source
 #'   items when a fitted model has already established their meaning. Initial
 #'   fitting leaves this false so existing caller columns remain protected.
+#' @param contributing `NULL`, or one logical per row of `data`, `FALSE` for a
+#'   row of sampling weight zero (see `.multilpa_contributing_rows()`). Each
+#'   item's categories, and so the joint grid, are those of the contributing
+#'   rows, as for an unpaired item: a category seen only on rows of weight zero
+#'   adds no joint categories, and the joint value of such a row is `NA`
+#'   (review 2026-10-27, CORE-3). The grid keeps every combination of those
+#'   categories, observed or not.
 #' @return The data frame with one more column per pair.
 #' @noRd
 .latents_join_pairs <- function(data, pairs, min_categories = 0L,
-                                 rebuild_existing = FALSE) {
+                                 rebuild_existing = FALSE, contributing = NULL) {
   if (!is.null(pairs$kind)) pairs <- pairs[pairs$kind == "categorical", , drop = FALSE]
   joined <- Reduce(function(frame, index) {
     pair <- pairs[index, ]
@@ -195,8 +202,10 @@
     }
     first <- frame[[pair$item_1]]
     second <- frame[[pair$item_2]]
-    first_levels <- .multilpa_categorical_levels(first, pair$item_1, min_categories)
-    second_levels <- .multilpa_categorical_levels(second, pair$item_2, min_categories)
+    first_levels <- .multilpa_categorical_levels(first, pair$item_1, min_categories,
+                                                 contributing = contributing)
+    second_levels <- .multilpa_categorical_levels(second, pair$item_2, min_categories,
+                                                  contributing = contributing)
     # A joint category is written "first:second", so a category that already
     # holds a colon makes two responses one label: ("x:y", "z") and
     # ("x", "y:z") would be counted as the same response.
@@ -247,6 +256,9 @@
     combinations <- paste(grid$first, grid$second, sep = ":")
     halves <- c(.latents_partial_label(first_levels, "first"),
                 .latents_partial_label(second_levels, "second"))
+    # A label outside the grid can only come from a row of weight zero holding
+    # an excluded-only category; factor() makes it NA, as the categorical
+    # encoding does for an unpaired item.
     frame[[pair$name]] <- factor(labels, levels = c(combinations, halves))
     attr(frame[[pair$name]], "latents_pair") <- c(pair$item_1, pair$item_2)
     frame_pairs[[pair$name]] <- c(pair$item_1, pair$item_2)
@@ -428,7 +440,9 @@
   arguments$local_dependence <- if (nrow(continuous_pairs) > 0L) continuous_pairs$name
   # Apply the same native-value and variation requirements as unpaired items.
   # The join itself permits constant/single-row subsets used by prediction.
-  arguments$data <- .latents_join_pairs(arguments$data, joined_pairs, min_categories = 2L)
+  arguments$data <- .latents_join_pairs(
+    arguments$data, joined_pairs, min_categories = 2L,
+    contributing = .multilpa_contributing_rows(arguments$data, arguments$weights))
   # Each joint category's two levels, read from the data rather than parsed
   # back out of the label.
   categories <- lapply(stats::setNames(seq_len(nrow(joined_pairs)), joined_pairs$name),

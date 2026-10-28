@@ -9,28 +9,48 @@
 
 #' Bind the arguments of a call to symbols in an environment
 #'
-#' Every argument is evaluated once in `evaluate_in` (the caller's frame, so
+#' Unless `values` are supplied, each argument is evaluated once in `evaluate_in` (the caller's frame, so
 #' an expression's side effects land where a promise's would) and its value
 #' is bound in `env`: under the caller's own name when the argument is a
-#' symbol, otherwise under `.<name>`. The returned call therefore records
+#' symbol, otherwise under `.<name>`, with a unique suffix for collisions.
+#' The returned call therefore records
 #' symbols only, never the data, while evaluating to the same values.
 #' @param call A call.
 #' @param env The environment the call will be evaluated in.
 #' @param evaluate_in The environment the caller's expressions belong to.
+#' @param values Optional already-evaluated arguments, in call order. Wrappers
+#'   that have forced their promises supply these instead of evaluating the
+#'   caller's expressions again.
 #' @return The call with every argument replaced by a symbol bound in `env`.
 #' @noRd
-.latents_bind_values <- function(call, env, evaluate_in) {
+.latents_bind_values <- function(call, env, evaluate_in, values = NULL) {
   stopifnot("`call` must be a call" = is.call(call),
             "`env` must be an environment" = is.environment(env),
-            "`evaluate_in` must be an environment" = is.environment(evaluate_in))
+            "`evaluate_in` must be an environment" = is.environment(evaluate_in),
+            "`values` must contain one value per argument" =
+              is.null(values) || (is.list(values) && length(values) == length(call) - 1L))
   indices <- seq_along(call)[-1L]
   names <- names(call) %||% rep("", length(call))
+  # Generated names must not shadow a later caller symbol or the function
+  # already bound in env. Repeated symbols get separate slots too.
+  symbols <- vapply(indices, function(index) {
+    if (is.symbol(call[[index]])) as.character(call[[index]]) else ""
+  }, character(1))
+  reserved <- ls(env, all.names = TRUE)
   invisible(lapply(indices, function(index) {
     argument <- call[[index]]
-    value <- if (is.language(argument)) eval(argument, evaluate_in) else argument
+    value <- if (!is.null(values)) values[[index - 1L]] else
+      if (is.language(argument)) eval(argument, evaluate_in) else argument
     name <- if (is.symbol(argument)) as.character(argument) else
       if (nzchar(names[[index]])) paste0(".", names[[index]]) else
         sprintf(".argument_%d", index)
+    occupied <- unique(c(reserved, if (!is.symbol(argument)) symbols))
+    if (name %in% occupied) {
+      name <- utils::tail(make.unique(c(occupied, name)), 1L)
+      # A suffix can itself be a caller's symbol reserved for a later arg.
+      name <- utils::tail(make.unique(c(unique(c(reserved, symbols)), name)), 1L)
+    }
+    reserved <<- c(reserved, name)
     assign(name, value, envir = env)
     call[[index]] <<- as.symbol(name)
   }))
@@ -77,17 +97,4 @@
     condition$call <- .latents_bounded_call(conditionCall(condition))
   }
   condition
-}
-
-#' Refuse anything but a data frame with a classed condition
-#' @param data The `data` argument.
-#' @return `NULL`, invisibly, or `latents_bad_data`.
-#' @noRd
-.latents_check_data_frame <- function(data) {
-  if (!is.data.frame(data)) {
-    stop(errorCondition(sprintf(
-      "`data` must be a data frame, not an object of class \"%s\".", class(data)[1L]),
-      class = "latents_bad_data", call = NULL))
-  }
-  invisible(NULL)
 }

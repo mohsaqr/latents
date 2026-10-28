@@ -325,9 +325,10 @@ test_that("structures the data cannot distinguish are fitted once", {
   # get_candidate() needs no `model`.
   answers <- data.frame(a = factor(sample(c("x", "y"), 100, TRUE)),
                         b = factor(sample(c("x", "y"), 100, TRUE)))
-  classes <- suppressMessages(enumerate_classes(answers, c("a", "b"),
+  # Two classes of two binary items have more parameters than free cells.
+  expect_warning(classes <- suppressMessages(enumerate_classes(answers, c("a", "b"),
     id = NULL, n_profiles = 1:2, categorical = c("a", "b"), n_starts = 1,
-    seed = 1))
+    seed = 1)), class = "latents_unidentified")
   expect_identical(nrow(as.data.frame(classes)), 2L)
   expect_s3_class(get_candidate(classes, n_profiles = 2), "multilpa")
   expect_error(enumerate_classes(answers, c("a", "b"), id = NULL,

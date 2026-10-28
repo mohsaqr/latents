@@ -193,11 +193,13 @@ test_that("weighted fits and impossible outcomes are refused by class", {
                class = "latents_bad_argument")
   expect_error(three_step(fit, data, "y", method = "ml", variance = "pooled"),
                "should be one of")
-  # Plain stopifnot() contracts, without a class: a missing column and NA.
-  expect_error(three_step(fit, data, "absent", method = "ml"), "single column")
+  # Classed since 2026-10-27: a missing column names it, and NA is refused.
+  expect_error(three_step(fit, data, "absent", method = "ml"), "`absent`",
+               class = "latents_bad_data")
   with_missing <- data
   with_missing$y[4L] <- NA
-  expect_error(three_step(fit, with_missing, "y", method = "ml"), "must not be missing")
+  expect_error(three_step(fit, with_missing, "y", method = "ml"), "must not be missing",
+               class = "latents_bad_argument")
 })
 
 test_that("standard errors keep their relative size at large origins and small units", {

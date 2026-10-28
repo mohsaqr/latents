@@ -43,11 +43,12 @@ test_that("a dotted covariate name gives the coefficient table without a warning
   expect_equal(nrow(table), 4L)
 })
 
-test_that("get_results() on a general transition fit names an argument it ignores", {
+test_that("get_results() on a general transition fit refuses an argument it does not use", {
+  # Refused, as every other family refuses it, rather than warned about and
+  # dropped (release review API-4).
   fit <- review_general_fit()
-  expect_warning(table <- get_results(fit, "transitions", estimated = FALSE),
-                 class = "latents_unused_argument")
-  expect_identical(table, get_results(fit, "transitions"))
+  expect_error(get_results(fit, "transitions", estimated = FALSE),
+               class = "latents_bad_argument")
   expect_no_warning(get_results(fit, "transitions", level = 0.9))
 })
 
@@ -154,7 +155,7 @@ test_that("a categorical general transition fit reports its response probabiliti
   expect_setequal(table$category, c("high", "low"))
   expect_equal(as.vector(tapply(table$probability, table$profile, sum)), c(1, 1))
   expect_true("responses" %in% names(get_results(fit, "all")))
-  expect_true("responses" %in% names(summary(fit)))
+  expect_true("responses" %in% names(get_results(summary(fit), "all")))
   # Occasion-specific measurement: one block per occasion.
   by_occasion <- lta(panel, c("y", "grade"), "id", n_profiles = 2, time = "time",
                      categorical = "grade", measurement = "occasion", n_starts = 1, seed = 1)

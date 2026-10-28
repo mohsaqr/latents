@@ -99,13 +99,13 @@ class's enrolments in that profile, across the whole history, and
 get_results(moves, "initial")
 ```
 
-Student class 2, with 30.0% of students, starts in the lower-activity profile
+Student class 1, with 30.0% of students, starts in the lower-activity profile
 with probability 0.762 and in the higher-activity profile with probability
 0.238; its probability of starting in the intermediate profile is effectively
-zero. Class 1, with 70.0% of students, starts across all three profiles, with
+zero. Class 2, with 70.0% of students, starts across all three profiles, with
 probabilities 0.204, 0.444 and 0.353. Starting and overall shares differ: class
-2 starts in the lower profile with probability 0.762, but 0.819 of its
-enrolments are expected there over the whole history, while class 1 starts in
+1 starts in the lower profile with probability 0.762, but 0.819 of its
+enrolments are expected there over the whole history, while class 2 starts in
 the higher profile with probability 0.444 and spends 0.333 of its enrolments
 there.
 
@@ -130,20 +130,20 @@ profile in rows and the destination in columns.
 plot_transitions(moves)
 ```
 
-In class 2, lower activity persists with probability 0.939, estimated from 303
+In class 1, lower activity persists with probability 0.939, estimated from 303
 expected transitions. Each of its other transitions rests on fewer than 20
-expected transitions, because class-2 students rarely leave the lower profile.
-Class 1 moves between profiles. Its students remain in the lower profile with
+expected transitions, because class-1 students rarely leave the lower profile.
+Class 2 moves between profiles. Its students remain in the lower profile with
 probability 0.615, move from higher to intermediate activity with probability
-0.495, and from intermediate to higher with probability 0.360. Class 2 is
-therefore a persistently low-engagement class, and class 1 a class whose
+0.495, and from intermediate to higher with probability 0.360. Class 1 is
+therefore a persistently low-engagement class, and class 2 a class whose
 engagement changes from course to course.
 
 ## Sparse and boundary estimates
 
-Some estimates rest on very little information. Class 2's probability of
-starting in the intermediate profile is at its lower bound, because no class-2
-student is expected to start there. Class 2's transitions out of the higher
+Some estimates rest on very little information. Class 1's probability of
+starting in the intermediate profile is at its lower bound, because no class-1
+student is expected to start there. Class 1's transitions out of the higher
 and intermediate profiles rest on between 4.7 and 18.9 expected transitions
 each, because its students rarely leave the lower profile. A probability near
 zero shows that the data carry little information about that movement, not
@@ -209,8 +209,8 @@ plot(per_class)
 ```
 
 The class networks show the two patterns of the transition table: a dominant
-self-loop on the lower profile in class 2, and movement among all three
-profiles in class 1.
+self-loop on the lower profile in class 1, and movement among all three
+profiles in class 2.
 
 ## Limitations
 
@@ -219,7 +219,7 @@ so change specific to one stage of the program is averaged over positions.
 Transitions are between successive observed courses, which can differ in
 duration, content and assessment. Class differences describe patterns in
 engagement histories and do not identify their causes.
-Wald standard errors are withheld for this fit, because class 2's probability
+Wald standard errors are withheld for this fit, because class 1's probability
 of starting in the intermediate profile sits at its lower bound (the note
 above the profile table), and the numbers of profiles and classes were not
 compared here; `enumerate_classes()` with `time` compares transition models
@@ -228,7 +228,7 @@ here is therefore a working choice. The diagonal covariance ignores the associat
 and the click measures, which the evaluation vignette shows is present in
 these data; unmodelled dependence can be absorbed by extra profiles and change
 the apparent transitions. Transitions supported by few expected counts, such as those out of
-the higher and intermediate profiles in class 2, should not be interpreted.
+the higher and intermediate profiles in class 1, should not be interpreted.
 
 ## References
 

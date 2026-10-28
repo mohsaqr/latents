@@ -13,7 +13,9 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 \item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} (a profile, latent
 class, transition or group-class family grid), or a comparison from
 \code{\link[=compare_models]{compare_models()}}. On a family grid, give the name, or \code{n_group_classes}
-with \code{model}.}
+with \code{model}. A grid of mixture regressions from
+\code{\link[=enumerate_regressions]{enumerate_regressions()}} is not taken (\code{latents_bad_argument}):
+\code{get_results(grid, "model", n_classes = )} returns one of its models.}
 
 \item{n_profiles}{Number of individual profiles of the candidate, the
 candidate's name (\code{"profiles3_groups4"}), or its two class counts

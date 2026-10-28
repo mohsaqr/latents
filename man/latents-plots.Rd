@@ -535,8 +535,10 @@ Each object takes \verb{what =} for its views, \code{main}, \code{subtitle} and 
 arguments named here.
 \describe{
 \item{Fitted profile and class models}{From \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}},
-\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and covariate models: \code{"profiles"}
-(default), \code{"bars"}, \code{"heatmap"}, \code{"raincloud"}, \code{"parallel"},
+\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and covariate models: \code{"profiles"} (the default; a
+fit whose indicators are all categorical with non-numeric category
+labels, which the profile summaries cannot score, draws \code{"responses"}
+by default), \code{"bars"}, \code{"heatmap"}, \code{"raincloud"}, \code{"parallel"},
 \code{"pairs"} (each profile's 95\% covariance ellipse), \code{"responses"},
 \code{"probabilities"} (not for covariate models), \code{"sequences"} (fits with
 \code{time}; \code{cell_labels = TRUE} prints the profile in each cell),

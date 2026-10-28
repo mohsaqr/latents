@@ -19,9 +19,12 @@ descriptives(x, ...)
 \method{descriptives}{multilpa_covariates}(x, by = NULL, ...)
 }
 \arguments{
-\item{x}{A data frame, or a fitted model of this package, whose own \code{vars}
-and \code{id} are then used. A single-level fit has no groups, so its table
-has no \code{n_groups} or \code{icc}.}
+\item{x}{A data frame, or a profile, class or transition fit (from
+\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}, or \code{\link[=lta]{lta()}} with
+time-homogeneous transitions), whose own \code{vars} and \code{id} are then used. A
+single-level fit has no groups, so its table has no \code{n_groups} or \code{icc}.
+Anything else, including a fit of another family, raises
+\code{latents_not_a_fit}; describe the data frame it was fitted to instead.}
 
 \item{...}{Not used. For a data frame, any further argument raises a
 \code{latents_unused_argument} warning; for a fit, it raises

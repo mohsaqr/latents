@@ -114,7 +114,8 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
                           missing = "fiml", n_starts = 1), class = "latents_bad_data")
   data$x <- c(Inf, rep(NA_real_, 19))
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
-                          missing = "fiml", n_starts = 1), "non-finite")
+                          missing = "fiml", n_starts = 1), "`x` has infinite or NaN",
+               class = "latents_bad_data")
   data$x <- c(1, rep(NA_real_, 19))
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
                           missing = "fiml", n_starts = 1), "Constant")
@@ -132,5 +133,6 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
 })
 test_that("FIML rejects NaN consistently with inference", {
   data <- data.frame(group = rep(1:3, each = 2), y = c(1, 2, NaN, 4, 5, 6))
-  expect_error(multilpa(data, "y", "group", 1, 1, missing = "fiml", n_starts = 1), "non-finite")
+  expect_error(multilpa(data, "y", "group", 1, 1, missing = "fiml", n_starts = 1),
+               "`y` has infinite or NaN", class = "latents_bad_data")
 })

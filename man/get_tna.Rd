@@ -2,6 +2,7 @@
 % Please edit documentation in R/tna.R
 \name{get_tna}
 \alias{get_tna}
+\alias{get_tna.default}
 \alias{get_tna.multilpa_transitions}
 \alias{get_tna.multilpa_lta}
 \alias{get_tna.multilpa}
@@ -9,6 +10,8 @@
 \title{Build one transition network for the whole sample}
 \usage{
 get_tna(x, ...)
+
+\method{get_tna}{default}(x, ...)
 
 \method{get_tna}{multilpa_transitions}(x, ...)
 

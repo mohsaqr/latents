@@ -126,7 +126,8 @@ test_that("a broken contract is refused", {
   data <- .step_data()
   fit <- .step_fit(data)
 
-  expect_error(three_step(fit, data, "absent"), "must name a single column")
+  expect_error(three_step(fit, data, "absent"), "`outcome` names `absent`",
+               class = "latents_bad_data")
   # `y` varies within a group, so it cannot be a group-level outcome.
   expect_error(three_step(fit, data, "y", level = "groups"),
                class = "latents_bad_outcome")
@@ -306,11 +307,11 @@ test_that("a broken contract is refused", {
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
                   n_starts = 1, seed = 1)
 
-  expect_error(r3step(fit, data, "absent"), "must name columns")
-  expect_error(r3step(fit, data, "truth", ci_level = 1), "`ci_level` must be")
+  expect_error(r3step(fit, data, "absent"), class = "latents_bad_data")
+  expect_error(r3step(fit, data, "truth", ci_level = 1), class = "latents_bad_argument")
   missing_covariate <- data
   missing_covariate$x[1L] <- NA
-  expect_error(r3step(fit, missing_covariate, "x"), "must not be missing")
+  expect_error(r3step(fit, missing_covariate, "x"), class = "latents_bad_argument")
   data$copy <- data$x
   expect_error(r3step(fit, data, c("x", "copy")),
                class = "latents_bad_covariate")

@@ -47,16 +47,18 @@ test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
 
 test_that("enumerate_lca() treats every indicator as categorical", {
   skip_on_cran()
+  # Three classes on three binary items are not identified (Goodman 1974).
   expect_no_message(
-    models <- enumerate_lca(student_esm, esm_activities, n_classes = 1:3,
-                            n_starts = 1, seed = 1))
+    models <- quietly(enumerate_lca(student_esm, esm_activities, n_classes = 1:3,
+                                    n_starts = 1, seed = 1),
+                      classes = "latents_unidentified"))
   table <- as.data.frame(models)
   # No covariance structure is crossed, so one candidate per count.
   expect_identical(table$n_profiles, 1:3)
   expect_true(all(is.na(table$model)))
-  same <- suppressMessages(enumerate_classes(student_esm, esm_activities,
+  same <- suppressMessages(quietly(enumerate_classes(student_esm, esm_activities,
     id = NULL, n_profiles = 1:3, categorical = esm_activities, n_starts = 1,
-    seed = 1))
+    seed = 1), classes = "latents_unidentified"))
   expect_equal(table, as.data.frame(same))
   alone <- lca(student_esm, esm_activities, n_classes = 2, n_starts = 1,
                seed = 1)

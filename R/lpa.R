@@ -46,6 +46,7 @@
 #' plot(fit, what = "raincloud")
 #' @export
 lpa <- function(data, vars, n_profiles, ...) {
+  .latents_check_data_frame(data, substitute(data))
   .multilpa_single_level_call("lpa", "multilpa", list(...))
   fit <- .multilpa_quiet_single_level(
     multilpa(data, vars, id = NULL, n_profiles = n_profiles, ...))
@@ -96,6 +97,7 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' plot(fit, what = "heatmap")
 #' @export
 lca <- function(data, vars, n_classes, ...) {
+  .latents_check_data_frame(data, substitute(data))
   .multilpa_single_level_call("lca", "multilca", list(...))
   if ("n_profiles" %in% names(list(...))) {
     stop(errorCondition(
@@ -155,6 +157,7 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
   # Preserve omission: the default gives way to legacy covariance switches
   # and to all-categorical data, whereas an explicit model does not.
   data_expression <- substitute(data)
+  .latents_check_data_frame(data, data_expression)
   if (missing(model)) {
     return(.latents_candidate_data(.multilpa_quiet_single_level(
       enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles, ...)),
@@ -203,6 +206,7 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' summary(models)
 #' @export
 enumerate_lca <- function(data, vars, n_classes = 1:4, ...) {
+  .latents_check_data_frame(data, substitute(data))
   extra <- list(...)
   .multilpa_single_level_call("enumerate_lca", "enumerate_classes", extra)
   # As in multilca(), a `categorical` adds to the set; every indicator stays

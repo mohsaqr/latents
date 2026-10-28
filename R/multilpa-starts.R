@@ -192,6 +192,13 @@
       if (is.null(sampling_weights)) n_groups else sum(sampling_weights > 0)
     small_classes <- any(effective_profile_counts < 1) ||
       any(effective_group_counts < 1)
+    # A start that stops by the EM rule can still lie several steps below
+    # the maximum when EM is slow, so replication allows 1e-6 per observed
+    # value: unit-free like the old 1e-6 * (1 + |log L|), and about as wide.
+    replication_tolerance <- 1e-6 * max(1, .latents_observed_values(
+      x, codes, .latents_extra_matrix(extra),
+      row_weights = if (is.null(sampling_weights)) NULL else
+        sampling_weights[group_index]))
     result <- c(parameters, list(
       call = call, vars = vars, continuous = continuous,
       continuous_types = vapply(data[continuous], typeof, character(1)),
@@ -247,8 +254,8 @@
       effective_group_counts = effective_group_counts,
       n_best_replicated = sum(valid & final_stage &
                                 abs(scores - log_likelihood) <=
-                               1e-6 * (1 + abs(log_likelihood))),
-      replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields,
+                               replication_tolerance),
+      replication_tolerance = replication_tolerance), noise_fields,
       .latents_search_record(search, n_starts, screen, select_start,
                              if (exclude_boundary) "exclude" else "allow"))
     class(result) <- "multilpa"

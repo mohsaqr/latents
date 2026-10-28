@@ -68,6 +68,10 @@
     table[!table$estimated, c("standard_error", "conf_low", "conf_high")] <- NA_real_
   }
   covariance <- stats::cov(kept)
+  if (!is.null(table$estimated)) {
+    covariance[!table$estimated, ] <- NA_real_
+    covariance[, !table$estimated] <- NA_real_
+  }
   dimnames(covariance) <- list(table$name, table$name)
   columns <- setdiff(names(table), "name")
   result <- table[, columns, drop = FALSE]

@@ -158,8 +158,8 @@ awe_groups_pick <- pick("awe", "groups")
 aic_pick <- with(subset(best, criterion == "aic"), candidate)
 # The code below names these candidates; stop if the results ever change.
 stopifnot(bic_groups_pick == "profiles4_groups3",
-          icl_groups_pick == "profiles4_groups2",
-          awe_groups_pick == "profiles3_groups2")
+          icl_groups_pick == "profiles2_groups3",
+          awe_groups_pick == "profiles2_groups2")
 ```
 
 The result holds `r n_candidates` fitted candidates. Each candidate is named
@@ -202,6 +202,11 @@ charge of several criteria depends on the sample size. Criteria ending in
 criteria ending in `_individual` count the
 `r format(n_enrolments, big.mark = ",")` enrolments. An analysis uses one of
 the two conventions throughout.
+
+ICL and AWE include uncertainty about both the students' group classes and
+their enrolments' profiles under either convention. Changing the sample-size
+convention changes the parameter penalty, not which classification uncertainty
+is included.
 
 The candidate at the minimum of each criterion:
 
@@ -397,7 +402,7 @@ compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
 The same candidates given by their numbers of classes, with labels:
 
 ```{r compare-counts}
-compare_models(models, bic = c(4, 3), icl = c(4, 2), awe = c(3, 2))
+compare_models(models, bic = c(4, 3), icl = c(2, 3), awe = c(2, 2))
 ```
 
 Every candidate with four profiles, which shows what the group classes add:

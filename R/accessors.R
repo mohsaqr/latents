@@ -27,7 +27,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'   row per class and truth value.
 #' @noRd
 .multilpa_assignments <- function(x, data = NULL, truth = NULL) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .latents_require_fit(x)
   frame <- .multilpa_resolve_data(x, data)
   .multilpa_check_row_count(x, frame)
   .multilpa_check_alignment(x, frame)
@@ -214,6 +214,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
         # Half-observed rows of a joined pair keep their observed item.
         value <- .latents_restore_partial(original_values[x$categorical_data[, name]],
                                           x$categorical_data, name)
+        value <- .multilpa_restore_excluded(value, original_values)
         pair <- x$local_dependence
         joined <- match(name, pair$name)
         # Older saved fits recorded the pair on the fit, not its typed values.
@@ -250,7 +251,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' @noRd
 .multilpa_resolve_data <- function(x, data) {
   if (is.null(data)) return(.multilpa_model_frame(x))
-  stopifnot("`data` must be a data frame" = is.data.frame(data))
+  .latents_check_data_frame(data)
   # The caller's own data holds the paired items; the fit, their joint ones.
   if (!is.null(x$local_dependence)) data <- .latents_join_pairs(data, x$local_dependence, rebuild_existing = TRUE)
   data
@@ -316,7 +317,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' digit and its CSV text no longer matches. Each supplied value is accepted
 #' when it lies within the two known errors of the original: half a unit in
 #' the fifteenth significant digit (the precision `write.csv()` keeps) and the
-#' rounding of the reconstruction `r = c s + o`, at most `4 eps (|r| + |o|)`.
+#' rounding of the reconstruction (the value is `c s + o`), at most `4 eps (|r| + |o|)`.
 #' This is an alignment check only; objective-data checks stay exact.
 #'
 #' @param x A fitted model of this package.
@@ -444,8 +445,18 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (length(extra_names) > 0L) {
     original <- .latents_draw_extra_columns(x$extra_data)
     lapply(extra_names, function(name) {
-      stored <- original[[name]]
       native <- x$extra_data$ordinal_values[[name]]
+      # A row of weight zero may hold an ordinal value the fit never modelled,
+      # stored as NA: compare the codes as the fit encoded them first.
+      if (name %in% x$ordinal) {
+        value <- data[[name]]
+        codes <- if (is.numeric(value) && !is.null(native)) match(value, native) else
+          match(as.character(value), x$extra_data$ordinal_levels[[name]])
+        if (.multilpa_same_values(codes, x$extra_data$ordinal[, name])) {
+          return(record(name, TRUE))
+        }
+      }
+      stored <- original[[name]]
       if (is.numeric(data[[name]]) && !is.null(native)) {
         stored <- native[x$extra_data$ordinal[, name]]
       }
@@ -532,7 +543,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 .multilpa_profile_frame <- function(x, data = NULL,
                                     scale = c("raw", "standardized"),
                                     standard_errors = !is.null(data)) {
-  scale <- match.arg(scale)
+  scale <- .latents_match_arg(scale, c("raw", "standardized"), "scale")
   vars <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   # `spread` of one and `centre` of zero leave the raw scale untouched, so the
@@ -862,6 +873,7 @@ print.multilpa_enumeration <- function(x, ...) {
   table <- .multilpa_enumeration_grid(x)
   cat(sprintf("Class enumeration: %d candidate models%s\n", nrow(table),
               .latents_enumeration_type_label(x)))
+  # Printed rounded; every column at full precision is in as.data.frame(x).
   columns <- intersect(c("candidate", "n_profiles", "n_group_classes", "model",
                          "log_likelihood", "n_parameters", "aic", "bic_groups",
                          "bic_individual", "icl_individual", "profile_entropy",
@@ -873,10 +885,26 @@ print.multilpa_enumeration <- function(x, ...) {
                          "n_best_replicated"),
                        names(table))
   # A column with no value in any row (the covariance structure of an LCA
-  # grid) carries nothing to read.
+  # grid) carries nothing to read, and a single-level grid's two BICs agree.
   columns <- columns[vapply(columns, function(column) !all(is.na(table[[column]])),
                             logical(1))]
-  print(table[, columns, drop = FALSE], row.names = FALSE, ...)
+  if (all(c("bic_groups", "bic_individual") %in% columns) &&
+      isTRUE(all.equal(table$bic_groups, table$bic_individual))) {
+    columns <- setdiff(columns, "bic_individual")
+  }
+  if ("n_group_classes" %in% columns && all(table$n_group_classes %in% 1L)) {
+    columns <- setdiff(columns, "n_group_classes")
+  }
+  shown <- table[, columns, drop = FALSE]
+  two <- intersect(c("log_likelihood", "aic", "bic_groups", "bic_individual",
+                     "icl_individual"), columns)
+  three <- intersect(c("profile_entropy", "group_entropy", "avepp_min", "avepp_max",
+                       "avepp_mean", "group_avepp_min", "group_avepp_max",
+                       "group_avepp_mean"), columns)
+  shown[two] <- lapply(shown[two], round, digits = 2L)
+  shown[three] <- lapply(shown[three], round, digits = 3L)
+  print(shown, row.names = FALSE, ...)
+  cat("Every column, unrounded: as.data.frame(x).\n")
   # A candidate that produced no fit is reported apart from one that was
   # fitted but stopped short of convergence: the remedies differ.
   failed <- is.na(table$log_likelihood)
@@ -906,7 +934,8 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   continuous indicators, `response_probabilities` for categorical ones. An
 #'   all-categorical model needs no Gaussian block. Other elements are
 #'   ignored. A missing block raises `latents_bad_start`; a fit with a noise
-#'   component raises `latents_unsupported_noise`.
+#'   component raises `latents_unsupported_noise`; anything that is not a
+#'   list raises `latents_bad_argument`.
 #' @param what `"all"` (the default) returns the measurement and mixing
 #'   blocks. `"measurement"` omits `profile_probabilities` and
 #'   `group_probabilities`, which are sized for the model that produced them;
@@ -945,10 +974,15 @@ print.multilpa_enumeration <- function(x, ...) {
 #' @export
 starting_values <- function(x, covariance = c("auto", "drop", "keep"),
                             what = c("all", "measurement")) {
-  stopifnot("`x` must be a list or a `multilpa` fit" = is.list(x))
+  if (!is.list(x)) {
+    stop(errorCondition(sprintf(
+      "`x` must be a fitted `multilpa` model or a list of starting values, but it is %s.",
+      .latents_describe(x)), class = "latents_bad_argument", call = NULL))
+  }
   .multilpa_refuse_noise(x, "starting_values()")
-  covariance <- match.arg(covariance)
-  what <- match.arg(what)
+  covariance <- .latents_match_arg(covariance, c("auto", "drop", "keep"),
+                                  "covariance")
+  what <- .latents_match_arg(what, c("all", "measurement"), "what")
   has_responses <- !is.null(x$response_probabilities)
   # A model with only categorical indicators carries no Gaussian block.
   required <- c("means", "profile_probabilities", "group_probabilities")
@@ -1037,6 +1071,18 @@ print.multilpa_start <- function(x, ...) {
                            length(x$group_probabilities))))
   cat("Pass this to multilpa(start = ) as it is.\n")
   invisible(x)
+}
+
+#' @noRd
+#' @export
+summary.multilpa_start <- function(object, ...) {
+  stopifnot("`object` must be a `multilpa_start` object" =
+              inherits(object, "multilpa_start"))
+  .multilpa_reject_extra_arguments(list(...), "summary()", .multilpa_summary_advice())
+  # A starting-value set is already the collection of its tables, which
+  # get_results() reads; summary.default listed its internal blocks as a
+  # Length/Class/Mode table instead (review 2026-10-27).
+  object
 }
 
 #' @noRd
