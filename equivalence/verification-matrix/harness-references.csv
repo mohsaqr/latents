@@ -12,13 +12,13 @@ pattern,reference,kind
 ^latents \(unit-scale fit\),unit-scale refit,internal
 ^Mplus,Mplus,commercial program
 ^Latent GOLD,Latent GOLD,commercial program
-^EM with MASS,MASS,R package
-^EM with VGAM,VGAM,R package
+^EM with MASS,custom EM using MASS,independent code
+^EM with VGAM,custom EM using VGAM,independent code
 ^mice,mice,R package
 ^base-R,base-R likelihood + numDeriv,independent code
 ^likelihood written here,base-R likelihood + numDeriv,independent code
 ^sandwich,sandwich,R package
-^tidySEM,tidySEM,R package
+^tidySEM,tidySEM classification-error matrix,component check
 ^latents [0-9.]+ multilpa\(\) called directly,direct multilpa() call,internal
 ^refusal parity,refusal parity,internal
 ^invariance,invariance,internal

@@ -25,6 +25,18 @@
 #' warning states that the row is unestimated; absent transitions are not
 #' treated as self-transitions.
 #'
+#' A [multilpa()] or [multilca()] fit made with `time =` has no estimated
+#' transition matrix: the network is built by [tna::tna()] from each group's
+#' sequence of modal profiles in time order. `get_group_tna()` splits those
+#' sequences by each group's modal group class. A fit made without `time` is
+#' refused.
+#'
+#' A general [lta()] fit (occasion-varying or covariate-dependent
+#' transitions, second order, movers and stayers, or ordinal, count or
+#' weighted data) has no single transition matrix and is refused with
+#' `latents_unsupported_tna`; its transitions are returned by
+#' `get_results(x, "transitions")`.
+#'
 #' @param x A fitted model from [lta()].
 #' @param ... Passed to [tna::tna()].
 #' @return An object of class `tna`, as returned by [tna::tna()], to which the
@@ -44,15 +56,15 @@ get_tna <- function(x, ...) {
   UseMethod("get_tna")
 }
 
-#' @rdname get_tna
+#' @noRd
 #' @export
-get_tna.default <- function(x, ...) {
+get_tna.default <-function(x, ...) {
   .latents_require_fit(x, substitute(x))
 }
 
-#' @rdname get_tna
+#' @noRd
 #' @export
-get_tna.multilpa_transitions <- function(x, ...) {
+get_tna.multilpa_transitions <-function(x, ...) {
   .multilpa_require_tna()
   aggregate <- .multilpa_aggregate_transitions(x)
   if (any(!aggregate$estimated)) {
@@ -92,9 +104,9 @@ get_group_tna <- function(x, ...) {
   UseMethod("get_group_tna")
 }
 
-#' @rdname get_group_tna
+#' @noRd
 #' @export
-get_group_tna.default <- function(x, ...) {
+get_group_tna.default <-function(x, ...) {
   .latents_require_fit(x, substitute(x))
 }
 
@@ -119,18 +131,13 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   .multilpa_as_group_tna(models, label = label)
 }
 
-#' @rdname get_tna
-#' @details A general [lta()] fit (occasion-varying or covariate-dependent
-#'   transitions, second order, movers and stayers, or ordinal, count or
-#'   weighted data) has no single transition matrix and is refused with
-#'   `latents_unsupported_tna`; its transitions are returned by
-#'   `get_results(x, "transitions")`.
+#' @noRd
 #' @export
-get_tna.multilpa_lta <- function(x, ...) .lta_refuse_tna("get_tna()")
+get_tna.multilpa_lta <-function(x, ...) .lta_refuse_tna("get_tna()")
 
-#' @rdname get_group_tna
+#' @noRd
 #' @export
-get_group_tna.multilpa_lta <- function(x, ...) .lta_refuse_tna("get_group_tna()")
+get_group_tna.multilpa_lta <-function(x, ...) .lta_refuse_tna("get_group_tna()")
 
 #' Refuse a transition network for a general transition fit
 #' @param verb The verb, for the message.
@@ -238,25 +245,20 @@ get_group_tna.multilpa_lta <- function(x, ...) .lta_refuse_tna("get_group_tna()"
             class = "group_tna")
 }
 
-#' @rdname get_tna
-#' @details A [multilpa()] or [multilca()] fit made with `time =` has no
-#'   estimated transition matrix: the network is built by [tna::tna()] from
-#'   each group's sequence of modal profiles in time order.
-#'   `get_group_tna()` splits those sequences by each group's modal group
-#'   class. A fit made without `time` is refused.
+#' @noRd
 #' @export
-get_tna.multilpa <- function(x, ...) {
+get_tna.multilpa <-function(x, ...) {
   .multilpa_require_tna()
   tna::tna(.multilpa_modal_sequences(x)$states, ...)
 }
 
-#' @rdname get_tna
+#' @noRd
 #' @export
-get_tna.multilpa_covariates <- get_tna.multilpa
+get_tna.multilpa_covariates <-get_tna.multilpa
 
-#' @rdname get_group_tna
+#' @noRd
 #' @export
-get_group_tna.multilpa <- function(x, label = "Group class", ...) {
+get_group_tna.multilpa <-function(x, label = "Group class", ...) {
   .multilpa_require_tna()
   stopifnot("`label` must be a single string" =
               is.character(label) && length(label) == 1L && !is.na(label))
@@ -266,9 +268,9 @@ get_group_tna.multilpa <- function(x, label = "Group class", ...) {
   tna::group_tna(grouped, group = ".group", ...)
 }
 
-#' @rdname get_group_tna
+#' @noRd
 #' @export
-get_group_tna.multilpa_covariates <- get_group_tna.multilpa
+get_group_tna.multilpa_covariates <-get_group_tna.multilpa
 
 #' Each group's modal profiles in time order, one row per group
 #'

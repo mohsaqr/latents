@@ -694,17 +694,17 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
   result
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-logLik.multilpa_covariates <- function(object, ...) {
+logLik.multilpa_covariates <-function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-nobs.multilpa_covariates <- function(object, ...) {
+nobs.multilpa_covariates <-function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
   .multilpa_group_sample_size(object)
 }

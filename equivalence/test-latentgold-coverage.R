@@ -17,6 +17,8 @@
 coverage_dir <- file.path("latentgold-coverage")
 source(file.path(coverage_dir, "compare-functions.R"), local = TRUE)
 
+source("package-kit-runner.R", local = TRUE)
+
 test_that("the coverage kit is the one Latent GOLD was run on", {
   inputs <- utils::read.table(file.path(coverage_dir, "returned", "INPUTS.md5"),
                               col.names = c("md5", "file"))
@@ -33,16 +35,11 @@ test_that("growth, latent class, profile, transition and enumeration fits reprod
   known <- utils::read.csv(file.path(coverage_dir, "known-differences.csv"),
                            stringsAsFactors = FALSE)
   comparison <- compare_all(cases, file.path(coverage_dir, "returned"))
-  explained <- vapply(seq_len(nrow(comparison)), function(i) {
-    any(known$case == comparison$case[[i]] &
-          vapply(known$quantity, grepl, logical(1), x = comparison$quantity[[i]]))
-  }, logical(1))
-  unexplained <- subset(comparison, !agrees & !explained)
+  registered <- apply_register(comparison, known)
+  expect_identical(nrow(comparison), 440L)
+  unexplained <- subset(registered$comparison, status == "disagrees")
   expect_identical(nrow(unexplained), 0L,
                    info = paste(unexplained$case, unexplained$quantity, collapse = "; "))
-  expect_true(all(vapply(seq_len(nrow(known)), function(r) {
-    any(!comparison$agrees & comparison$case == known$case[[r]] &
-          grepl(known$quantity[[r]], comparison$quantity))
-  }, logical(1))))
+  expect_identical(nrow(registered$stale), 0L)
   expect_gte(sum(comparison$agrees), 434L)
 })

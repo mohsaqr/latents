@@ -385,19 +385,19 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
 #' @importFrom stats logLik
-logLik.multilpa <- function(object, ...) {
+logLik.multilpa <-function(object, ...) {
   stopifnot(inherits(object, "multilpa"))
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
 #' @importFrom stats nobs
-nobs.multilpa <- function(object, ...) {
+nobs.multilpa <-function(object, ...) {
   stopifnot(inherits(object, "multilpa"))
   .multilpa_group_sample_size(object)
 }

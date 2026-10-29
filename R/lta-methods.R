@@ -561,27 +561,9 @@ logLik.multilpa_lta <- function(object, ...) {
 #' @export
 nobs.multilpa_lta <- function(object, ...) .multilpa_group_sample_size(object)
 
-#' @details For a general transition fit (an [lta()] fit with covariate,
-#'   occasion-varying or second-order transitions), the table has one row per
-#'   transition, initial and second-order logit: `block`, `group_class`,
-#'   `from`, `to`, `term`, `estimate`, `standard_error`, `statistic`,
-#'   `p_value`, `p_adjusted`, `conf_low`, `conf_high`, `estimated` (and
-#'   `previous` for a second-order fit). `estimated` is `FALSE` for a logit
-#'   the likelihood does not identify: a move into an occasion at which no
-#'   row observes an indicator, under `transitions = "occasion"` (or every
-#'   second-order logit when nothing is observed from occasion 3 on). Such a
-#'   logit is not counted in `n_parameters`, AIC or BIC, and its standard
-#'   error and test are `NA`. `method = "bootstrap"` resamples persons, refits, and
-#'   matches every replicate's profiles (on the measurement) and group classes
-#'   to the original's, rebasing the initial logits when the reference profile
-#'   moves; it needs `data`, and works where Wald inference is refused (for
-#'   example full covariance structures). Transition inference fixes no
-#'   parameter at a bound: without an active bound `boundary = "fix"` gives
-#'   the same table as `"error"`, and a fit with an active bound raises
-#'   `latents_boundary_fit` under either.
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
+parameter_inference.multilpa_lta <-function(x, data = NULL, level = 0.95,
                                              step = 1e-4,
                                              vcov_type = c("observed", "robust", "opg"),
                                              adjust = .multilpa_p_adjust_methods,
@@ -632,9 +614,9 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
 }
 
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_lta <- function(x, main = NULL, subtitle = NULL, ...) {
+plot.multilpa_lta <-function(x, main = NULL, subtitle = NULL, ...) {
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")

@@ -43,9 +43,9 @@ utils::globalVariables(c("trajectory_time", "observed", "predicted", "class_mean
        ggplot2::scale_shape_manual(values = values("shape"), guide = guide))
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals",
+plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals",
                                                     "coefficients", "random",
                                                     "classification", "posteriors"),
                                         time = NULL, facet = FALSE, persons = 12L,

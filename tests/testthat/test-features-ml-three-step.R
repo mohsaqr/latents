@@ -4,6 +4,7 @@
 # limits of perfect classification and equal variances, and the refusals.
 # The comparisons with Latent GOLD, Mplus and an independent implementation
 # are in equivalence/test-features-ml-three-step.R.
+# The comparisons with independent references are in tests/equivalence/test-features-ml-three-step.R.
 
 # More than 2 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -223,79 +224,6 @@ test_that("standard errors keep their relative size at large origins and small u
                                      variance = variance, contrast = "pairs")
     expect_equal(small_pairs$statistic, pairs$statistic, tolerance = 1e-6)
   }))
-})
-
-test_that("the step-three likelihood is the fixed-error mixture of Vermunt (2010)", {
-  # Written out here from the formula: pi_t the average posterior, D[t, s]
-  # the posterior mass of class t among units assigned to s over the mass of
-  # t, and the outcome normal within each true class.
-  data <- features_ml_data(k = 3L, n = 360L, separation = 1.6)
-  fit <- features_ml_fit(data, k = 3L)
-  posteriors <- fit$subject_posteriors
-  modal <- max.col(posteriors, ties.method = "first")
-  expect_identical(as.integer(fit$subject_profiles), modal)
-  errors <- vapply(1:3, \(s) colSums(posteriors * (modal == s)), numeric(3)) /
-    colSums(posteriors)
-  prior <- colMeans(posteriors)
-  log_likelihood <- function(means, sds) {
-    terms <- vapply(1:3, \(t) prior[t] * errors[t, modal] *
-                      stats::dnorm(data$y, means[t], sds[t]), numeric(nrow(data)))
-    sum(log(rowSums(terms)))
-  }
-  invisible(lapply(c("varying", "equal"), \(variance) {
-    step <- .multilpa_step_ml_fit(.multilpa_level_assignments(fit, "individuals"), data$y,
-                                  variance)
-    sds <- sqrt(step$variances)
-    expect_equal(log_likelihood(step$means, sds), step$log_likelihood, tolerance = 1e-10)
-    # The estimate is stationary for this likelihood: a step of 1e-4 standard
-    # deviations in any mean changes it only at second order.
-    slopes <- vapply(1:3, \(t) {
-      h <- 1e-4 * sds[t]
-      up <- step$means
-      up[t] <- up[t] + h
-      down <- step$means
-      down[t] <- down[t] - h
-      (log_likelihood(up, sds) - log_likelihood(down, sds)) / (2 * h) * sds[t]
-    }, numeric(1))
-    expect_lt(max(abs(slopes)), 1e-4)
-  }))
-})
-
-# Posteriors and a heavy-tailed outcome on which the step-three likelihood
-# has several maxima: from the proportional start alone EM stopped 2.57 below
-# the best one (equivalence/features/ml-three-step/repro-local-maximum.R).
-features_ml_heavy <- function(seed = 5L, n = 300L) {
-  set.seed(seed)
-  class <- sample.int(3L, n, TRUE)
-  logits <- matrix(stats::rnorm(n * 3L, 0, 0.4), n, 3L)
-  logits[cbind(seq_len(n), class)] <- logits[cbind(seq_len(n), class)] + 1.3
-  posteriors <- exp(logits) / rowSums(exp(logits))
-  list(pieces = list(posteriors = posteriors, modal = max.col(posteriors, "first"),
-                     n_classes = 3L),
-       y = c(0, 0.6, 1.2)[class] + stats::rt(n, 3))
-}
-
-test_that("the step-three model reaches the best of many random starts", {
-  skip_on_cran()
-  case <- features_ml_heavy()
-  pieces <- case$pieces
-  errors <- vapply(1:3, \(s) colSums(pieces$posteriors * (pieces$modal == s)), numeric(3)) /
-    colSums(pieces$posteriors)
-  prior <- colMeans(pieces$posteriors)
-  log_likelihood <- function(theta) {
-    terms <- vapply(1:3, \(t) prior[t] * errors[t, pieces$modal] *
-                      stats::dnorm(case$y, theta[t], exp(theta[3L + t])), numeric(length(case$y)))
-    sum(log(rowSums(terms)))
-  }
-  set.seed(11)
-  best <- max(vapply(seq_len(20L), \(i) {
-    start <- c(stats::quantile(case$y, stats::runif(3L), names = FALSE), rep(log(stats::sd(case$y)), 3L))
-    stats::optim(start, log_likelihood, method = "BFGS",
-                 control = list(fnscale = -1, maxit = 2000, reltol = 1e-14))$value
-  }, numeric(1)))
-  step <- .multilpa_step_ml_fit(pieces, case$y, "varying")
-  expect_gt(step$log_likelihood, -880.5)
-  expect_gt(step$log_likelihood, best - 1e-6 * (1 + abs(best)))
 })
 
 test_that("a class carried by one unit gets no standard error, with a warning", {

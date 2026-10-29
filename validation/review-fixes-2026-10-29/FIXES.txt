@@ -1,0 +1,75 @@
+Equivalence review repairs — 2026-10-29
+Base commit: 7d0e0df (latents 1.0.0)
+
+All eight findings in validation/review-2026-10-29/REPORT.txt are addressed.
+No runtime R source, NAMESPACE, version or estimation behavior was changed.
+
+1. LCA wrapper: checks the five R-package references separately from its
+   published HELP source. Cached controls exercise the actual wrapper.
+2. Missing comparisons: every new kit wrapper shares strict validation of
+   agreement flags, finite differences/tolerances and comparison counts.
+   Missing, empty and dropped-row results fail; zero-value failed-reference
+   rows remain explicit failures unless specifically registered.
+3. Known differences: parameter counts cannot be waived. Broad exceptions
+   in Mplus growth, growth-published, regression and LCA were narrowed to
+   their affected quantities. The injected 20-to-9999 count now fails.
+4. Attribution: component checks and custom reference code remain visible
+   without independent-model source credit. Corrected direct Latent GOLD
+   fits, Markov step-three tests, direct-effects and joined-item functions,
+   plus broad feature-suite rules that credited unrelated references.
+5. Matrix outcomes: imports passed/skipped/error/failed outcomes, removes
+   source credit from failed or incomplete references, and reports those
+   states explicitly. Actual error/skip reproductions no longer turn green.
+6. CI: ten comparison-kit jobs declare their reference dependencies, limit
+   job concurrency to two, preserve fresh outcomes/source identity, and
+   reject skipped/empty/failed runs. Fast safeguard tests run in those jobs.
+7. Provenance: current evidence requires matching source AND result hashes.
+   Source changes during a run are refused. Existing evidence received
+   explicitly retrospective attestations after verifying all 104 runtime
+   files against the retained SHA256 manifest and both release commits,
+   and the 17 result files against committed results (only the documented
+   function-label metadata reattribution was allowed). These are not claimed
+   reruns. 0.96.1 evidence remains historical. Added/deleted/changed source,
+   changed results and malformed manifests cannot retain current status.
+8. Counting: the headline and per-function check totals exclude internal,
+   infrastructure and provenance checks. Component and independent-code
+   checks are visible separately from independent model source strength.
+
+Updated record
+
+34,031 current external/published/component/independent-code checks;
+zero unexplained failures and zero incomplete current results.
+119 known numerical differences remain documented rather than called agreements.
+Independent-model source counts: lpa 7, multilpa 4, lca 9, multilca 4,
+lta 5, mixture_regression 5, growth 3, three_step 4, bootstrap_lrt/VLMR 3,
+enumeration 3, pool_imputations 3.
+
+Generated CSV, Markdown, HTML and PDF outputs agree. PDF text was checked
+for the updated 34,031 total. NEWS and verification documentation now describe
+evidence types and limitations instead of the inflated original source counts.
+
+Verification
+
+- safeguards.log: 29 groups, 148 assertions passed. Includes controls for all
+  ten actual kit wrappers and mutations of results, counts, manifests and
+  test outcomes; no model refits required for these pipeline checks.
+- claims-attribution.log: 303 assertions passed, no failures/warnings/skips.
+  final-claims.log: 275 documentation assertions passed after final doc edits.
+- attestation-tests.log: four Python tests passed; unchanged evidence and
+  metadata-only reattribution are accepted, numerical/outcome/deletion changes
+  cannot be retrospectively attested.
+- pool.log and pool/: fresh complete pooling kit passed all 36 comparisons
+  against mitml/mitools, three aggregate wrapper assertions, no skips/errors.
+  Its captured source/result sidecar validates. The initial integration path
+  error is retained in pool-before-path-fix*; a working-directory regression
+  covers its fix, and the successful fresh rerun is in pool/.
+- provenance-audit.log / matrix-integrity.log: all 104 source files and 17
+  historical results verified, all 17 current sidecars accepted, historical
+  0.96.1 excluded; generated counts/status checked and ten-job CI YAML parsed.
+- git diff --check passed.
+
+The remaining nine numerical kits were not fully refitted locally; their
+current-runtime numerical evidence was preserved, their changed wrappers and
+exceptions were exercised on retained full results, and they are now covered
+by explicit CI jobs. Remote GitHub Actions was not dispatched. No commit,
+push, release or CRAN submission was performed.

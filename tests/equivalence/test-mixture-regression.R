@@ -79,3 +79,50 @@ test_that("one class reduces to lm() and glm()", {
   expect_equal(get_results(fitted)$std_error,
                unname(sqrt(diag(stats::vcov(reference)))), tolerance = 1e-5)
 })
+
+# Moved from tests/testthat/test-mixture-regression.R: comparisons with independent references.
+
+test_that("the likelihood is the mixture likelihood, in every nesting", {
+  skip_on_cran()
+  rows <- simulate_rows()
+  single <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1, vcov_type = "none")
+  expect_equal(single$log_likelihood, direct_log_likelihood(single),
+               tolerance = 1e-10)
+  concomitant <- mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 1,
+                                    seed = 1, vcov_type = "none")
+  expect_equal(concomitant$log_likelihood,
+               direct_log_likelihood(concomitant), tolerance = 1e-10)
+  grouped <- mixture_regression(passed ~ hours, study_hours, 2, family = "binomial",
+                                id = "student", class_level = "group", n_starts = 1,
+                                seed = 1, vcov_type = "none")
+  expect_equal(grouped$log_likelihood, direct_log_likelihood(grouped),
+               tolerance = 1e-10)
+  two_level <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
+                                  n_group_classes = 2, membership = ~ sleep,
+                                  group_membership = ~ motivation, n_starts = 1,
+                                  seed = 1, vcov_type = "none")
+  expect_equal(two_level$log_likelihood, direct_log_likelihood(two_level),
+               tolerance = 1e-10)
+  counts <- mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 1,
+                               seed = 1, vcov_type = "none")
+  expect_equal(counts$log_likelihood, direct_log_likelihood(counts),
+               tolerance = 1e-10)
+})
+
+test_that("binomial counts with several trials are identified row by row", {
+  rows <- latents:::.mixture_with_seed(5, {
+    n <- 300
+    class <- 1L + (stats::runif(n) < 0.5)
+    x <- stats::rnorm(n)
+    trials <- rep(8L, n)
+    successes <- stats::rbinom(n, trials, stats::plogis(
+      ifelse(class == 1L, -1 + 2 * x, 1 - x)))
+    data.frame(x, successes, failures = trials - successes)
+  })
+  fit <- mixture_regression(cbind(successes, failures) ~ x, rows, 2, family = "binomial",
+                            n_starts = 1, seed = 1)
+  expect_equal(fit$log_likelihood, direct_log_likelihood(fit),
+               tolerance = 1e-10)
+  expect_equal(sort(get_results(fit)$estimate[c(2, 4)]), c(-1, 2),
+               tolerance = 0.25)
+})

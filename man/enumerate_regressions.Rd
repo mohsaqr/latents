@@ -2,10 +2,6 @@
 % Please edit documentation in R/mixture-regression-enumerate.R
 \name{enumerate_regressions}
 \alias{enumerate_regressions}
-\alias{as.data.frame.latents_regression_enumeration}
-\alias{get_results.latents_regression_enumeration}
-\alias{summary.latents_regression_enumeration}
-\alias{print.latents_regression_enumeration}
 \title{Compare mixture regressions with different numbers of classes}
 \usage{
 enumerate_regressions(
@@ -18,14 +14,6 @@ enumerate_regressions(
   seed = NULL,
   ...
 )
-
-\method{as.data.frame}{latents_regression_enumeration}(x, row.names = NULL, optional = FALSE, ...)
-
-\method{get_results}{latents_regression_enumeration}(x, what = "fit", n_classes = NULL, n_group_classes = 1L, ...)
-
-\method{summary}{latents_regression_enumeration}(object, ...)
-
-\method{print}{latents_regression_enumeration}(x, digits = 4L, ...)
 }
 \arguments{
 \item{formula}{A model formula \code{outcome ~ predictors}. Factors, interactions
@@ -51,19 +39,6 @@ in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
 \item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family},
 \code{id}, \code{class_level}, \code{common}, \code{membership} or \code{variance}. \code{n_classes},
 \code{n_group_classes} and \code{vcov_type} are not accepted here.}
-
-\item{x}{A \code{latents_regression_enumeration} object.}
-
-\item{row.names, optional}{Not used; part of the generic.}
-
-\item{what}{\code{"fit"} (the default) for the comparison table, \code{"model"} for
-one fitted model, \code{"tree"} for the class tree, or \code{"all"} for the named
-list of the two tables (\code{fit} and \code{tree}). Any other name raises
-\code{latents_bad_argument}.}
-
-\item{object}{A \code{latents_regression_enumeration} object.}
-
-\item{digits}{Significant digits.}
 }
 \value{
 An object of class \code{latents_regression_enumeration}. Its table
@@ -80,7 +55,11 @@ columns are \code{NA} where the \code{k - 1} or \code{k} class model is missing 
 failed, and the p-value is \code{NA} when the observed fits fail validation or
 fewer than half of the requested replicates are valid.
 \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one
-fitted model. \code{summary()} returns the same table as \code{\link[=as.data.frame]{as.data.frame()}}.
+fitted model, \code{get_results(x, "tree")} the class tree and
+\code{get_results(x, "all")} the named list of the \code{fit} and \code{tree} tables;
+any other \code{what} raises \code{latents_bad_argument}. \code{print()} shows the main
+columns of the table. \code{summary()} returns the same table as
+\code{\link[=as.data.frame]{as.data.frame()}}.
 \code{plot()} draws AIC, BIC, SABIC and ICL across the classes (see
 \code{\link[=plot_enumeration]{plot_enumeration()}} for its other views, and \code{plot_views(x)} for the
 views a regression grid offers).
@@ -108,7 +87,7 @@ replicates, their count and the invalid count are reported, and
 \code{latents_failed_replicates} is warned naming the count; the p-value is \code{NA}
 only when fewer than half of the requested replicates are valid. Excluding
 invalid replicates conditions the null distribution on a valid refit, so a
-large invalid share is worth reporting with the result.
+large invalid share should be reported with the result.
 }
 \section{Conditions}{
 

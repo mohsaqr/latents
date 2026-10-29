@@ -269,9 +269,9 @@ simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, .
                                        mu = exp(eta)))
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
+plot.latents_mixture_regression <-function(x, what = NULL, predictor = NULL,
                                             level = 0.95, main = NULL, subtitle = NULL,
                                             time = NULL, facet = FALSE, persons = 12L,
                                             max_persons = 120L, ...) {

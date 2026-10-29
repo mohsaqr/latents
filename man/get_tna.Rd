@@ -2,24 +2,9 @@
 % Please edit documentation in R/tna.R
 \name{get_tna}
 \alias{get_tna}
-\alias{get_tna.default}
-\alias{get_tna.multilpa_transitions}
-\alias{get_tna.multilpa_lta}
-\alias{get_tna.multilpa}
-\alias{get_tna.multilpa_covariates}
 \title{Build one transition network for the whole sample}
 \usage{
 get_tna(x, ...)
-
-\method{get_tna}{default}(x, ...)
-
-\method{get_tna}{multilpa_transitions}(x, ...)
-
-\method{get_tna}{multilpa_lta}(x, ...)
-
-\method{get_tna}{multilpa}(x, ...)
-
-\method{get_tna}{multilpa_covariates}(x, ...)
 }
 \arguments{
 \item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
@@ -44,17 +29,17 @@ class, its row is the class rows averaged by class probability, and a
 warning states that the row is unestimated; absent transitions are not
 treated as self-transitions.
 
+A \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =} has no estimated
+transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from each group's
+sequence of modal profiles in time order. \code{get_group_tna()} splits those
+sequences by each group's modal group class. A fit made without \code{time} is
+refused.
+
 A general \code{\link[=lta]{lta()}} fit (occasion-varying or covariate-dependent
 transitions, second order, movers and stayers, or ordinal, count or
 weighted data) has no single transition matrix and is refused with
 \code{latents_unsupported_tna}; its transitions are returned by
 \code{get_results(x, "transitions")}.
-
-A \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =} has no
-estimated transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from
-each group's sequence of modal profiles in time order.
-\code{get_group_tna()} splits those sequences by each group's modal group
-class. A fit made without \code{time} is refused.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

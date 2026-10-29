@@ -1,4 +1,5 @@
 # mixture_regression(): likelihood, estimation, inference, accessors and refusals.
+# The comparisons with independent references are in tests/equivalence/test-mixture-regression.R.
 
 # More than 1.5 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -17,77 +18,6 @@ simulate_rows <- function(n = 300L, seed = 1L) {
                                          1.5 - 0.1 * x))))
   })
 }
-
-# The likelihood written from its definition, one term per unit, sharing no
-# code with the engine.
-direct_log_likelihood <- function(fit) {
-  spec <- fit$spec
-  p <- fit$params
-  eta <- spec$x %*% p$beta + spec$offset
-  if (ncol(spec$z) > 0L) eta <- eta + drop(spec$z %*% p$common)
-  density <- switch(spec$family,
-    gaussian = vapply(seq_len(spec$n_classes), function(k) {
-      stats::dnorm(spec$y, eta[, k], sqrt(p$sigma2[k]))
-    }, numeric(spec$n)),
-    poisson = vapply(seq_len(spec$n_classes), function(k) {
-      stats::dpois(spec$y, exp(eta[, k]))
-    }, numeric(spec$n)),
-    binomial = vapply(seq_len(spec$n_classes), function(k) {
-      stats::dbinom(spec$y, spec$trials, stats::plogis(eta[, k]))
-    }, numeric(spec$n)))
-  density <- matrix(density, spec$n)
-  softmax <- function(scores) exp(scores) / rowSums(exp(scores))
-  switch(spec$nesting,
-    observation = sum(log(rowSums(softmax(spec$w %*% p$gamma) * density))),
-    group = {
-      prior <- softmax(spec$w %*% p$gamma)
-      sum(vapply(seq_len(spec$n_groups), function(j) {
-        rows <- spec$group_index == j
-        log(sum(prior[j, ] * apply(density[rows, , drop = FALSE], 2L, prod)))
-      }, numeric(1)))
-    },
-    "two-level" = {
-      group_prior <- softmax(spec$v %*% p$delta)
-      sum(vapply(seq_len(spec$n_groups), function(j) {
-        rows <- which(spec$group_index == j)
-        by_group_class <- vapply(seq_len(spec$n_group_classes), function(h) {
-          indicator <- matrix(0, length(rows), spec$n_group_classes)
-          indicator[, h] <- 1
-          class_prior <- softmax(cbind(indicator, spec$w[rows, , drop = FALSE]) %*%
-                                   p$class_logits)
-          prod(rowSums(class_prior * density[rows, , drop = FALSE]))
-        }, numeric(1))
-        log(sum(group_prior[j, ] * by_group_class))
-      }, numeric(1)))
-    })
-}
-
-test_that("the likelihood is the mixture likelihood, in every nesting", {
-  skip_on_cran()
-  rows <- simulate_rows()
-  single <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1, vcov_type = "none")
-  expect_equal(single$log_likelihood, direct_log_likelihood(single),
-               tolerance = 1e-10)
-  concomitant <- mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 1,
-                                    seed = 1, vcov_type = "none")
-  expect_equal(concomitant$log_likelihood,
-               direct_log_likelihood(concomitant), tolerance = 1e-10)
-  grouped <- mixture_regression(passed ~ hours, study_hours, 2, family = "binomial",
-                                id = "student", class_level = "group", n_starts = 1,
-                                seed = 1, vcov_type = "none")
-  expect_equal(grouped$log_likelihood, direct_log_likelihood(grouped),
-               tolerance = 1e-10)
-  two_level <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                                  n_group_classes = 2, membership = ~ sleep,
-                                  group_membership = ~ motivation, n_starts = 1,
-                                  seed = 1, vcov_type = "none")
-  expect_equal(two_level$log_likelihood, direct_log_likelihood(two_level),
-               tolerance = 1e-10)
-  counts <- mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 1,
-                               seed = 1, vcov_type = "none")
-  expect_equal(counts$log_likelihood, direct_log_likelihood(counts),
-               tolerance = 1e-10)
-})
 
 test_that("a two-class Gaussian mixture recovers the generating regressions", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
@@ -337,24 +267,6 @@ test_that("misspecified requests are refused by class", {
   expect_warning(mixture_regression(score ~ hours, gappy, 2, missing = "omit",
                                     n_starts = 1, seed = 1, vcov_type = "none"),
                                     class = "latents_rows_dropped")
-})
-
-test_that("binomial counts with several trials are identified row by row", {
-  rows <- latents:::.mixture_with_seed(5, {
-    n <- 300
-    class <- 1L + (stats::runif(n) < 0.5)
-    x <- stats::rnorm(n)
-    trials <- rep(8L, n)
-    successes <- stats::rbinom(n, trials, stats::plogis(
-      ifelse(class == 1L, -1 + 2 * x, 1 - x)))
-    data.frame(x, successes, failures = trials - successes)
-  })
-  fit <- mixture_regression(cbind(successes, failures) ~ x, rows, 2, family = "binomial",
-                            n_starts = 1, seed = 1)
-  expect_equal(fit$log_likelihood, direct_log_likelihood(fit),
-               tolerance = 1e-10)
-  expect_equal(sort(get_results(fit)$estimate[c(2, 4)]), c(-1, 2),
-               tolerance = 0.25)
 })
 
 test_that("the recovery table cross-tabulates assignments against the truth", {

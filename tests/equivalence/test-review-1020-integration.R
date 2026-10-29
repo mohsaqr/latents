@@ -1,3 +1,6 @@
+# Comparisons with independent references moved from tests/testthat/test-review-1020-integration.R,
+# so that they run in CI's equivalence job rather than under R CMD check.
+
 test_that("paired mixed measurement retains direct-effect inference through data adapters", {
   set.seed(12020)
   n <- 400

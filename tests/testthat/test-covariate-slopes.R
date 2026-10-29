@@ -4,6 +4,7 @@
 # The likelihood is checked against its definition, the analytic score against
 # numerical differentiation of that likelihood, and the standard errors against
 # a Hessian of the likelihood alone.
+# The comparisons with independent references are in tests/equivalence/test-covariate-slopes.R.
 
 skip_on_cran()
 
@@ -30,43 +31,6 @@ skip_on_cran()
                    tol = tol, max_iter = 3000))
 }
 
-# The two-level likelihood from its definition, with each group class's profile
-# prior written from the coefficient table rather than from the stored design.
-.slopes_likelihood <- function(fit, data) {
-  coefficients <- get_results(fit, "coefficients")
-  logit_of <- function(term, level = "profile") {
-    coefficients$estimate[coefficients$level == level &
-                            coefficients$term == term]
-  }
-  density <- vapply(seq_len(2L), function(profile) {
-    stats::dnorm(data$y1, fit$means[profile, 1L], sqrt(fit$variances[profile, 1L])) *
-      stats::dnorm(data$y2, fit$means[profile, 2L], sqrt(fit$variances[profile, 2L]))
-  }, numeric(nrow(data)))
-  group_share <- stats::plogis(logit_of("(Intercept)", "group"))
-  group_share <- if (length(group_share)) c(group_share, 1 - group_share) else 1
-  rows_by_group <- split(seq_len(nrow(data)), data$g)
-  sum(vapply(rows_by_group, function(rows) {
-    log(sum(vapply(seq_len(fit$n_group_classes), function(class) {
-      slope_term <- if (identical(fit$profile_slopes, "group_class"))
-        sprintf("z:group_class_%d", class) else "z"
-      first <- stats::plogis(logit_of(sprintf("group_class_%d", class)) +
-                               logit_of(slope_term) * data$z[rows])
-      group_share[class] *
-        prod(first * density[rows, 1L] + (1 - first) * density[rows, 2L])
-    }, numeric(1))))
-  }, numeric(1)))
-}
-
-test_that("slopes by group class reproduce the likelihood written from its definition", {
-  data <- .slopes_fixture()
-  fit <- .slopes_fit(data)
-  expect_identical(fit$profile_slopes, "group_class")
-  expect_equal(fit$log_likelihood, .slopes_likelihood(fit, data), tolerance = 1e-10)
-  shared <- .slopes_fit(data, profile_slopes = "shared")
-  expect_equal(shared$log_likelihood, .slopes_likelihood(shared, data),
-               tolerance = 1e-10)
-})
-
 test_that("the coefficients are named by group class and counted once each", {
   data <- .slopes_fixture()
   fit <- .slopes_fit(data)
@@ -92,33 +56,6 @@ test_that("the recovered slopes carry the simulated cross-level interaction", {
   expect_true(all(profile$p_value < 1e-6))
   shared <- .slopes_fit(data, profile_slopes = "shared")
   expect_gt(fit$log_likelihood, shared$log_likelihood + 10)
-})
-
-test_that("scores and standard errors with slopes by group class match numerical ones", {
-  data <- .slopes_fixture()
-  fit <- .slopes_fit(data)
-  skip_if_not(fit$converged, "no start converged on this fixture")
-  x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
-  theta <- .multilpa_cov_encode(fit)
-  negative <- function(value) {
-    pieces <- .multilpa_cov_decode(value, fit)
-    -.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
-                               fit$profile_design, fit$group_design,
-                               pieces$beta, pieces$gamma, NULL)$log_likelihood
-  }
-  set.seed(9)
-  away <- theta + 0.05 * stats::rnorm(length(theta))
-  analytic <- colSums(.multilpa_cov_group_scores(away, x, fit, NULL))
-  numerical <- vapply(seq_along(away), function(index) {
-    step <- replace(numeric(length(away)), index, 1e-5)
-    -(negative(away + step) - negative(away - step)) / 2e-5
-  }, numeric(1))
-  expect_lt(max(abs(analytic - numerical)), 1e-5)
-  reported <- sqrt(diag(vcov(fit, scale = "unconstrained")))
-  reference <- sqrt(diag(solve(stats::optimHess(theta, negative))))
-  expect_lt(max(abs(reported - reference) / reference), 1e-4)
-  expect_equal(parameter_inference(fit, data)$standard_error,
-               parameter_inference(fit)$standard_error)
 })
 
 test_that("with one group class the slopes by group class are the shared slopes", {

@@ -40,3 +40,5 @@
 ^SEARCH-PLAN\.md$
 ^Astra\.md$
 ^joint-results\.rds$
+^Project_docs$
+^winbox-.*$

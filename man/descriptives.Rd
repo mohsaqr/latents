@@ -3,20 +3,11 @@
 \name{descriptives}
 \alias{descriptives}
 \alias{descriptives.data.frame}
-\alias{descriptives.multilpa}
-\alias{descriptives.multilpa_transitions}
-\alias{descriptives.multilpa_covariates}
 \title{Descriptive statistics and intraclass correlations of model variables}
 \usage{
 descriptives(x, ...)
 
 \method{descriptives}{data.frame}(x, vars = NULL, id = NULL, by = NULL, ...)
-
-\method{descriptives}{multilpa}(x, by = NULL, ...)
-
-\method{descriptives}{multilpa_transitions}(x, by = NULL, ...)
-
-\method{descriptives}{multilpa_covariates}(x, by = NULL, ...)
 }
 \arguments{
 \item{x}{A data frame, or a profile, class or transition fit (from

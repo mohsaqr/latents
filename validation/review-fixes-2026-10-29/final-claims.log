@@ -1,0 +1,20 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | claims                                                         
+⠦ |          7 | claims                                                         
+⠸ |         34 | claims                                                         
+⠧ |         48 | claims                                                         
+⠸ |         74 | claims                                                         
+⠋ |         91 | claims                                                         
+⠙ |        122 | claims                                                         
+⠼ |        145 | claims                                                         
+⠼ |        165 | claims                                                         
+⠹ |        193 | claims                                                         
+⠏ |        220 | claims                                                         
+⠦ |        257 | claims                                                         
+✔ |        275 | claims [1.2s]
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 1.2 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 275 ]

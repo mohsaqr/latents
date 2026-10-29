@@ -1,5 +1,6 @@
 # Regressions from the 2026-10-15 review of the covariate, three-step, staged
 # and pooling verbs. Each test failed before its repair.
+# The comparisons with independent references are in tests/equivalence/test-review-1015-covariates.R.
 
 # More than 1.5 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -46,26 +47,6 @@ test_that("r3step() does not depend on where a covariate's zero lies", {
   expect_equal(shifted$estimate[shifted$term == "(Intercept)"] +
                  shift * shifted$estimate[shifted$term == "x"],
                base$estimate[base$term == "(Intercept)"], tolerance = 1e-6)
-})
-
-test_that("r3step() reaches the maximum of its likelihood", {
-  data <- review_r3step_data()
-  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 4, seed = 1)
-  result <- r3step(fit, data, "x")
-  pieces <- .multilpa_level_assignments(fit, "individuals")
-  by_assigned <- t(.multilpa_error_matrix(pieces))[pieces$modal, , drop = FALSE]
-  design <- cbind(1, data$x)
-  objective <- function(theta) {
-    prior <- .multilpa_logit_prior(matrix(theta, 2L, 1L), design)
-    -sum(log(rowSums(prior * by_assigned)))
-  }
-  tight <- stats::optim(c(0, 0), objective, method = "BFGS",
-                        control = list(maxit = 5000L, reltol = 1e-15))
-  tight <- stats::optim(tight$par, objective, method = "Nelder-Mead",
-                        control = list(maxit = 20000L, reltol = 1e-15))
-  # Before the repair the default BFGS tolerance left it 1e-4 away.
-  expect_equal(result$estimate, tight$par, tolerance = 1e-6)
 })
 
 test_that("r3step(by_group_class = TRUE) does not depend on a covariate's origin", {

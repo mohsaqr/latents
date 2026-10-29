@@ -1,0 +1,19 @@
+Actual testthat outcomes:
+                                     test nb failed error skipped passed
+ reference crashed after structural check  1      0  TRUE   FALSE      1
+                        reference skipped  1      0 FALSE    TRUE      0
+
+Imported outcomes (error and skipped are absent):
+               dir                file                                     test
+ tests/equivalence file12876404004c5.R reference crashed after structural check
+ tests/equivalence file12876404004c5.R                        reference skipped
+ nb failed        run  code current
+  1      0 2026-10-29 1.0.0    TRUE
+  1      0 2026-10-29 1.0.0    TRUE
+
+Matrix treatment of the actual error and skip:
+         reference current_checks current_failed  status
+ crashed reference              1              0 current
+ skipped reference              1              0 current
+
+CONFIRMED: both errored and skipped tests receive current source credit with zero failed checks.

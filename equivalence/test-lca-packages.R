@@ -17,24 +17,22 @@ skip_if_not_installed("withr")
 packages_dir <- file.path("lca-packages")
 source(file.path(packages_dir, "compare-functions.R"), local = TRUE)
 
+source("package-kit-runner.R", local = TRUE)
+
 test_that("lca() reproduces five independent latent class implementations", {
   known <- utils::read.csv(file.path(packages_dir, "known-differences.csv"),
                            stringsAsFactors = FALSE)
   comparison <- compare_all_lca()
-  explained <- vapply(seq_len(nrow(comparison)), function(i) {
-    any(known$case == comparison$case[[i]] & known$reference == comparison$reference[[i]] &
-          vapply(known$quantity, grepl, logical(1), x = comparison$quantity[[i]]))
-  }, logical(1))
-  unexplained <- subset(comparison, !agrees & !explained)
+  registered <- apply_register(comparison, known)
+  expect_identical(nrow(comparison), 211L)
+  unexplained <- subset(registered$comparison, status == "disagrees")
   expect_identical(nrow(unexplained), 0L,
                    info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
                                 collapse = "; "))
-  expect_true(all(vapply(seq_len(nrow(known)), function(r) {
-    any(!comparison$agrees & comparison$case == known$case[[r]] &
-          comparison$reference == known$reference[[r]] &
-          grepl(known$quantity[[r]], comparison$quantity))
-  }, logical(1))))
-  expect_setequal(unique(comparison$reference),
+  expect_identical(nrow(registered$stale), 0L)
+  expect_setequal(unique(comparison$reference[comparison$kind == "R package"]),
                   c("glca", "randomLCA", "BayesLCA", "multilevLCA", "depmixS4"))
+  expect_setequal(unique(comparison$reference[comparison$kind == "published"]),
+                  "Kleinman and Horton (2011), SAS and R blog, Example 8.21")
   expect_gte(sum(comparison$agrees), 203L)
 })

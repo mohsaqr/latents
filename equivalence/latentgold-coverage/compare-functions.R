@@ -440,8 +440,8 @@ fit_at_reference <- function(case, listing) {
 }
 
 .case_function <- c(lcga = "growth", gmm_slope = "growth", gmm_intercept = "growth",
-                    lca = "lca", lca_covariate = "lca", lca_enumeration = "enumeration",
-                    lpa = "lpa", lpa_enumeration = "enumeration", lta = "lta",
+                    lca = "lca", lca_covariate = "lca", lca_enumeration = "lca",
+                    lpa = "lpa", lpa_enumeration = "lpa", lta = "lta",
                     lta_covariate = "lta", nb_regression = "mixture_regression",
                     ordinal_regression = "mixture_regression")
 

@@ -1,6 +1,7 @@
 ## Tidiness and calibration of the three-step verbs: the shapes they return, the
 ## shapes they keep as the number of classes grows, and whether the new pairwise
 ## standard error agrees with a resampled one.
+# The comparisons with independent references are in tests/equivalence/test-tidy-three-step.R.
 
 .tidy_step_data <- function(seed = 11L, n_groups = 50L, per = 10L,
                             separation = 1.1, difference = 10) {
@@ -184,40 +185,6 @@ test_that("three-step variables must be external to the measurement model", {
                class = "latents_unsupported_three_step")
   expect_error(r3step(predicted, data, "x"),
                class = "latents_unsupported_three_step")
-})
-
-test_that("the pairwise standard error agrees with a cluster bootstrap", {
-  skip_on_cran()
-  # Weak separation on purpose: the BCH weights for the two classes are then
-  # strongly anticorrelated, so a standard error that ignored the covariance
-  # between the two class means would miss by more than the resampling noise.
-  data <- .tidy_step_data(separation = 0.8)
-  fit <- .tidy_step_fit(data)
-  pieces <- .multilpa_level_assignments(fit, "individuals")
-  weights <- .multilpa_step_weights(pieces, "bch")
-  analytic <- three_step(fit, data, "y", contrast = "pairs")
-
-  # Resample whole groups, holding the step-one weights fixed, which is exactly
-  # the assumption the cluster-robust variance makes. The influence-function
-  # standard error should reproduce the spread this generates.
-  set.seed(99)
-  rows_by_group <- split(seq_len(nrow(data)), pieces$group_index)
-  replicates <- replicate(600L, {
-    picked <- sample(seq_along(rows_by_group), replace = TRUE)
-    rows <- unlist(rows_by_group[picked], use.names = FALSE)
-    taken <- weights[rows, , drop = FALSE]
-    means <- colSums(taken * data$y[rows]) / colSums(taken)
-    means[[2L]] - means[[1L]]
-  })
-
-  ratio <- stats::sd(replicates) / analytic$standard_error
-  expect_gt(ratio, 0.90)
-  expect_lt(ratio, 1.16)
-  # Treating the two class means as independent would inflate the ratio past
-  # that bound, which is what makes this a calibration and not a tautology.
-  means <- three_step(fit, data, "y")
-  independent <- sqrt(sum(means$standard_error^2))
-  expect_gt(stats::sd(replicates) / independent, 1.16)
 })
 
 test_that("multiplicity is corrected, named, and can be turned off", {

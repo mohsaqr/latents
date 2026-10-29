@@ -66,3 +66,30 @@ test_that("a noise fit reproduces mclust's EM from the same start", {
                  info = code)
   }))
 })
+
+# Moved from tests/testthat/test-noise.R: comparisons with independent references.
+
+test_that("the likelihood is the mixture with a uniform component", {
+  data <- noise_frame()
+  fit <- noise_fit(data)
+  x <- as.matrix(data)
+  volume <- fit$hypervolume
+  densities <- cbind(vapply(seq_len(2L), function(k) {
+    fit$profile_probabilities[1L, k] * exp(rowSums(stats::dnorm(
+      x, rep(fit$means[k, ], each = nrow(x)),
+      rep(sqrt(fit$variances[k, ]), each = nrow(x)), log = TRUE)))
+  }, numeric(nrow(x))), fit$noise_probability / volume)
+  expect_equal(fit$log_likelihood, sum(log(rowSums(densities))), tolerance = 1e-10)
+  # Posteriors over the Gaussian profiles and the noise sum to one, and so do
+  # the proportions.
+  expect_equal(unname(rowSums(fit$subject_posteriors)) + unname(fit$noise_posteriors),
+               rep(1, nrow(x)), tolerance = 1e-12)
+  expect_equal(sum(fit$profile_probabilities) + fit$noise_probability, 1,
+               tolerance = 1e-12)
+  # One proportion and the hypervolume: mclust's count.
+  plain <- quietly(multilpa(data, c("a", "b", "c"), id = NULL, n_profiles = 2L,
+                            n_starts = 1L, seed = 1L))
+  expect_equal(fit$n_parameters, plain$n_parameters + 2)
+  # The scattered points are the ones the component takes.
+  expect_gte(mean(fit$subject_profiles[271:300] == 0L), 0.9)
+})

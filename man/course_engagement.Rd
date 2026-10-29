@@ -39,7 +39,8 @@ fitting; kept to check recovery.}
 }
 }
 \source{
-Simulated by \code{data-raw/course-engagement.R}, seed 2026. The
+Simulated by \code{data-raw/course-engagement.R} in the source
+repository, seed 2026. The
 simulation is calibrated to aggregate constants of a real
 learning-analytics export (scales, spreads, correlations and the
 persistence of engagement across courses). No row, identifier or value

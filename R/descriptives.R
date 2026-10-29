@@ -126,9 +126,9 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
   .multilpa_describe_by(x, vars, id, x[[by]], by)
 }
 
-#' @rdname descriptives
+#' @noRd
 #' @export
-descriptives.multilpa <- function(x, by = NULL, ...) {
+descriptives.multilpa <-function(x, by = NULL, ...) {
   if (!(is.null(by) || (is.character(by) && length(by) == 1L &&
                         by %in% c("profile", "group_class")))) {
     # A column name here is the usual slip: the fit's indicators are already
@@ -160,13 +160,13 @@ descriptives.multilpa <- function(x, by = NULL, ...) {
                         .multilpa_assignment_values(x, by), by)
 }
 
-#' @rdname descriptives
+#' @noRd
 #' @export
-descriptives.multilpa_transitions <- descriptives.multilpa
+descriptives.multilpa_transitions <-descriptives.multilpa
 
-#' @rdname descriptives
+#' @noRd
 #' @export
-descriptives.multilpa_covariates <- descriptives.multilpa
+descriptives.multilpa_covariates <-descriptives.multilpa
 
 #' The class a fit assigned to each of its observations
 #'

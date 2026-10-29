@@ -2,141 +2,9 @@
 % Please edit documentation in R/get-data.R
 \name{get_results}
 \alias{get_results}
-\alias{latents-as-data-frame}
-\alias{latents-print}
-\alias{latents-summary}
-\alias{as.data.frame.latents_family_enumeration}
-\alias{as.data.frame.latents_growth_mixture}
-\alias{as.data.frame.latents_mixture_regression}
-\alias{as.data.frame.latents_pooled}
-\alias{as.data.frame.latents_table}
-\alias{as.data.frame.latents_transition_enumeration}
-\alias{as.data.frame.multilpa}
-\alias{as.data.frame.multilpa_additive}
-\alias{as.data.frame.multilpa_bootstrap_lrt}
-\alias{as.data.frame.multilpa_covariates}
-\alias{as.data.frame.multilpa_cross_level}
-\alias{as.data.frame.multilpa_enumeration}
-\alias{as.data.frame.multilpa_lta}
-\alias{as.data.frame.multilpa_start}
-\alias{as.data.frame.multilpa_transitions}
-\alias{as.data.frame.summary_multilpa}
-\alias{as.data.frame.summary_multilpa_additive}
-\alias{as.data.frame.summary_multilpa_bootstrap_lrt}
-\alias{as.data.frame.summary_multilpa_covariates}
-\alias{as.data.frame.summary_multilpa_enumeration}
-\alias{as.data.frame.summary_multilpa_transitions}
-\alias{coef.latents_growth_mixture}
-\alias{coef.latents_mixture_regression}
-\alias{coef.multilpa_additive}
-\alias{coef.multilpa_lta}
-\alias{confint.latents_growth_mixture}
-\alias{confint.latents_mixture_regression}
-\alias{confint.multilpa_additive}
-\alias{get_results.latents_family_enumeration}
-\alias{get_results.latents_growth_mixture}
-\alias{get_results.latents_mixture_regression}
-\alias{get_results.latents_pooled}
-\alias{get_results.latents_transition_enumeration}
-\alias{get_results.multilpa_additive}
-\alias{get_results.multilpa_cross_level}
-\alias{get_results.multilpa_lta}
-\alias{logLik.latents_growth_mixture}
-\alias{logLik.latents_mixture_regression}
-\alias{logLik.multilpa_additive}
-\alias{logLik.multilpa_cross_level}
-\alias{logLik.multilpa_lta}
-\alias{nobs.latents_growth_mixture}
-\alias{nobs.latents_mixture_regression}
-\alias{nobs.multilpa_additive}
-\alias{nobs.multilpa_cross_level}
-\alias{nobs.multilpa_lta}
-\alias{print.latents_family_enumeration}
-\alias{print.latents_growth_mixture}
-\alias{print.latents_mixture_regression}
-\alias{print.latents_plots}
-\alias{print.latents_pooled}
-\alias{print.latents_table}
-\alias{print.latents_transition_enumeration}
-\alias{print.multilpa}
-\alias{print.multilpa_additive}
-\alias{print.multilpa_bootstrap_lrt}
-\alias{print.multilpa_covariates}
-\alias{print.multilpa_cross_level}
-\alias{print.multilpa_enumeration}
-\alias{print.multilpa_lta}
-\alias{print.multilpa_start}
-\alias{print.multilpa_transitions}
-\alias{print.summary_latents_growth_mixture}
-\alias{print.summary_latents_mixture_regression}
-\alias{print.summary_multilpa}
-\alias{print.summary_multilpa_additive}
-\alias{print.summary_multilpa_bootstrap_lrt}
-\alias{print.summary_multilpa_covariates}
-\alias{print.summary_multilpa_enumeration}
-\alias{print.summary_multilpa_transitions}
-\alias{summary.latents_family_enumeration}
-\alias{summary.latents_growth_mixture}
-\alias{summary.latents_mixture_regression}
-\alias{summary.latents_pooled}
-\alias{summary.latents_transition_enumeration}
-\alias{summary.multilpa}
-\alias{summary.multilpa_additive}
-\alias{summary.multilpa_bootstrap_lrt}
-\alias{summary.multilpa_covariates}
-\alias{summary.multilpa_cross_level}
-\alias{summary.multilpa_enumeration}
-\alias{summary.multilpa_lta}
-\alias{summary.multilpa_transitions}
-\alias{vcov.latents_growth_mixture}
-\alias{vcov.latents_mixture_regression}
-\alias{vcov.multilpa_additive}
-\alias{vcov.multilpa_lta}
-\alias{get_results.default}
-\alias{get_results.multilpa}
-\alias{get_results.multilpa_covariates}
-\alias{get_results.multilpa_transitions}
-\alias{get_results.multilpa_enumeration}
-\alias{get_results.latents_comparison}
-\alias{get_results.multilpa_bootstrap_lrt}
-\alias{get_results.multilpa_start}
-\alias{get_results.multilpa_diagnostics}
-\alias{get_results.summary_multilpa}
-\alias{get_results.summary_multilpa_covariates}
-\alias{get_results.summary_multilpa_transitions}
-\alias{get_results.summary_multilpa_enumeration}
-\alias{get_results.summary_multilpa_bootstrap_lrt}
 \title{Extract the result tables of a fitted model}
 \usage{
 get_results(x, what = NULL, ...)
-
-\method{get_results}{default}(x, what = NULL, ...)
-
-\method{get_results}{multilpa}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_covariates}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_transitions}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_enumeration}(x, what = NULL, ...)
-
-\method{get_results}{latents_comparison}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_bootstrap_lrt}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_start}(x, what = NULL, ...)
-
-\method{get_results}{multilpa_diagnostics}(x, what = NULL, ...)
-
-\method{get_results}{summary_multilpa}(x, what = NULL, ...)
-
-\method{get_results}{summary_multilpa_covariates}(x, what = NULL, ...)
-
-\method{get_results}{summary_multilpa_transitions}(x, what = NULL, ...)
-
-\method{get_results}{summary_multilpa_enumeration}(x, what = NULL, ...)
-
-\method{get_results}{summary_multilpa_bootstrap_lrt}(x, what = NULL, ...)
 }
 \arguments{
 \item{x}{A fitted model of this package, an enumeration grid, a model
@@ -170,11 +38,16 @@ Every object also has \code{print()}, which shows a compact overview,
 \code{vcov_type} where the model has standard errors), and \code{as.data.frame()},
 which returns its primary table, the same as \code{get_results(x)}.
 
-Tables joining caller-supplied columns to fitted rows check their alignment.
-Numeric columns may also match R's canonical CSV serialization, provided
-that serialization does not merge distinct values. This row-alignment check
-differs from the stricter fitted-data checks used for inference and model
-comparison; supplying unrelated columns alone cannot verify row order.
+A table that joins the columns of a supplied \code{data} frame to the fitted rows
+first checks that the rows are in the fitted order, by comparing the
+supplied columns the fit also holds (such as the identifier, the occasion
+and the indicators) with
+the fitted values. A numeric column also matches when it equals the fitted
+values after a round trip through \code{\link[utils:write.table]{utils::write.csv()}}, provided the round
+trip does not merge distinct values. This check establishes row order only;
+inference and model comparison check more strictly that supplied data
+reproduce the fitted data. Columns the fit does not hold cannot establish
+row order.
 }
 \section{Tables}{
 
@@ -633,8 +506,8 @@ Group-level recovery counts each group once. Unused factor levels are
 omitted. For a fit without discrete group classes every column is
 compared against \code{profile}.
 
-The model's labels are arbitrary, so mass off the diagonal indicates
-relabelling, not failure.
+Class labels are arbitrary, so a truth value assigned mostly to a class
+with a different label indicates relabelling, not misclassification.
 }
 
 \section{Information criteria}{

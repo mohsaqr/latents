@@ -1266,7 +1266,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' and latent classes, conditional on any fixed covariates. A fixed mask does
 #' not reproduce a MAR mechanism that depends on observed indicators, or an
 #' MNAR mechanism, and FIML estimation under MAR does not by itself validate
-#' this bootstrap under MAR; the size study covers MCAR only.
+#' this bootstrap under MAR; the size of the test has been checked by
+#' simulation under MCAR only.
 #'
 #' Membership-covariate fits (`multilpa(profile_covariates = ,
 #' group_covariates = )`) are supported: the covariates are held at their
@@ -1770,9 +1771,9 @@ as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL, op
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
+plot.multilpa_bootstrap_lrt <-function(x, main = NULL, subtitle = NULL,
                                         palette = NULL, style = NULL, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
               inherits(x, "multilpa_bootstrap_lrt"),

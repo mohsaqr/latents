@@ -225,7 +225,7 @@ fixed by the fit and has no confidence interval. Raised by
 \code{\link[=confint]{confint()}}.}
 \item{\code{latents_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} was called on a
 model family whose refit needs arguments the shared refit does not
-carry, whose profile labels cannot yet be aligned between two fits, or
+carry, whose profile labels cannot be aligned between two fits, or
 on a directly fixed fit whose original free starts cannot be
 replayed.}
 \item{\code{latents_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
@@ -277,9 +277,9 @@ Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
 on a fit made without \code{local_dependence}.}
 \item{\code{latents_no_direct_effects}}{\code{get_results(fit, "direct_effects")}
 on a fit made without \code{direct_effects}.}
-\item{\code{latents_partial_pair}}{No longer raised after version 0.97.1: a row
-observing one item of a \code{local_dependence} pair now contributes that
-item, the pair's other item summed out, instead of losing the pair.}
+\item{\code{latents_partial_pair}}{Not raised. A row observing one item of a
+\code{local_dependence} pair contributes that item, with the pair's other
+item summed out.}
 \item{\code{latents_no_lmr}}{\code{get_results(x, "lmr")} on a grid with no two
 converged candidates one profile or one group class apart. Also of class
 \code{latents_nothing_to_plot}.}
@@ -418,7 +418,8 @@ process variance far larger than the residual variance). During
 fitting this is treated as a rejected step; it reaches the caller only
 for parameter values supplied by hand.}
 \item{\code{latents_unused_argument}}{A method that accepts \code{...} (several
-\code{plot()} methods, \code{summary()} of fits and grids released in 0.9.21,
+\code{plot()} methods, \code{summary()} of the fits and grids whose summary
+takes no \code{level} or \code{vcov_type},
 \code{vcov()}, \code{predict()} and \code{\link[=descriptives]{descriptives()}} of a data frame) was given
 an argument it does not use. The call proceeds and
 the warning names the argument.}

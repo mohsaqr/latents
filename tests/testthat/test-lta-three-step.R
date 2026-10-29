@@ -2,6 +2,7 @@
 # Markov model. The Latent GOLD comparison is in
 # equivalence/test-latentgold-step3-markov.R; here, an independent likelihood
 # that sums over every path, equivariance, and the refusals.
+# The comparisons with independent references are in tests/equivalence/test-lta-three-step.R.
 
 # More than 2 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -35,63 +36,6 @@ markov_fit <- function(data, ...) {
   lta(data, c("y1", "y2"), "id", n_profiles = 2, time = "time", n_starts = 2,
       seed = 1, ...)
 }
-
-test_that("the step-three likelihood equals a sum over every path", {
-  data <- markov_fixture()
-  fit <- markov_fit(data)
-  result <- r3step(fit, data, initial_covariates = "w", transition_covariates = "z")
-  expect_named(result, c("block", "from", "to", "term", "estimate", "standard_error",
-                         "statistic", "p_value", "p_adjusted", "conf_low", "conf_high"))
-  errors <- attr(result, "classification_errors")
-  expect_equal(unname(rowSums(errors)), c(1, 1), tolerance = 1e-12)
-  # Each occasion's modal profile from its own indicators: pooled shares times
-  # the fitted normal densities of both indicators, written out here.
-  shares <- colMeans(fit$subject_posteriors)
-  joint <- vapply(1:2, function(k) {
-    shares[k] * stats::dnorm(data$y1, fit$means[k, "y1"], sqrt(fit$variances[k, "y1"])) *
-      stats::dnorm(data$y2, fit$means[k, "y2"], sqrt(fit$variances[k, "y2"]))
-  }, numeric(nrow(data)))
-  posteriors <- joint / rowSums(joint)
-  expect_equal(unname(latents:::.lta_occasion_posteriors(fit)), unname(posteriors),
-               tolerance = 1e-10)
-  modal <- max.col(posteriors, ties.method = "first")
-  expect_equal(unname(errors), unname(t(vapply(1:2, function(k) {
-    vapply(1:2, function(j) sum(posteriors[modal == j, k]), numeric(1)) / sum(posteriors[, k])
-  }, numeric(2)))), tolerance = 1e-10)
-  paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
-  coefficient <- function(block, from, term, theta) {
-    theta[result$block == block & (is.na(result$from) | result$from == from) &
-            result$term == term]
-  }
-  path_likelihood <- function(theta) {
-    sum(vapply(split(seq_len(nrow(data)), data$id), function(rows) {
-      w <- data$w[rows[1L]]
-      first <- stats::plogis(coefficient("initial", NA, "(Intercept)", theta) +
-                               coefficient("initial", NA, "w", theta) * w)
-      initial <- c(first, 1 - first)
-      move <- function(from, t) {
-        stats::plogis(coefficient("transition", paste0("profile_", from), "(Intercept)", theta) +
-                        coefficient("transition", paste0("profile_", from), "z", theta) *
-                        data$z[rows[t]])
-      }
-      log(sum(apply(paths, 1L, function(path) {
-        moves <- vapply(2:4, function(t) {
-          p <- move(path[t - 1L], t)
-          if (path[t] == path[t - 1L]) 1 - p else p
-        }, numeric(1))
-        initial[path[1L]] * prod(moves) * prod(errors[cbind(path, modal[rows])])
-      })))
-    }, numeric(1)))
-  }
-  expect_equal(attr(result, "log_likelihood"), path_likelihood(result$estimate),
-               tolerance = 1e-9)
-  # The estimate is a maximum of that likelihood: its gradient vanishes.
-  gradient <- vapply(seq_along(result$estimate), function(j) {
-    step <- replace(numeric(nrow(result)), j, 1e-5)
-    (path_likelihood(result$estimate + step) - path_likelihood(result$estimate - step)) / 2e-5
-  }, numeric(1))
-  expect_lt(max(abs(gradient)), 1e-3)
-})
 
 test_that("step-three slopes are equivariant in the covariates' units and origin", {
   data <- markov_fixture()

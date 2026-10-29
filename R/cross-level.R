@@ -609,18 +609,18 @@ nobs.multilpa_cross_level <- function(object, ...) {
   object$n_used_groups %||% object$n_groups
 }
 
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.multilpa_cross_level <- function(x, ...) {
+parameter_inference.multilpa_cross_level <-function(x, ...) {
   stop(errorCondition(paste(
     "Standard errors are not available for the cross-level families: their",
     "working likelihood includes the ratings and group means computed from those same ratings."),
     class = "latents_unsupported_inference", call = NULL))
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_cross_level <- function(x, what = c("profiles", "group_means",
+plot.multilpa_cross_level <-function(x, what = c("profiles", "group_means",
                                                   "composition"),
                                       main = NULL, subtitle = NULL, ...) {
   .latents_warn_unused_arguments(

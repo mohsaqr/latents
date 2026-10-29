@@ -1,0 +1,33 @@
+release-audit-comparison: .............
+release-audit-core: ....................
+release-audit-lta: .........................................
+release-audit-regression: ..........................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                             file
+1 test-release-audit-comparison.R
+2       test-release-audit-core.R
+3       test-release-audit-core.R
+4        test-release-audit-lta.R
+5        test-release-audit-lta.R
+6 test-release-audit-regression.R
+7 test-release-audit-regression.R
+8 test-release-audit-regression.R
+                                                                 test failed
+1  comparison wrappers preserve restored model labels and BIC weights      0
+2      zero-weight sentinel groups leave additive estimates unchanged      0
+3            one profile plus noise retains its classification checks      0
+4          general LTA covariance is equivariant to measurement units      0
+5   weighted public LTA refits retain inference in tiny outcome units      0
+6 shared regression dispersions retain public names and finite errors      0
+7                  an excluded regression row cannot remove inference      0
+8      excluded groups cannot choose regression inference coordinates      0
+  error warning passed
+1 FALSE       0     13
+2 FALSE       0     11
+3 FALSE       0      9
+4 FALSE       0     37
+5 FALSE       0      4
+6 FALSE       0     24
+7 FALSE       0      7
+8 FALSE       0     27

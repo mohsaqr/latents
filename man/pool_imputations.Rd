@@ -81,23 +81,25 @@ positive, \code{riv} is infinite and \code{fmi} is one.
 
 The pooled results are only as valid as the imputations. The covariate and
 the indicators are related through the latent classes, which an imputation
-model linear in the indicators (mice's defaults) does not capture. In
-\code{validation/pool-imputations-coverage.R} (a membership slope with 30\% of
+model linear in the indicators (mice's defaults) does not capture. In a
+simulation (\code{validation/pool-imputations-coverage.R} in the source
+repository: a membership slope with 30\% of
 its covariate missing at random given the indicators, 200 replications,
 ten imputations), 95\% intervals covered 0.925 under predictive mean
 matching and 0.935 under Bayesian linear regression, and 0.995 when the
 covariate was drawn approximately from its conditional distribution given
-the known generating parameters. That reference arm omits uncertainty in
+the known generating parameters. That last method omits uncertainty in
 the imputation parameters, so it does not validate proper multiple
-imputation, and the study covers one design only. The imputation model
+imputation, and the simulation covers one design only. The imputation model
 should account for the latent structure and the clustering, include the
 indicators and relevant nonlinearities, and propagate parameter
 uncertainty; imputing separately within assigned classes ignores
 classification uncertainty. Complete-case analysis covered 0.955 in that
-design, but selecting on the indicators changes their within-class
-distributions, and the case-control argument for unbiased logistic slopes
-does not carry over when the outcome is latent and its measurement model
-is estimated.
+design, but when missingness depends on the indicators, dropping incomplete
+cases selects on the indicators and changes their within-class
+distributions. The result that logistic slopes stay unbiased under
+selection on the outcome (as in case-control sampling) does not apply when
+the outcome is latent and its measurement model is estimated.
 }
 
 \section{Conditions}{

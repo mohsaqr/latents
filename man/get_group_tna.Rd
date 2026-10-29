@@ -2,24 +2,12 @@
 % Please edit documentation in R/tna.R
 \name{get_group_tna}
 \alias{get_group_tna}
-\alias{get_group_tna.default}
 \alias{get_group_tna.multilpa_transitions}
-\alias{get_group_tna.multilpa_lta}
-\alias{get_group_tna.multilpa}
-\alias{get_group_tna.multilpa_covariates}
 \title{Build one transition network per latent group class}
 \usage{
 get_group_tna(x, ...)
 
-\method{get_group_tna}{default}(x, ...)
-
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
-
-\method{get_group_tna}{multilpa_lta}(x, ...)
-
-\method{get_group_tna}{multilpa}(x, label = "Group class", ...)
-
-\method{get_group_tna}{multilpa_covariates}(x, label = "Group class", ...)
 }
 \arguments{
 \item{x}{A fitted model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}} / \code{\link[=multilca]{multilca()}} fit

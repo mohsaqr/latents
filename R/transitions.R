@@ -1272,17 +1272,17 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-logLik.multilpa_transitions <- function(object, ...) {
+logLik.multilpa_transitions <-function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = .multilpa_group_sample_size(object), class = "logLik")
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-nobs.multilpa_transitions <- function(object, ...) {
+nobs.multilpa_transitions <-function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
   .multilpa_group_sample_size(object)
 }
@@ -1366,9 +1366,9 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
   invisible(x)
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-coef.multilpa_transitions <- function(object, ...) {
+coef.multilpa_transitions <-function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
   # One encoding and one set of labels for coef(), vcov() and
   # parameter_inference(), so their names agree entry for entry.
@@ -1378,9 +1378,9 @@ coef.multilpa_transitions <- function(object, ...) {
                                 .multilpa_transition_view(object))))
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
+plot.multilpa_transitions <-function(x, what = c("transitions", "profiles",
                                                   "bars", "heatmap", "responses",
                                                   "sequences", "sizes", "entropy",
                                                   "posteriors", "avepp", "all"),

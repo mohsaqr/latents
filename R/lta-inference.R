@@ -667,7 +667,7 @@
 #' centred on `fit$centers`. [coef()] reports the same vector with the means
 #' in the data's units.
 #' @param fit A general transition fit (`multilpa_lta`).
-#' @return A numeric vector in [.lta_names()] order.
+#' @return A numeric vector in `.lta_names()` order.
 #' @noRd
 .lta_theta <- function(fit) {
   .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)

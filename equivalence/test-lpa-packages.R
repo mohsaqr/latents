@@ -16,22 +16,18 @@ skip_if_not_installed("withr")
 lpa_packages_dir <- file.path("lpa-packages")
 source(file.path(lpa_packages_dir, "compare-functions.R"), local = TRUE)
 
+source("package-kit-runner.R", local = TRUE)
+
 test_that("lpa() reproduces independent Gaussian mixture implementations", {
   known <- utils::read.csv(file.path(lpa_packages_dir, "known-differences.csv"),
                            stringsAsFactors = FALSE)
   comparison <- compare_all_lpa()
-  explained <- vapply(seq_len(nrow(comparison)), function(i) {
-    any(known$case == comparison$case[[i]] & known$reference == comparison$reference[[i]] &
-          vapply(known$quantity, grepl, logical(1), x = comparison$quantity[[i]]))
-  }, logical(1))
-  unexplained <- subset(comparison, !agrees & !explained)
+  registered <- apply_register(comparison, known)
+  expect_identical(nrow(comparison), 156L)
+  unexplained <- subset(registered$comparison, status == "disagrees")
   expect_identical(nrow(unexplained), 0L,
                    info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
                                 collapse = "; "))
-  expect_true(all(vapply(seq_len(nrow(known)), function(r) {
-    any(!comparison$agrees & comparison$case == known$case[[r]] &
-          comparison$reference == known$reference[[r]] &
-          grepl(known$quantity[[r]], comparison$quantity))
-  }, logical(1))))
+  expect_identical(nrow(registered$stale), 0L)
   expect_gte(sum(comparison$agrees), 155L)
 })

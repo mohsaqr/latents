@@ -2,18 +2,9 @@
 % Please edit documentation in R/report.R
 \name{diagnostics}
 \alias{diagnostics}
-\alias{as.data.frame.multilpa_diagnostics}
-\alias{print.multilpa_diagnostics}
-\alias{plot.multilpa_diagnostics}
 \title{Diagnostics of a fitted model}
 \usage{
 diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
-
-\method{as.data.frame}{multilpa_diagnostics}(x, row.names = NULL, optional = FALSE, ...)
-
-\method{print}{multilpa_diagnostics}(x, ...)
-
-\method{plot}{multilpa_diagnostics}(x, ...)
 }
 \arguments{
 \item{x}{A fitted model of this package.}
@@ -34,9 +25,6 @@ tables is set from whether the fit has discrete group classes.}
 
 \item{...}{Not used. For \code{diagnostics()} and \code{plot()}, any further argument
 raises \code{latents_bad_argument}; style the returned plots with ggplot2.}
-
-\item{row.names, optional}{Part of the base generic; \code{row.names} is applied
-to the returned table.}
 }
 \value{
 An object of class \code{multilpa_diagnostics}. Its checks table,
@@ -54,17 +42,19 @@ fit with a noise component has none either, and raises
 \code{print()} prints the checks grouped by domain, after a line naming those
 that need attention, and returns the object invisibly. \code{plot()} returns the four
 classification plots as a \code{latents_plots} list of ggplot objects, which
-draws all four when printed. \code{as.data.frame()} returns the entropy table,
-as it did before the checks existed. \code{summary()} returns the object
+draws all four when printed. \code{as.data.frame()} returns the entropy table.
+\code{summary()} returns the object
 itself, which is already the summary of the fit's classification.
 }
 \description{
-Reports what a fitted model's estimation and classification look like, in
-five domains. The values are reported, not judged against cut-offs: the
-published ones (an average posterior of .70, odds of correct
-classification of 5, a smallest class of 5 percent; Nagin, 2005) are rules
-of thumb rather than derived criteria, and whether a value is adequate
-depends on the study. A status marks only what is a fact about the fit.
+Computes checks of a fitted model's estimation and classification in five
+domains (estimation, class size, classification, local independence and
+information) and returns them together with the tables they are based on. The values are not judged against cut-offs: the published
+ones (an average posterior of .70, odds of correct classification of 5, a
+smallest class of 5 percent; Nagin, 2005) are rules of thumb rather than
+derived criteria, and whether a value is adequate depends on the study. A
+\code{"fail"} or \code{"check"} status marks only a fact about the fit, such as
+non-convergence or an estimate at a bound (see Details).
 }
 \details{
 \itemize{

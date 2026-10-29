@@ -47,7 +47,7 @@ supports.
 }
 \section{What it prints}{
  \code{summary()}, then \code{descriptives()}, then the
-one-line-per-diagnostic reading of \code{diagnostics()}, then every plot view
+printed checks of \code{diagnostics()}, then every plot view
 the fit supports. Views that the plot method declines for this model are
 listed after the plots as not drawn. The tables themselves are obtained
 from \code{\link[=get_results]{get_results()}}, \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}} and \code{\link[=diagnostics]{diagnostics()}}.

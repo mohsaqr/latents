@@ -206,9 +206,9 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
   table
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
+plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")

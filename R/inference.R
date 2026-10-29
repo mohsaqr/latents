@@ -696,7 +696,13 @@
 #' model selection. Boundary solutions and unidentified Hessians are refused
 #' by the Wald path.
 #'
-#' @param x A converged `multilpa` fit with inactive variance bounds.
+#' @param x A converged fit from [multilpa()], [lpa()], [lca()] or
+#'   [multilca()] (with or without covariates), [lta()], the additive family,
+#'   or a growth mixture. A fit with an active bound raises
+#'   `latents_boundary_fit` and an unconverged fit `latents_no_converge`.
+#'   Mixture regressions are refused with `latents_bad_argument` (their
+#'   inference is in [get_results()], [confint()] and [vcov()]), and the
+#'   cross-level families with `latents_unsupported_inference`.
 #' @param data Optional data frame the model was fitted to. When omitted it is
 #'   rebuilt from the indicators, identifiers and occasions the fit stores. A
 #'   supplied frame is checked exactly against the stored indicators and
@@ -823,6 +829,89 @@
 #'   scaling correction factor `tr(A^-1 B) / q` (with `B` without the CR1
 #'   factor), used for scaled likelihood-ratio difference tests; it is `NA`
 #'   otherwise.
+#' @details For a covariate fit (`multilpa(profile_covariates = )`), the
+#'   table covers every free parameter at all three levels: the measurement
+#'   model, the profile logits and the group-class logits. `outcome` is the
+#'   profile or group class a coefficient predicts, or the profile a
+#'   measurement parameter belongs to, and `parameter` is `"mean"`,
+#'   `"variance"`, `"covariance"`, `"response"` or `"coefficient"`. Each
+#'   categorical indicator contributes one `"response"` row per profile,
+#'   indicator and category, named `indicator:category`: the category
+#'   probability, with its standard error from the multinomial logits and no
+#'   Wald test. Class-membership coefficients are on the
+#'   multinomial logit scale, with the final profile and the final group class
+#'   as references, so each coefficient is a log odds against that reference.
+#'   The tests are Wald tests, which are invalid for a coefficient driven to
+#'   the boundary by separation or an empty class. A fit with a membership
+#'   logit above 20 in coordinates independent of the covariates' units and
+#'   origin (roughly, a slope per standard deviation of its covariate and an
+#'   intercept at the covariates' means) raises `latents_boundary_fit`; the
+#'   fit itself warns with `latents_extreme_coefficients`. Only
+#'   `method = "wald"` is implemented for a covariate fit; `"bootstrap"`
+#'   raises `latents_unsupported_inference`.
+#'
+#'   For a latent transition model from [lta()], the table covers the
+#'   measurement model, the group-class shares, each group class's initial
+#'   profile distribution and its transition matrix. An initial probability
+#'   (`parameter = "initial_probability"`, `level = "profile"`) has `outcome`
+#'   the profile and `term` the group class; a transition probability
+#'   (`"transition_probability"`) has `outcome` the profile moved to and
+#'   `term` `group_class_h:profile_j`, the group class and the profile moved
+#'   from. The scores follow the Fisher identity and the observed information
+#'   is the numerical Jacobian of that analytic score; `vcov_type = "robust"`
+#'   clusters on the groups, which are the sequences. `method = "bootstrap"`
+#'   resamples persons, refits and matches each replicate's profiles and group
+#'   classes to the original's; it needs `data` (`latents_bad_argument`
+#'   otherwise). A transition row with no information (a profile no group
+#'   occupies before its last occasion) raises `latents_boundary_fit`.
+#'
+#'   For a growth mixture ([mixture_regression()] with `random`), the
+#'   table has one row per natural parameter: `block` (`"coefficient"`,
+#'   `"membership"` and, for a multilevel growth mixture,
+#'   `"group_membership"`, `"residual_sd"`, `"random_variance"`,
+#'   `"random_sd"`, `"random_correlation"`, `"share"`), `class` (`"all"` for
+#'   a quantity shared by every class), `term`, `estimate`, `standard_error`,
+#'   `statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`. Wald
+#'   rows use the fit's covariance (`vcov_type`) with the delta method;
+#'   intervals of standard deviations and variances are formed on the log
+#'   scale, of correlations on the Fisher scale and of shares on the logit
+#'   scale, and only coefficients and logits are tested against zero.
+#'   `method = "bootstrap"` resamples persons, refits each resample from
+#'   `n_starts` starts and matches its classes to the original by their
+#'   posterior memberships of the original persons; it is refused for a
+#'   multilevel growth mixture (`latents_unsupported_inference`). In a
+#'   simulation of 1000 datasets per design, Wald intervals covered
+#'   0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
+#'   separated ones, whose standard errors were 6-30% too small
+#'   (validation/GROWTH_SIMULATION.md in the source repository); the
+#'   bootstrap is preferable for weakly separated classes. A class
+#'   whose random-effect covariance is degenerate, or (with correlated
+#'   residuals) a residual standard deviation or residual process held on its
+#'   bound, raises `latents_boundary_fit` under `boundary = "error"`, naming
+#'   which; under `"fix"` those rows have no standard error or interval. `data`, when
+#'   given, must be the fitted data; `step` is not used (the information is
+#'   the derivative of the analytic score).
+#'
+#'   For a general transition fit (an [lta()] fit with covariate,
+#'   occasion-varying or second-order transitions), the table has one row per
+#'   transition, initial and second-order logit: `block`, `group_class`,
+#'   `from`, `to`, `term`, `estimate`, `standard_error`, `statistic`,
+#'   `p_value`, `p_adjusted`, `conf_low`, `conf_high`, `estimated` (and
+#'   `previous` for a second-order fit). `estimated` is `FALSE` for a logit
+#'   the likelihood does not identify: a move into an occasion at which no
+#'   row observes an indicator, under `transitions = "occasion"` (or every
+#'   second-order logit when nothing is observed from occasion 3 on). Such a
+#'   logit is not counted in `n_parameters`, AIC or BIC, and its standard
+#'   error and test are `NA`. `method = "bootstrap"` resamples persons, refits, and
+#'   matches every replicate's profiles (on the measurement) and group classes
+#'   to the original's, rebasing the initial logits when the reference profile
+#'   moves; it needs `data`, and works where Wald inference is refused (for
+#'   example full covariance structures).
+#'
+#'   Transition inference (both kinds of [lta()] fit) fixes no
+#'   parameter at a bound: without an active bound `boundary = "fix"` gives
+#'   the same table as `"error"`, and a fit with an active bound raises
+#'   `latents_boundary_fit` under either.
 #' @section Computation: The observed information takes two evaluations of
 #'   the score over all the data for each free parameter, which makes it the
 #'   slowest part of Wald inference. For profile, class, covariate and
@@ -882,6 +971,30 @@
 #' # The bootstrap resamples schools and refits inside the same family.
 #' parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
 #'                     seed = 1)
+#'
+#' # A covariate fit: membership driven by `x` and by the group's class.
+#' set.seed(5)
+#' school <- rep(seq_len(16), each = 8)
+#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
+#' x <- rnorm(128)
+#' profile <- ifelse(
+#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
+#' )
+#' covariate_data <- data.frame(
+#'   school = school, x = x,
+#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
+#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
+#' )
+#' covariate_fit <- multilpa(covariate_data, c("y1", "y2"), "school",
+#'                           n_profiles = 2, n_group_classes = 2,
+#'                           profile_covariates = "x", n_starts = 2, seed = 1)
+#' parameter_inference(covariate_fit, covariate_data)
+#'
+#' # A latent transition model: initial and transition probabilities too.
+#' moves <- lta(subset(course_engagement, student <= 40),
+#'              c("browse", "lectures", "forum_read"), "student",
+#'              n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
+#' parameter_inference(moves)
 #' @export
 parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
                                 vcov_type = c("observed", "robust", "opg"),
@@ -892,9 +1005,9 @@ parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
   UseMethod("parameter_inference")
 }
 
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.default <- function(x, ...) {
+parameter_inference.default <-function(x, ...) {
   # A fit of this package without a method is told so, not that it is not a
   # fit of this package (review 2026-10-27, INF-2).
   if (inherits(x, "latents_mixture_regression")) {
@@ -914,9 +1027,9 @@ parameter_inference.default <- function(x, ...) {
   .latents_require_fit(x, substitute(x), expected = "a fitted model of this package")
 }
 
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e-4,
+parameter_inference.multilpa <-function(x, data = NULL, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust", "opg"),
                              adjust = .multilpa_p_adjust_methods,
                              method = c("wald", "bootstrap"), iter = 199L,

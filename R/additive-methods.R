@@ -318,10 +318,9 @@ logLik.multilpa_additive <- function(object, ...) {
 # non-zero weights; `n_used_groups` is absent from fits made before 0.97.2.
 nobs.multilpa_additive <- function(object, ...) object$n_used_groups %||% object$n_groups
 
-#' @rdname parameter_inference
-#' @param ... Further arguments; unused by most methods.
+#' @noRd
 #' @export
-parameter_inference.multilpa_additive <- function(
+parameter_inference.multilpa_additive <-function(
     x, data = NULL, level = 0.95, step = 1e-4,
     vcov_type = c("observed", "robust", "opg"),
     adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"),
@@ -432,9 +431,9 @@ get_results.summary_multilpa_additive <- function(x, what = "parameters", ...) {
              stringsAsFactors = FALSE)
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_additive <- function(x, what = c("means", "variances", "intercepts"),
+plot.multilpa_additive <-function(x, what = c("means", "variances", "intercepts"),
                                    level = 0.95, main = NULL, subtitle = NULL,
                                    ...) {
   .latents_warn_unused_arguments(

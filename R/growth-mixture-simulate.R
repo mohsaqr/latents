@@ -62,9 +62,9 @@
   mean + residual
 }
 
-#' @rdname latents-predict
+#' @noRd
 #' @export
-simulate.latents_growth_mixture <- function(object, nsim = 1, seed = NULL, ...) {
+simulate.latents_growth_mixture <-function(object, nsim = 1, seed = NULL, ...) {
   .latents_require("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
   .mixture_with_seed(seed, {
     draws <- lapply(seq_len(nsim), function(i) .growth_draw(object))

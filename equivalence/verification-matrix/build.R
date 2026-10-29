@@ -12,6 +12,7 @@
 # LATENTS_CHROME to its executable when it is not at the macOS default.
 
 .matrix_dir <- file.path("equivalence", "verification-matrix")
+source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
 
 .matrix_functions <- c(
   lpa = "lpa()", multilpa = "multilpa()", lca = "lca()", multilca = "multilca()",
@@ -28,13 +29,13 @@
 # group-level classification, a genuine mixture.
 .matrix_one_class_pattern <- "(?i)(^|[^a-z])(one[- ]class(?! per)|1 class|one profile)([^a-z]|$)"
 .matrix_kind_order <- c("commercial program", "R package", "Python package", "published",
-                        "independent code", "internal")
+                        "component check", "independent code", "internal")
 
 #' Saved evidence the matrix reads, with the run it records
 #' @return A data.frame: one row per input file.
 #' @noRd
 .matrix_evidence_files <- function() {
-  data.frame(
+  files <- data.frame(
     role = c("harness", "tests", "tests", "tests", "tests"),
     dir = c(NA, "tests/equivalence", "equivalence", "equivalence", "equivalence"),
     path = file.path("validation", c(
@@ -45,7 +46,9 @@
       "release-0.96.1-2026-10-20/outer-final/cases.csv")),
     run = c("2026-10-28", "2026-10-28", "2026-10-28", "2026-10-29", "2026-10-20"),
     code = c("0.98.0", "0.98.0", "0.98.0", "0.98.1", "0.96.1"),
-    current = c(TRUE, TRUE, TRUE, TRUE, FALSE))
+    current = FALSE)
+  files$current <- vapply(files$path, matrix_evidence_current, logical(1))
+  files
 }
 
 #' Read one rule table beside this script
@@ -85,7 +88,8 @@
     origin = "harness", location = paste0("harness/suites/", report$suite, ".R"),
     item = report$quantity, fn = fn_rules$fn[fn_index],
     reference = ref_rules$reference[ref_index], kind = ref_rules$kind[ref_index],
-    checks = 1L, values = report$n_values, failed = as.integer(!report$agrees),
+    checks = as.integer(report$agrees), values = report$n_values,
+    failed = as.integer(!report$agrees), incomplete = 0L,
     run = source$run, code = source$code, current = source$current,
     dataset = ifelse(is.na(report$dataset) | report$dataset == "NA", NA_character_, report$dataset),
     stringsAsFactors = FALSE)
@@ -97,15 +101,29 @@
   tests <- files[files$role == "tests" & file.exists(files$path), ]
   pieces <- lapply(seq_len(nrow(tests)), function(i) {
     rows <- utils::read.csv(tests$path[[i]], stringsAsFactors = FALSE)
+    outcomes <- c("passed", "failed", "skipped", "error")
+    complete <- all(outcomes %in% names(rows))
+    passed <- if (complete) as.integer(rows$passed) else rep(0L, nrow(rows))
+    errors <- if (complete) as.integer(rows$error) else rep(0L, nrow(rows))
+    incomplete <- if (complete) as.integer(rows$skipped | rows$error) else rep(1L, nrow(rows))
+    invalid <- is.na(passed) | is.na(errors) | is.na(incomplete) | is.na(rows$failed)
+    passed[invalid] <- 0L
+    incomplete[invalid] <- 1L
+    failures <- as.integer(rows$failed) + errors
+    failures[is.na(failures)] <- 0L
     data.frame(dir = tests$dir[[i]], file = rows$file, test = rows$test,
-               nb = as.integer(rows$nb), failed = as.integer(rows$failed),
+               nb = passed, failed = failures, incomplete = incomplete,
                run = tests$run[[i]], code = tests$code[[i]], current = tests$current[[i]],
                stringsAsFactors = FALSE)
   })
   results <- do.call(rbind, pieces)
   key <- paste(results$dir, results$file)
-  newest <- tapply(results$current, key, any)
-  keep <- results$current | !newest[key]
+  # Prefer current evidence, then the latest run. Never combine an old and
+  # replacement result for the same file just because both match the source.
+  rank <- ifelse(results$current, "1", "0")
+  priority <- paste(rank, results$run)
+  newest <- tapply(priority, key, max)
+  keep <- priority == newest[key]
   out <- results[keep, ]
   row.names(out) <- NULL
   out
@@ -150,7 +168,8 @@
       evidence_id = paste0(results$dir[[i]], "/", results$file[[i]], ":", results$test[[i]]),
       origin = "testthat", location = file.path(results$dir[[i]], results$file[[i]]),
       item = results$test[[i]], checks = results$nb[[i]], values = NA_real_,
-      failed = results$failed[[i]], run = results$run[[i]], code = results$code[[i]],
+      failed = results$failed[[i]], incomplete = results$incomplete[[i]],
+      run = results$run[[i]], code = results$code[[i]],
       current = results$current[[i]], dataset = NA_character_, stringsAsFactors = FALSE)
     .matrix_expand(base, rules$fn[[hit]], rules$reference[[hit]], rules$kind[[hit]])
   })
@@ -160,7 +179,7 @@
     base <- data.frame(
       evidence_id = paste0(unrun$dir[[i]], "/", unrun$file[[i]]), origin = "testthat",
       location = file.path(unrun$dir[[i]], unrun$file[[i]]), item = "(no saved result)",
-      checks = NA_integer_, values = NA_real_, failed = NA_integer_,
+      checks = NA_integer_, values = NA_real_, failed = NA_integer_, incomplete = 1L,
       run = "no saved result", code = NA_character_, current = FALSE,
       dataset = NA_character_, stringsAsFactors = FALSE)
     do.call(rbind, lapply(own, function(r) {
@@ -215,7 +234,9 @@
       reference = ifelse(nzchar(standard$reference), standard$reference, kit$reference),
       kind = rows$kind %||% rep(kit$kind, nrow(standard)), checks = as.integer(standard$agrees),
       values = ifelse(standard$agrees, standard$values, 0), failed = as.integer(!standard$agrees & !standard$known),
-      run = kit$run, code = "0.98.1", current = TRUE, shared = FALSE, known = standard$known,
+      incomplete = 0L,
+      run = kit$run, code = "0.98.1", current = matrix_evidence_current(kit$path),
+      shared = FALSE, known = standard$known,
       dataset = .matrix_kit_datasets(kit$path, standard$case), stringsAsFactors = FALSE)
   }))
 }
@@ -246,6 +267,7 @@
 #' @noRd
 .matrix_dataset_links <- function(evidence) {
   counted <- evidence[evidence$current & !evidence$one_class & evidence$checks > 0 &
+                        evidence$failed == 0L & evidence$incomplete == 0L &
                         evidence$kind %in% c(.matrix_external_kinds, "published"), ]
   named <- counted[!is.na(counted$dataset), c("fn", "reference", "kind", "dataset")]
   tests <- unique(counted[counted$origin == "testthat", c("location", "fn", "reference", "kind")])
@@ -278,7 +300,8 @@
   unique_rows <- rows[!duplicated(rows$evidence_id), ]
   c(checks = sum(unique_rows$checks, na.rm = TRUE),
     values = sum(unique_rows$values, na.rm = TRUE),
-    failed = sum(unique_rows$failed, na.rm = TRUE))
+    failed = sum(unique_rows$failed, na.rm = TRUE),
+    incomplete = sum(unique_rows$incomplete, na.rm = TRUE))
 }
 
 #' One row per function and reference: what checks it, and how current
@@ -287,12 +310,14 @@
   tested <- evidence[!evidence$kind %in% c("provenance", "infrastructure"), ]
   keys <- unique(tested[c("fn", "reference", "kind")])
   cells <- do.call(rbind, lapply(seq_len(nrow(keys)), function(i) {
-    rows <- tested[tested$fn == keys$fn[[i]] & tested$reference == keys$reference[[i]], ]
+    rows <- tested[tested$fn == keys$fn[[i]] & tested$reference == keys$reference[[i]] &
+                     tested$kind == keys$kind[[i]], ]
     now <- .matrix_unique_checks(rows[rows$current, ])
     mixture <- .matrix_unique_checks(rows[rows$current & !rows$one_class, ])
     old <- .matrix_unique_checks(rows[!rows$current & rows$run != "no saved result", ])
     data.frame(keys[i, ], current_checks = now[["checks"]], current_values = now[["values"]],
-               current_failed = now[["failed"]], mixture_checks = mixture[["checks"]],
+               current_failed = now[["failed"]], current_incomplete = now[["incomplete"]],
+               mixture_checks = mixture[["checks"]],
                older_checks = old[["checks"]],
                older_run = paste(unique(rows$code[!rows$current & !is.na(rows$code)]),
                                  collapse = ", "),
@@ -305,15 +330,20 @@
                            paste(cells$fn, cells$reference), ]
   candidate_cells <- data.frame(
     fn = untested$fn, reference = untested$reference, kind = untested$kind,
-    current_checks = 0L, current_values = 0, current_failed = 0L, mixture_checks = 0L,
-    older_checks = 0L,
-    older_run = "", unrun_files = 0L, n_datasets = 0L, shared = FALSE, candidate = TRUE,
+    current_checks = rep(0L, nrow(untested)), current_values = rep(0, nrow(untested)),
+    current_failed = rep(0L, nrow(untested)), current_incomplete = rep(0L, nrow(untested)),
+    mixture_checks = rep(0L, nrow(untested)), older_checks = rep(0L, nrow(untested)),
+    older_run = rep("", nrow(untested)), unrun_files = rep(0L, nrow(untested)),
+    n_datasets = rep(0L, nrow(untested)), shared = rep(FALSE, nrow(untested)),
+    candidate = rep(TRUE, nrow(untested)),
     stringsAsFactors = FALSE)
   out <- rbind(cells, candidate_cells)
   out$status <- ifelse(out$candidate, "candidate",
     ifelse(out$mixture_checks > 0L, "current",
       ifelse(out$current_checks > 0L, "one class only",
         ifelse(out$older_checks > 0L, "older run", "no saved result"))))
+  out$status[!out$candidate & out$current_incomplete > 0L] <- "incomplete"
+  out$status[!out$candidate & out$current_failed > 0L] <- "failed"
   out <- out[order(match(out$fn, names(.matrix_functions)),
                    match(out$kind, .matrix_kind_order), -out$current_checks,
                    out$reference), ]
@@ -346,8 +376,8 @@
   do.call(rbind, lapply(names(.matrix_functions), function(fn) {
     own <- cells[cells$fn == fn, ]
     rows <- evidence[evidence$fn == fn & !evidence$kind %in% c("provenance", "infrastructure"), ]
-    external <- own$reference[own$kind %in% .matrix_external_kinds & own$mixture_checks > 0L]
-    published <- own$reference[own$kind == "published" & own$mixture_checks > 0L]
+    external <- own$reference[own$kind %in% .matrix_external_kinds & own$status == "current"]
+    published <- own$reference[own$kind == "published" & own$status == "current"]
     older_only <- own$reference[own$status == "older run" &
                                   own$kind %in% c(.matrix_external_kinds, "published")]
     one_class_only <- own$reference[own$status == "one class only" &
@@ -355,13 +385,14 @@
     candidate_papers <- own$reference[own$candidate & own$kind == "published"]
     candidate_sources <- own$reference[own$candidate & own$kind %in% .matrix_external_kinds]
     unrun <- length(unique(rows$location[rows$run == "no saved result"]))
-    now <- .matrix_unique_checks(rows[rows$current, ])
+    now <- .matrix_unique_checks(rows[rows$current & rows$kind != "internal", ])
     strength <- .matrix_strength(length(external), length(published))
     raise <- c(
       if (now[["failed"]] > 0) sprintf("%d failing checks", now[["failed"]]),
+      if (now[["incomplete"]] > 0) sprintf("%d incomplete tests", now[["incomplete"]]),
       if (length(one_class_only)) sprintf("one-class checks only, not counted: %s",
                                           paste(one_class_only, collapse = ", ")),
-      if (length(older_only)) sprintf("rerun the 0.96.1 tests: adds %s",
+      if (length(older_only)) sprintf("rerun stale evidence: adds %s",
                                       paste(older_only, collapse = ", ")),
       if (unrun) sprintf("%d test file(s) never saved a result", unrun),
       if (!length(published) && length(candidate_papers))
@@ -377,7 +408,7 @@
       sources = paste(external, collapse = ", "), n_papers = length(published),
       papers = paste(published, collapse = ", "),
       checks_current = now[["checks"]], values_current = now[["values"]],
-      failed_current = now[["failed"]],
+      failed_current = now[["failed"]], incomplete_current = now[["incomplete"]],
       internal_checks = .matrix_unique_checks(rows[rows$current & rows$kind == "internal", ])[["checks"]],
       candidates = sum(own$candidate),
       to_strengthen = if (length(raise)) paste(raise, collapse = "; ") else "",
@@ -421,6 +452,7 @@
   if (!nrow(cell)) return("")
   if (isTRUE(cell$candidate)) return('<span class="cand">candidate</span>')
   star <- if (isTRUE(cell$shared)) "*" else ""
+  if (cell$status %in% c("failed", "incomplete")) return(cell$status)
   if (cell$mixture_checks > 0L) {
     return(sprintf('<span class="cur">%s%s</span>', format(cell$current_checks, big.mark = ","),
                    star))
@@ -448,14 +480,14 @@
 #' The reference by function grid: one row per reference, grouped by kind
 #' @noRd
 .matrix_grid <- function(cells, summary) {
-  shown <- cells[cells$kind %in% c(.matrix_external_kinds, "published", "independent code"), ]
+  shown <- cells[cells$kind %in% c(.matrix_external_kinds, "published", "component check", "independent code"), ]
   weight <- tapply(shown$current_checks + shown$older_checks, shown$reference, sum)
   references <- unique(shown[c("reference", "kind")])
   references <- references[order(match(references$kind, .matrix_kind_order),
                                  -weight[references$reference], references$reference), ]
-  row_html <- function(reference) {
+  row_html <- function(reference, kind) {
     labels <- vapply(names(.matrix_functions), function(fn) {
-      .matrix_cell_label(shown[shown$fn == fn & shown$reference == reference, ])
+      .matrix_cell_label(shown[shown$fn == fn & shown$reference == reference & shown$kind == kind, ])
     }, character(1))
     paste0("<tr><td class=\"ref\">", .matrix_escape(reference), "</td>",
            paste0("<td>", labels, "</td>", collapse = ""), "</tr>")
@@ -464,7 +496,7 @@
     own <- references$reference[references$kind == kind]
     paste0(sprintf('<tr class="group"><td colspan="%d">%s</td></tr>',
                    length(.matrix_functions) + 1L, .matrix_escape(kind)),
-           paste(vapply(own, row_html, character(1)), collapse = ""))
+           paste(vapply(own, row_html, character(1), kind = kind), collapse = ""))
   }, character(1))
   # Narrow grid cells: the + marks and the P marks on separate lines.
   stacked <- vapply(seq_len(nrow(summary)), function(i) {
@@ -478,7 +510,7 @@
   dataset_row <- paste0("<tr class=\"total\"><td class=\"ref\">datasets tested</td>",
                         paste0("<td>", format(summary$n_datasets, big.mark = ","), "</td>",
                                collapse = ""), "</tr>")
-  total_row <- paste0("<tr class=\"total\"><td class=\"ref\">current checks, all references</td>",
+  total_row <- paste0("<tr class=\"total\"><td class=\"ref\">current external/component/oracle checks</td>",
                       paste0("<td>", format(summary$checks_current, big.mark = ","), "</td>",
                              collapse = ""), "</tr>")
   header <- paste0("<th>reference</th>",
@@ -494,7 +526,7 @@
   version <- read.dcf("DESCRIPTION", fields = "Version")[[1L]]
   files <- .matrix_evidence_files()
   totals <- .matrix_unique_checks(evidence[evidence$current &
-                                             !evidence$kind %in% c("provenance", "infrastructure"), ])
+                                             !evidence$kind %in% c("provenance", "infrastructure", "internal"), ])
   overview <- data.frame(
     `function` = summary$label,
     strength = .matrix_badge(summary$tier, summary$strength),
@@ -502,7 +534,7 @@
     papers = summary$n_papers,
     datasets = format(summary$n_datasets, big.mark = ","),
     `checks passed` = format(summary$checks_current, big.mark = ","),
-    failed = summary$failed_current,
+    failed = summary$failed_current, incomplete = summary$incomplete_current,
     `values (harness)` = ifelse(summary$values_current > 0,
                                 format(summary$values_current, big.mark = ","), ""),
     `independent programs and packages` = summary$sources,
@@ -516,7 +548,7 @@
       `current checks` = format(own$current_checks, big.mark = ","),
       datasets = ifelse(own$n_datasets > 0L, own$n_datasets, ""),
       `values` = ifelse(own$current_values > 0, format(own$current_values, big.mark = ","), ""),
-      `0.96.1 checks` = ifelse(own$older_checks > 0L, format(own$older_checks, big.mark = ","), ""),
+      `stale checks` = ifelse(own$older_checks > 0L, format(own$older_checks, big.mark = ","), ""),
       `files without result` = ifelse(own$unrun_files > 0L, own$unrun_files, ""),
       shared = ifelse(own$shared, "*", ""), check.names = FALSE, stringsAsFactors = FALSE)
     wanted <- candidates[candidates$fn == fn, ]
@@ -570,18 +602,18 @@
             version, format(Sys.Date()), format(totals[["checks"]], big.mark = ","),
             format(totals[["values"]], big.mark = ",")),
     "<p>A <b>check</b> is one harness quantity (a whole output column counts once; <i>values</i> counts every number inside it) or one testthat expectation. ",
-    "<b>Current</b> means produced on 2026-10-28 or 2026-10-29 by the R code shipped in 0.98.0 and 0.98.1 (unchanged in 1.0.0). Results from 0.96.1 (2026-10-20) are shown in grey and do not count toward strength. ",
+    "<b>Current</b> requires matching runtime-source and result-file hashes in an evidence sidecar. Historical 1.0.0 evidence carries an explicit retrospective source-equivalence attestation, not a claimed rerun. Missing or mismatched provenance is stale and does not count toward strength. ",
     "</p>",
     "<div class=\"legend\"><h3>Legend</h3><dl>",
     "<dt>Strength</dt><dd>One <b>+</b> per <i>source</i>: an independent program or package (another R package, Mplus, Latent GOLD, Stata, Python) whose results agree on the current code for a model with two or more classes. ",
     "One <b>P</b> per published paper whose printed numbers are reproduced. <span class=\"badge very_strong\">++++ PP</span> is four sources and two papers. ",
     "Colour: <span class=\"badge none\">0</span> no source, <span class=\"badge single\">+</span> one, <span class=\"badge strong\">++</span> two, <span class=\"badge very_strong\">+++</span> three or more.</dd>",
-    "<dt>Not counted</dt><dd>Agreement on a one-class reduction only (one class equals lm(), glm.nb(), polr(), lme4, a linear mixed model), shown as \"(1 class)\"; our own independent code (numDeriv, dense likelihoods, the kits' reference implementations); internal checks (invariance, seed stability, refusal parity); results last run under 0.96.1.</dd>",
+    "<dt>Not counted</dt><dd>Agreement on a one-class reduction only (one class equals lm(), glm.nb(), polr(), lme4, a linear mixed model), shown as \"(1 class)\"; component checks (formulas and helper routines); our own independent code (numDeriv, dense likelihoods, the kits' reference implementations); internal checks; stale results; sources with failed or incomplete tests.</dd>",
     "<dt>Sources, papers</dt><dd>The number of + and of P.</dd>",
     "<dt>Datasets</dt><dd>Distinct datasets on which the function was compared with a source or a paper on current code, for models with two or more classes: the harness's datasets, the kits' datasets (kit-datasets.csv) and the simulated datasets of the testthat kits that the other program ran (test-datasets.csv). A dataset used by several kits counts once. Tests that build their own small data inline are not counted, so this is a lower bound.</dd>",
     "<dt>Checks passed</dt><dd>Current checks against every reference other than latents itself: one harness quantity (a whole output column), one kit quantity or one testthat expectation. <i>Values</i> counts the numbers inside the harness checks.</dd>",
-    "<dt>Failed</dt><dd>Current checks that disagree without a registered, explained difference (each kit's known-differences.csv).</dd>",
-    "<dt>Grid cells</dt><dd><span class=\"cur\">bold</span>: current checks on mixtures; <span class=\"one\">(1 class)</span>: one-class reductions only; <span class=\"old\">grey italic</span>: last run under 0.96.1 or no saved result; <span class=\"cand\">candidate</span>: found, not yet wired in; *: a test that checks several functions or references at once (counted once in each function's total).</dd>",
+    "<dt>Failed</dt><dd>Current disagreements without a registered explanation, plus test errors. Skipped or incomplete tests provide no source credit.</dd>",
+    "<dt>Grid cells</dt><dd><span class=\"cur\">bold</span>: current checks on mixtures; <span class=\"one\">(1 class)</span>: one-class reductions only; <span class=\"old\">grey italic</span>: stale provenance or no saved result; <span class=\"cand\">candidate</span>: found, not yet wired in; *: a test that checks several functions or references at once (counted once in each function's total).</dd>",
     "</dl></div>",
     "<h2>Strength by function</h2>", .matrix_html_table(overview, "overview", raw = "strength"),
     "<div class=\"pagebreak\"></div><h2>Reference by function</h2>",
@@ -613,19 +645,19 @@
 .matrix_markdown <- function(evidence, cells, summary) {
   version <- read.dcf("DESCRIPTION", fields = "Version")[[1L]]
   totals <- .matrix_unique_checks(evidence[evidence$current &
-                                             !evidence$kind %in% c("provenance", "infrastructure"), ])
+                                             !evidence$kind %in% c("provenance", "infrastructure", "internal"), ])
   overview <- data.frame(
     `function` = paste0("`", summary$label, "`"),
     strength = paste0("`", summary$strength, "`"),
     sources = summary$n_sources, papers = summary$n_papers,
     datasets = trimws(format(summary$n_datasets, big.mark = ",")),
     checks = trimws(format(summary$checks_current, big.mark = ",")),
-    failed = summary$failed_current, check.names = FALSE, stringsAsFactors = FALSE)
+    failed = summary$failed_current, incomplete = summary$incomplete_current, check.names = FALSE, stringsAsFactors = FALSE)
   per_function <- unlist(lapply(seq_len(nrow(summary)), function(i) {
     fn <- summary$fn[[i]]
-    own <- cells[cells$fn == fn & cells$status %in% c("current", "one class only"), ]
+    own <- cells[cells$fn == fn & cells$status %in% c("current", "one class only", "failed", "incomplete"), ]
     table <- data.frame(
-      reference = own$reference, kind = own$kind,
+      reference = own$reference, kind = own$kind, status = own$status,
       checks = paste0(trimws(format(own$current_checks, big.mark = ",")),
                       ifelse(own$status == "one class only", " (1 class)", "")),
       datasets = ifelse(own$n_datasets > 0L, own$n_datasets, ""),
@@ -652,15 +684,16 @@
           "for a model with two or more classes; one `P` per published paper whose printed",
           "numbers are reproduced. `++++ PP` is four sources and two papers."),
     paste("- **Not counted**: agreement on one-class reductions only (marked \"(1 class)\"), our",
-          "own independent code, internal checks, and results last run under 0.96.1."),
+          "own independent code, component checks, internal checks, stale results, and sources with failed or incomplete tests."),
     paste("- **Datasets**: distinct datasets on which the function was compared with a source or",
           "a paper on current code, for models with two or more classes (the harness, the kits",
           "and the testthat simulation kits that the other program ran). A dataset used by",
           "several kits counts once; tests with small inline data are not counted, so this is a",
           "lower bound."),
-    paste("- **Checks**: current harness quantities, kit quantities and testthat expectations",
+    paste("- **Current**: both the complete runtime-source manifest and the result-file hash match their evidence sidecar. Historical 1.0.0 evidence uses an explicitly labelled retrospective source-equivalence attestation; it is not a new run."),
+    paste("- **Checks**: current harness quantities, kit quantities and passed testthat expectations",
           "against every reference other than latents itself. **Failed**: checks that disagree",
-          "without a registered, explained difference."),
+          "without a registered, explained difference, plus test errors. Skips are incomplete and earn no source credit."),
     "", "## By function", "", per_function)
 }
 
@@ -701,4 +734,4 @@ build_verification_matrix <- function() {
                       "failed_current")])
 }
 
-print(build_verification_matrix(), right = FALSE)
+if (sys.nframe() == 0L) print(build_verification_matrix(), right = FALSE)

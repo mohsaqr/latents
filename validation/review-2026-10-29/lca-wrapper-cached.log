@@ -1,0 +1,18 @@
+── Failure: lca() reproduces five independent latent class implementations ─────
+Expected `unique(comparison$reference)` to have the same values as `c("glca", "randomLCA", "BayesLCA", "multilevLCA", "depmixS4")`.
+Actual: "glca", "randomLCA", "BayesLCA", "multilevLCA", "depmixS4", "Kleinman and Horton (2011), SAS and R blog, Example 8.21"
+Expected: "glca", "randomLCA", "BayesLCA", "multilevLCA", "depmixS4"
+Needs: "Kleinman and Horton (2011), SAS and R blog, Example 8.21"
+Error:
+! Test failed with 1 failure and 3 successes.
+Backtrace:
+    ▆
+ 1. └─base::eval(expr, lca_wrapper_env)
+ 2.   └─base::eval(expr, lca_wrapper_env)
+ 3.     └─testthat::test_that(...)
+ 4.       └─testthat:::test_code(code, parent.frame())
+ 5.         ├─withr (local) `<fn>`()
+ 6.         └─reporter$end_test(context = reporter$.context, test = test)
+ 7.           └─cli::cli_abort(...)
+ 8.             └─rlang::abort(...)
+Execution halted

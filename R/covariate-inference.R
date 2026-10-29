@@ -300,68 +300,9 @@
        covariances = covariance_block)
 }
 
-#' Tidy inference for a covariate fit
-#'
-#' For a `multilpa(profile_covariates = )` fit, returns standard errors, tests
-#' and intervals for every free parameter at all three levels: the
-#' measurement model, the profile logits and the group-class logits.
-#'
-#' @param x A fitted `multilpa_covariates` model.
-#' @param data Optional data frame the model was fitted to. When omitted it is
-#'   rebuilt from the indicators, group index and designs the fit stores.
-#' @param level Confidence level for the intervals, between 0 and 1.
-#' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"` uses the observed information; `"robust"`
-#'   uses the group-clustered sandwich (with the CR1 factor `G / (G - 1)` for
-#'   `G` groups), appropriate when the measurement model may be misspecified;
-#'   `"opg"` inverts the outer product of the group scores, as `glca` does.
-#' @param adjust Multiplicity correction applied to `p_value` to give
-#'   `p_adjusted`; default `"none"`. See [parameter_inference()].
-#' @return For a covariate fit, a base `data.frame` with one row per free
-#'   parameter and the same columns as for every other class: `level`
-#'   (`"measurement"`, `"profile"` or `"group"`), `outcome` (the profile or
-#'   group class the coefficient predicts, or the profile a measurement
-#'   parameter belongs to), `term`, `parameter` (`"mean"`, `"variance"`,
-#'   `"covariance"`, `"response"` or `"coefficient"`), `estimate`,
-#'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`. Variances and covariances are in their natural units, with
-#'   standard errors obtained by the delta method from the log and
-#'   log-Cholesky coordinates on which they are estimated. Each categorical
-#'   indicator contributes one `"response"` row per profile, indicator and
-#'   category, named `indicator:category`: the category probability, with its
-#'   standard error from the multinomial logits and no Wald test.
-#' @details Class-membership coefficients of a covariate fit are on the
-#'   multinomial logit scale, with the final profile and the final group class
-#'   as references, so each coefficient is a log odds against that reference.
-#'   The tests are Wald tests, which are invalid for a coefficient driven to
-#'   the boundary by separation or an empty class. A fit with a membership
-#'   logit above 20 in coordinates independent of the covariates' units and
-#'   origin (roughly, a slope per standard deviation of its covariate and an
-#'   intercept at the covariates' means) raises `latents_boundary_fit`; the
-#'   fit itself warns with `latents_extreme_coefficients`. Only
-#'   `method = "wald"` is implemented for a covariate fit; `"bootstrap"`
-#'   raises `latents_unsupported_inference`.
-#' @examples
-#' # Two separated profiles, membership driven by `x` and by the group's class.
-#' set.seed(5)
-#' school <- rep(seq_len(16), each = 8)
-#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
-#' x <- rnorm(128)
-#' profile <- ifelse(
-#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
-#' )
-#' example_data <- data.frame(
-#'   school = school, x = x,
-#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
-#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
-#' )
-#' fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                 n_group_classes = 2, profile_covariates = "x",
-#'                 n_starts = 2, seed = 1)
-#' parameter_inference(fit, example_data)
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95,
+parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
                                                     step = 1e-4,
                                                     vcov_type = c("observed", "robust", "opg"),
                                                     adjust = .multilpa_p_adjust_methods,
@@ -1029,9 +970,9 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   )
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained"),
+coef.multilpa_covariates <-function(object, scale = c("natural", "unconstrained"),
                                      ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))
@@ -1050,9 +991,9 @@ coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained
     .multilpa_cov_parameter_names(object))
 }
 
-#' @rdname latents-model-methods
+#' @noRd
 #' @export
-confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL,
+confint.multilpa_covariates <-function(object, parm, level = 0.95, data = NULL,
                                         ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))

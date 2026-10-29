@@ -88,9 +88,9 @@
   }, numeric(spec$n)) |> matrix(spec$n, spec$n_classes) + spec$offset
 }
 
-#' @rdname latents-predict
+#' @noRd
 #' @export
-predict.latents_growth_mixture <- function(object, newdata = NULL,
+predict.latents_growth_mixture <-function(object, newdata = NULL,
                                            type = c("response", "class_response",
                                                     "posterior", "conditional",
                                                     "class_conditional",

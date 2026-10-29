@@ -67,7 +67,8 @@
 #'     student's generating kind, corresponding to the group classes. Not for
 #'     fitting; kept to check recovery.}
 #' }
-#' @source Simulated by `data-raw/course-engagement.R`, seed 2026. The
+#' @source Simulated by `data-raw/course-engagement.R` in the source
+#'   repository, seed 2026. The
 #'   simulation is calibrated to aggregate constants of a real
 #'   learning-analytics export (scales, spreads, correlations and the
 #'   persistence of engagement across courses). No row, identifier or value

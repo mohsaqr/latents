@@ -90,7 +90,8 @@ refitted. Calibration requires missingness independent of the indicators
 and latent classes, conditional on any fixed covariates. A fixed mask does
 not reproduce a MAR mechanism that depends on observed indicators, or an
 MNAR mechanism, and FIML estimation under MAR does not by itself validate
-this bootstrap under MAR; the size study covers MCAR only.
+this bootstrap under MAR; the size of the test has been checked by
+simulation under MCAR only.
 
 Membership-covariate fits (\code{multilpa(profile_covariates = , group_covariates = )}) are supported: the covariates are held at their
 observed values, group classes are drawn from the fitted group logits and

@@ -267,11 +267,10 @@ single-level mixture is also refused when it has more free parameters than
 P (C - 1), the number of free category probabilities in P distinct
 covariate patterns (for example two classes and one binary factor).
 
-This implementation does not support binary mixtures with one trial per
-class assignment. Their identification depends on the covariate design and
-model constraints; being Bernoulli at each fixed covariate value does not
-imply nonidentification over all covariates. Here a binary mixture
-requires \code{class_level = "group"} (several rows per class
+Binary mixtures with one trial per class assignment are not supported:
+whether such a model is identified depends on the covariate design and the
+model constraints, which the package does not assess. A binary mixture
+therefore requires \code{class_level = "group"} (several rows per class
 assignment) or binomial counts with more than one trial per row; other
 binary specifications are refused.
 }

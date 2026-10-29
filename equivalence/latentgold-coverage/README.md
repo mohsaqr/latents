@@ -1,8 +1,8 @@
-# Growth, latent class, profile, transition and enumeration fits against Latent GOLD 6.1
+# Growth, latent class, profile and transition fits against Latent GOLD 6.1
 
 Before this kit no Latent GOLD run checked growth mixtures, unweighted
-single-level `lca()` and `lpa()`, plain or covariate-driven `lta()`, or class
-enumeration. Each case is fitted by both programs. Latent GOLD 6.1 (free
+single-level `lca()` and `lpa()`, or plain or covariate-driven `lta()`. The
+kit also compares individual class/profile fits at one to four classes. Each case is fitted by both programs. Latent GOLD 6.1 (free
 academic licence) ran in batch under Wine on this machine on 2026-10-28
 (`~/.wine-latentgold`, `lg61.exe <case>.lgs /b /o <case>.lst`). Its listings
 and posterior files are kept in `returned/`, so the comparison runs offline:
@@ -36,8 +36,12 @@ count, and every row's posterior probabilities.
 | t03 | lta | 2 states, Gaussian indicators, transitions on a person covariate (`transition_covariates`) |
 | r06 | mixture_regression | negative-binomial (NB2) mixture regression, 2 classes, dispersion by class (Latent GOLD `poisson overdispersed`), n 900 |
 | r07 | mixture_regression | cumulative-logit ordinal mixture regression, 4 categories, 2 classes with opposite slopes (Latent GOLD `cumlogit`), n 1500 |
-| e1k1-e1k4 | enumeration | `lca()` at 1 to 4 classes (c01's data): likelihood, parameters, BIC |
-| e2k1-e2k4 | enumeration | `lpa()` VVI at 1 to 4 profiles (p01's data) |
+| e1k1-e1k4 | lca | `lca()` at 1 to 4 classes (c01's data): likelihood, parameters, BIC |
+| e2k1-e2k4 | lpa | `lpa()` VVI at 1 to 4 profiles (p01's data) |
+
+The e1/e2 cases call `lca()` and `lpa()` directly, including a refit from
+Latent GOLD's solution. They do not exercise the `enumerate_*()` APIs and
+are attributed to the fitted functions in the verification matrix.
 
 ## How the two are put on one scale
 

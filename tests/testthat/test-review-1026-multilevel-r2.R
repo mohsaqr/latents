@@ -3,6 +3,7 @@
 # charge; a deterministic first start; the covariate search order; replication
 # counts. Each block fails on the code before the fix (see the round-2 report,
 # validation/review-2026-10-26/round-2/multilevel.md).
+# The comparisons with independent references are in tests/equivalence/test-review-1026-multilevel-r2.R.
 
 # More than 2 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -46,37 +47,6 @@ r2_quiet <- function(expr) {
     }
   })
 }
-
-test_that("restricted cross-level pseudo likelihood ignores zero-weight groups (CL-1)", {
-  sets <- r2_padded()
-  fit <- function(data) r2_quiet(multilpa(
-    data, c("y1", "y2"), "g", 2, 2, family = "restricted_cross_level",
-    weights = "w", n_starts = 3, seed = 1, tol = 1e-12))
-  plain <- fit(sets$data)
-  padded <- fit(sets$padded)
-  expect_equal(padded$log_likelihood, plain$log_likelihood, tolerance = 1e-10)
-  # The reported likelihood is sum_j w_j log L_j at the reported estimates.
-  data <- sets$data
-  index <- match(data$g, unique(data$g))
-  weights <- .latents_sampling_weights(data, "w", index, 24L)
-  x <- as.matrix(data[c("y1", "y2")])
-  row_density <- vapply(1:2, function(k) {
-    plain$profile_prevalences[k] *
-      stats::dnorm(x[, 1], plain$profile_means[k, 1], sqrt(plain$profile_variances[k, 1])) *
-      stats::dnorm(x[, 2], plain$profile_means[k, 2], sqrt(plain$profile_variances[k, 2]))
-  }, numeric(nrow(x)))
-  group_means <- rowsum(x, index) / as.vector(table(index))
-  group_density <- vapply(1:2, function(h) {
-    plain$group_probabilities[h] *
-      stats::dnorm(group_means[, 1], plain$group_means[h, 1],
-                   sqrt(plain$group_mean_variances[h, 1])) *
-      stats::dnorm(group_means[, 2], plain$group_means[h, 2],
-                   sqrt(plain$group_mean_variances[h, 2]))
-  }, numeric(24L))
-  direct <- sum(weights * (log(rowSums(group_density)) +
-                             as.vector(rowsum(log(rowSums(row_density)), index))))
-  expect_equal(plain$log_likelihood, direct, tolerance = 1e-10)
-})
 
 test_that("the equal between-group variance divides by the weighted total (CL-2)", {
   sets <- r2_padded()

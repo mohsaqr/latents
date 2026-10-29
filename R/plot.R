@@ -1,6 +1,6 @@
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud",
+plot.multilpa <-function(x, what = c("profiles", "bars", "heatmap", "raincloud",
                                       "parallel", "pairs", "responses",
                                       "probabilities", "sequences", "sizes",
                                       "entropy", "posteriors", "avepp", "all"),
@@ -206,9 +206,9 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
        profile = x$subject_profiles[kept])
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_enumeration <- function(x, what = c("enumeration", "tree"),
+plot.multilpa_enumeration <-function(x, what = c("enumeration", "tree"),
                                       criterion = c("aic", "bic_groups",
                                                     "bic_individual",
                                                     "icl_individual"),
@@ -476,9 +476,9 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
   stats::setNames(criterion[keep], titles[keep])
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
+plot.multilpa_covariates <-function(x, what = c("profiles", "bars", "heatmap",
                                                  "raincloud", "parallel",
                                                  "pairs", "responses",
                                                  "sequences", "sizes",

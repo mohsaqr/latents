@@ -35,9 +35,9 @@ predict.multilpa <- function(object, newdata = NULL,
                              posteriors = identical(type, "posterior"))
 }
 
-#' @rdname latents-predict
+#' @noRd
 #' @export
-predict.multilpa_covariates <- function(object, ...) {
+predict.multilpa_covariates <-function(object, ...) {
   stop(errorCondition(paste(
     "predict() is not implemented for membership-covariate models yet: a new",
     "row's class probabilities depend on its covariates through the",
@@ -46,9 +46,9 @@ predict.multilpa_covariates <- function(object, ...) {
     class = "latents_unsupported_prediction", call = NULL))
 }
 
-#' @rdname latents-predict
+#' @noRd
 #' @export
-predict.multilpa_transitions <- function(object, ...) {
+predict.multilpa_transitions <-function(object, ...) {
   stop(errorCondition(paste(
     "predict() is not implemented for latent transition models yet: a row's",
     "class depends on the rest of its sequence. The fitted rows' posteriors",

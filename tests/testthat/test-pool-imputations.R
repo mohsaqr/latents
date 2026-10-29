@@ -2,6 +2,7 @@
 # mice's own implementation, label alignment across imputations, and the
 # relabelling of a covariate fit, whose membership logits change reference
 # category when the labels move.
+# The comparisons with independent references are in tests/equivalence/test-pool-imputations.R.
 
 skip_on_cran()
 
@@ -30,24 +31,6 @@ skip_on_cran()
 .pool_quietly <- function(expr) {
   quietly(expr, classes = c(.multilpa_expected_warnings, "latents_extreme_coefficients"))
 }
-
-test_that("Rubin's rules agree with mice::pool.scalar for every parameter", {
-  skip_if_not_installed("mice")
-  pooled <- .pool_quietly(pool_imputations(
-    .pool_imputed(.pool_fixture()), c("y1", "y2"), "g", 2L,
-    n_group_classes = 1L, profile_covariates = "z", n_starts = 1, seed = 1))
-  estimates <- as.data.frame(pooled)
-  per_imputation <- get_results(pooled, "imputations")
-  key <- function(table) paste(table$level, table$outcome, table$term, table$parameter)
-  invisible(lapply(seq_len(nrow(estimates)), function(row) {
-    rows <- per_imputation[key(per_imputation) == key(estimates)[row], ]
-    reference <- mice::pool.scalar(rows$estimate, rows$standard_error^2, n = Inf)
-    expect_equal(estimates$estimate[row], reference$qbar, tolerance = 1e-12)
-    expect_equal(estimates$standard_error[row]^2, reference$t, tolerance = 1e-12)
-    expect_equal(estimates$df[row], reference$df, tolerance = 1e-10)
-    expect_equal(estimates$fmi[row], reference$fmi, tolerance = 1e-10)
-  }))
-})
 
 test_that("identical imputations pool to the single fit, with no missing information", {
   frame <- .pool_fixture()

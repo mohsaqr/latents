@@ -1,0 +1,17 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | lca-packages                                                   carcinoma_k2: depmixS4 reached the floating-point floor in 13 fits
+carcinoma_k3: depmixS4 reached the floating-point floor in 6 fits
+values_k2: depmixS4 reached the floating-point floor in 11 fits
+cheating_k2: depmixS4 reached the floating-point floor in 6 fits
+alzheimer_k2: depmixS4 reached the floating-point floor in 6 fits
+alzheimer_k3: depmixS4 reached the floating-point floor in 10 fits
+myocardial_k2: depmixS4 reached the floating-point floor in 13 fits
+dentistry_k2: depmixS4 reached the floating-point floor in 18 fits
+dentistry_k3: depmixS4 reached the floating-point floor in 18 fits
+hivtests_k2: depmixS4 reached the floating-point floor in 19 fits
+gss82_k2: depmixS4 reached the floating-point floor in 16 fits
+gss82_k3: depmixS4 reached the floating-point floor in 15 fits
+! Interrupting test: lca() reproduces five independent latent class implementations
+
+Execution halted

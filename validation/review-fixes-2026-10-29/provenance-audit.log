@@ -1,0 +1,18 @@
+Validated: validation/release-fixes-2026-10-28/equivalence/report.csv
+Validated: validation/release-fixes-2026-10-28/release/external-tests-consolidated.csv
+Validated: validation/release-fixes-2026-10-28/release/retained-references-results.csv
+Validated: validation/matrix-refresh-2026-10-28/equivalence-results.csv
+Validated: equivalence/latentgold-coverage/comparison.csv
+Validated: equivalence/lca-packages/comparison.csv
+Validated: equivalence/latentgold-wider/comparison.csv
+Validated: equivalence/latentgold/comparison.csv
+Validated: equivalence/latentgold-ordinal/comparison.csv
+Validated: equivalence/lpa-packages/comparison.csv
+Validated: equivalence/regression-packages/comparison.csv
+Validated: equivalence/growth-published/comparison.csv
+Validated: equivalence/pool-packages/comparison.csv
+Validated: equivalence/lta-packages/comparison.csv
+Validated: equivalence/stata-published/comparison.csv
+Validated: equivalence/mplus-growth/comparison.csv
+Validated: equivalence/enumeration-packages/comparison.csv
+104 runtime files and 17 results validated; 0.96.1 evidence remains unattested and stale.

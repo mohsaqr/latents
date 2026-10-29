@@ -608,9 +608,9 @@ summary.latents_transition_enumeration <- function(object, ...) {
   .latents_named_table(object)
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.latents_transition_enumeration <- function(x, criterion = c("bic", "aic",
+plot.latents_transition_enumeration <-function(x, criterion = c("bic", "aic",
                                                                  "bic_individual"),
                                                 main = NULL, subtitle = NULL,
                                                 ..., what = NULL) {

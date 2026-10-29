@@ -254,35 +254,9 @@
             messages = drawn$messages, adjust = adjust)
 }
 
-#' @details For a growth mixture ([mixture_regression()] with `random`), the
-#'   table has one row per natural parameter: `block` (`"coefficient"`,
-#'   `"membership"` and, for a multilevel growth mixture,
-#'   `"group_membership"`, `"residual_sd"`, `"random_variance"`,
-#'   `"random_sd"`, `"random_correlation"`, `"share"`), `class` (`"all"` for
-#'   a quantity shared by every class), `term`, `estimate`, `standard_error`,
-#'   `statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`. Wald
-#'   rows use the fit's covariance (`vcov_type`) with the delta method;
-#'   intervals of standard deviations and variances are formed on the log
-#'   scale, of correlations on the Fisher scale and of shares on the logit
-#'   scale, and only coefficients and logits are tested against zero.
-#'   `method = "bootstrap"` resamples persons, refits each resample from
-#'   `n_starts` starts and matches its classes to the original by their
-#'   posterior memberships of the original persons; it is refused for a
-#'   multilevel growth mixture (`latents_unsupported_inference`). In a
-#'   simulation of 1000 datasets per design, Wald intervals covered
-#'   0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
-#'   separated ones, whose standard errors were 6-30% too small
-#'   (validation/GROWTH_SIMULATION.md in the source repository); the
-#'   bootstrap is preferable for weakly separated classes. A class
-#'   whose random-effect covariance is degenerate, or (with correlated
-#'   residuals) a residual standard deviation or residual process held on its
-#'   bound, raises `latents_boundary_fit` under `boundary = "error"`, naming
-#'   which; under `"fix"` those rows have no standard error or interval. `data`, when
-#'   given, must be the fitted data; `step` is not used (the information is
-#'   the derivative of the analytic score).
-#' @rdname parameter_inference
+#' @noRd
 #' @export
-parameter_inference.latents_growth_mixture <- function(
+parameter_inference.latents_growth_mixture <-function(
     x, data = NULL, level = 0.95, step = 1e-4,
     vcov_type = c("observed", "robust", "opg"),
     adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"),

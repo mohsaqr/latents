@@ -1,3 +1,35 @@
+# latents 1.1.1
+
+## Help pages (2026-10-29)
+
+* S3 methods (`print()`, `summary()`, `as.data.frame()`, `plot()`,
+  `get_results()`, `parameter_inference()` and others for each class) no
+  longer have help entries of their own: the help index has 57 entries instead
+  of 222, and the page for each function says which methods its objects have.
+  The arguments only `plot()` takes are listed in a section of
+  `?"latents-plots"`, and `?parameter_inference` covers every model family.
+  The topics `latents-print`, `latents-summary` and `latents-as-data-frame`
+  are gone; their content is on `?get_results`. No function changed.
+* Clearer descriptions of `diagnostics()`, `get_results()`, `report()`,
+  `pool_imputations()`, `mixture_regression()` and `bootstrap_lrt()`, and of
+  two conditions in `?"latents-conditions"`.
+* Tests: 112 tests that compare results with other packages, numerical
+  routines, Latent GOLD, published values or independent re-implementations
+  moved from the package tests to `tests/equivalence/` in the source
+  repository, where continuous integration runs them. No test was removed.
+
+# latents 1.1.0
+
+## CRAN release (2026-10-29)
+
+This release brings the changes since CRAN 0.9.21 (the GitHub releases
+0.9.22 to 1.0.0) to CRAN. The estimation code is the same as in 1.0.0 and
+0.98.1, so every result agrees with those versions. Some results differ
+from 0.9.21: "Upgrading from CRAN 0.9.21" under 0.98.1 lists when to refit.
+
+* Tests: the boundary-fit test that uses numDeriv for its standard errors is
+  skipped when numDeriv, a suggested package, is not installed.
+
 # latents 1.0.0
 
 ## Verification against independent programs and published analyses (2026-10-29)
@@ -5,16 +37,17 @@
 No estimation code has changed since 0.98.1; every result is the same. This
 release records how each function is verified.
 
-* Every major function agrees, on the current code and on models with two or
-  more classes, with at least three independent programs or packages, and
-  most with published analyses: `lca()` with nine sources and seven papers,
-  `lpa()` with eight and three, `lta()` and `mixture_regression()` with five
-  and three. The record, rebuilt from saved results, is
+* Comparisons cover independent model fits, published analyses, component
+  formulas and independent reference implementations. The verification
+  matrix distinguishes these evidence types and counts only complete,
+  agreeing model comparisons toward its independent-source strength. The
+  record, rebuilt from saved results, is
   `equivalence/verification-matrix/VERIFICATION-MATRIX.md` in the source
   repository.
 * New comparisons: Latent GOLD 6.1 (growth mixtures, latent class, profile
   and transition models, negative-binomial and ordinal mixture regression,
-  enumeration), glca, randomLCA, BayesLCA, multilevLCA, depmixS4, Rmixmod,
+  and individual fits at one to four classes), glca, randomLCA, BayesLCA,
+  multilevLCA, depmixS4, Rmixmod,
   EMCluster, mixtools, MoEClust, flexmix, LMest, seqHMM, lcmm, mitml,
   mitools, and mclust and poLCA for enumeration and the bootstrap LRT; and the
   published values of SAS PROC FMM, Stata [SEM] Examples 50g and 52g, Masyn
@@ -30,6 +63,13 @@ release records how each function is verified.
 * Tests: the release-engine comparison of grand-scaled EVV and VVV fits now
   converges both fits and compares posteriors up to label order (it failed on
   Linux and Windows), and the poLCA residual statistic is compared to 1e-5.
+* Verification safeguards reject missing comparisons and incomplete result
+  tables. Known-difference exceptions cannot waive parameter-count errors;
+  the LCA wrapper includes the added published HELP reference. The matrix
+  gives no source credit to skipped or errored tests, verifies saved results
+  against runtime-source and result hashes, and excludes internal checks
+  from its external-check headline. All ten new comparison kits have CI
+  jobs that fail on unexpected skips as well as errors and disagreements.
 
 # latents 0.98.1
 

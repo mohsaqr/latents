@@ -43,7 +43,9 @@
 #'   [parameter_inference()] does not take is refused with
 #'   `latents_bad_argument`. `vcov()` of a covariate model warns
 #'   `latents_unused_argument` for an argument it does not take, and refuses
-#'   `method = "bootstrap"` with `latents_unsupported_inference`. Ignored
+#'   `method = "bootstrap"` with `latents_unsupported_inference`; `vcov()` of
+#'   a transition model warns `latents_unused_argument` for any. `confint()`
+#'   of a transition model passes them to [parameter_inference()]. Ignored
 #'   otherwise.
 #' @return `coef()`: a named numeric vector. `vcov()`: a named symmetric matrix
 #'   over the same parameters. `confint()`: a matrix with one row per parameter

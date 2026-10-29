@@ -1,6 +1,5 @@
-# Every Gaussian structure, with weights, checked directly in probability space.
-# Regression tests from past audits; CI runs them on every platform.
-skip_on_cran()
+# Comparisons with independent references moved from tests/testthat/test-review-structures.R,
+# so that they run in CI's equivalence job rather than under R CMD check.
 
 review_gaussian_density <- function(x, mean, covariance) {
   residual <- sweep(x, 2L, mean, "-")

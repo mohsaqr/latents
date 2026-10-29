@@ -61,7 +61,8 @@
 #'   matrix for an ellipsoidal one.
 #' @return An object of class `latents_prior`: a list with `shrinkage`, `mean`,
 #'   `dof` and `scale`, the last three `NULL` where the default is to be
-#'   computed from the data.
+#'   computed from the data. Its `print()` method shows these settings and
+#'   returns the object invisibly.
 #' @section Conditions:
 #'   `latents_bad_argument` for a negative or non-finite `shrinkage`, a
 #'   non-finite `mean`, a `mean` with a zero `shrinkage`, a non-positive or
@@ -104,12 +105,9 @@ prior_control <- function(shrinkage = 0.01, mean = NULL, dof = NULL,
             class = "latents_prior")
 }
 
-#' @rdname prior_control
-#' @param x A `latents_prior` object.
-#' @param ... Ignored.
-#' @return `print()` returns `x` invisibly.
+#' @noRd
 #' @export
-print.latents_prior <- function(x, ...) {
+print.latents_prior <-function(x, ...) {
   describe <- function(value) {
     if (is.null(value)) "mclust default (from the data)" else
       if (length(value) == 1L) format(value) else

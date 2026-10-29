@@ -1,0 +1,16 @@
+pool-packages: W1
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. (code run outside of `test_that()`) ('test-pool-packages.R:10:1') - cannot open file 'equivalence/verification-matrix/provenance.R': No such file or directory
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-pool-packages.R:10:1'): (code run outside of `test_that()`) ─
+Error in `file(filename, "r", encoding = encoding)`: cannot open the connection
+Backtrace:
+    ▆
+ 1. └─base::source(...)
+ 2.   └─base::file(filename, "r", encoding = encoding)
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Error: Kit did not complete: 0 failed expectations, 1 errors, 0 skips.
+Execution halted

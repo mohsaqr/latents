@@ -11,18 +11,15 @@ suppressMessages(pkgload::load_all(".", quiet = TRUE))
 directory <- file.path("equivalence", "latentgold-coverage")
 source(file.path(directory, "compare-functions.R"))
 
-#' Mark disagreements explained by the register; record stale entries
+source(file.path("equivalence", "package-kit-runner.R"))
+
+#' Apply the shared register and retain the explanation column in this kit
 #' @noRd
 apply_known_differences <- function(comparison, known) {
-  explained <- vapply(seq_len(nrow(comparison)), function(i) {
-    hits <- which(known$case == comparison$case[[i]] &
-                    vapply(known$quantity, grepl, logical(1), x = comparison$quantity[[i]]))
-    if (length(hits) && !comparison$agrees[[i]]) hits[[1L]] else NA_integer_
-  }, integer(1))
-  comparison$status <- ifelse(comparison$agrees, "agrees",
-                              ifelse(is.na(explained), "disagrees", "known difference"))
-  comparison$known_reason <- ifelse(is.na(explained), "", known$reason[explained])
-  list(comparison = comparison, stale = known[setdiff(seq_len(nrow(known)), explained), ])
+  result <- apply_register(comparison, known)
+  result$comparison$known_reason <- ifelse(is.na(result$explained), "",
+                                           known$reason[result$explained])
+  result
 }
 
 #' One row per case: how many quantities agree, and the worst agreeing gap
@@ -40,12 +37,14 @@ case_summary <- function(comparison) {
 #' Run the comparison, write its files, and report
 #' @return `TRUE` when nothing disagrees unexplained and no entry is stale.
 run_comparison <- function(directory) {
+  source_snapshot <- matrix_capture_source()
   cases <- readRDS(file.path(directory, "kit", "cases.rds"))
   known <- utils::read.csv(file.path(directory, "known-differences.csv"), stringsAsFactors = FALSE)
   raw <- compare_all(cases, file.path(directory, "returned"))
   result <- apply_known_differences(raw, known)
   comparison <- result$comparison
   utils::write.csv(comparison, file.path(directory, "comparison.csv"), row.names = FALSE)
+  matrix_record_evidence(file.path(directory, "comparison.csv"), source_snapshot)
   utils::write.csv(attr(raw, "search"), file.path(directory, "search.csv"), row.names = FALSE)
   writeLines(c(sprintf("run: %s", format(Sys.Date())),
                sprintf("latents: %s", utils::packageVersion("latents")),

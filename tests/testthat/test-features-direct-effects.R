@@ -4,6 +4,7 @@
 # comparisons with Latent GOLD, Mplus and an independent implementation are in
 # equivalence/test-features-direct-effects.R. Data are drawn in base R here
 # (simulab is not a declared dependency of the package's tests).
+# The comparisons with independent references are in tests/equivalence/test-features-direct-effects.R.
 
 # More than 2 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -168,27 +169,6 @@ test_that("predict() on the training data reproduces the posteriors", {
   expect_gt(max(abs(moved$probability_profile_1 - predicted$probability_profile_1)), 0.1)
   expect_error(predict(fit, newdata = transform(data, w = as.character(w))),
                class = "latents_bad_data")
-})
-
-test_that("one profile is a linear regression of each indicator", {
-  data <- de_unit_data()
-  fit <- quietly(lpa(data, paste0("y", 1:4), 1, model = "VVI", n_starts = 1, seed = 1,
-                     tol = 1e-12, direct_effects = c("y3 ~ z + w", "y1 ~ z")))
-  models <- list(y1 = stats::lm(y1 ~ z, data), y2 = stats::lm(y2 ~ 1, data),
-                 y3 = stats::lm(y3 ~ z + w, data), y4 = stats::lm(y4 ~ 1, data))
-  expect_equal(unname(fit$means[1, ]),
-               unname(vapply(models, \(m) stats::coef(m)[["(Intercept)"]], numeric(1))),
-               tolerance = 1e-9)
-  expect_equal(unname(fit$direct_effects[c("y3:z", "y3:w", "y1:z")]),
-               unname(c(stats::coef(models$y3)[c("z", "w")], stats::coef(models$y1)[["z"]])),
-               tolerance = 1e-9)
-  # ML residual variance: the residual sum of squares over n.
-  expect_equal(unname(fit$variances[1, ]),
-               unname(vapply(models, \(m) mean(stats::residuals(m)^2), numeric(1))),
-               tolerance = 1e-9)
-  expect_equal(fit$log_likelihood,
-               sum(vapply(models, \(m) as.numeric(stats::logLik(m)), numeric(1))),
-               tolerance = 1e-12)
 })
 
 test_that("bootstrap, sensitivity and refits carry the direct effects", {

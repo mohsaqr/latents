@@ -196,6 +196,7 @@ test_that("collapsed group classes are flagged, warned and refused inference (AD
 })
 
 test_that("a boundary fit stops within the documented 0.002 standard errors (ADD2-6)", {
+  skip_if_not_installed("numDeriv")
   data <- r2_draw(14L, rep(6L, 40L), means = matrix(c(2, -1), 1L),
                   between = matrix(0, 1L, 2L), within = matrix(1, 1L, 2L))
   fit <- r2_quiet(multilpa(data, c("y1", "y2"), "g", n_group_classes = 1L,

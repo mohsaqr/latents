@@ -87,4 +87,90 @@ jobs:
         shell: Rscript {0}
 
       - name: Check documentation claims and retained inference references
-        run: Rscript equivalence/run.R '^(claims|mplus-(inference|robust|mixture-weights|lmr)|missing-patterns)$'
+        run: Rscript equivalence/run.R '^(claims|verification-attribution|mplus-(inference|robust|mixture-weights|lmr)|missing-patterns)$'
+
+  package-kits:
+    name: Comparison kit (${{ matrix.kit }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - kit: lca-packages
+            packages: |
+              any::glca
+              any::randomLCA
+              any::BayesLCA
+              any::multilevLCA
+              any::depmixS4
+              any::poLCA
+          - kit: lpa-packages
+            packages: |
+              any::Rmixmod
+              any::EMCluster
+              any::mixtools
+              any::mclust
+              any::MASS
+          - kit: regression-packages
+            packages: |
+              any::mixtools
+              any::MoEClust
+              any::flexmix
+          - kit: lta-packages
+            packages: |
+              any::LMest
+              any::seqHMM
+              any::TraMineR
+          - kit: pool-packages
+            packages: |
+              any::mitml
+              any::mitools
+              any::mice
+          - kit: enumeration-packages
+            packages: |
+              any::mclust
+              any::poLCA
+          - kit: growth-published
+            packages: any::lcmm
+          - kit: stata-published
+            packages: any::CompQuadForm
+          - kit: mplus-growth
+            packages: any::numDeriv
+          - kit: latentgold-coverage
+            packages: any::numDeriv
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+      OMP_NUM_THREADS: 1
+      OPENBLAS_NUM_THREADS: 1
+      VECLIB_MAXIMUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::withr
+            ${{ matrix.packages }}
+      - name: Install current package for worker processes
+        run: R CMD INSTALL .
+        shell: bash
+      - name: Check verification safeguards
+        run: |
+          Rscript equivalence/verification-matrix/tests/run.R
+          python3 -B -m unittest discover -s equivalence/verification-matrix/tests -p 'test_*.py'
+      - name: Compare every case in the kit
+        run: Rscript equivalence/run-package-kit-tests.R '${{ matrix.kit }}'
+      - name: Retain kit outcomes and source identity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparison-kit-${{ matrix.kit }}
+          path: tmp/equivalence-kits/${{ matrix.kit }}/
+          if-no-files-found: warn

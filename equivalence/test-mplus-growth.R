@@ -8,15 +8,16 @@
 mplus_growth_dir <- file.path("mplus-growth")
 source(file.path(mplus_growth_dir, "compare-functions.R"), local = TRUE)
 
+source("package-kit-runner.R", local = TRUE)
+
 test_that("growth mixtures reproduce genuine Mplus runs", {
   known <- utils::read.csv(file.path(mplus_growth_dir, "known-differences.csv"),
                            stringsAsFactors = FALSE)
   comparison <- compare_all_mplus_growth(mplus_growth_dir)
-  explained <- vapply(seq_len(nrow(comparison)), function(i) {
-    any(known$case == comparison$case[[i]] & known$reference == comparison$reference[[i]] &
-          vapply(known$quantity, grepl, logical(1), x = comparison$quantity[[i]]))
-  }, logical(1))
-  unexplained <- subset(comparison, !agrees & !explained)
+  registered <- apply_register(comparison, known)
+  expect_identical(nrow(comparison), 212L)
+  unexplained <- subset(registered$comparison, status == "disagrees")
+  expect_identical(nrow(registered$stale), 0L)
   expect_identical(nrow(unexplained), 0L,
                    info = paste(unexplained$case, unexplained$quantity, collapse = "; "))
 })

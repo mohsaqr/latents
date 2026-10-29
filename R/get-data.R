@@ -10,11 +10,16 @@
 #' `vcov_type` where the model has standard errors), and `as.data.frame()`,
 #' which returns its primary table, the same as `get_results(x)`.
 #'
-#' Tables joining caller-supplied columns to fitted rows check their alignment.
-#' Numeric columns may also match R's canonical CSV serialization, provided
-#' that serialization does not merge distinct values. This row-alignment check
-#' differs from the stricter fitted-data checks used for inference and model
-#' comparison; supplying unrelated columns alone cannot verify row order.
+#' A table that joins the columns of a supplied `data` frame to the fitted rows
+#' first checks that the rows are in the fitted order, by comparing the
+#' supplied columns the fit also holds (such as the identifier, the occasion
+#' and the indicators) with
+#' the fitted values. A numeric column also matches when it equals the fitted
+#' values after a round trip through [utils::write.csv()], provided the round
+#' trip does not merge distinct values. This check establishes row order only;
+#' inference and model comparison check more strictly that supplied data
+#' reproduce the fitted data. Columns the fit does not hold cannot establish
+#' row order.
 #'
 #' @param x A fitted model of this package, an enumeration grid, a model
 #'   comparison, a bootstrap comparison, a starting-value set, a
@@ -477,8 +482,8 @@
 #'   omitted. For a fit without discrete group classes every column is
 #'   compared against `profile`.
 #'
-#'   The model's labels are arbitrary, so mass off the diagonal indicates
-#'   relabelling, not failure.
+#'   Class labels are arbitrary, so a truth value assigned mostly to a class
+#'   with a different label indicates relabelling, not misclassification.
 #'
 #' @section Information criteria: Let `q` be the number of free parameters,
 #'   `n` the chosen sample size, and `EN` the entropy of the complete-data
@@ -674,185 +679,97 @@
 #' # which the model never saw. Both recovery checks are one call.
 #' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = c("engagement", "student_type"))
-#' @aliases latents-as-data-frame latents-print latents-summary
-#' @aliases as.data.frame.latents_family_enumeration
-#' @aliases as.data.frame.latents_growth_mixture
-#' @aliases as.data.frame.latents_mixture_regression
-#' @aliases as.data.frame.latents_pooled
-#' @aliases as.data.frame.latents_table
-#' @aliases as.data.frame.latents_transition_enumeration
-#' @aliases as.data.frame.multilpa
-#' @aliases as.data.frame.multilpa_additive
-#' @aliases as.data.frame.multilpa_bootstrap_lrt
-#' @aliases as.data.frame.multilpa_covariates
-#' @aliases as.data.frame.multilpa_cross_level
-#' @aliases as.data.frame.multilpa_enumeration
-#' @aliases as.data.frame.multilpa_lta
-#' @aliases as.data.frame.multilpa_start
-#' @aliases as.data.frame.multilpa_transitions
-#' @aliases as.data.frame.summary_multilpa
-#' @aliases as.data.frame.summary_multilpa_additive
-#' @aliases as.data.frame.summary_multilpa_bootstrap_lrt
-#' @aliases as.data.frame.summary_multilpa_covariates
-#' @aliases as.data.frame.summary_multilpa_enumeration
-#' @aliases as.data.frame.summary_multilpa_transitions
-#' @aliases coef.latents_growth_mixture
-#' @aliases coef.latents_mixture_regression
-#' @aliases coef.multilpa_additive
-#' @aliases coef.multilpa_lta
-#' @aliases confint.latents_growth_mixture
-#' @aliases confint.latents_mixture_regression
-#' @aliases confint.multilpa_additive
-#' @aliases get_results.latents_family_enumeration
-#' @aliases get_results.latents_growth_mixture
-#' @aliases get_results.latents_mixture_regression
-#' @aliases get_results.latents_pooled
-#' @aliases get_results.latents_transition_enumeration
-#' @aliases get_results.multilpa_additive
-#' @aliases get_results.multilpa_cross_level
-#' @aliases get_results.multilpa_lta
-#' @aliases logLik.latents_growth_mixture
-#' @aliases logLik.latents_mixture_regression
-#' @aliases logLik.multilpa_additive
-#' @aliases logLik.multilpa_cross_level
-#' @aliases logLik.multilpa_lta
-#' @aliases nobs.latents_growth_mixture
-#' @aliases nobs.latents_mixture_regression
-#' @aliases nobs.multilpa_additive
-#' @aliases nobs.multilpa_cross_level
-#' @aliases nobs.multilpa_lta
-#' @aliases print.latents_family_enumeration
-#' @aliases print.latents_growth_mixture
-#' @aliases print.latents_mixture_regression
-#' @aliases print.latents_plots
-#' @aliases print.latents_pooled
-#' @aliases print.latents_table
-#' @aliases print.latents_transition_enumeration
-#' @aliases print.multilpa
-#' @aliases print.multilpa_additive
-#' @aliases print.multilpa_bootstrap_lrt
-#' @aliases print.multilpa_covariates
-#' @aliases print.multilpa_cross_level
-#' @aliases print.multilpa_enumeration
-#' @aliases print.multilpa_lta
-#' @aliases print.multilpa_start
-#' @aliases print.multilpa_transitions
-#' @aliases print.summary_latents_growth_mixture
-#' @aliases print.summary_latents_mixture_regression
-#' @aliases print.summary_multilpa
-#' @aliases print.summary_multilpa_additive
-#' @aliases print.summary_multilpa_bootstrap_lrt
-#' @aliases print.summary_multilpa_covariates
-#' @aliases print.summary_multilpa_enumeration
-#' @aliases print.summary_multilpa_transitions
-#' @aliases summary.latents_family_enumeration
-#' @aliases summary.latents_growth_mixture
-#' @aliases summary.latents_mixture_regression
-#' @aliases summary.latents_pooled
-#' @aliases summary.latents_transition_enumeration
-#' @aliases summary.multilpa
-#' @aliases summary.multilpa_additive
-#' @aliases summary.multilpa_bootstrap_lrt
-#' @aliases summary.multilpa_covariates
-#' @aliases summary.multilpa_cross_level
-#' @aliases summary.multilpa_enumeration
-#' @aliases summary.multilpa_lta
-#' @aliases summary.multilpa_transitions
-#' @aliases vcov.latents_growth_mixture
-#' @aliases vcov.latents_mixture_regression
-#' @aliases vcov.multilpa_additive
-#' @aliases vcov.multilpa_lta
 #' @export
 get_results <- function(x, what = NULL, ...) {
   UseMethod("get_results")
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.default <- function(x, what = NULL, ...) {
+get_results.default <-function(x, what = NULL, ...) {
   stop(errorCondition(sprintf(
     "`get_results()` has no method for an object of class %s.",
     paste(sprintf("`%s`", class(x)), collapse = ", ")),
     class = "latents_bad_argument", call = NULL))
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.multilpa <- function(x, what = NULL, ...) {
+get_results.multilpa <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.multilpa_covariates <- function(x, what = NULL, ...) {
+get_results.multilpa_covariates <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.multilpa_transitions <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-
-#' @rdname get_results
-#' @export
-get_results.multilpa_enumeration <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.latents_comparison <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.multilpa_start <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.multilpa_diagnostics <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.summary_multilpa <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_results
-#' @export
-get_results.summary_multilpa_covariates <- function(x, what = NULL, ...) {
+get_results.multilpa_transitions <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.summary_multilpa_transitions <- function(x, what = NULL, ...) {
+get_results.multilpa_enumeration <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.summary_multilpa_enumeration <- function(x, what = NULL, ...) {
+get_results.latents_comparison <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_results
+#' @noRd
 #' @export
-get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
+get_results.multilpa_bootstrap_lrt <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.multilpa_start <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.multilpa_diagnostics <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_covariates <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_transitions <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_enumeration <-function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @noRd
+#' @export
+get_results.summary_multilpa_bootstrap_lrt <-function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 

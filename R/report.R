@@ -1,11 +1,13 @@
 #' Diagnostics of a fitted model
 #'
-#' Reports what a fitted model's estimation and classification look like, in
-#' five domains. The values are reported, not judged against cut-offs: the
-#' published ones (an average posterior of .70, odds of correct
-#' classification of 5, a smallest class of 5 percent; Nagin, 2005) are rules
-#' of thumb rather than derived criteria, and whether a value is adequate
-#' depends on the study. A status marks only what is a fact about the fit.
+#' Computes checks of a fitted model's estimation and classification in five
+#' domains (estimation, class size, classification, local independence and
+#' information) and returns them together with the tables they are based on. The values are not judged against cut-offs: the published
+#' ones (an average posterior of .70, odds of correct classification of 5, a
+#' smallest class of 5 percent; Nagin, 2005) are rules of thumb rather than
+#' derived criteria, and whether a value is adequate depends on the study. A
+#' `"fail"` or `"check"` status marks only a fact about the fit, such as
+#' non-convergence or an estimate at a bound (see Details).
 #'
 #' * **Estimation**: whether the best start converged; how many of the
 #'   starts run to the end reached the best log likelihood (a maximum reached
@@ -75,8 +77,8 @@
 #'   `print()` prints the checks grouped by domain, after a line naming those
 #'   that need attention, and returns the object invisibly. `plot()` returns the four
 #'   classification plots as a `latents_plots` list of ggplot objects, which
-#'   draws all four when printed. `as.data.frame()` returns the entropy table,
-#'   as it did before the checks existed. `summary()` returns the object
+#'   draws all four when printed. `as.data.frame()` returns the entropy table.
+#'   `summary()` returns the object
 #'   itself, which is already the summary of the fit's classification.
 #' @references
 #' Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
@@ -176,11 +178,9 @@ diagnostics <- function(x, data = NULL, plots = TRUE,
     NCOL(x$group_posteriors) > 1L
 }
 
-#' @rdname diagnostics
-#' @param row.names,optional Part of the base generic; `row.names` is applied
-#'   to the returned table.
+#' @noRd
 #' @export
-as.data.frame.multilpa_diagnostics <- function(x, row.names = NULL,
+as.data.frame.multilpa_diagnostics <-function(x, row.names = NULL,
                                                optional = FALSE, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   .multilpa_reject_extra_arguments(
@@ -204,9 +204,9 @@ summary.multilpa_diagnostics <- function(object, ...) {
   object
 }
 
-#' @rdname diagnostics
+#' @noRd
 #' @export
-print.multilpa_diagnostics <- function(x, ...) {
+print.multilpa_diagnostics <-function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   fit <- x$fit
   # A diagnostics object saved before the checks existed prints as it did.
@@ -425,9 +425,9 @@ print.multilpa_diagnostics <- function(x, ...) {
   former
 }
 
-#' @rdname diagnostics
+#' @noRd
 #' @export
-plot.multilpa_diagnostics <- function(x, ...) {
+plot.multilpa_diagnostics <-function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   .multilpa_reject_extra_arguments(
     list(...), "plot()",
@@ -458,7 +458,7 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' @param ... Not used. Any further argument raises `latents_bad_argument`
 #'   before anything is printed.
 #' @section What it prints: `summary()`, then `descriptives()`, then the
-#'   one-line-per-diagnostic reading of `diagnostics()`, then every plot view
+#'   printed checks of `diagnostics()`, then every plot view
 #'   the fit supports. Views that the plot method declines for this model are
 #'   listed after the plots as not drawn. The tables themselves are obtained
 #'   from [get_results()], [summary()], [descriptives()] and [diagnostics()].

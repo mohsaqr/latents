@@ -19,7 +19,7 @@ Run everything from the project root.
 | `houle-2026/` | Checks against the article and supplement of Houle et al. (2026). | `Rscript equivalence/houle-2026/check-fit-indices.R` |
 | `three-step/` | The BCH correction against tidySEM. | `Rscript equivalence/three-step/compare-tidysem.R` |
 | `deferred.R`, `fixtures.R`, `independent-likelihood.R` | Helpers the scripts above source. | — |
-| `latentgold-coverage/` | Growth mixtures, `lca()`, `lpa()`, `lta()`, negative-binomial and ordinal mixture regression and enumeration against Latent GOLD 6.1 (retained listings, offline). | `Rscript equivalence/latentgold-coverage/compare.R` |
+| `latentgold-coverage/` | Growth mixtures, `lca()`, `lpa()`, `lta()`, negative-binomial and ordinal mixture regression, including individual `lca()`/`lpa()` fits at one to four classes, against Latent GOLD 6.1 (retained listings, offline). | `Rscript equivalence/latentgold-coverage/compare.R` |
 | `lca-packages/`, `lpa-packages/`, `regression-packages/`, `lta-packages/`, `pool-packages/` | Each function against independent R implementations (glca, randomLCA, BayesLCA, multilevLCA, depmixS4; Rmixmod, EMCluster, mixtools; mixtools, MoEClust, flexmix; LMest, seqHMM; mitml, mitools), plus published values where they exist. Shared runner: `package-kit-runner.R`. | `Rscript equivalence/<kit>/compare.R` |
 | `enumeration-packages/` | `enumerate_lpa()` against `mclustBIC()`, `enumerate_lca()` against poLCA, `bootstrap_lrt()` against `mclustBootstrapLRT()` and mclust's vignette (mclust run to 1e-12; its default 1e-5 stops short). | `Rscript equivalence/enumeration-packages/compare.R` |
 | `growth-published/`, `stata-published/`, `mplus-growth/` | Published analyses reproduced (Proust-Lima et al. 2017 on paquid; Stata [SEM] Examples 52g and 50g and Masyn 2013 Table 25.12) and genuine Mplus 9 growth runs from JStats. | `Rscript equivalence/<kit>/compare.R` |
@@ -28,6 +28,15 @@ Run everything from the project root.
 
 Scripts other than the testthat files rewrite committed reports. To check
 only that they still run, run them in a scratch copy of the repository.
+
+The ten new comparison kits also run as separate CI jobs. Run one locally
+with `Rscript equivalence/run-package-kit-tests.R pool-packages` (substitute
+the kit name). It writes fresh test outcomes and their source identity under
+`tmp/equivalence-kits/` and fails on skipped tests, errors or disagreements.
+The fast validation regressions run with
+`Rscript equivalence/verification-matrix/tests/run.R`; they inject missing
+results, incorrect counts, skipped tests and changed source files without
+refitting models.
 
 ## The testthat assertions
 

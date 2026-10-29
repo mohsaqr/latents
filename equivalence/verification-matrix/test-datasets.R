@@ -42,6 +42,8 @@ test_datasets <- function() {
   ml3 <- .kit_cases(file.path("features", "ml-three-step", "kit", "cases.rds"))
   pair <- .kit_cases(file.path("features", "pair-covariance", "kit", "cases.rds"))
   joint <- .kit_cases(file.path("features", "joint-items", "kit", "cases.rds"))
+  joint_fn <- ifelse(vapply(joint, function(case) is.null(case$spec$h), logical(1)),
+                      "lca", "multilca")
   direct <- .kit_cases(file.path("features", "direct-effects", "kit", "cases.rds"))
   families <- .kit_cases(file.path("latentgold-families", "kit", "cases.rds"))
   markov <- .kit_cases(file.path("latentgold-step3-markov", "kit", "cases.rds"))
@@ -63,13 +65,13 @@ test_datasets <- function() {
                     names(ml3)[external_ml3]),
       .dataset_rows("test-features-pair-covariance.R", "lpa", "pair-covariance kit",
                     names(pair)[external_pair]),
-      .dataset_rows("test-features-joint-items.R", "lca", "joint-items kit", names(joint)),
-      .dataset_rows("test-features-direct-effects.R", "lca", "direct-effects kit", names(direct)),
+      .dataset_rows("test-features-direct-effects.R", "lpa", "direct-effects kit", names(direct)),
       .dataset_rows("test-latentgold-families.R", "multilpa", "Latent GOLD families kit", names(families)),
       .dataset_rows("test-latentgold-step3-markov.R", "three_step", "Latent GOLD step-3 Markov kit",
-                    names(markov)),
-      .dataset_rows("test-latentgold-step3-markov.R", "lta", "Latent GOLD step-3 Markov kit",
                     names(markov))),
+    lapply(unique(joint_fn), function(fn) {
+      .dataset_rows("test-features-joint-items.R", fn, "joint-items kit", names(joint)[joint_fn == fn])
+    }),
     lapply(unique(missing_fn), function(fn) {
       .dataset_rows("test-missing-patterns.R", fn, "missing-patterns kit", names(missing)[missing_fn == fn])
     }))

@@ -60,6 +60,13 @@ utils::globalVariables(c("seed", "status"))
 #'   proportion of observations given the same profile as the reference fit,
 #'   after label matching). A failed refit has `NA` in every column except
 #'   `seed`.
+#'
+#'   `as.data.frame()` and `plot()` methods are provided: `as.data.frame()`
+#'   returns the table as a plain `data.frame`, and `plot()` (which takes
+#'   `main` and `subtitle`) a ggplot object showing, for each seed, how far its log likelihood lies below the best
+#'   converged refit and its agreement with the reference fit. Unfinished
+#'   refits are distinguished from converged maxima; if none converged, the
+#'   highest observed log likelihood is the reference instead.
 #' @seealso [enumerate_classes()] to vary the number of classes, and
 #'   [parameter_inference()] for uncertainty about the parameters of a single
 #'   solution.
@@ -175,27 +182,17 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
   result
 }
 
-#' @rdname sensitivity
-#' @param row.names,optional Ignored; as for [as.data.frame()].
-#' @param ... Further arguments to the coercion and plotting methods are
-#'   ignored; style the returned plot with ggplot2.
-#' @return For `as.data.frame()`, the table as a plain `data.frame`.
+#' @noRd
 #' @export
-as.data.frame.latents_sensitivity <- function(x, row.names = NULL, optional = FALSE, ...) {
+as.data.frame.latents_sensitivity <-function(x, row.names = NULL, optional = FALSE, ...) {
   attr(x, "tolerance") <- NULL
   class(x) <- "data.frame"
   x
 }
 
-#' @rdname sensitivity
-#' @param main,subtitle Title and subtitle; `NULL` for the defaults.
-#' @return For `plot()`, a ggplot object: for each seed, how far its log
-#'   likelihood lies below the best converged refit and its agreement with
-#'   the reference fit. Unfinished refits are distinguished from converged
-#'   maxima. If none converged, the highest observed log likelihood is the
-#'   reference instead, and no seed is described as reaching a maximum.
+#' @noRd
 #' @export
-plot.latents_sensitivity <- function(x, main = NULL, subtitle = NULL, ...) {
+plot.latents_sensitivity <-function(x, main = NULL, subtitle = NULL, ...) {
   .gg_require()
   table <- as.data.frame(x)
   fitted <- is.finite(table$log_likelihood)

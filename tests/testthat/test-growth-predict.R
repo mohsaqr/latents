@@ -1,6 +1,7 @@
 # predict() for growth mixture models. The lcmm comparison is in
 # equivalence/test-growth-predict-lcmm.R; these tests use an independent dense
 # implementation (full marginal covariance per person) and invariants.
+# The comparisons with independent references are in tests/equivalence/test-growth-predict.R.
 
 # More than 2 s under CRAN's settings: skipped there to keep the check within
 # its time limit; it runs in CI and locally.
@@ -37,44 +38,6 @@ test_that("fitted and re-supplied persons give the fit's own posteriors", {
   expect_equal(predict(fit, data, type = "posterior"), fitted, tolerance = 1e-10)
   expect_equal(predict(fit, data, type = "class_conditional"),
                predict(fit, type = "class_conditional"), tolerance = 1e-10)
-})
-
-test_that("conditional curves match a dense empirical Bayes computation", {
-  data <- predict_fixture()
-  fit <- predict_fit(data)
-  new <- subset(data, id <= 6)
-  ours <- predict(fit, new, type = "class_conditional")
-  params <- fit$params
-  # b_ik = G_k Z_i' V_ik^-1 (y_i - X_i beta_k), V_ik = Z_i G_k Z_i' + s_k^2 I.
-  dense <- unlist(lapply(seq_len(2L), function(k) {
-    covariance <- params$random_covariance[[k]]
-    unlist(lapply(split(new, new$id), function(person) {
-      z <- cbind(1, person$time)
-      mean <- params$beta[1L, k] + params$beta[2L, k] * person$time
-      v <- z %*% covariance %*% t(z) + diag(params$sigma2[k], nrow(person))
-      effects <- covariance %*% t(z) %*% solve(v, person$y - mean)
-      as.vector(mean + z %*% effects)
-    }), use.names = FALSE)
-  }))
-  expect_equal(ours$fitted, dense, tolerance = 1e-8)
-  # Each person's dense posterior under the membership prior.
-  dense_posterior <- t(vapply(split(new, new$id), function(person) {
-    z <- cbind(1, person$time)
-    prior <- exp(c(0, sum(params$gamma[, 2L] * c(1, person$age[1L]))))
-    log_joint <- log(prior / sum(prior)) + vapply(seq_len(2L), function(k) {
-      covariance <- params$random_covariance[[k]]
-      mean <- params$beta[1L, k] + params$beta[2L, k] * person$time
-      v <- z %*% covariance %*% t(z) + diag(params$sigma2[k], nrow(person))
-      r <- person$y - mean
-      -0.5 * (nrow(person) * log(2 * pi) +
-                as.numeric(determinant(v, logarithm = TRUE)$modulus) +
-                sum(r * solve(v, r)))
-    }, numeric(1))
-    exp(log_joint - max(log_joint)) / sum(exp(log_joint - max(log_joint)))
-  }, numeric(2)))
-  posterior <- predict(fit, new, type = "posterior")
-  expect_equal(unname(as.matrix(posterior[c("posterior_class_1", "posterior_class_2")])),
-               unname(dense_posterior), tolerance = 1e-8)
 })
 
 test_that("predictions satisfy their mixing identities", {

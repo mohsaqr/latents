@@ -211,7 +211,7 @@
 #'     [confint()].}
 #'   \item{`latents_unsupported_sensitivity`}{[sensitivity()] was called on a
 #'     model family whose refit needs arguments the shared refit does not
-#'     carry, whose profile labels cannot yet be aligned between two fits, or
+#'     carry, whose profile labels cannot be aligned between two fits, or
 #'     on a directly fixed fit whose original free starts cannot be
 #'     replayed.}
 #'   \item{`latents_unsupported_three_step`}{[three_step()] or [r3step()] was
@@ -261,9 +261,9 @@
 #'     on a fit made without `local_dependence`.}
 #'   \item{`latents_no_direct_effects`}{`get_results(fit, "direct_effects")`
 #'     on a fit made without `direct_effects`.}
-#'   \item{`latents_partial_pair`}{No longer raised after version 0.97.1: a row
-#'     observing one item of a `local_dependence` pair now contributes that
-#'     item, the pair's other item summed out, instead of losing the pair.}
+#'   \item{`latents_partial_pair`}{Not raised. A row observing one item of a
+#'     `local_dependence` pair contributes that item, with the pair's other
+#'     item summed out.}
 #'   \item{`latents_no_lmr`}{`get_results(x, "lmr")` on a grid with no two
 #'     converged candidates one profile or one group class apart. Also of class
 #'     `latents_nothing_to_plot`.}
@@ -401,7 +401,8 @@
 #'     fitting this is treated as a rejected step; it reaches the caller only
 #'     for parameter values supplied by hand.}
 #'   \item{`latents_unused_argument`}{A method that accepts `...` (several
-#'     `plot()` methods, `summary()` of fits and grids released in 0.9.21,
+#'     `plot()` methods, `summary()` of the fits and grids whose summary
+#'     takes no `level` or `vcov_type`,
 #'     `vcov()`, `predict()` and [descriptives()] of a data frame) was given
 #'     an argument it does not use. The call proceeds and
 #'     the warning names the argument.}

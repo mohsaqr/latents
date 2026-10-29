@@ -1,0 +1,25 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | claims                                                         
+⠼ |          5 | claims                                                         
+⠇ |         29 | claims                                                         
+⠦ |         47 | claims                                                         
+⠦ |         77 | claims                                                         
+⠋ |         91 | claims                                                         
+⠇ |        119 | claims                                                         
+⠹ |        143 | claims                                                         
+⠸ |        164 | claims                                                         
+⠇ |        189 | claims                                                         
+⠹ |        213 | claims                                                         
+⠧ |        248 | claims                                                         
+⠸ |        274 | claims                                                         
+✔ |        275 | claims [1.3s]
+
+⠏ |          0 | verification-attribution                                       
+⠧ |         28 | verification-attribution                                       
+✔ |         28 | verification-attribution
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 1.4 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 303 ]

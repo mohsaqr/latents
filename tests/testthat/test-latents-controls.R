@@ -2,6 +2,7 @@
 # of R3STEP, and standard errors for a one-step covariate model whose
 # indicators are categorical. Each is checked against the formula it is meant
 # to solve, not against itself.
+# The comparisons with independent references are in tests/equivalence/test-latents-controls.R.
 
 # A two-level latent class design with a student-level covariate, far from
 # any boundary: two classes, five binary items, a slope of 0.8 on the logit.
@@ -242,24 +243,6 @@ test_that("a mixed covariate fit carries both measurement blocks", {
                   c("mean", "variance", "response", "coefficient"))
   expect_equal(sum(inference$parameter == "response"), 2L * 2L * 5L)
   expect_true(all(inference$standard_error > 0))
-})
-
-test_that("OPG standard errors reproduce glca on the same data", {
-  skip_on_cran()
-  # glca 1.4.2, item(y1, ..., y5) ~ z, group = g, nclass = 2, ncluster = 2,
-  # on this seeded design (150 groups of 10): log likelihood -4486.5647 and
-  # standard errors 0.16569, 0.16736 (the two intercepts) and 0.13636 (z).
-  data <- .lca_design(n_groups = 150, per = 10)
-  fit <- multilca(data, vars = .lca_items, id = "g", n_profiles = 2,
-                  n_group_classes = 2, profile_covariates = "z", n_starts = 1,
-                  seed = 1)
-  expect_equal(fit$log_likelihood, -4486.5647, tolerance = 1e-7)
-  opg <- subset(parameter_inference(fit, vcov_type = "opg"), level == "profile")
-  expect_equal(sort(opg$standard_error), sort(c(0.16569, 0.16736, 0.13636)),
-               tolerance = 2e-3)
-  # The observed information is what the curvature says; glca does not use it.
-  observed <- subset(parameter_inference(fit), level == "profile" & term == "z")
-  expect_lt(observed$standard_error, subset(opg, term == "z")$standard_error)
 })
 
 test_that("bound-active response probabilities are refused or held on request", {

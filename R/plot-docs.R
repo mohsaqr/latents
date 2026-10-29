@@ -177,36 +177,9 @@
 #' @param cell_labels For sequence views, `TRUE` (default) prints each
 #'   assigned profile in its cell when the cells are large enough for the
 #'   text.
-#' @param predictor For the fitted view of a mixture regression, a numeric
-#'   predictor in the formula. `NULL` (default) uses the first numeric
-#'   predictor.
-#' @param time For growth and trajectory views, the numeric time column.
-#'   `NULL` (default) uses the first numeric variable in the fitted random or
-#'   regression design.
-#' @param facet For trajectories, `FALSE` (default) draws all classes in one
-#'   panel; `TRUE` draws one panel per class.
-#' @param persons For individual trajectories, the number of persons to show
-#'   (default 12), or a vector of their identifiers.
-#' @param max_persons The maximum number of observed trajectories drawn
-#'   behind the class means (default 120); zero hides them.
-#' @param spread For growth trajectories, the band of random-effect spread of
-#'   persons around the class curve, from 0 (hidden) to less than 1; default
-#'   0.8.
 #' @param level For `plot_tree()`, `"individuals"` (default; the cases
 #'   divided into profiles or classes) or `"groups"` (the groups divided into
-#'   group classes). Otherwise the confidence level for additive,
-#'   mixture-regression and growth
-#'   views (default 0.95). On pooled plots, the former name of `what`:
-#'   `"profile"`, `"group"` or `"measurement"`.
-#' @param criterion The former name of `what` for enumeration criteria. On a
-#'   profile grid it is used alone or with `what = "enumeration"`; transition
-#'   and group-class family grids take `"bic"`, `"aic"` or
-#'   `"bic_individual"` (or a unique abbreviation, such as `"bic_i"`), or any
-#'   other view of the grid.
-#' @param palette For bootstrap plots, a colour vector for the histogram and
-#'   the observed statistic; `NULL` (default) uses the standard colours.
-#' @param style The former bootstrap drawing style; ignored with a
-#'   `latents_unused_argument` warning.
+#'   group classes). For `plot()`, see *Arguments of `plot()`*.
 #' @param ... With `what = "tree"` (on `plot()` of an enumeration or on
 #'   `plot_enumeration()`), the arguments of `plot_tree()`. On `plot()` of a
 #'   transition or group-class family grid, also `combine`, `labels`,
@@ -228,6 +201,40 @@
 #'   (`"criteria"`, `"quality"`, `"selection"` or `"tree"`), `supported`
 #'   (`TRUE` when the grid offers it), `description` and `reason` (why it is
 #'   not offered; `NA` when it is).
+#'
+#' @section Arguments of `plot()`:
+#' Besides `x`, `what`, `main`, `subtitle` and the arguments above, `plot()`
+#' takes these on the objects named:
+#' \describe{
+#'   \item{`level`}{The confidence level for additive, mixture-regression and
+#'     growth views (default 0.95). On pooled plots, the former name of
+#'     `what`: `"profile"`, `"group"` or `"measurement"`.}
+#'   \item{`predictor`}{For the fitted view of a mixture regression, a numeric
+#'     predictor in the formula. `NULL` (default) uses the first numeric
+#'     predictor.}
+#'   \item{`time`}{For growth and trajectory views, the numeric time column.
+#'     `NULL` (default) uses the first numeric variable in the fitted random
+#'     or regression design.}
+#'   \item{`facet`}{For trajectories, `FALSE` (default) draws all classes in
+#'     one panel; `TRUE` draws one panel per class.}
+#'   \item{`persons`}{For individual trajectories, the number of persons to
+#'     show (default 12), or a vector of their identifiers.}
+#'   \item{`max_persons`}{The maximum number of observed trajectories drawn
+#'     behind the class means (default 120); zero hides them.}
+#'   \item{`spread`}{For growth trajectories, the band of random-effect
+#'     spread of persons around the class curve, from 0 (hidden) to less than
+#'     1; default 0.8.}
+#'   \item{`criterion`}{The former name of `what` for enumeration criteria. On
+#'     a profile grid it is used alone or with `what = "enumeration"`;
+#'     transition and group-class family grids take `"bic"`, `"aic"` or
+#'     `"bic_individual"` (or a unique abbreviation, such as `"bic_i"`), or
+#'     any other view of the grid.}
+#'   \item{`palette`}{For bootstrap plots, a colour vector for the histogram
+#'     and the observed statistic; `NULL` (default) uses the standard
+#'     colours.}
+#'   \item{`style`}{The former bootstrap drawing style; ignored with a
+#'     `latents_unused_argument` warning.}
+#' }
 #'
 #' @section What `plot()` draws:
 #' Each object takes `what =` for its views, `main`, `subtitle` and the
@@ -258,7 +265,7 @@
 #'     the model-selection views `"deltas"` and `"heatmap"` (which use the
 #'     criterion in `using`), `"smallest"` and `"trust"`; `"selection"` draws
 #'     those four and `"diagnostics"`. Transition and group-class family
-#'     grids draw `"bic"` by default, as in latents 0.9.21, and take every
+#'     grids draw `"bic"` by default and take every
 #'     view they offer (the table under *Description*); a regression grid
 #'     draws its default criteria and takes the same arguments as
 #'     `plot_enumeration()`.}
@@ -387,11 +394,4 @@
 #'   plot_diagnostics(fit, what = "avepp")
 #' }
 #' @name latents-plots
-#' @aliases plot.multilpa plot.multilpa_enumeration plot.multilpa_covariates
-#'   plot.multilpa_transitions plot.multilpa_lta plot.multilpa_additive
-#'   plot.multilpa_cross_level plot.latents_growth_mixture
-#'   plot.latents_mixture_regression plot.latents_pooled
-#'   plot.latents_comparison plot.multilpa_bootstrap_lrt
-#'   plot.latents_transition_enumeration plot.latents_family_enumeration
-#'   plot.latents_regression_enumeration
 NULL

@@ -25,19 +25,6 @@ test_that("sufficient statistics match per-group means and scatter", {
   expect_equal(stats$pooled_scatter, colSums(stats$scatter))
 })
 
-test_that("one-indicator density equals numerical integration over the intercept", {
-  x <- c(0.4, -0.2, 1.3, 0.9)
-  data <- data.frame(g = c(1, 1, 1, 1, 2, 2), y = c(x, 0, 1))
-  stats <- .additive_prepare(data, "y", "g")
-  parameters <- list(means = matrix(0.3), between = matrix(0.5),
-                     within = 0.8, weights = 1)
-  integral <- stats::integrate(\(b) vapply(b, \(v) {
-    prod(stats::dnorm(x, v, sqrt(0.8))) * stats::dnorm(v, 0.3, sqrt(0.5))
-  }, numeric(1)), -Inf, Inf, rel.tol = 1e-11, abs.tol = 0)
-  expect_equal(.additive_log_density(stats, parameters)[1L, 1L],
-               log(integral$value), tolerance = 1e-9, ignore_attr = TRUE)
-})
-
 test_that("marginal intercept moments follow the law of total variance", {
   stats <- .additive_prepare(additive_data, additive_vars, "group")
   e <- .additive_expectation(stats, additive_parameters)

@@ -1,0 +1,15 @@
+All 17 current source/result manifests validate; 0.96.1 remains historical.
+34,031 external/component/independent checks; zero failed/incomplete current results.
+                 fn n_sources n_papers n_datasets checks_current
+                lpa         7        3        231          13807
+           multilpa         4        0         88           7045
+                lca         9        7         93           6002
+           multilca         4        1         27           5374
+                lta         5        3         28           2430
+ mixture_regression         5        3         21            702
+             growth         3        1         14            807
+         three_step         4        0         77           2344
+      bootstrap_lrt         3        0         63           5462
+        enumeration         3        0          8            205
+   pool_imputations         3        0          2            114
+CI YAML parses and declares all 10 comparison-kit jobs.

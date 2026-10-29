@@ -2,8 +2,6 @@
 % Please edit documentation in R/sensitivity.R
 \name{sensitivity}
 \alias{sensitivity}
-\alias{as.data.frame.latents_sensitivity}
-\alias{plot.latents_sensitivity}
 \title{Refit a model under several seeds}
 \usage{
 sensitivity(
@@ -16,10 +14,6 @@ sensitivity(
   tolerance = NULL,
   cores = 1L
 )
-
-\method{as.data.frame}{latents_sensitivity}(x, row.names = NULL, optional = FALSE, ...)
-
-\method{plot}{latents_sensitivity}(x, main = NULL, subtitle = NULL, ...)
 }
 \arguments{
 \item{x}{The reference fit: a \code{\link[=multilpa]{multilpa()}} model, an \code{\link[=lta]{lta()}} model, or a
@@ -65,13 +59,6 @@ Workers are forked processes on macOS and Linux, and a socket cluster on
 Windows and on macOS with Apple's Accelerate BLAS, as in \code{\link[=multilpa]{multilpa()}};
 socket workers load the installed copy of the package. More cores than
 seeds are not used.}
-
-\item{row.names, optional}{Ignored; as for \code{\link[=as.data.frame]{as.data.frame()}}.}
-
-\item{...}{Further arguments to the coercion and plotting methods are
-ignored; style the returned plot with ggplot2.}
-
-\item{main, subtitle}{Title and subtitle; \code{NULL} for the defaults.}
 }
 \value{
 A \code{data.frame} of class \code{latents_sensitivity} (which \code{plot()}
@@ -83,13 +70,12 @@ proportion of observations given the same profile as the reference fit,
 after label matching). A failed refit has \code{NA} in every column except
 \code{seed}.
 
-For \code{as.data.frame()}, the table as a plain \code{data.frame}.
-
-For \code{plot()}, a ggplot object: for each seed, how far its log
-likelihood lies below the best converged refit and its agreement with
-the reference fit. Unfinished refits are distinguished from converged
-maxima. If none converged, the highest observed log likelihood is the
-reference instead, and no seed is described as reaching a maximum.
+\code{as.data.frame()} and \code{plot()} methods are provided: \code{as.data.frame()}
+returns the table as a plain \code{data.frame}, and \code{plot()} (which takes
+\code{main} and \code{subtitle}) a ggplot object showing, for each seed, how far its log likelihood lies below the best
+converged refit and its agreement with the reference fit. Unfinished
+refits are distinguished from converged maxima; if none converged, the
+highest observed log likelihood is the reference instead.
 }
 \description{
 Refits the model under each of several random seeds and returns one row

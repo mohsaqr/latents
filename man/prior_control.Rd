@@ -2,12 +2,9 @@
 % Please edit documentation in R/prior.R
 \name{prior_control}
 \alias{prior_control}
-\alias{print.latents_prior}
 \title{Specify a conjugate prior for Gaussian mixture estimation}
 \usage{
 prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
-
-\method{print}{latents_prior}(x, ...)
 }
 \arguments{
 \item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa}
@@ -23,17 +20,12 @@ their centred values under \code{\link[=multilpa]{multilpa()}}'s \code{centering
 \item{scale}{Optional prior scale: a single positive number for an
 axis-parallel or spherical structure, or a positive-definite \code{d} by \code{d}
 matrix for an ellipsoidal one.}
-
-\item{x}{A \code{latents_prior} object.}
-
-\item{...}{Ignored.}
 }
 \value{
 An object of class \code{latents_prior}: a list with \code{shrinkage}, \code{mean},
 \code{dof} and \code{scale}, the last three \code{NULL} where the default is to be
-computed from the data.
-
-\code{print()} returns \code{x} invisibly.
+computed from the data. Its \code{print()} method shows these settings and
+returns the object invisibly.
 }
 \description{
 Returns a \code{latents_prior} object requesting maximum a posteriori (MAP)

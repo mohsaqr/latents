@@ -1,0 +1,2 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-pool-packages.R","pool-packages","pool-packages agrees with its references",3,0,FALSE,FALSE,0,8.393,0.2,8.867,3

@@ -23,7 +23,7 @@
 #' `latents_failed_replicates` is warned naming the count; the p-value is `NA`
 #' only when fewer than half of the requested replicates are valid. Excluding
 #' invalid replicates conditions the null distribution on a valid refit, so a
-#' large invalid share is worth reporting with the result.
+#' large invalid share should be reported with the result.
 #'
 #' @inheritParams mixture_regression
 #' @param n_classes Positive integer class counts to fit. Default `1:4`.
@@ -49,7 +49,11 @@
 #'   failed, and the p-value is `NA` when the observed fits fail validation or
 #'   fewer than half of the requested replicates are valid.
 #'   `get_results(x, "model", n_classes = , n_group_classes = )` returns one
-#'   fitted model. `summary()` returns the same table as [as.data.frame()].
+#'   fitted model, `get_results(x, "tree")` the class tree and
+#'   `get_results(x, "all")` the named list of the `fit` and `tree` tables;
+#'   any other `what` raises `latents_bad_argument`. `print()` shows the main
+#'   columns of the table. `summary()` returns the same table as
+#'   [as.data.frame()].
 #'   `plot()` draws AIC, BIC, SABIC and ICL across the classes (see
 #'   [plot_enumeration()] for its other views, and `plot_views(x)` for the
 #'   views a regression grid offers).
@@ -307,22 +311,16 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
              blrt_flagged = n_invalid)
 }
 
-#' @rdname enumerate_regressions
-#' @param x A `latents_regression_enumeration` object.
-#' @param row.names,optional Not used; part of the generic.
+#' @noRd
 #' @export
-as.data.frame.latents_regression_enumeration <- function(x, row.names = NULL,
+as.data.frame.latents_regression_enumeration <-function(x, row.names = NULL,
                                                      optional = FALSE, ...) {
   x$table
 }
 
-#' @rdname enumerate_regressions
-#' @param what `"fit"` (the default) for the comparison table, `"model"` for
-#'   one fitted model, `"tree"` for the class tree, or `"all"` for the named
-#'   list of the two tables (`fit` and `tree`). Any other name raises
-#'   `latents_bad_argument`.
+#' @noRd
 #' @export
-get_results.latents_regression_enumeration <- function(x, what = "fit",
+get_results.latents_regression_enumeration <-function(x, what = "fit",
                                                    n_classes = NULL,
                                                    n_group_classes = 1L, ...) {
   what <- .multilpa_match_table(what, c("fit", "model", "tree"))
@@ -358,10 +356,9 @@ get_results.latents_regression_enumeration <- function(x, what = "fit",
   fit
 }
 
-#' @rdname enumerate_regressions
-#' @param object A `latents_regression_enumeration` object.
+#' @noRd
 #' @export
-summary.latents_regression_enumeration <- function(object, ...) {
+summary.latents_regression_enumeration <-function(object, ...) {
   stopifnot("`object` must be a `latents_regression_enumeration` grid" =
               inherits(object, "latents_regression_enumeration"))
   .latents_warn_unused_arguments(list(...), "summary()",
@@ -369,9 +366,9 @@ summary.latents_regression_enumeration <- function(object, ...) {
   .subset2(object, "table")
 }
 
-#' @rdname latents-plots
+#' @noRd
 #' @export
-plot.latents_regression_enumeration <- function(x, what = c("aic", "bic", "sabic",
+plot.latents_regression_enumeration <-function(x, what = c("aic", "bic", "sabic",
                                                             "icl"),
                                                 combine = TRUE, labels = TRUE,
                                                 mark_minimum = TRUE, main = NULL,
@@ -384,10 +381,9 @@ plot.latents_regression_enumeration <- function(x, what = c("aic", "bic", "sabic
                    subtitle = subtitle, cutoff = cutoff, using = using, ...)
 }
 
-#' @rdname enumerate_regressions
-#' @param digits Significant digits.
+#' @noRd
 #' @export
-print.latents_regression_enumeration <- function(x, digits = 4L, ...) {
+print.latents_regression_enumeration <-function(x, digits = 4L, ...) {
   cat("Mixture regression class enumeration\n\n")
   shown <- x$table[intersect(c("n_classes", "n_group_classes",
                                "log_likelihood", "n_parameters", "bic",

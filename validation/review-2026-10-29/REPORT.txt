@@ -1,0 +1,221 @@
+latents 1.0.0 review — 2026-10-29
+Reviewed commit: 7d0e0df
+
+Assessment
+
+The equivalence expansion provides substantial useful evidence, but the
+verification machinery and headline claims need correction. Eight findings
+are listed below: seven medium-priority validation/reporting defects and one
+low-priority counting defect. No new estimation-code defect was confirmed.
+Several findings were demonstrated by injecting defects into comparison
+results in memory; they do not mean that the saved numeric results contain
+those defects.
+
+Scope: the latest 1.0.0 equivalence additions, comparison runners and tests,
+verification matrix, CI selection, and runtime changes from 3fb4e7a through
+HEAD (0.98.0 and 0.98.1). R/ is unchanged between 0.98.1 and 1.0.0.
+Older material was inspected where the new matrix relies on it. This was
+not a fresh execution of the entire package or every external comparison.
+
+Findings, in priority order
+
+1. P2 — The new LCA wrapper fails on its own valid published reference.
+
+   Location: equivalence/test-lca-packages.R:36–38;
+   equivalence/lca-packages/compare-functions.R:307–309.
+
+   compare_all_lca() now appends the published HELP comparison, yielding
+   six reference names. The wrapper still asserts exactly five package
+   names. Evaluating its actual test against the committed comparison.csv
+   produces one failure and three successes: the unexpected reference is
+   Kleinman and Horton (2011), SAS and R blog, Example 8.21. The numeric
+   agreement and known-difference assertions pass on those saved results.
+
+   Restrict the package-name assertion to kind='R package' and verify the
+   published source separately, or include all intended references. This
+   confirms the previous handoff's unverified wrapper was not green.
+
+2. P2 — Missing comparisons can pass the new test wrappers.
+
+   Locations: equivalence/test-pool-packages.R:18;
+   equivalence/test-mplus-growth.R:19;
+   equivalence/test-stata-published.R:17.
+
+   subset(comparison, !agrees & !explained) silently discards NA agreement
+   values. The affected wrappers do not separately require complete,
+   finite comparison results. Evaluating their actual test expressions
+   against modified saved tables demonstrated that:
+     * all 36 pooling comparisons can become NA and the test passes;
+     * all 91 Mplus-growth standard-error comparisons can become NA and
+       the test passes;
+     * all 50 Stata standard-error comparisons can become NA and the test
+       passes.
+
+   The original saved tables contain no missing agreement values. This is
+   a regression-detection defect. Require a complete expected inventory,
+   nonmissing agreement decisions and finite differences/tolerances. Do not
+   require reference_value itself to be finite for aggregated comparisons:
+   those intentionally store their evidence in a maximum-difference field.
+
+3. P2 — Broad known-difference entries suppress unrelated failures.
+
+   Location: equivalence/mplus-growth/known-differences.csv:2–4;
+   equivalence/package-kit-runner.R:11–18.
+
+   Each three-class exception uses the regex '.', accepting any quantity
+   for that case. Changing runner_gmm_k3's parameter count from 20 to 9999
+   is classified as a known difference, with zero unexplained or stale
+   entries. A different maximum or a Heywood solution does not explain an
+   arbitrary parameter-count discrepancy.
+
+   Restrict exceptions to the affected estimates, uncertainty and fit
+   statistics. Assert unaffected quantities independently. Where practical,
+   bound or verify the documented discrepancy instead of accepting any
+   disagreement under the same case name.
+
+4. P2 — Source counts overstate independent function verification.
+
+   Locations: equivalence/verification-matrix/test-attribution.csv:43,127;
+   equivalence/verification-matrix/harness-references.csv:15–16;
+   equivalence/latentgold-coverage/compare-functions.R:431–459.
+
+   The matrix combines different types of evidence under the same source
+   badge:
+     * stats lm/glm earns multilpa() credit solely from three assertions
+       about .multilpa_weighted_logits(). That test fits no mixture.
+     * MASS and VGAM credits come from project-written reference EM
+       implementations using those packages for M-steps. This is useful
+       independent-code evidence, but not a mixture fitted by either package.
+     * tidyLPA's lpa() credit checks classification formulas on latents'
+       own posteriors. It does not compare an independent tidyLPA fit.
+     * Latent GOLD earns enumeration credit from direct lpa()/lca() fits
+       and their statistics; the comparison never calls enumerate_lpa()
+       or enumerate_lca(). Reattributing this evidence would reduce the
+       displayed enumeration source count from four to three.
+
+   Preserve these tests, but classify full-fit, component and custom-oracle
+   evidence separately. The seven-source multilpa() headline is not seven
+   independent mixture implementations. Update NEWS and generated reports
+   after correcting the attribution rules.
+
+5. P2 — Matrix import can turn skipped or errored tests into green evidence.
+
+   Location: equivalence/verification-matrix/build.R:100–103,154–158.
+
+   The importer retains nb and failed but discards passed, skipped and
+   error. Actual testthat results show that a skip can have nb=1, failed=0,
+   passed=0; a passing preliminary assertion followed by stop() can have
+   nb=1, failed=0, error=TRUE. Importing the latter produced one current
+   check, zero failures and status='current'.
+
+   Existing saved current result files have no skips/errors, so this does
+   not invalidate their present pass results. It does make the living
+   report unsafe to refresh after an unsuccessful run. Import outcome
+   flags, give skips no agreement credit, and treat errors as failed or
+   incomplete evidence.
+
+6. P2 — CI does not run the newly added equivalence kits.
+
+   Location: .github/workflows/equivalence.yaml:80–90.
+
+   The workflow runs tests/equivalence, the established harness suites, and
+   a small regex-selected set under equivalence/. None includes the new
+   *-packages, growth-published, stata-published, mplus-growth or
+   latentgold-coverage wrappers. The dependency list also does not explicitly
+   provision several of their reference packages. Thus a green workflow
+   would not validate the comparisons added in 1.0.0.
+
+   Add an explicit CI job or job matrix for these kits with their required
+   dependencies, retained output and a check against unexpected skips.
+   This review did not dispatch CI or inspect remote job results.
+
+7. P2 — 'Current code' evidence has no enforced source identity.
+
+   Location: equivalence/verification-matrix/build.R:36–48,218,614.
+
+   Current flags are manually fixed in the input table and every kit is
+   unconditionally current=TRUE with code='0.98.1'. The renderer reads the
+   present DESCRIPTION version. A future source edit followed by rebuilding
+   the matrix therefore republishes old results beneath a new package
+   version, still labelled current, without detecting that they are stale.
+
+   This is not evidence that today's 1.0.0 estimation results are stale:
+   its runtime code matches 0.98.1. Record a runtime-source hash for each
+   run and compare it with the tree being reported. If hashes differ, require
+   a rerun or an explicit, reviewable justification of equivalence.
+
+8. P3 — The external-check headline includes internal checks.
+
+   Location: equivalence/verification-matrix/build.R:615–616,640–647.
+
+   The total excludes provenance/infrastructure but includes internal
+   checks, while the prose calls all 35,806 checks references other than
+   latents itself. There are 1,111 unique current internal checks in that
+   total. Excluding them yields 34,695 external, published or independent-
+   code checks. Correct the wording or filter. Neither number represents
+   that many independent models or datasets.
+
+What the saved new-kit evidence actually says
+
+Kit                         Compared    Agree    Known differences
+Latent GOLD coverage             440      434                    6
+LCA packages                     211      203                    8
+LPA packages                     156      155                    1
+Regression packages               76       71                    5
+Growth published                  37       33                    4
+Pooling packages                  36       36                    0
+LTA packages                      52       48                    4
+Stata published                  154      145                    9
+Mplus growth                     212      134                   78
+Enumeration packages             168      164                    4
+Total                          1,542    1,423                  119
+
+These are comparison rows, some covering many individual values. Zero
+unexplained failures excludes registered differences; it does not mean
+every quantity agrees. Existing Latent GOLD main/wider/ordinal comparisons
+and the older harness are additional evidence, outside this ten-kit total.
+
+Important interpretation limits
+
+The LPA package kit explicitly starts latents at reference solutions for
+its numerical agreement checks. This tests fitting and reporting at those
+solutions; it does not establish that the default search independently
+finds them. The retained search record shows banknote VVV k=2 at -729.952
+with default kmeans versus -718.396 with emEM/references; crabs at -1423.591
+versus -1354.157. These differences are documented, not newly discovered
+by this review. Replication of a local maximum is not proof of a global one.
+
+The bootstrap comparison also has a consequential documented difference:
+diabetes k=3 versus k=4 gives approximately 0.965 in latents and 0.425 in
+mclust, attributed to different replicate searches. It should remain visible
+beside any broad bootstrap-equivalence claim.
+
+Verification performed for this review
+
+* Four release-audit runtime test files: eight tests, 132 passing
+  expectations; zero failures, errors or warnings.
+* equivalence/harness/test-harness.R completed successfully.
+* A fresh iris_k2 pooling case: all nine aggregate comparisons against
+  mitml/mitools passed, covering 18 parameters; maximum normalized gap
+  approximately 4.8e-16.
+* Latent GOLD coverage manifests: all 44 input and all 44 output checksums
+  match the retained files.
+* In-memory defect injections reproduced findings 2, 3 and 5.
+* The LCA wrapper evaluated on its saved comparison table failed exactly
+  one stale reference-set assertion (finding 1); three assertions passed.
+* Saved CSV totals and attribution paths inspected independently.
+* A fresh full LCA comparison rerun progressed through the gss82 cases,
+  then was deliberately interrupted during the final HELP case because it
+  was slow and the wrapper failure had already been isolated. This run is
+  incomplete, not a numerical pass or failure. Its log is retained as
+  lca-packages-interrupted.log.
+
+The entire external suite, a full R CMD check and cross-platform CI were
+not rerun. No package implementation or comparison baseline was changed.
+An optional additional test would exercise LTA unit-rescaling inference
+under full/constrained covariance: the new targeted tests cover diagonal
+covariance, while the implementation also has chart-specific branches.
+
+Recommended order: fix the LCA wrapper; make gates fail on missing results; narrow
+known differences; correct attribution and outcome import; wire new kits
+into CI; bind reports to source hashes; then regenerate release claims.

@@ -1,0 +1,14 @@
+
+mplus-growth: rows=212; NA agreements=91
+Test passed with 1 success 🥇.
+
+stata-published: rows=154; NA agreements=50
+Test passed with 1 success 😸.
+
+pool-packages: rows=36; NA agreements=36
+Test passed with 2 successes 😸.
+
+Parameter-count mutation:
+             case             quantity reference_value latents           status
+172 runner_gmm_k3 number of parameters              20    9999 known difference
+unexplained= 0  stale= 0 

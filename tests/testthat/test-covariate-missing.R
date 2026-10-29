@@ -4,6 +4,7 @@
 # row by row, the analytic score against numerical differentiation of that
 # likelihood, and the standard errors against a Hessian of the likelihood alone,
 # so none of them is compared with the machinery under test.
+# The comparisons with independent references are in tests/equivalence/test-covariate-missing.R.
 
 skip_on_cran()
 
@@ -29,42 +30,6 @@ skip_on_cran()
   frame
 }
 
-# The observed-data likelihood from its definition: each row's Gaussian
-# density over its observed coordinates only, times the categorical
-# probability of its observed category, mixed over profiles and group classes.
-.cov_missing_likelihood <- function(fit, data) {
-  continuous <- c("y1", "y2")
-  x <- as.matrix(data[continuous])
-  density <- vapply(seq_len(fit$n_profiles), function(profile) {
-    covariance <- if (is.null(fit$covariances)) diag(fit$variances[profile, ]) else
-      fit$covariances[, , profile]
-    vapply(seq_len(nrow(x)), function(row) {
-      observed <- which(!is.na(x[row, ]))
-      gaussian <- if (length(observed) == 0L) 0 else {
-        sigma <- covariance[observed, observed, drop = FALSE]
-        residual <- x[row, observed] - fit$means[profile, observed]
-        -0.5 * (length(observed) * log(2 * pi) +
-                  as.numeric(determinant(sigma)$modulus) +
-                  sum(residual * solve(sigma, residual)))
-      }
-      category <- data$q[row]
-      gaussian + if (is.na(category)) 0 else
-        log(fit$response_probabilities$q[profile, category])
-    }, numeric(1))
-  }, numeric(nrow(x)))
-  group_prior <- exp(.multilpa_log_softmax(fit$group_design, fit$group_coefficients))
-  sum(vapply(seq_len(fit$n_groups), function(group) {
-    rows <- which(fit$group_index == group)
-    log(sum(vapply(seq_len(fit$n_group_classes), function(class) {
-      prior <- exp(.multilpa_log_softmax(fit$profile_design[[class]],
-                                         fit$profile_coefficients))
-      group_prior[group, class] *
-        exp(sum(log(rowSums(exp(density[rows, , drop = FALSE]) *
-                              prior[rows, , drop = FALSE]))))
-    }, numeric(1))))
-  }, numeric(1)))
-}
-
 .cov_missing_fit <- function(data, covariance_model, n_group_classes = 2L,
                              missing = "fiml", tol = 1e-12) {
   quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, n_group_classes,
@@ -73,16 +38,6 @@ skip_on_cran()
                    profile_covariates = "z", n_starts = 2, seed = 1,
                    tol = tol, max_iter = 5000))
 }
-
-test_that("a FIML covariate fit reproduces the observed-data likelihood", {
-  data <- .cov_missing_fixture()
-  invisible(lapply(c("diagonal", "full"), function(covariance_model) {
-    fit <- .cov_missing_fit(data, covariance_model)
-    expect_identical(fit$missing, "fiml")
-    expect_equal(fit$log_likelihood, .cov_missing_likelihood(fit, data),
-                 tolerance = 1e-10)
-  }))
-})
 
 test_that("without covariates the FIML fit is the covariate-free FIML model", {
   data <- .cov_missing_fixture()
@@ -98,37 +53,6 @@ test_that("without covariates the FIML fit is the covariate-free FIML model", {
       seed = 1, tol = 1e-12, max_iter = 5000))
     expect_equal(covariate$log_likelihood, plain$log_likelihood,
                  tolerance = 1e-9)
-  }))
-})
-
-test_that("scores and standard errors with missing indicators match numerical ones", {
-  data <- .cov_missing_fixture()
-  invisible(lapply(c("diagonal", "full"), function(covariance_model) {
-    fit <- .cov_missing_fit(data, covariance_model)
-    skip_if_not(fit$converged, "no start converged on this fixture")
-    x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
-    codes <- fit$categorical_data
-    theta <- .multilpa_cov_encode(fit)
-    negative <- function(value) {
-      pieces <- .multilpa_cov_decode(value, fit)
-      -.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
-                                 fit$profile_design, fit$group_design,
-                                 pieces$beta, pieces$gamma, codes)$log_likelihood
-    }
-    # Off the maximum, where the score is not zero and so can be wrong.
-    set.seed(9)
-    away <- theta + 0.05 * stats::rnorm(length(theta))
-    analytic <- colSums(.multilpa_cov_group_scores(away, x, fit, codes))
-    numerical <- vapply(seq_along(away), function(index) {
-      step <- replace(numeric(length(away)), index, 1e-5)
-      -(negative(away + step) - negative(away - step)) / 2e-5
-    }, numeric(1))
-    expect_lt(max(abs(analytic - numerical)), 1e-5)
-    # The package's information is the Jacobian of the analytic score; the
-    # reference is the Hessian of the likelihood alone.
-    reported <- sqrt(diag(vcov(fit, scale = "unconstrained")))
-    reference <- sqrt(diag(solve(stats::optimHess(theta, negative))))
-    expect_lt(max(abs(reported - reference) / reference), 1e-4)
   }))
 })
 

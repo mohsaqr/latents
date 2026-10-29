@@ -330,78 +330,9 @@
   labels
 }
 
-#' Standard errors and intervals for a latent transition model
-#'
-#' Returns standard errors, tests and intervals for every parameter of an
-#' [lta()] fit: the measurement model, the group-class shares, each group
-#' class's initial profile distribution and its transition matrix. The scores
-#' follow the Fisher identity (each is an expected count from the
-#' forward-backward pass minus the count implied by the fitted
-#' probabilities), and the observed information is the numerical Jacobian of
-#' that analytic score.
-#'
-#' @param x A fitted `multilpa_transitions` model from [lta()].
-#' @param data Optional data frame the model was fitted to. Not needed for
-#'   the Wald path, since the fit stores its indicators, codes, groups and
-#'   occasions; when given it must reproduce them. Required for
-#'   `method = "bootstrap"`.
-#' @param level Confidence level of the intervals. Default `0.95`.
-#' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"` (default; observed information), `"robust"`
-#'   (the sandwich clustered on groups, which are the sequences) or `"opg"`
-#'   (the outer product of the group scores).
-#' @param adjust Multiplicity correction for `p_adjusted`: `"none"` (default)
-#'   or one of the [stats::p.adjust()] methods.
-#' @param method `"wald"` (default) or `"bootstrap"`. The bootstrap resamples
-#'   persons with replacement, refits the same specification and matches each
-#'   replicate's profiles and group classes to the original's;
-#'   `standard_error` is the standard deviation of the replicates,
-#'   `conf_low` and `conf_high` their percentile interval, and `statistic`,
-#'   `p_value` and `p_adjusted` are `NA`.
-#' @param iter,n_starts,max_iter,tol,seed Number of bootstrap resamples, the
-#'   controls of each refit, and an optional seed. A supplied integer seed restores
-#'   the caller's `.Random.seed`; `NULL` uses its current stream.
-#'   The Box-Muller cached normal variate is not exposed by R
-#'   and cannot be restored. See [base::Random].
-#' @param boundary Accepted for consistency with the generic. Transition
-#'   inference holds no parameter at a bound: without an active bound
-#'   `"fix"` gives the same table as `"error"`, and a fit with an active bound
-#'   raises `latents_boundary_fit` under either.
-#' @param ... For `confint()`, further arguments to `parameter_inference()`,
-#'   such as `vcov_type`. `vcov()` takes none and warns
-#'   (`latents_unused_argument`) about any it is given.
-#' @return A base `data.frame` with one row per natural parameter and the
-#'   columns of [parameter_inference()]: `level`, `outcome`, `term`,
-#'   `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
-#'   `p_adjusted`, `conf_low` and `conf_high`, named as [coef()] names them.
-#'   An initial probability (`parameter = "initial_probability"`,
-#'   `level = "profile"`) has `outcome` the profile and `term` the group
-#'   class; a transition probability (`"transition_probability"`) has
-#'   `outcome` the profile moved to and `term` `group_class_h:profile_j`, the
-#'   group class and the profile moved from. Probabilities and variances have
-#'   no Wald test. The Wald table has attributes `covariance` (natural
-#'   scale), `covariance_unconstrained`, `level`, `step`, `method` and
-#'   `vcov_type`.
-#' @section Conditions:
-#'   `latents_no_converge` for an unconverged fit; `latents_boundary_fit` when
-#'   a variance, a response, initial or transition probability, or a
-#'   group-class share is at its bound, or a transition row has no
-#'   information (a profile no group occupies before its last occasion);
-#'   `latents_singular_information` when the information cannot be inverted;
-#'   `latents_bad_inference_data` when a supplied `data` does not reproduce
-#'   the fit; `latents_too_few_groups` for robust or OPG errors with no more
-#'   groups than parameters; `latents_bad_argument` for `method = "bootstrap"`
-#'   without `data`; `latents_bootstrap_failed` when fewer than two resamples
-#'   give a usable fit, with a `latents_bootstrap_dropped` warning for resamples
-#'   that were dropped.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' parameter_inference(fit)
-#' @rdname parameter_inference.multilpa_transitions
+#' @noRd
 #' @export
-parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.95,
+parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95,
                                                      step = 1e-4,
                                                      vcov_type = c("observed", "robust", "opg"),
                                                      adjust = .multilpa_p_adjust_methods,
@@ -620,11 +551,9 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
   invisible(NULL)
 }
 
-#' @rdname parameter_inference.multilpa_transitions
-#' @param object A fitted `multilpa_transitions` model.
-#' @param scale `"natural"` (probabilities) or `"unconstrained"` (logits).
+#' @noRd
 #' @export
-vcov.multilpa_transitions <- function(object, data = NULL, step = 1e-4,
+vcov.multilpa_transitions <-function(object, data = NULL, step = 1e-4,
                                       vcov_type = c("observed", "robust", "opg"),
                                       scale = c("natural", "unconstrained"), ...) {
   # `type = "robust"`, the name the general transition fit uses, used to fall
@@ -647,12 +576,9 @@ vcov.multilpa_transitions <- function(object, data = NULL, step = 1e-4,
   covariance
 }
 
-#' @rdname parameter_inference.multilpa_transitions
-#' @param parm Parameters to report, as names or positions of the natural
-#'   coefficients; all by default. A name or position that is not one of them
-#'   raises `latents_bad_argument`.
+#' @noRd
 #' @export
-confint.multilpa_transitions <- function(object, parm, level = 0.95, data = NULL,
+confint.multilpa_transitions <-function(object, parm, level = 0.95, data = NULL,
                                          ...) {
   inference <- parameter_inference(object, data = data, level = level, ...)
   names_used <- .multilpa_parameter_names(inference)
