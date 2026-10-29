@@ -56,3 +56,7 @@ _problems/
 # Windows test-box run folders and testthat result objects that embed local paths
 winbox-*/
 validation/matrix-refresh-2026-10-28/*.rds
+
+# Internal planning/review notes: local only, never published by pkgdown
+Astra.md
+ROADMAP.md

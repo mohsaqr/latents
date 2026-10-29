@@ -1,0 +1,14 @@
+        stage group_classes            fixed log_likelihood parameters
+1 measurement             1             <NA>      -1123.361          9
+2  membership             2 means, variances      -1084.333          3
+  parameters_with_measurement converged
+1                           9      TRUE
+2                          11      TRUE
+  group_class profile probability group_class_probability
+1           1       1   0.1890277               0.4871423
+2           1       2   0.8109723               0.4871423
+3           2       1   0.8088231               0.5128577
+4           2       2   0.1911769               0.5128577
+[1] "means"     "variances"
+[1] "means"     "variances"
+Measurement starting values identical across stages.

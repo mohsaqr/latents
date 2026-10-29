@@ -2,7 +2,7 @@
 % Please edit documentation in R/three-step.R
 \name{r3step}
 \alias{r3step}
-\title{Regress latent class membership on covariates by the three-step approach}
+\title{Relate latent class membership to external covariates}
 \usage{
 r3step(
   x,
@@ -23,11 +23,11 @@ the default) or from \code{\link[=lta]{lta()}} with its default homogeneous firs
 transitions and invariant measurement, or a trajectory model from
 \code{\link[=mixture_regression]{mixture_regression()}} that classifies persons (with or without
 \code{random}), whose person classes are then predicted. Fits with membership
-covariates and multilevel growth mixtures (\code{cluster}) are refused with
+covariates and multilevel growth mixtures (\code{cluster}) raise
 \code{latents_unsupported_three_step}: the correction uses a fixed,
 unconditional classification-error matrix and independent units. The
 other families of \code{\link[=multilpa]{multilpa()}}, general transition fits of \code{\link[=lta]{lta()}} and
-mixture regressions with observation classes are refused with
+mixture regressions with observation classes raise
 \code{latents_unsupported_three_step} too, except that a covariate-free
 general transition fit takes \code{initial_covariates} and
 \code{transition_covariates}.}
@@ -71,10 +71,10 @@ with a single intercept per profile. \code{TRUE} fits the two-level form of
 the one-step model: each group class has its own profile intercepts, the
 covariate slopes are shared across group classes, and a group's
 observations share one latent group class whose proportions are
-estimated jointly. Between-group differences not explained by the
-covariates are then captured by the group classes; the pooled regression
-attenuates the slopes and inflates their clustered standard errors in
-that case. Only for \code{level = "individuals"} on a covariate-free
+estimated jointly. Group classes represent between-group differences in
+profile membership that are not explained by the covariates. This changes
+the regression specification relative to the pooled analysis. Available
+only for \code{level = "individuals"} on a covariate-free
 \code{\link[=multilpa]{multilpa()}} fit; refused with \code{latents_bad_argument} otherwise.}
 
 \item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit with one
@@ -114,16 +114,31 @@ against the last profile and transition logits against staying, as in
 the covariate terms.
 }
 \description{
-Fits a multinomial logit of latent class membership on covariates after
-the measurement model (the R3STEP approach) and returns its coefficients
-as a \code{data.frame}. The assigned class is treated as an error-prone
-indicator of the true class, with the classification-error rates fixed at
-their step-one values; regressing the modal class directly attenuates the
-coefficients (Vermunt 2010; Asparouhov and Muthen 2014).
+\code{r3step()} examines how external covariates are associated with membership
+in latent classes identified by a previously fitted model. It addresses
+whether the relative likelihood of belonging to particular classes varies
+with characteristics that were not used to define them. The measurement
+parameters remain fixed, preserving the class definitions while estimating
+their associations with the covariates.
+
+Because class membership is unobserved, a regression that treats assigned
+classes as known outcomes can distort these associations. The three-step
+approach incorporates estimated classification-error probabilities into
+the membership regression, treating each assignment as an imperfect
+indicator of latent membership. Covariates enter a multinomial logistic
+model whose coefficients describe changes in the log odds of membership
+in a class relative to a reference class, holding the other covariates
+constant.
+
+For supported multilevel models, the regression can concern individual
+profiles or group classes. For supported transition models, a separate
+specification relates covariates to initial profile membership and
+movement between profiles over time. The function reports regression
+coefficients, standard errors, confidence intervals, and hypothesis tests,
+with options for clustered inference and adjustment for multiple
+comparisons.
 }
 \details{
-The classification-error matrix is held fixed rather than
-estimated jointly, so the covariates do not change the classes.
 On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} models the marginal profile at
 each occasion; it does not regress initial-state or transition
 probabilities on the covariates. \code{vcov_type = "robust"} clusters the
@@ -143,22 +158,30 @@ own posteriors are not used for the assignments, because they draw on a
 person's other occasions and their errors are therefore not independent
 across occasions, as step three assumes. The step-one fit must have no
 covariates and one group class (\code{latents_unsupported_three_step}
-otherwise). Results agree with Latent GOLD 6.1's \verb{step3 modal ml} latent
-Markov model to its printed precision on three designs
-(equivalence/latentgold-step3-markov in the source repository);
-\code{"robust"} is the sandwich over persons and \code{"observed"} the information
-Latent GOLD reports.
+otherwise). \code{"robust"} uses a sandwich covariance estimator with persons
+as independent units; \code{"observed"} uses the observed information.
 
-Over 60 replications of a two-profile design with a true log-odds slope
-of 1.2 and intercept -0.3, the slope had a bias of -0.002 and the
-intercept +0.006, against -0.163 on the slope for a logistic regression
-on the modal class. The standard deviation of the slope across
-replications was 0.127 (0.100 for the modal regression), and the nominal
-95\% intervals covered the true slope in 95\% of replications. The
-profiles in that design were well separated; because the error matrix is
-treated as known, intervals are expected to be too narrow where
-classification is poorer (see \code{get_results(x, "classification_errors")}).
+Because uncertainty in the estimated classification-error matrix is
+omitted, interval coverage may be below the nominal level when class
+separation is weak. Inspect the estimated error
+matrix with \code{get_results(x, "classification_errors")}.
 }
+\section{Interpretation}{
+
+The correction assumes that classification-error probabilities remain
+constant across covariate values within each latent class. Reported
+standard errors and confidence intervals treat those probabilities as
+fixed and omit uncertainty from their estimation and from selecting the
+class solution.
+
+In the ordinary membership regression, the last class is the reference.
+A positive coefficient indicates higher odds of membership in the
+specified class relative to that reference; exponentiating the coefficient
+gives the corresponding odds ratio. Transition regressions instead compare
+movement to another profile with remaining in the origin profile. These
+associations do not, by themselves, establish causal relationships.
+}
+
 \examples{
 set.seed(21)
 g <- rep(seq_len(50), each = 12)
@@ -173,7 +196,7 @@ fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 r3step(fit, example_data, "x")
 
-# Covariates of the moves between profiles, three steps on from lta().
+# Three-step regression of transition probabilities on covariates.
 moves <- lta(course_engagement,
              vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
              id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)

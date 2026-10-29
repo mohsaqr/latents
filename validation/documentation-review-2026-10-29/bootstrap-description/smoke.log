@@ -1,0 +1,12 @@
+[1] "multilpa_bootstrap_lrt"
+  null_profiles null_group_classes alternative_profiles
+1             1                  1                    2
+  alternative_group_classes statistic p_value monte_carlo_se iter n_valid
+1                         1  44.19811     0.1     0.09486833    9       9
+  n_invalid fixed null_family alternative_family
+1         0  <NA>    profiles           profiles
+[1] "replicate"                "statistic"               
+[3] "valid"                    "boundary"                
+[5] "logits_settled"           "null_replications"       
+[7] "alternative_replications" "warnings"                
+[9] "error"                   

@@ -687,22 +687,44 @@
 
 #' Standard errors, confidence intervals and tests for model parameters
 #'
-#' Returns a table of the estimated parameters of a fitted model with their
-#' standard errors, Wald tests and confidence intervals. By default the
-#' standard errors are maximum-likelihood errors from the inverse observed
-#' information, with delta-method Wald intervals; `method = "bootstrap"`
-#' resamples groups instead. The estimates are local and asymptotic,
-#' conditional on the selected numbers of classes, and do not account for
-#' model selection. Boundary solutions and unidentified Hessians are refused
-#' by the Wald path.
+#' @description
+#' `parameter_inference()` quantifies sampling uncertainty in the parameter
+#' estimates of a fitted mixture model. It provides standard errors and
+#' confidence intervals for quantities such as indicator means, response
+#' probabilities, membership coefficients, and transition probabilities,
+#' according to the model family. These results describe the precision of
+#' the estimates and support interpretation of the fitted model.
+#'
+#' Two approaches are available for supported models. Wald inference uses an
+#' estimated parameter covariance matrix to obtain standard errors,
+#' confidence intervals, and tests for eligible parameters. Bootstrap
+#' inference repeatedly resamples independent observational units and refits
+#' the model, using variation across the resulting estimates to calculate
+#' standard errors and percentile confidence intervals.
+#'
+#' The function returns a table of parameter estimates and their uncertainty
+#' measures. The available parameters, covariance estimators, and inference
+#' methods depend on the fitted model. Wald tests are omitted where an
+#' ordinary test against zero is inappropriate, including probabilities and
+#' variance parameters. Bootstrap results contain standard errors and
+#' confidence intervals but no hypothesis-test p-values.
+#'
+#' @section Interpretation:
+#' Inference is conditional on the specified model, including its number of
+#' classes and measurement assumptions. The reported uncertainty does not
+#' account for selecting that specification from several candidates. Wald
+#' inference requires an adequately converged and locally identified
+#' solution; estimates near parameter boundaries may require special
+#' treatment. Bootstrap inference also depends on successful refitting and
+#' consistent matching of class labels across resamples.
 #'
 #' @param x A converged fit from [multilpa()], [lpa()], [lca()] or
 #'   [multilca()] (with or without covariates), [lta()], the additive family,
 #'   or a growth mixture. A fit with an active bound raises
 #'   `latents_boundary_fit` and an unconverged fit `latents_no_converge`.
-#'   Mixture regressions are refused with `latents_bad_argument` (their
+#'   Mixture regressions raise `latents_bad_argument` (their
 #'   inference is in [get_results()], [confint()] and [vcov()]), and the
-#'   cross-level families with `latents_unsupported_inference`.
+#'   cross-level families raise `latents_unsupported_inference`.
 #' @param data Optional data frame the model was fitted to. When omitted it is
 #'   rebuilt from the indicators, identifiers and occasions the fit stores. A
 #'   supplied frame is checked exactly against the stored indicators and
@@ -712,7 +734,7 @@
 #'   `0.95`.
 #' @param step Positive finite-difference step for the analytic score
 #'   derivative. Default `1e-4`.
-#' @param vcov_type Covariance estimator for the Wald path.
+#' @param vcov_type Covariance estimator for the Wald method.
 #'   `"observed"` (default) inverts the observed information.
 #'   `"robust"` returns the Huber-White sandwich `A^-1 B A^-1`, where `B` is
 #'   the outer product of the per-group scores, multiplied by the CR1
@@ -723,18 +745,17 @@
 #'   robust errors relax the assumption that the within-group model is
 #'   correctly specified, not the assumption that groups are independent.
 #'   `"opg"` inverts the outer product of the per-group scores (the BHHH
-#'   estimator), as `glca` reports; it agrees with `"observed"` in large
-#'   samples and can differ in small ones, where `"observed"` is usually more
-#'   reliable. `"robust"` and `"opg"` need more groups than parameters; `"opg"`
+#'   estimator). The OPG and observed-information estimators are asymptotically
+#'   equivalent under a correctly specified regular model, but can differ in
+#'   finite samples. `"robust"` and `"opg"` need more groups than parameters; `"opg"`
 #'   also needs group scores of full rank, since it inverts their outer
 #'   product, while the sandwich does not. For a
 #'   fit with sampling weights the default is `"robust"`, and any other value
 #'   raises `latents_unsupported_weights`. For a fit with `centering =
 #'   "person"` or `scaling = "person"` the default is also `"robust"`, and
-#'   `"observed"` or `"opg"` raise `latents_unsupported_inference`: a unit's
-#'   transformed rows are not independent observations, and the inverse
-#'   information understated their errors (by up to 22% in a simulation),
-#'   while the sandwich over units is valid. Under `centering = "grand"` or
+#'   `"observed"` or `"opg"` raise `latents_unsupported_inference`. Transforming
+#'   observations within a unit induces dependence; the sandwich estimator
+#'   aggregates score contributions at the independent-unit level. Under `centering = "grand"` or
 #'   `scaling = "grand"` the sample means and standard deviations the
 #'   indicators were transformed with are estimated jointly with the model,
 #'   as estimating equations, and their variability is added to every
@@ -755,8 +776,9 @@
 #'   and Cayley-transform orientations (or, for VEE and EVV, determinant-one
 #'   log-Cholesky factors), so the information has one row per free
 #'   parameter. The reported variances and covariances are obtained from
-#'   these coordinates by the delta method, and their natural-scale
-#'   covariance is singular, as for the class probabilities. `"bootstrap"`
+#'   these coordinates by the delta method. Constraints can make the
+#'   natural-scale covariance singular; the sum constraints on class
+#'   probabilities also imply a singular covariance. `"bootstrap"`
 #'   resamples groups with replacement, refits within the same covariance
 #'   structure, realigns each refit's labels, and reports the percentile
 #'   interval and the standard deviation of the replicates; it is also
@@ -767,8 +789,8 @@
 #' @param n_starts,max_iter,tol Passed to each bootstrap refit, as in
 #'   [multilpa()].
 #' @param seed Optional seed for the resampling: a whole number accepted by
-#'   `set.seed()`; any other value raises `latents_bad_argument` on either
-#'   path. The Wald path uses no random numbers. A supplied integer seed restores
+#'   `set.seed()`; any other value raises `latents_bad_argument` with either
+#'   method. The Wald method uses no random numbers. A supplied integer seed restores
 #'   the caller's `.Random.seed` on exit; `NULL` uses its current stream.
 #'   R does not expose the Box-Muller cached normal
 #'   variate, so that cache cannot be restored; see [base::Random].
@@ -783,7 +805,7 @@
 #'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
 #'   `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
 #'   `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
-#'   scale (variances in their own units, probabilities as probabilities). A
+#'   scale (variances in squared indicator units, probabilities on `[0, 1]`). A
 #'   parameter whose null value lies on the boundary of its space (a variance,
 #'   a probability, a covariance diagonal, a count mean) has `NA` `statistic`,
 #'   `p_value` and `p_adjusted`, but still has an interval. All class
@@ -816,7 +838,7 @@
 #'   one row each), `messages` (why a resample was dropped, `NA` where it was
 #'   not), `structure` and `fixed`; `covariance_unconstrained` is `NULL`.
 #'
-#'   For the Wald path, diagnostics of the whole fit are attributes:
+#'   For the Wald method, diagnostics of the whole fit are attributes:
 #'   `covariance` and `covariance_unconstrained` (natural and
 #'   estimation-scale covariance of the estimates), `hessian`, `gradient`,
 #'   `scaled_score`, `score_displacement` (the largest score times its
@@ -878,13 +900,10 @@
 #'   scale, and only coefficients and logits are tested against zero.
 #'   `method = "bootstrap"` resamples persons, refits each resample from
 #'   `n_starts` starts and matches its classes to the original by their
-#'   posterior memberships of the original persons; it is refused for a
-#'   multilevel growth mixture (`latents_unsupported_inference`). In a
-#'   simulation of 1000 datasets per design, Wald intervals covered
-#'   0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
-#'   separated ones, whose standard errors were 6-30% too small
-#'   (validation/GROWTH_SIMULATION.md in the source repository); the
-#'   bootstrap is preferable for weakly separated classes. A class
+#'   posterior memberships of the original persons; it is unavailable for a
+#'   multilevel growth mixture (`latents_unsupported_inference`). Weak class
+#'   separation can reduce the accuracy of Wald intervals; bootstrap inference
+#'   provides an alternative assessment of sampling uncertainty. A class
 #'   whose random-effect covariance is degenerate, or (with correlated
 #'   residuals) a residual standard deviation or residual process held on its
 #'   bound, raises `latents_boundary_fit` under `boundary = "error"`, naming
@@ -912,13 +931,12 @@
 #'   parameter at a bound: without an active bound `boundary = "fix"` gives
 #'   the same table as `"error"`, and a fit with an active bound raises
 #'   `latents_boundary_fit` under either.
-#' @section Computation: The observed information takes two evaluations of
-#'   the score over all the data for each free parameter, which makes it the
-#'   slowest part of Wald inference. For profile, class, covariate and
-#'   transition models it is computed once per R session for a fit, its data
-#'   and `step`, and reused by later calls, including those made by the plots
-#'   that draw intervals and by `get_results()`. Any change to the fit or its
-#'   data computes it anew, and the result is the same either way.
+#' @section Computation:
+#'   Numerical differentiation of the score requires two score evaluations per
+#'   free parameter. For profile, class, covariate and transition models, the
+#'   information matrix is cached within an R session for the same fitted
+#'   model, data and `step`. Subsequent inference, plotting and [get_results()]
+#'   calls reuse this calculation; changes to its inputs trigger recalculation.
 #' @section Conditions:
 #'   Errors: `latents_no_converge` for an unconverged fit;
 #'   `latents_boundary_fit` when a variance, response probability or mixing
@@ -927,14 +945,14 @@
 #'   when `fixed` held every parameter; `latents_bad_inference_data` when a
 #'   supplied `data` does not reproduce the fit; `latents_too_few_groups` for
 #'   `vcov_type = "robust"` or `"opg"` when the fit has no more independent
-#'   groups than free parameters. The Wald path raises
+#'   groups than free parameters. The Wald method raises
 #'   `latents_unsupported_inference` for a fit made with `multilpa(prior = )`
-#'   (a posterior mode, where the score is not zero), and either path raises
+#'   (a posterior mode, where the score is not zero), and either method raises
 #'   `latents_unsupported_noise` for a fit with a noise component. A fit whose
 #'   score is still far from zero gives a `latents_unconverged` warning.
 #'   An invalid `level`, `step`, `iter`, `n_starts`, `max_iter` or `tol`
 #'   raises `latents_bad_argument`, and a `data` that is not a data frame
-#'   `latents_bad_data`. A fitted mixture regression is refused with
+#'   `latents_bad_data`. A fitted mixture regression raises
 #'   `latents_bad_argument` naming `get_results(x, "coefficients")`, which
 #'   reports its standard errors and tests; an object that is not a fitted
 #'   model raises `latents_not_a_fit`.
@@ -958,17 +976,16 @@
 #'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' parameter_inference(fit)
 #'
-#' # Many tests in one table: name the correction, do not apply one by stealth.
+#' # Apply Benjamini-Hochberg adjustment to the reported tests.
 #' parameter_inference(fit, adjust = "BH")
 #'
-#' # A structure that constrains the shape across profiles (VEI) is charted in
-#' # its own free coordinates, so it has Wald standard errors too.
+#' # Wald inference for a VEI model with equal shape across profiles.
 #' shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
 #'                    volume = "varying", shape = "equal", orientation = "axis")
 #' parameter_inference(shaped)
 #'
-#' # The bootstrap resamples schools and refits inside the same family.
+#' # Resample schools and refit the same covariance structure.
 #' parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
 #'                     seed = 1)
 #'
@@ -990,7 +1007,7 @@
 #'                           profile_covariates = "x", n_starts = 2, seed = 1)
 #' parameter_inference(covariate_fit, covariate_data)
 #'
-#' # A latent transition model: initial and transition probabilities too.
+#' # Inference for a latent transition model, including transition probabilities.
 #' moves <- lta(subset(course_engagement, student <= 40),
 #'              c("browse", "lectures", "forum_read"), "student",
 #'              n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)

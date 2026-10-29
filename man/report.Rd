@@ -2,7 +2,7 @@
 % Please edit documentation in R/report.R
 \name{report}
 \alias{report}
-\title{Print a full report of a fitted model}
+\title{Display model estimates and diagnostic summaries}
 \usage{
 report(
   x,
@@ -21,8 +21,8 @@ from \code{\link[=lta]{lta()}} with time-homogeneous transitions. A fit of anoth
 cross-level model) raises \code{latents_not_a_fit}; its own \code{summary()},
 \code{\link[=diagnostics]{diagnostics()}} and \code{plot()} report it.}
 
-\item{data}{Optional. The data the model was fitted to; a fit carries the
-columns it was built from.}
+\item{data}{Optional data frame used to fit the model. The required columns
+are stored in the fitted object.}
 
 \item{plots}{\code{TRUE} (the default) draws the plots. \code{FALSE} prints only.}
 
@@ -41,16 +41,24 @@ The fitted model, invisibly. Called for its printed and plotted
 output.
 }
 \description{
-Prints the model summary, the descriptive statistics of its variables and
-the classification diagnostics, then draws every plot view the fit
-supports.
+\code{report()} provides a combined overview of a fitted profile, class, or
+supported transition model. It brings together parameter estimates,
+descriptive statistics, and diagnostic checks to support examination of
+the estimated class structure, numerical convergence, classification
+uncertainty, and residual associations.
+
+Output is displayed in the R session, with optional plots appropriate to
+the fitted model. The function returns the original fitted model
+invisibly. Individual tables remain available through \code{\link[=get_results]{get_results()}},
+\code{\link[=descriptives]{descriptives()}}, and \code{\link[=diagnostics]{diagnostics()}} for further analysis or reporting.
 }
-\section{What it prints}{
- \code{summary()}, then \code{descriptives()}, then the
-printed checks of \code{diagnostics()}, then every plot view
-the fit supports. Views that the plot method declines for this model are
-listed after the plots as not drawn. The tables themselves are obtained
-from \code{\link[=get_results]{get_results()}}, \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}} and \code{\link[=diagnostics]{diagnostics()}}.
+\section{Report contents}{
+
+Output is presented in the following order: \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}},
+the checks from \code{\link[=diagnostics]{diagnostics()}}, and the supported plot views. Any omitted
+views are listed after the plots. The underlying tables can be accessed
+separately using \code{\link[=get_results]{get_results()}}, \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}} and
+\code{\link[=diagnostics]{diagnostics()}}.
 }
 
 \examples{

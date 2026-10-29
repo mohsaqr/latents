@@ -45,10 +45,10 @@ level), with the columns
 that is not numeric.}
 \item{\code{n_distinct}}{integer: distinct observed values.}
 \item{\code{n_groups},\code{icc}}{present only when \code{id} is known. \code{icc} is the
-one-way random-effects estimate; it can be slightly negative when the
-between-group mean square is below the within-group one, which
-indicates no group structure. Rows with a missing group ID do not
-contribute to either statistic.}
+one-way random-effects estimate. It can be negative when the
+between-group mean square is smaller than the within-group mean
+square; this does not represent a negative population variance.
+Rows with a missing group identifier contribute to neither statistic.}
 }
 With \code{by}, a first column named after the stratifier holds each stratum's
 value (\code{NA} for the stratum of missing values). For every variable,
@@ -60,16 +60,29 @@ the same name. A \code{by} named like one of the summary's own columns raises
 \code{latents_nothing_to_describe}.
 }
 \description{
-Returns a table with one row per variable giving the number of observed and
-missing values, the mean, standard deviation, minimum, maximum and number of
-distinct values, and, when groups are known, the number of groups and the
-intraclass correlation (ICC): the share of the variable's variance that lies
-between groups.
+\code{descriptives()} summarizes the characteristics of variables used in latent
+profile and class analyses. It supports inspection of variability, observed
+ranges, and missingness before model estimation, as well as descriptive
+comparisons across groups.
+
+For numeric variables, the function reports measures of central tendency
+and dispersion. When a grouping identifier is supplied, it also estimates
+intraclass correlations to describe clustering within groups. Summaries can
+be calculated for the full dataset or separately by an observed grouping
+variable. For supported fitted models, variables can also be summarized by
+assigned profile or group class.
 }
 \details{
-An ICC near zero indicates little between-group variation in that
-variable's mean. It does not rule out group classes that differ in other
-variables, in profile prevalence, or in other features of the distributions.
+Summaries by fitted class use assigned membership and do not incorporate
+classification uncertainty. They describe the observations assigned to each
+class and should be distinguished from the model's estimated class-specific
+parameters. Rows excluded from classification are retained in a separate
+stratum with a missing class label, following the fit's \code{drop_empty} setting.
+
+An intraclass correlation (ICC) near zero indicates little between-group
+variation in that variable's mean. It does not rule out group classes that
+differ in other variables, in profile prevalence, or in other features of
+the distributions.
 }
 \examples{
 descriptives(
@@ -78,8 +91,7 @@ descriptives(
   id = "student"
 )
 
-# A missing stratifier is a stratum of its own, not a silent loss and not
-# missingness invented in a variable that has none.
+# Missing stratification values form a separate stratum.
 descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
              vars = "score", by = "cohort")
 
@@ -98,6 +110,6 @@ and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), \emph{Multilevel
 theory, research, and methods in organizations}.
 }
 \seealso{
-\code{\link[=multilpa]{multilpa()}} to fit, \code{\link[=diagnostics]{diagnostics()}} for the after-the-fit
-counterpart.
+\code{\link[=multilpa]{multilpa()}} for model estimation and \code{\link[=diagnostics]{diagnostics()}} for
+diagnostics of a fitted model.
 }

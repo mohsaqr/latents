@@ -276,6 +276,25 @@
   posteriors[.multilpa_informative_rows(x), , drop = FALSE]
 }
 
+#' Posterior output with excluded classifications marked as missing
+#' @param x A fitted model.
+#' @param level Either `"individuals"` or `"groups"`.
+#' @return A posterior matrix in input order, with excluded rows set to `NA`.
+#' @noRd
+.multilpa_reported_posteriors <- function(x, level = "individuals") {
+  stopifnot(level %in% c("individuals", "groups"))
+  grouped <- identical(level, "groups")
+  posteriors <- if (grouped) x$group_posteriors else
+    .multilpa_class_posteriors(x)
+  if (is.null(posteriors)) return(NULL)
+  included <- if (grouped) .multilpa_informative_groups(x) else
+    .multilpa_informative_rows(x)
+  # Keep raw probabilities on the fit for estimation and subsequent inference.
+  # Public row-aligned tables must not turn excluded units into assigned cases.
+  posteriors[!included, ] <- NA_real_
+  posteriors
+}
+
 #' Refuse a verb that does not yet account for a noise component
 #' @param x A fitted model of this package.
 #' @param verb What was asked for, for the message.

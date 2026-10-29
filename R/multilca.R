@@ -1,17 +1,29 @@
 #' Fit a two-level latent class model
 #'
-#' Fits a two-level latent class model for discrete indicators and returns a
-#' fitted `multilpa` object. It is [multilpa()] with every indicator in `vars`
-#' treated as categorical, except those named in `ordinal` or `count` through
-#' `...`. Each profile has unrestricted response probabilities for the
-#' categorical indicators and structured parameters for the ordinal and count
-#' ones; the group classes differ in the probability of each profile. For
-#' models that combine categorical and continuous indicators, use [multilpa()]
-#' and name the categorical ones in its `categorical` argument.
+#' @description
+#' `multilca()` fits a latent class model for categorical data with observations
+#' nested within groups. It describes response patterns through latent classes
+#' and differences between groups through the relative prevalence of those
+#' classes. Groups with similar class compositions are represented by the same
+#' latent group class.
+#'
+#' By default, the response probabilities defining the observation-level
+#' classes are shared across groups. The model estimates these probabilities
+#' together with class proportions and posterior membership probabilities,
+#' allowing both observations and groups to be classified while retaining
+#' information about classification uncertainty.
+#'
+#' @details
+#' The function calls [multilpa()], treating
+#' all indicators in `vars` as categorical except those specified through
+#' `ordinal` or `count` in `...`. Categorical indicators have unrestricted
+#' class-specific response probabilities; ordinal and count indicators use the
+#' corresponding structured measurement models. For a combination of continuous
+#' and categorical indicators, use [multilpa()] with `categorical`.
 #'
 #' @param data A data frame with one row per observation.
 #' @param vars Names of the indicator columns. Numeric, integer, logical,
-#'   character and factor columns are accepted; factor levels keep their
+#'   character and factor columns are accepted; factor levels retain their
 #'   declared order and other types are sorted.
 #' @param id Name of the group identifier column, or `NULL` for a single-level
 #'   model.
@@ -24,7 +36,7 @@
 #'   `categorical` is accepted but has no further effect; its names must be in
 #'   `vars`.
 #' @return A fitted `multilpa` object (`multilpa_covariates` when membership
-#'   covariates are given), as [multilpa()] returns it. Categorical response
+#'   covariates are specified), as returned by [multilpa()]. Categorical response
 #'   probabilities are in `get_results(fit, "responses")`, one row per
 #'   profile, item and category.
 #' @section Conditions:

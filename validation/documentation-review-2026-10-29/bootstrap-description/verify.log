@@ -1,0 +1,4 @@
+103 R files have unchanged executable code; NAMESPACE unchanged.
+38 help topics parse without Rd problems.
+4 bundled vignettes have unchanged executable chunks.
+37 existing help examples match, allowing the revised condition message.

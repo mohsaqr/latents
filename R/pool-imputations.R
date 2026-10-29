@@ -10,50 +10,63 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 # does not: the imputations label their profiles and group classes
 # independently, so they are aligned to the first before anything is averaged.
 
-#' Fit a model to multiply imputed data and pool it with Rubin's rules
+#' Fit and pool mixture models across multiple imputations
 #'
-#' Fits [multilpa()] to every completed data set, aligns each fit's profile and
-#' group-class labels to those of the first, and pools the estimates with
-#' Rubin's rules, returning a `latents_pooled` object. Use it for missing
-#' covariates, which `missing = "fiml"` cannot handle because the model
-#' conditions on covariates. Impute them first (for example with the mice
-#' package, with the indicators and the group identifier in the imputation
-#' model) and pass the completed data.
+#' @description
+#' `pool_imputations()` estimates a mixture model from multiply imputed data
+#' and combines the results to account for uncertainty associated with
+#' missing values. It fits the same model specification to each completed
+#' data set, allowing parameter estimates to reflect the alternative plausible
+#' values supplied by the imputation procedure.
 #'
+#' Class labels can differ across fitted mixture models even when their
+#' profiles are similar. Before pooling, the function matches individual
+#' profiles and group classes to those in the first imputation's fit. It then
+#' combines the aligned parameter estimates and covariance matrices using
+#' Rubin's rules. The resulting uncertainty incorporates both the estimated
+#' sampling variance within each analysis and variation in estimates between
+#' imputations.
+#'
+#' The function returns pooled estimates, standard errors, confidence
+#' intervals, and tests for eligible parameters, together with summaries of
+#' the individual analyses. Completed data sets must be supplied as a list or
+#' a `mids` object from mice; the function does not construct the imputation
+#' model.
+#'
+#' @section Interpretation:
+#' Pooling requires an imputation model appropriate for the analysis and
+#' missingness assumptions, including the grouping structure where relevant.
+#' The number of classes and other model specifications remain fixed across
+#' imputations. Label matching resolves differences in numbering but cannot
+#' establish that substantially different class solutions represent the same
+#' underlying profiles.
+#'
+#' Estimates are pooled on their reported scale. Consequently, symmetric
+#' confidence intervals for probabilities or variances can extend beyond
+#' their permissible ranges.
+#'
+#' @details
 #' Pooling is on the reported (natural) scale: the pooled estimate is the mean
 #' over imputations, and its variance is the mean within-imputation variance
 #' plus `(1 + 1/m)` times the between-imputation variance. Degrees of freedom
 #' follow Rubin (1987) with a large complete-data sample. Pooled intervals are
-#' symmetric t intervals on this scale, so for probabilities and variances
-#' they can extend outside the parameter space, unlike the transformed Wald
-#' intervals of [parameter_inference()]. A structural constant, such as the
+#' symmetric t intervals, rather than the transformed Wald intervals used
+#' for bounded parameters by [parameter_inference()]. A structural constant, such as the
 #' probability of one for a single class, has zero within- and
 #' between-imputation variance and zero missing information. When the
 #' within-imputation variance is zero and the between-imputation variance is
 #' positive, `riv` is infinite and `fmi` is one.
 #'
 #' @section Choosing the imputation model:
-#' The pooled results are only as valid as the imputations. The covariate and
-#' the indicators are related through the latent classes, which an imputation
-#' model linear in the indicators (mice's defaults) does not capture. In a
-#' simulation (`validation/pool-imputations-coverage.R` in the source
-#' repository: a membership slope with 30% of
-#' its covariate missing at random given the indicators, 200 replications,
-#' ten imputations), 95% intervals covered 0.925 under predictive mean
-#' matching and 0.935 under Bayesian linear regression, and 0.995 when the
-#' covariate was drawn approximately from its conditional distribution given
-#' the known generating parameters. That last method omits uncertainty in
-#' the imputation parameters, so it does not validate proper multiple
-#' imputation, and the simulation covers one design only. The imputation model
-#' should account for the latent structure and the clustering, include the
-#' indicators and relevant nonlinearities, and propagate parameter
-#' uncertainty; imputing separately within assigned classes ignores
-#' classification uncertainty. Complete-case analysis covered 0.955 in that
-#' design, but when missingness depends on the indicators, dropping incomplete
-#' cases selects on the indicators and changes their within-class
-#' distributions. The result that logistic slopes stay unbiased under
-#' selection on the outcome (as in case-control sampling) does not apply when
-#' the outcome is latent and its measurement model is estimated.
+#' Valid pooling requires an imputation model compatible with the analysis
+#' model and the assumed missingness mechanism. Associations between
+#' covariates and indicators may be nonlinear because they depend on latent
+#' class membership. The imputation model should represent these associations,
+#' account for clustering, include relevant indicators and predictors of
+#' missingness, and propagate uncertainty in its estimated parameters.
+#' Imputing separately within modally assigned classes omits classification
+#' uncertainty. Complete-case analysis can also change the within-class
+#' indicator distributions when missingness depends on the indicators.
 #'
 #' @param imputed The completed data sets: a list of at least two data frames
 #'   with the same columns and rows in the same order, or a `mids` object from
@@ -68,7 +81,7 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #'   with sampling weights the default is `"robust"`, and the other types are
 #'   refused with `latents_unsupported_weights`; for fits with person
 #'   centring or scaling the default is `"robust"` too, and the other types
-#'   are refused with `latents_unsupported_inference`.
+#'   raise `latents_unsupported_inference`.
 #' @param adjust Multiplicity correction applied to the pooled p-values to
 #'   give `p_adjusted`, as in [parameter_inference()]: `"none"` (default) or
 #'   a method of [stats::p.adjust()]. The per-imputation tables are computed
@@ -104,8 +117,8 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #' section 5.2. Chapman & Hall/CRC.
 #' @examples
 #' set.seed(1)
-#' # Two stand-in completed data sets. With real missing covariates, pass the
-#' # `mids` object mice::mice() returns instead.
+#' # Illustrative completed data sets for demonstrating the pooling interface.
+#' # For an analysis, supply data generated by an appropriate imputation model.
 #' completed <- lapply(seq_len(2), function(i) {
 #'   within(subset(course_engagement, student <= 40),
 #'          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))

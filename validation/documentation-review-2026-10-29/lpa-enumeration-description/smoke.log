@@ -1,0 +1,10 @@
+      candidate n_profiles model converged
+1 profiles1_EEI          1   EEI      TRUE
+2 profiles2_EEI          2   EEI      TRUE
+3 profiles1_VVI          1   VVI      TRUE
+4 profiles2_VVI          2   VVI      TRUE
+5 profiles1_EEE          1   EEE      TRUE
+6 profiles2_EEE          2   EEE      TRUE
+7 profiles1_VVV          1   VVV      TRUE
+8 profiles2_VVV          2   VVV      TRUE
+Default covariance grid and candidate retrieval verified.

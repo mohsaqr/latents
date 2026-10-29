@@ -1,0 +1,18 @@
+Distal outcome by class (bch, 95% CI)
+
+Class   Mean         95% CI     SE  Effective n
+-----  -----  -------------  -----  -----------
+    1  10.07  [9.89, 10.26]  0.095       132.98
+    2   5.01  [4.79,  5.24]  0.116       157.98
+Distal outcome: class differences (bch, 95% CI)
+
+Class  vs  Difference          95% CI      p  p (BH)
+-----  --  ----------  --------------  -----  ------
+    2   1       -5.06  [-5.32, -4.79]  <.001   <.001
+        level   outcome        term   estimate standard_error statistic
+1 individuals profile_1 (Intercept) -0.2299916      0.1371357 -1.677109
+2 individuals profile_1           z  1.2453182      0.1902506  6.545672
+       p_value   p_adjusted   conf_low  conf_high
+1 9.352109e-02           NA -0.4987726 0.03878946
+2 5.922825e-11 5.922825e-11  0.8724338 1.61820250
+[1] 2

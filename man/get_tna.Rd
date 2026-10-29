@@ -2,12 +2,14 @@
 % Please edit documentation in R/tna.R
 \name{get_tna}
 \alias{get_tna}
-\title{Build one transition network for the whole sample}
+\title{Represent transitions between latent states as a network}
 \usage{
 get_tna(x, ...)
 }
 \arguments{
-\item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
+\item{x}{A time-homogeneous fitted model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}}
+or \code{\link[=multilca]{multilca()}} model fitted with \code{time}, for which the network is based
+on modal profile sequences.}
 
 \item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}}.}
 }
@@ -17,30 +19,46 @@ functions of the tna package apply, including \code{centralities()},
 \code{communities()}, \code{cliques()} and \code{plot()}.
 }
 \description{
-Builds a single \code{\link[tna:build_model]{tna::tna()}} model from a fitted transition model,
-aggregated over all latent group classes, and returns it.
+\code{get_tna()} constructs a network summarising transitions between latent
+profiles or classes across ordered observations. The profiles or classes
+form the nodes, and directed edge weights represent transition
+probabilities, including the probability of remaining in the same state.
+The returned network supports visualisation and analysis with the tna
+package.
+
+For a supported latent transition model, the network uses model-estimated
+transitions, pooling expected transitions across latent group classes.
+For a profile or class model fitted with \code{time}, it instead summarises
+transitions between the most probable class assignments in each group's
+ordered sequence.
 }
 \details{
-The network's transition probabilities are the expected transition counts
-summed across group classes and normalised by row, so each class
+For a supported latent transition model, transition probabilities are the
+expected transition counts summed across group classes and normalised by
+row, so each class
 contributes in proportion to its share of the expected transitions, not its
 class probability. If a profile has no expected outgoing transitions in any
 class, its row is the class rows averaged by class probability, and a
 warning states that the row is unestimated; absent transitions are not
 treated as self-transitions.
 
-A \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =} has no estimated
-transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from each group's
-sequence of modal profiles in time order. \code{get_group_tna()} splits those
-sequences by each group's modal group class. A fit made without \code{time} is
-refused.
+For a \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit, \code{\link[tna:build_model]{tna::tna()}} builds the network
+from the modal sequences. A fit made without \code{time} is refused.
 
 A general \code{\link[=lta]{lta()}} fit (occasion-varying or covariate-dependent
 transitions, second order, movers and stayers, or ordinal, count or
-weighted data) has no single transition matrix and is refused with
+weighted data) is currently unsupported and raises
 \code{latents_unsupported_tna}; its transitions are returned by
 \code{get_results(x, "transitions")}.
 }
+\section{Interpretation}{
+
+A network built from modal assignments is a descriptive summary and does
+not account for classification uncertainty. A pooled network may conceal
+differences between latent group classes; use \code{\link[=get_group_tna]{get_group_tna()}} to examine
+their separate networks.
+}
+
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")
@@ -51,5 +69,5 @@ if (requireNamespace("tna", quietly = TRUE)) {
 }
 }
 \seealso{
-\code{\link[=get_group_tna]{get_group_tna()}} for one network per latent class.
+\code{\link[=get_group_tna]{get_group_tna()}} for one network per latent group class.
 }

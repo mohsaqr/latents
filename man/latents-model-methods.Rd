@@ -7,7 +7,7 @@
 \alias{vcov.multilpa}
 \alias{confint.multilpa}
 \alias{latents-model-methods}
-\title{Coefficients, covariance, intervals and likelihood of latents fits}
+\title{Extract model coefficients, covariance matrices and likelihood summaries}
 \usage{
 \method{vcov}{multilpa_covariates}(
   object,
@@ -42,10 +42,10 @@ models).}
 \code{\link[=parameter_inference]{parameter_inference()}} (covariate models).}
 
 \item{scale}{\code{"natural"}, the default, or \code{"unconstrained"}. Natural
-coefficients are in the units \code{coef()} reports: means and variances in the
-indicators' units, probabilities as probabilities, with the covariance
-carried from the estimation scale by the delta method. Unconstrained is the
-scale the model is estimated on: log variances (diagonal), log-Cholesky
+coefficients are expressed on the reported scale: means in indicator
+units, variances in squared indicator units, and probabilities on \verb{[0, 1]}.
+Their covariance is obtained by the delta method. The unconstrained scale
+uses the coordinates in which the model is estimated: log variances (diagonal), log-Cholesky
 coordinates (full covariance), log volumes, shapes and orientations (a
 structure that constrains them across profiles), and baseline-category
 logits for mixing and response probabilities. In a covariate model, means
@@ -60,7 +60,7 @@ columns are then zero (covariate models).}
 \item{...}{For \code{vcov()} and \code{confint()} of a \code{multilpa} fit, and \code{confint()}
 of a covariate model, passed to \code{\link[=parameter_inference]{parameter_inference()}} (for example
 \code{method = "bootstrap"}, \code{vcov_type = "robust"} or \code{step}); an argument
-\code{\link[=parameter_inference]{parameter_inference()}} does not take is refused with
+\code{\link[=parameter_inference]{parameter_inference()}} does not take raises
 \code{latents_bad_argument}. \code{vcov()} of a covariate model warns
 \code{latents_unused_argument} for an argument it does not take, and refuses
 \code{method = "bootstrap"} with \code{latents_unsupported_inference}; \code{vcov()} of
@@ -82,17 +82,33 @@ and the lower and upper bounds as columns. \code{logLik()}: a \code{"logLik"} ob
 with \code{df} and \code{nobs} attributes. \code{nobs()}: the number of independent groups
 counted by the fitted BIC. With \code{drop_empty = TRUE}, groups without any
 observed indicator are excluded; with \code{drop_empty = FALSE}, they are counted.
+Groups with zero sampling weight are excluded under either setting.
 For a single-level fit these groups are its individual observations.
 }
 \description{
-\code{coef()}, \code{vcov()}, \code{confint()}, \code{logLik()} and \code{nobs()} for multilevel
-profile and class models (\code{\link[=multilpa]{multilpa()}}), covariate models, latent transition
-models and, for \code{coef()}, \code{vcov()} and \code{confint()}, pooled imputations.
-Mixture regressions, growth
-mixtures and the additive, cross-level and general transition families
-document the same methods with their \code{\link[=get_results]{get_results()}} page.
+These methods extract fitted parameters, measures of parameter uncertainty,
+and likelihood information for reporting and further statistical analysis.
+
+\code{coef()} returns the model's parameter values. \code{vcov()} returns their
+estimated sampling variances and covariances, describing the uncertainty in
+individual estimates and their joint variation. \code{confint()} provides
+confidence intervals for selected parameters.
+
+\code{logLik()} returns the fitted log likelihood together with the number of
+estimated parameters and the associated sample size. \code{nobs()} reports the
+number of independent units used in the model's group-based information
+criterion: individual observations for a single-level model and observed
+groups for a grouped model. The treatment of entirely missing units follows
+the fitted model's \code{drop_empty} setting.
 }
 \details{
+These methods support profile and class models, models with membership
+covariates and homogeneous latent transition models. Pooled
+multiple-imputation results support \code{coef()}, \code{vcov()} and \code{confint()}.
+Methods for mixture regressions, growth mixtures, additive models,
+cross-level models and general transition models are described in
+\code{\link[=get_results]{get_results()}}.
+
 Categorical parameter names escape reserved characters within
 indicator and category components (\verb{\%}, \code{:}, \verb{,}, \code{[} and \verb{]}) using percent
 codes. This keeps distinct parameters distinct when their original labels

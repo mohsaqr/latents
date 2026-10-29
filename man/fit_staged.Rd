@@ -2,7 +2,7 @@
 % Please edit documentation in R/fixed-measurement.R
 \name{fit_staged}
 \alias{fit_staged}
-\title{Fit a two-level model in stages, holding the measurement solution}
+\title{Estimate group classes with fixed individual profile definitions}
 \usage{
 fit_staged(
   data,
@@ -29,8 +29,9 @@ fit_staged(
 \arguments{
 \item{data}{A data frame containing the indicators and the group identifier.}
 
-\item{vars}{Unique character vector of indicator column names. Columns not
-named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
+\item{vars}{Unique character vector of indicator column names. Indicators
+named in \code{categorical} use categorical response distributions; the
+remaining indicators are continuous and use Gaussian distributions.}
 
 \item{id}{Name of the observed group identifier column. Character, factor
 and numeric identifiers are supported; missing identifiers are not.
@@ -38,55 +39,48 @@ Required; \code{id = NULL} is not accepted.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
-\item{n_group_classes}{Number of latent group classes to estimate in the
-second stage (default 2); must be at least two.}
+\item{n_group_classes}{Number of latent group classes in the second stage.
+Must be at least two; the default is 2.}
 
-\item{measurement}{\code{NULL} (the default), to fit the first stage here with
-one group class, or a fitted \code{multilpa} model to use as the first stage.
-Its profiles, indicators and measurement options must match the ones
-requested here, and it must have one group class. Fits made with
-\code{weights}, \code{centering} or \code{scaling}, with \code{ordinal} or \code{count}
-indicators, with \code{direct_effects} or with \code{local_dependence} between
-continuous indicators, are refused, as are covariance structures other
-than EEI, VVI, EEE and VVV. Every refusal raises \code{latents_bad_stage}.}
+\item{measurement}{An optional fitted \code{multilpa} model supplying the
+first-stage measurement estimates. With \code{NULL} (the default), the first
+stage is estimated from \code{data}. A supplied model must have one group class
+and matching profiles, indicators and measurement options. Models with
+\code{weights}, \code{centering}, \code{scaling}, \code{ordinal} or \code{count} indicators,
+\code{direct_effects}, or \code{local_dependence} between continuous indicators are
+not supported. Supported covariance structures are EEI, VVI, EEE and VVV.
+An incompatible measurement model raises \code{latents_bad_stage}.}
 
 \item{variance_model}{\code{"varying"} (the default; profile-specific variances
 or covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Number of EM starts, used for both stages.}
+\item{n_starts}{Number of EM starts used in each estimated stage. When
+\code{measurement} is supplied, only the second stage is estimated.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start
-(default 1000). \code{max_iter = 0} performs no update: with \code{start}, the model
-is evaluated at exactly those values, for example to score them with
-\code{logLik()}; without \code{start}, the random initializations are evaluated and
-the one with the highest log likelihood is returned.}
+in each estimated stage (default 1000). Zero evaluates initial values
+without performing EM updates.}
 
 \item{tol}{Positive convergence tolerance (default \code{1e-8}). EM has
 converged when one step (or SQUAREM cycle) changes the log likelihood by
 no more than \code{tol} times the number of observed indicator values (each
-non-missing cell of a row of positive weight, at least one). A change in
-log likelihood does not depend on the units of the data, so neither does
-this rule; latents 0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}, which a change of units moved.}
+non-missing cell in a row of positive weight, with a minimum count of one).
+The tolerance is therefore expressed per observed indicator value.}
 
-\item{min_variance}{Lower bound on each variance, or on each covariance
-eigenvalue under full covariance; the fit is then constrained maximum
-likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
-sample variance of the continuous indicators (observed values in rows of
-positive weight, on the scale fitted, after any centring and scaling), so
-that the bound moves with the units of the data. A number is an absolute
-bound in squared indicator units (the default of 0.97.1 and earlier was
-\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
-Estimates at the bound are reported and raise a warning.}
+\item{min_variance}{Lower bound on each continuous-indicator variance, or
+on each covariance eigenvalue under full covariance. \code{NULL} (the default)
+uses \code{1e-6} times the smallest observed sample variance of the continuous
+indicators. A numeric value specifies an absolute bound in squared
+indicator units. Estimates at the bound raise a warning. In the second
+stage, measurement parameters are held at their first-stage values.}
 
-\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
-including negative ones. When supplied, the caller's random-number state
+\item{seed}{Optional random seed: any integer \code{set.seed()} accepts,
+including negative integers. When supplied, the caller's random-number state
 is restored on exit.}
 
-\item{missing}{\code{"error"} (the default) rejects missing indicators; \code{"fiml"}
-maximizes the observed-data likelihood under an ignorable missingness
-mechanism (MAR), integrating missing indicators out rather than filling
-them in. This also holds with membership covariates; the covariates
-themselves must be complete (\code{latents_bad_data}).}
+\item{missing}{\code{"error"} (the default) rejects missing indicators;
+\code{"fiml"} maximises the observed-data likelihood under an ignorable
+missingness mechanism (MAR), integrating over missing indicators.}
 
 \item{covariance_model}{\code{"diagonal"} (the default) assumes conditional
 independence; \code{"full"} estimates within-profile residual covariances.}
@@ -117,82 +111,80 @@ raise \code{latents_bad_time} (also \code{latents_bad_data}); give the order wit
 \code{factor(levels = )} or zero-pad the numbers. Zero-padded numbers and ISO
 dates are accepted.}
 
-\item{search}{How the starts are found: \code{NULL} (the default), \code{"kmeans"}
-or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one
-covariance matrix (EII, EEI, EEE with continuous indicators), which removes
-the isolated-profile covariance-collapse mechanism. Shared covariances can
-still hit their floor on degenerate or over-extracted data; inspect the
-boundary diagnostics. It uses
-\code{"kmeans"} otherwise, including categorical-only models and the
-group-class families. The search used is recorded on the fit, and
-\code{search = "kmeans"} retains the start-search policy of latents 0.96.2.
-\code{"kmeans"} runs
-\code{n_starts} starts to convergence: Ward's clustering first, then k-means
-from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
-short EM run each and runs \code{n_starts} finalists to convergence
-(Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
-or supplied starting values) reserves one finalist slot if its screening
-succeeds; the remaining slots take the highest screening likelihoods.
-Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
-successfully, even if another screened start has a higher likelihood.
-With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
-The pool begins with the kmeans search's own
-starts, drawn in the same order, followed by random partitions of the
-rows and random rows as class centres, and \code{get_results(fit, "starts")}
-gives every start of the pool with its \code{kind}, its \code{stage} and its
-likelihood after screening. Either search reports the start with the
-highest likelihood among those run to convergence (subject to
-\code{select_start} and \code{boundary}). With profile-specific variances that
-maximum can be spurious, a profile on a few nearly coincident points
-with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
-harder search finds such maxima more often. They are reported, not set
-aside: a variance at \code{min_variance} as a boundary fit
-(\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
-and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
-warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
-covariance and support measures without an automatic spike cutoff or
-changing the selected start. Neither a warning's absence nor a repeated
-likelihood establishes a regular or globally optimal solution.}
+\item{search}{Initialisation strategy for each estimated stage: \code{NULL}
+(the default), \code{"kmeans"} or \code{"emEM"}. The default is \code{"emEM"} for
+models containing continuous indicators with a shared covariance matrix
+(EEI or EEE),
+and \code{"kmeans"} otherwise. \code{"kmeans"} uses clustering-based starts;
+\code{"emEM"} screens a pool of starts with short EM runs before completing
+\code{n_starts} selected searches. The second stage uses the first-stage
+measurement estimates as supplied starting values and holds them fixed.
+See \code{\link[=multilpa]{multilpa()}} for the screening and start-selection procedure.}
 
-\item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
-least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
-The protected first start counts toward the \code{n_starts} finalist budget;
-increasing \code{n_screen} does not add finalist slots. A single supplied
-start with \code{n_starts = 1} disables screening.
-A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
-\code{latents_bad_argument}.}
+\item{n_screen}{Number of starts screened under \code{search = "emEM"}, at
+least \code{n_starts}. The default is five times \code{n_starts}. Screening is
+skipped in the second stage when \code{n_starts = 1}, because a starting
+measurement solution is supplied. A value with \code{search = "kmeans"}, or
+one below \code{n_starts}, raises \code{latents_bad_argument}.}
 }
 \value{
-A \code{multilpa} object for the second stage, on which every accessor,
-diagnostic and method works. Its measurement parameters are exactly the
-first stage's. It also carries \code{fixed}, naming the held blocks;
-\code{n_parameters}, counting only the parameters this stage estimated; and
-\code{n_parameters_with_measurement}, which adds the held measurement back.
-\code{get_results(fit, what = "stages")} gives a two-row summary of both
-stages.
+A second-stage \code{multilpa} object with measurement parameters equal
+to the first-stage estimates. The \code{fixed} component identifies the
+parameter blocks held constant. \code{n_parameters} counts the parameters
+estimated in the second stage; \code{n_parameters_with_measurement} also
+includes the first-stage measurement parameters.
+\code{get_results(fit, what = "stages")} returns a two-row summary of the
+estimation stages. Standard result-extraction and diagnostic methods for
+\code{multilpa} objects are available.
 }
 \description{
-Fits a two-level model in two stages and returns the second-stage
-\code{multilpa} object. The first stage estimates the measurement model with one
-group class; the second estimates the group-class structure with that
-measurement held fixed, so adding group classes does not change the
-profiles.
+\code{fit_staged()} estimates a multilevel mixture model in which observed
+groups are distinguished by their composition of individual profiles. It
+separates the estimation of profile definitions from the estimation of
+group classes, allowing between-group differences to be studied while
+retaining a common measurement model.
+
+The first stage estimates the individual profiles using a model with one
+group class. These profiles are defined by their indicator distributions,
+including means and covariance parameters for continuous indicators and
+response probabilities for categorical indicators. The second stage holds
+these measurement parameters fixed and estimates the profile probabilities
+within each group class, together with the proportions of the group
+classes. Group classes therefore differ in their profile composition while
+the profiles retain the same measurement definitions.
+
+A compatible fitted measurement model may also be supplied, allowing
+established profile definitions to be reused. The returned model contains
+the second-stage estimates and retains the first-stage fit, so both stages
+can be inspected.
 }
 \details{
-The second stage treats the measurement solution as known, so its
-Wald standard errors (\code{\link[=parameter_inference]{parameter_inference()}}'s default), information
-criteria and likelihood-ratio comparisons are conditional on that solution
-and narrower than under joint estimation.
-\code{parameter_inference(fit, method = "bootstrap")} removes that conditioning
-for the standard errors and intervals: every resample of the groups is
-staged again, measurement first, and the table also reports the
-measurement parameters with their own errors. A supplied \code{measurement} is
-re-estimated on each resample with the same options. The criteria and
-likelihood comparisons remain conditional: compare staged fits with one
-another using \code{n_parameters}, and a staged fit with a jointly estimated
-one using \code{n_parameters_with_measurement}; the staged likelihood is not
-the joint maximum, so the latter comparison is descriptive.
+Information criteria and likelihood-ratio comparisons condition
+on the fixed measurement model.
+
+With \code{parameter_inference(fit, method = "bootstrap")}, groups are
+resampled and both stages are re-estimated. This procedure propagates
+first-stage estimation uncertainty and reports standard errors and
+intervals for the measurement parameters as well as the second-stage
+parameters. A supplied \code{measurement} model is re-estimated in each
+resample using its fitting options.
+
+For staged models with the same fixed measurement specification, use
+\code{n_parameters} when comparing conditional information criteria. Comparisons
+with jointly estimated models can include the measurement parameters
+through \code{n_parameters_with_measurement}, but remain descriptive because
+the staged estimates do not generally maximize the joint likelihood.
 }
+\section{Interpretation}{
+
+The second-stage estimates are conditional on the fixed measurement model.
+Default Wald standard errors omit uncertainty from estimating that model;
+bootstrap inference can propagate this uncertainty by resampling groups
+and re-estimating both stages. Staged estimates do not generally maximise
+the joint likelihood, so comparisons with jointly estimated models require
+care.
+}
+
 \examples{
 set.seed(7)
 example_data <- data.frame(
@@ -206,7 +198,7 @@ get_results(staged, what = "stages")
 get_results(staged, what = "profile_probabilities")
 }
 \seealso{
-\code{\link[=multilpa]{multilpa()}} with \code{fixed} for finer control over which blocks are
-held, and \code{\link[=starting_values]{starting_values()}} with \code{what = "measurement"} for the values a
-stage hands on.
+\code{\link[=multilpa]{multilpa()}} for selective constraints through \code{fixed};
+\code{\link[=starting_values]{starting_values()}} with \code{what = "measurement"} to extract measurement
+parameters for a subsequent fit.
 }

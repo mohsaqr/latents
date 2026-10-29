@@ -1,0 +1,9 @@
+Starting values: 1 profile(s), 2 continuous indicator(s)
+Residual covariance: diagonal
+Categorical indicators: 0
+Mixing blocks: 1 group class(es)
+Pass this to multilpa(start = ) as it is.
+[1] "means"     "variances"
+ original evaluated 
+-327.6034 -327.6034 
+Negative variance retained at extraction: -1 

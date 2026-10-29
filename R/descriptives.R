@@ -1,14 +1,29 @@
 #' Descriptive statistics and intraclass correlations of model variables
 #'
-#' Returns a table with one row per variable giving the number of observed and
-#' missing values, the mean, standard deviation, minimum, maximum and number of
-#' distinct values, and, when groups are known, the number of groups and the
-#' intraclass correlation (ICC): the share of the variable's variance that lies
-#' between groups.
+#' @description
+#' `descriptives()` summarizes the characteristics of variables used in latent
+#' profile and class analyses. It supports inspection of variability, observed
+#' ranges, and missingness before model estimation, as well as descriptive
+#' comparisons across groups.
 #'
-#' An ICC near zero indicates little between-group variation in that
-#' variable's mean. It does not rule out group classes that differ in other
-#' variables, in profile prevalence, or in other features of the distributions.
+#' For numeric variables, the function reports measures of central tendency
+#' and dispersion. When a grouping identifier is supplied, it also estimates
+#' intraclass correlations to describe clustering within groups. Summaries can
+#' be calculated for the full dataset or separately by an observed grouping
+#' variable. For supported fitted models, variables can also be summarized by
+#' assigned profile or group class.
+#'
+#' @details
+#' Summaries by fitted class use assigned membership and do not incorporate
+#' classification uncertainty. They describe the observations assigned to each
+#' class and should be distinguished from the model's estimated class-specific
+#' parameters. Rows excluded from classification are retained in a separate
+#' stratum with a missing class label, following the fit's `drop_empty` setting.
+#'
+#' An intraclass correlation (ICC) near zero indicates little between-group
+#' variation in that variable's mean. It does not rule out group classes that
+#' differ in other variables, in profile prevalence, or in other features of
+#' the distributions.
 #'
 #' @param x A data frame, or a profile, class or transition fit (from
 #'   [lpa()], [lca()], [multilpa()], [multilca()], or [lta()] with
@@ -39,10 +54,10 @@
 #'       that is not numeric.}
 #'     \item{`n_distinct`}{integer: distinct observed values.}
 #'     \item{`n_groups`,`icc`}{present only when `id` is known. `icc` is the
-#'       one-way random-effects estimate; it can be slightly negative when the
-#'       between-group mean square is below the within-group one, which
-#'       indicates no group structure. Rows with a missing group ID do not
-#'       contribute to either statistic.}
+#'       one-way random-effects estimate. It can be negative when the
+#'       between-group mean square is smaller than the within-group mean
+#'       square; this does not represent a negative population variance.
+#'       Rows with a missing group identifier contribute to neither statistic.}
 #'   }
 #'   With `by`, a first column named after the stratifier holds each stratum's
 #'   value (`NA` for the stratum of missing values). For every variable,
@@ -55,8 +70,8 @@
 #' @references Bliese, P. D. (2000). Within-group agreement, non-independence,
 #'   and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
 #'   theory, research, and methods in organizations*.
-#' @seealso [multilpa()] to fit, [diagnostics()] for the after-the-fit
-#'   counterpart.
+#' @seealso [multilpa()] for model estimation and [diagnostics()] for
+#'   diagnostics of a fitted model.
 #' @examples
 #' descriptives(
 #'   course_engagement,
@@ -64,8 +79,7 @@
 #'   id = "student"
 #' )
 #'
-#' # A missing stratifier is a stratum of its own, not a silent loss and not
-#' # missingness invented in a variable that has none.
+#' # Missing stratification values form a separate stratum.
 #' descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
 #'              vars = "score", by = "cohort")
 #'
@@ -185,6 +199,9 @@ descriptives.multilpa_covariates <-descriptives.multilpa
       "This fit carries no `%s` assignment for each of its observations.", by),
       class = "latents_incomplete_fit", call = NULL))
   }
+  included <- if (identical(by, "profile")) .multilpa_informative_rows(x) else
+    .multilpa_informative_groups(x)[x$group_index]
+  values[!included] <- NA_integer_
   values
 }
 

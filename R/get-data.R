@@ -1,31 +1,51 @@
-#' Extract the result tables of a fitted model
+#' Extract model estimates and analysis results
 #'
-#' Returns one tidy table of a fitted model or related object, named by
-#' `what`, as a base `data.frame`; `what = "all"` returns every table the
-#' object offers as a named list. The tables available depend on the class of
-#' the object and are listed under *Tables*.
+#' @description
+#' `get_results()` provides access to the estimates and summaries produced by
+#' models and analyses in `latents`. It supports examination of the estimated
+#' latent classes, their membership probabilities, and model-fit statistics,
+#' as well as the preparation of results for reporting and further analysis.
+#'
+#' The results available depend on the supplied object. Fitted models provide
+#' measurement estimates, class proportions, posterior membership
+#' probabilities, and other model-specific quantities, such as transition
+#' probabilities. Enumeration and comparison objects provide summaries of
+#' candidate models, while diagnostic and bootstrap objects provide their
+#' corresponding checks and test results.
+#'
+#' The `what` argument selects the requested table. Each table is returned as
+#' a standard R data frame, allowing its contents to be inspected, filtered,
+#' combined, or exported. Omitting `what` returns the object's primary table;
+#' `what = "all"` returns a named collection of the tables included by default
+#' for that object.
+#'
+#' @details
+#' Some tables calculate additional quantities when requested. For example,
+#' measurement tables may obtain standard errors through
+#' [parameter_inference()]. Their availability therefore depends on the fitted
+#' model and the requirements of the corresponding calculation.
+#'
+#' The table catalogue below specifies the contents and accepted arguments of
+#' each table, including results that require an explicit request.
 #'
 #' Every object also has `print()`, which shows a compact overview,
 #' `summary()`, which collects its main tables (taking `level` and
 #' `vcov_type` where the model has standard errors), and `as.data.frame()`,
 #' which returns its primary table, the same as `get_results(x)`.
 #'
-#' A table that joins the columns of a supplied `data` frame to the fitted rows
-#' first checks that the rows are in the fitted order, by comparing the
-#' supplied columns the fit also holds (such as the identifier, the occasion
-#' and the indicators) with
-#' the fitted values. A numeric column also matches when it equals the fitted
-#' values after a round trip through [utils::write.csv()], provided the round
-#' trip does not merge distinct values. This check establishes row order only;
-#' inference and model comparison check more strictly that supplied data
-#' reproduce the fitted data. Columns the fit does not hold cannot establish
-#' row order.
+#' Before combining supplied `data` with model results, the function checks
+#' row alignment using columns retained by the fitted object, such as
+#' identifiers, occasions, and indicators. Numeric values serialized by
+#' [utils::write.csv()] are also accepted when serialization preserves
+#' distinct values. Columns absent from the fitted object cannot establish
+#' alignment. Inference and model comparison apply additional checks to
+#' verify that supplied data reproduce the estimation data.
 #'
 #' @param x A fitted model of this package, an enumeration grid, a model
 #'   comparison, a bootstrap comparison, a starting-value set, a
 #'   classification-diagnostics object, or the summary of any of them.
-#' @param what Name of the table to return, or `"all"` for every table the
-#'   object offers. `NULL` (default) returns the primary table: the
+#' @param what Name of the table to return, or `"all"` for the collection of
+#'   tables included by default for the object. `NULL` (default) returns the primary table: the
 #'   measurement model for a fit, the candidate grid for an enumeration, the
 #'   test row for a bootstrap comparison and the entropy table for a
 #'   diagnostics object. A name the object does not offer raises
@@ -35,7 +55,9 @@
 #'   `latents_bad_argument`.
 #'
 #' @section Tables:
-#' Every fitted model offers these:
+#' The following tables apply to profile and class models and, where
+#' supported, membership-covariate and transition models. Tables for other
+#' model families are described in *Tables of the other model families*.
 #' \describe{
 #'   \item{`"profiles"`}{The Gaussian measurement model, one row per profile
 #'     and continuous indicator: `profile`, `indicator`, `mean`, `variance`,
@@ -59,22 +81,29 @@
 #'     `data`.}
 #'   \item{`"counts"`}{Effective class sizes, one row per class at each level
 #'     of the fit: `level`, `class`, `effective_count` (the summed posteriors)
-#'     and `effective_proportion`. These differ from the modal counts in
-#'     `"classification"` whenever entropy is below one.}
+#'     and `effective_proportion`. Effective counts use posterior probabilities;
+#'     modal counts in `"classification"` use discrete class assignments.}
 #'   \item{`"model"`}{One row describing the fit: its dimensions, likelihood,
 #'     parameter counts, `aic`, `bic_groups`, `bic_individual` and its
 #'     convergence and boundary diagnostics. The columns differ by family (a
 #'     covariate fit adds its predictor counts); `"information_criteria"` has
 #'     the same columns for every family.}
 #'   \item{`"posteriors"`}{One row per individual and profile: `row`, `group`,
-#'     `profile`, `posterior`, `modal`. Takes `format`.}
+#'     `profile`, `posterior`, `modal`. Takes `format`. Excluded observations
+#'     retain their rows, with `posterior` and `modal` set to `NA`. In wide
+#'     format their assigned `profile` and posterior columns are `NA`.}
 #'   \item{`"assignments"`}{One row per observation: the columns the fit was
 #'     built from (or those of `data`), then `profile`, `group_class` where the
 #'     model has one, `uncertainty` (one minus the posterior of the assigned
 #'     profile) and one `posterior_profile_*` column per profile, plus
 #'     `posterior_noise` for a fit with a noise component (whose cases are
 #'     profile 0). Takes `data` and `truth`; with `truth` it returns a recovery
-#'     table instead (see *Recovery*).}
+#'     table instead (see *Recovery*). Row order is preserved. Under the default
+#'     `drop_empty = TRUE`, observations with no observed indicators have `NA`
+#'     for `profile`, `uncertainty` and the posterior columns. Group assignments
+#'     are missing only when the entire group is excluded; an empty observation
+#'     can therefore retain a group assignment supported by other observations.
+#'     Zero-weight units are unclassified under either `drop_empty` setting.}
 #'   \item{`"classification"`}{Classification quality, one row per level and
 #'     class: `level`, `class`, `n_modal`, `proportion_modal`, `estimated_n`,
 #'     `estimated_proportion`, `average_posterior`,
@@ -117,7 +146,7 @@
 #'     `1 - sum_i w_i e_i / (sum_i w_i log K)`; `n_units` stays a count.}
 #'   \item{`"replication"`}{One row: `n_starts` (starts run to the end),
 #'     `n_best_replicated` (those whose log likelihood is within `tolerance`
-#'     of the best), `share`, `tolerance`, `best_start` (the winning start's
+#'     of the best), `share`, `tolerance`, `best_start` (the selected start's
 #'     index) and `log_likelihood`. A best solution reached by one start of
 #'     several may not be the global maximum: refit with more starts.}
 #'   \item{`"residuals"`}{Bivariate residuals for every pair of indicators,
@@ -136,7 +165,9 @@
 #'     Raises `latents_no_time` for a fit made without `time`.}
 #'   \item{`"sequence_summary"`}{One row per group class: `group_class`,
 #'     `groups`, `observations`, `mean_length`, `median_length`, `shortest`,
-#'     `longest`, `complete`, `gaps`. Raises `latents_no_time` for a fit made
+#'     `longest`, `complete`, `gaps`. Summarises classified groups only;
+#'     lengths describe their recorded occasions, including occasions with
+#'     missing indicators. Raises `latents_no_time` for a fit made
 #'     without `time`.}
 #'   \item{`"starts"`}{One row per EM start: `start`, `log_likelihood`,
 #'     `converged`, `iterations`, `error` and, where the family records it,
@@ -154,7 +185,8 @@
 #' \describe{
 #'   \item{`"group_posteriors"`}{One row per observed group and group class:
 #'     `group`, `group_size`, `log_likelihood`, `group_class`, `posterior`,
-#'     `modal`. Takes `format`.}
+#'     `modal`. Takes `format`. Excluded groups retain their rows, with missing
+#'     posterior probabilities and modal assignments, as for `"posteriors"`.}
 #' }
 #' Tables specific to one family or object:
 #' \describe{
@@ -251,9 +283,9 @@
 #'     `kind` (`"categorical"` or `"continuous"`), `profile`, `item_1`,
 #'     `category_1`, `item_2`, `category_2`, `probability`, `independent`,
 #'     `ratio`, `covariance` and `correlation`. A categorical pair has one row
-#'     per profile and combination of the two items' categories (every
-#'     combination, including any nobody gave, which sits at the
-#'     `min_probability` floor and counts as a parameter): the fitted
+#'     per profile and category combination, including unobserved combinations
+#'     subject to the `min_probability` floor and included in the parameter
+#'     count: the fitted
 #'     joint `probability`, the product of the two marginal probabilities
 #'     (`independent`, the joint probability under independence within the
 #'     profile) and their `ratio`; its covariance columns are `NA`. A
@@ -410,8 +442,10 @@
 #'     are extracted by name with [get_candidate()]; transition grids can also
 #'     be passed to [compare_models()].}
 #' }
-#' @section What `"all"` returns: A named list of every table the object
-#'   offers, in catalogue order, each built with its default arguments;
+#' @section What `"all"` returns: A named list of tables included by default
+#'   for the object, in catalogue order. Some results require an explicit
+#'   request, including the `"lmr"` table for an enumeration object.
+#'   Each included table is built with its default arguments;
 #'   supplying any further argument raises `latents_bad_argument`. A table
 #'   this object cannot produce (for example a sequence table for a fit made
 #'   without `time`, or bivariate residuals for a family without discrete
@@ -419,7 +453,7 @@
 #'   available. Only the conditions that mean the table does not exist for
 #'   this object are skipped; any other error is raised.
 #'
-#' @section Arguments the tables take:
+#' @section Table arguments:
 #'   These are passed through `...`; each table takes only those listed for it
 #'   under *Tables*.
 #' \describe{
@@ -474,6 +508,8 @@
 #'   `assignment` (the model label compared against), `class`, `truth` (the
 #'   column name), `value`, `n` and `proportion` (the share of units with that
 #'   truth value assigned to that class). Several truth columns are stacked.
+#'   Excluded observations or groups appear under `class = NA`, so the table
+#'   distinguishes unclassified units from assignments to an estimated class.
 #'
 #'   A truth column that is constant within every group is compared against
 #'   `group_class`; one that varies within any group is compared against
@@ -524,10 +560,11 @@
 #'   which uses no sample size, is the same in both rows. A transition model
 #'   ([lta()]) keeps one entropy per level instead: its profiles form a Markov
 #'   chain within a person, whose path entropy is not the sum of the
-#'   occasions' entropies, so its `"groups"` criteria charge the group-class
-#'   entropy and its `"individuals"` criteria the occasions' profile entropy,
-#'   and `get_results(x, "information_criteria", format = "long",
-#'   definitions = TRUE)` says so. Individual sample sizes exclude rows with
+#'   occasions' entropies. Its `"groups"` criteria use group-class entropy,
+#'   whereas its `"individuals"` criteria use occasion-level profile entropy.
+#'   These definitions are reported by
+#'   `get_results(x, "information_criteria", format = "long", definitions = TRUE)`.
+#'   Individual sample sizes exclude rows with
 #'   no observed indicators, and group sample sizes exclude groups in which
 #'   every row has none (`n_informative_groups`); the entropy and the
 #'   classification statistics exclude the same rows and groups, as in Mplus.
@@ -544,13 +581,14 @@
 #'   class `k` is `(p / (1 - p)) / (r / (1 - r))`, where `p` is the average
 #'   posterior in the assigned class and `r` is the model-estimated class
 #'   proportion. Values near one indicate classification no better than the
-#'   class proportions alone; values of five or more are conventionally taken
-#'   as adequate separation. It is `NA_real_` when `average_posterior` is
+#'   class proportions alone. A value of five is a conventional descriptive
+#'   benchmark, rather than a formal test of class separation. It is `NA_real_` when `average_posterior` is
 #'   missing or zero, or when `estimated_proportion` is zero or one. A perfect
 #'   `average_posterior` of one gives `Inf` at an interior estimated proportion; a
 #'   single-class solution always reports `NA_real_`. `average_posterior` is
 #'   `NA_real_` for a class with no modal members. `n_modal` and
-#'   `estimated_n` differ whenever entropy is below one.
+#'   `estimated_n` use modal assignments and posterior probabilities,
+#'   respectively, and need not coincide.
 #'
 #'   `relative_entropy` is `1 - EN_level / (n log K)` (Ramaswamy et al.
 #'   1993), between zero and one, higher meaning sharper classification, with
@@ -570,9 +608,9 @@
 #'   each observation by its posterior (times its sampling weight). Every pair
 #'   of indicators has a row (per profile under `by = "profile"`, once under
 #'   `by = "overall"`). `data` must be in the order the model was fitted in;
-#'   the alignment is checked. A large residual indicates local dependence
-#'   between two indicators, which otherwise tends to be absorbed by an extra
-#'   profile. What each `kind` computes:
+#'   the alignment is checked. Large residuals suggest associations that the
+#'   measurement model does not adequately represent. Calculations for each
+#'   `kind` are described below:
 #'
 #'   * `"gaussian"`, two Gaussian indicators: `observed` is the
 #'     posterior-weighted correlation of the residuals from the profile's
@@ -580,9 +618,8 @@
 #'     correlation the fitted covariance implies (zero for a diagonal one).
 #'     `statistic` is the difference of their Fisher z transforms times
 #'     `sqrt(effective_n - 3)`, referred to the standard normal (Fisher,
-#'     1921), two-sided, `df` is `NA`. Under a correctly specified model its
-#'     size is close to nominal: 4.8% (`"profile"`) and 5.8% (`"overall"`)
-#'     at 5% in 200 simulated two-profile data sets of 500 rows.
+#'     1921), with a two-sided p-value; `df` is `NA`. This is an approximate
+#'     reference distribution for a posterior-weighted diagnostic.
 #'   * `"categorical"`, two categorical or ordinal indicators (an ordinal
 #'     indicator's categories are its levels): `statistic` is the Pearson
 #'     X^2 of the posterior-weighted two-way table against the table the
@@ -591,12 +628,10 @@
 #'     `observed` and `expected` are the two tables' Cramer's V (Cramer,
 #'     1946), zero for the model's table within a profile. The chi-square
 #'     reference ignores that the model's table is estimated from the same
-#'     data, which makes the test very conservative (Oberski, van Kollenburg
-#'     & Vermunt, 2013): under a correctly specified model it rejected 0.25%
-#'     (`"profile"`) and 0.08% (`"overall"`) of pairs at nominal 5% in 200
-#'     simulated latent class data sets of 500 rows. A small `p_value` is
-#'     evidence of dependence; a large one is not evidence of independence,
-#'     so read `residual` and `statistic` rather than filtering on `p_value`.
+#'     data and can therefore be conservative (Oberski, van Kollenburg
+#'     & Vermunt, 2013). Interpret `p_value` together with `residual` and
+#'     `statistic`; a non-significant result does not establish conditional
+#'     independence.
 #'   * `"mixed"` (a Gaussian and a categorical or ordinal indicator) and
 #'     `"count"` (any pair with a count indicator): `observed` is the
 #'     posterior-weighted correlation of the two indicators' values within the
@@ -617,43 +652,59 @@
 #'
 #' @references Fisher, R. A. (1921). On the "probable error" of a coefficient
 #'   of correlation deduced from a small sample. *Metron*, 1, 3--32.
+#'
 #'   Cramer, H. (1946). *Mathematical Methods of Statistics*. Princeton
 #'   University Press.
+#'
 #'   Schwarz, G. (1978). Estimating the dimension of a model.
 #'   *Annals of Statistics*, 6, 461--464.
+#'
 #'   Sclove, S. L. (1987). Application of model-selection criteria to some
 #'   problems in multivariate analysis. *Psychometrika*, 52, 333--343.
+#'
 #'   Bozdogan, H. (1987). Model selection and Akaike's information criterion.
 #'   *Psychometrika*, 52, 345--370.
+#'
 #'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 #'   non-Gaussian clustering. *Biometrics*, 49, 803--821.
+#'
 #'   Biernacki, C., & Govaert, G. (1997). Using the classification likelihood
 #'   to choose the number of clusters. *Computing Science and Statistics*, 29,
 #'   451--457.
+#'
 #'   Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
 #'   Kullback's symmetric divergence. *Statistics and Probability Letters*, 42,
 #'   333--343.
+#'
 #'   Rosenberg, J. M., Beymer, P. N., Anderson, D. J., Van Lissa, C. J., &
 #'   Schmidt, J. A. (2018). tidyLPA: An R package to easily carry out latent
 #'   profile analysis (LPA) using open-source or commercial software.
 #'   *Journal of Open Source Software*, 3(30), 978.
+#'
 #'   McLachlan, G., & Peel, D. (2000). *Finite Mixture Models*. Wiley.
+#'
 #'   Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T.
 #'   (1993). An empirical pooling approach for estimating marketing mix
 #'   elasticities with PIMS data. *Marketing Science*, 12, 103--124.
+#'
 #'   Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
 #'   for clustering with the integrated completed likelihood. *IEEE
 #'   Transactions on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+#'
 #'   Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
 #'   models with categorical variables. *Political Analysis*, 12, 3--27.
+#'
 #'   Nagin, D. S. (2005). *Group-Based Modeling of Development*. Harvard
 #'   University Press.
+#'
 #'   Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
 #'   three-step approaches. *Political Analysis*, 18, 450--469.
+#'
 #'   Satopaa, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
 #'   "kneedle" in a haystack: Detecting knee points in system behavior.
 #'   *Proceedings of the 31st International Conference on Distributed
 #'   Computing Systems Workshops*, 166--171.
+#'
 #'   Oberski, D. L., van Kollenburg, G. H., & Vermunt, J. K. (2013). A Monte
 #'   Carlo evaluation of three methods to detect local dependence in binary
 #'   data latent class models. *Advances in Data Analysis and
@@ -662,7 +713,7 @@
 #'   under *Tables*, or a named list of such data frames for `what = "all"`.
 #' @seealso [as.data.frame()], which returns the primary table alone,
 #'   [summary()], which prints every table, and [diagnostics()] for the
-#'   classification tables gathered with a condensed reading.
+#'   classification tables with a diagnostic summary.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -675,8 +726,7 @@
 #' get_results(fit, what = "entropy")
 #' names(get_results(fit, what = "all"))
 #'
-#' # `engagement` and `student_type` are the kinds each row was simulated from,
-#' # which the model never saw. Both recovery checks are one call.
+#' # Compare estimated assignments with the generating classes at both levels.
 #' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = c("engagement", "student_type"))
 #' @export
@@ -1241,7 +1291,9 @@ get_results.summary_multilpa_bootstrap_lrt <-function(x, what = NULL, ...) {
 #' @return One row per group.
 #' @noRd
 .multilpa_sequence_length_frame <- function(x) {
-  data.frame(group = x$group_values, group_class = x$group_classes,
+  group_classes <- x$group_classes
+  group_classes[!.multilpa_informative_groups(x)] <- NA_integer_
+  data.frame(group = x$group_values, group_class = group_classes,
              occasions = unname(x$sequence_lengths),
              observations = unname(tabulate(x$group_index, nbins = x$n_groups)),
              complete = unname(x$sequence_lengths) == x$n_occasions,

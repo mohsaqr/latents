@@ -1,22 +1,22 @@
 Package: latents
 Title: Multilevel Latent Profile, Class and Transition Models
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
     person("Sonsoles", "L\u00f3pez-Pernas", role = "aut",
            comment = c(ORCID = "0000-0002-9621-1392")))
-Description: Provides functions for fitting multilevel latent profile
-    analysis, latent class, and latent transition models for continuous,
-    categorical, and mixed-type variables. Models are estimated by expectation-maximization,
-    handle missing data, and provide standard and robust standard errors.
-    Model selection is supported by information criteria, entropy,
-    classification diagnostics, and a parametric bootstrap likelihood ratio
-    test. Covariates can be related to latent class membership using
-    three-step methods with correction for classification error. Latent
-    transition models estimate transitions between latent profiles across
-    ordered occasions and are compatible with the 'tna' package for network
-    and sequence analysis. The multilevel mixture formulation follows Vermunt
+Description: Fits single-level and multilevel latent profile and class models,
+    latent transition models, and mixture regression and growth models for
+    studying unobserved heterogeneity. Supported measurement models accommodate
+    continuous, categorical, ordinal, count and mixed indicators. Provides
+    model comparison, parameter inference, classification diagnostics and
+    graphical summaries, with additional methods for membership covariates,
+    staged estimation and analyses of external variables that account for
+    classification error. Observed-data likelihood methods are available for
+    incomplete indicators, and supported transition models can be represented
+    as networks using the 'tna' package. The multilevel latent class
+    formulation follows Vermunt
     (2003) <doi:10.1111/j.0081-1750.2003.t01-1-00131.x>.
 URL: https://pak.dynasite.org/latents/, https://github.com/mohsaqr/latents
 BugReports: https://github.com/mohsaqr/latents/issues

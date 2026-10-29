@@ -182,52 +182,108 @@
   start
 }
 
-#' Fit a two-level model in stages, holding the measurement solution
+#' Estimate group classes with fixed individual profile definitions
 #'
-#' Fits a two-level model in two stages and returns the second-stage
-#' `multilpa` object. The first stage estimates the measurement model with one
-#' group class; the second estimates the group-class structure with that
-#' measurement held fixed, so adding group classes does not change the
-#' profiles.
+#' @description
+#' `fit_staged()` estimates a multilevel mixture model in which observed
+#' groups are distinguished by their composition of individual profiles. It
+#' separates the estimation of profile definitions from the estimation of
+#' group classes, allowing between-group differences to be studied while
+#' retaining a common measurement model.
+#'
+#' The first stage estimates the individual profiles using a model with one
+#' group class. These profiles are defined by their indicator distributions,
+#' including means and covariance parameters for continuous indicators and
+#' response probabilities for categorical indicators. The second stage holds
+#' these measurement parameters fixed and estimates the profile probabilities
+#' within each group class, together with the proportions of the group
+#' classes. Group classes therefore differ in their profile composition while
+#' the profiles retain the same measurement definitions.
+#'
+#' A compatible fitted measurement model may also be supplied, allowing
+#' established profile definitions to be reused. The returned model contains
+#' the second-stage estimates and retains the first-stage fit, so both stages
+#' can be inspected.
+#'
+#' @section Interpretation:
+#' The second-stage estimates are conditional on the fixed measurement model.
+#' Default Wald standard errors omit uncertainty from estimating that model;
+#' bootstrap inference can propagate this uncertainty by resampling groups
+#' and re-estimating both stages. Staged estimates do not generally maximise
+#' the joint likelihood, so comparisons with jointly estimated models require
+#' care.
 #'
 #' @inheritParams multilpa
+#' @param vars Unique character vector of indicator column names. Indicators
+#'   named in `categorical` use categorical response distributions; the
+#'   remaining indicators are continuous and use Gaussian distributions.
 #' @param id Name of the observed group identifier column. Character, factor
 #'   and numeric identifiers are supported; missing identifiers are not.
 #'   Required; `id = NULL` is not accepted.
-#' @param n_group_classes Number of latent group classes to estimate in the
-#'   second stage (default 2); must be at least two.
-#' @param measurement `NULL` (the default), to fit the first stage here with
-#'   one group class, or a fitted `multilpa` model to use as the first stage.
-#'   Its profiles, indicators and measurement options must match the ones
-#'   requested here, and it must have one group class. Fits made with
-#'   `weights`, `centering` or `scaling`, with `ordinal` or `count`
-#'   indicators, with `direct_effects` or with `local_dependence` between
-#'   continuous indicators, are refused, as are covariance structures other
-#'   than EEI, VVI, EEE and VVV. Every refusal raises `latents_bad_stage`.
-#' @param n_starts Number of EM starts, used for both stages.
-#' @return A `multilpa` object for the second stage, on which every accessor,
-#'   diagnostic and method works. Its measurement parameters are exactly the
-#'   first stage's. It also carries `fixed`, naming the held blocks;
-#'   `n_parameters`, counting only the parameters this stage estimated; and
-#'   `n_parameters_with_measurement`, which adds the held measurement back.
-#'   `get_results(fit, what = "stages")` gives a two-row summary of both
-#'   stages.
-#' @details The second stage treats the measurement solution as known, so its
-#'   Wald standard errors ([parameter_inference()]'s default), information
-#'   criteria and likelihood-ratio comparisons are conditional on that solution
-#'   and narrower than under joint estimation.
-#'   `parameter_inference(fit, method = "bootstrap")` removes that conditioning
-#'   for the standard errors and intervals: every resample of the groups is
-#'   staged again, measurement first, and the table also reports the
-#'   measurement parameters with their own errors. A supplied `measurement` is
-#'   re-estimated on each resample with the same options. The criteria and
-#'   likelihood comparisons remain conditional: compare staged fits with one
-#'   another using `n_parameters`, and a staged fit with a jointly estimated
-#'   one using `n_parameters_with_measurement`; the staged likelihood is not
-#'   the joint maximum, so the latter comparison is descriptive.
-#' @seealso [multilpa()] with `fixed` for finer control over which blocks are
-#'   held, and [starting_values()] with `what = "measurement"` for the values a
-#'   stage hands on.
+#' @param n_group_classes Number of latent group classes in the second stage.
+#'   Must be at least two; the default is 2.
+#' @param measurement An optional fitted `multilpa` model supplying the
+#'   first-stage measurement estimates. With `NULL` (the default), the first
+#'   stage is estimated from `data`. A supplied model must have one group class
+#'   and matching profiles, indicators and measurement options. Models with
+#'   `weights`, `centering`, `scaling`, `ordinal` or `count` indicators,
+#'   `direct_effects`, or `local_dependence` between continuous indicators are
+#'   not supported. Supported covariance structures are EEI, VVI, EEE and VVV.
+#'   An incompatible measurement model raises `latents_bad_stage`.
+#' @param n_starts Number of EM starts used in each estimated stage. When
+#'   `measurement` is supplied, only the second stage is estimated.
+#' @param max_iter Nonnegative integer maximum number of EM updates per start
+#'   in each estimated stage (default 1000). Zero evaluates initial values
+#'   without performing EM updates.
+#' @param missing `"error"` (the default) rejects missing indicators;
+#'   `"fiml"` maximises the observed-data likelihood under an ignorable
+#'   missingness mechanism (MAR), integrating over missing indicators.
+#' @param min_variance Lower bound on each continuous-indicator variance, or
+#'   on each covariance eigenvalue under full covariance. `NULL` (the default)
+#'   uses `1e-6` times the smallest observed sample variance of the continuous
+#'   indicators. A numeric value specifies an absolute bound in squared
+#'   indicator units. Estimates at the bound raise a warning. In the second
+#'   stage, measurement parameters are held at their first-stage values.
+#' @param search Initialisation strategy for each estimated stage: `NULL`
+#'   (the default), `"kmeans"` or `"emEM"`. The default is `"emEM"` for
+#'   models containing continuous indicators with a shared covariance matrix
+#'   (EEI or EEE),
+#'   and `"kmeans"` otherwise. `"kmeans"` uses clustering-based starts;
+#'   `"emEM"` screens a pool of starts with short EM runs before completing
+#'   `n_starts` selected searches. The second stage uses the first-stage
+#'   measurement estimates as supplied starting values and holds them fixed.
+#'   See [multilpa()] for the screening and start-selection procedure.
+#' @param n_screen Number of starts screened under `search = "emEM"`, at
+#'   least `n_starts`. The default is five times `n_starts`. Screening is
+#'   skipped in the second stage when `n_starts = 1`, because a starting
+#'   measurement solution is supplied. A value with `search = "kmeans"`, or
+#'   one below `n_starts`, raises `latents_bad_argument`.
+#' @return A second-stage `multilpa` object with measurement parameters equal
+#'   to the first-stage estimates. The `fixed` component identifies the
+#'   parameter blocks held constant. `n_parameters` counts the parameters
+#'   estimated in the second stage; `n_parameters_with_measurement` also
+#'   includes the first-stage measurement parameters.
+#'   `get_results(fit, what = "stages")` returns a two-row summary of the
+#'   estimation stages. Standard result-extraction and diagnostic methods for
+#'   `multilpa` objects are available.
+#' @details Information criteria and likelihood-ratio comparisons condition
+#'   on the fixed measurement model.
+#'
+#'   With `parameter_inference(fit, method = "bootstrap")`, groups are
+#'   resampled and both stages are re-estimated. This procedure propagates
+#'   first-stage estimation uncertainty and reports standard errors and
+#'   intervals for the measurement parameters as well as the second-stage
+#'   parameters. A supplied `measurement` model is re-estimated in each
+#'   resample using its fitting options.
+#'
+#'   For staged models with the same fixed measurement specification, use
+#'   `n_parameters` when comparing conditional information criteria. Comparisons
+#'   with jointly estimated models can include the measurement parameters
+#'   through `n_parameters_with_measurement`, but remain descriptive because
+#'   the staged estimates do not generally maximize the joint likelihood.
+#' @seealso [multilpa()] for selective constraints through `fixed`;
+#'   [starting_values()] with `what = "measurement"` to extract measurement
+#'   parameters for a subsequent fit.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(

@@ -319,11 +319,16 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   }
   .multilpa_check_row_count(view, frame)
   .multilpa_check_alignment(view, frame)
-  posteriors <- as.data.frame(unname(fit$subject_posteriors))
+  posteriors <- as.data.frame(unname(.multilpa_reported_posteriors(fit)))
   names(posteriors) <- sprintf("posterior_profile_%d", seq_len(fit$n_profiles))
   added <- data.frame(profile = max.col(fit$subject_posteriors, ties.method = "first"),
                       group_class = view$group_classes[fit$group_index],
                       uncertainty = pmax(1 - apply(fit$subject_posteriors, 1L, max), 0))
+  # Keep the full input layout, but report classifications only for units
+  # included by the same policy as the classification summaries.
+  excluded <- !.multilpa_informative_rows(fit)
+  added[excluded, c("profile", "uncertainty")] <- NA
+  added$group_class[!.multilpa_informative_groups(fit)[fit$group_index]] <- NA_integer_
   clashes <- intersect(names(frame), c(names(added), names(posteriors)))
   if (length(clashes) > 0L) {
     stop(errorCondition(sprintf(

@@ -1,0 +1,20 @@
+"result","bound_to_base","result_unchanged","previous_basis","eligible"
+"equivalence/enumeration-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/growth-published/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/latentgold-coverage/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/latentgold-ordinal/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/latentgold-wider/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/latentgold/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/lca-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/lpa-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/lta-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/mplus-growth/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/pool-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/regression-packages/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"equivalence/stata-published/comparison.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/matrix-refresh-2026-10-28/equivalence-results.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/release-fixes-2026-10-28/equivalence/report.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/release-fixes-2026-10-28/release/external-tests-consolidated.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/release-fixes-2026-10-28/release/retained-references-results.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/review-fixes-2026-10-29/pool-before-path-fix/test-results.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE
+"validation/review-fixes-2026-10-29/pool/test-results.csv",TRUE,TRUE,"retrospective source-equivalence attestation",TRUE

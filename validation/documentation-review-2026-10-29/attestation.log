@@ -1,0 +1,65 @@
+base 96c4b58: 104 runtime files; 24 with changed bytes, 0 with changed code
+      same_file_set namespace_identical      code_identical 
+               TRUE                TRUE                TRUE 
+                                                                      result
+                             equivalence/enumeration-packages/comparison.csv
+                                 equivalence/growth-published/comparison.csv
+                              equivalence/latentgold-coverage/comparison.csv
+                               equivalence/latentgold-ordinal/comparison.csv
+                                 equivalence/latentgold-wider/comparison.csv
+                                       equivalence/latentgold/comparison.csv
+                                     equivalence/lca-packages/comparison.csv
+                                     equivalence/lpa-packages/comparison.csv
+                                     equivalence/lta-packages/comparison.csv
+                                     equivalence/mplus-growth/comparison.csv
+                                    equivalence/pool-packages/comparison.csv
+                              equivalence/regression-packages/comparison.csv
+                                  equivalence/stata-published/comparison.csv
+                validation/matrix-refresh-2026-10-28/equivalence-results.csv
+                  validation/release-fixes-2026-10-28/equivalence/report.csv
+ validation/release-fixes-2026-10-28/release/external-tests-consolidated.csv
+ validation/release-fixes-2026-10-28/release/retained-references-results.csv
+    validation/review-fixes-2026-10-29/pool-before-path-fix/test-results.csv
+                    validation/review-fixes-2026-10-29/pool/test-results.csv
+ bound_to_base result_unchanged                               previous_basis
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+          TRUE             TRUE retrospective source-equivalence attestation
+ eligible
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+     TRUE
+19 of 19 results eligible
+re-attested 19 results; archive in validation/documentation-prose-attestation-2026-10-29

@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-data.R
 \name{get_results}
 \alias{get_results}
-\title{Extract the result tables of a fitted model}
+\title{Extract model estimates and analysis results}
 \usage{
 get_results(x, what = NULL, ...)
 }
@@ -11,8 +11,8 @@ get_results(x, what = NULL, ...)
 comparison, a bootstrap comparison, a starting-value set, a
 classification-diagnostics object, or the summary of any of them.}
 
-\item{what}{Name of the table to return, or \code{"all"} for every table the
-object offers. \code{NULL} (default) returns the primary table: the
+\item{what}{Name of the table to return, or \code{"all"} for the collection of
+tables included by default for the object. \code{NULL} (default) returns the primary table: the
 measurement model for a fit, the candidate grid for an enumeration, the
 test row for a bootstrap comparison and the entropy table for a
 diagnostics object. A name the object does not offer raises
@@ -27,31 +27,51 @@ A base \code{data.frame} for a single \code{what}, whose columns are given
 under \emph{Tables}, or a named list of such data frames for \code{what = "all"}.
 }
 \description{
-Returns one tidy table of a fitted model or related object, named by
-\code{what}, as a base \code{data.frame}; \code{what = "all"} returns every table the
-object offers as a named list. The tables available depend on the class of
-the object and are listed under \emph{Tables}.
+\code{get_results()} provides access to the estimates and summaries produced by
+models and analyses in \code{latents}. It supports examination of the estimated
+latent classes, their membership probabilities, and model-fit statistics,
+as well as the preparation of results for reporting and further analysis.
+
+The results available depend on the supplied object. Fitted models provide
+measurement estimates, class proportions, posterior membership
+probabilities, and other model-specific quantities, such as transition
+probabilities. Enumeration and comparison objects provide summaries of
+candidate models, while diagnostic and bootstrap objects provide their
+corresponding checks and test results.
+
+The \code{what} argument selects the requested table. Each table is returned as
+a standard R data frame, allowing its contents to be inspected, filtered,
+combined, or exported. Omitting \code{what} returns the object's primary table;
+\code{what = "all"} returns a named collection of the tables included by default
+for that object.
 }
 \details{
+Some tables calculate additional quantities when requested. For example,
+measurement tables may obtain standard errors through
+\code{\link[=parameter_inference]{parameter_inference()}}. Their availability therefore depends on the fitted
+model and the requirements of the corresponding calculation.
+
+The table catalogue below specifies the contents and accepted arguments of
+each table, including results that require an explicit request.
+
 Every object also has \code{print()}, which shows a compact overview,
 \code{summary()}, which collects its main tables (taking \code{level} and
 \code{vcov_type} where the model has standard errors), and \code{as.data.frame()},
 which returns its primary table, the same as \code{get_results(x)}.
 
-A table that joins the columns of a supplied \code{data} frame to the fitted rows
-first checks that the rows are in the fitted order, by comparing the
-supplied columns the fit also holds (such as the identifier, the occasion
-and the indicators) with
-the fitted values. A numeric column also matches when it equals the fitted
-values after a round trip through \code{\link[utils:write.table]{utils::write.csv()}}, provided the round
-trip does not merge distinct values. This check establishes row order only;
-inference and model comparison check more strictly that supplied data
-reproduce the fitted data. Columns the fit does not hold cannot establish
-row order.
+Before combining supplied \code{data} with model results, the function checks
+row alignment using columns retained by the fitted object, such as
+identifiers, occasions, and indicators. Numeric values serialized by
+\code{\link[utils:write.table]{utils::write.csv()}} are also accepted when serialization preserves
+distinct values. Columns absent from the fitted object cannot establish
+alignment. Inference and model comparison apply additional checks to
+verify that supplied data reproduce the estimation data.
 }
 \section{Tables}{
 
-Every fitted model offers these:
+The following tables apply to profile and class models and, where
+supported, membership-covariate and transition models. Tables for other
+model families are described in \emph{Tables of the other model families}.
 \describe{
 \item{\code{"profiles"}}{The Gaussian measurement model, one row per profile
 and continuous indicator: \code{profile}, \code{indicator}, \code{mean}, \code{variance},
@@ -75,22 +95,29 @@ indicators only: the ordinal and count measurement models. Take
 \code{data}.}
 \item{\code{"counts"}}{Effective class sizes, one row per class at each level
 of the fit: \code{level}, \code{class}, \code{effective_count} (the summed posteriors)
-and \code{effective_proportion}. These differ from the modal counts in
-\code{"classification"} whenever entropy is below one.}
+and \code{effective_proportion}. Effective counts use posterior probabilities;
+modal counts in \code{"classification"} use discrete class assignments.}
 \item{\code{"model"}}{One row describing the fit: its dimensions, likelihood,
 parameter counts, \code{aic}, \code{bic_groups}, \code{bic_individual} and its
 convergence and boundary diagnostics. The columns differ by family (a
 covariate fit adds its predictor counts); \code{"information_criteria"} has
 the same columns for every family.}
 \item{\code{"posteriors"}}{One row per individual and profile: \code{row}, \code{group},
-\code{profile}, \code{posterior}, \code{modal}. Takes \code{format}.}
+\code{profile}, \code{posterior}, \code{modal}. Takes \code{format}. Excluded observations
+retain their rows, with \code{posterior} and \code{modal} set to \code{NA}. In wide
+format their assigned \code{profile} and posterior columns are \code{NA}.}
 \item{\code{"assignments"}}{One row per observation: the columns the fit was
 built from (or those of \code{data}), then \code{profile}, \code{group_class} where the
 model has one, \code{uncertainty} (one minus the posterior of the assigned
 profile) and one \verb{posterior_profile_*} column per profile, plus
 \code{posterior_noise} for a fit with a noise component (whose cases are
 profile 0). Takes \code{data} and \code{truth}; with \code{truth} it returns a recovery
-table instead (see \emph{Recovery}).}
+table instead (see \emph{Recovery}). Row order is preserved. Under the default
+\code{drop_empty = TRUE}, observations with no observed indicators have \code{NA}
+for \code{profile}, \code{uncertainty} and the posterior columns. Group assignments
+are missing only when the entire group is excluded; an empty observation
+can therefore retain a group assignment supported by other observations.
+Zero-weight units are unclassified under either \code{drop_empty} setting.}
 \item{\code{"classification"}}{Classification quality, one row per level and
 class: \code{level}, \code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
 \code{estimated_proportion}, \code{average_posterior},
@@ -133,7 +160,7 @@ with a noise component, as for \code{"classification_errors"}.}
 \verb{1 - sum_i w_i e_i / (sum_i w_i log K)}; \code{n_units} stays a count.}
 \item{\code{"replication"}}{One row: \code{n_starts} (starts run to the end),
 \code{n_best_replicated} (those whose log likelihood is within \code{tolerance}
-of the best), \code{share}, \code{tolerance}, \code{best_start} (the winning start's
+of the best), \code{share}, \code{tolerance}, \code{best_start} (the selected start's
 index) and \code{log_likelihood}. A best solution reached by one start of
 several may not be the global maximum: refit with more starts.}
 \item{\code{"residuals"}}{Bivariate residuals for every pair of indicators,
@@ -152,7 +179,9 @@ kept under \code{drop_empty = FALSE}): \code{group}, \code{group_class}, \code{t
 Raises \code{latents_no_time} for a fit made without \code{time}.}
 \item{\code{"sequence_summary"}}{One row per group class: \code{group_class},
 \code{groups}, \code{observations}, \code{mean_length}, \code{median_length}, \code{shortest},
-\code{longest}, \code{complete}, \code{gaps}. Raises \code{latents_no_time} for a fit made
+\code{longest}, \code{complete}, \code{gaps}. Summarises classified groups only;
+lengths describe their recorded occasions, including occasions with
+missing indicators. Raises \code{latents_no_time} for a fit made
 without \code{time}.}
 \item{\code{"starts"}}{One row per EM start: \code{start}, \code{log_likelihood},
 \code{converged}, \code{iterations}, \code{error} and, where the family records it,
@@ -170,7 +199,8 @@ Fits with discrete group classes also offer:
 \describe{
 \item{\code{"group_posteriors"}}{One row per observed group and group class:
 \code{group}, \code{group_size}, \code{log_likelihood}, \code{group_class}, \code{posterior},
-\code{modal}. Takes \code{format}.}
+\code{modal}. Takes \code{format}. Excluded groups retain their rows, with missing
+posterior probabilities and modal assignments, as for \code{"posteriors"}.}
 }
 Tables specific to one family or object:
 \describe{
@@ -267,9 +297,9 @@ for \code{knee_without_largest} and \code{stable}; otherwise they are \code{NA} 
 \code{kind} (\code{"categorical"} or \code{"continuous"}), \code{profile}, \code{item_1},
 \code{category_1}, \code{item_2}, \code{category_2}, \code{probability}, \code{independent},
 \code{ratio}, \code{covariance} and \code{correlation}. A categorical pair has one row
-per profile and combination of the two items' categories (every
-combination, including any nobody gave, which sits at the
-\code{min_probability} floor and counts as a parameter): the fitted
+per profile and category combination, including unobserved combinations
+subject to the \code{min_probability} floor and included in the parameter
+count: the fitted
 joint \code{probability}, the product of the two marginal probabilities
 (\code{independent}, the joint probability under independence within the
 profile) and their \code{ratio}; its covariance columns are \code{NA}. A
@@ -430,8 +460,10 @@ be passed to \code{\link[=compare_models]{compare_models()}}.}
 }
 
 \section{What \code{"all"} returns}{
- A named list of every table the object
-offers, in catalogue order, each built with its default arguments;
+ A named list of tables included by default
+for the object, in catalogue order. Some results require an explicit
+request, including the \code{"lmr"} table for an enumeration object.
+Each included table is built with its default arguments;
 supplying any further argument raises \code{latents_bad_argument}. A table
 this object cannot produce (for example a sequence table for a fit made
 without \code{time}, or bivariate residuals for a family without discrete
@@ -440,7 +472,7 @@ available. Only the conditions that mean the table does not exist for
 this object are skipped; any other error is raised.
 }
 
-\section{Arguments the tables take}{
+\section{Table arguments}{
 
 These are passed through \code{...}; each table takes only those listed for it
 under \emph{Tables}.
@@ -498,6 +530,8 @@ per-observation table: one row per class and truth value, with columns
 \code{assignment} (the model label compared against), \code{class}, \code{truth} (the
 column name), \code{value}, \code{n} and \code{proportion} (the share of units with that
 truth value assigned to that class). Several truth columns are stacked.
+Excluded observations or groups appear under \code{class = NA}, so the table
+distinguishes unclassified units from assignments to an estimated class.
 
 A truth column that is constant within every group is compared against
 \code{group_class}; one that varies within any group is compared against
@@ -549,9 +583,11 @@ coincide. Use one convention consistently across compared candidates.
 which uses no sample size, is the same in both rows. A transition model
 (\code{\link[=lta]{lta()}}) keeps one entropy per level instead: its profiles form a Markov
 chain within a person, whose path entropy is not the sum of the
-occasions' entropies, so its \code{"groups"} criteria charge the group-class
-entropy and its \code{"individuals"} criteria the occasions' profile entropy,
-and \code{get_results(x, "information_criteria", format = "long", definitions = TRUE)} says so. Individual sample sizes exclude rows with
+occasions' entropies. Its \code{"groups"} criteria use group-class entropy,
+whereas its \code{"individuals"} criteria use occasion-level profile entropy.
+These definitions are reported by
+\code{get_results(x, "information_criteria", format = "long", definitions = TRUE)}.
+Individual sample sizes exclude rows with
 no observed indicators, and group sample sizes exclude groups in which
 every row has none (\code{n_informative_groups}); the entropy and the
 classification statistics exclude the same rows and groups, as in Mplus.
@@ -570,13 +606,14 @@ weighted the same way; modal counts stay counts.
 class \code{k} is \code{(p / (1 - p)) / (r / (1 - r))}, where \code{p} is the average
 posterior in the assigned class and \code{r} is the model-estimated class
 proportion. Values near one indicate classification no better than the
-class proportions alone; values of five or more are conventionally taken
-as adequate separation. It is \code{NA_real_} when \code{average_posterior} is
+class proportions alone. A value of five is a conventional descriptive
+benchmark, rather than a formal test of class separation. It is \code{NA_real_} when \code{average_posterior} is
 missing or zero, or when \code{estimated_proportion} is zero or one. A perfect
 \code{average_posterior} of one gives \code{Inf} at an interior estimated proportion; a
 single-class solution always reports \code{NA_real_}. \code{average_posterior} is
 \code{NA_real_} for a class with no modal members. \code{n_modal} and
-\code{estimated_n} differ whenever entropy is below one.
+\code{estimated_n} use modal assignments and posterior probabilities,
+respectively, and need not coincide.
 
 \code{relative_entropy} is \verb{1 - EN_level / (n log K)} (Ramaswamy et al.
 1993), between zero and one, higher meaning sharper classification, with
@@ -598,9 +635,9 @@ assumption that indicators are independent within a profile, weighting
 each observation by its posterior (times its sampling weight). Every pair
 of indicators has a row (per profile under \code{by = "profile"}, once under
 \code{by = "overall"}). \code{data} must be in the order the model was fitted in;
-the alignment is checked. A large residual indicates local dependence
-between two indicators, which otherwise tends to be absorbed by an extra
-profile. What each \code{kind} computes:
+the alignment is checked. Large residuals suggest associations that the
+measurement model does not adequately represent. Calculations for each
+\code{kind} are described below:
 \itemize{
 \item \code{"gaussian"}, two Gaussian indicators: \code{observed} is the
 posterior-weighted correlation of the residuals from the profile's
@@ -608,9 +645,8 @@ means (pooled over the profiles under \code{"overall"}), \code{expected} the
 correlation the fitted covariance implies (zero for a diagonal one).
 \code{statistic} is the difference of their Fisher z transforms times
 \code{sqrt(effective_n - 3)}, referred to the standard normal (Fisher,
-1921), two-sided, \code{df} is \code{NA}. Under a correctly specified model its
-size is close to nominal: 4.8\% (\code{"profile"}) and 5.8\% (\code{"overall"})
-at 5\% in 200 simulated two-profile data sets of 500 rows.
+1921), with a two-sided p-value; \code{df} is \code{NA}. This is an approximate
+reference distribution for a posterior-weighted diagnostic.
 \item \code{"categorical"}, two categorical or ordinal indicators (an ordinal
 indicator's categories are its levels): \code{statistic} is the Pearson
 X^2 of the posterior-weighted two-way table against the table the
@@ -619,12 +655,10 @@ model implies, which is Latent GOLD's bivariate residual times its
 \code{observed} and \code{expected} are the two tables' Cramer's V (Cramer,
 1946), zero for the model's table within a profile. The chi-square
 reference ignores that the model's table is estimated from the same
-data, which makes the test very conservative (Oberski, van Kollenburg
-& Vermunt, 2013): under a correctly specified model it rejected 0.25\%
-(\code{"profile"}) and 0.08\% (\code{"overall"}) of pairs at nominal 5\% in 200
-simulated latent class data sets of 500 rows. A small \code{p_value} is
-evidence of dependence; a large one is not evidence of independence,
-so read \code{residual} and \code{statistic} rather than filtering on \code{p_value}.
+data and can therefore be conservative (Oberski, van Kollenburg
+& Vermunt, 2013). Interpret \code{p_value} together with \code{residual} and
+\code{statistic}; a non-significant result does not establish conditional
+independence.
 \item \code{"mixed"} (a Gaussian and a categorical or ordinal indicator) and
 \code{"count"} (any pair with a count indicator): \code{observed} is the
 posterior-weighted correlation of the two indicators' values within the
@@ -657,51 +691,66 @@ get_results(fit, what = "profile_probabilities")
 get_results(fit, what = "entropy")
 names(get_results(fit, what = "all"))
 
-# `engagement` and `student_type` are the kinds each row was simulated from,
-# which the model never saw. Both recovery checks are one call.
+# Compare estimated assignments with the generating classes at both levels.
 get_results(fit, what = "assignments", data = course_engagement,
          truth = c("engagement", "student_type"))
 }
 \references{
 Fisher, R. A. (1921). On the "probable error" of a coefficient
 of correlation deduced from a small sample. \emph{Metron}, 1, 3--32.
+
 Cramer, H. (1946). \emph{Mathematical Methods of Statistics}. Princeton
 University Press.
+
 Schwarz, G. (1978). Estimating the dimension of a model.
 \emph{Annals of Statistics}, 6, 461--464.
+
 Sclove, S. L. (1987). Application of model-selection criteria to some
 problems in multivariate analysis. \emph{Psychometrika}, 52, 333--343.
+
 Bozdogan, H. (1987). Model selection and Akaike's information criterion.
 \emph{Psychometrika}, 52, 345--370.
+
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. \emph{Biometrics}, 49, 803--821.
+
 Biernacki, C., & Govaert, G. (1997). Using the classification likelihood
 to choose the number of clusters. \emph{Computing Science and Statistics}, 29,
 451--457.
+
 Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
 Kullback's symmetric divergence. \emph{Statistics and Probability Letters}, 42,
 333--343.
+
 Rosenberg, J. M., Beymer, P. N., Anderson, D. J., Van Lissa, C. J., &
 Schmidt, J. A. (2018). tidyLPA: An R package to easily carry out latent
 profile analysis (LPA) using open-source or commercial software.
 \emph{Journal of Open Source Software}, 3(30), 978.
+
 McLachlan, G., & Peel, D. (2000). \emph{Finite Mixture Models}. Wiley.
+
 Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T.
 (1993). An empirical pooling approach for estimating marketing mix
 elasticities with PIMS data. \emph{Marketing Science}, 12, 103--124.
+
 Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
 for clustering with the integrated completed likelihood. \emph{IEEE
 Transactions on Pattern Analysis and Machine Intelligence}, 22, 719--725.
+
 Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
 models with categorical variables. \emph{Political Analysis}, 12, 3--27.
+
 Nagin, D. S. (2005). \emph{Group-Based Modeling of Development}. Harvard
 University Press.
+
 Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
 three-step approaches. \emph{Political Analysis}, 18, 450--469.
+
 Satopaa, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
 "kneedle" in a haystack: Detecting knee points in system behavior.
 \emph{Proceedings of the 31st International Conference on Distributed
 Computing Systems Workshops}, 166--171.
+
 Oberski, D. L., van Kollenburg, G. H., & Vermunt, J. K. (2013). A Monte
 Carlo evaluation of three methods to detect local dependence in binary
 data latent class models. \emph{Advances in Data Analysis and
@@ -710,5 +759,5 @@ Classification}, 7, 267--279.
 \seealso{
 \code{\link[=as.data.frame]{as.data.frame()}}, which returns the primary table alone,
 \code{\link[=summary]{summary()}}, which prints every table, and \code{\link[=diagnostics]{diagnostics()}} for the
-classification tables gathered with a condensed reading.
+classification tables with a diagnostic summary.
 }

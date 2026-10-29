@@ -1,0 +1,10 @@
+        level   outcome        term   estimate standard_error statistic
+1 individuals profile_1 (Intercept) -0.2299916      0.1374775 -1.672940
+2 individuals profile_1           z  1.2453182      0.1867612  6.667972
+       p_value   p_adjusted   conf_low  conf_high
+1 9.433909e-02           NA -0.4994425 0.03945932
+2 2.593619e-11 2.593619e-11  0.8792730 1.61136330
+[1] 2
+  model n_profiles delta_bic   bic_weight converged
+1   one          1  265.2333 2.542859e-58      TRUE
+2   two          2    0.0000 1.000000e+00      TRUE

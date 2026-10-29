@@ -1,0 +1,5 @@
+          candidate n_profiles n_group_classes
+1 profiles1_groups1          1               1
+2 profiles2_groups1          2               1
+[1] "multilpa"
+Extraction by counts, name and comparison returns the same fitted object.

@@ -1,39 +1,49 @@
 #' Student engagement across a sequence of courses
 #'
-#' A simulated dataset of course enrolments nested in students. Each row is
-#' one student's enrolment in one course. Students take 10 to 15 courses,
-#' ordered by `sequence`, so the data support a cross-sectional two-level
-#' model (`id = "student"`), a latent transition model (`time = "sequence"`)
-#' and a membership-covariate model (`profile_covariates = "previous_grade"`).
+#' @description
+#' `course_engagement` is a simulated dataset for illustrating student
+#' engagement across successive courses. Each row represents one student's
+#' enrolment in one course, with courses ordered within students. The data
+#' include five activity indicators, standardised within course, and a
+#' simulated previous-course grade.
 #'
-#' Enrolments follow one of two engagement patterns, and students are of two
-#' kinds that differ in the mix of patterns: a committed student is engaged
-#' in about four enrolments in five, a wavering student in about one in four.
-#' The pooled engaged share describes neither kind; a two-level model recovers
-#' the two kinds.
+#' The data were generated from two engagement profiles and two student-level
+#' classes that differ in the prevalence of those profiles. Engagement can
+#' change across a student's course sequence. The generating profile and
+#' student-class labels are retained, allowing fitted classifications to be
+#' compared with the structure used to generate the data.
 #'
-#' The five activity indicators were simulated on the `log1p(events)` scale
-#' of a logged activity export (no raw counts were generated) and then
-#' standardised within course: each value is the enrolment's distance from
-#' its course's mean in that course's standard deviations, so every indicator
-#' has mean zero and standard deviation one within every course. A `browse`
-#' of 1.2 is 1.2 standard deviations above the average enrolment in that
-#' course. The simulated courses do not differ in activity volume, so the
-#' standardisation sets the scale but removes no course effect. The log
-#' transformation removes the right skew of raw activity counts, which
-#' standardisation within course would leave unchanged.
+#' The dataset supports examples of multilevel profile analysis, latent
+#' transition analysis and analyses relating previous grades to profile
+#' membership.
+#'
+#' @details
+#' Students take 10 to 15 courses, ordered by `sequence`. Use `id = "student"`
+#' for the nesting structure, `time = "sequence"` for occasion order, and
+#' `profile_covariates = "previous_grade"` for a membership-covariate model.
+#'
+#' In the generating model, students in the `"committed"` class have a
+#' stationary probability of an engaged enrolment of
+#' approximately 0.8, compared with approximately 0.25 in the `"wavering"`
+#' class.
+#'
+#' The activity indicators were simulated as continuous values intended to
+#' represent log-transformed activity measures, then standardized within course
+#' and rounded. Raw event counts were not generated. Each indicator has
+#' approximately mean zero and standard deviation one within course; for example, `browse = 1.2` represents a value 1.2 standard
+#' deviations above the course mean. The simulation does not include
+#' between-course differences in activity volume.
 #'
 #' @section Local dependence:
-#' `attendance` is generated from the four click measures, so the indicators
-#' are not independent given the profile, as a latent profile model with a
-#' diagonal residual covariance assumes. For the two-profile, two-group-class
-#' fit of the example, `get_results(fit, "residuals")` reports a largest
-#' residual of 0.23 (`lectures` with `attendance` within the first profile,
-#' `p = 6.4e-12`), and `covariance_model = "full"` improves the log likelihood
-#' from -8439.8 to -8313.1 for twenty more parameters, preferred by every
-#' information criterion except the individual-level AWE. Under a diagonal
-#' model, [enumerate_classes()] tends to favour more classes, which absorb
-#' the residual association.
+#' `attendance` is generated from the four click measures, introducing
+#' within-profile dependence among the indicators. A model with diagonal
+#' residual covariance therefore does not reproduce the generating covariance
+#' structure. Use `get_results(fit, "residuals")` to examine residual
+#' associations and `covariance_model = "full"` to estimate within-profile
+#' covariances. Class enumeration under a diagonal model may represent
+#' residual association by additional classes. The two generating profiles
+#' therefore do not imply that every fitted specification will favour two
+#' profiles.
 #'
 #' @format A data frame with 1422 rows (106 students, 32 courses, up to 15
 #'   enrolments each) and 11 columns:
@@ -44,28 +54,26 @@
 #'   \item{sequence}{Integer position of the course in the student's own
 #'     order, 1 to 15. Pass it as `time`. Students who took fewer courses have
 #'     shorter sequences, so the panel is unbalanced.}
-#'   \item{browse}{Numeric, course page views on the `log1p(events)` scale, standardized
+#'   \item{browse}{Numeric, simulated browsing activity, standardized within
+#'     course.}
+#'   \item{lectures}{Numeric, simulated lecture-viewing activity, standardized
 #'     within course.}
-#'   \item{lectures}{Numeric, lecture videos viewed on the `log1p(events)` scale, standardized
+#'   \item{forum_read}{Numeric, simulated forum-reading activity, standardized
 #'     within course.}
-#'   \item{forum_read}{Numeric, forum posts read on the `log1p(events)` scale, standardized
+#'   \item{forum_post}{Numeric, simulated forum-posting activity, standardized
 #'     within course.}
-#'   \item{forum_post}{Numeric, forum posts written on the `log1p(events)` scale, standardized
-#'     within course.}
-#'   \item{attendance}{Numeric, days the student was active in the course,
-#'     on the `log1p(events)` scale, standardized within course. Generated from
-#'     the four click measures with added noise, so it correlates 0.51 to 0.67
-#'     with them overall and 0.10 to 0.23 among the enrolments assigned to one
-#'     profile of the example fit. See *Local dependence*.}
-#'   \item{previous_grade}{Numeric, the grade the student earned in the
-#'     previous course, standardised across the cohort; an entry grade at a
-#'     student's first course. A predictor of engagement, for
-#'     `multilpa(profile_covariates = )` or [r3step()].}
+#'   \item{attendance}{Numeric, simulated attendance activity, standardized
+#'     within course. Generated from the four other activity indicators with
+#'     added noise, introducing within-profile dependence; see
+#'     *Local dependence*.}
+#'   \item{previous_grade}{Numeric, simulated grade in the previous course,
+#'     standardized across the cohort; an entry grade for the first course.
+#'     Can be used as a membership predictor through the `profile_covariates`
+#'     argument of [multilpa()] or in [r3step()].}
 #'   \item{engagement}{Factor, `"disengaged"` or `"engaged"`: the pattern
-#'     the row was generated from. Not for fitting; kept to check recovery.}
+#'     used to generate the observation; retained for assessing class recovery.}
 #'   \item{student_type}{Factor, `"committed"` or `"wavering"`: the
-#'     student's generating kind, corresponding to the group classes. Not for
-#'     fitting; kept to check recovery.}
+#'     student's generating class; retained for assessing group-class recovery.}
 #' }
 #' @source Simulated by `data-raw/course-engagement.R` in the source
 #'   repository, seed 2026. The
@@ -76,7 +84,7 @@
 #'   distributed.
 #' @seealso `vignette("lpa", package = "latents")` for the analysis these data are used in,
 #'   [multilpa()] for the two-level model, [lta()] for the
-#'   sequence, and `multilpa(profile_covariates = )` for `previous_grade`.
+#'   sequence, and [r3step()] for membership-covariate analysis.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -86,28 +94,37 @@
 #' )
 #' as.data.frame(fit)
 #' get_results(fit, what = "profile_probabilities")
-#' # The generating truth ships alongside, so recovery can be checked directly.
+#' # Compare fitted assignments with the generating engagement profiles.
 #' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = "engagement")
 "course_engagement"
 
 #' Leisure activities of university students in daily life
 #'
-#' Experience-sampling data on the leisure activities of university students
-#' between prompts at which they had not studied. Each row is one answered
-#' non-study prompt, with all eight activity items and all four affect
-#' ratings observed. Prompts are nested in students, so the data suit a
-#' two-level latent class analysis.
+#' @description
+#' `student_esm` contains experience-sampling reports of leisure activities
+#' and affect from 100 university students. Each row represents a survey
+#' response collected when the student reported no studying since the previous
+#' prompt. Eight binary items describe activities undertaken during that
+#' interval, and four ratings describe affect.
 #'
+#' Repeated reports are nested within students, providing an example for
+#' multilevel latent class analysis of activity patterns and differences in
+#' their prevalence between students. The dataset retains complete reports
+#' from students with at least 15 eligible responses. The affect ratings can
+#' also be included as indicators in a mixed measurement model.
+#'
+#' @details
 #' In the original study students answered six prompts a day for fourteen
 #' days; the activity items were asked only at prompts where the student had
-#' not studied since the previous prompt. The dataset holds 100 students,
-#' drawn with a fixed seed from those with at least 15 such prompts, and every
-#' such prompt they answered: 15 to 51 per student (median 24). The eight
+#' not studied since the previous prompt. The dataset contains 100 students,
+#' drawn with a fixed seed from those with at least 15 complete non-study
+#' reports, retaining every such report: 15 to 51 per student (median 24). The eight
 #' activity items are categorical indicators; the four affect ratings can be
 #' added as continuous indicators in a mixed measurement model. `worried` has
-#' a floor (49.7% of ratings are 1), so a profile of low-worry prompts can
-#' have zero variance on it and reach the `min_variance` bound.
+#' a pronounced floor effect (49.7% of ratings are 1). A Gaussian component
+#' representing low-worry prompts may therefore reach the `min_variance`
+#' bound.
 #'
 #' @format A data frame with 2582 rows (100 students) and 15 columns:
 #' \describe{
@@ -137,6 +154,7 @@
 #'   database (<https://openesmdata.org>). The subset is produced by
 #'   `data-raw/student-esm.R` in the source repository; identifiers are
 #'   renumbered and the values are otherwise unchanged.
+#' @encoding UTF-8
 #' @references Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic
 #'   adjustment on multiple time scales. *Zeitschrift für
 #'   Erziehungswissenschaft*, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
@@ -159,22 +177,37 @@
 
 #' Study hours and quiz scores under two study strategies
 #'
-#' A simulated dataset for [mixture_regression()]. Each row is one student's
-#' study week: 150 students, six weeks each. The generating classes are
-#' included for checking recovery.
+#' @description
+#' `study_hours` is a simulated dataset illustrating how the relationship
+#' between study time and quiz performance can differ across latent classes.
+#' Each row represents one study week for a student, with six weeks recorded
+#' for each of 150 students.
 #'
-#' Each week a student uses one of two study strategies, which sets the
-#' regression of quiz `score` on `hours`: a deep week gains about 4.5 points
-#' per hour from a base of 35, a surface week under one point per hour from a
-#' base of 55. Steady students study deeply in about 85% of weeks and erratic
-#' students in about 25%; higher `motivation` makes a student more likely to
-#' be steady, and more `sleep` makes a deep week more likely.
+#' The data were generated from two week-level regression classes, labelled
+#' "deep" and "surface", with different intercepts and slopes relating study
+#' hours to quiz scores. Two student-level classes differ in the prevalence
+#' of these weekly classes, allowing class membership to vary across weeks
+#' within students.
+#'
+#' The generating labels are retained for assessing class recovery. Additional
+#' binary and count outcomes provide examples of mixture regression with other
+#' response distributions.
+#'
+#' @details
+#' The generating model contains two week-level study strategies with
+#' different regressions of quiz `score` on `hours`. The `"deep"` strategy has
+#' an intercept of approximately 35 and a slope of 4.5 points per hour; the
+#' `"surface"` strategy has an intercept of approximately 55 and a slope
+#' below one point per hour. Students in the `"steady"` class use the deep
+#' strategy in approximately 85% of weeks, compared with 25% for the
+#' `"erratic"` class. In the simulation, `motivation` predicts student-level
+#' membership and `sleep` predicts week-level membership.
 #'
 #' `score ~ hours` is therefore a two-class mixture at the week level
 #' (`class_level = "observation"`) with class shares that differ by student
-#' (`id = "student"`, `n_group_classes = 2`). `passed` depends on the
-#' student's kind, not the week's strategy, so it is a mixture at the student
-#' level (`class_level = "group"`). `questions` is a count whose Poisson
+#' (`id = "student"`, `n_group_classes = 2`). The binary outcome `passed`
+#' depends on the student's generating class and illustrates a mixture at
+#' the student level (`class_level = "group"`). `questions` is a count whose Poisson
 #' regression depends on the week's strategy.
 #'
 #' @format A data frame with 900 rows (150 students by 6 weeks) and 10
@@ -189,9 +222,9 @@
 #'   \item{passed}{Integer 0/1: passed the weekly check.}
 #'   \item{questions}{Count of questions the student asked that week.}
 #'   \item{strategy}{Factor, `"deep"` or `"surface"`: the week's generating
-#'     strategy. Not for fitting; kept to check recovery.}
+#'     strategy; retained for assessing class recovery.}
 #'   \item{student_type}{Factor, `"steady"` or `"erratic"`: the student's
-#'     generating kind. Not for fitting; kept to check recovery.}
+#'     generating class; retained for assessing class recovery.}
 #' }
 #' @source Simulated by `data-raw/study-hours.R` in the source repository.
 #' @seealso [mixture_regression()], [enumerate_regressions()].
@@ -201,18 +234,25 @@
 #' get_results(fit, "coefficients")
 "study_hours"
 
-#' Self-regulated learning scores simulated by a large language model
+#' Self-regulated learning scores generated by a large language model
 #'
-#' Scores on five constructs of the Motivated Strategies for Learning
-#' Questionnaire (MSLQ) for 300 simulated respondents, one row per
-#' respondent. Each score is the mean of the construct's Likert items, on a
-#' scale from 1 to 7. The responses were **generated by a large language
-#' model (GPT)** in a study of how language models answer psychological
-#' surveys; they are not data on students.
+#' @description
+#' `srl` contains self-regulated learning scores derived from questionnaire
+#' responses generated by a large language model (GPT). Each row represents
+#' one of 300 synthetic respondents and contains five construct scores from
+#' the Motivated Strategies for Learning Questionnaire. Scores are means of
+#' the corresponding items, expressed on a scale from 1 to 7.
 #'
-#' Four constructs correlate about 0.8 with each other; test anxiety
-#' correlates weakly and negatively with them. The data illustrate how the
-#' covariance structure affects a latent profile analysis.
+#' The dataset illustrates latent profile analysis with correlated indicators.
+#' Strong associations among four constructs provide an example for examining
+#' how assumptions about within-profile covariance influence fitted solutions.
+#' Test anxiety shows a different pattern of association with the remaining
+#' constructs.
+#'
+#' @details
+#' Correlations among cognitive strategies, intrinsic value, self-efficacy and
+#' self-regulation range from approximately 0.78 to 0.86. Their correlations
+#' with test anxiety range from approximately -0.30 to -0.10.
 #'
 #' @format A data frame with 300 rows and 5 columns:
 #' \describe{
@@ -232,23 +272,38 @@
 #' @keywords datasets
 "srl"
 
-#' Achievement growth of students with three kinds of trajectory
+#' Simulated achievement scores with three growth trajectories
 #'
-#' A simulated longitudinal dataset for growth models. Each row is one
-#' student's test score at one occasion: 300 students tested on up to seven
-#' occasions (`wave` 0 to 6). Three kinds of student follow three
-#' trajectories: *improving* (starts near 48, gains 3.5
-#' points a wave), *stable* (starts near 62, gains 0.5) and *declining*
-#' (starts near 58, loses 2.5). Within each kind, students vary around the
-#' trajectory: each has their own start and rate of change (random intercept
-#' SD 4, random slope SD 0.8, correlation -0.3, the same spread in every kind),
-#' with residual SD 3. Motivation, measured once, makes a student more likely
-#' to be improving and less likely to be declining. About 12% of tests were
-#' missed at random, so the panel is unbalanced.
+#' @description
+#' `growth_scores` is a simulated longitudinal dataset illustrating growth
+#' mixture models. Each row represents an achievement score for one of 300
+#' students, measured on up to seven occasions.
 #'
-#' Because students vary within their kind, a trajectory model without random
-#' effects needs more than three classes; a growth mixture model with random
-#' intercepts and slopes recovers three.
+#' The data were generated from three trajectory classes, labelled
+#' "improving", "stable" and "declining". Within each class, students differ
+#' in their initial achievement and rate of change through random intercepts
+#' and slopes.
+#'
+#' The dataset illustrates how growth mixture models distinguish differences
+#' between class mean trajectories from variation among individuals within the
+#' same class. Generating class labels are retained for assessing recovery,
+#' and randomly omitted observations produce an unbalanced panel.
+#'
+#' @details
+#' Occasions are indexed by `wave`, from 0 to 6. The generating classes have
+#' three linear mean
+#' trajectories: *improving* (intercept 48, slope 3.5 points per occasion),
+#' *stable* (intercept 62, slope 0.5), and *declining* (intercept 58, slope
+#' -2.5). Within each class, individual trajectories vary according to random
+#' intercepts and slopes with standard deviations 4 and 0.8 and correlation
+#' -0.3. The residual standard deviation is 3. Motivation is a time-invariant
+#' predictor of class membership, with higher values associated with greater
+#' probability of the improving class and lower probability of the declining
+#' class. Approximately 12% of test occasions were removed at random,
+#' producing an unbalanced panel.
+#'
+#' A model without random effects may represent within-class variation by
+#' additional trajectory classes.
 #'
 #' @format A data frame with 1844 rows (300 students) and 5 columns:
 #' \describe{
@@ -257,8 +312,7 @@
 #'   \item{score}{Achievement score.}
 #'   \item{motivation}{Standardized motivation, constant within student.}
 #'   \item{trajectory}{Factor, `"improving"`, `"stable"` or `"declining"`:
-#'     the student's generating kind. Not for fitting; kept to check
-#'     recovery.}
+#'     the student's generating class; retained for assessing class recovery.}
 #' }
 #' @source Simulated by `data-raw/growth-scores.R` in the source repository.
 #' @seealso [mixture_regression()], [compare_models()].
@@ -275,17 +329,32 @@
 
 #' Reading growth of students nested in schools
 #'
-#' A simulated multilevel longitudinal dataset for the multilevel growth
-#' mixture model. Each row is one student's reading score at one occasion:
-#' 600 students in 40 schools (15 per school), tested on up to five occasions
-#' (`wave` 0 to 4). Two kinds of student follow two
-#' trajectories: *improving* (starts near 48, gains 3 points a wave) and
-#' *plateauing* (starts near 56, gains 0.3). Students vary around their
-#' trajectory (random intercept SD 3, random slope SD 0.6, correlation -0.2;
-#' residual SD 2). Schools are of two types: in *supportive* schools 80% of
-#' students improve, in *struggling* schools 25% do, and a school's support
-#' programme (standardized, measured once) makes it more likely to be
-#' supportive. About 8% of tests were missed at random.
+#' @description
+#' `growth_schools` is a simulated dataset illustrating multilevel growth
+#' mixture models. It contains repeated reading scores for 600 students nested
+#' within 40 schools, with up to five observations per student.
+#'
+#' The data were generated from two student trajectory classes, labelled
+#' "improving" and "plateauing". Students vary in their initial reading
+#' achievement and rate of change within each class. Two school-level classes
+#' differ in the prevalence of these student trajectories.
+#'
+#' The dataset illustrates how multilevel growth mixture models represent
+#' individual variation in development alongside differences in trajectory
+#' membership between schools. Generating class labels are retained at both
+#' levels for assessing recovery.
+#'
+#' @details
+#' There are 15 students per school, with occasions indexed by `wave` from 0
+#' to 4. The generating student classes have two linear mean
+#' trajectories: *improving* (intercept 48, slope 3 points per occasion) and
+#' *plateauing* (intercept 56, slope 0.3). Random intercepts and slopes have
+#' standard deviations 3 and 0.6 and correlation -0.2; the residual standard
+#' deviation is 2. The generating school classes, labelled *supportive* and
+#' *struggling*, have improving-class probabilities of 0.8 and 0.25,
+#' respectively. The standardized school-level `programme` variable predicts
+#' school-class membership. Approximately 8% of test occasions were removed
+#' at random.
 #'
 #' The school types correspond to the group classes of
 #' `mixture_regression(..., cluster = "school", n_group_classes = 2)`, with
@@ -301,9 +370,9 @@
 #'   \item{programme}{Standardized school support programme, constant within
 #'     school.}
 #'   \item{school_type}{Factor, `"supportive"` or `"struggling"`: the school's
-#'     generating type. Not for fitting; kept to check recovery.}
+#'     generating class; retained for assessing class recovery.}
 #'   \item{trajectory}{Factor, `"improving"` or `"plateauing"`: the student's
-#'     generating kind. Not for fitting; kept to check recovery.}
+#'     generating class; retained for assessing class recovery.}
 #' }
 #' @source Simulated by `data-raw/growth-schools.R` in the source repository.
 #' @seealso [mixture_regression()], [get_results()].

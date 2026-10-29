@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{prior_control}
 \alias{prior_control}
-\title{Specify a conjugate prior for Gaussian mixture estimation}
+\title{Specify prior settings for Gaussian profile estimation}
 \usage{
 prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
 }
@@ -10,10 +10,12 @@ prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
 \item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa}
 (default \code{0.01}, as in mclust). Zero leaves the means unshrunk.}
 
-\item{mean}{Optional prior mean, one value per continuous indicator, on the
-scale the profile means are estimated on: the indicators' own units, or
-their centred values under \code{\link[=multilpa]{multilpa()}}'s \code{centering}. Requires a positive
-\code{shrinkage}.}
+\item{mean}{Optional prior mean, one value per continuous indicator on the
+scale used to fit the profiles. Use original indicator units when no
+transformation is requested, and the transformed scale under
+\code{\link[=multilpa]{multilpa()}}'s \code{centering} or \code{scaling}. The separate internal centring
+used for numerical stability is handled automatically. Requires a
+positive \code{shrinkage}.}
 
 \item{dof}{Optional prior degrees of freedom, a single positive number.}
 
@@ -28,15 +30,21 @@ computed from the data. Its \code{print()} method shows these settings and
 returns the object invisibly.
 }
 \description{
-Returns a \code{latents_prior} object requesting maximum a posteriori (MAP)
-estimation of the Gaussian profile means and covariances under the
-conjugate prior of Fraley and Raftery (2007), as \code{mclust::priorControl()}
-does for \code{mclust::Mclust()}. Pass the result as \code{multilpa(prior = )}. The
-prior keeps the covariance estimates away from singularity.
+\code{prior_control()} specifies prior settings that regularise the estimation
+of Gaussian profile means and covariance parameters. The returned object
+is supplied to the \code{prior} argument of \code{\link[=multilpa]{multilpa()}}. The prior applies to
+the continuous-indicator measurement parameters; class-membership
+probabilities are estimated without a prior.
+
+The settings control mean shrinkage and the prior scale and degrees of
+freedom for covariance estimation. Unspecified values are determined from
+the data during fitting. The parameterisation follows the conventions of
+mclust, with effects that depend on the chosen covariance structure.
 }
 \details{
-Every argument left \code{NULL} takes \code{mclust::defaultPrior()}'s value, computed
-from the indicators being fitted: the prior mean is their column means, the
+The prior follows Fraley and Raftery (2007) and \code{mclust::priorControl()}.
+Arguments set to \code{NULL} use the data-dependent defaults of
+\code{mclust::defaultPrior()}: the prior mean is the vector of indicator means, the
 degrees of freedom are \code{d + 2} for \code{d} indicators, and the scale is
 \code{(1/G)^(2/d)} times the sample covariance (ellipsoidal structures) or times
 the average sample variance (axis-parallel and spherical structures), for
@@ -50,6 +58,15 @@ controls have different effects across covariance structures. For \code{EII},
 For \code{VEV}, \code{dof} does not enter the update. \code{EEI}, \code{EVI} and \code{EEV} count the
 mean-prior contribution once rather than once per profile.
 }
+\section{Interpretation}{
+
+Using a prior changes the estimation procedure from maximum likelihood to
+regularised point estimation. It does not provide posterior samples or
+Bayesian credible intervals. Ordinary Wald inference is unavailable for
+these fits; supported bootstrap inference refits the model with the prior
+settings.
+}
+
 \section{Conditions}{
 
 \code{latents_bad_argument} for a negative or non-finite \code{shrinkage}, a
@@ -68,5 +85,5 @@ normal mixture estimation and model-based clustering. \emph{Journal of
 Classification}, 24, 155--181. \doi{10.1007/s00357-007-0004-5}
 }
 \seealso{
-\code{\link[=multilpa]{multilpa()}}, whose \code{prior} argument takes this.
+\code{\link[=multilpa]{multilpa()}} for the supported model specifications.
 }

@@ -33,7 +33,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   .multilpa_check_alignment(x, frame)
   # A noise component is one more class: profile 0, as mclust numbers it, with
   # its own posterior column.
-  class_posteriors <- .multilpa_class_posteriors(x)
+  class_posteriors <- .multilpa_reported_posteriors(x)
   posteriors <- as.data.frame(unname(class_posteriors))
   names(posteriors) <- c(sprintf("posterior_profile_%d", seq_len(x$n_profiles)),
                          if (isTRUE(x$noise)) "posterior_noise")
@@ -44,10 +44,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # uncertainty; the estimates themselves are left as computed.
   uncertainty <- pmax(1 - apply(class_posteriors, 1L, max), 0)
   labels <- data.frame(profile = x$subject_profiles)
+  labels$profile[!.multilpa_informative_rows(x)] <- NA_integer_
   # A single-level fit has one group class that every row belongs to, so the
   # column would say nothing.
   if (!is.null(x$group_classes) && !isTRUE(x$single_level)) {
     labels$group_class <- x$group_classes[x$group_index]
+    labels$group_class[!.multilpa_informative_groups(x)[x$group_index]] <- NA_integer_
   }
   added <- cbind(labels, uncertainty = uncertainty, posteriors)
   clashes <- intersect(names(frame), names(added))
@@ -791,7 +793,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`format` must be \"long\" or \"wide\"" =
               format %in% c("long", "wide"))
   # A noise component is class 0, the last posterior column.
-  class_posteriors <- .multilpa_class_posteriors(x)
+  class_posteriors <- .multilpa_reported_posteriors(x)
   classes <- c(seq_len(x$n_profiles), if (isTRUE(x$noise)) 0L)
   modal <- classes[max.col(class_posteriors, ties.method = "first")]
   if (identical(format, "wide")) {
@@ -823,7 +825,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 .multilpa_group_posterior_frame <- function(x, format = "long") {
   stopifnot("`format` must be \"long\" or \"wide\"" =
               format %in% c("long", "wide"))
-  modal <- max.col(x$group_posteriors, ties.method = "first")
+  group_posteriors <- .multilpa_reported_posteriors(x, "groups")
+  modal <- max.col(group_posteriors, ties.method = "first")
   sizes <- tabulate(x$group_index, nbins = length(x$group_values))
   if (identical(format, "long")) {
     n_groups <- length(x$group_values)
@@ -833,11 +836,11 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       log_likelihood = rep(unname(x$group_log_likelihood),
                            times = x$n_group_classes),
       group_class = rep(seq_len(x$n_group_classes), each = n_groups),
-      posterior = as.vector(x$group_posteriors),
+      posterior = as.vector(group_posteriors),
       modal = rep(seq_len(x$n_group_classes), each = n_groups) ==
         rep(modal, times = x$n_group_classes)))
   }
-  posteriors <- as.data.frame(unname(x$group_posteriors))
+  posteriors <- as.data.frame(unname(group_posteriors))
   names(posteriors) <- sprintf("posterior_group_class_%d", seq_len(x$n_group_classes))
   # Sizes and modal classes are derived rather than read from the fit, because
   # not every result class stores them as fields.
@@ -922,11 +925,17 @@ print.multilpa_enumeration <- function(x, ...) {
 }
 
 
-#' Extract starting values for a latent profile fit
+#' Extract starting values for a subsequent fit
 #'
-#' Returns a `multilpa_start` object, the starting-value list [multilpa()]
-#' accepts as `start`, taken from a fitted model or from any list that carries
-#' the parameter blocks. The blocks are validated when the list is built.
+#' Extract parameter values from a fitted model for use as starting values in
+#' a subsequent [multilpa()] fit. Measurement parameters can be extracted
+#' separately when membership probabilities should be re-estimated. Supplying
+#' starting values does not hold parameters fixed; use the fitting function's
+#' `fixed` argument to impose those constraints.
+#'
+#' This is an advanced utility for controlled refitting and selective
+#' parameter constraints. Required blocks are checked during extraction;
+#' further numerical and model-specific validation occurs during fitting.
 #'
 #' @param x A fitted `multilpa` model, or a list carrying
 #'   `profile_probabilities`, `group_probabilities`, and the measurement
@@ -956,7 +965,8 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   each block's category names, and [multilpa()] matches the blocks by these
 #'   labels, so a fit whose categorical indicators or categories do not match
 #'   raises `latents_bad_start`. The object can be passed directly as `start`.
-#' @seealso [get_results()] for the values as tidy tables.
+#' @seealso [get_results()] for the values as tidy tables; [fit_staged()] for
+#'   two-stage estimation with fixed measurement parameters.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(

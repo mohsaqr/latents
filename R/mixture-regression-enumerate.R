@@ -1,29 +1,53 @@
 # Class enumeration for mixture regressions.
 
-#' Compare mixture regressions with different numbers of classes
+#' Assess the number of classes in mixture regression models
 #'
-#' Fits [mixture_regression()] for every requested number of classes (crossed
-#' with numbers of group classes, for the two-level model) and returns their
-#' fit statistics in one table. Optionally adds a parametric bootstrap
-#' likelihood-ratio test of `k - 1` against `k` classes, at the same number of
-#' group classes (McLachlan 1987; Nylund, Asparouhov and Muthen 2007):
-#' outcomes are simulated from the `k - 1` class fit, both models are refitted
-#' to every replicate, and the p-value is `(1 + b) / (1 + V)`, where `b`
-#' counts valid replicate statistics at least as large as the observed one and
-#' `V` is the number of valid replicates.
+#' @description
+#' `enumerate_regressions()` compares mixture regression models with different
+#' numbers of latent classes. It fits the same outcome model across the
+#' requested class counts, allowing researchers to assess whether additional
+#' classes provide a useful representation of variation in outcome--predictor
+#' relationships. The outcome distribution, predictors, and other supplied
+#' model settings remain common across candidates.
 #'
-#' A replicate is invalid when a refit fails, does not converge, warns of
-#' separation or a degenerate random-effect covariance, or gives a statistic
-#' below zero beyond rounding. Under the null hypothesis the extra class of the
-#' `k`-class refit is spurious, and a spurious class with membership
-#' covariates is expected to drift towards a separating or slowly converging
-#' solution: an invalid replicate is a property of the null distribution, not
-#' a failure of the test. The p-value is therefore computed over the valid
-#' replicates, their count and the invalid count are reported, and
-#' `latents_failed_replicates` is warned naming the count; the p-value is `NA`
-#' only when fewer than half of the requested replicates are valid. Excluding
-#' invalid replicates conditions the null distribution on a valid refit, so a
-#' large invalid share should be reported with the result.
+#' For supported two-level models, the function can also vary the number of
+#' group classes and fit each requested combination of class counts. The
+#' resulting table brings together information criteria, classification
+#' measures, class sizes, convergence, and likelihood replication. Individual
+#' fitted models are retained for examination of their coefficients,
+#' predictions, and class assignments.
+#'
+#' An optional parametric bootstrap likelihood-ratio test compares models with
+#' consecutive numbers of regression classes while holding the number of
+#' group classes fixed. This provides additional evidence about whether the
+#' improvement in likelihood supports the more complex specification.
+#'
+#' @section Interpretation:
+#' The `best_bic` column identifies the smallest reported BIC among the fitted
+#' candidates; it does not exclude unconverged fits. Model assessment should
+#' therefore consider convergence and likelihood replication alongside
+#' information criteria, class sizes, and the meaning of the estimated
+#' regression relationships. Bootstrap results also require attention to
+#' unsuccessful refits, whose exclusion can affect the test.
+#'
+#' @details
+#' The optional parametric bootstrap likelihood-ratio test compares `k - 1`
+#' with `k` classes at a fixed number of group classes (McLachlan, 1987;
+#' Nylund, Asparouhov and Muthen, 2007). Outcomes are simulated under the smaller model,
+#' and both models are refitted to each simulated dataset. The p-value is
+#' `(1 + b) / (1 + V)`, where `b` is the number of valid replicate statistics
+#' at least as large as the observed statistic and `V` is the number of valid
+#' replicates.
+#'
+#' A replicate is invalid if a refit fails, does not converge, produces a
+#' separation or degenerate random-effect covariance warning, or yields a
+#' negative likelihood-ratio statistic beyond numerical tolerance. The p-value
+#' uses valid replicates only. Both valid and invalid counts are reported, and
+#' `latents_failed_replicates` warns when any replicate is invalid. The p-value
+#' is `NA` when fewer than half of the requested replicates are valid.
+#' Excluding invalid replicates conditions the reference distribution on
+#' successful estimation and may affect calibration. Report the invalid
+#' proportion and examine the refit diagnostics when interpreting the test.
 #'
 #' @inheritParams mixture_regression
 #' @param n_classes Positive integer class counts to fit. Default `1:4`.
@@ -40,11 +64,12 @@
 #'   model, with columns `n_classes`, `n_group_classes`, `log_likelihood`,
 #'   `n_parameters`, `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`,
 #'   `smallest_share`, `converged`, `n_best_replicated`, `note` (why a model
-#'   could not be fitted), `best_bic` (`TRUE` for the minimum-BIC row), and,
+#'   could not be fitted), `best_bic` (`TRUE` for rows attaining the smallest
+#'   reported BIC, without filtering on convergence), and,
 #'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value`,
 #'   `blrt_replicates` (the valid replicates), `blrt_n_invalid` (the failed,
 #'   unconverged, separated or reversed-likelihood replicates) and
-#'   `blrt_flagged` (the same count, under its earlier name). The test
+#'   `blrt_flagged` (a compatibility alias for `blrt_n_invalid`). The test
 #'   columns are `NA` where the `k - 1` or `k` class model is missing or
 #'   failed, and the p-value is `NA` when the observed fits fail validation or
 #'   fewer than half of the requested replicates are valid.
@@ -59,7 +84,7 @@
 #'   views a regression grid offers).
 #' @section Conditions:
 #'   A model whose fit raises `latents_no_valid_start` or `latents_bad_data`
-#'   at some count gets a row of `NA` with the condition message in `note`
+#'   at some count has a row of `NA` values with the condition message in `note`
 #'   (and `print()` says how many); when every model fails with the same
 #'   `latents_bad_data` error (a column that does not exist), that error is
 #'   raised instead. Other errors stop the enumeration.
@@ -88,7 +113,7 @@
 #'                                  n_classes = 1:3, n_starts = 3, seed = 1)
 #' classes
 #' \donttest{
-#' # Four replicates keep the example fast; a report needs several hundred.
+#' # A small bootstrap count is used only to limit example execution time.
 #' with_test <- enumerate_regressions(score ~ hours, data = study_hours,
 #'                                    n_classes = 1:2, n_starts = 3, seed = 1,
 #'                                    bootstrap = 4)

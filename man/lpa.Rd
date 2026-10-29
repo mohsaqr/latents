@@ -12,29 +12,35 @@ lpa(data, vars, n_profiles, ...)
 \item{vars}{Names of the indicator columns. Numeric columns are continuous
 indicators; categorical ones are named in \code{categorical}.}
 
-\item{n_profiles}{Number of profiles, a positive whole number.}
+\item{n_profiles}{Number of profiles; a positive integer.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}: the covariance structure
 (\code{model}, or \code{variance_model} and \code{covariance_model}, or \code{volume},
 \code{shape} and \code{orientation}), \code{missing}, \code{categorical}, \code{n_starts},
-\code{seed}, \code{boundary}, \code{prior}, \code{noise}, \code{profile_covariates} and the others
-it documents, except \code{id} and \code{n_group_classes}.}
+\code{seed}, \code{boundary}, \code{prior}, \code{noise} and \code{profile_covariates}.
+Arguments \code{id} and \code{n_group_classes} are not accepted.}
 }
 \value{
-A fitted \code{multilpa} object, as \code{\link[=multilpa]{multilpa()}} returns, whose \code{call}
-is the \code{lpa()} call.
+A fitted object as returned by \code{\link[=multilpa]{multilpa()}}, usually of class
+\code{multilpa}, or \code{multilpa_covariates} with membership covariates. Its
+\code{call} records the original \code{lpa()} call.
 }
 \description{
-Fits a single-level latent profile model and returns a fitted \code{multilpa}
-object. The model is a finite mixture of multivariate normal distributions:
-each observation belongs to one of \code{n_profiles} unobserved profiles, and each
-profile has its own mean on every indicator. It is the model \code{\link[=multilpa]{multilpa()}}
-fits with \code{id = NULL}, so every accessor, plot and inference verb of the
-package applies to the result.
-}
-\details{
-For observations nested in groups, use \code{\link[=multilpa]{multilpa()}} with the grouping column
-as \code{id}, which adds latent classes of groups above the profiles.
+Latent profile analysis describes heterogeneity in continuous indicators
+through a specified number of latent profiles. Each profile represents a
+pattern of indicator means and within-profile variation. \code{lpa()} estimates
+these patterns using a finite mixture of multivariate normal distributions.
+
+By default, indicators are independent within profiles and their variances
+differ across profiles. Alternative covariance structures allow associations
+between indicators within profiles and equality constraints across profiles.
+The fitted model provides profile means, variances, proportions, and
+posterior membership probabilities for each observation, together with
+model-fit and classification summaries.
+
+The model treats observations as independent. For observations nested within
+groups, use \code{\link[=multilpa]{multilpa()}}. Additional measurement options support mixed
+continuous and discrete indicators.
 }
 \section{Conditions}{
 

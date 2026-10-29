@@ -25,9 +25,9 @@ parameter_inference(
 \code{\link[=multilca]{multilca()}} (with or without covariates), \code{\link[=lta]{lta()}}, the additive family,
 or a growth mixture. A fit with an active bound raises
 \code{latents_boundary_fit} and an unconverged fit \code{latents_no_converge}.
-Mixture regressions are refused with \code{latents_bad_argument} (their
+Mixture regressions raise \code{latents_bad_argument} (their
 inference is in \code{\link[=get_results]{get_results()}}, \code{\link[=confint]{confint()}} and \code{\link[=vcov]{vcov()}}), and the
-cross-level families with \code{latents_unsupported_inference}.}
+cross-level families raise \code{latents_unsupported_inference}.}
 
 \item{data}{Optional data frame the model was fitted to. When omitted it is
 rebuilt from the indicators, identifiers and occasions the fit stores. A
@@ -41,7 +41,7 @@ gives a weaker consistency check.}
 \item{step}{Positive finite-difference step for the analytic score
 derivative. Default \code{1e-4}.}
 
-\item{vcov_type}{Covariance estimator for the Wald path.
+\item{vcov_type}{Covariance estimator for the Wald method.
 \code{"observed"} (default) inverts the observed information.
 \code{"robust"} returns the Huber-White sandwich \verb{A^-1 B A^-1}, where \code{B} is
 the outer product of the per-group scores, multiplied by the CR1
@@ -52,17 +52,16 @@ package). Mplus's MLR applies no such factor, so these errors are
 robust errors relax the assumption that the within-group model is
 correctly specified, not the assumption that groups are independent.
 \code{"opg"} inverts the outer product of the per-group scores (the BHHH
-estimator), as \code{glca} reports; it agrees with \code{"observed"} in large
-samples and can differ in small ones, where \code{"observed"} is usually more
-reliable. \code{"robust"} and \code{"opg"} need more groups than parameters; \code{"opg"}
+estimator). The OPG and observed-information estimators are asymptotically
+equivalent under a correctly specified regular model, but can differ in
+finite samples. \code{"robust"} and \code{"opg"} need more groups than parameters; \code{"opg"}
 also needs group scores of full rank, since it inverts their outer
 product, while the sandwich does not. For a
 fit with sampling weights the default is \code{"robust"}, and any other value
 raises \code{latents_unsupported_weights}. For a fit with \code{centering = "person"} or \code{scaling = "person"} the default is also \code{"robust"}, and
-\code{"observed"} or \code{"opg"} raise \code{latents_unsupported_inference}: a unit's
-transformed rows are not independent observations, and the inverse
-information understated their errors (by up to 22\% in a simulation),
-while the sandwich over units is valid. Under \code{centering = "grand"} or
+\code{"observed"} or \code{"opg"} raise \code{latents_unsupported_inference}. Transforming
+observations within a unit induces dependence; the sandwich estimator
+aggregates score contributions at the independent-unit level. Under \code{centering = "grand"} or
 \code{scaling = "grand"} the sample means and standard deviations the
 indicators were transformed with are estimated jointly with the model,
 as estimating equations, and their variability is added to every
@@ -85,8 +84,9 @@ shapes with the determinant-one constraint built into the coordinates,
 and Cayley-transform orientations (or, for VEE and EVV, determinant-one
 log-Cholesky factors), so the information has one row per free
 parameter. The reported variances and covariances are obtained from
-these coordinates by the delta method, and their natural-scale
-covariance is singular, as for the class probabilities. \code{"bootstrap"}
+these coordinates by the delta method. Constraints can make the
+natural-scale covariance singular; the sum constraints on class
+probabilities also imply a singular covariance. \code{"bootstrap"}
 resamples groups with replacement, refits within the same covariance
 structure, realigns each refit's labels, and reports the percentile
 interval and the standard deviation of the replicates; it is also
@@ -100,8 +100,8 @@ Default \code{199}; a 95\% percentile interval is more stable with 999 or more.}
 \code{\link[=multilpa]{multilpa()}}.}
 
 \item{seed}{Optional seed for the resampling: a whole number accepted by
-\code{set.seed()}; any other value raises \code{latents_bad_argument} on either
-path. The Wald path uses no random numbers. A supplied integer seed restores
+\code{set.seed()}; any other value raises \code{latents_bad_argument} with either
+method. The Wald method uses no random numbers. A supplied integer seed restores
 the caller's \code{.Random.seed} on exit; \code{NULL} uses its current stream.
 R does not expose the Box-Muller cached normal
 variate, so that cache cannot be restored; see \link[base:Random]{base::Random}.}
@@ -119,7 +119,7 @@ A base \code{data.frame} with one row per reported parameter and the
 columns \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome},
 \code{term}, \code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value},
 \code{p_adjusted}, \code{conf_low} and \code{conf_high}. Estimates are on the natural
-scale (variances in their own units, probabilities as probabilities). A
+scale (variances in squared indicator units, probabilities on \verb{[0, 1]}). A
 parameter whose null value lies on the boundary of its space (a variance,
 a probability, a covariance diagonal, a count mean) has \code{NA} \code{statistic},
 \code{p_value} and \code{p_adjusted}, but still has an interval. All class
@@ -152,7 +152,7 @@ of the replicates and \code{conf_low}/\code{conf_high} the percentile interval.
 one row each), \code{messages} (why a resample was dropped, \code{NA} where it was
 not), \code{structure} and \code{fixed}; \code{covariance_unconstrained} is \code{NULL}.
 
-For the Wald path, diagnostics of the whole fit are attributes:
+For the Wald method, diagnostics of the whole fit are attributes:
 \code{covariance} and \code{covariance_unconstrained} (natural and
 estimation-scale covariance of the estimates), \code{hessian}, \code{gradient},
 \code{scaled_score}, \code{score_displacement} (the largest score times its
@@ -167,14 +167,26 @@ factor), used for scaled likelihood-ratio difference tests; it is \code{NA}
 otherwise.
 }
 \description{
-Returns a table of the estimated parameters of a fitted model with their
-standard errors, Wald tests and confidence intervals. By default the
-standard errors are maximum-likelihood errors from the inverse observed
-information, with delta-method Wald intervals; \code{method = "bootstrap"}
-resamples groups instead. The estimates are local and asymptotic,
-conditional on the selected numbers of classes, and do not account for
-model selection. Boundary solutions and unidentified Hessians are refused
-by the Wald path.
+\code{parameter_inference()} quantifies sampling uncertainty in the parameter
+estimates of a fitted mixture model. It provides standard errors and
+confidence intervals for quantities such as indicator means, response
+probabilities, membership coefficients, and transition probabilities,
+according to the model family. These results describe the precision of
+the estimates and support interpretation of the fitted model.
+
+Two approaches are available for supported models. Wald inference uses an
+estimated parameter covariance matrix to obtain standard errors,
+confidence intervals, and tests for eligible parameters. Bootstrap
+inference repeatedly resamples independent observational units and refits
+the model, using variation across the resulting estimates to calculate
+standard errors and percentile confidence intervals.
+
+The function returns a table of parameter estimates and their uncertainty
+measures. The available parameters, covariance estimators, and inference
+methods depend on the fitted model. Wald tests are omitted where an
+ordinary test against zero is inappropriate, including probabilities and
+variance parameters. Bootstrap results contain standard errors and
+confidence intervals but no hypothesis-test p-values.
 }
 \details{
 For a covariate fit (\code{multilpa(profile_covariates = )}), the
@@ -226,13 +238,10 @@ scale, of correlations on the Fisher scale and of shares on the logit
 scale, and only coefficients and logits are tested against zero.
 \code{method = "bootstrap"} resamples persons, refits each resample from
 \code{n_starts} starts and matches its classes to the original by their
-posterior memberships of the original persons; it is refused for a
-multilevel growth mixture (\code{latents_unsupported_inference}). In a
-simulation of 1000 datasets per design, Wald intervals covered
-0.936-0.965 with well-separated classes and 0.885-0.943 with weakly
-separated ones, whose standard errors were 6-30\% too small
-(validation/GROWTH_SIMULATION.md in the source repository); the
-bootstrap is preferable for weakly separated classes. A class
+posterior memberships of the original persons; it is unavailable for a
+multilevel growth mixture (\code{latents_unsupported_inference}). Weak class
+separation can reduce the accuracy of Wald intervals; bootstrap inference
+provides an alternative assessment of sampling uncertainty. A class
 whose random-effect covariance is degenerate, or (with correlated
 residuals) a residual standard deviation or residual process held on its
 bound, raises \code{latents_boundary_fit} under \code{boundary = "error"}, naming
@@ -261,14 +270,24 @@ parameter at a bound: without an active bound \code{boundary = "fix"} gives
 the same table as \code{"error"}, and a fit with an active bound raises
 \code{latents_boundary_fit} under either.
 }
+\section{Interpretation}{
+
+Inference is conditional on the specified model, including its number of
+classes and measurement assumptions. The reported uncertainty does not
+account for selecting that specification from several candidates. Wald
+inference requires an adequately converged and locally identified
+solution; estimates near parameter boundaries may require special
+treatment. Bootstrap inference also depends on successful refitting and
+consistent matching of class labels across resamples.
+}
+
 \section{Computation}{
- The observed information takes two evaluations of
-the score over all the data for each free parameter, which makes it the
-slowest part of Wald inference. For profile, class, covariate and
-transition models it is computed once per R session for a fit, its data
-and \code{step}, and reused by later calls, including those made by the plots
-that draw intervals and by \code{get_results()}. Any change to the fit or its
-data computes it anew, and the result is the same either way.
+
+Numerical differentiation of the score requires two score evaluations per
+free parameter. For profile, class, covariate and transition models, the
+information matrix is cached within an R session for the same fitted
+model, data and \code{step}. Subsequent inference, plotting and \code{\link[=get_results]{get_results()}}
+calls reuse this calculation; changes to its inputs trigger recalculation.
 }
 
 \section{Conditions}{
@@ -280,14 +299,14 @@ observed information cannot be inverted; \code{latents_no_free_parameters}
 when \code{fixed} held every parameter; \code{latents_bad_inference_data} when a
 supplied \code{data} does not reproduce the fit; \code{latents_too_few_groups} for
 \code{vcov_type = "robust"} or \code{"opg"} when the fit has no more independent
-groups than free parameters. The Wald path raises
+groups than free parameters. The Wald method raises
 \code{latents_unsupported_inference} for a fit made with \code{multilpa(prior = )}
-(a posterior mode, where the score is not zero), and either path raises
+(a posterior mode, where the score is not zero), and either method raises
 \code{latents_unsupported_noise} for a fit with a noise component. A fit whose
 score is still far from zero gives a \code{latents_unconverged} warning.
 An invalid \code{level}, \code{step}, \code{iter}, \code{n_starts}, \code{max_iter} or \code{tol}
 raises \code{latents_bad_argument}, and a \code{data} that is not a data frame
-\code{latents_bad_data}. A fitted mixture regression is refused with
+\code{latents_bad_data}. A fitted mixture regression raises
 \code{latents_bad_argument} naming \code{get_results(x, "coefficients")}, which
 reports its standard errors and tests; an object that is not a fitted
 model raises \code{latents_not_a_fit}.
@@ -313,17 +332,16 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 parameter_inference(fit)
 
-# Many tests in one table: name the correction, do not apply one by stealth.
+# Apply Benjamini-Hochberg adjustment to the reported tests.
 parameter_inference(fit, adjust = "BH")
 
-# A structure that constrains the shape across profiles (VEI) is charted in
-# its own free coordinates, so it has Wald standard errors too.
+# Wald inference for a VEI model with equal shape across profiles.
 shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
                    volume = "varying", shape = "equal", orientation = "axis")
 parameter_inference(shaped)
 
-# The bootstrap resamples schools and refits inside the same family.
+# Resample schools and refit the same covariance structure.
 parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
                     seed = 1)
 
@@ -345,7 +363,7 @@ covariate_fit <- multilpa(covariate_data, c("y1", "y2"), "school",
                           profile_covariates = "x", n_starts = 2, seed = 1)
 parameter_inference(covariate_fit, covariate_data)
 
-# A latent transition model: initial and transition probabilities too.
+# Inference for a latent transition model, including transition probabilities.
 moves <- lta(subset(course_engagement, student <= 40),
              c("browse", "lectures", "forum_read"), "student",
              n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)

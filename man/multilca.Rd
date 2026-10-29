@@ -10,7 +10,7 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 \item{data}{A data frame with one row per observation.}
 
 \item{vars}{Names of the indicator columns. Numeric, integer, logical,
-character and factor columns are accepted; factor levels keep their
+character and factor columns are accepted; factor levels retain their
 declared order and other types are sorted.}
 
 \item{id}{Name of the group identifier column, or \code{NULL} for a single-level
@@ -29,19 +29,30 @@ ordinal and count indicators; the remaining indicators are categorical.
 }
 \value{
 A fitted \code{multilpa} object (\code{multilpa_covariates} when membership
-covariates are given), as \code{\link[=multilpa]{multilpa()}} returns it. Categorical response
+covariates are specified), as returned by \code{\link[=multilpa]{multilpa()}}. Categorical response
 probabilities are in \code{get_results(fit, "responses")}, one row per
 profile, item and category.
 }
 \description{
-Fits a two-level latent class model for discrete indicators and returns a
-fitted \code{multilpa} object. It is \code{\link[=multilpa]{multilpa()}} with every indicator in \code{vars}
-treated as categorical, except those named in \code{ordinal} or \code{count} through
-\code{...}. Each profile has unrestricted response probabilities for the
-categorical indicators and structured parameters for the ordinal and count
-ones; the group classes differ in the probability of each profile. For
-models that combine categorical and continuous indicators, use \code{\link[=multilpa]{multilpa()}}
-and name the categorical ones in its \code{categorical} argument.
+\code{multilca()} fits a latent class model for categorical data with observations
+nested within groups. It describes response patterns through latent classes
+and differences between groups through the relative prevalence of those
+classes. Groups with similar class compositions are represented by the same
+latent group class.
+
+By default, the response probabilities defining the observation-level
+classes are shared across groups. The model estimates these probabilities
+together with class proportions and posterior membership probabilities,
+allowing both observations and groups to be classified while retaining
+information about classification uncertainty.
+}
+\details{
+The function calls \code{\link[=multilpa]{multilpa()}}, treating
+all indicators in \code{vars} as categorical except those specified through
+\code{ordinal} or \code{count} in \code{...}. Categorical indicators have unrestricted
+class-specific response probabilities; ordinal and count indicators use the
+corresponding structured measurement models. For a combination of continuous
+and categorical indicators, use \code{\link[=multilpa]{multilpa()}} with \code{categorical}.
 }
 \section{Conditions}{
 

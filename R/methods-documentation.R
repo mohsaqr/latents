@@ -1,21 +1,30 @@
-#' Coefficients, covariance, intervals and likelihood of latents fits
+#' Extract model coefficients, covariance matrices and likelihood summaries
 #'
-#' `coef()`, `vcov()`, `confint()`, `logLik()` and `nobs()` for multilevel
-#' profile and class models ([multilpa()]), covariate models, latent transition
-#' models and, for `coef()`, `vcov()` and `confint()`, pooled imputations.
-#' Mixture regressions, growth
-#' mixtures and the additive, cross-level and general transition families
-#' document the same methods with their [get_results()] page.
+#' @description
+#' These methods extract fitted parameters, measures of parameter uncertainty,
+#' and likelihood information for reporting and further statistical analysis.
+#'
+#' `coef()` returns the model's parameter values. `vcov()` returns their
+#' estimated sampling variances and covariances, describing the uncertainty in
+#' individual estimates and their joint variation. `confint()` provides
+#' confidence intervals for selected parameters.
+#'
+#' `logLik()` returns the fitted log likelihood together with the number of
+#' estimated parameters and the associated sample size. `nobs()` reports the
+#' number of independent units used in the model's group-based information
+#' criterion: individual observations for a single-level model and observed
+#' groups for a grouped model. The treatment of entirely missing units follows
+#' the fitted model's `drop_empty` setting.
 #'
 #' @param object A fitted model: from [multilpa()] (class `multilpa`), a
 #'   covariate model (`multilpa_covariates`), a latent transition model
 #'   (`multilpa_transitions`), or pooled imputations (`latents_pooled`:
 #'   `coef()`, `vcov()` and `confint()`).
 #' @param scale `"natural"`, the default, or `"unconstrained"`. Natural
-#'   coefficients are in the units `coef()` reports: means and variances in the
-#'   indicators' units, probabilities as probabilities, with the covariance
-#'   carried from the estimation scale by the delta method. Unconstrained is the
-#'   scale the model is estimated on: log variances (diagonal), log-Cholesky
+#'   coefficients are expressed on the reported scale: means in indicator
+#'   units, variances in squared indicator units, and probabilities on `[0, 1]`.
+#'   Their covariance is obtained by the delta method. The unconstrained scale
+#'   uses the coordinates in which the model is estimated: log variances (diagonal), log-Cholesky
 #'   coordinates (full covariance), log volumes, shapes and orientations (a
 #'   structure that constrains them across profiles), and baseline-category
 #'   logits for mixing and response probabilities. In a covariate model, means
@@ -40,7 +49,7 @@
 #' @param ... For `vcov()` and `confint()` of a `multilpa` fit, and `confint()`
 #'   of a covariate model, passed to [parameter_inference()] (for example
 #'   `method = "bootstrap"`, `vcov_type = "robust"` or `step`); an argument
-#'   [parameter_inference()] does not take is refused with
+#'   [parameter_inference()] does not take raises
 #'   `latents_bad_argument`. `vcov()` of a covariate model warns
 #'   `latents_unused_argument` for an argument it does not take, and refuses
 #'   `method = "bootstrap"` with `latents_unsupported_inference`; `vcov()` of
@@ -53,8 +62,17 @@
 #'   with `df` and `nobs` attributes. `nobs()`: the number of independent groups
 #'   counted by the fitted BIC. With `drop_empty = TRUE`, groups without any
 #'   observed indicator are excluded; with `drop_empty = FALSE`, they are counted.
+#'   Groups with zero sampling weight are excluded under either setting.
 #'   For a single-level fit these groups are its individual observations.
-#' @details Categorical parameter names escape reserved characters within
+#' @details
+#' These methods support profile and class models, models with membership
+#' covariates and homogeneous latent transition models. Pooled
+#' multiple-imputation results support `coef()`, `vcov()` and `confint()`.
+#' Methods for mixture regressions, growth mixtures, additive models,
+#' cross-level models and general transition models are described in
+#' [get_results()].
+#'
+#'   Categorical parameter names escape reserved characters within
 #'   indicator and category components (`%`, `:`, `,`, `[` and `]`) using percent
 #'   codes. This keeps distinct parameters distinct when their original labels
 #'   contain delimiters. Ordinary names are unchanged; use `names(coef(object))`

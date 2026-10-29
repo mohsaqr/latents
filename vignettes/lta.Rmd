@@ -14,15 +14,16 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Latent transition analysis (LTA) estimates latent profiles at each occasion
-and the probability of moving from one profile to another between consecutive
-occasions. With group classes, each class has its own starting probabilities
-and its own transition matrix, so classes separate groups that change
-differently over time.
+Latent transition analysis (LTA) estimates latent states at successive
+occasions and the probabilities of transitions between them. In the default
+model, profiles have a common measurement definition across occasions.
+With latent group classes, initial-state probabilities and transition
+matrices differ by class, representing heterogeneity in longitudinal
+patterns.
 
 ## Data
 
-`course_engagement` has one row per course enrolment: 1,422 enrolments from
+`course_engagement` is simulated and has one row per course enrolment: 1,422 enrolments from
 106 students. `lta()` needs three kinds of variables.
 
 - **Group:** `student` identifies whose occasions belong together.
@@ -38,10 +39,10 @@ library(latents)
 
 ## Fit
 
-To fit the model, we call `lta()` with `vars` for the indicators, `id` for
-the group, `time` for the occasion order, `n_profiles` for the number of
-profiles, `n_group_classes` for the number of group classes, `n_starts` for
-the number of random EM starts, and `seed` for reproducible starts.
+The `lta()` function requires indicators (`vars`), a group identifier
+(`id`), and occasion order (`time`). The arguments `n_profiles` and
+`n_group_classes` specify the latent structure; `n_starts` and `seed`
+control repeated estimation from reproducible starting values.
 
 ```{r fit}
 moves <- lta(course_engagement,
@@ -52,8 +53,9 @@ moves <- lta(course_engagement,
 moves
 ```
 
-To check whether the starts agree, we call `get_results()` with `"starts"`.
-Starts that reach the same log likelihood support the solution.
+The `"starts"` table reports the log likelihood reached by each start.
+Replication of the selected likelihood supports numerical stability but
+does not establish that the global maximum has been found.
 
 ```{r starts}
 get_results(moves, "starts")
@@ -61,18 +63,16 @@ get_results(moves, "starts")
 
 ## Profiles
 
-To see the profiles, we call `plot_profiles()` (on a transition fit, `plot()`
-alone draws the transition matrices). Each line is a
-profile's mean on each indicator, and its label gives the profile's share of
-the cases.
+The profile plot displays estimated indicator means and the estimated share
+of occasions in each profile. For a transition model, `plot()` without an
+explicit view instead displays transition matrices.
 
 ```{r profiles}
 plot_profiles(moves)
 ```
 
-To compare profiles on a common scale, we call `plot_profiles()` with
-`what = "heatmap"`, which shows each mean in standard deviations from the
-indicator's overall mean.
+The profile heatmap expresses each mean in standard deviations from the
+indicator's overall mean, facilitating comparison across indicators.
 
 ```{r heatmap}
 plot_profiles(moves, what = "heatmap")
@@ -80,10 +80,9 @@ plot_profiles(moves, what = "heatmap")
 
 ## Starting probabilities
 
-To obtain the starting probabilities, we call `get_results()` with
-`"initial"`. `probability` is the chance of starting in each profile,
-`prevalence` the expected share of all occasions in it, and
-`group_class_probability` the share of groups in the class.
+The `"initial"` table reports initial profile probabilities (`probability`),
+profile prevalence across occasions (`prevalence`), and estimated group-class
+proportions (`group_class_probability`).
 
 ```{r initial}
 get_results(moves, "initial")
@@ -91,19 +90,19 @@ get_results(moves, "initial")
 
 ## Transitions
 
-To obtain the transition probabilities, we call `get_results()` with
-`"transitions"`. `probability` is the chance of moving from profile `from` to
-profile `to` at the next occasion, and the probabilities out of each profile
-sum to one. `stable` marks staying in the same profile, `expected_count` is
-the expected number of such moves in the data, and `estimated = FALSE` marks a
-row the data cannot inform.
+The `"transitions"` table reports the probability of moving from state
+`from` to state `to` at the next occasion. Probabilities sum to one within
+each origin state and group class. The column `stable` identifies transitions
+that retain the same state; `expected_count` reports the posterior expected
+transition count. A row with `estimated = FALSE` lacks information for
+estimating that transition distribution.
 
 ```{r transitions}
 get_results(moves, "transitions")
 ```
 
-To draw the transition matrices, we call `plot_transitions()`: one heatmap per group class, current profile in rows and next profile in
-columns.
+The transition plot displays one matrix per group class, with current
+profiles in rows and next-occasion profiles in columns.
 
 ```{r transition-plot}
 plot_transitions(moves)
@@ -111,9 +110,9 @@ plot_transitions(moves)
 
 ## Sequences
 
-To see each group's path, we call `plot_sequences()`: one row
-per group, coloured by its most probable profile at each occasion. These
-assignments ignore classification uncertainty.
+The sequence plot displays one row per group, coloured by the most probable
+profile at each occasion. These modal assignments summarize the fitted
+sequences but omit classification uncertainty.
 
 ```{r sequences, fig.height = 6}
 plot_sequences(moves)
@@ -121,18 +120,18 @@ plot_sequences(moves)
 
 ## Classification
 
-To obtain classification certainty, we call `get_results()` with `"entropy"`.
-Relative entropy is reported for occasions and for groups: 1 means every case
-is assigned with certainty, 0 means no separation.
+The `"entropy"` table reports relative entropy for occasions and groups.
+With more than one class, a value of 1 indicates certain posterior membership;
+0 indicates equal posterior probabilities across classes for every case.
+Entropy summarizes classification separation under the fitted model.
 
 ```{r entropy}
 get_results(moves, "entropy")
 ```
 
-To see where the uncertainty lies, we call `plot_diagnostics()` with
-`what = "entropy"` for the per-case uncertainty within each profile, and with
-`what = "posteriors"` for the posterior probability of each case's assigned
-profile.
+Diagnostic plots display per-case uncertainty within each profile
+(`what = "entropy"`) and posterior probabilities of assigned profiles
+(`what = "posteriors"`).
 
 ```{r entropy-plot}
 plot_diagnostics(moves, what = "entropy")
@@ -144,10 +143,11 @@ plot_diagnostics(moves, what = "posteriors")
 
 ## Transition networks
 
-To analyse the transitions as networks, we call `get_tna()` for one network
-pooled over group classes and `get_group_tna()` for one network per class.
-Both return [tna](https://cran.r-project.org/package=tna) models built from
-the estimated transitions, which `plot()` draws.
+The estimated transitions can be represented as networks. `get_tna()`
+returns a network pooled across group classes; `get_group_tna()` returns one
+network per class. Both functions produce
+[tna](https://cran.r-project.org/package=tna) objects that can be displayed
+with `plot()`.
 
 ```{r networks, message = FALSE, eval = requireNamespace("tna", quietly = TRUE)}
 plot(get_tna(moves))
@@ -156,8 +156,8 @@ plot(get_group_tna(moves))
 
 ## Beyond homogeneous transitions
 
-Each default assumption of the model can be tested by relaxing it in one
-argument:
+Several extensions permit alternative specifications of temporal dependence
+and measurement:
 
 - `transition_covariates` lets covariates shift the transition
   probabilities: the log odds of moving to each other profile rather than
@@ -173,9 +173,8 @@ argument:
 `enumerate_classes(..., time = "sequence")` compares numbers of profiles and
 group classes, and `bootstrap_lrt()` tests a model against a nested one.
 
-Does a student's grade in the previous course change how likely they are to
-move between engagement profiles? `previous_grade` changes from course to
-course:
+The following example examines whether `previous_grade`, which varies
+across courses, is associated with transition probabilities:
 
 ```{r grade}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -187,11 +186,12 @@ grade <- lta(course_engagement, activity, "student", n_profiles = 2,
 get_results(grade, "transition_coefficients")
 ```
 
-The grade's odds ratios are close to one, and its intervals, on the log-odds
-scale of `estimate`, include zero: in
-these data, the previous grade does not change the chance of switching
-profile. A second-order chain, where the next profile depends on the two
-previous ones, does not earn its extra parameters either:
+The estimated odds ratios are close to one, and the confidence intervals for
+the log-odds coefficients include zero. These results provide limited
+evidence of an association between previous grade and transitions in this
+example; they do not establish the absence of an association. A second-order
+model, in which the next profile depends on the two previous states, can also
+be compared with the first-order specification using BIC:
 
 ```{r second-order}
 second <- lta(course_engagement, activity, "student", n_profiles = 2,
@@ -206,9 +206,10 @@ stopifnot(all(slopes$conf_low < 0 & slopes$conf_high > 0),
           BIC(homogeneous) < BIC(grade), BIC(homogeneous) < BIC(second))
 ```
 
-These extensions return a fit with transition and initial logit coefficients,
-Wald standard errors and probabilities per occasion; they were checked
-against Mplus, depmixS4 and LMest.
+For these data, BIC is lower for the homogeneous first-order model than for
+either extension. Extended models provide transition and initial-state logit
+coefficients, with Wald standard errors when supported by the fitted model,
+and occasion-specific probability summaries.
 
 ## Assumptions
 
@@ -218,7 +219,7 @@ against Mplus, depmixS4 and LMest.
 - Profiles have the same definition at every occasion unless
   `measurement = "occasion"`.
 - Indicators are independent within a profile (the default diagonal
-  covariance; `covariance_model = "full"` or `model =` relaxes it).
+  covariance; `covariance_model = "full"` or a non-diagonal `model` relaxes it).
 
 ```{r restore-options, include = FALSE}
 options(old_options)

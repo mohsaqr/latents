@@ -1,25 +1,32 @@
-#' Conditions raised by the package
+#' Errors, warnings and diagnostic messages
 #'
-#' Lists the classes of the errors, warnings and messages the package raises,
-#' and what raises each. A condition can be caught by its class with
-#' [tryCatch()] or [withCallingHandlers()]. The classes are stable; the
-#' message text may change between versions.
+#' latents reports errors, warnings and messages to communicate problems with
+#' input data, difficulties during estimation, and limitations of requested
+#' analyses. Errors indicate that an operation could not be completed.
+#' Warnings identify issues requiring attention when interpreting or using a
+#' result. Messages provide progress updates or supplementary information.
 #'
-#' @section Input and data contracts:
+#' This reference describes the conditions that trigger these signals and
+#' their associated classes. In automated analyses, conditions can be handled
+#' by class using [tryCatch()] or [withCallingHandlers()]. Class-based handling
+#' allows scripts to respond to specific situations without depending on
+#' message wording, which may change between versions.
+#'
+#' @section Input validation:
 #' \describe{
 #'   \item{`latents_bad_data`}{The data frame, the indicator columns or the
 #'     group column are invalid: too few rows, a duplicated or absent column
 #'     name, an indicator that is not a numeric vector, an indicator that is
 #'     constant or entirely unobserved, missing or non-finite values under
 #'     `missing = "error"`, or a missing group identifier.}
-#'   \item{`latents_unweightable_level`}{[diagnostics()] of a weighted fit
-#'     whose level cannot be weighted (a cross-level fit stores its weights per
-#'     group and no map from rows to groups). It is caught inside
-#'     `diagnostics()`, which reports that level's checks as `n/a`.}
-#'   \item{`latents_not_a_fit`}{A verb that works on a fitted model received
-#'     something else (a data frame, an enumeration, a vector), or a fitted
-#'     model of a family the verb does not take; the message says what it
-#'     received. It is also a `latents_bad_argument`.}
+#'   \item{`latents_unweightable_level`}{The stored sampling weights cannot be
+#'     aligned with a classification level, for example in an older cross-level
+#'     fit without a row-to-group mapping. [diagnostics()] handles this condition
+#'     internally and reports the affected checks as `n/a`.}
+#'   \item{`latents_not_a_fit`}{A function requiring a fitted model received
+#'     an unsupported object or a model from an unsupported family. The message
+#'     identifies the supplied object. Also inherits from
+#'     `latents_bad_argument`.}
 #'   \item{`latents_bad_argument`}{An argument has an invalid value: a scalar
 #'     such as `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`
 #'     or `min_variance`; a `seed` or `seeds` that is not a whole number
@@ -28,7 +35,7 @@
 #'     name; an enumerated option such as `missing`, `boundary`,
 #'     `select_start`, `acceleration`, `centering`, `scaling`,
 #'     `variance_model`, `covariance_model`, `vcov_type` or `adjust` given a
-#'     value that is not one of its choices; or an argument the verb or table
+#'     value that is not one of its choices; or an argument the function or table
 #'     does not use.}
 #'   \item{`latents_bad_time`}{`time` is missing, or repeats a position within
 #'     a group.}
@@ -46,9 +53,8 @@
 #'     was fitted with `weights`, `centering`, or ordinal or count indicators.}
 #'   \item{`latents_bad_transition`}{A transition model was requested with
 #'     fewer than two profiles, or with no group observed at two occasions.}
-#'   \item{`latents_bad_inference_data`}{The data passed to a verb with a fit
-#'     do not reproduce the fit: a different number of rows, different values
-#'     or a different group ordering.}
+#'   \item{`latents_bad_inference_data`}{Data supplied with a fitted model
+#'     differ from the fitting data in row count, values or group ordering.}
 #'   \item{`latents_no_indicator_data`}{A fit carries no stored indicators, so
 #'     the request needs the original data.}
 #'   \item{`latents_incomplete_fit`}{A fit lacks fields the request needs,
@@ -88,9 +94,9 @@
 #'     raises `latents_all_starts_failed`.}
 #'   \item{`latents_boundary_fit`}{A variance or response probability is at
 #'     its bound, a mixing probability is zero, or a membership logit
-#'     coefficient diverges (separation). The parameter is on the edge of its
-#'     space, where the normal approximation of Wald inference does not hold,
-#'     so no standard error is reported.}
+#'     coefficient diverges (separation). The usual normal approximation for
+#'     Wald inference does not apply at the parameter boundary, so standard
+#'     errors are unavailable under the requested inference method.}
 #'   \item{`latents_singular_information`}{The observed information is not
 #'     positive definite or is numerically singular, so no standard error can
 #'     be formed.}
@@ -118,12 +124,13 @@
 #'     A process lost during fitting is otherwise retried and reported with
 #'     `latents_worker_lost` instead.}
 #'   \item{`latents_worker_lost`}{One or more worker tasks returned no result,
-#'     possibly because their processes were killed for memory. Missing results
+#'     possibly because the operating system terminated them for excessive
+#'     memory use. Missing results
 #'     are retried once with fewer workers. The warning reports the numbers
 #'     lost, recovered and still failed, and suggests fewer `cores`. Persistent
 #'     losses become failed starts or candidate rows, retaining other results.
-#'     A socket connection failure makes its current bounded chunk uncertain;
-#'     earlier chunks are retained, and the uncertain chunk is retried.}
+#'     After a socket connection failure, the affected batch is retried and
+#'     results from previously completed batches are retained.}
 #'   \item{`latents_suspect_categorical`}{A numeric indicator fitted as
 #'     categorical has non-integer values or more than ten categories, so it
 #'     may be continuous. Every distinct value is fitted as a category. The
@@ -138,8 +145,9 @@
 #'     fitted as one worker task lost that worker twice. It is recorded as the
 #'     candidate's error, in its row of the grid, and the other candidates are
 #'     returned.}
-#'   \item{`latents_reversed_likelihood`}{The model with more parameters has
-#'     the lower likelihood, so at least one fit is at a local optimum.}
+#'   \item{`latents_reversed_likelihood`}{The larger nested model has a lower
+#'     likelihood, indicating that at least one fit has not reached its global
+#'     maximum.}
 #'   \item{`latents_bad_outcome`}{A distal outcome given to [three_step()] is
 #'     of a type the requested method cannot handle, varies within a group
 #'     when a group-level outcome is requested, or is a measurement
@@ -163,7 +171,7 @@
 #' \describe{
 #'   \item{`latents_unsupported_inference`}{Standard errors are not available
 #'     for this fit. Raised by [parameter_inference()] for a fit made with
-#'     `prior` (Wald path), for the cross-level families, for a covariate fit
+#'     `prior` (Wald method), for the cross-level families, for a covariate fit
 #'     made by an older version, and for a fit recording a covariance
 #'     structure code this version does not know; and by
 #'     `parameter_inference(method = "bootstrap")` for an additive or
@@ -178,17 +186,19 @@
 #'   \item{`latents_unsupported_noise`}{`multilpa(noise = TRUE)` was combined
 #'     with more than one group class, categorical indicators, a `fixed`
 #'     block, membership covariates or missing indicator values; or a fit with
-#'     a noise component was given to a verb that does not support one:
+#'     a noise component was given to a function that does not support one:
 #'     [parameter_inference()], [three_step()], [r3step()], [bootstrap_lrt()],
 #'     [starting_values()], bivariate residuals, [fit_staged()] or a
-#'     posterior plot.}
+#'     posterior plot. Also raised by `predict()` for partially observed rows
+#'     when the fitted model has a noise component, because its stored
+#'     hypervolume does not define the required marginal noise density.}
 #'   \item{`latents_unsupported_structure`}{`multilpa()` was asked for a
 #'     covariance structure other than EEI, VVI, EEE or VVV together with
 #'     `profile_covariates` or `group_covariates`.}
 #'   \item{`latents_bad_weights`}{`weights` does not name a column, or its
 #'     values are missing, negative, non-finite, vary within a unit, or are
 #'     positive for fewer than two units.}
-#'   \item{`latents_unsupported_weights`}{A weighted fit was given to a verb
+#'   \item{`latents_unsupported_weights`}{A weighted fit was given to a function
 #'     or option that does not support sampling weights: [bootstrap_lrt()],
 #'     `enumerate_regressions(bootstrap = )`, [three_step()], [r3step()],
 #'     `prior` or `noise`; or a `vcov_type` other than `"robust"` was
@@ -209,11 +219,10 @@
 #'   \item{`latents_held_parameter`}{A parameter named in `parm` was held
 #'     fixed by the fit and has no confidence interval. Raised by
 #'     [confint()].}
-#'   \item{`latents_unsupported_sensitivity`}{[sensitivity()] was called on a
-#'     model family whose refit needs arguments the shared refit does not
-#'     carry, whose profile labels cannot be aligned between two fits, or
-#'     on a directly fixed fit whose original free starts cannot be
-#'     replayed.}
+#'   \item{`latents_unsupported_sensitivity`}{[sensitivity()] cannot refit the
+#'     requested model or align its class labels. This includes directly fitted
+#'     fixed-measurement models whose original free starting values were not
+#'     retained.}
 #'   \item{`latents_unsupported_three_step`}{[three_step()] or [r3step()] was
 #'     called on a fit the correction does not cover: a membership-covariate
 #'     fit, whose classification errors depend on the predictors (the
@@ -236,7 +245,7 @@
 #'     `get_results(x, "transitions")`.}
 #'   \item{`latents_no_plot`}{`plot(x, what = "all")` was called on an object
 #'     whose plot method has no views to draw.}
-#'   \item{`latents_no_time`}{A sequence table or verb was requested for a
+#'   \item{`latents_no_time`}{A sequence table or function was requested for a
 #'     fit made without `time`.}
 #'   \item{`latents_unsupported_prediction`}{`predict()` was called on a
 #'     growth mixture, a membership-covariate fit or a latent transition fit,
@@ -255,8 +264,9 @@
 #'     describe: `vars` named none, or the frame has no numeric column outside
 #'     `id` and `by`.}
 #'   \item{`latents_nothing_to_plot`}{The requested panel has no rows to draw.}
-#'   \item{`latents_inaccurate_probability`}{The numerical integral behind a
-#'     Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+#'   \item{`latents_inaccurate_probability`}{Numerical integration for a
+#'     Lo-Mendell-Rubin p-value did not meet the required accuracy, so the
+#'     p-value is unavailable.}
 #'   \item{`latents_no_local_dependence`}{`get_results(fit, "local_dependence")`
 #'     on a fit made without `local_dependence`.}
 #'   \item{`latents_no_direct_effects`}{`get_results(fit, "direct_effects")`
@@ -275,7 +285,7 @@
 #'     group level of a grid with one group class was asked for. Also of
 #'     class `latents_nothing_to_plot`; `get_results(x, "all")` leaves the
 #'     `"tree"` table out.}
-#'   \item{`latents_unsupported_view`}{A grid verb ([plot_enumeration()],
+#'   \item{`latents_unsupported_view`}{A grid function ([plot_enumeration()],
 #'     [plot_selection()], [plot_tree()] or `plot()` of a grid) was asked for
 #'     a view that this kind of grid cannot draw, such as the tree of a
 #'     group-class family or regression grid. The message gives the reason
@@ -289,8 +299,9 @@
 #'     standard deviation.}
 #' }
 #'
-#' @section Warnings:
-#' These are raised when a result is returned but qualified.
+#' @section Additional errors, warnings and messages:
+#' These conditions report limitations of a returned result or an inability to
+#' complete estimation. Message-only conditions are identified explicitly.
 #' \describe{
 #'   \item{`latents_failed_starts`}{Some, but not all, EM starts failed. The
 #'     remaining starts are in `get_results(fit, "starts")`.}
@@ -312,8 +323,9 @@
 #'   \item{`latents_em_decrease`}{The [mixture_regression()] EM likelihood
 #'     decreased beyond rounding error. This indicates a defect and should be
 #'     reported.}
-#'   \item{`latents_unconverged`}{The best start had not converged when
-#'     `max_iter` was reached, so the returned estimate is not a maximum.}
+#'   \item{`latents_unconverged`}{The selected start did not satisfy the
+#'     convergence criterion before `max_iter`, or an inference check found a
+#'     non-negligible score. The returned estimate requires further assessment.}
 #'   \item{`latents_boundary`}{A variance, or a covariance eigenvalue, is at
 #'     `min_variance`, so the fit is bound-active and its standard errors are
 #'     not valid at that parameter.}
@@ -364,16 +376,16 @@
 #'   \item{`latents_sensitivity_dropped`}{One or more seeds did not produce a
 #'     fit in [sensitivity()]. Their rows are `NA`, and the warning states how
 #'     many failed and the first reason.}
-#'   \item{`latents_extreme_coefficients`}{A membership logit coefficient,
-#'     measured per root-mean-square unit of its covariate, is large enough
-#'     that the class is close to separated, so the estimate is driven by
-#'     scaling, a sparse class or separation rather than by the data.}
+#'   \item{`latents_extreme_coefficients`}{A membership logit coefficient is
+#'     extreme after adjustment for covariate location and scale. This may
+#'     indicate separation or sparse class membership and requires inspection
+#'     before interpreting the coefficient or its standard error.}
 #'   \item{`latents_empty_transition_row`}{A profile is never occupied before
 #'     a final occasion, so its transition row is uniform by construction
 #'     rather than estimated; `get_results(fit, "transitions", estimated =
 #'     FALSE)` lists such rows. The general [lta()] engine raises it too, for
 #'     an origin profile (or pair, under `order = 2`) that no move leaves: its
-#'     logits are fixed at zero and flagged `estimated = FALSE` in
+#'     logits are fixed at zero and marked `estimated = FALSE` in
 #'     `get_results(fit, "transitions")` and [parameter_inference()]. In both
 #'     engines such a row is not counted in `n_parameters`, AIC or BIC. The
 #'     transition-network handoff also warns when it includes such a row.}
@@ -383,8 +395,9 @@
 #'     the empty occasion (or, for an empty first occasion, the initial
 #'     distribution and the first move) enter the likelihood only through
 #'     their product, so their logits are not separately identified: the
-#'     estimates are one of many equally good splits and their standard errors
-#'     are not meaningful, and the parameter count includes them. Occasions
+#'     distinct parameter combinations yield the same likelihood. Their
+#'     standard errors are not interpretable, although the parameter count
+#'     includes them. Occasions
 #'     after the last observed one are not counted and do not warn.}
 #'   \item{`latents_unverified_alignment`}{A supplied `data` frame has too
 #'     little fitted information to verify row order (for example only a
@@ -399,7 +412,7 @@
 #'     residuals met a marginal covariance that is numerically singular (a
 #'     process variance far larger than the residual variance). During
 #'     fitting this is treated as a rejected step; it reaches the caller only
-#'     for parameter values supplied by hand.}
+#'     for parameter values supplied explicitly.}
 #'   \item{`latents_unused_argument`}{A method that accepts `...` (several
 #'     `plot()` methods, `summary()` of the fits and grids whose summary
 #'     takes no `level` or `vcov_type`,
@@ -429,10 +442,10 @@
 #' )
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' # A sequence verb on a fit made without `time` is catchable by class.
+#' # Handle a missing-time condition by its class.
 #' tryCatch(get_results(fit, "sequences"),
 #'          latents_no_time = function(condition) {
-#'   "this fit carries no ordering"
+#'   "No occasion ordering was specified for this fit."
 #' })
 #' @name latents-conditions
 NULL

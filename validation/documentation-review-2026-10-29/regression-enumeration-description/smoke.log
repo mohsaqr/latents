@@ -1,0 +1,7 @@
+  n_classes      bic   entropy smallest_share converged n_best_replicated
+1         1 838.7288        NA      1.0000000      TRUE                 3
+2         2 470.0813 0.9918979      0.3900651      TRUE                 3
+  best_bic
+1    FALSE
+2     TRUE
+Enumeration and stored-model retrieval verified.

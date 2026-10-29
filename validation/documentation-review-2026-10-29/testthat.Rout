@@ -1,0 +1,242 @@
+
+R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(testthat)
+> library(latents)
+> 
+> test_check("latents")
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent class model.
+Fitted a single-level latent class model.
+Fitted a single-level latent class model.
+Fitted a single-level latent class model.
+No standard errors in this table: Robust and OPG inference need more groups than parameters; this fit has 20 groups and 30 parameters.
+No standard errors in this table: Inference requires a converged fit.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+Preparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+Fitted a single-level latent profile model.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+[ FAIL 0 | WARN 0 | SKIP 336 | PASS 4295 ]
+
+══ Skipped tests (336) ═════════════════════════════════════════════════════════
+• !is.finite(available) || available < 1L is TRUE (1):
+  'test-review-1026-refusals.R:68:3'
+• On CRAN (329): 'test-acceleration.R:10:3', 'test-additive-compare.R:11:3',
+  'test-additive-compare.R:51:3', 'test-additive-compare.R:91:3',
+  'test-additive-families.R:32:3', 'test-additive-families.R:57:3',
+  'test-additive-families.R:103:3', 'test-additive-fit.R:40:3',
+  'test-additive-fit.R:107:3', 'test-additive-fit.R:144:1',
+  'test-additive-methods.R:95:3', 'test-additive-methods.R:208:3',
+  'test-additive-methods.R:230:3', 'test-additive-methods.R:266:3',
+  'test-alignment-service.R:177:3', 'test-api-compat-0921.R:5:1',
+  'test-astra-core.R:6:1', 'test-astra-diagnostics.R:6:1',
+  'test-audit-inference-repairs.R:6:1', 'test-audit-ml3-optimizer.R:21:3',
+  'test-audit-plots-predictions.R:5:1', 'test-audit-recent-api.R:5:1',
+  'test-audit-reporting-repairs.R:3:1', 'test-bivariate-residuals.R:161:3',
+  'test-bootstrap-constraints.R:43:3', 'test-bootstrap-constraints.R:69:3',
+  'test-bootstrap-constraints.R:128:3', 'test-bootstrap-constraints.R:139:3',
+  'test-bootstrap-constraints.R:156:3', 'test-bootstrap-constraints.R:169:3',
+  'test-bootstrap-constraints.R:188:3', 'test-bootstrap-inference.R:59:3',
+  'test-bootstrap-inference.R:87:3', 'test-bootstrap-inference.R:102:3',
+  'test-bootstrap-inference.R:173:3', 'test-bootstrap-inference.R:195:3',
+  'test-bootstrap-inference.R:207:3', 'test-bootstrap-lrt-extended.R:7:1',
+  'test-boundary-exclude.R:9:1', 'test-categorical.R:116:3',
+  'test-categorical.R:226:3', 'test-convenience.R:3:1',
+  'test-covariance-structure.R:8:1', 'test-covariate-measurement.R:10:1',
+  'test-covariate-missing.R:9:1', 'test-covariate-slopes.R:9:1',
+  'test-covariate-surface.R:111:3', 'test-cross-level.R:52:3',
+  'test-data-student-esm.R:40:3', 'test-data.R:268:3', 'test-data.R:284:3',
+  'test-default-search.R:8:1', 'test-direct-effects.R:60:3',
+  'test-direct-effects.R:83:3', 'test-direct-effects.R:104:3',
+  'test-direct-effects.R:184:3', 'test-direct-effects.R:229:3',
+  'test-engine-fixes.R:6:1', 'test-enumerate-verbs.R:49:3',
+  'test-enumeration-type.R:3:1', 'test-enumeration.R:4:1',
+  'test-extra-indicators.R:103:3', 'test-extra-indicators.R:183:3',
+  'test-extra-indicators.R:213:3', 'test-features-direct-effects.R:11:1',
+  'test-features-joint-items.R:10:1', 'test-features-ml-three-step.R:11:1',
+  'test-features-pair-covariance.R:152:3', 'test-features-vlmr.R:8:1',
+  'test-fit-verbs.R:134:3', 'test-fit-verbs.R:146:3', 'test-fit-verbs.R:173:3',
+  'test-fit-verbs.R:213:3', 'test-fit-verbs.R:250:3', 'test-fit-verbs.R:296:3',
+  'test-fit-verbs.R:329:3', 'test-fixed-measurement.R:7:1',
+  'test-get-data.R:8:1', 'test-grid-contract.R:56:3',
+  'test-grid-contract.R:91:3', 'test-grid-contract.R:118:3',
+  'test-grid-contract.R:151:3', 'test-grid-contract.R:175:3',
+  'test-grid-contract.R:216:3', 'test-grid-contract.R:232:3',
+  'test-growth-correlated.R:10:1', 'test-growth-mixture.R:5:1',
+  'test-growth-parameter-inference.R:7:1', 'test-growth-predict.R:8:1',
+  'test-growth-r3step.R:9:1', 'test-inference-fixed-measurement.R:129:3',
+  'test-informative-rows.R:17:3', 'test-informative-rows.R:52:3',
+  'test-informative-rows.R:72:3', 'test-informative-rows.R:89:3',
+  'test-informative-rows.R:101:3', 'test-informative-rows.R:111:3',
+  'test-informative-rows.R:130:3', 'test-informative-rows.R:157:3',
+  'test-informative-rows.R:174:3', 'test-informative-rows.R:201:3',
+  'test-informative-rows.R:221:3', 'test-informative-rows.R:251:3',
+  'test-informative-rows.R:265:3', 'test-latents-controls.R:204:3',
+  'test-lmr.R:7:1', 'test-local-dependence.R:26:3',
+  'test-local-dependence.R:40:3', 'test-local-dependence.R:61:3',
+  'test-local-dependence.R:118:3', 'test-local-dependence.R:156:3',
+  'test-local-dependence.R:187:3', 'test-lta-bootstrap.R:25:3',
+  'test-lta-bootstrap.R:39:3', 'test-lta-bootstrap.R:114:3',
+  'test-lta-bootstrap.R:125:3', 'test-lta-bootstrap.R:152:3',
+  'test-lta-bootstrap.R:186:3', 'test-lta-bootstrap.R:203:3',
+  'test-lta-compare.R:6:3', 'test-lta-compare.R:26:3',
+  'test-lta-compare.R:57:3', 'test-lta-compare.R:84:3',
+  'test-lta-general.R:31:3', 'test-lta-general.R:87:3',
+  'test-lta-general.R:109:3', 'test-lta-general.R:134:3',
+  'test-lta-parallel.R:5:1', 'test-lta-thin-profiles.R:7:1',
+  'test-lta-three-step.R:9:1', 'test-math-core-audit.R:3:1',
+  'test-math-extensions-audit.R:2:1', 'test-math-inference-audit.R:2:1',
+  'test-math-plot-audit.R:7:1', 'test-math-results-audit.R:2:1',
+  'test-mixture-regression-prediction-design.R:43:3',
+  'test-mixture-regression.R:6:1', 'test-multilevel-growth.R:39:3',
+  'test-multilevel-growth.R:59:3', 'test-multilevel-growth.R:81:3',
+  'test-multilevel-growth.R:104:3', 'test-negative-binomial-regression.R:21:3',
+  'test-numerical-safeguards.R:3:1', 'test-ordinal-regression.R:40:3',
+  'test-ordinal-regression.R:100:3', 'test-ordinal-regression.R:157:3',
+  'test-parallel-profile-pool.R:3:1', 'test-parallel-recovery.R:57:3',
+  'test-parallel-recovery.R:83:3', 'test-parallel-recovery.R:101:3',
+  'test-parallel-recovery.R:127:3', 'test-parallel-recovery.R:152:3',
+  'test-parallel-recovery.R:176:3', 'test-parallel-recovery.R:203:3',
+  'test-parallel-recovery.R:228:3', 'test-parallel-recovery.R:258:3',
+  'test-parallel-recovery.R:281:3', 'test-parallel.R:42:3',
+  'test-parallel.R:57:3', 'test-parallel.R:72:3', 'test-parallel.R:86:3',
+  'test-parallel.R:132:3', 'test-parallel.R:147:3', 'test-parallel.R:163:3',
+  'test-parallel.R:225:3', 'test-parallel.R:587:3',
+  'test-plot-categorical-summaries.R:5:1', 'test-plot-gg.R:12:3',
+  'test-plot-gg.R:58:3', 'test-plot-gg.R:114:3', 'test-plot-named.R:30:3',
+  'test-plot-named.R:72:3', 'test-plot-named.R:94:3',
+  'test-plot-named.R:120:3', 'test-plot-named.R:130:3',
+  'test-plot-named.R:148:3', 'test-plot-named.R:204:3',
+  'test-plot-polish.R:9:1', 'test-plot.R:17:3', 'test-plot.R:34:3',
+  'test-plot.R:71:3', 'test-plot.R:87:3', 'test-plot.R:104:3',
+  'test-plot.R:154:3', 'test-plot.R:170:3', 'test-plot.R:191:3',
+  'test-plot.R:215:3', 'test-plot.R:225:3', 'test-plot.R:272:3',
+  'test-plot.R:292:3', 'test-plot.R:307:3', 'test-plot.R:316:3',
+  'test-pool-imputations.R:7:1', 'test-post-submission-review.R:3:1',
+  'test-predict.R:12:3', 'test-predict.R:51:3', 'test-prior.R:81:3',
+  'test-release-core.R:6:1', 'test-release-engine.R:9:1',
+  'test-release-inference.R:7:1', 'test-release-items.R:5:1',
+  'test-release-regression.R:7:1', 'test-release-surface.R:8:1',
+  'test-release-transitions.R:66:3', 'test-release-transitions.R:104:3',
+  'test-release-transitions.R:117:3', 'test-release-transitions.R:140:3',
+  'test-release-transitions.R:175:3', 'test-release-transitions.R:196:3',
+  'test-release-transitions.R:226:3', 'test-release-transitions.R:241:3',
+  'test-release-transitions.R:249:3', 'test-release-transitions.R:261:3',
+  'test-release-transitions.R:274:3', 'test-release-transitions.R:290:3',
+  'test-release-units.R:58:3', 'test-release-units.R:83:3',
+  'test-release-units.R:96:3', 'test-release-units.R:122:3',
+  'test-report-surface.R:24:3', 'test-report-surface.R:40:3',
+  'test-report-surface.R:51:3', 'test-report-surface.R:65:3',
+  'test-report-surface.R:78:3', 'test-report-surface.R:100:3',
+  'test-review-0970-parallel.R:5:1', 'test-review-1015-covariates.R:7:1',
+  'test-review-1015-families.R:6:1', 'test-review-1015-inference.R:53:3',
+  'test-review-1015-inference.R:73:3', 'test-review-1015-inference.R:96:3',
+  'test-review-1015-inference.R:112:3', 'test-review-1015-inference.R:143:3',
+  'test-review-1015-lead.R:14:3', 'test-review-1015-lead.R:25:3',
+  'test-review-1015-lead.R:37:3', 'test-review-1015-lead.R:48:3',
+  'test-review-1015-lead.R:72:3', 'test-review-1015-lead.R:97:3',
+  'test-review-1015-plots.R:9:3', 'test-review-1015-plots.R:37:3',
+  'test-review-1015-plots.R:57:3', 'test-review-1015-plots.R:73:3',
+  'test-review-1015-plots.R:89:3', 'test-review-1015-plots.R:113:3',
+  'test-review-1015-plots.R:127:3', 'test-review-1015-regression.R:4:1',
+  'test-review-1015-transitions.R:6:1', 'test-review-1020-inference.R:4:1',
+  'test-review-1026-additive.R:9:1', 'test-review-1026-categorical-r2.R:7:1',
+  'test-review-1026-categorical.R:9:1', 'test-review-1026-codex.R:6:1',
+  'test-review-1026-growth-r2.R:11:1', 'test-review-1026-growth.R:11:1',
+  'test-review-1026-inference-r2.R:46:3',
+  'test-review-1026-inference-r2.R:101:3',
+  'test-review-1026-inference-r2.R:202:3',
+  'test-review-1026-inference-r2.R:216:3', 'test-review-1026-inference.R:32:3',
+  'test-review-1026-inference.R:79:3', 'test-review-1026-inference.R:100:3',
+  'test-review-1026-kernel-r2.R:8:1', 'test-review-1026-labels.R:9:1',
+  'test-review-1026-lta-open.R:10:1', 'test-review-1026-lta-r2.R:13:1',
+  'test-review-1026-lta.R:10:1', 'test-review-1026-mixreg-r2.R:7:1',
+  'test-review-1026-mixreg.R:13:1', 'test-review-1026-multilevel-r2.R:10:1',
+  'test-review-1026-multilevel.R:10:1', 'test-review-1026-selection-r2.R:7:1',
+  'test-review-1027-condition-calls.R:8:1',
+  'test-review-1027-diagnostics.R:58:3', 'test-review-1027-diagnostics.R:79:3',
+  'test-review-1027-diagnostics.R:123:3',
+  'test-review-1027-diagnostics.R:139:3',
+  'test-review-1027-diagnostics.R:153:3',
+  'test-review-1027-diagnostics.R:177:3',
+  'test-review-1027-diagnostics.R:187:3',
+  'test-review-1027-diagnostics.R:205:3',
+  'test-review-1027-diagnostics.R:221:3',
+  'test-review-1027-diagnostics.R:257:3',
+  'test-review-1027-diagnostics.R:264:3',
+  'test-review-1027-diagnostics.R:274:3', 'test-review-1027-replication.R:7:1',
+  'test-review-core-audit.R:6:1', 'test-review-extra.R:2:1',
+  'test-review-families.R:3:1', 'test-review-followup.R:6:1',
+  'test-review-integration.R:3:1', 'test-review-lta.R:5:1',
+  'test-review-regression.R:2:1', 'test-search.R:9:1', 'test-seeds.R:84:3',
+  'test-sensitivity.R:79:3', 'test-sensitivity.R:95:3',
+  'test-sensitivity.R:160:3', 'test-sensitivity.R:189:3',
+  'test-sensitivity.R:278:3', 'test-sequences.R:145:3',
+  'test-single-level.R:92:3', 'test-staged-bootstrap.R:5:1',
+  'test-start-kmeans-warning.R:7:1', 'test-structure-inference.R:8:1',
+  'test-thin-profiles.R:6:1', 'test-three-step-clusters.R:93:3',
+  'test-three-step-clusters.R:115:3', 'test-three-step-clusters.R:145:3',
+  'test-three-step-clusters.R:172:3', 'test-three-step-clusters.R:206:3',
+  'test-three-step-ml.R:8:1', 'test-tidy-accessors.R:78:3',
+  'test-tidy-accessors.R:107:3', 'test-tidy-classes.R:163:3',
+  'test-tidy-core.R:268:3', 'test-tidy-core.R:309:3',
+  'test-tidy-inference.R:8:1', 'test-tna-fits.R:50:3', 'test-tna.R:121:3',
+  'test-transition-inference.R:6:1', 'test-transitions-numerics.R:103:3',
+  'test-transitions-numerics.R:136:3', 'test-transitions.R:76:3',
+  'test-tree.R:3:1', 'test-weights.R:255:3', 'test-weights.R:287:3',
+  'test-weights.R:305:3', 'test-weights.R:326:3'
+• package sources are not available (1): 'test-review-1015-accessors.R:122:3'
+• supporting study is outside the installed package (2):
+  'test-audit-core-repairs.R:184:3', 'test-audit-core-repairs.R:204:3'
+• validation sources are outside the installed package (3):
+  'test-audit-validation-fork-safety.R:12:3',
+  'test-audit-validation-fork-safety.R:30:3',
+  'test-audit-validation-fork-safety.R:54:3'
+
+[ FAIL 0 | WARN 0 | SKIP 336 | PASS 4295 ]
+> 
+> proc.time()
+   user  system elapsed 
+ 59.259   7.148  74.457 

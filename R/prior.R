@@ -26,16 +26,31 @@
 #
 # mclust has no prior for VEE, EVE, VVE or EVV, and neither has this package.
 
-#' Specify a conjugate prior for Gaussian mixture estimation
+#' Specify prior settings for Gaussian profile estimation
 #'
-#' Returns a `latents_prior` object requesting maximum a posteriori (MAP)
-#' estimation of the Gaussian profile means and covariances under the
-#' conjugate prior of Fraley and Raftery (2007), as `mclust::priorControl()`
-#' does for `mclust::Mclust()`. Pass the result as `multilpa(prior = )`. The
-#' prior keeps the covariance estimates away from singularity.
+#' @description
+#' `prior_control()` specifies prior settings that regularise the estimation
+#' of Gaussian profile means and covariance parameters. The returned object
+#' is supplied to the `prior` argument of [multilpa()]. The prior applies to
+#' the continuous-indicator measurement parameters; class-membership
+#' probabilities are estimated without a prior.
 #'
-#' Every argument left `NULL` takes `mclust::defaultPrior()`'s value, computed
-#' from the indicators being fitted: the prior mean is their column means, the
+#' The settings control mean shrinkage and the prior scale and degrees of
+#' freedom for covariance estimation. Unspecified values are determined from
+#' the data during fitting. The parameterisation follows the conventions of
+#' mclust, with effects that depend on the chosen covariance structure.
+#'
+#' @section Interpretation:
+#' Using a prior changes the estimation procedure from maximum likelihood to
+#' regularised point estimation. It does not provide posterior samples or
+#' Bayesian credible intervals. Ordinary Wald inference is unavailable for
+#' these fits; supported bootstrap inference refits the model with the prior
+#' settings.
+#'
+#' @details
+#' The prior follows Fraley and Raftery (2007) and `mclust::priorControl()`.
+#' Arguments set to `NULL` use the data-dependent defaults of
+#' `mclust::defaultPrior()`: the prior mean is the vector of indicator means, the
 #' degrees of freedom are `d + 2` for `d` indicators, and the scale is
 #' `(1/G)^(2/d)` times the sample covariance (ellipsoidal structures) or times
 #' the average sample variance (axis-parallel and spherical structures), for
@@ -51,10 +66,12 @@
 #'
 #' @param shrinkage Non-negative prior precision factor for the means, `kappa`
 #'   (default `0.01`, as in mclust). Zero leaves the means unshrunk.
-#' @param mean Optional prior mean, one value per continuous indicator, on the
-#'   scale the profile means are estimated on: the indicators' own units, or
-#'   their centred values under [multilpa()]'s `centering`. Requires a positive
-#'   `shrinkage`.
+#' @param mean Optional prior mean, one value per continuous indicator on the
+#'   scale used to fit the profiles. Use original indicator units when no
+#'   transformation is requested, and the transformed scale under
+#'   [multilpa()]'s `centering` or `scaling`. The separate internal centring
+#'   used for numerical stability is handled automatically. Requires a
+#'   positive `shrinkage`.
 #' @param dof Optional prior degrees of freedom, a single positive number.
 #' @param scale Optional prior scale: a single positive number for an
 #'   axis-parallel or spherical structure, or a positive-definite `d` by `d`
@@ -71,7 +88,7 @@
 #' @references Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for
 #'   normal mixture estimation and model-based clustering. *Journal of
 #'   Classification*, 24, 155--181. \doi{10.1007/s00357-007-0004-5}
-#' @seealso [multilpa()], whose `prior` argument takes this.
+#' @seealso [multilpa()] for the supported model specifications.
 #' @examples
 #' prior_control()
 #' prior_control(shrinkage = 0)

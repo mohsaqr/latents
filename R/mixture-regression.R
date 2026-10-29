@@ -1,39 +1,65 @@
-#' Fit a finite mixture of regressions
+#' Estimate regression relationships that vary across latent classes
 #'
-#' Fits a regression whose coefficients differ across `n_classes` latent
-#' classes and returns the fitted model: the class-specific regressions, the
-#' class sizes and every row's posterior class membership, estimated jointly
-#' by maximum likelihood. This is clusterwise, latent class or mixture
-#' regression (DeSarbo and Cron 1988; Wedel and DeSarbo 1995).
+#' @description
+#' `mixture_regression()` examines whether the relationship between an outcome
+#' and its predictors differs across latent classes. It represents the
+#' conditional outcome distribution as a mixture of class-specific regression
+#' models, allowing classes to differ in their outcome levels, predictor
+#' associations, or trajectories over time.
+#'
+#' Regression parameters and class-membership probabilities are estimated
+#' jointly by maximum likelihood. Coefficients may vary across classes or,
+#' for selected predictor terms, be constrained to a common value. Predictors
+#' in the outcome formula describe variation within classes; covariates
+#' supplied through `membership` describe variation in the probability of
+#' belonging to each class. Posterior membership probabilities express the
+#' uncertainty in assigning observations or groups to the estimated classes.
+#'
+#' The function supports Gaussian, binomial, Poisson, negative-binomial, and
+#' ordinal outcome models, subject to the restrictions described below. Class
+#' membership may be defined for individual observations or shared across
+#' repeated observations from the same unit. With time predictors, shared
+#' membership defines class-specific trajectories; Gaussian random effects
+#' additionally allow individual trajectories to vary within classes.
+#'
+#' @section Interpretation:
+#' The classes describe heterogeneity under the specified regression model.
+#' Their interpretation depends on the outcome distribution, included
+#' predictors, coefficient constraints, and treatment of repeated
+#' observations. Within-class coefficients describe conditional associations
+#' and do not, by themselves, establish causal effects. Estimation stability
+#' and classification uncertainty should be examined before assigning
+#' substantive meaning to the classes.
 #'
 #' @section Nesting:
-#' `class_level` and `n_group_classes` choose one of three likelihoods.
+#' Arguments `class_level` and `n_group_classes` specify the level of latent
+#' class membership and the likelihood contribution of each independent unit.
 #' \describe{
-#'   \item{Single level (`id = NULL`)}{Every row is its own unit with its own
+#'   \item{Single level (`id = NULL`)}{Each row is an independent unit with its own
 #'     class.}
 #'   \item{`class_level = "group"`}{All rows of a group (`id`) belong to the
 #'     same class: the regression mixture for repeated measures, as
 #'     `flexmix(y ~ x | id)`. A group's likelihood contribution is the product
 #'     of its rows' densities.}
 #'   \item{`class_level = "observation"` with `id` and `n_group_classes >= 2`}{
-#'     Each row has its own class, and a second-level group class sets the
+#'     Each row has its own class, and a second-level group class determines the
 #'     class probabilities within its groups (Vermunt 2003).
 #'     With `n_group_classes = 1`, `id` enters only the `"robust"` standard
 #'     errors, which are then clustered on `id`.}
 #' }
 #'
 #' @section Growth mixture models:
-#' With repeated measures of persons (`id`, `class_level = "group"`), a time
-#' predictor in `formula` gives every class its own trajectory: latent class
-#' growth analysis (Nagin 2005). `random` adds random effects within
-#' classes, so that persons vary around their class trajectory: the growth
-#' mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden 1999). Within
-#' class k, person i's outcomes are
+#' For repeated measurements (`id`, `class_level = "group"`), including time
+#' in `formula` specifies class-specific trajectories. Without random effects,
+#' this is a latent class growth model (Nagin, 2005). Argument `random` adds
+#' within-class variation in individual trajectories, yielding a growth mixture
+#' model (Verbeke and Lesaffre, 1996; Muthen and Shedden, 1999). For individual
+#' i in class k, the model is
 #' \deqn{y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k),
 #' \quad e_i \sim N(0, \sigma_k^2 I),}{y_i = X_i beta_k + Z_i b_i + e_i, b_i ~ N(0, G_k), e_i ~ N(0, sigma_k^2 I),}
-#' with `Z` built from `random`. The likelihood is exact (Gaussian, no
-#' numerical integration); estimation is EM with the random effects as missing
-#' data, finished by quasi-Newton with analytic scores. Such a fit has class
+#' where `Z` is the design matrix specified by `random`. The Gaussian random
+#' effects are integrated analytically. Estimation uses EM followed by
+#' quasi-Newton optimization with analytic scores. The fitted object has class
 #' `latents_growth_mixture`; its tables and plots are described on
 #' [get_results()] and [plot()][latents-plots]. Random effects require the
 #' gaussian family, `id` and `class_level = "group"`.
@@ -41,9 +67,8 @@
 #' With `residual_correlation`, the residuals also carry a process shared by
 #' the classes, \eqn{e_i \sim N(0, W_i + \sigma_k^2 I)}{e_i ~ N(0, W_i + sigma_k^2 I)}:
 #' a continuous-time autoregressive process (`"ar"`) or Brownian motion
-#' (`"brownian"`) over `residual_time`, as in `lcmm::hlme(cor = )`; at hlme's
-#' estimates the two likelihoods agree
-#' (`equivalence/test-growth-correlated-lcmm.R` in the source repository).
+#' (`"brownian"`) over `residual_time`, corresponding to the correlation
+#' structures specified by `lcmm::hlme(cor = )`.
 #'
 #' With `cluster`, persons are nested in clusters (students in schools) and
 #' the multilevel growth mixture model is fitted: each cluster belongs to a
@@ -70,7 +95,7 @@
 #' \deqn{P(Y \le c \mid x, k) = F(t_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,}{P(Y <= c | x, k) = plogis(t_kc - x' beta_k), c = 1, ..., C - 1,}
 #' with ordered thresholds \eqn{t_{k1} < \ldots < t_{k,C-1}}{t_k1 < ... < t_k,C-1}
 #' per class in place of the intercept, and the parametrization of
-#' `MASS::polr()`: a positive slope moves the class towards higher
+#' `MASS::polr()`: a positive slope increases the probability of higher
 #' categories. The outcome is an ordered factor, a factor (its levels taken
 #' in order) or whole-number categories; the categories are those observed,
 #' at least two. `common` terms share their slopes across classes, and
@@ -84,9 +109,9 @@
 #' order; `predict(type = "probabilities")` gives the category probabilities.
 #' With one outcome per class assignment, an ordinal mixture with no
 #' predictors is not identified. Two-category mixtures follow the binary
-#' support restriction below. Both are refused with `latents_not_identified`, unless
+#' support restriction below. Both are rejected with `latents_not_identified`, unless
 #' `class_level = "group"` gives each class assignment several outcomes. A
-#' single-level mixture is also refused when it has more free parameters than
+#' single-level mixture is also rejected when it has more free parameters than
 #' P (C - 1), the number of free category probabilities in P distinct
 #' covariate patterns (for example two classes and one binary factor).
 #'
@@ -95,7 +120,7 @@
 #' model constraints, which the package does not assess. A binary mixture
 #' therefore requires `class_level = "group"` (several rows per class
 #' assignment) or binomial counts with more than one trial per row; other
-#' binary specifications are refused.
+#' binary specifications are rejected.
 #'
 #' @param formula A model formula `outcome ~ predictors`. Factors, interactions
 #'   and `offset()` are supported.
@@ -109,7 +134,7 @@
 #' @param class_level `"observation"` (default; each row has its own class) or
 #'   `"group"` (all rows of a group share a class; requires `id`).
 #' @param n_group_classes Number of second-level group classes (default 1,
-#'   no second level), for `class_level = "observation"` with `id`, or for the
+#'   no latent group classes), for `class_level = "observation"` with `id`, or for the
 #'   clusters of a multilevel growth mixture (`cluster`).
 #' @param common `NULL`, or the predictor terms whose coefficients are
 #'   shared by every class: variable names such as `"age"`, or a one-sided
@@ -127,18 +152,17 @@
 #'   negative-binomial dispersion, per class) or `"equal"` (one shared).
 #'   Gaussian and negative-binomial families only.
 #' @param n_starts Number of random starts (default 10), besides one start
-#'   built from the residuals of a pooled regression. Every start runs up to
+#'   built from the residuals of a pooled regression. Each start runs for up to
 #'   50 EM iterations; the better half (at least two) continue to
 #'   convergence.
 #' @param max_iter Maximum EM iterations per start (default 1000).
 #' @param tol Convergence tolerance (default `1e-8`): EM has converged when
 #'   one step changes the log likelihood by no more than `tol` times the
-#'   number of rows of positive weight, a rule that does not depend on the
-#'   units of the outcome (latents 0.97.1 and earlier used `tol * (1 +
-#'   abs(previous log likelihood))`).
+#'   number of positive-weight rows. The tolerance is therefore expressed per
+#'   observation.
 #' @param min_variance Floor for a Gaussian residual variance, relative to the
 #'   outcome's variance (default `1e-6`). Starts in which a class reaches the
-#'   floor (fits too few rows exactly) are set aside. In a growth mixture the
+#'   lower bound are excluded from selection. In a growth mixture, the
 #'   same floor bounds each random effect's conditional variance, applied in
 #'   the standardized coordinates the model is fitted in (outcome and
 #'   predictors centred and scaled), so it does not depend on the units of the
@@ -147,10 +171,10 @@
 #'   seed restores the caller's `.Random.seed` afterwards. R does not store a
 #'   cached Box-Muller normal draw
 #'   in `.Random.seed`, so that hidden cached draw cannot be preserved.
-#' @param missing `"error"` (default) refuses rows with missing values in any
+#' @param missing `"error"` (default) rejects rows with missing values in any
 #'   variable the model uses; `"omit"` drops them with a
 #'   `latents_rows_dropped` warning stating how many.
-#' @param select_start `"likelihood"` (default) keeps the start with the
+#' @param select_start `"likelihood"` (default) selects the start with the
 #'   highest likelihood; `"converged"` prefers the best start that converged.
 #' @param vcov_type Covariance of the estimates stored with the fit:
 #'   `"observed"` (default; inverse observed information), `"robust"` (sandwich with
@@ -160,7 +184,7 @@
 #'   sampling weight per independent unit: per row without `id`, per `id`
 #'   group otherwise (constant within it). Pseudo maximum likelihood with the
 #'   weights scaled to sum to the units of positive weight; `vcov_type`
-#'   defaults to `"robust"` and refuses `"observed"` and `"opg"`. The
+#'   defaults to `"robust"` and rejects `"observed"` and `"opg"`. The
 #'   information criteria use the weighted log likelihood, and the entropy
 #'   term of ICL is weighted by the sampling weights, as the likelihood is. A
 #'   unit of weight zero is absent from the fit: from every start, estimate,
@@ -187,7 +211,7 @@
 #'   probabilities of its persons. The clusters are the independent units of
 #'   the likelihood, the standard errors and the BIC; with
 #'   `n_group_classes = 1` the model is the single-level growth mixture with
-#'   clusters as those units, comparable by BIC with fits with more group
+#'   clusters as those units, comparable by BIC with fits with additional group
 #'   classes. See *Growth mixture models*.
 #' @param residual_correlation `"none"` (default) for independent residuals
 #'   within a person; with `random`, `"ar"` adds a continuous-time
@@ -200,9 +224,10 @@
 #'   random effects is left on its bound and warned about
 #'   (`latents_random_boundary`); its rows then have no standard error.
 #'   Refused with `latents_bad_argument` without `random`.
-#' @param residual_time The numeric column the process runs over; by default
-#'   the first numeric variable of `random`, or else of the predictors.
-#'   Brownian motion needs non-negative times (`latents_bad_data`).
+#' @param residual_time Name of the numeric time column for the residual
+#'   process. Defaults to the first numeric variable in `random`, or otherwise
+#'   the predictors. Brownian motion requires non-negative times
+#'   (`latents_bad_data`).
 #' @return An object of class `latents_mixture_regression`, or
 #'   `latents_growth_mixture` when `random` is given. [as.data.frame()]
 #'   returns the coefficient table and [get_results()] every table by name

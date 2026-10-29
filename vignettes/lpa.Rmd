@@ -14,17 +14,22 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Multilevel latent profile analysis (MLPA) estimates latent profiles at the
-observation level and, at a higher level, identifies latent group classes that
-differ in how probable each profile is for their observations. Each profile is characterized by a mean and variance for
-each indicator and is defined identically across all group classes. The group
-classes therefore differ only in the probabilities associated with the
-profiles.
+Multilevel latent profile analysis captures heterogeneity in continuous
+responses by modelling variation within and across groups. Observation-level
+profiles describe patterns across indicators, while latent group classes
+capture differences in the prevalence of these profiles across groups.
+
+In this vignette, course enrolments are nested within students. Engagement
+profiles describe variation in activity patterns across enrolments, while
+student classes capture differences in how frequently students exhibit those
+patterns. The profiles share the same indicator means and covariance structure
+across student classes, allowing their prevalence to be compared on a common
+basis.
 
 ## Data
 
 `course_engagement` has one row per course enrolment: 1,422 enrolments from
-106 students. `multilpa()` needs two kinds of variables.
+106 students. `multilpa()` requires a group identifier and indicator variables.
 
 - **Group:** `student` identifies which enrolments belong to the same
   student.
@@ -42,9 +47,10 @@ library(latents)
 
 ## Clustering within groups
 
-To check how much each indicator varies between groups, we call
-`descriptives()` with `vars` for the indicators and `id` for the group. `icc`
-is the share of an indicator's variance that lies between groups.
+The `descriptives()` function summarizes the indicators specified in `vars`
+and their clustering within the groups specified by `id`. The intraclass
+correlation (`icc`) estimates the proportion of an indicator's variance
+attributable to between-group differences.
 
 ```{r descriptives}
 descriptives(course_engagement,
@@ -55,12 +61,11 @@ descriptives(course_engagement,
 
 ## Fit
 
-To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
-for the group, `n_profiles` for the number of profiles, `n_group_classes` for
-the number of group classes, `n_starts` for the number of random EM starts, and
-`seed` for reproducible starts. With many starts on large data, `cores` runs
-the starts in parallel and returns the same fit as one core. Printing the fit
-gives the profile means.
+The arguments `n_profiles` and `n_group_classes` specify the numbers of
+observation-level profiles and group classes. Estimation uses multiple
+expectation-maximization (EM) starts, controlled by `n_starts`; `seed`
+controls reproducibility. The `cores` argument permits parallel estimation
+of starts. The printed model summary includes the estimated profile means.
 
 ```{r fit}
 fit <- multilpa(course_engagement,
@@ -71,8 +76,10 @@ fit <- multilpa(course_engagement,
 fit
 ```
 
-To check whether the starts agree, we call `get_results()` with `"starts"`.
-Starts that reach the same log likelihood support the solution.
+The starting-value summary reports the log likelihood reached by each start.
+Replication of the selected likelihood provides evidence of numerical
+stability, although it does not establish that the global maximum has been
+found.
 
 ```{r starts}
 get_results(fit, "starts")
@@ -80,15 +87,15 @@ get_results(fit, "starts")
 
 ## Profiles
 
-To obtain the profile means and variances, we call `get_results()` on the fit.
-There is one row per profile and indicator.
+By default, `get_results()` returns profile means and variances, with one
+row per profile and continuous indicator.
 
 ```{r profiles}
 get_results(fit)
 ```
 
-To see the profiles, we call `plot_profiles()` on the fit. Each line is a
-profile's mean on each indicator, and its label gives the profile's share of the cases.
+The profile plot displays the estimated indicator means for each profile.
+The labels also report the profiles' estimated shares of observations.
 
 ```{r profile-plot}
 plot_profiles(fit)
@@ -96,17 +103,17 @@ plot_profiles(fit)
 
 ## Group classes
 
-To obtain the profile probabilities of each group class, we call
-`get_results()` with `"profile_probabilities"`. `probability` is the chance
-that an observation of a group in that class falls in each profile, and
-`group_class_probability` is the share of groups in the class.
+The `"profile_probabilities"` table reports the conditional probability of
+each observation-level profile within each group class (`probability`).
+The column `group_class_probability` reports the estimated proportion of
+groups in that class.
 
 ```{r profile-probabilities}
 get_results(fit, "profile_probabilities")
 ```
 
-To compare the group classes, we call `plot_prevalence()`: one line per group
-class across the profiles.
+The prevalence plot compares these conditional profile probabilities, with
+one line per group class.
 
 ```{r probability-plot}
 plot_prevalence(fit)
@@ -114,9 +121,8 @@ plot_prevalence(fit)
 
 ## Class sizes
 
-To obtain class sizes, we call `get_results()` with `"counts"`.
-`effective_count` sums the posterior probabilities, so it need not be a whole
-number.
+The `"counts"` table summarizes class sizes. The column `effective_count`
+sums posterior membership probabilities and can therefore be noninteger.
 
 ```{r counts}
 get_results(fit, "counts")
@@ -124,22 +130,23 @@ get_results(fit, "counts")
 
 ## Classification
 
-To obtain classification certainty, we call `get_results()` with `"entropy"`.
-Relative entropy is reported for observations and for groups: 1 means every
-case is assigned with certainty, 0 means no separation.
+The `"entropy"` table summarizes classification uncertainty at both levels.
+For a model with more than one class, relative entropy is 1 when posterior
+membership is certain and 0 when every case has equal posterior probability
+of membership in every class. It describes separation under the fitted model,
+not overall model fit.
 
 ```{r entropy}
 get_results(fit, "entropy")
 ```
 
-To add each observation's assigned profile and group class to the data, we
-call `get_results()` with `"assignments"` and `data` for the data frame. It
-returns the data in its original row order with five added columns: `profile`
-and `group_class` hold the most probable classes, `uncertainty` is one minus
-the posterior probability of the assigned profile, and the `posterior_profile_`
-columns hold the posterior probability of each profile. Assignment takes the
-most probable class, so `profile` and `group_class` alone ignore
-classification uncertainty.
+The `"assignments"` table appends classification results to `data` in its
+original row order. The columns `profile` and `group_class` contain the most
+probable classes. The column `uncertainty` is one minus the posterior
+probability of the assigned profile, and the `posterior_profile_` columns
+contain membership probabilities for each profile. The number of posterior
+columns depends on `n_profiles`. Analyses based only on the assigned labels
+omit this classification uncertainty.
 
 ```{r assignments}
 get_results(fit, "assignments", data = course_engagement) |> head()
@@ -147,11 +154,10 @@ get_results(fit, "assignments", data = course_engagement) |> head()
 
 ## Recovery of the known structure
 
-To compare the fitted classes with known labels, we call `get_results()` with
-`"assignments"`, `data` for the data frame, and `truth` for the columns that
-hold the labels. `engagement` is compared with the profiles and
-`student_type` with the group classes. Class numbers are arbitrary, so the
-table is read by its largest cells.
+For these simulated data, the `truth` argument permits comparison with the
+generating labels: `engagement` for profiles and `student_type` for group
+classes. Class numbers are arbitrary, so correspondence is assessed from the
+cross-tabulation rather than by matching numeric labels directly.
 
 ```{r recovery}
 get_results(fit, "assignments", data = course_engagement,
@@ -208,7 +214,6 @@ plot(fit, what = "all")                        # every view this fit supports
 
 # Other functions
 sensitivity(fit, seeds = 1:10)       # refits under several seeds
-starting_values(fit)                 # parameters to start another fit
 ```
 
 `vignette("enumeration", package = "latents")` covers `enumerate_classes()`
@@ -220,13 +225,14 @@ and `get_candidate()`; `vignette("lta", package = "latents")` covers `lta()`,
 
 ## Sampling weights
 
-When students were sampled unequally, for example wavering students at half
-the rate of committed ones, each student carries a sampling weight, and the
-fit should estimate the population rather than the sample. We pass the
-weight column as `weights`. The weight belongs to the independent unit, here
-the student, so it must be constant within `id`. The fit maximizes the
-weighted (pseudo) log likelihood, with the weights scaled to sum to the
-number of students, and reports Kish's effective sample size.
+Sampling weights can represent unequal selection probabilities. The example
+below assigns twice the weight to the simulated `"wavering"` student class,
+as would be appropriate if its sampling probability were half that of the
+other class. The weight column is supplied through `weights` and must be
+constant within the independent sampling unit, here `student`. Estimation
+maximizes a weighted pseudo-log-likelihood after normalizing weights to sum
+to the number of students. The output also reports Kish's effective sample
+size.
 
 ```{r weights}
 weighted_data <- transform(course_engagement,
@@ -239,22 +245,24 @@ weighted_fit <- multilpa(weighted_data,
 weighted_fit
 ```
 
-Under weights the inverse information is not the variance of the estimates,
-so `parameter_inference()` reports sandwich standard errors by default and
-refuses `vcov_type = "observed"`.
+For weighted fits, `parameter_inference()` uses sandwich standard errors by
+default. The package does not support `vcov_type = "observed"` for these
+fits because inverse-information standard errors do not generally represent
+the sampling variance under unequal weighting.
 
 ```{r weights-inference}
 head(parameter_inference(weighted_fit), 4)
 ```
 
-`lta()`, `mixture_regression()` and every `family` of `multilpa()` take
-`weights` the same way. The bootstrap likelihood ratio test does not: it
-simulates from the model, not from the sampling design.
+The `weights` argument is also available in `lta()`, `mixture_regression()`
+and the model families fitted through `multilpa()`. The parametric bootstrap
+likelihood ratio test does not support weighted fits; its simulations do not
+reproduce a sampling design.
 
 ## All tables
 
-To see every table at once, we call `summary()` on the fit, with `rows` for
-the number of rows shown per table.
+The model summary collects the result tables. The `rows` argument limits
+the number of rows printed from each table.
 
 ```{r summary}
 print(summary(fit), rows = 3)

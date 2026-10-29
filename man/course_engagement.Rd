@@ -14,28 +14,26 @@ pass it as \code{id}.}
 \item{sequence}{Integer position of the course in the student's own
 order, 1 to 15. Pass it as \code{time}. Students who took fewer courses have
 shorter sequences, so the panel is unbalanced.}
-\item{browse}{Numeric, course page views on the \code{log1p(events)} scale, standardized
+\item{browse}{Numeric, simulated browsing activity, standardized within
+course.}
+\item{lectures}{Numeric, simulated lecture-viewing activity, standardized
 within course.}
-\item{lectures}{Numeric, lecture videos viewed on the \code{log1p(events)} scale, standardized
+\item{forum_read}{Numeric, simulated forum-reading activity, standardized
 within course.}
-\item{forum_read}{Numeric, forum posts read on the \code{log1p(events)} scale, standardized
+\item{forum_post}{Numeric, simulated forum-posting activity, standardized
 within course.}
-\item{forum_post}{Numeric, forum posts written on the \code{log1p(events)} scale, standardized
-within course.}
-\item{attendance}{Numeric, days the student was active in the course,
-on the \code{log1p(events)} scale, standardized within course. Generated from
-the four click measures with added noise, so it correlates 0.51 to 0.67
-with them overall and 0.10 to 0.23 among the enrolments assigned to one
-profile of the example fit. See \emph{Local dependence}.}
-\item{previous_grade}{Numeric, the grade the student earned in the
-previous course, standardised across the cohort; an entry grade at a
-student's first course. A predictor of engagement, for
-\code{multilpa(profile_covariates = )} or \code{\link[=r3step]{r3step()}}.}
+\item{attendance}{Numeric, simulated attendance activity, standardized
+within course. Generated from the four other activity indicators with
+added noise, introducing within-profile dependence; see
+\emph{Local dependence}.}
+\item{previous_grade}{Numeric, simulated grade in the previous course,
+standardized across the cohort; an entry grade for the first course.
+Can be used as a membership predictor through the \code{profile_covariates}
+argument of \code{\link[=multilpa]{multilpa()}} or in \code{\link[=r3step]{r3step()}}.}
 \item{engagement}{Factor, \code{"disengaged"} or \code{"engaged"}: the pattern
-the row was generated from. Not for fitting; kept to check recovery.}
+used to generate the observation; retained for assessing class recovery.}
 \item{student_type}{Factor, \code{"committed"} or \code{"wavering"}: the
-student's generating kind, corresponding to the group classes. Not for
-fitting; kept to check recovery.}
+student's generating class; retained for assessing group-class recovery.}
 }
 }
 \source{
@@ -51,42 +49,50 @@ distributed.
 course_engagement
 }
 \description{
-A simulated dataset of course enrolments nested in students. Each row is
-one student's enrolment in one course. Students take 10 to 15 courses,
-ordered by \code{sequence}, so the data support a cross-sectional two-level
-model (\code{id = "student"}), a latent transition model (\code{time = "sequence"})
-and a membership-covariate model (\code{profile_covariates = "previous_grade"}).
+\code{course_engagement} is a simulated dataset for illustrating student
+engagement across successive courses. Each row represents one student's
+enrolment in one course, with courses ordered within students. The data
+include five activity indicators, standardised within course, and a
+simulated previous-course grade.
+
+The data were generated from two engagement profiles and two student-level
+classes that differ in the prevalence of those profiles. Engagement can
+change across a student's course sequence. The generating profile and
+student-class labels are retained, allowing fitted classifications to be
+compared with the structure used to generate the data.
+
+The dataset supports examples of multilevel profile analysis, latent
+transition analysis and analyses relating previous grades to profile
+membership.
 }
 \details{
-Enrolments follow one of two engagement patterns, and students are of two
-kinds that differ in the mix of patterns: a committed student is engaged
-in about four enrolments in five, a wavering student in about one in four.
-The pooled engaged share describes neither kind; a two-level model recovers
-the two kinds.
+Students take 10 to 15 courses, ordered by \code{sequence}. Use \code{id = "student"}
+for the nesting structure, \code{time = "sequence"} for occasion order, and
+\code{profile_covariates = "previous_grade"} for a membership-covariate model.
 
-The five activity indicators were simulated on the \code{log1p(events)} scale
-of a logged activity export (no raw counts were generated) and then
-standardised within course: each value is the enrolment's distance from
-its course's mean in that course's standard deviations, so every indicator
-has mean zero and standard deviation one within every course. A \code{browse}
-of 1.2 is 1.2 standard deviations above the average enrolment in that
-course. The simulated courses do not differ in activity volume, so the
-standardisation sets the scale but removes no course effect. The log
-transformation removes the right skew of raw activity counts, which
-standardisation within course would leave unchanged.
+In the generating model, students in the \code{"committed"} class have a
+stationary probability of an engaged enrolment of
+approximately 0.8, compared with approximately 0.25 in the \code{"wavering"}
+class.
+
+The activity indicators were simulated as continuous values intended to
+represent log-transformed activity measures, then standardized within course
+and rounded. Raw event counts were not generated. Each indicator has
+approximately mean zero and standard deviation one within course; for example, \code{browse = 1.2} represents a value 1.2 standard
+deviations above the course mean. The simulation does not include
+between-course differences in activity volume.
 }
 \section{Local dependence}{
 
-\code{attendance} is generated from the four click measures, so the indicators
-are not independent given the profile, as a latent profile model with a
-diagonal residual covariance assumes. For the two-profile, two-group-class
-fit of the example, \code{get_results(fit, "residuals")} reports a largest
-residual of 0.23 (\code{lectures} with \code{attendance} within the first profile,
-\code{p = 6.4e-12}), and \code{covariance_model = "full"} improves the log likelihood
-from -8439.8 to -8313.1 for twenty more parameters, preferred by every
-information criterion except the individual-level AWE. Under a diagonal
-model, \code{\link[=enumerate_classes]{enumerate_classes()}} tends to favour more classes, which absorb
-the residual association.
+\code{attendance} is generated from the four click measures, introducing
+within-profile dependence among the indicators. A model with diagonal
+residual covariance therefore does not reproduce the generating covariance
+structure. Use \code{get_results(fit, "residuals")} to examine residual
+associations and \code{covariance_model = "full"} to estimate within-profile
+covariances. Class enumeration under a diagonal model may represent
+residual association by additional classes. The two generating profiles
+therefore do not imply that every fitted specification will favour two
+profiles.
 }
 
 \examples{
@@ -98,13 +104,13 @@ fit <- multilpa(
 )
 as.data.frame(fit)
 get_results(fit, what = "profile_probabilities")
-# The generating truth ships alongside, so recovery can be checked directly.
+# Compare fitted assignments with the generating engagement profiles.
 get_results(fit, what = "assignments", data = course_engagement,
          truth = "engagement")
 }
 \seealso{
 \code{vignette("lpa", package = "latents")} for the analysis these data are used in,
 \code{\link[=multilpa]{multilpa()}} for the two-level model, \code{\link[=lta]{lta()}} for the
-sequence, and \code{multilpa(profile_covariates = )} for \code{previous_grade}.
+sequence, and \code{\link[=r3step]{r3step()}} for membership-covariate analysis.
 }
 \keyword{datasets}

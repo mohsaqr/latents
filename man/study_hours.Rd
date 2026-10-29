@@ -17,9 +17,9 @@ columns:
 \item{passed}{Integer 0/1: passed the weekly check.}
 \item{questions}{Count of questions the student asked that week.}
 \item{strategy}{Factor, \code{"deep"} or \code{"surface"}: the week's generating
-strategy. Not for fitting; kept to check recovery.}
+strategy; retained for assessing class recovery.}
 \item{student_type}{Factor, \code{"steady"} or \code{"erratic"}: the student's
-generating kind. Not for fitting; kept to check recovery.}
+generating class; retained for assessing class recovery.}
 }
 }
 \source{
@@ -29,23 +29,36 @@ Simulated by \code{data-raw/study-hours.R} in the source repository.
 study_hours
 }
 \description{
-A simulated dataset for \code{\link[=mixture_regression]{mixture_regression()}}. Each row is one student's
-study week: 150 students, six weeks each. The generating classes are
-included for checking recovery.
+\code{study_hours} is a simulated dataset illustrating how the relationship
+between study time and quiz performance can differ across latent classes.
+Each row represents one study week for a student, with six weeks recorded
+for each of 150 students.
+
+The data were generated from two week-level regression classes, labelled
+"deep" and "surface", with different intercepts and slopes relating study
+hours to quiz scores. Two student-level classes differ in the prevalence
+of these weekly classes, allowing class membership to vary across weeks
+within students.
+
+The generating labels are retained for assessing class recovery. Additional
+binary and count outcomes provide examples of mixture regression with other
+response distributions.
 }
 \details{
-Each week a student uses one of two study strategies, which sets the
-regression of quiz \code{score} on \code{hours}: a deep week gains about 4.5 points
-per hour from a base of 35, a surface week under one point per hour from a
-base of 55. Steady students study deeply in about 85\% of weeks and erratic
-students in about 25\%; higher \code{motivation} makes a student more likely to
-be steady, and more \code{sleep} makes a deep week more likely.
+The generating model contains two week-level study strategies with
+different regressions of quiz \code{score} on \code{hours}. The \code{"deep"} strategy has
+an intercept of approximately 35 and a slope of 4.5 points per hour; the
+\code{"surface"} strategy has an intercept of approximately 55 and a slope
+below one point per hour. Students in the \code{"steady"} class use the deep
+strategy in approximately 85\% of weeks, compared with 25\% for the
+\code{"erratic"} class. In the simulation, \code{motivation} predicts student-level
+membership and \code{sleep} predicts week-level membership.
 
 \code{score ~ hours} is therefore a two-class mixture at the week level
 (\code{class_level = "observation"}) with class shares that differ by student
-(\code{id = "student"}, \code{n_group_classes = 2}). \code{passed} depends on the
-student's kind, not the week's strategy, so it is a mixture at the student
-level (\code{class_level = "group"}). \code{questions} is a count whose Poisson
+(\code{id = "student"}, \code{n_group_classes = 2}). The binary outcome \code{passed}
+depends on the student's generating class and illustrates a mixture at
+the student level (\code{class_level = "group"}). \code{questions} is a count whose Poisson
 regression depends on the week's strategy.
 }
 \examples{

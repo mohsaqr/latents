@@ -1,16 +1,50 @@
 utils::globalVariables("statistic")
 
-#' Enumerate numbers of individual profiles and group classes
+#' Class enumeration and comparison of mixture models
 #'
-#' Fits every requested combination of profile count, group-class count and
-#' covariance structure and returns the candidates with their information
-#' criteria and classification diagnostics. Errors and warnings of each
-#' candidate are kept in the table alongside the successful fits. Information
-#' criteria are descriptive: neither the smallest BIC nor high entropy
-#' guarantees the correct number of classes. Unconverged, boundary and
-#' unreplicated fits are reported, not silently selected.
-#' @param data Data frame.
-#' @param vars Indicator column names.
+#' @description
+#' Class enumeration evaluates alternative numbers of latent classes to inform
+#' model selection. `enumerate_classes()` fits a specified set of candidate
+#' models and summarizes their fit, classification quality, and estimation
+#' diagnostics. It supports latent profile, latent class, and latent transition
+#' models, including multilevel specifications.
+#'
+#' For multilevel profile and class models, candidates can differ in the number
+#' of observation-level profiles or classes, the number of group-level classes,
+#' and, for continuous indicators, the within-profile covariance structure.
+#' Comparing these specifications allows the analyst to assess both the latent
+#' class structure and the assumptions used to represent variation within
+#' classes.
+#'
+#' The function retains the fitted candidates and provides tables for comparing
+#' information criteria, posterior classification probabilities, class sizes,
+#' and convergence diagnostics. Individual models can be extracted with
+#' [get_candidate()] for further examination and analysis.
+#'
+#' @section Model selection:
+#' Information criteria summarize relative support for the candidate
+#' specifications, whereas entropy and posterior membership probabilities
+#' describe classification uncertainty within each fitted model. These measures
+#' address different aspects of the analysis. Model selection should also
+#' examine whether the selected likelihood is replicated across starts,
+#' whether estimates approach parameter bounds, and whether additional classes
+#' yield interpretable differences in response patterns. The function reports
+#' this evidence without prescribing a final number of classes.
+#'
+#' Comparisons of class counts depend on the measurement specification. For
+#' example, additional profiles can represent residual associations that a
+#' diagonal covariance model cannot accommodate within profiles. Evaluate the
+#' number of classes alongside plausible covariance structures and indicator
+#' distributions. The candidate range and fitting controls are supplied by the
+#' analyst; the function does not expand the range automatically.
+#'
+#' @param data A data frame with one row per observation and columns containing
+#'   the indicators, group identifier and, when applicable, occasion order and
+#'   covariates. Use the same observations and measurement scale throughout a
+#'   candidate comparison.
+#' @param vars Character vector naming the indicator columns in `data`.
+#'   Indicator distributions are determined by `type` and the measurement
+#'   arguments supplied through `...`.
 #' @param id The column identifying the groups the observations are nested in
 #'   (students in schools, reports in students). Required; `NULL` enumerates
 #'   single-level models, with a message. [enumerate_lpa()] and
@@ -33,15 +67,15 @@ utils::globalVariables("statistic")
 #'   are fitted once; with only categorical indicators no structure is
 #'   crossed. A structure set through `variance_model`, `covariance_model`,
 #'   `volume`, `shape` or `orientation` in `...` replaces the default.
-#' @param seed Optional seed for each fit: a whole number `set.seed()`
-#'   accepts. Anything else raises `latents_bad_argument` before any candidate
-#'   is fitted.
+#' @param seed Optional integer random seed accepted by [set.seed()]. Used
+#'   to reproduce the starting values for the same data and fitting controls.
+#'   Invalid values raise `latents_bad_argument` before fitting begins.
 #' @param family `"profiles"` (the default) enumerates the profile model over
 #'   `n_profiles`, `n_group_classes` and `model`. One or more of the
 #'   group-class families `"additive"`, `"dispersion"` and
 #'   `"additive_dispersion"` enumerates those instead, over `family`,
 #'   `n_group_classes` and `between_variance`; these need `id`, `n_profiles`
-#'   and `model` are then refused, and the result is a
+#'   and `model` are then rejected, and the result is a
 #'   `latents_family_enumeration`, read with [get_results()] and
 #'   [get_candidate()].
 #' @param between_variance For group-class families: the between-variance
@@ -55,60 +89,38 @@ utils::globalVariables("statistic")
 #'   the profile family is available. The result is a
 #'   `latents_transition_enumeration`, read with [get_results()] and
 #'   [get_candidate()].
-#' @param cores Number of processor cores to fit the candidates on (default
-#'   1). Each candidate sets and restores its own random seed, so with `seed`
-#'   given the result is identical to `cores = 1`. Candidates are fitted by
-#'   forked processes on macOS and Linux, and by a socket cluster on Windows
-#'   and on macOS when R uses Apple's Accelerate BLAS (socket workers load the
-#'   installed package). Warnings and messages from the workers are passed on
-#'   in grid order once all have finished. Without `seed`, the random starts
-#'   differ between runs on any number of cores. Lost worker results are retried
-#'   once with half as many workers (rounded up). One `latents_worker_lost`
-#'   warning reports how many tasks were lost and recovered, and suggests fewer
-#'   cores. A task still lost becomes a failed start (for flat start grids) or
-#'   a failed candidate; the other results are retained. On sockets, bounded
-#'   chunks preserve earlier results when a connection breaks; completed tasks
-#'   within the failed chunk may also be retried. Each core holds its own copy
-#'   of the fits it computes; `parallel::detectCores()` gives the number
-#'   available.
-#'   Transition grids (`time`) and profile grids (including categorical-only
-#'   latent class models) distribute individual starts across one pool,
-#'   longest estimated first, with at most `cores` workers and no nested
-#'   workers. Both emEM screening and finalist runs use the pool; `search`
-#'   keeps the same defaults as [multilpa()]. Setup, ordered starting values,
-#'   start selection and finalisation stay in the current process. Profile
-#'   models with membership covariates or joined categorical `local_dependence`
-#'   pairs instead occupy one worker per candidate in the same pool, with
-#'   serial starts. Group-class families also keep candidate-level parallelism.
+#' @param cores Positive integer maximum number of parallel workers; the
+#'   default, `1`, fits models serially. With a fixed `seed`, parallel and
+#'   serial execution produce the same results. Parallel fitting requires
+#'   additional memory. See *Parallel estimation* for platform requirements
+#'   and the handling of interrupted workers.
 #' @param verbose Whether to report progress: one message each when the
 #'   candidates are prepared, when their starts are fitted, and when the grid
 #'   is done, with the elapsed time. The default reports when `cores > 1`,
 #'   where a grid is usually long. Group-class families (`family`) are not
 #'   reported.
 #' @param type Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL`
-#'   (the default) keeps the existing routing and measurement settings.
+#'   (the default) determines the model from the other arguments.
 #'   `"lca"` treats every indicator as categorical, as [multilca()] does:
 #'   indicators named in `ordinal` or `count` keep those distributions, and
 #'   `categorical` adds to the set rather than replacing it. Numeric response
 #'   codes are categorical with `type = "lca"`. `"lpa"` requires continuous
-#'   indicators and refuses non-empty `categorical`, `ordinal` or `count`.
+#'   indicators and rejects non-empty `categorical`, `ordinal` or `count`.
 #'   Both require `time = NULL`. `"lta"` requires `time` and takes its
 #'   measurement settings from `categorical`, as [lta()] does; it does not
 #'   make numeric indicators categorical. An explicit type requires
 #'   `family = "profiles"`; leave `type = NULL` for group-class families.
-#' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`),
-#'   applied to every candidate, such as `n_starts` (random starts per
-#'   candidate), `max_iter`, `missing`, `categorical`, `centering`, `scaling`,
-#'   `drop_empty` and `boundary` (`"exclude"` sets aside starts with a
-#'   variance at `min_variance`, degenerate solutions that become more likely
-#'   as `n_starts` grows). For example, `enumerate_classes(data, vars, id,
-#'   n_profiles = 2:6, n_starts = 20, seed = 1)`. Group-class families take
-#'   only `n_starts`, `max_iter`, `tol` and `min_variance`.
+#' @param ... Additional fitting arguments passed to [multilpa()], or to
+#'   [lta()] when `time` is supplied. The same settings are used for each
+#'   candidate. Common arguments include `n_starts`, `max_iter`, `missing`,
+#'   `categorical`, `centering`, `scaling`, `drop_empty` and `boundary`.
+#'   The group-class families accept only `n_starts`, `max_iter`, `tol` and
+#'   `min_variance` through `...`.
 #' @return An object of class `multilpa_enumeration` (or the transition or
 #'   family enumeration described above). Its `type` records the resolved
 #'   model: `"lca"`, `"lpa"` or `"lta"`, or `"mixed"`/`"family"` for
-#'   those grids under `type = NULL`. The print header shows this type; table
-#'   columns are unchanged. [as.data.frame()] gives
+#'   those grids under `type = NULL`. The print header reports this type.
+#'   [as.data.frame()] gives
 #'   one row per candidate, starting with its name (`"profiles3_groups2"`),
 #'   with every criterion and diagnostic (including both entropies and, at
 #'   each level, the smallest, largest and mean average posterior probability
@@ -120,9 +132,23 @@ utils::globalVariables("statistic")
 #'   evidence. [summary()] prints each criterion's minimum and every table,
 #'   [plot()] draws the information criteria (and, with `what`,
 #'   classification quality and model-selection views), [get_candidate()]
-#'   returns the fitted model of one candidate, and [compare_models()] puts
-#'   candidates side by side; these verbs take candidates by name.
-#' @seealso [get_candidate()] to take one fitted model out of the grid,
+#'   extracts a fitted candidate, and [compare_models()] compares candidates
+#'   selected by name.
+#' @section Parallel estimation:
+#' Socket workers are used on Windows and on macOS with Apple's Accelerate
+#' BLAS; these workers load the installed package, which must match the
+#' version used in the main R session. Other supported Unix configurations
+#' use forked processes. Each worker requires memory for its fitting tasks.
+#'
+#' Depending on the model family, parallel tasks consist of individual starts
+#' or complete candidate models. The total number of workers does not exceed
+#' `cores`. Warnings and messages are reported in candidate order. Without a
+#' fixed `seed`, starting values can differ between runs.
+#'
+#' Lost worker results are retried once with fewer workers, and a
+#' `latents_worker_lost` warning reports the interruption. Unrecovered tasks
+#' are recorded as failed starts or candidates; other results are retained.
+#' @seealso [get_candidate()] to extract a fitted candidate,
 #'   `summary()` for the criterion-by-criterion comparison.
 #' @section Conditions:
 #'   `latents_bad_argument` when `model` names an unknown structure, when it is
@@ -133,7 +159,7 @@ utils::globalVariables("statistic")
 #'   when `id` is missing; when `between_variance` is given for the profile
 #'   family; when `n_profiles` or `model` is given for a group-class family,
 #'   or `id` is `NULL`; when `time` is combined with a group-class family or
-#'   with `between_variance`; and when `cores` is not a whole number of at
+#'   with `between_variance`; and when `cores` is not an integer of at
 #'   least 1; and when `type` is invalid or conflicts with `time`, `family`
 #'   or the requested measurement distributions.
 #' @references
@@ -458,13 +484,22 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   codes
 }
 
-#' Take one fitted model out of an enumeration grid or a comparison
+#' Retrieve a fitted model from an enumeration or comparison
 #'
-#' Returns one fitted model from an enumeration, selected by its name or by
-#' its number of profiles and group classes (and its covariance structure when
-#' the grid has several), or one model from a comparison, selected by its row
-#' label.
+#' @description
+#' `get_candidate()` retrieves a specified fitted model from an enumeration
+#' grid or model comparison for detailed inspection and subsequent analysis.
+#' The returned object retains its original model class and supports the
+#' summary, diagnostic, plotting, and inference methods available for that
+#' model.
 #'
+#' A candidate can be identified by its name or, for supported enumeration
+#' grids, by its class counts and model specification. When several
+#' candidates share the same class counts, the covariance structure or
+#' candidate name distinguishes them. The function retrieves the stored fit
+#' without repeating estimation.
+#'
+#' @details
 #' A candidate is selected by its name, as the grid's `candidate` column shows
 #' it (`get_candidate(grid, "profiles3_groups4")`; `classes` instead of
 #' `profiles` when every indicator is categorical); by its class counts,
@@ -477,7 +512,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   class, transition or group-class family grid), or a comparison from
 #'   [compare_models()]. On a family grid, give the name, or `n_group_classes`
 #'   with `model`. A grid of mixture regressions from
-#'   [enumerate_regressions()] is not taken (`latents_bad_argument`):
+#'   [enumerate_regressions()] is not supported (`latents_bad_argument`):
 #'   `get_results(grid, "model", n_classes = )` returns one of its models.
 #' @param n_profiles Number of individual profiles of the candidate, the
 #'   candidate's name (`"profiles3_groups4"`), or its two class counts
@@ -488,9 +523,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   [enumerate_classes()] crossed several structures and the class counts
 #'   match several candidates; on a group-class family grid, the family model
 #'   as the grid's `model` column shows it.
-#' @return The fitted model of that candidate, the same kind of object its
-#'   fitting function returns (for a profile grid, class `multilpa`), so the
-#'   verbs for a fitted model apply to it.
+#' @return The fitted object for the selected candidate, with the class and
+#'   methods of its fitting function (for example, `multilpa` for a profile
+#'   model).
 #' @section Conditions:
 #'   `latents_unknown_candidate` for a name or class counts not in the grid,
 #'   for counts that match several candidates (the message lists their
@@ -500,7 +535,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   counts given together with `n_group_classes` or `model`, for a value that
 #'   names no candidate, and for a comparison given no label;
 #'   `latents_incomplete_fit` for a comparison that no longer carries its
-#'   models. Counts that are not single positive whole numbers fail the
+#'   models. Counts that are not single positive integers fail the
 #'   argument checks.
 #' @examples
 #' set.seed(1)
@@ -1228,124 +1263,182 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   invisible(NULL)
 }
 
-#' Parametric bootstrap likelihood-ratio test of two nested models
+#' Parametric bootstrap likelihood-ratio test for nested mixture models
 #'
-#' Tests a model against one with one more individual profile or one more
-#' group class. Indicators are simulated from the null model with the observed
-#' group sizes, both models are refitted to every simulated dataset, and the
-#' observed likelihood-ratio statistic is compared with the simulated ones.
-#' The p-value is `(1 + b) / (V + 1)`, where `b` counts valid simulated
-#' statistics at least as large as the observed one and `V` is the number of
-#' valid replicates (`iter` when all are valid); no chi-square reference
-#' distribution is used. This is a native parametric bootstrap, not an
-#' implementation of Mplus TECH14.
+#' @description
+#' The parametric bootstrap likelihood-ratio test evaluates whether a more
+#' flexible mixture model provides an improvement in fit that is inconsistent
+#' with a simpler, nested model. `bootstrap_lrt()` compares two fitted models
+#' using twice the difference between their maximized log likelihoods. In class
+#' enumeration, this comparison assesses the evidence for adding a latent
+#' profile or group class.
 #'
-#' The two models must differ by exactly one individual profile or one group
-#' class, with the observations, group layout, covariance structure,
-#' centering and scaling, missing-data handling and `drop_empty` the same.
-#' Grand-mean centering is repeated in every simulated refit. Person-centred
-#' or person-scaled fits are refused, because the model specifies no
-#' distribution for the group baselines that transformation removes.
+#' The function generates datasets from the fitted null model and refits both
+#' candidate models to each dataset. These simulated comparisons approximate
+#' the distribution of the likelihood-ratio statistic under the null hypothesis.
+#' The observed statistic is then evaluated against this distribution to obtain
+#' a bootstrap p-value. This approach avoids relying on the usual chi-squared
+#' approximation, which is generally inappropriate when comparing different
+#' numbers of mixture components.
 #'
-#' A replicate is invalid when a refit fails, does not converge, or has a
-#' reversed likelihood. Under the null hypothesis the alternative's extra
-#' class is spurious, and a spurious class is expected to drift to a boundary,
-#' an empty or separated solution, or a slowly converging one; an invalid
-#' replicate is therefore a property of the null distribution, not a failure
-#' of the test. The p-value is computed over the valid replicates, the result
-#' reports `n_valid` and `n_invalid` (also in `print()` and
-#' [as.data.frame()]), `latents_failed_replicates` is warned naming the
-#' count, and the p-value is `NA` only when fewer than half of the replicates
-#' are valid. Leaving invalid replicates out conditions the reference
-#' distribution on a valid refit, so a large invalid share should be reported
-#' with the result.
+#' The result includes the observed test statistic, bootstrap p-value, Monte
+#' Carlo standard error, and diagnostics for the simulated refits. The function
+#' supports profile and class models, latent transition models, and group-class
+#' model families, subject to the nesting and compatibility requirements below.
 #'
-#' Fits made with `missing = "fiml"` are supported when both models were:
-#' every replicate is given the observed data's missing cells before it is
-#' refitted. Calibration requires missingness independent of the indicators
-#' and latent classes, conditional on any fixed covariates. A fixed mask does
-#' not reproduce a MAR mechanism that depends on observed indicators, or an
-#' MNAR mechanism, and FIML estimation under MAR does not by itself validate
-#' this bootstrap under MAR; the size of the test has been checked by
-#' simulation under MCAR only.
+#' @section Interpretation:
+#' A small p-value provides evidence against the null model in favour of the
+#' specified alternative, subject to the model assumptions and the quality of
+#' estimation. It does not establish that the alternative has the correct
+#' number of classes or fits the data adequately in an absolute sense.
+#' Interpretation should consider convergence, replication across starting
+#' values, and the frequency of invalid bootstrap replicates. Increasing the
+#' number of replicates reduces simulation uncertainty but does not resolve
+#' systematic estimation problems.
 #'
-#' Membership-covariate fits (`multilpa(profile_covariates = ,
-#' group_covariates = )`) are supported: the covariates are held at their
-#' observed values, group classes are drawn from the fitted group logits and
-#' profiles from each row's profile logits. Both models must use the same
-#' profile covariates, group covariates and slope specification, except that
-#' a one-group-class null, which cannot carry group covariates or slopes by
-#' group class, may be compared with an alternative that adds them. When
-#' `data` is omitted it is rebuilt from the alternative, whose columns include
-#' the null's. A covariate replicate counts as valid when its likelihood has
-#' converged even if a membership logit is still changing, as happens for an
-#' empty or separated class in an over-fitted alternative, because the
-#' statistic uses only the maximised likelihood. The replicate table's
-#' `logits_settled` column records whether both refits' logits had also
-#' converged. The original models must be fully converged.
+#' @section Supported comparisons:
+#' For ordinary profile and class models, with or without membership
+#' covariates, the models must differ by exactly one observation-level profile
+#' or class, or by exactly one group class. They must use the same observations,
+#' group layout, covariance structure, centering and scaling, missing-data
+#' handling, and `drop_empty` setting. Grand-mean centering is repeated in each
+#' simulated refit. Person-centred or person-scaled fits are not supported,
+#' because the model does not specify a distribution for the group baselines
+#' removed by these transformations.
 #'
-#' Models fitted with `fixed`, including those from [fit_staged()], are
-#' supported: every replicate is refitted with the same blocks held at the
-#' same values. The p-value is then conditional on that measurement solution,
-#' whose own uncertainty is not propagated. A constrained pair whose nesting
-#' cannot be established is refused.
+#' Transition models fitted with [lta()] support comparisons in which the null
+#' specification is nested within the alternative. Supported differences include
+#' class counts and restrictions on measurement, transition probabilities,
+#' Markov order, and covariate effects. Both models must use compatible
+#' indicators, grouping, occasion layout, and measurement distributions. The
+#' original `data` must be supplied for transition comparisons.
 #'
-#' Two transition fits ([lta()]) or two group-class family fits are also
-#' accepted; each is handled by its own family's bootstrap.
+#' Group-class models fitted through the `family` argument of [multilpa()]
+#' support comparisons across class counts and parameter restrictions. The null
+#' must be nested within, and distinct from, the alternative: the alternative
+#' must have at least as many group classes and cannot impose additional
+#' restrictions on the class-specific means or variance components. Models from
+#' different families cannot be combined arbitrarily.
+#'
+#' For membership-covariate models, covariates are held at their observed values
+#' when simulating data. Group classes and profiles are drawn using the fitted
+#' membership probabilities. Both models must use the same profile covariates,
+#' group covariates and slope specification, except that a one-group-class null
+#' may be compared with an alternative that adds group covariates or slopes
+#' that vary by group class.
+#'
+#' For models fitted with `fixed`, including those from [fit_staged()], each
+#' replicate retains the same fixed blocks at the same values. The resulting
+#' p-value is conditional on that measurement solution; uncertainty in its
+#' estimation is not propagated. Pairs for which nesting cannot be established
+#' are rejected.
+#'
+#' @section Bootstrap calculation:
+#' The observed statistic is `2 * (logLik(alternative_model) - logLik(null_model))`.
+#' Datasets are simulated under the fitted null model, retaining the group
+#' structure and other design features required by the model family. Both
+#' models are refitted to each simulated dataset and the statistic is
+#' recalculated. By default, each model retains its original search controls;
+#' `n_starts`, `max_iter` and `tol` can override the corresponding settings for
+#' both models.
+#'
+#' The bootstrap p-value is `(1 + b) / (V + 1)`, where `b` is the number of valid
+#' simulated statistics at least as large as the observed statistic and `V` is
+#' the number of valid replicates. When all replicates are valid, `V = iter`.
+#' The reported Monte Carlo standard error summarizes uncertainty from the
+#' finite number of simulated replicates.
+#'
+#' @section Estimation failures:
+#' Both original models must have converged. A simulated replicate is invalid
+#' if a refit fails, does not converge, or produces an alternative-model
+#' likelihood below the null-model likelihood beyond numerical tolerance. The
+#' result reports `n_valid` and `n_invalid`; `latents_failed_replicates` warns
+#' when any replicate is invalid. The p-value uses only valid replicates and is
+#' `NA` when fewer than half of the requested replicates are valid.
+#'
+#' Excluding invalid replicates conditions the reference distribution on
+#' successful estimation and may affect calibration. Report the invalid
+#' proportion and examine the replicate diagnostics before interpreting the test.
+#'
+#' For membership-covariate models, a simulated refit is considered converged
+#' for this test when its likelihood has converged, even if a membership logit
+#' is still changing. This can occur with an empty or separated class in an
+#' alternative model. The `logits_settled` column records whether the logits
+#' also converged. The original covariate models must be fully converged.
+#'
+#' @section Missing-data assumptions:
+#' Fits estimated with `missing = "fiml"` are supported when both models use
+#' that setting. Each simulated dataset retains the original missing-value
+#' pattern before refitting. Calibration requires missingness independent of
+#' the indicators and latent classes, conditional on any fixed covariates.
+#' A fixed missingness pattern does not reproduce a missing-at-random (MAR)
+#' mechanism that depends on observed indicators or a missing-not-at-random
+#' (MNAR) mechanism. Valid FIML estimation under MAR does not by itself establish
+#' validity of this bootstrap under MAR.
+#'
+#' @param null_model A converged fitted model representing the null hypothesis.
+#'   Supported inputs are profile or class models, with or without membership
+#'   covariates; transition models from [lta()]; and group-class models fitted
+#'   through [multilpa()]. See *Supported comparisons* for nesting requirements.
+#' @param alternative_model A compatible, more flexible model fitted to the
+#'   same data, within which `null_model` is nested.
+#' @param data The data frame used to fit both models. Required for transition
+#'   models, whose simulations retain the observed groups, occasions and
+#'   covariates. For ordinary profile and class models, omission reconstructs
+#'   the data from the null fit, or from the alternative for membership-covariate
+#'   models. For group-class models, the stored sufficient statistics are used
+#'   when `data` is omitted. Supplied data are checked against the fitted models.
+#' @param iter Number of simulated datasets; default 199. Profile, class and
+#'   group-class comparisons require at least two replicates; transition
+#'   comparisons accept any positive integer. Larger values reduce Monte Carlo
+#'   uncertainty in the estimated p-value.
+#' @param n_starts Number of starts for each simulated fit. With `NULL` (the
+#'   default), each model retains its original number of starts and search
+#'   strategy. A supplied number applies to both models.
+#' @param max_iter Maximum iterations for each simulated fit. With `NULL`
+#'   (the default), each model retains its original iteration limit.
+#' @param tol Convergence tolerance for each simulated fit. With `NULL` (the
+#'   default), each model retains its original tolerance.
+#' @param seed Optional integer seed accepted by [set.seed()]. The caller's
+#'   random-number state is restored on exit.
+#' @return An object of class `multilpa_bootstrap_lrt` containing the observed
+#'   statistic, bootstrap p-value, Monte Carlo standard error, numbers of valid
+#'   and invalid replicates, and replicate-level diagnostics. The `fixed`
+#'   component identifies any measurement blocks held constant.
+#'
+#'   [as.data.frame()] returns a one-row test summary.
+#'   `get_results(result, what = "replicates")` returns one row per simulated
+#'   replicate. [summary()] combines the test summary and replicate diagnostics;
+#'   [plot()] displays the simulated reference distribution and observed statistic.
 #' @section Conditions:
-#'   `latents_bad_nesting` when the models do not differ by exactly one class
-#'   at one level; when only one of them holds measurement blocks fixed, when
-#'   they hold different blocks or the same blocks at different values, or
-#'   when they hold a measurement fixed while differing in the number of
-#'   profiles; when the alternative does not estimate more free parameters
-#'   than the null; and when two covariate models use different covariates or
-#'   slope specifications (other than a one-group-class null).
-#'   `latents_incomparable_models` when the models differ in their
-#'   observations, grouping, covariance structure, centering, scaling,
-#'   missing-data handling or `drop_empty`.
-#'   `latents_unsupported_bootstrap` for person-centred or person-scaled fits.
-#'   `latents_unsupported_prior` for fits estimated with a prior, whose
-#'   likelihoods are evaluated at posterior modes rather than ML estimates.
-#'   `latents_unsupported_weights` for fits with sampling weights;
-#'   `latents_unsupported_noise` for fits with a noise component.
-#'   `latents_bad_data` when the data have missing indicators and the models
-#'   were not fitted with `missing = "fiml"`; `latents_bad_inference_data`
-#'   when `data` does not reproduce a fitted likelihood or the original
-#'   observations and their order.
-#'   `latents_no_converge` when either original model has not converged or
-#'   has an active variance bound; `latents_reversed_likelihood` when the
-#'   alternative's log likelihood is below the null's by more than `tol` can
-#'   explain; `latents_bad_argument` for an invalid `seed`, or for a
-#'   transition fit paired with a fit of another family.
-#'   `latents_failed_replicates` is a warning, given when some replicate
-#'   is invalid (it names the count); the p-value is then computed over the
-#'   valid replicates, and is `NA` only when fewer than half are valid.
-#' @param null_model The smaller model: a converged [multilpa()] fit, with or
-#'   without membership covariates.
-#' @param alternative_model The larger model, fitted to the same data.
-#' @param data Optional. The data both models were fitted to, used to verify
-#'   both fitted likelihoods. When omitted it is rebuilt from what the null
-#'   model stores (from the alternative for covariate fits).
-#' @param iter Number of simulated datasets, at least 2. Default 199; use many
-#'   for inference.
-#' @param n_starts Number of starts for each simulated fit. `NULL` (the
-#'   default) refits each model with the starts it was fitted with, by the same
-#'   `search`; a number applies to both models.
-#' @param max_iter Maximum EM iterations for each simulated fit; `NULL` (the
-#'   default) takes each model's own.
-#' @param tol Relative likelihood convergence tolerance; `NULL` (the default)
-#'   takes each model's own.
-#' @param seed Optional seed: a whole number `set.seed()` accepts. The
-#'   caller's random-number state is restored on exit.
-#' @return An object of class `multilpa_bootstrap_lrt`, holding the observed
-#'   statistic, the p-value, its Monte Carlo standard error, the measurement
-#'   blocks held fixed in every fit, and one record per replicate.
-#'   [as.data.frame()] gives the single-row test result,
-#'   `get_results(what = "replicates")` one row per simulated replicate,
-#'   [summary()] the test beside the replicate diagnostics, and [plot()] the
-#'   simulated null distribution with the observed statistic marked. Failed
-#'   starts, boundary flags and likelihood replication should be inspected
-#'   before the result is interpreted.
+#' For ordinary profile and class comparisons, `latents_bad_nesting` indicates
+#' incompatible class counts, fixed measurement blocks, covariate
+#' specifications, or parameter counts. `latents_incomparable_models` indicates
+#' incompatible data or fitting specifications. Transition and group-class
+#' comparisons use their family-specific nesting checks and raise
+#' `latents_bad_argument` for unsupported nesting requests. Transition models
+#' also raise `latents_bad_argument` when `data` is omitted.
+#'
+#' `latents_unsupported_bootstrap` identifies unsupported person centering or
+#' scaling. Models with a prior, sampling weights or a noise component raise
+#' `latents_unsupported_prior`, `latents_unsupported_weights` or
+#' `latents_unsupported_noise`, respectively. `latents_bad_data` identifies
+#' unsupported missing indicators, and `latents_bad_inference_data` identifies
+#' supplied data that do not reproduce the original fitting data or likelihood.
+#'
+#' `latents_no_converge` indicates that an original model has not converged;
+#' for ordinary profile and class models it also identifies active variance
+#' bounds. `latents_reversed_likelihood` indicates that the alternative has a
+#' lower likelihood than the null beyond numerical tolerance. Invalid seeds or
+#' incompatible model families raise `latents_bad_argument`.
+#' `latents_failed_replicates` warns about invalid simulated replicates; see
+#' *Estimation failures* for their treatment.
+#' @references
+#' Nylund, K. L., Asparouhov, T., & Muthen, B. O. (2007). Deciding on the number
+#' of classes in latent class analysis and growth mixture modeling: A Monte
+#' Carlo simulation study. *Structural Equation Modeling*, 14(4), 535--569.
+#' @seealso [enumerate_classes()] for fitting candidate models;
+#'   [compare_models()] for information-criterion comparisons.
 #' @examples
 #' set.seed(1)
 #' example_data <- data.frame(

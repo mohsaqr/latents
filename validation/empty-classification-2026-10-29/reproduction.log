@@ -1,0 +1,14 @@
+           a         b profile uncertainty posterior_profile_1
+8  -1.842589 -3.683247       1 4.72955e-14                   1
+9         NA        NA      NA          NA                  NA
+10 -2.762155 -4.423053       1 0.00000e+00                   1
+   posterior_profile_2
+8         4.733534e-14
+9                   NA
+10        3.177354e-18
+          input_rows          output_rows           classified 
+                 300                  300                  299 
+                nobs classification_total 
+                 299                  299 
+Original fit parameters, likelihood and internal posteriors preserved.
+Synthetic reproduction and source manifest saved.

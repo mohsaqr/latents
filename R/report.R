@@ -1,19 +1,39 @@
 #' Diagnostics of a fitted model
 #'
-#' Computes checks of a fitted model's estimation and classification in five
-#' domains (estimation, class size, classification, local independence and
-#' information) and returns them together with the tables they are based on. The values are not judged against cut-offs: the published
-#' ones (an average posterior of .70, odds of correct classification of 5, a
-#' smallest class of 5 percent; Nagin, 2005) are rules of thumb rather than
-#' derived criteria, and whether a value is adequate depends on the study. A
-#' `"fail"` or `"check"` status marks only a fact about the fit, such as
-#' non-convergence or an estimate at a bound (see Details).
+#' @description
+#' `diagnostics()` examines the estimation and interpretation of a fitted
+#' mixture model. It assesses convergence and replication across starting
+#' values, describes the size and separation of the latent classes, and,
+#' where supported, examines associations between indicators that are not
+#' adequately represented by the model.
 #'
-#' * **Estimation**: whether the best start converged; how many of the
-#'   starts run to the end reached the best log likelihood (a maximum reached
-#'   by one start is not replicated; Masyn, 2013); starts that failed or did
-#'   not finish (screened starts, short by design, are reported apart); and
-#'   estimates at a bound.
+#' Convergence and likelihood replication indicate whether different starting
+#' values lead to the same numerical solution. Class sizes and posterior
+#' membership probabilities describe how observations are distributed across
+#' classes and how uncertain their classification remains. Bivariate residuals
+#' compare observed indicator associations with those implied by the fitted
+#' model, helping identify departures from the measurement specification.
+#'
+#' The function brings these results together in diagnostic tables and, where
+#' available, classification plots. For multilevel models, classification
+#' summaries distinguish observation-level profiles from group-level classes.
+#' Conditions such as incomplete convergence, estimates at parameter bounds,
+#' and classes with no assigned observations are identified for further
+#' examination.
+#'
+#' @section Interpretation:
+#' Numerical convergence, classification separation, and measurement fit
+#' address different aspects of a model. A converged solution may contain
+#' poorly separated classes, while sharply separated classes may arise under
+#' an inadequate measurement specification. The diagnostics should therefore
+#' be interpreted jointly, with attention to the study design and the
+#' substantive meaning of the estimated classes.
+#'
+#' @details
+#' * **Estimation**: convergence of the selected solution; replication of the
+#'   best log likelihood across completed starts (Masyn, 2013); failed or
+#'   unfinished starts; and estimates at parameter bounds. Preliminary
+#'   screening starts are reported separately from full optimisation runs.
 #' * **Class size**, at each level the fit classifies: the smallest class,
 #'   the largest gap between modal and model-estimated class proportions, and
 #'   classes to which no unit is assigned.
@@ -22,51 +42,53 @@
 #'   of classes (Clark & Muthen, 2009); the lowest average posterior
 #'   probability of the assigned class and the lowest odds of correct
 #'   classification (Nagin, 2005).
-#' * **Local independence**: the indicator pairs whose bivariate residual is
-#'   significant at 0.05 after Benjamini-Hochberg adjustment (Vermunt &
-#'   Magidson, 2005), with the largest.
-#' * **Information**: the log likelihood, number of parameters and BIC, which
-#'   are read against other models with [compare_models()].
+#' * **Bivariate residuals**: discrepancies between observed and model-implied
+#'   indicator associations, reported under the `"Local independence"` domain.
+#'   Where tests are available, pairs are flagged at 0.05 after
+#'   Benjamini-Hochberg adjustment (Vermunt & Magidson, 2005). Residuals
+#'   without an available test are reported descriptively.
+#' * **Information**: log likelihood, number of parameters and BIC, for
+#'   comparison with other fitted models using [compare_models()].
 #'
-#' A status is `"fail"` (the estimate is not usable: the best start did not
-#' converge, or a class is estimated from less than one unit), `"check"` (a
-#' fact that needs looking at: starts that failed or did not finish,
-#' estimates at a bound, a class with no assigned unit, dependent indicator
-#' pairs), `"ok"` (that fact does not hold), `"info"` (a value reported
-#' without a verdict) or `"n/a"` (the quantity does not apply, with the
-#' reason). Classification uses the fit's posterior probabilities, eligible
-#' units and sampling weights; no model estimate is changed. Profile, class
-#' and transition fits are reported in
-#' full; the additive, cross-level, mixture-regression and growth families
-#' are reported on what they estimate, and a quantity they cannot support is
-#' `"n/a"`.
+#' The status labels are `"fail"` for a non-converged selected solution or a
+#' class with effective membership below one; `"check"` for conditions requiring
+#' review, including failed or unfinished starts, active parameter bounds,
+#' classes with no modal assignments or residual indicator dependence; `"ok"`
+#' when the checked condition is absent; `"info"` for a descriptive quantity;
+#' and `"n/a"` for an unavailable or inapplicable quantity. An `"ok"` status
+#' applies only to the specified check and does not establish overall model
+#' adequacy. Classification summaries use the fitted posterior probabilities,
+#' eligible observations and sampling weights. The available diagnostics depend
+#' on the model family.
 #'
-#' Every family supplies entropy, classification and average-posterior tables
-#' at the levels it classifies, with the start record (`"replication"`).
+#' Entropy, classification and average-posterior tables are supplied at the
+#' classification levels supported by each family, together with a summary of
+#' replication across starts (`"replication"`).
 #' Group-classified regressions report the group level; hierarchical regression
 #' and growth models report both levels. All-empty transition rows follow the
 #' fitted `drop_empty` policy, and zero-weight units are never classified.
 #' Bivariate residuals are gathered for families that support them.
 #'
 #' @param x A fitted model of this package.
-#' @param data Optional. The data the model was fitted to. A fit carries the
-#'   columns it was built from, so this is only needed to override them.
-#' @param plots `TRUE` (the default) also draws the four classification plots:
-#'   effective profile sizes, posterior probabilities of the assigned
-#'   profiles, case entropy, and the average posterior probability matrix.
-#'   Without the ggplot2 package a message says so and the tables are still
-#'   returned. `FALSE` returns the tables only.
+#' @param data Optional data frame used to fit the model. When omitted, the
+#'   required columns are reconstructed from the fitted object.
+#' @param plots `TRUE` (the default) draws classification plots for model
+#'   families that support them: effective profile sizes, posterior
+#'   probabilities of assigned profiles, case entropy, and the average
+#'   posterior probability matrix. If ggplot2 is unavailable or the model
+#'   family has no classification plots, a message is issued and the tables
+#'   are returned without plots. `FALSE` returns only the tables.
 #' @param by `"profile"` (the default) assesses each profile's bivariate
-#'   residuals separately; `"overall"` pools them. It is the only argument
-#'   forwarded to the gathered tables. The `level` of the classification
-#'   tables is set from whether the fit has discrete group classes.
+#'   residuals separately; `"overall"` pools them. This argument is forwarded
+#'   to the residual calculations. The classification levels are determined
+#'   by the fitted model.
 #' @param ... Not used. For `diagnostics()` and `plot()`, any further argument
 #'   raises `latents_bad_argument`; style the returned plots with ggplot2.
-#' @return An object of class `multilpa_diagnostics`. Its checks table,
-#'   `get_results(result, "checks")`, has one row per check: `domain`, `check`, `level`, `value` (numeric), `display` (as
-#'   printed), `criterion`, `status`, `detail` and `reference`. Its other
-#'   tables are read with `get_results(result, what = )`, where `what` is
-#'   `"checks"`, `"entropy"`,
+#' @return An object of class `multilpa_diagnostics`. The checks table,
+#'   accessed with `get_results(result, "checks")`, contains one row per check
+#'   and columns `domain`, `check`, `level`, `value` (numeric), `display`
+#'   (formatted value), `criterion`, `status`, `detail` and `reference`.
+#'   Tables are accessed with [get_results()], using `what = "checks"`, `"entropy"`,
 #'   `"classification"`, `"average_posteriors"`, `"residuals"`,
 #'   `"replication"` or `"all"`. A
 #'   model family without bivariate residuals leaves that table out of
@@ -74,12 +96,12 @@
 #'   fit with a noise component has none either, and raises
 #'   `latents_unsupported_noise`.
 #'
-#'   `print()` prints the checks grouped by domain, after a line naming those
-#'   that need attention, and returns the object invisibly. `plot()` returns the four
-#'   classification plots as a `latents_plots` list of ggplot objects, which
-#'   draws all four when printed. `as.data.frame()` returns the entropy table.
-#'   `summary()` returns the object
-#'   itself, which is already the summary of the fit's classification.
+#'   `print()` groups checks by domain, highlights those requiring review and
+#'   returns the object invisibly. For supported model families, `plot()`
+#'   returns four classification plots as a `latents_plots` list of ggplot
+#'   objects; printing the list draws
+#'   all four plots. `as.data.frame()` returns the entropy table. `summary()`
+#'   returns the diagnostics object.
 #' @references
 #' Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
 #' variables not included in the analysis. Unpublished manuscript.
@@ -435,11 +457,19 @@ plot.multilpa_diagnostics <-function(x, ...) {
   plot_diagnostics(x$fit)
 }
 
-#' Print a full report of a fitted model
+#' Display model estimates and diagnostic summaries
 #'
-#' Prints the model summary, the descriptive statistics of its variables and
-#' the classification diagnostics, then draws every plot view the fit
-#' supports.
+#' @description
+#' `report()` provides a combined overview of a fitted profile, class, or
+#' supported transition model. It brings together parameter estimates,
+#' descriptive statistics, and diagnostic checks to support examination of
+#' the estimated class structure, numerical convergence, classification
+#' uncertainty, and residual associations.
+#'
+#' Output is displayed in the R session, with optional plots appropriate to
+#' the fitted model. The function returns the original fitted model
+#' invisibly. Individual tables remain available through [get_results()],
+#' [descriptives()], and [diagnostics()] for further analysis or reporting.
 #'
 #' @param x A profile, class or transition fit: from [lpa()], [lca()],
 #'   [multilpa()] or [multilca()] (with or without membership covariates), or
@@ -447,8 +477,8 @@ plot.multilpa_diagnostics <-function(x, ...) {
 #'   (a mixture regression, growth mixture, general transition, additive or
 #'   cross-level model) raises `latents_not_a_fit`; its own `summary()`,
 #'   [diagnostics()] and `plot()` report it.
-#' @param data Optional. The data the model was fitted to; a fit carries the
-#'   columns it was built from.
+#' @param data Optional data frame used to fit the model. The required columns
+#'   are stored in the fitted object.
 #' @param plots `TRUE` (the default) draws the plots. `FALSE` prints only.
 #' @param rows Number of rows of each summary table to print, passed to
 #'   `print(summary(x))`. Default 10.
@@ -457,11 +487,12 @@ plot.multilpa_diagnostics <-function(x, ...) {
 #'   pools them.
 #' @param ... Not used. Any further argument raises `latents_bad_argument`
 #'   before anything is printed.
-#' @section What it prints: `summary()`, then `descriptives()`, then the
-#'   printed checks of `diagnostics()`, then every plot view
-#'   the fit supports. Views that the plot method declines for this model are
-#'   listed after the plots as not drawn. The tables themselves are obtained
-#'   from [get_results()], [summary()], [descriptives()] and [diagnostics()].
+#' @section Report contents:
+#'   Output is presented in the following order: [summary()], [descriptives()],
+#'   the checks from [diagnostics()], and the supported plot views. Any omitted
+#'   views are listed after the plots. The underlying tables can be accessed
+#'   separately using [get_results()], [summary()], [descriptives()] and
+#'   [diagnostics()].
 #' @return The fitted model, invisibly. Called for its printed and plotted
 #'   output.
 #' @seealso [summary()], [diagnostics()], [descriptives()],

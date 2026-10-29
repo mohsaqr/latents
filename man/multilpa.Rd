@@ -65,8 +65,9 @@ no default: omitting it raises \code{latents_bad_argument}.
 
 \code{id = NULL} fits a \strong{single-level} model: each row is its own unit, the
 observations are independent, and \code{n_group_classes} is one. The fit raises
-a \code{latents_single_level} message. Every verb of the package works on the
-result. The internal unit column is named \code{.observation}; it is not
+a \code{latents_single_level} message. Methods for extracting results,
+visualization and inference remain available. The internal unit column is
+named \code{.observation}; it is not
 returned by \code{get_results(x, "data")}, and a \code{data} that already has a
 column of that name raises \code{latents_bad_data}. Requesting more than one
 group class with \code{id = NULL} raises \code{latents_bad_argument}.}
@@ -84,7 +85,7 @@ the one-step maximum-likelihood covariate model and returns a
 profile slopes are shared across group classes unless
 \code{profile_slopes = "group_class"}. A group covariate must be constant
 within each group. Covariates enter in their supplied units, without
-centring or scaling. The covariate model refuses \code{start} and \code{fixed}; it
+centring or scaling. The covariate model rejects \code{start} and \code{fixed}; it
 accepts \code{missing = "fiml"} for the indicators, but the covariates must be
 complete. \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the staged alternatives.}
 
@@ -94,14 +95,14 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread, and, with more than one group
+initialized with its own means and variances, and, with more than one group
 class, Ward's clustering of the groups' profile compositions. The
 remaining starts are k-means from random centres. A supplied \code{start}
 replaces the first start, and the remaining starts are random. With
-\code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
-is. Rows from zero-weight units do not supply initial clustering or
-measurement parameters. For \code{search = "emEM"}, this is the finalist
-budget, including the protected first start (see \code{search}).}
+\code{start} and \code{max_iter = 0}, exactly one start is evaluated regardless of
+\code{n_starts}. Zero-weight units do not contribute to initialization. For
+\code{search = "emEM"}, \code{n_starts} is the number of final optimization runs,
+including the protected first start (see \code{search}).}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start
 (default 1000). \code{max_iter = 0} performs no update: with \code{start}, the model
@@ -112,22 +113,21 @@ the one with the highest log likelihood is returned.}
 \item{tol}{Positive convergence tolerance (default \code{1e-8}). EM has
 converged when one step (or SQUAREM cycle) changes the log likelihood by
 no more than \code{tol} times the number of observed indicator values (each
-non-missing cell of a row of positive weight, at least one). A change in
-log likelihood does not depend on the units of the data, so neither does
-this rule; latents 0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}, which a change of units moved.}
+non-missing cell in a row of positive weight, with a minimum count of one).
+The tolerance is therefore expressed per observed indicator value.}
 
 \item{min_variance}{Lower bound on each variance, or on each covariance
 eigenvalue under full covariance; the fit is then constrained maximum
 likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
 sample variance of the continuous indicators (observed values in rows of
 positive weight, on the scale fitted, after any centring and scaling), so
-that the bound moves with the units of the data. A number is an absolute
-bound in squared indicator units (the default of 0.97.1 and earlier was
-\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
+that the default bound adapts to the measurement scale. A numeric value
+specifies an absolute bound in squared indicator units. The bound used is
+stored as \code{min_variance} on the fit.
 Estimates at the bound are reported and raise a warning.}
 
-\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
-including negative ones. When supplied, the caller's random-number state
+\item{seed}{Optional random seed: any integer \code{set.seed()} accepts,
+including negative integers. When supplied, the caller's random-number state
 is restored on exit.}
 
 \item{start}{Optional list of \code{means} and \code{variances} (profiles by
@@ -190,7 +190,7 @@ dates are accepted.}
 values in \code{start} instead of estimating them: any of \code{"means"},
 \code{"variances"} and \code{"response_probabilities"}, or \code{"measurement"} for every
 block the model has. Under \code{covariance_model = "full"}, \code{"variances"}
-holds the residual covariance matrices. A held block stays as supplied in
+holds the residual covariance matrices. A fixed block retains its supplied values in
 every start and is not counted in \code{n_parameters}, so the result is a
 different model, not a different starting point. \code{start} must contain the
 named blocks; \code{starting_values(fit, what = "measurement")} produces them,
@@ -219,7 +219,7 @@ profiles gives the fourteen models mclust names with three letters, all
 of which are available.
 
 \code{volume} is \code{"equal"} or \code{"varying"}. \code{shape} is \code{"equal"}, \code{"varying"}
-or \code{"spherical"}; \code{"spherical"} makes every indicator's spread equal
+or \code{"spherical"}; \code{"spherical"} makes the variance equal across indicators
 within a profile and leaves no orientation to constrain. \code{orientation} is
 \code{"axis"} (a diagonal covariance), \code{"equal"} (one orientation shared by
 every profile) or \code{"varying"}. Each defaults to \code{NULL}, which follows
@@ -255,16 +255,16 @@ profiles, with \code{I} for axis-aligned (no covariances). These are the codes
 \code{variance_model}/\code{covariance_model} or \code{volume}/\code{shape}/\code{orientation}, not
 together with them.}
 
-\item{select_start}{Which start the fit reports. \code{"likelihood"} (the
-default) takes the highest log likelihood across starts, preferring a
-converged start only among those within a relative \code{1e-10} of it.
-\code{"converged"} takes the highest log likelihood among the converged starts
-when at least one converged, and among all starts otherwise. The two
-differ when an unconverged start exceeds a converged one by a negligible
-amount, as happens when a membership logit drifts along a flat ridge of
-the likelihood; only the converged start is a maximum on which
-\code{\link[=parameter_inference]{parameter_inference()}} can be based. \code{summary()} and
-\code{get_results(fit, "starts")} show every start. The reported replication
+\item{select_start}{Rule for selecting a fitted solution. \code{"likelihood"}
+(the default) selects among starts within \code{tol * max(1, n_observed)} of
+the highest log likelihood, preferring converged starts within this set.
+Here \code{n_observed} counts observed indicator values in positive-weight rows.
+\code{"converged"} restricts selection to converged starts when any are
+available; otherwise it uses all starts. Remaining ties are resolved by
+start order. Convergence is required for
+Wald inference but does not establish identification or global
+optimality. \code{summary()} and \code{get_results(fit, "starts")} report the
+individual starts. The reported replication
 count includes final-stage starts within \code{1e-6 * max(1, n_observed)} of
 the selected log likelihood, where \code{n_observed} counts observed indicator
 values in rows of positive sampling weight, as in the EM stopping rule.
@@ -276,17 +276,16 @@ several steps below its maximum. It is stored as
 \item{prior}{\code{NULL} (the default) for maximum likelihood, or a
 \code{\link[=prior_control]{prior_control()}} object for maximum a posteriori estimation of the
 Gaussian means and covariances under the conjugate prior of Fraley and
-Raftery (2007), mclust's \code{priorControl()}. The hyperparameters default to
-mclust's \code{defaultPrior()} computed from the indicators, and each M-step is
-mclust's, so a fit from the same start reproduces
-\code{mclust::Mclust(..., prior = priorControl())}. Available for EII, VII,
+Raftery (2007). Hyperparameters use the data-dependent defaults of
+\code{mclust::defaultPrior()}, and updates follow the conventions described in
+\code{\link[=prior_control]{prior_control()}}. Available for EII, VII,
 EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has no prior for VEE,
 EVE, VVE and EVV), with complete continuous indicators and without \code{fixed}
 or membership covariates; otherwise \code{latents_unsupported_prior} is raised.
 The mixing proportions have no prior. As in mclust, the fit's
 \code{log_likelihood} is the \emph{unpenalized} log likelihood at the posterior
 mode, and \code{aic}, \code{bic} and their variants are computed from it with the
-usual parameter count. EM convergence is judged on its relative change;
+usual parameter count. Convergence uses the change described under \code{tol};
 because a MAP step can lower that likelihood, the decrease check made
 under maximum likelihood is not applied. \code{parameter_inference(method = "wald")} raises \code{latents_unsupported_inference} for such a fit, because
 the score is not zero at a posterior mode; \code{method = "bootstrap"} refits
@@ -303,8 +302,9 @@ explains (Banfield & Raftery, 1993; mclust's
 principal-component-aligned bounding boxes. The component has no
 measurement parameters; its mixing proportion is estimated with the
 others, and, as in mclust, it adds two parameters (the proportion and the
-hypervolume), so the criteria equal mclust's. A random start puts a tenth
-of the mass on the noise; a \code{start} supplies \code{noise_probability} alongside
+hypervolume), following mclust's parameter-count convention. A random
+start assigns probability 0.1 to noise. A supplied \code{start} includes
+\code{noise_probability} alongside
 \code{profile_probabilities}, the two summing to one. Available for complete
 continuous indicators with one group class (\code{id = NULL} or
 \code{n_group_classes = 1}), under any of the fourteen covariance structures,
@@ -327,14 +327,12 @@ for such a fit.}
 (Varadhan & Roland, 2008): each cycle extrapolates along the last two EM
 steps in unit-free coordinates (means divided by reference standard
 deviations, variances and covariances by the corresponding products;
-probabilities unchanged). Reference spreads use observed values in rows
-of positive sampling weight. Changing this acceleration chart can change
-iteration counts and the local maximum reached relative to earlier
-versions. Each cycle ends with an ordinary EM step and falls back when
+probabilities unchanged). Reference standard deviations use observed values in rows
+of positive sampling weight. Each cycle ends with an ordinary EM step
+and reverts to the EM update when
 the extrapolated point would lower the likelihood, so the iteration stays
-monotone. Convergence is assessed over a whole cycle, so it is never
-looser than plain EM's. \code{"none"} runs plain EM, which follows the same
-path as mclust's \code{me()} from the same start. \code{iterations} and \code{max_iter}
+monotone. Convergence is assessed over a complete cycle. \code{"none"} runs
+ordinary EM. \code{iterations} and \code{max_iter}
 count EM steps under either setting. Fits with \code{prior}, and models with
 membership covariates, always use plain EM. For EVE and VVE, whose shared
 orientation has no closed form, each EM iteration takes a fixed number of
@@ -409,7 +407,7 @@ on the group-class rows, the class weight.}
 \item{between_variance}{For the additive and additive-dispersion families:
 \code{"varying"} (the default) estimates between-group variances per group
 class, \code{"equal"} one set shared by all classes. The dispersion family
-holds them equal and refuses \code{"varying"}. For the cross-level families,
+holds them equal and rejects \code{"varying"}. For the cross-level families,
 the variances of the group means within each group class.}
 
 \item{weights}{\code{NULL}, or the name of a numeric column of \code{data} holding a
@@ -427,21 +425,21 @@ grand scale of \code{centering}/\code{scaling = "grand"}, and is not classified.
 Nor does it define a category: a categorical, ordinal or paired
 (\code{local_dependence}) value seen only on units of weight zero is not a
 category of the fit and has no parameter, and an indicator constant among
-the units of positive weight is refused whatever those units hold. Under
+the positive-weight units is rejected regardless of zero-weight values. Under
 \code{missing = "error"}, a missing categorical, ordinal or count value on a
-unit of weight zero is not refused; a missing continuous value is.
+unit of weight zero is not rejected; a missing continuous value is.
 Standard errors are sandwich estimates:
-\code{parameter_inference()} defaults to \code{vcov_type = "robust"} and refuses
+\code{parameter_inference()} defaults to \code{vcov_type = "robust"} and rejects
 \code{"observed"} and \code{"opg"} (\code{latents_unsupported_weights}), and
 \code{method = "bootstrap"} resamples the units with their weights.
 Classification tables report each unit's own posterior; effective counts
 and proportions are weighted. \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=three_step]{three_step()}},
-\code{\link[=r3step]{r3step()}}, \code{prior} and \code{noise} refuse a weighted fit. Weights work with
+\code{\link[=r3step]{r3step()}}, \code{prior} and \code{noise} reject a weighted fit. Weights are supported with
 every \code{family}, membership covariates, categorical indicators and
 \code{missing = "fiml"}.}
 
 \item{ordinal}{Names of indicators in \code{vars} to model as ordinal: an
-(ordered) factor, or whole numbers, whose categories are ordered by factor
+(ordered) factor, or integers, whose categories are ordered by factor
 level or by value. Each follows an adjacent-category logit with category
 intercepts shared by every profile and one location per profile,
 \verb{log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c}, with the last
@@ -455,19 +453,19 @@ raises the \code{latents_unused_category} warning; \code{droplevels()} removes i
 \item{count}{Names of indicators in \code{vars} holding non-negative whole
 numbers, modelled as Poisson with one mean per profile (or negative
 binomial, see \code{count_model}); the means are returned by
-\code{get_results(fit, "count_means")}. Ordinal and count indicators work with
+\code{get_results(fit, "count_means")}. Ordinal and count indicators support
 \code{missing = "fiml"}, \code{weights}, two-level fits, membership covariates,
 Wald and bootstrap inference, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=predict]{predict()}} and \code{\link[=lta]{lta()}}.
 \code{start}, \code{fixed}, \code{prior} and \code{noise} do not accept them
 (\code{latents_unsupported_indicator}), and the group-class and cross-level
-families refuse them as arguments they do not take
+families do not support them
 (\code{latents_bad_argument}).}
 
 \item{count_model}{\code{"poisson"} (the default) or \code{"negative_binomial"}: NB2,
-with mean \code{mu} and variance \verb{mu + alpha mu^2}, for counts more variable
+with mean \code{mu} and variance \verb{mu + alpha mu^2}, for counts with greater variance
 than a Poisson within a profile (Latent GOLD's \verb{poisson overdispersed}).
 A dispersion estimated at zero is the Poisson limit, a boundary fit
-(\code{latents_boundary} warning; Wald inference is refused there).}
+(\code{latents_boundary} warning; Wald inference is rejected there).}
 
 \item{count_dispersion}{For \code{count_model = "negative_binomial"}: one
 dispersion per profile (\code{"varying"}, the default) or one shared by every
@@ -483,8 +481,8 @@ the sample, and \verb{centering = "person", scaling = "person"} standardizes it
 within each unit. Standard deviations use the observed values with
 denominator \code{n - 1}. The scales are stored on the fit with the centring
 offsets, so \code{get_results(x, "data")} returns the supplied columns, and
-\code{predict()} scales new units by their own spread under \code{"person"} and by
-the fitted spread under \code{"grand"}. Means, variances and covariances are
+\code{predict()} scales new units by their own standard deviation under \code{"person"} and by
+the fitted standard deviation under \code{"grand"}. Means, variances and covariances are
 reported in standard-deviation units. The log likelihood and every
 information criterion are those of the scaled values, so only fits with
 the same centring and scaling are comparable. A standard deviation that is
@@ -506,18 +504,21 @@ solution. Under \code{centering = "person"} with \code{scaling = "person"}, a gr
 with only two observations of an indicator becomes exactly
 \code{-1/sqrt(2)} and \code{1/sqrt(2)} on it: such groups raise
 \code{latents_atomic_groups}, and when every group is like that the fit is
-refused with \code{latents_bad_data}.}
+rejected with \code{latents_bad_data}.}
 
 \item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: how the reported
 statistics treat rows whose every indicator is missing, and groups
-consisting only of such rows. These contribute nothing to the likelihood,
-so the estimates are the same either way, and their posterior is the
-prior. With \code{TRUE} they are excluded, as in Mplus, from the individual and
+consisting only of such rows. This setting affects reporting, not
+estimation. With \code{TRUE} they are excluded, as in Mplus, from the individual and
 group sample sizes of the information criteria, from relative entropy,
 AvePP and the entropy term of ICL, AWE and CLC, from the classification
-tables and diagnostic plots, and from the effective class counts. With
-\code{FALSE} every row and group is counted in those statistics (the results
-of latents 0.9.37 and earlier), except in the individual sample size of a
+tables and diagnostic plots, and from the effective class counts.
+Row-aligned assignment and posterior tables retain these units but report
+their classifications and posterior probabilities as \code{NA}. A partially
+observed row remains classified, and an empty row in an informative group
+can retain its group-class assignment. With
+\code{FALSE} every row and group is counted in those statistics, except in the
+individual sample size of a
 \code{multilpa()} fit, which excludes such rows either way. Units of sampling
 weight zero are excluded from every count and entropy term under either
 setting. \code{\link[=compare_models]{compare_models()}}
@@ -545,7 +546,7 @@ engines use one task per candidate.}
 
 \item{local_dependence}{Pairs of indicators that stay associated within
 each class, written \code{"item1:item2"} (several as a character vector).
-A pair of continuous indicators gets its own covariance in each class
+A continuous indicator pair has a covariance estimated within each class
 (one shared covariance with \code{variance_model = "equal"}), every other
 covariance staying zero: the covariance Latent GOLD fits with
 \verb{item1 <-> item2 | Cluster}. It is not combined with \code{covariance_model},
@@ -553,7 +554,7 @@ covariance staying zero: the covariance Latent GOLD fits with
 or held variances. A pair of categorical indicators is modelled jointly
 within each class. Each such pair becomes one categorical indicator, named
 \code{"item1:item2"}, whose categories are every combination of the two items'
-categories (the full grid: a combination nobody gave is estimated on the
+categories (the full grid: an unobserved combination is estimated on the
 \code{min_probability} floor and counted as a parameter, so each class has
 \verb{K1 K2 - 1} of them), so every class has its own joint distribution of
 the pair: the class-specific association Latent GOLD fits with
@@ -600,17 +601,15 @@ or \code{"emEM"}. \code{NULL} uses \code{"emEM"} when every profile shares one
 covariance matrix (EII, EEI, EEE with continuous indicators), which removes
 the isolated-profile covariance-collapse mechanism. Shared covariances can
 still hit their floor on degenerate or over-extracted data; inspect the
-boundary diagnostics. It uses
-\code{"kmeans"} otherwise, including categorical-only models and the
-group-class families. The search used is recorded on the fit, and
-\code{search = "kmeans"} retains the start-search policy of latents 0.96.2.
-\code{"kmeans"} runs
+boundary diagnostics. The default is \code{"kmeans"} otherwise, including
+categorical-only models and the group-class families. The selected search
+strategy is recorded on the fit. \code{"kmeans"} runs
 \code{n_starts} starts to convergence: Ward's clustering first, then k-means
 from random centres. \code{"emEM"} screens a pool of \code{n_screen} starts by a
-short EM run each and runs \code{n_starts} finalists to convergence
+short EM run each and runs \code{n_starts} selected starts to convergence
 (Biernacki, Celeux & Govaert, 2003). The first start (Ward's clustering,
-or supplied starting values) reserves one finalist slot if its screening
-succeeds; the remaining slots take the highest screening likelihoods.
+or supplied starting values) is retained for final optimization if its
+screening succeeds; remaining starts are selected by screening likelihood.
 Thus \code{n_starts = 1} finalizes Ward's start whenever it screens
 successfully, even if another screened start has a higher likelihood.
 With a supplied start and \code{n_starts = 1}, screening is skipped entirely.
@@ -621,21 +620,21 @@ gives every start of the pool with its \code{kind}, its \code{stage} and its
 likelihood after screening. Either search reports the start with the
 highest likelihood among those run to convergence (subject to
 \code{select_start} and \code{boundary}). With profile-specific variances that
-maximum can be spurious, a profile on a few nearly coincident points
-with a variance near zero (McLachlan & Peel, 2000, section 3.10), and a
-harder search finds such maxima more often. They are reported, not set
-aside: a variance at \code{min_variance} as a boundary fit
-(\code{latents_boundary}; \code{boundary = "exclude"} sets those starts aside),
-and low Gaussian membership mass by a \code{latents_thin_profiles} heuristic
-warning. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
+maximum can correspond to a nearly degenerate component concentrated on
+a few observations (McLachlan & Peel, 2000, section 3.10). More extensive
+searches can identify such solutions more often. A variance at
+\code{min_variance} produces a \code{latents_boundary} warning; use
+\code{boundary = "exclude"} to exclude these starts when an interior solution
+is available. Low effective Gaussian profile membership produces the
+heuristic warning \code{latents_thin_profiles}. \code{get_results(fit, "gaussian_diagnostics")} reports continuous
 covariance and support measures without an automatic spike cutoff or
 changing the selected start. Neither a warning's absence nor a repeated
 likelihood establishes a regular or globally optimal solution.}
 
 \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
 least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
-The protected first start counts toward the \code{n_starts} finalist budget;
-increasing \code{n_screen} does not add finalist slots. A single supplied
+The protected first start is included in the \code{n_starts} final optimization
+runs. Increasing \code{n_screen} does not increase that number. A single supplied
 start with \code{n_starts = 1} disables screening.
 A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
 \code{latents_bad_argument}.}
@@ -657,7 +656,7 @@ A \code{multilpa} object containing \code{means}, \code{variances}, optional
 \code{covariances} (indicators by indicators by profiles),
 \code{profile_probabilities}, \code{group_probabilities}, posterior matrices,
 classifications, log likelihood, information criteria, restart
-diagnostics and convergence history. Individual rows keep their input
+diagnostics and convergence history. Individual rows retain their input
 order; groups keep first-occurrence order. \code{bic} and \code{bic_groups} use the
 observed group count; \code{bic_individual} uses \code{n_informative}, the number of
 rows with at least one observed indicator. These are alternative
@@ -671,22 +670,35 @@ models. Global optimality is not guaranteed for any \code{n_starts}.
 \code{as.data.frame()} returns the tidy tables, selected by \code{what}.
 }
 \description{
-Fits a latent profile model for observations nested in groups and returns a
-fitted \code{multilpa} object. Each observation belongs to a Gaussian profile,
-and each group belongs to a latent group class that determines the profile
-proportions. Profile means and variances are shared across group classes
-(measurement invariance). By default indicators are independent within a
-profile; full residual covariances and observed-data maximum likelihood for
-missing indicators are available.
+Multilevel latent profile analysis describes heterogeneity among
+observations and among the groups in which they are nested. Examples
+include repeated measurements within individuals and students within
+schools. Observation-level profiles describe patterns in the indicators,
+while group-level classes describe differences in the probabilities of
+those profiles.
+
+In the standard model, profile definitions are shared across group classes:
+a given profile has the same indicator means and covariance structure in
+every group class. Group classes therefore differ in their profile
+composition. Observations within the same group can belong to different
+profiles, with their membership probabilities depending on the group's
+latent class.
+
+\code{multilpa()} estimates the measurement parameters, conditional profile
+probabilities, group-class proportions, and posterior membership
+probabilities at both levels. The default specification uses Gaussian
+indicators with diagonal within-profile covariance matrices. Alternative
+specifications support other covariance structures, discrete or mixed
+indicators, and predictors of latent membership.
 }
 \details{
 Infinite and constant observed indicators are rejected; each
 indicator must have at least two distinct observed values. No rows are
 silently dropped. Under FIML, fully missing individuals contribute no
 direct measurement likelihood but receive posterior probabilities from
-their group's information. Observation counts include these individuals;
-the individual-level BIC excludes them through \code{n_informative}, while the
-group-level BIC uses all observed groups. Missing patterns can prevent
+their group's information. The individual-level BIC excludes these rows
+through \code{n_informative}; the treatment of fully missing groups follows
+\code{drop_empty}. Missing patterns can prevent
 parameter identification; no general identification guarantee is made.
 Only initialization fills missing values with indicator means; EM uses
 conditional Gaussian sufficient statistics and observed marginal
@@ -696,11 +708,10 @@ but do not establish identification. A model of complete categorical and
 ordinal indicators alone, with one group class, warns
 (\code{latents_unidentified}) when it has more free parameters than its
 contingency table has free cells (negative degrees of freedom), which no
-data can identify (Goodman, 1974). By default the highest finite
-likelihood across starts is returned, even if that start did not converge;
-\code{select_start = "converged"} prefers a converged start, and \code{converged}
-and \code{starts} show which was chosen. Profile and group-class labels are
-arbitrary.
+data can identify (Goodman, 1974). Start selection follows \code{select_start};
+the default can return a solution that has not converged. Inspect the
+\code{converged} flag and the \code{starts} table before interpreting the model.
+Profile and group-class labels are arbitrary.
 }
 \examples{
 # Course sessions nested in students: engagement profiles of sessions, and

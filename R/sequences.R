@@ -138,9 +138,10 @@
   # inside it; a group that simply stopped early does not count as a gap.
   has_gap <- lengths_by_group < (last - first + 1L)
   class_by_group <- x$group_classes
+  included <- .multilpa_informative_groups(x)
   classes <- seq_len(x$n_group_classes)
   summarize <- function(class) {
-    in_class <- class_by_group == class
+    in_class <- included & class_by_group == class
     taken <- lengths_by_group[in_class]
     data.frame(
       group_class = class,

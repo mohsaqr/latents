@@ -2,20 +2,41 @@
 
 utils::globalVariables(c("model", "criterion", "value"))
 
-#' Compare fitted models on the same data
+#' Compare the fit and classification of mixture models
 #'
-#' Returns a table with one row per model giving its log likelihood, number
-#' of parameters, information criteria, classification quality and
-#' convergence, together with `delta_bic`, each model's BIC above the
-#' smallest, and `bic_weight`, the Schwarz weight `exp(-delta_bic / 2)`
-#' normalised over the models compared (Wagenmakers and Farrell 2004). The
-#' weight is the approximate posterior probability of each model, assuming
-#' one of them is true and all have equal prior probability. No row is marked
-#' as best.
+#' @description
+#' `compare_models()` compares alternative mixture models fitted to the same
+#' observed data. It supports assessment of the number of latent classes and
+#' other model specifications by presenting evidence about model fit,
+#' complexity, classification, and convergence.
 #'
-#' Information criteria are comparable only on the same data: every model
-#' must be fitted to the same outcome or indicators, persons (or groups) and
-#' observations, or the comparison is refused.
+#' Information criteria summarise the trade-off between fit and the number of
+#' estimated parameters. Classification measures provide complementary
+#' information about the separation and relative size of the classes, while
+#' convergence summaries help identify estimation problems that may compromise
+#' the comparison. These measures address different aspects of a solution and
+#' should be interpreted together.
+#'
+#' The function accepts separately fitted models or candidates from an
+#' enumeration grid and returns their comparison statistics in a single
+#' table. BIC differences express each model's distance from the smallest BIC
+#' among the candidates; normalised BIC weights summarise their relative
+#' support within that set. The function does not select a final model.
+#'
+#' @section Interpretation:
+#' Models must use the same outcomes or indicators and observational units,
+#' and their likelihoods must be comparable. Lower information criteria favour
+#' a model relative to the alternatives considered, but do not establish
+#' adequate fit or substantive validity. Classification separation should
+#' inform interpretation rather than serve as the sole basis for choosing the
+#' number of classes. Final selection also requires examination of estimation
+#' stability, model assumptions, and the meaning of the resulting classes.
+#'
+#' @details
+#' `delta_bic` is the difference from the smallest BIC among the supplied
+#' candidates. `bic_weight` is the Schwarz weight `exp(-delta_bic / 2)`,
+#' normalised across those candidates (Wagenmakers and Farrell, 2004).
+#' Incompatible data produce an error.
 #'
 #' Candidates of an enumeration grid are selected by name, as the grid's
 #' `candidate` column shows them
@@ -76,8 +97,7 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
 #' weights. *Psychonomic Bulletin & Review*, 11, 192--196.
 #' @examples
-#' # Fixed trajectories against growth curves with a random intercept,
-#' # for the first 60 students
+#' # Compare trajectory and random-intercept growth models for 60 students.
 #' few_students <- subset(growth_scores, student <= 60)
 #' trajectories <- mixture_regression(score ~ wave, few_students, n_classes = 2,
 #'                                    id = "student", class_level = "group",

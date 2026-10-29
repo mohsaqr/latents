@@ -1,0 +1,10 @@
+'data.frame':	12 obs. of  3 variables:
+ $ group  : int  1 1 1 1 2 2 2 2 3 3 ...
+ $ stratum: chr  "A" "B" "A" "B" ...
+ $ score  : int  1 2 3 4 5 NA 7 8 9 10 ...
+NULL
+  variable  n n_missing     mean       sd min max n_distinct n_groups       icc
+1    score 11         1 6.545455 3.777926   1  12         11        3 0.9031903
+  stratum variable n n_missing mean       sd min max n_distinct
+1       A    score 6         0  6.0 3.741657   1  11          6
+2       B    score 5         1  7.2 4.147288   2  12          5

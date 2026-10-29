@@ -1,0 +1,3 @@
+    model structure delta_bic bic_weight converged
+1   equal       EEI         0        0.5      TRUE
+2 varying       VVI         0        0.5      TRUE

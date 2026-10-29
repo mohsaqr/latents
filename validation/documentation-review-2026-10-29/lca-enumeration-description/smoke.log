@@ -1,0 +1,11 @@
+  candidate n_profiles converged
+1  classes1          1      TRUE
+2  classes2          2      TRUE
+  profile indicator category probability threshold probability_standard_error
+1       1     item1        0   0.8839701  2.030575                 0.02969922
+2       2     item1        0   0.1823157 -1.500737                 0.03637905
+3       1     item1        1   0.1160299        NA                 0.02969922
+4       2     item1        1   0.8176843        NA                 0.03637905
+5       1     item2        0   0.8401659  1.659463                 0.03407367
+6       2     item2        0   0.1861456 -1.475252                 0.03506884
+Categorical enumeration and response-probability retrieval verified.

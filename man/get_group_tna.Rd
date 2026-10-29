@@ -3,15 +3,16 @@
 \name{get_group_tna}
 \alias{get_group_tna}
 \alias{get_group_tna.multilpa_transitions}
-\title{Build one transition network per latent group class}
+\title{Construct transition networks for latent group classes}
 \usage{
 get_group_tna(x, ...)
 
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
 }
 \arguments{
-\item{x}{A fitted model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}} / \code{\link[=multilca]{multilca()}} fit
-made with \verb{time =}, whose modal profile sequences are then used.}
+\item{x}{A supported time-homogeneous model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}}
+or \code{\link[=multilca]{multilca()}} fit made with \code{time}, whose modal profile sequences are
+then used.}
 
 \item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}} for each class.}
 
@@ -25,12 +26,32 @@ column, \code{compare()} contrasts two classes, and \code{plot()} draws all
 networks.
 }
 \description{
-Builds one \code{\link[tna:build_model]{tna::tna()}} model per latent group class of a fitted transition
-model and returns them as a \code{group_tna} object, the input of tna's grouped
-functions. A class row with no expected outgoing transitions keeps the
-fit's unestimated transition probabilities and raises the warning
-\code{latents_empty_transition_row}.
+\code{get_group_tna()} constructs separate transition networks for latent group
+classes, allowing patterns of persistence and movement between states to be
+compared. Each network represents the same latent profiles or classes,
+making differences in transition probabilities directly comparable.
+
+For a supported latent transition model, each network uses the estimated
+transition matrix and initial state distribution of its group class.
+For a profile or class model fitted with \code{time}, it summarises the modal
+state sequences of observed groups assigned to each latent group class.
+The returned object supports grouped network analysis and visualisation
+with the tna package.
 }
+\details{
+For a transition-matrix row with no expected outgoing transitions, the
+fitted probabilities are retained and a \code{latents_empty_transition_row}
+warning identifies the row as unestimated. General \code{\link[=lta]{lta()}} models are
+currently unsupported; see \code{\link[=get_tna]{get_tna()}} for the supported model scope.
+}
+\section{Interpretation}{
+
+Networks represent latent group classes, rather than individual observed
+groups. Networks constructed from modal sequences treat both state and
+group-class assignments as known and do not account for uncertainty in
+either classification.
+}
+
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")

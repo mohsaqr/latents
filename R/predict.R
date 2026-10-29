@@ -20,8 +20,18 @@ predict.multilpa <- function(object, newdata = NULL,
     # (together they sum to one); the E-step takes it as a last column.
     parameters$profile_probabilities <- cbind(parameters$profile_probabilities,
                                               noise = object$noise_probability)
-    parameters$noise_log_density <- rep(-log(object$hypervolume),
-                                        nrow(prepared$x))
+    observed <- rowSums(!is.na(prepared$x))
+    if (any(observed > 0L & observed < ncol(prepared$x))) {
+      stop(errorCondition(paste(
+        "Prediction with a noise component requires complete indicators or",
+        "a row with every indicator missing. The fitted hypervolume does not",
+        "define marginal noise densities for partially observed rows."),
+        class = "latents_unsupported_noise", call = NULL))
+    }
+    # Integrating every indicator out gives density one for every component,
+    # including noise; the full-space density is not an empty row's density.
+    parameters$noise_log_density <- ifelse(observed == 0L, 0,
+                                           -log(object$hypervolume))
   }
   if (identical(type, "density")) {
     return(data.frame(row = prepared$rows,
@@ -59,9 +69,11 @@ predict.multilpa_transitions <-function(object, ...) {
 #' The fitted rows, prepared as the fit prepared them
 #' @noRd
 .multilpa_training_rows <- function(object) {
-  .multilpa_prediction_rows(object, .multilpa_fit_data(object),
+  prepared <- .multilpa_prediction_rows(object, .multilpa_fit_data(object),
                             contributing = if (is.null(object$sampling_weights)) NULL else
                               unname(object$sampling_weights)[object$group_index] > 0)
+  prepared$informative <- .multilpa_informative_rows(object)
+  prepared
 }
 
 #' The data frame a fit was made from, as it was handed in
@@ -80,7 +92,7 @@ predict.multilpa_transitions <-function(object, ...) {
 #' @param object A `multilpa` fit.
 #' @param newdata A data frame.
 #' @param contributing Optional training-row mask; excluded training values may
-#'   lack a modeled categorical response. New-data prediction uses every row.
+#'   lack a modeled categorical response. New-data prediction checks every row.
 #' @return A list of the continuous matrix `x`, categorical `codes` (or
 #'   `NULL`), `group_index`, the group labels `groups`, and `rows`.
 #' @noRd
@@ -144,6 +156,10 @@ predict.multilpa_transitions <-function(object, ...) {
   # one, that the fit never modelled: it is coded NA and not checked.
   extra <- .latents_prepare_extra_like(object, newdata, contributing = contributing)
   extra_values <- .latents_extra_matrix(extra)
+  # Use the supplied indicator values: a half-observed joined categorical
+  # pair has an NA code but still contributes an observed response.
+  informative <- checked & (isFALSE(object$drop_empty) |
+    rowSums(!is.na(newdata[object$vars])) > 0L)
   if (identical(object$missing %||% "error", "error") &&
       (anyNA(x) || (!is.null(codes) && anyNA(codes[checked, , drop = FALSE])) ||
        (!is.null(extra_values) && anyNA(extra_values[checked, , drop = FALSE])))) {
@@ -180,7 +196,8 @@ predict.multilpa_transitions <-function(object, ...) {
     x <- x / scales[group_index, , drop = FALSE]
   }
   list(x = x, codes = codes, extra = extra, group_index = group_index,
-       groups = groups, rows = seq_len(n), two_level = two_level)
+       groups = groups, rows = seq_len(n), two_level = two_level,
+       informative = informative)
 }
 
 #' Log density of each row under the fitted mixture
@@ -218,6 +235,11 @@ predict.multilpa_transitions <-function(object, ...) {
     table$group_class <- group_modal[prepared$group_index]
     table$group_posterior <- expectation$group_posteriors[
       cbind(prepared$group_index, table$group_class)]
+    informative_groups <- rowsum(as.integer(prepared$informative),
+                                  prepared$group_index, reorder = TRUE)[, 1L] > 0L
+    excluded_groups <- !informative_groups[prepared$group_index]
+    table$group_class[excluded_groups] <- NA_integer_
+    table$group_posterior[excluded_groups] <- NA_real_
   }
   if (posteriors) {
     columns <- paste0("probability_profile_", seq_len(n_profiles))
@@ -226,5 +248,9 @@ predict.multilpa_transitions <-function(object, ...) {
     names(probability) <- columns
     table <- cbind(table, probability)
   }
+  excluded <- !prepared$informative
+  table$profile[excluded] <- NA_integer_
+  table$posterior[excluded] <- NA_real_
+  if (posteriors) table[excluded, columns] <- NA_real_
   table
 }

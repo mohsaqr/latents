@@ -147,6 +147,22 @@
   if (is.null(maps)) NULL else maps[[column]]
 }
 
+#' Number of categorical indicators observed in each row
+#'
+#' A half-observed joined pair has no complete category code, but its observed
+#' item contributes to the likelihood and must keep the row in reported sample
+#' sizes and classification summaries.
+#' @param codes A categorical code matrix, possibly with partial-pair maps, or
+#'   `NULL` when the model has no categorical indicators.
+#' @return One number per row, or scalar zero for `NULL`.
+#' @noRd
+.multilpa_categorical_observed <- function(codes) {
+  if (is.null(codes)) return(0L)
+  observed <- rowSums(!is.na(codes))
+  maps <- Filter(Negate(is.null), attr(codes, "latents_partial", exact = TRUE))
+  Reduce(`+`, lapply(maps, function(map) !is.na(map$index)), init = observed)
+}
+
 #' Rows-by-sets membership of a half-observed set map
 #' @param map A `.latents_partial_map()` result.
 #' @param n_categories The joint item's number of categories.

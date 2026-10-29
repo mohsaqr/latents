@@ -1,0 +1,934 @@
+acceleration: S.........................
+additive-compare: SS...S
+additive-engine: .............................
+additive-families: SS.....S
+additive-fit: ......S..............S............S
+additive-methods: .......................S........................................SS...S
+alignment-service: .........................................S....................
+api-compat-0921: S
+assignment-alignment: ..........................
+assignments-empty-rows: ..............................
+astra-core: S
+astra-diagnostics: S
+astra-surface: Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+..Fitted a single-level latent class model.
+.Fitted a single-level latent class model.
+....Fitted a single-level latent class model.
+.Fitted a single-level latent class model.
+..............
+audit-core-repairs: ................................................................
+audit-drawing-integration: ......
+audit-extension-repairs: ...........................................
+audit-inference-repairs: S
+audit-ml3-optimizer: .....S
+audit-nb-alignment-repairs: ....................
+audit-plots-predictions: S
+audit-recent-api: S
+audit-reporting-repairs: S
+audit-services-fixes: ...............................
+audit-validation-fork-safety: .........................................................................................
+bivariate-residuals: ..................................S
+bootstrap-constraints: SS.....SSSSS
+bootstrap-inference: ......................S....SS...........SSS..
+bootstrap-lrt-extended: S
+boundary-exclude: S
+categorical-inference: ...........................
+categorical-suspect: ...............
+categorical: .................................S.....................S
+centering: ...................................No standard errors in this table: Robust and OPG inference need more groups than parameters; this fit has 20 groups and 30 parameters.
+.
+cluster-robust-cr1: ......
+compat-0921: ..........
+convenience: S
+covariance-structure: S
+covariate-fold: ..............................
+covariate-inference: ........................................
+covariate-measurement: S
+covariate-missing: S
+covariate-separation: ............
+covariate-slopes: S
+covariate-surface: ...................................S
+covariates: .......................
+cross-level-thin-profiles: ................................................
+cross-level: ....S
+data-student-esm: ................S
+data: ..................................................................SS
+default-search: S
+descriptives-safety: .....................................
+diagnostics: .....................................................................................No standard errors in this table: Inference requires a converged fit.
+................................................
+direct-effects: ...SSS.............Fitted a single-level latent profile model.
+.....S..S
+empty-assignment-masks: ...............
+empty-classification-consumers: .................No standard errors in this table: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+No standard errors in this table: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+.No standard errors in this table: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+No standard errors in this table: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+.....................
+engine-fixes: S
+enumerate-verbs: ............S.............
+enumeration-type: S
+enumeration: S
+evaluate-only-start: ...................
+evaluate-only: .....................
+extra-indicators: ................S............SS
+features-direct-effects: S
+features-joint-items: S
+features-ml-three-step: S
+features-pair-covariance: ............................S.......................
+features-vlmr: S
+fit-verbs: SSSSSSS
+fixed-measurement: S
+gaussian-diagnostic-tables: .............................................................................
+gaussian-diagnostics: .........................................
+gaussian-warning-support: ............................
+get-data: S
+grid-contract: SSSSSSS
+growth-correlated: S
+growth-mixture: S
+growth-parameter-inference: S
+growth-predict: S
+growth-r3step: S
+inference-cache: .....................
+inference-fixed-measurement: ............................S
+inference: ......................................................
+informative-rows: SSSSSSSSSSSSS
+kernel: ..................................................
+latents-controls: ......................................S........
+lmr: S
+local-dependence: SSS..........S..Fitted a single-level latent profile model.
+..S...S
+lta-acceleration: .......................................
+lta-bootstrap: SS...........................SSS..SS...
+lta-compare: SS......SS
+lta-covariance-boundary: ....................................................
+lta-general: S.................SSS
+lta-parallel: S
+lta-thin-profiles: S
+lta-three-step: S
+math-core-audit: S
+math-extensions-audit: S
+math-inference-audit: S
+math-plot-audit: S
+math-results-audit: S
+missing-covariance: ..................................................
+mixture-regression-labels: .......
+mixture-regression-prediction-design: .........S
+mixture-regression: S
+multilca: ..No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+....No standard errors in this table: Inference requires a converged fit.
+...........
+multilevel-growth: SSSS......
+multilpa: ............................................................................................................................................................
+negative-binomial-regression: S............
+noise: .................
+numerical-safeguards: S
+ordinal-regression: S.........S...........S
+parallel-candidates: Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+.Preparing 2 candidates on 2 workers.
+Fitting 2 starts on 2 workers.
+Done in under a minute.
+...............
+parallel-profile-pool: S
+parallel-recovery: SSSSSSSSSS
+parallel-report: ....................
+parallel: SSSS..........SSS.......SPreparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+.............................................................S
+plot-categorical-summaries: S
+plot-gg: S..........S..........S
+plot-named: SSSSSSS...
+plot-polish: S
+plot: SS.....SSS...SSSSS...........SSSS....
+pool-imputations: S
+post-submission-review: S
+posterior-rounding: .......
+predict-empty-rows: ................................
+predict: SS......
+prior: ........................S
+release-audit-comparison: .............
+release-audit-core: ....................
+release-audit-lta: .........................................
+release-audit-regression: ..........................................................
+release-core: S
+release-engine: S
+release-inference: S
+release-items: S
+release-regression: S
+release-surface: S
+release-transitions: SSSSSS.........SSSSSS
+release-units: SSSS
+report-surface: SSSSSS
+review-0970-estimation: ...........................
+review-0970-parallel: S
+review-0971-fixes: .............Fitted a single-level latent profile model.
+.................
+review-1015-accessors: ..................................
+review-1015-core: ...................................
+review-1015-covariates: S
+review-1015-families: S
+review-1015-inference: ..............S....SSS....S
+review-1015-lead: SSSS....S...S
+review-1015-plots: SSSSSSS
+review-1015-regression: S
+review-1015-transitions: S
+review-1020-inference: S
+review-1020-zero-weights: ..................
+review-1026-additive-r2: ................................
+review-1026-additive: S
+review-1026-categorical-r2: S
+review-1026-categorical: S
+review-1026-codex: S
+review-1026-constancy: ............
+review-1026-empty-rows: ..............
+review-1026-growth-r2: S
+review-1026-growth: S
+review-1026-inference-r2: S.........S..................SS
+review-1026-inference: ...............SSS......
+review-1026-kernel-r2: S
+review-1026-kernel: ..................
+review-1026-labels: S
+review-1026-lta-open: S
+review-1026-lta-r2: S
+review-1026-lta: S
+review-1026-mixreg-r2: S
+review-1026-mixreg: S
+review-1026-multilevel-r2: S
+review-1026-multilevel: S
+review-1026-refusals: ..............S
+review-1026-selection-r2: S
+review-1026-selection: ........................................
+review-1026-zero-weight-checks: ....................
+review-1026-zero-weight-likelihood: ...................
+review-1027-condition-calls: S
+review-1027-diagnostics: SS......SSS.....SSSS...SSS..
+review-1027-error-contract: ........................................................................................................................................................................................................................
+review-1027-replication: S
+review-core-audit: S
+review-extra: S
+review-families: S
+review-followup: S
+review-integration: S
+review-lta: S
+review-pairs-trees: ..........................................................
+review-regression: S
+robust: ...................................
+scaling-invariance: .....................................
+scaling: ...............................
+search: S
+seeds: ....................S
+sensitivity: ...................SS.............SS....................S
+sequences: .............................................S....
+single-level: ....................S....
+staged-bootstrap: S
+staged-identity: ......................................................
+start-helpers: .......................
+start-kmeans-warning: S
+structure-inference: S
+thin-profiles: S
+three-step-clusters: .............SSSSS
+three-step-ml: S
+three-step: ..........................................................................
+tidy-accessors: ..........................................................SS................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+........................................................................................
+tidy-classes: ........................................S.....
+tidy-core: ..............................................................SS
+tidy-diagnostics: ...................................................
+tidy-examples: ..
+tidy-inference: S
+tidy-sequences: ..........................
+tidy-three-step: ..........................................................................
+tna-fits: .....S..
+tna: ................................S..........
+transition-inference: S
+transitions-numerics: ...........................No standard errors in this table: Inference requires a converged fit.
+.SS........
+transitions: ....S....................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........No standard errors in this table: Inference requires a converged fit.
+.No standard errors in this table: Inference requires a converged fit.
+......................No standard errors in this table: Inference requires a converged fit.
+...No standard errors in this table: Inference requires a converged fit.
+...............................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........
+tree: S
+weighted-logits: .....
+weights: ...................................................SSSS.......
+zero-weight-initialization: ........................................
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. SQUAREM reaches plain EM's maximum from the same start ('test-acceleration.R:10:3') - Reason: On CRAN
+
+2. enumeration crosses families, restrictions and class counts ('test-additive-compare.R:11:3') - Reason: On CRAN
+
+3. the bootstrap LRT simulates the null and refits both models ('test-additive-compare.R:51:3') - Reason: On CRAN
+
+4. bootstrap refuses non-nested or mismatched group-class fits ('test-additive-compare.R:91:3') - Reason: On CRAN
+
+5. blocks are shared or class-specific as each family says ('test-additive-families.R:32:3') - Reason: On CRAN
+
+6. nested families order their likelihoods ('test-additive-families.R:57:3') - Reason: On CRAN
+
+7. print, summary and plots work for the new families ('test-additive-families.R:103:3') - Reason: On CRAN
+
+8. one class, balanced groups: boundary MLE is reached exactly ('test-additive-fit.R:40:3') - Reason: On CRAN
+
+9. likelihood is invariant to row order ('test-additive-fit.R:107:3') - Reason: On CRAN
+
+10. the print method is short and stable ('test-additive-fit.R:144:1') - Reason: On CRAN
+
+11. group-class labels do not depend on the start that won ('test-additive-methods.R:95:3') - Reason: On CRAN
+
+12. plots are ggplot objects with intervals only when inference applies ('test-additive-methods.R:208:3') - Reason: On CRAN
+
+13. Newton polishing reaches the maximum EM stops short of ('test-additive-methods.R:230:3') - Reason: On CRAN
+
+14. a rare, weakly separated class raises latents_weak_class ('test-additive-methods.R:266:3') - Reason: On CRAN
+
+15. categorical draws follow the inverse-CDF definition ('test-alignment-service.R:177:3') - Reason: On CRAN
+
+16. (code run outside of `test_that()`) ('test-api-compat-0921.R:5:1') - Reason: On CRAN
+
+17. (code run outside of `test_that()`) ('test-astra-core.R:6:1') - Reason: On CRAN
+
+18. (code run outside of `test_that()`) ('test-astra-diagnostics.R:6:1') - Reason: On CRAN
+
+19. (code run outside of `test_that()`) ('test-audit-inference-repairs.R:6:1') - Reason: On CRAN
+
+20. equal-variance optimizer basins respect outcome units and origin ('test-audit-ml3-optimizer.R:21:3') - Reason: On CRAN
+
+21. (code run outside of `test_that()`) ('test-audit-plots-predictions.R:5:1') - Reason: On CRAN
+
+22. (code run outside of `test_that()`) ('test-audit-recent-api.R:5:1') - Reason: On CRAN
+
+23. (code run outside of `test_that()`) ('test-audit-reporting-repairs.R:3:1') - Reason: On CRAN
+
+24. the residual table corrects for the number of pairs it tests ('test-bivariate-residuals.R:161:3') - Reason: On CRAN
+
+25. every bootstrap refit carries the held blocks and their values ('test-bootstrap-constraints.R:43:3') - Reason: On CRAN
+
+26. an unconstrained comparison is refitted without a constraint ('test-bootstrap-constraints.R:69:3') - Reason: On CRAN
+
+27. the held constraint is named on the public surface ('test-bootstrap-constraints.R:128:3') - Reason: On CRAN
+
+28. a constrained pair that is not nested is refused ('test-bootstrap-constraints.R:139:3') - Reason: On CRAN
+
+29. a held measurement is refused across different profile counts ('test-bootstrap-constraints.R:156:3') - Reason: On CRAN
+
+30. a constraint on only one of the two models is refused ('test-bootstrap-constraints.R:169:3') - Reason: On CRAN
+
+31. models holding different blocks are refused ('test-bootstrap-constraints.R:188:3') - Reason: On CRAN
+
+32. a resample carries one group per draw, whatever repeats ('test-bootstrap-inference.R:59:3') - Reason: On CRAN
+
+33. a constrained structure reports bootstrap intervals ('test-bootstrap-inference.R:87:3') - Reason: On CRAN
+
+34. the bootstrap agrees with the sandwich where both are available ('test-bootstrap-inference.R:102:3') - Reason: On CRAN
+
+35. a seed makes the table reproducible and leaves the stream alone ('test-bootstrap-inference.R:173:3') - Reason: On CRAN
+
+36. confint reports the interval parameter_inference reports ('test-bootstrap-inference.R:195:3') - Reason: On CRAN
+
+37. vcov and confint reach the bootstrap for a constrained structure ('test-bootstrap-inference.R:207:3') - Reason: On CRAN
+
+38. (code run outside of `test_that()`) ('test-bootstrap-lrt-extended.R:7:1') - Reason: On CRAN
+
+39. (code run outside of `test_that()`) ('test-boundary-exclude.R:9:1') - Reason: On CRAN
+
+40. ordinal and mixed-mode measurement fit and count parameters correctly ('test-categorical.R:116:3') - Reason: On CRAN
+
+41. categorical models plot their response probabilities ('test-categorical.R:226:3') - Reason: On CRAN
+
+42. (code run outside of `test_that()`) ('test-convenience.R:3:1') - Reason: On CRAN
+
+43. (code run outside of `test_that()`) ('test-covariance-structure.R:8:1') - Reason: On CRAN
+
+44. (code run outside of `test_that()`) ('test-covariate-measurement.R:10:1') - Reason: On CRAN
+
+45. (code run outside of `test_that()`) ('test-covariate-missing.R:9:1') - Reason: On CRAN
+
+46. (code run outside of `test_that()`) ('test-covariate-slopes.R:9:1') - Reason: On CRAN
+
+47. plot draws what a covariate model has and refuses what it has not ('test-covariate-surface.R:111:3') - Reason: On CRAN
+
+48. tables, plots and refusals of the cross-level families ('test-cross-level.R:52:3') - Reason: On CRAN
+
+49. the first week supports a two-level latent class model ('test-data-student-esm.R:40:3') - Reason: On CRAN
+
+50. the sequence recovers the persistence it was generated with ('test-data.R:268:3') - Reason: On CRAN
+
+51. previous_grade predicts engagement, as the data are documented to ('test-data.R:284:3') - Reason: On CRAN
+
+52. (code run outside of `test_that()`) ('test-default-search.R:8:1') - Reason: On CRAN
+
+53. shifting a covariate moves the means; scaling it scales the effect ('test-direct-effects.R:60:3') - Reason: On CRAN
+
+54. a direct effect nests the model without it and removes the covariate's association ('test-direct-effects.R:83:3') - Reason: On CRAN
+
+55. a direct-effect fit predicts, refits and simulates with its covariates ('test-direct-effects.R:104:3') - Reason: On CRAN
+
+56. bootstrap replicates are refitted with the models' direct effects and patterns ('test-direct-effects.R:184:3') - Reason: On CRAN
+
+57. plots draw the cases of a direct-effect fit where its profile means are ('test-direct-effects.R:229:3') - Reason: On CRAN
+
+58. (code run outside of `test_that()`) ('test-engine-fixes.R:6:1') - Reason: On CRAN
+
+59. enumerate_lca() treats every indicator as categorical ('test-enumerate-verbs.R:49:3') - Reason: On CRAN
+
+60. (code run outside of `test_that()`) ('test-enumeration-type.R:3:1') - Reason: On CRAN
+
+61. (code run outside of `test_that()`) ('test-enumeration.R:4:1') - Reason: On CRAN
+
+62. prediction, bootstrap and simulation carry the new indicators ('test-extra-indicators.R:103:3') - Reason: On CRAN
+
+63. lta() takes ordinal and count indicators, invariant or by occasion ('test-extra-indicators.R:183:3') - Reason: On CRAN
+
+64. negative-binomial counts: recovery, scores and the Poisson limit ('test-extra-indicators.R:213:3') - Reason: On CRAN
+
+65. (code run outside of `test_that()`) ('test-features-direct-effects.R:11:1') - Reason: On CRAN
+
+66. (code run outside of `test_that()`) ('test-features-joint-items.R:10:1') - Reason: On CRAN
+
+67. (code run outside of `test_that()`) ('test-features-ml-three-step.R:11:1') - Reason: On CRAN
+
+68. refits keep the pattern: refit arguments, enumeration, comparison, bootstrap ('test-features-pair-covariance.R:152:3') - Reason: On CRAN
+
+69. (code run outside of `test_that()`) ('test-features-vlmr.R:8:1') - Reason: On CRAN
+
+70. every fit class is a kind the named functions know ('test-fit-verbs.R:134:3') - Reason: On CRAN
+
+71. the registry maps each function once, onto views the fit offers ('test-fit-verbs.R:146:3') - Reason: On CRAN
+
+72. each named function on each fit draws or refuses with a classed condition ('test-fit-verbs.R:173:3') - Reason: On CRAN
+
+73. a mapped function draws exactly what plot(what = ) draws ('test-fit-verbs.R:213:3') - Reason: On CRAN
+
+74. the mapping is the documented one, view by view ('test-fit-verbs.R:250:3') - Reason: On CRAN
+
+75. refusals are classed and name the views of the fit's plot() ('test-fit-verbs.R:296:3') - Reason: On CRAN
+
+76. an argument the mapped view does not take is refused by name ('test-fit-verbs.R:329:3') - Reason: On CRAN
+
+77. (code run outside of `test_that()`) ('test-fixed-measurement.R:7:1') - Reason: On CRAN
+
+78. (code run outside of `test_that()`) ('test-get-data.R:8:1') - Reason: On CRAN
+
+79. every grid verb draws or refuses by class, on every kind of grid ('test-grid-contract.R:56:3') - Reason: On CRAN
+
+80. the registry, plot_views() and the verbs agree on every grid ('test-grid-contract.R:91:3') - Reason: On CRAN
+
+81. each kind offers the views its candidates carry ('test-grid-contract.R:118:3') - Reason: On CRAN
+
+82. an object that is not a grid, or a criterion it lacks, is refused by class ('test-grid-contract.R:151:3') - Reason: On CRAN
+
+83. transition and family plots keep their 0.9.21 calls ('test-grid-contract.R:175:3') - Reason: On CRAN
+
+84. a regression grid has a criteria plot and a tidy summary ('test-grid-contract.R:216:3') - Reason: On CRAN
+
+85. the grid table and quality numbers are the grids' own ('test-grid-contract.R:232:3') - Reason: On CRAN
+
+86. (code run outside of `test_that()`) ('test-growth-correlated.R:10:1') - Reason: On CRAN
+
+87. (code run outside of `test_that()`) ('test-growth-mixture.R:5:1') - Reason: On CRAN
+
+88. (code run outside of `test_that()`) ('test-growth-parameter-inference.R:7:1') - Reason: On CRAN
+
+89. (code run outside of `test_that()`) ('test-growth-predict.R:8:1') - Reason: On CRAN
+
+90. (code run outside of `test_that()`) ('test-growth-r3step.R:9:1') - Reason: On CRAN
+
+91. fit_staged makes good on its promise of conditional standard errors ('test-inference-fixed-measurement.R:129:3') - Reason: On CRAN
+
+92. classification quality is taken over rows with an observed indicator ('test-informative-rows.R:17:3') - Reason: On CRAN
+
+93. rows with nothing observed change no estimate and no statistic ('test-informative-rows.R:52:3') - Reason: On CRAN
+
+94. the enumeration and comparison tables use the same rows ('test-informative-rows.R:72:3') - Reason: On CRAN
+
+95. a weighted fit with empty rows weights the rows it classifies ('test-informative-rows.R:89:3') - Reason: On CRAN
+
+96. complete data keep every row ('test-informative-rows.R:101:3') - Reason: On CRAN
+
+97. several panels share a legend, one panel is labelled directly ('test-informative-rows.R:111:3') - Reason: On CRAN
+
+98. lta() and covariate fits count informative rows in the individual BIC ('test-informative-rows.R:130:3') - Reason: On CRAN
+
+99. a general lta() fit compares on its informative rows ('test-informative-rows.R:157:3') - Reason: On CRAN
+
+100. a group with nothing observed is left out of the group statistics ('test-informative-rows.R:174:3') - Reason: On CRAN
+
+101. in a single-level fit an empty row is an empty group ('test-informative-rows.R:201:3') - Reason: On CRAN
+
+102. drop_empty = TRUE counts only what was observed, FALSE counts everything ('test-informative-rows.R:221:3') - Reason: On CRAN
+
+103. drop_empty reaches every candidate and refuses a wrong value by class ('test-informative-rows.R:251:3') - Reason: On CRAN
+
+104. fits with different drop_empty are not compared ('test-informative-rows.R:265:3') - Reason: On CRAN
+
+105. categorical covariate inference reports every category coherently ('test-latents-controls.R:204:3') - Reason: On CRAN
+
+106. (code run outside of `test_that()`) ('test-lmr.R:7:1') - Reason: On CRAN
+
+107. the joint model does not depend on the order of the pair or how it is joined ('test-local-dependence.R:26:3') - Reason: On CRAN
+
+108. the dependence table holds each class's joint table and its independence ('test-local-dependence.R:40:3') - Reason: On CRAN
+
+109. a joint model predicts from the caller's own columns ('test-local-dependence.R:61:3') - Reason: On CRAN
+
+110. one pair of two indicators frees every covariance, as the full model does ('test-local-dependence.R:118:3') - Reason: On CRAN
+
+111. refits of a fit with chosen covariances keep the pattern ('test-local-dependence.R:156:3') - Reason: On CRAN
+
+112. enumeration with chosen covariances crosses the diagonal they extend ('test-local-dependence.R:187:3') - Reason: On CRAN
+
+113. diagonal draws keep the package's random stream ('test-lta-bootstrap.R:25:3') - Reason: On CRAN
+
+114. full-covariance draws reproduce each profile's mean and covariance ('test-lta-bootstrap.R:39:3') - Reason: On CRAN
+
+115. a permuted homogeneous fit aligns back to the original exactly ('test-lta-bootstrap.R:114:3') - Reason: On CRAN
+
+116. refits whose labels switched align to the original estimates ('test-lta-bootstrap.R:125:3') - Reason: On CRAN
+
+117. transition bootstrap matches the Wald table's layout and scale ('test-lta-bootstrap.R:152:3') - Reason: On CRAN
+
+118. a full covariance structure has Wald and bootstrap inference that agree ('test-lta-bootstrap.R:186:3') - Reason: On CRAN
+
+119. weighted transition fits bootstrap with their weights ('test-lta-bootstrap.R:203:3') - Reason: On CRAN
+
+120. simulation keeps groups, occasions and covariates and draws the model ('test-lta-compare.R:6:3') - Reason: On CRAN
+
+121. general fits simulate with covariates, occasion measurement and order 2 ('test-lta-compare.R:26:3') - Reason: On CRAN
+
+122. bootstrap LRT between nested transition fits ('test-lta-compare.R:57:3') - Reason: On CRAN
+
+123. transition enumeration crosses profiles, classes and structures ('test-lta-compare.R:84:3') - Reason: On CRAN
+
+124. the general engine reproduces the homogeneous lta() exactly ('test-lta-general.R:31:3') - Reason: On CRAN
+
+125. EM alone reaches a stationary point (the quasi-Newton finish masks M-step bugs) ('test-lta-general.R:87:3') - Reason: On CRAN
+
+126. covariance structures combine with the extensions and nest ('test-lta-general.R:109:3') - Reason: On CRAN
+
+127. chart scores of the extended model equal the likelihood's gradient ('test-lta-general.R:134:3') - Reason: On CRAN
+
+128. (code run outside of `test_that()`) ('test-lta-parallel.R:5:1') - Reason: On CRAN
+
+129. (code run outside of `test_that()`) ('test-lta-thin-profiles.R:7:1') - Reason: On CRAN
+
+130. (code run outside of `test_that()`) ('test-lta-three-step.R:9:1') - Reason: On CRAN
+
+131. (code run outside of `test_that()`) ('test-math-core-audit.R:3:1') - Reason: On CRAN
+
+132. (code run outside of `test_that()`) ('test-math-extensions-audit.R:2:1') - Reason: On CRAN
+
+133. (code run outside of `test_that()`) ('test-math-inference-audit.R:2:1') - Reason: On CRAN
+
+134. (code run outside of `test_that()`) ('test-math-plot-audit.R:7:1') - Reason: On CRAN
+
+135. (code run outside of `test_that()`) ('test-math-results-audit.R:2:1') - Reason: On CRAN
+
+136. regression plots carry membership columns and raw transformed predictors ('test-mixture-regression-prediction-design.R:43:3') - Reason: On CRAN
+
+137. (code run outside of `test_that()`) ('test-mixture-regression.R:6:1') - Reason: On CRAN
+
+138. identical group classes reduce it to the single-level growth mixture ('test-multilevel-growth.R:39:3') - Reason: On CRAN
+
+139. one group class is the single-level model with clusters as units ('test-multilevel-growth.R:59:3') - Reason: On CRAN
+
+140. a simulated multilevel truth is recovered ('test-multilevel-growth.R:81:3') - Reason: On CRAN
+
+141. the tables, printing, simulation and standard errors are complete ('test-multilevel-growth.R:104:3') - Reason: On CRAN
+
+142. a simulated NB mixture is recovered ('test-negative-binomial-regression.R:21:3') - Reason: On CRAN
+
+143. (code run outside of `test_that()`) ('test-numerical-safeguards.R:3:1') - Reason: On CRAN
+
+144. a simulated two-class ordinal mixture is recovered ('test-ordinal-regression.R:40:3') - Reason: On CRAN
+
+145. category probabilities sum to one and relabelling leaves the likelihood ('test-ordinal-regression.R:100:3') - Reason: On CRAN
+
+146. simulate() is seeded and draws the fitted categories ('test-ordinal-regression.R:157:3') - Reason: On CRAN
+
+147. (code run outside of `test_that()`) ('test-parallel-profile-pool.R:3:1') - Reason: On CRAN
+
+148. a killed fork task is retried once and recovers its exact value ('test-parallel-recovery.R:57:3') - Reason: On CRAN
+
+149. a permanently killed fork task leaves other task results intact ('test-parallel-recovery.R:83:3') - Reason: On CRAN
+
+150. a socket retry loses only the task that kills its worker ('test-parallel-recovery.R:101:3') - Reason: On CRAN
+
+151. ordinary errors in start code are recorded without a process-loss retry ('test-parallel-recovery.R:127:3') - Reason: On CRAN
+
+152. recovered flat starts preserve the complete transition grid ('test-parallel-recovery.R:152:3') - Reason: On CRAN
+
+153. a recovered direct lta start preserves the undisturbed fitted object ('test-parallel-recovery.R:176:3') - Reason: On CRAN
+
+154. a genuine transition start error is neither retried nor called worker loss ('test-parallel-recovery.R:203:3') - Reason: On CRAN
+
+155. a permanently lost flat start is reported alongside fitted candidates ('test-parallel-recovery.R:228:3') - Reason: On CRAN
+
+156. losing all starts fails only their candidate in a transition grid ('test-parallel-recovery.R:258:3') - Reason: On CRAN
+
+157. emEM aggregates recovered screening and finalist losses into one warning ('test-parallel-recovery.R:281:3') - Reason: On CRAN
+
+158. a profile grid on several cores is identical to one core ('test-parallel.R:42:3') - Reason: On CRAN
+
+159. transition and family grids on several cores are identical to one core ('test-parallel.R:57:3') - Reason: On CRAN
+
+160. candidates' warnings reach the caller in grid order, as on one core ('test-parallel.R:72:3') - Reason: On CRAN
+
+161. the socket backend returns values and conditions in order ('test-parallel.R:86:3') - Reason: On CRAN
+
+162. a forked worker killed by a signal becomes a failed candidate ('test-parallel.R:132:3') - Reason: On CRAN
+
+163. a socket worker that dies becomes a failed candidate ('test-parallel.R:147:3') - Reason: On CRAN
+
+164. one fit's starts on several cores give the same fit as one core ('test-parallel.R:163:3') - Reason: On CRAN
+
+165. cleanup closes a live socket even when another node is already closed ('test-parallel.R:225:3') - Reason: On CRAN
+
+166. a seeded multilevel LCA grid prepared on workers is identical to one core ('test-parallel.R:587:3') - Reason: On CRAN
+
+167. (code run outside of `test_that()`) ('test-plot-categorical-summaries.R:5:1') - Reason: On CRAN
+
+168. every view of a fit and a grid builds without a warning ('test-plot-gg.R:12:3') - Reason: On CRAN
+
+169. an ellipse has the covariance it was drawn from ('test-plot-gg.R:58:3') - Reason: On CRAN
+
+170. the plots of several views print each one ('test-plot-gg.R:114:3') - Reason: On CRAN
+
+171. each named plot draws what plot(what = ) draws ('test-plot-named.R:30:3') - Reason: On CRAN
+
+172. plot_diagnostics() returns every supported view, as diagnostics does ('test-plot-named.R:72:3') - Reason: On CRAN
+
+173. the group views report the group classification table ('test-plot-named.R:94:3') - Reason: On CRAN
+
+174. a fit with one group class has no group views ('test-plot-named.R:120:3') - Reason: On CRAN
+
+175. named plots refuse what a fit cannot draw, by condition class ('test-plot-named.R:130:3') - Reason: On CRAN
+
+176. enumeration plots choose criteria with `what`, and 0.9.21's `criterion` still works ('test-plot-named.R:148:3') - Reason: On CRAN
+
+177. a grouped plot function's "all" draws each of its views ('test-plot-named.R:204:3') - Reason: On CRAN
+
+178. (code run outside of `test_that()`) ('test-plot-polish.R:9:1') - Reason: On CRAN
+
+179. plot methods return ggplot objects for every view ('test-plot.R:17:3') - Reason: On CRAN
+
+180. plot refuses the styling arguments it no longer takes ('test-plot.R:34:3') - Reason: On CRAN
+
+181. enumeration plotting rejects unusable criteria by condition class ('test-plot.R:71:3') - Reason: On CRAN
+
+182. plot_enumeration() draws the enumeration view plot() draws ('test-plot.R:87:3') - Reason: On CRAN
+
+183. what = "all" draws every information criterion once ('test-plot.R:104:3') - Reason: On CRAN
+
+184. the sequence plot draws every group at every position ('test-plot.R:154:3') - Reason: On CRAN
+
+185. every plot's data is reachable through a tidy verb ('test-plot.R:170:3') - Reason: On CRAN
+
+186. the catalogue lists exactly the views the methods accept ('test-plot.R:191:3') - Reason: On CRAN
+
+187. a view a fit cannot supply is refused by condition class ('test-plot.R:215:3') - Reason: On CRAN
+
+188. case views agree with the entropy the package reports ('test-plot.R:225:3') - Reason: On CRAN
+
+189. transition bars draw the transition fit's own 95% intervals ('test-plot.R:272:3') - Reason: On CRAN
+
+190. the avepp view draws the average posterior matrix ('test-plot.R:292:3') - Reason: On CRAN
+
+191. a one-profile fit still draws its sizes ('test-plot.R:307:3') - Reason: On CRAN
+
+192. what = "all" returns every drawable view, named ('test-plot.R:316:3') - Reason: On CRAN
+
+193. (code run outside of `test_that()`) ('test-pool-imputations.R:7:1') - Reason: On CRAN
+
+194. (code run outside of `test_that()`) ('test-post-submission-review.R:3:1') - Reason: On CRAN
+
+195. predicting the training rows reproduces the fit's posteriors ('test-predict.R:12:3') - Reason: On CRAN
+
+196. a single-level fit's densities sum to its log likelihood ('test-predict.R:51:3') - Reason: On CRAN
+
+197. shrinkage pulls the means towards the prior mean ('test-prior.R:81:3') - Reason: On CRAN
+
+198. (code run outside of `test_that()`) ('test-release-core.R:6:1') - Reason: On CRAN
+
+199. (code run outside of `test_that()`) ('test-release-engine.R:9:1') - Reason: On CRAN
+
+200. (code run outside of `test_that()`) ('test-release-inference.R:7:1') - Reason: On CRAN
+
+201. (code run outside of `test_that()`) ('test-release-items.R:5:1') - Reason: On CRAN
+
+202. (code run outside of `test_that()`) ('test-release-regression.R:7:1') - Reason: On CRAN
+
+203. (code run outside of `test_that()`) ('test-release-surface.R:8:1') - Reason: On CRAN
+
+204. an origin no move leaves is flagged and not counted by both engines (TRANS-1) ('test-release-transitions.R:66:3') - Reason: On CRAN
+
+205. zero-weight units beyond the weighted occasions leave an occasion-measurement fit unchanged (TRANS-3) ('test-release-transitions.R:104:3') - Reason: On CRAN
+
+206. the transitions table leaves out moves only zero-weight units make (TRANS-4) ('test-release-transitions.R:117:3') - Reason: On CRAN
+
+207. get_results() on a general transition fit keeps the shared contract (TRANS-5, API-4, API-5) ('test-release-transitions.R:140:3') - Reason: On CRAN
+
+208. summary() of a general transition fit is a summary, not a list dump (API-6) ('test-release-transitions.R:175:3') - Reason: On CRAN
+
+209. an unused factor level is dropped from transition covariates (TRANS-7) ('test-release-transitions.R:196:3') - Reason: On CRAN
+
+210. the TRANS-8 refusal's two remedies both give the numeric-time fit ('test-release-transitions.R:226:3') - Reason: On CRAN
+
+211. bootstrap_lrt() refuses transition fits with different drop_empty (TRANS-9) ('test-release-transitions.R:241:3') - Reason: On CRAN
+
+212. confint() of a transition fit refuses a parm that is not an estimate (INF-5) ('test-release-transitions.R:249:3') - Reason: On CRAN
+
+213. a transition grid raises an input error every candidate shares (API-2) ('test-release-transitions.R:261:3') - Reason: On CRAN
+
+214. a transition or profile grid raises an argument error every candidate shares (API-2 handoff) ('test-release-transitions.R:274:3') - Reason: On CRAN
+
+215. a general transition fit classes an unknown table or covariance type (INF-2, API-5) ('test-release-transitions.R:290:3') - Reason: On CRAN
+
+216. lta() takes the same path in any units, under SQUAREM and plain EM ('test-release-units.R:58:3') - Reason: On CRAN
+
+217. the additive family takes the same SQUAREM path in any units ('test-release-units.R:83:3') - Reason: On CRAN
+
+218. every family counts replication within 1e-6 per observed value ('test-release-units.R:96:3') - Reason: On CRAN
+
+219. sensitivity() reads the fit's own replication tolerance ('test-release-units.R:122:3') - Reason: On CRAN
+
+220. diagnostics() forwards `by` instead of dropping it ('test-report-surface.R:24:3') - Reason: On CRAN
+
+221. report() forwards `by` through to the residual it prints ('test-report-surface.R:40:3') - Reason: On CRAN
+
+222. an argument the reporting surface cannot forward is refused ('test-report-surface.R:51:3') - Reason: On CRAN
+
+223. plot(diagnostics()) draws for a covariate fit ('test-report-surface.R:65:3') - Reason: On CRAN
+
+224. a single-profile fit refuses the case diagnostics by class ('test-report-surface.R:78:3') - Reason: On CRAN
+
+225. report() draws every view it offers, for every family ('test-report-surface.R:100:3') - Reason: On CRAN
+
+226. (code run outside of `test_that()`) ('test-review-0970-parallel.R:5:1') - Reason: On CRAN
+
+227. (code run outside of `test_that()`) ('test-review-1015-covariates.R:7:1') - Reason: On CRAN
+
+228. (code run outside of `test_that()`) ('test-review-1015-families.R:6:1') - Reason: On CRAN
+
+229. vcov() on the estimation scale refuses the bootstrap instead of NULL ('test-review-1015-inference.R:53:3') - Reason: On CRAN
+
+230. bootstrap_lrt() matches groups by value, not by storage type ('test-review-1015-inference.R:73:3') - Reason: On CRAN
+
+231. the bootstrap summary does not call a non-converged replicate an error ('test-review-1015-inference.R:96:3') - Reason: On CRAN
+
+232. get_candidate() on a transition grid checks counts before matching ('test-review-1015-inference.R:112:3') - Reason: On CRAN
+
+233. an all-unconverged transition grid names no best candidate ('test-review-1015-inference.R:143:3') - Reason: On CRAN
+
+234. a transition grid passes its candidates' warnings on, as the profile grid does ('test-review-1015-lead.R:14:3') - Reason: On CRAN
+
+235. a family grid passes its candidates' warnings on ('test-review-1015-lead.R:25:3') - Reason: On CRAN
+
+236. lta() retains enough default iterations for unaccelerated EM ('test-review-1015-lead.R:37:3') - Reason: On CRAN
+
+237. a model comparison marks no row and circles no point as best ('test-review-1015-lead.R:48:3') - Reason: On CRAN
+
+238. an occasion-varying lta() plot orders panels by occasion number and wraps labels ('test-review-1015-lead.R:72:3') - Reason: On CRAN
+
+239. a grid over group classes at one profile count puts the classes on the x-axis ('test-review-1015-lead.R:97:3') - Reason: On CRAN
+
+240. response whiskers are the inference table's own bounds ('test-review-1015-plots.R:9:3') - Reason: On CRAN
+
+241. named plots refuse objects they cannot draw with a classed error ('test-review-1015-plots.R:37:3') - Reason: On CRAN
+
+242. plot_enumeration() and plot_tree() draw a transition grid ('test-review-1015-plots.R:57:3') - Reason: On CRAN
+
+243. a noise fit's prevalence plot accounts for the noise share ('test-review-1015-plots.R:73:3') - Reason: On CRAN
+
+244. profile views say which indicators they leave out ('test-review-1015-plots.R:89:3') - Reason: On CRAN
+
+245. covariate fits refuse an abbreviated prevalence with the reason ('test-review-1015-plots.R:113:3') - Reason: On CRAN
+
+246. a centred fit's case-level views are refused as nothing to plot ('test-review-1015-plots.R:127:3') - Reason: On CRAN
+
+247. (code run outside of `test_that()`) ('test-review-1015-regression.R:4:1') - Reason: On CRAN
+
+248. (code run outside of `test_that()`) ('test-review-1015-transitions.R:6:1') - Reason: On CRAN
+
+249. (code run outside of `test_that()`) ('test-review-1020-inference.R:4:1') - Reason: On CRAN
+
+250. (code run outside of `test_that()`) ('test-review-1026-additive.R:9:1') - Reason: On CRAN
+
+251. (code run outside of `test_that()`) ('test-review-1026-categorical-r2.R:7:1') - Reason: On CRAN
+
+252. (code run outside of `test_that()`) ('test-review-1026-categorical.R:9:1') - Reason: On CRAN
+
+253. (code run outside of `test_that()`) ('test-review-1026-codex.R:6:1') - Reason: On CRAN
+
+254. (code run outside of `test_that()`) ('test-review-1026-growth-r2.R:11:1') - Reason: On CRAN
+
+255. (code run outside of `test_that()`) ('test-review-1026-growth.R:11:1') - Reason: On CRAN
+
+256. grand-centred SEs are calibrated against the spread of the reported means (INF2-1) ('test-review-1026-inference-r2.R:46:3') - Reason: On CRAN
+
+257. person-centred sandwich SEs are calibrated (INF2-2) ('test-review-1026-inference-r2.R:101:3') - Reason: On CRAN
+
+258. covariate fits: grand-transformed SEs are calibrated (INF2-1) ('test-review-1026-inference-r2.R:202:3') - Reason: On CRAN
+
+259. covariate fits: person-centred fits use the calibrated sandwich (INF2-2) ('test-review-1026-inference-r2.R:216:3') - Reason: On CRAN
+
+260. alignment recovers a known permutation and relabelling leaves the SE table invariant ('test-review-1026-inference.R:32:3') - Reason: On CRAN
+
+261. standard errors are translation invariant and scale equivariant ('test-review-1026-inference.R:79:3') - Reason: On CRAN
+
+262. a seeded bootstrap restores the caller's stream and is reproducible ('test-review-1026-inference.R:100:3') - Reason: On CRAN
+
+263. (code run outside of `test_that()`) ('test-review-1026-kernel-r2.R:8:1') - Reason: On CRAN
+
+264. (code run outside of `test_that()`) ('test-review-1026-labels.R:9:1') - Reason: On CRAN
+
+265. (code run outside of `test_that()`) ('test-review-1026-lta-open.R:10:1') - Reason: On CRAN
+
+266. (code run outside of `test_that()`) ('test-review-1026-lta-r2.R:13:1') - Reason: On CRAN
+
+267. (code run outside of `test_that()`) ('test-review-1026-lta.R:10:1') - Reason: On CRAN
+
+268. (code run outside of `test_that()`) ('test-review-1026-mixreg-r2.R:7:1') - Reason: On CRAN
+
+269. (code run outside of `test_that()`) ('test-review-1026-mixreg.R:13:1') - Reason: On CRAN
+
+270. (code run outside of `test_that()`) ('test-review-1026-multilevel-r2.R:10:1') - Reason: On CRAN
+
+271. (code run outside of `test_that()`) ('test-review-1026-multilevel.R:10:1') - Reason: On CRAN
+
+272. more cores than the machine has are capped with a classed warning ('test-review-1026-refusals.R:68:3') - Reason: !is.finite(available) || available < 1L is TRUE
+
+273. (code run outside of `test_that()`) ('test-review-1026-selection-r2.R:7:1') - Reason: On CRAN
+
+274. (code run outside of `test_that()`) ('test-review-1027-condition-calls.R:8:1') - Reason: On CRAN
+
+275. every family gets a report with the contract's columns and statuses ('test-review-1027-diagnostics.R:58:3') - Reason: On CRAN
+
+276. every value is the value of the table it is read from ('test-review-1027-diagnostics.R:79:3') - Reason: On CRAN
+
+277. rule-of-thumb quantities are reported without a verdict ('test-review-1027-diagnostics.R:123:3') - Reason: On CRAN
+
+278. screened starts are reported apart, never as unfinished ('test-review-1027-diagnostics.R:139:3') - Reason: On CRAN
+
+279. a one-class fit, an empty class and a noise fit report n/a or check, not NA ('test-review-1027-diagnostics.R:153:3') - Reason: On CRAN
+
+280. a diagnostics object saved before the checks still prints and answers ('test-review-1027-diagnostics.R:177:3') - Reason: On CRAN
+
+281. residuals without a test are described, never reported as passing ('test-review-1027-diagnostics.R:187:3') - Reason: On CRAN
+
+282. finished starts are every stage but screened, so emEM counts are right ('test-review-1027-diagnostics.R:205:3') - Reason: On CRAN
+
+283. a cross-level fit is checked at both levels, weighted where it can be ('test-review-1027-diagnostics.R:221:3') - Reason: On CRAN
+
+284. a family without classification plots is diagnosed with plots = TRUE ('test-review-1027-diagnostics.R:257:3') - Reason: On CRAN
+
+285. an indicator named profile is printed with the others ('test-review-1027-diagnostics.R:264:3') - Reason: On CRAN
+
+286. diagnostics keeps 0.9.21's default table, the entropy ('test-review-1027-diagnostics.R:274:3') - Reason: On CRAN
+
+287. (code run outside of `test_that()`) ('test-review-1027-replication.R:7:1') - Reason: On CRAN
+
+288. (code run outside of `test_that()`) ('test-review-core-audit.R:6:1') - Reason: On CRAN
+
+289. (code run outside of `test_that()`) ('test-review-extra.R:2:1') - Reason: On CRAN
+
+290. (code run outside of `test_that()`) ('test-review-families.R:3:1') - Reason: On CRAN
+
+291. (code run outside of `test_that()`) ('test-review-followup.R:6:1') - Reason: On CRAN
+
+292. (code run outside of `test_that()`) ('test-review-integration.R:3:1') - Reason: On CRAN
+
+293. (code run outside of `test_that()`) ('test-review-lta.R:5:1') - Reason: On CRAN
+
+294. (code run outside of `test_that()`) ('test-review-regression.R:2:1') - Reason: On CRAN
+
+295. (code run outside of `test_that()`) ('test-search.R:9:1') - Reason: On CRAN
+
+296. the covariate fit and the bootstraps accept a negative seed ('test-seeds.R:84:3') - Reason: On CRAN
+
+297. seeds reaching the same maximum agree, whatever they numbered it ('test-sensitivity.R:79:3') - Reason: On CRAN
+
+298. agreement is a proportion and the reference seed reproduces itself ('test-sensitivity.R:95:3') - Reason: On CRAN
+
+299. a transition fit is refitted per seed and its occasions compared ('test-sensitivity.R:160:3') - Reason: On CRAN
+
+300. a growth mixture is refitted per seed and its persons compared ('test-sensitivity.R:189:3') - Reason: On CRAN
+
+301. parallel seeds give the serial table for every refitted family ('test-sensitivity.R:278:3') - Reason: On CRAN
+
+302. the sequence panel draws and respects the no-ordering contract ('test-sequences.R:145:3') - Reason: On CRAN
+
+303. the package's verbs work on a single-level fit ('test-single-level.R:92:3') - Reason: On CRAN
+
+304. (code run outside of `test_that()`) ('test-staged-bootstrap.R:5:1') - Reason: On CRAN
+
+305. (code run outside of `test_that()`) ('test-start-kmeans-warning.R:7:1') - Reason: On CRAN
+
+306. (code run outside of `test_that()`) ('test-structure-inference.R:8:1') - Reason: On CRAN
+
+307. (code run outside of `test_that()`) ('test-thin-profiles.R:6:1') - Reason: On CRAN
+
+308. enough groups give a standard error of a plausible size ('test-three-step-clusters.R:93:3') - Reason: On CRAN
+
+309. the refusal threshold is the rank the cluster sums can reach ('test-three-step-clusters.R:115:3') - Reason: On CRAN
+
+310. two groups cannot carry a variance for two classes ('test-three-step-clusters.R:145:3') - Reason: On CRAN
+
+311. r3step refuses a robust covariance its groups cannot support ('test-three-step-clusters.R:172:3') - Reason: On CRAN
+
+312. a robust r3step with many groups is unchanged and comparable ('test-three-step-clusters.R:206:3') - Reason: On CRAN
+
+313. (code run outside of `test_that()`) ('test-three-step-ml.R:8:1') - Reason: On CRAN
+
+314. the standardized profile means the plot draws are available as data ('test-tidy-accessors.R:78:3') - Reason: On CRAN
+
+315. standardizing errors where the plot would, and only where it applies ('test-tidy-accessors.R:107:3') - Reason: On CRAN
+
+316. a bootstrap comparison is classed and plots its simulated null ('test-tidy-classes.R:163:3') - Reason: On CRAN
+
+317. every condition class raised in R/ is documented, and every documented class is raised ('test-tidy-core.R:268:3') - Reason: On CRAN
+
+318. every warning the package raises carries a class ('test-tidy-core.R:309:3') - Reason: On CRAN
+
+319. (code run outside of `test_that()`) ('test-tidy-inference.R:8:1') - Reason: On CRAN
+
+320. a covariate fit gives networks and draws its response probabilities ('test-tna-fits.R:50:3') - Reason: On CRAN
+
+321. a transition fit draws every view its catalogue claims ('test-tna.R:121:3') - Reason: On CRAN
+
+322. (code run outside of `test_that()`) ('test-transition-inference.R:6:1') - Reason: On CRAN
+
+323. the prevalence reported is the one the final expectation implies ('test-transitions-numerics.R:103:3') - Reason: On CRAN
+
+324. two very long sequences fit rather than overflowing ('test-transitions-numerics.R:136:3') - Reason: On CRAN
+
+325. enough starts reach the same maximum from either row order ('test-transitions.R:76:3') - Reason: On CRAN
+
+326. (code run outside of `test_that()`) ('test-tree.R:3:1') - Reason: On CRAN
+
+327. weighted transition fits reproduce duplicated persons ('test-weights.R:255:3') - Reason: On CRAN
+
+328. weighted transition scores are the gradient of the pseudo likelihood ('test-weights.R:287:3') - Reason: On CRAN
+
+329. weighted group-class families reproduce duplicated groups ('test-weights.R:305:3') - Reason: On CRAN
+
+330. weighted additive scores are the gradient and inference is robust ('test-weights.R:326:3') - Reason: On CRAN
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ failed skipped   error warning  passed 
+      0     239       0       0    4509 

@@ -1,20 +1,54 @@
 #' Predict from and simulate a fitted model
 #'
-#' `predict()` evaluates a fit on new rows. For [multilpa()] and [multilca()]
-#' fits without membership covariates it is the E-step at the estimates,
-#' applied through the fit's own preparation (categorical levels, centering,
-#' missing-data handling), so predicting the training rows reproduces the
-#' fit's posteriors exactly. In a two-level model the groups in `newdata` are
-#' new groups, each classified from its own rows. For [mixture_regression()]
-#' fits it returns fitted outcomes or class probabilities. For a growth
-#' mixture (`mixture_regression(random = )`) the persons in `newdata` are new
-#' persons (and their clusters new clusters): it returns class trajectories,
-#' which need no outcome, or, given the outcomes, class posteriors and each
-#' person's own curve with their empirical Bayes random effects, the
-#' quantities of `lcmm::predictY()`, `predictClass()` and `predictRE()`.
-#' Membership-covariate and latent transition fits are refused with
-#' `latents_unsupported_prediction`; the posteriors of their fitted rows are
-#' given by `get_results(x, "posteriors")`.
+#' @description
+#' `predict()` applies a fitted model to the original sample or new
+#' observations to obtain class membership probabilities or predicted outcomes.
+#'
+#' For latent profile and class models, it estimates each observation's
+#' probability of belonging to each class, given its observed indicators, and
+#' identifies the most probable class. These probabilities express uncertainty
+#' in classification; the assigned class provides a discrete summary of that
+#' uncertainty.
+#'
+#' For mixture regression models, it predicts outcomes from the relationships
+#' estimated within each class, either separately by class or averaged over
+#' class membership probabilities. Growth mixture models also provide
+#' individual trajectories informed by the person's observed outcomes.
+#'
+#' `simulate()` generates replicate outcomes under a fitted mixture regression
+#' or growth mixture model, preserving the original predictors and grouping
+#' structure. The simulations reflect the model's assumed variation in class
+#' membership and outcomes while holding the estimated parameters fixed.
+#'
+#' @details
+#' For [multilpa()] and
+#' [multilca()] models without membership covariates, it evaluates the E-step
+#' at the estimated parameters using the fitted categorical levels, centering,
+#' and missing-data rules. Applying it to the estimation data reproduces the
+#' fitted posterior probabilities for classified observations. In a two-level
+#' model, groups in `newdata` are treated as new groups and classified using
+#' their supplied observations.
+#' With the default `drop_empty = TRUE`, rows with every indicator missing
+#' retain their position but have `NA` for the predicted profile and its
+#' probabilities. A group is unclassified only when none of its rows has an
+#' observed indicator. Fitted rows with zero sampling weight are unclassified
+#' under either setting of `drop_empty`. New-data prediction does not apply
+#' sampling weights. These exclusions apply to classification output;
+#' density predictions retain each row's evaluated log density.
+#' For a model with a noise component, prediction supports complete rows and,
+#' under `missing = "fiml"`, rows with every indicator missing. Partially
+#' observed rows are unsupported because the fitted noise hypervolume does
+#' not specify their marginal density. An entirely missing row has log
+#' density zero, including under the noise component.
+#'
+#' For growth mixtures (`mixture_regression(random = )`),
+#' individuals and clusters in `newdata` are treated as new units. Class mean
+#' trajectories require only predictors; posterior class probabilities,
+#' individual trajectories, and empirical Bayes random effects also require
+#' observed outcomes. Prediction is not supported for membership-covariate or
+#' latent transition fits and raises `latents_unsupported_prediction`.
+#' For these fits, use `get_results(x, "posteriors")` to extract posterior
+#' probabilities for the estimation data.
 #'
 #' `simulate()` draws new outcomes on the fitted design of a mixture
 #' regression or growth mixture: class memberships from the fitted mixing
@@ -31,14 +65,14 @@
 #'   over group classes, for scoring or held-out likelihood). For a mixture
 #'   regression: `"response"` (the mean outcome over classes; expected
 #'   successes for a binomial count response),
-#'   `"class_response"` (one row per row and class), `"posterior"` (class
+#'   `"class_response"` (one row per observation and class), `"posterior"` (class
 #'   probabilities given the outcome, which `newdata` must contain) or
 #'   `"probabilities"` (each category under each class; ordinal family only).
 #'   For a growth mixture: `"response"` (the class trajectories averaged with
 #'   each person's prior class probabilities), `"class_response"` (one row per
-#'   row and class, random effects at zero), and, from the outcomes in
+#'   observation and class, with random effects set to zero), and, using outcomes in
 #'   `newdata`, `"posterior"` (one row per person), `"class_conditional"`
-#'   (one row per row and class: the class trajectory plus the person's
+#'   (one row per observation and class: the class trajectory plus the person's
 #'   random effects predicted under that class, E(b | y, class)),
 #'   `"conditional"` (those averaged with the posterior class probabilities)
 #'   and `"random_effects"` (one row per person and class with its posterior
@@ -65,12 +99,15 @@
 #'   returns one row per fitted row and one column per simulation, `sim_1`,
 #'   `sim_2`, ...
 #' @section Conditions: `latents_bad_data` when `newdata` lacks an indicator
-#'   or the `id` column, has a category the fit never saw, or a missing value
-#'   the fit cannot handle, or a regression design cannot be evaluated.
+#'   or the `id` column, contains a category absent from the estimation data,
+#'   contains unsupported missing values, or does not allow evaluation of the
+#'   regression design.
 #'   Binomial count predictions without trial counts also raise
 #'   `latents_bad_data`; `latents_bad_argument` for `"probabilities"`
 #'   outside the ordinal family; `latents_unsupported_prediction` for
 #'   `predict()` on a membership-covariate fit or a latent transition fit.
+#'   `latents_unsupported_noise` for partially observed prediction rows in a
+#'   model with a noise component.
 #'   A growth mixture prediction raises `latents_bad_data` when `newdata`
 #'   lacks `id`, the cluster column or (for the outcome-based types) the
 #'   outcome, and warns with `latents_unused_argument` for arguments it
@@ -81,7 +118,7 @@
 #' predict(fit, data.frame(hours = c(2, 10)), type = "class_response")
 #' head(simulate(fit, nsim = 2, seed = 1))
 #'
-#' # A growth mixture: one student's own curve, predicted from their scores.
+#' # Predict an individual trajectory conditional on observed scores.
 #' growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
 #'                              n_classes = 2, id = "student", class_level = "group",
 #'                              random = ~ 1, n_starts = 1, seed = 1)

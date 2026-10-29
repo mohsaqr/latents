@@ -1,0 +1,13 @@
+  group_class profile probability group_class_probability
+1           1       1   0.1703129               0.5130011
+2           1       2   0.8296871               0.5130011
+3           2       1   0.8176178               0.4869989
+4           2       2   0.1823822               0.4869989
+  profile indicator category probability threshold probability_standard_error
+1       1     item1        0   0.8513175  1.744972                 0.02876844
+2       2     item1        0   0.1781379 -1.529015                 0.03037020
+3       1     item1        1   0.1486825        NA                 0.02876844
+4       2     item1        1   0.8218621        NA                 0.03037020
+5       1     item2        0   0.8162200  1.490944                 0.03254871
+6       2     item2        0   0.1529490 -1.711656                 0.02721492
+Two-level class probabilities and shared response tables verified.

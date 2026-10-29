@@ -11,7 +11,8 @@ enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 
 \item{vars}{Names of the indicator columns.}
 
-\item{n_profiles}{Positive whole numbers of profiles to compare.}
+\item{n_profiles}{Numbers of profiles to compare, specified as positive
+integers.}
 
 \item{model}{The covariance structures: \code{"basic"}, the default, for the
 four that combine equal or varying variances with covariances absent or
@@ -25,19 +26,20 @@ three-letter codes. See \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
 returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
-candidate each criterion prefers, \code{\link[=plot]{plot()}} the criteria against the
+candidate minimizing each criterion, \code{\link[=plot]{plot()}} the criteria against the
 number of profiles, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate.
 }
 \description{
-Fits a single-level latent profile model for each number of profiles in
-\code{n_profiles} under each covariance structure in \code{model}, and returns a
-\code{multilpa_enumeration} object that tabulates the information criteria,
-entropy and diagnostics of every fit. It is \code{\link[=enumerate_classes]{enumerate_classes()}} with
-\code{id = NULL}.
+\code{enumerate_lpa()} fits latent profile models with different numbers of
+profiles and specified covariance structures. It brings together evidence
+about fit, classification, and estimation stability to support selection
+of the number of profiles and their covariance specification. Each fitted
+candidate remains available for detailed examination.
 }
 \details{
+This is the single-level interface to \code{\link[=enumerate_classes]{enumerate_classes()}}.
 For observations nested in groups, use \code{\link[=enumerate_classes]{enumerate_classes()}} with the
-grouping column as \code{id}, which also crosses the number of group classes.
+grouping column as \code{id}, which also varies the number of group classes.
 }
 \section{Conditions}{
 

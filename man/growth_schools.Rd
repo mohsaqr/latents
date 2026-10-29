@@ -15,9 +15,9 @@ columns:
 \item{programme}{Standardized school support programme, constant within
 school.}
 \item{school_type}{Factor, \code{"supportive"} or \code{"struggling"}: the school's
-generating type. Not for fitting; kept to check recovery.}
+generating class; retained for assessing class recovery.}
 \item{trajectory}{Factor, \code{"improving"} or \code{"plateauing"}: the student's
-generating kind. Not for fitting; kept to check recovery.}
+generating class; retained for assessing class recovery.}
 }
 }
 \source{
@@ -27,19 +27,32 @@ Simulated by \code{data-raw/growth-schools.R} in the source repository.
 growth_schools
 }
 \description{
-A simulated multilevel longitudinal dataset for the multilevel growth
-mixture model. Each row is one student's reading score at one occasion:
-600 students in 40 schools (15 per school), tested on up to five occasions
-(\code{wave} 0 to 4). Two kinds of student follow two
-trajectories: \emph{improving} (starts near 48, gains 3 points a wave) and
-\emph{plateauing} (starts near 56, gains 0.3). Students vary around their
-trajectory (random intercept SD 3, random slope SD 0.6, correlation -0.2;
-residual SD 2). Schools are of two types: in \emph{supportive} schools 80\% of
-students improve, in \emph{struggling} schools 25\% do, and a school's support
-programme (standardized, measured once) makes it more likely to be
-supportive. About 8\% of tests were missed at random.
+\code{growth_schools} is a simulated dataset illustrating multilevel growth
+mixture models. It contains repeated reading scores for 600 students nested
+within 40 schools, with up to five observations per student.
+
+The data were generated from two student trajectory classes, labelled
+"improving" and "plateauing". Students vary in their initial reading
+achievement and rate of change within each class. Two school-level classes
+differ in the prevalence of these student trajectories.
+
+The dataset illustrates how multilevel growth mixture models represent
+individual variation in development alongside differences in trajectory
+membership between schools. Generating class labels are retained at both
+levels for assessing recovery.
 }
 \details{
+There are 15 students per school, with occasions indexed by \code{wave} from 0
+to 4. The generating student classes have two linear mean
+trajectories: \emph{improving} (intercept 48, slope 3 points per occasion) and
+\emph{plateauing} (intercept 56, slope 0.3). Random intercepts and slopes have
+standard deviations 3 and 0.6 and correlation -0.2; the residual standard
+deviation is 2. The generating school classes, labelled \emph{supportive} and
+\emph{struggling}, have improving-class probabilities of 0.8 and 0.25,
+respectively. The standardized school-level \code{programme} variable predicts
+school-class membership. Approximately 8\% of test occasions were removed
+at random.
+
 The school types correspond to the group classes of
 \code{mixture_regression(..., cluster = "school", n_group_classes = 2)}, with
 \code{group_membership = "programme"}.

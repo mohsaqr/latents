@@ -2,7 +2,7 @@
 % Please edit documentation in R/accessors.R
 \name{starting_values}
 \alias{starting_values}
-\title{Extract starting values for a latent profile fit}
+\title{Extract starting values for a subsequent fit}
 \usage{
 starting_values(
   x,
@@ -45,9 +45,16 @@ labels, so a fit whose categorical indicators or categories do not match
 raises \code{latents_bad_start}. The object can be passed directly as \code{start}.
 }
 \description{
-Returns a \code{multilpa_start} object, the starting-value list \code{\link[=multilpa]{multilpa()}}
-accepts as \code{start}, taken from a fitted model or from any list that carries
-the parameter blocks. The blocks are validated when the list is built.
+Extract parameter values from a fitted model for use as starting values in
+a subsequent \code{\link[=multilpa]{multilpa()}} fit. Measurement parameters can be extracted
+separately when membership probabilities should be re-estimated. Supplying
+starting values does not hold parameters fixed; use the fitting function's
+\code{fixed} argument to impose those constraints.
+}
+\details{
+This is an advanced utility for controlled refitting and selective
+parameter constraints. Required blocks are checked during extraction;
+further numerical and model-specific validation occurs during fitting.
 }
 \examples{
 set.seed(7)
@@ -65,5 +72,6 @@ refit <- multilpa(example_data, c("score_a", "score_b"), "school",
 logLik(refit)
 }
 \seealso{
-\code{\link[=get_results]{get_results()}} for the values as tidy tables.
+\code{\link[=get_results]{get_results()}} for the values as tidy tables; \code{\link[=fit_staged]{fit_staged()}} for
+two-stage estimation with fixed measurement parameters.
 }

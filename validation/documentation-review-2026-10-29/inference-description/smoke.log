@@ -1,0 +1,25 @@
+        level       outcome          term   parameter    estimate
+1 measurement     profile_1             a        mean  0.07248577
+2 measurement     profile_1             b        mean -0.10164942
+3 measurement     profile_1             a    variance  1.04448690
+4 measurement     profile_1             b    variance  0.85194395
+5     profile     profile_1 group_class_1 probability  1.00000000
+6       group group_class_1          <NA> probability  1.00000000
+  standard_error  statistic   p_value p_adjusted   conf_low  conf_high
+1     0.10220014  0.7092531 0.4781674  0.4781674 -0.1278228 0.27279437
+2     0.09230081 -1.1012842 0.2707730  0.2707730 -0.2825557 0.07925684
+3     0.14771275         NA        NA         NA  0.7916349 1.37810108
+4     0.12048307         NA        NA         NA  0.6457032 1.12405898
+5     0.00000000         NA        NA         NA  1.0000000 1.00000000
+6     0.00000000         NA        NA         NA  1.0000000 1.00000000
+Distal outcome by class (bch, 95% CI)
+
+Class   Mean         95% CI    SE  Effective n
+-----  -----  -------------  ----  -----------
+    1   5.10  [4.82,  5.37]  0.14        98.75
+    2  10.14  [9.93, 10.35]  0.11        95.32
+Distal outcome: class differences (bch, 95% CI)
+
+Class  vs  Difference        95% CI      p  p (BH)
+-----  --  ----------  ------------  -----  ------
+    2   1        5.04  [4.69, 5.39]  <.001   <.001

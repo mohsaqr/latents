@@ -15,6 +15,10 @@ navbar:
     right: [search, github]
 
 reference:
+- title: Overview
+  contents:
+  - latents-package
+
 - title: Fitting models
   desc: Two-level latent profile, latent class and latent transition models.
   contents:

@@ -1,0 +1,20 @@
+Conjugate prior (Fraley & Raftery, 2007)
+  shrinkage: 20
+  mean:      supplied (2 x 1)
+  dof:       mclust default (from the data)
+  scale:     mclust default (from the data)
+                 a        b
+profile_1 1.846392 2.608134
+$shrinkage
+[1] 20
+
+$mean
+[1] 0 0
+
+$dof
+[1] 4
+
+$scale
+[1] 0.9054754
+
+Mean shrinkage and Wald-inference restriction verified.

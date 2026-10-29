@@ -1,0 +1,14 @@
+[1] "multilpa_diagnostics"
+               domain                                 check status
+1          Estimation                  best start converged     ok
+2          Estimation        best log likelihood reached by   info
+3          Estimation           starts failed or unfinished     ok
+4          Estimation                  estimates at a bound     ok
+5          Class size                        smallest class   info
+6          Class size        modal vs estimated proportions   info
+7          Class size         classes with no assigned unit     ok
+8      Classification                      relative entropy   info
+9      Classification              lowest average posterior   info
+10     Classification lowest odds of correct classification   info
+11 Local independence        pairs dependent within a class     ok
+12        Information       log likelihood, parameters, BIC   info

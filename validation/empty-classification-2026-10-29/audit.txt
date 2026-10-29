@@ -1,0 +1,73 @@
+Empty-classification repair and audit — 2026-10-29
+
+Problem reproduced
+An LPA/FIML fit retained all 300 observations but counted only 299 as
+informative. Row 9 had no observed indicator yet assignments reported profile
+2, the largest class, with probabilities equal to the mixing proportions.
+
+Corrected behavior
+Assignment and posterior tables preserve row order and mark excluded profile
+labels, uncertainty, posterior probabilities and modal flags as missing.
+Group labels are masked independently: an empty observation can belong to an
+informative group, while a wholly empty group has no reported assignment.
+Long posterior tables retain the class index identifying each probability;
+that index is not the observation's assigned class.
+
+The same policy now covers fitted/new-data predictions, general LTA
+assignments, class-specific descriptives, seed-sensitivity agreement,
+sequence summaries and homogeneous-LTA sequence-length tables. Recovery
+cross-tabulations retain excluded units in a visible NA class category.
+drop_empty = FALSE retains the documented legacy convention. Zero-weight
+units remain excluded under the existing multilpa reporting policy.
+
+Partially observed categorical pairs were incorrectly excluded when the
+observed item was their only measurement. The observedness calculation now
+includes such partial pairs. This can correct sample sizes, information
+criteria and classification summaries; fitted likelihoods and probabilities
+are unchanged.
+
+Noise prediction edge case
+An entirely missing prediction row now has log density zero for every
+component, including noise. Partially observed noise prediction raises
+latents_unsupported_noise: a scalar fitted hypervolume cannot identify the
+required marginal density. Noise fitting already rejects missing indicators.
+
+Paths checked without changes
+Classification/entropy diagnostics, BCH and three-step estimation, class
+trees, classification-plot inputs, modal sequences and TNA already use the
+informative masks. Plots of measured values remove nonfinite measurements.
+Ordinal/count LTA masks already include those measurements. Covariate fits
+inherit the corrected base mask. Additive/cross-level fits reject missing
+indicators. Regression/growth fits reject missing outcomes or explicitly
+omit them; synthetic checks confirmed omitted persons are not classified.
+Their separate zero-weight prediction conventions were not changed.
+
+Jamovi integration boundary
+The sibling JLatents directory contains DESIGN.md, not runnable module code.
+Its documented save route is get_results(fit, "assignments"), whose output is
+now corrected. The actual jamovi save-to-spreadsheet interaction could not
+be tested in this workspace. No sibling-project file was modified.
+
+Validation
+Four new regression-test files cover assignments, prediction, consumers and
+observedness. Full test suite under NOT_CRAN=false: 4,509 passing assertions,
+zero failures, errors or warnings, with the suite's CRAN-mode skips. Relevant
+targeted suites were also run with CRAN skips disabled: final informative-row,
+plot and accessor checks passed 391 assertions with no failures, errors,
+warnings or skips. See extended-tests.log
+and the agent logs under tmp/empty-consumer-review, tmp/empty-mask-audit and
+tmp/empty-assignment-review. All 38 Rd topics parse cleanly. The PDF manual
+was rebuilt successfully (118 pages).
+
+verify.R reproduces the original example: input/output rows=300, classified
+rows=nobs=classification total=299. It compares the original saved pre-fix
+fit with the current fit and confirms matching parameters, log likelihood
+and internal posteriors. assignments.csv records the corrected export.
+source-manifest.csv binds the reviewed R sources and tests.
+
+Scope/provenance
+This is an authorized runtime repair following the earlier documentation
+review. The earlier documentation-only executable-identity attestation and
+benchmark fingerprint sidecars do not attest this modified runtime. Those
+historical artifacts were not rewritten or represented as a new benchmark
+run. No package installation, commit, push or release was performed.

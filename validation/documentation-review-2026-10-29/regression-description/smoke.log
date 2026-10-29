@@ -1,0 +1,25 @@
+Regression coefficients (95% CI)
+
+Class    Term       Estimate          95% CI      p
+-------  ---------  --------  --------------  -----
+Class 1  Intercept     -2.98  [-3.06, -2.89]  <.001
+Class 1  x              0.99  [ 0.90,  1.08]  <.001
+Class 2  Intercept      3.03  [ 2.94,  3.12]  <.001
+Class 2  x             -0.94  [-1.03, -0.85]  <.001
+Model fit
+
+Family          gaussian
+Nesting         observation
+Classes         2
+Group classes   1
+Observations    240
+Parameters      7
+Log likelihood  -329.17
+AIC             672.33
+BIC             696.70
+SABIC           674.51
+ICL             698.21
+Entropy         0.995
+Smallest class  46.8%
+Converged       yes
+Class-specific regression coefficients inspected on synthetic data.

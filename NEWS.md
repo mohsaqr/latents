@@ -1,3 +1,38 @@
+# latents 1.1.2
+
+## Rows without data are no longer assigned a class (2026-10-29)
+
+Estimates, log likelihoods and posterior probabilities used in estimation
+are unchanged.
+
+* A row whose every indicator is missing contributes nothing to the fit, so
+  its posterior equals the class proportions. With the default
+  `drop_empty = TRUE`, such rows already counted for nothing in the sample
+  sizes and classification summaries. The assignment table then gave them
+  the largest class, however. Assignment and posterior tables now keep these
+  rows in their input order, but report their class, uncertainty and
+  probabilities as `NA`. The same applies to `predict()` on fitted or new
+  data, `lta()` assignments, `descriptives()` by class, `sensitivity()`
+  agreement and sequence summaries. A group whose rows are all empty has no
+  group class. An empty row in a group with data keeps the group's class.
+  `drop_empty = FALSE` keeps the earlier output.
+* A categorical `local_dependence` pair joins its two items into one. A row
+  could answer only one item of the pair, with no other indicator observed.
+  Such a row was wrongly dropped from the sample sizes, information criteria
+  and classification summaries, and is now counted as observed. Likelihoods
+  are unchanged.
+* `predict()` for a model with a noise component now refuses a row with only
+  some indicators observed, with condition class `latents_unsupported_noise`.
+  The fitted noise volume does not define a density for a subset of
+  indicators. A row with every indicator missing is accepted and, like any
+  empty row, reported without a class.
+
+## Documentation
+
+* Rewrote the introductions to the help pages, the bundled dataset
+  descriptions, the package overview (`?latents`), the DESCRIPTION summary and
+  the opening of the LPA vignette.
+
 # latents 1.1.1
 
 ## Help pages (2026-10-29)

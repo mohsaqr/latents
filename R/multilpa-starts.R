@@ -155,7 +155,7 @@
     # nothing to any estimate, so it must not enlarge the sample size the
     # individual-level BIC penalizes against.
     observed_per_row <- rowSums(!is.na(x)) +
-      (if (is.null(codes)) 0L else rowSums(!is.na(codes))) +
+      .multilpa_categorical_observed(codes) +
       if (is.null(.latents_extra_matrix(extra))) 0L else
         rowSums(!is.na(.latents_extra_matrix(extra)))
     # A unit of sampling weight zero contributes nothing either, so its rows

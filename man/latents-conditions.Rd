@@ -2,17 +2,25 @@
 % Please edit documentation in R/conditions.R
 \name{latents-conditions}
 \alias{latents-conditions}
-\title{Conditions raised by the package}
+\title{Errors, warnings and diagnostic messages}
 \value{
 Nothing; this page documents conditions rather than a function.
 }
 \description{
-Lists the classes of the errors, warnings and messages the package raises,
-and what raises each. A condition can be caught by its class with
-\code{\link[=tryCatch]{tryCatch()}} or \code{\link[=withCallingHandlers]{withCallingHandlers()}}. The classes are stable; the
-message text may change between versions.
+latents reports errors, warnings and messages to communicate problems with
+input data, difficulties during estimation, and limitations of requested
+analyses. Errors indicate that an operation could not be completed.
+Warnings identify issues requiring attention when interpreting or using a
+result. Messages provide progress updates or supplementary information.
 }
-\section{Input and data contracts}{
+\details{
+This reference describes the conditions that trigger these signals and
+their associated classes. In automated analyses, conditions can be handled
+by class using \code{\link[=tryCatch]{tryCatch()}} or \code{\link[=withCallingHandlers]{withCallingHandlers()}}. Class-based handling
+allows scripts to respond to specific situations without depending on
+message wording, which may change between versions.
+}
+\section{Input validation}{
 
 \describe{
 \item{\code{latents_bad_data}}{The data frame, the indicator columns or the
@@ -20,14 +28,14 @@ group column are invalid: too few rows, a duplicated or absent column
 name, an indicator that is not a numeric vector, an indicator that is
 constant or entirely unobserved, missing or non-finite values under
 \code{missing = "error"}, or a missing group identifier.}
-\item{\code{latents_unweightable_level}}{\code{\link[=diagnostics]{diagnostics()}} of a weighted fit
-whose level cannot be weighted (a cross-level fit stores its weights per
-group and no map from rows to groups). It is caught inside
-\code{diagnostics()}, which reports that level's checks as \code{n/a}.}
-\item{\code{latents_not_a_fit}}{A verb that works on a fitted model received
-something else (a data frame, an enumeration, a vector), or a fitted
-model of a family the verb does not take; the message says what it
-received. It is also a \code{latents_bad_argument}.}
+\item{\code{latents_unweightable_level}}{The stored sampling weights cannot be
+aligned with a classification level, for example in an older cross-level
+fit without a row-to-group mapping. \code{\link[=diagnostics]{diagnostics()}} handles this condition
+internally and reports the affected checks as \code{n/a}.}
+\item{\code{latents_not_a_fit}}{A function requiring a fitted model received
+an unsupported object or a model from an unsupported family. The message
+identifies the supplied object. Also inherits from
+\code{latents_bad_argument}.}
 \item{\code{latents_bad_argument}}{An argument has an invalid value: a scalar
 such as \code{n_profiles}, \code{n_group_classes}, \code{n_starts}, \code{max_iter}, \code{tol}
 or \code{min_variance}; a \code{seed} or \code{seeds} that is not a whole number
@@ -36,7 +44,7 @@ does not have, or a \code{what} that is \code{NA}, not text or more than one
 name; an enumerated option such as \code{missing}, \code{boundary},
 \code{select_start}, \code{acceleration}, \code{centering}, \code{scaling},
 \code{variance_model}, \code{covariance_model}, \code{vcov_type} or \code{adjust} given a
-value that is not one of its choices; or an argument the verb or table
+value that is not one of its choices; or an argument the function or table
 does not use.}
 \item{\code{latents_bad_time}}{\code{time} is missing, or repeats a position within
 a group.}
@@ -54,9 +62,8 @@ indicators, profiles or measurement options than the stage requests; or
 was fitted with \code{weights}, \code{centering}, or ordinal or count indicators.}
 \item{\code{latents_bad_transition}}{A transition model was requested with
 fewer than two profiles, or with no group observed at two occasions.}
-\item{\code{latents_bad_inference_data}}{The data passed to a verb with a fit
-do not reproduce the fit: a different number of rows, different values
-or a different group ordering.}
+\item{\code{latents_bad_inference_data}}{Data supplied with a fitted model
+differ from the fitting data in row count, values or group ordering.}
 \item{\code{latents_no_indicator_data}}{A fit carries no stored indicators, so
 the request needs the original data.}
 \item{\code{latents_incomplete_fit}}{A fit lacks fields the request needs,
@@ -98,9 +105,9 @@ overflowed, at a point EM reached: the start is recorded as failed
 raises \code{latents_all_starts_failed}.}
 \item{\code{latents_boundary_fit}}{A variance or response probability is at
 its bound, a mixing probability is zero, or a membership logit
-coefficient diverges (separation). The parameter is on the edge of its
-space, where the normal approximation of Wald inference does not hold,
-so no standard error is reported.}
+coefficient diverges (separation). The usual normal approximation for
+Wald inference does not apply at the parameter boundary, so standard
+errors are unavailable under the requested inference method.}
 \item{\code{latents_singular_information}}{The observed information is not
 positive definite or is numerically singular, so no standard error can
 be formed.}
@@ -130,12 +137,13 @@ or a broken cluster's surviving processes could not be stopped safely.
 A process lost during fitting is otherwise retried and reported with
 \code{latents_worker_lost} instead.}
 \item{\code{latents_worker_lost}}{One or more worker tasks returned no result,
-possibly because their processes were killed for memory. Missing results
+possibly because the operating system terminated them for excessive
+memory use. Missing results
 are retried once with fewer workers. The warning reports the numbers
 lost, recovered and still failed, and suggests fewer \code{cores}. Persistent
 losses become failed starts or candidate rows, retaining other results.
-A socket connection failure makes its current bounded chunk uncertain;
-earlier chunks are retained, and the uncertain chunk is retried.}
+After a socket connection failure, the affected batch is retried and
+results from previously completed batches are retained.}
 \item{\code{latents_suspect_categorical}}{A numeric indicator fitted as
 categorical has non-integer values or more than ten categories, so it
 may be continuous. Every distinct value is fitted as a category. The
@@ -150,8 +158,9 @@ or \code{verbose = FALSE}.}
 fitted as one worker task lost that worker twice. It is recorded as the
 candidate's error, in its row of the grid, and the other candidates are
 returned.}
-\item{\code{latents_reversed_likelihood}}{The model with more parameters has
-the lower likelihood, so at least one fit is at a local optimum.}
+\item{\code{latents_reversed_likelihood}}{The larger nested model has a lower
+likelihood, indicating that at least one fit has not reached its global
+maximum.}
 \item{\code{latents_bad_outcome}}{A distal outcome given to \code{\link[=three_step]{three_step()}} is
 of a type the requested method cannot handle, varies within a group
 when a group-level outcome is requested, or is a measurement
@@ -177,7 +186,7 @@ analysis.
 \describe{
 \item{\code{latents_unsupported_inference}}{Standard errors are not available
 for this fit. Raised by \code{\link[=parameter_inference]{parameter_inference()}} for a fit made with
-\code{prior} (Wald path), for the cross-level families, for a covariate fit
+\code{prior} (Wald method), for the cross-level families, for a covariate fit
 made by an older version, and for a fit recording a covariance
 structure code this version does not know; and by
 \code{parameter_inference(method = "bootstrap")} for an additive or
@@ -192,17 +201,19 @@ indicator values.}
 \item{\code{latents_unsupported_noise}}{\code{multilpa(noise = TRUE)} was combined
 with more than one group class, categorical indicators, a \code{fixed}
 block, membership covariates or missing indicator values; or a fit with
-a noise component was given to a verb that does not support one:
+a noise component was given to a function that does not support one:
 \code{\link[=parameter_inference]{parameter_inference()}}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
 \code{\link[=starting_values]{starting_values()}}, bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a
-posterior plot.}
+posterior plot. Also raised by \code{predict()} for partially observed rows
+when the fitted model has a noise component, because its stored
+hypervolume does not define the required marginal noise density.}
 \item{\code{latents_unsupported_structure}}{\code{multilpa()} was asked for a
 covariance structure other than EEI, VVI, EEE or VVV together with
 \code{profile_covariates} or \code{group_covariates}.}
 \item{\code{latents_bad_weights}}{\code{weights} does not name a column, or its
 values are missing, negative, non-finite, vary within a unit, or are
 positive for fewer than two units.}
-\item{\code{latents_unsupported_weights}}{A weighted fit was given to a verb
+\item{\code{latents_unsupported_weights}}{A weighted fit was given to a function
 or option that does not support sampling weights: \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
 \code{enumerate_regressions(bootstrap = )}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}},
 \code{prior} or \code{noise}; or a \code{vcov_type} other than \code{"robust"} was
@@ -223,11 +234,10 @@ so there is no standard error to report. Raised by
 \item{\code{latents_held_parameter}}{A parameter named in \code{parm} was held
 fixed by the fit and has no confidence interval. Raised by
 \code{\link[=confint]{confint()}}.}
-\item{\code{latents_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} was called on a
-model family whose refit needs arguments the shared refit does not
-carry, whose profile labels cannot be aligned between two fits, or
-on a directly fixed fit whose original free starts cannot be
-replayed.}
+\item{\code{latents_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} cannot refit the
+requested model or align its class labels. This includes directly fitted
+fixed-measurement models whose original free starting values were not
+retained.}
 \item{\code{latents_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
 called on a fit the correction does not cover: a membership-covariate
 fit, whose classification errors depend on the predictors (the
@@ -250,7 +260,7 @@ single transition matrix; its transitions are given by
 \code{get_results(x, "transitions")}.}
 \item{\code{latents_no_plot}}{\code{plot(x, what = "all")} was called on an object
 whose plot method has no views to draw.}
-\item{\code{latents_no_time}}{A sequence table or verb was requested for a
+\item{\code{latents_no_time}}{A sequence table or function was requested for a
 fit made without \code{time}.}
 \item{\code{latents_unsupported_prediction}}{\code{predict()} was called on a
 growth mixture, a membership-covariate fit or a latent transition fit,
@@ -271,8 +281,9 @@ panel needs indicators of a kind the fit does not have.}
 describe: \code{vars} named none, or the frame has no numeric column outside
 \code{id} and \code{by}.}
 \item{\code{latents_nothing_to_plot}}{The requested panel has no rows to draw.}
-\item{\code{latents_inaccurate_probability}}{The numerical integral behind a
-Lo-Mendell-Rubin p-value did not settle, so the p-value is not reported.}
+\item{\code{latents_inaccurate_probability}}{Numerical integration for a
+Lo-Mendell-Rubin p-value did not meet the required accuracy, so the
+p-value is unavailable.}
 \item{\code{latents_no_local_dependence}}{\code{get_results(fit, "local_dependence")}
 on a fit made without \code{local_dependence}.}
 \item{\code{latents_no_direct_effects}}{\code{get_results(fit, "direct_effects")}
@@ -291,7 +302,7 @@ reason in \code{note}; improve the alternative's fit before comparing.}
 group level of a grid with one group class was asked for. Also of
 class \code{latents_nothing_to_plot}; \code{get_results(x, "all")} leaves the
 \code{"tree"} table out.}
-\item{\code{latents_unsupported_view}}{A grid verb (\code{\link[=plot_enumeration]{plot_enumeration()}},
+\item{\code{latents_unsupported_view}}{A grid function (\code{\link[=plot_enumeration]{plot_enumeration()}},
 \code{\link[=plot_selection]{plot_selection()}}, \code{\link[=plot_tree]{plot_tree()}} or \code{plot()} of a grid) was asked for
 a view that this kind of grid cannot draw, such as the tree of a
 group-class family or regression grid. The message gives the reason
@@ -306,9 +317,10 @@ standard deviation.}
 }
 }
 
-\section{Warnings}{
+\section{Additional errors, warnings and messages}{
 
-These are raised when a result is returned but qualified.
+These conditions report limitations of a returned result or an inability to
+complete estimation. Message-only conditions are identified explicitly.
 \describe{
 \item{\code{latents_failed_starts}}{Some, but not all, EM starts failed. The
 remaining starts are in \code{get_results(fit, "starts")}.}
@@ -330,8 +342,9 @@ are unreliable.}
 \item{\code{latents_em_decrease}}{The \code{\link[=mixture_regression]{mixture_regression()}} EM likelihood
 decreased beyond rounding error. This indicates a defect and should be
 reported.}
-\item{\code{latents_unconverged}}{The best start had not converged when
-\code{max_iter} was reached, so the returned estimate is not a maximum.}
+\item{\code{latents_unconverged}}{The selected start did not satisfy the
+convergence criterion before \code{max_iter}, or an inference check found a
+non-negligible score. The returned estimate requires further assessment.}
 \item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, is at
 \code{min_variance}, so the fit is bound-active and its standard errors are
 not valid at that parameter.}
@@ -382,15 +395,15 @@ many.}
 \item{\code{latents_sensitivity_dropped}}{One or more seeds did not produce a
 fit in \code{\link[=sensitivity]{sensitivity()}}. Their rows are \code{NA}, and the warning states how
 many failed and the first reason.}
-\item{\code{latents_extreme_coefficients}}{A membership logit coefficient,
-measured per root-mean-square unit of its covariate, is large enough
-that the class is close to separated, so the estimate is driven by
-scaling, a sparse class or separation rather than by the data.}
+\item{\code{latents_extreme_coefficients}}{A membership logit coefficient is
+extreme after adjustment for covariate location and scale. This may
+indicate separation or sparse class membership and requires inspection
+before interpreting the coefficient or its standard error.}
 \item{\code{latents_empty_transition_row}}{A profile is never occupied before
 a final occasion, so its transition row is uniform by construction
 rather than estimated; \code{get_results(fit, "transitions", estimated = FALSE)} lists such rows. The general \code{\link[=lta]{lta()}} engine raises it too, for
 an origin profile (or pair, under \code{order = 2}) that no move leaves: its
-logits are fixed at zero and flagged \code{estimated = FALSE} in
+logits are fixed at zero and marked \code{estimated = FALSE} in
 \code{get_results(fit, "transitions")} and \code{\link[=parameter_inference]{parameter_inference()}}. In both
 engines such a row is not counted in \code{n_parameters}, AIC or BIC. The
 transition-network handoff also warns when it includes such a row.}
@@ -400,8 +413,9 @@ indicator, followed by an occasion that does. The moves into and out of
 the empty occasion (or, for an empty first occasion, the initial
 distribution and the first move) enter the likelihood only through
 their product, so their logits are not separately identified: the
-estimates are one of many equally good splits and their standard errors
-are not meaningful, and the parameter count includes them. Occasions
+distinct parameter combinations yield the same likelihood. Their
+standard errors are not interpretable, although the parameter count
+includes them. Occasions
 after the last observed one are not counted and do not warn.}
 \item{\code{latents_unverified_alignment}}{A supplied \code{data} frame has too
 little fitted information to verify row order (for example only a
@@ -416,7 +430,7 @@ bound; the standard errors of those parameters are not reported.}
 residuals met a marginal covariance that is numerically singular (a
 process variance far larger than the residual variance). During
 fitting this is treated as a rejected step; it reaches the caller only
-for parameter values supplied by hand.}
+for parameter values supplied explicitly.}
 \item{\code{latents_unused_argument}}{A method that accepts \code{...} (several
 \code{plot()} methods, \code{summary()} of the fits and grids whose summary
 takes no \code{level} or \code{vcov_type},
@@ -446,9 +460,9 @@ example_data <- data.frame(
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-# A sequence verb on a fit made without `time` is catchable by class.
+# Handle a missing-time condition by its class.
 tryCatch(get_results(fit, "sequences"),
          latents_no_time = function(condition) {
-  "this fit carries no ordering"
+  "No occasion ordering was specified for this fit."
 })
 }

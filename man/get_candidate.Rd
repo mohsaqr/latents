@@ -3,7 +3,7 @@
 \name{get_candidate}
 \alias{get_candidate}
 \alias{candidate_fit}
-\title{Take one fitted model out of an enumeration grid or a comparison}
+\title{Retrieve a fitted model from an enumeration or comparison}
 \usage{
 get_candidate(x, n_profiles, n_group_classes = 1L, model = NULL)
 
@@ -14,7 +14,7 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 class, transition or group-class family grid), or a comparison from
 \code{\link[=compare_models]{compare_models()}}. On a family grid, give the name, or \code{n_group_classes}
 with \code{model}. A grid of mixture regressions from
-\code{\link[=enumerate_regressions]{enumerate_regressions()}} is not taken (\code{latents_bad_argument}):
+\code{\link[=enumerate_regressions]{enumerate_regressions()}} is not supported (\code{latents_bad_argument}):
 \code{get_results(grid, "model", n_classes = )} returns one of its models.}
 
 \item{n_profiles}{Number of individual profiles of the candidate, the
@@ -30,15 +30,22 @@ match several candidates; on a group-class family grid, the family model
 as the grid's \code{model} column shows it.}
 }
 \value{
-The fitted model of that candidate, the same kind of object its
-fitting function returns (for a profile grid, class \code{multilpa}), so the
-verbs for a fitted model apply to it.
+The fitted object for the selected candidate, with the class and
+methods of its fitting function (for example, \code{multilpa} for a profile
+model).
 }
 \description{
-Returns one fitted model from an enumeration, selected by its name or by
-its number of profiles and group classes (and its covariance structure when
-the grid has several), or one model from a comparison, selected by its row
-label.
+\code{get_candidate()} retrieves a specified fitted model from an enumeration
+grid or model comparison for detailed inspection and subsequent analysis.
+The returned object retains its original model class and supports the
+summary, diagnostic, plotting, and inference methods available for that
+model.
+
+A candidate can be identified by its name or, for supported enumeration
+grids, by its class counts and model specification. When several
+candidates share the same class counts, the covariance structure or
+candidate name distinguishes them. The function retrieves the stored fit
+without repeating estimation.
 }
 \details{
 A candidate is selected by its name, as the grid's \code{candidate} column shows
@@ -62,7 +69,7 @@ there is no model to return; \code{latents_bad_argument} for a name or pair of
 counts given together with \code{n_group_classes} or \code{model}, for a value that
 names no candidate, and for a comparison given no label;
 \code{latents_incomplete_fit} for a comparison that no longer carries its
-models. Counts that are not single positive whole numbers fail the
+models. Counts that are not single positive integers fail the
 argument checks.
 }
 

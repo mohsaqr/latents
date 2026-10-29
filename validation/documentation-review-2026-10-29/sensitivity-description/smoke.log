@@ -1,0 +1,5 @@
+  seed log_likelihood converged iterations optimum best agreement
+1    1      -396.1633      TRUE          9       1 TRUE         1
+2    2      -396.1633      TRUE          9       1 TRUE         1
+3    3      -396.1633      TRUE          9       1 TRUE         1
+[1] 0.00024

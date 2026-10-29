@@ -2,7 +2,7 @@
 % Please edit documentation in R/three-step.R
 \name{three_step}
 \alias{three_step}
-\title{Estimate a distal outcome's mean in each latent class}
+\title{Compare latent classes on an external outcome}
 \usage{
 three_step(
   x,
@@ -24,13 +24,13 @@ transitions and invariant measurement, or a trajectory model that
 classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"},
 with or without \code{random} effects) fitted without \code{membership}
 covariates. Fits with membership covariates and multilevel growth
-mixtures (\code{cluster}) are refused with \code{latents_unsupported_three_step}:
+mixtures (\code{cluster}) raise \code{latents_unsupported_three_step}:
 the correction uses a fixed, unconditional classification-error matrix
 and independent units. The other families of \code{\link[=multilpa]{multilpa()}}, \code{\link[=lta]{lta()}} fits
 from the general transition engine (occasion-varying, second-order or
 covariate transitions, occasion-specific measurement, a stayer class,
 ordinal or count indicators) and mixture regressions with observation
-classes are refused with \code{latents_unsupported_three_step} too.}
+classes raise \code{latents_unsupported_three_step} too.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order.
 Columns shared with the fit are checked row by row; a frame with too
@@ -50,7 +50,8 @@ related to its person classes, reported with \code{level = "persons"};
 
 \item{method}{\code{"bch"} (default) applies the Bolck-Croon-Hagenaars weights;
 \code{"ml"} fits the maximum-likelihood step-three model (see \emph{Details});
-\code{"proportional"} weights by the posterior probabilities (attenuated);
+\code{"proportional"} weights by the posterior probabilities without
+correction for classification error;
 \code{"modal"} uses the uncorrected modal assignment, for comparison.}
 
 \item{ci_level}{Confidence level for the intervals (default 0.95).}
@@ -68,8 +69,7 @@ passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default)
 within the fit's groups and treats the groups as the independent units,
 as required when the outcome is measured on observations nested in
 groups. \code{"independent"} treats every observation as an independent unit,
-which is appropriate only without nesting (for example a fit with a
-single group). The choice is recorded in the result's \code{vcov_type}
+which is appropriate only when observations can be treated as independent. The choice is recorded in the result's \code{vcov_type}
 attribute.}
 
 \item{variance}{For \code{method = "ml"}: \code{"varying"} (default) estimates a
@@ -95,20 +95,32 @@ The result's \code{vcov_type} attribute records the variance used; for
 applied to \code{p_adjusted}.
 }
 \description{
-Estimates the mean of an outcome in each latent class of a fitted model,
-or the difference between every pair of classes, by the three-step
-approach, and returns a \code{data.frame}. The measurement model is fitted
-first, units are assigned to classes, and the outcome is then related to
-the assignments with a correction for classification error, so the outcome
-does not influence the classes. \code{"bch"} weights give approximately
-unbiased class means; \code{"ml"} estimates them by maximum likelihood with the
-classification errors held fixed; regressing on the modal class attenuates
-the differences (Vermunt 2010; Bakk, Tekle and Vermunt 2013; Bakk and
-Vermunt 2016).
+\code{three_step()} estimates differences in an external outcome between latent
+classes defined by a previously fitted model. It addresses whether classes
+distinguished by their indicator patterns also differ on a variable that
+was not used to identify them. The measurement model remains fixed, so the
+outcome comparison retains the original meaning of the classes.
+
+Latent class membership is inferred rather than observed. Assigning each
+observation to its most probable class and comparing the resulting groups
+treats those assignments as certain, which can distort estimated outcome
+differences. Three-step methods address this problem by using
+classification-error probabilities from the fitted model when estimating
+class-specific outcome means. The default Bolck--Croon--Hagenaars (\code{"bch"})
+method applies correction weights; the alternative maximum-likelihood
+(\code{"ml"}) method incorporates the classification-error probabilities into
+a model for the outcome.
+
+The analysis provides estimated outcome means within classes or differences
+between pairs of classes, together with standard errors and confidence
+intervals. Pairwise differences can also be tested against zero, with
+adjustment for multiple comparisons. For supported multilevel models,
+comparisons may concern individual profiles or group classes. Uncorrected
+modal-assignment and posterior-weighted analyses are available as
+additional methods.
 }
 \details{
-The correction assumes the outcome is independent of the assigned
-class given the true class. On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"}
+On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"}
 uses one row per occasion and relates the outcome to the profile at that
 occasion, with the default group-clustered variance accounting for the
 repeated occasions within a group. This is a marginal profile-outcome
@@ -119,7 +131,7 @@ The cluster-robust variance is the sum of one outer product per
 independent unit, scaled by the small-sample (CR1) factor \code{G / (G - 1)}
 for \code{G} units (groups, or observations under \code{vcov_type = "independent"}). These contributions sum to zero at the estimate, so the
 variance has rank at most \code{G - 1}: it is zero with a single group and
-singular with as many groups as classes. Both cases are refused with
+singular with as many groups as classes. Both cases raise
 \code{latents_too_few_groups}; \code{vcov_type = "independent"} gives the
 unclustered variance. For the same reason a class carried by a single
 unit (all its weight in one group, or under \code{vcov_type = "independent"}
@@ -135,30 +147,38 @@ normal within each true class. The log likelihood
 the class means and variances by EM followed by Newton steps, with the
 class sizes \code{pi_t} fixed at the average posterior probabilities and the
 classification errors \code{D} fixed, as in Latent GOLD's step-three model for
-a dependent variable. That likelihood can have several maxima (a skewed
-or heavy-tailed outcome lets a class absorb the tail), so EM runs from a
-fixed set of starts, Latent GOLD's proportional start among them, and
-keeps the highest. Equal-variance fits also try bounded BFGS from the
-existing quantile-based placements, accepting converged candidates with
-a settled score and a positive-definite information matrix. These finite
-searches do not guarantee the global maximum. Twenty of the starts are
-random draws from a fixed
-internal seed, so the result does not depend on the random seed and the
+a dependent variable. Multiple initialisations are used because the
+likelihood may have several local maxima. Equal-variance fits additionally
+use bounded BFGS optimisation from quantile-based initial values; accepted
+solutions must converge, have a sufficiently small score and yield a
+positive-definite information matrix. These searches do not guarantee the
+global maximum. Twenty random starts use a fixed internal seed, and the
 caller's \code{.Random.seed} is restored. R's hidden Box-Muller normal cache
-cannot be restored; see \link[base:Random]{base::Random}. The standard errors are the
-sandwich of that likelihood, clustered as for the other methods, and a
-class carried by a single unit has none, as above. Maximum likelihood
-relies on the normal distribution within classes: when the outcome is
-skewed, or its variance differs between classes while \code{variance = "equal"}, ML can shift the class means, and BCH is the more robust choice
-(Bakk and Vermunt 2016).
+cannot be restored; see \link[base:Random]{base::Random}. Standard errors use a sandwich
+covariance estimator, clustered as for the other methods. As described
+above, a class supported by a single independent unit has no standard error.
+Maximum-likelihood estimates depend on the assumed within-class outcome
+distribution. Skewness or an incorrect equal-variance constraint can bias
+estimated means; BCH is less sensitive to these distributional assumptions
+(Bakk and Vermunt, 2016).
 
-The classification-error matrix is treated as known, so the intervals
-are too narrow. Over 60 replications of a two-profile design with 8\%
-misclassification and a true class difference of 10, \code{"bch"} had a bias
-of -0.13 (against -1.28 for \code{"modal"} and -1.82 for \code{"proportional"})
-and its nominal 95\% intervals covered the true difference in 85\% of
-replications; the intervals of the other two methods covered it in none.
+Because uncertainty in the estimated classification-error probabilities
+is omitted, interval coverage can be below the nominal level,
+particularly when classification is uncertain.
 }
+\section{Interpretation}{
+
+Correction for classification error depends on the fitted measurement
+model and assumes that the outcome and assigned class are independent
+conditional on latent class membership. The maximum-likelihood method
+additionally assumes a normal outcome distribution within each class.
+Reported uncertainty is conditional on the estimated classification-error
+probabilities and does not include uncertainty from estimating those
+probabilities or selecting the class solution. Outcome differences
+describe associations; they do not establish causal effects of class
+membership.
+}
+
 \examples{
 set.seed(11)
 group <- rep(seq_len(40), each = 10)

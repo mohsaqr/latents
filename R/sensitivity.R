@@ -1,16 +1,39 @@
 utils::globalVariables(c("seed", "status"))
 
-#' Refit a model under several seeds
+#' Assess sensitivity of a fitted mixture model to initialisation
 #'
-#' Refits the model under each of several random seeds and returns one row
-#' per seed with the maximised log likelihood, convergence, which distinct
-#' optimum the refit reached, and the proportion of observations assigned to
-#' the same profile as in the reference fit. Profile labels of each refit are
-#' matched to the reference fit's before agreement is computed.
+#' @description
+#' `sensitivity()` evaluates how consistently a fitted mixture model is
+#' recovered from different random initialisations. Mixture-model estimation
+#' can converge to different local maxima, yielding different class assignments
+#' for the same data and model specification. Examining this dependence on
+#' initialisation helps assess the numerical reliability of the solution
+#' being interpreted.
 #'
-#' A fit's own replication count describes only the starts within one seed's
-#' random-number stream; refitting under other seeds shows whether other
-#' streams reach the same maximum and the same classification.
+#' The function repeats estimation under several random seeds and compares
+#' the resulting likelihood values and class assignments with the reference
+#' fit. Class labels are aligned before assignments are compared. By
+#' considering likelihood and classification agreement together, the analysis
+#' shows whether repeated searches recover a comparable fit and whether they
+#' assign the same observations to the same classes.
+#'
+#' Results include convergence status, log likelihood, and classification
+#' agreement for each refit. Similar likelihood values are grouped using a
+#' specified tolerance. The data and model specification remain fixed
+#' throughout the analysis.
+#'
+#' @section Interpretation:
+#' Consistent results across converged refits support numerical
+#' reproducibility, but do not guarantee a global maximum or establish the
+#' validity of the model. Similar likelihood values alone do not imply
+#' identical parameter estimates. The analysis assesses sensitivity to
+#' initialisation, rather than uncertainty arising from sampling or model
+#' selection.
+#'
+#' @details
+#' Replication across seeds complements replication across starts within one
+#' fit. Each refit uses the reference fit's estimation controls unless
+#' alternatives are supplied.
 #'
 #' A seed whose refit fails gives a row with `NA` estimates, and a
 #' `latents_sensitivity_dropped` warning reports how many seeds failed.
@@ -21,7 +44,7 @@ utils::globalVariables(c("seed", "status"))
 #'   measurement solution fixed. A directly fitted model with measurement
 #'   blocks held fixed is refused (`latents_unsupported_sensitivity`), because
 #'   its original free starting values are not retained. A
-#'   membership-covariate fit is refused with
+#'   membership-covariate fit raises
 #'   `latents_unsupported_sensitivity`. For an [lta()] fit, `agreement` is the
 #'   share of occasions given the same profile, after matching the refit's
 #'   profiles on the measurement; for a growth mixture it is the share of
@@ -32,19 +55,19 @@ utils::globalVariables(c("seed", "status"))
 #'   (`latents_bad_argument` otherwise). It must be the data the model was
 #'   fitted to, in its original row order; shared identifier and indicator
 #'   columns are checked against the fit (`latents_bad_inference_data`).
-#' @param seeds Seeds to refit under: at least two distinct whole numbers
-#'   that `set.seed()` accepts. Default `1:10`. Anything else raises
-#'   `latents_bad_argument`. If the reference fit's own seed is included, that
-#'   row reproduces the reference fit.
+#' @param seeds At least two distinct integer seeds accepted by `set.seed()`.
+#'   Default `1:10`. Invalid values raise `latents_bad_argument`. Reusing the
+#'   reference seed reproduces its initialisation when the other fitting
+#'   controls are unchanged.
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
 #'   used.
 #' @param max_iter,tol Passed to each refit. Default to the reference fit's
 #'   (for a fit that does not record them, to the defaults of the function
 #'   that fitted it).
-#' @param tolerance How far below an optimum's best log likelihood a refit may
-#'   lie and still count as reaching that optimum: each optimum is anchored at
-#'   its best value and spans at most `tolerance`. Defaults to the reference
-#'   fit's replication tolerance, 1e-6 per observed value.
+#' @param tolerance Maximum log-likelihood difference for grouping refits.
+#'   Each group is anchored at its highest log likelihood
+#'   and spans no more than `tolerance`. Defaults to the reference fit's
+#'   replication tolerance, 1e-6 per observed value.
 #' @param cores Number of processor cores (default 1). The seeds are refitted
 #'   in parallel, one seed per worker at a time, each refit on one core. Every
 #'   refit sets its own seed, so the result is identical to `cores = 1`.
@@ -54,17 +77,22 @@ utils::globalVariables(c("seed", "status"))
 #'   seeds are not used.
 #' @return A `data.frame` of class `latents_sensitivity` (which `plot()`
 #'   draws), one row per seed, with columns `seed`,
-#'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
-#'   maximum found across the seeds, 2 for the next distinct one, and so on),
+#'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the group
+#'   containing the highest attained log likelihood, 2 for the next lower
+#'   group, and so on),
 #'   `best` (whether this seed reached optimum 1) and `agreement` (the
-#'   proportion of observations given the same profile as the reference fit,
-#'   after label matching). A failed refit has `NA` in every column except
-#'   `seed`.
+#'   proportion of classified observations given the same profile as the
+#'   reference fit, after label matching). For profile and transition models,
+#'   this uses observations included in both fits under their `drop_empty`
+#'   settings. A failed refit has `NA` in every column except
+#'   `seed`. The `optimum` and `best` columns group attained likelihood values
+#'   without filtering on convergence; inspect `converged` before interpreting
+#'   them as evidence of replicated maxima.
 #'
-#'   `as.data.frame()` and `plot()` methods are provided: `as.data.frame()`
-#'   returns the table as a plain `data.frame`, and `plot()` (which takes
-#'   `main` and `subtitle`) a ggplot object showing, for each seed, how far its log likelihood lies below the best
-#'   converged refit and its agreement with the reference fit. Unfinished
+#'   `as.data.frame()` returns a plain `data.frame`. `plot()` accepts `main`
+#'   and `subtitle` and returns a ggplot object showing each refit's
+#'   log-likelihood difference from the best converged refit and its
+#'   classification agreement with the reference fit. Unfinished
 #'   refits are distinguished from converged maxima; if none converged, the
 #'   highest observed log likelihood is the reference instead.
 #' @seealso [enumerate_classes()] to vary the number of classes, and
@@ -288,7 +316,9 @@ plot.latents_sensitivity <-function(x, main = NULL, subtitle = NULL, ...) {
     refit = function(seed) do.call(multilpa, c(list(data = frame), shared,
                                                list(seed = seed))),
     agreement = function(fit) {
-      mean(.multilpa_align_labels(fit, x)$subject_profiles == x$subject_profiles)
+      included <- .multilpa_informative_rows(x) & .multilpa_informative_rows(fit)
+      mean(.multilpa_align_labels(fit, x)$subject_profiles[included] ==
+             x$subject_profiles[included])
     },
     tolerance = x$replication_tolerance %||% 1e-4)
 }
@@ -325,7 +355,8 @@ plot.latents_sensitivity <-function(x, main = NULL, subtitle = NULL, ...) {
     agreement = function(fit) {
       order <- .multilpa_match_order(.lta_profile_signature(x, x),
                                      .lta_profile_signature(fit, x))
-      mean(match(modal(fit), order) == reference)
+      included <- .multilpa_informative_rows(x) & .multilpa_informative_rows(fit)
+      mean(match(modal(fit)[included], order) == reference[included])
     },
     tolerance = x$replication_tolerance %||% 1e-4)
 }

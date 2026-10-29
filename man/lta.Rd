@@ -75,42 +75,38 @@ or covariance matrices) or \code{"equal"} (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts (default 10). The
 first start is deterministic: Ward's hierarchical clustering of the
 standardized indicators (on at most 2000 evenly spaced rows), each cluster
-described by its own means and spread, and, with more than one group
+initialized with its own means and variances, and, with more than one group
 class, Ward's clustering of the groups' profile compositions. The
 remaining starts are k-means from random centres. A supplied \code{start}
 replaces the first start, and the remaining starts are random. With
-\code{start} and \code{max_iter = 0}, exactly one start is run whatever \code{n_starts}
-is. Rows from zero-weight units do not supply initial clustering or
-measurement parameters. For \code{search = "emEM"}, this is the finalist
-budget, including the protected first start (see \code{search}).}
+\code{start} and \code{max_iter = 0}, exactly one start is evaluated regardless of
+\code{n_starts}. Zero-weight units do not contribute to initialization. For
+\code{search = "emEM"}, \code{n_starts} is the number of final optimization runs,
+including the protected first start (see \code{search}).}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start
 (default 5000, higher than the 1000 of \code{\link[=multilpa]{multilpa()}} to match the tighter
 \code{tol}). A fit that stops short warns with \code{latents_unconverged}.
 \code{max_iter = 0} updates nothing and evaluates the starting values.}
 
-\item{tol}{Positive convergence tolerance (default \code{1e-10}, tighter than
-the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}). EM has converged when one step (or SQUAREM
-cycle) changes the log likelihood by no more than \code{tol} times the number
-of observed indicator values (non-missing cells in rows of positive
-weight), a rule that does not depend on the units of the data; latents
-0.97.1 and earlier used \verb{tol * (1 + abs(previous log likelihood))}.
-The group-class shares are re-estimated from posteriors one EM step
-behind them; at \code{1e-8} the two differed by up to about \code{2e-4}, at \code{1e-10}
-by about \code{2e-5}, for roughly 1.5 times the iterations.}
+\item{tol}{Positive convergence tolerance (default \code{1e-10}). EM convergence
+is assessed from the change in log likelihood over one step or SQUAREM
+cycle, with threshold \code{tol} times the number of observed indicator values
+in positive-weight rows. This default is stricter than the \code{1e-8} default
+of \code{\link[=multilpa]{multilpa()}}.}
 
 \item{min_variance}{Lower bound on each variance, or on each covariance
 eigenvalue under full covariance; the fit is then constrained maximum
 likelihood. \code{NULL} (the default) sets it to \code{1e-6} times the smallest
 sample variance of the continuous indicators (observed values in rows of
 positive weight, on the scale fitted, after any centring and scaling), so
-that the bound moves with the units of the data. A number is an absolute
-bound in squared indicator units (the default of 0.97.1 and earlier was
-\code{1e-6}). The bound used is stored as \code{min_variance} on the fit.
+that the default bound adapts to the measurement scale. A numeric value
+specifies an absolute bound in squared indicator units. The bound used is
+stored as \code{min_variance} on the fit.
 Estimates at the bound are reported and raise a warning.}
 
-\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
-including negative ones. When supplied, the caller's random-number state
+\item{seed}{Optional random seed: any integer \code{set.seed()} accepts,
+including negative integers. When supplied, the caller's random-number state
 is restored on exit.}
 
 \item{missing}{\code{"error"} (the default) rejects missing indicators; \code{"fiml"}
@@ -145,16 +141,15 @@ observation is its first occasion: occasion-specific transitions and
 measurement count occasions from each group's own start, not from the
 first position in the data.}
 
-\item{select_start}{Which start the fit reports. \code{"likelihood"} (the
-default) takes the highest log likelihood across starts, preferring a
-converged start only among those within a relative \code{1e-10} of it.
-\code{"converged"} takes the highest log likelihood among the converged starts
-when at least one converged, and among all starts otherwise. The two
-differ when an unconverged start exceeds a converged one by a negligible
-amount, as happens when a membership logit drifts along a flat ridge of
-the likelihood; only the converged start is a maximum on which standard
-errors can be based. \code{summary()} and \code{get_results(fit, "starts")} show
-every start.}
+\item{select_start}{Rule for selecting a fitted solution. \code{"likelihood"}
+(the default) selects among starts within \code{tol * max(1, n_observed)} of
+the highest log likelihood, preferring converged starts within this set.
+Here \code{n_observed} counts observed indicator values in positive-weight rows.
+\code{"converged"} restricts selection to converged starts when any are
+available; otherwise it uses all starts. Remaining ties are resolved by
+start order. Convergence is required for
+standard errors but does not establish identification or global
+optimality. \code{summary()} and \code{get_results(fit, "starts")} report all starts.}
 
 \item{transitions}{\code{"homogeneous"} (the default) uses one transition matrix
 for every occasion; \code{"occasion"} estimates a separate one for each move
@@ -193,14 +188,14 @@ variances and response probabilities equal across occasions;
 
 \item{order}{\code{1} (the default) or \code{2}. With \code{2}, the profile at each
 occasion from the third on depends on the profiles at the two previous
-occasions (a second-order Markov chain); the first move stays first
+occasions (a second-order Markov chain); the first transition remains first
 order.}
 
 \item{model}{A covariance structure as \code{multilpa()} takes it (\code{"EEI"},
 \code{"VVI"}, \code{"VEI"}, ... ; mclust's codes). Standard errors are given for
 every structure with the extensions (covariate, occasion-varying or
 second-order transitions, occasion-specific measurement), and for EEI,
-VVI, EEE and VVV in the homogeneous model, which refuses the other ten
+VVI, EEE and VVV in the homogeneous model, which rejects the other ten
 with \code{latents_unsupported_inference}.}
 
 \item{mover_stayer}{\code{FALSE} (the default), or \code{TRUE} to add a class of
@@ -220,20 +215,23 @@ with their weights.}
 
 \item{ordinal, count, count_model, count_dispersion}{Ordinal and count
 indicators, as in \code{\link[=multilpa]{multilpa()}}; with \code{measurement = "occasion"} their
-parameters are estimated per occasion. Read them with
+parameters are estimated per occasion. These estimates are returned by
 \code{get_results(fit, "ordinal")} and \code{get_results(fit, "count_means")}. A
 fit with them uses the general transition engine.}
 
 \item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: how the reported
 statistics treat rows whose every indicator is missing, and groups
-consisting only of such rows. These contribute nothing to the likelihood,
-so the estimates are the same either way, and their posterior is the
-prior. With \code{TRUE} they are excluded, as in Mplus, from the individual and
+consisting only of such rows. This setting affects reporting, not
+estimation. With \code{TRUE} they are excluded, as in Mplus, from the individual and
 group sample sizes of the information criteria, from relative entropy,
 AvePP and the entropy term of ICL, AWE and CLC, from the classification
-tables and diagnostic plots, and from the effective class counts. With
-\code{FALSE} every row and group is counted in those statistics (the results
-of latents 0.9.37 and earlier), except in the individual sample size of a
+tables and diagnostic plots, and from the effective class counts.
+Row-aligned assignment and posterior tables retain these units but report
+their classifications and posterior probabilities as \code{NA}. A partially
+observed row remains classified, and an empty row in an informative group
+can retain its group-class assignment. With
+\code{FALSE} every row and group is counted in those statistics, except in the
+individual sample size of a
 \code{multilpa()} fit, which excludes such rows either way. Units of sampling
 weight zero are excluded from every count and entropy term under either
 setting. \code{\link[=compare_models]{compare_models()}}
@@ -247,8 +245,8 @@ does not choose its default by the covariance structure.}
 
 \item{n_screen}{For \code{search = "emEM"}, the number of starts screened, at
 least \code{n_starts}. \code{NULL} (the default) screens five times \code{n_starts}.
-The protected first start counts toward the \code{n_starts} finalist budget;
-increasing \code{n_screen} does not add finalist slots. A single supplied
+The protected first start is included in the \code{n_starts} final optimization
+runs. Increasing \code{n_screen} does not increase that number. A single supplied
 start with \code{n_starts = 1} disables screening.
 A value with \code{search = "kmeans"}, or one below \code{n_starts}, raises
 \code{latents_bad_argument}.}
@@ -259,13 +257,9 @@ along the last two EM steps, including the initial and transition
 probabilities, and ends with an ordinary EM step. An extrapolated point
 that would lower the likelihood, or that leaves a probability
 non-positive or a row not summing to one, is replaced by the plain EM
-point, so the iteration stays monotone. Convergence is assessed over a
-whole cycle, so it is never looser than plain EM's. Under the strict
-default \code{tol} plain EM can creep along a flat likelihood for thousands of
-steps; SQUAREM usually stops in far fewer, at the same or a slightly
-higher maximum. \code{"none"} runs plain EM, which reproduces fits from
-versions before this argument existed. \code{iterations} and \code{max_iter} count
-EM steps under either setting.}
+point, preserving monotone likelihood updates. Convergence is assessed
+over a complete cycle. \code{"none"} runs ordinary EM. \code{iterations} and
+\code{max_iter} count EM steps under either setting.}
 
 \item{cores}{Number of processor cores for the random starts (default 1).
 The starting values are drawn in order in the current process and only
@@ -308,26 +302,35 @@ to its tables raises \code{latents_bad_argument}, and \code{summary()} collects
 them (taking \code{level} and \code{vcov_type}). Missing indicators
 (\code{missing = "fiml"}) and covariance structures are supported; diagonal
 fits are finished by a quasi-Newton search on the exact likelihood,
-others by EM. Agreement with Mplus (User's Guide examples 8.13, 8.14;
-occasion-specific thresholds), depmixS4 and LMest is recorded in
-\verb{equivalence/lta-extensions/} of the source repository.
+others by EM.
 }
 \description{
-Fits latent profiles to repeated observations of the same group, estimates
-the probabilities of moving between profiles from one occasion to the next,
-and returns a \code{multilpa_transitions} (or \code{multilpa_lta}) object. The
-measurement model is that of \code{\link[=multilpa]{multilpa()}} (Gaussian, categorical or mixed
-indicators) and is invariant across occasions by default, so a profile has
-the same meaning at every occasion. With more than one group class, each
-class has its own initial distribution and its own transition matrix, so
-the group classes are a mixture over transition patterns. \code{\link[=multilpa]{multilpa()}} is
-the cross-sectional counterpart.
+Latent transition analysis examines stability and change in latent states
+across repeated observations. States are defined by patterns in continuous
+or discrete indicators, and transition probabilities describe the
+probability of remaining in a state or moving to another between successive
+occasions. \code{lta()} estimates the measurement and transition parameters
+jointly, accounting for uncertainty in state membership.
+
+By default, transitions follow a first-order, time-homogeneous model: the
+state at an occasion depends on the immediately preceding state, and
+transition probabilities are constant across occasions. Measurement
+parameters are also equal across occasions, providing a common definition
+of each state over time.
+
+Additional latent group classes can represent differences between
+individuals or other units in their initial-state distributions and
+transition patterns. Extensions allow covariate-dependent transitions,
+occasion-specific parameters, and second-order dependence. The fitted model
+provides measurement estimates, initial-state probabilities, transition
+probabilities, and posterior membership probabilities.
 }
 \details{
-By default transitions are first order and homogeneous over
-occasions: the probability of moving from one profile to another does not
-depend on the occasion or on earlier profiles. Measurement parameters are
-shared across occasions and across group classes. A profile that no group
+Under the default first-order model, the next profile depends on
+the current profile and, when present, the latent group class. Earlier
+profiles provide no additional dependence conditional on these variables.
+Homogeneous transitions use the same probabilities at each occasion.
+Measurement parameters are shared across occasions and across group classes. A profile that no group
 occupies before its final occasion leaves its transition row without
 information; the row is then uniform by construction, not estimated, and
 its probabilities are not counted in \code{n_parameters}, AIC or BIC. Such
@@ -336,16 +339,13 @@ a row raises a warning when the model is fitted, is flagged by the
 \code{get_results(fit, "transitions", estimated = FALSE)}. Profile labels are
 arbitrary and are not comparable across fits without alignment.
 
-\code{max_iter = 0} updates nothing: the starting values are evaluated and
-returned with the expectation they imply, and the fit reports
-\code{converged = FALSE} after zero iterations. Every reported quantity,
-including \code{expected_count} and the implied profile prevalence, is then
-read off that single expectation.
+With \code{max_iter = 0}, the model evaluates the starting values without
+updating them and reports \code{converged = FALSE}. Posterior probabilities,
+expected transition counts and implied profile prevalences are computed
+at those starting values.
 }
 \examples{
-# Students take their courses in their own order, which `sequence` records,
-# so the same enrolments that fit a cross-sectional model fit a transition
-# one. Engagement mostly persists from one course to the next.
+# Model engagement transitions across each student's course sequence.
 fit <- lta(
   course_engagement,
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),

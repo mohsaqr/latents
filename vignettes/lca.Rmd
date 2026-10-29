@@ -14,24 +14,22 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Two-level latent class analysis (LCA) is used when the indicators are
-categorical: yes/no answers, ratings on a few ordered options, or unordered
-choices. Like multilevel latent profile analysis, it estimates latent classes
-of observations, called profiles in the output, and latent group classes that
-differ in how probable each profile is for their observations. The difference
-is in how a profile is described: by the probability of each answer to each
-item, instead of a mean and a variance. `multilca()` fits LCA, treating every
-indicator as categorical; `multilpa()` with some indicators named in
-`categorical` fits a mixed model with both kinds of indicator.
+Two-level latent class analysis (LCA) represents heterogeneity in categorical
+response patterns among observations nested within groups. Observation-level
+classes, labelled profiles in the output, are defined by item-response
+probabilities. Group classes differ in their conditional probabilities of
+observation-level class membership. By default, `multilca()` treats all
+selected indicators as categorical. `multilpa()` supports mixed continuous
+and categorical indicators through the `categorical` argument.
 
 ## What the package supports
 
 - **Item types.** Binary, ordinal and nominal items share one
-  parameterization: a free probability for every category in every profile.
+  parameterization: unrestricted category probabilities in each profile, subject to summing
+  to one.
   Numeric, integer, logical, character and factor columns are accepted; factor
   levels keep their order, other types are sorted. Ordered items can instead
-  be modelled as `ordinal` (an adjacent-category logit with far fewer
-  parameters), and counts as `count` (Poisson); see below.
+  be modelled as `ordinal` (an adjacent-category logit with shared category intercepts), and counts as `count` (Poisson); see below.
 - **Mixed measurement.** Continuous and categorical indicators in one model.
 - **Missing answers.** `missing = "fiml"` uses the observed answers of each
   row.
@@ -60,8 +58,8 @@ study day, from 0 to 13. `?student_esm` gives the source.
 library(latents)
 ```
 
-To keep the example short, we call `subset()` with `day <= 6`, which keeps the
-first week and all 100 students.
+The example uses the first week of observations (`day <= 6`), retaining all
+100 students while limiting computation.
 
 ```{r first-week}
 first_week <- subset(student_esm, day <= 6)
@@ -78,10 +76,10 @@ activities <- c("time_with_friends", "on_social_media", "tv_video_games",
 
 ## Fitting the model
 
-To fit the model, we call `multilca()` with `vars` for the categorical
-indicators, `id` for the group, `n_profiles`, `n_group_classes`, `n_starts`,
-`seed`, and `tol` for a tighter convergence tolerance, which standard errors
-need.
+The model specifies two observation-level classes and two group classes.
+The `tol` argument sets a stricter convergence tolerance for this example;
+accurate numerical standard errors require a sufficiently well-converged
+solution.
 
 ```{r lca}
 lca <- multilca(first_week, vars = activities, id = "student",
@@ -90,16 +88,16 @@ lca <- multilca(first_week, vars = activities, id = "student",
 lca
 ```
 
-To obtain the response probabilities, we call `get_results()` with
-`"responses"`. There is one row per profile, item and category;
-`probability` is the chance of that answer in that profile.
+The `"responses"` table contains one row per profile, item and category.
+The column `probability` is the estimated conditional probability of that
+response within the profile.
 
 ```{r responses}
 get_results(lca, "responses")
 ```
 
-To see them, we call `plot_responses()`: one line per profile across the
-items.
+The response plot compares the fitted item-response probabilities across
+profiles.
 
 ```{r responses-plot}
 plot_responses(lca)
@@ -123,9 +121,8 @@ computed, so these plots avoid the parameter-inference calculation used by
 the response-probability plot. In mixed models, `plot_profiles()` continues
 to show only continuous indicators.
 
-To obtain the profile probabilities of each group class, we call
-`get_results()` with `"profile_probabilities"`, and to compare the classes,
-`plot_prevalence()`.
+The `"profile_probabilities"` table and the prevalence plot summarize how
+the distribution of observation-level classes differs across group classes.
 
 ```{r profile-probabilities}
 get_results(lca, "profile_probabilities")
@@ -135,8 +132,8 @@ get_results(lca, "profile_probabilities")
 plot_prevalence(lca)
 ```
 
-To obtain classification certainty, we call `get_results()` with
-`"entropy"`.
+The `"entropy"` table summarizes posterior classification separation at
+both levels.
 
 ```{r entropy}
 get_results(lca, "entropy")
@@ -144,10 +141,13 @@ get_results(lca, "entropy")
 
 ## Mixed indicators
 
-To combine both kinds, we call `multilpa()` with all indicators in `vars` and
-only the categorical ones in `categorical`. Here three affect ratings are
-continuous and the activities categorical. `worried` is left out: about half
-its ratings are 1, which can push a profile's variance to its lower bound.
+Mixed models specify all indicators in `vars` and the categorical subset in
+`categorical`. This example treats three affect ratings as continuous and
+the activity indicators as categorical. Treating ratings as continuous is a
+measurement assumption that should be evaluated against an ordinal
+specification. The `worried` item is omitted because its concentration at
+the lowest category can produce a component with variance near the lower
+bound under a Gaussian specification.
 
 ```{r mixed}
 mixed <- multilpa(first_week,
@@ -156,9 +156,8 @@ mixed <- multilpa(first_week,
                   n_group_classes = 2, n_starts = 3, seed = 1)
 ```
 
-To obtain the means and variances of the continuous indicators, we call
-`get_results()` on the fit; for the answer probabilities of the categorical
-ones, `get_results()` with `"responses"`.
+The default results table reports the continuous indicators' means and
+variances. The `"responses"` table reports categorical response probabilities.
 
 ```{r mixed-results}
 get_results(mixed)
@@ -167,10 +166,12 @@ get_results(mixed, "responses")
 
 ## Ordinal and count indicators
 
-The affect ratings run from 1 to 7. As `categorical` items each would have six
-free probabilities in every profile; as `ordinal` items each has six category
-intercepts shared by every profile and one location per profile, which says
-how far up the scale that profile sits. We pass their names as `ordinal`.
+The affect ratings range from 1 to 7. An unrestricted categorical
+specification requires six free probability parameters per item and profile.
+The ordinal specification instead uses shared category intercepts and
+profile locations under an adjacent-category logit model, with identifying
+constraints described in `?multilpa`. The `ordinal` argument identifies the
+items to which this specification applies.
 
 ```{r ordinal}
 affect <- c("happy", "relaxed", "worried", "exhausted")
@@ -180,19 +181,20 @@ ordinal <- multilpa(first_week, vars = c(affect, activities), id = "student",
 ordinal
 ```
 
-`get_results()` with `"ordinal"` gives each profile's probability of every
-rating and its location.
+The `"ordinal"` table reports fitted category probabilities and profile
+locations for the ordinal indicators.
 
 ```{r ordinal-results}
 head(get_results(ordinal, "ordinal"), 7)
 ```
 
-Indicators holding counts (number of messages sent, of absences) go in
-`count`: each is Poisson with one mean per profile, read with
-`get_results(fit, "count_means")`. Counts more variable than a Poisson within
-a profile take `count_model = "negative_binomial"`, which adds a dispersion
-per profile (or one shared, `count_dispersion = "equal"`). Both types work
-with membership covariates and in `lta()` as well.
+Count indicators, such as numbers of messages or absences, are specified in
+`count`. The default Poisson model estimates one mean per profile, available
+through `get_results(fit, "count_means")`. The negative-binomial option,
+`count_model = "negative_binomial"`, permits within-profile overdispersion
+through profile-specific dispersion parameters, or a common parameter with
+`count_dispersion = "equal"`. Both count specifications support membership
+covariates and latent transition models.
 
 ## Reference
 
@@ -215,8 +217,9 @@ multilca(first_week, vars = activities, id = "student", n_profiles = 2,
 ## Assumptions
 
 - Items are independent within a profile.
-- Every category of every item has its own probability in each profile, so
-  rare answers can push probabilities to their lower bound (`min_probability`).
+- Under unrestricted categorical measurement, each item has a separate
+  response-probability distribution in every profile. Rare responses can
+  produce estimates at the lower bound (`min_probability`).
 - Categories are taken from the observed values; factor levels keep their
   order.
 

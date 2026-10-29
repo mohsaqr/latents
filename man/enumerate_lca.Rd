@@ -11,7 +11,8 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 
 \item{vars}{Names of the categorical indicator columns.}
 
-\item{n_classes}{Positive whole numbers of classes to compare.}
+\item{n_classes}{Numbers of classes to compare, specified as positive
+integers.}
 
 \item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
 \code{n_starts}, \code{seed} and \code{min_probability}, except \code{id} and
@@ -22,19 +23,24 @@ effect; its names must be in \code{vars}.}
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
 returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
-candidate each criterion prefers, \code{\link[=plot]{plot()}} the criteria against the
-number of classes, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate, named by
-its \code{n_profiles}.
+candidate minimizing each criterion, \code{\link[=plot]{plot()}} the criteria against the
+number of classes, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate. The number
+of classes is reported in the \code{n_profiles} column of the enumeration
+table and selected through the \code{n_profiles} argument of \code{\link[=get_candidate]{get_candidate()}}.
 }
 \description{
-Fits a single-level latent class model for each number of classes in
-\code{n_classes}, and returns a \code{multilpa_enumeration} object that tabulates the
-information criteria, entropy and diagnostics of every fit. Every indicator
-is categorical unless named in \code{ordinal} or \code{count}, as in \code{\link[=lca]{lca()}}. It is
-\code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL}; the number of classes is reported in
-the \code{n_profiles} column.
+\code{enumerate_lca()} fits latent class models with different numbers of classes
+to examine heterogeneity in categorical response patterns. It brings
+together evidence about fit, classification, and estimation stability to
+support selection of the number of classes. Each fitted candidate remains
+available for examination of its class-specific response probabilities and
+class proportions.
 }
 \details{
+This is the single-level interface to \code{\link[=enumerate_classes]{enumerate_classes()}} for categorical
+indicators. Every indicator is categorical unless named in \code{ordinal} or
+\code{count}, as in \code{\link[=lca]{lca()}}.
+
 For observations nested in groups, use \code{\link[=enumerate_classes]{enumerate_classes()}} with the
 grouping column as \code{id} and the indicators as \code{categorical}.
 }

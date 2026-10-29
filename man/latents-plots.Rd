@@ -12,7 +12,7 @@
 \alias{plot_selection}
 \alias{plot_enumeration}
 \alias{plot_views}
-\title{Plot latents results}
+\title{Plot model estimates, classification summaries, and comparisons}
 \usage{
 plot_profiles(
   x,
@@ -100,7 +100,7 @@ plot_views(x = NULL)
 \code{plot_transitions()}, any fitted model of the package: profile, class
 and transition models from \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}
 and \code{\link[=lta]{lta()}} (with or without covariates) take the views described
-under \code{what} and \emph{What \code{plot()} draws}; growth
+under \code{what} and \emph{Views by object class}; growth
 mixtures and mixture regressions from \code{\link[=mixture_regression]{mixture_regression()}}, additive,
 dispersion and cross-level fits from \code{\link[=multilpa]{multilpa()}}, pooled imputations
 from \code{\link[=pool_imputations]{pool_imputations()}} and general \code{\link[=lta]{lta()}} fits (occasion-varying
@@ -134,7 +134,7 @@ labelled strips.}
 intervals. \code{NULL} (default) uses the data stored in the fit.}
 
 \item{main, subtitle}{Title and subtitle. \code{NULL} (default) uses the view's
-own.}
+default title and subtitle.}
 
 \item{what}{The view to draw. \code{"all"} draws every view of that function
 that the model supports, as a list, and names in a message any it cannot
@@ -262,42 +262,51 @@ returns one row per \code{what} value of that grid: \code{type}, \code{group}
 not offered; \code{NA} when it is).
 }
 \description{
-\code{plot()} draws any result of this package and returns a ggplot object,
-which can be printed, saved with \code{ggplot2::ggsave()} or restyled with
-\code{+ ggplot2::theme()}. The plots of mixture regressions (for fits that
-classify persons, the \code{"fitted"} view only), pooled imputations and
-bootstrap tests are drawn when called, including inside loops, and their
-ggplot is returned invisibly.
+The plotting functions support interpretation and comparison of fitted
+latent variable models. Depending on the model, they display differences
+between classes in indicator patterns, outcome relationships, prevalence or
+transition probabilities. Classification plots describe how strongly
+observations are associated with their assigned classes.
+
+For candidate models, plots compare information criteria and classification
+quality across alternative solutions. They also display convergence
+diagnostics and correspondence between classes, helping assess how the
+solution changes with the number of classes or the model specification.
+
+Available views depend on the fitted model. Plots are returned as ggplot
+objects that can be customised and saved for reporting.
 }
 \details{
-The main views also have their own functions, each grouping related views
-under \code{what}, with \code{"all"} drawing every one: \code{plot_profiles()} (profile
-means as lines, bars, a heatmap, rainclouds, parallel lines or pairs, or
-categorical means, medians and modes), \code{plot_responses()} (categorical
-response probabilities), \code{plot_sequences()} (each group's profile at each
-occasion), \code{plot_prevalence()} (profile shares within each group class),
-\code{plot_diagnostics()} (classification quality), \code{plot_transitions()}
-(transition matrix), \code{plot_enumeration()} (information criteria,
-classification quality and model-selection evidence across a grid),
-\code{plot_selection()} (the model-selection evidence of a grid) and
-\code{plot_tree()} (how profiles split as more are added, one plot per tree, or
-how chosen solutions correspond). Each draws the same
-plot as the matching \code{plot(x, what = )}. The fit functions take every
-fitted model of the package; for growth mixtures, mixture regressions,
-additive and dispersion fits, cross-level fits, pooled imputations and
-general \code{\link[=lta]{lta()}} fits they draw the view of that fit's own \code{plot()} that
-shows the same quantity, and refuse the rest (see \emph{Named plot functions on
-other fitted models}). \code{plot_views()} lists the views of
-a fitted model, and \code{"enumeration"} and \code{"tree"} for a grid, with a
-one-line description of each; \code{plot_views(grid)} lists every view of that
-grid, whether it is offered, and why not.
+Returned plots can be printed, saved with
+\code{ggplot2::ggsave()}, or customized with \code{ggplot2::theme()}. Mixture-regression
+plots (only the \code{"fitted"} view for models that classify persons), pooled
+imputation plots, and bootstrap-test plots are displayed immediately,
+including inside loops, and return their ggplot objects invisibly.
 
-The grid functions take every grid of the package: profile and class grids
+Named functions provide access to related plot types through \code{what}:
+\code{plot_profiles()} displays profile summaries and indicator distributions;
+\code{plot_responses()} displays categorical response probabilities;
+\code{plot_sequences()} displays assigned profiles over occasions;
+\code{plot_prevalence()} displays profile proportions within group classes;
+\code{plot_diagnostics()} displays classification summaries; and
+\code{plot_transitions()} displays transition probabilities. For enumeration
+results, \code{plot_enumeration()} displays information criteria and
+classification summaries, \code{plot_selection()} displays model-comparison
+diagnostics, and \code{plot_tree()} displays correspondence between class
+solutions.
+
+These functions use the corresponding \code{plot(x, what = )} method. Available
+views depend on the model family, as described below; \code{what = "all"}
+requests all supported views for the selected function. \code{plot_views()}
+lists plot types and their descriptions. For an enumeration object,
+\code{plot_views(grid)} also reports whether each view is supported and gives
+the reason when it is unavailable.
+
+The enumeration functions support profile and class grids
 (\code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}}), transition
 grids (\code{enumerate_classes(time = )}), group-class family grids
 (\code{enumerate_classes(family = )}) and regression grids
-(\code{\link[=enumerate_regressions]{enumerate_regressions()}}). Each kind offers the views its candidates
-carry:
+(\code{\link[=enumerate_regressions]{enumerate_regressions()}}). Available views are summarized below:
 \tabular{lllll}{
 View \tab Profiles, classes \tab Transitions \tab Families \tab Regressions \cr
 criteria \tab 14 columns \tab aic, bic, bic_individual \tab aic, bic,
@@ -307,18 +316,17 @@ deltas, heatmap, smallest, trust, selection \tab yes \tab yes \tab no \tab
 yes \cr
 tree \tab yes \tab yes \tab group classes \tab yes
 }
-A family grid's candidates have group classes and no profiles, so its
-criteria and quality are drawn against the number of group classes, the
-views laid out by profiles and group classes are not drawn, and its tree
-divides the groups (\code{level = "groups"}, its default), one tree per family.
-A regression grid's tree divides the cases by their class posteriors; its
-smallest-class view reads the \code{smallest_share} of its table, and its trust
-view has no boundary column to read. A view a grid does not offer is
-refused with \code{latents_unsupported_view}.
+Group-class family grids contain group classes without individual-level
+profiles. Their criteria and classification summaries are plotted against
+the number of group classes, and their trees compare group assignments
+(\code{level = "groups"}, the default), with one tree per family. Views requiring
+both profiles and group classes are unavailable. Regression-grid trees use
+case-level posterior probabilities; the smallest-class view uses
+\code{smallest_share}, and the \code{"trust"} view omits boundary status because that
+column is unavailable. Unsupported views raise \code{latents_unsupported_view}.
 
-Each profile keeps the same order (largest first), Okabe-Ito colour and
-point shape in every view. The plots require ggplot2, which is a suggested
-package.
+Profile order (largest first), Okabe-Ito colours, and point shapes are
+consistent across views. Plotting requires the suggested package ggplot2.
 }
 \section{Arguments of \code{plot()}}{
 
@@ -326,7 +334,7 @@ Besides \code{x}, \code{what}, \code{main}, \code{subtitle} and the arguments ab
 takes these on the objects named:
 \describe{
 \item{\code{level}}{The confidence level for additive, mixture-regression and
-growth views (default 0.95). On pooled plots, the former name of
+growth views (default 0.95). On pooled plots, a compatibility alias for
 \code{what}: \code{"profile"}, \code{"group"} or \code{"measurement"}.}
 \item{\code{predictor}}{For the fitted view of a mixture regression, a numeric
 predictor in the formula. \code{NULL} (default) uses the first numeric
@@ -343,7 +351,7 @@ behind the class means (default 120); zero hides them.}
 \item{\code{spread}}{For growth trajectories, the band of random-effect
 spread of persons around the class curve, from 0 (hidden) to less than
 1; default 0.8.}
-\item{\code{criterion}}{The former name of \code{what} for enumeration criteria. On
+\item{\code{criterion}}{A compatibility alias for \code{what} in enumeration plots. On
 a profile grid it is used alone or with \code{what = "enumeration"};
 transition and group-class family grids take \code{"bic"}, \code{"aic"} or
 \code{"bic_individual"} (or a unique abbreviation, such as \code{"bic_i"}), or
@@ -351,12 +359,12 @@ any other view of the grid.}
 \item{\code{palette}}{For bootstrap plots, a colour vector for the histogram
 and the observed statistic; \code{NULL} (default) uses the standard
 colours.}
-\item{\code{style}}{The former bootstrap drawing style; ignored with a
+\item{\code{style}}{An obsolete bootstrap plotting argument; ignored with a
 \code{latents_unused_argument} warning.}
 }
 }
 
-\section{What \code{plot()} draws}{
+\section{Views by object class}{
 
 Each object takes \verb{what =} for its views, \code{main}, \code{subtitle} and the
 arguments named here.
@@ -427,9 +435,9 @@ with the observed statistic, and the views of \code{plot_diagnostics()}.}
 
 \section{Named plot functions on other fitted models}{
 
-Each named fit function draws the view of the fit's own \code{plot()} that
-shows the same quantity, so \code{plot_profiles(fit)} and
-\code{plot(fit, what = "trajectories")} on a growth mixture draw one plot:
+Named plotting functions dispatch to the corresponding view for each
+model family. For example, \code{plot_profiles(fit)} and
+\code{plot(fit, what = "trajectories")} produce the same growth-mixture plot:
 \describe{
 \item{Growth mixtures, and mixture regressions that classify persons
 (\code{class_level = "group"})}{\code{plot_profiles()} draws \code{"trajectories"}
@@ -461,10 +469,11 @@ trajectory); use \code{plot()} for that view's own arguments, such as \code{time
 \code{facet} or \code{predictor}, and for the views no named function draws.
 }
 
-\section{Former argument names}{
+\section{Compatibility arguments}{
  Enumeration plots accept \code{criterion}
-(now \code{what}; on a profile grid \code{what = "enumeration"} is the default
-criteria view), pooled plots accept \code{level} (now \code{what}), and bootstrap
+as an alternative to \code{what} (on a profile grid, \code{what = "enumeration"}
+requests the default criteria view). Pooled plots accept \code{level} as an
+alternative to \code{what}, and bootstrap
 plots accept \code{palette} (the histogram and observed-line colours). On an
 enumeration, \code{criterion} with any \code{what} other than \code{"enumeration"} is an
 error of class \code{latents_bad_argument} (with \code{"tree"}, a warning, as the
