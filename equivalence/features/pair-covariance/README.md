@@ -55,29 +55,30 @@ Mplus runs that hold the binding floor as an equality. The reference study
 adds 120 simulab datasets (n 40-2000, k 2-3, 2-5 items, 1-2 pairs, 60 equal
 and 60 varying, 12 with missing values) checked against `reference.R` alone.
 
-## Results (re-run 2026-10-21)
+## Results (re-run 2026-10-29, latents fitting at tol 1e-12)
 
-`Rscript equivalence/run.R features-pair-covariance`: 1242 expectations, 0
-failures, 0 errors (after the symmetry fix, FINDINGS.md). Unit file: 69
-passed.
+`equivalence/test-features-pair-covariance.R` on 0.98.1: 1291 expectations,
+0 failures, 0 errors. latents now fits at Latent GOLD's tolerance, 1e-12 (it
+was 1e-10): at 1e-10 the flat case vvi_one_k3_l_02 stopped with posteriors
+2.0e-5 from Mplus, just over the 2e-5 bound; at 1e-12 within 1.0e-6.
 
-| Against | Quantity | Largest difference |
+| Against | Quantity | Largest difference (1e-10, 2026-10-21) |
 |---|---|---|
-| Latent GOLD (58 runs) | log likelihood | 1.9e-8 |
-| | posteriors | 1.6e-5 |
-| | BIC | 4.9e-5 |
-| | estimates (standard-error units) | 1.7e-4 |
-| | standard errors (relative), complete data | 6.2e-6 |
+| Latent GOLD (58 runs) | log likelihood | 1.7e-9 (1.9e-8) |
+| | posteriors | 2.4e-6 (1.6e-5) |
+| | BIC | 4.9e-5 (4.9e-5) |
+| | estimates (standard-error units) | 3.6e-5 (1.7e-4) |
+| | standard errors (relative), complete data | 1.0e-6 (6.2e-6) |
 | | standard errors (relative), missing data | 6.3e-2 (a convention, below) |
 | | parameter count | equal in all 58 |
 | Mplus (56 runs reaching latents' maximum) | log likelihood | 3.7e-3 at n = 20000, 5.0e-4 at n = 5000 (its 8-digit print) |
-| | posteriors | 1.7e-5 |
-| | estimates (SE units) / SEs (relative) | 1.7e-4 / 1.1e-5 |
+| | posteriors | 1.1e-5 (1.7e-5) |
+| | estimates (SE units) / SEs (relative) | 6.0e-5 / 1.0e-5 (1.7e-4 / 1.1e-5) |
 | Mplus, floor held as an equality (4) | log likelihood | 4.4e-5 |
-| Independent reference (120 datasets) | likelihood at latents' estimates (relative) | 7.0e-15 |
-| | its own maximum above latents' | 1.3e-8 |
-| | Newton decrement at latents' estimates | 2.7e-8 |
-| | standard errors (relative) | 4.9e-6 |
+| Independent reference (120 datasets) | likelihood at latents' estimates (relative) | 2.0e-15 (7.0e-15) |
+| | its own maximum above latents' | 2.9e-8 (1.3e-8) |
+| | Newton decrement at latents' estimates | 5.8e-8 (2.7e-8) |
+| | standard errors (relative) | 8.0e-6 (4.9e-6) |
 | | entries outside the pattern | exactly 0 in all 120 |
 | | exact symmetry | all 120 (largest asymmetry 0) |
 | | parameter count against the formula | equal in all 120 |

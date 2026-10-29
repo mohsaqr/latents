@@ -1,0 +1,13 @@
+help-lca.csv: the four binary indicators of Kleinman and Horton (2011), "SAS
+and R" blog, Example 8.21 (latent class analysis), from the HELP study data
+as distributed in mosaicData::HELPrct (mosaicData 0.20.4, installed in a
+scratch library on 2026-10-29, not a dependency):
+
+  homeless   = HELPrct$homeless == "homeless"
+  cesdcut    = HELPrct$cesd > 20
+  satreat    = HELPrct$satreat == "yes"
+  linkstatus = HELPrct$linkstatus
+
+coded 0/1, complete cases only: 431 of 453 rows (linkstatus is missing for
+22), as in the post (its data file, math.smith.edu/r/data/help.csv, no longer
+exists). Each indicator's 0/1 coding does not change the likelihood.

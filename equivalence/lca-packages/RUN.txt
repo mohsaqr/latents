@@ -1,0 +1,4 @@
+run: 2026-10-29
+latents: 0.98.1
+packages: glca 1.4.2, randomLCA 1.1.4, BayesLCA 1.9, multilevLCA 2.1.6, depmixS4 1.5.1
+R: R version 4.5.2 (2025-10-31)

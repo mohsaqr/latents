@@ -56,9 +56,11 @@ test_that("the whole MAP EM reproduces mclust::me from the same start", {
   rows <- lapply(latents:::.multilpa_prior_structures(), function(code) {
     reference <- do.call(mclust::me, list(
       modelName = code, data = x, z = z, prior = mclust::priorControl(),
-      control = mclust::emControl(tol = c(1e-13, 1e-14))),
+      control = mclust::emControl(tol = c(1e-16, 1e-16), itmax = c(1e6, 1e6))),
       envir = asNamespace("mclust"))
     # mclust's `me()` starts with an M-step from `z`; so does this start.
+    # Both run to 1e-16: at 1e-13 the two stopping rules leave the means up to
+    # 1.5e-8 apart (EEI, after the 0.97 finishes), at 1e-16 within 3e-10.
     hyper <- latents:::.multilpa_prior_parameters(prior_control(), x, 3L, code)
     first <- latents:::.multilpa_prior_maximize(x, z, code, hyper, 1e-12, tol = 1e-14)
     start <- list(means = first$means,
@@ -68,7 +70,7 @@ test_that("the whole MAP EM reproduces mclust::me from the same start", {
       start$covariances <- first$covariances
     fit <- suppressWarnings(do.call(multilpa, c(
       list(data = frame, vars = c("a", "b", "c"), id = NULL, n_profiles = 3L,
-           n_starts = 1L, start = start, tol = 1e-13, max_iter = 20000L,
+           n_starts = 1L, start = start, tol = 1e-16, max_iter = 200000L,
            prior = prior_control()),
       latents:::.multilpa_structure_arguments(code))))
     expect_true(fit$converged, label = code)

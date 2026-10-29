@@ -91,11 +91,19 @@ test_that("every latents candidate reaches Latent GOLD's non-degenerate maximum"
   invisible(Map(function(gap, label) {
     expect_gt(gap, -1e-4, label = label)
   }, gaps, labels))
-  # Latent GOLD's degenerate solutions are VVI spikes that latents' variance
-  # floor excludes, so latents' likelihood is the lower one there.
+  # Latent GOLD's degenerate solutions (a printed share below 1 / n or a zero
+  # variance) are VVI single-unit spikes, whose likelihood each program's
+  # variance floor sets, so they are not compared. Where latents' maximum is
+  # the lower, its floor excluded Latent GOLD's spike; where it is the higher
+  # (vvi_small_01-03 at three and four profiles under the relative floor of
+  # 2026-10-26, by 0.14 to 3.0), latents' fit is itself bound-active, a spike
+  # on its own floor.
   degenerate <- subset(external, lg_degenerate %in% TRUE)
   expect_true(all(degenerate$model == "VVI"))
-  expect_true(all(pmax(degenerate$lg_ll0 - degenerate$ll0, degenerate$lg_ll1 - degenerate$ll1) > 0))
+  above <- c(degenerate$ll0 - degenerate$lg_ll0, degenerate$ll1 - degenerate$lg_ll1) > 1e-4
+  on_floor <- c(degenerate$boundary0, degenerate$boundary1)
+  expect_true(all(on_floor[above]),
+              label = paste(rep(degenerate$case, 2L)[above & !on_floor], collapse = ", "))
 })
 
 test_that("LR, adjusted LR, moments and p-values reproduce Latent GOLD", {

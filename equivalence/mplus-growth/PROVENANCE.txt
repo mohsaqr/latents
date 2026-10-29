@@ -1,0 +1,3 @@
+returned/: genuine Mplus 9 Demo inputs, outputs and data copied on 2026-10-29
+from ../JStats/tests/fixtures/mplus/{lcga-ml,gmm-ml,runner-lcga,runner-gmm-growth}
+(JStats commit b227543b2, 2026-10-20). Unchanged copies; the comparison reads them.

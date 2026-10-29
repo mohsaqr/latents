@@ -1,0 +1,10 @@
+path,case_pattern,fn
+equivalence/latentgold-wider/comparison.csv,^r0,mixture_regression
+equivalence/latentgold-wider/comparison.csv,^w01,lpa
+equivalence/latentgold-wider/comparison.csv,^w02,lta
+equivalence/latentgold-wider/comparison.csv,^w03,multilpa
+equivalence/latentgold/comparison.csv,^c04_categorical,multilca
+equivalence/latentgold/comparison.csv,^c09_three_step,three_step
+equivalence/latentgold/comparison.csv,^c1[01]_lta,lta
+equivalence/latentgold/comparison.csv,.,multilpa
+equivalence/latentgold-ordinal/comparison.csv,.,multilpa

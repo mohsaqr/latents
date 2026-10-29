@@ -366,7 +366,16 @@ compare_block <- function(quantity, reference, obtained, tolerance, output = NA_
   # OCC divides by 1 - AvePP: a gap d in the average posterior a becomes a
   # relative gap of d / (a (1 - a)) in the odds, about 2000 d at a = 0.9995.
   # Posteriors agreeing to 1e-8 therefore support OCC to about 1e-4.
-  `classification$odds_correct_classification` = 1e-4)
+  `classification$odds_correct_classification` = 1e-4,
+  # A bivariate residual is a sum of squared standardized cell residuals, so
+  # it carries the parameters' convergence gap, amplified. On flat surfaces
+  # the package stops a few 1e-7 from the fixed point (gss82 with two classes:
+  # a response probability 3.2e-7 short; see suites/polca.R), and the
+  # statistic then moves by about 1e-6: 9.94e-7 on glca's nyts18 here and
+  # 1.09e-6 on gss82 under Linux's BLAS (CI, 2026-10-28), against the default
+  # 1e-6. A formula error moves it by orders of magnitude more; the p-values of
+  # these statistics already carry 1e-5 for the same reason.
+  `residuals$statistic` = 1e-5)
 
 #' Compare every expected table with what a fit reports
 #'

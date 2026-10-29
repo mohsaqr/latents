@@ -102,6 +102,12 @@ vlmr_grid_ll <- function(grid) {
   stats::setNames(table$log_likelihood, table$n_profiles)
 }
 
+#' Whether each candidate of a grid is bound-active, by number of classes
+vlmr_grid_boundary <- function(grid) {
+  table <- as.data.frame(grid)
+  stats::setNames(table$boundary %in% TRUE, table$n_profiles)
+}
+
 #' Fit a case, trying further seeds (with more starts) until every candidate
 #' reaches at least the reference maximum less `slack`; the grid reaching the
 #' most candidates is kept, with the seed that produced it.
@@ -187,13 +193,16 @@ vlmr_compute_case <- function(name, case, draws = 1e6) {
   grid <- fitted$grid
   table <- get_results(grid, "lmr")
   ll <- vlmr_grid_ll(grid)
+  boundary <- vlmr_grid_boundary(grid)
   rows <- lapply(seq_len(nrow(table)), function(index) {
     row <- table[index, ]
     null_k <- as.integer(row$n_profiles - 1L)
     out <- data.frame(case = name, config = case$config, model = case$spec$model,
                       n = case$spec$n, true_k = case$spec$true_k, null_k = null_k,
                       seed_used = fitted$seed, ll0 = ll[[as.character(null_k)]],
-                      ll1 = ll[[as.character(null_k + 1L)]], row[c(
+                      ll1 = ll[[as.character(null_k + 1L)]],
+                      boundary0 = boundary[[as.character(null_k)]],
+                      boundary1 = boundary[[as.character(null_k + 1L)]], row[c(
                         "n_units", "parameters_added", "lr", "vlmr_p", "adjusted_lr", "almr_p",
                         "reference_mean", "reference_sd", "note")])
     if (!is.null(lg)) {

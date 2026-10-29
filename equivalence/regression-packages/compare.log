@@ -1,0 +1,20 @@
+Warning: Optimal model contains positive log-densities; consider setting 'posidens' to FALSE
+
+Warning: Optimal model contains positive log-densities; consider setting 'posidens' to FALSE
+
+                                                    reference compared agreed
+                    Benaglia et al. (2009) JSS 32(6), CO2data        4      4
+                                                      flexmix       11     11
+                Grun and Leisch (2008) JSS 28(4), betablocker        2      2
+                                                     mixtools       20     20
+                                                     MoEClust       25     20
+ SAS/STAT 14.2 PROC FMM Example 40.3 (Wang et al. 1996 model)       14     14
+ known values
+     0      4
+     0    462
+     0      2
+     0    970
+     5   1779
+     0     14
+
+76 quantities compared: 71 agree, 5 known differences, 0 disagree

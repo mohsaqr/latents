@@ -1,0 +1,13 @@
+# Compares lpa() with independent Gaussian mixture implementations (Rmixmod,
+# EMCluster, mixtools) on six datasets and four covariance structures. Run from
+# the project root:
+#   Rscript equivalence/lpa-packages/compare.R
+# Writes comparison.csv and RUN.txt beside this script. Exits non-zero when a
+# quantity disagrees without a registered known difference, or when a
+# registered difference no longer matches a disagreement.
+
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
+directory <- file.path("equivalence", "lpa-packages")
+source(file.path("equivalence", "package-kit-runner.R"))
+source(file.path(directory, "compare-functions.R"))
+if (!run_package_kit(directory, compare_all_lpa, names(.fitters))) quit(status = 1L, save = "no")

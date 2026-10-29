@@ -1,0 +1,2 @@
+case,reference,quantity,reason
+tonedata_k2,MoEClust,.,"tonedata has several maxima (De Veaux 1989). MoEClust stops below the maximum: 141.187 from its default hierarchical-clustering start, 132.070 from 20 random starts. mixtools' 20 random starts and mixture_regression() both reach 141.198 with the same estimates."

@@ -1,0 +1,43 @@
+ [>] 5 distinct states appear in the data: 
+     1 = 1
+     2 = 2
+     3 = 3
+     4 = 4
+     5 = 5
+ [>] state coding:
+       [alphabet]  [label]  [long label] 
+     1  1           1        1
+     2  2           2        2
+     3  3           3        3
+     4  4           4        4
+     5  5           5        5
+ [>] 1718 sequences in the data set
+ [>] min/max sequence length: 7/7
+ [>] 5 distinct states appear in the data: 
+     1 = 1
+     2 = 2
+     3 = 3
+     4 = 4
+     5 = 5
+ [>] state coding:
+       [alphabet]  [label]  [long label] 
+     1  1           1        1
+     2  2           2        2
+     3  3           3        3
+     4  4           4        4
+     5  5           5        5
+ [>] 1718 sequences in the data set
+ [>] min/max sequence length: 7/7
+                                                                   reference
+             Bartolucci, Pandolfi and Pennoni (2017), JSS 81(4), section 3.1
+                                                                       LMest
+ Pennoni, Pandolfi and Bartolucci (2024), R Journal RJ-2024-036, section 3.3
+                                                                      seqHMM
+ compared agreed known values
+        8      4     4      8
+       24     24     0    208
+       12     12     0     12
+        8      8     0     45
+
+52 quantities compared: 48 agree, 4 known differences, 0 disagree
+exit 0

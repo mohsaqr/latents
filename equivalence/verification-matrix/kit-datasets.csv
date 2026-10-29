@@ -1,0 +1,20 @@
+path,pattern,replacement
+equivalence/latentgold-coverage/comparison.csv,^e([0-9])k[0-9]+$,Latent GOLD coverage kit: e\1
+equivalence/latentgold-coverage/comparison.csv,^(.*)$,Latent GOLD coverage kit: \1
+equivalence/lca-packages/comparison.csv,^help_k[0-9]+$,HELP (mosaicData HELPrct)
+equivalence/lca-packages/comparison.csv,^(.*)_k[0-9]+$,\1
+equivalence/latentgold-wider/comparison.csv,^(.*)$,Latent GOLD wider kit: \1
+equivalence/latentgold/comparison.csv,^(c[0-9]+)_.*$,Latent GOLD kit: \1
+equivalence/latentgold-ordinal/comparison.csv,^(.*)$,Latent GOLD ordinal kit: \1
+equivalence/lpa-packages/comparison.csv,^([a-z]+)_[A-Z]{3}_k[0-9]+$,\1
+equivalence/regression-packages/comparison.csv,^NPreg_.*$,NPreg
+equivalence/regression-packages/comparison.csv,^(.*)_k[0-9]+$,\1
+equivalence/growth-published/comparison.csv,^(.*)_k[0-9]+$,\1
+equivalence/pool-packages/comparison.csv,^srl.*$,srl
+equivalence/pool-packages/comparison.csv,^(.*)_k[0-9]+$,\1
+equivalence/lta-packages/comparison.csv,^rlms_.*$,RLMSdat
+equivalence/lta-packages/comparison.csv,^market_.*$,data_market_sim
+equivalence/stata-published/comparison.csv,^reaven_.*$,Reaven-Miller (Stata gsem)
+equivalence/stata-published/comparison.csv,^stouffer_toby_.*$,Stouffer-Toby (Stata gsem)
+equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
+equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1

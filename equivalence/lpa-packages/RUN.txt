@@ -1,0 +1,4 @@
+run: 2026-10-29
+latents: 0.98.1
+packages: Rmixmod 2.1.10, EMCluster 0.2.17, mixtools 2.0.0.1
+R: R version 4.5.2 (2025-10-31)

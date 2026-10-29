@@ -1,0 +1,26 @@
+fn,reference,kind,data,published,mark
+lpa,Masyn (2013),published,"Reaven-Miller diabetes /10 (Stata gsem_lca2.dta, n = 145)","Table 25.12: LL, BIC, adj. LMR for K = 1-5 x EEI/VVI/EEE/VVV (VVV-3 LL -1536.64); Table 25.14 entropy .88, AvePP, OCC",verified
+lpa,Stata 19 [SEM] Example 52g,commercial program,same as Masyn (2013),"EEI-2 LL -1702.5542, VVV-3 LL -1536.6409, every parameter with SE",verified
+lpa,StepMix (Morin et al. 2025),Python package,iris; mclust::banknote,iris VVV-3 LL -180.185; banknote VVI-2 with covariate LL -771.669,verified
+lpa,Scrucca et al. (2016),published,old mclust::diabetes; gclus::wine,14 structures x G = 1-9 BIC grid; wine EVE-3 BIC -6873.257; BLRT statistics,verified
+lpa,Rmixmod (Lebret et al. 2015),R package,geyser,"K = 3 LL -1131.0738, BIC 2312.5998",verified
+lca,Stata 19 [SEM] Examples 50g/51g,commercial program,"Stouffer-Toby (gsem_lca1.dta, n = 216)",2 classes LL -504.46767 with SEs; entropy and LMR for K = 1-3,verified
+lca,Mplus UG ex7.6/7.7/7.8 (JStats),commercial program,UG data in ../JStats/validation/r-reference,"ex7.6 LL -19214.480; ex7.7/7.8 LL -21408.482, estimates with SEs",verified
+lca,StepMix (Morin et al. 2025),Python package,data_bakk_covariate(2000) exported from Python,LL -5192.049 (StepMix = poLCA = Mplus),verified
+multilca,singleton-group identity,internal,any lca() reference,groups of size one: multilca() equals lca(),identity
+multilpa,singleton-group identity,internal,any lpa() reference,groups of size one: multilpa() equals lpa(),identity
+lta,IMMERSE lca-bookdown (Mplus 8.11),commercial program,LSAY lsay_lta.csv,invariant LL -14542.768; occasion-specific LL -14531.997,verified
+lta,Mplus UG ex8.12/8.15/10.13,commercial program,posted with the examples,HMM LL -13427.811; mover-stayer LL -19504.367; two-level LTA LL -20716.373,online
+mixture_regression,Stata 19 [FMM] Examples 1a/1b/2,commercial program,"mus03sub.dta, gsem_mixture.dta",3-class Gaussian LL -4727.6738; lcprob LL -4712.3871; Poisson LL -11502.686,verified
+mixture_regression,Deb & Trivedi (1997),published,AER::NMES1988,2-class negative binomial (tables not opened),online
+growth,Mplus 9 Demo LCGA/GMM (JStats),commercial program,../JStats/tests/fixtures/mplus (lcga-ml; gmm-ml; runner-*),LCGA K = 2 LL -2091.416; GMM K = 2 LL -2727.520,verified
+growth,Mplus UG ex8.9,commercial program,posted with the example,binary LCGA LL -1272.307,online
+growth,nlme corAR1/corCAR1 identity,R package,any growth data,one class with AR/Brownian residuals equals nlme::lme,identity
+three_step,StepMix (Morin et al. 2025) Table 9,Python package,GSS 1976-77 via gssr,BCH 26.71/36.81/44.68; ML LL -18754.72,verified
+three_step,Bakk & Kuha (2021) BJMSP,published,GSS 1976-77 (ICPSR),BCH 26.65/37.06/44.70; ML 20.63/44.94/65.67,online
+three_step,Mplus Web Talk 8 BCH (JStats),commercial program,mplus-webtalk8-distal.dat,LL -3634.865; BCH means with SEs,verified
+three_step,IMMERSE Nylund-Gibson et al. (2019),commercial program,LSAY lsay_df.csv,BCH step 3 LL -12744.043; ML step 3 LL -12742.252,verified
+bootstrap_lrt,mclust bootstrap LRT (2016 paper; vignette),R package,mclust::diabetes (two versions),statistics 361.186445 / 114.703559 / 7.437806,verified
+bootstrap_lrt,randomLCA (Beath 2017),R package,randomLCA::myocardial,bootstrap LRT p = .001,verified
+bootstrap_lrt,Masyn (2013) Table 25.12 and Stata lcstats,published,Reaven-Miller /10,adjusted LMR p-values,verified
+bootstrap_lrt,Mplus Demo TECH11/TECH14 (JStats),commercial program,mplus-lca-tech11/tech14-s1/s2; lca-boundary-tech11,"TECH11/TECH14 for K = 2, 3",verified

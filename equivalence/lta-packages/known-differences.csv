@@ -1,0 +1,2 @@
+case,reference,quantity,reason
+rlms_k3,"Bartolucci, Pandolfi and Pennoni (2017), JSS 81(4), section 3.1",^(log likelihood|initial probability .*)$,"The paper's three-state values are LMest's default stopping point (tol = 1e-8, start = 0): the current LMest reproduces them exactly there (log likelihood -13557.20657, initial probabilities .1739 / .3638 / .4623, BIC 27263.391). Converged further (tol 1e-10 or tighter) LMest reaches -13557.20497 with .1737 / .3639 / .4624, the maximum lta() reaches; the published BIC (27263.39) and the four-state values agree."

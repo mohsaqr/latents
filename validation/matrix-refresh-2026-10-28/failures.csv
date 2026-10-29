@@ -1,0 +1,296 @@
+"file","test","class","message"
+"test-enumeration-mplus.R","a grid fitted on two cores is identical to one fitted on one","expectation_error","Error in `checkForRemoteErrors(val)`: 2 nodes produced errors; first error: could not find function "".latents_collect_conditions"""
+"test-features-ml-three-step.R","the kit's posteriors are latents' own fit, refitted to the same maximum","expectation_failure","Expected sweep_077 < 0.001.
+Actual comparison: 7.482 >= 0.001
+Difference: 7.481 >= 0"
+"test-features-ml-three-step.R","the kit's posteriors are latents' own fit, refitted to the same maximum","expectation_failure","Expected sweep_095 < 0.05.
+Actual comparison: 1.00 >= 0.05
+Difference: 0.95 >= 0"
+"test-features-pair-covariance.R","vvi_one_k3_l_02: latents agrees with mplus","expectation_failure","Expected `result$aligned$gap` <= `pc_tolerance$posterior`.
+Actual comparison: 0.000020069 > 0.000020000
+Difference: 0.000000069 > 0"
+"test-features-vlmr.R","every latents candidate reaches Latent GOLD's non-degenerate maximum","expectation_failure","Expected `all(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-mclust-prior.R","the whole MAP EM reproduces mclust::me from the same start","expectation_failure","Expected `all(unlist(table[, -1L]) < 1e-08)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_01 icl_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_01 awe_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_01 clc_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_02 icl_individual < `tolerance`.
+Actual comparison: 9.02 >= 0.05
+Difference: 8.97 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_02 awe_individual < `tolerance`.
+Actual comparison: 9.02 >= 0.05
+Difference: 8.97 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_02 clc_individual < `tolerance`.
+Actual comparison: 9.02 >= 0.05
+Difference: 8.97 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_03 icl_individual < `tolerance`.
+Actual comparison: 2.06 >= 0.02
+Difference: 2.04 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_03 awe_individual < `tolerance`.
+Actual comparison: 2.06 >= 0.02
+Difference: 2.04 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_03 clc_individual < `tolerance`.
+Actual comparison: 2.06 >= 0.02
+Difference: 2.04 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_04 icl_individual < `tolerance`.
+Actual comparison: 0.26 >= 0.02
+Difference: 0.23 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_04 awe_individual < `tolerance`.
+Actual comparison: 0.26 >= 0.02
+Difference: 0.23 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_04 clc_individual < `tolerance`.
+Actual comparison: 0.26 >= 0.02
+Difference: 0.23 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_05 icl_individual < `tolerance`.
+Actual comparison: 0.097 >= 0.039
+Difference: 0.057 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_05 awe_individual < `tolerance`.
+Actual comparison: 0.097 >= 0.039
+Difference: 0.057 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_05 clc_individual < `tolerance`.
+Actual comparison: 0.097 >= 0.039
+Difference: 0.057 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_06 icl_individual < `tolerance`.
+Actual comparison: 2.05 >= 0.04
+Difference: 2.01 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_06 awe_individual < `tolerance`.
+Actual comparison: 2.05 >= 0.04
+Difference: 2.01 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_06 clc_individual < `tolerance`.
+Actual comparison: 2.05 >= 0.04
+Difference: 2.01 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_07 icl_individual < `tolerance`.
+Actual comparison: 3.33 >= 0.03
+Difference: 3.30 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_07 awe_individual < `tolerance`.
+Actual comparison: 3.33 >= 0.03
+Difference: 3.30 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_07 clc_individual < `tolerance`.
+Actual comparison: 3.33 >= 0.03
+Difference: 3.30 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_08 icl_individual < `tolerance`.
+Actual comparison: 0.28 >= 0.06
+Difference: 0.22 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_08 awe_individual < `tolerance`.
+Actual comparison: 0.28 >= 0.06
+Difference: 0.22 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_08 clc_individual < `tolerance`.
+Actual comparison: 0.28 >= 0.06
+Difference: 0.22 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_09 icl_individual < `tolerance`.
+Actual comparison: 7.20 >= 0.05
+Difference: 7.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_09 awe_individual < `tolerance`.
+Actual comparison: 7.20 >= 0.05
+Difference: 7.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_09 clc_individual < `tolerance`.
+Actual comparison: 7.20 >= 0.05
+Difference: 7.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_10 icl_individual < `tolerance`.
+Actual comparison: 2.80 >= 0.07
+Difference: 2.73 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_10 awe_individual < `tolerance`.
+Actual comparison: 2.80 >= 0.07
+Difference: 2.73 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_10 clc_individual < `tolerance`.
+Actual comparison: 2.80 >= 0.07
+Difference: 2.73 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_11 icl_individual < `tolerance`.
+Actual comparison: 4.76 >= 0.05
+Difference: 4.71 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_11 awe_individual < `tolerance`.
+Actual comparison: 4.76 >= 0.05
+Difference: 4.71 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_11 clc_individual < `tolerance`.
+Actual comparison: 4.76 >= 0.05
+Difference: 4.71 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_12 icl_individual < `tolerance`.
+Actual comparison: 4.10 >= 0.03
+Difference: 4.07 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_12 awe_individual < `tolerance`.
+Actual comparison: 4.10 >= 0.03
+Difference: 4.07 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_12 clc_individual < `tolerance`.
+Actual comparison: 4.10 >= 0.03
+Difference: 4.07 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_13 icl_individual < `tolerance`.
+Actual comparison: 7.37 >= 0.05
+Difference: 7.32 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_13 awe_individual < `tolerance`.
+Actual comparison: 7.37 >= 0.05
+Difference: 7.32 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_13 clc_individual < `tolerance`.
+Actual comparison: 7.37 >= 0.05
+Difference: 7.32 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_14 icl_individual < `tolerance`.
+Actual comparison: 0.41 >= 0.06
+Difference: 0.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_14 awe_individual < `tolerance`.
+Actual comparison: 0.41 >= 0.06
+Difference: 0.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_14 clc_individual < `tolerance`.
+Actual comparison: 0.41 >= 0.06
+Difference: 0.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_15 icl_individual < `tolerance`.
+Actual comparison: 6.51 >= 0.05
+Difference: 6.47 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_15 awe_individual < `tolerance`.
+Actual comparison: 6.51 >= 0.05
+Difference: 6.47 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lpa_15 clc_individual < `tolerance`.
+Actual comparison: 6.51 >= 0.05
+Difference: 6.47 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_01 icl_individual < `tolerance`.
+Actual comparison: 0.80 >= 0.02
+Difference: 0.78 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_01 awe_individual < `tolerance`.
+Actual comparison: 0.80 >= 0.02
+Difference: 0.78 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_01 clc_individual < `tolerance`.
+Actual comparison: 0.80 >= 0.02
+Difference: 0.78 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_02 icl_individual < `tolerance`.
+Actual comparison: 9.18 >= 0.02
+Difference: 9.17 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_02 awe_individual < `tolerance`.
+Actual comparison: 9.18 >= 0.02
+Difference: 9.17 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_02 clc_individual < `tolerance`.
+Actual comparison: 9.18 >= 0.02
+Difference: 9.17 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_03 icl_individual < `tolerance`.
+Actual comparison: 8.09 >= 0.03
+Difference: 8.06 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_03 awe_individual < `tolerance`.
+Actual comparison: 8.09 >= 0.03
+Difference: 8.06 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_03 clc_individual < `tolerance`.
+Actual comparison: 8.09 >= 0.03
+Difference: 8.06 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_04 icl_individual < `tolerance`.
+Actual comparison: 3.36 >= 0.02
+Difference: 3.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_04 awe_individual < `tolerance`.
+Actual comparison: 3.36 >= 0.02
+Difference: 3.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_04 clc_individual < `tolerance`.
+Actual comparison: 3.36 >= 0.02
+Difference: 3.34 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_05 icl_individual < `tolerance`.
+Actual comparison: 0.76 >= 0.02
+Difference: 0.74 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_05 awe_individual < `tolerance`.
+Actual comparison: 0.76 >= 0.02
+Difference: 0.74 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_05 clc_individual < `tolerance`.
+Actual comparison: 0.76 >= 0.02
+Difference: 0.74 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_06 icl_individual < `tolerance`.
+Actual comparison: 8.10 >= 0.02
+Difference: 8.08 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_06 awe_individual < `tolerance`.
+Actual comparison: 8.10 >= 0.02
+Difference: 8.08 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_06 clc_individual < `tolerance`.
+Actual comparison: 8.10 >= 0.02
+Difference: 8.08 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_07 icl_individual < `tolerance`.
+Actual comparison: 4.53 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_07 awe_individual < `tolerance`.
+Actual comparison: 4.53 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_07 clc_individual < `tolerance`.
+Actual comparison: 4.53 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_08 icl_individual < `tolerance`.
+Actual comparison: 5.34 >= 0.02
+Difference: 5.33 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_08 awe_individual < `tolerance`.
+Actual comparison: 5.34 >= 0.02
+Difference: 5.33 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_08 clc_individual < `tolerance`.
+Actual comparison: 5.34 >= 0.02
+Difference: 5.33 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_09 icl_individual < `tolerance`.
+Actual comparison: 4.24 >= 0.03
+Difference: 4.21 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_09 awe_individual < `tolerance`.
+Actual comparison: 4.24 >= 0.03
+Difference: 4.21 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_09 clc_individual < `tolerance`.
+Actual comparison: 4.24 >= 0.03
+Difference: 4.21 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_10 icl_individual < `tolerance`.
+Actual comparison: 5.78 >= 0.02
+Difference: 5.76 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_10 awe_individual < `tolerance`.
+Actual comparison: 5.78 >= 0.02
+Difference: 5.76 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_10 clc_individual < `tolerance`.
+Actual comparison: 5.78 >= 0.02
+Difference: 5.76 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_11 icl_individual < `tolerance`.
+Actual comparison: 2.18 >= 0.03
+Difference: 2.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_11 awe_individual < `tolerance`.
+Actual comparison: 2.18 >= 0.03
+Difference: 2.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_11 clc_individual < `tolerance`.
+Actual comparison: 2.18 >= 0.03
+Difference: 2.15 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_12 icl_individual < `tolerance`.
+Actual comparison: 3.64 >= 0.02
+Difference: 3.62 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_12 awe_individual < `tolerance`.
+Actual comparison: 3.64 >= 0.02
+Difference: 3.62 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_12 clc_individual < `tolerance`.
+Actual comparison: 3.64 >= 0.02
+Difference: 3.62 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_13 icl_individual < `tolerance`.
+Actual comparison: 2.82 >= 0.02
+Difference: 2.80 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_13 awe_individual < `tolerance`.
+Actual comparison: 2.82 >= 0.02
+Difference: 2.80 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_13 clc_individual < `tolerance`.
+Actual comparison: 2.82 >= 0.02
+Difference: 2.80 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_14 icl_individual < `tolerance`.
+Actual comparison: 4.52 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_14 awe_individual < `tolerance`.
+Actual comparison: 4.52 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_14 clc_individual < `tolerance`.
+Actual comparison: 4.52 >= 0.03
+Difference: 4.50 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_15 icl_individual < `tolerance`.
+Actual comparison: 5.87 >= 0.03
+Difference: 5.84 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_15 awe_individual < `tolerance`.
+Actual comparison: 5.87 >= 0.03
+Difference: 5.84 >= 0"
+"test-montecarlo.R","criteria, the AvePP matrix and OCC follow from Mplus's own quantities","expectation_failure","Expected ml_lca_15 clc_individual < `tolerance`.
+Actual comparison: 5.87 >= 0.03
+Difference: 5.84 >= 0"
+"test-review-1026-oracles.R","one class reproduces the linear mixed model of nlme::lme (ML)","expectation_failure","Expected `fit$params$sigma2` to equal `reference$sigma^2`.
+Differences:
+`names(actual)` is a character vector ('class_1')
+`names(expected)` is absent
+"

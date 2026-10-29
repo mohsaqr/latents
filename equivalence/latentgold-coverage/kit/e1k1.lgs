@@ -1,0 +1,30 @@
+//LG6.1//
+version = 6.1
+infile 'e1k1.dat'
+
+model
+title 'e1k1';
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'e1k1_posteriors.txt' classification keep id;
+variables
+   dependent u1 nominal coding=first, u2 nominal coding=first, u3 nominal coding=first, u4 nominal coding=first, u5 nominal coding=first, u6 nominal coding=first;
+   latent Cluster nominal 1 coding=first;
+equations
+   Cluster <- 1;
+   u1 <- 1 ;
+   u2 <- 1 ;
+   u3 <- 1 ;
+   u4 <- 1 ;
+   u5 <- 1 ;
+   u6 <- 1 ;
+end model

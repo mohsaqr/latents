@@ -1,0 +1,32 @@
+pattern,reference,kind
+^poLCA,poLCA,R package
+^glca,glca,R package
+^multilevLCA,multilevLCA,R package
+^mclust 6[.0-9]* estimates; base-R likelihood,base-R likelihood + numDeriv,independent code
+^mclust (6|vignette),mclust,R package
+^Scrucca et al\. \(2023\),Scrucca et al. (2023) mclust book,published
+^depmixS4,depmixS4,R package
+^LMest,LMest,R package
+^flexmix,flexmix,R package
+^lcmm,lcmm,R package
+^latents \(unit-scale fit\),unit-scale refit,internal
+^Mplus,Mplus,commercial program
+^Latent GOLD,Latent GOLD,commercial program
+^EM with MASS,MASS,R package
+^EM with VGAM,VGAM,R package
+^mice,mice,R package
+^base-R,base-R likelihood + numDeriv,independent code
+^likelihood written here,base-R likelihood + numDeriv,independent code
+^sandwich,sandwich,R package
+^tidySEM,tidySEM,R package
+^latents [0-9.]+ multilpa\(\) called directly,direct multilpa() call,internal
+^refusal parity,refusal parity,internal
+^invariance,invariance,internal
+"^multilpa, refitted across seeds",seed stability,internal
+^Linzer & Lewis,Linzer & Lewis (2011),published
+^Agresti & Lang,Agresti & Lang (1993),published
+^Zhou & Lange,Zhou & Lange (2010),published
+^Goodman,Goodman (2002),published
+^Dayton,Dayton (1998),published
+^McCutcheon,McCutcheon (1987),published
+^Lyrvall,Lyrvall et al. (2025),published

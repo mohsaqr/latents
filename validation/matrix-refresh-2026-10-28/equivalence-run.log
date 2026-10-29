@@ -1,0 +1,425 @@
+40 files:
+test-depmixs4-standard-errors.R
+test-direct-effects-search-protocol.R
+test-enumeration-mplus.R
+test-external-scripts.R
+test-features-direct-effects.R
+test-features-joint-items.R
+test-features-ml-three-step.R
+test-features-pair-covariance.R
+test-features-vlmr.R
+test-growth-correlated-lcmm.R
+test-growth-mixture-lcmm.R
+test-growth-predict-lcmm.R
+test-joint-items-polca-protocol.R
+test-joint-items-reference-optimizer.R
+test-joint-items-verification-protocol.R
+test-jstats-lta.R
+test-jstats-mplus.R
+test-mclust-noise.R
+test-mclust-prior.R
+test-mclust.R
+test-mixture-regression-flexmix.R
+test-montecarlo-extended.R
+test-montecarlo.R
+test-mplus-categorical.R
+test-mplus-classification.R
+test-mplus-covariates.R
+test-mplus-missing-full.R
+test-mplus-person-scaling.R
+test-mplus-public-parser.R
+test-mplus-public.R
+test-mplus-random-intercept.R
+test-mplus-standardize.R
+test-mplus-tech14.R
+test-mplus-twolevel-public.R
+test-mplus-twolevel-synthetic.R
+test-numerical-equivalence.R
+test-review-1026-oracles.R
+test-structure-inference.R
+test-tidylpa-classification.R
+test-tidysem-bch.R
+depmixs4-standard-errors: ...............
+direct-effects-search-protocol: .............................
+enumeration-mplus: ................................................Preparing 4 candidates on 2 workers.
+1
+external-scripts: ....................
+features-direct-effects: ...................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................WW.............................................................................................................................................................................................................................................................................................................................................
+features-joint-items: .................................................................................................
+features-ml-three-step: 23..............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+features-pair-covariance: ............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................4.............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+features-vlmr: WWWWWWWWWWWWWWWWWWWWWWWWWWWWW...........................................................................................................................................................................................................................................................................................................................................5..........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+growth-correlated-lcmm: ..................
+growth-mixture-lcmm: .........................
+growth-predict-lcmm: .....................
+joint-items-polca-protocol: ......................
+joint-items-reference-optimizer: ...........................
+joint-items-verification-protocol: .....................
+jstats-lta: .........................................................
+jstats-mplus: ..................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+mclust-noise: .Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+   code prior converged    loglik    means covariances    noise posteriors
+1   EII FALSE      TRUE  2.96e-12 4.14e-08    1.18e-07 3.30e-08   2.94e-07
+2   VII FALSE      TRUE  0.00e+00 3.55e-15    4.44e-16 5.55e-17   1.44e-15
+3   EEI FALSE      TRUE  1.34e-11 5.11e-08    2.88e-07 3.90e-08   5.28e-07
+4   VEI FALSE      TRUE  1.14e-11 6.36e-08    3.17e-07 3.67e-08   5.94e-07
+5   EVI FALSE      TRUE  0.00e+00 1.33e-15    5.55e-16 0.00e+00   1.78e-15
+6   VVI FALSE      TRUE -2.27e-13 1.78e-15    1.33e-15 0.00e+00   7.77e-16
+7   EEE FALSE      TRUE  1.50e-11 4.37e-08    2.46e-07 3.27e-08   6.17e-07
+8   VEE FALSE      TRUE  1.59e-11 4.25e-08    3.27e-07 3.57e-08   7.88e-07
+9   EVE FALSE      TRUE  4.55e-12 8.97e-08    7.78e-07 5.59e-08   2.57e-06
+10  VVE FALSE      TRUE  2.17e-03 1.54e-04    7.51e-03 1.05e-04   7.31e-03
+11  EEV FALSE      TRUE  2.96e-11 2.56e-08    3.94e-07 3.20e-08   9.85e-07
+12  VEV FALSE      TRUE -1.82e-12 1.00e-12    9.56e-11 5.02e-13   3.96e-11
+13  EVV FALSE      TRUE  2.30e-11 2.57e-08    4.34e-07 3.22e-08   9.77e-07
+14  VVV FALSE      TRUE -4.55e-13 3.11e-15    2.22e-15 1.39e-17   2.55e-15
+   parameters       bic
+1           0 -5.91e-12
+2           0  0.00e+00
+3           0 -2.68e-11
+4           0 -2.27e-11
+5           0  0.00e+00
+6           0  4.55e-13
+7           0 -3.00e-11
+8           0 -3.18e-11
+9           0 -9.09e-12
+10          0 -4.35e-03
+11          0 -5.91e-11
+12          0  3.64e-12
+13          0 -4.59e-11
+14          0  9.09e-13
+......Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+Fitted a single-level latent profile model.
+   code prior converged    loglik    means covariances    noise posteriors
+1   EII  TRUE      TRUE  2.27e-13 3.11e-15    1.33e-15 4.16e-17   3.89e-15
+2   VII  TRUE      TRUE  0.00e+00 3.55e-15    6.66e-16 6.94e-17   2.78e-15
+3   EEI  TRUE      TRUE  4.98e-11 1.26e-11    6.79e-11 9.54e-12   1.25e-10
+4   VEI  TRUE      TRUE  9.09e-13 4.88e-15    4.82e-14 0.00e+00   5.15e-14
+5   EVI  TRUE      TRUE -4.55e-13 3.11e-15    8.88e-16 1.39e-17   1.83e-15
+6   VVI  TRUE      TRUE  4.87e-11 2.17e-12    2.90e-11 2.19e-12   4.26e-11
+7   EEE  TRUE      TRUE  3.75e-11 1.12e-12    5.48e-12 8.12e-13   1.24e-11
+8   EEV  TRUE      TRUE  4.41e-11 9.68e-13    1.58e-11 1.17e-12   2.66e-11
+9   VEV  TRUE      TRUE -6.14e-11 2.24e-12    7.67e-11 3.16e-12   1.95e-10
+10  VVV  TRUE      TRUE  3.82e-11 2.65e-13    8.11e-12 4.45e-13   1.67e-11
+   parameters       bic
+1           0 -4.55e-13
+2           0  0.00e+00
+3           0 -9.96e-11
+4           0 -1.82e-12
+5           0  9.09e-13
+6           0 -9.73e-11
+7           0 -7.50e-11
+8           0 -8.82e-11
+9           0  1.23e-10
+10          0 -7.64e-11
+..Fitted a single-level latent profile model.
+  code prior converged  loglik    means covariances    noise posteriors
+1  VVV FALSE      TRUE 2.5e-12 3.11e-15    2.89e-15 5.55e-17   5.11e-15
+  parameters    bic
+1          0 -5e-12
+...Fitted a single-level latent profile model.
+..
+mclust-prior: ....................max |covariance difference| of one M-step, by structure:
+EII 6.22e-15
+VII 3.55e-15
+EEI 8.88e-16
+VEI 1.78e-15
+EVI 1.78e-15
+VVI 1.78e-15
+EEE 1.15e-14
+EEV 1.33e-14
+VEV 1.42e-14
+VVV 1.15e-14
+Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...6   code   loglik    means covariances proportions posteriors
+1   EII 8.23e-10 1.15e-08    1.39e-10    2.02e-09   8.76e-09
+2   VII 1.08e-09 2.82e-09    8.23e-10    5.01e-10   2.15e-09
+3   EEI 2.01e-10 1.45e-08    1.86e-09    4.86e-09   2.12e-08
+4   VEI 4.11e-10 7.72e-10    1.08e-09    2.92e-10   1.71e-09
+5   EVI 5.37e-10 6.27e-09    2.30e-09    7.67e-10   4.85e-09
+6   VVI 1.28e-09 1.11e-10    2.16e-10    4.42e-11   2.87e-10
+7   EEE 4.12e-10 4.45e-10    3.64e-10    8.81e-11   8.62e-10
+8   EEV 4.26e-10 1.32e-09    7.11e-10    2.59e-10   2.50e-09
+9   VEV 6.72e-10 5.10e-09    6.79e-09    1.22e-09   8.91e-09
+10  VVV 1.44e-09 8.97e-10    1.24e-09    2.42e-10   1.73e-09
+
+mclust: .........................................
+mixture-regression-flexmix: ............................
+montecarlo-extended: ...................................................................................................................................................................................................................................................................................................................................................................................................................
+montecarlo: ..........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................789.......abc.......def.......ghi.......jkl.......mno.......pqr.......stu.......vwx.......yzA.......BCD.......EFG.......HIJ.......KLM.......NOP.......QRS.......TUV.......WXY.......ZFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF.......FFF......................................................................................................................................................................................................................................................................................................................................................................................................................................
+mplus-categorical: .........
+mplus-classification: ...............
+mplus-covariates: ......................
+mplus-missing-full: ............................
+mplus-person-scaling: .....
+mplus-public-parser: ............
+mplus-public: ......................
+mplus-random-intercept: .....
+mplus-standardize: ......
+mplus-tech14: .............
+mplus-twolevel-public: ....................................
+mplus-twolevel-synthetic: ............................
+numerical-equivalence: ........W......W.........................
+review-1026-oracles: .....F...............................................................................................................................................................................................
+structure-inference: Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...single-level max relative SE difference by structure:
+EII 1.23e-07
+VII 1.30e-07
+EEI 5.25e-08
+VEI 1.16e-07
+EVI 4.01e-07
+VVI 1.08e-06
+EEE 2.25e-07
+VEE 2.12e-07
+EVE 2.84e-07
+VVE 1.43e-06
+EEV 3.56e-06
+VEV 9.95e-07
+EVV 2.94e-07
+VVV 9.68e-07
+..........................................two-level max relative SE difference by structure:
+EII 5.43e-07
+VII 1.20e-06
+EEI 1.59e-06
+VEI 9.18e-07
+EVI 4.09e-07
+VVI 8.95e-07
+EEE 1.18e-06
+VEE 7.43e-07
+EVE 3.95e-07
+VVE 1.02e-06
+EEV 8.49e-07
+VEV 8.84e-07
+EVV 4.93e-07
+VVV 9.17e-07
+
+tidylpa-classification: Registered S3 method overwritten by 'tidyLPA':
+  method    from   
+  print.LRT tidySEM
+...........
+tidysem-bch: ..
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. an independent implementation agrees on 84 more datasets ('test-features-direct-effects.R:173:33') - Profile 2: 2.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+2. an independent implementation agrees on 84 more datasets ('test-features-direct-effects.R:173:33') - Profile 3: 3.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+3. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 2.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+4. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 4.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+5. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+6. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+7. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+8. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+9. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+10. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+11. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+12. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+13. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 4: 1.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+14. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+15. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 2: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+16. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+17. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.9, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+18. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+19. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+20. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+21. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+22. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+23. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 3: 4.9, 2.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+24. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+25. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+26. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+27. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 3: 4.6, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+28. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+29. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+30. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+31. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 3.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+32. fitted likelihood and posteriors match exhaustive latent assignments ('test-numerical-equivalence.R:30:3') - Profiles 1, 2: 2.0, 2.0 Gaussian membership mass for 4 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+33. one EM update matches an independent exhaustive E-step and M-step ('test-numerical-equivalence.R:60:5') - Profiles 1, 2: 3.0, 3.0 Gaussian membership mass for 4 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-enumeration-mplus.R:98:3'): a grid fitted on two cores is ide
+Error in `checkForRemoteErrors(val)`: 2 nodes produced errors; first error: could not find function ".latents_collect_conditions"
+Backtrace:
+     ▆
+  1. ├─base::suppressWarnings(enumeration_grid(case, 1:4, cores = 2L)) at test-enumeration-mplus.R:98:3
+  2. │ └─base::withCallingHandlers(...)
+  3. └─latents (local) enumeration_grid(case, 1:4, cores = 2L)
+  4.   └─latents::enumerate_lpa(...) at test-enumeration-mplus.R:38:3
+  5.     ├─latents:::.latents_candidate_data(...) at latents/R/lpa.R:166:3
+  6.     │ └─base::lapply(...) at latents/R/candidates.R:49:3
+  7.     ├─latents:::.multilpa_quiet_single_level(...)
+  8.     │ └─base::withCallingHandlers(...) at latents/R/lpa.R:248:3
+  9.     └─latents::enumerate_classes(...)
+ 10.       └─latents:::.multilpa_enumerate_fits(...) at latents/R/enumeration.R:303:3
+ 11.         └─worker_report$collect(...) at latents/R/multilpa-pool.R:111:3
+ 12.           ├─base::withCallingHandlers(...) at latents/R/parallel-report.R:12:5
+ 13.           └─latents (local) fun() at latents/R/parallel-report.R:12:5
+ 14.             └─latents:::.latents_pool_setup(...) at latents/R/multilpa-pool.R:111:3
+ 15.               └─latents:::.latents_map_candidates(...) at latents/R/start-pool.R:89:3
+ 16.                 └─latents (local) run_pass(indices[positions], collected, workers) at latents/R/parallel.R:449:5
+ 17.                   └─base::lapply(...) at latents/R/parallel.R:330:3
+ 18.                     └─latents (local) FUN(X[[i]], ...)
+ 19.                       └─base::tryCatch(...) at latents/R/parallel.R:346:5
+ 20.                         └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 21.                           └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 22.                             └─value[[3L]](cond)
+
+── 2. Failure ('test-features-ml-three-step.R:105:3'): the kit's posteriors are 
+Expected sweep_077 < 0.001.
+Actual comparison: 7.482 >= 0.001
+Difference: 7.481 >= 0
+
+── 3. Failure ('test-features-ml-three-step.R:107:3'): the kit's posteriors are 
+Expected sweep_095 < 0.05.
+Actual comparison: 1.00 >= 0.05
+Difference: 0.95 >= 0
+
+── 4. Failure ('test-features-pair-covariance.R:143:5'): vvi_one_k3_l_02: latent
+Expected `result$aligned$gap` <= `pc_tolerance$posterior`.
+Actual comparison: 0.000020069 > 0.000020000
+Difference: 0.000000069 > 0
+
+── 5. Failure ('test-features-vlmr.R:98:3'): every latents candidate reaches Lat
+Expected `all(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 6. Failure ('test-mclust-prior.R:90:3'): the whole MAP EM reproduces mclust::
+Expected `all(unlist(table[, -1L]) < 1e-08)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 7. Failure ('test-montecarlo.R:180:7'): criteria, the AvePP matrix and OCC fo
+Expected ml_lpa_01 icl_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-montecarlo.R:156:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-montecarlo.R:179:5
+ 4.       └─latents (local) FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-montecarlo.R:180:7
+
+── 8. Failure ('test-montecarlo.R:180:7'): criteria, the AvePP matrix and OCC fo
+Expected ml_lpa_01 awe_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-montecarlo.R:156:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-montecarlo.R:179:5
+ 4.       └─latents (local) FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-montecarlo.R:180:7
+
+── 9. Failure ('test-montecarlo.R:180:7'): criteria, the AvePP matrix and OCC fo
+Expected ml_lpa_01 clc_individual < `tolerance`.
+Actual comparison: 3.27 >= 0.04
+Difference: 3.24 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-montecarlo.R:156:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-montecarlo.R:179:5
+ 4.       └─latents (local) FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-montecarlo.R:180:7
+
+── 10. Failure ('test-montecarlo.R:180:7'): criteria, the AvePP matrix and OCC f
+Expected ml_lpa_02 icl_individual < `tolerance`.
+Actual comparison: 9.02 >= 0.05
+Difference: 8.97 >= 0
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-montecarlo.R:156:3
+ 2.   └─latents (local) FUN(X[[i]], ...)
+ 3.     └─base::lapply(...) at test-montecarlo.R:179:5
+ 4.       └─latents (local) FUN(X[[i]], ...)
+ 5.         └─testthat::expect_lt(...) at test-montecarlo.R:180:7
+  ... and 87 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one gets it right on their first try
+     nb  failed skipped   error warning  passed 
+  20858      96       0       1       4   20758 
+exit 0

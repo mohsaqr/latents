@@ -1,0 +1,152 @@
+g01.dat
+File name:	g01.dat	
+File size:	25252 bytes  2000 records	
+File date:	2026-Oct-28 11:50:14 PM	
+Syntax:	g01.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+g01	2-Class	-1943.6985	3929.3372	3901.3970	3908.3970	7	0.0021	0.9887	
+g01 - LL = -1943.6985
+2-Class Syntax Model	
+					
+Number of cases	400				
+Number of replications	2000				
+Number of parameters (Npar)	7				
+Activated Constraints	0				
+Random Seed	20261201				
+Best Start Seed	2717931				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1943.6985				
+Log-prior	0.0000				
+Log-posterior	-1943.6985				
+BIC (based on LL)	3929.3372				
+AIC (based on LL)	3901.3970				
+AIC3 (based on LL)	3908.3970				
+CAIC (based on LL)	3936.3372				
+SABIC (based on LL)	3907.1258				
+					
+					
+Classification Statistics	Class				
+Classification errors	0.0021				
+Reduction of errors (Lambda)	0.9944				
+Entropy R-squared	0.9887				
+Standard R-squared	0.9921				
+Classification log-likelihood	-1946.6649				
+Entropy	2.9664				
+CLC	3893.3297				
+AWE	3998.2102				
+ICL-BIC	3935.2700				
+					
+Class  Classification Table	Modal				
+Latent	1	2	Total		
+1	146.8960	0.7285	147.6245		
+2	0.1040	252.2715	252.3755		
+Total	147.0000	253.0000	400.0000		
+					
+Class  Classification Table	Proportional				
+Latent	1	2	Total		
+1	146.8926	0.7318	147.6245		
+2	0.7318	251.6437	252.3755		
+Total	147.6245	252.3755	400.0000		
+					
+Files					
+Infile	C:\lgcoverage\g01.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     400				
+predictionstatistics	no				
+outfile					
+file name	g01_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Class	Nominal	Case	2		
+ 					
+Case ID	id	400			
+Dependent					
+y	Continuous				
+Independent					
+time	Num-Fixed	5			
+0	0	0			
+1	1	1			
+2	2	2			
+3	3	3			
+4	4	4			
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'g01_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   dependent y continuous;
+   independent time;
+   latent Class nominal 2 coding=first;
+equations
+   Class <- 1;
+   y <- 1 | Class + time | Class;
+   y | Class;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Class(1)	<-	1			0.0000	.	.	.	26.5512	1	2.6e-7				
+Class(2)	<-	1			0.5362	0.1041	5.1528	2.6e-7							
+															
+y	<-	1	|	Class(1)	3.0296	0.0458	66.0915	3.7e-951	6005.8399	2	7.1e-1305	1559.6632	1	4.3e-341	
+y	<-	1	|	Class(2)	0.9975	0.0241	41.4487	1.7e-375							
+y	<-	time	|	Class(1)	-0.4204	0.0187	-22.4408	1.6e-111	4310.9955	2	7.6e-937	2394.5852	1	1.7e-522	
+y	<-	time	|	Class(2)	0.6040	0.0099	61.0361	1.4e-811							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Class(1)	0.4959	0.0261	19.0146	1.3e-80	994.4821	2	1.1e-216	82.4769	1	1.1e-19	
+y			|	Class(2)	0.2418	0.0097	24.8570	2.2e-136							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Class	<-	1			Class	1	2	26.5512	1	2.6e-7	
+	
+y	<-	1	|	Class	Class	1	2	1559.6632	1	4.3e-341	
+y	<-	 time	|	Class	Class	1	2	2394.5852	1	1.7e-522	
+Variances	
+y			|	Class	Class	1	2	82.4769	1	1.1e-19	

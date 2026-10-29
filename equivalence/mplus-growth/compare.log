@@ -1,0 +1,6 @@
+                      reference compared agreed known values
+ Mplus 9 Demo (JStats fixtures)      212    134    78    212
+
+212 quantities compared: 134 agree, 78 known differences, 0 disagree
+Warning message:
+The random-effect covariance of class 3 is degenerate (a variance at its floor or random effects perfectly correlated): the data cannot separate those random effects. Simplify the random effects, for example `random = "intercept"` or `random_covariance = "equal"`. Its standard errors are not reported. 

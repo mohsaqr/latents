@@ -1,0 +1,2 @@
+case,quantity,reason,evidence
+g03,"^standard s[.]e[.] (F1|y[1-5][|]Class[(][12][)])$","Latent GOLD's errors for the wide factor parameterization with a zero-variance slope factor differ from the observed information by up to 0.8%. latents agrees with an independent numDeriv Hessian of the likelihood written from its definition to 1e-9, and with Latent GOLD's own long-format fit of the same model (residual s.e. 0.0284; random-intercept variance s.e. 2 x 0.6612 x 0.0270 = 0.0357 from its Cholesky factor).",check-g03-errors.R

@@ -1,0 +1,198 @@
+t03.dat
+File name:	t03.dat	
+File size:	44663 bytes  1600 records	
+File date:	2026-Oct-28 11:51:52 PM	
+Syntax:	t03.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+t03	2-State	-4206.7242	8491.3375	8439.4485	8452.4485	13	.	.	
+t03 - LL = -4206.7242
+2-State Syntax Model	
+					
+Number of cases	400				
+Number of time points	1600				
+Number of parameters (Npar)	13				
+Activated Constraints	0				
+Random Seed	20261201				
+Best Start Seed	2267647				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4206.7242				
+Log-prior	0.0000				
+Log-posterior	-4206.7242				
+BIC (based on LL)	8491.3375				
+AIC (based on LL)	8439.4485				
+AIC3 (based on LL)	8452.4485				
+CAIC (based on LL)	8504.3375				
+SABIC (based on LL)	8450.0877				
+					
+					
+Classification Statistics	State				
+Classification errors	0.0531				
+Reduction of errors (Lambda)	0.8737				
+Entropy R-squared	0.8026				
+Standard R-squared	0.8380				
+Classification log-likelihood	-4412.6875				
+Entropy	205.9633				
+CLC	8825.3750				
+AWE	9020.1531				
+ICL-BIC	8903.2641				
+					
+State  Classification Table	Modal				
+Latent	1	2	Total		
+1	899.6584	38.6150	938.2733		
+2	46.3416	615.3850	661.7267		
+Total	946.0000	654.0000	1600.0000		
+					
+State  Classification Table	Proportional				
+Latent	1	2	Total		
+1	875.0969	63.1765	938.2733		
+2	63.1765	598.5502	661.7267		
+Total	938.2733	661.7267	1600.0000		
+					
+Model Classification Statistics	State				
+Classification errors	0.4204				
+Reduction of errors (Lambda)	0.0000				
+Entropy R-squared	0.0020				
+Standard R-squared	0.0027				
+					
+Files					
+Infile	C:\lgcoverage\t03.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     400				
+predictionstatistics	no				
+outfile					
+file name	t03_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+State	Nominal	Dynamic	2		
+ 					
+Case ID	id	400			
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Independent					
+z	Num-Fixed	399			
+-3.3599	-3.3599	-3.3599			
+-2.5948	-2.5948	-2.5948			
+-2.547	-2.547	-2.547			
+-2.4808	-2.4808	-2.4808			
+-2.3425	-2.3425	-2.3425			
+-2.3299	-2.3299	-2.3299			
+-2.3231	-2.3231	-2.3231			
+-2.1572	-2.1572	-2.1572			
+-2.1222	-2.1222	-2.1222			
+-2.1137	-2.1137	-2.1137			
+...					
+2.1068	2.1068	2.1068			
+2.1122	2.1122	2.1122			
+2.1647	2.1647	2.1647			
+2.224	2.224	2.224			
+2.2606	2.2606	2.2606			
+2.3133	2.3133	2.3133			
+2.5662	2.5662	2.5662			
+2.6655	2.6655	2.6655			
+2.813	2.813	2.813			
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 't03_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   dependent y1 continuous, y2 continuous;
+   independent z;
+   latent State nominal dynamic 2 coding=first;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1] + z | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+   y1 | State;
+   y2 | State;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+State[=0](1)	<-	1			0.0000	.	.	.	2.8760	1	0.090				
+State[=0](2)	<-	1			-0.1924	0.1135	-1.6959	0.090							
+															
+State(1)	<-	1	|	State[-1](1)	0.0000	.	.	.	164.7773	2	1.7e-36	159.0359	1	1.8e-36	
+State(2)	<-	1	|	State[-1](1)	-1.6822	0.1491	-11.2796	1.7e-29							
+State(1)	<-	1	|	State[-1](2)	0.0000	.	.	.							
+State(2)	<-	1	|	State[-1](2)	0.9747	0.1341	7.2689	3.6e-13							
+State(1)	<-	z	|	State[-1](1)	0.0000	.	.	.	78.5311	2	8.9e-18	78.4939	1	8.0e-19	
+State(2)	<-	z	|	State[-1](1)	1.0012	0.1492	6.7091	2.0e-11							
+State(1)	<-	z	|	State[-1](2)	0.0000	.	.	.							
+State(2)	<-	z	|	State[-1](2)	-0.8516	0.1337	-6.3700	1.9e-10							
+															
+y1	<-	1			-0.8301	0.0270	-30.7877	3.8e-208	947.8823	1	3.8e-208				
+y1	<-	State(1)			0.0000	.	.	.	2005.7624	1	5.1e-438				
+y1	<-	State(2)			1.7188	0.0384	44.7857	5.1e-438							
+															
+y2	<-	1			0.5105	0.0284	17.9849	2.6e-72	323.4579	1	2.6e-72				
+y2	<-	State(1)			0.0000	.	.	.	611.2256	1	6.1e-135				
+y2	<-	State(2)			-1.1120	0.0450	-24.7230	6.1e-135							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	State(1)	0.4344	0.0259	16.7683	4.2e-63	486.9377	2	1.8e-106	1.6932	1	0.19	
+y1			|	State(2)	0.4906	0.0344	14.2481	4.6e-46							
+y2			|	State(1)	0.6208	0.0307	20.2271	5.7e-91	675.5985	2	2.0e-147	1.0063	1	0.32	
+y2			|	State(2)	0.6711	0.0402	16.6758	2.0e-62							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+State[=0]	<-	1			State[=0]	1	2	2.8760	1	0.090	
+	
+State	<-	1	|	State[-1]	State[-1]	1	2	159.0359	1	1.8e-36	
+					State	1	2	164.7773	2	1.7e-36	
+State	<-	 z	|	State[-1]	State[-1]	1	2	78.4939	1	8.0e-19	
+					State	1	2	78.5311	2	8.9e-18	
+	
+y1	<-	 State			State	1	2	2005.7624	1	5.1e-438	
+	
+y2	<-	 State			State	1	2	611.2256	1	6.1e-135	
+Variances	
+y1			|	State	State	1	2	1.6932	1	0.19	
+y2			|	State	State	1	2	1.0063	1	0.32	

@@ -1,0 +1,1 @@
+paquid-normmmse.csv: lcmm::paquid (lcmm 2.2.1) with normMMSE = NormPsy::normMMSE(MMSE) (NormPsy 1.0.8, installed in a scratch library on 2026-10-29) and age65 = (age - 65) / 10, as in Proust-Lima, Philipps and Liquet (2017), JSS 78(2), section 6.

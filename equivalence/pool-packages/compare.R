@@ -1,0 +1,15 @@
+# Compares pool_imputations() with mitml::testEstimates() and
+# mitools::MIcombine() on latents' own per-imputation estimates. Run from the
+# project root:
+#   Rscript equivalence/pool-packages/compare.R
+# Writes comparison.csv and RUN.txt beside this script. Exits non-zero when a
+# quantity disagrees without a registered known difference, or when a
+# registered difference no longer matches a disagreement.
+
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
+directory <- file.path("equivalence", "pool-packages")
+source(file.path("equivalence", "package-kit-runner.R"))
+source(file.path(directory, "compare-functions.R"))
+if (!run_package_kit(directory, compare_all_pool, c("mitml", "mitools", "mice"))) {
+  quit(status = 1L, save = "no")
+}

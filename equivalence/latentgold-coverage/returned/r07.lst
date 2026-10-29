@@ -1,0 +1,175 @@
+r07.dat
+File name:	r07.dat	
+File size:	20486 bytes  1500 records	
+File date:	2026-Oct-29 1:48:49 AM	
+Syntax:	r07.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+r07	2-Cluster	-1968.9231	4003.6651	3955.8461	3964.8461	9	3854.6685	1491	1.7e-208	0.2159	0.3463	
+r07 - L² = 3854.6685
+2-Cluster Syntax Model	
+					
+Number of cases	1500				
+Number of parameters (Npar)	9				
+Random Seed	20261201				
+Best Start Seed	1236502				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	1491	p-value			
+L-squared (L²)	3854.6685	1.7e-208			
+X-squared	4365.8022	2.9e-279			
+Cressie-Read	3872.5450	6.9e-211			
+BIC (based on L²)	-7049.3431				
+AIC (based on L²)	872.6685				
+AIC3 (based on L²)	-618.3315				
+CAIC (based on L²)	-8540.3431				
+SABIC (based on L²)	-2312.8515				
+Dissimilarity Index	0.7051	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1968.9231				
+Log-prior	0.0000				
+Log-posterior	-1968.9231				
+BIC (based on LL)	4003.6651				
+AIC (based on LL)	3955.8461				
+AIC3 (based on LL)	3964.8461				
+CAIC (based on LL)	4012.6651				
+SABIC (based on LL)	3975.0746				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.2159				
+Reduction of errors (Lambda)	0.5651				
+Entropy R-squared	0.3463				
+Standard R-squared	0.4089				
+Classification log-likelihood	-2648.5656				
+Entropy	679.6425				
+CLC	5297.1311				
+AWE	5455.7691				
+ICL-BIC	5362.9501				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	553.8501	190.6839	744.5340		
+2	133.1499	622.3161	755.4660		
+Total	687.0000	813.0000	1500.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	522.8879	221.6461	744.5340		
+2	221.6461	533.8198	755.4660		
+Total	744.5340	755.4660	1500.0000		
+					
+Files					
+Infile	C:\lgcoverage\r07.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1500				
+predictionstatistics	no				
+outfile					
+file name	r07_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y	cumlogit	4			
+1	1	1			
+2	2	2			
+3	3	3			
+4	4	4			
+Independent					
+x	Num-Fixed	1459			
+-3.5132	-3.5132	-3.5132			
+-3.4612	-3.4612	-3.4612			
+-2.9959	-2.9959	-2.9959			
+-2.8576	-2.8576	-2.8576			
+-2.811	-2.811	-2.811			
+-2.7195	-2.7195	-2.7195			
+-2.6851	-2.6851	-2.6851			
+-2.5618	-2.5618	-2.5618			
+-2.5117	-2.5117	-2.5117			
+-2.5062	-2.5062	-2.5062			
+...					
+2.4195	2.4195	2.4195			
+2.4684	2.4684	2.4684			
+2.4811	2.4811	2.4811			
+2.5305	2.5305	2.5305			
+2.5564	2.5564	2.5564			
+2.6713	2.6713	2.6713			
+2.7874	2.7874	2.7874			
+3.0235	3.0235	3.0235			
+3.1101	3.1101	3.1101			
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'r07_posteriors.txt' classification keep id;
+variables
+   dependent y cumlogit;
+   independent x;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1;
+   y <- 1 | Cluster + x | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	0.0060	1	0.94				
+Cluster(2)	<-	1			0.0146	0.1878	0.0776	0.94							
+															
+y(2)	<-	1	|	Cluster(1)	0.4122	0.1600	2.5760	0.010	428.2055	6	2.4e-89	13.2663	3	0.0041	
+y(3)	<-	1	|	Cluster(1)	0.0269	0.2728	0.0985	0.92							
+y(4)	<-	1	|	Cluster(1)	-1.2145	0.1607	-7.5587	4.1e-14							
+y(2)	<-	1	|	Cluster(2)	1.7254	0.2612	6.6066	3.9e-11							
+y(3)	<-	1	|	Cluster(2)	-0.7325	0.3308	-2.2144	0.027							
+y(4)	<-	1	|	Cluster(2)	-1.8072	0.2229	-8.1075	5.2e-16							
+y	<-	x	|	Cluster(1)	-0.9801	0.1978	-4.9537	7.3e-7	177.0186	2	3.6e-39	174.2690	1	8.6e-40	
+y	<-	x	|	Cluster(2)	2.1132	0.2656	7.9575	1.8e-15							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	0.0060	1	0.94	
+	
+y	<-	1	|	Cluster	Cluster	1	2	13.2663	3	0.0041	
+y	<-	 x	|	Cluster	Cluster	1	2	174.2690	1	8.6e-40	

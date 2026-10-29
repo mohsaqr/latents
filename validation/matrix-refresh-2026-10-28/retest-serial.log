@@ -1,0 +1,103 @@
+features-ml-three-step: .................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+features-vlmr: WWWWWWWWWWWWWWWWWWWWWWWWWWWWW......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+mclust-prior: ....................max |covariance difference| of one M-step, by structure:
+EII 6.22e-15
+VII 3.55e-15
+EEI 8.88e-16
+VEI 1.78e-15
+EVI 1.78e-15
+VVI 1.78e-15
+EEE 1.15e-14
+EEV 1.33e-14
+VEV 1.42e-14
+VVV 1.15e-14
+Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+...Fitted a single-level latent profile model.
+....   code   loglik    means covariances proportions posteriors
+1   EII 2.27e-13 6.22e-15    4.66e-15    1.39e-16   4.11e-15
+2   VII 1.46e-11 3.48e-11    1.01e-11    6.18e-12   2.65e-11
+3   EEI 2.05e-12 1.93e-10    2.48e-11    6.49e-11   2.83e-10
+4   VEI 2.73e-12 3.12e-12    4.27e-12    1.19e-12   6.84e-12
+5   EVI 2.73e-12 2.51e-11    9.20e-12    3.07e-12   1.94e-11
+6   VVI 2.96e-12 2.50e-13    4.82e-13    9.98e-14   6.48e-13
+7   EEE 5.23e-12 3.92e-12    3.20e-12    7.74e-13   7.58e-12
+8   EEV 0.00e+00 3.77e-15    1.69e-14    4.44e-16   9.44e-15
+9   VEV 3.41e-12 2.06e-11    2.74e-11    4.93e-12   3.60e-11
+10  VVV 6.82e-13 6.07e-13    8.38e-13    1.64e-13   1.17e-12
+
+montecarlo: .....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+review-1026-oracles: .....................................................................................................................................................................................................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 2.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+2. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 4.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+3. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+4. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+5. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+6. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 2.0 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+7. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+8. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+9. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+10. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+11. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 4: 1.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+12. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+13. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 2: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+14. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+15. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.9, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+16. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+17. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 4: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+18. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+19. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+20. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 4.9 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+21. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 3: 4.9, 2.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+22. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+23. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 2.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+24. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+25. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 1, 3: 4.6, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+26. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+27. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profiles 2, 3: 1.0, 1.0 Gaussian membership mass for 6 free means and variances each. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+28. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 3: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+29. (code run outside of `test_that()`) ('test-features-vlmr.R:34:1') - Profile 2: 3.9 Gaussian membership mass for 8 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+             nb failed skipped error warning passed
+first_run 11187     95       0     0       0  11092
+retest    11188      0       0     0       0  11188
+merged    20859      1       0     1       4  20854
+exit 0

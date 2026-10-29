@@ -1,0 +1,30 @@
+//LG6.1//
+version = 6.1
+infile 'e2k1.dat'
+
+model
+title 'e2k1';
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'e2k1_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent Cluster nominal 1 coding=first;
+equations
+   Cluster <- 1;
+   y1 <- 1;
+   y2 <- 1;
+   y3 <- 1;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+end model

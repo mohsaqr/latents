@@ -1,0 +1,28 @@
+//LG6.1//
+version = 6.1
+infile 'g01.dat'
+
+model
+title 'g01';
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'g01_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   dependent y continuous;
+   independent time;
+   latent Class nominal 2 coding=first;
+equations
+   Class <- 1;
+   y <- 1 | Class + time | Class;
+   y | Class;
+end model

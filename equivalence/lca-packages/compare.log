@@ -1,0 +1,30 @@
+carcinoma_k2: depmixS4 reached the floating-point floor in 13 fits
+carcinoma_k3: depmixS4 reached the floating-point floor in 6 fits
+values_k2: depmixS4 reached the floating-point floor in 11 fits
+cheating_k2: depmixS4 reached the floating-point floor in 6 fits
+alzheimer_k2: depmixS4 reached the floating-point floor in 6 fits
+alzheimer_k3: depmixS4 reached the floating-point floor in 10 fits
+myocardial_k2: depmixS4 reached the floating-point floor in 13 fits
+dentistry_k2: depmixS4 reached the floating-point floor in 18 fits
+dentistry_k3: depmixS4 reached the floating-point floor in 18 fits
+hivtests_k2: depmixS4 reached the floating-point floor in 19 fits
+gss82_k2: depmixS4 reached the floating-point floor in 16 fits
+gss82_k3: depmixS4 reached the floating-point floor in 15 fits
+help_k3: depmixS4 reached the floating-point floor in 12 fits
+                                                reference compared agreed known
+                                                 BayesLCA       33     33     0
+                                                 depmixS4       52     52     0
+                                                     glca       52     52     0
+ Kleinman and Horton (2011), SAS and R blog, Example 8.21       11     11     0
+                                              multilevLCA       33     25     8
+                                                randomLCA       30     30     0
+ values
+    305
+  30914
+  30914
+     11
+    305
+    277
+
+211 quantities compared: 203 agree, 8 known differences, 0 disagree
+exit 0

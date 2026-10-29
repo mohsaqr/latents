@@ -7,22 +7,23 @@
 #
 # Tolerances (measured values in the README).
 # - Latent GOLD's `write=` file holds full precision; it converges to a
-#   gradient tolerance of 1e-12, latents to a relative change of 1e-10. The
-#   measured log-likelihood gap is 2e-8; the tolerance is 1e-6.
+#   gradient tolerance of 1e-12, latents (pc_fit()) to a relative change of
+#   1e-12. The measured log-likelihood gap is 1.7e-9; the tolerance is 1e-6.
 # - Mplus's RESULTS file prints eight significant digits (0.30437437E+04),
 #   so its log likelihood and BIC are known to half a unit of the eighth
 #   digit, 5e-5 at |LL| ~ 3000 and 5e-4 above 10000; the tolerance is that
 #   plus 2e-6.
 # - A log-likelihood gap delta moves a parameter by about sqrt(2 delta)
 #   standard errors in the worst direction; estimates are compared on that
-#   scale, |difference| <= 2e-3 standard errors (measured: 1.7e-4).
-# - Standard errors: relative 2e-3 (measured: 6e-6), the curvature at points
+#   scale, |difference| <= 2e-3 standard errors (measured: 6.0e-5).
+# - Standard errors: relative 2e-3 (measured: 1.0e-5), the curvature at points
 #   apart by the optimizer gap and each program's numerical derivatives.
 #   With missing values Latent GOLD's standard errors differ from the
 #   observed-data Hessian by up to 6% (a convention, README); there latents
 #   is compared with the reference's Hessian instead.
 # - Posteriors: Latent GOLD prints six decimals (5e-7), Mplus twelve; they
-#   move with the optimizer gap: 2e-5 (measured: 1.6e-5).
+#   move with the optimizer gap: 2e-5 (measured: 1.1e-5; 2.0e-5 when latents
+#   stopped at 1e-10).
 
 sys.source(file.path("features", "pair-covariance", "helpers.R"), envir = environment())
 sys.source(file.path("features", "pair-covariance", "reference.R"), envir = environment())

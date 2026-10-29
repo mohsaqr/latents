@@ -1,0 +1,29 @@
+//LG6.1//
+version = 6.1
+infile 't02.dat'
+
+model
+title 't02';
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 't02_posteriors.txt' classification keep id;
+variables
+   caseid id;
+   dependent u1 nominal coding=first, u2 nominal coding=first, u3 nominal coding=first;
+   latent State nominal dynamic 2 coding=first;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   u1 <- 1 | State;
+   u2 <- 1 | State;
+   u3 <- 1 | State;
+end model

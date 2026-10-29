@@ -1,0 +1,30 @@
+//LG6.1//
+version = 6.1
+infile 'c01.dat'
+
+model
+title 'c01';
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'c01_posteriors.txt' classification keep id;
+variables
+   dependent u1 nominal coding=first, u2 nominal coding=first, u3 nominal coding=first, u4 nominal coding=first, u5 nominal coding=first, u6 nominal coding=first;
+   latent Cluster nominal 3 coding=first;
+equations
+   Cluster <- 1;
+   u1 <- 1 | Cluster;
+   u2 <- 1 | Cluster;
+   u3 <- 1 | Cluster;
+   u4 <- 1 | Cluster;
+   u5 <- 1 | Cluster;
+   u6 <- 1 | Cluster;
+end model

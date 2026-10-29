@@ -1,0 +1,14 @@
+path,format,reference,kind,run,test_file
+equivalence/latentgold-coverage/comparison.csv,status,Latent GOLD,commercial program,2026-10-29,equivalence/test-latentgold-coverage.R
+equivalence/lca-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-lca-packages.R
+equivalence/latentgold-wider/comparison.csv,agrees,Latent GOLD,commercial program,2026-10-29,equivalence/test-latentgold-wider.R
+equivalence/latentgold/comparison.csv,latentgold,Latent GOLD,commercial program,2026-10-29,equivalence/test-latentgold.R
+equivalence/latentgold-ordinal/comparison.csv,ordinal,Latent GOLD,commercial program,2026-10-28,
+equivalence/lpa-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-lpa-packages.R
+equivalence/regression-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-regression-packages.R
+equivalence/growth-published/comparison.csv,status,,R package,2026-10-29,equivalence/test-growth-published.R
+equivalence/pool-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-pool-packages.R
+equivalence/lta-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-lta-packages.R
+equivalence/stata-published/comparison.csv,status,,commercial program,2026-10-29,equivalence/test-stata-published.R
+equivalence/mplus-growth/comparison.csv,status,,commercial program,2026-10-29,equivalence/test-mplus-growth.R
+equivalence/enumeration-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-enumeration-packages.R

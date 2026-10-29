@@ -6122,7 +6122,7 @@
 "sweep_108","varying","best known maximum","latents log likelihood shortfall",1.18234311230481e-11,1e-06
 "sweep_108","equal","Latent GOLD random starts","reference shortfall",0,1e-06
 "sweep_108","equal","best known maximum","latents log likelihood shortfall",0,1e-06
-"lpa_k2_hi_01","-","Latent GOLD step one","step-one log likelihood",7.5037901297037e-06,1e-04
+"lpa_k2_hi_01","-","Latent GOLD step one","step-one log likelihood",7.50378876546165e-06,1e-04
 "lpa_k2_hi_01","varying","Latent GOLD pipeline","reference log likelihood",0,1e-06
 "lpa_k2_hi_01","varying","Latent GOLD pipeline","reference mean (SE units)",7.68234023498857e-08,1e-05
 "lpa_k2_hi_01","varying","Latent GOLD pipeline","reference SE (relative)",9.7376917640446e-10,1e-05
@@ -6135,7 +6135,7 @@
 "lpa_k2_hi_01","equal","Latent GOLD pipeline","end-to-end mean (SE units)",1.13002249614001e-07,0.001
 "lpa_k2_hi_01","equal","Latent GOLD pipeline","end-to-end SE (relative)",1.2188439479921e-08,0.001
 "lpa_k2_hi_01","equal","Latent GOLD pipeline","end-to-end variance (relative)",3.12415382452969e-09,0.001
-"lpa_k4_hi_01","-","Latent GOLD step one","step-one log likelihood",3.6688567888632e-05,1e-04
+"lpa_k4_hi_01","-","Latent GOLD step one","step-one log likelihood",3.66886752090068e-05,1e-04
 "lpa_k4_hi_01","varying","Latent GOLD pipeline","reference log likelihood",3.63797880709171e-12,1e-06
 "lpa_k4_hi_01","varying","Latent GOLD pipeline","reference mean (SE units)",1.68583557155587e-07,1e-05
 "lpa_k4_hi_01","varying","Latent GOLD pipeline","reference SE (relative)",3.58494578467372e-09,1e-05
@@ -6174,7 +6174,7 @@
 "lca_k3_lo_01","equal","Latent GOLD pipeline","end-to-end mean (SE units)",1.76053429227781e-05,0.001
 "lca_k3_lo_01","equal","Latent GOLD pipeline","end-to-end SE (relative)",3.66656711325852e-06,0.001
 "lca_k3_lo_01","equal","Latent GOLD pipeline","end-to-end variance (relative)",1.66534100265459e-06,0.001
-"small_k2_01","-","Latent GOLD step one","step-one log likelihood",2.46093428586391e-05,1e-04
+"small_k2_01","-","Latent GOLD step one","step-one log likelihood",2.46093420628313e-05,1e-04
 "small_k2_01","varying","Latent GOLD pipeline","reference log likelihood",5.6843418860808e-14,1e-06
 "small_k2_01","varying","Latent GOLD pipeline","reference mean (SE units)",6.01624208170503e-10,1e-05
 "small_k2_01","varying","Latent GOLD pipeline","reference SE (relative)",4.78365125289315e-11,1e-05
@@ -6187,7 +6187,7 @@
 "small_k2_01","equal","Latent GOLD pipeline","end-to-end mean (SE units)",4.15900279752049e-07,0.001
 "small_k2_01","equal","Latent GOLD pipeline","end-to-end SE (relative)",2.16029231392412e-07,0.001
 "small_k2_01","equal","Latent GOLD pipeline","end-to-end variance (relative)",4.38031264593519e-08,0.001
-"lpa_k2_hi_01","-","Mplus","step-one log likelihood",0.0002075037900795,0.001
+"lpa_k2_hi_01","-","Mplus","step-one log likelihood",0.000207503788715258,0.001
 "lpa_k2_hi_01","varying","Mplus","reference mean (SE units)",0.000484966981741497,0.02
 "lpa_k2_hi_01","varying","Mplus","reference SE without CR1 (relative)",9.30858253533895e-05,5e-04
 "lpa_k2_hi_01","varying","Mplus","last-step proportions",5.38158209439921e-07,5e-05
@@ -6200,7 +6200,7 @@
 "lpa_k2_hi_01","equal","Mplus","pair |z| = sqrt(chi-square)",0.00168474315259637,0.02
 "lpa_k2_hi_01","equal","Mplus","latents mean (SE units)",0.00152300079215369,0.02
 "lpa_k2_hi_01","equal","Mplus","latents SE without CR1 (relative)",3.40179730323742e-05,5e-04
-"lpa_k2_hi_02","-","Mplus","step-one log likelihood",0.000381859050776256,0.001
+"lpa_k2_hi_02","-","Mplus","step-one log likelihood",0.000381859047593025,0.001
 "lpa_k2_hi_02","varying","Mplus","reference mean (SE units)",0.0015118543629703,0.02
 "lpa_k2_hi_02","varying","Mplus","reference SE without CR1 (relative)",9.65046997489782e-05,5e-04
 "lpa_k2_hi_02","varying","Mplus","last-step proportions",4.94501581754792e-06,5e-05
@@ -6213,7 +6213,7 @@
 "lpa_k2_hi_02","equal","Mplus","pair |z| = sqrt(chi-square)",0.000552750704938987,0.02
 "lpa_k2_hi_02","equal","Mplus","latents mean (SE units)",0.000501862926190447,0.02
 "lpa_k2_hi_02","equal","Mplus","latents SE without CR1 (relative)",5.20377727597499e-05,5e-04
-"lpa_k2_lo_01","-","Mplus","step-one log likelihood",8.06540806479461e-05,0.001
+"lpa_k2_lo_01","-","Mplus","step-one log likelihood",8.06539669611084e-05,0.001
 "lpa_k2_lo_01","varying","Mplus","reference mean (SE units)",0.00299511862652213,0.02
 "lpa_k2_lo_01","varying","Mplus","reference SE without CR1 (relative)",0.000139518861334342,5e-04
 "lpa_k2_lo_01","varying","Mplus","last-step proportions",1.69379954467752e-06,5e-05
@@ -6226,7 +6226,7 @@
 "lpa_k2_lo_01","equal","Mplus","pair |z| = sqrt(chi-square)",0.0037463414380472,0.02
 "lpa_k2_lo_01","equal","Mplus","latents mean (SE units)",0.00253445610685432,0.02
 "lpa_k2_lo_01","equal","Mplus","latents SE without CR1 (relative)",3.19882691067752e-05,5e-04
-"lpa_k2_lo_02","-","Mplus","step-one log likelihood",0.000321167367474118,0.001
+"lpa_k2_lo_02","-","Mplus","step-one log likelihood",0.000321011340929545,0.001
 "lpa_k2_lo_02","varying","Mplus","reference mean (SE units)",0.00248660290442679,0.02
 "lpa_k2_lo_02","varying","Mplus","reference SE without CR1 (relative)",9.08699464288176e-05,5e-04
 "lpa_k2_lo_02","varying","Mplus","last-step proportions",4.05201416808776e-07,5e-05
@@ -6239,7 +6239,7 @@
 "lpa_k2_lo_02","equal","Mplus","pair |z| = sqrt(chi-square)",0.00370920218262683,0.02
 "lpa_k2_lo_02","equal","Mplus","latents mean (SE units)",0.00264434574589756,0.02
 "lpa_k2_lo_02","equal","Mplus","latents SE without CR1 (relative)",0.000109431057268572,5e-04
-"lpa_k3_hi_01","-","Mplus","step-one log likelihood",4.17277165070118e-05,0.001
+"lpa_k3_hi_01","-","Mplus","step-one log likelihood",4.17277988162823e-05,0.001
 "lpa_k3_hi_01","varying","Mplus","reference mean (SE units)",0.000991160195380167,0.02
 "lpa_k3_hi_01","varying","Mplus","reference SE without CR1 (relative)",0.000229478876759948,5e-04
 "lpa_k3_hi_01","varying","Mplus","last-step proportions",6.71792280479422e-06,5e-05
@@ -6252,7 +6252,7 @@
 "lpa_k3_hi_01","equal","Mplus","pair |z| = sqrt(chi-square)",0.0020638399742765,0.02
 "lpa_k3_hi_01","equal","Mplus","latents mean (SE units)",0.00134217863436189,0.02
 "lpa_k3_hi_01","equal","Mplus","latents SE without CR1 (relative)",0.000151204168366559,5e-04
-"lpa_k3_hi_02","-","Mplus","step-one log likelihood",0.000230250699587486,0.001
+"lpa_k3_hi_02","-","Mplus","step-one log likelihood",0.000230250696859002,0.001
 "lpa_k3_hi_02","varying","Mplus","reference mean (SE units)",0.00175924907769974,0.02
 "lpa_k3_hi_02","varying","Mplus","reference SE without CR1 (relative)",0.00014447695875941,5e-04
 "lpa_k3_hi_02","varying","Mplus","last-step proportions",3.74404352621038e-06,5e-05

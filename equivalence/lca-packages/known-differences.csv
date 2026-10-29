@@ -1,0 +1,7 @@
+case,reference,quantity,reason
+carcinoma_k2,multilevLCA,^maximized log likelihood$,"multilevLCA bounds every response probability to [1e-5, 1 - 1e-5]. This maximum has probabilities at 0 and 1, so its log likelihood is lower (by 0.0024); the shares and probabilities agree to 1e-5, the bound."
+carcinoma_k3,multilevLCA,^maximized log likelihood$,"multilevLCA bounds every response probability to [1e-5, 1 - 1e-5]; this maximum has probabilities at the boundary, so its log likelihood is lower (by 0.0035)."
+myocardial_k2,multilevLCA,^maximized log likelihood$,"multilevLCA bounds every response probability to [1e-5, 1 - 1e-5]; this maximum has probabilities at the boundary, so its log likelihood is lower (by 0.0008)."
+hivtests_k2,multilevLCA,^maximized log likelihood$,"multilevLCA bounds every response probability to [1e-5, 1 - 1e-5]; this maximum has probabilities at the boundary, so its log likelihood is lower (by 0.0058)."
+alzheimer_k3,multilevLCA,.,"multilevLCA runs one k-means start and stops at a lower maximum (-744.968 against -743.484); glca, randomLCA, BayesLCA and depmixS4 all reach latents' maximum, with the same parameters."
+help_k3,multilevLCA,^maximized log likelihood$,"multilevLCA bounds every response probability to [1e-5, 1 - 1e-5]; this maximum has P(housed) = 1 in its smallest class, so its log likelihood is lower (by 4.1e-5); the shares and probabilities agree to 1.6e-5."

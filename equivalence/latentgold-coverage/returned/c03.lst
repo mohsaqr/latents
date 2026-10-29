@@ -1,0 +1,221 @@
+c03.dat
+File name:	c03.dat	
+File size:	14888 bytes  700 records	
+File date:	2026-Oct-28 11:50:14 PM	
+Syntax:	c03.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+c03	2-Cluster	-2012.1900	4102.9929	4048.3799	4060.3799	12	4013.2896	688	1.1e-461	0.0512	0.8114	
+c03 - L² = 4013.2896
+2-Cluster Syntax Model	
+					
+Number of cases	700				
+Number of parameters (Npar)	12				
+Random Seed	20261201				
+Best Start Seed	2396593				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	688	p-value			
+L-squared (L²)	4013.2896	1.1e-461			
+X-squared	22218.9402	3.9e-4160			
+Cressie-Read	10083.9757	1.0e-1642			
+BIC (based on L²)	-493.8537				
+AIC (based on L²)	2637.2896				
+AIC3 (based on L²)	1949.2896				
+CAIC (based on L²)	-1181.8537				
+SABIC (based on L²)	1690.6844				
+Dissimilarity Index	0.9010	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2012.1900				
+Log-prior	0.0000				
+Log-posterior	-2012.1900				
+BIC (based on LL)	4102.9929				
+AIC (based on LL)	4048.3799				
+AIC3 (based on LL)	4060.3799				
+CAIC (based on LL)	4114.9929				
+SABIC (based on LL)	4064.8905				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0512				
+Reduction of errors (Lambda)	0.8810				
+Entropy R-squared	0.8114				
+Standard R-squared	0.8459				
+Classification log-likelihood	-2102.4303				
+Entropy	90.2404				
+CLC	4204.8607				
+AWE	4398.0866				
+ICL-BIC	4283.4736				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	284.3401	17.2145	301.5545		
+2	18.6599	379.7855	398.4455		
+Total	303.0000	397.0000	700.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	275.0960	26.4586	301.5545		
+2	26.4586	371.9869	398.4455		
+Total	301.5545	398.4455	700.0000		
+					
+Model Classification Statistics	Cluster				
+Classification errors	0.3000				
+Reduction of errors (Lambda)	0.3037				
+Entropy R-squared	0.1657				
+Standard R-squared	0.2080				
+					
+Files					
+Infile	C:\lgcoverage\c03.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     700				
+predictionstatistics	no				
+outfile					
+file name	c03_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+u1	Nominal	2			
+0	0				
+1	1				
+u2	Nominal	2			
+0	0				
+1	1				
+u3	Nominal	2			
+0	0				
+1	1				
+u4	Nominal	2			
+0	0				
+1	1				
+u5	Nominal	2			
+0	0				
+1	1				
+Independent					
+x	Num-Fixed	696			
+-2.9042	-2.9042	-2.9042			
+-2.5958	-2.5958	-2.5958			
+-2.5666	-2.5666	-2.5666			
+-2.5289	-2.5289	-2.5289			
+-2.444	-2.444	-2.444			
+-2.4149	-2.4149	-2.4149			
+-2.3939	-2.3939	-2.3939			
+-2.2853	-2.2853	-2.2853			
+-2.2733	-2.2733	-2.2733			
+-2.2304	-2.2304	-2.2304			
+...					
+2.2854	2.2854	2.2854			
+2.2993	2.2993	2.2993			
+2.4045	2.4045	2.4045			
+2.4334	2.4334	2.4334			
+2.4431	2.4431	2.4431			
+2.4729	2.4729	2.4729			
+2.5575	2.5575	2.5575			
+2.6145	2.6145	2.6145			
+3.0218	3.0218	3.0218			
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'c03_posteriors.txt' classification keep id;
+variables
+   dependent u1 nominal coding=first, u2 nominal coding=first, u3 nominal coding=first, u4 nominal coding=first, u5 nominal coding=first;
+   independent x;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- 1 + x;
+   u1 <- 1 | Cluster;
+   u2 <- 1 | Cluster;
+   u3 <- 1 | Cluster;
+   u4 <- 1 | Cluster;
+   u5 <- 1 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	8.3340	1	0.0039				
+Cluster(2)	<-	1			0.3207	0.1111	2.8869	0.0039							
+Cluster(1)	<-	x			0.0000	.	.	.	92.3560	1	7.2e-22				
+Cluster(2)	<-	x			-1.1551	0.1202	-9.6102	7.2e-22							
+															
+u1(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	183.4220	2	1.5e-40	175.7408	1	4.1e-40	
+u1(1)	<-	1	|	Cluster(1)	-1.9198	0.2175	-8.8247	1.1e-18							
+u1(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+u1(1)	<-	1	|	Cluster(2)	1.6721	0.1651	10.1293	4.1e-24							
+															
+u2(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	144.1848	2	4.9e-32	139.7770	1	3.0e-32	
+u2(1)	<-	1	|	Cluster(1)	-1.0648	0.1469	-7.2476	4.2e-13							
+u2(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+u2(1)	<-	1	|	Cluster(2)	1.3695	0.1400	9.7845	1.3e-22							
+															
+u3(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	173.1351	2	2.5e-38	173.1349	1	1.5e-39	
+u3(1)	<-	1	|	Cluster(1)	-1.4295	0.1777	-8.0455	8.6e-16							
+u3(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+u3(1)	<-	1	|	Cluster(2)	2.3185	0.2256	10.2770	9.0e-25							
+															
+u4(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	113.2067	2	2.6e-25	109.5747	1	1.2e-25	
+u4(1)	<-	1	|	Cluster(1)	-1.0069	0.1453	-6.9305	4.2e-12							
+u4(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+u4(1)	<-	1	|	Cluster(2)	1.0260	0.1224	8.3794	5.3e-17							
+															
+u5(0)	<-	1	|	Cluster(1)	0.0000	.	.	.	149.7466	2	3.0e-33	145.3082	1	1.8e-33	
+u5(1)	<-	1	|	Cluster(1)	-1.2331	0.1572	-7.8464	4.3e-15							
+u5(0)	<-	1	|	Cluster(2)	0.0000	.	.	.							
+u5(1)	<-	1	|	Cluster(2)	1.2977	0.1356	9.5725	1.0e-21							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	8.3340	1	0.0039	
+Cluster	<-	 x			Cluster	1	2	92.3560	1	7.2e-22	
+	
+u1	<-	1	|	Cluster	Cluster	1	2	175.7408	1	4.1e-40	
+	
+u2	<-	1	|	Cluster	Cluster	1	2	139.7770	1	3.0e-32	
+	
+u3	<-	1	|	Cluster	Cluster	1	2	173.1349	1	1.5e-39	
+	
+u4	<-	1	|	Cluster	Cluster	1	2	109.5747	1	1.2e-25	
+	
+u5	<-	1	|	Cluster	Cluster	1	2	145.3082	1	1.8e-33	

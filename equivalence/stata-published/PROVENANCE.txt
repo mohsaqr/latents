@@ -1,0 +1,9 @@
+reaven-miller.csv: patient, glucose, insulin and sspg from Stata 19's gsem_lca2.dta
+(https://www.stata-press.com/data/r19/gsem_lca2.dta, downloaded 2026-10-29): the
+Reaven and Miller (1979) diabetes data, each measure divided by 10, as analysed in
+Stata [SEM] Example 52g and in Masyn (2013), Table 25.12 (n = 145).
+
+stouffer-toby.csv: accident, play, insurance and stock from Stata 19's gsem_lca1.dta
+(https://www.stata-press.com/data/r19/gsem_lca1.dta, downloaded 2026-10-29): the
+Stouffer and Toby (1951) role-conflict items, as analysed in Stata [SEM] Example
+50g (n = 216).

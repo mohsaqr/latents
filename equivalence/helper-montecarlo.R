@@ -77,7 +77,8 @@ montecarlo_mplus <- function(name, case, root = montecarlo_dir) {
     list(profiles = vapply(seq_len(k), \(j) rowSums(joint[, (seq_len(h) - 1L) * k + j,
                                                           drop = FALSE]), numeric(nrow(joint))),
          groups = vapply(seq_len(h), \(j) rowSums(joint[, (j - 1L) * k + seq_len(k),
-                                                        drop = FALSE]), numeric(nrow(joint))))
+                                                        drop = FALSE]), numeric(nrow(joint))),
+         joint = joint)
   } else list(profiles = as.matrix(saved[grep("^CPROB", columns)]))
   classification <- if (two)
     mplus_classification_twolevel(path, spec$k, spec$h) else
@@ -94,6 +95,27 @@ montecarlo_mplus <- function(name, case, root = montecarlo_dir) {
        posteriors = posteriors,
        terminated = any(grepl("THE MODEL ESTIMATION TERMINATED NORMALLY", lines)),
        replicated = any(grepl("THE BEST LOGLIKELIHOOD VALUE HAS BEEN REPLICATED", lines)))
+}
+
+#' The entropy of the complete-data classification from Mplus's posteriors
+#'
+#' Single level: the rows' posterior entropy. Two levels: from the joint
+#' CB x CW probabilities J_hik of each row and its cluster's CB posterior
+#' omega_jh, the clusters' CB entropy plus
+#' -sum_i sum_h sum_k J_hik log(J_hik / omega_jh), the entropy latents' ICL,
+#' AWE and CLC charge (NEWS 0.97.2, "Information criteria").
+montecarlo_complete_entropy <- function(m) {
+  plogp <- function(p) ifelse(p > 0, p * log(pmax(p, .Machine$double.xmin)), 0)
+  if (is.null(m$posteriors$joint)) return(-sum(plogp(m$posteriors$profiles)))
+  groups <- m$posteriors$groups
+  joint <- m$posteriors$joint
+  k <- ncol(m$posteriors$profiles)
+  # A row's CB posterior repeated over its K profile columns, cb outer.
+  shares <- groups[, rep(seq_len(ncol(groups)), each = k), drop = FALSE]
+  within <- -sum(ifelse(joint > 0, joint * (log(pmax(joint, .Machine$double.xmin)) -
+                                              log(pmax(shares, .Machine$double.xmin))), 0))
+  first <- !duplicated(m$group)
+  -sum(plogp(groups[first, , drop = FALSE])) + within
 }
 
 #' Everything compared from one Latent GOLD run

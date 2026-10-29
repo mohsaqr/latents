@@ -1,0 +1,137 @@
+e2k1.dat
+File name:	e2k1.dat	
+File size:	15523 bytes  600 records	
+File date:	2026-Oct-28 11:50:14 PM	
+Syntax:	e2k1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+e2k1	1-Cluster	-2762.7074	5563.7964	5537.4148	5543.4148	6	0.0000	1.0000	
+e2k1 - LL = -2762.7074
+1-Cluster Syntax Model	
+					
+Number of cases	600				
+Number of parameters (Npar)	6				
+Activated Constraints	0				
+Random Seed	20261201				
+Best Start Seed	20261201				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2762.7074				
+Log-prior	0.0000				
+Log-posterior	-2762.7074				
+BIC (based on LL)	5563.7964				
+AIC (based on LL)	5537.4148				
+AIC3 (based on LL)	5543.4148				
+CAIC (based on LL)	5569.7964				
+SABIC (based on LL)	5544.7480				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-2762.7074				
+Entropy	0.0000				
+CLC	5525.4148				
+AWE	5620.1779				
+ICL-BIC	5563.7964				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	600.0000	600.0000			
+Total	600.0000	600.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	600.0000	600.0000			
+Total	600.0000	600.0000			
+					
+Files					
+Infile	C:\lgcoverage\e2k1.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+outfile					
+file name	e2k1_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+y3	Continuous				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'e2k1_posteriors.txt' classification keep id;
+variables
+   dependent y1 continuous, y2 continuous, y3 continuous;
+   latent Cluster nominal 1 coding=first;
+equations
+   Cluster <- 1;
+   y1 <- 1;
+   y2 <- 1;
+   y3 <- 1;
+   y1 | Cluster;
+   y2 | Cluster;
+   y3 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+												
+y1	<-	1			-0.1150	0.0467	-2.4609	0.014	6.0561	1	0.014	
+												
+y2	<-	1			0.1349	0.0494	2.7311	0.0063	7.4592	1	0.0063	
+												
+y3	<-	1			0.3400	0.0417	8.1460	3.8e-16	66.3565	1	3.8e-16	
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+y1			|	Cluster(1)	1.3092	0.0756	17.3205	3.3e-67	300.0000	1	3.3e-67	
+y2			|	Cluster(1)	1.4647	0.0846	17.3205	3.3e-67	300.0000	1	3.3e-67	
+y3			|	Cluster(1)	1.0453	0.0604	17.3205	3.3e-67	300.0000	1	3.3e-67	

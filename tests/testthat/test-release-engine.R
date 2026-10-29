@@ -19,6 +19,12 @@ skip_on_cran()
 # best of three 12-step starts moved by 9e-7). Those fits run to convergence
 # instead, and only what convergence fixes is compared: the best likelihood,
 # the posteriors and the replication count, not each start's iterations.
+# "Convergence" must reach the fixed point: at tol = 1e-10 EVV's posteriors
+# are still 2.5e-5 from it (VVV 4.4e-6), so the raw and scaled fits agreed to
+# 1e-14 on macOS, where both follow one path, and differed by 3e-5 under
+# Linux and Windows BLAS (CI on 344dc7c). At 1e-15 they agree to 2e-8 to 4e-8
+# on every structure (validation/matrix-refresh-2026-10-28/
+# release-engine-tolerance.R).
 .release_engine_compare <- function(raw, scaled, jacobian, converged = FALSE) {
   starts <- scaled$starts
   likelihoods <- intersect(c("log_likelihood", "screened_log_likelihood"), names(starts))
@@ -34,8 +40,19 @@ skip_on_cran()
     expect_identical(starts[setdiff(names(starts), likelihoods)],
                      raw$starts[setdiff(names(raw$starts), likelihoods)])
   }
-  expect_equal(scaled$subject_posteriors, raw$subject_posteriors,
-               tolerance = 1e-6)
+  # Profile labels are arbitrary: they follow the winning start, and starts
+  # that tie at the maximum to 1e-12 may win in a different order under each
+  # scaling (EEE swaps its two profiles at tol = 1e-15). Converged fits are
+  # compared under the label order that matches.
+  posteriors <- scaled$subject_posteriors
+  if (converged) {
+    orders <- list(seq_len(ncol(posteriors)), rev(seq_len(ncol(posteriors))))
+    gaps <- vapply(orders, function(o) max(abs(posteriors[, o] - raw$subject_posteriors)),
+                   numeric(1))
+    posteriors <- posteriors[, orders[[which.min(gaps)]], drop = FALSE]
+    dimnames(posteriors) <- dimnames(raw$subject_posteriors)
+  }
+  expect_equal(posteriors, raw$subject_posteriors, tolerance = 1e-6)
   expect_identical(scaled$n_best_replicated, raw$n_best_replicated)
   expect_identical(scaled$replication_tolerance, raw$replication_tolerance)
 }
@@ -57,9 +74,10 @@ invisible(lapply(c("EEI", "VEI", "EVI", "VVI", "EEE", "VEE", "EVV", "VVV"), func
     data <- srl[seq_len(150L), c("cognitive_strategies", "intrinsic_value",
                                 "test_anxiety")]
     data$test_anxiety <- data$test_anxiety * 1000
-    raw <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-10)
-    changed <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-10,
-                                   centering = "grand", scaling = "grand")
+    raw <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-15,
+                               max_iter = 100000)
+    changed <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-15,
+                                   max_iter = 100000, centering = "grand", scaling = "grand")
     jacobian <- nrow(data) * sum(log(vapply(data, stats::sd, numeric(1))))
     .release_engine_compare(raw, changed, jacobian, converged = TRUE)
   })

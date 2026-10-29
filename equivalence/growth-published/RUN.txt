@@ -1,0 +1,4 @@
+run: 2026-10-29
+latents: 0.98.1
+packages: lcmm 2.2.1
+R: R version 4.5.2 (2025-10-31)

@@ -1,0 +1,28 @@
+TITLE: fitMixtureGrowth (linear, random intercept + slope, K = 2) vs Mplus 9 DEMO;
+  class-specific growth-factor (co)variances and residual variance;
+DATA: FILE IS gmm.dat;
+VARIABLE:
+  NAMES ARE y0-y4;
+  CLASSES = c(2);
+ANALYSIS:
+  TYPE = MIXTURE;
+  ESTIMATOR = ML;
+  STARTS = 200 50;
+  STITERATIONS = 50;
+  MCONVERGENCE = 0.000001;
+  LOGCRITERION = 0.0000001;
+  RLOGCRITERION = 0.0000000001;
+  PROCESSORS = 1;
+MODEL:
+  %OVERALL%
+  i s | y0@0 y1@1 y2@2 y3@3 y4@4;
+  %c#1%
+  [i s];
+  i s;
+  i WITH s;
+  y0-y4 (r1);
+  %c#2%
+  [i s];
+  i s;
+  i WITH s;
+  y0-y4 (r2);

@@ -1,0 +1,100 @@
+            case reference     latents reference_ll same_maximum
+ faithful_EEI_k1    mclust -1516.70583   -1516.7058         TRUE
+ faithful_EEI_k2    mclust -1157.68001   -1157.6800         TRUE
+ faithful_EEI_k3    mclust -1133.45540   -1133.4554         TRUE
+ faithful_EEI_k4    mclust -1125.36059   -1125.3606         TRUE
+ faithful_VVI_k1    mclust -1516.70583   -1516.7058         TRUE
+ faithful_VVI_k2    mclust -1147.80635   -1147.8064         TRUE
+ faithful_VVI_k3    mclust -1127.00752   -1131.8185        FALSE
+ faithful_VVI_k4    mclust -1112.88083   -1112.8808         TRUE
+ faithful_EEE_k1    mclust -1289.79675   -1289.7967         TRUE
+ faithful_EEE_k2    mclust -1140.18676   -1140.1868         TRUE
+ faithful_EEE_k3    mclust -1126.31593   -1126.3159         TRUE
+ faithful_EEE_k4    mclust -1120.82813   -1120.8281         TRUE
+ faithful_VVV_k1    mclust -1289.79675   -1289.7967         TRUE
+ faithful_VVV_k2    mclust -1130.26396   -1130.2640         TRUE
+ faithful_VVV_k3    mclust -1114.43987   -1127.0717        FALSE
+ faithful_VVV_k4    mclust -1106.03023   -1111.2480        FALSE
+     iris_EEI_k1    mclust  -741.01754    -741.0175         TRUE
+     iris_EEI_k2    mclust  -488.91482    -488.9148         TRUE
+     iris_EEI_k3    mclust  -361.42552    -361.4255         TRUE
+     iris_EEI_k4    mclust  -310.11698    -356.0407        FALSE
+     iris_VVI_k1    mclust  -741.01754    -741.0175         TRUE
+     iris_VVI_k2    mclust  -386.18535    -386.1853         TRUE
+     iris_VVI_k3    mclust  -306.86046    -307.1776        FALSE
+     iris_VVI_k4    mclust  -264.84757    -287.8205        FALSE
+     iris_EEE_k1    mclust  -379.91463    -379.9146         TRUE
+     iris_EEE_k2    mclust  -296.44757    -296.4476         TRUE
+     iris_EEE_k3    mclust  -256.35404    -256.3540         TRUE
+     iris_EEE_k4    mclust  -223.04864    -250.3331        FALSE
+     iris_VVV_k1    mclust  -379.91463    -379.9146         TRUE
+     iris_VVV_k2    mclust  -214.35470    -214.3547         TRUE
+     iris_VVV_k3    mclust  -180.18548    -180.1855         TRUE
+     iris_VVV_k4    mclust   -57.36554    -165.5475        FALSE
+ diabetes_EEI_k1    mclust -2748.94354   -2748.9435         TRUE
+ diabetes_EEI_k2    mclust -2556.46432   -2556.4643         TRUE
+ diabetes_EEI_k3    mclust -2458.08379   -2458.0838         TRUE
+ diabetes_EEI_k4    mclust -2417.19649   -2417.1965         TRUE
+ diabetes_VVI_k1    mclust -2748.94354   -2748.9435         TRUE
+ diabetes_VVI_k2    mclust -2437.19895   -2456.8663        FALSE
+ diabetes_VVI_k3    mclust -2353.17729   -2353.1773         TRUE
+ diabetes_VVI_k4    mclust -2320.06170   -2320.8705        FALSE
+ diabetes_EEE_k1    mclust -2540.66404   -2540.6640         TRUE
+ diabetes_EEE_k2    mclust -2468.26076   -2468.2608         TRUE
+ diabetes_EEE_k3    mclust -2409.08001   -2409.0800         TRUE
+ diabetes_EEE_k4    mclust -2372.36339   -2372.3634         TRUE
+ diabetes_VVV_k1    mclust -2540.66404   -2540.6640         TRUE
+ diabetes_VVV_k2    mclust -2343.01171   -2355.6385        FALSE
+ diabetes_VVV_k3    mclust -2295.09346   -2295.0935         TRUE
+ diabetes_VVV_k4    mclust -2281.25704   -2285.0179        FALSE
+    carcinoma_k1     poLCA  -524.46482    -524.4648         TRUE
+    carcinoma_k2     poLCA  -317.25684    -317.2568         TRUE
+    carcinoma_k3     poLCA  -293.70498    -293.7050         TRUE
+    carcinoma_k4     poLCA  -289.28585    -289.2858         TRUE
+       values_k1     poLCA  -543.64982    -543.6498         TRUE
+       values_k2     poLCA  -504.46767    -504.4677         TRUE
+       values_k3     poLCA  -503.30114    -503.3011         TRUE
+       values_k4     poLCA  -503.10771    -503.1077         TRUE
+     cheating_k1     poLCA  -467.43819    -467.4382         TRUE
+     cheating_k2     poLCA  -440.02711    -440.0271         TRUE
+     cheating_k3     poLCA  -436.23558    -436.2356         TRUE
+     cheating_k4     poLCA  -436.14499    -436.1450         TRUE
+ diabetes_VVV_k1    mclust -2540.66404   -2540.6640         TRUE
+ diabetes_VVV_k2    mclust -2343.01171   -2355.6385        FALSE
+ diabetes_VVV_k3    mclust -2295.09346   -2295.0935         TRUE
+ diabetes_VVV_k4    mclust -2281.25704   -2285.0179        FALSE
+                  case reference latents_statistic reference_statistic
+ diabetes_VVV_k1_vs_k2    mclust         370.05113           370.05113
+ diabetes_VVV_k2_vs_k3    mclust         121.09004           121.09004
+ diabetes_VVV_k3_vs_k4    mclust          20.15106            20.15106
+ reference_default_tolerance  vignette latents_mean reference_mean latents_p
+                   369.98537 369.98537     20.23057       21.20793     0.005
+                   121.10652 121.10652     31.33645       18.12442     0.005
+                    19.90071  19.90071     38.53483       19.78707     0.965
+ reference_p
+       0.005
+       0.005
+       0.425
+                                  reference compared agreed known values
+                                     mclust      129    128     0    129
+ mclust vignette (Scrucca et al.), diabetes        3      0     0      3
+                                      poLCA       36     36     0     36
+
+168 quantities compared: 164 agree, 0 known differences, 4 disagree
+                  case                                  reference
+ diabetes_VVV_k1_vs_k2 mclust vignette (Scrucca et al.), diabetes
+ diabetes_VVV_k2_vs_k3 mclust vignette (Scrucca et al.), diabetes
+ diabetes_VVV_k3_vs_k4                                     mclust
+ diabetes_VVV_k3_vs_k4 mclust vignette (Scrucca et al.), diabetes
+                                quantity reference_value   latents difference
+                 bootstrap LRT statistic       369.98537 370.05113 0.06576283
+                 bootstrap LRT statistic       121.10652 121.09004 0.01647955
+ bootstrap p-value (199 replicates each)         0.42500   0.96500 0.54000000
+                 bootstrap LRT statistic        19.90071  20.15106 0.25035296
+ tolerance n_values      kind agrees            fn    status
+ 0.0000050        1 R package  FALSE bootstrap_lrt disagrees
+ 0.0000050        1 R package  FALSE bootstrap_lrt disagrees
+ 0.1896502        1 R package  FALSE bootstrap_lrt disagrees
+ 0.0000050        1 R package  FALSE bootstrap_lrt disagrees
+There were 50 or more warnings (use warnings() to see the first 50)
+exit 1

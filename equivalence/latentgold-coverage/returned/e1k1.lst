@@ -1,0 +1,169 @@
+e1k1.dat
+File name:	e1k1.dat	
+File size:	12713 bytes  800 records	
+File date:	2026-Oct-28 11:50:14 PM	
+Syntax:	e1k1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+e1k1	1-Cluster	-3137.1876	6314.4828	6286.3752	6292.3752	6	916.1655	57	3.2e-155	0.0000	1.0000	
+e1k1 - L² = 916.1655
+1-Cluster Syntax Model	
+					
+Number of cases	800				
+Number of parameters (Npar)	6				
+Random Seed	20261201				
+Best Start Seed	20261201				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	57	p-value			
+L-squared (L²)	916.1655	3.2e-155			
+X-squared	2013.0904	4.9e-384			
+Cressie-Read	1409.7924	2.8e-257			
+BIC (based on L²)	535.1426				
+AIC (based on L²)	802.1655				
+AIC3 (based on L²)	745.1655				
+CAIC (based on L²)	478.1426				
+SABIC (based on L²)	716.1494				
+Dissimilarity Index	0.3924	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3137.1876				
+Log-prior	0.0000				
+Log-posterior	-3137.1876				
+BIC (based on LL)	6314.4828				
+AIC (based on LL)	6286.3752				
+AIC3 (based on LL)	6292.3752				
+CAIC (based on LL)	6320.4828				
+SABIC (based on LL)	6295.4295				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0000				
+Reduction of errors (Lambda)	1.0000				
+Entropy R-squared	1.0000				
+Standard R-squared	1.0000				
+Classification log-likelihood	-3137.1876				
+Entropy	0.0000				
+CLC	6274.3752				
+AWE	6372.5905				
+ICL-BIC	6314.4828				
+					
+Cluster  Classification Table	Modal				
+Latent	1	Total			
+1	800.0000	800.0000			
+Total	800.0000	800.0000			
+					
+Cluster  Classification Table	Proportional				
+Latent	1	Total			
+1	800.0000	800.0000			
+Total	800.0000	800.0000			
+					
+Files					
+Infile	C:\lgcoverage\e1k1.dat	
+					
+Options					
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261201				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     800				
+predictionstatistics	no				
+outfile					
+file name	e1k1_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	1		
+ 					
+Dependent					
+u1	Nominal	2			
+0	0				
+1	1				
+u2	Nominal	2			
+0	0				
+1	1				
+u3	Nominal	2			
+0	0				
+1	1				
+u4	Nominal	2			
+0	0				
+1	1				
+u5	Nominal	2			
+0	0				
+1	1				
+u6	Nominal	2			
+0	0				
+1	1				
+Syntax
+options
+   maxthreads=1;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261201 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors;
+   outfile 'e1k1_posteriors.txt' classification keep id;
+variables
+   dependent u1 nominal coding=first, u2 nominal coding=first, u3 nominal coding=first, u4 nominal coding=first, u5 nominal coding=first, u6 nominal coding=first;
+   latent Cluster nominal 1 coding=first;
+equations
+   Cluster <- 1;
+   u1 <- 1 ;
+   u2 <- 1 ;
+   u3 <- 1 ;
+   u4 <- 1 ;
+   u5 <- 1 ;
+   u6 <- 1 ;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.				
+										
+u1(0)	<-	1	0.0000	.	.	.	5.1090	1	0.024	
+u1(1)	<-	1	0.1603	0.0709	2.2603	0.024				
+										
+u2(0)	<-	1	0.0000	.	.	.	0.1250	1	0.72	
+u2(1)	<-	1	-0.0250	0.0707	-0.3535	0.72				
+										
+u3(0)	<-	1	0.0000	.	.	.	1.2793	1	0.26	
+u3(1)	<-	1	-0.0800	0.0708	-1.1311	0.26				
+										
+u4(0)	<-	1	0.0000	.	.	.	108.1958	1	2.4e-25	
+u4(1)	<-	1	0.7943	0.0764	10.4017	2.4e-25				
+										
+u5(0)	<-	1	0.0000	.	.	.	173.1130	1	1.5e-39	
+u5(1)	<-	1	1.0656	0.0810	13.1572	1.5e-39				
+										
+u6(0)	<-	1	0.0000	.	.	.	55.8320	1	7.9e-14	
+u6(1)	<-	1	0.5483	0.0734	7.4721	7.9e-14				

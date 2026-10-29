@@ -1,0 +1,44 @@
+suite,pattern,fn
+covariates,"^single level, profile covariate x \(poLCA\)",lca
+covariates,^two level,multilca
+covariates,"^single level, Poisson and Gaussian",multilpa
+depmixs4,.,lta
+hard-depmixs4,.,lta
+lta-general,.,lta
+lta-mixed,.,lta
+flexmix,.,mixture_regression
+glca,.,multilca
+multilevlca,.,multilca
+mplus-twolevel-lca,.,multilca
+hard-mclust,.,lpa
+mclust,.,lpa
+hard-polca,.,lca
+polca,.,lca
+published,.,lca
+invariance,^faithful,lpa
+invariance,^carcinoma,lca
+invariance,^two-level,multilpa
+invariance,^mixture regression,mixture_regression
+lcmm,.,growth
+ordinal-count,^lta-,lta
+ordinal-count,.,multilpa
+pool-imputations,.,pool_imputations
+predict-newdata,^faithful,lpa
+predict-newdata,^values,lca
+predict-newdata,^student_esm,multilca
+predict-newdata,^gaussian-2-membership,mixture_regression
+predict-newdata,^membership-covariate fit \(lca,lca
+predict-newdata,^latent transition fit \(lta,lta
+refusals,: multilpa (refuses|fits),multilpa
+refusals,: lpa (refuses|fits),lpa
+refusals,: lca (refuses|fits),lca
+refusals,: lta (refuses|fits),lta
+refusals,: mixture_regression (refuses|fits),mixture_regression
+refusals,: enumerate_[a-z]+ (refuses|fits),enumeration
+robust-se,^faithful,lpa
+robust-se,.,multilpa
+stability,^carcinoma,lca
+stability,^faithful,lpa
+stability,^dataTOY,multilca
+three-step,.,three_step
+twolevel-lpa,.,multilpa

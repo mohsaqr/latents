@@ -152,6 +152,9 @@ test_that("criteria, the AvePP matrix and OCC follow from Mplus's own quantities
   # evaluated at Mplus's log likelihood, parameter count, sample size and
   # posteriors. Entropy is already verified to 1e-5 + d, which bounds the
   # entropy sum EN, and through it ICL, AWE and CLC, by (1e-5 + d) n log K.
+  # EN is the entropy of the complete-data classification: at two levels that
+  # of the clusters' CB classes and the rows' CW profiles within them, from
+  # Mplus's joint CB x CW posteriors (NEWS 0.97.2).
   cases <- montecarlo_cases()
   invisible(lapply(names(cases), function(name) {
     case <- cases[[name]]
@@ -165,7 +168,8 @@ test_that("criteria, the AvePP matrix and OCC follow from Mplus's own quantities
     q <- m$n_parameters
     k <- case$spec$k
     p <- m$posteriors$profiles
-    entropy_sum <- -sum(p * log(pmax(p, .Machine$double.xmin)))
+    # The complete-data classification (CB and CW at two levels).
+    entropy_sum <- montecarlo_complete_entropy(m)
     deviance <- -2 * m$log_likelihood
     expected <- c(aic = deviance + 2 * q, kic = deviance + 3 * (q + 1),
                   bic_individual = deviance + q * log(n),

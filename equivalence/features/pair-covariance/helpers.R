@@ -15,7 +15,10 @@ pc_fit <- function(case, seeds = 1:3, n_starts = 20L) {
   fits <- lapply(seeds, function(seed) {
     arguments <- list(case$data, spec$vars, spec$k, local_dependence = spec$pairs,
                       variance_model = spec$variance, n_starts = n_starts, seed = seed,
-                      tol = 1e-10, max_iter = 5000,
+                      # Latent GOLD's 1e-12: at 1e-10 the flat vvi_one_k3_l_02
+                      # stopped with posteriors 2e-5 from both references,
+                      # at 1e-12 within 5.4e-7 / 1.0e-6 (2026-10-29).
+                      tol = 1e-12, max_iter = 5000,
                       missing = if (isTRUE(spec$missing)) "fiml" else "error")
     if (!is.null(spec$min_variance)) arguments$min_variance <- spec$min_variance
     withCallingHandlers(do.call(lpa, arguments),

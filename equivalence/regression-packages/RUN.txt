@@ -1,0 +1,4 @@
+run: 2026-10-29
+latents: 0.98.1
+packages: mixtools 2.0.0.1, MoEClust 1.6.0, flexmix 2.3.20
+R: R version 4.5.2 (2025-10-31)

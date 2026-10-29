@@ -1,0 +1,26 @@
+TITLE: fitLCGA (linear, K = 2) vs Mplus 9 DEMO, TYPE = MIXTURE, ESTIMATOR = ML;
+  class-specific residual variance, equal across the 5 waves (Carm LCGA);
+DATA: FILE IS lcga.dat;
+VARIABLE:
+  NAMES ARE y0-y4;
+  CLASSES = c(2);
+ANALYSIS:
+  TYPE = MIXTURE;
+  ESTIMATOR = ML;
+  STARTS = 200 50;
+  STITERATIONS = 50;
+  MCONVERGENCE = 0.000001;
+  LOGCRITERION = 0.0000001;
+  RLOGCRITERION = 0.0000000001;
+  PROCESSORS = 1;
+MODEL:
+  %OVERALL%
+  i s | y0@0 y1@1 y2@2 y3@3 y4@4;
+  i@0; s@0; i WITH s@0;
+  %c#1%
+  [i s];
+  y0-y4 (r1);
+  %c#2%
+  [i s];
+  y0-y4 (r2);
+OUTPUT: TECH1;

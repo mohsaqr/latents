@@ -1,0 +1,2 @@
+case,reference,quantity,reason
+thyroid_VVV_k3,Rmixmod,^a solution from the reference$,"Rmixmod returns no estimates for this model (likelihood 0, means NA) from 20 tries; EMCluster's starts all collapse onto degenerate spikes there and are filtered. mixtools reaches latents' maximum."

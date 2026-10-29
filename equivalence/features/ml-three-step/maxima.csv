@@ -61,7 +61,7 @@
 "reference (sweep)","single-unit class: latents interval is NA",0,1,0
 "reference (sweep)","single-unit class: reference sandwich / model SE",3.45737861782247e-11,1,0
 "Latent GOLD step one","step-one log likelihood",4.07885545428144e-05,5,0
-"Mplus","step-one log likelihood",0.000381859050776256,10,0
+"Mplus","step-one log likelihood",0.000381859047593025,10,0
 "Latent GOLD default","variance (relative)",2.22124318827177e-07,139,0
 "Latent GOLD random","variance (relative)",7.69462182859115e-08,1,0
 "reference","variance (relative)",1.33924866752011e-08,140,0

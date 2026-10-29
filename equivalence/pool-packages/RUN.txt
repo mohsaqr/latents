@@ -1,0 +1,4 @@
+run: 2026-10-29
+latents: 0.98.1
+packages: mitml 0.4.5, mitools 2.4, mice 3.19.0
+R: R version 4.5.2 (2025-10-31)

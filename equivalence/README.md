@@ -19,6 +19,12 @@ Run everything from the project root.
 | `houle-2026/` | Checks against the article and supplement of Houle et al. (2026). | `Rscript equivalence/houle-2026/check-fit-indices.R` |
 | `three-step/` | The BCH correction against tidySEM. | `Rscript equivalence/three-step/compare-tidysem.R` |
 | `deferred.R`, `fixtures.R`, `independent-likelihood.R` | Helpers the scripts above source. | — |
+| `latentgold-coverage/` | Growth mixtures, `lca()`, `lpa()`, `lta()`, negative-binomial and ordinal mixture regression and enumeration against Latent GOLD 6.1 (retained listings, offline). | `Rscript equivalence/latentgold-coverage/compare.R` |
+| `lca-packages/`, `lpa-packages/`, `regression-packages/`, `lta-packages/`, `pool-packages/` | Each function against independent R implementations (glca, randomLCA, BayesLCA, multilevLCA, depmixS4; Rmixmod, EMCluster, mixtools; mixtools, MoEClust, flexmix; LMest, seqHMM; mitml, mitools), plus published values where they exist. Shared runner: `package-kit-runner.R`. | `Rscript equivalence/<kit>/compare.R` |
+| `enumeration-packages/` | `enumerate_lpa()` against `mclustBIC()`, `enumerate_lca()` against poLCA, `bootstrap_lrt()` against `mclustBootstrapLRT()` and mclust's vignette (mclust run to 1e-12; its default 1e-5 stops short). | `Rscript equivalence/enumeration-packages/compare.R` |
+| `growth-published/`, `stata-published/`, `mplus-growth/` | Published analyses reproduced (Proust-Lima et al. 2017 on paquid; Stata [SEM] Examples 52g and 50g and Masyn 2013 Table 25.12) and genuine Mplus 9 growth runs from JStats. | `Rscript equivalence/<kit>/compare.R` |
+| `REFERENCE-CANDIDATES.md` | Published and software references not yet wired in, by function, with data access and the numbers to match. | — |
+| `verification-matrix/` | **The living verification record**: every major function against every reference that checks it (strength as one + per source and one P per paper, datasets, checks), built from saved results. Read [`VERIFICATION-MATRIX.md`](verification-matrix/VERIFICATION-MATRIX.md); rebuild after any equivalence run ([how](verification-matrix/README.md#keeping-it-current)). | `Rscript equivalence/verification-matrix/build.R` |
 
 Scripts other than the testthat files rewrite committed reports. To check
 only that they still run, run them in a scratch copy of the repository.

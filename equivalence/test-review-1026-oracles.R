@@ -121,7 +121,8 @@ test_that("one class reproduces the linear mixed model of nlme::lme (ML)", {
                unname(nlme::fixef(reference)), tolerance = 1e-4)
   expect_equal(unname(fit$params$random_covariance[[1L]]),
                unname(matrix(as.numeric(nlme::getVarCov(reference)), 2L)), tolerance = 1e-3)
-  expect_equal(fit$params$sigma2, reference$sigma^2, tolerance = 1e-4)
+  # Named by its class since 0.98.0.
+  expect_equal(unname(fit$params$sigma2), reference$sigma^2, tolerance = 1e-4)
   # BIC counts persons (the independent units), not observations.
   fit_table <- get_results(fit, "fit")
   expect_equal(fit_table$bic, -2 * fit$log_likelihood +

@@ -1,0 +1,69 @@
+mixtools start 5 failed: singular matrix 'a' in solve
+mixtools start 11 failed: singular matrix 'a' in solve
+mixtools start 6 failed: singular matrix 'a' in solve
+mixtools start 8 failed: singular matrix 'a' in solve
+mixtools start 9 failed: singular matrix 'a' in solve
+mixtools start 10 failed: singular matrix 'a' in solve
+mixtools start 12 failed: singular matrix 'a' in solve
+mixtools start 14 failed: singular matrix 'a' in solve
+mixtools start 17 failed: singular matrix 'a' in solve
+mixtools start 18 failed: singular matrix 'a' in solve
+mixtools start 19 failed: singular matrix 'a' in solve
+mixtools start 20 failed: singular matrix 'a' in solve
+mixtools start 13 failed: singular matrix 'a' in solve
+mixtools start 1 failed: singular matrix 'a' in solve
+mixtools start 2 failed: singular matrix 'a' in solve
+mixtools start 4 failed: singular matrix 'a' in solve
+mixtools start 6 failed: singular matrix 'a' in solve
+mixtools start 7 failed: singular matrix 'a' in solve
+mixtools start 8 failed: singular matrix 'a' in solve
+mixtools start 9 failed: singular matrix 'a' in solve
+mixtools start 10 failed: singular matrix 'a' in solve
+mixtools start 13 failed: singular matrix 'a' in solve
+mixtools start 16 failed: singular matrix 'a' in solve
+mixtools start 17 failed: singular matrix 'a' in solve
+mixtools start 18 failed: singular matrix 'a' in solve
+mixtools start 19 failed: singular matrix 'a' in solve
+mixtools start 20 failed: singular matrix 'a' in solve
+            case latents_default latents_emEM best_reference default_reaches
+ faithful_VVV_k2      -1130.2640  -1130.26396     -1130.2640            TRUE
+ faithful_EEE_k2      -1140.1868  -1140.18676     -1140.1868            TRUE
+ faithful_VVI_k3      -1127.0075  -1127.00752     -1127.0075            TRUE
+ faithful_EEI_k3      -1133.4554  -1133.45540     -1133.4554            TRUE
+     iris_VVV_k3       -180.1855    -75.15061      -180.1855            TRUE
+     iris_EEE_k3       -256.3540   -256.35404      -256.3540            TRUE
+     iris_VVI_k2       -386.1853   -386.18535      -386.1853            TRUE
+     iris_EEI_k3       -361.4255   -361.42552      -361.4255            TRUE
+ diabetes_VVV_k3      -2303.4918  -2303.49184     -2303.4918            TRUE
+ diabetes_VVI_k3      -2364.1372  -2364.13720     -2364.1372            TRUE
+ banknote_VVV_k2       -729.9521   -718.39592      -718.3959           FALSE
+ banknote_EEE_k2       -793.6416   -793.64161      -793.6416            TRUE
+    crabs_VVV_k2      -1423.5913  -1354.15670     -1354.1567           FALSE
+    crabs_EEE_k2      -1413.5106  -1413.51059     -1413.5106            TRUE
+  thyroid_VVI_k3      -2303.0223  -2303.02233     -2303.0223            TRUE
+  thyroid_VVV_k3      -2238.3904  -2238.39044     -2238.3904            TRUE
+ emEM_reaches
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+         TRUE
+ reference compared agreed known values
+ EMCluster       30     30     0   3128
+  mixtools       50     50     0   5022
+   Rmixmod       76     75     1   7898
+
+156 quantities compared: 155 agree, 1 known differences, 0 disagree
+Warning message:
+A covariance eigenvalue reached min_variance; this is a bound-active constrained fit. 

@@ -1,0 +1,14 @@
+                                                          reference compared
+ Masyn (2013), Oxford Handbook of Quantitative Methods, Table 25.12       51
+                                  Stata 19 [SEM] Example 50g (gsem)       23
+                                  Stata 19 [SEM] Example 52g (gsem)       80
+ agreed known values
+     49     2     51
+     22     1     23
+     74     6     80
+
+154 quantities compared: 145 agree, 9 known differences, 0 disagree
+Warning messages:
+1: A variance reached min_variance; this is a bound-active constrained fit. 
+2: A profile or group class has effective membership below one. 
+3: Profile 1: 1.0 Gaussian membership mass for 6 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics. 

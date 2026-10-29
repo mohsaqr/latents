@@ -1,3 +1,36 @@
+# latents 1.0.0
+
+## Verification against independent programs and published analyses (2026-10-29)
+
+No estimation code has changed since 0.98.1; every result is the same. This
+release records how each function is verified.
+
+* Every major function agrees, on the current code and on models with two or
+  more classes, with at least three independent programs or packages, and
+  most with published analyses: `lca()` with nine sources and seven papers,
+  `lpa()` with eight and three, `lta()` and `mixture_regression()` with five
+  and three. The record, rebuilt from saved results, is
+  `equivalence/verification-matrix/VERIFICATION-MATRIX.md` in the source
+  repository.
+* New comparisons: Latent GOLD 6.1 (growth mixtures, latent class, profile
+  and transition models, negative-binomial and ordinal mixture regression,
+  enumeration), glca, randomLCA, BayesLCA, multilevLCA, depmixS4, Rmixmod,
+  EMCluster, mixtools, MoEClust, flexmix, LMest, seqHMM, lcmm, mitml,
+  mitools, and mclust and poLCA for enumeration and the bootstrap LRT; and the
+  published values of SAS PROC FMM, Stata [SEM] Examples 50g and 52g, Masyn
+  (2013), Proust-Lima, Philipps and Liquet (2017), Bartolucci, Pandolfi and
+  Pennoni (2017), Pennoni, Pandolfi and Bartolucci (2024), Benaglia et al.
+  (2009), Grün and Leisch (2008) and the SAS and R blog's latent class example.
+* Where a reference reaches a different maximum the difference is recorded
+  with its cause. mclust's default EM tolerance stops up to 0.04 short of the
+  maximum, and the statistics printed in its vignette are that stopping point.
+  The default kmeans start search can return a lower maximum for VVV models
+  with two profiles (banknote, crabs), where `search = "emEM"` reaches the
+  higher one.
+* Tests: the release-engine comparison of grand-scaled EVV and VVV fits now
+  converges both fits and compares posteriors up to label order (it failed on
+  Linux and Windows), and the poLCA residual statistic is compared to 1e-5.
+
 # latents 0.98.1
 
 ## Further release audit repairs (2026-10-28)
