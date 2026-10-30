@@ -1,4 +1,4 @@
-test_that("profile predictions leave empty and zero-weight fitted rows unclassified", {
+test_that("profile predictions leave empty rows unclassified and keep zero-weight rows", {
   data <- .mixture_with_seed(702, {
     location <- rep(c(-3, 3), c(50, 100))
     data.frame(a = rnorm(150, location), b = rnorm(150, location), w = 1)
@@ -12,8 +12,9 @@ test_that("profile predictions leave empty and zero-weight fitted rows unclassif
   fitted <- predict(fit, type = "posterior")
   fields <- setdiff(names(fitted), "row")
   expect_identical(fitted$row, seq_len(nrow(data)))
-  expect_true(all(is.na(fitted[c(9, 11), fields])))
-  expect_false(anyNA(fitted[10, fields]))
+  expect_true(all(is.na(fitted[9, fields])))
+  # A zero-weight unit is in no count but keeps its posterior in output (ML-1).
+  expect_false(anyNA(fitted[c(10, 11), fields]))
   expect_identical(fit$subject_posteriors, raw)
   expect_equal(predict(fit, type = "density")$log_density[9], 0,
                tolerance = 1e-12)
@@ -21,12 +22,11 @@ test_that("profile predictions leave empty and zero-weight fitted rows unclassif
   newcomers <- predict(fit, data, type = "posterior")
   expect_true(all(is.na(newcomers[9, fields])))
   expect_false(anyNA(newcomers[c(10, 11), fields]))
-  expect_equal(newcomers[-c(9, 11), ], fitted[-c(9, 11), ], tolerance = 1e-12)
+  expect_equal(newcomers[-9, ], fitted[-9, ], tolerance = 1e-12)
 
   fit$drop_empty <- FALSE
   legacy <- predict(fit, type = "posterior")
-  expect_false(anyNA(legacy[9, fields]))
-  expect_true(all(is.na(legacy[11, fields])))
+  expect_false(anyNA(legacy[c(9, 11), fields]))
   expect_false(anyNA(predict(fit, data, type = "posterior")))
 })
 
@@ -45,9 +45,11 @@ test_that("group predictions distinguish empty observations from empty groups", 
   individual <- c("profile", "posterior", "probability_profile_1",
                   "probability_profile_2")
   group <- c("group_class", "group_posterior")
-  expect_true(all(is.na(fitted[c(1, 6:15), individual])))
+  expect_true(all(is.na(fitted[c(1, 6:10), individual])))
   expect_false(anyNA(fitted[1, group]))
-  expect_true(all(is.na(fitted[6:15, group])))
+  expect_true(all(is.na(fitted[6:10, group])))
+  # The zero-weight group keeps its rows' and its own classification (ML-1).
+  expect_false(anyNA(fitted[11:15, c(individual, group)]))
   expect_false(anyNA(fitted[2:5, c(individual, group)]))
   new <- predict(fit, data, type = "posterior")
   expect_true(all(is.na(new[6:10, c(individual, group)])))
@@ -55,8 +57,7 @@ test_that("group predictions distinguish empty observations from empty groups", 
 
   fit$drop_empty <- FALSE
   legacy <- predict(fit, type = "posterior")
-  expect_false(anyNA(legacy[1:10, c(individual, group)]))
-  expect_true(all(is.na(legacy[11:15, c(individual, group)])))
+  expect_false(anyNA(legacy[, c(individual, group)]))
 })
 
 test_that("prediction recognizes observations of every indicator family", {

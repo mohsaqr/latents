@@ -64,8 +64,9 @@ test_that("general transition assignments apply the shared classification policy
   expect_equal(.sensitivity_transitions(fit, data, NULL, NULL, NULL)$agreement(changed), 1)
   fit$drop_empty <- FALSE
   expect_false(anyNA(get_results(fit, "assignments")[fields]))
+  # A zero-weight unit keeps its row, posterior and assignment in output (ML-1).
   fit$sampling_weights <- c(0, rep(1, 23))
-  expect_true(all(is.na(get_results(fit, "assignments")[1:4, c(fields, "group_class")])))
+  expect_false(anyNA(get_results(fit, "assignments")[1:4, c(fields, "group_class")]))
 })
 
 test_that("sequence summaries and networks use classified groups and occasions", {

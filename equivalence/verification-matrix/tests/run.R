@@ -130,3 +130,24 @@ test_that("CI rejects empty, errored, skipped and partial outcome tables", {
 })
 
 source("equivalence/validation/check-package-kit-gates.R")
+
+test_that("a 'sometimes' register entry explains a difference but is never stale", {
+  environment <- new.env(parent = globalenv())
+  withr::with_dir("equivalence", sys.source("package-kit-runner.R", envir = environment))
+  comparison <- data.frame(case = c("a", "b"), reference = "pkg",
+                           quantity = "maximized log likelihood",
+                           agrees = c(FALSE, TRUE), difference = c(1, 0),
+                           tolerance = 1e-6, n_values = 1)
+  known <- data.frame(case = c("a", "b", "c"), reference = "pkg",
+                      quantity = "^maximized log likelihood$", reason = "r",
+                      occurs = c("sometimes", "sometimes", "always"))
+  result <- environment$apply_register(comparison, known)
+  expect_identical(result$comparison$status, c("known difference", "agrees"))
+  # "b" did not occur but is optional; "c" did not occur and is required.
+  expect_identical(result$stale$case, "c")
+  # Without the column every entry is required, as before.
+  result <- environment$apply_register(comparison, known[c("case", "reference", "quantity", "reason")])
+  expect_identical(result$stale$case, c("b", "c"))
+  known$occurs[1] <- "often"
+  expect_error(environment$apply_register(comparison, known), "occurs")
+})

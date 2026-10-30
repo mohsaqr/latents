@@ -1292,7 +1292,7 @@ get_results.summary_multilpa_bootstrap_lrt <-function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_sequence_length_frame <- function(x) {
   group_classes <- x$group_classes
-  group_classes[!.multilpa_informative_groups(x)] <- NA_integer_
+  group_classes[!.multilpa_reported_groups(x)] <- NA_integer_
   data.frame(group = x$group_values, group_class = group_classes,
              occasions = unname(x$sequence_lengths),
              observations = unname(tabulate(x$group_index, nbins = x$n_groups)),

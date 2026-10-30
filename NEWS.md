@@ -1,3 +1,14 @@
+# latents 1.1.3
+
+## Zero-weight units keep their classification (2026-10-30)
+
+* 1.1.2 (a GitHub release) reported the class, uncertainty and posterior
+  probabilities of units with sampling weight zero as `NA` in assignment,
+  posterior and prediction tables. These units are again reported as in 1.1.1.
+  A unit of weight zero stays out of every count, criterion and starting
+  value, but keeps its row, posterior and assignment in output. Only rows and
+  groups with no observed indicator are left without a class.
+
 # latents 1.1.2
 
 ## Rows without data are no longer assigned a class (2026-10-29)

@@ -72,7 +72,7 @@ predict.multilpa_transitions <-function(object, ...) {
   prepared <- .multilpa_prediction_rows(object, .multilpa_fit_data(object),
                             contributing = if (is.null(object$sampling_weights)) NULL else
                               unname(object$sampling_weights)[object$group_index] > 0)
-  prepared$informative <- .multilpa_informative_rows(object)
+  prepared$informative <- .multilpa_reported_rows(object)
   prepared
 }
 

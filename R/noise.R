@@ -276,10 +276,40 @@
   posteriors[.multilpa_informative_rows(x), , drop = FALSE]
 }
 
+#' Which rows a row-aligned output table reports a classification for
+#'
+#' A row with nothing observed is unclassified (`.multilpa_informative_rows()`).
+#' A unit of sampling weight zero is absent from every count and criterion but
+#' keeps its row, posterior and assignment in output (ML-1), so it is reported.
+#'
+#' @param x A fitted model of this package.
+#' @return A logical vector, one per observation.
+#' @noRd
+.multilpa_reported_rows <- function(x) {
+  informative <- .multilpa_informative_rows(x)
+  informative | !.multilpa_carrying_rows(x, length(informative))
+}
+
+#' Which groups a group-level output table reports a classification for
+#'
+#' The group counterpart of `.multilpa_reported_rows()`: a group whose every
+#' row observes nothing is unclassified, a group of weight zero is reported.
+#'
+#' @param x A fitted model of this package.
+#' @return A logical vector, one per group, or `NULL` for a fit without group
+#'   posteriors.
+#' @noRd
+.multilpa_reported_groups <- function(x) {
+  informative <- .multilpa_informative_groups(x)
+  if (is.null(informative)) return(NULL)
+  informative | !.multilpa_carrying_groups(x, length(informative))
+}
+
 #' Posterior output with excluded classifications marked as missing
 #' @param x A fitted model.
 #' @param level Either `"individuals"` or `"groups"`.
-#' @return A posterior matrix in input order, with excluded rows set to `NA`.
+#' @return A posterior matrix in input order, with unclassified rows set to
+#'   `NA`.
 #' @noRd
 .multilpa_reported_posteriors <- function(x, level = "individuals") {
   stopifnot(level %in% c("individuals", "groups"))
@@ -287,8 +317,8 @@
   posteriors <- if (grouped) x$group_posteriors else
     .multilpa_class_posteriors(x)
   if (is.null(posteriors)) return(NULL)
-  included <- if (grouped) .multilpa_informative_groups(x) else
-    .multilpa_informative_rows(x)
+  included <- if (grouped) .multilpa_reported_groups(x) else
+    .multilpa_reported_rows(x)
   # Keep raw probabilities on the fit for estimation and subsequent inference.
   # Public row-aligned tables must not turn excluded units into assigned cases.
   posteriors[!included, ] <- NA_real_

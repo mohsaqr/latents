@@ -52,7 +52,7 @@ test_that("both posterior formats and all-table output mark excluded cases", {
   expect_true(all(is.na(all_tables$posteriors$modal[all_tables$posteriors$row == 9L])))
 })
 
-test_that("legacy empty-row reporting retains assignments but excludes zero weights", {
+test_that("legacy reporting keeps every assignment; zero weights stay out of counts", {
   case <- assignment_empty_case()
   data <- transform(case$data, weight = rep(1, 300L))
   data$weight[11L] <- 0
@@ -62,10 +62,32 @@ test_that("legacy empty-row reporting retains assignments but excludes zero weig
   assigned <- get_results(fit, "assignments")
   expect_false(anyNA(assigned[9L, c("profile", "uncertainty",
                                   "posterior_profile_1", "posterior_profile_2")]))
-  expect_true(all(is.na(assigned[11L, c("profile", "uncertainty",
-                                      "posterior_profile_1", "posterior_profile_2")])))
-  expect_equal(sum(!is.na(assigned$profile)),
-               sum(get_results(fit, "classification")$n_modal))
+  # A zero-weight unit keeps its row, posterior and assignment in output but
+  # is absent from every count (ML-1).
+  expect_false(anyNA(assigned[11L, c("profile", "uncertainty",
+                                   "posterior_profile_1", "posterior_profile_2")]))
+  expect_false(anyNA(assigned$profile))
+  expect_equal(sum(get_results(fit, "classification")$n_modal), nrow(data) - 1L)
+})
+
+test_that("zero-weight rows keep their assignment while empty rows lose theirs", {
+  case <- assignment_empty_case()
+  data <- transform(case$data, weight = rep(1, 300L))
+  data$weight[11L] <- 0
+  fit <- quietly(lpa(data, c("a", "b"), n_profiles = 2L, weights = "weight",
+                      missing = "fiml", n_starts = 2L, seed = 1L))
+  fields <- c("profile", "uncertainty", "posterior_profile_1", "posterior_profile_2")
+  assigned <- get_results(fit, "assignments")
+  expect_true(all(is.na(assigned[9L, fields])))
+  # A zero-weight unit is in no count but keeps its row, posterior and
+  # assignment in output (ML-1).
+  expect_false(anyNA(assigned[c(10L, 11L), fields]))
+  posteriors <- get_results(fit, "posteriors")
+  expect_false(anyNA(posteriors$posterior[posteriors$row == 11L]))
+  expect_true(all(is.na(posteriors$posterior[posteriors$row == 9L])))
+  # Counts leave out both the empty row and the zero-weight row.
+  expect_identical(nobs(fit), 298L)
+  expect_equal(sum(get_results(fit, "classification")$n_modal), 298)
 })
 
 test_that("group classification requires an observed member, not every member", {

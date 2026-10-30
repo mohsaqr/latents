@@ -326,9 +326,9 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                       uncertainty = pmax(1 - apply(fit$subject_posteriors, 1L, max), 0))
   # Keep the full input layout, but report classifications only for units
   # included by the same policy as the classification summaries.
-  excluded <- !.multilpa_informative_rows(fit)
+  excluded <- !.multilpa_reported_rows(fit)
   added[excluded, c("profile", "uncertainty")] <- NA
-  added$group_class[!.multilpa_informative_groups(fit)[fit$group_index]] <- NA_integer_
+  added$group_class[!.multilpa_reported_groups(fit)[fit$group_index]] <- NA_integer_
   clashes <- intersect(names(frame), c(names(added), names(posteriors)))
   if (length(clashes) > 0L) {
     stop(errorCondition(sprintf(

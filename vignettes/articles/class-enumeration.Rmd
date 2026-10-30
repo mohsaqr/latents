@@ -604,24 +604,31 @@ plot_selection(srl_models, what = "deltas")
 srl_bic <- with(subset(get_results(srl_models, "best"),
                        criterion == "bic" & convention == "groups"),
                 candidate)
-eight_on_boundary <- with(subset(as.data.frame(srl_models),
-                                 candidate == "profiles8"), boundary)
+on_boundary <- with(subset(as.data.frame(srl_models), boundary), candidate)
 warned <- with(subset(as.data.frame(srl_models), nzchar(warnings)), candidate)
 thin <- with(subset(as.data.frame(srl_models), grepl("membership mass for", warnings)),
              candidate)
-stopifnot(srl_bic == "profiles6", isTRUE(eight_on_boundary),
+seven_mass <- with(subset(as.data.frame(srl_models), candidate == "profiles7"),
+                   round(min_gaussian_mass))
+six_mass <- with(subset(as.data.frame(srl_models), candidate == "profiles6"),
+                 round(min_gaussian_mass))
+stopifnot(srl_bic == "profiles7",
+          identical(on_boundary, c("profiles7", "profiles8")),
           identical(warned, c("profiles6", "profiles7", "profiles8")),
-          identical(thin, warned))
+          identical(thin, warned), seven_mass <= 5, six_mass <= 12)
 ```
 
-BIC is minimized by `r srl_bic`. The six- and seven-profile candidates each
-contain a profile of about ten observations, about 3% of the sample, too few
-to determine its own ten means and variances, and the enumeration reports
-this with a `latents_thin_profiles` warning; such a profile may be a
-spurious maximum, and the BIC choice should be weighed against the
-five-profile candidate, which `compare_models()` shows beside it. The
-eight-profile candidate has a variance at its lower bound and a nearly empty
-profile, which marks the limit of what `r nrow(srl)` observations can
+BIC is minimized by `r srl_bic`, but that candidate is a boundary fit: a
+variance reached its lower bound, and one profile holds about `r seven_mass`
+observations. Its low BIC reflects a nearly degenerate component, not a
+better description of the data. The six-profile candidate is the best fit
+that is not on the boundary, but it too has a profile of about `r six_mass`
+observations, too few to determine its own ten means and variances. The
+enumeration reports both with a `latents_thin_profiles` warning; such a
+profile may be a spurious maximum, and the choice should be weighed against
+the five-profile candidate, which `compare_models()` shows beside them. The
+eight-profile candidate is also on the boundary, with two nearly empty
+profiles, which marks the limit of what `r nrow(srl)` observations can
 support. Every warning issued during the enumeration is retained in the
 `warnings` column of the table.
 

@@ -44,12 +44,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # uncertainty; the estimates themselves are left as computed.
   uncertainty <- pmax(1 - apply(class_posteriors, 1L, max), 0)
   labels <- data.frame(profile = x$subject_profiles)
-  labels$profile[!.multilpa_informative_rows(x)] <- NA_integer_
+  labels$profile[!.multilpa_reported_rows(x)] <- NA_integer_
   # A single-level fit has one group class that every row belongs to, so the
   # column would say nothing.
   if (!is.null(x$group_classes) && !isTRUE(x$single_level)) {
     labels$group_class <- x$group_classes[x$group_index]
-    labels$group_class[!.multilpa_informative_groups(x)[x$group_index]] <- NA_integer_
+    labels$group_class[!.multilpa_reported_groups(x)[x$group_index]] <- NA_integer_
   }
   added <- cbind(labels, uncertainty = uncertainty, posteriors)
   clashes <- intersect(names(frame), names(added))

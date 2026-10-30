@@ -42,14 +42,21 @@ validate_package_comparison <- function(comparison) {
 #' Mark disagreements the register explains; list entries that explain nothing
 #' @param comparison Rows with `case`, `quantity`, `agrees` and comparison values.
 #' @param known The register: `case`, `quantity` (a regex), `reason`, and optionally
-#'   `reference` (required on comparison rows when present in the register).
+#'   `reference` (required on comparison rows when present in the register) and
+#'   `occurs`: `"always"` (the default) or `"sometimes"`, for a reference whose
+#'   result differs by platform or version. A `"sometimes"` entry explains a
+#'   difference when one occurs and is not stale when none does.
 #' @return A list of the comparison with a `status` column, and the stale rows.
 apply_register <- function(comparison, known) {
   validate_package_comparison(comparison)
   stopifnot("known differences require case, quantity and reason" =
               all(c("case", "quantity", "reason") %in% names(known)),
             "reference-specific exceptions require comparison references" =
-              !"reference" %in% names(known) || "reference" %in% names(comparison))
+              !"reference" %in% names(known) || "reference" %in% names(comparison),
+            "`occurs` must be \"always\" or \"sometimes\"" =
+              !"occurs" %in% names(known) || all(known$occurs %in% c("always", "sometimes")))
+  optional <- if ("occurs" %in% names(known)) known$occurs == "sometimes" else
+    rep(FALSE, nrow(known))
   # A different optimum cannot explain an incorrect model dimension. Never
   # let an exception (including a broad legacy regex) waive parameter counts.
   count <- grepl("number of parameters|parameter count|n_parameters", comparison$quantity,
@@ -65,7 +72,7 @@ apply_register <- function(comparison, known) {
   }, integer(1))
   comparison$status <- ifelse(comparison$agrees, "agrees",
                               ifelse(is.na(explained), "disagrees", "known difference"))
-  list(comparison = comparison, stale = known[setdiff(seq_len(nrow(known)), explained), ],
+  list(comparison = comparison, stale = known[setdiff(which(!optional), explained), ],
        explained = explained)
 }
 

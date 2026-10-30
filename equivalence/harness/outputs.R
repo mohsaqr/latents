@@ -1299,6 +1299,18 @@ reference_tables <- function(reference, fit) {
       probability = as.vector(gamma), group_class_probability = rep(delta, times = k))
   }
 
+  # Row-aligned output leaves an empty row, and a group with no observed row,
+  # unclassified (NA) under the default `drop_empty = TRUE`; a unit of weight
+  # zero keeps its row, posterior and assignment (ML-1). Counts and entropy
+  # above already use `classified_row` and `informative_group`.
+  reported_row <- isFALSE(fit$drop_empty) | informative |
+    (if (weighted) row_weights <= 0 else FALSE)
+  reported_group <- isFALSE(fit$drop_empty) |
+    as.character(group_ids) %in% as.character(unique(group_of_row[rows[informative]])) |
+    (if (weighted) unit_weights <= 0 else FALSE)
+  p[!reported_row, ] <- NA_real_
+  zg[!reported_group, ] <- NA_real_
+
   tables$posteriors <- data.frame(row = rep(rows, times = k), profile = rep(seq_len(k), each = n_rows),
                                   posterior = as.vector(p),
                                   modal = as.vector(col(p) == max.col(p, "first")))
