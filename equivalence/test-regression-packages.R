@@ -30,5 +30,8 @@ test_that("mixture_regression() reproduces three packages and three publications
   published <- subset(comparison, kind == "published")
   expect_identical(nrow(published), 20L)
   expect_true(all(published$agrees))
-  expect_gte(sum(comparison$agrees), 71L)
+  # Rows explained by a "sometimes" entry (a platform-dependent reference)
+  # count with the agreeing rows; the floor still bounds what the register waives.
+  optional <- registered$explained %in% which(known$occurs == "sometimes")
+  expect_gte(sum(comparison$agrees | optional), 71L)
 })

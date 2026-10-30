@@ -1,3 +1,16 @@
+# latents 1.1.4
+
+## Continuous integration (2026-10-30)
+
+No package code changed; every result is the same as in 1.1.3.
+
+* Comparisons with other packages, run in continuous integration only, allow
+  for reference packages whose results differ between platforms. On Linux
+  under R 4.6.2, multilevLCA and MoEClust gave different answers in three
+  cases, and MoEClust differed between two runs; latents agreed with every
+  other reference package. The mclust noise comparison now checks estimates
+  to the precision that both programs' stopping rules guarantee.
+
 # latents 1.1.3
 
 ## Zero-weight units keep their classification (2026-10-30)

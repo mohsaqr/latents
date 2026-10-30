@@ -58,9 +58,13 @@ test_that("a noise fit reproduces mclust's EM from the same start", {
            noise = TRUE, acceleration = "none"),
       latents:::.multilpa_structure_arguments(code))))
     expect_equal(fit$log_likelihood, reference$loglik, tolerance = 1e-10, info = code)
+    # Both EMs stop on a relative log likelihood change of 1e-13, which fixes
+    # the estimates only to about sqrt(1e-13) = 3e-7 on a flat maximum: on
+    # Linux under R 4.6.2 the two stopped 1e-7 apart in the noise proportion
+    # with log likelihoods equal to 1e-10. 1e-6 is the stopping rule's bound.
     expect_equal(fit$noise_probability, reference$parameters$pro[3L],
-                 tolerance = 1e-8, info = code)
-    expect_equal(t(fit$means), reference$parameters$mean, tolerance = 1e-8,
+                 tolerance = 1e-6, info = code)
+    expect_equal(t(fit$means), reference$parameters$mean, tolerance = 1e-6,
                  ignore_attr = TRUE, info = code)
     expect_equal(fit$n_parameters, mclust::nMclustParams(code, 3L, 2L, noise = TRUE),
                  info = code)
