@@ -1,5 +1,15 @@
 # Changelog
 
+## latents 1.1.6
+
+### Shorter CRAN check (2026-10-30)
+
+Results are the same as in 1.1.5.
+
+- Test files taking more than half a second run in continuous
+  integration but not on CRAN. On the Windows builder, 1.1.5 still took
+  742 s to check.
+
 ## latents 1.1.5
 
 ### Seed sensitivity with supplied data (2026-10-30)
