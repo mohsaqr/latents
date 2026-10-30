@@ -3,6 +3,8 @@
 # caller holds another, and every verb that crosses that boundary has to know
 # which side it is on.
 
+skip_on_cran()
+
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 centred_fit <- function(centering = "person", n_profiles = 3L, ...) {

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 astra_surface_data <- function() {
   withr::local_seed(1027)
   data.frame(id = rep(seq_len(12L), each = 5L), x = stats::rnorm(60),

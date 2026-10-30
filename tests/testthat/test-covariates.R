@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("weighted multinomial optimizer reproduces fractional counts", {
   set.seed(64)
   design <- cbind(1, rnorm(100))

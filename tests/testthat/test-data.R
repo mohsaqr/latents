@@ -2,6 +2,8 @@
 # `?course_engagement` states. Every documented claim is asserted here, so the
 # help page cannot drift away from the data it describes.
 
+skip_on_cran()
+
 .activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 # Persistence of the shipped `engagement` from one enrolment to the next,

@@ -4,6 +4,8 @@
 # Error paths are asserted by CLASS, never by message text: the class is the
 # contract documented on ?"latents-conditions", the message is not.
 
+skip_on_cran()
+
 .core_fixture <- function(n_groups = 20L, per_group = 10L, seed = 5L) {
   set.seed(seed)
   n <- n_groups * per_group

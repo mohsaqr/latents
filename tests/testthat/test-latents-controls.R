@@ -6,6 +6,8 @@
 
 # A two-level latent class design with a student-level covariate, far from
 # any boundary: two classes, five binary items, a slope of 0.8 on the logit.
+skip_on_cran()
+
 .lca_design <- function(n_groups = 60, per = 8, continuous = FALSE) {
   set.seed(2024)
   g <- rep(seq_len(n_groups), each = per)

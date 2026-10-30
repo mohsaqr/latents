@@ -3,6 +3,8 @@
 # `y <- 1 + Cluster + z`).
 # The comparisons with independent references are in tests/equivalence/test-direct-effects.R.
 
+skip_on_cran()
+
 direct_data <- function(seed = 3, n = 1500) {
   set.seed(seed)
   class <- sample(1:2, n, TRUE, prob = c(0.55, 0.45))

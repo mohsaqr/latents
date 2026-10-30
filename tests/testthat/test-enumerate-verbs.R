@@ -1,6 +1,8 @@
 # enumerate_lpa() and enumerate_lca() are enumerate_classes(id = NULL) under
 # the names of the single-level analyses, as lpa() and lca() are for one fit.
 
+skip_on_cran()
+
 srl_indicators <- c("cognitive_strategies", "intrinsic_value",
                     "self_efficacy", "self_regulation", "test_anxiety")
 esm_activities <- c("time_with_friends", "on_social_media", "sports")

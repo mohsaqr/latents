@@ -1,3 +1,5 @@
+skip_on_cran()
+
 scaling_data <- function() {
   set.seed(42)
   group <- rep(seq_len(30L), each = 6L)

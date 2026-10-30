@@ -1,5 +1,7 @@
 #' A small thin Gaussian profile with covariate and categorical columns
 #' @return An 80-row data frame with three clearly separated Gaussian rows.
+skip_on_cran()
+
 gaussian_warning_support_data <- function() {
   set.seed(73)
   data <- as.data.frame(matrix(rnorm(80L * 5L), 80L, 5L))

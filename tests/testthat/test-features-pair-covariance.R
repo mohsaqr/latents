@@ -4,6 +4,8 @@
 # GOLD, Mplus, mclust and an independent implementation are in
 # equivalence/test-features-pair-covariance.R.
 
+skip_on_cran()
+
 pair_data <- function(n = 300, seed = 11) {
   set.seed(seed)
   class <- sample.int(2L, n, replace = TRUE, prob = c(0.55, 0.45))

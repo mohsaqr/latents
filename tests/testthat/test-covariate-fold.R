@@ -3,6 +3,8 @@
 # unchanged, records the caller's own call, and refuses the three arguments the
 # covariate path has no meaning for instead of accepting and ignoring them.
 
+skip_on_cran()
+
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 # These tests check routing and arguments, not estimates, so a small subset
 # and short runs are enough.

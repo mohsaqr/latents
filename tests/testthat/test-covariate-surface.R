@@ -1,3 +1,5 @@
+skip_on_cran()
+
 .surface_data <- function(seed = 5L) {
   set.seed(seed)
   school <- rep(seq_len(16), each = 8L)

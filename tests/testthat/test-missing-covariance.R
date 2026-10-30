@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("Gaussian missing-pattern moments agree with conditional normal formulas", {
   x <- rbind(c(3, NA), c(NA, 5), c(NA, NA), c(3, 5))
   parameters <- list(means = matrix(c(1, 2), 1L),

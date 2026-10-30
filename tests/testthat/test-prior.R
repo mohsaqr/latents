@@ -2,6 +2,8 @@
 # (`multilpa(prior = prior_control())`). The full ten-structure comparison
 # with mclust lives in equivalence/test-mclust-prior.R.
 
+skip_on_cran()
+
 prior_frame <- function(seed = 3L) {
   set.seed(seed)
   n <- 150L

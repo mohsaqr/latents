@@ -5,6 +5,8 @@
 # the observed information happened to be numerically singular: seed 5 below
 # reported z = -504 with standard error 669 and p = 0.45.
 
+skip_on_cran()
+
 .covariate_rows <- function(seed, separated = TRUE, unit = 1) {
   set.seed(seed)
   groups <- rep(seq_len(40), each = 15)

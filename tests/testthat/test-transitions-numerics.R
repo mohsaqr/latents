@@ -12,6 +12,8 @@
 # with tiny variance. Every log density is either zero or -5000, which is what
 # drives the two recursions apart; the deterministic path makes the answer
 # known in advance.
+skip_on_cran()
+
 .alternating_expectation <- function(n_occasions) {
   x <- matrix(rep(c(-5, 5), length.out = n_occasions), n_occasions, 1L)
   layout <- .multilpa_sequence_layout(rep(1L, n_occasions),

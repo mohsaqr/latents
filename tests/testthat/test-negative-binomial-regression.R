@@ -5,6 +5,8 @@
 # comparisons with MASS::glm.nb() and numerical derivatives are in
 # tests/equivalence/.
 
+skip_on_cran()
+
 nb_data <- function(seed = 5, n = 1000) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 assignment_empty_case <- local({
   cache <- NULL
   function() {

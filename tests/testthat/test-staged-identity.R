@@ -7,6 +7,8 @@
 
 # Every ordering of a set, so the invariance is asserted over all of them rather
 # than over one hand-picked swap. Brackets belong inside a function body.
+skip_on_cran()
+
 .staged_orderings <- function(items) {
   if (length(items) <= 1L) return(list(items))
   unlist(lapply(seq_along(items), function(index) {

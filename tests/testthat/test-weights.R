@@ -1,5 +1,7 @@
 # Sampling weights: pseudo maximum likelihood over the independent units.
 
+skip_on_cran()
+
 weighted_rows <- function(seed = 1, n = 100) {
   set.seed(seed)
   data.frame(a = c(rnorm(0.6 * n), rnorm(0.4 * n, 3)),

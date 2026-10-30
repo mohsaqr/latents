@@ -1,4 +1,6 @@
 # Every test uses the same fit on the same data, so it is fitted once.
+skip_on_cran()
+
 .covariate_fit <- local({
   cached <- NULL
   function(data) {

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 .categorical_indicators <- function() c("u1", "u2", "u3", "u4", "u5")
 
 .categorical_fit <- function(data, ...) {

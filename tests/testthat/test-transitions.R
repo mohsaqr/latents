@@ -5,6 +5,8 @@
 # be hidden by the recursion being used on both sides of the comparison.
 # The comparisons with independent references are in tests/equivalence/test-transitions.R.
 
+skip_on_cran()
+
 .transition_fixture <- function(n_groups = 9L, occasions = 4L, seed = 99L) {
   set.seed(seed)
   frame <- data.frame(g = rep(seq_len(n_groups), each = occasions),

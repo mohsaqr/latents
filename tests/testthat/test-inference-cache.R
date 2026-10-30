@@ -3,6 +3,8 @@
 # session for identical inputs, and anew whenever anything it depends on
 # differs.
 
+skip_on_cran()
+
 clear_inference_cache <- function() {
   rm(list = ls(.latents_cache), envir = .latents_cache)
 }

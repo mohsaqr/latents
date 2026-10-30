@@ -1,3 +1,5 @@
+skip_on_cran()
+
 named_plot_fits <- function() {
   set.seed(11)
   group <- rep(seq_len(24L), each = 8L)

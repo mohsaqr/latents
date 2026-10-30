@@ -2,6 +2,8 @@
 # every verb returns a base data.frame whose columns are atomic, the summary
 # never carries an unnamed field, and starting values still round-trip.
 
+skip_on_cran()
+
 tidy_fixture <- local({
   set.seed(3141)
   group <- rep(seq_len(20L), each = 12L)

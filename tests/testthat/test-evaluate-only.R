@@ -1,6 +1,8 @@
 # Warm starts for categorical models, zero-iteration evaluation, and the
 # information-carrying sample size used by the individual-level BIC.
 
+skip_on_cran()
+
 categorical_frame <- function(n = 240L, seed = 11L) {
   set.seed(seed)
   profile <- rep(seq_len(2L), length.out = n)

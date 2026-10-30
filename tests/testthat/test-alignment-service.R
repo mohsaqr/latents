@@ -1,6 +1,8 @@
 # The alignment and simulation services: matching labels, relabelling exactly,
 # seed scoping, categorical draws and the bootstrap replicate loops.
 
+skip_on_cran()
+
 alignment_profile_fit <- function() {
   quietly(multilpa(engagement_small, c("browse", "lectures"), "student", 3, 2,
                    n_starts = 2, seed = 1))

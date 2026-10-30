@@ -2,6 +2,8 @@
 # numerical derivatives of the dense likelihood, and direct likelihoods that
 # share no code with the EM.
 
+skip_on_cran()
+
 additive_fit_quiet <- function(...) {
   withCallingHandlers(multilpa(...), latents_boundary = \(w) invokeRestart("muffleWarning"))
 }

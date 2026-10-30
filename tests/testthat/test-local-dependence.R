@@ -2,6 +2,8 @@
 # jointly within each class (Latent GOLD's `a <-> b | Cluster`).
 # The comparisons with independent references are in tests/equivalence/test-local-dependence.R.
 
+skip_on_cran()
+
 dependent_items <- function(seed = 5, n = 1500) {
   set.seed(seed)
   class <- sample(1:2, n, TRUE)

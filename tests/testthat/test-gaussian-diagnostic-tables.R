@@ -1,5 +1,7 @@
 #' A small separated Gaussian panel for public diagnostic-table checks
 #' @return Group IDs, occasions, a covariate and two continuous indicators.
+skip_on_cran()
+
 gaussian_table_data <- function() {
   set.seed(3)
   n <- 90L

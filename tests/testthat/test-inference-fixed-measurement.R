@@ -9,6 +9,8 @@
 
 #' Two-level data with two well-separated profiles and two group classes
 #' @return A list with the data frame, the indicator matrix and the group vector.
+skip_on_cran()
+
 fixed_measurement_data <- function() {
   set.seed(4021)
   n_groups <- 24L

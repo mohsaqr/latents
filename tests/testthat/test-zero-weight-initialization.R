@@ -1,6 +1,8 @@
 # Excluded independent units must not change starting states or the internal
 # coordinate origin. Relative positive weights retain the established starts.
 
+skip_on_cran()
+
 test_that("zero-weight Gaussian outliers cannot consume a starting profile", {
   set.seed(803)
   active <- data.frame(y = c(rnorm(50, -3, 0.5), rnorm(50, 3, 0.5)), w = 1)

@@ -1,6 +1,8 @@
 # Labelling of mixture_regression() classes: relabelling is likelihood-neutral, and group
 # classes are ordered by composition rather than by near-equal sizes.
 
+skip_on_cran()
+
 test_that("relabelling classes and group classes leaves the likelihood unchanged", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
                             n_group_classes = 2, membership = ~ sleep,

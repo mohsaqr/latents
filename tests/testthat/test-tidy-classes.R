@@ -8,6 +8,8 @@
 ## call; the last block asserts dispatch itself and skips while registration is
 ## outstanding.
 
+skip_on_cran()
+
 .tidy_covariate_fit <- function() {
   set.seed(5)
   school <- rep(seq_len(16), each = 8)

@@ -1,5 +1,7 @@
 # Generate and inspect a deterministic, clearly separated two-level population.
 # The comparisons with independent references are in tests/equivalence/test-multilpa.R.
+skip_on_cran()
+
 multilpa_fixture <- local({
   set.seed(6123)
   n_groups <- 80L

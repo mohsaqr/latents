@@ -3,6 +3,8 @@
 # interval agrees with the sandwich where both exist -- rather than the
 # plumbing of the data frame it comes back in.
 
+skip_on_cran()
+
 activity <- c("browse", "lectures", "forum_read")
 
 clustered_data <- function(n_groups = 60L, per_group = 4L, seed = 11L) {

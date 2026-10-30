@@ -1,5 +1,7 @@
 # Ordinal (adjacent-category logit) and count (Poisson) indicators.
 
+skip_on_cran()
+
 extra_rows <- function(seed = 1, n = 600) {
   set.seed(seed)
   profile <- rbinom(n, 1, 0.4) + 1

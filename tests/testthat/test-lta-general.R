@@ -5,6 +5,8 @@
 # LMest, Mplus) are in tests/equivalence/.
 
 # Small two-profile panel with a time-varying covariate and a group-level one.
+skip_on_cran()
+
 lta_small <- local({
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 .step_data <- function(seed = 11L, n_groups = 50L, per = 10L, separation = 1.1,
                        difference = 10) {
   set.seed(seed)

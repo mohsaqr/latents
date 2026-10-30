@@ -8,6 +8,8 @@
 # only parameters. Seeds reaching an identical maximum reported `agreement` of
 # exactly 0. That is the defect these tests reproduce.
 
+skip_on_cran()
+
 separated_data <- function(n_groups = 14L, per_group = 10L, seed = 7L) {
   set.seed(seed)
   n <- n_groups * per_group

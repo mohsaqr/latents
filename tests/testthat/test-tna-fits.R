@@ -2,6 +2,8 @@
 # the observed transitions between modal profiles, checked against a count
 # made independently from the assignments.
 
+skip_on_cran()
+
 .sequence_fit <- function(covariates = FALSE) {
   set.seed(1)
   data <- data.frame(g = rep(seq_len(30), each = 6), t = rep(seq_len(6), 30))

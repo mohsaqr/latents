@@ -3,6 +3,8 @@
 # not evidence that the two are in the same order, so the columns the fit
 # recognises are compared against it row by row.
 
+skip_on_cran()
+
 .aligned_data <- function(seed = 41L, n_groups = 12L, per = 12L) {
   set.seed(seed)
   n <- n_groups * per

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 robust_fixture_data <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
   set.seed(seed)
   group <- rep(seq_len(n_groups), each = per_group)

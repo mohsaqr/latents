@@ -2,6 +2,8 @@
 # strings, no documentation stored as data, one shape per verb.
 # The comparisons with independent references are in tests/equivalence/test-tidy-diagnostics.R.
 
+skip_on_cran()
+
 .tidy_fit <- function() {
   set.seed(11)
   group <- rep(seq_len(30L), each = 8L)

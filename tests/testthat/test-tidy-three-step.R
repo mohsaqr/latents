@@ -3,6 +3,8 @@
 ## standard error agrees with a resampled one.
 # The comparisons with independent references are in tests/equivalence/test-tidy-three-step.R.
 
+skip_on_cran()
+
 .tidy_step_data <- function(seed = 11L, n_groups = 50L, per = 10L,
                             separation = 1.1, difference = 10) {
   set.seed(seed)

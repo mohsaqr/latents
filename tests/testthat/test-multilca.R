@@ -1,6 +1,8 @@
 # multilca() is multilpa() with every indicator categorical. What is tested is
 # that equivalence, the call it records, and the one argument it refuses.
 
+skip_on_cran()
+
 .lca_items <- c("time_with_friends", "on_social_media", "tv_video_games")
 .lca_data <- subset(student_esm, day <= 2)
 

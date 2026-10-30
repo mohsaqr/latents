@@ -1,5 +1,7 @@
 # Full-covariance transition simulation and the transition bootstrap.
 
+skip_on_cran()
+
 boot_lta_data <- function(n = 120L, occasions = 4L, seed = 41L) {
   set.seed(seed)
   transition <- matrix(c(0.85, 0.15, 0.15, 0.85), 2L)

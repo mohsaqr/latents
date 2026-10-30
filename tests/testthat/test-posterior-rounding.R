@@ -2,6 +2,8 @@
 # engagement data: 2 of 1136 rows). Reported uncertainty and plotted certainty
 # stay inside [0, 1]; the stored estimates are left as computed.
 
+skip_on_cran()
+
 rounded_fit <- function() {
   vars <- c("browse", "lectures")
   fit <- lpa(course_engagement, vars, n_profiles = 2, n_starts = 1, seed = 1)

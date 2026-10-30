@@ -4,6 +4,8 @@
 #' Capture cross-level warnings without hiding unrelated condition classes
 #' @param ... Arguments passed to multilpa().
 #' @return The fitted model and its warning conditions.
+skip_on_cran()
+
 cross_level_capture_warnings <- function(...) {
   notices <- list()
   fit <- withCallingHandlers(multilpa(...), warning = function(notice) {

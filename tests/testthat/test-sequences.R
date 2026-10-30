@@ -1,3 +1,5 @@
+skip_on_cran()
+
 .sequence_fixture <- function(n_groups = 12L, positions = 8L, seed = 4L) {
   set.seed(seed)
   group <- rep(seq_len(n_groups), each = positions)

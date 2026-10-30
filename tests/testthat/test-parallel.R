@@ -1,6 +1,8 @@
 # Fitting candidates on several cores changes the time an enumeration takes and
 # nothing it returns: every candidate sets and restores its own seed.
 
+skip_on_cran()
+
 strip_calls <- function(grid) {
   grid$call <- NULL
   grid$fits <- lapply(grid$fits, function(fit) {

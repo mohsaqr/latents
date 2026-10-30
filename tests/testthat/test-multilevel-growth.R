@@ -6,6 +6,8 @@
 # derivatives, the single-level model it reduces to, and recovery of a
 # simulated truth.
 
+skip_on_cran()
+
 multilevel_data <- function(seed = 1, n_schools = 16, per_school = 10, waves = 0:3) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else

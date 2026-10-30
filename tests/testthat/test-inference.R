@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("observed information reproduces analytic Gaussian standard errors", {
   set.seed(329)
   dat <- data.frame(group = rep(seq_len(20), each = 10),

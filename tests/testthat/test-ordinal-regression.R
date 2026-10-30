@@ -7,6 +7,8 @@
 
 # Rows with one ordinal outcome each, from two classes whose slopes differ in
 # sign; categories 1..4 as an ordered factor.
+skip_on_cran()
+
 ordinal_rows <- function(seed = 11, n = 2000) {
   latents:::.mixture_with_seed(seed, {
     x <- stats::rnorm(n)

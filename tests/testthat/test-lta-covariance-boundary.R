@@ -1,6 +1,8 @@
 #' Generate Gaussian transition data with a controlled covariance geometry
 #' @param geometry A flat covariance, narrow marginal, or interior covariance.
 #' @return A three-occasion data frame with two well-separated profiles.
+skip_on_cran()
+
 lta_covariance_boundary_data <- function(geometry) {
   stopifnot(geometry %in% c("flat", "narrow", "interior"))
   set.seed(12)

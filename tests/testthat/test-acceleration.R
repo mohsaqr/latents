@@ -1,6 +1,8 @@
 # SQUAREM acceleration of the multilpa EM: same maxima as plain EM, a
 # monotone path, honest iteration counts, and plain EM where it must be.
 
+skip_on_cran()
+
 acceleration_data <- function() {
   engagement <- c("browse", "lectures", "forum_read")
   list(data = subset(course_engagement, student <= 40), vars = engagement)

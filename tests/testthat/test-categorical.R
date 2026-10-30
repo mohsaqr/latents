@@ -1,3 +1,5 @@
+skip_on_cran()
+
 categorical_fixture <- function(seed = 99L, n_groups = 40L, per_group = 15L) {
   set.seed(seed)
   group <- rep(seq_len(n_groups), each = per_group)

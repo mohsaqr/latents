@@ -1,6 +1,8 @@
 # multilpa(family = "additive"): scores, information, standard errors,
 # tables, S3 methods and plots.
 
+skip_on_cran()
+
 additive_methods_truth <- list(
   means = rbind(c(-1, 0.5), c(1.2, -0.7)),
   between = rbind(c(0.3, 0.4), c(0.5, 0.2)),
