@@ -397,9 +397,9 @@
     # A pair without a test cannot pass: with untested pairs and none flagged,
     # the check is reported, not passed.
     status = if (flagged > 0L) "check" else if (untested > 0L) "info" else "ok",
-    detail = if (flagged == 0L) {
-      paste0(detail, if (untested > 0L) sprintf("; %d pairs have no test", untested) else "")
-    } else paste0(detail, "; consider local_dependence = or a full covariance model"),
+    detail = paste0(detail, if (flagged == 0L && untested > 0L) {
+      sprintf("; %d pairs have no test", untested)
+    } else ""),
     reference = .latents_check_references[["residuals"]])
 }
 

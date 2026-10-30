@@ -294,3 +294,16 @@ test_that("a failed seed keeps its place on the sensitivity plot and is named", 
   expect_identical(built$layout$panel_params[[1L]]$x$get_limits(), as.character(1:4))
   expect_match(plot$labels$caption, "failed .* seed 3")
 })
+
+test_that("a flagged local-independence check reports the pair, not advice", {
+  # The detail named an R argument with nothing after `=`; in the jamovi
+  # module it pointed at a control the panel does not have (2026-10-30).
+  residuals <- data.frame(indicator_1 = c("a", "a", "b"), indicator_2 = c("b", "c", "c"),
+                          profile = "profile_1", residual = c(0.4, 0.01, -0.02),
+                          p_adjusted = c(1e-6, 0.9, 0.8))
+  check <- latents:::.latents_residual_checks(residuals, reason = "")
+  expect_identical(check$status, "check")
+  expect_equal(check$value, 1)
+  expect_identical(check$detail, "largest: a x b in profile_1, residual 0.400, adjusted p <1e-04")
+  expect_no_match(check$detail, "consider|local_dependence")
+})
