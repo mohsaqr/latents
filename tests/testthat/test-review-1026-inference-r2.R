@@ -1,6 +1,8 @@
 # Round-2 review of the inference area, 2026-10-26: INF2-1 to INF2-6 and
 # round-1 INF-3. Each test fails on the code before its fix.
 
+skip_on_cran()
+
 r2_seeded <- function(seed, code) {
   had <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
   old <- if (had) get(".Random.seed", envir = globalenv())

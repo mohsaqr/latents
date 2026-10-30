@@ -1,6 +1,8 @@
 # Review 2026-10-15: items settled by the lead after the parallel review.
 
 # Every warning class a call raises, with the warnings muffled.
+skip_on_cran()
+
 warning_classes <- function(expr) {
   classes <- character()
   withCallingHandlers(expr, warning = function(w) {

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("bootstrap inference validates original observations before resampling", {
   set.seed(719)
   d <- data.frame(g = rep(1:30, each = 4), a = rnorm(120), b = rnorm(120))

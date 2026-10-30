@@ -5,6 +5,8 @@
 # 56 cases raised a bare `simpleError`, and a misspelt column, a missing
 # column, a repeated column and `id` among `vars` shared one sentence.
 
+skip_on_cran()
+
 contract_data <- function() {
   withr::local_seed(20261027)
   data.frame(id = rep(seq_len(60L), each = 4L), t = rep(1:4, 60L),

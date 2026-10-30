@@ -1,3 +1,5 @@
+skip_on_cran()
+
 plot_fixture <- function(seed = 11L, n_groups = 24L, per_group = 8L) {
   set.seed(seed)
   group <- rep(seq_len(n_groups), each = per_group)

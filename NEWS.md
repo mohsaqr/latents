@@ -1,3 +1,24 @@
+# latents 1.1.5
+
+## Seed sensitivity with supplied data (2026-10-30)
+
+* `sensitivity(fit, data = )` on a single-level `lpa()` or `lca()` fit
+  dropped every seed with `latents_sensitivity_dropped`, because the
+  caller's data lacked the row identifier the fit had added for itself. The
+  supplied data are now numbered the same way, and the result equals the one
+  computed without `data`.
+
+## Shorter CRAN check (2026-10-30)
+
+Results are the same as in 1.1.4.
+
+* The class enumeration and latent transition analysis vignettes are now
+  articles on the package website, at the same addresses. The package ships
+  the latent profile and latent class vignettes.
+* Regression tests written for earlier reviews, and tests that draw plots,
+  run in continuous integration but not on CRAN.
+* The `compare_models()` and `diagnostics()` examples run faster.
+
 # latents 1.1.4
 
 ## Continuous integration (2026-10-30)

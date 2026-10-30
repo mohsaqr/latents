@@ -5,6 +5,8 @@
 # whose posterior is the class prior is assigned to the larger class, and on
 # this fixture P(assigned 1 | true 2) was 0.025 rather than about 5e-5.
 
+skip_on_cran()
+
 empty_row_case <- function() {
   data <- datasets::faithful[seq_len(120L), ]
   empty <- c(5L, 9L, 30L)

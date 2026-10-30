@@ -104,11 +104,11 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'                                    seed = 1)
 #' growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
 #'                              id = "student", class_level = "group",
-#'                              random = "intercept", seed = 1)
+#'                              random = "intercept", n_starts = 3, seed = 1)
 #' compare_models(trajectories = trajectories, growth = growth)
 #'
 #' # Candidates of an enumeration grid, by name, by class counts, or selected
-#' grid <- enumerate_classes(subset(course_engagement, student <= 40),
+#' grid <- enumerate_classes(subset(course_engagement, student <= 30),
 #'                           c("browse", "lectures"), "student",
 #'                           n_profiles = 2:3, n_group_classes = 1:2,
 #'                           model = "VVI", n_starts = 2, seed = 1)

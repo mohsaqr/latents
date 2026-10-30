@@ -100,8 +100,8 @@ articles:
   contents:
   - lpa
   - lca
-  - lta
-  - enumeration
+  - articles/lta
+  - articles/enumeration
 
 - title: Guides
   navbar: Guides

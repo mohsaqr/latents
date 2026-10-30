@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("zero-weight sentinel groups leave additive estimates unchanged", {
   withr::local_seed(271)
   data <- data.frame(

@@ -229,6 +229,20 @@ test_that("agreement refuses data whose rows no longer match the reference", {
                class = "latents_bad_inference_data")
 })
 
+test_that("a single-level fit refits from the caller's data as from its own", {
+  # lpa() numbers its rows in a `.observation` column the caller's frame does
+  # not have. Before the resolver added it, every seed was dropped with
+  # `latents_sensitivity_dropped` and the table came back all NA.
+  data <- separated_data()
+  fit <- lpa(data, c("a", "b"), n_profiles = 2L, n_starts = 4L, seed = 1L)
+  supplied <- expect_no_warning(sensitivity(fit, data = data, seeds = 1:2))
+  expect_false(anyNA(supplied$log_likelihood))
+  expect_equal(as.data.frame(supplied),
+               as.data.frame(sensitivity(fit, seeds = 1:2)))
+  expect_error(sensitivity(fit, data = head(data, -1L), seeds = 1:2),
+               class = "latents_bad_inference_data")
+})
+
 test_that("a staged sensitivity refits the conditional second stage", {
   data <- separated_data(n_groups = 18L)
   staged <- quietly(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,

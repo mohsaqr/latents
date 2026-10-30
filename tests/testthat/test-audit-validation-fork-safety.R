@@ -1,3 +1,5 @@
+skip_on_cran()
+
 validation_fork_guard <- function() {
   path <- testthat::test_path("..", "..", "validation", "fork-runtime.R")
   skip_if_not(file.exists(path), "validation sources are outside the installed package")

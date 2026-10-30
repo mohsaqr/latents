@@ -3,6 +3,8 @@
 # weights were normalised over every unit, and four zero-weight groups added to
 # fifteen scaled the log likelihood by 19/15 and moved BIC from 622.99 to 784.74.
 
+skip_on_cran()
+
 zero_weight_data <- function() {
   withr::local_seed(1026)
   groups <- 16L

@@ -1,6 +1,8 @@
 # Review 2026-10-26, refusal parity: an input that `multilpa()` refuses is
 # refused by every entry point, with the same class, and for the right reason.
 
+skip_on_cran()
+
 refusal_data <- function() {
   withr::local_seed(20261026)
   data.frame(g = rep(seq_len(20L), each = 4L), y1 = stats::rnorm(80L),

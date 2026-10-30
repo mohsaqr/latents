@@ -1,6 +1,8 @@
 # Regressions from the 2026-10-15 plot review. Each test reads the built plot
 # (its data, layers or labels), not pixels.
 
+skip_on_cran()
+
 review_lta_data <- function() {
   subset(course_engagement, student <= 40)
 }

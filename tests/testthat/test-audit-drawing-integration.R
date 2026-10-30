@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("pooled and bootstrap plot calls draw once and return reusable ggplots", {
   skip_if_not_installed("ggplot2")
   set.seed(192)

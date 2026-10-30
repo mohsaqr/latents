@@ -71,10 +71,10 @@ response patterns. Numerical fit and classification separation alone do not
 establish causal effects or distinct populations.
 }
 \section{Getting started}{
-The vignettes \code{vignette("lpa", package = "latents")},
-\code{vignette("lca", package = "latents")},
-\code{vignette("enumeration", package = "latents")}, and
-\code{vignette("lta", package = "latents")} introduce the main workflows.
+The vignettes \code{vignette("lpa", package = "latents")} and
+\code{vignette("lca", package = "latents")} introduce the main workflows;
+class enumeration and latent transition analysis are covered in articles on
+the package website, \url{https://pak.dynasite.org/latents/articles/}.
 See \code{\link{latents-plots}} for graphical summaries,
 \code{\link{latents-predict}} for prediction, and
 \code{\link{latents-conditions}} for diagnostic conditions.

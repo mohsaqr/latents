@@ -131,7 +131,7 @@ quality <- diagnostics(fit, plots = FALSE)
 quality
 get_results(quality, "checks")
 get_results(quality, what = "classification")
-get_results(diagnostics(fit, by = "overall"), what = "residuals")
+get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
 }
 \references{
 Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to

@@ -133,7 +133,7 @@
 #' quality
 #' get_results(quality, "checks")
 #' get_results(quality, what = "classification")
-#' get_results(diagnostics(fit, by = "overall"), what = "residuals")
+#' get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
 #' @export
 diagnostics <- function(x, data = NULL, plots = TRUE,
                         by = c("profile", "overall"), ...) {

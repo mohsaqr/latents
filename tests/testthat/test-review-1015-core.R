@@ -2,6 +2,8 @@
 # (multilpa.R, lpa.R, categorical.R, centering.R, prior.R). Each test failed
 # before its repair.
 
+skip_on_cran()
+
 .review_core_data <- function(scale = 1) {
   skip_if_not_installed("withr")
   data <- withr::with_seed(71, data.frame(

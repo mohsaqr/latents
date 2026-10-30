@@ -4,6 +4,8 @@
 # NA for a one-class fit and for an empty group class, and refused the
 # additive, cross-level and mixture-regression families.
 
+skip_on_cran()
+
 diagnostic_data <- function() {
   withr::local_seed(11)
   n <- 600L

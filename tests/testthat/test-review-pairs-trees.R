@@ -1,6 +1,8 @@
 # Regression tests for the 2026-10-20 review: preserve data identities and
 # sampling-weight units across paired measurement and tree adapters.
 
+skip_on_cran()
+
 test_that("generated pair names cannot replace caller columns", {
   data <- expand.grid(a = 0:1, b = 0:1, c = 0:1)
   data[["a:b"]] <- seq_len(nrow(data))

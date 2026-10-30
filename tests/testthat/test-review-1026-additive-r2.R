@@ -6,6 +6,8 @@
 
 # Raw ratings: classes in `means` (H x 2), between variances `between`
 # (H x 2), within variances `within` (H x 2), groups of sizes `sizes`.
+skip_on_cran()
+
 r2_draw <- function(seed, sizes, means, between, within, prefix = "G") {
   withr::with_seed(seed, {
     n_groups <- length(sizes)

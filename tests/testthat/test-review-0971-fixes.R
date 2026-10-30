@@ -1,5 +1,7 @@
 # Reporting fixes found while reading a 49-candidate multilevel LCA grid.
 
+skip_on_cran()
+
 fixes_0971_grid <- function() {
   # Two distinct indicator rows, so three classes cannot be fitted.
   data <- data.frame(g = rep(seq_len(10L), each = 3L), y = rep(c(0L, 1L), 15L))

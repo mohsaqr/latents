@@ -5,6 +5,8 @@
 
 # Ten weighted groups of five rows, two clear profiles on `y1`, and `n_zero`
 # zero-weight groups appended after them.
+skip_on_cran()
+
 .zw_frame <- function(n_positive = 10L, size = 5L, n_zero = 10L,
                       zero_size = 5L) {
   set.seed(1026)

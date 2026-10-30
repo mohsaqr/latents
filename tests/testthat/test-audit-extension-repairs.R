@@ -1,6 +1,8 @@
 # Public reproductions and independent references for the extension audit.
 # The comparisons with independent references are in tests/equivalence/test-audit-extension-repairs.R.
 
+skip_on_cran()
+
 test_that("extreme-response regression posteriors retain the prior at crossing means", {
   set.seed(551)
   data <- data.frame(x = runif(240, -2, 2))

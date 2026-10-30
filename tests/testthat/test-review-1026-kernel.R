@@ -4,6 +4,8 @@
 # offset stabilization added in 8ac3576.
 # The comparisons with independent references are in tests/equivalence/test-review-1026-kernel.R.
 
+skip_on_cran()
+
 kernel_review_mixed <- function() {
   set.seed(3)
   n <- 40L

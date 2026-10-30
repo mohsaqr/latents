@@ -1,4 +1,6 @@
 # Model-labelled controls must keep every candidate when dots are forwarded.
+skip_on_cran()
+
 test_that("comparison wrappers preserve restored model labels and BIC weights", {
   withr::local_seed(2812)
   data <- data.frame(y = rnorm(100L))

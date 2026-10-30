@@ -3,6 +3,8 @@
 # independent computations rather than against the package's own arithmetic.
 # The comparisons with independent references are in tests/equivalence/test-review-1026-inference.R.
 
+skip_on_cran()
+
 test_that("score-difference information recovers an analytic Hessian under both schemes", {
   set.seed(3)
   x <- stats::rnorm(40, 1, 2)

@@ -1,6 +1,8 @@
 # Inference must transform with the units of the measured indicators. Exact
 # rescaling of one fitted object isolates derivatives/inversion from fitting.
 
+skip_on_cran()
+
 audit_lta_panel <- function() {
   withr::local_seed(8)
   n <- 80L

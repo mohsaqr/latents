@@ -1,6 +1,8 @@
 # Regressions for the 2026-10-15 review of the accessors, methods, reporting
 # verbs, descriptives, prediction and the condition catalogue.
 
+skip_on_cran()
+
 review_activity <- c("browse", "lectures", "forum_read")
 
 review_two_level <- function(...) {

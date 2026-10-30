@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("zero-count rows do not change the membership optimum or its score", {
   z <- seq(-2, 2, length.out = 81)
   design <- cbind(1, z)

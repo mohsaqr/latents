@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("negative-binomial dispersion identifies equal-mean classes", {
   reference <- list(n_profiles = 2L, count_means = matrix(1.5, 2, 1),
                     count_dispersion = matrix(c(.1, 5), 2, 1))

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("person scaling refuses constant units whose mean rounds", {
   # Three values of 0.1 average to 0.10000000000000002: the computed standard
   # deviation is about 1e-17, not zero, yet the unit is exactly constant.

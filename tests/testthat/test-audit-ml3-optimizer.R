@@ -3,6 +3,8 @@
 # optimized reference point, never read by the production optimizer.
 # The comparisons with independent references are in tests/equivalence/test-audit-ml3-optimizer.R.
 
+skip_on_cran()
+
 test_that("equal-variance step three preserves the observed-class Gaussian solution", {
   pieces <- list(posteriors = rbind(cbind(rep(1, 30), 0), cbind(rep(0, 30), 1)),
                  modal = rep(1:2, each = 30), n_classes = 2L)

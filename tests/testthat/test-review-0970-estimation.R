@@ -1,5 +1,7 @@
 # The comparisons with independent references are in tests/equivalence/test-review-0970-estimation.R.
 
+skip_on_cran()
+
 test_that("joined categorical items estimate the full category grid", {
   data <- data.frame(a = rep(c(0, 0, 1), c(50, 25, 25)),
                      b = rep(c(0, 1, 0), c(50, 25, 25)))

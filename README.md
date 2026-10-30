@@ -963,12 +963,10 @@ The package vignettes cover the main model families.
 ``` r
 vignette("lpa", package = "latents")
 vignette("lca", package = "latents")
-vignette("lta", package = "latents")
-vignette("enumeration", package = "latents")
 citation("latents")
 ```
 
-Further guides are on the [package website](https://pak.dynasite.org/latents/articles/): complete workflows for [latent profile](https://pak.dynasite.org/latents/articles/workflow-lpa.html) and [latent class](https://pak.dynasite.org/latents/articles/workflow-lca.html) analysis, [model evaluation](https://pak.dynasite.org/latents/articles/evaluation.html), [covariates and staged estimation](https://pak.dynasite.org/latents/articles/covariates.html), [mixture regression](https://pak.dynasite.org/latents/articles/mixture-regression.html), [latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html), [growth mixture models](https://pak.dynasite.org/latents/articles/growth-mixture.html) and [group-class and cross-level models](https://pak.dynasite.org/latents/articles/additive.html).
+Further guides are on the [package website](https://pak.dynasite.org/latents/articles/): [class enumeration](https://pak.dynasite.org/latents/articles/enumeration.html), [latent transition analysis](https://pak.dynasite.org/latents/articles/lta.html), complete workflows for [latent profile](https://pak.dynasite.org/latents/articles/workflow-lpa.html) and [latent class](https://pak.dynasite.org/latents/articles/workflow-lca.html) analysis, [model evaluation](https://pak.dynasite.org/latents/articles/evaluation.html), [covariates and staged estimation](https://pak.dynasite.org/latents/articles/covariates.html), [mixture regression](https://pak.dynasite.org/latents/articles/mixture-regression.html), [latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html), [growth mixture models](https://pak.dynasite.org/latents/articles/growth-mixture.html) and [group-class and cross-level models](https://pak.dynasite.org/latents/articles/additive.html).
 
 ## Authors and citation
 

@@ -5,6 +5,8 @@
 # check that compared storage types rather than values, and a summary that
 # counted non-converged replicates as errors.
 
+skip_on_cran()
+
 review_data <- function() {
   set.seed(7)
   data.frame(school = rep(seq_len(12), each = 10),

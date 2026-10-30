@@ -1,6 +1,8 @@
 # Release audit 2026-10-28: stable shared-dispersion names (REL-1), and
 # zero-weight units absent from every inference design and score (REL-3).
 
+skip_on_cran()
+
 test_that("shared regression dispersions retain public names and finite errors", {
   .latents_local_seed(2810L)
   groups <- 70L

@@ -1,3 +1,5 @@
+skip_on_cran()
+
 .review_zero_weight_data <- function() {
   set.seed(1020)
   data <- data.frame(g = rep(seq_len(20), each = 5), t = rep(0:4, 20))

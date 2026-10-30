@@ -256,7 +256,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   .latents_check_data_frame(data)
   # The caller's own data holds the paired items; the fit, their joint ones.
   if (!is.null(x$local_dependence)) data <- .latents_join_pairs(data, x$local_dependence, rebuild_existing = TRUE)
-  data
+  # A single-level fit numbered its rows itself; the caller's frame lacks that
+  # column, and a refit by `id` would otherwise find no unit to nest in.
+  .multilpa_number_single_level(x, data)
 }
 
 #' Do two vectors hold the same values in the same positions

@@ -3,6 +3,8 @@
 # computations from the fitted posteriors and likelihoods, plus invariants.
 # The comparisons with independent references are in tests/equivalence/test-review-1026-selection.R.
 
+skip_on_cran()
+
 selection_fit <- function() {
   withr::local_seed(42)
   n <- 240
