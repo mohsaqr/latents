@@ -260,15 +260,21 @@ fit
     #> Two-level latent profile analysis: 3 profiles, 3 group classes
     #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
     #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
-    #> Converged: TRUE | iterations: 42 | best start: 1/10
-    #> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+    #> Converged: TRUE | iterations: 45 | best log likelihood reached by 10 of 10 starts (10 converged)
+    #> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478.1; weight effective n: 603.8.
     #> 
-    #>  profile  browse lectures forum_read forum_post attendance count proportion
-    #>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362
-    #>        2 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400   575     0.4043
-    #>        3  0.7089   0.7135     0.8109     0.7503     1.1328   369     0.2595
+    #> Class sizes   profile_1 33.6% (478)   profile_2 40.4% (575)   profile_3 25.9% (369)
+    #> Group classes group_class_1 29.3% (31)   group_class_2 26.1% (28)   group_class_3 44.6% (47)
     #> 
-    #> Variances and standard errors: get_results(x, "profiles"). 
+    #> Means
+    #>   indicator profile_1 profile_2 profile_3
+    #>      browse     0.387    -0.777     0.709
+    #>    lectures     0.186    -0.612     0.713
+    #>  forum_read     0.446    -0.891     0.811
+    #>  forum_post     0.338    -0.762     0.750
+    #>  attendance     0.256    -0.940     1.133
+    #> 
+    #> Variances and standard errors: get_results(x, "profiles").
     #> Every other table: get_results(x, what = ), or get_results(x, "all").
 
 Profile 3 has the highest estimated mean on all five activity
@@ -311,11 +317,11 @@ get_results(fit, "counts")
 ```
 
     #>         level class effective_count effective_proportion
-    #> 1 individuals     1          478.03               0.3362
+    #> 1 individuals     1          478.07               0.3362
     #> 2 individuals     2          574.96               0.4043
-    #> 3 individuals     3          369.01               0.2595
-    #> 4      groups     1           27.65               0.2609
-    #> 5      groups     2           31.03               0.2927
+    #> 3 individuals     3          368.97               0.2595
+    #> 4      groups     1           31.03               0.2927
+    #> 5      groups     2           27.65               0.2609
     #> 6      groups     3           47.32               0.4464
 
 The **lower-activity** profile has the largest effective membership,
@@ -323,7 +329,7 @@ accounting for 575.0 enrolments, or 40.4% of the total. The
 **higher-activity** profile accounts for 369.0 enrolments, or 25.9%. At
 Level 2, student class 3 is the largest, with an effective membership of
 47.3 students, corresponding to 44.6% of the sample. Classes 1 and 2
-have effective memberships of 27.7 and 31.0 students, respectively.
+have effective memberships of 31.0 and 27.7 students, respectively.
 
 ### How students differ in their profile composition
 
@@ -341,26 +347,26 @@ get_results(fit, "profile_probabilities")
 ```
 
     #>   group_class profile probability group_class_probability
-    #> 1           1       1     0.54695                  0.2609
-    #> 2           1       2     0.05523                  0.2609
-    #> 3           1       3     0.39782                  0.2609
-    #> 4           2       1     0.07013                  0.2927
-    #> 5           2       2     0.84667                  0.2927
-    #> 6           2       3     0.08320                  0.2927
-    #> 7           3       1     0.38811                  0.4464
-    #> 8           3       2     0.31716                  0.4464
-    #> 9           3       3     0.29472                  0.4464
+    #> 1           1       1     0.07014                  0.2927
+    #> 2           1       2     0.84667                  0.2927
+    #> 3           1       3     0.08319                  0.2927
+    #> 4           2       1     0.54701                  0.2609
+    #> 5           2       2     0.05524                  0.2609
+    #> 6           2       3     0.39775                  0.2609
+    #> 7           3       1     0.38814                  0.4464
+    #> 8           3       2     0.31717                  0.4464
+    #> 9           3       3     0.29469                  0.4464
 
-Student class 1 is characterized mainly by the **higher-activity** and
+Student class 2 is characterized mainly by the **higher-activity** and
 **intermediate-activity** profiles. Conditional on membership in class
-1, the probabilities of an enrolment occupying the higher-,
+2, the probabilities of an enrolment occupying the higher-,
 intermediate-, and lower-activity profiles are 0.398, 0.547, and 0.055,
 respectively. Student class 3 has a more balanced profile composition,
 with corresponding probabilities of 0.295, 0.388, and 0.317. Student
-class 2 is strongly characterized by the **lower-activity** profile: an
+class 1 is strongly characterized by the **lower-activity** profile: an
 enrolment from a student in this class has a probability of 0.847 of
 occupying profile 2. The estimated prevalences of student classes 1, 2,
-and 3 are 0.261, 0.293, and 0.446, respectively.
+and 3 are 0.293, 0.261, and 0.446, respectively.
 
 The probability plot provides a visual comparison of these
 class-specific profile compositions on a common scale from zero to one.
@@ -378,8 +384,8 @@ plot_prevalence(fit)
 ![](case-engagement-profiles_files/figure-html/probabilities-1.png)
 
 Class 3 has an almost level profile because its probabilities are
-similar across the three engagement profiles. In contrast, class 2 rises
-sharply to 0.847 for the **lower-activity** profile, whereas class 1
+similar across the three engagement profiles. In contrast, class 1 rises
+sharply to 0.847 for the **lower-activity** profile, whereas class 2
 falls to 0.055 for that same profile. These differences illustrate how
 student classes can have distinct profile compositions even though
 students within each class may still occupy more than one engagement
@@ -399,14 +405,14 @@ get_results(fit, "starts")
 ```
 
     #>    start log_likelihood converged iterations error boundary
-    #> 1      1          -8348      TRUE         42  <NA>    FALSE
-    #> 2      2          -8348      TRUE         33  <NA>    FALSE
-    #> 3      3          -8348      TRUE         42  <NA>    FALSE
+    #> 1      1          -8348      TRUE         45  <NA>    FALSE
+    #> 2      2          -8348      TRUE         42  <NA>    FALSE
+    #> 3      3          -8348      TRUE         45  <NA>    FALSE
     #> 4      4          -8348      TRUE         39  <NA>    FALSE
-    #> 5      5          -8348      TRUE         33  <NA>    FALSE
-    #> 6      6          -8348      TRUE         33  <NA>    FALSE
-    #> 7      7          -8348      TRUE         33  <NA>    FALSE
-    #> 8      8          -8348      TRUE         42  <NA>    FALSE
+    #> 5      5          -8348      TRUE         42  <NA>    FALSE
+    #> 6      6          -8348      TRUE         36  <NA>    FALSE
+    #> 7      7          -8348      TRUE         36  <NA>    FALSE
+    #> 8      8          -8348      TRUE         51  <NA>    FALSE
     #> 9      9          -8348      TRUE         42  <NA>    FALSE
     #> 10    10          -8348      TRUE         42  <NA>    FALSE
 
@@ -456,10 +462,10 @@ get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
     #>   group group_class sequence_1 sequence_2 sequence_3 sequence_4 sequence_5 sequence_6
-    #> 1     1           2          1          1          2          2          2          2
-    #> 2     2           2          2          2          2          2          2          2
-    #> 3     3           1          3          1          1          1          1          1
-    #> 4     4           1          3          1          3          3          1          1
+    #> 1     1           1          1          1          2          2          2          2
+    #> 2     2           1          2          2          2          2          2          2
+    #> 3     3           2          3          1          1          1          1          1
+    #> 4     4           2          3          1          3          3          1          1
     #>   sequence_7 sequence_8 sequence_9 sequence_10 sequence_11 sequence_12 sequence_13
     #> 1          2          2          2           2           2           2           2
     #> 2          2          2          2           2           2           2           2
@@ -471,12 +477,12 @@ get_results(fit, "sequences", format = "wide") |> head(4)
     #> 3           3        <NA>
     #> 4        <NA>        <NA>
 
-Students 1 and 2 are assigned to student class 2. Student 1 is assigned
+Students 1 and 2 are assigned to student class 1. Student 1 is assigned
 to the **intermediate-activity** profile for the first two observed
 courses and to the **lower-activity** profile for the courses that
 follow, whereas student 2 is assigned to the **lower-activity** profile
 throughout the observed sequence. Students 3 and 4 are assigned to class
-1 and have enrolments classified as both **higher activity** and
+2 and have enrolments classified as both **higher activity** and
 **intermediate activity**. These patterns illustrate the class-specific
 profile compositions described above, but they should not be interpreted
 as estimated transition processes. Trailing `NA` values indicate courses
@@ -496,12 +502,12 @@ get_results(fit, "sequence_summary")
 ```
 
     #>   group_class groups observations mean_length median_length shortest longest complete gaps
-    #> 1           1     25          330       13.20          13.0       11      15        4    0
-    #> 2           2     30          403       13.43          13.5       10      15        7    0
+    #> 1           1     30          403       13.43          13.5       10      15        7    0
+    #> 2           2     25          330       13.20          13.0       11      15        4    0
     #> 3           3     51          689       13.51          14.0       10      15       13    0
 
-The modal assignments place 25, 30, and 51 students in classes 1, 2, and
-3, respectively. Their mean sequence lengths are 13.20, 13.43, and 13.51
+The modal assignments place 30, 25, and 51 students in classes 1, 2, and
+3, respectively. Their mean sequence lengths are 13.43, 13.20, and 13.51
 observed courses. Thus, the classes have similar amounts of longitudinal
 information, even though their profile compositions differ
 substantially. None of the observed sequences contains an internal gap.

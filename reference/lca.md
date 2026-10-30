@@ -1,17 +1,25 @@
 # Fit a latent class model
 
-Fits a single-level latent class model and returns a fitted `multilpa`
-object. Each observation belongs to one of `n_classes` unobserved
-classes, and within a class the discrete indicators are independent.
-Categorical indicators have unrestricted response probabilities;
-`ordinal` and `count` in `...` select the structured measurement models
-described in
+Latent class analysis describes heterogeneity in categorical response
+patterns through a specified number of latent classes. Each class is
+characterized by the probabilities of the response categories for each
+indicator. These probabilities describe how response patterns differ
+between classes.
+
+`lca()` estimates the class-specific response probabilities and class
+proportions, together with posterior membership probabilities for each
+observation. Indicators are assumed independent conditional on class
+membership unless associations between selected indicators are
+explicitly specified. The posterior probabilities describe uncertainty
+in classification; an observation's assigned class is a summary of these
+probabilities.
+
+The model treats observations as independent. For observations nested
+within groups, use
+[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md).
+Ordinal and count indicators can also be fitted using the structured
+measurement models described in
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
-It is the model
-[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-fits with `id = NULL`, so every accessor, plot and inference verb of the
-package applies to the result. In the results the classes are labelled
-`profile_1`, `profile_2`, and so on.
 
 ## Usage
 
@@ -33,7 +41,7 @@ lca(data, vars, n_classes, ...)
 
 - n_classes:
 
-  Number of classes, a positive whole number.
+  Number of classes; a positive integer.
 
 - ...:
 
@@ -44,16 +52,11 @@ lca(data, vars, n_classes, ...)
 
 ## Value
 
-A fitted `multilpa` object, as
-[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-returns, whose `call` is the `lca()` call.
-
-## Details
-
-For observations nested in groups, use
-[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-with the grouping column as `id`, which adds latent classes of groups
-above the classes of observations.
+A fitted object as returned by
+[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+usually of class `multilpa`, or `multilpa_covariates` with membership
+covariates. Its `call` records the original `lca()` call. Classes are
+labelled `profile_1`, `profile_2`, and so on in the returned tables.
 
 ## Conditions
 
@@ -86,27 +89,23 @@ fit
 #> Latent class analysis: 2 classes
 #> 2582 observations; 4 categorical indicators
 #> Classes are labelled profile_1, profile_2, ... in every table.
-#> Log likelihood: -4560.238321 | AIC: 9138.477 | BIC: 9191.184
-#> Converged: TRUE | iterations: 96 | best start: 3/3
+#> Log likelihood: -4560.239231 | AIC: 9138.478 | BIC: 9191.185
+#> Converged: TRUE | iterations: 69 | best log likelihood reached by 3 of 3 starts (3 converged)
 #> 
-#>  profile         indicator category  probability  threshold
-#>        1 time_with_friends       no 7.817818e-01  1.2760802
-#>        2 time_with_friends       no 8.974465e-01  2.1691689
-#>        1 time_with_friends      yes 2.182182e-01         NA
-#>        2 time_with_friends      yes 1.025535e-01         NA
-#>        1   on_social_media       no 9.999994e-01 14.3865832
-#>        2   on_social_media       no 5.522219e-01  0.2096522
-#>        1   on_social_media      yes 5.649189e-07         NA
-#>        2   on_social_media      yes 4.477781e-01         NA
-#>        1    tv_video_games       no 9.998452e-01  8.7729715
-#>        2    tv_video_games       no 6.701118e-01  0.7086909
-#>        1    tv_video_games      yes 1.548387e-04         NA
-#>        2    tv_video_games      yes 3.298882e-01         NA
-#>        1            sports       no 9.021327e-01  2.2211497
-#>        2            sports       no 9.428194e-01  2.8026605
-#>        1            sports      yes 9.786725e-02         NA
-#>        2            sports      yes 5.718058e-02         NA
+#> Class sizes   profile_1 35.6% (919)   profile_2 64.4% (1663)
 #> 
+#> Response probabilities
+#>          indicator category profile_1 profile_2
+#>  time_with_friends       no     0.782     0.897
+#>  time_with_friends      yes     0.218     0.103
+#>    on_social_media       no     1.000     0.552
+#>    on_social_media      yes     0.000     0.448
+#>     tv_video_games       no     1.000     0.670
+#>     tv_video_games      yes     0.000     0.330
+#>             sports       no     0.902     0.943
+#>             sports      yes     0.098     0.057
+#> 
+#> Thresholds and standard errors: get_results(x, "responses").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 plot(fit, what = "heatmap")
 ```

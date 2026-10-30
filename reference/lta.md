@@ -1,17 +1,24 @@
 # Fit a latent transition model
 
-Fits latent profiles to repeated observations of the same group,
-estimates the probabilities of moving between profiles from one occasion
-to the next, and returns a `multilpa_transitions` (or `multilpa_lta`)
-object. The measurement model is that of
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-(Gaussian, categorical or mixed indicators) and is invariant across
-occasions by default, so a profile has the same meaning at every
-occasion. With more than one group class, each class has its own initial
-distribution and its own transition matrix, so the group classes are a
-mixture over transition patterns.
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-is the cross-sectional counterpart.
+Latent transition analysis examines stability and change in latent
+states across repeated observations. States are defined by patterns in
+continuous or discrete indicators, and transition probabilities describe
+the probability of remaining in a state or moving to another between
+successive occasions. `lta()` estimates the measurement and transition
+parameters jointly, accounting for uncertainty in state membership.
+
+By default, transitions follow a first-order, time-homogeneous model:
+the state at an occasion depends on the immediately preceding state, and
+transition probabilities are constant across occasions. Measurement
+parameters are also equal across occasions, providing a common
+definition of each state over time.
+
+Additional latent group classes can represent differences between
+individuals or other units in their initial-state distributions and
+transition patterns. Extensions allow covariate-dependent transitions,
+occasion-specific parameters, and second-order dependence. The fitted
+model provides measurement estimates, initial-state probabilities,
+transition probabilities, and posterior membership probabilities.
 
 ## Usage
 
@@ -27,7 +34,7 @@ lta(
   n_starts = 10L,
   max_iter = 5000L,
   tol = 1e-10,
-  min_variance = 1e-06,
+  min_variance = NULL,
   seed = NULL,
   missing = c("error", "fiml"),
   covariance_model = c("diagonal", "full"),
@@ -84,9 +91,11 @@ lta(
   They are ordered as [`sort()`](https://rdrr.io/r/base/sort.html)
   orders them: numbers numerically, a factor by its levels, and
   character strings alphabetically. Numbers stored as text whose
-  alphabetical order is not their numeric order (`"2"`, `"10"`) raise
-  `latents_bad_time` (also `latents_bad_data`); zero-padded numbers and
-  ISO dates are accepted.
+  alphabetical order is not their numeric order (`"2"`, `"10"`), and
+  numbered labels sharing their text around the number whose
+  alphabetical order is not the numbers' (`"T2"`, `"T10"`; `"week 2"`,
+  `"week 10"`), raise `latents_bad_time` (also `latents_bad_data`);
+  zero-padded numbers and ISO dates are accepted.
 
 - n_group_classes:
 
@@ -104,13 +113,15 @@ lta(
   Positive integer number of EM starts (default 10). The first start is
   deterministic: Ward's hierarchical clustering of the standardized
   indicators (on at most 2000 evenly spaced rows), each cluster
-  described by its own means and spread. The remaining starts are
-  k-means from random centres. A supplied `start` replaces the first
-  start, and the remaining starts are random. With `start` and
-  `max_iter = 0`, exactly one start is run whatever `n_starts` is. Rows
-  from zero-weight units do not supply initial clustering or measurement
-  parameters. For `search = "emEM"`, this is the finalist budget,
-  including the protected first start (see `search`).
+  initialized with its own means and variances, and, with more than one
+  group class, Ward's clustering of the groups' profile compositions.
+  The remaining starts are k-means from random centres. A supplied
+  `start` replaces the first start, and the remaining starts are random.
+  With `start` and `max_iter = 0`, exactly one start is evaluated
+  regardless of `n_starts`. Zero-weight units do not contribute to
+  initialization. For `search = "emEM"`, `n_starts` is the number of
+  final optimization runs, including the protected first start (see
+  `search`).
 
 - max_iter:
 
@@ -123,27 +134,30 @@ lta(
 
 - tol:
 
-  Positive relative log-likelihood tolerance (default `1e-10`, tighter
-  than the `1e-8` of
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)).
-  Convergence requires an absolute change no greater than
-  `tol * (1 + abs(previous log likelihood))`. The group-class shares are
-  re-estimated from posteriors one EM step behind them; at `1e-8` the
-  two differed by up to about `2e-4`, at `1e-10` by about `2e-5`, for
-  roughly 1.5 times the iterations.
+  Positive convergence tolerance (default `1e-10`). EM convergence is
+  assessed from the change in log likelihood over one step or SQUAREM
+  cycle, with threshold `tol` times the number of observed indicator
+  values in positive-weight rows. This default is stricter than the
+  `1e-8` default of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
 
 - min_variance:
 
-  Positive lower bound on each variance, or on each covariance
-  eigenvalue under full covariance, in squared input units (default
-  `1e-6`); the fit is then constrained maximum likelihood. Estimates at
-  the bound are reported and raise a warning.
+  Lower bound on each variance, or on each covariance eigenvalue under
+  full covariance; the fit is then constrained maximum likelihood.
+  `NULL` (the default) sets it to `1e-6` times the smallest sample
+  variance of the continuous indicators (observed values in rows of
+  positive weight, on the scale fitted, after any centring and scaling),
+  so that the default bound adapts to the measurement scale. A numeric
+  value specifies an absolute bound in squared indicator units. The
+  bound used is stored as `min_variance` on the fit. Estimates at the
+  bound are reported and raise a warning.
 
 - seed:
 
-  Optional random seed: any whole number
+  Optional random seed: any integer
   [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts, including
-  negative ones. When supplied, the caller's random-number state is
+  negative integers. When supplied, the caller's random-number state is
   restored on exit.
 
 - missing:
@@ -190,23 +204,35 @@ lta(
 
 - select_start:
 
-  Which start the fit reports. `"likelihood"` (the default) takes the
-  highest log likelihood across starts, preferring a converged start
-  only among those within a relative `1e-10` of it. `"converged"` takes
-  the highest log likelihood among the converged starts when at least
-  one converged, and among all starts otherwise. The two differ when an
-  unconverged start exceeds a converged one by a negligible amount, as
-  happens when a membership logit drifts along a flat ridge of the
-  likelihood; only the converged start is a maximum on which standard
-  errors can be based.
+  Rule for selecting a fitted solution. `"likelihood"` (the default)
+  selects among starts within `tol * max(1, n_observed)` of the highest
+  log likelihood, preferring converged starts within this set. Here
+  `n_observed` counts observed indicator values in positive-weight rows.
+  `"converged"` restricts selection to converged starts when any are
+  available; otherwise it uses all starts. Remaining ties are resolved
+  by start order. Convergence is required for standard errors but does
+  not establish identification or global optimality.
   [`summary()`](https://rdrr.io/r/base/summary.html) and
-  `get_results(fit, "starts")` show every start.
+  `get_results(fit, "starts")` report all starts.
 
 - transitions:
 
   `"homogeneous"` (the default) uses one transition matrix for every
   occasion; `"occasion"` estimates a separate one for each move
-  (occasion 1 to 2, 2 to 3, ...).
+  (occasion 1 to 2, 2 to 3, ...). A move into an occasion at which no
+  row observes an indicator (`missing = "fiml"`) is not identified:
+  after the last observed occasion it does not enter the likelihood, and
+  before that occasion it enters only through its product with the move
+  out. Its logits are then reported with `estimated = FALSE` and no
+  standard error, and are not counted in `n_parameters`, AIC or BIC;
+  likewise the second-order logits when nothing is observed from
+  occasion 3 on, and the measurement block of an empty occasion under
+  `measurement = "occasion"`. Under either setting, a profile that is
+  never occupied before a later occasion (in a group class) has no move
+  out of it: its outgoing logits are fixed at zero (equal
+  probabilities), flagged `estimated = FALSE`, not counted, and
+  `latents_empty_transition_row` is raised, as the homogeneous model
+  reports its uniform row.
 
 - transition_covariates:
 
@@ -214,17 +240,19 @@ lta(
   through a multinomial logit per origin profile: the log odds of moving
   to each other profile rather than staying. A column may change over
   occasions; the value at the destination occasion is used. Factors are
-  expanded to indicator columns. With `occasions = "grid"`, a move into
-  a position the group skipped has no row to read the covariates from,
-  and the fit raises `latents_bad_data`; use `occasions = "observed"`,
-  or add the skipped rows with their covariate values (their indicators
-  may be missing under `missing = "fiml"`).
+  expanded to indicator columns, after dropping levels the data do not
+  use (as [`stats::glm()`](https://rdrr.io/r/stats/glm.html) does). With
+  `occasions = "grid"`, a move into a position the group skipped has no
+  row to read the covariates from, and the fit raises
+  `latents_bad_data`; use `occasions = "observed"`, or add the skipped
+  rows with their covariate values (their indicators may be missing
+  under `missing = "fiml"`).
 
 - initial_covariates:
 
   Names of columns that shift the initial profile distribution (a
   multinomial logit, reference: the last profile), read at each group's
-  first occasion.
+  first occasion. Factors are expanded as for `transition_covariates`.
 
 - measurement:
 
@@ -236,7 +264,7 @@ lta(
 
   `1` (the default) or `2`. With `2`, the profile at each occasion from
   the third on depends on the profiles at the two previous occasions (a
-  second-order Markov chain); the first move stays first order.
+  second-order Markov chain); the first transition remains first order.
 
 - model:
 
@@ -246,7 +274,7 @@ lta(
   errors are given for every structure with the extensions (covariate,
   occasion-varying or second-order transitions, occasion-specific
   measurement), and for EEI, VVI, EEE and VVV in the homogeneous model,
-  which refuses the other ten with `latents_unsupported_inference`.
+  which rejects the other ten with `latents_unsupported_inference`.
 
 - mover_stayer:
 
@@ -273,25 +301,29 @@ lta(
   Ordinal and count indicators, as in
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
   with `measurement = "occasion"` their parameters are estimated per
-  occasion. Read them with `get_results(fit, "ordinal")` and
-  `get_results(fit, "count_means")`. A fit with them uses the general
-  transition engine.
+  occasion. These estimates are returned by
+  `get_results(fit, "ordinal")` and `get_results(fit, "count_means")`. A
+  fit with them uses the general transition engine.
 
 - drop_empty:
 
   `TRUE` (the default) or `FALSE`: how the reported statistics treat
   rows whose every indicator is missing, and groups consisting only of
-  such rows. These contribute nothing to the likelihood, so the
-  estimates are the same either way, and their posterior is the prior.
-  With `TRUE` they are excluded, as in Mplus, from the individual and
-  group sample sizes of the information criteria, from relative entropy,
-  AvePP and the entropy term of ICL, AWE and CLC, from the
-  classification tables and diagnostic plots, and from the effective
-  class counts. With `FALSE` every row and group is counted in those
-  statistics (the results of latents 0.9.37 and earlier), except in the
-  individual sample size of a
+  such rows. This setting affects reporting, not estimation. With `TRUE`
+  they are excluded, as in Mplus, from the individual and group sample
+  sizes of the information criteria, from relative entropy, AvePP and
+  the entropy term of ICL, AWE and CLC, from the classification tables
+  and diagnostic plots, and from the effective class counts. Row-aligned
+  assignment and posterior tables retain these units but report their
+  classifications and posterior probabilities as `NA`. A partially
+  observed row remains classified, and an empty row in an informative
+  group can retain its group-class assignment. With `FALSE` every row
+  and group is counted in those statistics, except in the individual
+  sample size of a
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  fit, which excludes such rows either way.
+  fit, which excludes such rows either way. Units of sampling weight
+  zero are excluded from every count and entropy term under either
+  setting.
   [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
   and
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
@@ -312,9 +344,9 @@ lta(
 
   For `search = "emEM"`, the number of starts screened, at least
   `n_starts`. `NULL` (the default) screens five times `n_starts`. The
-  protected first start counts toward the `n_starts` finalist budget;
-  increasing `n_screen` does not add finalist slots. A single supplied
-  start with `n_starts = 1` disables screening. A value with
+  protected first start is included in the `n_starts` final optimization
+  runs. Increasing `n_screen` does not increase that number. A single
+  supplied start with `n_starts = 1` disables screening. A value with
   `search = "kmeans"`, or one below `n_starts`, raises
   `latents_bad_argument`.
 
@@ -327,13 +359,10 @@ lta(
   the initial and transition probabilities, and ends with an ordinary EM
   step. An extrapolated point that would lower the likelihood, or that
   leaves a probability non-positive or a row not summing to one, is
-  replaced by the plain EM point, so the iteration stays monotone.
-  Convergence is assessed over a whole cycle, so it is never looser than
-  plain EM's. Under the strict default `tol` plain EM can creep along a
-  flat likelihood for thousands of steps; SQUAREM usually stops in far
-  fewer, at the same or a slightly higher maximum. `"none"` runs plain
-  EM, which reproduces fits from versions before this argument existed.
-  `iterations` and `max_iter` count EM steps under either setting.
+  replaced by the plain EM point, preserving monotone likelihood
+  updates. Convergence is assessed over a complete cycle. `"none"` runs
+  ordinary EM. `iterations` and `max_iter` count EM steps under either
+  setting.
 
 - cores:
 
@@ -378,31 +407,37 @@ With `transitions = "occasion"`, `transition_covariates`,
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md):
 transition and initial logit coefficients with Wald standard errors
 (observed, robust or OPG, from analytic scores), model-implied
-transition probabilities per occasion, and profiles per occasion.
-Missing indicators (`missing = "fiml"`) and covariance structures are
-supported; diagonal fits are finished by a quasi-Newton search on the
-exact likelihood, others by EM. Agreement with Mplus (User's Guide
-examples 8.13, 8.14; occasion-specific thresholds), depmixS4 and LMest
-is recorded in `equivalence/lta-extensions/` of the source repository.
+transition probabilities per occasion (with an `estimated` column,
+`FALSE` for a row resting on a logit the likelihood does not identify; a
+move only units of weight zero make is left out), profiles per occasion,
+and the assignments in the layout every fit shares (taking `data` and
+`truth`). Any other argument to its tables raises
+`latents_bad_argument`, and
+[`summary()`](https://rdrr.io/r/base/summary.html) collects them (taking
+`level` and `vcov_type`). Missing indicators (`missing = "fiml"`) and
+covariance structures are supported; diagonal fits are finished by a
+quasi-Newton search on the exact likelihood, others by EM.
 
 ## Details
 
-By default transitions are first order and homogeneous over occasions:
-the probability of moving from one profile to another does not depend on
-the occasion or on earlier profiles. Measurement parameters are shared
-across occasions and across group classes. A profile that no group
-occupies before its final occasion leaves its transition row without
-information; the row is then uniform by construction, not estimated.
-Such a row raises a warning when the model is fitted, is flagged by the
-`estimated` column of the transition table and is listed by
+Under the default first-order model, the next profile depends on the
+current profile and, when present, the latent group class. Earlier
+profiles provide no additional dependence conditional on these
+variables. Homogeneous transitions use the same probabilities at each
+occasion. Measurement parameters are shared across occasions and across
+group classes. A profile that no group occupies before its final
+occasion leaves its transition row without information; the row is then
+uniform by construction, not estimated, and its probabilities are not
+counted in `n_parameters`, AIC or BIC. Such a row raises a warning when
+the model is fitted, is flagged by the `estimated` column of the
+transition table and is listed by
 `get_results(fit, "transitions", estimated = FALSE)`. Profile labels are
 arbitrary and are not comparable across fits without alignment.
 
-`max_iter = 0` updates nothing: the starting values are evaluated and
-returned with the expectation they imply, and the fit reports
-`converged = FALSE` after zero iterations. Every reported quantity,
-including `expected_count` and the implied profile prevalence, is then
-read off that single expectation.
+With `max_iter = 0`, the model evaluates the starting values without
+updating them and reports `converged = FALSE`. Posterior probabilities,
+expected transition counts and implied profile prevalences are computed
+at those starting values.
 
 ## References
 
@@ -428,9 +463,7 @@ with.
 ## Examples
 
 ``` r
-# Students take their courses in their own order, which `sequence` records,
-# so the same enrolments that fit a cross-sectional model fit a transition
-# one. Engagement mostly persists from one course to the next.
+# Model engagement transitions across each student's course sequence.
 fit <- lta(
   course_engagement,
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
@@ -453,7 +486,7 @@ summary(fit)
 #> Parameters: 23; converged: TRUE
 #> Log likelihood: -8335.287419; AIC: 16716.575
 #> BIC (groups): 16777.834; BIC (individuals): 16837.551
-#> Best likelihood replicated in 2/2 starts (absolute tolerance 0.00834).
+#> Best likelihood replicated in 2/2 starts (absolute tolerance 0.00711).
 #> 
 #> -- profiles --------------------------------------------------------
 #>  profile  indicator    mean variance standard_deviation mean_standard_error
@@ -541,20 +574,6 @@ summary(fit)
 #>   10     1       1 2.102e-06 FALSE
 #>    ... 2834 more rows.  get_results(x, what = "posteriors")
 #> 
-#> -- group_posteriors ------------------------------------------------
-#>  group group_size log_likelihood group_class posterior modal
-#>      1         13         -59.47           1         1  TRUE
-#>      2         13         -71.93           1         1  TRUE
-#>      3         14         -75.38           1         1  TRUE
-#>      4         13         -66.30           1         1  TRUE
-#>      5         14         -79.40           1         1  TRUE
-#>      6         12         -80.17           1         1  TRUE
-#>      7         15         -88.32           1         1  TRUE
-#>      8         14         -81.68           1         1  TRUE
-#>      9         14         -82.52           1         1  TRUE
-#>     10         15         -82.01           1         1  TRUE
-#>    ... 96 more rows.  get_results(x, what = "group_posteriors")
-#> 
 #> -- assignments -----------------------------------------------------
 #>  student sequence browse lectures forum_read forum_post attendance profile
 #>        1        1   0.73    -0.08       0.30       0.67       0.72       1
@@ -584,11 +603,9 @@ summary(fit)
 #>        level class n_modal proportion_modal estimated_n estimated_proportion
 #>  individuals     1     837           0.5886       836.4               0.5882
 #>  individuals     2     585           0.4114       585.6               0.4118
-#>       groups     1     106           1.0000       106.0               1.0000
 #>  average_posterior odds_correct_classification
 #>             0.9915                       81.98
 #>             0.9890                      128.23
-#>             1.0000                          NA
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
@@ -596,7 +613,6 @@ summary(fit)
 #>  individuals              1     2        837          0.008469
 #>  individuals              2     1        585          0.011015
 #>  individuals              2     2        585          0.988985
-#>       groups              1     1        106          1.000000
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
@@ -604,7 +620,6 @@ summary(fit)
 #>  individuals          1              2    0.007704
 #>  individuals          2              1    0.012104
 #>  individuals          2              2    0.987896
-#>       groups          1              1    1.000000
 #> 
 #> -- bch_weights -----------------------------------------------------
 #>        level unit assigned_class class   weight
@@ -618,12 +633,18 @@ summary(fit)
 #>  individuals    4              2     2  1.01235
 #>  individuals    5              2     1 -0.01235
 #>  individuals    5              2     2  1.01235
-#>    ... 2940 more rows.  get_results(x, what = "bch_weights")
+#>    ... 2834 more rows.  get_results(x, what = "bch_weights")
 #> 
 #> -- entropy ---------------------------------------------------------
 #>        level n_classes n_units entropy_sum relative_entropy
 #>  individuals         2    1422        38.3           0.9611
 #>       groups         1     106         0.0               NA
+#> 
+#> -- replication -----------------------------------------------------
+#>  n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+#>         2          0           2        0                 2     1   0.00711
+#>  best_start log_likelihood
+#>           1          -8335
 #> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual

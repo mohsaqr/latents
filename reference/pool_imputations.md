@@ -1,14 +1,24 @@
-# Fit a model to multiply imputed data and pool it with Rubin's rules
+# Fit and pool mixture models across multiple imputations
 
-Fits
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-to every completed data set, aligns each fit's profile and group-class
-labels to those of the first, and pools the estimates with Rubin's
-rules, returning a `latents_pooled` object. Use it for missing
-covariates, which `missing = "fiml"` cannot handle because the model
-conditions on covariates. Impute them first (for example with the mice
-package, with the indicators and the group identifier in the imputation
-model) and pass the completed data.
+`pool_imputations()` estimates a mixture model from multiply imputed
+data and combines the results to account for uncertainty associated with
+missing values. It fits the same model specification to each completed
+data set, allowing parameter estimates to reflect the alternative
+plausible values supplied by the imputation procedure.
+
+Class labels can differ across fitted mixture models even when their
+profiles are similar. Before pooling, the function matches individual
+profiles and group classes to those in the first imputation's fit. It
+then combines the aligned parameter estimates and covariance matrices
+using Rubin's rules. The resulting uncertainty incorporates both the
+estimated sampling variance within each analysis and variation in
+estimates between imputations.
+
+The function returns pooled estimates, standard errors, confidence
+intervals, and tests for eligible parameters, together with summaries of
+the individual analyses. Completed data sets must be supplied as a list
+or a `mids` object from mice; the function does not construct the
+imputation model.
 
 ## Usage
 
@@ -55,7 +65,9 @@ pool_imputations(
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
   applied to every imputation's fit. For fits with sampling weights the
   default is `"robust"`, and the other types are refused with
-  `latents_unsupported_weights`.
+  `latents_unsupported_weights`; for fits with person centring or
+  scaling the default is `"robust"` too, and the other types raise
+  `latents_unsupported_inference`.
 
 - adjust:
 
@@ -92,9 +104,8 @@ Pooling is on the reported (natural) scale: the pooled estimate is the
 mean over imputations, and its variance is the mean within-imputation
 variance plus `(1 + 1/m)` times the between-imputation variance. Degrees
 of freedom follow Rubin (1987) with a large complete-data sample. Pooled
-intervals are symmetric t intervals on this scale, so for probabilities
-and variances they can extend outside the parameter space, unlike the
-transformed Wald intervals of
+intervals are symmetric t intervals, rather than the transformed Wald
+intervals used for bounded parameters by
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
 A structural constant, such as the probability of one for a single
 class, has zero within- and between-imputation variance and zero missing
@@ -102,27 +113,31 @@ information. When the within-imputation variance is zero and the
 between-imputation variance is positive, `riv` is infinite and `fmi` is
 one.
 
+## Interpretation
+
+Pooling requires an imputation model appropriate for the analysis and
+missingness assumptions, including the grouping structure where
+relevant. The number of classes and other model specifications remain
+fixed across imputations. Label matching resolves differences in
+numbering but cannot establish that substantially different class
+solutions represent the same underlying profiles.
+
+Estimates are pooled on their reported scale. Consequently, symmetric
+confidence intervals for probabilities or variances can extend beyond
+their permissible ranges.
+
 ## Choosing the imputation model
 
-The pooled results are only as valid as the imputations. The covariate
-and the indicators are related through the latent classes, which an
-imputation model linear in the indicators (mice's defaults) does not
-capture. In `validation/pool-imputations-coverage.R` (a membership slope
-with 30% of its covariate missing at random given the indicators, 200
-replications, ten imputations), 95% intervals covered 0.925 under
-predictive mean matching and 0.935 under Bayesian linear regression, and
-0.995 when the covariate was drawn approximately from its conditional
-distribution given the known generating parameters. That reference arm
-omits uncertainty in the imputation parameters, so it does not validate
-proper multiple imputation, and the study covers one design only. The
-imputation model should account for the latent structure and the
-clustering, include the indicators and relevant nonlinearities, and
-propagate parameter uncertainty; imputing separately within assigned
-classes ignores classification uncertainty. Complete-case analysis
-covered 0.955 in that design, but selecting on the indicators changes
-their within-class distributions, and the case-control argument for
-unbiased logistic slopes does not carry over when the outcome is latent
-and its measurement model is estimated.
+Valid pooling requires an imputation model compatible with the analysis
+model and the assumed missingness mechanism. Associations between
+covariates and indicators may be nonlinear because they depend on latent
+class membership. The imputation model should represent these
+associations, account for clustering, include relevant indicators and
+predictors of missingness, and propagate uncertainty in its estimated
+parameters. Imputing separately within modally assigned classes omits
+classification uncertainty. Complete-case analysis can also change the
+within-class indicator distributions when missingness depends on the
+indicators.
 
 ## Conditions
 
@@ -148,8 +163,8 @@ section 5.2. Chapman & Hall/CRC.
 
 ``` r
 set.seed(1)
-# Two stand-in completed data sets. With real missing covariates, pass the
-# `mids` object mice::mice() returns instead.
+# Illustrative completed data sets for demonstrating the pooling interface.
+# For an analysis, supply data generated by an appropriate imputation model.
 completed <- lapply(seq_len(2), function(i) {
   within(subset(course_engagement, student <= 40),
          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
@@ -164,33 +179,33 @@ pooled
 #>        level   outcome           term   parameter estimate standard_error
 #>  measurement profile_1         browse        mean   0.5673        0.04202
 #>  measurement profile_1       lectures        mean   0.4578        0.05095
-#>  measurement profile_1     forum_read        mean   0.6314        0.04056
+#>  measurement profile_1     forum_read        mean   0.6314        0.04057
 #>  measurement profile_2         browse        mean  -0.8397        0.05746
 #>  measurement profile_2       lectures        mean  -0.6244        0.05838
-#>  measurement profile_2     forum_read        mean  -0.9156        0.04881
+#>  measurement profile_2     forum_read        mean  -0.9157        0.04881
 #>  measurement profile_1         browse    variance   0.5414        0.04379
 #>  measurement profile_1       lectures    variance   0.8138        0.06410
-#>  measurement profile_1     forum_read    variance   0.4739        0.03935
-#>  measurement profile_2         browse    variance   0.4890        0.05734
+#>  measurement profile_1     forum_read    variance   0.4740        0.03935
+#>  measurement profile_2         browse    variance   0.4890        0.05733
 #>  measurement profile_2       lectures    variance   0.5656        0.06255
 #>  measurement profile_2     forum_read    variance   0.3392        0.04177
-#>      profile profile_1    (Intercept) coefficient   0.6142        0.10890
+#>      profile profile_1    (Intercept) coefficient   0.6143        0.10891
 #>      profile profile_1 previous_grade coefficient   0.6516        0.10996
 #>  conf_low conf_high       fmi
-#>    0.4850    0.6497 8.932e-04
-#>    0.3580    0.5577 3.942e-04
-#>    0.5519    0.7109 1.837e-03
-#>   -0.9523   -0.7271 1.458e-03
-#>   -0.7388   -0.5100 7.534e-04
-#>   -1.0113   -0.8200 1.307e-03
-#>    0.4556    0.6272 5.457e-05
-#>    0.6881    0.9394 8.143e-05
-#>    0.3968    0.5511 8.404e-04
-#>    0.3766    0.6014 1.212e-04
-#>    0.4430    0.6882 6.422e-04
-#>    0.2573    0.4211 6.997e-05
-#>    0.4008    0.8276 3.305e-04
-#>    0.4361    0.8671 1.322e-03
+#>    0.4850    0.6497 9.204e-04
+#>    0.3579    0.5577 4.156e-04
+#>    0.5519    0.7109 1.910e-03
+#>   -0.9523   -0.7271 1.533e-03
+#>   -0.7389   -0.5100 7.724e-04
+#>   -1.0113   -0.8200 1.362e-03
+#>    0.4556    0.6272 5.685e-05
+#>    0.6881    0.9394 8.618e-05
+#>    0.3968    0.5511 8.793e-04
+#>    0.3766    0.6013 1.392e-04
+#>    0.4430    0.6882 6.543e-04
+#>    0.2573    0.4210 7.721e-05
+#>    0.4008    0.8277 3.680e-04
+#>    0.4361    0.8672 1.331e-03
 get_results(pooled, "fits")
 #>   imputation log_likelihood n_parameters converged profile_order group_order
 #> 1          1      -2099.880           14      TRUE           1,2           1

@@ -56,6 +56,8 @@ models <- enumerate_classes(course_engagement, activity, "student",
                             model = "VVI", n_starts = 3, seed = 1)
 #> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> Warning: Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 models
 #> Class enumeration: 24 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
@@ -75,8 +77,8 @@ models
 #>  profiles2_groups3          2               3   VVI          -8421           25 16892      16959
 #>  profiles3_groups3          3               3   VVI          -8348           38 16773      16874
 #>  profiles4_groups3          4               3   VVI          -8307           51 16716      16852
-#>  profiles5_groups3          5               3   VVI          -8291           64 16709      16880
-#>  profiles6_groups3          6               3   VVI          -8279           77 16712      16917
+#>  profiles5_groups3          5               3   VVI          -8290           64 16708      16879
+#>  profiles6_groups3          6               3   VVI          -8277           77 16707      16912
 #>  profiles1_groups4          1               4   VVI             NA           NA    NA         NA
 #>  profiles2_groups4          2               4   VVI          -8415           27 16884      16956
 #>  profiles3_groups4          3               4   VVI          -8343           41 16767      16876
@@ -88,26 +90,26 @@ models
 #>           17383          17537           0.922            NA     0.974     0.982      0.978
 #>           17306          18017           0.772            NA     0.832     0.964      0.886
 #>           17314          18359           0.735            NA     0.803     0.849      0.835
-#>           17361          18401           0.773            NA     0.804     0.962      0.861
-#>           17435          19124           0.669            NA     0.627     0.812      0.729
+#>           17361          18400           0.773            NA     0.804     0.962      0.861
+#>           17435          19124           0.668            NA     0.628     0.811      0.729
 #>              NA             NA              NA            NA        NA        NA         NA
-#>           17047          17168           0.938         0.940     0.982     0.985      0.983
-#>           16983          17640           0.790         0.943     0.849     0.979      0.893
-#>           16994          18021           0.739         0.937     0.791     0.858      0.835
-#>           17045          18076           0.775         0.965     0.803     0.860      0.839
-#>           17110          18476           0.732         0.946     0.699     0.845      0.780
+#>           17047          17176           0.938         0.940     0.982     0.985      0.983
+#>           16983          17646           0.790         0.943     0.849     0.979      0.893
+#>           16994          18027           0.739         0.937     0.791     0.859      0.835
+#>           17045          18066           0.775         0.965     0.803     0.860      0.839
+#>           17110          18454           0.733         0.946     0.698     0.845      0.780
 #>              NA             NA              NA            NA        NA        NA         NA
-#>           17024          17142           0.940         0.816     0.982     0.986      0.984
-#>           16973          17622           0.792         0.797     0.845     0.978      0.892
-#>           16985          18014           0.739         0.823     0.801     0.854      0.836
-#>           17046          18353           0.714         0.854     0.628     0.843      0.779
-#>           17117          18780           0.674         0.853     0.655     0.795      0.743
+#>           17024          17180           0.940         0.816     0.982     0.986      0.984
+#>           16973          17663           0.792         0.797     0.843     0.978      0.892
+#>           16985          18045           0.739         0.823     0.801     0.853      0.836
+#>           17045          18259           0.736         0.844     0.702     0.848      0.799
+#>           17112          18571           0.716         0.836     0.664     0.872      0.792
 #>              NA             NA              NA            NA        NA        NA         NA
-#>           17026          17140           0.942         0.798     0.984     0.986      0.985
-#>           16983          17630           0.793         0.772     0.843     0.980      0.892
-#>           17000          18027           0.740         0.803     0.801     0.853      0.837
-#>           17067          18207           0.751         0.830     0.786     0.853      0.820
-#>           17139          18540           0.725         0.851     0.654     0.847      0.783
+#>           17026          17193           0.942         0.798     0.984     0.986      0.985
+#>           16983          17690           0.793         0.772     0.844     0.980      0.892
+#>           17000          18071           0.740         0.803     0.801     0.853      0.837
+#>           17067          18213           0.751         0.830     0.786     0.853      0.820
+#>           17139          18496           0.726         0.851     0.654     0.847      0.783
 #>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
 #>           NA              NA              NA               NA                NA      TRUE    FALSE
 #>            0              NA              NA               NA                NA      TRUE    FALSE
@@ -124,15 +126,15 @@ models
 #>           NA              NA              NA               NA                NA     FALSE       NA
 #>            0           0.900           0.962            0.923                 0      TRUE    FALSE
 #>            0           0.864           0.977            0.913                 0      TRUE    FALSE
-#>            0           0.874           0.981            0.923                 0      TRUE    FALSE
-#>            1           0.917           0.987            0.941                 0      TRUE    FALSE
-#>            6           0.915           0.984            0.941                 0      TRUE    FALSE
+#>            0           0.861           0.981            0.922                 0      TRUE    FALSE
+#>            1           0.889           0.979            0.930                 0      TRUE    FALSE
+#>            2           0.899           0.978            0.933                 0      TRUE    FALSE
 #>           NA              NA              NA               NA                NA     FALSE       NA
 #>            0           0.851           0.912            0.877                 0      TRUE    FALSE
 #>            0           0.841           0.902            0.864                 0      TRUE    FALSE
 #>            0           0.867           0.903            0.885                 0      TRUE    FALSE
 #>            1           0.882           0.926            0.904                 0      TRUE    FALSE
-#>            3           0.898           0.940            0.916                 0      TRUE    FALSE
+#>            3           0.907           0.930            0.918                 0      TRUE    FALSE
 #>  n_best_replicated
 #>                  3
 #>                  3
@@ -144,20 +146,21 @@ models
 #>                  3
 #>                  3
 #>                  3
-#>                  2
+#>                  1
 #>                  1
 #>                 NA
 #>                  3
 #>                  3
 #>                  3
-#>                  2
-#>                  2
+#>                  1
+#>                  1
 #>                 NA
 #>                  3
-#>                  3
 #>                  2
 #>                  1
-#>                  1
+#>                  2
+#>                  2
+#> Every column, unrounded: as.data.frame(x).
 #> 3 candidate(s) failed to fit; the `error` column of as.data.frame(x) gives the reason.
 #> No candidate is selected automatically. Compare one convention consistently.
 ```
@@ -244,12 +247,15 @@ fluctuation rather than between-person level.
 
 Under covariance structures that estimate a separate variance for each
 indicator (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand-mean scaling
-is a reparameterization: it alters the units of the estimates but leaves
-class membership, entropy and AvePP unchanged. The spherical structures
-`EII` and `VII` constrain all indicators to a common variance, so that
-an unscaled indicator with a large range would dominate the
-classification; under these structures the indicators should be
-standardized beforehand.
+is a reparameterization of the unconstrained likelihood. Corresponding
+optima have the same class membership, entropy and AvePP when bounds and
+priors transform consistently. The package’s absolute variance floor is
+expressed in the fitted units, so an active floor can change
+classification after rescaling; numerical search can also reach
+different local optima. The spherical structures `EII` and `VII`
+constrain all indicators to a common variance, so that an unscaled
+indicator with a large range would dominate the classification; under
+these structures the indicators should be standardized beforehand.
 
 ``` r
 
@@ -268,11 +274,11 @@ get_results(spherical, "best")
 #> 6      sabic individuals profiles4          4               1   EII  3385
 #> 7       caic      groups profiles4          4               1   EII  3485
 #> 8       caic individuals profiles4          4               1   EII  3485
-#> 9        awe      groups profiles4          4               1   EII  3670
+#> 9        awe      groups profiles4          4               1   EII  3779
 #> 10       awe individuals profiles4          4               1   EII  3779
-#> 11       icl      groups profiles4          4               1   EII  3461
+#> 11       icl      groups profiles4          4               1   EII  3570
 #> 12       icl individuals profiles4          4               1   EII  3570
-#> 13       clc      groups profiles4          4               1   EII  3324
+#> 13       clc      groups profiles4          4               1   EII  3433
 #> 14       clc individuals profiles4          4               1   EII  3433
 ```
 
@@ -284,37 +290,41 @@ centring and scaling, as is the case within a single grid.
 
 With `missing = "fiml"`, the likelihood of each observation is evaluated
 over its observed indicators, without imputation; under the
-missing-at-random assumption this yields unbiased estimates. An
-observation with all indicators missing contributes nothing to the
-likelihood, and its posterior probability equals the prior implied by
-its group; it is therefore not classified. Following Mplus, such
-observations are excluded from the sample size of the individual-level
-information criteria, from entropy and AvePP, from the classification
-tables and from the effective class counts; `n_informative` records the
-number retained, and the printed fit reports the number excluded. Groups
-in which no observation has an observed indicator are excluded from the
-group-level sample size and statistics on the same grounds
-(`n_informative_groups`), whereas a group with at least one observed row
-is retained. Partially observed rows remain in every statistic: they are
-classified, with correspondingly greater uncertainty, from the
-indicators available. Setting `drop_empty = FALSE` restores the counting
-rules of latents 0.9.37 and earlier, so that previously reported results
-can be reproduced.
+missing-at-random assumption and a correctly specified, identifiable
+model, this supports consistent estimation; it does not guarantee
+finite-sample unbiasedness. An observation with all indicators missing
+contributes nothing to the likelihood, and its posterior probability
+equals the prior implied by its group; it is therefore not classified.
+Following Mplus, such observations are excluded from the sample size of
+the individual-level information criteria, from entropy and AvePP, from
+the classification tables and from the effective class counts;
+`n_informative` records the number retained, and the printed fit reports
+the number excluded. Groups in which no observation has an observed
+indicator are excluded from the group-level sample size and statistics
+on the same grounds (`n_informative_groups`), whereas a group with at
+least one observed row is retained. Partially observed rows remain in
+every statistic: they are classified, with correspondingly greater
+uncertainty, from the indicators available. Setting `drop_empty = FALSE`
+restores the counting rules of latents 0.9.37 and earlier, so that
+previously reported results can be reproduced.
 
 ``` r
 
 set.seed(3)
-incomplete <- course_engagement
-empty <- sample(nrow(incomplete), 150)
-incomplete[empty, activity] <- NA
-partial <- setdiff(sample(nrow(incomplete), 150), empty)
-incomplete[partial, "attendance"] <- NA
+empty <- sample(nrow(course_engagement), 150)
+partial <- setdiff(sample(nrow(course_engagement), 150), empty)
+incomplete <- transform(course_engagement,
+                        browse = replace(browse, empty, NA),
+                        lectures = replace(lectures, empty, NA),
+                        forum_read = replace(forum_read, empty, NA),
+                        forum_post = replace(forum_post, empty, NA),
+                        attendance = replace(attendance, c(empty, partial), NA))
 incomplete_fit <- multilpa(incomplete, activity, "student", n_profiles = 3,
                            n_group_classes = 2, model = "VVI",
                            missing = "fiml", n_starts = 3, seed = 1)
 get_results(incomplete_fit, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
-#> 1 individuals         3    1272      321.52            0.770
+#> 1 individuals         3    1272      321.58            0.770
 #> 2      groups         2     106        5.42            0.926
 ```
 
@@ -338,7 +348,7 @@ probabilities `p`:
 | Criterion | Formula | Penalty depends on | Reference |
 |----|----|----|----|
 | `aic` | `-2L + 2q` | parameters only | Akaike (1974) |
-| `kic` | `-2L + 3(q + 1)` | parameters only | Cavanaugh (1999) |
+| `kic` | `-2L + 3(q + 1)` | parameters only | Cavanaugh (1999), in the form tidyLPA computes; his general `-2L + 3q` differs by a constant 3 |
 | `bic` | `-2L + q log(n)` | sample size | Schwarz (1978) |
 | `sabic` | `-2L + q log((n + 2) / 24)` | sample size | Sclove (1987) |
 | `caic` | `-2L + q (log(n) + 1)` | sample size | Bozdogan (1987) |
@@ -348,11 +358,12 @@ probabilities `p`:
 
 Smaller values indicate a better trade-off between fit and complexity.
 The penalty per parameter is 2 for AIC, 3 for KIC, `log((n + 2) / 24)`
-for SABIC, `log(n)` for BIC and `log(n) + 1` for CAIC; for samples
-beyond a few dozen units, AIC is therefore the most lenient and CAIC the
-most conservative, and heavier penalties favour fewer classes. ICL and
-AWE additionally penalize classification uncertainty, since overlapping
-classes increase `EN`; they consequently favour fewer and
+for SABIC, `log(n)` for BIC and `log(n) + 1` for CAIC. SABIC has a
+smaller per-parameter penalty than AIC until `n` exceeds
+`24 * exp(2) - 2` (approximately 175.34); compare the actual penalties
+at the relevant sample size. Heavier penalties favour fewer classes. ICL
+and AWE additionally penalize classification uncertainty, since
+overlapping classes increase `EN`; they consequently favour fewer and
 better-separated classes than BIC. CLC carries no per-parameter penalty,
 only the entropy term, and may favour many classes when these are well
 separated and few when they are not. CLC is defined here, as are ICL and
@@ -366,20 +377,23 @@ In a two-level model the sample size may be defined as the number of
 groups (here, 106 students) or the number of observations (here, 1,422
 enrolments). latents reports every sample-size-dependent criterion under
 both conventions: columns ending in `_groups` use the number of groups
-and the posterior probabilities of the group classes for `EN`, and
-columns ending in `_individual` use the number of observations and the
-posterior probabilities of the profiles. Neither constitutes a uniquely
-correct multilevel BIC; each is a stated convention, and an analysis
-adopts one and applies it to every candidate. AIC and KIC do not depend
-on the sample size.
+and columns ending in `_individual` the number of observations. Neither
+constitutes a uniquely correct multilevel BIC; each is a stated
+convention, and an analysis adopts one and applies it to every
+candidate. AIC and KIC do not depend on the sample size.
 
-In a single-level model the two sample sizes coincide, and BIC, SABIC
-and CAIC are identical under both conventions. The entropy-based
-criteria are not: their `_groups` columns use the classification of the
-group classes, of which a single-level model has only one, so they carry
-no classification penalty and ICL reduces to BIC. For single-level
-models, the `_individual` columns of ICL, AWE and CLC should therefore
-be used.
+The entropy `EN` of ICL, AWE and CLC is the same under both conventions:
+the soft entropy of the complete-data classification, which in a
+two-level model is the group class of every student together with the
+profile of every enrolment. It is the entropy of the group-class
+posteriors plus, within each group class, the entropy of the profile
+posteriors (Biernacki, Celeux and Govaert 2000). With one group class it
+is the entropy of the profile posteriors. The two conventions therefore
+differ only in `n`, and in a single-level model, where the two sample
+sizes coincide, every criterion is identical under both. A transition
+model from [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+is the exception: its profiles form a Markov chain within a person, and
+its criteria charge one level’s entropy per convention.
 
 ### The table of every candidate
 
@@ -408,8 +422,8 @@ as.data.frame(models)
 #> 14 profiles2_groups3          2               3   VVI          -8421           25 16892 16920
 #> 15 profiles3_groups3          3               3   VVI          -8348           38 16773 16814
 #> 16 profiles4_groups3          4               3   VVI          -8307           51 16716 16770
-#> 17 profiles5_groups3          5               3   VVI          -8291           64 16709 16776
-#> 18 profiles6_groups3          6               3   VVI          -8279           77 16712 16792
+#> 17 profiles5_groups3          5               3   VVI          -8290           64 16708 16775
+#> 18 profiles6_groups3          6               3   VVI          -8277           77 16707 16787
 #> 19 profiles1_groups4          1               4   VVI             NA           NA    NA    NA
 #> 20 profiles2_groups4          2               4   VVI          -8415           27 16884 16914
 #> 21 profiles3_groups4          3               4   VVI          -8343           41 16767 16811
@@ -418,104 +432,104 @@ as.data.frame(models)
 #> 24 profiles6_groups4          6               4   VVI          -8268           83 16703 16789
 #>    bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
 #> 1       20062          20088        20030            20056       20072           20098      20138
-#> 2       17328          17383        17262            17316       17349           17404      17489
-#> 3       17222          17306        17121            17204       17254           17338      17468
-#> 4       17203          17314        17067            17178       17246           17357      17532
-#> 5       17220          17361        17050            17189       17274           17415      17634
-#> 6       17266          17435        17061            17228       17331           17500      17764
+#> 2       17328          17383        17262            17316       17349           17404      17644
+#> 3       17222          17306        17121            17204       17254           17338      18179
+#> 4       17203          17314        17067            17178       17246           17357      18577
+#> 5       17220          17361        17050            17189       17274           17415      18674
+#> 6       17266          17435        17061            17228       17331           17500      19453
 #> 7          NA             NA           NA               NA          NA              NA         NA
-#> 8       16987          17047        16914            16974       17010           17070      17172
-#> 9       16892          16983        16782            16872       16927           17018      17169
-#> 10      16872          16994        16723            16844       16919           17041      17241
-#> 11      16892          17045        16706            16858       16951           17104      17350
-#> 12      16926          17110        16701            16884       16997           17181      17478
+#> 8       16987          17047        16914            16974       17010           17070      17292
+#> 9       16892          16983        16782            16872       16927           17018      17824
+#> 10      16872          16994        16723            16844       16919           17041      18265
+#> 11      16892          17045        16706            16858       16951           17104      18365
+#> 12      16926          17110        16701            16884       16997           17181      18814
 #> 13         NA             NA           NA               NA          NA              NA         NA
-#> 14      16959          17024        16880            16944       16984           17049      17193
-#> 15      16874          16973        16754            16852       16912           17011      17212
-#> 16      16852          16985        16691            16823       16903           17036      17284
-#> 17      16880          17046        16677            16842       16944           17110      17404
-#> 18      16917          17117        16674            16872       16994           17194      17541
+#> 14      16959          17024        16880            16944       16984           17049      17306
+#> 15      16874          16973        16754            16852       16912           17011      17856
+#> 16      16852          16985        16691            16823       16903           17036      18303
+#> 17      16879          17045        16677            16842       16943           17109      18583
+#> 18      16912          17112        16669            16868       16989           17189      18961
 #> 19         NA             NA           NA               NA          NA              NA         NA
-#> 20      16956          17026        16871            16941       16983           17053      17223
-#> 21      16876          16983        16747            16853       16917           17024      17258
-#> 22      16858          17000        16684            16826       16913           17055      17337
-#> 23      16887          17067        16669            16847       16956           17136      17466
-#> 24      16924          17139        16661            16876       17007           17222      17604
+#> 20      16956          17026        16871            16941       16983           17053      17330
+#> 21      16876          16983        16747            16853       16917           17024      17897
+#> 22      16858          17000        16684            16826       16913           17055      18350
+#> 23      16887          17067        16669            16847       16956           17136      18563
+#> 24      16924          17139        16661            16876       17007           17222      18917
 #>    awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
 #> 1           20190      20062          20088      20015          20015              NA            NA
-#> 2           17753      17328          17537      17230          17385           0.922            NA
-#> 3           18345      17222          18017      17073          17785           0.772            NA
-#> 4           18800      17203          18359      17002          18047           0.735            NA
-#> 5           18955      17220          18401      16969          18009           0.773            NA
-#> 6           19791      17266          19124      16963          18652           0.669            NA
+#> 2           17753      17483          17537      17385          17385           0.922            NA
+#> 3           18345      17934          18017      17785          17785           0.772            NA
+#> 4           18800      18247          18359      18047          18047           0.735            NA
+#> 5           18955      18260          18400      18008          18008           0.773            NA
+#> 6           19791      18955          19124      18652          18652           0.668            NA
 #> 7              NA         NA             NA         NA             NA              NA            NA
-#> 8           17404      16996          17168      16889          17002           0.938         0.940
-#> 9           18000      16901          17640      16737          17386           0.790         0.943
-#> 10          18503      16881          18021      16662          17680           0.739         0.937
-#> 11          18682      16897          18076      16622          17648           0.775         0.965
-#> 12          19205      16934          18476      16602          17961           0.732         0.946
+#> 8           17412      17116          17176      17009          17009           0.938         0.940
+#> 9           18005      17556          17646      17392          17392           0.790         0.943
+#> 10          18509      17905          18027      17686          17686           0.739         0.937
+#> 11          18672      17913          18066      17638          17638           0.775         0.965
+#> 12          19183      18270          18454      17939          17939           0.733         0.946
 #> 13             NA         NA             NA         NA             NA              NA            NA
-#> 14          17398      17001          17142      16885          16960           0.940         0.816
-#> 15          18012      16921          17622      16744          17346           0.792         0.797
-#> 16          18537      16893          18014      16656          17644           0.739         0.823
-#> 17          19010      16914          18353      16615          17888           0.714         0.854
-#> 18          19570      16951          18780      16592          18221           0.674         0.853
+#> 14          17436      17115          17180      16998          16998           0.940         0.816
+#> 15          18053      17565          17663      17388          17388           0.792         0.797
+#> 16          18568      17913          18045      17675          17675           0.739         0.823
+#> 17          18915      18092          18259      17794          17794           0.736         0.844
+#> 18          19361      18371          18571      18012          18012           0.716         0.836
 #> 19             NA         NA             NA         NA             NA              NA            NA
-#> 20          17417      17016          17140      16890          16944           0.942         0.798
-#> 21          18051      16943          17630      16752          17332           0.793         0.772
-#> 22          18592      16916          18027      16659          17628           0.740         0.803
-#> 23          18915      16937          18207      16616          17706           0.751         0.830
-#> 24          19392      16967          18540      16580          17938           0.725         0.851
+#> 20          17470      17123          17193      16997          16997           0.942         0.798
+#> 21          18110      17583          17690      17392          17392           0.793         0.772
+#> 22          18636      17929          18071      17672          17672           0.740         0.803
+#> 23          18921      18034          18213      17713          17713           0.751         0.830
+#> 24          19348      18281          18496      17893          17893           0.726         0.851
 #>    avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
 #> 1         NA        NA         NA          NA              NA              NA               NA
 #> 2      0.974     0.982      0.978           0              NA              NA               NA
 #> 3      0.832     0.964      0.886           0              NA              NA               NA
 #> 4      0.803     0.849      0.835           0              NA              NA               NA
 #> 5      0.804     0.962      0.861           0              NA              NA               NA
-#> 6      0.627     0.812      0.729           5              NA              NA               NA
+#> 6      0.628     0.811      0.729           5              NA              NA               NA
 #> 7         NA        NA         NA          NA              NA              NA               NA
 #> 8      0.982     0.985      0.983           0           0.969           0.992            0.980
 #> 9      0.849     0.979      0.893           0           0.977           0.992            0.985
-#> 10     0.791     0.858      0.835           1           0.975           0.990            0.983
+#> 10     0.791     0.859      0.835           1           0.975           0.990            0.983
 #> 11     0.803     0.860      0.839           0           0.990           0.996            0.993
-#> 12     0.699     0.845      0.780           4           0.972           0.987            0.979
+#> 12     0.698     0.845      0.780           4           0.972           0.987            0.979
 #> 13        NA        NA         NA          NA              NA              NA               NA
 #> 14     0.982     0.986      0.984           0           0.900           0.962            0.923
-#> 15     0.845     0.978      0.892           0           0.864           0.977            0.913
-#> 16     0.801     0.854      0.836           0           0.874           0.981            0.923
-#> 17     0.628     0.843      0.779           1           0.917           0.987            0.941
-#> 18     0.655     0.795      0.743           6           0.915           0.984            0.941
+#> 15     0.843     0.978      0.892           0           0.864           0.977            0.913
+#> 16     0.801     0.853      0.836           0           0.861           0.981            0.922
+#> 17     0.702     0.848      0.799           1           0.889           0.979            0.930
+#> 18     0.664     0.872      0.792           2           0.899           0.978            0.933
 #> 19        NA        NA         NA          NA              NA              NA               NA
 #> 20     0.984     0.986      0.985           0           0.851           0.912            0.877
-#> 21     0.843     0.980      0.892           0           0.841           0.902            0.864
+#> 21     0.844     0.980      0.892           0           0.841           0.902            0.864
 #> 22     0.801     0.853      0.837           0           0.867           0.903            0.885
 #> 23     0.786     0.853      0.820           1           0.882           0.926            0.904
-#> 24     0.654     0.847      0.783           3           0.898           0.940            0.916
+#> 24     0.654     0.847      0.783           3           0.907           0.930            0.918
 #>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
 #> 1                 NA      TRUE    FALSE                      1.0000           1422.00
 #> 2                 NA      TRUE    FALSE                      0.3750            589.08
 #> 3                 NA      TRUE    FALSE                      0.1932            418.21
-#> 4                 NA      TRUE    FALSE                      0.1893            172.20
+#> 4                 NA      TRUE    FALSE                      0.1892            172.06
 #> 5                 NA      TRUE    FALSE                      0.0036              4.89
-#> 6                 NA      TRUE    FALSE                      0.1556             95.07
+#> 6                 NA      TRUE    FALSE                      0.1556             95.11
 #> 7                 NA     FALSE       NA                          NA                NA
 #> 8                  0      TRUE    FALSE                      0.3715            587.90
-#> 9                  0      TRUE    FALSE                      0.2000            382.59
-#> 10                 0      TRUE    FALSE                      0.2003            178.19
-#> 11                 0      TRUE    FALSE                      0.0636             36.89
-#> 12                 0      TRUE    FALSE                      0.0849             40.93
+#> 9                  0      TRUE    FALSE                      0.2000            382.61
+#> 10                 0      TRUE    FALSE                      0.2003            177.99
+#> 11                 0      TRUE    FALSE                      0.0636             36.78
+#> 12                 0      TRUE    FALSE                      0.0849             40.14
 #> 13                NA     FALSE       NA                          NA                NA
 #> 14                 0      TRUE    FALSE                      0.3748            591.09
-#> 15                 0      TRUE    FALSE                      0.2003            368.95
-#> 16                 0      TRUE    FALSE                      0.1950            202.20
-#> 17                 0      TRUE    FALSE                      0.1681            141.26
-#> 18                 0      TRUE    FALSE                      0.1745            150.21
+#> 15                 0      TRUE    FALSE                      0.2002            369.36
+#> 16                 0      TRUE    FALSE                      0.1951            201.50
+#> 17                 0      TRUE    FALSE                      0.1131             78.19
+#> 18                 0      TRUE    FALSE                      0.0175              9.14
 #> 19                NA     FALSE       NA                          NA                NA
 #> 20                 0      TRUE    FALSE                      0.3747            592.09
-#> 21                 0      TRUE    FALSE                      0.2007            369.16
-#> 22                 0      TRUE    FALSE                      0.1967            201.57
-#> 23                 0      TRUE    FALSE                      0.0994             61.45
-#> 24                 0      TRUE    FALSE                      0.1224            114.80
+#> 21                 0      TRUE    FALSE                      0.2006            369.51
+#> 22                 0      TRUE    FALSE                      0.1967            201.54
+#> 23                 0      TRUE    FALSE                      0.0994             61.40
+#> 24                 0      TRUE    FALSE                      0.1224            114.83
 #>    n_best_replicated
 #> 1                  3
 #> 2                  3
@@ -527,20 +541,20 @@ as.data.frame(models)
 #> 8                  3
 #> 9                  3
 #> 10                 3
-#> 11                 2
+#> 11                 1
 #> 12                 1
 #> 13                NA
 #> 14                 3
 #> 15                 3
 #> 16                 3
-#> 17                 2
-#> 18                 2
+#> 17                 1
+#> 18                 1
 #> 19                NA
 #> 20                 3
-#> 21                 3
-#> 22                 2
-#> 23                 1
-#> 24                 1
+#> 21                 2
+#> 22                 1
+#> 23                 2
+#> 24                 2
 #>                                                                                                                                                                                warnings
 #> 1                                                                                                                                                                                      
 #> 2                                                                                                                                                                                      
@@ -559,7 +573,7 @@ as.data.frame(models)
 #> 15                                                                                                                                                                                     
 #> 16                                                                                                                                                                                     
 #> 17                                                                                                                                                                                     
-#> 18                                                                                                                                                                                     
+#> 18 Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 #> 19                                                                                                                                                                                     
 #> 20                                                                                                                                                                                     
 #> 21                                                                                                                                                                                     
@@ -612,17 +626,17 @@ get_results(models, "best")
 #> 6      sabic individuals profiles4_groups3          4               3   VVI 16823
 #> 7       caic      groups profiles4_groups3          4               3   VVI 16903
 #> 8       caic individuals profiles3_groups3          3               3   VVI 17011
-#> 9        awe      groups profiles3_groups2          3               2   VVI 17169
-#> 10       awe individuals profiles2_groups3          2               3   VVI 17398
-#> 11       icl      groups profiles4_groups2          4               2   VVI 16881
-#> 12       icl individuals profiles2_groups4          2               4   VVI 17140
-#> 13       clc      groups profiles6_groups4          6               4   VVI 16580
-#> 14       clc individuals profiles2_groups4          2               4   VVI 16944
+#> 9        awe      groups profiles2_groups2          2               2   VVI 17292
+#> 10       awe individuals profiles2_groups2          2               2   VVI 17412
+#> 11       icl      groups profiles2_groups3          2               3   VVI 17115
+#> 12       icl individuals profiles2_groups2          2               2   VVI 17176
+#> 13       clc      groups profiles2_groups4          2               4   VVI 16997
+#> 14       clc individuals profiles2_groups4          2               4   VVI 16997
 ```
 
-In this example the criteria favour 8 different candidates: BIC with
+In this example the criteria favour 7 different candidates: BIC with
 students as units favours profiles4_groups3, BIC with enrolments as
-units profiles3_groups3, ICL with students as units profiles4_groups2,
+units profiles3_groups3, ICL with students as units profiles2_groups3,
 and AIC profiles6_groups4. Such disagreement is typical rather than
 anomalous. The criteria were derived for different purposes, and their
 penalties largely account for the pattern: AIC, with the lightest
@@ -694,8 +708,8 @@ get_results(models, "deltas")
 #> 14 profiles2_groups3          2               3   VVI bic_groups 16959            NA
 #> 15 profiles3_groups3          3               3   VVI bic_groups 16874          84.6
 #> 16 profiles4_groups3          4               3   VVI bic_groups 16852          21.9
-#> 17 profiles5_groups3          5               3   VVI bic_groups 16880         -27.5
-#> 18 profiles6_groups3          6               3   VVI bic_groups 16917         -37.5
+#> 17 profiles5_groups3          5               3   VVI bic_groups 16879         -26.7
+#> 18 profiles6_groups3          6               3   VVI bic_groups 16912         -33.6
 #> 19 profiles1_groups4          1               4   VVI bic_groups    NA            NA
 #> 20 profiles2_groups4          2               4   VVI bic_groups 16956            NA
 #> 21 profiles3_groups4          3               4   VVI bic_groups 16876          79.9
@@ -719,14 +733,14 @@ get_results(models, "deltas")
 #> 14              <NA>             28.18 profiles2_groups2
 #> 15 profiles2_groups3             18.19 profiles3_groups2
 #> 16 profiles3_groups3             19.43 profiles4_groups2
-#> 17 profiles4_groups3             12.55 profiles5_groups2
-#> 18 profiles5_groups3              8.51 profiles6_groups2
+#> 17 profiles4_groups3             13.29 profiles5_groups2
+#> 18 profiles5_groups3             13.15 profiles6_groups2
 #> 19              <NA>                NA              <NA>
 #> 20              <NA>              2.37 profiles2_groups3
 #> 21 profiles2_groups4             -2.43 profiles3_groups3
 #> 22 profiles3_groups4             -5.54 profiles4_groups3
-#> 23 profiles4_groups4             -7.79 profiles5_groups3
-#> 24 profiles5_groups4             -6.62 profiles6_groups3
+#> 23 profiles4_groups4             -8.53 profiles5_groups3
+#> 24 profiles5_groups4            -11.25 profiles6_groups3
 ```
 
 With three group classes, the third profile reduces BIC by 85 and the
@@ -800,14 +814,14 @@ get_results(models, "knees")
 #>       knee_candidate distance knee_without_largest stable                               note
 #> 1  profiles2_groups1    0.544    profiles2_groups1   TRUE                                   
 #> 2  profiles4_groups2    0.648    profiles3_groups2  FALSE moves when the largest is left out
-#> 3  profiles4_groups3    0.750    profiles3_groups3  FALSE moves when the largest is left out
+#> 3  profiles4_groups3    0.718    profiles3_groups3  FALSE moves when the largest is left out
 #> 4  profiles4_groups4    0.792    profiles3_groups4  FALSE moves when the largest is left out
 #> 5               <NA>       NA                 <NA>     NA        fewer than three candidates
 #> 6  profiles2_groups2    0.413    profiles2_groups2   TRUE                                   
 #> 7  profiles3_groups2    0.438    profiles3_groups2   TRUE                                   
 #> 8  profiles4_groups2    0.439    profiles4_groups2   TRUE                                   
-#> 9  profiles5_groups2    0.456    profiles5_groups2   TRUE                                   
-#> 10 profiles6_groups2    0.463    profiles6_groups2   TRUE                                   
+#> 9  profiles5_groups2    0.455    profiles5_groups2   TRUE                                   
+#> 10 profiles6_groups2    0.460    profiles6_groups2   TRUE                                   
 #> 11 profiles2_groups2    0.561    profiles2_groups2   TRUE
 ```
 
@@ -831,7 +845,7 @@ no complete result is available:
 | `moves when the largest is left out` | the knee depends on the range fitted |
 
 With three group classes, the knee along the number of profiles is
-profiles4_groups3, at a distance of 0.75. Without the largest candidate
+profiles4_groups3, at a distance of 0.72. Without the largest candidate
 it is profiles3_groups3, so `stable` is FALSE: the bend lies between
 three and four profiles, and which of the two is identified depends on
 the extent of the grid. The deltas locate the same region with less
@@ -896,9 +910,9 @@ get_results(models, "classification")
 #> 7   profiles4_groups1          4               1   VVI individuals     2     157          0.11041
 #> 8   profiles4_groups1          4               1   VVI individuals     3     419          0.29466
 #> 9   profiles4_groups1          4               1   VVI individuals     4     365          0.25668
-#> 10  profiles5_groups1          5               1   VVI individuals     1     355          0.24965
+#> 10  profiles5_groups1          5               1   VVI individuals     1     354          0.24895
 #> 11  profiles5_groups1          5               1   VVI individuals     2     419          0.29466
-#> 12  profiles5_groups1          5               1   VVI individuals     3     486          0.34177
+#> 12  profiles5_groups1          5               1   VVI individuals     3     487          0.34248
 #> 13  profiles5_groups1          5               1   VVI individuals     4       5          0.00352
 #> 14  profiles5_groups1          5               1   VVI individuals     5     157          0.11041
 #> 15  profiles6_groups1          6               1   VVI individuals     1     372          0.26160
@@ -909,23 +923,23 @@ get_results(models, "classification")
 #> 20  profiles6_groups1          6               1   VVI individuals     6     116          0.08158
 #> 21  profiles2_groups2          2               2   VVI individuals     1     836          0.58790
 #> 22  profiles2_groups2          2               2   VVI individuals     2     586          0.41210
-#> 23  profiles2_groups2          2               2   VVI      groups     1      71          0.66981
-#> 24  profiles2_groups2          2               2   VVI      groups     2      35          0.33019
+#> 23  profiles2_groups2          2               2   VVI      groups     1      35          0.33019
+#> 24  profiles2_groups2          2               2   VVI      groups     2      71          0.66981
 #> 25  profiles3_groups2          3               2   VVI individuals     1     472          0.33193
 #> 26  profiles3_groups2          3               2   VVI individuals     2     570          0.40084
 #> 27  profiles3_groups2          3               2   VVI individuals     3     380          0.26723
-#> 28  profiles3_groups2          3               2   VVI      groups     1      71          0.66981
-#> 29  profiles3_groups2          3               2   VVI      groups     2      35          0.33019
+#> 28  profiles3_groups2          3               2   VVI      groups     1      35          0.33019
+#> 29  profiles3_groups2          3               2   VVI      groups     2      71          0.66981
 #> 30  profiles4_groups2          4               2   VVI individuals     1     490          0.34459
 #> 31  profiles4_groups2          4               2   VVI individuals     2     166          0.11674
 #> 32  profiles4_groups2          4               2   VVI individuals     3     418          0.29395
 #> 33  profiles4_groups2          4               2   VVI individuals     4     348          0.24473
-#> 34  profiles4_groups2          4               2   VVI      groups     1      71          0.66981
-#> 35  profiles4_groups2          4               2   VVI      groups     2      35          0.33019
-#> 36  profiles5_groups2          5               2   VVI individuals     1     483          0.33966
+#> 34  profiles4_groups2          4               2   VVI      groups     1      35          0.33019
+#> 35  profiles4_groups2          4               2   VVI      groups     2      71          0.66981
+#> 36  profiles5_groups2          5               2   VVI individuals     1     327          0.22996
 #> 37  profiles5_groups2          5               2   VVI individuals     2     423          0.29747
 #> 38  profiles5_groups2          5               2   VVI individuals     3      31          0.02180
-#> 39  profiles5_groups2          5               2   VVI individuals     4     327          0.22996
+#> 39  profiles5_groups2          5               2   VVI individuals     4     483          0.33966
 #> 40  profiles5_groups2          5               2   VVI individuals     5     158          0.11111
 #> 41  profiles5_groups2          5               2   VVI      groups     1      72          0.67925
 #> 42  profiles5_groups2          5               2   VVI      groups     2      34          0.32075
@@ -935,209 +949,209 @@ get_results(models, "classification")
 #> 46  profiles6_groups2          6               2   VVI individuals     4      90          0.06329
 #> 47  profiles6_groups2          6               2   VVI individuals     5     343          0.24121
 #> 48  profiles6_groups2          6               2   VVI individuals     6      36          0.02532
-#> 49  profiles6_groups2          6               2   VVI      groups     1      69          0.65094
-#> 50  profiles6_groups2          6               2   VVI      groups     2      37          0.34906
+#> 49  profiles6_groups2          6               2   VVI      groups     1      37          0.34906
+#> 50  profiles6_groups2          6               2   VVI      groups     2      69          0.65094
 #> 51  profiles2_groups3          2               3   VVI individuals     1     832          0.58509
 #> 52  profiles2_groups3          2               3   VVI individuals     2     590          0.41491
-#> 53  profiles2_groups3          2               3   VVI      groups     1      25          0.23585
-#> 54  profiles2_groups3          2               3   VVI      groups     2      31          0.29245
+#> 53  profiles2_groups3          2               3   VVI      groups     1      31          0.29245
+#> 54  profiles2_groups3          2               3   VVI      groups     2      25          0.23585
 #> 55  profiles2_groups3          2               3   VVI      groups     3      50          0.47170
-#> 56  profiles3_groups3          3               3   VVI individuals     1     367          0.25809
+#> 56  profiles3_groups3          3               3   VVI individuals     1     476          0.33474
 #> 57  profiles3_groups3          3               3   VVI individuals     2     576          0.40506
-#> 58  profiles3_groups3          3               3   VVI individuals     3     479          0.33685
-#> 59  profiles3_groups3          3               3   VVI      groups     1      25          0.23585
-#> 60  profiles3_groups3          3               3   VVI      groups     2      30          0.28302
+#> 58  profiles3_groups3          3               3   VVI individuals     3     370          0.26020
+#> 59  profiles3_groups3          3               3   VVI      groups     1      30          0.28302
+#> 60  profiles3_groups3          3               3   VVI      groups     2      25          0.23585
 #> 61  profiles3_groups3          3               3   VVI      groups     3      51          0.48113
-#> 62  profiles4_groups3          4               3   VVI individuals     1     508          0.35724
-#> 63  profiles4_groups3          4               3   VVI individuals     2     402          0.28270
-#> 64  profiles4_groups3          4               3   VVI individuals     3     192          0.13502
+#> 62  profiles4_groups3          4               3   VVI individuals     1     509          0.35795
+#> 63  profiles4_groups3          4               3   VVI individuals     2     191          0.13432
+#> 64  profiles4_groups3          4               3   VVI individuals     3     402          0.28270
 #> 65  profiles4_groups3          4               3   VVI individuals     4     320          0.22504
-#> 66  profiles4_groups3          4               3   VVI      groups     1      28          0.26415
-#> 67  profiles4_groups3          4               3   VVI      groups     2      48          0.45283
-#> 68  profiles4_groups3          4               3   VVI      groups     3      30          0.28302
-#> 69  profiles5_groups3          5               3   VVI individuals     1     123          0.08650
-#> 70  profiles5_groups3          5               3   VVI individuals     2     201          0.14135
-#> 71  profiles5_groups3          5               3   VVI individuals     3     244          0.17159
-#> 72  profiles5_groups3          5               3   VVI individuals     4     457          0.32138
-#> 73  profiles5_groups3          5               3   VVI individuals     5     397          0.27918
-#> 74  profiles5_groups3          5               3   VVI      groups     1      27          0.25472
-#> 75  profiles5_groups3          5               3   VVI      groups     2      48          0.45283
-#> 76  profiles5_groups3          5               3   VVI      groups     3      31          0.29245
-#> 77  profiles6_groups3          6               3   VVI individuals     1     206          0.14487
-#> 78  profiles6_groups3          6               3   VVI individuals     2     446          0.31364
-#> 79  profiles6_groups3          6               3   VVI individuals     3     322          0.22644
-#> 80  profiles6_groups3          6               3   VVI individuals     4     128          0.09001
-#> 81  profiles6_groups3          6               3   VVI individuals     5     168          0.11814
-#> 82  profiles6_groups3          6               3   VVI individuals     6     152          0.10689
-#> 83  profiles6_groups3          6               3   VVI      groups     1      47          0.44340
-#> 84  profiles6_groups3          6               3   VVI      groups     2      32          0.30189
-#> 85  profiles6_groups3          6               3   VVI      groups     3      27          0.25472
+#> 66  profiles4_groups3          4               3   VVI      groups     1      30          0.28302
+#> 67  profiles4_groups3          4               3   VVI      groups     2      29          0.27358
+#> 68  profiles4_groups3          4               3   VVI      groups     3      47          0.44340
+#> 69  profiles5_groups3          5               3   VVI individuals     1     308          0.21660
+#> 70  profiles5_groups3          5               3   VVI individuals     2     395          0.27778
+#> 71  profiles5_groups3          5               3   VVI individuals     3      50          0.03516
+#> 72  profiles5_groups3          5               3   VVI individuals     4     472          0.33193
+#> 73  profiles5_groups3          5               3   VVI individuals     5     197          0.13854
+#> 74  profiles5_groups3          5               3   VVI      groups     1      47          0.44340
+#> 75  profiles5_groups3          5               3   VVI      groups     2      27          0.25472
+#> 76  profiles5_groups3          5               3   VVI      groups     3      32          0.30189
+#> 77  profiles6_groups3          6               3   VVI individuals     1     210          0.14768
+#> 78  profiles6_groups3          6               3   VVI individuals     2     400          0.28129
+#> 79  profiles6_groups3          6               3   VVI individuals     3     323          0.22714
+#> 80  profiles6_groups3          6               3   VVI individuals     4     285          0.20042
+#> 81  profiles6_groups3          6               3   VVI individuals     5     195          0.13713
+#> 82  profiles6_groups3          6               3   VVI individuals     6       9          0.00633
+#> 83  profiles6_groups3          6               3   VVI      groups     1      28          0.26415
+#> 84  profiles6_groups3          6               3   VVI      groups     2      30          0.28302
+#> 85  profiles6_groups3          6               3   VVI      groups     3      48          0.45283
 #> 86  profiles2_groups4          2               4   VVI individuals     1     832          0.58509
 #> 87  profiles2_groups4          2               4   VVI individuals     2     590          0.41491
-#> 88  profiles2_groups4          2               4   VVI      groups     1      25          0.23585
-#> 89  profiles2_groups4          2               4   VVI      groups     2      12          0.11321
+#> 88  profiles2_groups4          2               4   VVI      groups     1      12          0.11321
+#> 89  profiles2_groups4          2               4   VVI      groups     2      25          0.23585
 #> 90  profiles2_groups4          2               4   VVI      groups     3      22          0.20755
 #> 91  profiles2_groups4          2               4   VVI      groups     4      47          0.44340
-#> 92  profiles3_groups4          3               4   VVI individuals     1     477          0.33544
-#> 93  profiles3_groups4          3               4   VVI individuals     2     576          0.40506
-#> 94  profiles3_groups4          3               4   VVI individuals     3     369          0.25949
-#> 95  profiles3_groups4          3               4   VVI      groups     1      46          0.43396
-#> 96  profiles3_groups4          3               4   VVI      groups     2      15          0.14151
+#> 92  profiles3_groups4          3               4   VVI individuals     1     369          0.25949
+#> 93  profiles3_groups4          3               4   VVI individuals     2     477          0.33544
+#> 94  profiles3_groups4          3               4   VVI individuals     3     576          0.40506
+#> 95  profiles3_groups4          3               4   VVI      groups     1      15          0.14151
+#> 96  profiles3_groups4          3               4   VVI      groups     2      25          0.23585
 #> 97  profiles3_groups4          3               4   VVI      groups     3      20          0.18868
-#> 98  profiles3_groups4          3               4   VVI      groups     4      25          0.23585
-#> 99  profiles4_groups4          4               4   VVI individuals     1     191          0.13432
-#> 100 profiles4_groups4          4               4   VVI individuals     2     321          0.22574
-#> 101 profiles4_groups4          4               4   VVI individuals     3     510          0.35865
-#> 102 profiles4_groups4          4               4   VVI individuals     4     400          0.28129
-#> 103 profiles4_groups4          4               4   VVI      groups     1      46          0.43396
+#> 98  profiles3_groups4          3               4   VVI      groups     4      46          0.43396
+#> 99  profiles4_groups4          4               4   VVI individuals     1     321          0.22574
+#> 100 profiles4_groups4          4               4   VVI individuals     2     400          0.28129
+#> 101 profiles4_groups4          4               4   VVI individuals     3     191          0.13432
+#> 102 profiles4_groups4          4               4   VVI individuals     4     510          0.35865
+#> 103 profiles4_groups4          4               4   VVI      groups     1      25          0.23585
 #> 104 profiles4_groups4          4               4   VVI      groups     2      24          0.22642
-#> 105 profiles4_groups4          4               4   VVI      groups     3      11          0.10377
-#> 106 profiles4_groups4          4               4   VVI      groups     4      25          0.23585
+#> 105 profiles4_groups4          4               4   VVI      groups     3      46          0.43396
+#> 106 profiles4_groups4          4               4   VVI      groups     4      11          0.10377
 #> 107 profiles5_groups4          5               4   VVI individuals     1     189          0.13291
-#> 108 profiles5_groups4          5               4   VVI individuals     2      38          0.02672
-#> 109 profiles5_groups4          5               4   VVI individuals     3     302          0.21238
-#> 110 profiles5_groups4          5               4   VVI individuals     4     491          0.34529
-#> 111 profiles5_groups4          5               4   VVI individuals     5     402          0.28270
+#> 108 profiles5_groups4          5               4   VVI individuals     2     302          0.21238
+#> 109 profiles5_groups4          5               4   VVI individuals     3     491          0.34529
+#> 110 profiles5_groups4          5               4   VVI individuals     4     402          0.28270
+#> 111 profiles5_groups4          5               4   VVI individuals     5      38          0.02672
 #> 112 profiles5_groups4          5               4   VVI      groups     1      23          0.21698
-#> 113 profiles5_groups4          5               4   VVI      groups     2      25          0.23585
-#> 114 profiles5_groups4          5               4   VVI      groups     3      11          0.10377
+#> 113 profiles5_groups4          5               4   VVI      groups     2      11          0.10377
+#> 114 profiles5_groups4          5               4   VVI      groups     3      25          0.23585
 #> 115 profiles5_groups4          5               4   VVI      groups     4      47          0.44340
-#> 116 profiles6_groups4          6               4   VVI individuals     1     491          0.34529
-#> 117 profiles6_groups4          6               4   VVI individuals     2     107          0.07525
-#> 118 profiles6_groups4          6               4   VVI individuals     3     341          0.23980
-#> 119 profiles6_groups4          6               4   VVI individuals     4     149          0.10478
-#> 120 profiles6_groups4          6               4   VVI individuals     5     174          0.12236
-#> 121 profiles6_groups4          6               4   VVI individuals     6     160          0.11252
-#> 122 profiles6_groups4          6               4   VVI      groups     1      26          0.24528
-#> 123 profiles6_groups4          6               4   VVI      groups     2      14          0.13208
-#> 124 profiles6_groups4          6               4   VVI      groups     3      23          0.21698
-#> 125 profiles6_groups4          6               4   VVI      groups     4      43          0.40566
+#> 116 profiles6_groups4          6               4   VVI individuals     1     341          0.23980
+#> 117 profiles6_groups4          6               4   VVI individuals     2     149          0.10478
+#> 118 profiles6_groups4          6               4   VVI individuals     3     159          0.11181
+#> 119 profiles6_groups4          6               4   VVI individuals     4     107          0.07525
+#> 120 profiles6_groups4          6               4   VVI individuals     5     175          0.12307
+#> 121 profiles6_groups4          6               4   VVI individuals     6     491          0.34529
+#> 122 profiles6_groups4          6               4   VVI      groups     1      14          0.13208
+#> 123 profiles6_groups4          6               4   VVI      groups     2      23          0.21698
+#> 124 profiles6_groups4          6               4   VVI      groups     3      25          0.23585
+#> 125 profiles6_groups4          6               4   VVI      groups     4      44          0.41509
 #>     estimated_n estimated_proportion average_posterior odds_correct_classification relative_entropy
 #> 1        832.92              0.58574             0.982                       37.75            0.922
 #> 2        589.08              0.41426             0.974                       53.24            0.922
-#> 3        452.67              0.31834             0.832                       10.61            0.772
+#> 3        452.68              0.31834             0.832                       10.61            0.772
 #> 4        551.11              0.38756             0.964                       42.39            0.772
 #> 5        418.21              0.29410             0.863                       15.17            0.772
-#> 6        478.06              0.33619             0.842                       10.51            0.735
-#> 7        172.20              0.12110             0.803                       29.63            0.735
-#> 8        405.28              0.28501             0.849                       14.14            0.735
-#> 9        366.46              0.25771             0.846                       15.86            0.735
-#> 10       359.22              0.25262             0.847                       16.42            0.773
-#> 11       405.22              0.28496             0.849                       14.13            0.773
-#> 12       480.38              0.33782             0.842                       10.42            0.773
-#> 13         4.89              0.00344             0.962                     7368.14            0.773
-#> 14       172.30              0.12116             0.804                       29.66            0.773
-#> 15       340.87              0.23971             0.735                        8.78            0.669
-#> 16       165.78              0.11658             0.784                       27.56            0.669
-#> 17       348.85              0.24532             0.780                       10.89            0.669
-#> 18        95.07              0.06686             0.636                       24.43            0.669
-#> 19       321.57              0.22614             0.812                       14.74            0.669
-#> 20       149.86              0.10538             0.627                       14.29            0.669
+#> 6        477.89              0.33607             0.842                       10.50            0.735
+#> 7        172.06              0.12100             0.803                       29.60            0.735
+#> 8        405.38              0.28508             0.849                       14.15            0.735
+#> 9        366.66              0.25785             0.847                       15.88            0.735
+#> 10       358.75              0.25229             0.848                       16.50            0.773
+#> 11       405.25              0.28499             0.849                       14.13            0.773
+#> 12       480.80              0.33812             0.841                       10.38            0.773
+#> 13         4.89              0.00344             0.962                     7362.68            0.773
+#> 14       172.31              0.12117             0.804                       29.66            0.773
+#> 15       340.74              0.23962             0.734                        8.77            0.668
+#> 16       165.77              0.11658             0.784                       27.55            0.668
+#> 17       348.87              0.24534             0.780                       10.89            0.668
+#> 18        95.11              0.06689             0.637                       24.43            0.668
+#> 19       321.48              0.22608             0.811                       14.73            0.668
+#> 20       150.02              0.10550             0.628                       14.29            0.668
 #> 21       834.10              0.58657             0.985                       46.08            0.938
 #> 22       587.90              0.41343             0.982                       76.35            0.938
-#> 23        71.52              0.67470             0.992                       59.89            0.940
-#> 24        34.48              0.32530             0.969                       64.80            0.940
-#> 25       469.56              0.33021             0.849                       11.40            0.790
+#> 23        34.48              0.32530             0.969                       64.80            0.940
+#> 24        71.52              0.67470             0.992                       59.89            0.940
+#> 25       469.54              0.33020             0.849                       11.40            0.790
 #> 26       569.85              0.40074             0.979                       68.94            0.790
-#> 27       382.59              0.26905             0.850                       15.45            0.790
-#> 28        71.25              0.67213             0.992                       62.14            0.943
-#> 29        34.75              0.32787             0.977                       87.77            0.943
-#> 30       480.19              0.33769             0.845                       10.71            0.739
-#> 31       178.19              0.12531             0.791                       26.49            0.739
-#> 32       407.65              0.28667             0.858                       15.08            0.739
-#> 33       355.96              0.25033             0.846                       16.41            0.739
-#> 34        71.16              0.67132             0.990                       48.96            0.937
-#> 35        34.84              0.32868             0.975                       80.76            0.937
-#> 36       464.18              0.32643             0.846                       11.33            0.775
+#> 27       382.61              0.26907             0.851                       15.46            0.790
+#> 28        34.75              0.32787             0.977                       87.77            0.943
+#> 29        71.25              0.67213             0.992                       62.14            0.943
+#> 30       480.20              0.33769             0.845                       10.71            0.739
+#> 31       177.99              0.12517             0.791                       26.46            0.739
+#> 32       407.84              0.28680             0.859                       15.11            0.739
+#> 33       355.98              0.25033             0.846                       16.41            0.739
+#> 34        34.84              0.32868             0.975                       80.78            0.937
+#> 35        71.16              0.67132             0.990                       48.95            0.937
+#> 36       337.69              0.23747             0.848                       17.88            0.775
 #> 37       408.11              0.28700             0.860                       15.27            0.775
-#> 38        36.89              0.02594             0.838                      194.58            0.775
-#> 39       337.67              0.23746             0.848                       17.88            0.775
-#> 40       175.15              0.12317             0.803                       28.94            0.775
-#> 41        71.40              0.67360             0.990                       48.07            0.965
-#> 42        34.60              0.32640             0.996                      581.20            0.965
-#> 43       444.31              0.31245             0.835                       11.14            0.732
-#> 44       173.96              0.12233             0.781                       25.62            0.732
-#> 45       294.72              0.20726             0.728                       10.24            0.732
-#> 46       118.27              0.08317             0.699                       25.64            0.732
-#> 47       349.82              0.24600             0.845                       16.71            0.732
-#> 48        40.93              0.02878             0.789                      126.37            0.732
-#> 49        69.10              0.65185             0.987                       39.18            0.946
-#> 50        36.90              0.34815             0.972                       65.76            0.946
+#> 38        36.78              0.02587             0.838                      195.11            0.775
+#> 39       464.27              0.32649             0.846                       11.34            0.775
+#> 40       175.14              0.12317             0.803                       28.94            0.775
+#> 41        71.40              0.67360             0.990                       48.04            0.965
+#> 42        34.60              0.32640             0.996                      581.73            0.965
+#> 43       444.92              0.31288             0.836                       11.23            0.733
+#> 44       173.92              0.12231             0.781                       25.61            0.733
+#> 45       295.07              0.20750             0.729                       10.26            0.733
+#> 46       117.94              0.08294             0.698                       25.59            0.733
+#> 47       350.01              0.24614             0.845                       16.74            0.733
+#> 48        40.14              0.02823             0.789                      128.55            0.733
+#> 49        36.90              0.34809             0.972                       65.69            0.946
+#> 50        69.10              0.65191             0.987                       39.40            0.946
 #> 51       830.91              0.58433             0.986                       49.28            0.940
 #> 52       591.09              0.41567             0.982                       75.73            0.940
-#> 53        26.66              0.25147             0.905                       28.33            0.816
-#> 54        30.78              0.29035             0.962                       62.25            0.816
+#> 53        30.78              0.29035             0.962                       62.25            0.816
+#> 54        26.66              0.25147             0.905                       28.33            0.816
 #> 55        48.57              0.45818             0.900                       10.69            0.816
-#> 56       368.95              0.25946             0.845                       15.58            0.792
-#> 57       574.96              0.40433             0.978                       65.03            0.792
-#> 58       478.08              0.33621             0.853                       11.45            0.792
-#> 59        27.65              0.26086             0.898                       24.87            0.797
-#> 60        31.03              0.29271             0.977                      104.20            0.797
+#> 56       477.70              0.33593             0.855                       11.63            0.792
+#> 57       574.94              0.40432             0.978                       64.96            0.792
+#> 58       369.36              0.25975             0.843                       15.29            0.792
+#> 59        31.03              0.29271             0.977                      104.15            0.797
+#> 60        27.65              0.26086             0.898                       24.87            0.797
 #> 61        47.32              0.44643             0.864                        7.90            0.797
-#> 62       497.03              0.34953             0.854                       10.86            0.739
-#> 63       391.99              0.27566             0.847                       14.60            0.739
-#> 64       202.20              0.14220             0.801                       24.24            0.739
-#> 65       330.78              0.23261             0.842                       17.57            0.739
-#> 66        27.40              0.25844             0.874                       19.96            0.823
-#> 67        48.01              0.45292             0.915                       13.01            0.823
-#> 68        30.60              0.28864             0.981                      127.50            0.823
-#> 69       141.26              0.09934             0.628                       15.34            0.714
-#> 70       211.64              0.14884             0.804                       23.52            0.714
-#> 71       248.08              0.17446             0.804                       19.44            0.714
-#> 72       435.18              0.30603             0.817                       10.09            0.714
-#> 73       385.84              0.27134             0.843                       14.42            0.714
-#> 74        28.08              0.26491             0.917                       30.75            0.854
-#> 75        46.73              0.44081             0.918                       14.29            0.854
-#> 76        31.19              0.29428             0.987                      180.98            0.854
-#> 77       206.70              0.14536             0.777                       20.53            0.674
-#> 78       414.48              0.29148             0.795                        9.42            0.674
-#> 79       297.05              0.20890             0.733                       10.42            0.674
-#> 80       150.21              0.10563             0.711                       20.85            0.674
-#> 81       191.71              0.13482             0.655                       12.18            0.674
-#> 82       161.85              0.11382             0.788                       28.90            0.674
-#> 83        46.26              0.43639             0.925                       15.84            0.853
-#> 84        32.68              0.30828             0.984                      137.98            0.853
-#> 85        27.07              0.25534             0.915                       31.49            0.853
-#> 86       829.91              0.58362             0.986                       50.18            0.942
+#> 62       496.81              0.34937             0.853                       10.79            0.739
+#> 63       201.50              0.14170             0.801                       24.37            0.739
+#> 64       392.63              0.27611             0.849                       14.69            0.739
+#> 65       331.06              0.23281             0.842                       17.60            0.739
+#> 66        30.60              0.28866             0.981                      127.46            0.823
+#> 67        27.40              0.25845             0.861                       17.82            0.823
+#> 68        48.01              0.45290             0.924                       14.63            0.823
+#> 69       305.11              0.21457             0.824                       17.18            0.736
+#> 70       386.77              0.27199             0.848                       14.89            0.736
+#> 71        78.19              0.05499             0.702                       40.55            0.736
+#> 72       443.05              0.31157             0.813                        9.62            0.736
+#> 73       208.87              0.14688             0.806                       24.09            0.736
+#> 74        47.06              0.44401             0.923                       15.04            0.844
+#> 75        27.25              0.25708             0.889                       23.20            0.844
+#> 76        31.69              0.29892             0.979                      106.79            0.844
+#> 77       216.03              0.15192             0.803                       22.77            0.716
+#> 78       386.49              0.27180             0.841                       14.21            0.716
+#> 79       319.17              0.22445             0.770                       11.54            0.716
+#> 80       284.53              0.20009             0.664                        7.90            0.716
+#> 81       206.64              0.14531             0.803                       24.04            0.716
+#> 82         9.14              0.00643             0.872                     1049.37            0.716
+#> 83        29.69              0.28010             0.922                       30.30            0.836
+#> 84        30.29              0.28571             0.978                      110.58            0.836
+#> 85        46.02              0.43419             0.899                       11.65            0.836
+#> 86       829.91              0.58362             0.986                       50.19            0.942
 #> 87       592.09              0.41638             0.984                       85.01            0.942
-#> 88        24.59              0.23201             0.868                       21.73            0.798
-#> 89        11.33              0.10689             0.851                       47.77            0.798
-#> 90        22.34              0.21071             0.877                       26.81            0.798
+#> 88        11.33              0.10689             0.851                       47.77            0.798
+#> 89        24.59              0.23201             0.868                       21.73            0.798
+#> 90        22.34              0.21072             0.877                       26.81            0.798
 #> 91        47.74              0.45039             0.912                       12.62            0.798
-#> 92       476.54              0.33512             0.853                       11.52            0.793
-#> 93       576.30              0.40527             0.980                       70.36            0.793
-#> 94       369.16              0.25960             0.843                       15.32            0.793
-#> 95        47.04              0.44379             0.902                       11.51            0.772
-#> 96        13.62              0.12851             0.841                       35.95            0.772
-#> 97        20.96              0.19774             0.868                       26.74            0.772
-#> 98        24.37              0.22995             0.843                       17.98            0.772
-#> 99       201.57              0.14175             0.801                       24.37            0.740
-#> 100      332.98              0.23416             0.843                       17.58            0.740
-#> 101      494.01              0.34741             0.850                       10.64            0.740
-#> 102      393.44              0.27668             0.853                       15.17            0.740
-#> 103       46.89              0.44232             0.903                       11.76            0.803
-#> 104       22.90              0.21605             0.867                       23.74            0.803
-#> 105       10.91              0.10288             0.898                       76.55            0.803
-#> 106       25.31              0.23874             0.873                       21.82            0.803
-#> 107      201.07              0.14140             0.803                       24.79            0.751
-#> 108       61.45              0.04322             0.786                       81.48            0.751
-#> 109      305.33              0.21472             0.831                       17.96            0.751
-#> 110      461.34              0.32443             0.826                        9.90            0.751
-#> 111      392.80              0.27623             0.853                       15.15            0.751
+#> 92       369.51              0.25985             0.844                       15.35            0.793
+#> 93       476.20              0.33488             0.853                       11.50            0.793
+#> 94       576.28              0.40526             0.980                       70.31            0.793
+#> 95        13.62              0.12846             0.841                       35.91            0.772
+#> 96        24.38              0.22998             0.843                       17.98            0.772
+#> 97        20.96              0.19777             0.868                       26.75            0.772
+#> 98        47.04              0.44380             0.902                       11.51            0.772
+#> 99       333.00              0.23418             0.843                       17.58            0.740
+#> 100      393.46              0.27670             0.853                       15.17            0.740
+#> 101      201.54              0.14173             0.801                       24.37            0.740
+#> 102      494.00              0.34740             0.850                       10.64            0.740
+#> 103       25.30              0.23872             0.872                       21.82            0.803
+#> 104       22.90              0.21603             0.867                       23.72            0.803
+#> 105       46.89              0.44233             0.903                       11.76            0.803
+#> 106       10.91              0.10292             0.898                       76.59            0.803
+#> 107      201.06              0.14140             0.803                       24.78            0.751
+#> 108      305.31              0.21471             0.831                       17.96            0.751
+#> 109      461.42              0.32448             0.826                        9.90            0.751
+#> 110      392.81              0.27624             0.853                       15.15            0.751
+#> 111       61.40              0.04318             0.786                       81.56            0.751
 #> 112       23.02              0.21714             0.926                       44.87            0.830
-#> 113       25.69              0.24237             0.882                       23.26            0.830
-#> 114       11.14              0.10505             0.899                       75.62            0.830
-#> 115       46.16              0.43544             0.909                       12.98            0.830
-#> 116      466.75              0.32823             0.830                        9.98            0.725
-#> 117      114.80              0.08073             0.847                       63.10            0.725
-#> 118      320.60              0.22546             0.806                       14.24            0.725
-#> 119      167.55              0.11783             0.765                       24.39            0.725
-#> 120      192.57              0.13542             0.797                       25.09            0.725
-#> 121      159.73              0.11233             0.654                       14.97            0.725
-#> 122       25.05              0.23630             0.898                       28.53            0.851
-#> 123       13.24              0.12488             0.907                       68.41            0.851
-#> 124       23.33              0.22010             0.919                       40.18            0.851
-#> 125       44.38              0.41872             0.940                       21.71            0.851
+#> 113       11.14              0.10505             0.899                       75.63            0.830
+#> 114       25.69              0.24240             0.882                       23.27            0.830
+#> 115       46.15              0.43542             0.909                       12.98            0.830
+#> 116      320.63              0.22548             0.806                       14.24            0.726
+#> 117      167.52              0.11781             0.765                       24.39            0.726
+#> 118      158.37              0.11137             0.654                       15.05            0.726
+#> 119      114.83              0.08075             0.847                       63.11            0.726
+#> 120      193.25              0.13590             0.797                       24.99            0.726
+#> 121      467.40              0.32869             0.831                       10.03            0.726
+#> 122       13.24              0.12489             0.907                       68.44            0.851
+#> 123       23.34              0.22015             0.919                       40.30            0.851
+#> 124       25.05              0.23636             0.914                       34.51            0.851
+#> 125       44.37              0.41860             0.930                       18.41            0.851
 ```
 
 `plot_selection(x, what = "diagnostics")` displays relative entropy and
@@ -1172,8 +1186,10 @@ ones therefore exhibits moderate AvePP together with low entropy.
 The two levels of a two-level model are classified on the basis of
 different amounts of information. A group’s class is inferred from all
 of its observations jointly, whereas an observation’s profile is
-inferred from its own responses alone; group classes are consequently
-classified with considerably greater certainty. For a single candidate,
+inferred from its own responses and the group’s inferred class, which
+also uses the other observations in that group. Certainty at either
+level depends on the fitted separation and available information. For a
+single candidate,
 [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
 displays both levels:
 
@@ -1315,9 +1331,9 @@ comparison
 #> 
 #> Model              Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------
-#> profiles3_groups3         3              3  38  -8348.43  16874.07  21.92   0.000  17622.03     0.79       0.85      0           0.80             0.86
-#> profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87
-#> profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98
+#> profiles3_groups3         3              3  38  -8348.43  16874.07  21.92   0.000  17663.42     0.79       0.84      0           0.80             0.86
+#> profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18045.06     0.74       0.80      0           0.82             0.86
+#> profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18027.20     0.74       0.79      1           0.94             0.98
 plot(comparison)
 ```
 
@@ -1333,17 +1349,22 @@ chosen <- get_candidate(models, "profiles4_groups3")
 chosen
 #> Two-level latent profile analysis: 4 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8307.154320 | AIC: 16716.309 | BIC (groups): 16852.144
-#> Converged: TRUE | iterations: 48 | best start: 3/3
-#> Smallest standardized Gaussian eigenvalue: 0.195 (profiles, profile_4); Gaussian mass: 330.8; weight effective n: 434.9.
+#> Log likelihood: -8307.154420 | AIC: 16716.309 | BIC (groups): 16852.144
+#> Converged: TRUE | iterations: 70 | best log likelihood reached by 3 of 3 starts (3 converged)
+#> Smallest standardized Gaussian eigenvalue: 0.1951 (profiles, profile_4); Gaussian mass: 331.1; weight effective n: 435.2.
 #> 
-#>  profile browse lectures forum_read forum_post attendance count proportion
-#>        1  0.412    0.232      0.490      0.383      0.309   497      0.350
-#>        2 -0.564   -0.561     -0.695     -0.676     -0.656   392      0.276
-#>        3 -1.113   -0.685     -1.200     -0.880     -1.417   202      0.142
-#>        4  0.728    0.734      0.821      0.763      1.180   331      0.233
+#> Class sizes   profile_1 34.9% (497)   profile_2 14.2% (201)   profile_3 27.6% (393)   profile_4 23.3% (331)
+#> Group classes group_class_1 28.9% (31)   group_class_2 25.8% (27)   group_class_3 45.3% (48)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3 profile_4
+#>      browse     0.412    -1.114    -0.564     0.728
+#>    lectures     0.232    -0.685    -0.562     0.734
+#>  forum_read     0.490    -1.201    -0.695     0.821
+#>  forum_post     0.383    -0.880    -0.676     0.763
+#>  attendance     0.309    -1.418    -0.657     1.180
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -1371,11 +1392,13 @@ smaller <- get_candidate(models, "profiles3_groups3")
 larger <- get_candidate(models, "profiles4_groups3")
 test <- bootstrap_lrt(smaller, larger, data = course_engagement,
                       iter = 19, n_starts = 2, seed = 1)
+#> Warning: Profile 4: 7.2 Gaussian membership mass for 10 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 test
 #> Parametric bootstrap likelihood-ratio comparison
 #> Null: 3 profiles, 3 group classes; alternative: 4 profiles, 3 group classes
-#> Observed statistic: 82.548767
-#> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates
+#> Observed statistic: 82.548643
+#> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)
 plot(test)
 ```
 
@@ -1410,12 +1433,12 @@ subset(get_results(models, "lmr"), n_group_classes == 3)
 #> 26      profiles profiles5_groups3     profiles6_groups3          6               3   VVI      NA
 #>    parameters_added    lr   vlmr_p adjusted_lr   almr_p reference_mean reference_sd
 #> 12                2  37.5 3.43e-07        33.9 1.32e-06           0.76         3.37
-#> 14                3  32.2 6.29e-05        30.0 1.21e-04           2.95         4.15
-#> 16                4  38.1 2.63e-04        36.1 4.06e-04           4.70         5.86
+#> 14                3  32.2 6.27e-05        30.0 1.20e-04           2.95         4.15
+#> 16                4  38.1 2.26e-04        36.1 3.53e-04           4.65         5.80
 #> 18               NA    NA       NA          NA       NA             NA           NA
 #> 19               NA    NA       NA          NA       NA             NA           NA
-#> 20               13 145.3 4.15e-13       142.9 6.80e-13          13.74         6.38
-#> 22               13  82.5 5.18e-05        81.2 6.12e-05          14.94         8.15
+#> 20               13 145.3 4.17e-13       142.9 6.83e-13          13.73         6.38
+#> 22               13  82.5 4.58e-05        81.2 5.43e-05          14.88         8.08
 #> 24               NA    NA       NA          NA       NA             NA           NA
 #> 26               NA    NA       NA          NA       NA             NA           NA
 #>                                                                                                                                                                                                                                                  note

@@ -1,10 +1,12 @@
-# Extract starting values for a latent profile fit
+# Extract starting values for a subsequent fit
 
-Returns a `multilpa_start` object, the starting-value list
+Extract parameter values from a fitted model for use as starting values
+in a subsequent
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-accepts as `start`, taken from a fitted model or from any list that
-carries the parameter blocks. The blocks are validated when the list is
-built.
+fit. Measurement parameters can be extracted separately when membership
+probabilities should be re-estimated. Supplying starting values does not
+hold parameters fixed; use the fitting function's `fixed` argument to
+impose those constraints.
 
 ## Usage
 
@@ -26,7 +28,8 @@ starting_values(
   `response_probabilities` for categorical ones. An all-categorical
   model needs no Gaussian block. Other elements are ignored. A missing
   block raises `latents_bad_start`; a fit with a noise component raises
-  `latents_unsupported_noise`.
+  `latents_unsupported_noise`; anything that is not a list raises
+  `latents_bad_argument`.
 
 - covariance:
 
@@ -62,10 +65,18 @@ matches the blocks by these labels, so a fit whose categorical
 indicators or categories do not match raises `latents_bad_start`. The
 object can be passed directly as `start`.
 
+## Details
+
+This is an advanced utility for controlled refitting and selective
+parameter constraints. Required blocks are checked during extraction;
+further numerical and model-specific validation occurs during fitting.
+
 ## See also
 
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-for the values as tidy tables.
+for the values as tidy tables;
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+for two-stage estimation with fixed measurement parameters.
 
 ## Examples
 
@@ -85,10 +96,10 @@ starting_values(fit)
 #> Pass this to multilpa(start = ) as it is.
 as.data.frame(starting_values(fit))
 #>   profile indicator        mean  variance standard_deviation
-#> 1       1         1  0.31636979 0.7483074          0.8650476
-#> 2       1         2 -0.05291982 0.9149785          0.9565451
-#> 3       2         1 -1.11359585 0.1018727          0.3191750
-#> 4       2         2  0.79091589 0.2857973          0.5346002
+#> 1       1         1  0.31636435 0.7483133          0.8650510
+#> 2       1         2 -0.05291897 0.9149761          0.9565438
+#> 3       2         1 -1.11359384 0.1018719          0.3191738
+#> 4       2         2  0.79093314 0.2857893          0.5345926
 refit <- multilpa(example_data, c("score_a", "score_b"), "school",
                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
                     start = starting_values(fit))

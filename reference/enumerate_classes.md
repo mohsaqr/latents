@@ -1,12 +1,24 @@
-# Enumerate numbers of individual profiles and group classes
+# Class enumeration and comparison of mixture models
 
-Fits every requested combination of profile count, group-class count and
-covariance structure and returns the candidates with their information
-criteria and classification diagnostics. Errors and warnings of each
-candidate are kept in the table alongside the successful fits.
-Information criteria are descriptive: neither the smallest BIC nor high
-entropy guarantees the correct number of classes. Unconverged, boundary
-and unreplicated fits are reported, not silently selected.
+Class enumeration evaluates alternative numbers of latent classes to
+inform model selection. `enumerate_classes()` fits a specified set of
+candidate models and summarizes their fit, classification quality, and
+estimation diagnostics. It supports latent profile, latent class, and
+latent transition models, including multilevel specifications.
+
+For multilevel profile and class models, candidates can differ in the
+number of observation-level profiles or classes, the number of
+group-level classes, and, for continuous indicators, the within-profile
+covariance structure. Comparing these specifications allows the analyst
+to assess both the latent class structure and the assumptions used to
+represent variation within classes.
+
+The function retains the fitted candidates and provides tables for
+comparing information criteria, posterior classification probabilities,
+class sizes, and convergence diagnostics. Individual models can be
+extracted with
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+for further examination and analysis.
 
 ## Usage
 
@@ -33,11 +45,16 @@ enumerate_classes(
 
 - data:
 
-  Data frame.
+  A data frame with one row per observation and columns containing the
+  indicators, group identifier and, when applicable, occasion order and
+  covariates. Use the same observations and measurement scale throughout
+  a candidate comparison.
 
 - vars:
 
-  Indicator column names.
+  Character vector naming the indicator columns in `data`. Indicator
+  distributions are determined by `type` and the measurement arguments
+  supplied through `...`.
 
 - id:
 
@@ -80,9 +97,10 @@ enumerate_classes(
 
 - seed:
 
-  Optional seed for each fit: a whole number
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts. Anything
-  else raises `latents_bad_argument` before any candidate is fitted.
+  Optional integer random seed accepted by
+  [`set.seed()`](https://rdrr.io/r/base/Random.html). Used to reproduce
+  the starting values for the same data and fitting controls. Invalid
+  values raise `latents_bad_argument` before fitting begins.
 
 - family:
 
@@ -91,7 +109,7 @@ enumerate_classes(
   group-class families `"additive"`, `"dispersion"` and
   `"additive_dispersion"` enumerates those instead, over `family`,
   `n_group_classes` and `between_variance`; these need `id`,
-  `n_profiles` and `model` are then refused, and the result is a
+  `n_profiles` and `model` are then rejected, and the result is a
   `latents_family_enumeration`, read with
   [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
   and
@@ -119,59 +137,33 @@ enumerate_classes(
 
 - ...:
 
-  Further arguments to
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  (or to [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
-  with `time`), applied to every candidate, such as `n_starts` (random
-  starts per candidate), `max_iter`, `missing`, `categorical`,
-  `centering`, `scaling`, `drop_empty` and `boundary` (`"exclude"` sets
-  aside starts with a variance at `min_variance`, degenerate solutions
-  that become more likely as `n_starts` grows). For example,
-  `enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)`.
-  Group-class families take only `n_starts`, `max_iter`, `tol` and
-  `min_variance`.
+  Additional fitting arguments passed to
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  or to [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  when `time` is supplied. The same settings are used for each
+  candidate. Common arguments include `n_starts`, `max_iter`, `missing`,
+  `categorical`, `centering`, `scaling`, `drop_empty` and `boundary`.
+  The group-class families accept only `n_starts`, `max_iter`, `tol` and
+  `min_variance` through `...`.
 
 - cores:
 
-  Number of processor cores to fit the candidates on (default 1). Each
-  candidate sets and restores its own random seed, so with `seed` given
-  the result is identical to `cores = 1`. Candidates are fitted by
-  forked processes on macOS and Linux, and by a socket cluster on
-  Windows and on macOS when R uses Apple's Accelerate BLAS (socket
-  workers load the installed package). Warnings and messages from the
-  workers are passed on in grid order once all have finished. Without
-  `seed`, the random starts differ between runs on any number of cores.
-  Lost worker results are retried once with half as many workers
-  (rounded up). One `latents_worker_lost` warning reports how many tasks
-  were lost and recovered, and suggests fewer cores. A task still lost
-  becomes a failed start (for flat start grids) or a failed candidate;
-  the other results are retained. On sockets, bounded chunks preserve
-  earlier results when a connection breaks; completed tasks within the
-  failed chunk may also be retried. Each core holds its own copy of the
-  fits it computes;
-  [`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html)
-  gives the number available. Transition grids (`time`) and profile
-  grids (including categorical-only latent class models) distribute
-  individual starts across one pool, longest estimated first, with at
-  most `cores` workers and no nested workers. Both emEM screening and
-  finalist runs use the pool; `search` keeps the same defaults as
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
-  Setup, ordered starting values, start selection and finalisation stay
-  in the current process. Profile models with membership covariates or
-  joined categorical `local_dependence` pairs instead occupy one worker
-  per candidate in the same pool, with serial starts. Group-class
-  families also keep candidate-level parallelism.
+  Positive integer maximum number of parallel workers; the default, `1`,
+  fits models serially. With a fixed `seed`, parallel and serial
+  execution produce the same results. Parallel fitting requires
+  additional memory. See *Parallel estimation* for platform requirements
+  and the handling of interrupted workers.
 
 - type:
 
   Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL` (the default)
-  keeps the existing routing and measurement settings. `"lca"` treats
-  every indicator as categorical, as
+  determines the model from the other arguments. `"lca"` treats every
+  indicator as categorical, as
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
   does: indicators named in `ordinal` or `count` keep those
   distributions, and `categorical` adds to the set rather than replacing
   it. Numeric response codes are categorical with `type = "lca"`.
-  `"lpa"` requires continuous indicators and refuses non-empty
+  `"lpa"` requires continuous indicators and rejects non-empty
   `categorical`, `ordinal` or `count`. Both require `time = NULL`.
   `"lta"` requires `time` and takes its measurement settings from
   `categorical`, as
@@ -193,8 +185,7 @@ enumerate_classes(
 An object of class `multilpa_enumeration` (or the transition or family
 enumeration described above). Its `type` records the resolved model:
 `"lca"`, `"lpa"` or `"lta"`, or `"mixed"`/`"family"` for those grids
-under `type = NULL`. The print header shows this type; table columns are
-unchanged.
+under `type = NULL`. The print header reports this type.
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives one
 row per candidate, starting with its name (`"profiles3_groups2"`), with
 every criterion and diagnostic (including both entropies and, at each
@@ -210,9 +201,46 @@ criterion's minimum and every table,
 information criteria (and, with `what`, classification quality and
 model-selection views),
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-returns the fitted model of one candidate, and
+extracts a fitted candidate, and
 [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
-puts candidates side by side; these verbs take candidates by name.
+compares candidates selected by name.
+
+## Model selection
+
+Information criteria summarize relative support for the candidate
+specifications, whereas entropy and posterior membership probabilities
+describe classification uncertainty within each fitted model. These
+measures address different aspects of the analysis. Model selection
+should also examine whether the selected likelihood is replicated across
+starts, whether estimates approach parameter bounds, and whether
+additional classes yield interpretable differences in response patterns.
+The function reports this evidence without prescribing a final number of
+classes.
+
+Comparisons of class counts depend on the measurement specification. For
+example, additional profiles can represent residual associations that a
+diagonal covariance model cannot accommodate within profiles. Evaluate
+the number of classes alongside plausible covariance structures and
+indicator distributions. The candidate range and fitting controls are
+supplied by the analyst; the function does not expand the range
+automatically.
+
+## Parallel estimation
+
+Socket workers are used on Windows and on macOS with Apple's Accelerate
+BLAS; these workers load the installed package, which must match the
+version used in the main R session. Other supported Unix configurations
+use forked processes. Each worker requires memory for its fitting tasks.
+
+Depending on the model family, parallel tasks consist of individual
+starts or complete candidate models. The total number of workers does
+not exceed `cores`. Warnings and messages are reported in candidate
+order. Without a fixed `seed`, starting values can differ between runs.
+
+Lost worker results are retried once with fewer workers, and a
+`latents_worker_lost` warning reports the interruption. Unrecovered
+tasks are recorded as failed starts or candidates; other results are
+retained.
 
 ## Conditions
 
@@ -226,8 +254,8 @@ does not take; when `n_group_classes` other than 1 is given with
 `id = NULL`; when `id` is missing; when `between_variance` is given for
 the profile family; when `n_profiles` or `model` is given for a
 group-class family, or `id` is `NULL`; when `time` is combined with a
-group-class family or with `between_variance`; and when `cores` is not a
-whole number of at least 1; and when `type` is invalid or conflicts with
+group-class family or with `between_variance`; and when `cores` is not
+an integer of at least 1; and when `type` is invalid or conflicts with
 `time`, `family` or the requested measurement distributions.
 
 ## References
@@ -238,7 +266,7 @@ models. *Pattern Recognition*, 28(5), 781–793.
 ## See also
 
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-to take one fitted model out of the grid,
+to extract a fitted candidate,
 [`summary()`](https://rdrr.io/r/base/summary.html) for the
 criterion-by-criterion comparison.
 
@@ -262,19 +290,19 @@ as.data.frame(candidates)
 #> 4            5 271.1839 279.1839   272.6968       284.2098     257.7182
 #>   sabic_individual caic_groups caic_individual awe_groups awe_individual
 #> 1         264.2039    267.9152        272.5204   276.5204       285.7307
-#> 2         266.9458    274.3684        283.5788   291.5788       385.9162
+#> 2         266.9458    274.3684        283.5788   367.5789       385.9996
 #> 3         264.2039    267.9152        272.5204   276.5204       285.7307
-#> 4         268.4185    277.6968        289.2098   299.2098       449.6156
+#> 4         268.4185    277.6968        289.2098   426.5893       449.6151
 #>   icl_groups icl_individual clc_groups clc_individual profile_entropy
 #> 1   265.9152       270.5204   261.3100       261.3100              NA
-#> 2   270.3684       355.4955   261.1581       337.0748      0.45237653
+#> 2   346.3686       355.5789   337.1583       337.1583      0.45177478
 #> 3   265.9152       270.5204   261.3100       261.3100              NA
-#> 4   272.6968       411.5897   261.1839       388.5639      0.08114782
+#> 4   400.0763       411.5893   388.5634       388.5634      0.08115115
 #>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
 #> 1            NA        NA        NA         NA          NA              NA
-#> 2            NA 0.6402627 0.8532616  0.7467621           1              NA
+#> 2            NA 0.6411851 0.8529074  0.7470462           1              NA
 #> 3            NA        NA        NA         NA          NA              NA
-#> 4            NA 0.6380900 0.6405463  0.6393181           2              NA
+#> 4            NA 0.6380736 0.6405599  0.6393168           2              NA
 #>   group_avepp_max group_avepp_mean group_avepp_below converged boundary
 #> 1              NA               NA                NA      TRUE    FALSE
 #> 2              NA               NA                NA      TRUE    FALSE
@@ -282,9 +310,9 @@ as.data.frame(candidates)
 #> 4              NA               NA                NA      TRUE    FALSE
 #>   min_standardized_eigenvalue min_gaussian_mass n_best_replicated warnings
 #> 1                   1.0000000         100.00000                 2         
-#> 2                   0.8403157          17.63499                 2         
+#> 2                   0.8400023          17.67382                 2         
 #> 3                   1.0000000         100.00000                 2         
-#> 4                   0.8201227          44.58310                 2         
+#> 4                   0.8201279          44.58165                 2         
 #>   error
 #> 1  <NA>
 #> 2  <NA>
@@ -292,7 +320,7 @@ as.data.frame(candidates)
 #> 4  <NA>
 summary(candidates)
 #> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
-#> 3 distinct candidate(s) are minimal under some criterion.
+#> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
 #> The candidates table shows 15 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
@@ -304,7 +332,7 @@ summary(candidates)
 #>  profiles2_groups1_VVI          2   VVI         -130.6            5 271.2
 #>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_mean
 #>       265.9          270.5          270.5              NA        NA         NA
-#>       270.4          279.6          355.5         0.45238    0.6403     0.7468
+#>       270.4          279.6          355.6         0.45177    0.6412     0.7470
 #>       265.9          270.5          270.5              NA        NA         NA
 #>       272.7          284.2          411.6         0.08115    0.6381     0.6393
 #>  avepp_below converged boundary
@@ -370,13 +398,13 @@ summary(candidates)
 #>  profiles2_groups1_VVI          2               1   VVI individuals     1
 #>  profiles2_groups1_VVI          2               1   VVI individuals     2
 #>  n_modal proportion_modal estimated_n estimated_proportion average_posterior
-#>        6             0.06       17.63               0.1763            0.6403
-#>       94             0.94       82.37               0.8237            0.8533
+#>        6             0.06       17.67               0.1767            0.6412
+#>       94             0.94       82.33               0.8233            0.8529
 #>       31             0.31       44.58               0.4458            0.6381
-#>       69             0.69       55.42               0.5542            0.6405
+#>       69             0.69       55.42               0.5542            0.6406
 #>  odds_correct_classification relative_entropy
-#>                        8.313          0.45238
-#>                        1.245          0.45238
+#>                        8.324          0.45177
+#>                        1.245          0.45177
 #>                        2.192          0.08115
 #>                        1.434          0.08115
 #> 
@@ -416,8 +444,8 @@ summary(candidates)
 #>   VVI individuals profiles1_groups1_VVI          1          1
 #>   VVI individuals profiles1_groups1_VVI          1          1
 #>           to_candidate to_class to_share   mass share_of_from share_of_to
-#>  profiles2_groups1_EEI        1   0.1763 0.1763        0.1763           1
-#>  profiles2_groups1_EEI        2   0.8237 0.8237        0.8237           1
+#>  profiles2_groups1_EEI        1   0.1767 0.1767        0.1767           1
+#>  profiles2_groups1_EEI        2   0.8233 0.8233        0.8233           1
 #>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1
 #>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1
 #> 
@@ -519,7 +547,7 @@ summary(single)
 #>                    157977.78           0.9999
 #>                          Inf           0.9999
 #>                          Inf           0.9704
-#>                       129.96           0.9704
+#>                       129.97           0.9704
 #>                       138.39           0.9704
 #>                    329661.62           0.9999
 #>                    147652.77           0.9999
@@ -577,9 +605,9 @@ summary(single)
 #>    0.6667 6.667e-01     6.667e-01   1.000e+00
 #>    0.3333 3.333e-01     1.000e+00   1.000e+00
 #>    0.3333 4.220e-06     6.330e-06   1.266e-05
-#>    0.2992 2.274e-17     6.822e-17   7.601e-17
+#>    0.2992 2.275e-17     6.824e-17   7.603e-17
 #>    0.2992 2.992e-01     4.488e-01   1.000e+00
-#>    0.3675 2.016e-21     6.047e-21   5.485e-21
+#>    0.3675 2.015e-21     6.044e-21   5.482e-21
 #>    0.3675 3.675e-01     5.512e-01   1.000e+00
 #>    0.3333 3.333e-01     3.333e-01   1.000e+00
 #>    0.6667 6.667e-01     6.667e-01   1.000e+00

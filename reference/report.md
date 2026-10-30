@@ -1,8 +1,19 @@
-# Print a full report of a fitted model
+# Display model estimates and diagnostic summaries
 
-Prints the model summary, the descriptive statistics of its variables
-and the classification diagnostics, then draws every plot view the fit
-supports.
+`report()` provides a combined overview of a fitted profile, class, or
+supported transition model. It brings together parameter estimates,
+descriptive statistics, and diagnostic checks to support examination of
+the estimated class structure, numerical convergence, classification
+uncertainty, and residual associations.
+
+Output is displayed in the R session, with optional plots appropriate to
+the fitted model. The function returns the original fitted model
+invisibly. Individual tables remain available through
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+[`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
+and
+[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+for further analysis or reporting.
 
 ## Usage
 
@@ -21,12 +32,26 @@ report(
 
 - x:
 
-  A fitted model of this package.
+  A profile, class or transition fit: from
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  or
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  (with or without membership covariates), or from
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with
+  time-homogeneous transitions. A fit of another family (a mixture
+  regression, growth mixture, general transition, additive or
+  cross-level model) raises `latents_not_a_fit`; its own
+  [`summary()`](https://rdrr.io/r/base/summary.html),
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  and [`plot()`](https://rdrr.io/r/graphics/plot.default.html) report
+  it.
 
 - data:
 
-  Optional. The data the model was fitted to; a fit carries the columns
-  it was built from.
+  Optional data frame used to fit the model. The required columns are
+  stored in the fitted object.
 
 - plots:
 
@@ -53,15 +78,15 @@ report(
 
 The fitted model, invisibly. Called for its printed and plotted output.
 
-## What it prints
+## Report contents
 
-[`summary()`](https://rdrr.io/r/base/summary.html), then
+Output is presented in the following order:
+[`summary()`](https://rdrr.io/r/base/summary.html),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-then the one-line-per-diagnostic reading of
+the checks from
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
-then every plot view the fit supports. Views that the plot method
-declines for this model are listed after the plots as not drawn. The
-tables themselves are obtained from
+and the supported plot views. Any omitted views are listed after the
+plots. The underlying tables can be accessed separately using
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
@@ -89,7 +114,7 @@ report(fit, plots = FALSE)
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609
-#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00844).
+#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00711).
 #> 
 #> -- profiles --------------------------------------------------------
 #>  profile  indicator    mean variance standard_deviation mean_standard_error
@@ -142,17 +167,17 @@ report(fit, plots = FALSE)
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
-#>            1       1      0.7859                  0.6747
-#>            1       2      0.2141                  0.6747
-#>            2       1      0.1705                  0.3253
-#>            2       2      0.8295                  0.3253
+#>            1       1      0.1705                  0.3253
+#>            1       2      0.8295                  0.3253
+#>            2       1      0.7859                  0.6747
+#>            2       2      0.2141                  0.6747
 #> 
 #> -- counts ----------------------------------------------------------
 #>        level class effective_count effective_proportion
 #>  individuals     1          834.10               0.5866
 #>  individuals     2          587.90               0.4134
-#>       groups     1           71.52               0.6747
-#>       groups     2           34.48               0.3253
+#>       groups     1           34.48               0.3253
+#>       groups     2           71.52               0.6747
 #> 
 #> -- posteriors ------------------------------------------------------
 #>  row group profile posterior modal
@@ -170,33 +195,33 @@ report(fit, plots = FALSE)
 #> 
 #> -- group_posteriors ------------------------------------------------
 #>  group group_size log_likelihood group_class posterior modal
-#>      1         13         -61.52           1 1.473e-05 FALSE
-#>      2         13         -71.94           1 6.391e-08 FALSE
-#>      3         14         -76.69           1 1.000e+00  TRUE
-#>      4         13         -67.56           1 1.000e+00  TRUE
-#>      5         14         -78.80           1 1.248e-06 FALSE
-#>      6         12         -80.90           1 9.802e-01  TRUE
-#>      7         15         -89.36           1 1.000e+00  TRUE
-#>      8         14         -85.22           1 1.067e-03 FALSE
-#>      9         14         -83.80           1 1.000e+00  TRUE
-#>     10         15         -82.06           1 1.565e-06 FALSE
+#>      1         13         -61.52           1 1.000e+00  TRUE
+#>      2         13         -71.94           1 1.000e+00  TRUE
+#>      3         14         -76.69           1 6.005e-10 FALSE
+#>      4         13         -67.56           1 1.327e-09 FALSE
+#>      5         14         -78.80           1 1.000e+00  TRUE
+#>      6         12         -80.90           1 1.984e-02 FALSE
+#>      7         15         -89.36           1 1.123e-09 FALSE
+#>      8         14         -85.22           1 9.989e-01  TRUE
+#>      9         14         -83.80           1 4.309e-10 FALSE
+#>     10         15         -82.06           1 1.000e+00  TRUE
 #>    ... 202 more rows.  get_results(x, what = "group_posteriors")
 #> 
 #> -- assignments -----------------------------------------------------
 #>  student browse lectures forum_read forum_post attendance profile group_class
-#>        1   0.73    -0.08       0.30       0.67       0.72       1           2
-#>        1   0.68     0.53      -0.02      -0.55       0.70       1           2
-#>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           2
-#>        1   0.64    -1.02      -1.62      -1.20      -1.26       2           2
-#>        1  -0.94    -0.37      -0.71      -0.28      -1.52       2           2
-#>        1  -0.36    -0.46      -0.77      -0.43      -1.34       2           2
-#>        1   0.38    -1.85      -0.84      -1.09      -1.12       2           2
-#>        1  -1.44     0.66      -0.67      -1.67      -1.00       2           2
-#>        1  -0.76    -0.43      -1.04      -0.69      -1.37       2           2
-#>        1   0.26    -0.95      -0.51      -1.89      -1.45       2           2
+#>        1   0.73    -0.08       0.30       0.67       0.72       1           1
+#>        1   0.68     0.53      -0.02      -0.55       0.70       1           1
+#>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1
+#>        1   0.64    -1.02      -1.62      -1.20      -1.26       2           1
+#>        1  -0.94    -0.37      -0.71      -0.28      -1.52       2           1
+#>        1  -0.36    -0.46      -0.77      -0.43      -1.34       2           1
+#>        1   0.38    -1.85      -0.84      -1.09      -1.12       2           1
+#>        1  -1.44     0.66      -0.67      -1.67      -1.00       2           1
+#>        1  -0.76    -0.43      -1.04      -0.69      -1.37       2           1
+#>        1   0.26    -0.95      -0.51      -1.89      -1.45       2           1
 #>  uncertainty posterior_profile_1 posterior_profile_2
 #>    4.436e-04           9.996e-01           0.0004436
-#>    1.485e-02           9.851e-01           0.0148536
+#>    1.485e-02           9.851e-01           0.0148535
 #>    2.421e-06           2.421e-06           0.9999976
 #>    3.863e-06           3.863e-06           0.9999961
 #>    5.749e-06           5.749e-06           0.9999943
@@ -211,13 +236,13 @@ report(fit, plots = FALSE)
 #>        level class n_modal proportion_modal estimated_n estimated_proportion
 #>  individuals     1     836           0.5879      834.10               0.5866
 #>  individuals     2     586           0.4121      587.90               0.4134
-#>       groups     1      71           0.6698       71.52               0.6747
-#>       groups     2      35           0.3302       34.48               0.3253
+#>       groups     1      35           0.3302       34.48               0.3253
+#>       groups     2      71           0.6698       71.52               0.6747
 #>  average_posterior odds_correct_classification
 #>             0.9849                       46.08
 #>             0.9818                       76.35
-#>             0.9920                       59.89
 #>             0.9690                       64.80
+#>             0.9920                       59.89
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
@@ -225,10 +250,10 @@ report(fit, plots = FALSE)
 #>  individuals              1     2        836          0.015065
 #>  individuals              2     1        586          0.018243
 #>  individuals              2     2        586          0.981757
-#>       groups              1     1         71          0.992014
-#>       groups              1     2         71          0.007986
-#>       groups              2     1         35          0.031015
-#>       groups              2     2         35          0.968985
+#>       groups              1     1         35          0.968985
+#>       groups              1     2         35          0.031015
+#>       groups              2     1         71          0.007986
+#>       groups              2     2         71          0.992014
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
@@ -236,10 +261,10 @@ report(fit, plots = FALSE)
 #>  individuals          1              2     0.01282
 #>  individuals          2              1     0.02142
 #>  individuals          2              2     0.97858
-#>       groups          1              1     0.98482
-#>       groups          1              2     0.01518
-#>       groups          2              1     0.01644
-#>       groups          2              2     0.98356
+#>       groups          1              1     0.98356
+#>       groups          1              2     0.01644
+#>       groups          2              1     0.01518
+#>       groups          2              2     0.98482
 #> 
 #> -- bch_weights -----------------------------------------------------
 #>        level unit assigned_class class   weight
@@ -259,6 +284,12 @@ report(fit, plots = FALSE)
 #>        level n_classes n_units entropy_sum relative_entropy
 #>  individuals         2    1422      60.940           0.9382
 #>       groups         2     106       4.435           0.9396
+#> 
+#> -- replication -----------------------------------------------------
+#>  n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+#>         4          0           4        0                 4     1   0.00711
+#>  best_start log_likelihood
+#>           1          -8440
 #> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual
@@ -289,9 +320,9 @@ report(fit, plots = FALSE)
 #>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups
 #>           -8440           23 16926 16952      16987          17047        16914
 #>  sabic_individual caic_groups caic_individual awe_groups awe_individual
-#>             16974       17010           17070      17172          17404
+#>             16974       17010           17070      17292          17412
 #>  icl_groups icl_individual clc_groups clc_individual
-#>       16996          17168      16889          17002
+#>       17116          17176      17009          17009
 #> 
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
@@ -314,7 +345,7 @@ report(fit, plots = FALSE)
 #>      1          -8440      TRUE          9  <NA>    FALSE
 #>      2          -8440      TRUE         12  <NA>    FALSE
 #>      3          -8440      TRUE          9  <NA>    FALSE
-#>      4          -8440      TRUE         12  <NA>    FALSE
+#>      4          -8440      TRUE          9  <NA>    FALSE
 #> 
 #> -- data ------------------------------------------------------------
 #>  student browse lectures forum_read forum_post attendance
@@ -330,7 +361,7 @@ report(fit, plots = FALSE)
 #>        1   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 21 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 #> 
 #>     variable    n n_missing          mean        sd   min  max n_distinct
@@ -346,13 +377,37 @@ report(fit, plots = FALSE)
 #> 4      106 0.15034618
 #> 5      106 0.22145308
 #> 
-#> Classification quality: 2 profiles, 2 group classes
+#> Diagnostics: Two-level latent profile analysis, 2 profiles, 2 group classes
+#> 1 check needs attention: pairs dependent within a class
 #> 
-#>   Relative entropy     individuals 0.938    groups 0.940
-#>   Smallest class       individuals 587.9 (41.3%)    groups 34.5 (32.5%)
-#>   Lowest avg posterior individuals 0.982    groups 0.969
-#>   Largest residual     0.234  (lectures, attendance; profile_1)
+#> Estimation
+#>   ok     best start converged                                yes                      
+#>   info   best log likelihood reached by                      4 of 4 starts            
+#>   ok     starts failed or unfinished                         0 of 4                   
+#>   ok     estimates at a bound                                no                       
 #> 
-#> Tables: get_results(x, what = "entropy" | "classification" | 
-#>         "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+#> Class size
+#>   info   smallest class                         individuals  41.3% (n = 588, class 2) 
+#>   info   modal vs estimated proportions         individuals  largest gap 0.001        
+#>   ok     classes with no assigned unit          individuals  0 of 2                   
+#>   info   smallest class                         groups       32.5% (n = 34, class 1)  
+#>   info   modal vs estimated proportions         groups       largest gap 0.005        
+#>   ok     classes with no assigned group         groups       0 of 2                   
+#> 
+#> Classification
+#>   info   relative entropy                       individuals  0.938                    
+#>   info   lowest average posterior               individuals  0.982 (class 2)          
+#>   info   lowest odds of correct classification  individuals  46.1 (class 1)           
+#>   info   relative entropy                       groups       0.940                    
+#>   info   lowest average posterior               groups       0.969 (class 1)          
+#>   info   lowest odds of correct classification  groups       59.9 (class 2)           
+#> 
+#> Local independence
+#>   check  pairs dependent within a class                      9 of 20 tested pairs     BH-adjusted p < 0.05
+#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04; consider local_dependence = or a full covariance model
+#> 
+#> Information
+#>   info   log likelihood, parameters, BIC                     -8439.82, 23, 16986.89   
+#> 
+#> Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
 ```

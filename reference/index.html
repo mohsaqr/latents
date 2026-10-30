@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,22 @@
     </div>
 
     <div class="section level2">
+      <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="latents-package.html">latents-package</a></code> <code><a href="latents-package.html">latents</a></code>
+
+        </dt>
+        <dd>Latent Profile, Class and Transition Models</dd>
+      </dl></div><div class="section level2">
       <h2 id="fitting-models">Fitting models<a class="anchor" aria-label="anchor" href="#fitting-models"></a></h2>
 
       <div class="section-desc"><p>Two-level latent profile, latent class and latent transition models.</p></div>
@@ -109,21 +125,21 @@
           <code><a href="fit_staged.html">fit_staged()</a></code>
 
         </dt>
-        <dd>Fit a two-level model in stages, holding the measurement solution</dd>
+        <dd>Estimate group classes with fixed individual profile definitions</dd>
 
         <dt>
 
           <code><a href="starting_values.html">starting_values()</a></code>
 
         </dt>
-        <dd>Extract starting values for a latent profile fit</dd>
+        <dd>Extract starting values for a subsequent fit</dd>
 
         <dt>
 
-          <code><a href="prior_control.html">prior_control()</a></code> <code><a href="prior_control.html">print(<i>&lt;latents_prior&gt;</i>)</a></code>
+          <code><a href="prior_control.html">prior_control()</a></code>
 
         </dt>
-        <dd>Specify a conjugate prior for Gaussian mixture estimation</dd>
+        <dd>Specify prior settings for Gaussian profile estimation</dd>
       </dl></div><div class="section level2">
       <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a></h2>
 
@@ -139,7 +155,7 @@
           <code><a href="get_results.html">get_results()</a></code>
 
         </dt>
-        <dd>Extract the result tables of a fitted model</dd>
+        <dd>Extract model estimates and analysis results</dd>
 
         <dt>
 
@@ -150,17 +166,17 @@
 
         <dt>
 
-          <code><a href="diagnostics.html">diagnostics()</a></code> <code><a href="diagnostics.html">as.data.frame(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code> <code><a href="diagnostics.html">print(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code> <code><a href="diagnostics.html">plot(<i>&lt;multilpa_diagnostics&gt;</i>)</a></code>
+          <code><a href="diagnostics.html">diagnostics()</a></code>
 
         </dt>
-        <dd>Classification diagnostics of a fitted model</dd>
+        <dd>Diagnostics of a fitted model</dd>
 
         <dt>
 
           <code><a href="report.html">report()</a></code>
 
         </dt>
-        <dd>Print a full report of a fitted model</dd>
+        <dd>Display model estimates and diagnostic summaries</dd>
       </dl></div><div class="section level2">
       <h2 id="evaluating-a-model">Evaluating a model<a class="anchor" aria-label="anchor" href="#evaluating-a-model"></a></h2>
 
@@ -190,49 +206,42 @@
           <code><a href="enumerate_classes.html">enumerate_classes()</a></code>
 
         </dt>
-        <dd>Enumerate numbers of individual profiles and group classes</dd>
+        <dd>Class enumeration and comparison of mixture models</dd>
 
         <dt>
 
           <code><a href="get_candidate.html">get_candidate()</a></code> <code><a href="get_candidate.html">candidate_fit()</a></code>
 
         </dt>
-        <dd>Take one fitted model out of an enumeration grid or a comparison</dd>
+        <dd>Retrieve a fitted model from an enumeration or comparison</dd>
 
         <dt>
 
           <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>
 
         </dt>
-        <dd>Parametric bootstrap likelihood-ratio test of two nested models</dd>
+        <dd>Parametric bootstrap likelihood-ratio test for nested mixture models</dd>
 
         <dt>
 
           <code><a href="sensitivity.html">sensitivity()</a></code>
 
         </dt>
-        <dd>Refit a model under several seeds</dd>
+        <dd>Assess sensitivity of a fitted mixture model to initialisation</dd>
 
         <dt>
 
           <code><a href="parameter_inference.html">parameter_inference()</a></code>
 
         </dt>
-        <dd>Tidy inference for a covariate fit</dd>
-
-        <dt>
-
-          <code><a href="parameter_inference.multilpa_transitions.html">parameter_inference(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="parameter_inference.multilpa_transitions.html">vcov(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="parameter_inference.multilpa_transitions.html">confint(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Standard errors and intervals for a latent transition model</dd>
+        <dd>Standard errors, confidence intervals and tests for model parameters</dd>
 
         <dt>
 
           <code><a href="pool_imputations.html">pool_imputations()</a></code>
 
         </dt>
-        <dd>Fit a model to multiply imputed data and pool it with Rubin's rules</dd>
+        <dd>Fit and pool mixture models across multiple imputations</dd>
       </dl></div><div class="section level2">
       <h2 id="mixture-regression-and-growth-models">Mixture regression and growth models<a class="anchor" aria-label="anchor" href="#mixture-regression-and-growth-models"></a></h2>
 
@@ -248,25 +257,25 @@
           <code><a href="mixture_regression.html">mixture_regression()</a></code>
 
         </dt>
-        <dd>Fit a finite mixture of regressions</dd>
+        <dd>Estimate regression relationships that vary across latent classes</dd>
 
         <dt>
 
-          <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code> <code><a href="enumerate_regressions.html">as.data.frame(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">get_results(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">summary(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="enumerate_regressions.html">print(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code>
+          <code><a href="enumerate_regressions.html">enumerate_regressions()</a></code>
 
         </dt>
-        <dd>Compare mixture regressions with different numbers of classes</dd>
+        <dd>Assess the number of classes in mixture regression models</dd>
 
         <dt>
 
           <code><a href="compare_models.html">compare_models()</a></code>
 
         </dt>
-        <dd>Compare fitted models on the same data</dd>
+        <dd>Compare the fit and classification of mixture models</dd>
 
         <dt>
 
-          <code><a href="latents-predict.html">predict(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-predict.html">simulate(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-predict.html">predict(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-predict.html">simulate(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-predict.html">predict(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-predict.html">predict(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-predict.html">predict(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
+          <code><a href="latents-predict.html">predict(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-predict.html">simulate(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-predict.html">predict(<i>&lt;multilpa&gt;</i>)</a></code>
 
         </dt>
         <dd>Predict from and simulate a fitted model</dd>
@@ -285,14 +294,14 @@
           <code><a href="three_step.html">three_step()</a></code>
 
         </dt>
-        <dd>Estimate a distal outcome's mean in each latent class</dd>
+        <dd>Compare latent classes on an external outcome</dd>
 
         <dt>
 
           <code><a href="r3step.html">r3step()</a></code>
 
         </dt>
-        <dd>Regress latent class membership on covariates by the three-step approach</dd>
+        <dd>Relate latent class membership to external covariates</dd>
       </dl></div><div class="section level2">
       <h2 id="plots">Plots<a class="anchor" aria-label="anchor" href="#plots"></a></h2>
 
@@ -305,10 +314,10 @@
 
       <dl><dt>
 
-          <code><a href="latents-plots.html">plot(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_comparison&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_transition_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_lta&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_regression_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_profiles()</a></code> <code><a href="latents-plots.html">plot_responses()</a></code> <code><a href="latents-plots.html">plot_sequences()</a></code> <code><a href="latents-plots.html">plot_prevalence()</a></code> <code><a href="latents-plots.html">plot_diagnostics()</a></code> <code><a href="latents-plots.html">plot_transitions()</a></code> <code><a href="latents-plots.html">plot_tree()</a></code> <code><a href="latents-plots.html">plot_selection()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_enumeration()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-plots.html">plot_views()</a></code> <code><a href="latents-plots.html">plot(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-plots.html">plot(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
+          <code><a href="latents-plots.html">plot_profiles()</a></code> <code><a href="latents-plots.html">plot_responses()</a></code> <code><a href="latents-plots.html">plot_sequences()</a></code> <code><a href="latents-plots.html">plot_prevalence()</a></code> <code><a href="latents-plots.html">plot_diagnostics()</a></code> <code><a href="latents-plots.html">plot_transitions()</a></code> <code><a href="latents-plots.html">plot_tree()</a></code> <code><a href="latents-plots.html">plot_selection()</a></code> <code><a href="latents-plots.html">plot_enumeration()</a></code> <code><a href="latents-plots.html">plot_views()</a></code>
 
         </dt>
-        <dd>Plot latents results</dd>
+        <dd>Plot model estimates, classification summaries, and comparisons</dd>
       </dl></div><div class="section level2">
       <h2 id="transition-networks">Transition networks<a class="anchor" aria-label="anchor" href="#transition-networks"></a></h2>
 
@@ -324,14 +333,14 @@
           <code><a href="get_tna.html">get_tna()</a></code>
 
         </dt>
-        <dd>Build one transition network for the whole sample</dd>
+        <dd>Represent transitions between latent states as a network</dd>
 
         <dt>
 
           <code><a href="get_group_tna.html">get_group_tna()</a></code>
 
         </dt>
-        <dd>Build one transition network per latent group class</dd>
+        <dd>Construct transition networks for latent group classes</dd>
       </dl></div><div class="section level2">
       <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a></h2>
 
@@ -368,7 +377,7 @@
           <code><a href="growth_scores.html">growth_scores</a></code>
 
         </dt>
-        <dd>Achievement growth of students with three kinds of trajectory</dd>
+        <dd>Simulated achievement scores with three growth trajectories</dd>
 
         <dt>
 
@@ -382,7 +391,7 @@
           <code><a href="srl.html">srl</a></code>
 
         </dt>
-        <dd>Self-regulated learning scores simulated by a large language model</dd>
+        <dd>Self-regulated learning scores generated by a large language model</dd>
       </dl></div><div class="section level2">
       <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
 
@@ -395,10 +404,10 @@
 
       <dl><dt>
 
-          <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">confint(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">confint(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">vcov(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
+          <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">confint(<i>&lt;multilpa&gt;</i>)</a></code>
 
         </dt>
-        <dd>Coefficients, covariance, intervals and likelihood of latents fits</dd>
+        <dd>Extract model coefficients, covariance matrices and likelihood summaries</dd>
       </dl></div><div class="section level2">
       <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
 
@@ -414,7 +423,7 @@
           <code><a href="latents-conditions.html">latents-conditions</a></code>
 
         </dt>
-        <dd>Conditions raised by the package</dd>
+        <dd>Errors, warnings and diagnostic messages</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

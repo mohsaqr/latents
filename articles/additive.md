@@ -200,7 +200,7 @@ bootstrap_lrt(one_class, two_classes, iter = 19, n_starts = 3, seed = 1)
 #> Parametric bootstrap likelihood-ratio comparison
 #> Null: additive_equal, 1 group class; alternative: additive_equal, 2 group classes
 #> Observed statistic: 73.015578
-#> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates
+#> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)
 ```
 
 With 19 replicates the smallest attainable p-value is 0.05; use several
@@ -408,10 +408,10 @@ restricted <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                        seed = 1)
 get_results(full, "composition")
 #>     group_class   profile share
-#> 1 group_class_1 profile_1 0.834
-#> 2 group_class_2 profile_1 0.215
-#> 3 group_class_1 profile_2 0.166
-#> 4 group_class_2 profile_2 0.785
+#> 1 group_class_1 profile_1 0.166
+#> 2 group_class_2 profile_1 0.785
+#> 3 group_class_1 profile_2 0.834
+#> 4 group_class_2 profile_2 0.215
 rbind(get_results(full, "fit"), get_results(restricted, "fit"))
 #>                   family n_profiles n_group_classes log_likelihood n_parameters   aic
 #> 1       full_cross_level          2               2          -8512           43 17111

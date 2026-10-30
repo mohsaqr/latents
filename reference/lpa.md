@@ -1,13 +1,23 @@
 # Fit a latent profile model
 
-Fits a single-level latent profile model and returns a fitted `multilpa`
-object. The model is a finite mixture of multivariate normal
-distributions: each observation belongs to one of `n_profiles`
-unobserved profiles, and each profile has its own mean on every
-indicator. It is the model
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-fits with `id = NULL`, so every accessor, plot and inference verb of the
-package applies to the result.
+Latent profile analysis describes heterogeneity in continuous indicators
+through a specified number of latent profiles. Each profile represents a
+pattern of indicator means and within-profile variation. `lpa()`
+estimates these patterns using a finite mixture of multivariate normal
+distributions.
+
+By default, indicators are independent within profiles and their
+variances differ across profiles. Alternative covariance structures
+allow associations between indicators within profiles and equality
+constraints across profiles. The fitted model provides profile means,
+variances, proportions, and posterior membership probabilities for each
+observation, together with model-fit and classification summaries.
+
+The model treats observations as independent. For observations nested
+within groups, use
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+Additional measurement options support mixed continuous and discrete
+indicators.
 
 ## Usage
 
@@ -28,7 +38,7 @@ lpa(data, vars, n_profiles, ...)
 
 - n_profiles:
 
-  Number of profiles, a positive whole number.
+  Number of profiles; a positive integer.
 
 - ...:
 
@@ -37,21 +47,15 @@ lpa(data, vars, n_profiles, ...)
   the covariance structure (`model`, or `variance_model` and
   `covariance_model`, or `volume`, `shape` and `orientation`),
   `missing`, `categorical`, `n_starts`, `seed`, `boundary`, `prior`,
-  `noise`, `profile_covariates` and the others it documents, except `id`
-  and `n_group_classes`.
+  `noise` and `profile_covariates`. Arguments `id` and `n_group_classes`
+  are not accepted.
 
 ## Value
 
-A fitted `multilpa` object, as
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-returns, whose `call` is the `lpa()` call.
-
-## Details
-
-For observations nested in groups, use
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with the grouping column as `id`, which adds latent classes of groups
-above the profiles.
+A fitted object as returned by
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+usually of class `multilpa`, or `multilpa_covariates` with membership
+covariates. Its `call` records the original `lpa()` call.
 
 ## Conditions
 
@@ -86,17 +90,20 @@ fit
 #> Latent profile analysis: 2 profiles
 #> 300 observations; equal full residual covariance (EEE)
 #> Log likelihood: -600.924999 | AIC: 1253.850 | BIC: 1350.148
-#> Converged: TRUE | iterations: 18 | best start: 1 (emEM: 15 screened, 3 run to the end)
+#> Converged: TRUE | iterations: 18 | best log likelihood reached by 3 of 3 starts (3 converged; emEM: 15 screened)
 #> Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.
 #> 
-#>  profile cognitive_strategies intrinsic_value self_efficacy self_regulation
-#>        1             5.215480        5.515915      5.392216        5.108061
-#>        2             5.928344        6.386346      6.166524        5.740191
-#>  test_anxiety     count proportion
-#>      3.845232  93.07442  0.3102481
-#>      3.634675 206.92558  0.6897519
+#> Class sizes   profile_1 31.0% (93)   profile_2 69.0% (207)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>             indicator profile_1 profile_2
+#>  cognitive_strategies     5.215     5.928
+#>       intrinsic_value     5.516     6.386
+#>         self_efficacy     5.392     6.167
+#>       self_regulation     5.108     5.740
+#>          test_anxiety     3.845     3.635
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 plot(fit, what = "raincloud")
 ```

@@ -97,7 +97,7 @@ three-class solution the media class keeps 76% of its posterior mass.
 The offline class divides into three parts. The largest, 64%, forms a
 class of time with friends and walking, 27% joins the media class, and
 the remainder forms a class of 4% of prompts in which the probability of
-a part-time job is 1.00. The part-time job class passes 98% of its mass
+a part-time job is 1.00. The part-time job class passes 96% of its mass
 to a single class of the four-class solution, so it persists as further
 classes are added.
 
@@ -114,9 +114,12 @@ plot_tree(models)
 
 ![](tree-plot_files/figure-html/trees-1.png)![](tree-plot_files/figure-html/trees-2.png)![](tree-plot_files/figure-html/trees-3.png)![](tree-plot_files/figure-html/trees-4.png)
 
-A class in a later tree takes the colour of the class of the first tree
-with which it shares the most posterior mass, at the same number of
-classes, so a colour marks corresponding classes across the trees.
+A later tree matches its classes to those of the first tree using a
+one-to-one assignment of posterior overlap at the same number of
+classes. The assignment maximizes total overlap for square matches up to
+eight classes; larger or rectangular matches use a greedy assignment. A
+class can therefore be matched to something other than its own
+largest-overlap class. Colours mark these assigned correspondences.
 `combine = TRUE` plots every tree as a panel of one figure.
 
 ## Comparing solutions at one level
@@ -141,43 +144,43 @@ with the same arguments, one row per pair of classes.
 
 get_results(models, "tree", n_profiles = 4, n_group_classes = c(1, 3))
 #>        tree       level   from_candidate from_class from_share     to_candidate to_class to_share
-#> 1  classes4 individuals classes4_groups1          1     0.1299 classes4_groups3        1   0.1677
-#> 2  classes4 individuals classes4_groups1          2     0.4365 classes4_groups3        1   0.1677
-#> 3  classes4 individuals classes4_groups1          3     0.3470 classes4_groups3        1   0.1677
-#> 4  classes4 individuals classes4_groups1          4     0.0866 classes4_groups3        1   0.1677
-#> 5  classes4 individuals classes4_groups1          1     0.1299 classes4_groups3        2   0.4244
-#> 6  classes4 individuals classes4_groups1          2     0.4365 classes4_groups3        2   0.4244
-#> 7  classes4 individuals classes4_groups1          3     0.3470 classes4_groups3        2   0.4244
-#> 8  classes4 individuals classes4_groups1          4     0.0866 classes4_groups3        2   0.4244
-#> 9  classes4 individuals classes4_groups1          1     0.1299 classes4_groups3        3   0.3172
-#> 10 classes4 individuals classes4_groups1          2     0.4365 classes4_groups3        3   0.3172
-#> 11 classes4 individuals classes4_groups1          3     0.3470 classes4_groups3        3   0.3172
-#> 12 classes4 individuals classes4_groups1          4     0.0866 classes4_groups3        3   0.3172
-#> 13 classes4 individuals classes4_groups1          1     0.1299 classes4_groups3        4   0.0907
-#> 14 classes4 individuals classes4_groups1          2     0.4365 classes4_groups3        4   0.0907
-#> 15 classes4 individuals classes4_groups1          3     0.3470 classes4_groups3        4   0.0907
-#> 16 classes4 individuals classes4_groups1          4     0.0866 classes4_groups3        4   0.0907
+#> 1  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        1   0.0353
+#> 2  classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        1   0.0353
+#> 3  classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        1   0.0353
+#> 4  classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        1   0.0353
+#> 5  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        2   0.2702
+#> 6  classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        2   0.2702
+#> 7  classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        2   0.2702
+#> 8  classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        2   0.2702
+#> 9  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        3   0.2430
+#> 10 classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        3   0.2430
+#> 11 classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        3   0.2430
+#> 12 classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        3   0.2430
+#> 13 classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        4   0.4514
+#> 14 classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        4   0.4514
+#> 15 classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        4   0.4514
+#> 16 classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        4   0.4514
 #>        mass share_of_from share_of_to
-#> 1  7.92e-02      6.10e-01    4.72e-01
-#> 2  6.37e-02      1.46e-01    3.80e-01
-#> 3  2.06e-02      5.93e-02    1.23e-01
-#> 4  4.18e-03      4.82e-02    2.49e-02
-#> 5  3.06e-02      2.35e-01    7.20e-02
-#> 6  2.68e-01      6.14e-01    6.32e-01
-#> 7  1.15e-01      3.31e-01    2.71e-01
-#> 8  1.08e-02      1.25e-01    2.55e-02
-#> 9  1.89e-02      1.45e-01    5.95e-02
-#> 10 8.69e-02      1.99e-01    2.74e-01
-#> 11 2.11e-01      6.09e-01    6.66e-01
-#> 12 6.32e-09      7.30e-08    1.99e-08
-#> 13 1.26e-03      9.68e-03    1.39e-02
-#> 14 1.78e-02      4.07e-02    1.96e-01
-#> 15 2.02e-08      5.83e-08    2.23e-07
-#> 16 7.16e-02      8.27e-01    7.90e-01
+#> 1  4.63e-04      1.16e-03    1.31e-02
+#> 2  4.20e-14      5.25e-13    1.19e-12
+#> 3  3.41e-02      8.05e-02    9.66e-01
+#> 4  7.24e-04      7.59e-03    2.05e-02
+#> 5  1.11e-01      2.77e-01    4.11e-01
+#> 6  5.57e-02      6.96e-01    2.06e-01
+#> 7  9.81e-02      2.31e-01    3.63e-01
+#> 8  5.35e-03      5.61e-02    1.98e-02
+#> 9  1.79e-01      4.48e-01    7.38e-01
+#> 10 1.71e-02      2.14e-01    7.05e-02
+#> 11 4.15e-02      9.79e-02    1.71e-01
+#> 12 4.98e-03      5.22e-02    2.05e-02
+#> 13 1.10e-01      2.74e-01    2.43e-01
+#> 14 7.23e-03      9.04e-02    1.60e-02
+#> 15 2.50e-01      5.90e-01    5.54e-01
+#> 16 8.44e-02      8.84e-01    1.87e-01
 ```
 
 Each class of the four-class solution with one group class places
-between 61% and 83% of its posterior mass in a single class of the
+between 45% and 88% of its posterior mass in a single class of the
 solution with three group classes. The two solutions describe similar
 classes, and the group classes shift a part of the prompts between them.
 Omitting `n_group_classes` compares the same level across every number

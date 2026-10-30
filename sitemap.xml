@@ -1,6 +1,5 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://pak.dynasite.org/latents/404.html</loc></url>
-<url><loc>https://pak.dynasite.org/latents/ROADMAP.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/case-engagement-covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html</loc></url>
@@ -44,6 +43,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/index.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-conditions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-model-methods.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/latents-package.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-plots.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-predict.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/lca.html</loc></url>
@@ -53,7 +53,6 @@
 <url><loc>https://pak.dynasite.org/latents/reference/multilca.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/multilpa.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.html</loc></url>
-<url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/pool_imputations.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/prior_control.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/r3step.html</loc></url>

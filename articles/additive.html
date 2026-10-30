@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -284,7 +284,7 @@ the one-class fit:</p>
 <span><span class="co">#&gt; Parametric bootstrap likelihood-ratio comparison</span></span>
 <span><span class="co">#&gt; Null: additive_equal, 1 group class; alternative: additive_equal, 2 group classes</span></span>
 <span><span class="co">#&gt; Observed statistic: 73.015578</span></span>
-<span><span class="co">#&gt; p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates</span></span></code></pre></div>
+<span><span class="co">#&gt; p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)</span></span></code></pre></div>
 <p>With 19 replicates the smallest attainable p-value is 0.05; use
 several hundred replicates for a report.</p>
 </div>
@@ -463,10 +463,10 @@ form group classes.</p>
 <span>                       seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">full</span>, <span class="st">"composition"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     group_class   profile share</span></span>
-<span><span class="co">#&gt; 1 group_class_1 profile_1 0.834</span></span>
-<span><span class="co">#&gt; 2 group_class_2 profile_1 0.215</span></span>
-<span><span class="co">#&gt; 3 group_class_1 profile_2 0.166</span></span>
-<span><span class="co">#&gt; 4 group_class_2 profile_2 0.785</span></span>
+<span><span class="co">#&gt; 1 group_class_1 profile_1 0.166</span></span>
+<span><span class="co">#&gt; 2 group_class_2 profile_1 0.785</span></span>
+<span><span class="co">#&gt; 3 group_class_1 profile_2 0.834</span></span>
+<span><span class="co">#&gt; 4 group_class_2 profile_2 0.215</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">full</span>, <span class="st">"fit"</span><span class="op">)</span>, <span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">restricted</span>, <span class="st">"fit"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                   family n_profiles n_group_classes log_likelihood n_parameters   aic</span></span>
 <span><span class="co">#&gt; 1       full_cross_level          2               2          -8512           43 17111</span></span>

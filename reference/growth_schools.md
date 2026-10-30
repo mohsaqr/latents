@@ -1,16 +1,18 @@
 # Reading growth of students nested in schools
 
-A simulated multilevel longitudinal dataset for the multilevel growth
-mixture model. Each row is one student's reading score at one occasion:
-600 students in 40 schools (15 per school), tested on up to five
-occasions (`wave` 0 to 4). Two kinds of student follow two trajectories:
-*improving* (starts near 48, gains 3 points a wave) and *plateauing*
-(starts near 56, gains 0.3). Students vary around their trajectory
-(random intercept SD 3, random slope SD 0.6, correlation -0.2; residual
-SD 2). Schools are of two types: in *supportive* schools 80% of students
-improve, in *struggling* schools 25% do, and a school's support
-programme (standardized, measured once) makes it more likely to be
-supportive. About 8% of tests were missed at random.
+`growth_schools` is a simulated dataset illustrating multilevel growth
+mixture models. It contains repeated reading scores for 600 students
+nested within 40 schools, with up to five observations per student.
+
+The data were generated from two student trajectory classes, labelled
+"improving" and "plateauing". Students vary in their initial reading
+achievement and rate of change within each class. Two school-level
+classes differ in the prevalence of these student trajectories.
+
+The dataset illustrates how multilevel growth mixture models represent
+individual variation in development alongside differences in trajectory
+membership between schools. Generating class labels are retained at both
+levels for assessing recovery.
 
 ## Usage
 
@@ -45,18 +47,29 @@ A data frame with 2780 rows (600 students, 40 schools) and 7 columns:
 - school_type:
 
   Factor, `"supportive"` or `"struggling"`: the school's generating
-  type. Not for fitting; kept to check recovery.
+  class; retained for assessing class recovery.
 
 - trajectory:
 
   Factor, `"improving"` or `"plateauing"`: the student's generating
-  kind. Not for fitting; kept to check recovery.
+  class; retained for assessing class recovery.
 
 ## Source
 
 Simulated by `data-raw/growth-schools.R` in the source repository.
 
 ## Details
+
+There are 15 students per school, with occasions indexed by `wave` from
+0 to 4. The generating student classes have two linear mean
+trajectories: *improving* (intercept 48, slope 3 points per occasion)
+and *plateauing* (intercept 56, slope 0.3). Random intercepts and slopes
+have standard deviations 3 and 0.6 and correlation -0.2; the residual
+standard deviation is 2. The generating school classes, labelled
+*supportive* and *struggling*, have improving-class probabilities of 0.8
+and 0.25, respectively. The standardized school-level `programme`
+variable predicts school-class membership. Approximately 8% of test
+occasions were removed at random.
 
 The school types correspond to the group classes of
 `mixture_regression(..., cluster = "school", n_group_classes = 2)`, with

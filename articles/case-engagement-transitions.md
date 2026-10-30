@@ -51,13 +51,13 @@ moves <- lta(course_engagement, vars, "student", n_profiles = 3,
 get_results(moves, "starts")
 #>    start log_likelihood converged iterations error
 #> 1      1          -8243      TRUE         36  <NA>
-#> 2      2          -8243      TRUE         39  <NA>
-#> 3      3          -8243      TRUE         42  <NA>
-#> 4      4          -8243      TRUE         54  <NA>
-#> 5      5          -8243      TRUE         39  <NA>
-#> 6      6          -8243      TRUE         69  <NA>
-#> 7      7          -8243      TRUE         48  <NA>
-#> 8      8          -8243      TRUE         48  <NA>
+#> 2      2          -8243      TRUE         48  <NA>
+#> 3      3          -8243      TRUE         64  <NA>
+#> 4      4          -8243      TRUE         48  <NA>
+#> 5      5          -8243      TRUE         45  <NA>
+#> 6      6          -8243      TRUE         39  <NA>
+#> 7      7          -8243      TRUE         46  <NA>
+#> 8      8          -8243      TRUE         39  <NA>
 #> 9      9          -8243      TRUE         42  <NA>
 #> 10    10          -8243      TRUE         39  <NA>
 ```
@@ -116,11 +116,11 @@ get_results(moves)
 #> 15                      NA
 ```
 
-Profile 1 is the lowest on every indicator, profile 2 the highest, and
-profile 3 lies between them; their attendance means are -0.929, 1.124
-and 0.254. The profiles are therefore lower, higher and intermediate
-activity. The heatmap shows the same means as standard deviations from
-each indicator’s grand mean.
+The profiles describe lower, intermediate and higher activity. Their
+attendance means are approximately -0.929, 0.254 and 1.124 in that
+order; the table above gives the corresponding profile labels for this
+fitted solution. The heatmap shows the same means as standard deviations
+from each indicator’s grand mean.
 
 ``` r
 
@@ -144,22 +144,22 @@ class.
 
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1   3.527e-01    0.43724                  0.6997
-#> 2           1       2   2.037e-01    0.22974                  0.6997
-#> 3           1       3   4.436e-01    0.33301                  0.6997
-#> 4           2       1   1.179e-09    0.08414                  0.3003
-#> 5           2       2   7.623e-01    0.81932                  0.3003
-#> 6           2       3   2.377e-01    0.09654                  0.3003
+#> 1           1       1   1.000e-10    0.08414                  0.3003
+#> 2           1       2   7.623e-01    0.81932                  0.3003
+#> 3           1       3   2.377e-01    0.09654                  0.3003
+#> 4           2       1   3.527e-01    0.43724                  0.6997
+#> 5           2       2   2.037e-01    0.22974                  0.6997
+#> 6           2       3   4.436e-01    0.33301                  0.6997
 ```
 
-Student class 2, with 30.0% of students, starts in the lower-activity
+Student class 1, with 30.0% of students, starts in the lower-activity
 profile with probability 0.762 and in the higher-activity profile with
 probability 0.238; its probability of starting in the intermediate
-profile is effectively zero. Class 1, with 70.0% of students, starts
+profile is effectively zero. Class 2, with 70.0% of students, starts
 across all three profiles, with probabilities 0.204, 0.444 and 0.353.
-Starting and overall shares differ: class 2 starts in the lower profile
+Starting and overall shares differ: class 1 starts in the lower profile
 with probability 0.762, but 0.819 of its enrolments are expected there
-over the whole history, while class 1 starts in the higher profile with
+over the whole history, while class 2 starts in the higher profile with
 probability 0.444 and spends 0.333 of its enrolments there.
 
 ## How engagement changes
@@ -177,24 +177,24 @@ estimated in this fit.
 
 get_results(moves, "transitions")
 #>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1     0.52559        214.237   TRUE      TRUE                  0.6997
-#> 2            1    1  2     0.11407         46.497  FALSE      TRUE                  0.6997
-#> 3            1    1  3     0.36034        146.877  FALSE      TRUE                  0.6997
-#> 4            1    2  1     0.20987         43.694  FALSE      TRUE                  0.6997
-#> 5            1    2  2     0.61458        127.949   TRUE      TRUE                  0.6997
-#> 6            1    2  3     0.17555         36.548  FALSE      TRUE                  0.6997
-#> 7            1    3  1     0.49508        150.595  FALSE      TRUE                  0.6997
-#> 8            1    3  2     0.12771         38.847  FALSE      TRUE                  0.6997
-#> 9            1    3  3     0.37722        114.743   TRUE      TRUE                  0.6997
-#> 10           2    1  1     0.52017         17.541   TRUE      TRUE                  0.3003
-#> 11           2    1  2     0.33936         11.444  FALSE      TRUE                  0.3003
-#> 12           2    1  3     0.14047          4.737  FALSE      TRUE                  0.3003
-#> 13           2    2  1     0.03017          9.748  FALSE      TRUE                  0.3003
-#> 14           2    2  2     0.93857        303.221   TRUE      TRUE                  0.3003
-#> 15           2    2  3     0.03126         10.099  FALSE      TRUE                  0.3003
-#> 16           2    3  1     0.22210          8.712  FALSE      TRUE                  0.3003
-#> 17           2    3  2     0.29606         11.613  FALSE      TRUE                  0.3003
-#> 18           2    3  3     0.48184         18.900   TRUE      TRUE                  0.3003
+#> 1            1    1  1     0.52017         17.541   TRUE      TRUE                  0.3003
+#> 2            1    1  2     0.33936         11.444  FALSE      TRUE                  0.3003
+#> 3            1    1  3     0.14047          4.737  FALSE      TRUE                  0.3003
+#> 4            1    2  1     0.03017          9.748  FALSE      TRUE                  0.3003
+#> 5            1    2  2     0.93857        303.221   TRUE      TRUE                  0.3003
+#> 6            1    2  3     0.03126         10.099  FALSE      TRUE                  0.3003
+#> 7            1    3  1     0.22210          8.712  FALSE      TRUE                  0.3003
+#> 8            1    3  2     0.29606         11.613  FALSE      TRUE                  0.3003
+#> 9            1    3  3     0.48184         18.900   TRUE      TRUE                  0.3003
+#> 10           2    1  1     0.52559        214.238   TRUE      TRUE                  0.6997
+#> 11           2    1  2     0.11407         46.497  FALSE      TRUE                  0.6997
+#> 12           2    1  3     0.36034        146.876  FALSE      TRUE                  0.6997
+#> 13           2    2  1     0.20987         43.694  FALSE      TRUE                  0.6997
+#> 14           2    2  2     0.61457        127.949   TRUE      TRUE                  0.6997
+#> 15           2    2  3     0.17555         36.548  FALSE      TRUE                  0.6997
+#> 16           2    3  1     0.49508        150.595  FALSE      TRUE                  0.6997
+#> 17           2    3  2     0.12771         38.847  FALSE      TRUE                  0.6997
+#> 18           2    3  3     0.37721        114.743   TRUE      TRUE                  0.6997
 ```
 
 The transition plot draws each class’s matrix as a heatmap, with the
@@ -207,21 +207,21 @@ plot_transitions(moves)
 
 ![](case-engagement-transitions_files/figure-html/transition-plot-1.png)
 
-In class 2, lower activity persists with probability 0.939, estimated
+In class 1, lower activity persists with probability 0.939, estimated
 from 303 expected transitions. Each of its other transitions rests on
-fewer than 20 expected transitions, because class-2 students rarely
-leave the lower profile. Class 1 moves between profiles. Its students
+fewer than 20 expected transitions, because class-1 students rarely
+leave the lower profile. Class 2 moves between profiles. Its students
 remain in the lower profile with probability 0.615, move from higher to
 intermediate activity with probability 0.495, and from intermediate to
-higher with probability 0.360. Class 2 is therefore a persistently
-low-engagement class, and class 1 a class whose engagement changes from
+higher with probability 0.360. Class 1 is therefore a persistently
+low-engagement class, and class 2 a class whose engagement changes from
 course to course.
 
 ## Sparse and boundary estimates
 
-Some estimates rest on very little information. Class 2’s probability of
+Some estimates rest on very little information. Class 1’s probability of
 starting in the intermediate profile is at its lower bound, because no
-class-2 student is expected to start there. Class 2’s transitions out of
+class-1 student is expected to start there. Class 1’s transitions out of
 the higher and intermediate profiles rest on between 4.7 and 18.9
 expected transitions each, because its students rarely leave the lower
 profile. A probability near zero shows that the data carry little
@@ -246,8 +246,8 @@ plot_sequences(moves)
 
 get_results(moves, "sequence_summary")
 #>   group_class groups observations mean_length median_length shortest longest complete gaps
-#> 1           1     75         1005       13.40            14       10      15       16    0
-#> 2           2     31          417       13.45            13       10      15        8    0
+#> 1           1     31          417       13.45            13       10      15        8    0
+#> 2           2     75         1005       13.40            14       10      15       16    0
 ```
 
 The summary gives the number of students and courses in each assigned
@@ -314,8 +314,8 @@ plot(per_class)
 ![](case-engagement-transitions_files/figure-html/group-network-1.png)![](case-engagement-transitions_files/figure-html/group-network-2.png)
 
 The class networks show the two patterns of the transition table: a
-dominant self-loop on the lower profile in class 2, and movement among
-all three profiles in class 1.
+dominant self-loop on the lower profile in class 1, and movement among
+all three profiles in class 2.
 
 ## Limitations
 
@@ -325,7 +325,7 @@ over positions. Transitions are between successive observed courses,
 which can differ in duration, content and assessment. Class differences
 describe patterns in engagement histories and do not identify their
 causes. Wald standard errors are withheld for this fit, because class
-2’s probability of starting in the intermediate profile sits at its
+1’s probability of starting in the intermediate profile sits at its
 lower bound (the note above the profile table), and the numbers of
 profiles and classes were not compared here;
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
@@ -336,7 +336,7 @@ choice. The diagonal covariance ignores the association between
 is present in these data; unmodelled dependence can be absorbed by extra
 profiles and change the apparent transitions. Transitions supported by
 few expected counts, such as those out of the higher and intermediate
-profiles in class 2, should not be interpreted.
+profiles in class 1, should not be interpreted.
 
 ## References
 

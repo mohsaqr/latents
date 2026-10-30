@@ -58,8 +58,12 @@ estimates these four structures with every number of profiles requested.
 ``` r
 
 models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)
+#> Warning: A variance reached min_variance; this is a bound-active constrained fit.
 #> Warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is
 #> a conservative diagnostic, not an identification test; inspect the Gaussian covariance
+#> diagnostics.
+#> Warning: Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This
+#> is a conservative diagnostic, not an identification test; inspect the Gaussian covariance
 #> diagnostics.
 plot_enumeration(models)
 ```
@@ -68,15 +72,18 @@ plot_enumeration(models)
 
 The choice of structure matters here because four of the five constructs
 are strongly correlated. The structures without covariances (`EEI`,
-`VVI`) can reproduce these correlations only by adding profiles, and
-their BIC continues to fall up to six profiles. The warnings printed
-during the enumeration report candidates with profile-specific variances
-that contain a profile too small to determine them
-(`latents_thin_profiles`); the `EEE` structure shares one covariance
-matrix and cannot have such a profile. The structures with covariances
-account for the correlations directly, and reach far lower BIC values
-with one or two profiles. The `EEE` structure attains the lowest values;
-its candidates are:
+`VVI`) can reproduce these correlations only by adding profiles. BIC
+falls through six profiles for `EEI`. For `VVI`, it is lowest at five
+profiles, but that fit reaches the variance floor; BIC rises again at
+six profiles. The warnings printed during the enumeration report
+candidates with low Gaussian membership mass relative to the number of
+profile-specific means and variances (`latents_thin_profiles`). This is
+a conservative support diagnostic, not an identification test; inspect
+the covariance diagnostics as well. The `EEE` structure shares one
+covariance matrix and does not receive this profile-specific warning.
+The structures with covariances account for the correlations directly,
+and reach far lower BIC values with one or two profiles. The `EEE`
+structure attains the lowest values; its candidates are:
 
 ``` r
 
@@ -97,7 +104,7 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
 #>               NA        NA         NA          NA      TRUE    FALSE
 #>           0.7440    0.8801     0.9169           0      TRUE    FALSE
-#>           0.6347    0.7968     0.8340           1      TRUE    FALSE
+#>           0.6347    0.7966     0.8340           1      TRUE    FALSE
 #>           0.7686    0.8180     0.8777           0      TRUE    FALSE
 #>           0.7440    0.8046     0.8427           0      TRUE    FALSE
 #>           0.7422    0.7602     0.8214           2      TRUE    FALSE
@@ -145,13 +152,13 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  estimated_n estimated_proportion average_posterior odds_correct_classification
 #>        93.07               0.3102            0.8801                      16.315
 #>       206.93               0.6898            0.9538                       9.290
-#>       129.78               0.4326            0.8241                       6.146
-#>        80.40               0.2680            0.7968                      10.711
+#>       129.81               0.4327            0.8242                       6.149
+#>        80.37               0.2679            0.7966                      10.705
 #>        89.82               0.2994            0.8810                      17.327
 #>        84.23               0.2808            0.8180                      11.514
-#>        66.74               0.2225            0.8793                      25.452
-#>        33.29               0.1110            0.8961                      69.074
-#>       115.74               0.3858            0.9175                      17.714
+#>        66.74               0.2225            0.8793                      25.451
+#>        33.29               0.1110            0.8961                      69.070
+#>       115.74               0.3858            0.9175                      17.715
 #>        68.24               0.2275            0.8764                      24.072
 #>  relative_entropy
 #>            0.7440
@@ -194,25 +201,25 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>  tree       level from_candidate from_class from_share to_candidate to_class to_share
 #>  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102
 #>  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898
-#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4326
-#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4326
-#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2680
-#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2680
+#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327
+#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327
+#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679
+#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679
 #>  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994
 #>  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994
-#>  tree individuals      profiles3          1     0.4326    profiles4        1   0.2808
-#>  tree individuals      profiles3          2     0.2680    profiles4        1   0.2808
+#>  tree individuals      profiles3          1     0.4327    profiles4        1   0.2808
+#>  tree individuals      profiles3          2     0.2679    profiles4        1   0.2808
 #>     mass share_of_from share_of_to
 #>  0.31025       0.31025     1.00000
 #>  0.68975       0.68975     1.00000
-#>  0.04628       0.14915     0.10697
-#>  0.38632       0.56008     0.89303
-#>  0.01009       0.03251     0.03763
-#>  0.25791       0.37392     0.96237
-#>  0.25389       0.81834     0.84795
-#>  0.04552       0.06600     0.15205
-#>  0.17822       0.41199     0.63479
-#>  0.07623       0.28446     0.27153
+#>  0.04628       0.14917     0.10696
+#>  0.38641       0.56021     0.89304
+#>  0.01008       0.03249     0.03763
+#>  0.25782       0.37379     0.96237
+#>  0.25389       0.81834     0.84796
+#>  0.04552       0.06600     0.15204
+#>  0.17826       0.41199     0.63493
+#>  0.07619       0.28441     0.27139
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
 #> 7 tables above, truncated to fit. get_results(x, what = ) returns any
@@ -233,7 +240,7 @@ lrt
 #> Parametric bootstrap likelihood-ratio comparison
 #> Null: 1 profile; alternative: 2 profiles
 #> Observed statistic: 29.518785
-#> p-value: 0.005 (Monte Carlo SE 0.00499) from 199 of 199 valid replicates
+#> p-value: 0.005 (Monte Carlo SE 0.00499) from 199 of 199 valid replicates (0 invalid)
 ```
 
 The test rejects the one-profile model (p = 0.005), and the two-profile
@@ -250,17 +257,20 @@ fit
 #> Latent profile analysis: 2 profiles
 #> 300 observations; equal full residual covariance (EEE)
 #> Log likelihood: -600.924999 | AIC: 1253.850 | BIC: 1350.148
-#> Converged: TRUE | iterations: 18 | best start: 1 (emEM: 50 screened, 10 run to the end)
+#> Converged: TRUE | iterations: 18 | best log likelihood reached by 10 of 10 starts (10 converged; emEM: 50 screened)
 #> Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.
 #> 
-#>  profile cognitive_strategies intrinsic_value self_efficacy self_regulation test_anxiety
-#>        1                 5.22            5.52          5.39            5.11         3.85
-#>        2                 5.93            6.39          6.17            5.74         3.63
-#>  count proportion
-#>   93.1       0.31
-#>  206.9       0.69
+#> Class sizes   profile_1 31.0% (93)   profile_2 69.0% (207)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>             indicator profile_1 profile_2
+#>  cognitive_strategies      5.21      5.93
+#>       intrinsic_value      5.52      6.39
+#>         self_efficacy      5.39      6.17
+#>       self_regulation      5.11      5.74
+#>          test_anxiety      3.85      3.63
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -366,15 +376,33 @@ diagnostics(fit)
 
 ![](workflow-lpa_files/figure-html/diagnostics-1.png)![](workflow-lpa_files/figure-html/diagnostics-2.png)![](workflow-lpa_files/figure-html/diagnostics-3.png)![](workflow-lpa_files/figure-html/diagnostics-4.png)
 
-    #> Classification quality: 2 profiles
+    #> Diagnostics: Latent profile analysis, 2 profiles
+    #> 1 check needs attention: pairs dependent within a class
     #> 
-    #>   Relative entropy     individuals 0.744
-    #>   Smallest class       individuals 93.1 (31.0%)
-    #>   Lowest avg posterior individuals 0.880
-    #>   Largest residual     0.103  (self_efficacy, self_regulation; profile_1)
+    #> Estimation
+    #>   ok     best start converged                                yes                      
+    #>   info   best log likelihood reached by                      10 of 10 starts          
+    #>   ok     starts failed or unfinished                         0 of 10 (40 screened)    
+    #>   ok     estimates at a bound                                no                       
     #> 
-    #> Tables: get_results(x, what = "entropy" | "classification" | 
-    #>         "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+    #> Class size
+    #>   info   smallest class                         individuals  31.0% (n = 93, class 1)  
+    #>   info   modal vs estimated proportions         individuals  largest gap 0.006        
+    #>   ok     classes with no assigned unit          individuals  0 of 2                   
+    #> 
+    #> Classification
+    #>   info   relative entropy                       individuals  0.744                    
+    #>   info   lowest average posterior               individuals  0.880 (class 1)          
+    #>   info   lowest odds of correct classification  individuals  9.3 (class 2)            
+    #> 
+    #> Local independence
+    #>   check  pairs dependent within a class                      1 of 20 tested pairs     BH-adjusted p < 0.05
+    #>          largest: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.049; consider local_dependence = or a full covariance model
+    #> 
+    #> Information
+    #>   info   log likelihood, parameters, BIC                     -600.92, 26, 1350.15     
+    #> 
+    #> Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
 
 A relative entropy of 0.74 and average posterior probabilities of at
 least 0.88 indicate an acceptable classification.
@@ -396,7 +424,7 @@ head(get_results(fit, "assignments"))
 #> 5                 4.38            5.56          4.89            4.78         4.00       1
 #> 6                 4.85            5.44          5.67            5.11         3.50       1
 #>   uncertainty posterior_profile_1 posterior_profile_2
-#> 1    0.154287            0.845713               0.154
+#> 1    0.154286            0.845714               0.154
 #> 2    0.008309            0.008309               0.992
 #> 3    0.005427            0.005427               0.995
 #> 4    0.000982            0.000982               0.999

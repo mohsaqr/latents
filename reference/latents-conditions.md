@@ -1,16 +1,27 @@
-# Conditions raised by the package
+# Errors, warnings and diagnostic messages
 
-Lists the classes of the errors, warnings and messages the package
-raises, and what raises each. A condition can be caught by its class
-with [`tryCatch()`](https://rdrr.io/r/base/conditions.html) or
-[`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html). The
-classes are stable; the message text may change between versions.
+latents reports errors, warnings and messages to communicate problems
+with input data, difficulties during estimation, and limitations of
+requested analyses. Errors indicate that an operation could not be
+completed. Warnings identify issues requiring attention when
+interpreting or using a result. Messages provide progress updates or
+supplementary information.
 
 ## Value
 
 Nothing; this page documents conditions rather than a function.
 
-## Input and data contracts
+## Details
+
+This reference describes the conditions that trigger these signals and
+their associated classes. In automated analyses, conditions can be
+handled by class using
+[`tryCatch()`](https://rdrr.io/r/base/conditions.html) or
+[`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html).
+Class-based handling allows scripts to respond to specific situations
+without depending on message wording, which may change between versions.
+
+## Input validation
 
 - `latents_bad_data`:
 
@@ -20,13 +31,32 @@ Nothing; this page documents conditions rather than a function.
   unobserved, missing or non-finite values under `missing = "error"`, or
   a missing group identifier.
 
+- `latents_unweightable_level`:
+
+  The stored sampling weights cannot be aligned with a classification
+  level, for example in an older cross-level fit without a row-to-group
+  mapping.
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  handles this condition internally and reports the affected checks as
+  `n/a`.
+
+- `latents_not_a_fit`:
+
+  A function requiring a fitted model received an unsupported object or
+  a model from an unsupported family. The message identifies the
+  supplied object. Also inherits from `latents_bad_argument`.
+
 - `latents_bad_argument`:
 
   An argument has an invalid value: a scalar such as `n_profiles`,
   `n_group_classes`, `n_starts`, `max_iter`, `tol` or `min_variance`; a
   `seed` or `seeds` that is not a whole number accepted by
   [`set.seed()`](https://rdrr.io/r/base/Random.html); a `what` naming a
-  table or view the object does not have; or an argument the verb or
+  table or view the object does not have, or a `what` that is `NA`, not
+  text or more than one name; an enumerated option such as `missing`,
+  `boundary`, `select_start`, `acceleration`, `centering`, `scaling`,
+  `variance_model`, `covariance_model`, `vcov_type` or `adjust` given a
+  value that is not one of its choices; or an argument the function or
   table does not use.
 
 - `latents_bad_time`:
@@ -65,9 +95,8 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_bad_inference_data`:
 
-  The data passed to a verb with a fit do not reproduce the fit: a
-  different number of rows, different values or a different group
-  ordering.
+  Data supplied with a fitted model differ from the fitting data in row
+  count, values or group ordering.
 
 - `latents_no_indicator_data`:
 
@@ -86,7 +115,11 @@ Nothing; this page documents conditions rather than a function.
   The requested model is not identified from the data: more profiles
   than distinct observed indicator rows, more group classes than groups,
   or more than one group class with only one profile or only singleton
-  groups.
+  groups. Raised as a warning, and the fit returned, for a model of
+  complete categorical and ordinal indicators with one group class that
+  has more free parameters than free cells of its table (negative
+  degrees of freedom); a model with membership covariates is not judged
+  by that count.
 
 - `latents_all_starts_failed`:
 
@@ -116,17 +149,28 @@ Nothing; this page documents conditions rather than a function.
   The classes are not separated well enough for the requested three-step
   correction.
 
+- `latents_too_many_cores`:
+
+  `cores` exceeds the machine's core count; the fit uses the machine's
+  count instead.
+
 - `latents_no_converge`:
 
   A fit required by the request did not converge.
+
+- `latents_vanished_density`:
+
+  Every component density is zero, or one overflowed, at a point EM
+  reached: the start is recorded as failed (`get_results(x, "starts")`),
+  and a fit whose every start fails raises `latents_all_starts_failed`.
 
 - `latents_boundary_fit`:
 
   A variance or response probability is at its bound, a mixing
   probability is zero, or a membership logit coefficient diverges
-  (separation). The parameter is on the edge of its space, where the
-  normal approximation of Wald inference does not hold, so no standard
-  error is reported.
+  (separation). The usual normal approximation for Wald inference does
+  not apply at the parameter boundary, so standard errors are
+  unavailable under the requested inference method.
 
 - `latents_singular_information`:
 
@@ -173,13 +217,13 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_worker_lost`:
 
-  One or more worker tasks returned no result, possibly because their
-  processes were killed for memory. Missing results are retried once
-  with fewer workers. The warning reports the numbers lost, recovered
-  and still failed, and suggests fewer `cores`. Persistent losses become
-  failed starts or candidate rows, retaining other results. A socket
-  connection failure makes its current bounded chunk uncertain; earlier
-  chunks are retained, and the uncertain chunk is retried.
+  One or more worker tasks returned no result, possibly because the
+  operating system terminated them for excessive memory use. Missing
+  results are retried once with fewer workers. The warning reports the
+  numbers lost, recovered and still failed, and suggests fewer `cores`.
+  Persistent losses become failed starts or candidate rows, retaining
+  other results. After a socket connection failure, the affected batch
+  is retried and results from previously completed batches are retained.
 
 - `latents_suspect_categorical`:
 
@@ -205,8 +249,8 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_reversed_likelihood`:
 
-  The model with more parameters has the lower likelihood, so at least
-  one fit is at a local optimum.
+  The larger nested model has a lower likelihood, indicating that at
+  least one fit has not reached its global maximum.
 
 - `latents_bad_outcome`:
 
@@ -248,10 +292,10 @@ analysis.
 
   Standard errors are not available for this fit. Raised by
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  for a fit made with `prior` (Wald path), for the cross-level families,
-  for a covariate fit made by an older version, and for a fit recording
-  a covariance structure code this version does not know; and by
-  `parameter_inference(method = "bootstrap")` for an additive or
+  for a fit made with `prior` (Wald method), for the cross-level
+  families, for a covariate fit made by an older version, and for a fit
+  recording a covariance structure code this version does not know; and
+  by `parameter_inference(method = "bootstrap")` for an additive or
   covariate fit, a multilevel growth mixture, or a fit holding a
   measurement block through `fixed`. Also raised by
   `vcov(scale = "unconstrained")` for a bootstrap covariance.
@@ -268,7 +312,7 @@ analysis.
   `multilpa(noise = TRUE)` was combined with more than one group class,
   categorical indicators, a `fixed` block, membership covariates or
   missing indicator values; or a fit with a noise component was given to
-  a verb that does not support one:
+  a function that does not support one:
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
@@ -276,7 +320,11 @@ analysis.
   [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md),
   bivariate residuals,
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-  or a posterior plot.
+  or a posterior plot. Also raised by
+  [`predict()`](https://rdrr.io/r/stats/predict.html) for partially
+  observed rows when the fitted model has a noise component, because its
+  stored hypervolume does not define the required marginal noise
+  density.
 
 - `latents_unsupported_structure`:
 
@@ -292,7 +340,7 @@ analysis.
 
 - `latents_unsupported_weights`:
 
-  A weighted fit was given to a verb or option that does not support
+  A weighted fit was given to a function or option that does not support
   sampling weights:
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
   `enumerate_regressions(bootstrap = )`,
@@ -337,18 +385,27 @@ analysis.
 - `latents_unsupported_sensitivity`:
 
   [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
-  was called on a model family whose refit needs arguments the shared
-  refit does not carry, whose profile labels cannot yet be aligned
-  between two fits, or on a directly fixed fit whose original free
-  starts cannot be replayed.
+  cannot refit the requested model or align its class labels. This
+  includes directly fitted fixed-measurement models whose original free
+  starting values were not retained.
 
 - `latents_unsupported_three_step`:
 
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   or [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
-  was called on a membership-covariate fit, whose classification errors
-  depend on the predictors; the correction uses one unconditional error
-  matrix.
+  was called on a fit the correction does not cover: a
+  membership-covariate fit, whose classification errors depend on the
+  predictors (the correction uses one unconditional error matrix); a
+  multilevel growth mixture; a general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  (occasion-varying, second-order or covariate transitions,
+  occasion-specific measurement, a stayer class, or ordinal or count
+  indicators), except that
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  takes `initial_covariates` and `transition_covariates` for a
+  covariate-free one; an additive, dispersion or cross-level
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  fit; or a mixture regression with observation classes.
 
 - `latents_unsupported_bootstrap`:
 
@@ -376,7 +433,8 @@ analysis.
 
 - `latents_no_time`:
 
-  A sequence table or verb was requested for a fit made without `time`.
+  A sequence table or function was requested for a fit made without
+  `time`.
 
 - `latents_unsupported_prediction`:
 
@@ -413,8 +471,8 @@ analysis.
 
 - `latents_inaccurate_probability`:
 
-  The numerical integral behind a Lo-Mendell-Rubin p-value did not
-  settle, so the p-value is not reported.
+  Numerical integration for a Lo-Mendell-Rubin p-value did not meet the
+  required accuracy, so the p-value is unavailable.
 
 - `latents_no_local_dependence`:
 
@@ -428,8 +486,8 @@ analysis.
 
 - `latents_partial_pair`:
 
-  A warning: rows observe one item of a `local_dependence` pair and not
-  the other, so the pair is treated as missing in those rows.
+  Not raised. A row observing one item of a `local_dependence` pair
+  contributes that item, with the pair's other item summed out.
 
 - `latents_no_lmr`:
 
@@ -453,7 +511,7 @@ analysis.
 
 - `latents_unsupported_view`:
 
-  A grid verb
+  A grid function
   ([`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
   [`plot_selection()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
   [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
@@ -475,9 +533,11 @@ analysis.
   `scale = "standardized"` met an indicator with zero or undefined
   standard deviation.
 
-## Warnings
+## Additional errors, warnings and messages
 
-These are raised when a result is returned but qualified.
+These conditions report limitations of a returned result or an inability
+to complete estimation. Message-only conditions are identified
+explicitly.
 
 - `latents_failed_starts`:
 
@@ -530,8 +590,9 @@ These are raised when a result is returned but qualified.
 
 - `latents_unconverged`:
 
-  The best start had not converged when `max_iter` was reached, so the
-  returned estimate is not a maximum.
+  The selected start did not satisfy the convergence criterion before
+  `max_iter`, or an inference check found a non-negligible score. The
+  returned estimate requires further assessment.
 
 - `latents_boundary`:
 
@@ -539,13 +600,24 @@ These are raised when a result is returned but qualified.
   fit is bound-active and its standard errors are not valid at that
   parameter.
 
+- `latents_atomic_groups`:
+
+  Under `centering = "person"` with `scaling = "person"`, some groups
+  have fewer than three observations of an indicator. Standardizing two
+  values within a group makes them exactly `-1/sqrt(2)` and `1/sqrt(2)`,
+  so those rows carry only a sign pattern, and a profile can collapse
+  onto them. The message gives the share of rows in such groups. When
+  every group is like that, the fit is refused with `latents_bad_data`
+  instead.
+
 - `latents_small_classes`:
 
   A profile or group class has an effective membership below one
   observation; or, in
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-  with `method = "ml"`, a class is carried by a single unit, so its
-  standard error is reported as `NA`.
+  with any `method`, a class is carried by a single unit (fewer than 1.5
+  effective carrying units, by Kish's formula), so its standard error is
+  reported as `NA`.
 
 - `latents_thin_profiles`:
 
@@ -608,17 +680,38 @@ These are raised when a result is returned but qualified.
 
 - `latents_extreme_coefficients`:
 
-  A membership logit coefficient, measured per root-mean-square unit of
-  its covariate, is large enough that the class is close to separated,
-  so the estimate is driven by scaling, a sparse class or separation
-  rather than by the data.
+  A membership logit coefficient is extreme after adjustment for
+  covariate location and scale. This may indicate separation or sparse
+  class membership and requires inspection before interpreting the
+  coefficient or its standard error.
 
 - `latents_empty_transition_row`:
 
   A profile is never occupied before a final occasion, so its transition
   row is uniform by construction rather than estimated;
   `get_results(fit, "transitions", estimated = FALSE)` lists such rows.
-  The transition-network handoff also warns when it includes such a row.
+  The general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) engine
+  raises it too, for an origin profile (or pair, under `order = 2`) that
+  no move leaves: its logits are fixed at zero and marked
+  `estimated = FALSE` in `get_results(fit, "transitions")` and
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
+  In both engines such a row is not counted in `n_parameters`, AIC or
+  BIC. The transition-network handoff also warns when it includes such a
+  row.
+
+- `latents_unidentified_occasion`:
+
+  An [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  with `transitions = "occasion"` has an occasion at which no row
+  observes an indicator, followed by an occasion that does. The moves
+  into and out of the empty occasion (or, for an empty first occasion,
+  the initial distribution and the first move) enter the likelihood only
+  through their product, so their logits are not separately identified:
+  the distinct parameter combinations yield the same likelihood. Their
+  standard errors are not interpretable, although the parameter count
+  includes them. Occasions after the last observed one are not counted
+  and do not warn.
 
 - `latents_unverified_alignment`:
 
@@ -639,12 +732,14 @@ These are raised when a result is returned but qualified.
   A growth mixture with correlated residuals met a marginal covariance
   that is numerically singular (a process variance far larger than the
   residual variance). During fitting this is treated as a rejected step;
-  it reaches the caller only for parameter values supplied by hand.
+  it reaches the caller only for parameter values supplied explicitly.
 
 - `latents_unused_argument`:
 
   A method that accepts `...` (several
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods,
+  [`summary()`](https://rdrr.io/r/base/summary.html) of the fits and
+  grids whose summary takes no `level` or `vcov_type`,
   [`vcov()`](https://rdrr.io/r/stats/vcov.html),
   [`predict()`](https://rdrr.io/r/stats/predict.html) and
   [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
@@ -679,10 +774,10 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #> Warning: Profile 1: 2.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-# A sequence verb on a fit made without `time` is catchable by class.
+# Handle a missing-time condition by its class.
 tryCatch(get_results(fit, "sequences"),
          latents_no_time = function(condition) {
-  "this fit carries no ordering"
+  "No occasion ordering was specified for this fit."
 })
-#> [1] "this fit carries no ordering"
+#> [1] "No occasion ordering was specified for this fit."
 ```

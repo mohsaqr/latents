@@ -108,15 +108,21 @@ fit
 #> Two-level latent profile analysis: 3 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
-#> Converged: TRUE | iterations: 42 | best start: 1/10
-#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+#> Converged: TRUE | iterations: 45 | best log likelihood reached by 10 of 10 starts (10 converged)
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478.1; weight effective n: 603.8.
 #> 
-#>  profile    browse  lectures forum_read forum_post attendance   count proportion
-#>        1  0.387017  0.185619   0.446387   0.337626   0.256357 478.027   0.336165
-#>        2 -0.776812 -0.612328  -0.891423  -0.762315  -0.939959 574.961   0.404332
-#>        3  0.708895  0.713452   0.810941   0.750317   1.132758 369.012   0.259502
+#> Class sizes   profile_1 33.6% (478)   profile_2 40.4% (575)   profile_3 25.9% (369)
+#> Group classes group_class_1 29.3% (31)   group_class_2 26.1% (28)   group_class_3 44.6% (47)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3
+#>      browse     0.387    -0.777     0.709
+#>    lectures     0.186    -0.612     0.713
+#>  forum_read     0.446    -0.891     0.811
+#>  forum_post     0.338    -0.762     0.750
+#>  attendance     0.256    -0.940     1.133
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -152,14 +158,14 @@ investigation before the fitted profiles are interpreted in detail.
 
 get_results(fit, "starts")
 #>    start log_likelihood converged iterations error boundary
-#> 1      1       -8348.43      TRUE         42  <NA>    FALSE
-#> 2      2       -8348.43      TRUE         33  <NA>    FALSE
-#> 3      3       -8348.43      TRUE         42  <NA>    FALSE
+#> 1      1       -8348.43      TRUE         45  <NA>    FALSE
+#> 2      2       -8348.43      TRUE         42  <NA>    FALSE
+#> 3      3       -8348.43      TRUE         45  <NA>    FALSE
 #> 4      4       -8348.43      TRUE         39  <NA>    FALSE
-#> 5      5       -8348.43      TRUE         33  <NA>    FALSE
-#> 6      6       -8348.43      TRUE         33  <NA>    FALSE
-#> 7      7       -8348.43      TRUE         33  <NA>    FALSE
-#> 8      8       -8348.43      TRUE         42  <NA>    FALSE
+#> 5      5       -8348.43      TRUE         42  <NA>    FALSE
+#> 6      6       -8348.43      TRUE         36  <NA>    FALSE
+#> 7      7       -8348.43      TRUE         36  <NA>    FALSE
+#> 8      8       -8348.43      TRUE         51  <NA>    FALSE
 #> 9      9       -8348.43      TRUE         42  <NA>    FALSE
 #> 10    10       -8348.43      TRUE         42  <NA>    FALSE
 ```
@@ -220,7 +226,7 @@ classes at each level.
 
 get_results(fit, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
-#> 1 individuals         3    1422    324.6623         0.792180
+#> 1 individuals         3    1422    324.6527         0.792186
 #> 2      groups         3     106     23.6028         0.797319
 ```
 
@@ -278,19 +284,19 @@ summaries and subsequent substantive comparisons may be less stable.
 
 get_results(fit, "classification")
 #>         level class n_modal proportion_modal estimated_n estimated_proportion average_posterior
-#> 1 individuals     1     479         0.336850    478.0271             0.336165          0.852873
-#> 2 individuals     2     576         0.405063    574.9606             0.404332          0.977844
-#> 3 individuals     3     367         0.258087    369.0123             0.259502          0.845238
-#> 4      groups     1      25         0.235849     27.6523             0.260870          0.897726
-#> 5      groups     2      30         0.283019     31.0269             0.292706          0.977332
-#> 6      groups     3      51         0.481132     47.3209             0.446423          0.864392
+#> 1 individuals     1     479         0.336850    478.0700             0.336196          0.852921
+#> 2 individuals     2     576         0.405063    574.9629             0.404334          0.977847
+#> 3 individuals     3     367         0.258087    368.9671             0.259471          0.845179
+#> 4      groups     1      30         0.283019     31.0268             0.292706          0.977332
+#> 5      groups     2      25         0.235849     27.6526             0.260874          0.897729
+#> 6      groups     3      51         0.481132     47.3206             0.446421          0.864388
 #>   odds_correct_classification
-#> 1                    11.44722
-#> 2                    65.01970
-#> 3                    15.58461
-#> 4                    24.86984
-#> 5                   104.18117
-#> 6                     7.90415
+#> 1                    11.45003
+#> 2                    65.02681
+#> 3                    15.58023
+#> 4                   104.18292
+#> 5                    24.87018
+#> 6                     7.90399
 ```
 
 The class-specific results show that classification certainty varies
@@ -304,7 +310,7 @@ classified into Profile 2.
 
 A similar pattern appears at the student level. Students assigned to
 Class 3 have an average posterior probability of 0.864, whereas those
-assigned to Class 2 have an average posterior probability of 0.977. The
+assigned to Class 1 have an average posterior probability of 0.977. The
 student-level classifications are therefore not equally certain across
 classes, even though the overall relative entropy is similar across the
 two levels.
@@ -368,15 +374,15 @@ consistent with the observed associations.
 
 get_results(fit, "residuals") |> head(4)
 #>     profile indicator_1 indicator_2     kind observed expected residual effective_n statistic df
-#> 1 profile_2  forum_read  attendance gaussian 0.211089        0 0.211089     574.961   5.12540 NA
-#> 2 profile_2      browse  attendance gaussian 0.177096        0 0.177096     574.961   4.28052 NA
-#> 3 profile_2    lectures  attendance gaussian 0.113807        0 0.113807     574.961   2.73362 NA
-#> 4 profile_2  forum_post  attendance gaussian 0.105262        0 0.105262     574.961   2.52678 NA
+#> 1 profile_2  forum_read  attendance gaussian 0.211091        0 0.211091     574.963   5.12547 NA
+#> 2 profile_2      browse  attendance gaussian 0.177099        0 0.177099     574.963   4.28058 NA
+#> 3 profile_2    lectures  attendance gaussian 0.113807        0 0.113807     574.963   2.73363 NA
+#> 4 profile_2  forum_post  attendance gaussian 0.105264        0 0.105264     574.963   2.52683 NA
 #>       p_value  p_adjusted
-#> 1 2.96905e-07 2.96905e-07
-#> 2 1.86461e-05 1.86461e-05
-#> 3 6.26429e-03 6.26429e-03
-#> 4 1.15114e-02 1.15114e-02
+#> 1 2.96802e-07 2.96802e-07
+#> 2 1.86407e-05 1.86407e-05
+#> 3 6.26406e-03 6.26406e-03
+#> 4 1.15097e-02 1.15097e-02
 ```
 
 The largest residual correlation is 0.211 between forum reading and
@@ -459,6 +465,8 @@ candidates <- enumerate_classes(course_engagement, vars, id = "student",
                                 n_profiles = 2:3, n_group_classes = 2:3,
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
+#> Warning: Profile 2: 18.6 Gaussian membership mass for 20 free means and variances. This is a
+#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 get_results(candidates, "candidates")
 #>               candidate n_profiles n_group_classes model log_likelihood n_parameters     aic
 #> 1 profiles2_groups2_VVI          2               2   VVI       -8439.82           23 16925.6
@@ -466,7 +474,7 @@ get_results(candidates, "candidates")
 #> 3 profiles2_groups3_VVI          2               3   VVI       -8421.06           25 16892.1
 #> 4 profiles3_groups3_VVI          3               3   VVI       -8348.43           38 16772.9
 #> 5 profiles2_groups2_VVV          2               2   VVV       -8313.11           43 16712.2
-#> 6 profiles3_groups2_VVV          3               2   VVV       -8291.40           65 16712.8
+#> 6 profiles3_groups2_VVV          3               2   VVV       -8289.07           65 16708.1
 #> 7 profiles2_groups3_VVV          2               3   VVV       -8295.38           45 16680.8
 #> 8 profiles3_groups3_VVV          3               3   VVV       -8275.08           68 16686.2
 #>       kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual
@@ -475,45 +483,63 @@ get_results(candidates, "candidates")
 #> 3 16920.1    16958.7        17023.6      16879.7          16944.2     16983.7         17048.6
 #> 4 16813.9    16874.1        16972.7      16754.0          16852.0     16912.1         17010.7
 #> 5 16758.2    16826.8        16938.4      16690.9          16801.8     16869.8         16981.4
-#> 6 16780.8    16885.9        17054.7      16680.6          16848.2     16950.9         17119.7
+#> 6 16776.1    16881.3        17050.0      16675.9          16843.5     16946.3         17115.0
 #> 7 16728.8    16800.6        16917.5      16658.4          16774.5     16845.6         16962.5
 #> 8 16757.2    16867.3        17043.8      16652.4          16827.8     16935.3         17111.8
 #>   awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy
-#> 1    17172.0        17404.5    16995.8        17168.5    16888.5        17001.5        0.938173
-#> 2    17168.8        17999.5    16900.6        17640.4    16737.4        17386.4        0.789624
-#> 3    17193.1        17398.0    17001.5        17141.5    16884.9        16960.0        0.940203
-#> 4    17212.5        18011.9    16921.3        17622.1    16744.1        17346.2        0.792180
-#> 5    17164.8        17564.3    16835.3        17123.1    16634.7        16810.9        0.906299
-#> 6    17391.7        18218.6    16893.5        17551.7    16590.4        17079.8        0.840922
-#> 7    17188.3        17558.0    16843.4        17096.3    16633.6        16769.6        0.909291
-#> 8    17429.4        18278.5    16908.3        17580.9    16591.2        17087.2        0.828118
+#> 1    17292.2        17411.7    17116.0        17175.7    17008.7        17008.7        0.938173
+#> 2    17823.7        18005.5    17555.5        17646.4    17392.3        17392.3        0.789625
+#> 3    17306.3        17436.1    17114.7        17179.6    16998.1        16998.1        0.940203
+#> 4    17855.8        18053.1    17564.6        17663.3    17387.4        17387.4        0.792186
+#> 5    17346.2        17569.5    17016.7        17128.4    16816.2        16816.2        0.906299
+#> 6    17593.3        17930.8    17095.2        17263.9    16792.0        16792.0        0.933156
+#> 7    17359.5        17593.2    17014.7        17131.5    16804.8        16804.8        0.909291
+#> 8    17957.7        18310.8    17436.6        17613.2    17119.5        17119.5        0.828142
 #>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max
 #> 1      0.939643  0.981757  0.984935   0.983346           0        0.968985        0.992014
-#> 2      0.943150  0.848963  0.978772   0.892726           0        0.977176        0.992210
-#> 3      0.816455  0.981777  0.985771   0.983774           0        0.900354        0.962214
-#> 4      0.797319  0.845238  0.977844   0.891985           0        0.864392        0.977332
+#> 2      0.943149  0.848969  0.978772   0.892726           0        0.977176        0.992210
+#> 3      0.816454  0.981777  0.985771   0.983774           0        0.900351        0.962213
+#> 4      0.797319  0.845179  0.977847   0.891982           0        0.864388        0.977332
 #> 5      0.942161  0.973255  0.977752   0.975503           0        0.970873        0.993019
-#> 6      0.948115  0.649364  0.971863   0.844724           1        0.982278        0.990363
-#> 7      0.816138  0.974333  0.977839   0.976086           0        0.903069        0.959803
-#> 8      0.823956  0.649559  0.973628   0.840843           1        0.878069        0.955368
+#> 6      0.943398  0.796376  0.975771   0.915213           1        0.979379        0.990214
+#> 7      0.816138  0.974333  0.977839   0.976086           0        0.903070        0.959803
+#> 8      0.823957  0.649407  0.973627   0.840806           1        0.878064        0.955367
 #>   group_avepp_mean group_avepp_below converged boundary min_standardized_eigenvalue
 #> 1         0.980500                 0      TRUE    FALSE                   0.3714788
-#> 2         0.984693                 0      TRUE    FALSE                   0.1999744
-#> 3         0.922506                 0      TRUE    FALSE                   0.3748297
-#> 4         0.913150                 0      TRUE    FALSE                   0.2002771
+#> 2         0.984693                 0      TRUE    FALSE                   0.1999758
+#> 3         0.922505                 0      TRUE    FALSE                   0.3748293
+#> 4         0.913150                 0      TRUE    FALSE                   0.2002897
 #> 5         0.981946                 0      TRUE    FALSE                   0.2710424
-#> 6         0.986321                 0      TRUE    FALSE                   0.0984473
+#> 6         0.984796                 0      TRUE    FALSE                   0.0110647
 #> 7         0.922502                 0      TRUE    FALSE                   0.2720518
-#> 8         0.920425                 0      TRUE    FALSE                   0.1201822
-#>   min_gaussian_mass n_best_replicated warnings error
-#> 1           587.904                 6           <NA>
-#> 2           382.562                 6           <NA>
-#> 3           591.087                 6           <NA>
-#> 4           369.012                 6           <NA>
-#> 5           583.221                 6           <NA>
-#> 6           104.363                 3           <NA>
-#> 7           589.486                 6           <NA>
-#> 8           116.302                 5           <NA>
+#> 8         0.920423                 0      TRUE    FALSE                   0.1201323
+#>   min_gaussian_mass n_best_replicated
+#> 1          587.9042                 6
+#> 2          382.5560                 6
+#> 3          591.0872                 6
+#> 4          368.9671                 6
+#> 5          583.2209                 6
+#> 6           18.6125                 1
+#> 7          589.4862                 6
+#> 8          116.2557                 5
+#>                                                                                                                                                                                warnings
+#> 1                                                                                                                                                                                      
+#> 2                                                                                                                                                                                      
+#> 3                                                                                                                                                                                      
+#> 4                                                                                                                                                                                      
+#> 5                                                                                                                                                                                      
+#> 6 Profile 2: 18.6 Gaussian membership mass for 20 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 7                                                                                                                                                                                      
+#> 8                                                                                                                                                                                      
+#>   error
+#> 1  <NA>
+#> 2  <NA>
+#> 3  <NA>
+#> 4  <NA>
+#> 5  <NA>
+#> 6  <NA>
+#> 7  <NA>
+#> 8  <NA>
 ```
 
 Under the diagonal covariance specification, the lowest BIC is obtained
@@ -527,7 +553,7 @@ three-class full-covariance model has a higher BIC of 16867.3.
 
 Most candidate models also show stable likelihood replication across
 starts. The exception is the three-profile, two-class full-covariance
-model, whose best solution is recovered by only three of the six
+model, whose best solution is recovered by only one of the six
 initializations. This weaker replication suggests greater numerical
 uncertainty for that candidate and illustrates why class enumeration
 should not be based on information criteria alone.
@@ -554,16 +580,16 @@ within-profile associations observed in the data.
 full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
                       model = "VVV")
 get_results(full, "residuals") |> head(4)
-#>     profile indicator_1 indicator_2     kind   observed   expected    residual effective_n
-#> 1 profile_1      browse  forum_read gaussian 0.04220417 0.04220345 7.19972e-07     832.514
-#> 2 profile_1  forum_read  attendance gaussian 0.22563980 0.22563909 7.19552e-07     832.514
-#> 3 profile_1    lectures  forum_read gaussian 0.00953716 0.00953647 6.92761e-07     832.514
-#> 4 profile_1  forum_post  attendance gaussian 0.21625412 0.21625347 6.51244e-07     832.514
+#>     profile indicator_1 indicator_2     kind   observed  expected    residual effective_n
+#> 1 profile_1      browse  forum_read gaussian 0.04220405 0.0422031 8.99773e-07     832.514
+#> 2 profile_1  forum_read  attendance gaussian 0.22563970 0.2256388 8.75914e-07     832.514
+#> 3 profile_1    lectures  forum_read gaussian 0.00953707 0.0095362 8.64190e-07     832.514
+#> 4 profile_2  forum_read  forum_post gaussian 0.07712515 0.0771244 7.70121e-07     589.486
 #>     statistic df  p_value p_adjusted
-#> 1 2.07731e-05 NA 0.999983   0.999983
-#> 2 2.18357e-05 NA 0.999983   0.999983
-#> 3 1.99542e-05 NA 0.999984   0.999984
-#> 4 1.96769e-05 NA 0.999984   0.999984
+#> 1 2.59609e-05 NA 0.999979   0.999979
+#> 2 2.65807e-05 NA 0.999979   0.999979
+#> 3 2.48920e-05 NA 0.999980   0.999980
+#> 4 1.87620e-05 NA 0.999985   0.999985
 ```
 
 In the two-profile, three-class full-covariance model, the estimated
@@ -624,97 +650,97 @@ discussion below uses the rows for the attendance means.
 
 parameter_inference(fit)
 #>          level       outcome          term   parameter   estimate standard_error statistic
-#> 1  measurement     profile_1        browse        mean  0.3870170      0.0454191   8.52102
-#> 2  measurement     profile_1      lectures        mean  0.1856188      0.0575792   3.22371
-#> 3  measurement     profile_1    forum_read        mean  0.4463868      0.0441638  10.10752
-#> 4  measurement     profile_1    forum_post        mean  0.3376256      0.0533679   6.32638
-#> 5  measurement     profile_1    attendance        mean  0.2563574      0.0515945   4.96870
-#> 6  measurement     profile_2        browse        mean -0.7768119      0.0314789 -24.67726
-#> 7  measurement     profile_2      lectures        mean -0.6123278      0.0312718 -19.58081
-#> 8  measurement     profile_2    forum_read        mean -0.8914229      0.0264490 -33.70349
-#> 9  measurement     profile_2    forum_post        mean -0.7623152      0.0280090 -27.21675
-#> 10 measurement     profile_2    attendance        mean -0.9399585      0.0268402 -35.02051
-#> 11 measurement     profile_3        browse        mean  0.7088949      0.0514564  13.77662
-#> 12 measurement     profile_3      lectures        mean  0.7134520      0.0616420  11.57413
-#> 13 measurement     profile_3    forum_read        mean  0.8109413      0.0462604  17.52992
-#> 14 measurement     profile_3    forum_post        mean  0.7503169      0.0525192  14.28652
-#> 15 measurement     profile_3    attendance        mean  1.1327581      0.0610226  18.56292
-#> 16 measurement     profile_1        browse    variance  0.6132461      0.0450503        NA
-#> 17 measurement     profile_1      lectures    variance  0.7610614      0.0586615        NA
-#> 18 measurement     profile_1    forum_read    variance  0.4571736      0.0359690        NA
-#> 19 measurement     profile_1    forum_post    variance  0.7116428      0.0561919        NA
-#> 20 measurement     profile_1    attendance    variance  0.1957347      0.0216170        NA
-#> 21 measurement     profile_2        browse    variance  0.5240130      0.0322067        NA
-#> 22 measurement     profile_2      lectures    variance  0.5359580      0.0321820        NA
-#> 23 measurement     profile_2    forum_read    variance  0.3571071      0.0226927        NA
-#> 24 measurement     profile_2    forum_post    variance  0.4139011      0.0262015        NA
-#> 25 measurement     profile_2    attendance    variance  0.3626828      0.0227639        NA
-#> 26 measurement     profile_3        browse    variance  0.5195153      0.0482413        NA
-#> 27 measurement     profile_3      lectures    variance  0.8071112      0.0690734        NA
-#> 28 measurement     profile_3    forum_read    variance  0.4642225      0.0394946        NA
-#> 29 measurement     profile_3    forum_post    variance  0.5837185      0.0553583        NA
-#> 30 measurement     profile_3    attendance    variance  0.2025704      0.0246594        NA
-#> 31     profile     profile_1 group_class_1 probability  0.5469459      0.0746367        NA
-#> 32     profile     profile_2 group_class_1 probability  0.0552343      0.0247735        NA
-#> 33     profile     profile_3 group_class_1 probability  0.3978198      0.0757787        NA
-#> 34     profile     profile_1 group_class_2 probability  0.0701337      0.0205414        NA
-#> 35     profile     profile_2 group_class_2 probability  0.8466711      0.0245139        NA
-#> 36     profile     profile_3 group_class_2 probability  0.0831952      0.0188280        NA
-#> 37     profile     profile_1 group_class_3 probability  0.3881129      0.0428625        NA
-#> 38     profile     profile_2 group_class_3 probability  0.3171629      0.0364857        NA
-#> 39     profile     profile_3 group_class_3 probability  0.2947242      0.0407046        NA
-#> 40       group group_class_1          <NA> probability  0.2608702      0.0741551        NA
-#> 41       group group_class_2          <NA> probability  0.2927065      0.0482765        NA
-#> 42       group group_class_3          <NA> probability  0.4464233      0.0737332        NA
+#> 1  measurement     profile_1        browse        mean  0.3870324      0.0454157   8.52199
+#> 2  measurement     profile_1      lectures        mean  0.1856519      0.0575759   3.22447
+#> 3  measurement     profile_1    forum_read        mean  0.4464107      0.0441603  10.10886
+#> 4  measurement     profile_1    forum_post        mean  0.3376538      0.0533639   6.32738
+#> 5  measurement     profile_1    attendance        mean  0.2564040      0.0515939   4.96966
+#> 6  measurement     profile_2        browse        mean -0.7768095      0.0314788 -24.67724
+#> 7  measurement     profile_2      lectures        mean -0.6123273      0.0312717 -19.58085
+#> 8  measurement     profile_2    forum_read        mean -0.8914204      0.0264490 -33.70342
+#> 9  measurement     profile_2    forum_post        mean -0.7623134      0.0280090 -27.21677
+#> 10 measurement     profile_2    attendance        mean -0.9399557      0.0268401 -35.02059
+#> 11 measurement     profile_3        browse        mean  0.7089196      0.0514602  13.77606
+#> 12 measurement     profile_3      lectures        mean  0.7134804      0.0616461  11.57381
+#> 13 measurement     profile_3    forum_read        mean  0.8109612      0.0462641  17.52897
+#> 14 measurement     profile_3    forum_post        mean  0.7503371      0.0525223  14.28607
+#> 15 measurement     profile_3    attendance        mean  1.1328124      0.0610244  18.56326
+#> 16 measurement     profile_1        browse    variance  0.6132450      0.0450473        NA
+#> 17 measurement     profile_1      lectures    variance  0.7610659      0.0586588        NA
+#> 18 measurement     profile_1    forum_read    variance  0.4571729      0.0359665        NA
+#> 19 measurement     profile_1    forum_post    variance  0.7116451      0.0561877        NA
+#> 20 measurement     profile_1    attendance    variance  0.1957470      0.0216178        NA
+#> 21 measurement     profile_2        browse    variance  0.5240143      0.0322067        NA
+#> 22 measurement     profile_2      lectures    variance  0.5359582      0.0321819        NA
+#> 23 measurement     profile_2    forum_read    variance  0.3571087      0.0226928        NA
+#> 24 measurement     profile_2    forum_post    variance  0.4139024      0.0262015        NA
+#> 25 measurement     profile_2    attendance    variance  0.3626838      0.0227638        NA
+#> 26 measurement     profile_3        browse    variance  0.5195008      0.0482432        NA
+#> 27 measurement     profile_3      lectures    variance  0.8071150      0.0690787        NA
+#> 28 measurement     profile_3    forum_read    variance  0.4642238      0.0394977        NA
+#> 29 measurement     profile_3    forum_post    variance  0.5837024      0.0553610        NA
+#> 30 measurement     profile_3    attendance    variance  0.2025563      0.0246588        NA
+#> 31     profile     profile_1 group_class_1 probability  0.0701381      0.0205420        NA
+#> 32     profile     profile_2 group_class_1 probability  0.8466733      0.0245137        NA
+#> 33     profile     profile_3 group_class_1 probability  0.0831886      0.0188275        NA
+#> 34     profile     profile_1 group_class_2 probability  0.5470108      0.0746365        NA
+#> 35     profile     profile_2 group_class_2 probability  0.0552359      0.0247742        NA
+#> 36     profile     profile_3 group_class_2 probability  0.3977533      0.0757776        NA
+#> 37     profile     profile_1 group_class_3 probability  0.3881406      0.0428633        NA
+#> 38     profile     profile_2 group_class_3 probability  0.3171672      0.0364866        NA
+#> 39     profile     profile_3 group_class_3 probability  0.2946922      0.0407032        NA
+#> 40       group group_class_1          <NA> probability  0.2927056      0.0482765        NA
+#> 41       group group_class_2          <NA> probability  0.2608736      0.0741567        NA
+#> 42       group group_class_3          <NA> probability  0.4464207      0.0737344        NA
 #>         p_value   p_adjusted   conf_low conf_high
-#> 1   1.58155e-17  1.58155e-17  0.2979972  0.476037
-#> 2   1.26541e-03  1.26541e-03  0.0727656  0.298472
-#> 3   5.11626e-24  5.11626e-24  0.3598273  0.532946
-#> 4   2.50979e-10  2.50979e-10  0.2330264  0.442225
-#> 5   6.74043e-07  6.74043e-07  0.1552341  0.357481
-#> 6  1.87658e-134 1.87658e-134 -0.8385093 -0.715115
-#> 7   2.25409e-85  2.25409e-85 -0.6736195 -0.551036
-#> 8  5.13944e-249 5.13944e-249 -0.9432620 -0.839584
-#> 9  4.11497e-163 4.11497e-163 -0.8172119 -0.707418
-#> 10 1.09645e-268 1.09645e-268 -0.9925644 -0.887353
-#> 11  3.52367e-43  3.52367e-43  0.6080423  0.809748
-#> 12  5.57343e-31  5.57343e-31  0.5926360  0.834268
-#> 13  8.46817e-69  8.46817e-69  0.7202726  0.901610
-#> 14  2.65563e-46  2.65563e-46  0.6473811  0.853253
-#> 15  6.41241e-77  6.41241e-77  1.0131559  1.252360
-#> 16           NA           NA  0.5310113  0.708216
-#> 17           NA           NA  0.6543503  0.885175
-#> 18           NA           NA  0.3918422  0.533398
-#> 19           NA           NA  0.6096077  0.830756
-#> 20           NA           NA  0.1576381  0.243038
-#> 21           NA           NA  0.4645428  0.591096
-#> 22           NA           NA  0.4764527  0.602895
-#> 23           NA           NA  0.3152884  0.404472
-#> 24           NA           NA  0.3656051  0.468577
-#> 25           NA           NA  0.3207016  0.410160
-#> 26           NA           NA  0.4330691  0.623217
-#> 27           NA           NA  0.6824748  0.954509
-#> 28           NA           NA  0.3929240  0.548459
-#> 29           NA           NA  0.4847053  0.702958
-#> 30           NA           NA  0.1595722  0.257155
-#> 31           NA           NA  0.4008303  0.685396
-#> 32           NA           NA  0.0225366  0.129106
-#> 33           NA           NA  0.2622040  0.551177
-#> 34           NA           NA  0.0390910  0.122681
-#> 35           NA           NA  0.7922637  0.888828
-#> 36           NA           NA  0.0529744  0.128320
-#> 37           NA           NA  0.3081033  0.474646
-#> 38           NA           NA  0.2502955  0.392541
-#> 39           NA           NA  0.2216013  0.380191
-#> 40           NA           NA  0.1424328  0.428574
-#> 41           NA           NA  0.2076231  0.395264
-#> 42           NA           NA  0.3100459  0.591372
+#> 1   1.56830e-17  1.56830e-17  0.2980192  0.476046
+#> 2   1.26205e-03  1.26205e-03  0.0728052  0.298499
+#> 3   5.04657e-24  5.04657e-24  0.3598581  0.532963
+#> 4   2.49357e-10  2.49357e-10  0.2330625  0.442245
+#> 5   6.70708e-07  6.70708e-07  0.1552819  0.357526
+#> 6  1.87769e-134 1.87769e-134 -0.8385067 -0.715112
+#> 7   2.25242e-85  2.25242e-85 -0.6736188 -0.551036
+#> 8  5.15138e-249 5.15138e-249 -0.9432594 -0.839581
+#> 9  4.11293e-163 4.11293e-163 -0.8172099 -0.707417
+#> 10 1.09354e-268 1.09354e-268 -0.9925613 -0.887350
+#> 11  3.55114e-43  3.55114e-43  0.6080593  0.809780
+#> 12  5.59425e-31  5.59425e-31  0.5926563  0.834305
+#> 13  8.61179e-69  8.61179e-69  0.7202853  0.901637
+#> 14  2.67283e-46  2.67283e-46  0.6473953  0.853279
+#> 15  6.37199e-77  6.37199e-77  1.0132067  1.252418
+#> 16           NA           NA  0.5310154  0.708208
+#> 17           NA           NA  0.6543593  0.885173
+#> 18           NA           NA  0.3918458  0.533391
+#> 19           NA           NA  0.6096171  0.830749
+#> 20           NA           NA  0.1576488  0.243052
+#> 21           NA           NA  0.4645441  0.591098
+#> 22           NA           NA  0.4764530  0.602895
+#> 23           NA           NA  0.3152899  0.404474
+#> 24           NA           NA  0.3656065  0.468578
+#> 25           NA           NA  0.3207027  0.410160
+#> 26           NA           NA  0.4330518  0.623208
+#> 27           NA           NA  0.6824699  0.954525
+#> 28           NA           NA  0.3929202  0.548467
+#> 29           NA           NA  0.4846849  0.702948
+#> 30           NA           NA  0.1595593  0.257140
+#> 31           NA           NA  0.0390943  0.122686
+#> 32           NA           NA  0.7922662  0.888830
+#> 33           NA           NA  0.0529689  0.128313
+#> 34           NA           NA  0.4008901  0.685456
+#> 35           NA           NA  0.0225372  0.129110
+#> 36           NA           NA  0.2621452  0.551115
+#> 37           NA           NA  0.3081288  0.474675
+#> 38           NA           NA  0.2502982  0.392547
+#> 39           NA           NA  0.2215729  0.380157
+#> 40           NA           NA  0.2076223  0.395263
+#> 41           NA           NA  0.1424337  0.428581
+#> 42           NA           NA  0.3100415  0.591372
 ```
 
 For the higher-activity Profile 3, the estimated attendance mean is
 1.133 standard deviations above the course mean, with a standard error
 of 0.061 and a 95% Wald interval from 1.013 to 1.252. The
-intermediate-activity Profile 1 has an interval from 0.155 to 0.357,
+intermediate-activity Profile 1 has an interval from 0.155 to 0.358,
 while the lower-activity Profile 2 has an interval from $`-0.993`$ to
 $`-0.887`$.
 

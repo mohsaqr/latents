@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -148,23 +148,32 @@ estimates these four structures with every number of profiles
 requested.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">indicators</span>, n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: A variance reached min_variance; this is a bound-active constrained fit.</span></span>
 <span><span class="co">#&gt; Warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is</span></span>
 <span><span class="co">#&gt; a conservative diagnostic, not an identification test; inspect the Gaussian covariance</span></span>
+<span><span class="co">#&gt; diagnostics.</span></span>
+<span><span class="co">#&gt; Warning: Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This</span></span>
+<span><span class="co">#&gt; is a conservative diagnostic, not an identification test; inspect the Gaussian covariance</span></span>
 <span><span class="co">#&gt; diagnostics.</span></span>
 <span><span class="fu"><a href="../reference/latents-plots.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/enumerate-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The choice of structure matters here because four of the five
 constructs are strongly correlated. The structures without covariances
 (<code>EEI</code>, <code>VVI</code>) can reproduce these correlations
-only by adding profiles, and their BIC continues to fall up to six
+only by adding profiles. BIC falls through six profiles for
+<code>EEI</code>. For <code>VVI</code>, it is lowest at five profiles,
+but that fit reaches the variance floor; BIC rises again at six
 profiles. The warnings printed during the enumeration report candidates
-with profile-specific variances that contain a profile too small to
-determine them (<code>latents_thin_profiles</code>); the
-<code>EEE</code> structure shares one covariance matrix and cannot have
-such a profile. The structures with covariances account for the
-correlations directly, and reach far lower BIC values with one or two
-profiles. The <code>EEE</code> structure attains the lowest values; its
-candidates are:</p>
+with low Gaussian membership mass relative to the number of
+profile-specific means and variances
+(<code>latents_thin_profiles</code>). This is a conservative support
+diagnostic, not an identification test; inspect the covariance
+diagnostics as well. The <code>EEE</code> structure shares one
+covariance matrix and does not receive this profile-specific warning.
+The structures with covariances account for the correlations directly,
+and reach far lower BIC values with one or two profiles. The
+<code>EEE</code> structure attains the lowest values; its candidates
+are:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">indicators</span>, n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, model <span class="op">=</span> <span class="st">"EEE"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Class enumeration: 6 candidates, 6 converged, 0 failed to fit</span></span>
@@ -183,7 +192,7 @@ candidates are:</p>
 <span><span class="co">#&gt;  profile_entropy avepp_min avepp_mean avepp_below converged boundary</span></span>
 <span><span class="co">#&gt;               NA        NA         NA          NA      TRUE    FALSE</span></span>
 <span><span class="co">#&gt;           0.7440    0.8801     0.9169           0      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;           0.6347    0.7968     0.8340           1      TRUE    FALSE</span></span>
+<span><span class="co">#&gt;           0.6347    0.7966     0.8340           1      TRUE    FALSE</span></span>
 <span><span class="co">#&gt;           0.7686    0.8180     0.8777           0      TRUE    FALSE</span></span>
 <span><span class="co">#&gt;           0.7440    0.8046     0.8427           0      TRUE    FALSE</span></span>
 <span><span class="co">#&gt;           0.7422    0.7602     0.8214           2      TRUE    FALSE</span></span>
@@ -231,13 +240,13 @@ candidates are:</p>
 <span><span class="co">#&gt;  estimated_n estimated_proportion average_posterior odds_correct_classification</span></span>
 <span><span class="co">#&gt;        93.07               0.3102            0.8801                      16.315</span></span>
 <span><span class="co">#&gt;       206.93               0.6898            0.9538                       9.290</span></span>
-<span><span class="co">#&gt;       129.78               0.4326            0.8241                       6.146</span></span>
-<span><span class="co">#&gt;        80.40               0.2680            0.7968                      10.711</span></span>
+<span><span class="co">#&gt;       129.81               0.4327            0.8242                       6.149</span></span>
+<span><span class="co">#&gt;        80.37               0.2679            0.7966                      10.705</span></span>
 <span><span class="co">#&gt;        89.82               0.2994            0.8810                      17.327</span></span>
 <span><span class="co">#&gt;        84.23               0.2808            0.8180                      11.514</span></span>
-<span><span class="co">#&gt;        66.74               0.2225            0.8793                      25.452</span></span>
-<span><span class="co">#&gt;        33.29               0.1110            0.8961                      69.074</span></span>
-<span><span class="co">#&gt;       115.74               0.3858            0.9175                      17.714</span></span>
+<span><span class="co">#&gt;        66.74               0.2225            0.8793                      25.451</span></span>
+<span><span class="co">#&gt;        33.29               0.1110            0.8961                      69.070</span></span>
+<span><span class="co">#&gt;       115.74               0.3858            0.9175                      17.715</span></span>
 <span><span class="co">#&gt;        68.24               0.2275            0.8764                      24.072</span></span>
 <span><span class="co">#&gt;  relative_entropy</span></span>
 <span><span class="co">#&gt;            0.7440</span></span>
@@ -280,25 +289,25 @@ candidates are:</p>
 <span><span class="co">#&gt;  tree       level from_candidate from_class from_share to_candidate to_class to_share</span></span>
 <span><span class="co">#&gt;  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102</span></span>
 <span><span class="co">#&gt;  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        1   0.4326</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        1   0.4326</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        2   0.2680</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        2   0.2680</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679</span></span>
 <span><span class="co">#&gt;  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994</span></span>
 <span><span class="co">#&gt;  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles3          1     0.4326    profiles4        1   0.2808</span></span>
-<span><span class="co">#&gt;  tree individuals      profiles3          2     0.2680    profiles4        1   0.2808</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles3          1     0.4327    profiles4        1   0.2808</span></span>
+<span><span class="co">#&gt;  tree individuals      profiles3          2     0.2679    profiles4        1   0.2808</span></span>
 <span><span class="co">#&gt;     mass share_of_from share_of_to</span></span>
 <span><span class="co">#&gt;  0.31025       0.31025     1.00000</span></span>
 <span><span class="co">#&gt;  0.68975       0.68975     1.00000</span></span>
-<span><span class="co">#&gt;  0.04628       0.14915     0.10697</span></span>
-<span><span class="co">#&gt;  0.38632       0.56008     0.89303</span></span>
-<span><span class="co">#&gt;  0.01009       0.03251     0.03763</span></span>
-<span><span class="co">#&gt;  0.25791       0.37392     0.96237</span></span>
-<span><span class="co">#&gt;  0.25389       0.81834     0.84795</span></span>
-<span><span class="co">#&gt;  0.04552       0.06600     0.15205</span></span>
-<span><span class="co">#&gt;  0.17822       0.41199     0.63479</span></span>
-<span><span class="co">#&gt;  0.07623       0.28446     0.27153</span></span>
+<span><span class="co">#&gt;  0.04628       0.14917     0.10696</span></span>
+<span><span class="co">#&gt;  0.38641       0.56021     0.89304</span></span>
+<span><span class="co">#&gt;  0.01008       0.03249     0.03763</span></span>
+<span><span class="co">#&gt;  0.25782       0.37379     0.96237</span></span>
+<span><span class="co">#&gt;  0.25389       0.81834     0.84796</span></span>
+<span><span class="co">#&gt;  0.04552       0.06600     0.15204</span></span>
+<span><span class="co">#&gt;  0.17826       0.41199     0.63493</span></span>
+<span><span class="co">#&gt;  0.07619       0.28441     0.27139</span></span>
 <span><span class="co">#&gt;    ... 60 more rows.  get_results(x, what = "tree")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; 7 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
@@ -315,7 +324,7 @@ compares the two models directly.</p>
 <span><span class="co">#&gt; Parametric bootstrap likelihood-ratio comparison</span></span>
 <span><span class="co">#&gt; Null: 1 profile; alternative: 2 profiles</span></span>
 <span><span class="co">#&gt; Observed statistic: 29.518785</span></span>
-<span><span class="co">#&gt; p-value: 0.005 (Monte Carlo SE 0.00499) from 199 of 199 valid replicates</span></span></code></pre></div>
+<span><span class="co">#&gt; p-value: 0.005 (Monte Carlo SE 0.00499) from 199 of 199 valid replicates (0 invalid)</span></span></code></pre></div>
 <p>The test rejects the one-profile model (p = 0.005), and the
 two-profile model with the <code>EEE</code> structure is retained.</p>
 </div>
@@ -329,17 +338,20 @@ fitted model:</p>
 <span><span class="co">#&gt; Latent profile analysis: 2 profiles</span></span>
 <span><span class="co">#&gt; 300 observations; equal full residual covariance (EEE)</span></span>
 <span><span class="co">#&gt; Log likelihood: -600.924999 | AIC: 1253.850 | BIC: 1350.148</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 18 | best start: 1 (emEM: 50 screened, 10 run to the end)</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 18 | best log likelihood reached by 10 of 10 starts (10 converged; emEM: 50 screened)</span></span>
 <span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.1025 (profiles, profile_1); Gaussian mass: 93.07; weight effective n: 111.8.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  profile cognitive_strategies intrinsic_value self_efficacy self_regulation test_anxiety</span></span>
-<span><span class="co">#&gt;        1                 5.22            5.52          5.39            5.11         3.85</span></span>
-<span><span class="co">#&gt;        2                 5.93            6.39          6.17            5.74         3.63</span></span>
-<span><span class="co">#&gt;  count proportion</span></span>
-<span><span class="co">#&gt;   93.1       0.31</span></span>
-<span><span class="co">#&gt;  206.9       0.69</span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 31.0% (93)   profile_2 69.0% (207)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
+<span><span class="co">#&gt; Means</span></span>
+<span><span class="co">#&gt;             indicator profile_1 profile_2</span></span>
+<span><span class="co">#&gt;  cognitive_strategies      5.21      5.93</span></span>
+<span><span class="co">#&gt;       intrinsic_value      5.52      6.39</span></span>
+<span><span class="co">#&gt;         self_efficacy      5.39      6.17</span></span>
+<span><span class="co">#&gt;       self_regulation      5.11      5.74</span></span>
+<span><span class="co">#&gt;          test_anxiety      3.85      3.63</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -417,15 +429,33 @@ column the average posterior probability they place on each profile.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/diagnostics.html">diagnostics</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/diagnostics-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="workflow-lpa_files/figure-html/diagnostics-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="workflow-lpa_files/figure-html/diagnostics-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="workflow-lpa_files/figure-html/diagnostics-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<pre><code><span><span class="co">#&gt; Classification quality: 2 profiles</span></span>
+<pre><code><span><span class="co">#&gt; Diagnostics: Latent profile analysis, 2 profiles</span></span>
+<span><span class="co">#&gt; 1 check needs attention: pairs dependent within a class</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Relative entropy     individuals 0.744</span></span>
-<span><span class="co">#&gt;   Smallest class       individuals 93.1 (31.0%)</span></span>
-<span><span class="co">#&gt;   Lowest avg posterior individuals 0.880</span></span>
-<span><span class="co">#&gt;   Largest residual     0.103  (self_efficacy, self_regulation; profile_1)</span></span>
+<span><span class="co">#&gt; Estimation</span></span>
+<span><span class="co">#&gt;   ok     best start converged                                yes                      </span></span>
+<span><span class="co">#&gt;   info   best log likelihood reached by                      10 of 10 starts          </span></span>
+<span><span class="co">#&gt;   ok     starts failed or unfinished                         0 of 10 (40 screened)    </span></span>
+<span><span class="co">#&gt;   ok     estimates at a bound                                no                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Tables: get_results(x, what = "entropy" | "classification" | </span></span>
-<span><span class="co">#&gt;         "average_posteriors" | "residuals" | "all"). plot(x) draws them.</span></span></code></pre>
+<span><span class="co">#&gt; Class size</span></span>
+<span><span class="co">#&gt;   info   smallest class                         individuals  31.0% (n = 93, class 1)  </span></span>
+<span><span class="co">#&gt;   info   modal vs estimated proportions         individuals  largest gap 0.006        </span></span>
+<span><span class="co">#&gt;   ok     classes with no assigned unit          individuals  0 of 2                   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Classification</span></span>
+<span><span class="co">#&gt;   info   relative entropy                       individuals  0.744                    </span></span>
+<span><span class="co">#&gt;   info   lowest average posterior               individuals  0.880 (class 1)          </span></span>
+<span><span class="co">#&gt;   info   lowest odds of correct classification  individuals  9.3 (class 2)            </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Local independence</span></span>
+<span><span class="co">#&gt;   check  pairs dependent within a class                      1 of 20 tested pairs     BH-adjusted p &lt; 0.05</span></span>
+<span><span class="co">#&gt;          largest: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.049; consider local_dependence = or a full covariance model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Information</span></span>
+<span><span class="co">#&gt;   info   log likelihood, parameters, BIC                     -600.92, 26, 1350.15     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).</span></span></code></pre>
 <p>A relative entropy of 0.74 and average posterior probabilities of at
 least 0.88 indicate an acceptable classification.</p>
 </div>
@@ -445,7 +475,7 @@ and the classification uncertainty, in the row order of the data.</p>
 <span><span class="co">#&gt; 5                 4.38            5.56          4.89            4.78         4.00       1</span></span>
 <span><span class="co">#&gt; 6                 4.85            5.44          5.67            5.11         3.50       1</span></span>
 <span><span class="co">#&gt;   uncertainty posterior_profile_1 posterior_profile_2</span></span>
-<span><span class="co">#&gt; 1    0.154287            0.845713               0.154</span></span>
+<span><span class="co">#&gt; 1    0.154286            0.845714               0.154</span></span>
 <span><span class="co">#&gt; 2    0.008309            0.008309               0.992</span></span>
 <span><span class="co">#&gt; 3    0.005427            0.005427               0.995</span></span>
 <span><span class="co">#&gt; 4    0.000982            0.000982               0.999</span></span>

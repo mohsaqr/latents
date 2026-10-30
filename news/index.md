@@ -1,5 +1,850 @@
 # Changelog
 
+## latents 1.1.3
+
+### Zero-weight units keep their classification (2026-10-30)
+
+- 1.1.2 (a GitHub release) reported the class, uncertainty and posterior
+  probabilities of units with sampling weight zero as `NA` in
+  assignment, posterior and prediction tables. These units are again
+  reported as in 1.1.1. A unit of weight zero stays out of every count,
+  criterion and starting value, but keeps its row, posterior and
+  assignment in output. Only rows and groups with no observed indicator
+  are left without a class.
+
+## latents 1.1.2
+
+### Rows without data are no longer assigned a class (2026-10-29)
+
+Estimates, log likelihoods and posterior probabilities used in
+estimation are unchanged.
+
+- A row whose every indicator is missing contributes nothing to the fit,
+  so its posterior equals the class proportions. With the default
+  `drop_empty = TRUE`, such rows already counted for nothing in the
+  sample sizes and classification summaries. The assignment table then
+  gave them the largest class, however. Assignment and posterior tables
+  now keep these rows in their input order, but report their class,
+  uncertainty and probabilities as `NA`. The same applies to
+  [`predict()`](https://rdrr.io/r/stats/predict.html) on fitted or new
+  data, [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  assignments,
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+  by class,
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  agreement and sequence summaries. A group whose rows are all empty has
+  no group class. An empty row in a group with data keeps the group’s
+  class. `drop_empty = FALSE` keeps the earlier output.
+- A categorical `local_dependence` pair joins its two items into one. A
+  row could answer only one item of the pair, with no other indicator
+  observed. Such a row was wrongly dropped from the sample sizes,
+  information criteria and classification summaries, and is now counted
+  as observed. Likelihoods are unchanged.
+- [`predict()`](https://rdrr.io/r/stats/predict.html) for a model with a
+  noise component now refuses a row with only some indicators observed,
+  with condition class `latents_unsupported_noise`. The fitted noise
+  volume does not define a density for a subset of indicators. A row
+  with every indicator missing is accepted and, like any empty row,
+  reported without a class.
+
+### Documentation
+
+- Rewrote the introductions to the help pages, the bundled dataset
+  descriptions, the package overview
+  ([`?latents`](https://pak.dynasite.org/latents/reference/latents-package.md)),
+  the DESCRIPTION summary and the opening of the LPA vignette.
+
+## latents 1.1.1
+
+### Help pages (2026-10-29)
+
+- S3 methods ([`print()`](https://rdrr.io/r/base/print.html),
+  [`summary()`](https://rdrr.io/r/base/summary.html),
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  and others for each class) no longer have help entries of their own:
+  the help index has 57 entries instead of 222, and the page for each
+  function says which methods its objects have. The arguments only
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) takes are
+  listed in a section of
+  [`?"latents-plots"`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  and
+  [`?parameter_inference`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  covers every model family. The topics `latents-print`,
+  `latents-summary` and `latents-as-data-frame` are gone; their content
+  is on
+  [`?get_results`](https://pak.dynasite.org/latents/reference/get_results.md).
+  No function changed.
+- Clearer descriptions of
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+  [`report()`](https://pak.dynasite.org/latents/reference/report.md),
+  [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md),
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  and
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  and of two conditions in
+  [`?"latents-conditions"`](https://pak.dynasite.org/latents/reference/latents-conditions.md).
+- Tests: 112 tests that compare results with other packages, numerical
+  routines, Latent GOLD, published values or independent
+  re-implementations moved from the package tests to
+  `tests/equivalence/` in the source repository, where continuous
+  integration runs them. No test was removed.
+
+## latents 1.1.0
+
+### CRAN release (2026-10-29)
+
+This release brings the changes since CRAN 0.9.21 (the GitHub releases
+0.9.22 to 1.0.0) to CRAN. The estimation code is the same as in 1.0.0
+and 0.98.1, so every result agrees with those versions. Some results
+differ from 0.9.21: “Upgrading from CRAN 0.9.21” under 0.98.1 lists when
+to refit.
+
+- Tests: the boundary-fit test that uses numDeriv for its standard
+  errors is skipped when numDeriv, a suggested package, is not
+  installed.
+
+## latents 1.0.0
+
+### Verification against independent programs and published analyses (2026-10-29)
+
+No estimation code has changed since 0.98.1; every result is the same.
+This release records how each function is verified.
+
+- Comparisons cover independent model fits, published analyses,
+  component formulas and independent reference implementations. The
+  verification matrix distinguishes these evidence types and counts only
+  complete, agreeing model comparisons toward its independent-source
+  strength. The record, rebuilt from saved results, is
+  `equivalence/verification-matrix/VERIFICATION-MATRIX.md` in the source
+  repository.
+- New comparisons: Latent GOLD 6.1 (growth mixtures, latent class,
+  profile and transition models, negative-binomial and ordinal mixture
+  regression, and individual fits at one to four classes), glca,
+  randomLCA, BayesLCA, multilevLCA, depmixS4, Rmixmod, EMCluster,
+  mixtools, MoEClust, flexmix, LMest, seqHMM, lcmm, mitml, mitools, and
+  mclust and poLCA for enumeration and the bootstrap LRT; and the
+  published values of SAS PROC FMM, Stata \[SEM\] Examples 50g and 52g,
+  Masyn (2013), Proust-Lima, Philipps and Liquet (2017), Bartolucci,
+  Pandolfi and Pennoni (2017), Pennoni, Pandolfi and Bartolucci (2024),
+  Benaglia et al. (2009), Grün and Leisch (2008) and the SAS and R
+  blog’s latent class example.
+- Where a reference reaches a different maximum the difference is
+  recorded with its cause. mclust’s default EM tolerance stops up to
+  0.04 short of the maximum, and the statistics printed in its vignette
+  are that stopping point. The default kmeans start search can return a
+  lower maximum for VVV models with two profiles (banknote, crabs),
+  where `search = "emEM"` reaches the higher one.
+- Tests: the release-engine comparison of grand-scaled EVV and VVV fits
+  now converges both fits and compares posteriors up to label order (it
+  failed on Linux and Windows), and the poLCA residual statistic is
+  compared to 1e-5.
+- Verification safeguards reject missing comparisons and incomplete
+  result tables. Known-difference exceptions cannot waive
+  parameter-count errors; the LCA wrapper includes the added published
+  HELP reference. The matrix gives no source credit to skipped or
+  errored tests, verifies saved results against runtime-source and
+  result hashes, and excludes internal checks from its external-check
+  headline. All ten new comparison kits have CI jobs that fail on
+  unexpected skips as well as errors and disagreements.
+
+## latents 0.98.1
+
+### Further release audit repairs (2026-10-28)
+
+- Equal-variance Gaussian and equal-dispersion negative-binomial mixture
+  regressions again report their residual standard deviations or
+  dispersions and standard errors. Class names on the internal variances
+  had changed the shared parameter’s name, leaving the result-table
+  lookup empty, even with one class.
+- General-engine LTA covariance calculations now differentiate and
+  invert in standardized parameter coordinates for observed, robust and
+  OPG inference. Small outcome units could distort standard errors or
+  cause a false singular-information refusal; large units could also
+  cause that refusal.
+- Zero-weight regression units are excluded from inference
+  transformations and scores, as they already were from fitting. Extreme
+  values on excluded units could otherwise erase standard errors.
+  Additive models normalize their posteriors more stably, so excluded
+  groups with large finite values no longer abort an otherwise valid
+  fit.
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  retains every model and its ordering through wrappers forwarding
+  `...`, including models named `n_profiles`, `n_group_classes` or
+  `cutoff`. These labels could silently drop a model and change BIC
+  weights.
+- Diagnostics count the noise component as a classification alternative.
+  One Gaussian profile plus noise now receives classification checks
+  instead of being described as having nothing to classify.
+
+### Upgrading from CRAN 0.9.21
+
+Refit a model made with 0.9.21 when one of these applies; each is
+described in full further down.
+
+- **Gaussian indicators recorded in small units** (a proportion, metres,
+  a rate). 0.9.21 floored variances at an absolute `1e-6` and stopped EM
+  relative to `|log L|`: the same data multiplied by 0.001 and by 1e-6
+  gave log likelihoods 654 and 37,700 below the fit in the original
+  units, with only a boundary warning. Both rules are now unit-free
+  (“Fits that do not depend on the units of the data”), and so are
+  SQUAREM and the quasi-Newton finishes (“SQUAREM and replication in any
+  units”).
+- **Occasion labels such as `T1` … `T10`.** 0.9.21 ordered them
+  alphabetically (`T1`, `T10`, `T2`, …), so
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and
+  `multilpa(time =)` fitted the occasions in the wrong order. Such
+  labels are now refused with `latents_bad_time`; give the order with
+  `factor(levels = )` or zero-pad the numbers.
+- **Sampling weights with zeros.** A unit of weight zero is now absent
+  from every count, criterion, entropy and start (“Sampling weights”).
+- **Several group classes.** Start 1 of a multilevel model is now
+  deterministic and can number the classes the other way round (“Class
+  numbering of multilevel models”).
+- **ICL, AWE and CLC** charge the entropy of the complete classification
+  (“Information criteria”), and EII, EEI and EEE default to
+  `search = "emEM"` (“Default start search”).
+- **Mixture regressions with `common = "intercept"`.** The argument had
+  no effect in 0.9.21; it is now refused.
+
+### Latent GOLD: mixture regression and sampling weights (2026-10-28)
+
+Mixture regressions (Gaussian, Poisson, logistic; model-based and robust
+standard errors) and sampling weights in
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
+[`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and
+two-level
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+were compared with Latent GOLD 6.1: 172 estimates, standard errors, log
+likelihoods and parameter counts, all within its printed rounding
+(`equivalence/latentgold-wider/`). The comparison found:
+
+- [`coef()`](https://rdrr.io/r/stats/coef.html) of an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit run
+  by the general engine (sampling weights, transition or initial
+  covariates, occasion-varying transitions, second order) returned each
+  continuous mean minus the indicator’s grand mean, the engine’s
+  internal coordinates. It now returns the means in the data’s units, as
+  the profile table always did.
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html), standard errors and
+  every table were unaffected.
+- [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  stored its class variances under the names of their positions before
+  the classes were relabelled. No reported number used the names.
+
+### Release review (2026-10-27)
+
+A whole-package review confirmed 40 defects. The repairs below each have
+a regression test; SQUAREM and the replication count are in the next
+section. The enumeration’s `criteria` table, which duplicates part of
+its grid, is kept because 0.9.21 code reads it.
+
+#### Results that change
+
+- A latent transition origin that no expected move leaves (an empty row)
+  reported its starting values as estimates and counted them as
+  parameters. Its probabilities are now equal, flagged
+  `estimated = FALSE`, left out of `n_parameters`, AIC and BIC (by K - 1
+  per empty row), and warned with `latents_empty_transition_row`. Wald
+  inference reports `NA` for them and keeps the rest of the table, which
+  it used to refuse as singular.
+- A three-step class carried by a single group (or, under
+  `vcov_type = "independent"`, a single unit) reported a standard error
+  of about 1e-16 and a zero-width interval under BCH, proportional and
+  modal assignment, and its pairwise contrasts p = 0. They are now `NA`,
+  with `latents_small_classes`.
+- [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  of an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  refits with the fit’s own `tol` and `max_iter`; it used
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)’s
+  defaults.
+- Zero-weight units no longer choose the starts or the maximum of a
+  mixture regression or growth mixture, and a level or category seen
+  only on zero-weight rows adds no parameter (regressions, ordinal
+  indicators and `local_dependence` pairs).
+- An autoregressive growth residual held on its bound reports `NA` for
+  its standard error and interval, not zero.
+- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  of a single-level fit, or of a two-level fit with one group class, no
+  longer has the trivial “groups” row in its classification and
+  average-posterior tables, and `get_results(fit, "all")` follows it.
+
+#### Refusals and warnings
+
+- A latent class model with more free parameters than response patterns
+  allow warns `latents_unidentified` (Goodman, 1974); its estimates are
+  unchanged.
+- [`confint()`](https://rdrr.io/r/stats/confint.html),
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  and [`summary()`](https://rdrr.io/r/base/summary.html) of regression,
+  growth and additive fits refuse a level outside (0, 1), which used to
+  give an inverted interval, and refuse arguments they do not take.
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html) warns
+  `latents_unused_argument` for arguments it ignores, and refuses
+  `method = "bootstrap"` on covariate fits instead of returning the Wald
+  matrix. [`summary()`](https://rdrr.io/r/base/summary.html) of a fit,
+  an enumeration or a bootstrap LRT warns for an argument it ignores
+  (`summary(fit, digits = 3)` used to do nothing).
+- [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  refuses an abbreviated table name.
+- More input mistakes raise classed conditions: three-step contracts,
+  unsupported three-step families, and the option checks of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  (`latents_bad_argument`).
+
+#### Other changes
+
+- [`summary()`](https://rdrr.io/r/base/summary.html) of a general LTA
+  fit is a result object: read its table with
+  `get_results(summary(fit), "table")`. Its transition and second-order
+  tables gain an `estimated` column, and its assignments take the shared
+  layout.
+- [`coef()`](https://rdrr.io/r/stats/coef.html) and
+  [`confint()`](https://rdrr.io/r/stats/confint.html) methods for pooled
+  imputations; the intervals are Rubin’s t intervals with each
+  parameter’s degrees of freedom.
+- The default plot of an all-categorical fit with text category labels
+  draws the response probabilities instead of failing.
+
+#### Known issue
+
+- A covariate fit stops on the change in log likelihood, which along a
+  flat direction of the logit coefficients cannot place them closer than
+  about 1e-6 to the maximum, and tightening `tol` does not help. On the
+  equivalence data the coefficients differ from a reference optimiser by
+  2.6e-6, against standard errors of 0.16 to 0.82. A stop on the score
+  of the coefficients would remove this.
+
+### SQUAREM and replication in any units
+
+- SQUAREM extrapolated on the raw parameters, whose means are in the
+  indicators’ units and variances in their squares, so its step length,
+  and with it the maximum a start reached, depended on the units. With
+  `test_anxiety` of `srl` multiplied by 1000 (VVV, four profiles, five
+  starts, seed 3) the fit and its grand-scaled refit differed by 4.92 in
+  log likelihood. SQUAREM now steps in standard-deviation units in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  (and so [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) and
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)),
+  both [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  engines and the additive family, and the two fits agree to 1e-12.
+  Plain EM was already unit-free and is unchanged bit for bit.
+  Accelerated fits can stop at a different iteration and, from some
+  starts, at a different maximum: on the package’s 192 recorded
+  reference fits, 179 log likelihoods moved by less than 1e-6, 9 by up
+  to 1e-4, three rose (by 0.19, 0.84 and 2.29) and one, a short staged
+  fit, fell by 0.0006.
+- The quasi-Newton finish of the general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) engine
+  (covariates, occasion-specific transitions, weights, mover-stayer,
+  second order) and of growth mixtures stopped relative to `|log L|`,
+  which a change of units moves, and searched the means in the units of
+  the data. With the indicators multiplied by 0.001, a mover-stayer fit
+  of `course_engagement` stopped up to 0.028 below the maximum it
+  reaches in the original units. Both now stop on the change per
+  observed value, the general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) engine
+  searches the means in standard deviations, and the fit is the same in
+  any units.
+- Starts whose log likelihoods are within the fit’s own precision, `tol`
+  times the number of observed values (the change at which its EM
+  stops), are now treated as tied, and the earliest converged one among
+  them is reported, in every family. The window used to be a relative
+  `1e-10` of `|log L|`, which a change of units moves and which at
+  `|log L|` in the thousands spans 4e-7: a weakly separated transition
+  model fitted with `tol = 1e-12` reported a start 3.2e-7 below another,
+  a gap depmixS4’s EM then recovered from the reported point. With the
+  default `tol = 1e-8` the window is wider than before, so between
+  starts that agree to the precision asked for the earlier one is now
+  reported more often.
+- The additive family’s search for between-group variances at zero
+  compared a derivative with respect to a variance, which has units,
+  with a slack proportional to `|log L|`. It now compares the derivative
+  in reference-variance units with a slack per observed rating, and
+  accepts a boundary fit within `tol` per observed rating, as EM stops.
+- Group classes of the additive family that the data cannot tell apart
+  are now flagged as collapsed when setting them equal lowers the log
+  likelihood by less than the replication tolerance, not only when their
+  parameters agree to 1e-8. EM approaches such a pair along a flat ridge
+  and rarely brings it that close: a dispersion fit whose classes differ
+  only in means was flagged from one seed in twelve, and its inference
+  then failed with a singular information instead of the collapsed-class
+  refusal. It is now flagged from every seed tried
+  (`latents_weak_class`).
+- A start counts as reaching the best log likelihood when it is within
+  `1e-6` times the number of observed values of it, no longer
+  `1e-6 * (1 + |log L|)`, which moved 40-fold with the units for the
+  same gaps between starts. For data in ordinary units the two are of
+  the same size, so the counts printed for such fits barely change.
+  Every family uses this rule and stores it as `replication_tolerance`,
+  which
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  reads; the general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) engine,
+  mixture regressions and growth mixtures did not store one before.
+
+### Astra review repairs
+
+- Zero-weight people no longer determine the covariate coordinates or
+  boundary checks of an LTA fit. Ordinary categorical levels are
+  discovered on positive support; excluded-only categories do not add
+  parameters or change BIC. Unidentified transition coefficients have
+  unavailable bootstrap covariance rows and columns as well as
+  unavailable standard errors.
+- A constant Gaussian response is accepted when its design or offset
+  leaves residual variation. Argument forwarding uses distinct internal
+  bindings and evaluates each supplied expression once, including
+  through
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md).
+- Diagnostics and regression enumeration use the fitted family’s
+  contributing units, sampling weights and classification levels. Newly
+  supported diagnostics families expose the documented entropy and
+  classification tables. Unfinished sensitivity refits remain visible
+  and are not labelled as replicated maxima.
+- Enumeration examples use the current complete-data entropy convention
+  and updated ICL/AWE winners. The full-output equivalence harness
+  checks the new replication likelihood, fails partial output coverage,
+  and runs all reference suites in CI with explicit failures for
+  unavailable dependencies.
+
+### Class numbering of multilevel models
+
+- Start 1 now takes its group classes from Ward’s clustering of the
+  groups’ profile compositions, as its profiles already came from Ward’s
+  clustering, so it no longer depends on the seed. A model with more
+  than one group class can reach the same maximum as in earlier versions
+  with its group classes, and sometimes its profiles, numbered the other
+  way round: the log likelihood and estimates are unchanged, only the
+  labels swap. Scripts that refer to a class by its number should check
+  which class it now is.
+
+### diagnostics() as a structured report
+
+- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  reports a fit in five domains (estimation, class size, classification,
+  local independence, information), one row per quantity with its value,
+  a status and, where one defines it, its reference: how many starts
+  reached the best log likelihood, starts that failed or did not finish,
+  estimates at a bound, the smallest class, classes with no assigned
+  unit, relative entropy, the lowest average posterior and odds of
+  correct classification, and the bivariate residuals significant at
+  0.05 after Benjamini-Hochberg adjustment. Values are reported without
+  cut-offs: the published ones (AvePP .70, OCC 5, a 5% smallest class)
+  are rules of thumb, and the package does not impose them. A status
+  marks only facts: a best start that did not converge or a class
+  estimated from less than one unit (`fail`); failed or unfinished
+  starts, estimates at a bound, a class with no assigned unit, or
+  dependent indicator pairs (`check`). The print names those first.
+  `get_results(diagnostics(fit), "checks")` is the table; every value is
+  read from a table the fit already computes, and no estimate changes.
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) of the
+  result is still the entropy table.
+- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  now reports on additive, cross-level, mixture-regression and
+  growth-mixture fits, which it used to refuse; a quantity a family
+  cannot support is `n/a` with the reason. A one-class fit and a class
+  with no assigned unit no longer print `NA`.
+- Starts that a search screens (short runs by design) are reported apart
+  from finished starts, never as unconverged.
+
+### A readable result when it is printed or clicked
+
+- A fitted latent class model prints its class sizes (and group-class
+  sizes) and a wide table of response probabilities, one row per
+  indicator category and one column per class, rounded to three
+  decimals; it used to print a long table of probabilities and
+  thresholds at full precision.
+- [`str()`](https://rdrr.io/r/utils/str.html) of a fit, an enumeration
+  or a
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  result is two lines: the result’s header and where its tables are. A
+  host that shows [`str()`](https://rdrr.io/r/utils/str.html) before
+  [`print()`](https://rdrr.io/r/base/print.html) when an object is
+  clicked (Beatrina, RStudio’s Environment pane) used to show some
+  ninety components of internals first. `str(unclass(x))` still shows
+  the raw list.
+
+### How often the best solution was reached
+
+- [`print()`](https://rdrr.io/r/base/print.html) of a fit and
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  now say how many starts reached the best log likelihood (“best log
+  likelihood reached by 4 of 10 starts”), and flag a best solution found
+  by a single start. [`print()`](https://rdrr.io/r/base/print.html) used
+  to show the winning start’s index as “best start: 5/10”, which read as
+  a count; the count itself was only in
+  [`summary()`](https://rdrr.io/r/base/summary.html). The numbers are in
+  `get_results(fit, "replication")` and
+  `get_results(diagnostics(fit), "replication")`.
+
+### Clearer refusals
+
+- Every common input mistake is now refused with a `latents_*` condition
+  class, no call, and a message that names what is wrong and how to fix
+  it. Of 56 mistakes across the exported verbs, 23 used to raise a bare
+  `simpleError`; none does now (contract test
+  `test-review-1027-error-contract.R`).
+- A misspelt, missing or repeated column, and an `id` listed among
+  `vars`, each have their own message, with the likely spelling: “`vars`
+  names `Z`, which `data` does not have. Did you mean `z`?” (the four
+  used to share “Supply at least two rows, unique existing indicators,
+  and one distinct group column.”). The same for `id`, `time`, a
+  three-step `outcome` and `descriptives(vars = )`.
+- Missing values name the indicators and their counts and point to
+  `missing = "fiml"`; infinite and NaN values are reported separately,
+  because FIML treats only `NA` as missing. A non-numeric indicator in a
+  profile model names the column and its class and points to
+  `categorical` or
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md).
+- Passing a fitted model or an enumeration where the data belong now
+  says so by the caller’s own name: “`data` must be a data frame, but
+  `grid` is an enumeration result … Pass the data frame the model is to
+  be fitted on.” Passing data where a fitted model belongs raises the
+  new class `latents_not_a_fit` (also a `latents_bad_argument`), saying
+  what was passed;
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md)
+  and
+  [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
+  gain default methods that do the same instead of R’s “no applicable
+  method”.
+- The plot verbs
+  ([`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  and the rest) name the object they were given and, for a data frame,
+  say that the plot is drawn from the fitted model itself.
+- [`candidate_fit()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+  no longer evaluates a call headed by `get_candidate`’s body with the
+  arguments by value, so its conditions carry no data.
+
+### Conditions never carry the data (0.97.4)
+
+- An error raised while a fitting verb validated its input could carry
+  the whole data set in its call:
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  forwarded to
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  with [`do.call()`](https://rdrr.io/r/base/do.call.html), so the
+  recorded call held the data by value, and
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  put the setup function’s body (375 lines) at the head of the call it
+  evaluated. R’s own error printing truncates the call, but a host that
+  deparses [`conditionCall()`](https://rdrr.io/r/base/conditions.html)
+  in full streamed every value of a 400,000-row data set (a 10,000-row
+  object printed as 3.3 MB; now 83 bytes). The fitting verbs now
+  evaluate calls of symbols only
+  ([`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)), a non
+  data frame is refused with `latents_bad_data` naming the object’s
+  class, and every candidate error that is stored on a grid or raised
+  again has its call bounded (`<data.frame[400000 x 9]>` in place of the
+  values).
+
+#### Third pass: interactions (2026-10-27)
+
+- A plain categorical item whose labels happen to contain `::` is no
+  longer read as a half-observed joined item (the one-class log
+  likelihood was 47.8 too high); only a declared `local_dependence` pair
+  carries that meaning.
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  again accepts fits named `n_profiles`, `n_group_classes` or `cutoff`,
+  as 0.9.21 did; numeric values keep their filtering meaning.
+- A positive sampling weight whose ratio underflows stays a present
+  unit.
+- Regression, growth and additive fits apply the sampling-weight
+  convention to their entropy, average posteriors and classification
+  tables; the two-level regression ICL charges the joint classification
+  entropy.
+- Covariate inference keeps half-observed pair rows; zero-weight
+  outcomes no longer set a Gaussian floor or a growth coordinate; the
+  regression floor stays relative below machine epsilon; a
+  random-intercept growth model whose every person has one observation
+  is refused as `latents_not_identified`; Brownian residual bounds and
+  starts follow the time units.
+
+#### Second review of every formula (2026-10-26, round 2)
+
+- **Standard errors of centred fits.** Under `centering = "grand"` or
+  `scaling = "grand"` the Wald standard errors treated the centring
+  constants as known and were 22-31% too small; they are now estimated
+  jointly (the centring equations are stacked into the information) and
+  calibrate to within 10% in simulation. Under person centring or
+  scaling the observed information is too small by construction, so such
+  fits now default to `vcov_type = "robust"` and refuse `"observed"` and
+  `"opg"`; the robust sandwich, which used to be refused as rank
+  deficient, is correct there.
+- **Information criteria.** ICL, AWE and CLC charge the soft entropy of
+  the complete-data classification (group classes and profiles) under
+  both conventions; the conventions differ only in the sample size.
+  Under the old rule the “groups” convention charged only the
+  group-class entropy, which is zero for every single-level fit, so
+  `icl_groups` equalled BIC and `clc_groups` always chose the largest
+  model. Transition fits keep one entropy per level. Fits with several
+  group classes saved by 0.97.1 report `NA` for these three until
+  refitted. KIC is documented as −2L + 3(q + 1), the form tidyLPA
+  computes.
+- **Sampling weights.** Every classification estimate (entropy sum of
+  the criteria, relative entropy, average posteriors, odds of correct
+  classification, the classification-error matrix and the BCH weights)
+  uses the sampling-weighted posteriors; modal counts stay counts. Units
+  of weight zero are absent from every count, estimate, start, refusal
+  and warning in every family, including the cross-level fits (whose
+  restricted log likelihood was inflated by 19/15 with zero-weight
+  groups), grand centring and scaling, and `drop_empty = FALSE`.
+- **A half-observed categorical pair** (one item of a `local_dependence`
+  pair missing) now contributes its observed item under
+  `missing = "fiml"`; it used to be dropped, which biased the estimates
+  under MAR. The `latents_partial_pair` warning is no longer raised.
+  Every pair of indicators now has a row in
+  `get_results(x, "residuals")`; ordinal indicators enter the
+  categorical table, and mixed or count pairs report an association
+  without a test. The categorical chi-square is documented as
+  conservative.
+- **Units and origins.** The VEI, EVE and VVE M-steps no longer floor a
+  unitless shape at `min_variance`; `min_variance = NULL` (the new
+  default) means 1e-6 times the smallest indicator variance in the
+  fitted units; EM stops on a log-likelihood change of `tol` times the
+  number of observed values, which does not depend on the units; the
+  membership regression’s Newton step and the separation flag no longer
+  depend on a covariate’s origin; mixture-regression standard errors are
+  origin-free up to shifts of 1e6; growth mixtures standardise their
+  predictors as well as the outcome (time in days, hours or calendar
+  years gives the same fit);
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) covariate
+  designs are fitted on a centred, scaled chart.
+- **Shared negative-binomial dispersion** (`count_dispersion = "equal"`)
+  is no longer forced to its floor on a local condition (the fit through
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) was 23.5
+  log-likelihood units low).
+- **Bootstrap likelihood-ratio tests** take their p-value over the valid
+  replicates and report `n_invalid`, with a `latents_failed_replicates`
+  warning; the p-value is `NA` only when fewer than half the replicates
+  are valid. Under the null a spurious extra class is expected to
+  separate or stall, so an invalid replicate is information, not
+  failure.
+- **Smaller:** start 1 is deterministic for any number of group classes;
+  covariate and cross-level fits record `n_best_replicated`; nominal and
+  ordinal fits of the same items can be compared; the
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  by-group-class table reports `NA` for a non-positive variance;
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  counts optima by an anchor rule; bootstrap resamples are drawn before
+  any refit; a CSV round trip of the data is accepted by every inference
+  verb; [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  refuses rank-deficient covariate designs and counts only identified
+  logits; person centring together with person scaling refuses data
+  whose every group has fewer than three observations
+  (`latents_atomic_groups` otherwise);
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  counts rows of positive weight in the observation nesting and no
+  longer refuses a two-level model with as many groups as row classes.
+
+#### Fits that do not depend on the units of the data
+
+- `min_variance` now defaults to `NULL`: one millionth of the smallest
+  indicator variance (observed values in rows of positive weight, on the
+  scale fitted), in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+  and the group-class and cross-level families. The old default was an
+  absolute `1e-6`, so data recorded in small units met it in ordinary
+  fits: iris in metres gave a VVV solution whose log likelihood was 1.00
+  below the centimetre fit, and at `x 0.001` VVI and EEE were 414 and
+  465 below, with only a boundary warning. A number keeps its meaning,
+  and the bound used is stored on the fit.
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  and growth models already used a relative bound.
+- EM now stops when a step changes the log likelihood by at most `tol`
+  times the number of observed values, rather than
+  `tol * (1 + |log L|)`, which a change of units moved. Plain EM on
+  overlapping profiles now stops at the same step at units `x 1e-6`,
+  `x 1` and `x 1e6` (0.048 standard errors from the maximum); before, it
+  stopped 0.06 to 0.19 standard errors away depending on the units. The
+  reported `iterations` can differ from earlier versions.
+- The VEI M-step compared a shape sum, which has no units, with
+  `min_variance`. With indicators whose scales differ by about 1e9 (a
+  rate and a population), every start failed with “EM likelihood
+  decreased”, where mclust fits. The EVE and VVE M-steps had an absolute
+  floor that broke them for data in units of about 1e-9.
+- Under SQUAREM, `iterations` counts the EM steps kept: a cycle that
+  falls back to plain EM is two steps, not three.
+- `centering = "person"` with `scaling = "person"` turns a group with
+  two observations of an indicator into exactly -1/sqrt(2) and
+  1/sqrt(2), on which a profile can collapse. Such groups now raise
+  `latents_atomic_groups`, and data in which every group is like that
+  are refused.
+- The `scaling` documentation now lists correctly which structures grand
+  scaling leaves unchanged (EEI, VEI, EVI, VVI, EEE, VEE, EVV, VVV) and
+  which it changes (EII, VII, EEV, VEV, EVE, VVE).
+
+#### Cores
+
+- `cores` larger than the machine’s core count is capped at that count
+  with a `latents_too_many_cores` warning. On macOS with Apple’s
+  Accelerate BLAS, and on Windows, each worker is a separate R process
+  holding the package and a copy of the data, so `cores = 24` on a
+  ten-core machine started 24 R processes and could exhaust memory.
+
+#### Parallel seed sensitivity
+
+- [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  gains a trailing `cores` argument. The seeds are refitted in parallel,
+  each refit on one core and seeding itself, so the table is identical
+  to `cores = 1`, for profile, transition and growth fits alike. Before,
+  every refit ran on one core whatever the original fit used.
+
+#### Classification error and three-step estimators
+
+- Rows with no observed indicator are no longer counted in the
+  classification error matrix, the BCH weights or any three-step
+  estimator
+  ([`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)),
+  as they already were not in entropy, the average posteriors and the
+  information criteria. Such a row’s posterior is the class prior, so it
+  was assigned to the larger class and charged that class with errors:
+  on 120 rows of which 3 were empty, P(assigned 1 \| true 2) was 0.025
+  instead of 5e-5. A group with no observed row is likewise left out at
+  the group level. `drop_empty = FALSE` keeps every row, as before.
+
+#### Standard errors
+
+- A probability on its upper bound (one minus the floor, because every
+  other category of its row is on the floor) has an `NA` standard error,
+  as the documentation states. In a binary item it was reported as
+  exactly 0, with the interval \[1, 1\], when it was the last category,
+  and as `NA` when it was the first.
+- When an item’s last category is on the floor (a category one class
+  never uses), only that probability is held at its bound. The whole row
+  used to be held, so the row’s other probabilities had no standard
+  error, and every other error, the class shares included, was computed
+  as if they were known and came out too small: on poLCA’s `gss82` with
+  three classes the share errors were 0.0396, 0.0307 and 0.0348 instead
+  of 0.0521, 0.0462 and 0.0348. The errors no longer depend on the order
+  of the categories.
+
+#### Sampling weights
+
+- A unit of sampling weight zero now changes nothing: the weights are
+  scaled to the number of units with a positive weight, and such units
+  are in no sample size, criterion, entropy or classification table, in
+  every family
+  ([`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md), the
+  additive family,
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  and growth mixtures). Adding four zero-weight groups to fifteen used
+  to scale the log likelihood by 19/15 and move BIC from 622.99 to
+  784.74. [`nobs()`](https://rdrr.io/r/stats/nobs.html) counts units of
+  positive weight, as `nobs.glm()` does; `n_observations` and `n_groups`
+  still count the data, and every row keeps its posterior.
+
+#### Growth mixtures in any units
+
+- A growth mixture is now fitted in standard coordinates and mapped back
+  exactly: the outcome is centred and scaled, and so is every column of
+  the class-specific, common and random designs except the intercept.
+  Its estimates, log likelihood, standard errors, posteriors, predicted
+  random effects and predictions no longer depend on the units or origin
+  of the outcome or of the predictors. With the outcome multiplied by
+  1e-5 a fit used to stop 0.06 standard errors short; with time in days
+  instead of years a random slope’s variance was held at the variance
+  floor, 11.3 log-likelihood units low, and reported converged; time in
+  hours stopped 0.12 standard errors short; and a calendar-year random
+  slope stopped with “EM likelihood decreased”. Outcome scales from 1e-5
+  to 1e6 (with shifts up to 1e8), and time in days, hours, units of 1e5
+  or calendar years, now give the same fit to about 1e-11 standard
+  errors.
+- Every growth fit now ends with Newton steps on the analytic score and
+  is judged converged when it is within 1e-4 standard errors of the
+  root, as fits with correlated residuals already were; the quasi-Newton
+  stop alone left fits up to 0.35 standard errors short.
+- `min_variance` floors each random effect’s conditional variance (given
+  the ones before it) in the standard coordinates, in EM and in the
+  final steps alike, and a random-effect covariance is judged degenerate
+  there, also by the eigenvalues of its correlation matrix. A slope in
+  small time units is no longer flagged degenerate.
+- The class table’s `assigned_persons` and `average_posterior` leave out
+  persons of sampling weight zero, like every other count.
+- A multilevel growth mixture’s ICL charges the entropy of the joint
+  classification of clusters and persons. It used to add the persons’
+  marginal entropies to the clusters’ entropy, which overstated it.
+- [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  drops the interval of a residual standard deviation only for the class
+  whose variance is held at its floor, not for every class.
+
+#### Standard errors of mixture regressions
+
+- Standard errors no longer depend on a predictor’s units or origin. The
+  singularity check and the inverse of the information are taken on its
+  correlation form, and its numerical derivatives step by each
+  parameter’s own standard-error scale. With a calendar-year predictor
+  every standard error used to be `NA`, even with one class, and the
+  slope’s error moved by 0.2% under a shift of origin. Growth mixtures
+  and the latent-transition three-step share the corrected inverse.
+
+#### Smaller repairs from the review
+
+- `positive_rows` in `get_results(x, "gaussian_diagnostics")` is the
+  number of rows with a Gaussian value and a positive weight, as
+  documented. It used to count the posteriors that had not underflowed,
+  which for a component with SD 0.01 reported 87 of 300 rows.
+- Additive-family inference and
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  accept the fitted data with its rows reordered within groups; a
+  changed rating is still refused.
+- [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  reports `NA` with a `latents_singular_information` warning for a
+  coefficient whose variance is not positive, instead of a standard
+  error of 0.
+- The “densities vanished” stop is classed `latents_vanished_density`.
+- A trajectory three-step check names why a weight column cannot be
+  read.
+
+#### Refusals
+
+- [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  raise the data error that
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  raises (`latents_bad_data`, `latents_bad_categorical`) when every
+  candidate fails with it: a column that does not exist, an indicator
+  that is constant or entirely missing, a text indicator. They used to
+  return a grid of failed cells without a condition. Failures that
+  differ between candidates still appear in the grid.
+- [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  refuses a Gaussian outcome that takes one value in every row with
+  `latents_bad_data` and says so. It used to report that every start
+  degenerated and suggest fewer classes or more starts.
+
+#### Review of 2026-10-26 (numerical and validation defects)
+
+- Exactly constant indicators and covariates are recognised by their
+  range, not by a computed standard deviation, which is about 1e-17 for
+  a repeated 0.1.
+- Standard errors are kept for category labels containing `:`, `,`, `[`
+  or `]`.
+- A direct-effect covariate constant where its indicator is observed is
+  refused; a 17-digit ordinal label no longer merges categories on
+  redraw; unobserved joint categories keep their labels.
+- EVI/VEI variances of a near-empty profile are no longer floored (a 12%
+  bias); growth models in small units no longer stop 380 log-likelihood
+  units short; ordinal regressions at large predictor scales converge;
+  the negative-binomial dispersion is no longer forced to its floor.
+- Homogeneous and occasion-specific
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits of
+  the same data can be compared; person-centred fits accept their data
+  re-read from CSV.
+
 ## latents 0.97.1
 
 #### Enumeration on several cores
@@ -1229,16 +2074,15 @@ and documentation.
 
 - Cluster-robust standard errors now carry the CR1 small-sample factor
   `G / (G - 1)` for `G` independent units, the default of
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-  It applies to every `vcov_type = "robust"` result (profile, covariate,
-  transition, family, mixture-regression and growth fits) and to
+  `sandwich::vcovCL()`. It applies to every `vcov_type = "robust"`
+  result (profile, covariate, transition, family, mixture-regression and
+  growth fits) and to
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   (both `vcov_type`s, every `method`) and
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md).
   Robust standard errors rise by `sqrt(G / (G - 1))`: about 2.6% with 20
   groups and 0.5% with 100. A one-class robust regression now reproduces
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-  exactly.
+  `sandwich::vcovCL()` exactly.
 - Wald inference is refused (`latents_boundary_fit`) for a
   membership-covariate fit whose logit coefficients are heading to
   infinity because a covariate separates the classes. Previously the
@@ -1488,9 +2332,9 @@ CRAN release: 2026-10-16
   [`predict()`](https://rdrr.io/r/stats/predict.html) for growth
   mixtures, which shows the refusal and where the trajectories are.
 - The transition-enumeration example in
-  [`?get_results.latents_transition_enumeration`](https://pak.dynasite.org/latents/reference/get_results.md)
-  fits the first 50 students, so it runs in a few seconds on Windows as
-  well (it took 12 s there).
+  `?get_results.latents_transition_enumeration` fits the first 50
+  students, so it runs in a few seconds on Windows as well (it took 12 s
+  there).
 - The remaining tests that compare latents with another implementation
   move to `tests/equivalence/`: the depmixS4 and LMest fits, exact path
   sums, dense likelihoods, enumerated EM steps and independent Hessians,
@@ -1518,10 +2362,8 @@ CRAN release: 2026-10-16
   [`confint()`](https://rdrr.io/r/stats/confint.html),
   [`logLik()`](https://rdrr.io/r/stats/logLik.html) and
   [`nobs()`](https://rdrr.io/r/stats/nobs.html) methods that had a page
-  each are documented together on four pages
-  ([`?"latents-print"`](https://pak.dynasite.org/latents/reference/get_results.md),
-  [`?"latents-summary"`](https://pak.dynasite.org/latents/reference/get_results.md),
-  [`?"latents-as-data-frame"`](https://pak.dynasite.org/latents/reference/get_results.md),
+  each are documented together on four pages (`?"latents-print"`,
+  `?"latents-summary"`, `?"latents-as-data-frame"`,
   [`?"latents-model-methods"`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)).
   The methods are unchanged.
 - Fewer tests run on CRAN: tests that verify the estimators against

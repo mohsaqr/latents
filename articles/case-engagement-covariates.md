@@ -117,15 +117,21 @@ fit
 #> Two-level latent profile analysis: 3 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
-#> Converged: TRUE | iterations: 42 | best start: 1/10
-#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478; weight effective n: 603.8.
+#> Converged: TRUE | iterations: 45 | best log likelihood reached by 10 of 10 starts (10 converged)
+#> Smallest standardized Gaussian eigenvalue: 0.2003 (profiles, profile_1); Gaussian mass: 478.1; weight effective n: 603.8.
 #> 
-#>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362
-#>        2 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400   575     0.4043
-#>        3  0.7089   0.7135     0.8109     0.7503     1.1328   369     0.2595
+#> Class sizes   profile_1 33.6% (478)   profile_2 40.4% (575)   profile_3 25.9% (369)
+#> Group classes group_class_1 29.3% (31)   group_class_2 26.1% (28)   group_class_3 44.6% (47)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3
+#>      browse     0.387    -0.777     0.709
+#>    lectures     0.186    -0.612     0.713
+#>  forum_read     0.446    -0.891     0.811
+#>  forum_post     0.338    -0.762     0.750
+#>  attendance     0.256    -0.940     1.133
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -187,14 +193,14 @@ uncertainty and can make the error correction less stable.
 get_results(fit, "classification_errors", level = "individuals")
 #>         level true_class assigned_class probability
 #> 1 individuals          1              1   8.546e-01
-#> 2 individuals          1              2   2.658e-02
+#> 2 individuals          1              2   2.657e-02
 #> 3 individuals          1              3   1.188e-01
 #> 4 individuals          2              1   2.038e-02
 #> 5 individuals          2              2   9.796e-01
 #> 6 individuals          2              3   5.236e-06
 #> 7 individuals          3              1   1.592e-01
-#> 8 individuals          3              2   1.512e-04
-#> 9 individuals          3              3   8.406e-01
+#> 8 individuals          3              2   1.511e-04
+#> 9 individuals          3              3   8.407e-01
 ```
 
 The estimated probabilities of correct profile assignment are 0.855 for
@@ -275,15 +281,15 @@ not adjusted for multiple comparisons.
 
 r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic   p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)   0.3065        0.10676     2.871 4.097e-03         NA
-#> 2 individuals profile_1 previous_grade  -0.2085        0.10486    -1.989 4.674e-02  4.674e-02
-#> 3 individuals profile_2    (Intercept)   0.4473        0.13731     3.258 1.123e-03         NA
-#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.876e-15  9.752e-15
+#> 1 individuals profile_1    (Intercept)   0.3067        0.10676     2.873 4.072e-03         NA
+#> 2 individuals profile_1 previous_grade  -0.2085        0.10487    -1.989 4.674e-02  4.674e-02
+#> 3 individuals profile_2    (Intercept)   0.4475        0.13731     3.259 1.119e-03         NA
+#> 4 individuals profile_2 previous_grade  -0.6810        0.08697    -7.830 4.891e-15  9.782e-15
 #>   conf_low conf_high
-#> 1  0.09721  0.515703
-#> 2 -0.41407 -0.003008
-#> 3  0.17821  0.716446
-#> 4 -0.85140 -0.510499
+#> 1  0.09743  0.515924
+#> 2 -0.41408 -0.003005
+#> 3  0.17833  0.716581
+#> 4 -0.85142 -0.510500
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade
@@ -512,15 +518,21 @@ covariate_fit <- multilpa(
 
 covariate_fit
 #> Multilevel LPA with covariates: 3 profiles, 3 group classes
-#> Log likelihood -8331.180658; AIC 16742.361; BIC (groups) 16848.899; converged TRUE
+#> Log likelihood -8331.180656; AIC 16742.361; BIC (groups) 16848.899; converged TRUE
 #> Smallest standardized Gaussian eigenvalue: 0.2004 (profiles, profile_3); Gaussian mass: 347.4; weight effective n: 450.6.
 #> 
-#>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.3881   0.2028     0.4610     0.3535     0.2771 498.3     0.3504
-#>        2 -0.7743  -0.6141    -0.8891    -0.7620    -0.9379 576.3     0.4053
-#>        3  0.7277   0.7276     0.8140     0.7568     1.1586 347.4     0.2443
+#> Class sizes   profile_1 35.0% (498)   profile_2 40.5% (576)   profile_3 24.4% (347)
+#> Group classes group_class_1 28.5% (30)   group_class_2 26.3% (28)   group_class_3 45.2% (48)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3
+#>      browse     0.388    -0.774     0.728
+#>    lectures     0.203    -0.614     0.728
+#>  forum_read     0.461    -0.889     0.814
+#>  forum_post     0.354    -0.762     0.757
+#>  attendance     0.277    -0.938     1.159
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -539,16 +551,16 @@ the reference profile, and the intercepts of the student-class model.
 
 get_results(covariate_fit, "coefficients")
 #>      level       outcome           term parameter estimate
-#> 1  profile     profile_1  group_class_1     logit   0.5696
-#> 2  profile     profile_1  group_class_2     logit  -0.2714
+#> 1  profile     profile_1  group_class_1     logit  -0.2713
+#> 2  profile     profile_1  group_class_2     logit   0.5697
 #> 3  profile     profile_1  group_class_3     logit   0.3902
 #> 4  profile     profile_1 previous_grade     logit  -0.2390
-#> 5  profile     profile_2  group_class_1     logit  -1.6893
-#> 6  profile     profile_2  group_class_2     logit   2.2563
+#> 5  profile     profile_2  group_class_1     logit   2.2563
+#> 6  profile     profile_2  group_class_2     logit  -1.6892
 #> 7  profile     profile_2  group_class_3     logit   0.1612
 #> 8  profile     profile_2 previous_grade     logit  -0.5332
-#> 9    group group_class_1    (Intercept)     logit  -0.5387
-#> 10   group group_class_2    (Intercept)     logit  -0.4600
+#> 9    group group_class_1    (Intercept)     logit  -0.4600
+#> 10   group group_class_2    (Intercept)     logit  -0.5387
 ```
 
 The `previous_grade` slopes are $`-0.239`$ for the intermediate-activity
@@ -624,24 +636,30 @@ staged <- fit_staged(
 staged
 #> Two-level latent profile analysis: 3 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8351.800790 | AIC: 16719.602 | BIC (groups): 16740.909
-#> Converged: TRUE | iterations: 24 | best start: 2/6
+#> Log likelihood: -8351.800737 | AIC: 16719.601 | BIC (groups): 16740.909
+#> Converged: TRUE | iterations: 24 | best log likelihood reached by 5 of 6 starts (6 converged)
 #> Held fixed, not estimated here: means, variances (first stage)
 #> Parameters estimated here: 8; with the held measurement: 38
 #> Smallest standardized Gaussian eigenvalue: 0.1932 (profiles, profile_1); Gaussian mass: 438; weight effective n: 572.7.
 #> 
-#>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.3247   0.1364     0.3717     0.2717     0.1972 438.0     0.3080
-#>        2 -0.7923  -0.6301    -0.9109    -0.7792    -0.9775 562.3     0.3954
-#>        3  0.6925   0.6826     0.7983     0.7327     1.0749 421.6     0.2965
+#> Class sizes   profile_1 30.8% (438)   profile_2 39.5% (562)   profile_3 29.7% (422)
+#> Group classes group_class_1 29.0% (31)   group_class_2 44.0% (47)   group_class_3 26.9% (29)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3
+#>      browse     0.325    -0.792     0.693
+#>    lectures     0.136    -0.630     0.683
+#>  forum_read     0.372    -0.911     0.798
+#>  forum_post     0.272    -0.779     0.733
+#>  attendance     0.197    -0.977     1.075
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
 In the staged solution, Profile 1 represents intermediate activity,
 Profile 2 represents lower activity, and Profile 3 represents higher
-activity. Their estimated `attendance` means are 0.197, -0.978, and
+activity. Their estimated `attendance` means are 0.197, -0.977, and
 1.075, respectively. The numerical labels happen to match those of the
 earlier joint model, which separate fits do not guarantee, and the same
 broad engagement patterns remain recognizable. The estimated means

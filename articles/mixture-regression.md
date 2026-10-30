@@ -57,23 +57,23 @@ fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 fit
 #> Mixture of gaussian regressions: 2 classes (one class per row)
 #> score ~ hours
-#> 900 rows | log likelihood -3144.0074 | BIC 6335.63 | entropy 0.443
-#> Converged: TRUE | iterations: 42 | best likelihood reached by 5 of 5 completed starts (6 run)
+#> 900 rows | log likelihood -3144.0073 | BIC 6335.63 | entropy 0.443
+#> Converged: TRUE | iterations: 47 | best likelihood reached by 3 of 3 completed starts (6 run)
 #> 
 #> Classes
 #> 
 #> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
 #> -------  -----  --------  -------------  --------------  -----------
-#> Class 1  0.564    507.55            573           0.788         5.24
-#> Class 2  0.436    392.45            327           0.829         6.89
+#> Class 1  0.564    507.71            573           0.789         5.24
+#> Class 2  0.436    392.29            327           0.829         6.89
 #> 
 #> Regression coefficients (95% CI)
 #> 
 #> Class    Term       Estimate          95% CI      p
 #> -------  ---------  --------  --------------  -----
-#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  Intercept     34.36  [32.95, 35.77]  <.001
 #> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
-#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  Intercept     54.90  [52.76, 57.04]  <.001
 #> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 #> 
 #> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
@@ -92,8 +92,8 @@ get_results(fit, "classes")
 #> 
 #> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
 #> -------  -----  --------  -------------  --------------  -----------
-#> Class 1  0.564    507.55            573           0.788         5.24
-#> Class 2  0.436    392.45            327           0.829         6.89
+#> Class 1  0.564    507.71            573           0.789         5.24
+#> Class 2  0.436    392.29            327           0.829         6.89
 ```
 
 `get_results(fit, "assignments")` gives one row per observation. Because
@@ -135,9 +135,9 @@ classes
 #> 
 #>  n_classes n_group_classes log_likelihood n_parameters  bic  icl entropy smallest_share converged
 #>          1               1          -3245            3 6510 6510      NA        1.00000      TRUE
-#>          2               1          -3144            7 6336 7030  0.4432        0.43526      TRUE
-#>          3               1          -3133           11 6341 7272  0.5292        0.07523      TRUE
-#>          4               1          -3126           15 6354 7460  0.5571        0.07192      TRUE
+#>          2               1          -3144            7 6336 7031  0.4430        0.43587      TRUE
+#>          3               1          -3133           11 6341 7271  0.5293        0.07512      TRUE
+#>          4               1          -3126           15 6354 7459  0.5573        0.07185      TRUE
 #>  best_bic
 #>     FALSE
 #>      TRUE
@@ -169,7 +169,7 @@ get_results(with_sleep, "membership")
 #> 
 #> Class    Term       Estimate          95% CI     p  Odds ratio
 #> -------  ---------  --------  --------------  ----  ----------
-#> Class 2  Intercept      1.56  [ 0.22,  2.89]  .023        4.74
+#> Class 2  Intercept      1.56  [ 0.22,  2.89]  .022        4.75
 #> Class 2  sleep         -0.26  [-0.45, -0.07]  .007        0.77
 ```
 
@@ -223,19 +223,20 @@ get_results(students, "membership")
 #> Class 2  motivation     -1.82  [-2.78, -0.86]  <.001        0.16
 ```
 
-A mixture of logistic regressions with a single binary outcome per class
-assignment is not identified — any mixture of Bernoulli distributions is
-a Bernoulli distribution (Follmann and Lambert 1991) — so
-[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-refuses `family = "binomial"` with one trial per row unless the class is
-shared by a group:
+A mixture of Bernoulli distributions at a fixed covariate value is
+itself Bernoulli, so identification needs additional structure.
+Covariate-dependent logistic mixtures can be identifiable under suitable
+restrictions and covariate support (Follmann and Lambert 1991). The
+implementation conservatively refuses `family = "binomial"` with one
+trial per row unless the class is shared by a group; this is its
+supported-model policy, not a universal nonidentification theorem:
 
 ``` r
 
 mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
                    family = "binomial")
 #> Error:
-#> ! A mixture of logistic regressions with one binary outcome per class assignment is not identified: a mixture of Bernoulli distributions is itself a Bernoulli distribution (Follmann and Lambert 1991). Give each class assignment several outcomes with `id` and `class_level = "group"`, or supply binomial counts as `cbind(successes, failures)`.
+#> ! A mixture of logistic regressions with one binary outcome per class assignment is not supported. Identification depends on the covariate design and model constraints. Give each class assignment several outcomes with `id` and `class_level = "group"`, or supply binomial counts as `cbind(successes, failures)`.
 ```
 
 ## Two levels: groups that differ in their mix
@@ -266,7 +267,7 @@ summary(two_level)
 #> AIC             6205.56
 #> BIC             6238.68
 #> SABIC           6203.86
-#> ICL             6785.00
+#> ICL             6795.19
 #> Entropy         0.562
 #> Smallest class  42.1%
 #> Converged       yes
@@ -284,17 +285,17 @@ summary(two_level)
 #> 
 #> Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD
 #> -------  -----  --------  ---------------  --------------  -----------
-#> Class 1  0.579    521.40              532           0.873         5.28
-#> Class 2  0.421    378.60              368           0.845         6.79
+#> Class 1  0.579    521.42              532           0.873         5.28
+#> Class 2  0.421    378.58              368           0.845         6.79
 #> 
 #> Class membership (log odds, 95% CI)
 #> 
 #> Model        Class          Term                      Estimate          95% CI      p  Odds ratio
 #> -----------  -------------  ------------------------  --------  --------------  -----  ----------
-#> group_class  Group class 2  Intercept                    -0.13  [-1.02,  0.77]   .783        0.88
+#> group_class  Group class 2  Intercept                    -0.12  [-1.02,  0.77]   .788        0.88
 #> group_class  Group class 2  motivation                   -1.87  [-2.80, -0.93]  <.001        0.15
-#> class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.84
-#> class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.33]  <.001       70.05
+#> class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.83
+#> class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.32]  <.001       69.91
 #> class        Class 2        sleep                        -0.47  [-0.74, -0.20]  <.001        0.63
 #> 
 #> Group classes
@@ -345,8 +346,8 @@ get_results(asked, "coefficients")
 #> -----------  ---------  --------  ----------------  -----  ----------
 #> Class 1      Intercept     0.558  [ 0.243,  0.873]  <.001        1.75
 #> Class 1      hours         0.104  [ 0.083,  0.125]  <.001        1.11
-#> Class 2      Intercept     1.508  [ 1.020,  1.996]  <.001        4.52
-#> Class 2      hours        -0.110  [-0.197, -0.022]   .014        0.90
+#> Class 2      Intercept     1.509  [ 1.021,  1.997]  <.001        4.52
+#> Class 2      hours        -0.110  [-0.198, -0.023]   .014        0.90
 #> All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98
 ```
 
@@ -370,9 +371,9 @@ get_results(fit, "coefficients", vcov_type = "robust")
 #> 
 #> Class    Term       Estimate          95% CI      p
 #> -------  ---------  --------  --------------  -----
-#> Class 1  Intercept     34.35  [32.77, 35.94]  <.001
+#> Class 1  Intercept     34.36  [32.77, 35.95]  <.001
 #> Class 1  hours          4.57  [ 4.34,  4.79]  <.001
-#> Class 2  Intercept     54.90  [52.70, 57.09]  <.001
+#> Class 2  Intercept     54.90  [52.71, 57.09]  <.001
 #> Class 2  hours          0.81  [ 0.46,  1.15]  <.001
 plot(fit, what = "coefficients")
 ```
@@ -420,12 +421,12 @@ get_results(fit, "starts")
 #> 
 #> start  kind       log_likelihood  converged  iterations  stage      degenerate  selected
 #> -----  ---------  --------------  ---------  ----------  ---------  ----------  --------
-#>     1  residuals        -3144.01        yes          49  completed          no        no
-#>     2  random           -3144.01        yes          47  completed          no        no
+#>     1  residuals        -3144.01         no          50  screened           no        no
+#>     2  random           -3144.01         no          50  screened           no        no
 #>     3  random           -3144.01         no          50  screened           no        no
-#>     4  random           -3144.01        yes          42  completed          no       yes
-#>     5  random           -3144.01        yes          46  completed          no        no
-#>     6  random           -3144.01        yes          43  completed          no        no
+#>     4  random           -3144.01        yes          47  completed          no       yes
+#>     5  random           -3144.01        yes          51  completed          no        no
+#>     6  random           -3144.01        yes          49  completed          no        no
 plot(fit, what = "posteriors")
 ```
 
@@ -439,10 +440,11 @@ Poisson estimates. `flexmix` divides the Gaussian residual sum of
 squares by `n - p`, so its Gaussian estimates are not quite the
 maximum-likelihood ones and
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-reaches a slightly higher likelihood. `flexmix` has no two-level model,
-no analytic standard errors (it refits with
-[`optim()`](https://rdrr.io/r/stats/optim.html)), and no bootstrap
-likelihood-ratio test.
+can reach a slightly higher likelihood. The models compared here use
+`flexmix` for single-level or shared-class grouped mixtures, which
+differ from a two-level latent group-class model. `flexmix` provides
+bootstrap likelihood-ratio tests through `LR_test()` and coefficient
+inference through its refitting facilities.
 
 ## References
 

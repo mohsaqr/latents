@@ -1,19 +1,24 @@
 # Multilevel latent profile analysis
 
-Multilevel latent profile analysis (MLPA) estimates latent profiles at
-the observation level and, at a higher level, identifies latent group
-classes that differ in how probable each profile is for their
-observations. Each profile is characterized by a mean and variance for
-each indicator and is defined identically across all group classes. The
-group classes therefore differ only in the probabilities associated with
-the profiles.
+Multilevel latent profile analysis captures heterogeneity in continuous
+responses by modelling variation within and across groups.
+Observation-level profiles describe patterns across indicators, while
+latent group classes capture differences in the prevalence of these
+profiles across groups.
+
+In this vignette, course enrolments are nested within students.
+Engagement profiles describe variation in activity patterns across
+enrolments, while student classes capture differences in how frequently
+students exhibit those patterns. The profiles share the same indicator
+means and covariance structure across student classes, allowing their
+prevalence to be compared on a common basis.
 
 ## Data
 
 `course_engagement` has one row per course enrolment: 1,422 enrolments
 from 106 students.
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-needs two kinds of variables.
+requires a group identifier and indicator variables.
 
 - **Group:** `student` identifies which enrolments belong to the same
   student.
@@ -32,10 +37,12 @@ library(latents)
 
 ## Clustering within groups
 
-To check how much each indicator varies between groups, we call
+The
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
-with `vars` for the indicators and `id` for the group. `icc` is the
-share of an indicator’s variance that lies between groups.
+function summarizes the indicators specified in `vars` and their
+clustering within the groups specified by `id`. The intraclass
+correlation (`icc`) estimates the proportion of an indicator’s variance
+attributable to between-group differences.
 
 ``` r
 
@@ -53,14 +60,12 @@ descriptives(course_engagement,
 
 ## Fit
 
-To fit the model, we call
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with `vars` for the indicators, `id` for the group, `n_profiles` for the
-number of profiles, `n_group_classes` for the number of group classes,
-`n_starts` for the number of random EM starts, and `seed` for
-reproducible starts. With many starts on large data, `cores` runs the
-starts in parallel and returns the same fit as one core. Printing the
-fit gives the profile means.
+The arguments `n_profiles` and `n_group_classes` specify the numbers of
+observation-level profiles and group classes. Estimation uses multiple
+expectation-maximization (EM) starts, controlled by `n_starts`; `seed`
+controls reproducibility. The `cores` argument permits parallel
+estimation of starts. The printed model summary includes the estimated
+profile means.
 
 ``` r
 
@@ -73,21 +78,28 @@ fit
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892
-#> Converged: TRUE | iterations: 9 | best start: 1/10
+#> Converged: TRUE | iterations: 9 | best log likelihood reached by 10 of 10 starts (10 converged)
 #> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
 #> 
-#>  profile browse lectures forum_read forum_post attendance count proportion
-#>        1  0.540    0.427      0.620      0.530      0.649   834      0.587
-#>        2 -0.766   -0.606     -0.879     -0.753     -0.921   588      0.413
+#> Class sizes   profile_1 58.7% (834)   profile_2 41.3% (588)
+#> Group classes group_class_1 32.5% (34)   group_class_2 67.5% (72)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2
+#>      browse     0.540    -0.766
+#>    lectures     0.427    -0.606
+#>  forum_read     0.620    -0.879
+#>  forum_post     0.530    -0.753
+#>  attendance     0.649    -0.921
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-To check whether the starts agree, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"starts"`. Starts that reach the same log likelihood support the
-solution.
+The starting-value summary reports the log likelihood reached by each
+start. Replication of the selected likelihood provides evidence of
+numerical stability, although it does not establish that the global
+maximum has been found.
 
 ``` r
 
@@ -96,9 +108,9 @@ get_results(fit, "starts")
 #> 1      1          -8440      TRUE          9  <NA>    FALSE
 #> 2      2          -8440      TRUE         12  <NA>    FALSE
 #> 3      3          -8440      TRUE          9  <NA>    FALSE
-#> 4      4          -8440      TRUE         12  <NA>    FALSE
+#> 4      4          -8440      TRUE          9  <NA>    FALSE
 #> 5      5          -8440      TRUE          9  <NA>    FALSE
-#> 6      6          -8440      TRUE         12  <NA>    FALSE
+#> 6      6          -8440      TRUE          9  <NA>    FALSE
 #> 7      7          -8440      TRUE          9  <NA>    FALSE
 #> 8      8          -8440      TRUE         12  <NA>    FALSE
 #> 9      9          -8440      TRUE          9  <NA>    FALSE
@@ -107,9 +119,10 @@ get_results(fit, "starts")
 
 ## Profiles
 
-To obtain the profile means and variances, we call
+By default,
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-on the fit. There is one row per profile and indicator.
+returns profile means and variances, with one row per profile and
+continuous indicator.
 
 ``` r
 
@@ -138,10 +151,9 @@ get_results(fit)
 #> 10                  0.0228
 ```
 
-To see the profiles, we call
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
-on the fit. Each line is a profile’s mean on each indicator, and its
-label gives the profile’s share of the cases.
+The profile plot displays the estimated indicator means for each
+profile. The labels also report the profiles’ estimated shares of
+observations.
 
 ``` r
 
@@ -152,25 +164,23 @@ plot_profiles(fit)
 
 ## Group classes
 
-To obtain the profile probabilities of each group class, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"profile_probabilities"`. `probability` is the chance that an
-observation of a group in that class falls in each profile, and
-`group_class_probability` is the share of groups in the class.
+The `"profile_probabilities"` table reports the conditional probability
+of each observation-level profile within each group class
+(`probability`). The column `group_class_probability` reports the
+estimated proportion of groups in that class.
 
 ``` r
 
 get_results(fit, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1       0.786                   0.675
-#> 2           1       2       0.214                   0.675
-#> 3           2       1       0.170                   0.325
-#> 4           2       2       0.830                   0.325
+#> 1           1       1       0.170                   0.325
+#> 2           1       2       0.830                   0.325
+#> 3           2       1       0.786                   0.675
+#> 4           2       2       0.214                   0.675
 ```
 
-To compare the group classes, we call
-[`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
-one line per group class across the profiles.
+The prevalence plot compares these conditional profile probabilities,
+with one line per group class.
 
 ``` r
 
@@ -181,10 +191,9 @@ plot_prevalence(fit)
 
 ## Class sizes
 
-To obtain class sizes, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"counts"`. `effective_count` sums the posterior probabilities, so
-it need not be a whole number.
+The `"counts"` table summarizes class sizes. The column
+`effective_count` sums posterior membership probabilities and can
+therefore be noninteger.
 
 ``` r
 
@@ -192,17 +201,17 @@ get_results(fit, "counts")
 #>         level class effective_count effective_proportion
 #> 1 individuals     1           834.1                0.587
 #> 2 individuals     2           587.9                0.413
-#> 3      groups     1            71.5                0.675
-#> 4      groups     2            34.5                0.325
+#> 3      groups     1            34.5                0.325
+#> 4      groups     2            71.5                0.675
 ```
 
 ## Classification
 
-To obtain classification certainty, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"entropy"`. Relative entropy is reported for observations and for
-groups: 1 means every case is assigned with certainty, 0 means no
-separation.
+The `"entropy"` table summarizes classification uncertainty at both
+levels. For a model with more than one class, relative entropy is 1 when
+posterior membership is certain and 0 when every case has equal
+posterior probability of membership in every class. It describes
+separation under the fitted model, not overall model fit.
 
 ``` r
 
@@ -212,16 +221,14 @@ get_results(fit, "entropy")
 #> 2      groups         2     106        4.43            0.940
 ```
 
-To add each observation’s assigned profile and group class to the data,
-we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"assignments"` and `data` for the data frame. It returns the data
-in its original row order with five added columns: `profile` and
-`group_class` hold the most probable classes, `uncertainty` is one minus
-the posterior probability of the assigned profile, and the
-`posterior_profile_` columns hold the posterior probability of each
-profile. Assignment takes the most probable class, so `profile` and
-`group_class` alone ignore classification uncertainty.
+The `"assignments"` table appends classification results to `data` in
+its original row order. The columns `profile` and `group_class` contain
+the most probable classes. The column `uncertainty` is one minus the
+posterior probability of the assigned profile, and the
+`posterior_profile_` columns contain membership probabilities for each
+profile. The number of posterior columns depends on `n_profiles`.
+Analyses based only on the assigned labels omit this classification
+uncertainty.
 
 ``` r
 
@@ -234,22 +241,21 @@ get_results(fit, "assignments", data = course_engagement) |> head()
 #> 5       1     16        5  -0.94    -0.37      -0.71      -0.28      -1.52          -0.67
 #> 6       1     29        6  -0.36    -0.46      -0.77      -0.43      -1.34          -0.40
 #>   engagement student_type profile group_class uncertainty posterior_profile_1 posterior_profile_2
-#> 1    engaged     wavering       1           2    4.44e-04            1.00e+00            0.000444
-#> 2    engaged     wavering       1           2    1.49e-02            9.85e-01            0.014854
-#> 3 disengaged     wavering       2           2    2.42e-06            2.42e-06            0.999998
-#> 4 disengaged     wavering       2           2    3.86e-06            3.86e-06            0.999996
-#> 5 disengaged     wavering       2           2    5.75e-06            5.75e-06            0.999994
-#> 6 disengaged     wavering       2           2    2.28e-05            2.28e-05            0.999977
+#> 1    engaged     wavering       1           1    4.44e-04            1.00e+00            0.000444
+#> 2    engaged     wavering       1           1    1.49e-02            9.85e-01            0.014854
+#> 3 disengaged     wavering       2           1    2.42e-06            2.42e-06            0.999998
+#> 4 disengaged     wavering       2           1    3.86e-06            3.86e-06            0.999996
+#> 5 disengaged     wavering       2           1    5.75e-06            5.75e-06            0.999994
+#> 6 disengaged     wavering       2           1    2.28e-05            2.28e-05            0.999977
 ```
 
 ## Recovery of the known structure
 
-To compare the fitted classes with known labels, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"assignments"`, `data` for the data frame, and `truth` for the
-columns that hold the labels. `engagement` is compared with the profiles
-and `student_type` with the group classes. Class numbers are arbitrary,
-so the table is read by its largest cells.
+For these simulated data, the `truth` argument permits comparison with
+the generating labels: `engagement` for profiles and `student_type` for
+group classes. Class numbers are arbitrary, so correspondence is
+assessed from the cross-tabulation rather than by matching numeric
+labels directly.
 
 ``` r
 
@@ -260,10 +266,10 @@ get_results(fit, "assignments", data = course_engagement,
 #> 2     profile     2   engagement disengaged 569     0.9726
 #> 3     profile     1   engagement    engaged 820     0.9797
 #> 4     profile     2   engagement    engaged  17     0.0203
-#> 5 group_class     1 student_type  committed  61     0.9839
-#> 6 group_class     2 student_type  committed   1     0.0161
-#> 7 group_class     1 student_type   wavering  10     0.2273
-#> 8 group_class     2 student_type   wavering  34     0.7727
+#> 5 group_class     1 student_type  committed   1     0.0161
+#> 6 group_class     2 student_type  committed  61     0.9839
+#> 7 group_class     1 student_type   wavering  34     0.7727
+#> 8 group_class     2 student_type   wavering  10     0.2273
 ```
 
 ## Reference
@@ -317,7 +323,6 @@ plot(fit, what = "all")                        # every view this fit supports
 
 # Other functions
 sensitivity(fit, seeds = 1:10)       # refits under several seeds
-starting_values(fit)                 # parameters to start another fit
 ```
 
 [`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md)
@@ -339,14 +344,14 @@ and the covariates article covers
 
 ## Sampling weights
 
-When students were sampled unequally, for example wavering students at
-half the rate of committed ones, each student carries a sampling weight,
-and the fit should estimate the population rather than the sample. We
-pass the weight column as `weights`. The weight belongs to the
-independent unit, here the student, so it must be constant within `id`.
-The fit maximizes the weighted (pseudo) log likelihood, with the weights
-scaled to sum to the number of students, and reports Kish’s effective
-sample size.
+Sampling weights can represent unequal selection probabilities. The
+example below assigns twice the weight to the simulated `"wavering"`
+student class, as would be appropriate if its sampling probability were
+half that of the other class. The weight column is supplied through
+`weights` and must be constant within the independent sampling unit,
+here `student`. Estimation maximizes a weighted pseudo-log-likelihood
+after normalizing weights to sum to the number of students. The output
+also reports Kish’s effective sample size.
 
 ``` r
 
@@ -362,22 +367,30 @@ weighted_fit
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Sampling weights `survey_weight` (pseudo maximum likelihood): Kish effective n 94.5 of 106 units
 #> Log likelihood: -8341.125778 | AIC: 16728.252 | BIC (groups): 16789.511
-#> Converged: TRUE | iterations: 9 | best start: 1/10
+#> Converged: TRUE | iterations: 9 | best log likelihood reached by 10 of 10 starts (10 converged)
 #> Smallest standardized Gaussian eigenvalue: 0.3759 (profiles, profile_2); Gaussian mass: 714.8; weight effective n: 563.8.
 #> 
-#>  profile browse lectures forum_read forum_post attendance count proportion
-#>        1  0.525    0.446      0.605      0.515      0.655   701      0.495
-#>        2 -0.770   -0.608     -0.877     -0.742     -0.921   715      0.505
+#> Class sizes   profile_1 49.5% (701)   profile_2 50.5% (715)
+#> Group classes group_class_1 45.2% (48)   group_class_2 54.8% (58)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2
+#>      browse     0.525    -0.770
+#>    lectures     0.446    -0.608
+#>  forum_read     0.605    -0.877
+#>  forum_post     0.515    -0.742
+#>  attendance     0.655    -0.921
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-Under weights the inverse information is not the variance of the
-estimates, so
+For weighted fits,
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-reports sandwich standard errors by default and refuses
-`vcov_type = "observed"`.
+uses sandwich standard errors by default. The package does not support
+`vcov_type = "observed"` for these fits because inverse-information
+standard errors do not generally represent the sampling variance under
+unequal weighting.
 
 ``` r
 
@@ -394,18 +407,18 @@ head(parameter_inference(weighted_fit), 4)
 #> 4    0.453     0.578
 ```
 
+The `weights` argument is also available in
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-and every `family` of
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-take `weights` the same way. The bootstrap likelihood ratio test does
-not: it simulates from the model, not from the sampling design.
+and the model families fitted through
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+The parametric bootstrap likelihood ratio test does not support weighted
+fits; its simulations do not reproduce a sampling design.
 
 ## All tables
 
-To see every table at once, we call
-[`summary()`](https://rdrr.io/r/base/summary.html) on the fit, with
-`rows` for the number of rows shown per table.
+The model summary collects the result tables. The `rows` argument limits
+the number of rows printed from each table.
 
 ``` r
 
@@ -414,7 +427,7 @@ print(summary(fit), rows = 3)
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609
-#> Best likelihood replicated in 10/10 starts (absolute tolerance 0.00844).
+#> Best likelihood replicated in 10/10 starts (absolute tolerance 0.00711).
 #> 
 #> -- profiles --------------------------------------------------------
 #>  profile  indicator   mean variance standard_deviation mean_standard_error variance_standard_error
@@ -443,16 +456,16 @@ print(summary(fit), rows = 3)
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
-#>            1       1      0.7859                  0.6747
-#>            1       2      0.2141                  0.6747
-#>            2       1      0.1705                  0.3253
+#>            1       1      0.1705                  0.3253
+#>            1       2      0.8295                  0.3253
+#>            2       1      0.7859                  0.6747
 #>    ... 1 more rows.  get_results(x, what = "profile_probabilities")
 #> 
 #> -- counts ----------------------------------------------------------
 #>        level class effective_count effective_proportion
 #>  individuals     1          834.10               0.5866
 #>  individuals     2          587.90               0.4134
-#>       groups     1           71.52               0.6747
+#>       groups     1           34.48               0.3253
 #>    ... 1 more rows.  get_results(x, what = "counts")
 #> 
 #> -- posteriors ------------------------------------------------------
@@ -464,19 +477,19 @@ print(summary(fit), rows = 3)
 #> 
 #> -- group_posteriors ------------------------------------------------
 #>  group group_size log_likelihood group_class posterior modal
-#>      1         13         -61.52           1 1.473e-05 FALSE
-#>      2         13         -71.94           1 6.391e-08 FALSE
-#>      3         14         -76.69           1 1.000e+00  TRUE
+#>      1         13         -61.52           1 1.000e+00  TRUE
+#>      2         13         -71.94           1 1.000e+00  TRUE
+#>      3         14         -76.69           1 6.005e-10 FALSE
 #>    ... 209 more rows.  get_results(x, what = "group_posteriors")
 #> 
 #> -- assignments -----------------------------------------------------
 #>  student browse lectures forum_read forum_post attendance profile group_class uncertainty
-#>        1   0.73    -0.08       0.30       0.67       0.72       1           2   4.436e-04
-#>        1   0.68     0.53      -0.02      -0.55       0.70       1           2   1.485e-02
-#>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           2   2.421e-06
+#>        1   0.73    -0.08       0.30       0.67       0.72       1           1   4.436e-04
+#>        1   0.68     0.53      -0.02      -0.55       0.70       1           1   1.485e-02
+#>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1   2.421e-06
 #>  posterior_profile_1 posterior_profile_2
 #>            9.996e-01           0.0004436
-#>            9.851e-01           0.0148536
+#>            9.851e-01           0.0148535
 #>            2.421e-06           0.9999976
 #>    ... 1419 more rows.  get_results(x, what = "assignments")
 #> 
@@ -484,11 +497,11 @@ print(summary(fit), rows = 3)
 #>        level class n_modal proportion_modal estimated_n estimated_proportion average_posterior
 #>  individuals     1     836           0.5879      834.10               0.5866            0.9849
 #>  individuals     2     586           0.4121      587.90               0.4134            0.9818
-#>       groups     1      71           0.6698       71.52               0.6747            0.9920
+#>       groups     1      35           0.3302       34.48               0.3253            0.9690
 #>  odds_correct_classification
 #>                        46.08
 #>                        76.35
-#>                        59.89
+#>                        64.80
 #>    ... 1 more rows.  get_results(x, what = "classification")
 #> 
 #> -- average_posteriors ----------------------------------------------
@@ -517,6 +530,12 @@ print(summary(fit), rows = 3)
 #>  individuals         2    1422      60.940           0.9382
 #>       groups         2     106       4.435           0.9396
 #> 
+#> -- replication -----------------------------------------------------
+#>  n_starts n_screened n_converged n_failed n_best_replicated share tolerance best_start
+#>        10          0          10        0                10     1   0.00711          1
+#>  log_likelihood
+#>           -8440
+#> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual effective_n statistic df
 #>  profile_1    lectures  attendance gaussian   0.2339        0   0.2339       834.1     6.871 NA
@@ -532,9 +551,9 @@ print(summary(fit), rows = 3)
 #>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups sabic_individual
 #>           -8440           23 16926 16952      16987          17047        16914            16974
 #>  caic_groups caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups
-#>        17010           17070      17172          17404      16996          17168      16889
+#>        17010           17070      17292          17412      17116          17176      17009
 #>  clc_individual
-#>           17002
+#>           17009
 #> 
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering scaling
@@ -562,7 +581,7 @@ print(summary(fit), rows = 3)
 #>        1  -1.51    -0.51      -0.91      -0.80      -0.97
 #>    ... 1419 more rows.  get_results(x, what = "data")
 #> 
-#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 21 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 

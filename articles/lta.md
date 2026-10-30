@@ -1,15 +1,16 @@
 # Latent transition analysis
 
-Latent transition analysis (LTA) estimates latent profiles at each
-occasion and the probability of moving from one profile to another
-between consecutive occasions. With group classes, each class has its
-own starting probabilities and its own transition matrix, so classes
-separate groups that change differently over time.
+Latent transition analysis (LTA) estimates latent states at successive
+occasions and the probabilities of transitions between them. In the
+default model, profiles have a common measurement definition across
+occasions. With latent group classes, initial-state probabilities and
+transition matrices differ by class, representing heterogeneity in
+longitudinal patterns.
 
 ## Data
 
-`course_engagement` has one row per course enrolment: 1,422 enrolments
-from 106 students.
+`course_engagement` is simulated and has one row per course enrolment:
+1,422 enrolments from 106 students.
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) needs three
 kinds of variables.
 
@@ -27,12 +28,11 @@ library(latents)
 
 ## Fit
 
-To fit the model, we call
-[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with `vars`
-for the indicators, `id` for the group, `time` for the occasion order,
-`n_profiles` for the number of profiles, `n_group_classes` for the
-number of group classes, `n_starts` for the number of random EM starts,
-and `seed` for reproducible starts.
+The [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+function requires indicators (`vars`), a group identifier (`id`), and
+occasion order (`time`). The arguments `n_profiles` and
+`n_group_classes` specify the latent structure; `n_starts` and `seed`
+control repeated estimation from reproducible starting values.
 
 ``` r
 
@@ -48,37 +48,40 @@ moves
 #> Converged: TRUE after 36 iterations; best of 3 starts
 #> Smallest standardized Gaussian eigenvalue: 0.2092 (profiles, profile_1); Gaussian mass: 470.7; weight effective n: 589.7.
 #> 
-#>  profile browse lectures forum_read forum_post attendance count proportion
-#>        1  0.396    0.189      0.454      0.345      0.254   471      0.331
-#>        2 -0.776   -0.612     -0.888     -0.761     -0.929   579      0.407
-#>        3  0.706    0.712      0.807      0.747      1.124   372      0.262
+#> Class sizes   profile_1 33.1% (471)   profile_2 40.7% (579)   profile_3 26.2% (372)
+#> Group classes group_class_1 30.0% (32)   group_class_2 70.0% (74)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>   indicator profile_1 profile_2 profile_3
+#>      browse     0.396    -0.776     0.706
+#>    lectures     0.189    -0.612     0.712
+#>  forum_read     0.454    -0.888     0.807
+#>  forum_post     0.345    -0.761     0.747
+#>  attendance     0.254    -0.929     1.124
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-To check whether the starts agree, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"starts"`. Starts that reach the same log likelihood support the
-solution.
+The `"starts"` table reports the log likelihood reached by each start.
+Replication of the selected likelihood supports numerical stability but
+does not establish that the global maximum has been found.
 
 ``` r
 
 get_results(moves, "starts")
 #>   start log_likelihood converged iterations error
 #> 1     1          -8243      TRUE         36  <NA>
-#> 2     2          -8243      TRUE         39  <NA>
-#> 3     3          -8243      TRUE         42  <NA>
+#> 2     2          -8243      TRUE         48  <NA>
+#> 3     3          -8243      TRUE         64  <NA>
 ```
 
 ## Profiles
 
-To see the profiles, we call
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
-(on a transition fit,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) alone draws the
-transition matrices). Each line is a profile’s mean on each indicator,
-and its label gives the profile’s share of the cases.
+The profile plot displays estimated indicator means and the estimated
+share of occasions in each profile. For a transition model,
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) without an
+explicit view instead displays transition matrices.
 
 ``` r
 
@@ -87,10 +90,8 @@ plot_profiles(moves)
 
 ![](lta_files/figure-html/profiles-1.png)
 
-To compare profiles on a common scale, we call
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
-with `what = "heatmap"`, which shows each mean in standard deviations
-from the indicator’s overall mean.
+The profile heatmap expresses each mean in standard deviations from the
+indicator’s overall mean, facilitating comparison across indicators.
 
 ``` r
 
@@ -101,62 +102,57 @@ plot_profiles(moves, what = "heatmap")
 
 ## Starting probabilities
 
-To obtain the starting probabilities, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"initial"`. `probability` is the chance of starting in each
-profile, `prevalence` the expected share of all occasions in it, and
-`group_class_probability` the share of groups in the class.
+The `"initial"` table reports initial profile probabilities
+(`probability`), profile prevalence across occasions (`prevalence`), and
+estimated group-class proportions (`group_class_probability`).
 
 ``` r
 
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1    3.53e-01     0.4372                     0.7
-#> 2           1       2    2.04e-01     0.2297                     0.7
-#> 3           1       3    4.44e-01     0.3330                     0.7
-#> 4           2       1    1.18e-09     0.0841                     0.3
-#> 5           2       2    7.62e-01     0.8193                     0.3
-#> 6           2       3    2.38e-01     0.0965                     0.3
+#> 1           1       1    1.00e-10     0.0841                     0.3
+#> 2           1       2    7.62e-01     0.8193                     0.3
+#> 3           1       3    2.38e-01     0.0965                     0.3
+#> 4           2       1    3.53e-01     0.4372                     0.7
+#> 5           2       2    2.04e-01     0.2297                     0.7
+#> 6           2       3    4.44e-01     0.3330                     0.7
 ```
 
 ## Transitions
 
-To obtain the transition probabilities, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"transitions"`. `probability` is the chance of moving from profile
-`from` to profile `to` at the next occasion, and the probabilities out
-of each profile sum to one. `stable` marks staying in the same profile,
-`expected_count` is the expected number of such moves in the data, and
-`estimated = FALSE` marks a row the data cannot inform.
+The `"transitions"` table reports the probability of moving from state
+`from` to state `to` at the next occasion. Probabilities sum to one
+within each origin state and group class. The column `stable` identifies
+transitions that retain the same state; `expected_count` reports the
+posterior expected transition count. A row with `estimated = FALSE`
+lacks information for estimating that transition distribution.
 
 ``` r
 
 get_results(moves, "transitions")
 #>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1      0.5256         214.24   TRUE      TRUE                     0.7
-#> 2            1    1  2      0.1141          46.50  FALSE      TRUE                     0.7
-#> 3            1    1  3      0.3603         146.88  FALSE      TRUE                     0.7
-#> 4            1    2  1      0.2099          43.69  FALSE      TRUE                     0.7
-#> 5            1    2  2      0.6146         127.95   TRUE      TRUE                     0.7
-#> 6            1    2  3      0.1756          36.55  FALSE      TRUE                     0.7
-#> 7            1    3  1      0.4951         150.59  FALSE      TRUE                     0.7
-#> 8            1    3  2      0.1277          38.85  FALSE      TRUE                     0.7
-#> 9            1    3  3      0.3772         114.74   TRUE      TRUE                     0.7
-#> 10           2    1  1      0.5202          17.54   TRUE      TRUE                     0.3
-#> 11           2    1  2      0.3394          11.44  FALSE      TRUE                     0.3
-#> 12           2    1  3      0.1405           4.74  FALSE      TRUE                     0.3
-#> 13           2    2  1      0.0302           9.75  FALSE      TRUE                     0.3
-#> 14           2    2  2      0.9386         303.22   TRUE      TRUE                     0.3
-#> 15           2    2  3      0.0313          10.10  FALSE      TRUE                     0.3
-#> 16           2    3  1      0.2221           8.71  FALSE      TRUE                     0.3
-#> 17           2    3  2      0.2961          11.61  FALSE      TRUE                     0.3
-#> 18           2    3  3      0.4818          18.90   TRUE      TRUE                     0.3
+#> 1            1    1  1      0.5202          17.54   TRUE      TRUE                     0.3
+#> 2            1    1  2      0.3394          11.44  FALSE      TRUE                     0.3
+#> 3            1    1  3      0.1405           4.74  FALSE      TRUE                     0.3
+#> 4            1    2  1      0.0302           9.75  FALSE      TRUE                     0.3
+#> 5            1    2  2      0.9386         303.22   TRUE      TRUE                     0.3
+#> 6            1    2  3      0.0313          10.10  FALSE      TRUE                     0.3
+#> 7            1    3  1      0.2221           8.71  FALSE      TRUE                     0.3
+#> 8            1    3  2      0.2961          11.61  FALSE      TRUE                     0.3
+#> 9            1    3  3      0.4818          18.90   TRUE      TRUE                     0.3
+#> 10           2    1  1      0.5256         214.24   TRUE      TRUE                     0.7
+#> 11           2    1  2      0.1141          46.50  FALSE      TRUE                     0.7
+#> 12           2    1  3      0.3603         146.88  FALSE      TRUE                     0.7
+#> 13           2    2  1      0.2099          43.69  FALSE      TRUE                     0.7
+#> 14           2    2  2      0.6146         127.95   TRUE      TRUE                     0.7
+#> 15           2    2  3      0.1756          36.55  FALSE      TRUE                     0.7
+#> 16           2    3  1      0.4951         150.59  FALSE      TRUE                     0.7
+#> 17           2    3  2      0.1277          38.85  FALSE      TRUE                     0.7
+#> 18           2    3  3      0.3772         114.74   TRUE      TRUE                     0.7
 ```
 
-To draw the transition matrices, we call
-[`plot_transitions()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
-one heatmap per group class, current profile in rows and next profile in
-columns.
+The transition plot displays one matrix per group class, with current
+profiles in rows and next-occasion profiles in columns.
 
 ``` r
 
@@ -167,10 +163,9 @@ plot_transitions(moves)
 
 ## Sequences
 
-To see each group’s path, we call
-[`plot_sequences()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
-one row per group, coloured by its most probable profile at each
-occasion. These assignments ignore classification uncertainty.
+The sequence plot displays one row per group, coloured by the most
+probable profile at each occasion. These modal assignments summarize the
+fitted sequences but omit classification uncertainty.
 
 ``` r
 
@@ -181,11 +176,11 @@ plot_sequences(moves)
 
 ## Classification
 
-To obtain classification certainty, we call
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"entropy"`. Relative entropy is reported for occasions and for
-groups: 1 means every case is assigned with certainty, 0 means no
-separation.
+The `"entropy"` table reports relative entropy for occasions and groups.
+With more than one class, a value of 1 indicates certain posterior
+membership; 0 indicates equal posterior probabilities across classes for
+every case. Entropy summarizes classification separation under the
+fitted model.
 
 ``` r
 
@@ -195,11 +190,9 @@ get_results(moves, "entropy")
 #> 2      groups         2     106        16.3            0.778
 ```
 
-To see where the uncertainty lies, we call
-[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
-with `what = "entropy"` for the per-case uncertainty within each
-profile, and with `what = "posteriors"` for the posterior probability of
-each case’s assigned profile.
+Diagnostic plots display per-case uncertainty within each profile
+(`what = "entropy"`) and posterior probabilities of assigned profiles
+(`what = "posteriors"`).
 
 ``` r
 
@@ -217,14 +210,13 @@ plot_diagnostics(moves, what = "posteriors")
 
 ## Transition networks
 
-To analyse the transitions as networks, we call
-[`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) for
-one network pooled over group classes and
+The estimated transitions can be represented as networks.
+[`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md)
+returns a network pooled across group classes;
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
-for one network per class. Both return
-[tna](https://cran.r-project.org/package=tna) models built from the
-estimated transitions, which
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws.
+returns one network per class. Both functions produce
+[tna](https://cran.r-project.org/package=tna) objects that can be
+displayed with [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
 ``` r
 
@@ -242,8 +234,8 @@ plot(get_group_tna(moves))
 
 ## Beyond homogeneous transitions
 
-Each default assumption of the model can be tested by relaxing it in one
-argument:
+Several extensions permit alternative specifications of temporal
+dependence and measurement:
 
 - `transition_covariates` lets covariates shift the transition
   probabilities: the log odds of moving to each other profile rather
@@ -262,9 +254,8 @@ and group classes, and
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
 tests a model against a nested one.
 
-Does a student’s grade in the previous course change how likely they are
-to move between engagement profiles? `previous_grade` changes from
-course to course:
+The following example examines whether `previous_grade`, which varies
+across courses, is associated with transition probabilities:
 
 ``` r
 
@@ -280,18 +271,20 @@ get_results(grade, "transition_coefficients")
 #> 2 group_class_1 profile_1 profile_2 previous_grade   0.0338          0.121     0.280 7.79e-01
 #> 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29
 #> 4 group_class_1 profile_2 profile_1 previous_grade   0.0438          0.130     0.337 7.36e-01
-#>   conf_low conf_high odds_ratio
-#> 1   -2.071    -1.608      0.159
-#> 2   -0.203     0.270      1.034
-#> 3   -1.718    -1.208      0.231
-#> 4   -0.211     0.298      1.045
+#>   conf_low conf_high odds_ratio estimated
+#> 1   -2.071    -1.608      0.159      TRUE
+#> 2   -0.203     0.270      1.034      TRUE
+#> 3   -1.718    -1.208      0.231      TRUE
+#> 4   -0.211     0.298      1.045      TRUE
 ```
 
-The grade’s odds ratios are close to one, and its intervals, on the
-log-odds scale of `estimate`, include zero: in these data, the previous
-grade does not change the chance of switching profile. A second-order
-chain, where the next profile depends on the two previous ones, does not
-earn its extra parameters either:
+The estimated odds ratios are close to one, and the confidence intervals
+for the log-odds coefficients include zero. These results provide
+limited evidence of an association between previous grade and
+transitions in this example; they do not establish the absence of an
+association. A second-order model, in which the next profile depends on
+the two previous states, can also be compared with the first-order
+specification using BIC:
 
 ``` r
 
@@ -304,9 +297,11 @@ BIC(homogeneous, grade, second)
 #> second      27 16786
 ```
 
-These extensions return a fit with transition and initial logit
-coefficients, Wald standard errors and probabilities per occasion; they
-were checked against Mplus, depmixS4 and LMest.
+For these data, BIC is lower for the homogeneous first-order model than
+for either extension. Extended models provide transition and
+initial-state logit coefficients, with Wald standard errors when
+supported by the fitted model, and occasion-specific probability
+summaries.
 
 ## Assumptions
 
@@ -316,4 +311,5 @@ were checked against Mplus, depmixS4 and LMest.
 - Profiles have the same definition at every occasion unless
   `measurement = "occasion"`.
 - Indicators are independent within a profile (the default diagonal
-  covariance; `covariance_model = "full"` or `model =` relaxes it).
+  covariance; `covariance_model = "full"` or a non-diagonal `model`
+  relaxes it).

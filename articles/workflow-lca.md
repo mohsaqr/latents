@@ -68,25 +68,25 @@ plot_enumeration(models)
 
 summary(models)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
-#> 4 distinct candidate(s) are minimal under some criterion.
+#> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
 #> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>  candidate n_profiles log_likelihood n_parameters   aic   bic icl_individual
 #>   classes1          1          -8035            8 16086 16133          16133
-#>   classes2          2          -7892           17 15819 15918          17771
+#>   classes2          2          -7892           17 15819 15918          17748
 #>   classes3          3          -7848           26 15749 15901          17820
-#>   classes4          4          -7807           35 15683 15888          17931
+#>   classes4          4          -7807           35 15683 15888          17934
 #>   classes5          5          -7795           44 15678 15935          18074
-#>   classes6          6          -7771           53 15648 15959          18299
+#>   classes6          6          -7771           53 15648 15959          18291
 #>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
 #>               NA        NA         NA          NA      TRUE    FALSE
-#>           0.4823    0.7057     0.8226           1      TRUE    FALSE
+#>           0.4887    0.7035     0.8222           1      TRUE    FALSE
 #>           0.6618    0.7046     0.8632           1      TRUE    FALSE
-#>           0.7146    0.7144     0.8306           2      TRUE    FALSE
+#>           0.7142    0.7151     0.8307           2      TRUE    FALSE
 #>           0.7426    0.5196     0.8051           2      TRUE    FALSE
-#>           0.7471    0.6011     0.7794           4      TRUE    FALSE
+#>           0.7479    0.6009     0.7799           4      TRUE    FALSE
 #> 
 #> -- best ------------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes value
@@ -98,7 +98,7 @@ summary(models)
 #>      sabic individuals  classes4          4               1 15777
 #>       caic      groups  classes4          4               1 15923
 #>       caic individuals  classes4          4               1 15923
-#>        awe      groups  classes2          2               1 16103
+#>        awe      groups  classes1          1               1 16220
 #>        awe individuals  classes1          1               1 16220
 #>    ... 4 more rows.  get_results(x, what = "best")
 #> 
@@ -112,14 +112,14 @@ summary(models)
 #>      sabic individuals  classes4          4               1 15777
 #>       caic      groups  classes4          4               1 15923
 #>       caic individuals  classes4          4               1 15923
-#>        awe      groups  classes2          2               1 16103
+#>        awe      groups  classes1          1               1 16220
 #>        awe individuals  classes1          1               1 16220
 #>    ... 4 more rows.  get_results(x, what = "criteria")
 #> 
 #> -- classification --------------------------------------------------
 #>  candidate n_profiles n_group_classes       level class n_modal proportion_modal
-#>   classes2          2               1 individuals     1    1276          0.49419
-#>   classes2          2               1 individuals     2    1306          0.50581
+#>   classes2          2               1 individuals     1    1271          0.49225
+#>   classes2          2               1 individuals     2    1311          0.50775
 #>   classes3          3               1 individuals     1    1180          0.45701
 #>   classes3          3               1 individuals     2      98          0.03796
 #>   classes3          3               1 individuals     3    1304          0.50503
@@ -129,26 +129,26 @@ summary(models)
 #>   classes4          4               1 individuals     4      35          0.01356
 #>   classes5          5               1 individuals     1     915          0.35438
 #>  estimated_n estimated_proportion average_posterior odds_correct_classification
-#>       979.41              0.37932            0.7057                       3.923
-#>      1602.59              0.62068            0.9395                       9.496
+#>       971.75              0.37636            0.7035                       3.932
+#>      1610.25              0.62364            0.9408                       9.596
 #>      1490.65              0.57732            0.9329                      10.175
 #>        93.58              0.03624            0.9521                     527.981
 #>       997.77              0.38643            0.7046                       3.788
-#>      1466.11              0.56782            0.8871                       5.981
-#>        93.99              0.03640            0.9554                     566.454
-#>       989.52              0.38324            0.7144                       4.026
-#>        32.38              0.01254            0.7654                     256.835
-#>      1229.10              0.47602            0.9174                      12.230
+#>      1464.19              0.56708            0.8863                       5.950
+#>        94.00              0.03640            0.9554                     567.505
+#>       991.40              0.38396            0.7151                       4.028
+#>        32.41              0.01255            0.7658                     257.214
+#>      1229.10              0.47603            0.9174                      12.230
 #>  relative_entropy
-#>            0.4823
-#>            0.4823
+#>            0.4887
+#>            0.4887
 #>            0.6618
 #>            0.6618
 #>            0.6618
-#>            0.7146
-#>            0.7146
-#>            0.7146
-#>            0.7146
+#>            0.7142
+#>            0.7142
+#>            0.7142
+#>            0.7142
 #>            0.7426
 #>    ... 10 more rows.  get_results(x, what = "classification")
 #> 
@@ -178,27 +178,27 @@ summary(models)
 #> 
 #> -- tree ------------------------------------------------------------
 #>  tree       level from_candidate from_class from_share to_candidate to_class to_share
-#>  tree individuals       classes1          1    1.00000     classes2        1  0.37932
-#>  tree individuals       classes1          1    1.00000     classes2        2  0.62068
-#>  tree individuals       classes2          1    0.37932     classes3        1  0.57732
-#>  tree individuals       classes2          2    0.62068     classes3        1  0.57732
-#>  tree individuals       classes2          1    0.37932     classes3        2  0.03624
-#>  tree individuals       classes2          2    0.62068     classes3        2  0.03624
-#>  tree individuals       classes2          1    0.37932     classes3        3  0.38643
-#>  tree individuals       classes2          2    0.62068     classes3        3  0.38643
-#>  tree individuals       classes3          1    0.57732     classes4        1  0.56782
-#>  tree individuals       classes3          2    0.03624     classes4        1  0.56782
+#>  tree individuals       classes1          1    1.00000     classes2        1  0.37636
+#>  tree individuals       classes1          1    1.00000     classes2        2  0.62364
+#>  tree individuals       classes2          1    0.37636     classes3        1  0.57732
+#>  tree individuals       classes2          2    0.62364     classes3        1  0.57732
+#>  tree individuals       classes2          1    0.37636     classes3        2  0.03624
+#>  tree individuals       classes2          2    0.62364     classes3        2  0.03624
+#>  tree individuals       classes2          1    0.37636     classes3        3  0.38643
+#>  tree individuals       classes2          2    0.62364     classes3        3  0.38643
+#>  tree individuals       classes3          1    0.57732     classes4        1  0.56708
+#>  tree individuals       classes3          2    0.03624     classes4        1  0.56708
 #>      mass share_of_from share_of_to
-#>  0.379322      0.379322    1.000000
-#>  0.620678      0.620678    1.000000
-#>  0.102737      0.270845    0.177954
-#>  0.474587      0.764626    0.822046
-#>  0.033119      0.087311    0.913794
-#>  0.003124      0.005034    0.086206
-#>  0.243465      0.641844    0.630033
-#>  0.142967      0.230340    0.369967
-#>  0.442310      0.766138    0.778961
-#>  0.001457      0.040188    0.002565
+#>  0.376356      0.376356    1.000000
+#>  0.623644      0.623644    1.000000
+#>  0.101204      0.268906    0.175299
+#>  0.476120      0.763449    0.824701
+#>  0.033106      0.087964    0.913435
+#>  0.003137      0.005031    0.086565
+#>  0.242046      0.643130    0.626361
+#>  0.144386      0.231520    0.373639
+#>  0.441847      0.765336    0.779166
+#>  0.001454      0.040120    0.002564
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
 #> 7 tables above, truncated to fit. get_results(x, what = ) returns any
@@ -227,32 +227,31 @@ fit
 #> Latent class analysis: 3 classes
 #> 2582 observations; 8 categorical indicators
 #> Classes are labelled profile_1, profile_2, ... in every table.
-#> Log likelihood: -7848.453002 | AIC: 15748.906 | BIC: 15901.170
-#> Converged: TRUE | iterations: 45 | best start: 7/10
+#> Log likelihood: -7848.453248 | AIC: 15748.906 | BIC: 15901.171
+#> Converged: TRUE | iterations: 39 | best log likelihood reached by 2 of 10 starts (10 converged)
 #> 
-#>  profile         indicator category probability threshold
-#>        1 time_with_friends       no    9.81e-01    3.9264
-#>        2 time_with_friends       no    9.05e-01    2.2542
-#>        3 time_with_friends       no    7.72e-01    1.2195
-#>        1 time_with_friends      yes    1.93e-02        NA
-#>        2 time_with_friends      yes    9.50e-02        NA
-#>        3 time_with_friends      yes    2.28e-01        NA
-#>        1   on_social_media       no    9.55e-01    3.0545
-#>        2   on_social_media       no    5.03e-01    0.0114
-#>        3   on_social_media       no    1.00e+00   13.0106
-#>        1   on_social_media      yes    4.50e-02        NA
-#>        2   on_social_media      yes    4.97e-01        NA
-#>        3   on_social_media      yes    2.24e-06        NA
-#>        1    tv_video_games       no    1.00e+00   23.0259
-#>        2    tv_video_games       no    6.66e-01    0.6905
-#>        3    tv_video_games       no    9.48e-01    2.9130
-#>        1    tv_video_games      yes    1.00e-10        NA
-#>        2    tv_video_games      yes    3.34e-01        NA
-#>        3    tv_video_games      yes    5.15e-02        NA
-#>        1    listened_music       no    9.90e-01    4.6459
-#>        2    listened_music       no    7.64e-01    1.1759
-#>    ... 28 more rows.  get_results(x, "responses")
+#> Class sizes   profile_1 3.6% (94)   profile_2 57.7% (1490)   profile_3 38.7% (999)
 #> 
+#> Response probabilities
+#>          indicator category profile_1 profile_2 profile_3
+#>  time_with_friends       no     0.981     0.905     0.772
+#>  time_with_friends      yes     0.019     0.095     0.228
+#>    on_social_media       no     0.955     0.503     1.000
+#>    on_social_media      yes     0.045     0.497     0.000
+#>     tv_video_games       no     1.000     0.666     0.948
+#>     tv_video_games      yes     0.000     0.334     0.052
+#>     listened_music       no     0.990     0.764     0.963
+#>     listened_music      yes     0.010     0.236     0.037
+#>             sports       no     1.000     0.942     0.901
+#>             sports      yes     0.000     0.058     0.099
+#>            walking       no     0.957     0.920     0.794
+#>            walking      yes     0.043     0.080     0.206
+#>            reading       no     0.992     0.863     0.914
+#>            reading      yes     0.008     0.137     0.086
+#>      part_time_job       no     0.000     0.994     1.000
+#>      part_time_job      yes     1.000     0.006     0.000
+#> 
+#> Thresholds and standard errors: get_results(x, "responses").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
@@ -281,6 +280,8 @@ on its boundary.
 ``` r
 
 plot_responses(fit)
+#> Warning: The fitted likelihood still carries a score worth 1.6% of a standard error;
+#> refit with a tighter `tol` before using Wald inference.
 ```
 
 ![](workflow-lca_files/figure-html/responses-1.png)
@@ -292,15 +293,17 @@ parameter space, so those are held at their bound and have none.
 ``` r
 
 head(get_results(fit, "responses"), 8)
+#> Warning: The fitted likelihood still carries a score worth 1.6% of a standard error;
+#> refit with a tighter `tol` before using Wald inference.
 #>   profile         indicator category probability threshold probability_standard_error
-#> 1       1 time_with_friends       no      0.9807    3.9264                    0.01497
-#> 2       2 time_with_friends       no      0.9050    2.2542                    0.00945
-#> 3       3 time_with_friends       no      0.7720    1.2195                    0.02004
+#> 1       1 time_with_friends       no      0.9807    3.9263                    0.01497
+#> 2       2 time_with_friends       no      0.9050    2.2543                    0.00945
+#> 3       3 time_with_friends       no      0.7720    1.2198                    0.02004
 #> 4       1 time_with_friends      yes      0.0193        NA                    0.01497
 #> 5       2 time_with_friends      yes      0.0950        NA                    0.00945
 #> 6       3 time_with_friends      yes      0.2280        NA                    0.02004
-#> 7       1   on_social_media       no      0.9550    3.0545                    0.03353
-#> 8       2   on_social_media       no      0.5029    0.0114                    0.03785
+#> 7       1   on_social_media       no      0.9550    3.0547                    0.03352
+#> 8       2   on_social_media       no      0.5027    0.0108                    0.03788
 ```
 
 ## Classification quality
@@ -319,15 +322,33 @@ diagnostics(fit)
 
 ![](workflow-lca_files/figure-html/diagnostics-1.png)![](workflow-lca_files/figure-html/diagnostics-2.png)![](workflow-lca_files/figure-html/diagnostics-3.png)![](workflow-lca_files/figure-html/diagnostics-4.png)
 
-    #> Classification quality: 3 profiles
+    #> Diagnostics: Latent class analysis, 3 classes
+    #> 1 check needs attention: pairs dependent within a class
     #> 
-    #>   Relative entropy     individuals 0.662
-    #>   Smallest class       individuals 93.6 (3.6%)
-    #>   Lowest avg posterior individuals 0.705
-    #>   Largest residual     0.237  (on_social_media, walking; profile_1)
+    #> Estimation
+    #>   ok     best start converged                                yes                      
+    #>   info   best log likelihood reached by                      2 of 10 starts           
+    #>   ok     starts failed or unfinished                         0 of 10                  
+    #>   ok     estimates at a bound                                no                       
     #> 
-    #> Tables: get_results(x, what = "entropy" | "classification" | 
-    #>         "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+    #> Class size
+    #>   info   smallest class                         individuals  3.6% (n = 94, class 1)   
+    #>   info   modal vs estimated proportions         individuals  largest gap 0.120        
+    #>   ok     classes with no assigned unit          individuals  0 of 3                   
+    #> 
+    #> Classification
+    #>   info   relative entropy                       individuals  0.662                    
+    #>   info   lowest average posterior               individuals  0.705 (class 3)          
+    #>   info   lowest odds of correct classification  individuals  3.8 (class 3)            
+    #> 
+    #> Local independence
+    #>   check  pairs dependent within a class                      9 of 84 tested pairs     BH-adjusted p < 0.05
+    #>          largest: listened_music x walking in profile_2, residual 0.110, adjusted p <1e-04; consider local_dependence = or a full covariance model
+    #> 
+    #> Information
+    #>   info   log likelihood, parameters, BIC                     -7848.45, 26, 15901.17   
+    #> 
+    #> Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).
 
 The relative entropy of 0.66 indicates a moderately clear
 classification.
@@ -338,25 +359,31 @@ The latent class model assumes that the activities are independent
 within each class. The bivariate residual of a pair of activities
 compares their observed co-occurrence within a class with the
 co-occurrence the model implies, and a large value indicates a
-dependence the classes do not explain.
+dependence the classes do not explain. The p-value refers this Pearson
+statistic to a chi-square distribution that ignores the estimation of
+the model’s table, which makes it very conservative: in simulated data
+from a correctly specified latent class model it rejected 0.25% of pairs
+per class, and 0.08% pooled, at a nominal 5%. A pair that passes the
+filter below is therefore strong evidence of dependence, but a pair that
+does not pass it is not evidence of independence.
 
 ``` r
 
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
 #>     profile       indicator_1    indicator_2        kind observed expected residual
-#> 3 profile_2    listened_music        walking categorical   0.1099 2.03e-16   0.1099
-#> 4 profile_2    listened_music        reading categorical   0.0881 6.46e-17   0.0881
-#> 5 profile_2            sports        walking categorical   0.0879 3.48e-17   0.0879
-#> 6 profile_2    listened_music         sports categorical   0.0874 2.03e-16   0.0874
-#> 8 profile_2 time_with_friends        walking categorical   0.0762 1.71e-16   0.0762
-#> 9 profile_2   on_social_media listened_music categorical   0.0697 1.83e-16   0.0697
+#> 3 profile_2    listened_music        walking categorical   0.1099 4.24e-17   0.1099
+#> 4 profile_2    listened_music        reading categorical   0.0881 1.29e-16   0.0881
+#> 5 profile_2            sports        walking categorical   0.0879 1.76e-17   0.0879
+#> 6 profile_2    listened_music         sports categorical   0.0874 1.87e-16   0.0874
+#> 8 profile_2 time_with_friends        walking categorical   0.0762 0.00e+00   0.0762
+#> 9 profile_2   on_social_media listened_music categorical   0.0697 1.36e-16   0.0697
 #>   effective_n statistic df  p_value p_adjusted
-#> 3        1490     17.99  1 2.22e-05   2.22e-05
-#> 4        1490     11.57  1 6.72e-04   6.72e-04
-#> 5        1490     11.52  1 6.88e-04   6.88e-04
-#> 6        1490     11.38  1 7.42e-04   7.42e-04
+#> 3        1490     17.98  1 2.23e-05   2.23e-05
+#> 4        1490     11.57  1 6.71e-04   6.71e-04
+#> 5        1490     11.52  1 6.89e-04   6.89e-04
+#> 6        1490     11.38  1 7.43e-04   7.43e-04
 #> 8        1490      8.65  1 3.27e-03   3.27e-03
-#> 9        1490      7.25  1 7.10e-03   7.10e-03
+#> 9        1490      7.23  1 7.17e-03   7.17e-03
 ```
 
 The largest residual is that of listening to music and walking in class
@@ -384,18 +411,18 @@ get_results(dependent, "local_dependence")
 #> 11 listened_music:walking categorical       3 listened_music        yes walking
 #> 12 listened_music:walking categorical       3 listened_music        yes walking
 #>    category_2 probability independent    ratio covariance correlation
-#> 1          no    7.66e-01    0.761631 1.01e+00         NA          NA
-#> 2         yes    2.19e-01    0.223282 9.79e-01         NA          NA
-#> 3          no    6.95e-03    0.011667 5.95e-01         NA          NA
-#> 4         yes    8.14e-03    0.003420 2.38e+00         NA          NA
-#> 5          no    9.37e-01    0.937528 9.99e-01         NA          NA
-#> 6         yes    4.74e-02    0.046664 1.02e+00         NA          NA
-#> 7          no    1.58e-02    0.015058 1.05e+00         NA          NA
-#> 8         yes    1.00e-10    0.000749 1.33e-07         NA          NA
-#> 9          no    7.20e-01    0.704341 1.02e+00         NA          NA
-#> 10        yes    3.85e-02    0.053912 7.14e-01         NA          NA
-#> 11         no    2.09e-01    0.224559 9.31e-01         NA          NA
-#> 12        yes    3.26e-02    0.017188 1.90e+00         NA          NA
+#> 1          no    7.66e-01    0.761730 1.01e+00         NA          NA
+#> 2         yes    2.18e-01    0.222601 9.79e-01         NA          NA
+#> 3          no    7.49e-03    0.012125 6.18e-01         NA          NA
+#> 4         yes    8.18e-03    0.003543 2.31e+00         NA          NA
+#> 5          no    9.37e-01    0.937446 9.99e-01         NA          NA
+#> 6         yes    4.75e-02    0.046722 1.02e+00         NA          NA
+#> 7          no    1.58e-02    0.015080 1.05e+00         NA          NA
+#> 8         yes    1.00e-10    0.000752 1.33e-07         NA          NA
+#> 9          no    7.20e-01    0.703997 1.02e+00         NA          NA
+#> 10        yes    3.81e-02    0.053593 7.10e-01         NA          NA
+#> 11         no    2.10e-01    0.225262 9.31e-01         NA          NA
+#> 12        yes    3.27e-02    0.017148 1.91e+00         NA          NA
 ```
 
 The table gives each class’s joint probabilities of the pair beside the
@@ -411,8 +438,8 @@ compare_models(independent = fit, dependent = dependent)
 #> 
 #> Model        Classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8
 #> -----------  -------  --  --------  --------  ----  ------  --------  -------  ---------  -----
-#> independent        3  26  -7848.45  15901.17  0.00   0.560  17820.00     0.66       0.70      1
-#> dependent          3  29  -7836.91  15901.65  0.48   0.440  17801.94     0.67       0.70      1
+#> independent        3  26  -7848.45  15901.17  0.00   0.561  17820.27     0.66       0.71      1
+#> dependent          3  29  -7836.91  15901.66  0.49   0.439  17816.33     0.66       0.70      1
 ```
 
 The joint model raises the log likelihood by 11.5 at the cost of 3
@@ -424,9 +451,11 @@ about as well without modelling it.
 
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
 estimates the mean of an outcome within each class. It uses the BCH
-method, which weights each observation by its posterior class
-probabilities and corrects for classification error (Bolck, Croon and
-Hagenaars, 2004). The outcome here is the happiness rating.
+method, which applies the inverse estimated classification-error matrix
+to modal class assignments (Bolck, Croon and Hagenaars, 2004). These
+corrected weights can be negative; posterior-probability weighting is
+the separate `method = "proportional"` option. The outcome here is the
+happiness rating.
 
 ``` r
 
@@ -437,8 +466,8 @@ happiness
 #> Class  Mean        95% CI     SE  Effective n
 #> -----  ----  ------------  -----  -----------
 #>     1  4.53  [4.22, 4.83]  0.156        88.80
-#>     2  4.63  [4.53, 4.73]  0.051       957.73
-#>     3  5.30  [5.16, 5.43]  0.068       548.80
+#>     2  4.63  [4.53, 4.73]  0.051       957.30
+#>     3  5.30  [5.16, 5.43]  0.068       549.14
 ```
 
 Happiness is highest in the class of reports away from screens (5.30 on
@@ -460,12 +489,12 @@ two_level <- multilca(student_esm, activities, id = "student",
                       n_profiles = 3, n_group_classes = 2)
 get_results(two_level, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1      0.2258                    0.36
-#> 2           1       2      0.1056                    0.36
-#> 3           1       3      0.6686                    0.36
-#> 4           2       1      0.2500                    0.64
-#> 5           2       2      0.7285                    0.64
-#> 6           2       3      0.0215                    0.64
+#> 1           1       1      0.2264                    0.36
+#> 2           1       2      0.1052                    0.36
+#> 3           1       3      0.6685                    0.36
+#> 4           2       1      0.2513                    0.64
+#> 5           2       2      0.7271                    0.64
+#> 6           2       3      0.0216                    0.64
 ```
 
 The two-level model is presented in detail in

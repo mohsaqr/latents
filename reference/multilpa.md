@@ -1,13 +1,25 @@
 # Fit a two-level latent profile model
 
-Fits a latent profile model for observations nested in groups and
-returns a fitted `multilpa` object. Each observation belongs to a
-Gaussian profile, and each group belongs to a latent group class that
-determines the profile proportions. Profile means and variances are
-shared across group classes (measurement invariance). By default
-indicators are independent within a profile; full residual covariances
-and observed-data maximum likelihood for missing indicators are
-available.
+Multilevel latent profile analysis describes heterogeneity among
+observations and among the groups in which they are nested. Examples
+include repeated measurements within individuals and students within
+schools. Observation-level profiles describe patterns in the indicators,
+while group-level classes describe differences in the probabilities of
+those profiles.
+
+In the standard model, profile definitions are shared across group
+classes: a given profile has the same indicator means and covariance
+structure in every group class. Group classes therefore differ in their
+profile composition. Observations within the same group can belong to
+different profiles, with their membership probabilities depending on the
+group's latent class.
+
+`multilpa()` estimates the measurement parameters, conditional profile
+probabilities, group-class proportions, and posterior membership
+probabilities at both levels. The default specification uses Gaussian
+indicators with diagonal within-profile covariance matrices. Alternative
+specifications support other covariance structures, discrete or mixed
+indicators, and predictors of latent membership.
 
 ## Usage
 
@@ -24,7 +36,7 @@ multilpa(
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  min_variance = 1e-06,
+  min_variance = NULL,
   seed = NULL,
   start = NULL,
   missing = c("error", "fiml"),
@@ -81,12 +93,12 @@ multilpa(
 
   `id = NULL` fits a **single-level** model: each row is its own unit,
   the observations are independent, and `n_group_classes` is one. The
-  fit raises a `latents_single_level` message. Every verb of the package
-  works on the result. The internal unit column is named `.observation`;
-  it is not returned by `get_results(x, "data")`, and a `data` that
-  already has a column of that name raises `latents_bad_data`.
-  Requesting more than one group class with `id = NULL` raises
-  `latents_bad_argument`.
+  fit raises a `latents_single_level` message. Methods for extracting
+  results, visualization and inference remain available. The internal
+  unit column is named `.observation`; it is not returned by
+  `get_results(x, "data")`, and a `data` that already has a column of
+  that name raises `latents_bad_data`. Requesting more than one group
+  class with `id = NULL` raises `latents_bad_argument`.
 
 - n_profiles:
 
@@ -107,7 +119,7 @@ multilpa(
   group classes unless `profile_slopes = "group_class"`. A group
   covariate must be constant within each group. Covariates enter in
   their supplied units, without centring or scaling. The covariate model
-  refuses `start` and `fixed`; it accepts `missing = "fiml"` for the
+  rejects `start` and `fixed`; it accepts `missing = "fiml"` for the
   indicators, but the covariates must be complete.
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
@@ -123,13 +135,15 @@ multilpa(
   Positive integer number of EM starts (default 10). The first start is
   deterministic: Ward's hierarchical clustering of the standardized
   indicators (on at most 2000 evenly spaced rows), each cluster
-  described by its own means and spread. The remaining starts are
-  k-means from random centres. A supplied `start` replaces the first
-  start, and the remaining starts are random. With `start` and
-  `max_iter = 0`, exactly one start is run whatever `n_starts` is. Rows
-  from zero-weight units do not supply initial clustering or measurement
-  parameters. For `search = "emEM"`, this is the finalist budget,
-  including the protected first start (see `search`).
+  initialized with its own means and variances, and, with more than one
+  group class, Ward's clustering of the groups' profile compositions.
+  The remaining starts are k-means from random centres. A supplied
+  `start` replaces the first start, and the remaining starts are random.
+  With `start` and `max_iter = 0`, exactly one start is evaluated
+  regardless of `n_starts`. Zero-weight units do not contribute to
+  initialization. For `search = "emEM"`, `n_starts` is the number of
+  final optimization runs, including the protected first start (see
+  `search`).
 
 - max_iter:
 
@@ -142,22 +156,29 @@ multilpa(
 
 - tol:
 
-  Positive relative log-likelihood tolerance (default `1e-8`).
-  Convergence requires an absolute change no greater than
-  `tol * (1 + abs(previous log likelihood))`.
+  Positive convergence tolerance (default `1e-8`). EM has converged when
+  one step (or SQUAREM cycle) changes the log likelihood by no more than
+  `tol` times the number of observed indicator values (each non-missing
+  cell in a row of positive weight, with a minimum count of one). The
+  tolerance is therefore expressed per observed indicator value.
 
 - min_variance:
 
-  Positive lower bound on each variance, or on each covariance
-  eigenvalue under full covariance, in squared input units (default
-  `1e-6`); the fit is then constrained maximum likelihood. Estimates at
-  the bound are reported and raise a warning.
+  Lower bound on each variance, or on each covariance eigenvalue under
+  full covariance; the fit is then constrained maximum likelihood.
+  `NULL` (the default) sets it to `1e-6` times the smallest sample
+  variance of the continuous indicators (observed values in rows of
+  positive weight, on the scale fitted, after any centring and scaling),
+  so that the default bound adapts to the measurement scale. A numeric
+  value specifies an absolute bound in squared indicator units. The
+  bound used is stored as `min_variance` on the fit. Estimates at the
+  bound are reported and raise a warning.
 
 - seed:
 
-  Optional random seed: any whole number
+  Optional random seed: any integer
   [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts, including
-  negative ones. When supplied, the caller's random-number state is
+  negative integers. When supplied, the caller's random-number state is
   restored on exit.
 
 - start:
@@ -222,10 +243,14 @@ multilpa(
   in estimation; it is stored for `get_results(x, "sequences")`,
   `get_results(x, "sequence_summary")` and `plot(what = "sequences")`.
   Values must be complete and unique within each group, and are ordered
-  as [`sort()`](https://rdrr.io/r/base/sort.html) orders them. Numbers
-  stored as text whose alphabetical order is not their numeric order
-  (`"2"`, `"10"`) raise `latents_bad_time`; zero-padded numbers and ISO
-  dates are accepted.
+  as [`sort()`](https://rdrr.io/r/base/sort.html) orders them: numbers
+  numerically, a factor by its levels, and character strings
+  alphabetically. Numbers stored as text whose alphabetical order is not
+  their numeric order (`"2"`, `"10"`), and numbered labels sharing their
+  text around the number whose alphabetical order is not the numbers'
+  (`"T2"`, `"T10"`; `"week 2"`, `"week 10"`), raise `latents_bad_time`
+  (also `latents_bad_data`); give the order with `factor(levels = )` or
+  zero-pad the numbers. Zero-padded numbers and ISO dates are accepted.
 
 - fixed:
 
@@ -233,11 +258,11 @@ multilpa(
   `start` instead of estimating them: any of `"means"`, `"variances"`
   and `"response_probabilities"`, or `"measurement"` for every block the
   model has. Under `covariance_model = "full"`, `"variances"` holds the
-  residual covariance matrices. A held block stays as supplied in every
-  start and is not counted in `n_parameters`, so the result is a
-  different model, not a different starting point. `start` must contain
-  the named blocks; `starting_values(fit, what = "measurement")`
-  produces them, and
+  residual covariance matrices. A fixed block retains its supplied
+  values in every start and is not counted in `n_parameters`, so the
+  result is a different model, not a different starting point. `start`
+  must contain the named blocks;
+  `starting_values(fit, what = "measurement")` produces them, and
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   performs the two-stage workflow in one call. The mixing parameters
   cannot be held.
@@ -268,11 +293,12 @@ multilpa(
   mclust names with three letters, all of which are available.
 
   `volume` is `"equal"` or `"varying"`. `shape` is `"equal"`,
-  `"varying"` or `"spherical"`; `"spherical"` makes every indicator's
-  spread equal within a profile and leaves no orientation to constrain.
-  `orientation` is `"axis"` (a diagonal covariance), `"equal"` (one
-  orientation shared by every profile) or `"varying"`. Each defaults to
-  `NULL`, which follows `variance_model` and `covariance_model`.
+  `"varying"` or `"spherical"`; `"spherical"` makes the variance equal
+  across indicators within a profile and leaves no orientation to
+  constrain. `orientation` is `"axis"` (a diagonal covariance),
+  `"equal"` (one orientation shared by every profile) or `"varying"`.
+  Each defaults to `NULL`, which follows `variance_model` and
+  `covariance_model`.
 
   |               |               |               |                    |
   |---------------|---------------|---------------|--------------------|
@@ -311,43 +337,51 @@ multilpa(
 
 - select_start:
 
-  Which start the fit reports. `"likelihood"` (the default) takes the
-  highest log likelihood across starts, preferring a converged start
-  only among those within a relative `1e-10` of it. `"converged"` takes
-  the highest log likelihood among the converged starts when at least
-  one converged, and among all starts otherwise. The two differ when an
-  unconverged start exceeds a converged one by a negligible amount, as
-  happens when a membership logit drifts along a flat ridge of the
-  likelihood; only the converged start is a maximum on which
-  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  can be based. [`summary()`](https://rdrr.io/r/base/summary.html) and
-  `get_results(fit, "starts")` show every start.
+  Rule for selecting a fitted solution. `"likelihood"` (the default)
+  selects among starts within `tol * max(1, n_observed)` of the highest
+  log likelihood, preferring converged starts within this set. Here
+  `n_observed` counts observed indicator values in positive-weight rows.
+  `"converged"` restricts selection to converged starts when any are
+  available; otherwise it uses all starts. Remaining ties are resolved
+  by start order. Convergence is required for Wald inference but does
+  not establish identification or global optimality.
+  [`summary()`](https://rdrr.io/r/base/summary.html) and
+  `get_results(fit, "starts")` report the individual starts. The
+  reported replication count includes final-stage starts within
+  `1e-6 * max(1, n_observed)` of the selected log likelihood, where
+  `n_observed` counts observed indicator values in rows of positive
+  sampling weight, as in the EM stopping rule. This absolute
+  likelihood-gap tolerance is independent of measurement units and of
+  `tol`, since a start stopped by the EM rule can still lie several
+  steps below its maximum. It is stored as `replication_tolerance` and
+  does not select a start.
 
 - prior:
 
   `NULL` (the default) for maximum likelihood, or a
   [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
   object for maximum a posteriori estimation of the Gaussian means and
-  covariances under the conjugate prior of Fraley and Raftery (2007),
-  mclust's `priorControl()`. The hyperparameters default to mclust's
-  `defaultPrior()` computed from the indicators, and each M-step is
-  mclust's, so a fit from the same start reproduces
-  `mclust::Mclust(..., prior = priorControl())`. Available for EII, VII,
-  EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has no prior for
-  VEE, EVE, VVE and EVV), with complete continuous indicators and
-  without `fixed` or membership covariates; otherwise
-  `latents_unsupported_prior` is raised. The mixing proportions have no
-  prior. As in mclust, the fit's `log_likelihood` is the *unpenalized*
-  log likelihood at the posterior mode, and `aic`, `bic` and their
-  variants are computed from it with the usual parameter count. EM
-  convergence is judged on its relative change; because a MAP step can
-  lower that likelihood, the decrease check made under maximum
-  likelihood is not applied. `parameter_inference(method = "wald")`
-  raises `latents_unsupported_inference` for such a fit, because the
-  score is not zero at a posterior mode; `method = "bootstrap"` refits
-  every resample with the same prior. The fit stores the request as
-  `prior` and the resolved hyperparameters, in the indicators' units
-  (centred, under `centering`), as `prior_parameters`.
+  covariances under the conjugate prior of Fraley and Raftery (2007).
+  Hyperparameters use the data-dependent defaults of
+  [`mclust::defaultPrior()`](https://mclust-org.github.io/mclust/reference/defaultPrior.html),
+  and updates follow the conventions described in
+  [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md).
+  Available for EII, VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV
+  (mclust has no prior for VEE, EVE, VVE and EVV), with complete
+  continuous indicators and without `fixed` or membership covariates;
+  otherwise `latents_unsupported_prior` is raised. The mixing
+  proportions have no prior. As in mclust, the fit's `log_likelihood` is
+  the *unpenalized* log likelihood at the posterior mode, and `aic`,
+  `bic` and their variants are computed from it with the usual parameter
+  count. Convergence uses the change described under `tol`; because a
+  MAP step can lower that likelihood, the decrease check made under
+  maximum likelihood is not applied.
+  `parameter_inference(method = "wald")` raises
+  `latents_unsupported_inference` for such a fit, because the score is
+  not zero at a posterior mode; `method = "bootstrap"` refits every
+  resample with the same prior. The fit stores the request as `prior`
+  and the resolved hyperparameters, in the indicators' units (centred,
+  under `centering`), as `prior_parameters`.
 
 - noise:
 
@@ -360,12 +394,12 @@ multilpa(
   principal-component-aligned bounding boxes. The component has no
   measurement parameters; its mixing proportion is estimated with the
   others, and, as in mclust, it adds two parameters (the proportion and
-  the hypervolume), so the criteria equal mclust's. A random start puts
-  a tenth of the mass on the noise; a `start` supplies
-  `noise_probability` alongside `profile_probabilities`, the two summing
-  to one. Available for complete continuous indicators with one group
-  class (`id = NULL` or `n_group_classes = 1`), under any of the
-  fourteen covariance structures, with or without `prior`; otherwise
+  the hypervolume), following mclust's parameter-count convention. A
+  random start assigns probability 0.1 to noise. A supplied `start`
+  includes `noise_probability` alongside `profile_probabilities`, the
+  two summing to one. Available for complete continuous indicators with
+  one group class (`id = NULL` or `n_group_classes = 1`), under any of
+  the fourteen covariance structures, with or without `prior`; otherwise
   `latents_unsupported_noise` is raised. In the fit the noise component
   is profile `0`, as in mclust's classification: `subject_profiles` is
   `0` for an observation assigned to it,
@@ -390,18 +424,20 @@ multilpa(
 - acceleration:
 
   `"squarem"` (the default) accelerates EM with SQUAREM (Varadhan &
-  Roland, 2008): each cycle extrapolates along the last two EM steps and
-  ends with an ordinary EM step, and falls back to plain EM when the
-  extrapolated point would lower the likelihood, so the iteration stays
-  monotone. Convergence is assessed over a whole cycle, so it is never
-  looser than plain EM's. `"none"` runs plain EM, which follows the same
-  path as mclust's `me()` from the same start. `iterations` and
-  `max_iter` count EM steps under either setting. Fits with `prior`, and
-  models with membership covariates, always use plain EM. For EVE and
-  VVE, whose shared orientation has no closed form, each EM iteration
-  takes a fixed number of warm-started orientation steps (a generalized
-  EM step) under either setting, which keeps every iteration monotone
-  and the EM map a fixed function, as SQUAREM requires.
+  Roland, 2008): each cycle extrapolates along the last two EM steps in
+  unit-free coordinates (means divided by reference standard deviations,
+  variances and covariances by the corresponding products; probabilities
+  unchanged). Reference standard deviations use observed values in rows
+  of positive sampling weight. Each cycle ends with an ordinary EM step
+  and reverts to the EM update when the extrapolated point would lower
+  the likelihood, so the iteration stays monotone. Convergence is
+  assessed over a complete cycle. `"none"` runs ordinary EM.
+  `iterations` and `max_iter` count EM steps under either setting. Fits
+  with `prior`, and models with membership covariates, always use plain
+  EM. For EVE and VVE, whose shared orientation has no closed form, each
+  EM iteration takes a fixed number of warm-started orientation steps (a
+  generalized EM step) under either setting, which keeps every iteration
+  monotone and the EM map a fixed function, as SQUAREM requires.
 
 - family:
 
@@ -424,15 +460,18 @@ multilpa(
 
   These families take only `data`, `vars`, `id`, `n_group_classes`,
   `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance`,
-  `seed` and `weights`; any other argument raises
-  `latents_bad_argument`. Indicators must be complete and continuous,
-  and at least one group must have more than one row
-  (`latents_unidentified` otherwise). Between variances estimated at
-  zero are reached by a boundary maximization with a Karush-Kuhn-Tucker
-  check and flagged (`latents_boundary`); interior fits are finished by
-  Newton steps. The result has class `multilpa_additive`; `bic` uses the
-  number of groups and `bic_individual` the number of rows. It is read
-  with
+  `seed`, `weights`, `search` and `n_screen`; any other argument raises
+  `latents_bad_argument`. Groups of sampling weight zero are not part of
+  the sample: the identification checks, starting values, counts,
+  entropy and classification tables use only the groups of positive
+  weight, though every group still receives a posterior. Indicators must
+  be complete and continuous, and at least one group must have more than
+  one row (`latents_unidentified` otherwise). Between variances
+  estimated at zero are reached by a boundary maximization with a
+  Karush-Kuhn-Tucker check and flagged (`latents_boundary`); interior
+  fits are finished by Newton steps. The result has class
+  `multilpa_additive`; `bic` uses the number of groups and
+  `bic_individual` the number of rows. It is read with
   [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md);
   [`summary()`](https://rdrr.io/r/base/summary.html),
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
@@ -487,7 +526,7 @@ multilpa(
   For the additive and additive-dispersion families: `"varying"` (the
   default) estimates between-group variances per group class, `"equal"`
   one set shared by all classes. The dispersion family holds them equal
-  and refuses `"varying"`. For the cross-level families, the variances
+  and rejects `"varying"`. For the cross-level families, the variances
   of the group means within each group class.
 
 - weights:
@@ -498,11 +537,22 @@ multilpa(
   within its group (`latents_bad_weights` otherwise); within-unit
   weights are not supported. The fit maximizes the pseudo log likelihood
   `sum_j w_j log L_j` (Skinner, 1989) with the weights scaled to sum to
-  the number of units, as Mplus does, so integer weights give the fit to
-  the data with each unit repeated that many times and the criteria stay
-  on the sample's scale. Standard errors are sandwich estimates:
+  the number of units of positive weight, as Mplus scales to the sample
+  size, so integer weights give the fit to the data with each unit
+  repeated that many times and the criteria stay on the sample's scale.
+  A unit of weight zero is not part of the sample: it changes no
+  estimate, likelihood, sample size, entropy or criterion, sets neither
+  the grand offset nor the grand scale of
+  `centering`/`scaling = "grand"`, and is not classified. Nor does it
+  define a category: a categorical, ordinal or paired
+  (`local_dependence`) value seen only on units of weight zero is not a
+  category of the fit and has no parameter, and an indicator constant
+  among the positive-weight units is rejected regardless of zero-weight
+  values. Under `missing = "error"`, a missing categorical, ordinal or
+  count value on a unit of weight zero is not rejected; a missing
+  continuous value is. Standard errors are sandwich estimates:
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  defaults to `vcov_type = "robust"` and refuses `"observed"` and
+  defaults to `vcov_type = "robust"` and rejects `"observed"` and
   `"opg"` (`latents_unsupported_weights`), and `method = "bootstrap"`
   resamples the units with their weights. Classification tables report
   each unit's own posterior; effective counts and proportions are
@@ -510,15 +560,15 @@ multilpa(
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
-  `prior` and `noise` refuse a weighted fit. Weights work with every
-  `family`, membership covariates, categorical indicators and
+  `prior` and `noise` reject a weighted fit. Weights are supported with
+  every `family`, membership covariates, categorical indicators and
   `missing = "fiml"`.
 
 - ordinal:
 
   Names of indicators in `vars` to model as ordinal: an (ordered)
-  factor, or whole numbers, whose categories are ordered by factor level
-  or by value. Each follows an adjacent-category logit with category
+  factor, or integers, whose categories are ordered by factor level or
+  by value. Each follows an adjacent-category logit with category
   intercepts shared by every profile and one location per profile,
   `log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c`, with the last
   profile's location fixed at zero: `(K - 1) + (C - 1)` parameters per
@@ -534,24 +584,24 @@ multilpa(
   Names of indicators in `vars` holding non-negative whole numbers,
   modelled as Poisson with one mean per profile (or negative binomial,
   see `count_model`); the means are returned by
-  `get_results(fit, "count_means")`. Ordinal and count indicators work
-  with `missing = "fiml"`, `weights`, two-level fits, membership
+  `get_results(fit, "count_means")`. Ordinal and count indicators
+  support `missing = "fiml"`, `weights`, two-level fits, membership
   covariates, Wald and bootstrap inference,
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
   [`predict()`](https://rdrr.io/r/stats/predict.html) and
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md). `start`,
   `fixed`, `prior` and `noise` do not accept them
   (`latents_unsupported_indicator`), and the group-class and cross-level
-  families refuse them as arguments they do not take
-  (`latents_bad_argument`).
+  families do not support them (`latents_bad_argument`).
 
 - count_model:
 
   `"poisson"` (the default) or `"negative_binomial"`: NB2, with mean
-  `mu` and variance `mu + alpha mu^2`, for counts more variable than a
-  Poisson within a profile (Latent GOLD's `poisson overdispersed`). A
-  dispersion estimated at zero is the Poisson limit, a boundary fit
-  (`latents_boundary` warning; Wald inference is refused there).
+  `mu` and variance `mu + alpha mu^2`, for counts with greater variance
+  than a Poisson within a profile (Latent GOLD's
+  `poisson overdispersed`). A dispersion estimated at zero is the
+  Poisson limit, a boundary fit (`latents_boundary` warning; Wald
+  inference is rejected there).
 
 - count_dispersion:
 
@@ -571,33 +621,49 @@ multilpa(
   values with denominator `n - 1`. The scales are stored on the fit with
   the centring offsets, so `get_results(x, "data")` returns the supplied
   columns, and [`predict()`](https://rdrr.io/r/stats/predict.html)
-  scales new units by their own spread under `"person"` and by the
-  fitted spread under `"grand"`. Means, variances and covariances are
-  reported in standard-deviation units. The log likelihood and every
-  information criterion are those of the scaled values, so only fits
-  with the same centring and scaling are comparable. A standard
-  deviation that is zero or undefined (under `"person"`, a unit observed
-  once on an indicator or always giving the same value) raises
-  `latents_bad_data`. Under structures that give each indicator its own
-  variance (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand scaling
-  changes only the units of the estimates; under the spherical `EII` and
-  `VII`, which impose one variance on every indicator, it changes the
-  solution.
+  scales new units by their own standard deviation under `"person"` and
+  by the fitted standard deviation under `"grand"`. Means, variances and
+  covariances are reported in standard-deviation units. The log
+  likelihood and every information criterion are those of the scaled
+  values, so only fits with the same centring and scaling are
+  comparable. A standard deviation that is zero or undefined (under
+  `"person"`, a unit observed once on an indicator or always giving the
+  same value) raises `latents_bad_data`. Under `EEI`, `VEI`, `EVI`,
+  `VVI`, `EEE`, `VEE`, `EVV` and `VVV`, whose family is unchanged when
+  each indicator is rescaled, grand scaling changes only the units of
+  the estimates and adds the density Jacobian to each start's log
+  likelihood. SQUAREM uses unit-free coordinates, so its search path is
+  equivariant in exact arithmetic when variance bounds are inactive or
+  transformed with the model. Rounding near convergence can still change
+  iteration counts, and nearly tied starts can change the selected
+  labelling. A scalar variance or eigenvalue floor is not generally
+  preserved by unequal indicator rescaling. Under the spherical `EII`
+  and `VII`, which impose one variance on every indicator, and under
+  `EEV`, `VEV`, `EVE` and `VVE`, which share eigenvalues or eigenvectors
+  across profiles (neither survives rescaling the indicators by
+  different factors), it changes the solution. Under
+  `centering = "person"` with `scaling = "person"`, a group with only
+  two observations of an indicator becomes exactly `-1/sqrt(2)` and
+  `1/sqrt(2)` on it: such groups raise `latents_atomic_groups`, and when
+  every group is like that the fit is rejected with `latents_bad_data`.
 
 - drop_empty:
 
   `TRUE` (the default) or `FALSE`: how the reported statistics treat
   rows whose every indicator is missing, and groups consisting only of
-  such rows. These contribute nothing to the likelihood, so the
-  estimates are the same either way, and their posterior is the prior.
-  With `TRUE` they are excluded, as in Mplus, from the individual and
-  group sample sizes of the information criteria, from relative entropy,
-  AvePP and the entropy term of ICL, AWE and CLC, from the
-  classification tables and diagnostic plots, and from the effective
-  class counts. With `FALSE` every row and group is counted in those
-  statistics (the results of latents 0.9.37 and earlier), except in the
-  individual sample size of a `multilpa()` fit, which excludes such rows
-  either way.
+  such rows. This setting affects reporting, not estimation. With `TRUE`
+  they are excluded, as in Mplus, from the individual and group sample
+  sizes of the information criteria, from relative entropy, AvePP and
+  the entropy term of ICL, AWE and CLC, from the classification tables
+  and diagnostic plots, and from the effective class counts. Row-aligned
+  assignment and posterior tables retain these units but report their
+  classifications and posterior probabilities as `NA`. A partially
+  observed row remains classified, and an empty row in an informative
+  group can retain its group-class assignment. With `FALSE` every row
+  and group is counted in those statistics, except in the individual
+  sample size of a `multilpa()` fit, which excludes such rows either
+  way. Units of sampling weight zero are excluded from every count and
+  entropy term under either setting.
   [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
   and
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
@@ -631,30 +697,33 @@ multilpa(
 - local_dependence:
 
   Pairs of indicators that stay associated within each class, written
-  `"item1:item2"` (several as a character vector). A pair of continuous
-  indicators gets its own covariance in each class (one shared
-  covariance with `variance_model = "equal"`), every other covariance
-  staying zero: the covariance Latent GOLD fits with
+  `"item1:item2"` (several as a character vector). A continuous
+  indicator pair has a covariance estimated within each class (one
+  shared covariance with `variance_model = "equal"`), every other
+  covariance staying zero: the covariance Latent GOLD fits with
   `item1 <-> item2 | Cluster`. It is not combined with
   `covariance_model`, `model` or the structure arguments, covariates,
   `time`, `prior`, `noise` or held variances. A pair of categorical
   indicators is modelled jointly within each class. Each such pair
   becomes one categorical indicator, named `"item1:item2"`, whose
-  categories are the observed combinations of the two items' categories,
-  so every class has its own joint distribution of the pair: the
-  class-specific association Latent GOLD fits with
+  categories are every combination of the two items' categories (the
+  full grid: an unobserved combination is estimated on the
+  `min_probability` floor and counted as a parameter, so each class has
+  `K1 K2 - 1` of them), so every class has its own joint distribution of
+  the pair: the class-specific association Latent GOLD fits with
   `item1 <-> item2 | Cluster`. The other indicators stay independent
   given the class. `get_results(fit, "local_dependence")` reports each
   class's joint probabilities beside their values under independence;
   [`predict()`](https://rdrr.io/r/stats/predict.html),
   `parameter_inference(data = )` and the other functions that take
-  `data` join the pair in the caller's data. A row observing one item of
-  a pair and not the other treats the pair as missing, with a
-  `latents_partial_pair` warning. A pair of indicators that are not both
-  categorical, that names an indicator twice or that shares an indicator
-  with another pair raises `latents_bad_argument`; a categorical item of
-  a pair whose categories contain `":"` raises `latents_bad_data`.
-  Default: none.
+  `data` join the pair in the caller's data. Under `missing = "fiml"` a
+  row observing one item of a pair and not the other contributes the
+  observed item, the pair's joint distribution summed over the missing
+  one, which is the observed-data likelihood under MAR. A pair that
+  mixes a categorical and a continuous indicator, that names an
+  indicator twice or that shares an indicator with another pair raises
+  `latents_bad_argument`; a categorical item of a pair whose categories
+  contain `":"` raises `latents_bad_data`. Default: none.
 
 - direct_effects:
 
@@ -688,47 +757,48 @@ multilpa(
 
   How the starts are found: `NULL` (the default), `"kmeans"` or
   `"emEM"`. `NULL` uses `"emEM"` when every profile shares one
-  covariance matrix (EII, EEI, EEE with continuous indicators), where
-  the likelihood is bounded and a higher maximum cannot be a collapsed
-  profile, and `"kmeans"` otherwise, including categorical-only models
-  and the group-class families. The search used is recorded on the fit,
-  and `search = "kmeans"` reproduces the fits of latents 0.96.2 for
-  every model. `"kmeans"` runs `n_starts` starts to convergence: Ward's
-  clustering first, then k-means from random centres. `"emEM"` screens a
-  pool of `n_screen` starts by a short EM run each and runs `n_starts`
-  finalists to convergence (Biernacki, Celeux & Govaert, 2003). The
-  first start (Ward's clustering, or supplied starting values) reserves
-  one finalist slot if its screening succeeds; the remaining slots take
-  the highest screening likelihoods. Thus `n_starts = 1` finalizes
-  Ward's start whenever it screens successfully, even if another
-  screened start has a higher likelihood. With a supplied start and
-  `n_starts = 1`, screening is skipped entirely. The pool begins with
-  the kmeans search's own starts, drawn in the same order, followed by
-  random partitions of the rows and random rows as class centres, and
+  covariance matrix (EII, EEI, EEE with continuous indicators), which
+  removes the isolated-profile covariance-collapse mechanism. Shared
+  covariances can still hit their floor on degenerate or over-extracted
+  data; inspect the boundary diagnostics. The default is `"kmeans"`
+  otherwise, including categorical-only models and the group-class
+  families. The selected search strategy is recorded on the fit.
+  `"kmeans"` runs `n_starts` starts to convergence: Ward's clustering
+  first, then k-means from random centres. `"emEM"` screens a pool of
+  `n_screen` starts by a short EM run each and runs `n_starts` selected
+  starts to convergence (Biernacki, Celeux & Govaert, 2003). The first
+  start (Ward's clustering, or supplied starting values) is retained for
+  final optimization if its screening succeeds; remaining starts are
+  selected by screening likelihood. Thus `n_starts = 1` finalizes Ward's
+  start whenever it screens successfully, even if another screened start
+  has a higher likelihood. With a supplied start and `n_starts = 1`,
+  screening is skipped entirely. The pool begins with the kmeans
+  search's own starts, drawn in the same order, followed by random
+  partitions of the rows and random rows as class centres, and
   `get_results(fit, "starts")` gives every start of the pool with its
   `kind`, its `stage` and its likelihood after screening. Either search
   reports the start with the highest likelihood among those run to
   convergence (subject to `select_start` and `boundary`). With
-  profile-specific variances that maximum can be spurious, a profile on
-  a few nearly coincident points with a variance near zero (McLachlan &
-  Peel, 2000, section 3.10), and a harder search finds such maxima more
-  often. They are reported, not set aside: a variance at `min_variance`
-  as a boundary fit (`latents_boundary`; `boundary = "exclude"` sets
-  those starts aside), and low Gaussian membership mass by a
-  `latents_thin_profiles` heuristic warning.
-  `get_results(fit, "gaussian_diagnostics")` reports continuous
-  covariance and support measures without an automatic spike cutoff or
-  changing the selected start. Neither a warning's absence nor a
-  repeated likelihood establishes a regular or globally optimal
-  solution.
+  profile-specific variances that maximum can correspond to a nearly
+  degenerate component concentrated on a few observations (McLachlan &
+  Peel, 2000, section 3.10). More extensive searches can identify such
+  solutions more often. A variance at `min_variance` produces a
+  `latents_boundary` warning; use `boundary = "exclude"` to exclude
+  these starts when an interior solution is available. Low effective
+  Gaussian profile membership produces the heuristic warning
+  `latents_thin_profiles`. `get_results(fit, "gaussian_diagnostics")`
+  reports continuous covariance and support measures without an
+  automatic spike cutoff or changing the selected start. Neither a
+  warning's absence nor a repeated likelihood establishes a regular or
+  globally optimal solution.
 
 - n_screen:
 
   For `search = "emEM"`, the number of starts screened, at least
   `n_starts`. `NULL` (the default) screens five times `n_starts`. The
-  protected first start counts toward the `n_starts` finalist budget;
-  increasing `n_screen` does not add finalist slots. A single supplied
-  start with `n_starts = 1` disables screening. A value with
+  protected first start is included in the `n_starts` final optimization
+  runs. Increasing `n_screen` does not increase that number. A single
+  supplied start with `n_starts = 1` disables screening. A value with
   `search = "kmeans"`, or one below `n_starts`, raises
   `latents_bad_argument`.
 
@@ -753,7 +823,7 @@ A `multilpa` object containing `means`, `variances`, optional
 `covariances` (indicators by indicators by profiles),
 `profile_probabilities`, `group_probabilities`, posterior matrices,
 classifications, log likelihood, information criteria, restart
-diagnostics and convergence history. Individual rows keep their input
+diagnostics and convergence history. Individual rows retain their input
 order; groups keep first-occurrence order. `bic` and `bic_groups` use
 the observed group count; `bic_individual` uses `n_informative`, the
 number of rows with at least one observed indicator. These are
@@ -777,24 +847,31 @@ Infinite and constant observed indicators are rejected; each indicator
 must have at least two distinct observed values. No rows are silently
 dropped. Under FIML, fully missing individuals contribute no direct
 measurement likelihood but receive posterior probabilities from their
-group's information. Observation counts include these individuals; the
-individual-level BIC excludes them through `n_informative`, while the
-group-level BIC uses all observed groups. Missing patterns can prevent
-parameter identification; no general identification guarantee is made.
-Only initialization fills missing values with indicator means; EM uses
-conditional Gaussian sufficient statistics and observed marginal
-densities. More than one group class requires more than one profile and
-at least one group with more than one individual; these checks are
-necessary but do not establish identification. By default the highest
-finite likelihood across starts is returned, even if that start did not
-converge; `select_start = "converged"` prefers a converged start, and
-`converged` and `starts` show which was chosen. Profile and group-class
-labels are arbitrary.
+group's information. The individual-level BIC excludes these rows
+through `n_informative`; the treatment of fully missing groups follows
+`drop_empty`. Missing patterns can prevent parameter identification; no
+general identification guarantee is made. Only initialization fills
+missing values with indicator means; EM uses conditional Gaussian
+sufficient statistics and observed marginal densities. More than one
+group class requires more than one profile and at least one group with
+more than one individual; these checks are necessary but do not
+establish identification. A model of complete categorical and ordinal
+indicators alone, with one group class, warns (`latents_unidentified`)
+when it has more free parameters than its contingency table has free
+cells (negative degrees of freedom), which no data can identify
+(Goodman, 1974). Start selection follows `select_start`; the default can
+return a solution that has not converged. Inspect the `converged` flag
+and the `starts` table before interpreting the model. Profile and
+group-class labels are arbitrary.
 
 ## References
 
 Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+
+Goodman, L. A. (1974). Exploratory latent structure analysis using both
+identifiable and unidentifiable models. Biometrika, 61(2), 215–231.
+doi:10.1093/biomet/61.2.215.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.
@@ -842,7 +919,7 @@ summary(fit)
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609
-#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00844).
+#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00711).
 #> 
 #> -- profiles --------------------------------------------------------
 #>  profile  indicator    mean variance standard_deviation mean_standard_error
@@ -1013,6 +1090,12 @@ summary(fit)
 #>  individuals         2    1422      60.940           0.9382
 #>       groups         2     106       4.435           0.9396
 #> 
+#> -- replication -----------------------------------------------------
+#>  n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+#>         4          0           4        0                 4     1   0.00711
+#>  best_start log_likelihood
+#>           1          -8440
+#> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual
 #>  profile_1    lectures  attendance gaussian  0.23393        0  0.23393
@@ -1042,9 +1125,9 @@ summary(fit)
 #>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups
 #>           -8440           23 16926 16952      16987          17047        16914
 #>  sabic_individual caic_groups caic_individual awe_groups awe_individual
-#>             16974       17010           17070      17172          17404
+#>             16974       17010           17070      17292          17412
 #>  icl_groups icl_individual clc_groups clc_individual
-#>       16996          17168      16889          17002
+#>       17116          17176      17009          17009
 #> 
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
@@ -1065,7 +1148,7 @@ summary(fit)
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error boundary
 #>      1          -8440      TRUE          9  <NA>    FALSE
-#>      2          -8440      TRUE         12  <NA>    FALSE
+#>      2          -8440      TRUE          9  <NA>    FALSE
 #>      3          -8440      TRUE          9  <NA>    FALSE
 #>      4          -8440      TRUE          9  <NA>    FALSE
 #> 
@@ -1083,35 +1166,35 @@ summary(fit)
 #>        1   0.26    -0.95      -0.51      -1.89      -1.45
 #>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
-#> 20 tables above, truncated to fit. get_results(x, what = ) returns any
+#> 21 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 as.data.frame(fit)
 #>    profile  indicator       mean  variance standard_deviation
-#> 1        1     browse  0.5395773 0.5898715          0.7680309
-#> 2        1   lectures  0.4274030 0.8446923          0.9190714
-#> 3        1 forum_read  0.6198248 0.4814743          0.6938835
-#> 4        1 forum_post  0.5304887 0.6887896          0.8299335
-#> 5        1 attendance  0.6490497 0.3841264          0.6197793
+#> 1        1     browse  0.5395774 0.5898715          0.7680309
+#> 2        1   lectures  0.4274031 0.8446923          0.9190714
+#> 3        1 forum_read  0.6198249 0.4814743          0.6938835
+#> 4        1 forum_post  0.5304888 0.6887895          0.8299335
+#> 5        1 attendance  0.6490498 0.3841263          0.6197793
 #> 6        2     browse -0.7655998 0.5284684          0.7269583
 #> 7        2   lectures -0.6064852 0.5383733          0.7337392
-#> 8        2 forum_read -0.8792138 0.3631129          0.6025885
-#> 9        2 forum_post -0.7526883 0.4211623          0.6489702
-#> 10       2 attendance -0.9206600 0.3736293          0.6112522
+#> 8        2 forum_read -0.8792137 0.3631130          0.6025886
+#> 9        2 forum_post -0.7526883 0.4211624          0.6489703
+#> 10       2 attendance -0.9206599 0.3736293          0.6112523
 #>    mean_standard_error variance_standard_error
-#> 1           0.02710160              0.02948402
+#> 1           0.02710160              0.02948401
 #> 2           0.03248649              0.04210054
-#> 3           0.02473030              0.02439627
+#> 3           0.02473030              0.02439626
 #> 4           0.02953027              0.03481645
 #> 5           0.02226482              0.01955858
 #> 6           0.03121144              0.03221700
 #> 7           0.03093059              0.03209025
 #> 8           0.02621510              0.02279295
 #> 9           0.02768122              0.02607600
-#> 10          0.02642702              0.02278995
+#> 10          0.02642702              0.02278996
 get_results(fit, what = "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1   0.1704511               0.3252973
-#> 2           1       2   0.8295489               0.3252973
-#> 3           2       1   0.7859319               0.6747027
-#> 4           2       2   0.2140681               0.6747027
+#> 1           1       1   0.1704508                0.325297
+#> 2           1       2   0.8295492                0.325297
+#> 3           2       1   0.7859317                0.674703
+#> 4           2       2   0.2140683                0.674703
 ```

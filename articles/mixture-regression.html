@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -181,23 +181,23 @@ recovery can be checked; the models never see them.</p>
 <span><span class="va">fit</span></span>
 <span><span class="co">#&gt; Mixture of gaussian regressions: 2 classes (one class per row)</span></span>
 <span><span class="co">#&gt; score ~ hours</span></span>
-<span><span class="co">#&gt; 900 rows | log likelihood -3144.0074 | BIC 6335.63 | entropy 0.443</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 42 | best likelihood reached by 5 of 5 completed starts (6 run)</span></span>
+<span><span class="co">#&gt; 900 rows | log likelihood -3144.0073 | BIC 6335.63 | entropy 0.443</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 47 | best likelihood reached by 3 of 3 completed starts (6 run)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Classes</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span></span>
 <span><span class="co">#&gt; -------  -----  --------  -------------  --------------  -----------</span></span>
-<span><span class="co">#&gt; Class 1  0.564    507.55            573           0.788         5.24</span></span>
-<span><span class="co">#&gt; Class 2  0.436    392.45            327           0.829         6.89</span></span>
+<span><span class="co">#&gt; Class 1  0.564    507.71            573           0.789         5.24</span></span>
+<span><span class="co">#&gt; Class 2  0.436    392.29            327           0.829         6.89</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
 <span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
-<span><span class="co">#&gt; Class 1  Intercept     34.35  [32.94, 35.76]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     34.36  [32.95, 35.77]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 1  hours          4.57  [ 4.36,  4.77]  &lt;.001</span></span>
-<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.75, 57.04]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.76, 57.04]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 2  hours          0.81  [ 0.48,  1.14]  &lt;.001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".</span></span></code></pre></div>
@@ -212,8 +212,8 @@ assigned.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span></span>
 <span><span class="co">#&gt; -------  -----  --------  -------------  --------------  -----------</span></span>
-<span><span class="co">#&gt; Class 1  0.564    507.55            573           0.788         5.24</span></span>
-<span><span class="co">#&gt; Class 2  0.436    392.45            327           0.829         6.89</span></span></code></pre></div>
+<span><span class="co">#&gt; Class 1  0.564    507.71            573           0.789         5.24</span></span>
+<span><span class="co">#&gt; Class 2  0.436    392.29            327           0.829         6.89</span></span></code></pre></div>
 <p><code>get_results(fit, "assignments")</code> gives one row per
 observation. Because these data carry the generating strategy, the
 recovery table cross-tabulates the assigned classes against it:</p>
@@ -245,9 +245,9 @@ model.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  n_classes n_group_classes log_likelihood n_parameters  bic  icl entropy smallest_share converged</span></span>
 <span><span class="co">#&gt;          1               1          -3245            3 6510 6510      NA        1.00000      TRUE</span></span>
-<span><span class="co">#&gt;          2               1          -3144            7 6336 7030  0.4432        0.43526      TRUE</span></span>
-<span><span class="co">#&gt;          3               1          -3133           11 6341 7272  0.5292        0.07523      TRUE</span></span>
-<span><span class="co">#&gt;          4               1          -3126           15 6354 7460  0.5571        0.07192      TRUE</span></span>
+<span><span class="co">#&gt;          2               1          -3144            7 6336 7031  0.4430        0.43587      TRUE</span></span>
+<span><span class="co">#&gt;          3               1          -3133           11 6341 7271  0.5293        0.07512      TRUE</span></span>
+<span><span class="co">#&gt;          4               1          -3126           15 6354 7459  0.5573        0.07185      TRUE</span></span>
 <span><span class="co">#&gt;  best_bic</span></span>
 <span><span class="co">#&gt;     FALSE</span></span>
 <span><span class="co">#&gt;      TRUE</span></span>
@@ -277,7 +277,7 @@ it should lower the odds of the surface class:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Term       Estimate          95% CI     p  Odds ratio</span></span>
 <span><span class="co">#&gt; -------  ---------  --------  --------------  ----  ----------</span></span>
-<span><span class="co">#&gt; Class 2  Intercept      1.56  [ 0.22,  2.89]  .023        4.74</span></span>
+<span><span class="co">#&gt; Class 2  Intercept      1.56  [ 0.22,  2.89]  .022        4.75</span></span>
 <span><span class="co">#&gt; Class 2  sleep         -0.26  [-0.45, -0.07]  .007        0.77</span></span></code></pre></div>
 <p>The coefficients are estimated jointly with the regressions — a
 one-step model, not a regression on assigned classes — so classification
@@ -327,17 +327,19 @@ depends on the student’s type, not on the week:</p>
 <span><span class="co">#&gt; -------  ----------  --------  --------------  -----  ----------</span></span>
 <span><span class="co">#&gt; Class 2  Intercept      -0.15  [-0.88,  0.58]   .688        0.86</span></span>
 <span><span class="co">#&gt; Class 2  motivation     -1.82  [-2.78, -0.86]  &lt;.001        0.16</span></span></code></pre></div>
-<p>A mixture of logistic regressions with a single binary outcome per
-class assignment is not identified — any mixture of Bernoulli
-distributions is a Bernoulli distribution (Follmann and Lambert 1991) —
-so <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> refuses
-<code>family = "binomial"</code> with one trial per row unless the class
-is shared by a group:</p>
+<p>A mixture of Bernoulli distributions at a fixed covariate value is
+itself Bernoulli, so identification needs additional structure.
+Covariate-dependent logistic mixtures can be identifiable under suitable
+restrictions and covariate support (Follmann and Lambert 1991). The
+implementation conservatively refuses <code>family = "binomial"</code>
+with one trial per row unless the class is shared by a group; this is
+its supported-model policy, not a universal nonidentification
+theorem:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">passed</span> <span class="op">~</span> <span class="va">hours</span>, data <span class="op">=</span> <span class="va">study_hours</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>                   family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> A mixture of logistic regressions with one binary outcome per class assignment is not identified: a mixture of Bernoulli distributions is itself a Bernoulli distribution (Follmann and Lambert 1991). Give each class assignment several outcomes with `id` and `class_level = "group"`, or supply binomial counts as `cbind(successes, failures)`.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> A mixture of logistic regressions with one binary outcome per class assignment is not supported. Identification depends on the covariate design and model constraints. Give each class assignment several outcomes with `id` and `class_level = "group"`, or supply binomial counts as `cbind(successes, failures)`.</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="two-levels-groups-that-differ-in-their-mix">Two levels: groups that differ in their mix<a class="anchor" aria-label="anchor" href="#two-levels-groups-that-differ-in-their-mix"></a>
@@ -366,7 +368,7 @@ rows in its groups.</p>
 <span><span class="co">#&gt; AIC             6205.56</span></span>
 <span><span class="co">#&gt; BIC             6238.68</span></span>
 <span><span class="co">#&gt; SABIC           6203.86</span></span>
-<span><span class="co">#&gt; ICL             6785.00</span></span>
+<span><span class="co">#&gt; ICL             6795.19</span></span>
 <span><span class="co">#&gt; Entropy         0.562</span></span>
 <span><span class="co">#&gt; Smallest class  42.1%</span></span>
 <span><span class="co">#&gt; Converged       yes</span></span>
@@ -384,17 +386,17 @@ rows in its groups.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD</span></span>
 <span><span class="co">#&gt; -------  -----  --------  ---------------  --------------  -----------</span></span>
-<span><span class="co">#&gt; Class 1  0.579    521.40              532           0.873         5.28</span></span>
-<span><span class="co">#&gt; Class 2  0.421    378.60              368           0.845         6.79</span></span>
+<span><span class="co">#&gt; Class 1  0.579    521.42              532           0.873         5.28</span></span>
+<span><span class="co">#&gt; Class 2  0.421    378.58              368           0.845         6.79</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class membership (log odds, 95% CI)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model        Class          Term                      Estimate          95% CI      p  Odds ratio</span></span>
 <span><span class="co">#&gt; -----------  -------------  ------------------------  --------  --------------  -----  ----------</span></span>
-<span><span class="co">#&gt; group_class  Group class 2  Intercept                    -0.13  [-1.02,  0.77]   .783        0.88</span></span>
+<span><span class="co">#&gt; group_class  Group class 2  Intercept                    -0.12  [-1.02,  0.77]   .788        0.88</span></span>
 <span><span class="co">#&gt; group_class  Group class 2  motivation                   -1.87  [-2.80, -0.93]  &lt;.001        0.15</span></span>
-<span><span class="co">#&gt; class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.84</span></span>
-<span><span class="co">#&gt; class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.33]  &lt;.001       70.05</span></span>
+<span><span class="co">#&gt; class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.83</span></span>
+<span><span class="co">#&gt; class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.32]  &lt;.001       69.91</span></span>
 <span><span class="co">#&gt; class        Class 2        sleep                        -0.47  [-0.74, -0.20]  &lt;.001        0.63</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group classes</span></span>
@@ -439,8 +441,8 @@ deviation.</p>
 <span><span class="co">#&gt; -----------  ---------  --------  ----------------  -----  ----------</span></span>
 <span><span class="co">#&gt; Class 1      Intercept     0.558  [ 0.243,  0.873]  &lt;.001        1.75</span></span>
 <span><span class="co">#&gt; Class 1      hours         0.104  [ 0.083,  0.125]  &lt;.001        1.11</span></span>
-<span><span class="co">#&gt; Class 2      Intercept     1.508  [ 1.020,  1.996]  &lt;.001        4.52</span></span>
-<span><span class="co">#&gt; Class 2      hours        -0.110  [-0.197, -0.022]   .014        0.90</span></span>
+<span><span class="co">#&gt; Class 2      Intercept     1.509  [ 1.021,  1.997]  &lt;.001        4.52</span></span>
+<span><span class="co">#&gt; Class 2      hours        -0.110  [-0.198, -0.023]   .014        0.90</span></span>
 <span><span class="co">#&gt; All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98</span></span></code></pre></div>
 <p>The <code>Rate ratio</code> column (<code>exp_estimate</code> in the
 data frame) is the exponentiated coefficient.</p>
@@ -462,9 +464,9 @@ given <code>id</code>.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
 <span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
-<span><span class="co">#&gt; Class 1  Intercept     34.35  [32.77, 35.94]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     34.36  [32.77, 35.95]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 1  hours          4.57  [ 4.34,  4.79]  &lt;.001</span></span>
-<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.70, 57.09]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.71, 57.09]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 2  hours          0.81  [ 0.46,  1.15]  &lt;.001</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"coefficients"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="mixture-regression_files/figure-html/robust-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
@@ -506,12 +508,12 @@ starts.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; start  kind       log_likelihood  converged  iterations  stage      degenerate  selected</span></span>
 <span><span class="co">#&gt; -----  ---------  --------------  ---------  ----------  ---------  ----------  --------</span></span>
-<span><span class="co">#&gt;     1  residuals        -3144.01        yes          49  completed          no        no</span></span>
-<span><span class="co">#&gt;     2  random           -3144.01        yes          47  completed          no        no</span></span>
+<span><span class="co">#&gt;     1  residuals        -3144.01         no          50  screened           no        no</span></span>
+<span><span class="co">#&gt;     2  random           -3144.01         no          50  screened           no        no</span></span>
 <span><span class="co">#&gt;     3  random           -3144.01         no          50  screened           no        no</span></span>
-<span><span class="co">#&gt;     4  random           -3144.01        yes          42  completed          no       yes</span></span>
-<span><span class="co">#&gt;     5  random           -3144.01        yes          46  completed          no        no</span></span>
-<span><span class="co">#&gt;     6  random           -3144.01        yes          43  completed          no        no</span></span>
+<span><span class="co">#&gt;     4  random           -3144.01        yes          47  completed          no       yes</span></span>
+<span><span class="co">#&gt;     5  random           -3144.01        yes          51  completed          no        no</span></span>
+<span><span class="co">#&gt;     6  random           -3144.01        yes          49  completed          no        no</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="mixture-regression_files/figure-html/starts-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -523,10 +525,12 @@ starts.</p>
 binomial and Poisson estimates. <code>flexmix</code> divides the
 Gaussian residual sum of squares by <code>n - p</code>, so its Gaussian
 estimates are not quite the maximum-likelihood ones and
-<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> reaches a slightly higher likelihood.
-<code>flexmix</code> has no two-level model, no analytic standard errors
-(it refits with <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim()</a></code>), and no bootstrap likelihood-ratio
-test.</p>
+<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> can reach a slightly higher
+likelihood. The models compared here use <code>flexmix</code> for
+single-level or shared-class grouped mixtures, which differ from a
+two-level latent group-class model. <code>flexmix</code> provides
+bootstrap likelihood-ratio tests through <code>LR_test()</code> and
+coefficient inference through its refitting facilities.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

@@ -68,7 +68,7 @@ enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:5,
 #>  n_classes n_group_classes log_likelihood n_parameters   bic   icl entropy smallest_share
 #>          1               1          -6629            3 13276 13276      NA         1.0000
 #>          2               1          -6080            7 12199 12210  0.9725         0.3263
-#>          3               1          -5890           11 11842 11897  0.9156         0.3179
+#>          3               1          -5890           11 11842 11897  0.9156         0.3178
 #>          4               1          -5778           15 11641 11689  0.9419         0.1376
 #>          5               1          -5658           19 11425 11487  0.9359         0.1248
 #>  converged best_bic
@@ -95,22 +95,22 @@ fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
 fit
 #> Mixture of gaussian regressions: 3 classes (one class per `student`)
 #> score ~ wave
-#> 1844 rows in 300 groups | log likelihood -5848.9652 | BIC 11772.08 | entropy 0.917
-#> Converged: TRUE | iterations: 23 | best likelihood reached by 6 of 6 completed starts (6 run)
+#> 1844 rows in 300 groups | log likelihood -5848.9651 | BIC 11772.08 | entropy 0.917
+#> Converged: TRUE | iterations: 22 | best likelihood reached by 6 of 6 completed starts (6 run)
 #> 
 #> Classes
 #> 
 #> Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD
 #> -------  -----  --------  ---------------  --------------  -----------
-#> Class 1  0.345    103.41              104           0.944         5.16
+#> Class 1  0.345    103.43              104           0.945         5.16
 #> Class 2  0.336    100.81              101           0.989         5.16
-#> Class 3  0.319     95.78               95           0.949         4.71
+#> Class 3  0.319     95.76               95           0.949         4.71
 #> 
 #> Regression coefficients (95% CI)
 #> 
 #> Class    Term       Estimate          95% CI      p
 #> -------  ---------  --------  --------------  -----
-#> Class 1  Intercept     61.01  [60.00, 62.01]  <.001
+#> Class 1  Intercept     61.00  [60.00, 62.01]  <.001
 #> Class 1  wave           1.05  [ 0.80,  1.31]  <.001
 #> Class 2  Intercept     57.87  [57.12, 58.63]  <.001
 #> Class 2  wave          -2.35  [-2.56, -2.14]  <.001
@@ -130,17 +130,17 @@ get_results(fit, "classes")
 #> 
 #> Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD
 #> -------  -----  --------  ---------------  --------------  -----------
-#> Class 1  0.345    103.41              104           0.944         5.16
+#> Class 1  0.345    103.43              104           0.945         5.16
 #> Class 2  0.336    100.81              101           0.989         5.16
-#> Class 3  0.319     95.78               95           0.949         4.71
+#> Class 3  0.319     95.76               95           0.949         4.71
 get_results(fit, "membership")
 #> Class membership (log odds, 95% CI)
 #> 
 #> Class    Term        Estimate          95% CI      p  Odds ratio
 #> -------  ----------  --------  --------------  -----  ----------
-#> Class 2  Intercept      -0.28  [-0.62,  0.06]   .110        0.76
+#> Class 2  Intercept      -0.28  [-0.62,  0.06]   .109        0.76
 #> Class 2  motivation     -1.01  [-1.39, -0.62]  <.001        0.36
-#> Class 3  Intercept      -0.30  [-0.68,  0.09]   .128        0.74
+#> Class 3  Intercept      -0.30  [-0.69,  0.09]   .127        0.74
 #> Class 3  motivation      0.62  [ 0.26,  0.99]  <.001        1.87
 get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 #> Recovery of a known classification
@@ -266,9 +266,9 @@ get_results(pass_fit, "coefficients")
 #> -------  ---------  --------  --------------  -----  ----------
 #> Class 1  Intercept     -0.74  [-1.14, -0.35]  <.001       0.476
 #> Class 1  wave          -0.75  [-1.07, -0.43]  <.001       0.472
-#> Class 2  Intercept     -3.85  [-4.80, -2.90]  <.001       0.021
-#> Class 2  wave           1.14  [ 0.90,  1.39]  <.001       3.132
-#> Class 3  Intercept      1.29  [ 0.40,  2.17]   .004       3.619
+#> Class 2  Intercept     -3.85  [-4.80, -2.91]  <.001       0.021
+#> Class 2  wave           1.14  [ 0.90,  1.39]  <.001       3.133
+#> Class 3  Intercept      1.28  [ 0.40,  2.17]   .004       3.610
 #> Class 3  wave           0.42  [ 0.13,  0.71]   .005       1.519
 ```
 
@@ -316,7 +316,7 @@ get_results(band_fit, "coefficients")
 #> Class 2  Threshold middle|high     0.100  [ -0.205,  0.404]   .520            
 #> Class 2  Threshold high|top        2.913  [  2.195,  3.630]  <.001            
 #> Class 2  wave                     -0.822  [ -0.951, -0.692]  <.001        0.44
-#> Class 3  Threshold low|middle     -6.249  [-13.843,  1.345]   .107            
+#> Class 3  Threshold low|middle     -6.246  [-13.827,  1.335]   .106            
 #> Class 3  Threshold middle|high    -1.538  [ -2.106, -0.971]  <.001            
 #> Class 3  Threshold high|top        0.802  [  0.403,  1.202]  <.001            
 #> Class 3  wave                      0.241  [  0.137,  0.346]  <.001        1.27

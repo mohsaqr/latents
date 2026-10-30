@@ -437,8 +437,8 @@ enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
 #> 
 #>  n_classes n_group_classes log_likelihood n_parameters   bic   icl entropy smallest_share
 #>          2               1          -7105           10 14246 14384  0.8345         0.4399
-#>          2               2          -7029           12 14102 14212  0.8699         0.4360
-#>          2               3          -7028           14 14109 14243  0.8707         0.4364
+#>          2               2          -7029           12 14102 14211  0.8699         0.4360
+#>          2               3          -7028           14 14109 14241  0.8707         0.4364
 #>  converged best_bic
 #>       TRUE    FALSE
 #>       TRUE     TRUE

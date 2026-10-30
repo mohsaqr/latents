@@ -1,16 +1,19 @@
-# Achievement growth of students with three kinds of trajectory
+# Simulated achievement scores with three growth trajectories
 
-A simulated longitudinal dataset for growth models. Each row is one
-student's test score at one occasion: 300 students tested on up to seven
-occasions (`wave` 0 to 6). Three kinds of student follow three
-trajectories: *improving* (starts near 48, gains 3.5 points a wave),
-*stable* (starts near 62, gains 0.5) and *declining* (starts near 58,
-loses 2.5). Within each kind, students vary around the trajectory: each
-has their own start and rate of change (random intercept SD 4, random
-slope SD 0.8, correlation -0.3, the same spread in every kind), with
-residual SD 3. Motivation, measured once, makes a student more likely to
-be improving and less likely to be declining. About 12% of tests were
-missed at random, so the panel is unbalanced.
+`growth_scores` is a simulated longitudinal dataset illustrating growth
+mixture models. Each row represents an achievement score for one of 300
+students, measured on up to seven occasions.
+
+The data were generated from three trajectory classes, labelled
+"improving", "stable" and "declining". Within each class, students
+differ in their initial achievement and rate of change through random
+intercepts and slopes.
+
+The dataset illustrates how growth mixture models distinguish
+differences between class mean trajectories from variation among
+individuals within the same class. Generating class labels are retained
+for assessing recovery, and randomly omitted observations produce an
+unbalanced panel.
 
 ## Usage
 
@@ -41,7 +44,7 @@ A data frame with 1844 rows (300 students) and 5 columns:
 - trajectory:
 
   Factor, `"improving"`, `"stable"` or `"declining"`: the student's
-  generating kind. Not for fitting; kept to check recovery.
+  generating class; retained for assessing class recovery.
 
 ## Source
 
@@ -49,9 +52,20 @@ Simulated by `data-raw/growth-scores.R` in the source repository.
 
 ## Details
 
-Because students vary within their kind, a trajectory model without
-random effects needs more than three classes; a growth mixture model
-with random intercepts and slopes recovers three.
+Occasions are indexed by `wave`, from 0 to 6. The generating classes
+have three linear mean trajectories: *improving* (intercept 48, slope
+3.5 points per occasion), *stable* (intercept 62, slope 0.5), and
+*declining* (intercept 58, slope -2.5). Within each class, individual
+trajectories vary according to random intercepts and slopes with
+standard deviations 4 and 0.8 and correlation -0.3. The residual
+standard deviation is 3. Motivation is a time-invariant predictor of
+class membership, with higher values associated with greater probability
+of the improving class and lower probability of the declining class.
+Approximately 12% of test occasions were removed at random, producing an
+unbalanced panel.
+
+A model without random effects may represent within-class variation by
+additional trajectory classes.
 
 ## See also
 

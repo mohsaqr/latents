@@ -1,10 +1,16 @@
 # Descriptive statistics and intraclass correlations of model variables
 
-Returns a table with one row per variable giving the number of observed
-and missing values, the mean, standard deviation, minimum, maximum and
-number of distinct values, and, when groups are known, the number of
-groups and the intraclass correlation (ICC): the share of the variable's
-variance that lies between groups.
+`descriptives()` summarizes the characteristics of variables used in
+latent profile and class analyses. It supports inspection of
+variability, observed ranges, and missingness before model estimation,
+as well as descriptive comparisons across groups.
+
+For numeric variables, the function reports measures of central tendency
+and dispersion. When a grouping identifier is supplied, it also
+estimates intraclass correlations to describe clustering within groups.
+Summaries can be calculated for the full dataset or separately by an
+observed grouping variable. For supported fitted models, variables can
+also be summarized by assigned profile or group class.
 
 ## Usage
 
@@ -13,24 +19,22 @@ descriptives(x, ...)
 
 # S3 method for class 'data.frame'
 descriptives(x, vars = NULL, id = NULL, by = NULL, ...)
-
-# S3 method for class 'multilpa'
-descriptives(x, by = NULL, ...)
-
-# S3 method for class 'multilpa_transitions'
-descriptives(x, by = NULL, ...)
-
-# S3 method for class 'multilpa_covariates'
-descriptives(x, by = NULL, ...)
 ```
 
 ## Arguments
 
 - x:
 
-  A data frame, or a fitted model of this package, whose own `vars` and
-  `id` are then used. A single-level fit has no groups, so its table has
-  no `n_groups` or `icc`.
+  A data frame, or a profile, class or transition fit (from
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with
+  time-homogeneous transitions), whose own `vars` and `id` are then
+  used. A single-level fit has no groups, so its table has no `n_groups`
+  or `icc`. Anything else, including a fit of another family, raises
+  `latents_not_a_fit`; describe the data frame it was fitted to instead.
 
 - ...:
 
@@ -86,10 +90,10 @@ level), with the columns
 - `n_groups`,`icc`:
 
   present only when `id` is known. `icc` is the one-way random-effects
-  estimate; it can be slightly negative when the between-group mean
-  square is below the within-group one, which indicates no group
-  structure. Rows with a missing group ID do not contribute to either
-  statistic.
+  estimate. It can be negative when the between-group mean square is
+  smaller than the within-group mean square; this does not represent a
+  negative population variance. Rows with a missing group identifier
+  contribute to neither statistic.
 
 With `by`, a first column named after the stratifier holds each
 stratum's value (`NA` for the stratum of missing values). For every
@@ -102,10 +106,17 @@ columns raises `latents_bad_data`. Describing no variables raises
 
 ## Details
 
-An ICC near zero indicates little between-group variation in that
-variable's mean. It does not rule out group classes that differ in other
-variables, in profile prevalence, or in other features of the
-distributions.
+Summaries by fitted class use assigned membership and do not incorporate
+classification uncertainty. They describe the observations assigned to
+each class and should be distinguished from the model's estimated
+class-specific parameters. Rows excluded from classification are
+retained in a separate stratum with a missing class label, following the
+fit's `drop_empty` setting.
+
+An intraclass correlation (ICC) near zero indicates little between-group
+variation in that variable's mean. It does not rule out group classes
+that differ in other variables, in profile prevalence, or in other
+features of the distributions.
 
 ## References
 
@@ -116,9 +127,9 @@ theory, research, and methods in organizations*.
 ## See also
 
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-to fit,
+for model estimation and
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-for the after-the-fit counterpart.
+for diagnostics of a fitted model.
 
 ## Examples
 
@@ -141,8 +152,7 @@ descriptives(
 #> 4      106 0.15034618
 #> 5      106 0.22145308
 
-# A missing stratifier is a stratum of its own, not a silent loss and not
-# missingness invented in a variable that has none.
+# Missing stratification values form a separate stratum.
 descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
              vars = "score", by = "cohort")
 #>   cohort variable n n_missing mean        sd min max n_distinct

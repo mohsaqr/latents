@@ -1,9 +1,16 @@
-# Take one fitted model out of an enumeration grid or a comparison
+# Retrieve a fitted model from an enumeration or comparison
 
-Returns one fitted model from an enumeration, selected by its name or by
-its number of profiles and group classes (and its covariance structure
-when the grid has several), or one model from a comparison, selected by
-its row label.
+`get_candidate()` retrieves a specified fitted model from an enumeration
+grid or model comparison for detailed inspection and subsequent
+analysis. The returned object retains its original model class and
+supports the summary, diagnostic, plotting, and inference methods
+available for that model.
+
+A candidate can be identified by its name or, for supported enumeration
+grids, by its class counts and model specification. When several
+candidates share the same class counts, the covariance structure or
+candidate name distinguishes them. The function retrieves the stored fit
+without repeating estimation.
 
 ## Usage
 
@@ -22,7 +29,11 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
   (a profile, latent class, transition or group-class family grid), or a
   comparison from
   [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md).
-  On a family grid, give the name, or `n_group_classes` with `model`.
+  On a family grid, give the name, or `n_group_classes` with `model`. A
+  grid of mixture regressions from
+  [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  is not supported (`latents_bad_argument`):
+  `get_results(grid, "model", n_classes = )` returns one of its models.
 
 - n_profiles:
 
@@ -44,9 +55,8 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 
 ## Value
 
-The fitted model of that candidate, the same kind of object its fitting
-function returns (for a profile grid, class `multilpa`), so the verbs
-for a fitted model apply to it.
+The fitted object for the selected candidate, with the class and methods
+of its fitting function (for example, `multilpa` for a profile model).
 
 ## Details
 
@@ -72,8 +82,8 @@ there is no model to return; `latents_bad_argument` for a name or pair
 of counts given together with `n_group_classes` or `model`, for a value
 that names no candidate, and for a comparison given no label;
 `latents_incomplete_fit` for a comparison that no longer carries its
-models. Counts that are not single positive whole numbers fail the
-argument checks.
+models. Counts that are not single positive integers fail the argument
+checks.
 
 ## Examples
 
@@ -86,51 +96,51 @@ get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #> Two-level latent profile analysis: 2 profiles, 1 group class
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
-#> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Converged: TRUE | iterations: 34 | best log likelihood reached by 2 of 2 starts (2 converged)
 #> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
-#>  profile          y   count proportion
-#>        1 -0.1928460 44.5831   0.445831
-#>        2  0.3516482 55.4169   0.554169
+#> Class sizes   profile_1 44.6% (45)   profile_2 55.4% (55)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>  indicator profile_1 profile_2
+#>          y    -0.193     0.352
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 # This grid crosses two structures, so the names carry them:
 candidates
 #> Class enumeration: 4 candidate models (LPA)
-#>              candidate n_profiles n_group_classes model log_likelihood
-#>  profiles1_groups1_EEI          1               1   EEI      -130.6550
-#>  profiles2_groups1_EEI          2               1   EEI      -130.5791
-#>  profiles1_groups1_VVI          1               1   VVI      -130.6550
-#>  profiles2_groups1_VVI          2               1   VVI      -130.5920
-#>  n_parameters      aic bic_groups bic_individual icl_individual profile_entropy
-#>             2 265.3100   265.9152       270.5204       270.5204              NA
-#>             4 269.1581   270.3684       279.5788       355.4955      0.45237653
-#>             2 265.3100   265.9152       270.5204       270.5204              NA
-#>             5 271.1839   272.6968       284.2098       411.5897      0.08114782
-#>  avepp_min avepp_max avepp_mean avepp_below converged boundary
-#>         NA        NA         NA          NA      TRUE    FALSE
-#>  0.6402627 0.8532616  0.7467621           1      TRUE    FALSE
-#>         NA        NA         NA          NA      TRUE    FALSE
-#>  0.6380900 0.6405463  0.6393181           2      TRUE    FALSE
-#>  n_best_replicated
-#>                  2
-#>                  2
-#>                  2
-#>                  2
+#>              candidate n_profiles model log_likelihood n_parameters    aic
+#>  profiles1_groups1_EEI          1   EEI        -130.66            2 265.31
+#>  profiles2_groups1_EEI          2   EEI        -130.58            4 269.16
+#>  profiles1_groups1_VVI          1   VVI        -130.66            2 265.31
+#>  profiles2_groups1_VVI          2   VVI        -130.59            5 271.18
+#>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_max
+#>      265.92         270.52         270.52              NA        NA        NA
+#>      270.37         279.58         355.58           0.452     0.641     0.853
+#>      265.92         270.52         270.52              NA        NA        NA
+#>      272.70         284.21         411.59           0.081     0.638     0.641
+#>  avepp_mean avepp_below converged boundary n_best_replicated
+#>          NA          NA      TRUE    FALSE                 2
+#>       0.747           1      TRUE    FALSE                 2
+#>          NA          NA      TRUE    FALSE                 2
+#>       0.639           2      TRUE    FALSE                 2
+#> Every column, unrounded: as.data.frame(x).
 #> No candidate is selected automatically. Compare one convention consistently.
 get_candidate(candidates, "profiles2_groups1_VVI")
 #> Two-level latent profile analysis: 2 profiles, 1 group class
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
-#> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Converged: TRUE | iterations: 34 | best log likelihood reached by 2 of 2 starts (2 converged)
 #> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
-#>  profile          y   count proportion
-#>        1 -0.1928460 44.5831   0.445831
-#>        2  0.3516482 55.4169   0.554169
+#> Class sizes   profile_1 44.6% (45)   profile_2 55.4% (55)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>  indicator profile_1 profile_2
+#>          y    -0.193     0.352
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 compared <- compare_models(candidates, "profiles1_groups1_VVI",
                            "profiles2_groups1_VVI")
@@ -138,13 +148,15 @@ get_candidate(compared, "profiles2_groups1_VVI")
 #> Two-level latent profile analysis: 2 profiles, 1 group class
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
-#> Converged: TRUE | iterations: 36 | best start: 1/2
+#> Converged: TRUE | iterations: 34 | best log likelihood reached by 2 of 2 starts (2 converged)
 #> Smallest standardized Gaussian eigenvalue: 0.8201 (profiles, profile_2); Gaussian mass: 55.42; weight effective n: 92.77.
 #> 
-#>  profile          y   count proportion
-#>        1 -0.1928460 44.5831   0.445831
-#>        2  0.3516482 55.4169   0.554169
+#> Class sizes   profile_1 44.6% (45)   profile_2 55.4% (55)
 #> 
-#> Variances and standard errors: get_results(x, "profiles"). 
+#> Means
+#>  indicator profile_1 profile_2
+#>          y    -0.193     0.352
+#> 
+#> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```

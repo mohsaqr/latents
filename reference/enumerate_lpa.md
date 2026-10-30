@@ -1,11 +1,10 @@
 # Compare latent profile models
 
-Fits a single-level latent profile model for each number of profiles in
-`n_profiles` under each covariance structure in `model`, and returns a
-`multilpa_enumeration` object that tabulates the information criteria,
-entropy and diagnostics of every fit. It is
-[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-with `id = NULL`.
+`enumerate_lpa()` fits latent profile models with different numbers of
+profiles and specified covariance structures. It brings together
+evidence about fit, classification, and estimation stability to support
+selection of the number of profiles and their covariance specification.
+Each fitted candidate remains available for detailed examination.
 
 ## Usage
 
@@ -25,7 +24,7 @@ enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 
 - n_profiles:
 
-  Positive whole numbers of profiles to compare.
+  Numbers of profiles to compare, specified as positive integers.
 
 - model:
 
@@ -48,8 +47,8 @@ An object of class `multilpa_enumeration`, as
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 returns: [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
 gives one row per candidate,
-[`summary()`](https://rdrr.io/r/base/summary.html) the candidate each
-criterion prefers,
+[`summary()`](https://rdrr.io/r/base/summary.html) the candidate
+minimizing each criterion,
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) the criteria
 against the number of profiles, and
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
@@ -57,9 +56,11 @@ one fitted candidate.
 
 ## Details
 
+This is the single-level interface to
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
 For observations nested in groups, use
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-with the grouping column as `id`, which also crosses the number of group
+with the grouping column as `id`, which also varies the number of group
 classes.
 
 ## Conditions
@@ -115,7 +116,7 @@ summary(models)
 #>            1714          0.9089    0.9356     0.9591           0      TRUE
 #>            1345              NA        NA         NA          NA      TRUE
 #>            1457          0.7440    0.8801     0.9169           0      TRUE
-#>            1609          0.6347    0.7966     0.8340           1      TRUE
+#>            1609          0.6347    0.7964     0.8339           1      TRUE
 #>            1345              NA        NA         NA          NA      TRUE
 #>  boundary
 #>     FALSE
@@ -191,7 +192,7 @@ summary(models)
 #>                        27.77           0.8991
 #>                        23.22           0.9089
 #>                        54.87           0.9089
-#>                       115.74           0.9089
+#>                       115.73           0.9089
 #>    ... 10 more rows.  get_results(x, what = "classification")
 #> 
 #> -- deltas ----------------------------------------------------------

@@ -1,13 +1,11 @@
 # Compare latent class models
 
-Fits a single-level latent class model for each number of classes in
-`n_classes`, and returns a `multilpa_enumeration` object that tabulates
-the information criteria, entropy and diagnostics of every fit. Every
-indicator is categorical unless named in `ordinal` or `count`, as in
-[`lca()`](https://pak.dynasite.org/latents/reference/lca.md). It is
-[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-with `id = NULL`; the number of classes is reported in the `n_profiles`
-column.
+`enumerate_lca()` fits latent class models with different numbers of
+classes to examine heterogeneity in categorical response patterns. It
+brings together evidence about fit, classification, and estimation
+stability to support selection of the number of classes. Each fitted
+candidate remains available for examination of its class-specific
+response probabilities and class proportions.
 
 ## Usage
 
@@ -27,7 +25,7 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 
 - n_classes:
 
-  Positive whole numbers of classes to compare.
+  Numbers of classes to compare, specified as positive integers.
 
 - ...:
 
@@ -44,14 +42,23 @@ An object of class `multilpa_enumeration`, as
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 returns: [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
 gives one row per candidate,
-[`summary()`](https://rdrr.io/r/base/summary.html) the candidate each
-criterion prefers,
+[`summary()`](https://rdrr.io/r/base/summary.html) the candidate
+minimizing each criterion,
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) the criteria
 against the number of classes, and
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-one fitted candidate, named by its `n_profiles`.
+one fitted candidate. The number of classes is reported in the
+`n_profiles` column of the enumeration table and selected through the
+`n_profiles` argument of
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
 
 ## Details
+
+This is the single-level interface to
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+for categorical indicators. Every indicator is categorical unless named
+in `ordinal` or `count`, as in
+[`lca()`](https://pak.dynasite.org/latents/reference/lca.md).
 
 For observations nested in groups, use
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
@@ -77,30 +84,31 @@ for continuous indicators.
 models <- enumerate_lca(student_esm, c("time_with_friends",
                                        "on_social_media", "sports"),
                         n_classes = 1:3, n_starts = 2, seed = 1)
+#> Warning: The model is not identified: it has 11 free parameters, but its indicators' 8 response patterns leave only 7 free cell probabilities (-4 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators.
 summary(models)
 #> Class enumeration: 3 candidates, 3 converged, 0 failed to fit
-#> 3 distinct candidate(s) are minimal under some criterion.
+#> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
 #> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
 #>  candidate n_profiles log_likelihood n_parameters  aic  bic icl_individual
 #>   classes1          1          -3280            3 6566 6584           6584
-#>   classes2          2          -3269            7 6552 6593           7454
+#>   classes2          2          -3270            7 6555 6596           6655
 #>   classes3          3          -3269           11 6560 6624           6651
 #>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
 #>               NA        NA         NA          NA      TRUE    FALSE
-#>           0.7594    0.8993     0.8993           1      TRUE    FALSE
+#>           0.9835    0.9942     0.9970           0      TRUE    FALSE
 #>           0.9953    0.9983     0.9992           0      TRUE    FALSE
 #> 
 #> -- best ------------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes2          2               1  6552
-#>        kic        <NA>  classes2          2               1  6562
+#>        aic        <NA>  classes2          2               1  6555
+#>        kic        <NA>  classes2          2               1  6565
 #>        bic      groups  classes1          1               1  6584
 #>        bic individuals  classes1          1               1  6584
-#>      sabic      groups  classes2          2               1  6571
-#>      sabic individuals  classes2          2               1  6571
+#>      sabic      groups  classes2          2               1  6574
+#>      sabic individuals  classes2          2               1  6574
 #>       caic      groups  classes1          1               1  6587
 #>       caic individuals  classes1          1               1  6587
 #>        awe      groups  classes1          1               1  6616
@@ -109,12 +117,12 @@ summary(models)
 #> 
 #> -- criteria --------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes2          2               1  6552
-#>        kic        <NA>  classes2          2               1  6562
+#>        aic        <NA>  classes2          2               1  6555
+#>        kic        <NA>  classes2          2               1  6565
 #>        bic      groups  classes1          1               1  6584
 #>        bic individuals  classes1          1               1  6584
-#>      sabic      groups  classes2          2               1  6571
-#>      sabic individuals  classes2          2               1  6571
+#>      sabic      groups  classes2          2               1  6574
+#>      sabic individuals  classes2          2               1  6574
 #>       caic      groups  classes1          1               1  6587
 #>       caic individuals  classes1          1               1  6587
 #>        awe      groups  classes1          1               1  6616
@@ -123,20 +131,20 @@ summary(models)
 #> 
 #> -- classification --------------------------------------------------
 #>  candidate n_profiles n_group_classes       level class n_modal
-#>   classes2          2               1 individuals     1    2582
-#>   classes2          2               1 individuals     2       0
+#>   classes2          2               1 individuals     1    1837
+#>   classes2          2               1 individuals     2     745
 #>   classes3          3               1 individuals     1    2054
 #>   classes3          3               1 individuals     2     185
 #>   classes3          3               1 individuals     3     343
 #>  proportion_modal estimated_n estimated_proportion average_posterior
-#>           1.00000      2322.1              0.89934            0.8993
-#>           0.00000       259.9              0.10066                NA
+#>           0.71146      1841.1              0.71303            0.9998
+#>           0.28854       740.9              0.28697            0.9942
 #>           0.79551      2053.6              0.79535            0.9996
 #>           0.07165       185.4              0.07182            0.9997
 #>           0.13284       343.0              0.13283            0.9983
 #>  odds_correct_classification relative_entropy
-#>                          1.0           0.7594
-#>                           NA           0.7594
+#>                       2505.7           0.9835
+#>                        423.5           0.9835
 #>                        573.9           0.9953
 #>                      46383.9           0.9953
 #>                       3920.3           0.9953
@@ -144,8 +152,8 @@ summary(models)
 #> -- deltas ----------------------------------------------------------
 #>  candidate n_profiles n_group_classes  criterion value delta_profile
 #>   classes1          1               1 bic_groups  6584            NA
-#>   classes2          2               1 bic_groups  6593        -9.597
-#>   classes3          3               1 bic_groups  6624       -31.210
+#>   classes2          2               1 bic_groups  6596        -12.42
+#>   classes3          3               1 bic_groups  6624        -28.39
 #>  from_profile delta_group_class from_group_class
 #>          <NA>                NA             <NA>
 #>      classes1                NA             <NA>
@@ -164,23 +172,23 @@ summary(models)
 #> 
 #> -- tree ------------------------------------------------------------
 #>  tree       level from_candidate from_class from_share to_candidate to_class
-#>  tree individuals       classes1          1     1.0000     classes2        1
-#>  tree individuals       classes1          1     1.0000     classes2        2
-#>  tree individuals       classes2          1     0.8993     classes3        1
-#>  tree individuals       classes2          2     0.1007     classes3        1
-#>  tree individuals       classes2          1     0.8993     classes3        2
-#>  tree individuals       classes2          2     0.1007     classes3        2
-#>  tree individuals       classes2          1     0.8993     classes3        3
-#>  tree individuals       classes2          2     0.1007     classes3        3
-#>  to_share      mass share_of_from share_of_to
-#>   0.89934 8.993e-01     0.8993419   1.0000000
-#>   0.10066 1.007e-01     0.1006581   1.0000000
-#>   0.79535 6.947e-01     0.7724746   0.8734801
-#>   0.79535 1.006e-01     0.9996915   0.1265199
-#>   0.07182 7.181e-02     0.0798446   0.9997929
-#>   0.07182 1.488e-05     0.0001478   0.0002071
-#>   0.13283 1.328e-01     0.1476807   0.9998782
-#>   0.13283 1.618e-05     0.0001607   0.0001218
+#>  tree individuals       classes1          1      1.000     classes2        1
+#>  tree individuals       classes1          1      1.000     classes2        2
+#>  tree individuals       classes2          1      0.713     classes3        1
+#>  tree individuals       classes2          2      0.287     classes3        1
+#>  tree individuals       classes2          1      0.713     classes3        2
+#>  tree individuals       classes2          2      0.287     classes3        2
+#>  tree individuals       classes2          1      0.713     classes3        3
+#>  tree individuals       classes2          2      0.287     classes3        3
+#>  to_share    mass share_of_from share_of_to
+#>   0.71303 0.71303       0.71303      1.0000
+#>   0.28697 0.28697       0.28697      1.0000
+#>   0.79535 0.55064       0.77225      0.6923
+#>   0.79535 0.24471       0.85273      0.3077
+#>   0.07182 0.05643       0.07914      0.7857
+#>   0.07182 0.01539       0.05364      0.2143
+#>   0.13283 0.10597       0.14861      0.7977
+#>   0.13283 0.02687       0.09362      0.2023
 #> 
 #> 7 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
