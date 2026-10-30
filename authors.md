@@ -14,13 +14,13 @@ Source:
 [`DESCRIPTION`](https://github.com/mohsaqr/latents/blob/main/DESCRIPTION)
 
 Saqr M, López-Pernas S (2026). *latents: Multilevel Latent Profile,
-Class and Transition Models*. R package version 1.1.3,
+Class and Transition Models*. R package version 1.1.4,
 <https://pak.dynasite.org/latents/>.
 
     @Manual{,
       title = {latents: Multilevel Latent Profile, Class and Transition Models},
       author = {Mohammed Saqr and Sonsoles López-Pernas},
       year = {2026},
-      note = {R package version 1.1.3},
+      note = {R package version 1.1.4},
       url = {https://pak.dynasite.org/latents/},
     }

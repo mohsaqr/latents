@@ -1,5 +1,19 @@
 # Changelog
 
+## latents 1.1.4
+
+### Continuous integration (2026-10-30)
+
+No package code changed; every result is the same as in 1.1.3.
+
+- Comparisons with other packages, run in continuous integration only,
+  allow for reference packages whose results differ between platforms.
+  On Linux under R 4.6.2, multilevLCA and MoEClust gave different
+  answers in three cases, and MoEClust differed between two runs;
+  latents agreed with every other reference package. The mclust noise
+  comparison now checks estimates to the precision that both programs’
+  stopping rules guarantee.
+
 ## latents 1.1.3
 
 ### Zero-weight units keep their classification (2026-10-30)
@@ -1788,9 +1802,10 @@ signature, a new `type`, or a verb that used to refuse.
   classifies each person, `"class_conditional"` and `"conditional"` give
   each person’s own curve with their empirical Bayes random effects, and
   `"random_effects"` gives those effects by class. At lcmm’s own
-  estimates they equal `lcmm::predictY()` (marginal and
-  subject-specific), `predictClass()` and `predictRE()` (three
-  configurations; `equivalence/test-growth-predict-lcmm.R`). A
+  estimates they equal
+  [`lcmm::predictY()`](https://cecileproust-lima.github.io/lcmm/reference/predictY.html)
+  (marginal and subject-specific), `predictClass()` and `predictRE()`
+  (three configurations; `equivalence/test-growth-predict-lcmm.R`). A
   multilevel growth mixture classifies the clusters in `newdata` as new
   clusters.
 - [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
@@ -2552,7 +2567,8 @@ CRAN release: 2026-10-16
   trajectory (the Gaussian growth mixture model). The likelihood is
   exact; estimation is EM with the random effects as missing data,
   finished by quasi-Newton with analytic scores. Validated against an
-  independent dense likelihood, numerical derivatives and `lcmm::hlme()`
+  independent dense likelihood, numerical derivatives and
+  [`lcmm::hlme()`](https://cecileproust-lima.github.io/lcmm/reference/hlme.html)
   (six configurations; the same likelihood at `hlme`’s estimates and at
   least its maximum).
 - Variable names may replace one-sided formulas: `random = "wave"`,

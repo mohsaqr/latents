@@ -199,9 +199,9 @@ mixture_regression(
 
   How the random-effect covariance differs across classes: `"varying"`
   (default; one per class), `"equal"` (one shared matrix, as
-  `lcmm::hlme()` with `nwg = FALSE`) or `"proportional"` (a shared
-  matrix times a class-specific scale, the last class's being one;
-  `nwg = TRUE`).
+  [`lcmm::hlme()`](https://cecileproust-lima.github.io/lcmm/reference/hlme.html)
+  with `nwg = FALSE`) or `"proportional"` (a shared matrix times a
+  class-specific scale, the last class's being one; `nwg = TRUE`).
 
 - random_diagonal:
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,14 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.4" id="latents-114">latents 1.1.4<a class="anchor" aria-label="anchor" href="#latents-114"></a></h2>
+<div class="section level3">
+<h3 id="continuous-integration-1-1-4">Continuous integration (2026-10-30)<a class="anchor" aria-label="anchor" href="#continuous-integration-1-1-4"></a></h3>
+<p>No package code changed; every result is the same as in 1.1.3.</p>
+<ul><li>Comparisons with other packages, run in continuous integration only, allow for reference packages whose results differ between platforms. On Linux under R 4.6.2, multilevLCA and MoEClust gave different answers in three cases, and MoEClust differed between two runs; latents agreed with every other reference package. The mclust noise comparison now checks estimates to the precision that both programs’ stopping rules guarantee.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.3" id="latents-113">latents 1.1.3<a class="anchor" aria-label="anchor" href="#latents-113"></a></h2>
 <div class="section level3">
@@ -699,7 +707,7 @@ Each draws exactly what <code>plot(x, what = )</code> draws.</li>
 <div class="section level4">
 <h4 id="growth-mixture-models-mixture_regressionrandom---0-9-37">Growth mixture models (<code>mixture_regression(random = )</code>)<a class="anchor" aria-label="anchor" href="#growth-mixture-models-mixture_regressionrandom---0-9-37"></a></h4>
 <ul><li>
-<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> works on growth mixtures (it used to refuse). The persons in <code>newdata</code> are new persons: <code>type = "response"</code> and <code>"class_response"</code> give class trajectories, which need no outcome; given the outcomes, <code>"posterior"</code> classifies each person, <code>"class_conditional"</code> and <code>"conditional"</code> give each person’s own curve with their empirical Bayes random effects, and <code>"random_effects"</code> gives those effects by class. At lcmm’s own estimates they equal <code>lcmm::predictY()</code> (marginal and subject-specific), <code>predictClass()</code> and <code>predictRE()</code> (three configurations; <code>equivalence/test-growth-predict-lcmm.R</code>). A multilevel growth mixture classifies the clusters in <code>newdata</code> as new clusters.</li>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> works on growth mixtures (it used to refuse). The persons in <code>newdata</code> are new persons: <code>type = "response"</code> and <code>"class_response"</code> give class trajectories, which need no outcome; given the outcomes, <code>"posterior"</code> classifies each person, <code>"class_conditional"</code> and <code>"conditional"</code> give each person’s own curve with their empirical Bayes random effects, and <code>"random_effects"</code> gives those effects by class. At lcmm’s own estimates they equal <code><a href="https://cecileproust-lima.github.io/lcmm/reference/predictY.html" class="external-link">lcmm::predictY()</a></code> (marginal and subject-specific), <code>predictClass()</code> and <code>predictRE()</code> (three configurations; <code>equivalence/test-growth-predict-lcmm.R</code>). A multilevel growth mixture classifies the clusters in <code>newdata</code> as new clusters.</li>
 <li>
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> has a growth-mixture method: one row per natural parameter (coefficients, membership logits, residual and random-effect standard deviations, variances and correlations, class shares) by Wald, or by a person bootstrap (<code>method = "bootstrap"</code>) whose replicates are matched to the fitted classes by their posterior memberships of the fitted persons. The Wald rows reproduce the fit’s own tables.</li>
 <li>
@@ -925,7 +933,7 @@ Each draws exactly what <code>plot(x, what = )</code> draws.</li>
 <div class="section level3">
 <h3 id="growth-mixture-models-0-9-12">Growth mixture models<a class="anchor" aria-label="anchor" href="#growth-mixture-models-0-9-12"></a></h3>
 <ul><li>
-<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> gains <code>random</code>, <code>random_covariance</code> and <code>random_diagonal</code>: random effects within classes, so persons scatter around their class trajectory (the Gaussian growth mixture model). The likelihood is exact; estimation is EM with the random effects as missing data, finished by quasi-Newton with analytic scores. Validated against an independent dense likelihood, numerical derivatives and <code>lcmm::hlme()</code> (six configurations; the same likelihood at <code>hlme</code>’s estimates and at least its maximum).</li>
+<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> gains <code>random</code>, <code>random_covariance</code> and <code>random_diagonal</code>: random effects within classes, so persons scatter around their class trajectory (the Gaussian growth mixture model). The likelihood is exact; estimation is EM with the random effects as missing data, finished by quasi-Newton with analytic scores. Validated against an independent dense likelihood, numerical derivatives and <code><a href="https://cecileproust-lima.github.io/lcmm/reference/hlme.html" class="external-link">lcmm::hlme()</a></code> (six configurations; the same likelihood at <code>hlme</code>’s estimates and at least its maximum).</li>
 <li>Variable names may replace one-sided formulas: <code>random = "wave"</code>, <code>random = "intercept"</code>, <code>common = "x"</code>, <code>membership = "age"</code>.</li>
 <li>A degenerate random-effect covariance (a variance at zero, or perfectly correlated random effects) warns (<code>latents_random_boundary</code>) and reports no interval for it.</li>
 <li>New <code><a href="../reference/compare_models.html">compare_models()</a></code>: fits to the same data side by side, with BIC differences and Schwarz weights; <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws the comparison.</li>
