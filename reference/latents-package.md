@@ -94,12 +94,12 @@ distinct populations.
 ## Getting started
 
 The vignettes
-[`vignette("lpa", package = "latents")`](https://pak.dynasite.org/latents/articles/lpa.md),
-[`vignette("lca", package = "latents")`](https://pak.dynasite.org/latents/articles/lca.md),
-[`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md),
+[`vignette("lpa", package = "latents")`](https://pak.dynasite.org/latents/articles/lpa.md)
 and
-[`vignette("lta", package = "latents")`](https://pak.dynasite.org/latents/articles/lta.md)
-introduce the main workflows. See
+[`vignette("lca", package = "latents")`](https://pak.dynasite.org/latents/articles/lca.md)
+introduce the main workflows; class enumeration and latent transition
+analysis are covered in articles on the package website,
+<https://pak.dynasite.org/latents/articles/>. See
 [`latents-plots`](https://pak.dynasite.org/latents/reference/latents-plots.md)
 for graphical summaries,
 [`latents-predict`](https://pak.dynasite.org/latents/reference/latents-predict.md)

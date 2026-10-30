@@ -140,7 +140,7 @@ trajectories <- mixture_regression(score ~ wave, few_students, n_classes = 2,
                                    seed = 1)
 growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
                              id = "student", class_level = "group",
-                             random = "intercept", seed = 1)
+                             random = "intercept", n_starts = 3, seed = 1)
 compare_models(trajectories = trajectories, growth = growth)
 #> Model comparison
 #> 
@@ -150,7 +150,7 @@ compare_models(trajectories = trajectories, growth = growth)
 #> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97
 
 # Candidates of an enumeration grid, by name, by class counts, or selected
-grid <- enumerate_classes(subset(course_engagement, student <= 40),
+grid <- enumerate_classes(subset(course_engagement, student <= 30),
                           c("browse", "lectures"), "student",
                           n_profiles = 2:3, n_group_classes = 1:2,
                           model = "VVI", n_starts = 2, seed = 1)
@@ -159,20 +159,20 @@ compare_models(grid, "profiles2_groups2", "profiles3_groups2")
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98
-#> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97
+#> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99
+#> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99
 compare_models(grid, c(2, 2), c(3, 2))
 #> Model comparison
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98
-#> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97
+#> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99
+#> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99
 compare_models(grid, n_group_classes = 2)
 #> Model comparison
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98
-#> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97
+#> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99
+#> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99
 ```

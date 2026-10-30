@@ -304,15 +304,7 @@ get_results(quality, what = "classification")
 #> 2         0.9817573                    76.35253
 #> 3         0.9689851                    64.80058
 #> 4         0.9920142                    59.89189
-get_results(diagnostics(fit, by = "overall"), what = "residuals")
-
-
-
-
-
-
-
-
+get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
 #>    profile indicator_1 indicator_2     kind     observed expected     residual
 #> 1  overall  forum_read  attendance gaussian  0.215876298        0  0.215876298
 #> 2  overall    lectures  attendance gaussian  0.192343530        0  0.192343530

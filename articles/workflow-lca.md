@@ -79,14 +79,14 @@ summary(models)
 #>   classes3          3          -7848           26 15749 15901          17820
 #>   classes4          4          -7807           35 15683 15888          17934
 #>   classes5          5          -7795           44 15678 15935          18074
-#>   classes6          6          -7771           53 15648 15959          18291
+#>   classes6          6          -7771           53 15648 15959          18290
 #>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
 #>               NA        NA         NA          NA      TRUE    FALSE
 #>           0.4887    0.7035     0.8222           1      TRUE    FALSE
 #>           0.6618    0.7046     0.8632           1      TRUE    FALSE
 #>           0.7142    0.7151     0.8307           2      TRUE    FALSE
 #>           0.7426    0.5196     0.8051           2      TRUE    FALSE
-#>           0.7479    0.6009     0.7799           4      TRUE    FALSE
+#>           0.7481    0.6008     0.7803           4      TRUE    FALSE
 #> 
 #> -- best ------------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes value
@@ -134,11 +134,11 @@ summary(models)
 #>      1490.65              0.57732            0.9329                      10.175
 #>        93.58              0.03624            0.9521                     527.981
 #>       997.77              0.38643            0.7046                       3.788
-#>      1464.19              0.56708            0.8863                       5.950
-#>        94.00              0.03640            0.9554                     567.505
-#>       991.40              0.38396            0.7151                       4.028
-#>        32.41              0.01255            0.7658                     257.214
-#>      1229.10              0.47603            0.9174                      12.230
+#>      1464.22              0.56709            0.8863                       5.950
+#>        94.00              0.03640            0.9554                     567.495
+#>       991.37              0.38396            0.7151                       4.028
+#>        32.41              0.01255            0.7658                     257.212
+#>      1229.08              0.47602            0.9174                      12.231
 #>  relative_entropy
 #>            0.4887
 #>            0.4887
@@ -186,18 +186,18 @@ summary(models)
 #>  tree individuals       classes2          2    0.62364     classes3        2  0.03624
 #>  tree individuals       classes2          1    0.37636     classes3        3  0.38643
 #>  tree individuals       classes2          2    0.62364     classes3        3  0.38643
-#>  tree individuals       classes3          1    0.57732     classes4        1  0.56708
-#>  tree individuals       classes3          2    0.03624     classes4        1  0.56708
+#>  tree individuals       classes3          1    0.57732     classes4        1  0.56709
+#>  tree individuals       classes3          2    0.03624     classes4        1  0.56709
 #>      mass share_of_from share_of_to
 #>  0.376356      0.376356    1.000000
 #>  0.623644      0.623644    1.000000
-#>  0.101204      0.268906    0.175299
+#>  0.101205      0.268906    0.175299
 #>  0.476120      0.763449    0.824701
 #>  0.033106      0.087964    0.913435
 #>  0.003137      0.005031    0.086565
 #>  0.242046      0.643130    0.626361
 #>  0.144386      0.231520    0.373639
-#>  0.441847      0.765336    0.779166
+#>  0.441853      0.765345    0.779164
 #>  0.001454      0.040120    0.002564
 #>    ... 60 more rows.  get_results(x, what = "tree")
 #> 
@@ -372,11 +372,11 @@ does not pass it is not evidence of independence.
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
 #>     profile       indicator_1    indicator_2        kind observed expected residual
 #> 3 profile_2    listened_music        walking categorical   0.1099 4.24e-17   0.1099
-#> 4 profile_2    listened_music        reading categorical   0.0881 1.29e-16   0.0881
-#> 5 profile_2            sports        walking categorical   0.0879 1.76e-17   0.0879
-#> 6 profile_2    listened_music         sports categorical   0.0874 1.87e-16   0.0874
-#> 8 profile_2 time_with_friends        walking categorical   0.0762 0.00e+00   0.0762
-#> 9 profile_2   on_social_media listened_music categorical   0.0697 1.36e-16   0.0697
+#> 4 profile_2    listened_music        reading categorical   0.0881 1.03e-16   0.0881
+#> 5 profile_2            sports        walking categorical   0.0879 1.73e-16   0.0879
+#> 6 profile_2    listened_music         sports categorical   0.0874 0.00e+00   0.0874
+#> 8 profile_2 time_with_friends        walking categorical   0.0762 3.56e-17   0.0762
+#> 9 profile_2   on_social_media listened_music categorical   0.0697 5.57e-17   0.0697
 #>   effective_n statistic df  p_value p_adjusted
 #> 3        1490     17.98  1 2.23e-05   2.23e-05
 #> 4        1490     11.57  1 6.71e-04   6.71e-04

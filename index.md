@@ -1397,14 +1397,15 @@ The package vignettes cover the main model families.
 
 vignette("lpa", package = "latents")
 vignette("lca", package = "latents")
-vignette("lta", package = "latents")
-vignette("enumeration", package = "latents")
 citation("latents")
 ```
 
 Further guides are on the [package
-website](https://pak.dynasite.org/latents/articles/): complete workflows
-for [latent
+website](https://pak.dynasite.org/latents/articles/): [class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.html),
+[latent transition
+analysis](https://pak.dynasite.org/latents/articles/lta.html), complete
+workflows for [latent
 profile](https://pak.dynasite.org/latents/articles/workflow-lpa.html)
 and [latent
 class](https://pak.dynasite.org/latents/articles/workflow-lca.html)

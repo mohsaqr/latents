@@ -325,12 +325,14 @@ plot(fit, what = "all")                        # every view this fit supports
 sensitivity(fit, seeds = 1:10)       # refits under several seeds
 ```
 
-[`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md)
-covers
+The [class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
+article covers
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 and
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
-[`vignette("lta", package = "latents")`](https://pak.dynasite.org/latents/articles/lta.md)
+the [latent transition
+analysis](https://pak.dynasite.org/latents/articles/lta.html) article
 covers [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
 [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) and
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md).
@@ -593,6 +595,6 @@ print(summary(fit), rows = 3)
 - Indicators are independent within a profile (the default diagonal
   covariance; `covariance_model = "full"` relaxes it).
 - The numbers of profiles and group classes are chosen by the analyst;
-  see
-  [`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md)
-  for comparing them.
+  see the [class
+  enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
+  article for comparing them.

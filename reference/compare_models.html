@@ -35,7 +35,7 @@ support within that set. The function does not select a final model."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -213,7 +213,7 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-in"><span>                                   seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">growth</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">few_students</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                             id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>                             random <span class="op">=</span> <span class="st">"intercept"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                             random <span class="op">=</span> <span class="st">"intercept"</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span>trajectories <span class="op">=</span> <span class="va">trajectories</span>, growth <span class="op">=</span> <span class="va">growth</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -223,7 +223,7 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Candidates of an enumeration grid, by name, by class counts, or selected</span></span></span>
-<span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">40</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">30</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                          <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span><span class="op">)</span>, <span class="st">"student"</span>,</span></span>
 <span class="r-in"><span>                          n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                          model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
@@ -232,22 +232,22 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99</span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99</span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3232.35     0.67       0.90      0           0.96             0.98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3407.47     0.67       0.72      1           0.96             0.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
