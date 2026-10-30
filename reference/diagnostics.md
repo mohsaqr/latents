@@ -210,7 +210,7 @@ quality
 #> 
 #> Local independence
 #>   check  pairs dependent within a class                      9 of 20 tested pairs     BH-adjusted p < 0.05
-#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04; consider local_dependence = or a full covariance model
+#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
 #> 
 #> Information
 #>   info   log likelihood, parameters, BIC                     -8439.82, 23, 16986.89   
@@ -255,25 +255,25 @@ get_results(quality, "checks")
 #> 16  5.989189e+01           59.9 (class 2)                        info
 #> 17  9.000000e+00     9 of 20 tested pairs BH-adjusted p < 0.05  check
 #> 18 -8.439816e+03   -8439.82, 23, 16986.89                        info
-#>                                                                                                                                    detail
-#> 1                                                                                                                                        
-#> 2                                                                                                                                        
-#> 3                                                                                                                                        
-#> 4                                                                                                                                        
-#> 5                                                                                                                                        
-#> 6                                                                                                                                        
-#> 7                                                                                                                                        
-#> 8                                                                                                                                        
-#> 9                                                                                                                                        
-#> 10                                                                                                                                       
-#> 11                                                                                                                                       
-#> 12                                                                                                                                       
-#> 13                                                                                                                                       
-#> 14                                                                                                                                       
-#> 15                                                                                                                                       
-#> 16                                                                                                                                       
-#> 17 largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04; consider local_dependence = or a full covariance model
-#> 18                                                                                 meaningful only against other models: compare_models()
+#>                                                                            detail
+#> 1                                                                                
+#> 2                                                                                
+#> 3                                                                                
+#> 4                                                                                
+#> 5                                                                                
+#> 6                                                                                
+#> 7                                                                                
+#> 8                                                                                
+#> 9                                                                                
+#> 10                                                                               
+#> 11                                                                               
+#> 12                                                                               
+#> 13                                                                               
+#> 14                                                                               
+#> 15                                                                               
+#> 16                                                                               
+#> 17 largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
+#> 18                         meaningful only against other models: compare_models()
 #>                              reference
 #> 1                                     
 #> 2                         Masyn (2013)

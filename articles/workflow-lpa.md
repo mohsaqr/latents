@@ -397,7 +397,7 @@ diagnostics(fit)
     #> 
     #> Local independence
     #>   check  pairs dependent within a class                      1 of 20 tested pairs     BH-adjusted p < 0.05
-    #>          largest: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.049; consider local_dependence = or a full covariance model
+    #>          largest: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.049
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -600.92, 26, 1350.15     

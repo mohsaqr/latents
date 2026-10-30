@@ -343,7 +343,7 @@ diagnostics(fit)
     #> 
     #> Local independence
     #>   check  pairs dependent within a class                      9 of 84 tested pairs     BH-adjusted p < 0.05
-    #>          largest: listened_music x walking in profile_2, residual 0.110, adjusted p <1e-04; consider local_dependence = or a full covariance model
+    #>          largest: listened_music x walking in profile_2, residual 0.110, adjusted p <1e-04
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -7848.45, 26, 15901.17   

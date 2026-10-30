@@ -1533,7 +1533,7 @@ diagnostics(chosen)
     #> 
     #> Local independence
     #>   check  pairs dependent within a class                      4 of 40 tested pairs     BH-adjusted p < 0.05
-    #>          largest: browse x forum_post in profile_1, residual -0.102, adjusted p 0.023; consider local_dependence = or a full covariance model
+    #>          largest: browse x forum_post in profile_1, residual -0.102, adjusted p 0.023
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -8307.15, 51, 16852.14   

@@ -1,5 +1,17 @@
 # Changelog
 
+## latents 1.1.7
+
+### Local-independence check without advice (2026-10-30)
+
+Results are the same as in 1.1.6.
+
+- When pairs of indicators are dependent within a class, the
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  check reports the largest pair and its residual only. The advice that
+  followed, “consider local_dependence = or a full covariance model”,
+  named an argument with nothing after it and is removed.
+
 ## latents 1.1.6
 
 ### Shorter CRAN check (2026-10-30)

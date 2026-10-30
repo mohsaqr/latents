@@ -404,7 +404,7 @@ report(fit, plots = FALSE)
 #> 
 #> Local independence
 #>   check  pairs dependent within a class                      9 of 20 tested pairs     BH-adjusted p < 0.05
-#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04; consider local_dependence = or a full covariance model
+#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
 #> 
 #> Information
 #>   info   log likelihood, parameters, BIC                     -8439.82, 23, 16986.89   
