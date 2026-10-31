@@ -103,7 +103,7 @@ montecarlo_mplus <- function(name, case, root = montecarlo_dir) {
 #' CB x CW probabilities J_hik of each row and its cluster's CB posterior
 #' omega_jh, the clusters' CB entropy plus
 #' -sum_i sum_h sum_k J_hik log(J_hik / omega_jh), the entropy latents' ICL,
-#' AWE and CLC charge (NEWS 0.97.2, "Information criteria").
+#' AWE and CLC charge (changed in 0.97.2).
 montecarlo_complete_entropy <- function(m) {
   plogp <- function(p) ifelse(p > 0, p * log(pmax(p, .Machine$double.xmin)), 0)
   if (is.null(m$posteriors$joint)) return(-sum(plogp(m$posteriors$profiles)))

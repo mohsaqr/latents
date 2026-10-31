@@ -154,7 +154,7 @@ test_that("criteria, the AvePP matrix and OCC follow from Mplus's own quantities
   # entropy sum EN, and through it ICL, AWE and CLC, by (1e-5 + d) n log K.
   # EN is the entropy of the complete-data classification: at two levels that
   # of the clusters' CB classes and the rows' CW profiles within them, from
-  # Mplus's joint CB x CW posteriors (NEWS 0.97.2).
+  # Mplus's joint CB x CW posteriors (0.97.2).
   cases <- montecarlo_cases()
   invisible(lapply(names(cases), function(name) {
     case <- cases[[name]]
