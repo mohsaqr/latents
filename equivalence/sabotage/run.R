@@ -109,7 +109,21 @@ sabotage_defects <- function() {
          },
          # Against TECH14 the p-values agree only within Monte Carlo error,
          # which this defect stays inside; the exact formula is a unit test.
-         suite = "unit", filter = "^enumeration$")
+         suite = "unit", filter = "^enumeration$"),
+    list(name = "lrt_degrees_of_freedom",
+         description = "Likelihood-ratio test with one degree of freedom too many",
+         target = ".latents_lrt_pair",
+         replace = function(original) function(...) {
+           test <- original(...)
+           test$df <- test$df + 1L
+           test
+         },
+         suite = "equivalence", filter = "^lrt$"),
+    list(name = "lrt_covariance_nesting",
+         description = "Every covariance structure taken as nested in every other",
+         target = ".multilpa_lrt_covariance_nested",
+         replace = function(original) function(null, alternative) TRUE,
+         suite = "unit", filter = "^compare-lrt$")
   )
 }
 

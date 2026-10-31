@@ -50,6 +50,26 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' [multilpa()], [lpa()], [lca()], [lta()] or [get_candidate()] can also be
 #' passed directly.
 #'
+#' With `test = "lrt"`, each model is tested against the model in the row
+#' before it, as [stats::anova()] does: `lr_statistic` is twice the difference
+#' in their log likelihoods, `lr_df` the difference in their numbers of free
+#' parameters, and `lr_p_value` its upper chi-square tail (Wilks, 1938). List
+#' the models from the most restricted to the most general. A model is nested
+#' in the next when the two have the same indicators, coding, estimation
+#' settings and numbers of profiles and group classes, and the first only
+#' restricts the second: a covariance structure restricted letter by letter
+#' (EEI within VVI or EEE, and both within VVV), covariances of chosen pairs
+#' (`local_dependence`) within more pairs or a full covariance, fewer joint
+#' item pairs, direct effects or membership covariates, profile slopes shared
+#' across group classes, count dispersions shared across profiles; and for
+#' [lta()], measurement invariant within measurement by occasion, homogeneous
+#' within occasion-specific transitions, first within second order, and fewer
+#' transition or initial covariates. These restrictions hold parameters at
+#' interior values, where the chi-square reference applies. A different number
+#' of profiles or group classes, or a stayer class, puts the null on the
+#' boundary of the parameter space, where it does not: those comparisons are
+#' refused and belong to [bootstrap_lrt()] or `get_results(grid, "lmr")`.
+#'
 #' @param ... Either an enumeration grid from [enumerate_classes()] followed
 #'   by the candidates to compare (none for all of them, or a selection
 #'   through `n_profiles` and `n_group_classes`); or two or more fits from
@@ -64,6 +84,9 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'   probability below which a class is counted in `avepp_below` and
 #'   `group_avepp_below`; a single number in (0, 1], default 0.8. Not used for
 #'   mixture regressions.
+#' @param test `"none"` (the default) for the comparison table alone, or
+#'   `"lrt"` to add a likelihood-ratio test of each profile, class or
+#'   transition model against the one before it (see *Details*).
 #' @return A base `data.frame` of class `latents_comparison`, one row per
 #'   model.
 #'
@@ -84,6 +107,9 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'   single-level model, the ordinary BIC). The values are those of the
 #'   grid's candidates table.
 #'
+#'   With `test = "lrt"`, three more columns: `lr_statistic`, `lr_df` and
+#'   `lr_p_value`, `NA` in the first row.
+#'
 #'   Raises `latents_bad_argument` for fits that cannot be compared, for
 #'   fewer than two models, for duplicate labels, for a group-class family grid (its own
 #'   table, `as.data.frame(grid)`, compares its candidates), for candidates
@@ -93,7 +119,21 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'   grid; `latents_failed_candidate` for a named candidate that could not be
 #'   fitted; `latents_incomparable_models` for fits to different data. A
 #'   `cutoff` outside (0, 1] fails the argument checks.
+#'
+#'   With `test = "lrt"`: `latents_bad_nesting` for consecutive models that
+#'   are not nested as described in *Details*, or that differ in their
+#'   numbers of profiles or group classes; `latents_reversed_likelihood` when
+#'   the more general model has the lower likelihood beyond the fits'
+#'   tolerance; `latents_no_converge` for a fit that did not converge;
+#'   `latents_unsupported_weights`, `latents_unsupported_prior` and
+#'   `latents_unsupported_noise` for fits with sampling weights, a prior or a
+#'   noise component; `latents_bad_argument` for mixture regressions. A fit
+#'   with a variance at `min_variance` warns `latents_boundary`.
 #' @references
+#' Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
+#' for testing composite hypotheses. *The Annals of Mathematical Statistics*,
+#' 9(1), 60--62.
+#'
 #' Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
 #' weights. *Psychonomic Bulletin & Review*, 11, 192--196.
 #' @examples
@@ -115,9 +155,17 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' compare_models(grid, "profiles2_groups2", "profiles3_groups2")
 #' compare_models(grid, c(2, 2), c(3, 2))
 #' compare_models(grid, n_group_classes = 2)
+#'
+#' # Is a covariance structure that varies by profile needed? A
+#' # likelihood-ratio test of each structure against the one before it.
+#' shared <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'               model = "EEI", n_starts = 2, seed = 1)
+#' varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'                model = "VVI", n_starts = 2, seed = 1)
+#' compare_models(shared = shared, varying = varying, test = "lrt")
 #' @export
 compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
-                           cutoff = 0.8) {
+                           cutoff = 0.8, test = c("none", "lrt")) {
   fits <- list(...)
   expressions <- vapply(as.list(substitute(list(...)))[-1L], deparse1, character(1))
   labels <- names(fits) %||% rep("", length(fits))
@@ -125,7 +173,7 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
   # Before candidate filters were added these names were ordinary model
   # labels in `...`. A fit-valued control keeps that released meaning.
   controls <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
-                    cutoff = cutoff)
+                    cutoff = cutoff, test = test)
   model_controls <- vapply(controls, function(value) {
     .latents_comparison_measurement_fit(value) ||
       inherits(value, c("latents_mixture_regression", "latents_growth_mixture"))
@@ -144,6 +192,11 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
     if (model_controls[["n_profiles"]]) n_profiles <- NULL
     if (model_controls[["n_group_classes"]]) n_group_classes <- NULL
     if (model_controls[["cutoff"]]) cutoff <- 0.8
+    if (model_controls[["test"]]) test <- "none"
+  }
+  test <- match.arg(test)
+  tested <- function(table) {
+    if (identical(test, "lrt")) .latents_comparison_lrt(table) else table
   }
   if (length(fits) >= 1L && inherits(fits[[1L]], "latents_family_enumeration")) {
     stop(errorCondition(paste(
@@ -151,8 +204,8 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
       "as.data.frame(grid)."), class = "latents_bad_argument", call = NULL))
   }
   if (length(fits) >= 1L && .latents_is_grid(fits[[1L]])) {
-    return(.multilpa_compare_candidates(fits[[1L]], fits[-1L], labels[-1L],
-                                        n_profiles, n_group_classes, cutoff))
+    return(tested(.multilpa_compare_candidates(fits[[1L]], fits[-1L], labels[-1L],
+                                               n_profiles, n_group_classes, cutoff)))
   }
   if (!is.null(n_profiles) || !is.null(n_group_classes)) {
     stop(errorCondition(paste(
@@ -160,7 +213,7 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
       "grid; pass the grid first."), class = "latents_bad_argument", call = NULL))
   }
   if (length(fits) >= 1L && all(vapply(fits, .latents_comparison_measurement_fit, logical(1)))) {
-    return(.multilpa_compare_fits(fits, labels, cutoff))
+    return(tested(.multilpa_compare_fits(fits, labels, cutoff)))
   }
   supported <- vapply(fits, function(fit) {
     inherits(fit, "latents_mixture_regression") || inherits(fit, "latents_growth_mixture")
@@ -170,6 +223,12 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
       "`compare_models()` takes an enumeration grid and two or more candidate",
       "keys, or two or more fits of one kind: from multilpa(), lpa(), lca() or",
       "get_candidate(), or from mixture_regression()."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  if (identical(test, "lrt")) {
+    stop(errorCondition(paste(
+      "`test = \"lrt\"` compares profile, class and transition models; compare",
+      "mixture regressions on their information criteria."),
       class = "latents_bad_argument", call = NULL))
   }
   if (anyDuplicated(labels)) {

@@ -4,7 +4,13 @@
 \alias{compare_models}
 \title{Compare the fit and classification of mixture models}
 \usage{
-compare_models(..., n_profiles = NULL, n_group_classes = NULL, cutoff = 0.8)
+compare_models(
+  ...,
+  n_profiles = NULL,
+  n_group_classes = NULL,
+  cutoff = 0.8,
+  test = c("none", "lrt")
+)
 }
 \arguments{
 \item{...}{Either an enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} followed
@@ -23,6 +29,10 @@ whose fit failed are left out, with a message.}
 probability below which a class is counted in \code{avepp_below} and
 \code{group_avepp_below}; a single number in (0, 1], default 0.8. Not used for
 mixture regressions.}
+
+\item{test}{\code{"none"} (the default) for the comparison table alone, or
+\code{"lrt"} to add a likelihood-ratio test of each profile, class or
+transition model against the one before it (see \emph{Details}).}
 }
 \value{
 A base \code{data.frame} of class \code{latents_comparison}, one row per
@@ -45,6 +55,9 @@ observation mass including any noise component), \code{converged},
 single-level model, the ordinary BIC). The values are those of the
 grid's candidates table.
 
+With \code{test = "lrt"}, three more columns: \code{lr_statistic}, \code{lr_df} and
+\code{lr_p_value}, \code{NA} in the first row.
+
 Raises \code{latents_bad_argument} for fits that cannot be compared, for
 fewer than two models, for duplicate labels, for a group-class family grid (its own
 table, \code{as.data.frame(grid)}, compares its candidates), for candidates
@@ -54,6 +67,16 @@ named together with \code{n_profiles} or \code{n_group_classes}, and for
 grid; \code{latents_failed_candidate} for a named candidate that could not be
 fitted; \code{latents_incomparable_models} for fits to different data. A
 \code{cutoff} outside (0, 1] fails the argument checks.
+
+With \code{test = "lrt"}: \code{latents_bad_nesting} for consecutive models that
+are not nested as described in \emph{Details}, or that differ in their
+numbers of profiles or group classes; \code{latents_reversed_likelihood} when
+the more general model has the lower likelihood beyond the fits'
+tolerance; \code{latents_no_converge} for a fit that did not converge;
+\code{latents_unsupported_weights}, \code{latents_unsupported_prior} and
+\code{latents_unsupported_noise} for fits with sampling weights, a prior or a
+noise component; \code{latents_bad_argument} for mixture regressions. A fit
+with a variance at \code{min_variance} warns \code{latents_boundary}.
 }
 \description{
 \code{compare_models()} compares alternative mixture models fitted to the same
@@ -91,6 +114,26 @@ compares them all. Latent class grids work the same way, with \code{classes}
 in the names, and the \code{n_profiles} column counting classes. Fits from
 \code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}} can also be
 passed directly.
+
+With \code{test = "lrt"}, each model is tested against the model in the row
+before it, as \code{\link[stats:anova]{stats::anova()}} does: \code{lr_statistic} is twice the difference
+in their log likelihoods, \code{lr_df} the difference in their numbers of free
+parameters, and \code{lr_p_value} its upper chi-square tail (Wilks, 1938). List
+the models from the most restricted to the most general. A model is nested
+in the next when the two have the same indicators, coding, estimation
+settings and numbers of profiles and group classes, and the first only
+restricts the second: a covariance structure restricted letter by letter
+(EEI within VVI or EEE, and both within VVV), covariances of chosen pairs
+(\code{local_dependence}) within more pairs or a full covariance, fewer joint
+item pairs, direct effects or membership covariates, profile slopes shared
+across group classes, count dispersions shared across profiles; and for
+\code{\link[=lta]{lta()}}, measurement invariant within measurement by occasion, homogeneous
+within occasion-specific transitions, first within second order, and fewer
+transition or initial covariates. These restrictions hold parameters at
+interior values, where the chi-square reference applies. A different number
+of profiles or group classes, or a stayer class, puts the null on the
+boundary of the parameter space, where it does not: those comparisons are
+refused and belong to \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} or \code{get_results(grid, "lmr")}.
 }
 \section{Interpretation}{
 
@@ -122,8 +165,20 @@ grid <- enumerate_classes(subset(course_engagement, student <= 30),
 compare_models(grid, "profiles2_groups2", "profiles3_groups2")
 compare_models(grid, c(2, 2), c(3, 2))
 compare_models(grid, n_group_classes = 2)
+
+# Is a covariance structure that varies by profile needed? A
+# likelihood-ratio test of each structure against the one before it.
+shared <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+              model = "EEI", n_starts = 2, seed = 1)
+varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+               model = "VVI", n_starts = 2, seed = 1)
+compare_models(shared = shared, varying = varying, test = "lrt")
 }
 \references{
+Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
+for testing composite hypotheses. \emph{The Annals of Mathematical Statistics},
+9(1), 60--62.
+
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
 weights. \emph{Psychonomic Bulletin & Review}, 11, 192--196.
 }

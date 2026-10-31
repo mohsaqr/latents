@@ -1,261 +1,261 @@
 "case","status","max_rel_diff","first_diff_path","seconds_baseline","seconds_now","slowdown","slow","detail"
-"profiles_two_level_basic","DIFFERENT",Inf,"profiles_two_level_basic/probes/print/value",0.148,0.199,1.34459459459459,TRUE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_refusal_noise_two_level","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_lpa_single_varying","DIFFERENT",Inf,"profiles_lpa_single_varying/probes/print/value",0.024,0.0270000000000001,1.12500000000001,FALSE," chr [1:16] ""Latent profile analysis: 3 profiles"" ""300 observations; v vs  chr [1:17] ""Latent profile analysis: 3 profiles"" ""300 observations; v"
-"profiles_lpa_single_equal","DIFFERENT",Inf,"profiles_lpa_single_equal/probes/print/value",0.0179999999999998,0.0199999999999996,1.1111111111111,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; e vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; e"
-"profiles_lpa_single_full","DIFFERENT",Inf,"profiles_lpa_single_full/probes/print/value",0.0449999999999999,0.0410000000000004,0.911111111111121,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_lpa_single_full_equal","DIFFERENT",Inf,"profiles_lpa_single_full_equal/probes/print/value",0.0300000000000002,0.0259999999999998,0.866666666666654,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; e vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; e"
-"profiles_lpa_engagement_id_null","DIFFERENT",Inf,"profiles_lpa_engagement_id_null/probes/print/value",0.0130000000000008,0.0140000000000002,1.07692307692303,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""274 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""274 observations; v"
-"profiles_lpa_one_profile","DIFFERENT",Inf,"profiles_lpa_one_profile/probes/print/value",0.000999999999999446,0.00199999999999978,2.00000000000089,FALSE," chr [1:10] ""Latent profile analysis: 1 profile"" ""150 observations; va vs  chr [1:11] ""Latent profile analysis: 1 profile"" ""150 observations; va"
-"profiles_two_level_equal","DIFFERENT",Inf,"profiles_two_level_equal/probes/print/value",0.0169999999999995,0.0169999999999995,0.999999999999998,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_two_level_full","DIFFERENT",Inf,"profiles_two_level_full/probes/print/value",0.0379999999999994,0.0369999999999999,0.973684210526329,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_two_level_three_profiles","DIFFERENT",Inf,"profiles_two_level_three_profiles/probes/print/value",0.0900000000000007,0.0869999999999997,0.966666666666656,FALSE," chr [1:12] ""Two-level latent profile analysis: 3 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 3 profiles, 2 group cl"
-"profiles_two_level_one_class","DIFFERENT",Inf,"profiles_two_level_one_class/probes/print/value",0.0120000000000005,0.0140000000000002,1.16666666666664,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 1 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 1 group cl"
-"profiles_structure_EII","DIFFERENT",Inf,"profiles_structure_EII/probes/print/value",0.0170000000000003,0.0149999999999997,0.882352941176436,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_VII","DIFFERENT",Inf,"profiles_structure_VII/probes/print/value",0.0129999999999999,0.0149999999999997,1.15384615384614,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EEI","DIFFERENT",Inf,"profiles_structure_EEI/probes/print/value",0.0140000000000002,0.0150000000000006,1.0714285714286,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; e vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; e"
-"profiles_structure_VEI","DIFFERENT",Inf,"profiles_structure_VEI/probes/print/value",0.0460000000000003,0.0439999999999996,0.95652173913042,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EVI","DIFFERENT",Inf,"profiles_structure_EVI/probes/print/value",0.0139999999999993,0.016,1.1428571428572,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_VVI","DIFFERENT",Inf,"profiles_structure_VVI/probes/print/value",0.0179999999999998,0.0170000000000003,0.944444444444474,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EEE","DIFFERENT",Inf,"profiles_structure_EEE/probes/print/value",0.0270000000000001,0.0269999999999992,0.999999999999968,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; e vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; e"
-"profiles_structure_VEE","DIFFERENT",Inf,"profiles_structure_VEE/probes/print/value",0.048,0.0419999999999998,0.874999999999996,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EVE","DIFFERENT",Inf,"profiles_structure_EVE/probes/print/value",0.239,0.239000000000001,1,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_VVE","DIFFERENT",Inf,"profiles_structure_VVE/probes/print/value",0.277000000000001,0.266,0.960288808664256,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EEV","DIFFERENT",Inf,"profiles_structure_EEV/probes/print/value",0.0289999999999999,0.0329999999999995,1.13793103448274,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_VEV","DIFFERENT",Inf,"profiles_structure_VEV/probes/print/value",0.0449999999999999,0.0500000000000007,1.11111111111113,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_EVV","DIFFERENT",Inf,"profiles_structure_EVV/probes/print/value",0.0449999999999999,0.052999999999999,1.17777777777776,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_VVV","DIFFERENT",Inf,"profiles_structure_VVV/probes/print/value",0.0419999999999998,0.0429999999999993,1.02380952380951,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_pieces_VEV","DIFFERENT",Inf,"profiles_structure_pieces_VEV/probes/print/value",0.0460000000000012,0.0510000000000002,1.10869565217389,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_pieces_EII","DIFFERENT",Inf,"profiles_structure_pieces_EII/probes/print/value",0.0140000000000011,0.0170000000000012,1.21428571428571,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_structure_three_profiles_EVE","DIFFERENT",Inf,"profiles_structure_three_profiles_EVE/probes/print/value",0.065999999999999,0.0640000000000001,0.969696969696985,FALSE," chr [1:12] ""Latent profile analysis: 3 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 3 profiles"" ""150 observations; v"
-"profiles_two_level_VEI","DIFFERENT",Inf,"profiles_two_level_VEI/probes/print/value",0.0309999999999988,0.0309999999999988,1,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_two_level_EEV","DIFFERENT",Inf,"profiles_two_level_EEV/probes/print/value",0.0349999999999984,0.036999999999999,1.05714285714288,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_two_level_VVE","DIFFERENT",Inf,"profiles_two_level_VVE/probes/print/value",0.048,0.0500000000000007,1.04166666666668,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_refusal_model_and_pieces","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_fiml_two_level","DIFFERENT",Inf,"profiles_fiml_two_level/probes/print/value",0.0549999999999997,0.052999999999999,0.963636363636352,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_fiml_single_full","DIFFERENT",Inf,"profiles_fiml_single_full/probes/print/value",0.172000000000001,0.0879999999999992,0.511627906976736,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""274 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""274 observations; v"
-"profiles_refusal_missing_error","identical",0,NA,0.000999999999999446,0,0,FALSE,NA
-"profiles_lca_single","DIFFERENT",Inf,"profiles_lca_single/probes/summary/value",0.177,0.126000000000001,0.711864406779668,FALSE,"[1]  chr ""Multilevel LPA: 2 profiles and 1 group classes"" vs  chr ""Latent class analysis: 2 classes"""
-"profiles_multilca_two_level","DIFFERENT",Inf,"profiles_multilca_two_level/probes/summary/value",0.346999999999998,0.222,0.63976945244957,FALSE,"[1]  chr ""Multilevel LPA: 2 profiles and 2 group classes"" vs  chr ""Two-level latent class analysis: 2 classes, 2 group classes"""
-"profiles_mixed_categorical","DIFFERENT",Inf,"profiles_mixed_categorical/probes/print/value",0.0549999999999997,0.0410000000000004,0.745454545454556,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_ordinal_single","DIFFERENT",Inf,"profiles_ordinal_single/probes/print/value",0.135999999999999,0.0830000000000002,0.610294117647065,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""737 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""737 observations; v"
-"profiles_ordinal_two_level","DIFFERENT",Inf,"profiles_ordinal_two_level/probes/print/value",0.102999999999998,0.0719999999999992,0.699029126213598,FALSE," chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_count_poisson","DIFFERENT",Inf,"profiles_count_poisson/probes/print/value",0.0410000000000004,0.0299999999999994,0.731707317073148,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""360 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""360 observations; v"
-"profiles_count_nb_varying","DIFFERENT",Inf,"profiles_count_nb_varying/probes/print/value",1.27,0.847000000000001,0.666929133858269,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""360 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""360 observations; v"
-"profiles_count_nb_equal","DIFFERENT",Inf,"profiles_count_nb_equal/probes/print/value",0.176000000000002,0.117000000000001,0.664772727272725,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""360 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""360 observations; v"
-"profiles_count_two_level","DIFFERENT",Inf,"profiles_count_two_level/probes/print/value",0.116,0.0650000000000013,0.560344827586218,FALSE," chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_mixed_all_types","DIFFERENT",Inf,"profiles_mixed_all_types/probes/print/value",0.141000000000002,0.0740000000000016,0.524822695035465,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""737 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""737 observations; v"
-"profiles_extra_fiml","DIFFERENT",Inf,"profiles_extra_fiml/probes/print/value",0.0999999999999979,0.083000000000002,0.830000000000037,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""737 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""737 observations; v"
-"profiles_refusal_ordinal_fixed","identical",0,NA,0.0609999999999999,0.0710000000000015,1.16393442622953,FALSE,NA
-"profiles_weights_single","DIFFERENT",Inf,"profiles_weights_single/probes/print/value",0.0229999999999997,0.0239999999999974,1.04347826086946,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_weights_two_level","DIFFERENT",Inf,"profiles_weights_two_level/probes/print/value",0.0159999999999982,0.0180000000000007,1.12500000000017,FALSE," chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_weights_categorical","DIFFERENT",Inf,"profiles_weights_categorical/probes/summary/value",0.0740000000000016,0.0790000000000006,1.06756756756755,FALSE,"[1]  chr ""Multilevel LPA: 2 profiles and 2 group classes"" vs  chr ""Two-level latent class analysis: 2 classes, 2 group classes"""
-"profiles_refusal_weights_prior","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_noise_single","DIFFERENT",Inf,"profiles_noise_single/probes/print/value",0.145,0.0249999999999986,0.172413793103438,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_noise_VVV","DIFFERENT",Inf,"profiles_noise_VVV/probes/print/value",0.0470000000000002,0.046999999999997,0.999999999999933,FALSE," chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:16] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_prior_VVI","DIFFERENT",Inf,"profiles_prior_VVI/probes/print/value",0.0410000000000004,0.0429999999999993,1.04878048780485,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_prior_EEE","DIFFERENT",Inf,"profiles_prior_EEE/probes/print/value",0.0770000000000017,0.0790000000000006,1.02597402597401,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; e vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; e"
-"profiles_prior_VEV_shrinkage","DIFFERENT",Inf,"profiles_prior_VEV_shrinkage/probes/print/value",0.158999999999999,0.169,1.06289308176102,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_prior_noise_EII","DIFFERENT",Inf,"profiles_prior_noise_EII/probes/print/value",0.0569999999999999,0.0510000000000019,0.894736842105299,FALSE," chr [1:13] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_refusal_prior_VEE","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_fixed_measurement","DIFFERENT",Inf,"profiles_fixed_measurement/probes/print/value",0.0470000000000006,0.0350000000000001,0.744680851063823,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_fixed_means","DIFFERENT",Inf,"profiles_fixed_means/probes/print/value",0.0280000000000022,0.032,1.14285714285705,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_fixed_categorical","DIFFERENT",Inf,"profiles_fixed_categorical/probes/summary/value",0.132999999999999,0.195,1.46616541353385,TRUE,"[1]  chr ""Multilevel LPA: 2 profiles and 2 group classes"" vs  chr ""Two-level latent class analysis: 2 classes, 2 group classes"""
-"profiles_evaluate_only","DIFFERENT",Inf,"profiles_evaluate_only/probes/print/value",0.0129999999999981,0.022000000000002,1.6923076923081,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 1 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 1 group cl"
-"profiles_user_start","DIFFERENT",Inf,"profiles_user_start/probes/print/value",0.0120000000000005,0.0160000000000018,1.33333333333343,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_refusal_fixed_without_start","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_centering_person","DIFFERENT",Inf,"profiles_centering_person/probes/print/value",0.0720000000000027,0.0999999999999979,1.38888888888881,FALSE," chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_centering_grand","DIFFERENT",Inf,"profiles_centering_grand/probes/print/value",0.0169999999999959,0.0180000000000007,1.05882352941206,FALSE," chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_time_sequences","DIFFERENT",Inf,"profiles_time_sequences/probes/print/value",0.0180000000000007,0.0180000000000007,0.999999999999999,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_acceleration_none","DIFFERENT",Inf,"profiles_acceleration_none/probes/print/value",0.0150000000000006,0.0159999999999982,1.06666666666651,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"profiles_acceleration_squarem_full","DIFFERENT",Inf,"profiles_acceleration_squarem_full/probes/print/value",0.0510000000000019,0.0530000000000008,1.03921568627449,FALSE," chr [1:12] ""Latent profile analysis: 3 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 3 profiles"" ""150 observations; v"
-"profiles_acceleration_none_full","DIFFERENT",Inf,"profiles_acceleration_none_full/probes/print/value",0.0760000000000005,0.083000000000002,1.09210526315791,FALSE," chr [1:12] ""Latent profile analysis: 3 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 3 profiles"" ""150 observations; v"
-"profiles_select_converged","DIFFERENT",Inf,"profiles_select_converged/probes/print/value",0.137,0.206,1.50364963503649,TRUE," chr [1:12] ""Two-level latent profile analysis: 3 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 3 profiles, 2 group cl"
-"profiles_select_likelihood","DIFFERENT",Inf,"profiles_select_likelihood/probes/print/value",0.134,0.135000000000002,1.00746268656718,FALSE," chr [1:12] ""Two-level latent profile analysis: 3 profiles, 2 group cl vs  chr [1:13] ""Two-level latent profile analysis: 3 profiles, 2 group cl"
-"profiles_min_variance_tol","DIFFERENT",Inf,"profiles_min_variance_tol/probes/print/value",0.0120000000000005,0.0129999999999981,1.08333333333313,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"profiles_refusal_two_classes_no_id","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_refusal_missing_id","identical",0,NA,0,0,NA,FALSE,NA
-"profiles_refusal_bad_model","identical",0,NA,0,0,NA,FALSE,NA
-"cov_profile_shared","DIFFERENT",Inf,"cov_profile_shared/probes/print/value",0.201,0.175999999999998,0.875621890547256,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 2 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_group_only","DIFFERENT",Inf,"cov_group_only/probes/print/value",0.134,0.106999999999999,0.798507462686562,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 2 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_both_shared","DIFFERENT",Inf,"cov_both_shared/probes/print/value",0.125,0.0989999999999966,0.791999999999973,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 2 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_slopes_group_class","DIFFERENT",Inf,"cov_slopes_group_class/probes/print/value",0.181999999999995,0.149999999999999,0.824175824175839,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 2 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_one_group_class","DIFFERENT",Inf,"cov_one_group_class/probes/print/value",0.0609999999999999,0.054000000000002,0.885245901639379,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_single_level","DIFFERENT",Inf,"cov_single_level/probes/print/value",0.0640000000000001,0.0549999999999997,0.859374999999994,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_three_profiles_equal","DIFFERENT",Inf,"cov_three_profiles_equal/probes/print/value",1.223,0.972999999999999,0.795584627964022,FALSE," chr [1:10] ""Multilevel LPA with covariates: 3 profiles, 1 group class vs  chr [1:11] ""Multilevel LPA with covariates: 3 profiles, 1 group class"
-"cov_fiml","DIFFERENT",Inf,"cov_fiml/probes/print/value",0.244,0.226000000000006,0.926229508196747,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 2 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_full_covariance","DIFFERENT",Inf,"cov_full_covariance/probes/print/value",0.110999999999997,0.0989999999999966,0.891891891891886,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_categorical_esm","DIFFERENT",Inf,"cov_categorical_esm/probes/print/value",0.119999999999997,0.106999999999999,0.891666666666683,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_categorical_boundary","DIFFERENT",Inf,"cov_categorical_boundary/probes/print/value",0.123999999999995,0.113999999999997,0.919354838709692,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_ordinal","DIFFERENT",Inf,"cov_ordinal/probes/print/value",0.121000000000002,0.119,0.983471074380147,FALSE," chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class vs  chr [1:11] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_count_poisson","DIFFERENT",Inf,"cov_count_poisson/probes/print/value",0.127000000000002,0.129000000000005,1.01574803149609,FALSE," chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class vs  chr [1:11] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"cov_esm_mixed","DIFFERENT",Inf,"cov_esm_mixed/probes/print/value",0.297999999999995,0.276000000000003,0.926174496644322,FALSE," chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class vs  chr [1:11] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_weights","DIFFERENT",Inf,"cov_weights/probes/print/value",0.188000000000002,0.164000000000001,0.872340425531913,FALSE," chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 2 group class vs  chr [1:11] ""Multilevel LPA with covariates: 2 profiles, 2 group class"
-"cov_refusal_start","identical",0,NA,0.019999999999996,0.0210000000000008,1.05000000000025,FALSE,NA
-"cov_refusal_fixed","identical",0,NA,0,0,NA,FALSE,NA
-"cov_refusal_missing_covariate","identical",0,NA,0,0,NA,FALSE,NA
-"cov_refusal_slopes_without_covariates","identical",0,NA,0,0,NA,FALSE,NA
-"cov_refusal_group_covariate_varies","identical",0,NA,0.02,0.0189999999999984,0.949999999999918,FALSE,NA
-"family_additive_varying","DIFFERENT",Inf,"family_additive_varying/probes/tables/value/starts/log_likelihood",0.133000000000003,0.116,0.872180451127797,FALSE,"baseline -1476.9670836532025, now -1476.967070056686"
-"family_additive_equal","DIFFERENT",Inf,"family_additive_equal/probes/tables/value/starts/log_likelihood",0.046999999999997,0.0420000000000016,0.893617021276687,FALSE,"baseline -1479.6206305934627, now -1479.6206216000362"
-"family_additive_three_classes","DIFFERENT",Inf,"family_additive_three_classes/probes/summary/value",0.393999999999998,0.107999999999997,0.274111675126897,FALSE,"[5]  chr "" 3014 3048 60 480 0.9542 0.0678 NA"" vs  chr "" 3014 3048 60 480 0.9542 0.06771 NA"""
-"family_additive_weights","DIFFERENT",Inf,"family_additive_weights/probes/summary/value",0.0560000000000045,0.0509999999999948,0.91071428571412,FALSE,"[5]  chr "" 3008 3031 60 480 0.9667 0.4615 26.65"" vs  chr "" 3008 3031 60 480 0.9667 0.4615 22.66"""
-"family_additive_engagement_boundary","DIFFERENT",Inf,"family_additive_engagement_boundary/probes/print/value",0.533999999999999,0.140999999999998,0.264044943820222,FALSE,"[3]  chr ""log-likelihood -3298.627, 16 parameters, BIC (groups) 6662.764"" vs  chr ""log-likelihood -3298.627, 16 parameters, BIC (groups) 6662.763"""
-"family_dispersion_equal","DIFFERENT",Inf,"family_dispersion_equal/probes/tables/value/starts/log_likelihood",0.0970000000000013,0.0700000000000003,0.721649484536076,FALSE,"baseline -1520.7560043867845, now -1520.7553751442194"
-"family_dispersion_three_classes","DIFFERENT",Inf,"family_dispersion_three_classes/probes/summary/value",0.237000000000002,0.0940000000000012,0.396624472573841,FALSE,"[5]  chr "" 3091 3116 60 480 0.1505 0.1857 NA"" vs  chr "" 3091 3116 60 480 0.147 0.1935 NA"""
-"family_dispersion_varying_refused","identical",0,NA,0,0,NA,FALSE,NA
-"family_additive_dispersion_varying","DIFFERENT",Inf,"family_additive_dispersion_varying/probes/tables/value/starts/log_likelihood",0.0609999999999999,0.056999999999995,0.934426229508117,FALSE,"baseline -1475.1119546362793, now -1475.1119304015533"
-"family_additive_dispersion_equal","DIFFERENT",Inf,"family_additive_dispersion_equal/probes/tables/value/intercepts/intercept_mean",0.0499999999999972,0.0380000000000038,0.760000000000119,FALSE,"baseline -0.011507182165104428, now -0.01150718203684167"
-"family_additive_dispersion_three_classes","DIFFERENT",Inf,"family_additive_dispersion_three_classes/probes/tables/value/starts/log_likelihood",0.155999999999999,0.0989999999999966,0.634615384615367,FALSE,"baseline -1472.1252903512764, now -1472.125202246493"
-"family_restricted_cross_level_varying","DIFFERENT",Inf,"family_restricted_cross_level_varying/probes/print/value",0.0360000000000014,0.0410000000000039,1.13888888888895,FALSE," chr [1:4] ""Restricted cross-level model: 2 profiles, 2 group classes"" vs  chr [1:5] ""Restricted cross-level model: 2 profiles, 2 group classes"""
-"family_restricted_cross_level_equal","DIFFERENT",Inf,"family_restricted_cross_level_equal/probes/print/value",0.0250000000000057,0.0300000000000011,1.19999999999977,FALSE," chr [1:4] ""Restricted cross-level model: 2 profiles, 2 group classes"" vs  chr [1:5] ""Restricted cross-level model: 2 profiles, 2 group classes"""
-"family_full_cross_level_varying","DIFFERENT",Inf,"family_full_cross_level_varying/probes/print/value",0.0330000000000013,0.0319999999999965,0.969696969696825,FALSE," chr [1:4] ""Full cross-level model: 2 profiles, 2 group classes"" ""60 g vs  chr [1:5] ""Full cross-level model: 2 profiles, 2 group classes"" ""60 g"
-"family_full_cross_level_equal","DIFFERENT",Inf,"family_full_cross_level_equal/probes/print/value",0.0190000000000055,0.0220000000000056,1.15789473684206,FALSE," chr [1:4] ""Full cross-level model: 2 profiles, 2 group classes"" ""60 g vs  chr [1:5] ""Full cross-level model: 2 profiles, 2 group classes"" ""60 g"
-"family_refusal_categorical","DIFFERENT",Inf,"family_refusal_categorical/refusal/message",0,0,NA,FALSE,"[1]  chr ""`family = \""additive\""` has group classes only and needs `id`; i vs  chr ""`family = \""additive\""` has group classes only and needs `id`; i"
-"family_refusal_fiml","DIFFERENT",Inf,"family_refusal_fiml/refusal/message",0,0,NA,FALSE,"[1]  chr ""`family = \""additive\""` has group classes only and needs `id`; i vs  chr ""`family = \""additive\""` has group classes only and needs `id`; i"
-"family_refusal_covariates","DIFFERENT",Inf,"family_refusal_covariates/refusal/message",0,0,NA,FALSE,"[1]  chr ""`family = \""additive\""` has group classes only and needs `id`; i vs  chr ""`family = \""additive\""` has group classes only and needs `id`; i"
-"family_refusal_cross_level_categorical","DIFFERENT",Inf,"family_refusal_cross_level_categorical/refusal/message",0,0,NA,FALSE,"[1]  chr ""`family = \""full_cross_level\""` needs `id` and `n_profiles`; it  vs  chr ""`family = \""full_cross_level\""` needs `id` and `n_profiles`; it "
-"family_enumeration","DIFFERENT",Inf,"family_enumeration/probes/print/value",0.466000000000008,0.390999999999998,0.839055793991398,FALSE," chr [1:24] ""Group-class family enumeration: 10 candidates"" "" model n_ vs  chr [1:35] ""Group-class family enumeration: 10 candidates"" "" candidat"
-"family_bootstrap_lrt","DIFFERENT",Inf,"family_bootstrap_lrt/probes/summary/value",1.33,0.600000000000001,0.451127819548873,FALSE,"[2]  chr ""1 replicate(s) reached a parameter boundary; 0 raised an error."" vs  chr ""2 replicate(s) reached a parameter boundary; 0 were invalid (an "
-"family_bootstrap_lrt_refused","identical",0,NA,0.213000000000008,0.128,0.600938967136128,FALSE,NA
-"lta_homogeneous_basic","DIFFERENT",Inf,"lta_homogeneous_basic/probes/print/value",0.105000000000004,0.107999999999997,1.02857142857136,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""274  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""274 "
-"lta_homogeneous_group_classes","DIFFERENT",Inf,"lta_homogeneous_group_classes/probes/print/value",0.271000000000001,0.268999999999998,0.992619926199252,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 2 group classes"" ""16 vs  chr [1:12] ""Latent transition model: 2 profiles, 2 group classes"" ""16"
-"lta_homogeneous_equal_variance","DIFFERENT",Inf,"lta_homogeneous_equal_variance/probes/print/value",0.0190000000000055,0.0169999999999959,0.894736842104789,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_full_covariance","DIFFERENT",Inf,"lta_homogeneous_full_covariance/probes/print/value",0.0300000000000011,0.0300000000000011,1,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_model_EEI","DIFFERENT",Inf,"lta_homogeneous_model_EEI/probes/print/value",0.0189999999999912,0.0160000000000053,0.842105263158566,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_model_VVI","DIFFERENT",Inf,"lta_homogeneous_model_VVI/probes/print/value",0.0169999999999959,0.0159999999999982,0.941176470588359,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_model_EEE","DIFFERENT",Inf,"lta_homogeneous_model_EEE/probes/print/value",0.0289999999999964,0.0259999999999962,0.896551724137913,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_model_VVV","DIFFERENT",Inf,"lta_homogeneous_model_VVV/probes/print/value",0.0289999999999964,0.0260000000000034,0.896551724138158,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_model_VEI","DIFFERENT",Inf,"lta_homogeneous_model_VEI/probes/print/value",0.019999999999996,0.0189999999999984,0.950000000000108,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_categorical","DIFFERENT",Inf,"lta_homogeneous_categorical/probes/print/value",0.872,0.530000000000001,0.607798165137616,FALSE,"[3]  chr ""Log likelihood: -660.703050; 9 parameters; BIC (groups): 1348.36 vs  chr ""Log likelihood: -660.703046; 9 parameters; BIC (groups): 1348.36"
-"lta_homogeneous_mixed","DIFFERENT",Inf,"lta_homogeneous_mixed/probes/print/value",0.305999999999997,0.323999999999998,1.05882352941177,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""360  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""360 "
-"lta_homogeneous_fiml","DIFFERENT",Inf,"lta_homogeneous_fiml/probes/print/value",0.0370000000000061,0.0410000000000039,1.10810810810803,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""160  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""160 "
-"lta_homogeneous_occasions_observed","DIFFERENT",Inf,"lta_homogeneous_occasions_observed/probes/print/value",0.0220000000000056,0.0189999999999984,0.863636363636069,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""190  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""190 "
-"lta_homogeneous_occasions_grid","DIFFERENT",Inf,"lta_homogeneous_occasions_grid/probes/print/value",0.0240000000000009,0.017000000000003,0.708333333333432,FALSE," chr [1:11] ""Latent transition model: 2 profiles, 1 group class"" ""190  vs  chr [1:12] ""Latent transition model: 2 profiles, 1 group class"" ""190 "
-"lta_homogeneous_select_converged","DIFFERENT",Inf,"lta_homogeneous_select_converged/probes/print/value",2.06,3.915,1.9004854368932,TRUE," chr [1:12] ""Latent transition model: 3 profiles, 2 group classes"" ""16 vs  chr [1:13] ""Latent transition model: 3 profiles, 2 group classes"" ""16"
-"lta_homogeneous_bootstrap","DIFFERENT",Inf,"lta_homogeneous_bootstrap/probes/value/value@covariance",0.179000000000002,0.146999999999998,0.821229050279312,FALSE,"baseline -5.5094427978439436e-05, now -5.2428246422345793e-05"
-"lta_general_occasion_transitions","DIFFERENT",Inf,"lta_general_occasion_transitions/probes/print/value",0.215000000000003,0.926000000000002,4.306976744186,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (occa vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (occasi"
-"lta_general_order2","DIFFERENT",Inf,"lta_general_order2/probes/print/value",0.241,0.768000000000001,3.18672199170125,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (seco vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (second"
-"lta_general_mover_stayer","DIFFERENT",Inf,"lta_general_mover_stayer/fit_conditions",0.590000000000003,2.085,3.53389830508473,TRUE,"length 0 vs 1"
-"lta_general_transition_covariates","DIFFERENT",Inf,"lta_general_transition_covariates/probes/print/value",0.213,0.265000000000001,1.24413145539906,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (tran vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (transi"
-"lta_general_initial_covariates","DIFFERENT",Inf,"lta_general_initial_covariates/probes/print/value",0.0700000000000074,0.156999999999996,2.24285714285686,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (init vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (initia"
-"lta_general_occasion_measurement","DIFFERENT",Inf,"lta_general_occasion_measurement/probes/print/value",0.158999999999992,0.260000000000005,1.63522012578628,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (occa vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (occasi"
-"lta_general_group_classes","DIFFERENT",Inf,"lta_general_group_classes/probes/print/value",1.31700000000001,9.851,7.47987851176912,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 2 group classes (tran vs  chr [1:5] ""Latent transition model: 2 profiles, 2 group classes (tran"
-"lta_general_full_covariance","DIFFERENT",Inf,"lta_general_full_covariance/probes/print/value",0.22399999999999,0.287999999999997,1.28571428571433,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (occa vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (occasi"
-"lta_general_model_VEI","DIFFERENT",Inf,"lta_general_model_VEI/probes/print/value",0.0700000000000074,0.0730000000000075,1.04285714285714,FALSE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (tran vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (transi"
-"lta_general_categorical","DIFFERENT",Inf,"lta_general_categorical/probes/print/value",0.98599999999999,5.70699999999999,5.78803245436111,TRUE,"[1]  chr ""Latent transition model: 2 profiles, 1 group classes (occasion-v vs  chr ""Latent transition model: 2 profiles, 1 group class (occasion-var"
-"lta_general_ordinal","DIFFERENT",Inf,"lta_general_ordinal/fit_conditions",3.31999999999999,4.81100000000001,1.44909638554218,TRUE,"length 0 vs 1"
-"lta_general_count_poisson","DIFFERENT",Inf,"lta_general_count_poisson/probes/print/value",0.503,0.772000000000006,1.5347912524851,TRUE," chr [1:5] ""Latent transition model: 2 profiles, 1 group classes (homo vs  chr [1:6] ""Latent transition model: 2 profiles, 1 group class (homoge"
-"lta_general_count_nb_varying","DIFFERENT",Inf,"lta_general_count_nb_varying/probes/print/value",2.407,4.60900000000001,1.91483174075613,TRUE," chr [1:5] ""Latent transition model: 2 profiles, 1 group classes (homo vs  chr [1:6] ""Latent transition model: 2 profiles, 1 group class (homoge"
-"lta_general_count_nb_equal","DIFFERENT",Inf,"lta_general_count_nb_equal/fit_conditions",2.07599999999999,4.34200000000001,2.09152215799616,TRUE,"length 0 vs 1"
-"lta_general_weights","DIFFERENT",Inf,"lta_general_weights/probes/print/value",0.0790000000000077,0.188000000000002,2.37974683544284,TRUE," chr [1:5] ""Latent transition model: 2 profiles, 1 group classes (homo vs  chr [1:6] ""Latent transition model: 2 profiles, 1 group class (homoge"
-"lta_general_fiml_covariates","DIFFERENT",Inf,"lta_general_fiml_covariates/probes/print/value",0.0899999999999892,0.375,4.16666666666717,TRUE," chr [1:4] ""Latent transition model: 2 profiles, 1 group classes (tran vs  chr [1:5] ""Latent transition model: 2 profiles, 1 group class (transi"
-"lta_general_mixed_extensions","DIFFERENT",Inf,"lta_general_mixed_extensions/fit_conditions",0.665999999999997,8.301,12.463963963964,TRUE,"length 0 vs 1"
-"lta_general_order2_mover_stayer","DIFFERENT",Inf,"lta_general_order2_mover_stayer/fit_conditions",2.348,10.266,4.37223168654174,TRUE,"length 1 vs 2"
-"lta_general_bootstrap","DIFFERENT",Inf,"lta_general_bootstrap/probes/value/value@covariance",0.513999999999996,1.346,2.61867704280158,TRUE,"baseline 0.00421318155576082, now 0.004375568229313855"
-"lta_general_weights_bootstrap","DIFFERENT",Inf,"lta_general_weights_bootstrap/probes/value/value@covariance",0.483999999999995,0.968000000000018,2.00000000000006,TRUE,"baseline 0.0772976180700264, now 0.077118219886056175"
-"lta_refusal_one_profile","identical",0,NA,0,0,NA,FALSE,NA
-"lta_refusal_order3","identical",0,NA,0,0,NA,FALSE,NA
-"lta_refusal_no_time","identical",0,NA,0,0,NA,FALSE,NA
-"lta_refusal_missing_error","identical",0,NA,0,0,NA,FALSE,NA
-"lta_refusal_bad_model","identical",0,NA,0,0,NA,FALSE,NA
-"lta_bootstrap_lrt_covariates","DIFFERENT",Inf,"lta_bootstrap_lrt_covariates/probes/print/value",0.774000000000001,1.43200000000002,1.85012919896643,TRUE,"[3]  chr ""Observed statistic: 0.999924"" vs  chr ""Observed statistic: 0.999979"""
-"lta_bootstrap_lrt_group_classes","DIFFERENT",Inf,"lta_bootstrap_lrt_group_classes/probes/print/value",2.35999999999999,4.368,1.85084745762712,TRUE,"[3]  chr ""Observed statistic: 1.723668"" vs  chr ""Observed statistic: 1.723758"""
-"lta_refusal_bootstrap_lrt_reversed","identical",0,NA,0.0970000000000084,0.260000000000019,2.68041237113399,TRUE,NA
-"lta_enumeration","DIFFERENT",Inf,"lta_enumeration/probes/print/value",1.672,1.89500000000001,1.13337320574163,FALSE,"[2]  chr "" n_profiles n_group_classes model log_likelihood n_parameters bi vs  chr "" candidate n_profiles n_group_classes model log_likelihood n_par"
-"lta_enumeration_structures","DIFFERENT",Inf,"lta_enumeration_structures/probes/print/value",0.0409999999999968,0.0370000000000061,0.902439024390464,FALSE,"[2]  chr "" n_profiles n_group_classes model log_likelihood n_parameters bi vs  chr "" candidate n_profiles n_group_classes model log_likelihood"""
-"lta_enumeration_candidate","DIFFERENT",Inf,"lta_enumeration_candidate/probes/print/value",0.347000000000008,0.305999999999983,0.881844380403389,FALSE," chr [1:12] ""Latent transition model: 3 profiles, 1 group class"" ""160  vs  chr [1:13] ""Latent transition model: 3 profiles, 1 group class"" ""160 "
-"lta_refusal_enumeration_one_profile","identical",0,NA,0,0,NA,FALSE,NA
-"reg_gaussian_single","DIFFERENT",0.00973359586093817,"reg_gaussian_single/probes/tables_robust/value/coefficients/std_error",0.14500000000001,0.131,0.903448275862008,FALSE,"baseline 0.95325154981397386, now 0.95424607439308151"
-"reg_gaussian_equal_variance","DIFFERENT",0.0354246291839422,"reg_gaussian_equal_variance/probes/tables_robust/value/coefficients/std_error",0.0300000000000011,0.0219999999999914,0.733333333333018,FALSE,"baseline 0.19197569310187373, now 0.19217598078608297"
-"reg_gaussian_common","DIFFERENT",0.00967549115196277,"reg_gaussian_common/probes/tables_robust/value/coefficients/std_error",0.039999999999992,0.0330000000000155,0.825000000000552,FALSE,"baseline 2.5369618142817836, now 2.5396086191897562"
-"reg_gaussian_membership","DIFFERENT",0.00992809374029825,"reg_gaussian_membership/probes/tables_robust/value/coefficients/std_error",0.0810000000000173,0.0670000000000073,0.827160493827074,FALSE,"baseline 0.12893308145535845, now 0.12906759696555356"
-"reg_gaussian_select_converged","DIFFERENT",0.00973359586093817,"reg_gaussian_select_converged/probes/tables_robust/value/coefficients/std_error",0.032999999999987,0.0279999999999916,0.848484848484928,FALSE,"baseline 0.95325154981397386, now 0.95424607439308151"
-"reg_gaussian_vcov_robust_clustered","DIFFERENT",Inf,"reg_gaussian_vcov_robust_clustered/probes/print/value",0.032999999999987,0.0279999999999916,0.848484848484928,FALSE,"[17]  chr ""Class 1 Intercept 34.48 [32.66, 36.29] <.001"" vs  chr ""Class 1 Intercept 34.48 [32.65, 36.30] <.001"""
-"reg_gaussian_vcov_opg","DIFFERENT",0.00973359586093817,"reg_gaussian_vcov_opg/probes/tables_robust/value/coefficients/std_error",0.0289999999999964,0.0250000000000057,0.862068965517544,FALSE,"baseline 0.95325154981397386, now 0.95424607439308151"
-"reg_gaussian_vcov_none","DIFFERENT",0.00973359586093817,"reg_gaussian_vcov_none/probes/tables_robust/value/coefficients/std_error",0.0289999999999964,0.025999999999982,0.896551724137423,FALSE,"baseline 0.95325154981397386, now 0.95424607439308151"
-"reg_gaussian_weights_rows","DIFFERENT",Inf,"reg_gaussian_weights_rows/probes/summary/value",0.0390000000000157,0.0330000000000155,0.846153846153902,FALSE,"[38]  chr ""Class 2 Intercept -0.23 [-0.58, 0.13] .210 0.80"" vs  chr ""Class 2 Intercept -0.23 [-0.58, 0.13] .211 0.80"""
-"reg_gaussian_weights_observed_refused","identical",0,NA,0.00100000000000477,0.00100000000000477,1,FALSE,NA
-"reg_gaussian_missing_omit","DIFFERENT",0.0091855279440928,"reg_gaussian_missing_omit/probes/tables_robust/value/coefficients/std_error",0.0349999999999966,0.0289999999999964,0.828571428571405,FALSE,"baseline 0.95235775119621724, now 0.95341299556557579"
+"profiles_two_level_basic","identical",0,NA,0.322,0.334,1.03726708074534,FALSE,NA
+"profiles_refusal_noise_two_level","identical",0,NA,0.00899999999999945,0.00899999999999945,1,FALSE,NA
+"profiles_lpa_single_varying","identical",0,NA,0.0339999999999998,0.0369999999999999,1.08823529411765,FALSE,NA
+"profiles_lpa_single_equal","identical",0,NA,0.124,0.127,1.0241935483871,FALSE,NA
+"profiles_lpa_single_full","identical",0,NA,0.0720000000000001,0.0839999999999996,1.16666666666666,FALSE,NA
+"profiles_lpa_single_full_equal","identical",0,NA,0.181,0.202,1.11602209944751,FALSE,NA
+"profiles_lpa_engagement_id_null","identical",0,NA,0.0300000000000002,0.0380000000000003,1.26666666666667,FALSE,NA
+"profiles_lpa_one_profile","identical",0,NA,0.0120000000000005,0.0180000000000007,1.49999999999999,FALSE,NA
+"profiles_two_level_equal","identical",0,NA,0.13,0.142000000000001,1.0923076923077,FALSE,NA
+"profiles_two_level_full","identical",0,NA,0.0520000000000005,0.0789999999999988,1.51923076923073,FALSE,NA
+"profiles_two_level_three_profiles","identical",0,NA,0.146999999999999,0.142000000000001,0.965986394557838,FALSE,NA
+"profiles_two_level_one_class","identical",0,NA,0.0309999999999997,0.0339999999999989,1.09677419354836,FALSE,NA
+"profiles_structure_EII","identical",0,NA,0.115,0.123999999999999,1.07826086956521,FALSE,NA
+"profiles_structure_VII","identical",0,NA,0.0289999999999999,0.0380000000000003,1.31034482758622,FALSE,NA
+"profiles_structure_EEI","identical",0,NA,0.125,0.141,1.128,FALSE,NA
+"profiles_structure_VEI","identical",0,NA,0.0650000000000013,0.141,2.16923076923073,TRUE,NA
+"profiles_structure_EVI","identical",0,NA,0.0279999999999987,0.0389999999999997,1.3928571428572,FALSE,NA
+"profiles_structure_VVI","identical",0,NA,0.032,0.0370000000000008,1.15625000000003,FALSE,NA
+"profiles_structure_EEE","identical",0,NA,0.175000000000001,0.186999999999999,1.06857142857142,FALSE,NA
+"profiles_structure_VEE","identical",0,NA,0.0739999999999998,0.0670000000000002,0.90540540540541,FALSE,NA
+"profiles_structure_EVE","identical",0,NA,0.18,0.186,1.03333333333333,FALSE,NA
+"profiles_structure_VVE","identical",0,NA,0.203999999999999,0.202999999999999,0.995098039215688,FALSE,NA
+"profiles_structure_EEV","identical",0,NA,0.0500000000000007,0.0490000000000013,0.980000000000012,FALSE,NA
+"profiles_structure_VEV","identical",0,NA,0.0730000000000004,0.0790000000000006,1.08219178082192,FALSE,NA
+"profiles_structure_EVV","identical",0,NA,0.0840000000000014,0.116,1.38095238095235,FALSE,NA
+"profiles_structure_VVV","identical",0,NA,0.0690000000000008,0.0830000000000002,1.20289855072463,FALSE,NA
+"profiles_structure_pieces_VEV","identical",0,NA,0.0710000000000015,0.0709999999999997,0.999999999999975,FALSE,NA
+"profiles_structure_pieces_EII","identical",0,NA,0.134,0.106000000000002,0.791044776119415,FALSE,NA
+"profiles_structure_three_profiles_EVE","identical",0,NA,0.137,0.114999999999998,0.839416058394149,FALSE,NA
+"profiles_two_level_VEI","identical",0,NA,0.043000000000001,0.0400000000000027,0.930232558139576,FALSE,NA
+"profiles_two_level_EEV","identical",0,NA,0.0540000000000003,0.0740000000000016,1.37037037037039,FALSE,NA
+"profiles_two_level_VVE","identical",0,NA,0.0830000000000002,0.130000000000003,1.56626506024099,FALSE,NA
+"profiles_refusal_model_and_pieces","identical",0,NA,0.00900000000000034,0.00999999999999801,1.11111111111085,FALSE,NA
+"profiles_fiml_two_level","identical",0,NA,0.0890000000000004,0.0899999999999999,1.01123595505617,FALSE,NA
+"profiles_fiml_single_full","identical",0,NA,0.132,0.131,0.992424242424244,FALSE,NA
+"profiles_refusal_missing_error","identical",0,NA,0.0100000000000016,0.00799999999999912,0.799999999999784,FALSE,NA
+"profiles_lca_single","identical",0,NA,0.184000000000001,0.192,1.04347826086956,FALSE,NA
+"profiles_multilca_two_level","identical",0,NA,0.169,0.146000000000001,0.863905325443792,FALSE,NA
+"profiles_mixed_categorical","identical",0,NA,0.0689999999999991,0.0630000000000024,0.913043478260916,FALSE,NA
+"profiles_ordinal_single","identical",0,NA,0.123000000000001,0.116,0.943089430894299,FALSE,NA
+"profiles_ordinal_two_level","identical",0,NA,0.108000000000001,0.103999999999999,0.962962962962947,FALSE,NA
+"profiles_count_poisson","identical",0,NA,0.0749999999999993,0.0720000000000027,0.960000000000045,FALSE,NA
+"profiles_count_nb_varying","identical",0,NA,1.002,0.890999999999998,0.889221556886226,FALSE,NA
+"profiles_count_nb_equal","identical",0,NA,0.143000000000001,0.120999999999999,0.846153846153831,FALSE,NA
+"profiles_count_two_level","identical",0,NA,0.100999999999999,0.0869999999999997,0.861386138613867,FALSE,NA
+"profiles_mixed_all_types","identical",0,NA,0.119,0.111000000000001,0.932773109243703,FALSE,NA
+"profiles_extra_fiml","identical",0,NA,0.138000000000002,0.123999999999999,0.898550724637659,FALSE,NA
+"profiles_refusal_ordinal_fixed","identical",0,NA,0.119,0.108000000000001,0.907563025210089,FALSE,NA
+"profiles_weights_single","identical",0,NA,0.0410000000000004,0.0390000000000015,0.951219512195149,FALSE,NA
+"profiles_weights_two_level","identical",0,NA,0.0289999999999999,0.0310000000000024,1.06896551724146,FALSE,NA
+"profiles_weights_categorical","identical",0,NA,0.131,0.120999999999999,0.923664122137394,FALSE,NA
+"profiles_refusal_weights_prior","identical",0,NA,0.0130000000000017,0.0150000000000006,1.15384615384605,FALSE,NA
+"profiles_noise_single","identical",0,NA,0.0359999999999978,0.0410000000000004,1.13888888888897,FALSE,NA
+"profiles_noise_VVV","identical",0,NA,0.0670000000000002,0.0690000000000026,1.02985074626869,FALSE,NA
+"profiles_prior_VVI","identical",0,NA,0.0579999999999998,0.0549999999999997,0.948275862068964,FALSE,NA
+"profiles_prior_EEE","identical",0,NA,0.204999999999998,0.202999999999999,0.990243902439031,FALSE,NA
+"profiles_prior_VEV_shrinkage","identical",0,NA,0.222999999999999,0.191000000000003,0.856502242152481,FALSE,NA
+"profiles_prior_noise_EII","identical",0,NA,0.157,0.139999999999997,0.891719745222911,FALSE,NA
+"profiles_refusal_prior_VEE","identical",0,NA,0.0129999999999981,0.0109999999999992,0.846153846153911,FALSE,NA
+"profiles_fixed_measurement","identical",0,NA,0.0770000000000017,0.0650000000000013,0.844155844155842,FALSE,NA
+"profiles_fixed_means","identical",0,NA,0.0650000000000013,0.0599999999999987,0.923076923076885,FALSE,NA
+"profiles_fixed_categorical","identical",0,NA,0.216000000000001,0.183,0.847222222222218,FALSE,NA
+"profiles_evaluate_only","identical",0,NA,0.0539999999999985,0.0459999999999994,0.851851851851864,FALSE,NA
+"profiles_user_start","identical",0,NA,0.0300000000000011,0.0279999999999987,0.933333333333256,FALSE,NA
+"profiles_refusal_fixed_without_start","identical",0,NA,0.0109999999999992,0.00900000000000034,0.818181818181909,FALSE,NA
+"profiles_centering_person","identical",0,NA,0.110000000000003,0.102999999999998,0.936363636363593,FALSE,NA
+"profiles_centering_grand","identical",0,NA,0.032,0.0389999999999944,1.21874999999982,FALSE,NA
+"profiles_time_sequences","identical",0,NA,0.0339999999999989,0.0350000000000037,1.02941176470602,FALSE,NA
+"profiles_acceleration_none","identical",0,NA,0.0329999999999977,0.0309999999999988,0.939393939393969,FALSE,NA
+"profiles_acceleration_squarem_full","identical",0,NA,0.0749999999999993,0.0700000000000003,0.933333333333346,FALSE,NA
+"profiles_acceleration_none_full","identical",0,NA,0.102999999999998,0.097999999999999,0.95145631067962,FALSE,NA
+"profiles_select_converged","identical",0,NA,0.178000000000001,0.169999999999995,0.955056179775245,FALSE,NA
+"profiles_select_likelihood","identical",0,NA,0.174999999999997,0.174,0.994285714285728,FALSE,NA
+"profiles_min_variance_tol","identical",0,NA,0.0279999999999987,0.0290000000000035,1.03571428571446,FALSE,NA
+"profiles_refusal_two_classes_no_id","identical",0,NA,0.00999999999999801,0.0100000000000051,1.00000000000071,FALSE,NA
+"profiles_refusal_missing_id","identical",0,NA,0.00800000000000267,0.00899999999999324,1.12499999999878,FALSE,NA
+"profiles_refusal_bad_model","identical",0,NA,0.00900000000000034,0.00999999999999801,1.11111111111085,FALSE,NA
+"cov_profile_shared","identical",0,NA,0.257000000000005,0.259,1.0077821011673,FALSE,NA
+"cov_group_only","identical",0,NA,0.172000000000004,0.180999999999997,1.05232558139531,FALSE,NA
+"cov_both_shared","identical",0,NA,0.147999999999996,0.156000000000006,1.05405405405412,FALSE,NA
+"cov_slopes_group_class","identical",0,NA,0.222000000000001,0.237000000000002,1.06756756756757,FALSE,NA
+"cov_one_group_class","identical",0,NA,0.0889999999999986,0.102000000000004,1.1460674157304,FALSE,NA
+"cov_single_level","identical",0,NA,0.0900000000000034,0.0959999999999965,1.06666666666659,FALSE,NA
+"cov_three_profiles_equal","identical",0,NA,1.916,1.858,0.969728601252612,FALSE,NA
+"cov_fiml","identical",0,NA,0.311000000000007,0.307000000000002,0.98713826366558,FALSE,NA
+"cov_full_covariance","identical",0,NA,0.148000000000003,0.150000000000006,1.01351351351353,FALSE,NA
+"cov_categorical_esm","identical",0,NA,0.158000000000001,0.160999999999994,1.01898734177211,FALSE,NA
+"cov_categorical_boundary","identical",0,NA,0.153999999999996,0.158999999999999,1.03246753246755,FALSE,NA
+"cov_ordinal","identical",0,NA,0.174000000000007,0.179000000000002,1.02873563218388,FALSE,NA
+"cov_count_poisson","identical",0,NA,0.211999999999996,0.210999999999999,0.995283018867936,FALSE,NA
+"cov_esm_mixed","identical",0,NA,0.396999999999998,0.363,0.914357682619651,FALSE,NA
+"cov_weights","identical",0,NA,0.252000000000002,0.237000000000002,0.94047619047619,FALSE,NA
+"cov_refusal_start","identical",0,NA,0.0500000000000043,0.0499999999999972,0.999999999999857,FALSE,NA
+"cov_refusal_fixed","identical",0,NA,0.00900000000000034,0.00900000000000034,1,FALSE,NA
+"cov_refusal_missing_covariate","identical",0,NA,0.00900000000000034,0.00800000000000267,0.888888888889152,FALSE,NA
+"cov_refusal_slopes_without_covariates","identical",0,NA,0.00900000000000034,0.00799999999999557,0.888888888888363,FALSE,NA
+"cov_refusal_group_covariate_varies","identical",0,NA,0.0450000000000017,0.0760000000000005,1.68888888888884,FALSE,NA
+"family_additive_varying","identical",0,NA,0.197000000000003,0.174999999999997,0.888324873096419,FALSE,NA
+"family_additive_equal","identical",0,NA,0.068000000000005,0.0599999999999952,0.882352941176335,FALSE,NA
+"family_additive_three_classes","identical",0,NA,0.162999999999997,0.154000000000003,0.944785276073658,FALSE,NA
+"family_additive_weights","identical",0,NA,0.0800000000000054,0.0799999999999983,0.999999999999911,FALSE,NA
+"family_additive_engagement_boundary","identical",0,NA,0.177,0.170999999999999,0.966101694915251,FALSE,NA
+"family_dispersion_equal","identical",0,NA,0.0859999999999985,0.0769999999999982,0.895348837209297,FALSE,NA
+"family_dispersion_three_classes","identical",0,NA,0.140999999999998,0.131,0.929078014184412,FALSE,NA
+"family_dispersion_varying_refused","identical",0,NA,0.00900000000000034,0.00800000000000267,0.888888888889152,FALSE,NA
+"family_additive_dispersion_varying","identical",0,NA,0.0799999999999983,0.0829999999999984,1.0375,FALSE,NA
+"family_additive_dispersion_equal","identical",0,NA,0.0589999999999975,0.0579999999999998,0.983050847457666,FALSE,NA
+"family_additive_dispersion_three_classes","identical",0,NA,0.144999999999996,0.134,0.924137931034511,FALSE,NA
+"family_restricted_cross_level_varying","identical",0,NA,0.0799999999999983,0.0779999999999959,0.974999999999969,FALSE,NA
+"family_restricted_cross_level_equal","identical",0,NA,0.0630000000000024,0.0649999999999977,1.03174603174596,FALSE,NA
+"family_full_cross_level_varying","identical",0,NA,0.070999999999998,0.0509999999999948,0.718309859154877,FALSE,NA
+"family_full_cross_level_equal","identical",0,NA,0.0420000000000016,0.0339999999999989,0.809523809523753,FALSE,NA
+"family_refusal_categorical","identical",0,NA,0.0110000000000028,0.00800000000000267,0.727272727272785,FALSE,NA
+"family_refusal_fiml","identical",0,NA,0.00999999999999801,0.00800000000000267,0.800000000000426,FALSE,NA
+"family_refusal_covariates","identical",0,NA,0.00999999999999801,0.00800000000000267,0.800000000000426,FALSE,NA
+"family_refusal_cross_level_categorical","identical",0,NA,0.00900000000000034,0.00799999999999557,0.888888888888363,FALSE,NA
+"family_enumeration","identical",0,NA,0.698,0.748000000000005,1.07163323782236,FALSE,NA
+"family_bootstrap_lrt","identical",0,NA,0.905000000000001,1.171,1.2939226519337,TRUE,NA
+"family_bootstrap_lrt_refused","identical",0,NA,0.166000000000004,0.182000000000002,1.09638554216866,FALSE,NA
+"lta_homogeneous_basic","identical",0,NA,0.117999999999995,0.138999999999996,1.17796610169493,FALSE,NA
+"lta_homogeneous_group_classes","identical",0,NA,0.104000000000006,0.107999999999997,1.03846153846145,FALSE,NA
+"lta_homogeneous_equal_variance","identical",0,NA,0.0320000000000036,0.0310000000000059,0.968750000000076,FALSE,NA
+"lta_homogeneous_full_covariance","identical",0,NA,0.0419999999999945,0.036999999999999,0.880952380952473,FALSE,NA
+"lta_homogeneous_model_EEI","identical",0,NA,0.0300000000000011,0.0330000000000013,1.1,FALSE,NA
+"lta_homogeneous_model_VVI","identical",0,NA,0.0330000000000013,0.0300000000000011,0.909090909090908,FALSE,NA
+"lta_homogeneous_model_EEE","identical",0,NA,0.0450000000000017,0.0380000000000038,0.844444444444497,FALSE,NA
+"lta_homogeneous_model_VVV","identical",0,NA,0.0410000000000039,0.0360000000000014,0.878048780487755,FALSE,NA
+"lta_homogeneous_model_VEI","identical",0,NA,0.0429999999999993,0.0369999999999919,0.860465116278896,FALSE,NA
+"lta_homogeneous_categorical","identical",0,NA,0.236999999999995,0.204999999999998,0.864978902953598,FALSE,NA
+"lta_homogeneous_mixed","identical",0,NA,0.176000000000002,0.162999999999997,0.926136363636334,FALSE,NA
+"lta_homogeneous_fiml","identical",0,NA,0.068000000000012,0.0630000000000024,0.926470588235166,FALSE,NA
+"lta_homogeneous_occasions_observed","identical",0,NA,0.032999999999987,0.0390000000000015,1.18181818181869,FALSE,NA
+"lta_homogeneous_occasions_grid","identical",0,NA,0.0330000000000013,0.0339999999999918,1.03030303030274,FALSE,NA
+"lta_homogeneous_select_converged","identical",0,NA,0.539999999999992,0.581999999999994,1.07777777777778,FALSE,NA
+"lta_homogeneous_bootstrap","identical",0,NA,0.272000000000006,0.300000000000011,1.10294117647061,FALSE,NA
+"lta_general_occasion_transitions","identical",0,NA,1.36,1.46299999999999,1.07573529411764,FALSE,NA
+"lta_general_order2","identical",0,NA,0.784999999999997,1.10799999999999,1.41146496815286,TRUE,NA
+"lta_general_mover_stayer","identical",0,NA,3.83699999999999,3.961,1.03231691425593,FALSE,NA
+"lta_general_transition_covariates","identical",0,NA,0.299999999999997,0.26100000000001,0.870000000000042,FALSE,NA
+"lta_general_initial_covariates","identical",0,NA,0.152000000000001,0.129000000000005,0.848684210526342,FALSE,NA
+"lta_general_occasion_measurement","identical",0,NA,0.337999999999994,0.305999999999997,0.90532544378699,FALSE,NA
+"lta_general_group_classes","identical",0,NA,6.56700000000001,7.792,1.18653875437795,FALSE,NA
+"lta_general_full_covariance","identical",0,NA,0.189999999999998,0.231000000000009,1.21578947368427,FALSE,NA
+"lta_general_model_VEI","identical",0,NA,0.11999999999999,0.176000000000002,1.4666666666668,TRUE,NA
+"lta_general_categorical","identical",0,NA,6.727,8.078,1.20083246618106,TRUE,NA
+"lta_general_ordinal","identical",0,NA,3.462,4.292,1.23974581166956,TRUE,NA
+"lta_general_count_poisson","identical",0,NA,0.603000000000009,0.799999999999997,1.3266998341625,TRUE,NA
+"lta_general_count_nb_varying","identical",0,NA,6.19199999999999,10.179,1.64389534883721,TRUE,NA
+"lta_general_count_nb_equal","identical",0,NA,3.777,4.624,1.22425205189304,TRUE,NA
+"lta_general_weights","identical",0,NA,0.10499999999999,0.114000000000004,1.08571428571443,FALSE,NA
+"lta_general_fiml_covariates","identical",0,NA,0.156999999999996,0.173000000000002,1.10191082802552,FALSE,NA
+"lta_general_mixed_extensions","identical",0,NA,6.55199999999999,10.099,1.54136141636142,TRUE,NA
+"lta_general_order2_mover_stayer","identical",0,NA,15.906,23.909,1.50314346787376,TRUE,NA
+"lta_general_bootstrap","identical",0,NA,1.381,1.726,1.24981897175959,TRUE,NA
+"lta_general_weights_bootstrap","identical",0,NA,0.874000000000024,1.26599999999999,1.44851258581231,TRUE,NA
+"lta_refusal_one_profile","identical",0,NA,0.00799999999998136,0.0100000000000193,1.25000000000533,FALSE,NA
+"lta_refusal_order3","identical",0,NA,0.00600000000000023,0.0100000000000193,1.66666666666982,FALSE,NA
+"lta_refusal_no_time","identical",0,NA,0.00699999999997658,0.0099999999999909,1.42857142857491,FALSE,NA
+"lta_refusal_missing_error","identical",0,NA,0.00799999999998136,0.0100000000000193,1.25000000000533,FALSE,NA
+"lta_refusal_bad_model","identical",0,NA,0.007000000000005,0.00899999999998613,1.28571428571139,FALSE,NA
+"lta_bootstrap_lrt_covariates","identical",0,NA,1.511,1.863,1.23295830575778,TRUE,NA
+"lta_bootstrap_lrt_group_classes","identical",0,NA,0.757000000000005,1.05599999999998,1.39498018494052,TRUE,NA
+"lta_refusal_bootstrap_lrt_reversed","identical",0,NA,0.260999999999996,0.294999999999987,1.13026819923369,FALSE,NA
+"lta_enumeration","identical",0,NA,0.539999999999992,0.649000000000001,1.20185185185187,TRUE,NA
+"lta_enumeration_structures","identical",0,NA,0.0869999999999891,0.0960000000000036,1.10344827586225,FALSE,NA
+"lta_enumeration_candidate","identical",0,NA,0.193999999999988,0.204000000000008,1.05154639175268,FALSE,NA
+"lta_refusal_enumeration_one_profile","identical",0,NA,0.0109999999999957,0.0099999999999909,0.909090909090438,FALSE,NA
+"reg_gaussian_single","identical",0,NA,0.283000000000015,0.369,1.30388692579498,TRUE,NA
+"reg_gaussian_equal_variance","identical",0,NA,0.0629999999999882,0.063999999999993,1.01587301587309,FALSE,NA
+"reg_gaussian_common","identical",0,NA,0.0949999999999989,0.0979999999999848,1.03157894736827,FALSE,NA
+"reg_gaussian_membership","identical",0,NA,0.191999999999979,0.222999999999985,1.16145833333338,FALSE,NA
+"reg_gaussian_select_converged","identical",0,NA,0.0819999999999936,0.120999999999981,1.47560975609744,FALSE,NA
+"reg_gaussian_vcov_robust_clustered","identical",0,NA,0.0869999999999891,0.0819999999999936,0.942528735632229,FALSE,NA
+"reg_gaussian_vcov_opg","identical",0,NA,0.0819999999999936,0.0730000000000075,0.890243902439185,FALSE,NA
+"reg_gaussian_vcov_none","identical",0,NA,0.0739999999999839,0.0749999999999886,1.01351351351358,FALSE,NA
+"reg_gaussian_weights_rows","identical",0,NA,0.0889999999999986,0.0859999999999843,0.9662921348313,FALSE,NA
+"reg_gaussian_weights_observed_refused","identical",0,NA,0.00100000000000477,0.000999999999976353,0.999999999971583,FALSE,NA
+"reg_gaussian_missing_omit","identical",0,NA,0.092000000000013,0.0829999999999984,0.902173913043333,FALSE,NA
 "reg_refusal_missing_error","identical",0,NA,0,0,NA,FALSE,NA
-"reg_group_level","DIFFERENT",0.276533831123386,"reg_group_level/probes/tables_robust/value/coefficients/std_error",0.0169999999999959,0.0159999999999911,0.941176470587941,FALSE,"baseline 1.1027056263586226, now 1.1096628286643906"
-"reg_group_membership","DIFFERENT",0.0893881000449194,"reg_group_membership/probes/tables_robust/value/coefficients/std_error",0.0349999999999966,0.0310000000000059,0.885714285714541,FALSE,"baseline 0.14216714400686464, now 0.14306410649480925"
-"reg_group_weights","DIFFERENT",Inf,"reg_group_weights/probes/print/value",0.0229999999999961,0.0160000000000196,0.695652173914012,FALSE,"[18]  chr ""Class 1 Intercept 47.84 [45.67, 50.01] <.001"" vs  chr ""Class 1 Intercept 47.84 [45.66, 50.03] <.001"""
-"reg_two_level","DIFFERENT",0.0765895602398208,"reg_two_level/probes/tables_robust/value/coefficients/std_error",0.205,0.0769999999999982,0.375609756097552,FALSE,"baseline 1.1838515199072259, now 1.1913206887652674"
-"reg_two_level_group_membership","DIFFERENT",0.0934102559250207,"reg_two_level_group_membership/probes/tables_robust/value/coefficients/std_error",0.131,0.123999999999995,0.946564885496147,FALSE,"baseline 0.81066565844658178, now 0.81578031901721459"
-"reg_two_level_robust","DIFFERENT",Inf,"reg_two_level_robust/probes/print/value",0.0899999999999999,0.0769999999999982,0.855555555555536,FALSE,"[17]  chr ""Class 1 Intercept 34.65 [32.99, 36.30] <.001"" vs  chr ""Class 1 Intercept 34.65 [32.98, 36.31] <.001"""
-"reg_binomial_group","DIFFERENT",0.180677412618071,"reg_binomial_group/probes/tables_robust/value/coefficients/std_error",0.0489999999999782,0.0459999999999923,0.938775510204342,FALSE,"baseline 0.092930934592898792, now 0.093517255454035594"
-"reg_binomial_cbind","DIFFERENT",Inf,"reg_binomial_cbind/probes/tables_robust/value/coefficients/std_error",0.132000000000005,0.120000000000005,0.909090909090909,FALSE,"baseline 0.021808424613407987, now 0.021831177279599712"
-"reg_poisson","DIFFERENT",0.0322271133532952,"reg_poisson/probes/tables_robust/value/coefficients/std_error",0.195999999999998,0.251000000000005,1.280612244898,TRUE,"baseline 0.10691422292837435, now 0.1070257662233314"
-"reg_poisson_offset","DIFFERENT",0.0510659481173553,"reg_poisson_offset/probes/tables_robust/value/coefficients/std_error",0.0180000000000007,0.0250000000000057,1.38888888888915,FALSE,"baseline 0.023897204327396934, now 0.024047976828709541"
-"reg_negative_binomial","DIFFERENT",Inf,"reg_negative_binomial/probes/tables/value/coefficients/estimate",1.564,1.49799999999999,0.957800511508945,FALSE,"baseline -0.099070682484109968, now -0.09907115626019887"
-"reg_negative_binomial_group","DIFFERENT",0.194697255576293,"reg_negative_binomial_group/probes/tables_robust/value/coefficients/std_error",0.489,0.501999999999981,1.02658486707563,FALSE,"baseline 0.093578433157998547, now 0.094168839223674"
-"reg_ordinal_group","DIFFERENT",0.175700483682218,"reg_ordinal_group/probes/tables_robust/value/coefficients/std_error",0.356,0.22999999999999,0.646067415730308,FALSE,"baseline 0.069536968387429718, now 0.069975691783082272"
-"reg_ordinal_common","DIFFERENT",0.0114650811227292,"reg_ordinal_common/probes/tables_robust/value/coefficients/std_error",3.35,2.79900000000001,0.835522388059703,FALSE,"baseline 2.2074911798092023, now 2.20979424895912"
-"reg_ordinal_two_level","DIFFERENT",0.126959634393948,"reg_ordinal_two_level/probes/tables_robust/value/coefficients/std_error",0.907,0.877999999999986,0.968026460859962,FALSE,"baseline 0.056601467380829433, now 0.056958577973138733"
-"reg_ordinal_refusal_two_categories","identical",0,NA,0.000999999999999446,0,0,FALSE,NA
-"reg_refusal_binary_rows","identical",0,NA,0,0.00100000000000477,Inf,FALSE,NA
+"reg_group_level","identical",0,NA,0.0480000000000018,0.0509999999999877,1.0624999999997,FALSE,NA
+"reg_group_membership","identical",0,NA,0.0720000000000027,0.0809999999999889,1.1249999999998,FALSE,NA
+"reg_group_weights","identical",0,NA,0.0539999999999736,0.0520000000000209,0.962962962963821,FALSE,NA
+"reg_two_level","identical",0,NA,0.217999999999989,0.258999999999986,1.18807339449541,FALSE,NA
+"reg_two_level_group_membership","identical",0,NA,0.337999999999994,0.377999999999986,1.11834319526625,FALSE,NA
+"reg_two_level_robust","identical",0,NA,0.236999999999995,0.22799999999998,0.962025316455633,FALSE,NA
+"reg_binomial_group","identical",0,NA,0.0960000000000036,0.0979999999999848,1.02083333333314,FALSE,NA
+"reg_binomial_cbind","identical",0,NA,0.274000000000001,0.282999999999987,1.03284671532842,FALSE,NA
+"reg_poisson","identical",0,NA,0.515000000000015,0.52600000000001,1.02135922330096,FALSE,NA
+"reg_poisson_offset","identical",0,NA,0.0510000000000161,0.0529999999999973,1.03921568627413,FALSE,NA
+"reg_negative_binomial","identical",0,NA,2.243,2.67600000000002,1.19304502897905,FALSE,NA
+"reg_negative_binomial_group","identical",0,NA,0.881,1.07499999999999,1.22020431328035,TRUE,NA
+"reg_ordinal_group","identical",0,NA,0.295999999999992,0.292000000000002,0.986486486486519,FALSE,NA
+"reg_ordinal_common","identical",0,NA,4.66,4.46799999999999,0.9587982832618,FALSE,NA
+"reg_ordinal_two_level","identical",0,NA,1.87799999999999,1.83699999999999,0.978168264110756,FALSE,NA
+"reg_ordinal_refusal_two_categories","identical",0,NA,0.00199999999998113,0,0,FALSE,NA
+"reg_refusal_binary_rows","identical",0,NA,0.00100000000000477,0,0,FALSE,NA
 "reg_refusal_group_without_id","identical",0,NA,0,0,NA,FALSE,NA
-"reg_refusal_poisson_noninteger","identical",0,NA,0,0,NA,FALSE,NA
-"reg_enumerate","DIFFERENT",Inf,"reg_enumerate/probes@names",0.0330000000000155,0.025999999999982,0.787878787877873,FALSE," chr [1:4] ""class"" ""print"" ... vs  chr [1:5] ""class"" ""print"" ..."
-"reg_enumerate_bootstrap","DIFFERENT",Inf,"reg_enumerate_bootstrap/fit_conditions",1.38499999999999,1.197,0.864259927797842,FALSE,"length 0 vs 1"
-"reg_compare_models","DIFFERENT",Inf,"reg_compare_models/probes/value/value",0.155999999999977,0.130000000000024,0.833333333333609,FALSE,"attributes [class,display,marks,names,row.names,title] vs [class,display,models,names,row.names,title]"
-"growth_lcga","DIFFERENT",0.105729733221987,"growth_lcga/probes/tables_robust/value/coefficients/std_error",0.154,0.0130000000000052,0.0844155844156184,FALSE,"baseline 0.27339666427271803, now 0.27570385002282105"
-"growth_random_intercept","DIFFERENT",Inf,"growth_random_intercept/probes@names",0.441,0.373999999999995,0.848072562358266,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_random_slope","DIFFERENT",Inf,"growth_random_slope/probes@names",0.876,0.755000000000024,0.861872146118749,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_random_slope_only","DIFFERENT",Inf,"growth_random_slope_only/probes@names",0.391999999999999,0.340000000000003,0.867346938775521,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_covariance_equal","DIFFERENT",Inf,"growth_covariance_equal/probes@names",0.576,0.531000000000006,0.92187500000001,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_covariance_proportional","DIFFERENT",Inf,"growth_covariance_proportional/probes@names",0.959,0.830999999999989,0.866527632950979,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_random_diagonal","DIFFERENT",Inf,"growth_random_diagonal/probes@names",0.715999999999999,0.638000000000005,0.891061452513975,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_variance_equal","DIFFERENT",Inf,"growth_variance_equal/probes@names",0.345000000000001,0.224000000000018,0.649275362318891,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_membership","DIFFERENT",Inf,"growth_membership/probes@names",0.491,0.364999999999981,0.743380855397109,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_weights","DIFFERENT",Inf,"growth_weights/probes@names",0.34,0.288999999999987,0.849999999999962,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_vcov_robust","DIFFERENT",Inf,"growth_vcov_robust/probes@names",0.872999999999999,0.745000000000005,0.853379152348231,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_vcov_opg","DIFFERENT",Inf,"growth_vcov_opg/probes@names",0.799,0.683999999999997,0.856070087609509,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
+"reg_refusal_poisson_noninteger","identical",0,NA,0,0.000999999999976353,Inf,FALSE,NA
+"reg_enumerate","identical",0,NA,0.085000000000008,0.0939999999999941,1.105882352941,FALSE,NA
+"reg_enumerate_bootstrap","identical",0,NA,3.499,3.709,1.0600171477565,FALSE,NA
+"reg_compare_models","identical",0,NA,0.341000000000008,0.461999999999989,1.35483870967736,TRUE,NA
+"growth_lcga","identical",0,NA,0.0430000000000064,0.0459999999999923,1.06976744186013,FALSE,NA
+"growth_random_intercept","identical",0,NA,0.686000000000007,1.208,1.76093294460639,TRUE,NA
+"growth_random_slope","identical",0,NA,1.05000000000001,1.53800000000001,1.4647619047619,TRUE,NA
+"growth_random_slope_only","identical",0,NA,0.644999999999982,0.828000000000003,1.2837209302326,TRUE,NA
+"growth_covariance_equal","identical",0,NA,0.614000000000004,0.793000000000006,1.29153094462541,TRUE,NA
+"growth_covariance_proportional","identical",0,NA,1.05699999999999,1.20400000000001,1.13907284768214,FALSE,NA
+"growth_random_diagonal","identical",0,NA,0.816999999999979,1.15799999999999,1.41738066095473,TRUE,NA
+"growth_variance_equal","identical",0,NA,0.524000000000001,0.534999999999997,1.02099236641221,FALSE,NA
+"growth_membership","identical",0,NA,0.874000000000024,0.913999999999987,1.04576659038897,FALSE,NA
+"growth_weights","identical",0,NA,0.50200000000001,0.635999999999996,1.2669322709163,TRUE,NA
+"growth_vcov_robust","identical",0,NA,1.32499999999999,1.524,1.15018867924529,FALSE,NA
+"growth_vcov_opg","identical",0,NA,1.25200000000001,1.33000000000001,1.06230031948882,FALSE,NA
 "growth_refusal_poisson_random","identical",0,NA,0,0,NA,FALSE,NA
 "growth_refusal_observation_level","identical",0,NA,0,0,NA,FALSE,NA
-"growth_multilevel","DIFFERENT",Inf,"growth_multilevel/probes@names",2.104,1.58699999999999,0.754277566539919,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
-"growth_multilevel_one_class","DIFFERENT",Inf,"growth_multilevel_one_class/probes@names",2.39,2.05500000000001,0.859832635983266,FALSE," chr [1:12] ""class"" ""print"" ... vs  chr [1:14] ""class"" ""print"" ..."
+"growth_multilevel","identical",0,NA,4.804,4.994,1.03955037468776,FALSE,NA
+"growth_multilevel_one_class","identical",0,NA,3.095,3.97299999999998,1.28368336025848,TRUE,NA
 "growth_refusal_cluster_weights","identical",0,NA,0,0,NA,FALSE,NA
-"svc_enumerate_lpa_basic","DIFFERENT",Inf,"svc_enumerate_lpa_basic/probes/print/value",0.247000000000014,0.27000000000001,1.09311740890686,FALSE," chr [1:41] ""Class enumeration: 12 candidate models"" "" n_profiles n_gr vs  chr [1:67] ""Class enumeration: 12 candidate models"" "" candidate n_pro"
-"svc_enumerate_lpa_all_structures","DIFFERENT",Inf,"svc_enumerate_lpa_all_structures/probes/print/value",0.795000000000016,0.864000000000004,1.08679245283017,FALSE," chr [1:47] ""Class enumeration: 14 candidate models"" "" n_profiles n_gr vs  chr [1:77] ""Class enumeration: 14 candidate models"" "" candidate n_pro"
-"svc_enumerate_lca","DIFFERENT",Inf,"svc_enumerate_lca/probes/print/value",0.417000000000002,0.423000000000002,1.01438848920863,FALSE," chr [1:14] ""Class enumeration: 3 candidate models"" "" n_profiles n_gro vs  chr [1:22] ""Class enumeration: 3 candidate models"" "" candidate n_prof"
-"svc_enumerate_classes_two_level","DIFFERENT",Inf,"svc_enumerate_classes_two_level/probes/print/value",0.0740000000000123,0.0800000000000125,1.08108108108107,FALSE," chr [1:30] ""Class enumeration: 8 candidate models"" "" n_profiles n_gro vs  chr [1:48] ""Class enumeration: 8 candidate models"" "" candidate n_prof"
-"svc_candidate_fit","DIFFERENT",Inf,"svc_candidate_fit/probes/print/value",0.070999999999998,0.0800000000000125,1.12676056338049,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_candidate_fit_ambiguous","DIFFERENT",Inf,"svc_candidate_fit_ambiguous/refusal/message",0.0349999999999966,0.0389999999999873,1.11428571428546,FALSE,"[1]  chr ""2 candidates have 2 profiles and 1 group classes: EEI, VVI. Name vs  chr ""2 candidates have 2 profiles and 1 group classes: \""profiles2_gr"
-"svc_bootstrap_lrt_lpa","DIFFERENT",Inf,"svc_bootstrap_lrt_lpa/probes/print/value",0.0169999999999959,0.021000000000015,1.23529411764824,FALSE," chr [1:12] ""Latent profile analysis: 3 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 3 profiles"" ""150 observations; v"
-"svc_bootstrap_lrt_lca","DIFFERENT",Inf,"svc_bootstrap_lrt_lca/probes/summary/value",0.138999999999982,0.140000000000015,1.00719424460455,FALSE,"[1]  chr ""Multilevel LPA: 2 profiles and 1 group classes"" vs  chr ""Latent class analysis: 2 classes"""
-"svc_bootstrap_lrt_fiml","DIFFERENT",Inf,"svc_bootstrap_lrt_fiml/probes/print/value",0.0519999999999925,0.054000000000002,1.03846153846173,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"svc_bootstrap_lrt_profiles","DIFFERENT",Inf,"svc_bootstrap_lrt_profiles/probes/print/value",0.0120000000000005,0.01400000000001,1.16666666666745,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 1 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 1 group cl"
-"svc_bootstrap_lrt_covariates","DIFFERENT",Inf,"svc_bootstrap_lrt_covariates/fit_conditions",0.694999999999993,0.741000000000014,1.06618705035974,FALSE,"length 0 vs 1"
-"svc_bootstrap_lrt_mixed_families","DIFFERENT",Inf,"svc_bootstrap_lrt_mixed_families/probes/print/value",0.0360000000000014,0.0360000000000014,0.999999999999999,FALSE," chr [1:9] ""Multilevel LPA with covariates: 2 profiles, 1 group classe vs  chr [1:10] ""Multilevel LPA with covariates: 2 profiles, 1 group class"
-"svc_bootstrap_lrt_fixed","DIFFERENT",Inf,"svc_bootstrap_lrt_fixed/probes/print/value",0.021000000000015,0.0269999999999868,1.28571428571274,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
+"svc_enumerate_lpa_basic","identical",0,NA,1.01499999999999,1.507,1.48472906403943,TRUE,NA
+"svc_enumerate_lpa_all_structures","identical",0,NA,1.58500000000001,2.19300000000001,1.38359621451104,TRUE,NA
+"svc_enumerate_lca","identical",0,NA,0.725999999999999,0.828000000000031,1.14049586776864,FALSE,NA
+"svc_enumerate_classes_two_level","identical",0,NA,0.501999999999981,0.565999999999974,1.12749003984063,FALSE,NA
+"svc_candidate_fit","identical",0,NA,0.485000000000014,0.689999999999998,1.42268041237109,TRUE,NA
+"svc_candidate_fit_ambiguous","identical",0,NA,0.355999999999995,0.451000000000022,1.26685393258435,TRUE,NA
+"svc_bootstrap_lrt_lpa","identical",0,NA,0.0699999999999932,0.0649999999999977,0.928571428571486,FALSE,NA
+"svc_bootstrap_lrt_lca","identical",0,NA,0.242999999999995,0.324999999999989,1.33744855967076,TRUE,NA
+"svc_bootstrap_lrt_fiml","identical",0,NA,0.146000000000015,0.120000000000005,0.821917808219125,FALSE,NA
+"svc_bootstrap_lrt_profiles","identical",0,NA,0.0769999999999982,0.0500000000000114,0.649350649350812,FALSE,NA
+"svc_bootstrap_lrt_covariates","identical",0,NA,2.56300000000002,1.61999999999995,0.632071790870049,FALSE,NA
+"svc_bootstrap_lrt_mixed_families","identical",0,NA,0.114000000000004,0.0769999999999982,0.675438596491188,FALSE,NA
+"svc_bootstrap_lrt_fixed","identical",0,NA,0.092000000000013,0.0690000000000168,0.750000000000077,FALSE,NA
 "svc_fit_staged_one_class","identical",0,NA,0,0,NA,FALSE,NA
-"svc_inference_lpa","DIFFERENT",Inf,"svc_inference_lpa/probes/print/value",0.0139999999999816,0.0150000000000148,1.07142857143104,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"svc_inference_lpa_full","DIFFERENT",Inf,"svc_inference_lpa_full/probes/print/value",0.0390000000000157,0.0379999999999825,0.974358974358133,FALSE," chr [1:14] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:15] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"svc_inference_two_level","DIFFERENT",Inf,"svc_inference_two_level/probes/print/value",0.0169999999999959,0.0180000000000007,1.05882352941206,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_inference_boundary_lca","DIFFERENT",Inf,"svc_inference_boundary_lca/probes/summary/value",0.197999999999979,0.193000000000012,0.974747474747639,FALSE,"[76]  chr "" 1 2 2 2 1 2 2 2 2 1.399e-14 1.392e-14"" vs  chr "" 1 2 2 2 1 2 2 2 2 1.388e-14 1.392e-14"""
-"svc_inference_bootstrap_lca","DIFFERENT",Inf,"svc_inference_bootstrap_lca/probes/summary/value",0.137999999999977,0.139999999999986,1.01449275362326,FALSE,"[1]  chr ""Multilevel LPA: 2 profiles and 1 group classes"" vs  chr ""Latent class analysis: 2 classes"""
-"svc_inference_bootstrap_mixed_extra","DIFFERENT",Inf,"svc_inference_bootstrap_mixed_extra/probes/print/value",0.0720000000000027,0.0759999999999934,1.05555555555542,FALSE," chr [1:12] ""Latent profile analysis: 2 profiles"" ""737 observations; v vs  chr [1:13] ""Latent profile analysis: 2 profiles"" ""737 observations; v"
-"svc_inference_bootstrap_vei","DIFFERENT",Inf,"svc_inference_bootstrap_vei/probes/print/value",0.0369999999999777,0.0390000000000157,1.05405405405511,FALSE," chr [1:11] ""Latent profile analysis: 2 profiles"" ""150 observations; v vs  chr [1:12] ""Latent profile analysis: 2 profiles"" ""150 observations; v"
-"svc_inference_bootstrap_staged","DIFFERENT",Inf,"svc_inference_bootstrap_staged/probes/print/value",0.0219999999999914,0.0270000000000152,1.2272727272739,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_inference_adjust_level","DIFFERENT",Inf,"svc_inference_adjust_level/probes/value/value",0.0389999999999873,0.0240000000000009,0.615384615384839,FALSE,"attributes [adjust,class,condition_ratio,covariance,covariance_unconstrained,fixed,fixed_at_bound,gradient,hessian,level,method,names,row.names,scaled_score,scaling_correction,score_displacement,step,vcov_type] vs [adjust,class,condition_ratio,covariance,covariance_unconstrained,fixed,fixed_at_bound,gradient,hessian,hessian_conditioned,level,method,names,row.names,scaled_score,scaling_correction,score_displacement,step,vcov_type]"
-"svc_three_step_two_level","DIFFERENT",Inf,"svc_three_step_two_level/probes/print/value",0.0159999999999911,0.0180000000000007,1.12500000000067,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_three_step_independent","DIFFERENT",0.0460487606934163,"svc_three_step_independent/probes/value/value/standard_error",0.0180000000000007,0.0229999999999961,1.27777777777751,FALSE,"baseline 0.12992336692512479, now 0.1301611043003861"
-"svc_three_step_single_level","DIFFERENT",Inf,"svc_three_step_single_level/probes/print/value",0.0180000000000007,0.0190000000000055,1.05555555555582,FALSE," chr [1:12] ""Latent profile analysis: 3 profiles"" ""150 observations; v vs  chr [1:13] ""Latent profile analysis: 3 profiles"" ""150 observations; v"
-"svc_three_step_indicator_refused","identical",0,NA,0.0159999999999911,0.0169999999999959,1.06250000000034,FALSE,NA
-"svc_r3step_two_level","DIFFERENT",Inf,"svc_r3step_two_level/probes/print/value",0.0159999999999911,0.0190000000000055,1.187500000001,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_r3step_by_group_class","DIFFERENT",Inf,"svc_r3step_by_group_class/probes/value/value/estimate",0.0480000000000018,0.0510000000000161,1.0625000000003,FALSE,"baseline 1.0982793393700263, now 1.0982793024148558"
-"svc_r3step_observed","DIFFERENT",Inf,"svc_r3step_observed/probes/value/value/estimate",0.0250000000000057,0.0310000000000059,1.23999999999995,FALSE,"baseline 0.66724301395785801, now 0.6672431145687393"
-"svc_sensitivity_two_level","DIFFERENT",Inf,"svc_sensitivity_two_level/probes/print/value",0.0170000000000243,0.0180000000000007,1.05882352941029,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_sensitivity_options","identical",0,NA,0.0339999999999918,0.0410000000000252,1.20588235294221,FALSE,NA
-"svc_pool_covariates","within_tolerance",4.1796409156761e-11,"svc_pool_covariates/probes/tables/estimates/value/df",0.201999999999998,0.161000000000001,0.797029702970312,FALSE,"baseline 173.96056546484937, now 173.96056547212029"
-"svc_pool_robust","DIFFERENT",Inf,"svc_pool_robust/probes/print/value",0.0749999999999886,0.0550000000000068,0.733333333333536,FALSE,"[2]  chr ""Largest fraction of missing information: NaN"" vs  chr ""Largest fraction of missing information: 0.000"""
-"svc_pool_mice","within_tolerance",4.84623276593559e-11,"svc_pool_mice/probes/tables/estimates/value/df",0.207999999999998,2.001,9.62019230769242,TRUE,"baseline 32.29735198731003, now 32.297351988875235"
-"svc_fit_staged","DIFFERENT",Inf,"svc_fit_staged/probes/print/value",0.0209999999999866,0.0240000000000009,1.14285714285792,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_fit_staged_categorical","DIFFERENT",Inf,"svc_fit_staged_categorical/probes/print/value",0.0510000000000161,0.0510000000000161,1,FALSE," chr [1:13] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:14] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_starting_values_full","identical",0,NA,0.0370000000000061,0.0420000000000016,1.13513513513499,FALSE,NA
-"svc_diagnostics_report","DIFFERENT",Inf,"svc_diagnostics_report/probes/print/value",0.0159999999999911,0.0160000000000196,1.00000000000178,FALSE," chr [1:11] ""Two-level latent profile analysis: 2 profiles, 2 group cl vs  chr [1:12] ""Two-level latent profile analysis: 2 profiles, 2 group cl"
-"svc_diagnostics_overall","identical",0,NA,0.0190000000000055,0.0219999999999914,1.15789473684132,FALSE,NA
-"svc_predict_types","identical",0,NA,0.0170000000000243,0.0209999999999866,1.2352941176445,FALSE,NA
-"svc_descriptives_data","identical",0,NA,0.0029999999999859,0.00300000000001432,1.00000000000947,FALSE,NA
+"svc_inference_lpa","identical",0,NA,0.0420000000000016,0.04200000000003,1.00000000000068,FALSE,NA
+"svc_inference_lpa_full","identical",0,NA,0.0910000000000082,0.0810000000000173,0.89010989011,FALSE,NA
+"svc_inference_two_level","identical",0,NA,0.0420000000000016,0.0359999999999445,0.857142857141504,FALSE,NA
+"svc_inference_boundary_lca","identical",0,NA,0.296999999999997,0.24799999999999,0.835016835016811,FALSE,NA
+"svc_inference_bootstrap_lca","identical",0,NA,0.260999999999996,0.237000000000023,0.908045977011597,FALSE,NA
+"svc_inference_bootstrap_mixed_extra","identical",0,NA,0.161000000000001,0.15300000000002,0.95031055900633,FALSE,NA
+"svc_inference_bootstrap_vei","identical",0,NA,0.0879999999999654,0.0960000000000036,1.09090909090956,FALSE,NA
+"svc_inference_bootstrap_staged","identical",0,NA,0.0849999999999795,0.0720000000000027,0.847058823529648,FALSE,NA
+"svc_inference_adjust_level","identical",0,NA,0.0699999999999932,0.0589999999999691,0.842857142856783,FALSE,NA
+"svc_three_step_two_level","identical",0,NA,0.0439999999999827,0.04200000000003,0.954545454546512,FALSE,NA
+"svc_three_step_independent","identical",0,NA,0.0430000000000064,0.0459999999999923,1.06976744186013,FALSE,NA
+"svc_three_step_single_level","identical",0,NA,0.0360000000000014,0.0360000000000014,0.999999999999999,FALSE,NA
+"svc_three_step_indicator_refused","identical",0,NA,0.0480000000000018,0.0339999999999918,0.708333333333136,FALSE,NA
+"svc_r3step_two_level","identical",0,NA,0.035000000000025,0.0339999999999918,0.971428571427644,FALSE,NA
+"svc_r3step_by_group_class","identical",0,NA,0.0939999999999941,0.0909999999999513,0.968085106382522,FALSE,NA
+"svc_r3step_observed","identical",0,NA,0.0710000000000264,0.0600000000000023,0.845070422534929,FALSE,NA
+"svc_sensitivity_two_level","identical",0,NA,0.0640000000000214,0.0389999999999873,0.609374999999597,FALSE,NA
+"svc_sensitivity_options","identical",0,NA,0.0830000000000268,0.115000000000009,1.38554216867436,FALSE,NA
+"svc_pool_covariates","identical",0,NA,0.40300000000002,0.339999999999975,0.843672456575578,FALSE,NA
+"svc_pool_robust","identical",0,NA,0.149999999999977,0.145000000000039,0.966666666667072,FALSE,NA
+"svc_pool_mice","identical",0,NA,2.125,2.43400000000003,1.14541176470589,FALSE,NA
+"svc_fit_staged","identical",0,NA,0.0570000000000164,0.0769999999999982,1.35087719298204,FALSE,NA
+"svc_fit_staged_categorical","identical",0,NA,0.106000000000051,0.166999999999973,1.5754716981122,TRUE,NA
+"svc_starting_values_full","identical",0,NA,0.0739999999999554,0.0900000000000318,1.21621621621738,FALSE,NA
+"svc_diagnostics_report","identical",0,NA,0.0539999999999736,0.0380000000000109,0.70370370370425,FALSE,NA
+"svc_diagnostics_overall","identical",0,NA,0.0419999999999732,0.0509999999999877,1.2142857142862,FALSE,NA
+"svc_predict_types","identical",0,NA,0.0380000000000109,0.0369999999999777,0.97368421052545,FALSE,NA
+"svc_descriptives_data","identical",0,NA,0.00499999999999545,0.00499999999999545,1,FALSE,NA

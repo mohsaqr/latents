@@ -1,3 +1,25 @@
+# latents 1.1.8
+
+## Likelihood-ratio tests in `compare_models()` (2026-10-31)
+
+Results of existing calls are the same as in 1.1.7.
+
+* `compare_models(..., test = "lrt")` tests each profile, class or
+  transition model against the one before it, as `anova()` does, and adds
+  `lr_statistic`, `lr_df` and `lr_p_value` to the comparison table. It
+  answers questions such as: does measurement vary across occasions
+  (`lta(measurement = "invariant")` against `"occasion"`), do profiles need
+  their own variances (EEI against VVI), is a pair of indicators locally
+  dependent, does a direct effect or a membership covariate improve fit.
+* The models must be nested, with the same numbers of profiles and group
+  classes; other pairs are refused with `latents_bad_nesting`. Comparisons
+  across numbers of classes stay with `bootstrap_lrt()` and
+  `get_results(grid, "lmr")`, because the chi-square reference does not hold
+  there. Weighted fits are refused with `latents_unsupported_weights`.
+* Checked against mclust (covariance structures), glca's `gofglca()` (a
+  membership covariate) and Mplus 9 (LTA measurement invariance): 27 of 27
+  quantities agree (`equivalence/lrt/`).
+
 # latents 1.1.7
 
 ## Local-independence check without advice (2026-10-30)

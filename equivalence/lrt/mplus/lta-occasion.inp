@@ -1,0 +1,26 @@
+TITLE: latents LRT kit - 2-occasion LTA, 3 binary items, 2 classes,
+  measurement specific to each occasion (thresholds free at each occasion).;
+DATA: FILE IS lta.dat;
+VARIABLE:
+  NAMES ARE u11-u13 u21-u23;
+  USEVARIABLES ARE u11-u13 u21-u23;
+  CATEGORICAL ARE u11-u13 u21-u23;
+  CLASSES = c1(2) c2(2);
+ANALYSIS:
+  TYPE = MIXTURE;
+  ESTIMATOR = ML;
+  STARTS = 200 50;
+  PROCESS = 1;
+MODEL:
+  %OVERALL%
+  c2 ON c1;
+MODEL c1:
+  %c1#1%
+  [u11$1-u13$1];
+  %c1#2%
+  [u11$1-u13$1];
+MODEL c2:
+  %c2#1%
+  [u21$1-u23$1];
+  %c2#2%
+  [u21$1-u23$1];

@@ -1,5 +1,5 @@
 "defect","description","target","filter","expectations","failures","errors","detected","minutes"
-"control_no_defect","No defect (the original function)",".multilpa_relative_entropy","missing-patterns|mplus-mixture-weights|mplus-standardize|mplus-person-scaling",112,0,0,FALSE,1.9
+"control_no_defect","No defect (the original function)",".multilpa_relative_entropy","missing-patterns|mplus-mixture-weights|mplus-standardize|mplus-person-scaling",112,0,0,FALSE,2.6
 "entropy_denominator","Relative entropy divides by 1.01 n log K",".multilpa_relative_entropy","montecarlo|mplus-classification",3879,151,0,TRUE,1.6
 "empty_rows_counted","Rows with nothing observed counted in classification statistics",".multilpa_classified_posteriors","missing-patterns|montecarlo",3956,109,0,TRUE,3.3
 "empty_groups_counted","Groups with nothing observed counted in group statistics",".multilpa_informative_groups","missing-patterns",92,1,0,TRUE,1.8
@@ -10,4 +10,6 @@
 "mixing_update","Mixing (class share) update shrunk toward equal shares",".mixture_update_mixing","mixture-regression-flexmix|growth-mixture-lcmm",49,10,0,TRUE,0.5
 "weights_dropped","Sampling weights ignored in the E-step",".multilpa_weigh","mplus-mixture-weights",9,6,0,TRUE,0
 "scaling_denominator","Standard deviations for scaling use n instead of n - 1",".multilpa_indicator_scales","mplus-standardize|mplus-person-scaling",11,2,0,TRUE,0.1
-"blrt_p_value","Bootstrap p-value without the +1 correction",".latents_blrt_p_value","^enumeration$",321,1,0,TRUE,0.2
+"blrt_p_value","Bootstrap p-value without the +1 correction",".latents_blrt_p_value","^enumeration$",315,1,0,TRUE,0.5
+"lrt_degrees_of_freedom","Likelihood-ratio test with one degree of freedom too many",".latents_lrt_pair","^lrt$",2,1,0,TRUE,0.4
+"lrt_covariance_nesting","Every covariance structure taken as nested in every other",".multilpa_lrt_covariance_nested","^compare-lrt$",27,0,1,TRUE,0.2
