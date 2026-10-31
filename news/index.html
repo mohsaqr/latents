@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,17 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.8" id="latents-118">latents 1.1.8<a class="anchor" aria-label="anchor" href="#latents-118"></a></h2>
+<div class="section level3">
+<h3 id="likelihood-ratio-tests-in-compare_models-1-1-8">Likelihood-ratio tests in <code>compare_models()</code> (2026-10-31)<a class="anchor" aria-label="anchor" href="#likelihood-ratio-tests-in-compare_models-1-1-8"></a></h3>
+<p>Results of existing calls are the same as in 1.1.7.</p>
+<ul><li>
+<code>compare_models(..., test = "lrt")</code> tests each profile, class or transition model against the one before it, as <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code> does, and adds <code>lr_statistic</code>, <code>lr_df</code> and <code>lr_p_value</code> to the comparison table. It answers questions such as: does measurement vary across occasions (<code>lta(measurement = "invariant")</code> against <code>"occasion"</code>), do profiles need their own variances (EEI against VVI), is a pair of indicators locally dependent, does a direct effect or a membership covariate improve fit.</li>
+<li>The models must be nested, with the same numbers of profiles and group classes; other pairs are refused with <code>latents_bad_nesting</code>. Comparisons across numbers of classes stay with <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> and <code>get_results(grid, "lmr")</code>, because the chi-square reference does not hold there. Weighted fits are refused with <code>latents_unsupported_weights</code>.</li>
+<li>Checked against mclust (covariance structures), glca’s <code>gofglca()</code> (a membership covariate) and Mplus 9 (LTA measurement invariance): 27 of 27 quantities agree (<code>equivalence/lrt/</code>).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.7" id="latents-117">latents 1.1.7<a class="anchor" aria-label="anchor" href="#latents-117"></a></h2>
 <div class="section level3">

@@ -22,7 +22,13 @@ model.
 ## Usage
 
 ``` r
-compare_models(..., n_profiles = NULL, n_group_classes = NULL, cutoff = 0.8)
+compare_models(
+  ...,
+  n_profiles = NULL,
+  n_group_classes = NULL,
+  cutoff = 0.8,
+  test = c("none", "lrt")
+)
 ```
 
 ## Arguments
@@ -58,6 +64,12 @@ compare_models(..., n_profiles = NULL, n_group_classes = NULL, cutoff = 0.8)
   single number in (0, 1\], default 0.8. Not used for mixture
   regressions.
 
+- test:
+
+  `"none"` (the default) for the comparison table alone, or `"lrt"` to
+  add a likelihood-ratio test of each profile, class or transition model
+  against the one before it (see *Details*).
+
 ## Value
 
 A base `data.frame` of class `latents_comparison`, one row per model.
@@ -80,6 +92,9 @@ computed on `bic_groups` (the BIC that counts groups as the independent
 units; on a single-level model, the ordinary BIC). The values are those
 of the grid's candidates table.
 
+With `test = "lrt"`, three more columns: `lr_statistic`, `lr_df` and
+`lr_p_value`, `NA` in the first row.
+
 Raises `latents_bad_argument` for fits that cannot be compared, for
 fewer than two models, for duplicate labels, for a group-class family
 grid (its own table, `as.data.frame(grid)`, compares its candidates),
@@ -89,6 +104,16 @@ and for `n_profiles` or `n_group_classes` without a grid;
 grid; `latents_failed_candidate` for a named candidate that could not be
 fitted; `latents_incomparable_models` for fits to different data. A
 `cutoff` outside (0, 1\] fails the argument checks.
+
+With `test = "lrt"`: `latents_bad_nesting` for consecutive models that
+are not nested as described in *Details*, or that differ in their
+numbers of profiles or group classes; `latents_reversed_likelihood` when
+the more general model has the lower likelihood beyond the fits'
+tolerance; `latents_no_converge` for a fit that did not converge;
+`latents_unsupported_weights`, `latents_unsupported_prior` and
+`latents_unsupported_noise` for fits with sampling weights, a prior or a
+noise component; `latents_bad_argument` for mixture regressions. A fit
+with a variance at `min_variance` warns `latents_boundary`.
 
 ## Details
 
@@ -114,6 +139,30 @@ grids work the same way, with `classes` in the names, and the
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
 can also be passed directly.
 
+With `test = "lrt"`, each model is tested against the model in the row
+before it, as [`stats::anova()`](https://rdrr.io/r/stats/anova.html)
+does: `lr_statistic` is twice the difference in their log likelihoods,
+`lr_df` the difference in their numbers of free parameters, and
+`lr_p_value` its upper chi-square tail (Wilks, 1938). List the models
+from the most restricted to the most general. A model is nested in the
+next when the two have the same indicators, coding, estimation settings
+and numbers of profiles and group classes, and the first only restricts
+the second: a covariance structure restricted letter by letter (EEI
+within VVI or EEE, and both within VVV), covariances of chosen pairs
+(`local_dependence`) within more pairs or a full covariance, fewer joint
+item pairs, direct effects or membership covariates, profile slopes
+shared across group classes, count dispersions shared across profiles;
+and for [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
+measurement invariant within measurement by occasion, homogeneous within
+occasion-specific transitions, first within second order, and fewer
+transition or initial covariates. These restrictions hold parameters at
+interior values, where the chi-square reference applies. A different
+number of profiles or group classes, or a stayer class, puts the null on
+the boundary of the parameter space, where it does not: those
+comparisons are refused and belong to
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+or `get_results(grid, "lmr")`.
+
 ## Interpretation
 
 Models must use the same outcomes or indicators and observational units,
@@ -126,6 +175,10 @@ examination of estimation stability, model assumptions, and the meaning
 of the resulting classes.
 
 ## References
+
+Wilks, S. S. (1938). The large-sample distribution of the likelihood
+ratio for testing composite hypotheses. *The Annals of Mathematical
+Statistics*, 9(1), 60–62.
 
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using
 Akaike weights. *Psychonomic Bulletin & Review*, 11, 192–196.
@@ -175,4 +228,18 @@ compare_models(grid, n_group_classes = 2)
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
 #> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99
 #> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99
+
+# Is a covariance structure that varies by profile needed? A
+# likelihood-ratio test of each structure against the one before it.
+shared <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+              model = "EEI", n_starts = 2, seed = 1)
+varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+               model = "VVI", n_starts = 2, seed = 1)
+compare_models(shared = shared, varying = varying, test = "lrt")
+#> Model comparison
+#> 
+#> Model    Profiles  k    LogLik      BIC  ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8     LR  df      p
+#> -------  --------  -  --------  -------  ----  ------  -------  -------  ---------  -----  -----  --  -----
+#> shared          2  7  -1157.68  2354.60  8.54   0.014  2357.27     0.99       1.00      0                  
+#> varying         2  9  -1147.81  2346.06  0.00   0.986  2346.52     1.00       1.00      0  19.75   2  <.001
 ```
