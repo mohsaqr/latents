@@ -20,10 +20,12 @@
 #' @param codes The outcome as category codes, one per unit.
 #' @param categories The category labels, in code order.
 #' @param level,method,ci_level,contrast,adjust,vcov_type As in [three_step()].
+#' @param correction Optional step-one covariance correction closure.
 #' @return The table [three_step()] returns.
 #' @noRd
 .multilpa_three_step_categorical <- function(pieces, codes, categories, level, method,
-                                             ci_level, contrast, adjust, vcov_type) {
+                                             ci_level, contrast, adjust, vcov_type,
+                                             correction = NULL) {
   n_classes <- pieces$n_classes
   n_categories <- length(categories)
   indicators <- outer(codes, seq_len(n_categories), "==") * 1
@@ -61,6 +63,31 @@
   clustered <- .multilpa_step_clusters(influence, pieces, vcov_type)
   thin <- .multilpa_step_thin(carrying, pieces, vcov_type)
   clustered[, rep(thin, each = n_categories)] <- NA_real_
+  if (!is.null(correction) && !all(is.na(clustered))) {
+    if (identical(method, "ml")) {
+      free <- seq_len(n_categories - 1L)
+      jacobian <- do.call(rbind, lapply(seq_len(n_classes), function(class) {
+        p <- probabilities[class, ]
+        block <- matrix(0, n_categories, n_classes * length(free))
+        columns <- (class - 1L) * length(free) + free
+        block[, columns] <- diag(p)[, free, drop = FALSE] - tcrossprod(p, p[free])
+        block
+      }))
+      transform <- jacobian %*% solve(.multilpa_step_categorical_information(fit, indicators))
+      clustered <- correction(clustered, function(updated) {
+        weights <- t(.multilpa_error_matrix(updated)[, updated$modal, drop = FALSE]) *
+          matrix(colMeans(updated$posteriors), length(codes), n_classes, byrow = TRUE)
+        joint <- weights * tcrossprod(indicators, probabilities)
+        fit$responsibilities <- joint / rowSums(joint)
+        colSums(.multilpa_step_categorical_scores(fit, indicators))
+      }, transform)
+    } else {
+      clustered <- correction(clustered, function(updated) {
+        weights <- .multilpa_step_weights(updated, method)
+        as.vector(t(crossprod(weights, indicators) / colSums(weights)))
+      })
+    }
+  }
   outside <- probabilities < 0 | probabilities > 1
   if (any(outside)) {
     cells <- which(outside, arr.ind = TRUE)

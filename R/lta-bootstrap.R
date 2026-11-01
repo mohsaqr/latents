@@ -76,9 +76,10 @@
   columns <- setdiff(names(table), "name")
   result <- table[, columns, drop = FALSE]
   row.names(result) <- NULL
-  structure(result, covariance = covariance, covariance_unconstrained = NULL,
-            level = level, method = "bootstrap", iter = iter, n_valid = sum(valid),
-            replicates = kept, messages = drawn$messages, adjust = adjust)
+  .latents_bootstrap_table(structure(
+    result, covariance = covariance, covariance_unconstrained = NULL,
+    level = level, method = "bootstrap", iter = iter, n_valid = sum(valid),
+    replicates = kept, messages = drawn$messages, adjust = adjust), valid)
 }
 
 #' The rows a transition bootstrap reports, with their estimates

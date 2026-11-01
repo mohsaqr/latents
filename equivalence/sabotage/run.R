@@ -183,6 +183,29 @@ sabotage_defects <- function() {
            mapped
          },
          suite = "unit", filter = "^covariate-structure-inference$"),
+    list(name = "step_one_correction_shrunk",
+         description = "three_step(step_one = \"estimated\"): step-one contribution 19% too small",
+         target = ".multilpa_step_one_correction",
+         replace = function(original) function(x, pieces, level, method) {
+           correct <- original(x, pieces, level, method)
+           if (is.null(correct)) return(correct)
+           function(clustered, estimator, transform = NULL) {
+             corrected <- correct(clustered, estimator, transform)
+             added <- seq_len(nrow(corrected)) > nrow(clustered)
+             corrected[added, ] <- 0.9 * corrected[added, ]
+             corrected
+           }
+         },
+         suite = "equivalence", filter = "^latentgold-step-one$"),
+    list(name = "bootstrap_replicates_misassigned",
+         description = "as.data.frame(boot, what = \"replicates\"): replicates set beside the wrong parameters",
+         target = ".latents_bootstrap_replicates",
+         replace = function(original) function(x) {
+           replicates <- original(x)
+           replicates$estimate <- rev(replicates$estimate)
+           replicates
+         },
+         suite = "unit", filter = "^bootstrap-replicates$"),
     list(name = "residuals_unadjusted",
          description = "Local-independence check reads unadjusted p-values (the 1.1.9 behaviour)",
          target = ".multilpa_bivariate_residuals",

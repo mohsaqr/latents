@@ -451,12 +451,13 @@
 #' The ML three-step table of a distal outcome
 #'
 #' @param pieces,values The units' assignments and outcome values.
+#' @param correction Optional step-one covariance correction closure.
 #' @param level,variance,ci_level,contrast,adjust,vcov_type As in
 #'   [three_step()].
 #' @return The table [three_step()] returns.
 #' @noRd
 .multilpa_three_step_ml <- function(pieces, values, level, variance, ci_level,
-                                    contrast, adjust, vcov_type) {
+                                    contrast, adjust, vcov_type, correction = NULL) {
   fit <- .multilpa_step_ml_fit(pieces, values, variance)
   if (!fit$converged) {
     warning(warningCondition(sprintf(paste(
@@ -489,6 +490,27 @@
       "standard error cannot be estimated and is reported as NA."),
       paste(which(thin), collapse = ", ")), class = "latents_small_classes", call = NULL))
     clustered[, thin] <- NA_real_
+  }
+  if (!is.null(correction)) {
+    chart <- fit$outcome_coordinates
+    standardized <- (values - chart$center) / chart$scale
+    template <- fit
+    template$means <- chart$means
+    template$variances <- fit$variances / chart$scale^2
+    coordinates <- .multilpa_step_ml_coordinates(template, variance)
+    scale <- .multilpa_step_ml_scale(template, variance)
+    information <- .multilpa_step_ml_hessian(function(point) {
+      -colSums(.multilpa_step_ml_scores(template, standardized, variance, point))
+    }, coordinates, scale)
+    inverse <- solve(information * tcrossprod(scale)) * tcrossprod(scale)
+    # At the selected stationary point, d theta3 = I33^-1 d score3.
+    # Recompute both D and the fixed sizes; neither is data in step one.
+    clustered <- correction(clustered, function(updated) {
+      prior <- colMeans(updated$posteriors)
+      template$weights <- t(.multilpa_error_matrix(updated)[, updated$modal, drop = FALSE]) *
+        matrix(prior, length(values), pieces$n_classes, byrow = TRUE)
+      colSums(.multilpa_step_ml_scores(template, standardized, variance, coordinates))
+    }, chart$scale * inverse[seq_len(pieces$n_classes), , drop = FALSE])
   }
   if (identical(contrast, "overall")) {
     means <- fit$outcome_coordinates$means * fit$outcome_coordinates$scale

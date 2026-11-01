@@ -264,11 +264,12 @@
 #' model and assumes that the outcome and assigned class are independent
 #' conditional on latent class membership. The maximum-likelihood method
 #' additionally assumes a normal outcome distribution within each class.
-#' Reported uncertainty is conditional on the estimated classification-error
-#' probabilities and does not include uncertainty from estimating those
-#' probabilities or selecting the class solution. Outcome differences
-#' describe associations; they do not establish causal effects of class
-#' membership.
+#' By default, uncertainty is conditional on the estimated classification-error
+#' probabilities. With `step_one = "estimated"`, it also includes uncertainty
+#' from estimating the measurement model, holding modal assignments fixed.
+#' Neither option includes uncertainty from selecting the class solution.
+#' Outcome differences describe associations; they do not establish causal
+#' effects of class membership.
 #'
 #' @param x A covariate-free fit from [multilpa()] (`family = "profiles"`,
 #'   the default) or from [lta()] with its default homogeneous first-order
@@ -323,6 +324,12 @@
 #'   (default) estimates a variance of the outcome in each class, `"equal"`
 #'   one variance shared by the classes. Given with another method or a
 #'   categorical outcome it raises `latents_bad_argument`.
+#' @param step_one `"fixed"` (default) conditions on the step-one estimates;
+#'   `"estimated"` adds their first-order contribution to the step-three
+#'   covariance, including classification errors and ML class sizes. Available
+#'   for [lpa()], [lca()] and [multilpa()] profile fits at either level, when
+#'   step-one Wald inference is available. Modal assignments remain fixed.
+#'   The choice is recorded in the result's `step_one` attribute.
 #' @return A base `data.frame`. For `contrast = "none"`, one row per class
 #'   with the columns `level`, `method`, `class`, `estimate`,
 #'   `standard_error`, `conf_low`, `conf_high` and `effective_n`; class means
@@ -404,15 +411,26 @@
 #'   the bound, and it reports the estimates without standard errors, with a
 #'   `latents_boundary` warning.
 #'
-#'   Because uncertainty in the estimated classification-error probabilities
-#'   is omitted, interval coverage can be below the nominal level,
-#'   particularly when classification is uncertain.
+#'   With `step_one = "fixed"`, omitted uncertainty in the classification-error
+#'   probabilities can reduce interval coverage, particularly when classification
+#'   is uncertain. `step_one = "estimated"` adds `G V1 G'`, where `V1` is
+#'   the step-one covariance on the unconstrained scale and `G` differentiates
+#'   the step-three estimates through the posteriors, with data and modal
+#'   assignments held fixed (Bakk, Oberski and Vermunt, 2014). Estimates stay
+#'   the same; standard errors, intervals and Wald tests use the corrected
+#'   covariance. The modal method is unchanged because it uses no posteriors.
+#'   The correction is a large-sample one: with poorly separated classes in
+#'   a small sample (relative entropy near 0.6, three classes, 300
+#'   observations) its intervals still cover less than the nominal level.
 #' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
 #'   improved three-step approaches. *Political Analysis*, 18, 450--469.
 #'   Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
 #'   association between latent class membership and external variables
 #'   using bias-adjusted three-step approaches. *Sociological Methodology*,
 #'   43, 272--311.
+#'   Bakk, Z., Oberski, D. L., & Vermunt, J. K. (2014). Relating latent class
+#'   assignments to external variables: standard errors for correct inference.
+#'   *Political Analysis*, 22, 520--540.
 #'   Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
 #'   modeling with continuous distal outcomes. *Structural Equation Modeling*,
 #'   23, 20--31.
@@ -442,10 +460,23 @@ three_step <- function(x, data, outcome,
                        adjust = c("BH", "holm", "hochberg", "hommel",
                                     "bonferroni", "BY", "none"),
                        vcov_type = c("cluster", "independent"),
-                       variance = c("varying", "equal")) {
+                       variance = c("varying", "equal"),
+                       step_one = c("fixed", "estimated")) {
   # Whether `variance` was given is read before it is matched: missing() is
   # FALSE once an argument has been reassigned.
   variance_given <- !missing(variance)
+  step_one <- .latents_match_formal(step_one)
+  finish <- function(result) {
+    attr(result, "step_one") <- step_one
+    result
+  }
+  if (identical(step_one, "estimated") &&
+      (.trajectory_is_fit(x) || inherits(x, c("multilpa_transitions", "multilpa_lta")))) {
+    stop(errorCondition(paste(
+      "`step_one = \"estimated\"` is unavailable for transition and trajectory fits;",
+      "use `step_one = \"fixed\"`, which still works for supported three-step fits."),
+      class = "latents_unsupported_three_step", call = NULL))
+  }
   level <- match.arg(level)
   # The released methods keep their abbreviations ("m" is "modal", as it was
   # before "ml" existed); anything else is matched against all four, so "ml"
@@ -532,13 +563,17 @@ three_step <- function(x, data, outcome,
     # Only the classified units enter step three, as they do the error matrix.
     values <- .multilpa_outcome_values(x, data, outcome, level)[pieces$kept]
   }
+  correction <- if (identical(step_one, "estimated")) {
+    .multilpa_step_one_correction(x, pieces, level, method)
+  }
   if (categorical) {
-    return(.multilpa_three_step_categorical(pieces, as.integer(values), categories, level,
-                                            method, ci_level, contrast, adjust, vcov_type))
+    return(finish(.multilpa_three_step_categorical(
+      pieces, as.integer(values), categories, level, method, ci_level, contrast,
+      adjust, vcov_type, correction)))
   }
   if (identical(method, "ml")) {
-    return(.multilpa_three_step_ml(pieces, values, level, variance, ci_level,
-                                   contrast, adjust, vcov_type))
+    return(finish(.multilpa_three_step_ml(pieces, values, level, variance, ci_level,
+                                         contrast, adjust, vcov_type, correction)))
   }
   weights <- .multilpa_step_weights(pieces, method)
   classes <- seq_len(pieces$n_classes)
@@ -569,14 +604,20 @@ three_step <- function(x, data, outcome,
   # of zero in that unit by the definition of its mean, so its sandwich is 0
   # by construction, not an estimate; the ML path already says so (INF-1).
   clustered <- .multilpa_step_thin_classes(clustered, weights, pieces, vcov_type)
+  if (!is.null(correction)) {
+    clustered <- correction(clustered, function(updated) {
+      weights <- .multilpa_step_weights(updated, method)
+      as.vector(crossprod(weights, centered)) / colSums(weights)
+    })
+  }
 
   if (identical(contrast, "overall")) {
-    return(.multilpa_step_overall(centered_estimates, clustered, pieces$n_classes, level,
-                                  method, vcov_type))
+    return(finish(.multilpa_step_overall(centered_estimates, clustered, pieces$n_classes,
+                                        level, method, vcov_type)))
   }
   if (identical(contrast, "pairs")) {
-    return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
-                                adjust, vcov_type))
+    return(finish(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
+                                      adjust, vcov_type)))
   }
   errors <- sqrt(colSums(clustered^2))
   result <- data.frame(level = level, method = method, class = classes,
@@ -587,14 +628,96 @@ three_step <- function(x, data, outcome,
                        row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "vcov_type") <- vcov_type
   column <- .latents_column
-  .latents_table(result, ci_level,
-                 sprintf("Distal outcome by class (%s, %s%% CI)", method,
-                         format(100 * ci_level)),
-                 list(column("Class", "class", "integer"), column("Mean", "estimate"),
-                      column(sprintf("%s%% CI", format(100 * ci_level)),
-                             c("conf_low", "conf_high"), "ci", "estimate"),
-                      column("SE", "standard_error"),
-                      column("Effective n", "effective_n")))
+  finish(.latents_table(result, ci_level,
+                        sprintf("Distal outcome by class (%s, %s%% CI)", method,
+                                format(100 * ci_level)),
+                        list(column("Class", "class", "integer"),
+                             column("Mean", "estimate"),
+                             column(sprintf("%s%% CI", format(100 * ci_level)),
+                                    c("conf_low", "conf_high"), "ci", "estimate"),
+                             column("SE", "standard_error"),
+                             column("Effective n", "effective_n"))))
+}
+
+#' Propagate step-one uncertainty through fixed modal assignments
+#'
+#' The step-one data are the fit's own, as for [vcov()]: the `data` of
+#' [three_step()] need carry only the outcome.
+#' @param x,pieces,level,method The fit and analysed units of [three_step()].
+#' @return A function appending covariance pseudo-rows to scaled contributions.
+#'   Its estimator returns step-three estimates, or scores with a supplied
+#'   implicit derivative transform.
+#' @noRd
+.multilpa_step_one_correction <- function(x, pieces, level, method) {
+  stopifnot("`x` must be a multilpa fit" = inherits(x, "multilpa"),
+            "`pieces` must describe the analysed units" = is.list(pieces))
+  covariance <- tryCatch(stats::vcov(x, scale = "unconstrained"),
+                         error = function(condition) {
+    condition$message <- paste(conditionMessage(condition),
+                                '`step_one = "fixed"` still works without step-one inference.')
+    stop(condition)
+  })
+  if (identical(method, "modal")) return(NULL)
+  root <- .multilpa_covariance_root(covariance)
+  prepared <- .multilpa_inference_matrix(x, .multilpa_resolve_data(x, NULL))
+  centered <- x
+  centered$means <- sweep(x$means, 2L, prepared$centers, "-")
+  full <- .multilpa_coefficients(centered, "unconstrained")
+  free <- .multilpa_free_index(x, "unconstrained")
+  restore <- .multilpa_restore_held(full, free)
+  theta <- unname(full[free])
+  # Each coordinate is stepped on its own scale, as the Wald information is,
+  # so the correction does not depend on the units of the data.
+  direct <- if (is.null(x$extra_data$direct)) NULL else .latents_center_direct(
+    x$extra_data, prepared$x, x$sampling_weights[x$group_index])$direct
+  steps <- 1e-5 * .multilpa_coordinate_scale(x, direct)[free]
+  function(clustered, estimator, transform = NULL) {
+    at <- function(point) {
+      parameters <- .multilpa_decode(restore(point), x)
+      posterior <- .multilpa_expectation(prepared$x, x$group_index, parameters,
+                                         prepared$codes, unname(x$sampling_weights),
+                                         x$extra_data)
+      updated <- pieces
+      updated$posteriors <- if (identical(level, "individuals")) {
+        posterior$subject_posteriors[pieces$kept, , drop = FALSE]
+      } else posterior$group_posteriors[pieces$kept, , drop = FALSE]
+      estimator(updated)
+    }
+    size <- length(at(theta))
+    derivative <- vapply(seq_along(theta), function(j) {
+      up <- down <- theta
+      up[j] <- up[j] + steps[j]
+      down[j] <- down[j] - steps[j]
+      (at(up) - at(down)) / (2 * steps[j])
+    }, numeric(size))
+    derivative <- matrix(derivative, nrow = size)
+    if (!is.null(transform)) derivative <- transform %*% derivative
+    # Appended after CR1 and thin-class masking: these rows are covariance
+    # contributions, not additional observations or independent clusters.
+    rbind(clustered, t(derivative %*% root))
+  }
+}
+
+#' A square root of a step-one covariance, positive semidefinite allowed
+#'
+#' A sandwich or a constrained model (person centring makes the profile-
+#' weighted means sum to zero within every unit) gives a covariance of
+#' deficient rank, which a Cholesky factor refuses; its zero directions
+#' carry no variance and contribute nothing.
+#' @param covariance A symmetric covariance matrix.
+#' @return `L` with `L %*% t(L)` equal to `covariance`, or
+#'   `latents_singular_information` for a materially indefinite matrix.
+#' @noRd
+.multilpa_covariance_root <- function(covariance) {
+  decomposition <- eigen((covariance + t(covariance)) / 2, symmetric = TRUE)
+  values <- decomposition$values
+  if (any(values < -sqrt(.Machine$double.eps) * max(abs(values), 1e-300))) {
+    stop(errorCondition(paste(
+      "The step-one covariance is not positive semidefinite, so its uncertainty",
+      "cannot be added; `step_one = \"fixed\"` still works."),
+      class = "latents_singular_information", call = NULL))
+  }
+  decomposition$vectors %*% diag(sqrt(pmax(values, 0)), length(values))
 }
 
 #' Sum influence contributions over the independent units, scaled by CR1

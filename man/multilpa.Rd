@@ -86,9 +86,8 @@ profile slopes are shared across group classes unless
 \code{profile_slopes = "group_class"}. A group covariate must be constant
 within each group. Covariates enter in their supplied units, without
 centring or scaling. The covariate model takes any of the fourteen
-covariance structures (\code{model}); \code{\link[=parameter_inference]{parameter_inference()}} gives its Wald
-standard errors for EEI, VVI, EEE and VVV and refuses the others with
-\code{latents_unsupported_inference}. \code{start} sets where its first start
+covariance structures (\code{model}), each with Wald standard errors from
+\code{\link[=parameter_inference]{parameter_inference()}}. \code{start} sets where its first start
 begins; with \code{fixed}, the named measurement blocks are held at \code{start}
 (for example \verb{start = starting_values(fit), fixed = "measurement"} from
 a fit without covariates), which is the two-step estimator of Bakk and

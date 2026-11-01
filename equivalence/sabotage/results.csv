@@ -20,3 +20,5 @@
 "covariate_fixed_not_held","Covariate model drops the held blocks (fixed measurement drifts)",".multilpa_held_parameters","^covariate-fixed$",16,5,0,TRUE,0
 "covariate_chart_delta","Constrained-structure covariate fit: spread delta-method Jacobian 2% too large",".multilpa_cov_chart_front","^covariate-structure-inference$",65,10,0,TRUE,0.3
 "residuals_unadjusted","Local-independence check reads unadjusted p-values (the 1.1.9 behaviour)",".multilpa_bivariate_residuals","^review-1027-diagnostics$",158,2,0,TRUE,0.8
+"step_one_correction_shrunk","three_step(step_one = ""estimated""): step-one contribution 19% too small",".multilpa_step_one_correction","^latentgold-step-one$",8,2,0,TRUE,0.4
+"bootstrap_replicates_misassigned","as.data.frame(boot, what = ""replicates""): replicates set beside the wrong parameters",".latents_bootstrap_replicates","^bootstrap-replicates$",37,5,0,TRUE,0.6

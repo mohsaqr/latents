@@ -14,7 +14,8 @@ three_step(
   contrast = c("none", "pairs", "overall"),
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
   vcov_type = c("cluster", "independent"),
-  variance = c("varying", "equal")
+  variance = c("varying", "equal"),
+  step_one = c("fixed", "estimated")
 )
 }
 \arguments{
@@ -80,6 +81,13 @@ attribute.}
 (default) estimates a variance of the outcome in each class, \code{"equal"}
 one variance shared by the classes. Given with another method or a
 categorical outcome it raises \code{latents_bad_argument}.}
+
+\item{step_one}{\code{"fixed"} (default) conditions on the step-one estimates;
+\code{"estimated"} adds their first-order contribution to the step-three
+covariance, including classification errors and ML class sizes. Available
+for \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and \code{\link[=multilpa]{multilpa()}} profile fits at either level, when
+step-one Wald inference is available. Modal assignments remain fixed.
+The choice is recorded in the result's \code{step_one} attribute.}
 }
 \value{
 A base \code{data.frame}. For \code{contrast = "none"}, one row per class
@@ -189,9 +197,17 @@ in \verb{[0, 1]}; where the BCH shares do not, its maximum usually lies on
 the bound, and it reports the estimates without standard errors, with a
 \code{latents_boundary} warning.
 
-Because uncertainty in the estimated classification-error probabilities
-is omitted, interval coverage can be below the nominal level,
-particularly when classification is uncertain.
+With \code{step_one = "fixed"}, omitted uncertainty in the classification-error
+probabilities can reduce interval coverage, particularly when classification
+is uncertain. \code{step_one = "estimated"} adds \verb{G V1 G'}, where \code{V1} is
+the step-one covariance on the unconstrained scale and \code{G} differentiates
+the step-three estimates through the posteriors, with data and modal
+assignments held fixed (Bakk, Oberski and Vermunt, 2014). Estimates stay
+the same; standard errors, intervals and Wald tests use the corrected
+covariance. The modal method is unchanged because it uses no posteriors.
+The correction is a large-sample one: with poorly separated classes in
+a small sample (relative entropy near 0.6, three classes, 300
+observations) its intervals still cover less than the nominal level.
 }
 \section{Interpretation}{
 
@@ -199,11 +215,12 @@ Correction for classification error depends on the fitted measurement
 model and assumes that the outcome and assigned class are independent
 conditional on latent class membership. The maximum-likelihood method
 additionally assumes a normal outcome distribution within each class.
-Reported uncertainty is conditional on the estimated classification-error
-probabilities and does not include uncertainty from estimating those
-probabilities or selecting the class solution. Outcome differences
-describe associations; they do not establish causal effects of class
-membership.
+By default, uncertainty is conditional on the estimated classification-error
+probabilities. With \code{step_one = "estimated"}, it also includes uncertainty
+from estimating the measurement model, holding modal assignments fixed.
+Neither option includes uncertainty from selecting the class solution.
+Outcome differences describe associations; they do not establish causal
+effects of class membership.
 }
 
 \examples{
@@ -232,6 +249,9 @@ Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
 association between latent class membership and external variables
 using bias-adjusted three-step approaches. \emph{Sociological Methodology},
 43, 272--311.
+Bakk, Z., Oberski, D. L., & Vermunt, J. K. (2014). Relating latent class
+assignments to external variables: standard errors for correct inference.
+\emph{Political Analysis}, 22, 520--540.
 Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
 modeling with continuous distal outcomes. \emph{Structural Equation Modeling},
 23, 20--31.

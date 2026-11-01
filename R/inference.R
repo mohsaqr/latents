@@ -379,6 +379,46 @@
   }
 }
 
+#' The finite-difference scale of each unconstrained coordinate
+#'
+#' A mean moves on its indicator's spread, a log variance is unit free, a
+#' log-Cholesky or chart coordinate on the scale its own rule gives, and a
+#' direct effect (indicator units per covariate unit) on the indicator's
+#' spread over the covariate's. Steps taken on these scales do not depend on
+#' the units the data are measured in. Shared by the Wald information and the
+#' step-one correction of [three_step()].
+#' @param x A fitted `multilpa` model.
+#' @param direct The fit's direct-effect block with its covariates centred
+#'   and scaled (`.latents_center_direct()`), or `NULL` without direct effects.
+#' @return One positive scale per unconstrained coordinate, held ones included.
+#' @noRd
+.multilpa_coordinate_scale <- function(x, direct = NULL) {
+  widths <- .multilpa_coordinate_widths(x, "unconstrained")
+  scale <- c(as.vector(t(sqrt(x$variances))), rep(1, sum(widths) - length(x$means)))
+  dimension <- length(.multilpa_continuous_names(x))
+  if (.multilpa_uses_chart(x)) {
+    chart_scale <- .multilpa_chart_encode(x)$scale
+    scale[length(x$means) + seq_along(chart_scale)] <- chart_scale
+  } else if (identical(x$covariance_model, "full") && dimension > 0L) {
+    # Shared with the covariate path, which lacked this scaling and reported a
+    # singular information for an indicator in large units. One rule, one place.
+    covariance_scale <- .multilpa_covariance_coordinate_scale(
+      x$variances, dimension,
+      if (x$variance_model == "equal") 1L else seq_len(x$n_profiles))
+    scale[length(x$means) + seq_along(covariance_scale)] <- covariance_scale
+  }
+  # A direct effect is in indicator units per covariate unit, so its finite
+  # differences are taken on the indicator's spread over the covariate's; at
+  # unit scale a covariate in units of 1e4 gave a standard error 10% too large.
+  if (!is.null(direct)) {
+    effects <- direct$effects
+    last <- sum(widths[c("means", "variances", "response_probabilities", "extra")])
+    positions <- last - nrow(effects) + seq_len(nrow(effects))
+    scale[positions] <- sqrt(colMeans(x$variances))[effects$column] / direct$scales
+  }
+  scale
+}
+
 #' Decode unconstrained mixture coordinates
 #' @param theta Parameter vector with log variances and baseline-category
 #'   logits, carrying every coordinate of the model including any held block.
@@ -829,14 +869,22 @@
 #'   resample, so the table includes the measurement parameters and that
 #'   uncertainty is propagated (attribute `stages_resampled` is 2).
 #'
-#'   With `method = "bootstrap"` the table has the same columns and rows;
-#'   `estimate` is the fitted value, `standard_error` the standard deviation
-#'   of the replicates and `conf_low`/`conf_high` the percentile interval.
-#'   `statistic`, `p_value` and `p_adjusted` are `NA`. Its attributes are
-#'   `covariance` (the covariance of the replicates, returned by `vcov()`),
-#'   `level`, `method`, `iter`, `n_valid`, `replicates` (the kept replicates,
-#'   one row each), `messages` (why a resample was dropped, `NA` where it was
-#'   not), `structure` and `fixed`; `covariance_unconstrained` is `NULL`.
+#'   With `method = "bootstrap"` the table has the same columns and rows and
+#'   class `c("latents_bootstrap", "data.frame")`; `estimate` is the fitted
+#'   value, `standard_error` the standard deviation of the replicates and
+#'   `conf_low`/`conf_high` the percentile interval. `statistic`, `p_value`
+#'   and `p_adjusted` are `NA`. `as.data.frame(x, what = "replicates")`
+#'   returns the replicates, one row per kept resample and parameter
+#'   (`replicate`, the label columns and `estimate`), and `plot(x, what = )`
+#'   draws each estimate with its percentile interval for the kinds of
+#'   parameter named in `what` (values of the `parameter` column, such as
+#'   `"mean"` or `"probability"`; all by default), the profile means as one
+#'   line per profile across the indicators.
+#'   Its attributes are `covariance` (the covariance of the replicates,
+#'   returned by `vcov()`), `level`, `method`, `iter`, `n_valid`,
+#'   `replicates`, `replicate_number`, `messages` (why a resample was
+#'   dropped, `NA` where it was not), `structure` and `fixed`;
+#'   `covariance_unconstrained` is `NULL`.
 #'
 #'   For the Wald method, diagnostics of the whole fit are attributes:
 #'   `covariance` and `covariance_unconstrained` (natural and
@@ -986,8 +1034,11 @@
 #' parameter_inference(shaped)
 #'
 #' # Resample schools and refit the same covariance structure.
-#' parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
-#'                     seed = 1)
+#' boot <- parameter_inference(shaped, method = "bootstrap", iter = 10,
+#'                             n_starts = 1, seed = 1)
+#' boot
+#' head(as.data.frame(boot, what = "replicates"))  # one row per replicate
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(boot, what = "mean")
 #'
 #' # A covariate fit: membership driven by `x` and by the group's class.
 #' set.seed(5)
@@ -1177,28 +1228,8 @@ parameter_inference.multilpa <-function(x, data = NULL, level = 0.95, step = 1e-
       "data do not reproduce the fitted log likelihood; supply the original fitting data.",
       class = "latents_bad_inference_data", call = NULL))
   }
-  parameter_scale <- c(as.vector(t(sqrt(x$variances))),
-                       rep(1, length(full_theta) - length(x$means)))
-  dimension <- length(.multilpa_continuous_names(x))
-  if (.multilpa_uses_chart(x)) {
-    chart_scale <- .multilpa_chart_encode(x)$scale
-    parameter_scale[length(x$means) + seq_along(chart_scale)] <- chart_scale
-  } else if (identical(x$covariance_model, "full") && dimension > 0L) {
-    # Shared with the covariate path, which lacked this scaling and reported a
-    # singular information for an indicator in large units. One rule, one place.
-    covariance_scale <- .multilpa_covariance_coordinate_scale(
-      x$variances, dimension,
-      if (x$variance_model == "equal") 1L else seq_len(x$n_profiles))
-    parameter_scale[length(x$means) + seq_along(covariance_scale)] <- covariance_scale
-  }
-  # A direct effect is in indicator units per covariate unit, so its finite
-  # differences are taken on the indicator's spread over the covariate's; at
-  # unit scale a covariate in units of 1e4 gave a standard error 10% too large.
-  if (!is.null(direct)) {
-    spread <- sqrt(colMeans(x$variances))[effects$column]
-    parameter_scale[positions] <- spread / centered_direct$scales
-  }
-  parameter_scale <- parameter_scale[free]
+  parameter_scale <- .multilpa_coordinate_scale(
+    x, if (is.null(direct)) NULL else centered_direct)[free]
   scaled_objective <- function(displacement) {
     stopifnot(is.numeric(displacement))
     objective(centered_theta + displacement * parameter_scale)

@@ -1,0 +1,28 @@
+//LG6.1//
+version = 6.1
+infile 's01.dat'
+
+model
+title 's01_z_estimated_robust';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model;
+variables
+   caseid id;
+   dependent W nominal, z continuous;
+   latent Cluster nominal 2 coding=first;
+equations
+   Cluster <- (s) 1;
+   W <- (e~err) 1 | Cluster;
+   z <- 1 + Cluster;
+   z | Cluster;
+   e s = 's01_fixed.txt';
+end model

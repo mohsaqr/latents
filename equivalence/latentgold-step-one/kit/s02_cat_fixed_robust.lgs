@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 's02.dat'
+
+model
+title 's02_cat_fixed_robust';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model;
+variables
+   caseid id;
+   dependent W nominal, cat nominal coding=first;
+   latent Cluster nominal 3 coding=first;
+equations
+   Cluster <- (s) 1;
+   W <- (e~err) 1 | Cluster;
+   cat <- 1 + Cluster;
+   e s = {-2.6085973420043032 -2.3919035736598184 -2.0363937881285454 -1.6560891519119609 -1.5144313110374092 -1.3017412113268425 -0.17548600660600339 -0.30856496605923067};
+end model

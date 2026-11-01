@@ -1,4 +1,4 @@
-# latents 1.1.10
+# latents 1.1.11
 
 Changes since the CRAN release 0.9.21.
 
@@ -21,6 +21,12 @@ Changes since the CRAN release 0.9.21.
 
 ## New features
 
+* `three_step(step_one = "estimated")` includes uncertainty from the fitted
+  measurement model in outcome comparisons.
+* `plot()` on a bootstrap from `parameter_inference(method = "bootstrap")`
+  draws each estimate with its percentile interval, the profile means as
+  lines across the indicators; `as.data.frame(boot, what = "replicates")`
+  returns the replicates.
 * `compare_models(..., test = "lrt")` tests each nested model against the
   one before it.
 * `align_labels(fit, reference)` numbers one fit's profiles and group

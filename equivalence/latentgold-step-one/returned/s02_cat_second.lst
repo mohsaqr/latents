@@ -1,0 +1,203 @@
+s02.dat
+File name:	s02.dat	
+File size:	23198 bytes  900 records	
+File date:	2026-Nov-01 10:22:17 AM	
+Syntax:	s02_cat_second.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+s02_cat_second	3-Cluster	-1923.2879	3887.3902	3858.5759	3864.5759	6	0.0000	2	1.00	0.2285	0.4146	
+s02_cat_second - L² = 0.0000
+3-Cluster Syntax Model	
+						
+Number of cases	900					
+Number of replications	900					
+Number of parameters (Npar)	6					
+Random Seed	20261101					
+Best Start Seed	1161360					
+						
+Chi-squared Statistics						
+Degrees of freedom (df)	2	p-value				
+L-squared (L²)	0.0000	1.00				
+X-squared	0.0000	1.00				
+Cressie-Read	0.0000	1.00				
+BIC (based on L²)	-13.6048					
+AIC (based on L²)	-4.0000					
+AIC3 (based on L²)	-6.0000					
+CAIC (based on L²)	-15.6048					
+SABIC (based on L²)	-7.2531					
+Dissimilarity Index	0.0000	 				
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-1923.2879					
+Log-prior	0.0000					
+Log-posterior	-1923.2879					
+BIC (based on LL)	3887.3902					
+AIC (based on LL)	3858.5759					
+AIC3 (based on LL)	3864.5759					
+CAIC (based on LL)	3893.3902					
+SABIC (based on LL)	3868.3352					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.2285					
+Reduction of errors (Lambda)	0.6263					
+Entropy R-squared	0.4146					
+Standard R-squared	0.4668					
+Classification log-likelihood	-2497.8512					
+Entropy	574.5633					
+CLC	4995.7024					
+AWE	5095.3312					
+ICL-BIC	5036.5168					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	300.1576	22.1029	27.4510	349.7116		
+2	28.9784	222.0592	42.3876	293.4252		
+3	37.8640	46.8378	172.1614	256.8632		
+Total	367.0000	291.0000	242.0000	900.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	257.4825	45.1391	47.0899	349.7116		
+2	45.1391	181.8558	66.4303	293.4252		
+3	47.0899	66.4303	143.3430	256.8632		
+Total	349.7116	293.4252	256.8632	900.0000		
+						
+Files						
+Infile	C:\lgstep1se\s02.dat	
+						
+Options						
+threads	10					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261101					
+sets	20					
+tolerance	1e-05					
+iterations	100					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+output						
+parameters	first					
+standard errors	standard					
+identification	no					
+validation LL	no					
+sample size BIC	     900					
+predictionstatistics	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Case ID	id	900				
+Dependent						
+W	Nominal	3				
+1	1					
+2	2					
+3	3					
+cat	Nominal	3				
+1	1					
+2	2					
+3	3					
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+variables
+   caseid id;
+   dependent W nominal, cat nominal coding=first;
+   latent Cluster nominal 3 coding=first;
+equations
+   Cluster <- (s) 1;
+   W <- (e~err) 1 | Cluster;
+   cat <- 1 + Cluster;
+   e s = 's02_fixed_gradients.txt';
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.				
+Cluster(2)	<-	1			-0.1755	.	.	.				
+Cluster(3)	<-	1			-0.3086	.	.	.				
+												
+W(1)	<-	1	|	Cluster(1)	0.0000	.	.	.				
+W(2)	<-	1	|	Cluster(1)	-2.6086	.	.	.				
+W(3)	<-	1	|	Cluster(1)	-2.3919	.	.	.				
+W(1)	<-	1	|	Cluster(2)	-2.0364	.	.	.				
+W(2)	<-	1	|	Cluster(2)	0.0000	.	.	.				
+W(3)	<-	1	|	Cluster(2)	-1.6561	.	.	.				
+W(1)	<-	1	|	Cluster(3)	-1.5144	.	.	.				
+W(2)	<-	1	|	Cluster(3)	-1.3017	.	.	.				
+W(3)	<-	1	|	Cluster(3)	0.0000	.	.	.				
+												
+cat(1)	<-	1			0.0000	.	.	.	23.6635	2	7.3e-6	
+cat(2)	<-	1			-0.5336	0.1443	-3.6988	0.00022				
+cat(3)	<-	1			-1.6253	0.4444	-3.6570	0.00026				
+cat(1)	<-	Cluster(1)			0.0000	.	.	.	36.9951	4	1.8e-7	
+cat(2)	<-	Cluster(1)			0.0000	.	.	.				
+cat(3)	<-	Cluster(1)			0.0000	.	.	.				
+cat(1)	<-	Cluster(2)			0.0000	.	.	.				
+cat(2)	<-	Cluster(2)			0.7871	0.2534	3.1061	0.0019				
+cat(3)	<-	Cluster(2)			1.4047	0.4835	2.9054	0.0037				
+cat(1)	<-	Cluster(3)			0.0000	.	.	.				
+cat(2)	<-	Cluster(3)			0.3047	0.3816	0.7984	0.42				
+cat(3)	<-	Cluster(3)			2.2544	0.4545	4.9601	7.0e-7				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	-1.0000	0	.	
+					Cluster	1	3	-1.0000	0	.	
+					Cluster	2	3	-1.0000	0	.	
+	
+W	<-	1	|	Cluster	Cluster	1	2	-1.0000	0	.	
+					Cluster	1	3	-1.0000	0	.	
+					Cluster	2	3	-1.0000	0	.	
+	
+cat	<-	 Cluster			Cluster	1	2	14.1060	2	0.00086	
+					Cluster	1	3	25.0157	2	3.7e-6	
+					Cluster	2	3	10.4002	2	0.0055	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	Overall	s.e.	
+Size	0.3886	.	0.3260	.	0.2854	.	 	 	
+W	 	
+1	0.8583	.	0.0988	.	0.1474	.	0.4078	.	
+2	0.0632	.	0.7568	.	0.1823	.	0.3233	.	
+3	0.0785	.	0.1445	.	0.6702	.	0.2689	.	
+cat	 	
+1	0.5607	0.0409	0.3236	0.0404	0.2724	0.0549	0.4011	0.0240	
+2	0.3289	0.0336	0.4169	0.0454	0.2167	0.0492	0.3256	0.0223	
+3	0.1104	0.0432	0.2595	0.0465	0.5110	0.0675	0.2733	0.0341	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	
+ 	0.3886	.	0.3260	.	0.2854	.	
+	
+ 	W	
+Cluster	1	s.e.	2	s.e.	3	s.e.	
+1	0.8583	.	0.0632	.	0.0785	.	
+2	0.0988	.	0.7568	.	0.1445	.	
+3	0.1474	.	0.1823	.	0.6702	.	
+	
+ 	cat	
+Cluster	1	s.e.	2	s.e.	3	s.e.	
+1	0.5607	0.0409	0.3289	0.0336	0.1104	0.0432	
+2	0.3236	0.0404	0.4169	0.0454	0.2595	0.0465	
+3	0.2724	0.0549	0.2167	0.0492	0.5110	0.0675	

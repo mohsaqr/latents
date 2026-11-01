@@ -249,9 +249,10 @@
                        conf_low = quantiles[1L, ], conf_high = quantiles[2L, ],
                        row.names = NULL, stringsAsFactors = FALSE)
   covariance <- stats::cov(kept)
-  structure(result, covariance = covariance, level = level, method = "bootstrap",
-            iter = iter, n_valid = sum(valid), replicates = kept,
-            messages = drawn$messages, adjust = adjust)
+  .latents_bootstrap_table(structure(
+    result, covariance = covariance, level = level, method = "bootstrap",
+    iter = iter, n_valid = sum(valid), replicates = kept,
+    messages = drawn$messages, adjust = adjust), valid)
 }
 
 #' @noRd

@@ -1,4 +1,4 @@
-latents 1.1.9
+latents 1.1.10
 R version 4.5.2 (2025-10-31)
 Platform: aarch64-apple-darwin20
 Running under: macOS Tahoe 26.3.1
@@ -17,7 +17,7 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] latents_1.1.9  testthat_3.3.2
+[1] latents_1.1.10 testthat_3.3.2
 
 loaded via a namespace (and not attached):
  [1] desc_1.4.3        R6_2.6.1          devtools_2.4.6    fastmap_1.2.0    

@@ -13,3 +13,4 @@ equivalence/stata-published/comparison.csv,status,,commercial program,2026-10-29
 equivalence/mplus-growth/comparison.csv,status,,commercial program,2026-10-29,equivalence/test-mplus-growth.R
 equivalence/enumeration-packages/comparison.csv,status,,R package,2026-10-29,equivalence/test-enumeration-packages.R
 equivalence/latentgold-categorical-distal/comparison.csv,latentgold,Latent GOLD,commercial program,2026-11-01,equivalence/test-latentgold-categorical-distal.R
+equivalence/latentgold-step-one/comparison.csv,latentgold,Latent GOLD,commercial program,2026-11-01,equivalence/test-latentgold-step-one.R

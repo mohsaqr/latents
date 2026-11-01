@@ -246,5 +246,7 @@ equivalence,test-enumeration-packages.R,.,enumeration;bootstrap_lrt,mclust;poLCA
 equivalence,test-verification-attribution.R,.,none,verification attribution,infrastructure
 equivalence,test-latentgold-categorical-distal.R,^the kit is the one,none,kit provenance,provenance
 equivalence,test-latentgold-categorical-distal.R,.,three_step,Latent GOLD,commercial program
+equivalence,test-latentgold-step-one.R,^the kit is the one,none,kit provenance,provenance
+equivalence,test-latentgold-step-one.R,.,three_step,Latent GOLD,commercial program
 equivalence,test-lrt.R,.,enumeration,mclust;glca;Mplus,R package;R package;commercial program
 equivalence,test-moeclust-covariate-structures.R,.,lpa,MoEClust,R package

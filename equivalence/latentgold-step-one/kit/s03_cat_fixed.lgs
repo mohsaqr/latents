@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 's03.dat'
+
+model
+title 's03_cat_fixed';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+variables
+   caseid id;
+   dependent W nominal, cat nominal coding=first;
+   latent Cluster nominal 3 coding=first;
+equations
+   Cluster <- (s) 1;
+   W <- (e~err) 1 | Cluster;
+   cat <- 1 + Cluster;
+   e s = {-4.8354778432635124 -2.0580813933636848 -3.6121866265104745 -1.2118018068345144 -2.1758128402867598 -2.3096402708409105 -0.82425612449852048 0.032559522060099898};
+end model

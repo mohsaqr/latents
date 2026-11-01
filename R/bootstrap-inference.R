@@ -15,6 +15,8 @@
 # Journal of the Royal Statistical Society B, 69, 369-390; Davison & Hinkley,
 # 1997, Bootstrap Methods and their Application, chapter 3).
 
+utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_high"))
+
 #' The `multilpa()` arguments that refit a model as it was fitted
 #'
 #' A refit that reads `variance_model` and `covariance_model` alone silently
@@ -253,5 +255,215 @@
     structure = x$covariance_structure,
     fixed = x$fixed %||% character(),
     stages_resampled = if (staged) 2L else 1L))
+  .latents_bootstrap_table(result, valid)
+}
+
+#' Mark a bootstrap table, so that plot() and as.data.frame() reach its replicates
+#'
+#' Shared by the profile, transition and growth bootstraps. The table stays a
+#' data frame (one row per parameter, its label columns before `estimate`);
+#' the `replicates` attribute holds the kept replicates, one column per row,
+#' `replicate_number` the resample each kept replicate came from, and
+#' `replicate_rows` the row names the replicate columns belong to: `[` keeps
+#' attributes when it only reorders or repeats rows, so the row names are what
+#' tells a reordered copy from the table itself.
+#' @param result The bootstrap table, with its `replicates` attribute.
+#' @param valid One logical per resample: whether it produced a usable fit.
+#' @return `result` with class `c("latents_bootstrap", "data.frame")`.
+#' @noRd
+.latents_bootstrap_table <- function(result, valid) {
+  attr(result, "replicate_number") <- which(valid)
+  attr(result, "replicate_rows") <- row.names(result)
+  class(result) <- c("latents_bootstrap", "data.frame")
   result
+}
+
+#' The label columns of a bootstrap table and the column naming the kind
+#' @return A list: `labels`, the columns before `estimate`, with a second-order
+#'   transition table's `previous` (which follows the statistics) before
+#'   `from`; `kind`, the column that names the kind of parameter
+#'   (`parameter`, or `block` for a transition or growth model), or `NULL`.
+#' @noRd
+.latents_bootstrap_columns <- function(x) {
+  labels <- names(x)[seq_len(match("estimate", names(x)) - 1L)]
+  if ("previous" %in% names(x)) {
+    labels <- append(labels, "previous", after = match("from", labels, nomatch = 0L) - 1L)
+  }
+  kind <- intersect(c("parameter", "block"), labels)
+  list(labels = labels, kind = if (length(kind) > 0L) kind[[1L]] else NULL)
+}
+
+#' The kept replicates of a bootstrap table, one column per row of the table
+#' @return A replicates-by-parameters matrix, or `latents_bad_argument` when a
+#'   subset, reordered or modified copy of the table no longer matches them.
+#' @noRd
+.latents_bootstrap_matrix <- function(x) {
+  kept <- attr(x, "replicates")
+  if (is.null(kept) || !identical(ncol(kept), nrow(x)) ||
+      !identical(attr(x, "replicate_rows"), row.names(x))) {
+    stop(errorCondition(paste(
+      "This table no longer matches its bootstrap replicates (a subset or a",
+      "reordered or modified copy loses them). Use the table",
+      "parameter_inference(method = \"bootstrap\") returned."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  kept
+}
+
+#' The replicates of a bootstrap table, one row per replicate and parameter
+#' @return A base data frame: `replicate` (the resample's number), the
+#'   table's label columns, and `estimate`, the parameter in that replicate.
+#' @noRd
+.latents_bootstrap_replicates <- function(x) {
+  kept <- .latents_bootstrap_matrix(x)
+  labels <- .latents_bootstrap_columns(x)$labels
+  table <- as.data.frame(x)
+  number <- attr(x, "replicate_number") %||% seq_len(nrow(kept))
+  index <- expand.grid(parameter = seq_len(ncol(kept)), replicate = seq_len(nrow(kept)))
+  data.frame(replicate = number[index$replicate],
+             table[index$parameter, labels, drop = FALSE],
+             estimate = kept[cbind(index$replicate, index$parameter)],
+             row.names = NULL, stringsAsFactors = FALSE)
+}
+
+#' @noRd
+#' @export
+as.data.frame.latents_bootstrap <- function(x, row.names = NULL, optional = FALSE,
+                                            what = c("estimates", "replicates"), ...) {
+  what <- .latents_match_formal(what)
+  if (identical(what, "replicates")) return(.latents_bootstrap_replicates(x))
+  table <- x
+  attributes(table) <- list(names = names(x), row.names = attr(x, "row.names"),
+                            class = "data.frame")
+  if (!is.null(row.names)) row.names(table) <- row.names
+  table
+}
+
+#' @noRd
+#' @export
+plot.latents_bootstrap <- function(x, what = NULL, main = NULL, subtitle = NULL, ...) {
+  .gg_require()
+  kept <- .latents_bootstrap_matrix(x)
+  columns <- .latents_bootstrap_columns(x)
+  table <- as.data.frame(x)
+  kinds <- if (is.null(columns$kind)) character() else unique(table[[columns$kind]])
+  if (!is.null(what) && !(is.character(what) && length(what) > 0L && all(what %in% kinds))) {
+    stop(errorCondition(sprintf(
+      "`what` must name kinds of parameter in this table: %s.",
+      if (length(kinds) == 0L) "this table has none" else
+        paste(sprintf("\"%s\"", kinds), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  chosen <- if (is.null(what)) rep(TRUE, nrow(table)) else table[[columns$kind]] %in% what
+  # A parameter held fixed or determined by the others (the probability of a
+  # single group class) has no interval to draw; the caption names it instead.
+  spread <- apply(kept, 2L, function(values) diff(range(values)) > 1e-10 * max(1, abs(values)))
+  shown <- which(chosen & spread)
+  if (length(shown) == 0L) {
+    stop(errorCondition(
+      "No chosen parameter varies across the replicates, so there is nothing to plot.",
+      class = c("latents_nothing_to_plot", "latents_bad_argument"), call = NULL))
+  }
+  frame <- .latents_bootstrap_layout(table, columns, shown)
+  level <- attr(x, "level") %||% 0.95
+  kind_text <- if (is.null(columns$kind)) "parameters" else
+    paste(unique(table[[columns$kind]][shown]), collapse = ", ")
+  main <- main %||% sprintf("Bootstrap intervals: %s", kind_text)
+  subtitle <- subtitle %||% sprintf(paste(
+    "Estimates with %s%% percentile intervals from %d refitted resamples (of %d)."),
+    format(100 * level), nrow(kept), attr(x, "iter") %||% nrow(kept))
+  flat <- which(chosen & !spread)
+  flat_names <- vapply(flat, function(row) {
+    parts <- vapply(columns$labels, function(name) as.character(table[[name]][row]),
+                    character(1))
+    paste(parts[!is.na(parts)], collapse = " · ")
+  }, character(1))
+  # Series are told apart by colour and shape; a panel with a single series
+  # (the group classes' probabilities) is drawn in black without a key.
+  dodge <- ggplot2::position_dodge(width = 0.35)
+  several <- frame[!is.na(frame$series), , drop = FALSE]
+  single <- frame[is.na(frame$series), , drop = FALSE]
+  joined <- several[several$series_points > 1L, , drop = FALSE]
+  series <- unique(several$series)
+  palette <- rep_len(.gg_okabe_ito[-7L], length(series))
+  shapes <- rep_len(c(16L, 17L, 15L, 18L, 1L, 2L, 0L, 5L), length(series))
+  plot <- ggplot2::ggplot(frame, ggplot2::aes(at, estimate)) +
+    ggplot2::geom_line(data = joined, ggplot2::aes(colour = series, group = series),
+                       position = dodge, linewidth = 0.6) +
+    ggplot2::geom_errorbar(data = several, ggplot2::aes(ymin = conf_low, ymax = conf_high,
+                                                        colour = series, group = series),
+                           position = dodge, width = 0.2, linewidth = 0.6) +
+    ggplot2::geom_point(data = several, ggplot2::aes(colour = series, shape = series,
+                                                     group = series),
+                        position = dodge, size = 2.4) +
+    ggplot2::geom_errorbar(data = single, ggplot2::aes(ymin = conf_low, ymax = conf_high),
+                           colour = "#000000", width = 0.15, linewidth = 0.6) +
+    ggplot2::geom_point(data = single, colour = "#000000", size = 2.4) +
+    ggplot2::facet_wrap(~panel, scales = "free") +
+    ggplot2::scale_colour_manual(values = stats::setNames(palette, series), breaks = series,
+                                 name = NULL) +
+    ggplot2::scale_shape_manual(values = stats::setNames(shapes, series), breaks = series,
+                                name = NULL) +
+    ggplot2::labs(title = main, subtitle = subtitle, x = NULL, y = "Estimate",
+                  caption = if (length(flat) > 0L) sprintf(
+                    "Not drawn (no spread across replicates): %s.",
+                    paste(flat_names, collapse = "; "))) +
+    .gg_theme() +
+    ggplot2::theme(strip.text = ggplot2::element_text(face = "bold", hjust = 0),
+                   legend.position = "bottom",
+                   panel.spacing = ggplot2::unit(1, "lines"),
+                   panel.grid.minor = ggplot2::element_blank())
+  plot
+}
+
+#' Where each drawn parameter of a bootstrap table sits on the plot
+#'
+#' One panel per kind of parameter, split by `level` when a kind spans
+#' several (the probabilities of profiles and of group classes), which is
+#' then named with its level. Within a
+#' panel, the last label column that varies is the horizontal axis (the
+#' indicator of a mean, the group class of a profile's probability, the
+#' occasion of a transition) and the others that vary name the series that
+#' a line joins (the profile, the transition); a panel where only one column
+#' varies has a single series.
+#' @param table The bootstrap table as a base data frame.
+#' @param columns From .latents_bootstrap_columns().
+#' @param shown The rows drawn.
+#' @return A base data frame, one row per drawn parameter: `panel` and `at`
+#'   (factors in table order), `series` (`NA` for a panel's single series),
+#'   `series_points` (how many points the series has in its panel),
+#'   `estimate`, `conf_low` and `conf_high`.
+#' @noRd
+.latents_bootstrap_layout <- function(table, columns, shown) {
+  rows <- table[shown, , drop = FALSE]
+  text <- function(name) {
+    values <- as.character(rows[[name]])
+    values[is.na(values)] <- "(none)"
+    values
+  }
+  kind <- if (is.null(columns$kind)) rep("estimate", nrow(rows)) else text(columns$kind)
+  levels_of_kind <- if ("level" %in% columns$labels) {
+    tapply(text("level"), kind, function(values) length(unique(values)))[kind]
+  } else rep(1L, nrow(rows))
+  panel <- ifelse(levels_of_kind > 1L, paste(text("level"), kind), kind)
+  others <- setdiff(columns$labels, c(columns$kind, "level"))
+  pieces <- lapply(split(seq_len(nrow(rows)), factor(panel, levels = unique(panel))),
+                   function(index) {
+    varying <- Filter(function(name) length(unique(text(name)[index])) > 1L, others)
+    at <- if (length(varying) == 0L) panel[index] else text(varying[length(varying)])[index]
+    series <- if (length(varying) < 2L) rep(NA_character_, length(index)) else {
+      do.call(paste, c(lapply(varying[-length(varying)], function(name) text(name)[index]),
+                       sep = " · "))
+    }
+    data.frame(row = index, at = at, series = series, stringsAsFactors = FALSE)
+  })
+  placed <- do.call(rbind, pieces)
+  placed <- placed[order(placed$row), , drop = FALSE]
+  key <- paste(panel, placed$series)
+  data.frame(panel = factor(panel, levels = unique(panel)),
+             at = factor(placed$at, levels = unique(placed$at)),
+             series = placed$series,
+             series_points = as.vector(table(key)[key]),
+             estimate = rows$estimate, conf_low = rows$conf_low, conf_high = rows$conf_high,
+             row.names = NULL, stringsAsFactors = FALSE)
 }

@@ -143,14 +143,22 @@ and do not include its uncertainty (see \code{\link[=fit_staged]{fit_staged()}})
 resample, so the table includes the measurement parameters and that
 uncertainty is propagated (attribute \code{stages_resampled} is 2).
 
-With \code{method = "bootstrap"} the table has the same columns and rows;
-\code{estimate} is the fitted value, \code{standard_error} the standard deviation
-of the replicates and \code{conf_low}/\code{conf_high} the percentile interval.
-\code{statistic}, \code{p_value} and \code{p_adjusted} are \code{NA}. Its attributes are
-\code{covariance} (the covariance of the replicates, returned by \code{vcov()}),
-\code{level}, \code{method}, \code{iter}, \code{n_valid}, \code{replicates} (the kept replicates,
-one row each), \code{messages} (why a resample was dropped, \code{NA} where it was
-not), \code{structure} and \code{fixed}; \code{covariance_unconstrained} is \code{NULL}.
+With \code{method = "bootstrap"} the table has the same columns and rows and
+class \code{c("latents_bootstrap", "data.frame")}; \code{estimate} is the fitted
+value, \code{standard_error} the standard deviation of the replicates and
+\code{conf_low}/\code{conf_high} the percentile interval. \code{statistic}, \code{p_value}
+and \code{p_adjusted} are \code{NA}. \code{as.data.frame(x, what = "replicates")}
+returns the replicates, one row per kept resample and parameter
+(\code{replicate}, the label columns and \code{estimate}), and \code{plot(x, what = )}
+draws each estimate with its percentile interval for the kinds of
+parameter named in \code{what} (values of the \code{parameter} column, such as
+\code{"mean"} or \code{"probability"}; all by default), the profile means as one
+line per profile across the indicators.
+Its attributes are \code{covariance} (the covariance of the replicates,
+returned by \code{vcov()}), \code{level}, \code{method}, \code{iter}, \code{n_valid},
+\code{replicates}, \code{replicate_number}, \code{messages} (why a resample was
+dropped, \code{NA} where it was not), \code{structure} and \code{fixed};
+\code{covariance_unconstrained} is \code{NULL}.
 
 For the Wald method, diagnostics of the whole fit are attributes:
 \code{covariance} and \code{covariance_unconstrained} (natural and
@@ -342,8 +350,11 @@ shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
 parameter_inference(shaped)
 
 # Resample schools and refit the same covariance structure.
-parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
-                    seed = 1)
+boot <- parameter_inference(shaped, method = "bootstrap", iter = 10,
+                            n_starts = 1, seed = 1)
+boot
+head(as.data.frame(boot, what = "replicates"))  # one row per replicate
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(boot, what = "mean")
 
 # A covariate fit: membership driven by `x` and by the group's class.
 set.seed(5)

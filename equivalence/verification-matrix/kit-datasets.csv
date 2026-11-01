@@ -19,3 +19,4 @@ equivalence/stata-published/comparison.csv,^stouffer_toby_.*$,Stouffer-Toby (Sta
 equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1
 equivalence/latentgold-categorical-distal/comparison.csv,^(.*)$,Latent GOLD categorical distal kit: \1
+equivalence/latentgold-step-one/comparison.csv,^(.*)$,Latent GOLD step-one correction kit: \1
