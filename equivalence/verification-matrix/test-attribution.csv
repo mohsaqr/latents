@@ -244,3 +244,7 @@ equivalence,test-stata-published.R,.,lpa;lca,Stata 19;Masyn (2013),commercial pr
 equivalence,test-mplus-growth.R,.,growth,Mplus,commercial program
 equivalence,test-enumeration-packages.R,.,enumeration;bootstrap_lrt,mclust;poLCA,R package;R package
 equivalence,test-verification-attribution.R,.,none,verification attribution,infrastructure
+equivalence,test-latentgold-categorical-distal.R,^the kit is the one,none,kit provenance,provenance
+equivalence,test-latentgold-categorical-distal.R,.,three_step,Latent GOLD,commercial program
+equivalence,test-lrt.R,.,enumeration,mclust;glca;Mplus,R package;R package;commercial program
+equivalence,test-moeclust-covariate-structures.R,.,lpa,MoEClust,R package

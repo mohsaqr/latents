@@ -74,7 +74,7 @@ test_that("every forwarded argument reaches the estimator unchanged", {
   expect_identical(through_multilpa$time, "sequence")
 })
 
-test_that("the two arguments the covariate path cannot honour are refused", {
+test_that("the covariate path honours `start` and `fixed`", {
   call_with <- function(...) {
     multilpa(small, activity, "student", n_profiles = 2,
              n_group_classes = 2, profile_covariates = "previous_grade",
@@ -83,14 +83,15 @@ test_that("the two arguments the covariate path cannot honour are refused", {
   plain <- quietly(multilpa(small, activity, "student", n_profiles = 2,
                     n_group_classes = 2, n_starts = 1, max_iter = 20,
                     seed = 1))
-  expect_error(call_with(start = starting_values(plain)),
-               class = "latents_bad_argument")
-  expect_error(call_with(fixed = "means"), class = "latents_bad_argument")
-  # The message names the argument, so the caller is told which one to drop.
-  expect_error(call_with(fixed = "means"), "`fixed`")
-  # Both at once are named together rather than one refusal at a time.
-  expect_error(call_with(start = starting_values(plain), fixed = "means"),
-               "`start`, `fixed`")
+  # Both were refused before 1.2; a covariate fit now starts from `start` and
+  # holds the `fixed` blocks there, as a staged multilpa() fit does.
+  started <- quietly(call_with(start = starting_values(plain)))
+  expect_s3_class(started, "multilpa_covariates")
+  held <- quietly(call_with(start = starting_values(plain), fixed = "means"))
+  expect_equal(unname(held$means), unname(plain$means), tolerance = 1e-12)
+  expect_identical(held$fixed, "means")
+  # `fixed` still needs `start` to supply the values it holds.
+  expect_error(call_with(fixed = "means"), class = "latents_bad_fixed")
   # `missing = "fiml"` used to be refused here; it is now a supported model.
   expect_s3_class(quietly(call_with(missing = "fiml")), "multilpa_covariates")
 })

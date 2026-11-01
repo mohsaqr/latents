@@ -159,8 +159,12 @@ diagnostics <- function(x, data = NULL, plots = TRUE,
     result$average_posteriors <- .multilpa_average_posteriors(x, level = level)
     # Residuals need a discrete group-class model and no noise component; a
     # fit without them reports the check as not available, with the reason.
+    # The check reads BH-adjusted p-values, as it states; without `adjust`
+    # the table came back unadjusted (up to 1.1.9), and correctly specified
+    # profile models were flagged in up to half of simulated data sets
+    # (validation/bivariate-residual-size.R).
     result$residuals <- tryCatch(
-      .multilpa_bivariate_residuals(x, data, by = by),
+      .multilpa_bivariate_residuals(x, data, by = by, adjust = "BH"),
       latents_no_group_classes = function(condition) {
         residual_reason <<- conditionMessage(condition)
         NULL

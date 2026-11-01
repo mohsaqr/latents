@@ -8,3 +8,4 @@ equivalence/latentgold/comparison.csv,^c09_three_step,three_step
 equivalence/latentgold/comparison.csv,^c1[01]_lta,lta
 equivalence/latentgold/comparison.csv,.,multilpa
 equivalence/latentgold-ordinal/comparison.csv,.,multilpa
+equivalence/latentgold-categorical-distal/comparison.csv,.,three_step

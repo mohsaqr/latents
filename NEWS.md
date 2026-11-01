@@ -1,4 +1,4 @@
-# latents 1.1.9
+# latents 1.1.10
 
 Changes since the CRAN release 0.9.21.
 
@@ -23,14 +23,24 @@ Changes since the CRAN release 0.9.21.
 
 * `compare_models(..., test = "lrt")` tests each nested model against the
   one before it.
+* `align_labels(fit, reference)` numbers one fit's profiles and group
+  classes like another's, for comparing fits to different samples or waves.
 * `get_results(grid, "lmr")`: Vuong-Lo-Mendell-Rubin and adjusted
   Lo-Mendell-Rubin tests.
 * `local_dependence = "item1:item2"` models a pair of indicators jointly
   within each class.
 * `direct_effects = "y ~ z"` lets a covariate shift an indicator's mean in
   every profile.
+* `profile_covariates` and `group_covariates` work with every covariance
+  structure (`model =`), with standard errors in each. They also take
+  `start` and `fixed`: holding the measurement model of a fit without
+  covariates gives the two-step estimator.
 * `three_step(method = "ml")` for distal outcomes, and `r3step()` on `lta()`
   fits.
+* `three_step()` takes a categorical outcome (a factor, character or logical
+  column) and reports its probability in each class, by every method;
+  `contrast = "overall"` tests that the classes share one mean or one
+  distribution.
 * `predict()` for growth mixtures.
 * `diagnostics()` reports estimation, class sizes, classification, local
   independence and information, one row per quantity.
@@ -52,6 +62,10 @@ Changes since the CRAN release 0.9.21.
   classification error and three-step estimates.
 * `mixture_regression(common = "intercept")` had no effect; it is now
   refused.
+* The local-independence check of `diagnostics()` used unadjusted p-values,
+  although it states a Benjamini-Hochberg adjustment, and flagged a pair in
+  up to half of correctly specified profile models. It now applies the
+  adjustment, and flags about 5% or fewer.
 
 # latents 0.9.21
 

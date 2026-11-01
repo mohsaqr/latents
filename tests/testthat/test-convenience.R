@@ -165,8 +165,9 @@ test_that("diagnostics gathers the verbs without changing what they return", {
                    get_results(fit, "classification", level = "both"))
   expect_identical(get_results(quality, "average_posteriors"),
                    get_results(fit, "average_posteriors", level = "both"))
+  # The check reads Benjamini-Hochberg adjusted p-values.
   expect_identical(get_results(quality, "residuals"),
-                   get_results(fit, "residuals"))
+                   get_results(fit, "residuals", adjust = "BH"))
   expect_error(get_results(quality, "nonsense"))
   expect_output(print(quality), "^Diagnostics: ")
   expect_invisible(print(quality))

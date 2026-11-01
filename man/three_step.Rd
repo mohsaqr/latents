@@ -11,7 +11,7 @@ three_step(
   level = c("individuals", "groups"),
   method = c("bch", "proportional", "modal", "ml"),
   ci_level = 0.95,
-  contrast = c("none", "pairs"),
+  contrast = c("none", "pairs", "overall"),
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
   vcov_type = c("cluster", "independent"),
   variance = c("varying", "equal")
@@ -38,8 +38,10 @@ little identifying information raises a warning that alignment cannot be
 verified. For a trajectory model it must be the data frame the model was
 fitted to.}
 
-\item{outcome}{Name of a numeric outcome column, without missing or
-infinite values, that is not a measurement indicator of \code{x}. For
+\item{outcome}{Name of the outcome column, without missing values, that is
+not a measurement indicator of \code{x}: numeric (finite) for class means, or
+a factor, character or logical column for the class-specific probability
+of each category (a factor's unused levels are dropped). For
 \code{level = "groups"} it must be constant within each group, and for a
 trajectory model within each person.}
 
@@ -56,9 +58,11 @@ correction for classification error;
 
 \item{ci_level}{Confidence level for the intervals (default 0.95).}
 
-\item{contrast}{\code{"none"} (default) reports one outcome mean per class;
-\code{"pairs"} reports the difference between every pair of classes, with a
-test against zero.}
+\item{contrast}{\code{"none"} (default) reports one outcome mean per class (one
+probability per class and category); \code{"pairs"} reports the difference
+between every pair of classes, with a test against zero; \code{"overall"}
+tests that every class has the same mean (the same distribution over
+the categories) with one Wald statistic.}
 
 \item{adjust}{Multiplicity correction across the pairwise differences,
 passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default), \code{"holm"},
@@ -72,15 +76,19 @@ groups. \code{"independent"} treats every observation as an independent unit,
 which is appropriate only when observations can be treated as independent. The choice is recorded in the result's \code{vcov_type}
 attribute.}
 
-\item{variance}{For \code{method = "ml"}: \code{"varying"} (default) estimates a
-variance of the outcome in each class, \code{"equal"} one variance shared by
-the classes. Given with another method it raises \code{latents_bad_argument}.}
+\item{variance}{For \code{method = "ml"} with a numeric outcome: \code{"varying"}
+(default) estimates a variance of the outcome in each class, \code{"equal"}
+one variance shared by the classes. Given with another method or a
+categorical outcome it raises \code{latents_bad_argument}.}
 }
 \value{
 A base \code{data.frame}. For \code{contrast = "none"}, one row per class
 with the columns \code{level}, \code{method}, \code{class}, \code{estimate},
 \code{standard_error}, \code{conf_low}, \code{conf_high} and \code{effective_n}; class means
-are not tested. For \code{method = "ml"}, a \code{variance} column (the outcome's
+are not tested. For a categorical outcome, one row per class and
+category, with \code{category} after \code{class} and \code{estimate} the probability
+of the category in the class; the interval is formed on the logit scale
+and stays in (0, 1). For \code{method = "ml"}, a \code{variance} column (the outcome's
 estimated variance in the class) comes before \code{effective_n}, which is
 then the expected number of units in the class under the step-three
 model; the \code{variance} attribute records the choice. For \code{contrast = "pairs"}, one row per pair of classes
@@ -88,7 +96,13 @@ with the columns \code{level}, \code{method}, \code{class}, \code{reference_clas
 \code{estimate} (the mean of \code{class} minus the mean of \code{reference_class}),
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
 \code{conf_high}, as in \code{\link[=r3step]{r3step()}}. A contrast with zero or missing standard
-error has \code{NA_real_} statistic and p-values.
+error has \code{NA_real_} statistic and p-values. For a categorical outcome
+the pairs are compared category by category, with \code{category} after
+\code{reference_class} and \code{estimate} the difference in probability. For
+\code{contrast = "overall"}, one row with \code{level}, \code{method}, \code{statistic},
+\code{df} and \code{p_value}: \code{(K - 1)} degrees of freedom for a mean,
+\code{(K - 1)(C - 1)} for \code{C} categories, tested on the baseline-category
+logits.
 
 The result's \code{vcov_type} attribute records the variance used; for
 \code{contrast = "pairs"} the \code{adjust} attribute records the correction
@@ -162,6 +176,19 @@ distribution. Skewness or an incorrect equal-variance constraint can bias
 estimated means; BCH is less sensitive to these distributional assumptions
 (Bakk and Vermunt, 2016).
 
+A categorical outcome is described by its probability in each class.
+The weighting methods give the weighted share of each category; BCH
+weights can be negative, and with poorly separated classes a share can
+fall outside \verb{[0, 1]}: it is then reported without an interval or test,
+with a \code{latents_bch_out_of_range} warning. With \code{method = "ml"} the
+step-three model estimates a distribution over the categories in each
+class, with the class sizes and classification errors fixed as for a
+numeric outcome, as Latent GOLD's step-three model of a nominal dependent
+variable does without an equation for the sizes. Its probabilities stay
+in \verb{[0, 1]}; where the BCH shares do not, its maximum usually lies on
+the bound, and it reports the estimates without standard errors, with a
+\code{latents_boundary} warning.
+
 Because uncertainty in the estimated classification-error probabilities
 is omitted, interval coverage can be below the nominal level,
 particularly when classification is uncertain.
@@ -193,6 +220,10 @@ fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 three_step(fit, example_data, "y")
 three_step(fit, example_data, "y", contrast = "pairs")
+# A categorical outcome: its probability in each class.
+example_data <- transform(example_data, passed = y + rnorm(400, sd = 6) > 5)
+three_step(fit, example_data, "passed")
+three_step(fit, example_data, "passed", contrast = "overall")
 }
 \references{
 Vermunt, J. K. (2010). Latent class modeling with covariates: two

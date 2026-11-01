@@ -18,3 +18,4 @@ equivalence/stata-published/comparison.csv,^reaven_.*$,Reaven-Miller (Stata gsem
 equivalence/stata-published/comparison.csv,^stouffer_toby_.*$,Stouffer-Toby (Stata gsem)
 equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1
+equivalence/latentgold-categorical-distal/comparison.csv,^(.*)$,Latent GOLD categorical distal kit: \1

@@ -1,0 +1,159 @@
+d01.dat
+File name:	d01.dat	
+File size:	25462 bytes  600 records	
+File date:	2026-Oct-31 8:33:45 PM	
+Syntax:	d01_proportional_robust.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	
+d01_proportional_robust	2-Cluster	-1439.8232	2911.6311	2889.6465	2894.6465	5	
+d01_proportional_robust - LL = -1439.8232
+2-Cluster Syntax Model	
+					
+Number of cases	600				
+Number of parameters (Npar)	5				
+Robustness Effect	1.2020				
+Random Seed	20261101				
+Best Start Seed	20261101				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1439.8232				
+Log-prior	0.0000				
+Log-posterior	-1439.8232				
+BIC (based on LL)	2911.6311				
+AIC (based on LL)	2889.6465				
+AIC3 (based on LL)	2894.6465				
+CAIC (based on LL)	2916.6311				
+SABIC (based on LL)	2895.7575				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.3488				
+Reduction of errors (Lambda)	0.2099				
+Entropy R-squared	0.0693				
+Standard R-squared	0.0937				
+Classification log-likelihood	-1823.0533				
+Entropy	383.2301				
+CLC	3646.1066				
+AWE	3725.0759				
+ICL-BIC	3678.0913				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	113.7993	151.0571	264.8564		
+2	58.2007	276.9429	335.1436		
+Total	172.0000	428.0000	600.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	130.7799	134.0764	264.8564		
+2	134.0764	201.0672	335.1436		
+Total	264.8564	335.1436	600.0000		
+					
+Files					
+Infile	C:\lgdistal\d01.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261101				
+sets	20				
+tolerance	1e-05				
+iterations	100				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+step3					
+classification	proportional				
+adjustment	none				
+simultaneous	no				
+aggregate	no				
+output					
+parameters	first				
+standard errors	robust				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Variables					
+distal	Nominal	3			
+1	1				
+2	2				
+3	3				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 proportional none;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model;
+variables
+   dependent distal nominal coding=first;
+   latent Cluster nominal coding=first posterior = ( post1 post2 );
+equations
+   Cluster <- 1;
+   distal <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	8.1823	1	0.0042	
+Cluster(2)	<-	1	0.2354	0.0823	2.8605	0.0042				
+										
+distal(1)	<-	1	0.0000	.	.	.	11.0186	2	0.0040	
+distal(2)	<-	1	-0.0648	0.1629	-0.3979	0.69				
+distal(3)	<-	1	0.3780	0.1471	2.5694	0.010				
+distal(1)	<-	Cluster(1)	0.0000	.	.	.	53.1952	2	2.8e-12	
+distal(2)	<-	Cluster(1)	0.0000	.	.	.				
+distal(3)	<-	Cluster(1)	0.0000	.	.	.				
+distal(1)	<-	Cluster(2)	0.0000	.	.	.				
+distal(2)	<-	Cluster(2)	-0.6348	0.2070	-3.0659	0.0022				
+distal(3)	<-	Cluster(2)	-1.5346	0.2104	-7.2935	3.0e-13				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	8.1823	1	0.0042	
+	
+distal	<-	 Cluster	Cluster	1	2	53.1952	2	2.8e-12	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.4414	0.0203	0.5586	0.0203	 	 	
+distal	 	
+1	0.2944	0.0280	0.5521	0.0272	0.4383	0.0203	
+2	0.2759	0.0275	0.2743	0.0244	0.2750	0.0182	
+3	0.4297	0.0304	0.1737	0.0207	0.2867	0.0185	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	 	 	
+ 	0.4414	0.0203	0.5586	0.0203	 	 	
+	
+ 	distal	
+Cluster	1	s.e.	2	s.e.	3	s.e.	
+1	0.2944	0.0280	0.2759	0.0275	0.4297	0.0304	
+2	0.5521	0.0272	0.2743	0.0244	0.1737	0.0207	
+	
+ 	Cluster_Proportional	
+Cluster	post1	s.e.	post2	s.e.	 	 	
+1	1.0000	.	0.0000	.	 	 	
+2	0.0000	.	1.0000	.	 	 	

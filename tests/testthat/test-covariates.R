@@ -55,20 +55,20 @@ test_that("no predictors agrees with the base model and single-level works", {
   expect_error(multilpa(d, "y", "g", 2, 1, "constant", n_starts = 1), "rank deficient")
 })
 
-test_that("a structure the covariate model cannot fit is refused, not swapped", {
+test_that("the covariate model fits the structure it is given, not a neighbour", {
   activity <- c("browse", "lectures")
-  # VEI used to be fitted silently as VVI.
-  refused <- lapply(c("VEI", "EEV", "VII"), function(structure) {
-    expect_error(multilpa(course_engagement, activity, "student", 2, 1,
-                          profile_covariates = "previous_grade", model = structure,
-                          n_starts = 1),
-                 class = "latents_unsupported_structure")
-  })
-  expect_error(do.call(multilpa, c(
+  # VEI was once fitted silently as VVI, then refused; it is now fitted.
+  invisible(lapply(c("VEI", "EEV", "VII"), function(structure) {
+    fit <- quietly(multilpa(course_engagement, activity, "student", 2, 1,
+                            profile_covariates = "previous_grade", model = structure,
+                            n_starts = 1, seed = 1))
+    expect_identical(fit$covariance_structure, structure)
+  }))
+  by_pieces <- quietly(do.call(multilpa, c(
     list(course_engagement, activity, "student", 2, 1,
-         profile_covariates = "previous_grade", n_starts = 1),
-    .multilpa_structure_arguments("VEI"))),
-    class = "latents_unsupported_structure")
+         profile_covariates = "previous_grade", n_starts = 1, seed = 1),
+    .multilpa_structure_arguments("VEI"))))
+  expect_identical(by_pieces$covariance_structure, "VEI")
   equal_full <- quietly(multilpa(course_engagement, activity, "student", 2, 1,
                                  profile_covariates = "previous_grade", model = "EEE",
                                  n_starts = 1, seed = 1))

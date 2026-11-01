@@ -886,9 +886,18 @@
 #'   profile slopes are shared across group classes unless
 #'   `profile_slopes = "group_class"`. A group covariate must be constant
 #'   within each group. Covariates enter in their supplied units, without
-#'   centring or scaling. The covariate model rejects `start` and `fixed`; it
-#'   accepts `missing = "fiml"` for the indicators, but the covariates must be
-#'   complete. [three_step()] and [r3step()] are the staged alternatives.
+#'   centring or scaling. The covariate model takes any of the fourteen
+#'   covariance structures (`model`), each with Wald standard errors from
+#'   [parameter_inference()]. `start` sets where its first start
+#'   begins; with `fixed`, the named measurement blocks are held at `start`
+#'   (for example `start = starting_values(fit), fixed = "measurement"` from
+#'   a fit without covariates), which is the two-step estimator of Bakk and
+#'   Kuha (2018): only the membership logits are estimated, the criteria and
+#'   standard errors condition on the held measurement, and `n_parameters`
+#'   counts the free parameters (`n_parameters_with_measurement` all of
+#'   them). It accepts `missing = "fiml"` for the indicators, but the
+#'   covariates must be complete. [three_step()] and [r3step()] are the
+#'   staged alternatives.
 #' @param profile_slopes `"shared"` (the default) gives each profile
 #'   covariate one slope per profile logit, common to every group class.
 #'   `"group_class"` estimates separate slopes in each group class (a
@@ -1465,6 +1474,10 @@
 #'   (1997). Latent variable regression for multiple discrete outcomes.
 #'   Journal of the American Statistical Association, 92(440), 1375--1386.
 #'
+#'   Bakk, Z., & Kuha, J. (2018). Two-step estimation of models between latent
+#'   classes and external variables. Psychometrika, 83(4), 871--892.
+#'   doi:10.1007/s11336-017-9592-7.
+#'
 #'   Meng, X.-L., & Rubin, D. B. (1993). Maximum likelihood estimation via the
 #'   ECM algorithm: A general framework. Biometrika, 80(2), 267--278.
 #'   doi:10.1093/biomet/80.2.267.
@@ -1795,17 +1808,6 @@ multilpa <- function(data, vars, id, n_profiles,
     "`prior`" = !is.null(prior), "`noise = TRUE`" = isTRUE(noise),
     "`fixed`" = length(fixed) > 0L, "`start`" = !is.null(start)))
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
-    # The covariate model is fitted through `variance_model` and
-    # `covariance_model` alone, which reach these four structures only; any
-    # other used to be fitted silently as the nearest of them.
-    if (!structure %in% c("EEI", "VVI", "EEE", "VVV")) {
-      stop(errorCondition(sprintf(paste(
-        "The covariance structure \"%s\" is not available with",
-        "`profile_covariates` or `group_covariates`, which fit EEI, VVI, EEE",
-        "and VVV only. Fit the covariate-free model with this structure and use",
-        "three_step() or r3step(), or choose one of the four."), structure),
-        class = "latents_unsupported_structure", call = NULL))
-    }
     result <- .multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
       n_group_classes = n_group_classes,
@@ -1814,7 +1816,7 @@ multilpa <- function(data, vars, id, n_profiles,
       n_starts = n_starts, max_iter = max_iter, tol = tol,
       min_variance = min_variance, seed = seed, start = start,
       missing = missing, profile_slopes = profile_slopes,
-      covariance_model = covariance_model,
+      covariance_model = covariance_model, structure = structure,
       categorical = categorical, min_probability = min_probability,
       time = time, fixed = fixed, select_start = select_start, boundary = boundary,
       call = call,
@@ -2479,6 +2481,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                       n_starts, max_iter, tol, min_variance,
                                       seed, start, missing,
                                       profile_slopes = "shared", covariance_model,
+                                      structure = NULL,
                                       categorical, min_probability, time,
                                       fixed, select_start = "likelihood",
                                       boundary = "allow",
@@ -2488,18 +2491,6 @@ multilpa <- function(data, vars, id, n_profiles,
                                       centering = "none", scaling = "none",
                                       drop_empty = TRUE, search = "kmeans",
                                       n_screen = NULL) {
-  unsupported <- c(
-    start = !is.null(start),
-    fixed = length(fixed) > 0L)
-  if (any(unsupported)) {
-    stop(errorCondition(sprintf(paste(
-      "%s cannot be combined with `profile_covariates` or",
-      "`group_covariates`. Fit the covariate model without %s, or fit the",
-      "covariate-free model and use three_step() or r3step()."),
-      paste(sprintf("`%s`", names(unsupported)[unsupported]), collapse = ", "),
-      if (sum(unsupported) > 1L) "them" else "it"),
-      class = "latents_bad_argument", call = NULL))
-  }
   .multilpa_fit_covariates(
     data = data, vars = vars, id = id, n_profiles = n_profiles,
     n_group_classes = n_group_classes,
@@ -2507,7 +2498,8 @@ multilpa <- function(data, vars, id, n_profiles,
     group_covariates = group_covariates, variance_model = variance_model,
     n_starts = n_starts, max_iter = max_iter, tol = tol,
     min_variance = min_variance, seed = seed, time = time,
-    covariance_model = covariance_model, categorical = categorical,
+    covariance_model = covariance_model, structure = structure,
+    start = start, fixed = fixed, categorical = categorical,
     min_probability = min_probability, missing = missing,
     profile_slopes = profile_slopes, select_start = select_start,
     boundary = boundary, call = call,

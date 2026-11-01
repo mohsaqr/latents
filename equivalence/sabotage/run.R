@@ -123,7 +123,74 @@ sabotage_defects <- function() {
          description = "Every covariance structure taken as nested in every other",
          target = ".multilpa_lrt_covariance_nested",
          replace = function(original) function(null, alternative) TRUE,
-         suite = "unit", filter = "^compare-lrt$")
+         suite = "unit", filter = "^compare-lrt$"),
+    list(name = "align_gaussian_diagnostics",
+         description = "Relabelling leaves the stored Gaussian diagnostics on the old labels",
+         target = ".latents_permute_gaussian_diagnostics",
+         replace = function(original) function(table, profile_order) table,
+         suite = "unit", filter = "^align-labels$"),
+    # (The ML information as the outer product of the scores alone is not a
+    # defect here: the step-three model is saturated, so at its maximum the
+    # observed information and the outer product coincide.)
+    list(name = "categorical_softmax_jacobian",
+         description = "Categorical ML step three: softmax Jacobian without its -p p' term",
+         target = ".multilpa_step_categorical_influence",
+         replace = function(original) function(fit, indicators) {
+           influence <- .multilpa_step_categorical_scores(fit, indicators) %*%
+             solve(.multilpa_step_categorical_information(fit, indicators))
+           n_classes <- nrow(fit$probabilities)
+           free <- seq_len(ncol(indicators) - 1L)
+           do.call(cbind, lapply(seq_len(n_classes), function(class) {
+             jacobian <- diag(fit$probabilities[class, ])[, free, drop = FALSE]
+             columns <- (class - 1L) * length(free) + free
+             influence[, columns, drop = FALSE] %*% t(jacobian)
+           }))
+         },
+         # Latent GOLD's robust standard errors of the ML probabilities.
+         suite = "equivalence", filter = "^latentgold-categorical-distal$"),
+    list(name = "overall_wald_variance",
+         description = "Overall three-step Wald test with the contrast variance 10% too small",
+         target = ".multilpa_step_overall",
+         replace = function(original) function(estimates, clustered, ...) {
+           original(estimates, clustered * sqrt(0.9), ...)
+         },
+         suite = "equivalence", filter = "^latentgold-categorical-distal$"),
+    list(name = "covariate_structure_ignored",
+         description = "M-step drops a constrained covariance structure (fits the unconstrained one)",
+         target = ".multilpa_maximization",
+         # The original's own argument order: callers pass `structure` by
+         # position as well as by name.
+         replace = function(original) function(x, expectation, variance_model, min_variance,
+                                               covariance_model = "diagonal", codes = NULL,
+                                               n_categories = NULL, min_probability = 1e-10,
+                                               held = NULL, structure = NULL, ...) {
+           original(x, expectation, variance_model, min_variance, covariance_model, codes,
+                    n_categories, min_probability, held, structure = NULL, ...)
+         },
+         suite = "equivalence", filter = "^moeclust-covariate-structures$"),
+    list(name = "covariate_fixed_not_held",
+         description = "Covariate model drops the held blocks (fixed measurement drifts)",
+         target = ".multilpa_held_parameters",
+         replace = function(original) function(start, fixed, covariance_model) NULL,
+         suite = "unit", filter = "^covariate-fixed$"),
+    list(name = "covariate_chart_delta",
+         description = "Constrained-structure covariate fit: spread delta-method Jacobian 2% too large",
+         target = ".multilpa_cov_chart_front",
+         replace = function(original) function(object, front) {
+           mapped <- original(object, front)
+           spread <- seq_len(nrow(mapped$jacobian)) > length(object$means)
+           mapped$jacobian[spread, ] <- 1.02 * mapped$jacobian[spread, ]
+           mapped
+         },
+         suite = "unit", filter = "^covariate-structure-inference$"),
+    list(name = "residuals_unadjusted",
+         description = "Local-independence check reads unadjusted p-values (the 1.1.9 behaviour)",
+         target = ".multilpa_bivariate_residuals",
+         replace = function(original) function(x, data = NULL, by = c("profile", "overall"),
+                                               adjust = "none") {
+           original(x, data = data, by = by, adjust = "none")
+         },
+         suite = "unit", filter = "^review-1027-diagnostics$")
   )
 }
 

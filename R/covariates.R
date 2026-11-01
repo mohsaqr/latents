@@ -244,6 +244,7 @@
                                   min_variance = NULL, seed = NULL,
                                   time = NULL,
                                   covariance_model = c("diagonal", "full"),
+                                  structure = NULL, start = NULL, fixed = character(),
                                   categorical = character(),
                                   min_probability = 1e-10,
                                   missing = c("error", "fiml"),
@@ -284,6 +285,9 @@
   }
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
+  # Any of the fourteen structures; called without one, the structure the
+  # variance and covariance models name.
+  structure <- structure %||% .multilpa_resolve_structure(variance_model, covariance_model)
   missing <- match.arg(missing)
   profile_slopes <- match.arg(profile_slopes)
   stopifnot(
@@ -309,11 +313,13 @@
   base_estimation <- c("latents_unidentified", "latents_boundary", "latents_unconverged",
                        "latents_failed_starts", "latents_all_starts_boundary",
                        "latents_small_classes", "latents_thin_profiles")
+  # `start` and `fixed` reach the covariate model through this fit: it begins
+  # from `start`, holds the `fixed` blocks at it, and the covariate model's
+  # first start resumes from it with the same blocks held.
   base <- withCallingHandlers(multilpa(data, vars, id, n_profiles, n_group_classes,
-                     variance_model = variance_model,
+                     model = structure, start = start, fixed = fixed,
                      n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance,
-                     covariance_model = covariance_model,
                      categorical = categorical,
                      min_probability = min_probability, missing = missing,
                      weights = weights, ordinal = ordinal, count = count,
@@ -356,6 +362,15 @@
                                  row_weights = sampling_weights[group_index])
   x <- designs$x
   center <- designs$center
+  # The held blocks, in the centred coordinates the covariate EM works in.
+  fixed <- base$fixed %||% character()
+  held <- .multilpa_held_parameters(list(
+    means = sweep(unname(as.matrix(base$means)), 2L, center, "-"),
+    variances = unname(as.matrix(base$variances)),
+    covariances = if (!is.null(base$covariances)) unname(base$covariances),
+    response_probabilities = if (!is.null(base$response_probabilities)) {
+      unname(lapply(base$response_probabilities, function(block) unname(as.matrix(block))))
+    }), fixed, covariance_model)
   # Starts closer than the EM stopping threshold are tied (see
   # `.multilpa_select_start()`); the replication tolerance below counts the
   # same observed values.
@@ -366,8 +381,8 @@
   tie <- tol * max(1, n_observed)
   control <- list(variance_model = variance_model, min_variance = min_variance,
                   max_iter = max_iter, tol = tol,
-                  covariance_model = covariance_model,
-                  min_probability = min_probability,
+                  covariance_model = covariance_model, structure = structure,
+                  held = held, min_probability = min_probability,
                   n_profile_covariates = ncol(designs$stacked_design) -
                     n_group_classes,
                   n_group_covariates = length(group_covariates),
@@ -453,8 +468,8 @@
     n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), group_index = group_index,
     variance_model = variance_model, min_variance = min_variance,
-    covariance_model = covariance_model, categorical = categorical,
-    call = call %||% match.call())
+    covariance_model = covariance_model, structure = structure, fixed = fixed,
+    categorical = categorical, call = call %||% match.call())
   ## Set here rather than inside the assembler, where the name `time` would
   ## resolve to stats::time instead of this argument.
   result$time <- time
@@ -966,6 +981,8 @@ nobs.multilpa_covariates <-function(object, ...) {
                        hierarchical = FALSE, extra = designs$extra, kind = kind,
                        row_weights = control$sampling_weights[group_index])
   }
+  # Every start begins from the held blocks, as in multilpa().
+  parameters <- .multilpa_apply_held(parameters, control$held)
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /
           parameters$profile_probabilities[, n_profiles]),
@@ -998,6 +1015,8 @@ nobs.multilpa_covariates <-function(object, ...) {
                                          control$covariance_model, designs$codes,
                                          designs$n_categories,
                                          control$min_probability,
+                                         held = control$held,
+                                         structure = control$structure,
                                          previous = state$parameters,
                                          extra = designs$extra)
     profile_update <- .multilpa_weighted_logits(designs$stacked_design,
@@ -1045,8 +1064,8 @@ nobs.multilpa_covariates <-function(object, ...) {
                                  vars, id, profile_covariates,
                                  group_covariates, n_profiles, n_group_classes,
                                  group_index, variance_model, min_variance,
-                                 covariance_model = "diagonal",
-                                 categorical = character(), call) {
+                                 covariance_model = "diagonal", structure = NULL,
+                                 fixed = character(), categorical = character(), call) {
   result <- c(best$parameters,
               best$expectation[c("log_likelihood", "group_log_likelihood",
                                  "group_posteriors", "subject_posteriors",
@@ -1073,12 +1092,23 @@ nobs.multilpa_covariates <-function(object, ...) {
   # The membership logits replace the mixing probabilities the covariate-free
   # count includes, so the measurement half is taken from the shared counter and
   # the two coefficient matrices are added in their place.
+  # Counted by structure, so the constrained structures are counted right.
   measurement_parameters <- .multilpa_count_parameters(
     n_profiles, n_group_classes, n_indicators, designs$n_categories,
-    variance_model, covariance_model) -
+    variance_model, covariance_model, structure) -
     ((n_group_classes - 1L) + n_group_classes * (n_profiles - 1L))
+  # Held blocks are constants of this model, as in a staged multilpa() fit:
+  # the criteria condition on them, and the full count is kept beside.
+  held_parameters <- .multilpa_fixed_parameters(fixed, n_profiles, n_indicators,
+                                                designs$n_categories, variance_model,
+                                                covariance_model)
   result$n_parameters <- length(best$beta) + length(best$gamma) +
-    measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles)
+    measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles) -
+    held_parameters
+  result$fixed <- fixed
+  if (length(fixed) > 0L) {
+    result$n_parameters_with_measurement <- result$n_parameters + held_parameters
+  }
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
   result$bic <- -2 * result$log_likelihood +
     log(.multilpa_group_sample_size(base)) * result$n_parameters
@@ -1106,6 +1136,7 @@ nobs.multilpa_covariates <-function(object, ...) {
   result$group_covariates <- group_covariates
   result$variance_model <- variance_model
   result$covariance_model <- covariance_model
+  result$covariance_structure <- structure
   result$categorical <- categorical
   result$continuous <- designs$continuous
   result$continuous_types <- vapply(data[designs$continuous], typeof,

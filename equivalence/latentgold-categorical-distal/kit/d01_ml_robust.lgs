@@ -1,0 +1,24 @@
+//LG6.1//
+version = 6.1
+infile 'd01.dat'
+
+model
+title 'd01_ml_robust';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal ml;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model;
+variables
+   dependent distal nominal coding=first;
+   latent Cluster nominal coding=first posterior = ( post1 post2 );
+equations
+   distal <- 1 + Cluster;
+end model

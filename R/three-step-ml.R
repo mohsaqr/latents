@@ -490,6 +490,11 @@
       paste(which(thin), collapse = ", ")), class = "latents_small_classes", call = NULL))
     clustered[, thin] <- NA_real_
   }
+  if (identical(contrast, "overall")) {
+    means <- fit$outcome_coordinates$means * fit$outcome_coordinates$scale
+    return(.multilpa_step_overall(means, clustered, pieces$n_classes, level, "ml",
+                                  vcov_type))
+  }
   if (identical(contrast, "pairs")) {
     # The common origin cancels from contrasts; remove it before subtraction
     # so reported rounding at a large origin cannot erase a small difference.

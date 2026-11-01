@@ -1,0 +1,165 @@
+d02.dat
+File name:	d02.dat	
+File size:	56390 bytes  900 records	
+File date:	2026-Oct-31 8:33:45 PM	
+Syntax:	d02_proportional_robust.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	
+d02_proportional_robust	3-Cluster	-2428.2951	4890.6022	4866.5902	4871.5902	5	
+d02_proportional_robust - LL = -2428.2951
+3-Cluster Syntax Model	
+						
+Number of cases	900					
+Number of parameters (Npar)	5					
+Robustness Effect	1.4016					
+Random Seed	20261101					
+Best Start Seed	20261101					
+						
+Log-likelihood Statistics						
+Log-likelihood (LL)	-2428.2951					
+Log-prior	0.0000					
+Log-posterior	-2428.2951					
+BIC (based on LL)	4890.6022					
+AIC (based on LL)	4866.5902					
+AIC3 (based on LL)	4871.5902					
+CAIC (based on LL)	4895.6022					
+SABIC (based on LL)	4874.7230					
+						
+						
+Classification Statistics	Cluster					
+Classification errors	0.5139					
+Reduction of errors (Lambda)	0.0000					
+Entropy R-squared	0.0438					
+Standard R-squared	0.0350					
+Classification log-likelihood	-3314.1395					
+Entropy	885.8444					
+CLC	6628.2791					
+AWE	6711.3030					
+ICL-BIC	6662.2911					
+						
+Cluster  Classification Table	Modal					
+Latent	1	2	3	Total		
+1	0.0000	0.0000	294.7992	294.7992		
+2	0.0000	0.0000	167.7017	167.7017		
+3	0.0000	0.0000	437.4992	437.4992		
+Total	0.0000	0.0000	900.0000	900.0000		
+						
+Cluster  Classification Table	Proportional					
+Latent	1	2	3	Total		
+1	108.0704	45.5206	141.2082	294.7992		
+2	45.5206	38.9450	83.2361	167.7017		
+3	141.2082	83.2361	213.0548	437.4992		
+Total	294.7992	167.7017	437.4992	900.0000		
+						
+Files						
+Infile	C:\lgdistal\d02.dat	
+						
+Options						
+threads	10					
+algorithm						
+tolerance	1e-12					
+emtolerance	1e-10					
+emiterations	5000					
+nriterations	500					
+algorithm	NR					
+MstepNR	no					
+startvalues						
+seed	20261101					
+sets	20					
+tolerance	1e-05					
+iterations	100					
+bayes						
+categorical	0					
+variances	0					
+latent	0					
+poisson	0					
+quadrature						
+nodes	10					
+missing	excludeall					
+step3						
+classification	proportional					
+adjustment	none					
+simultaneous	no					
+aggregate	no					
+output						
+parameters	first					
+standard errors	robust					
+identification	no					
+validation LL	no					
+sample size BIC	     900					
+predictionstatistics	no					
+						
+Variable Detail						
+Latent						
+Cluster	Nominal	Case	3			
+ 						
+Variables						
+distal	Nominal	2				
+1	1					
+2	2					
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261101 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 proportional none;
+   output
+      parameters=first standarderrors=robust profile estimatedvalues=model;
+variables
+   dependent distal nominal coding=first;
+   latent Cluster nominal coding=first posterior = ( post1 post2 post3 );
+equations
+   Cluster <- 1;
+   distal <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	114.6432	2	1.3e-25	
+Cluster(2)	<-	1	-0.5641	0.0968	-5.8290	5.6e-9				
+Cluster(3)	<-	1	0.3948	0.0754	5.2363	1.6e-7				
+										
+distal(1)	<-	1	0.0000	.	.	.	12.9261	1	0.00032	
+distal(2)	<-	1	0.4287	0.1192	3.5953	0.00032				
+distal(1)	<-	Cluster(1)	0.0000	.	.	.	70.7821	2	4.3e-16	
+distal(2)	<-	Cluster(1)	0.0000	.	.	.				
+distal(1)	<-	Cluster(2)	0.0000	.	.	.				
+distal(2)	<-	Cluster(2)	-1.8888	0.2308	-8.1851	2.7e-16				
+distal(1)	<-	Cluster(3)	0.0000	.	.	.				
+distal(2)	<-	Cluster(3)	-0.7785	0.1538	-5.0617	4.2e-7				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	33.9776	1	5.6e-9	
+			Cluster	1	3	27.4185	1	1.6e-7	
+			Cluster	2	3	111.3444	1	5.0e-26	
+	
+distal	<-	 Cluster	Cluster	1	2	66.9965	1	2.7e-16	
+			Cluster	1	3	25.6206	1	4.2e-7	
+			Cluster	2	3	25.4361	1	4.6e-7	
+Profile
+ 	Cluster	 	 	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	3	s.e.	Overall	s.e.	
+Size	0.3276	0.0157	0.1863	0.0130	0.4861	0.0167	 	 	
+distal	 	
+1	0.3944	0.0285	0.8116	0.0302	0.5866	0.0236	0.5656	0.0165	
+2	0.6056	0.0285	0.1884	0.0302	0.4134	0.0236	0.4344	0.0165	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	3	s.e.	
+ 	0.3276	0.0157	0.1863	0.0130	0.4861	0.0167	
+	
+ 	distal	
+Cluster	1	s.e.	2	s.e.	 	 	
+1	0.3944	0.0285	0.6056	0.0285	 	 	
+2	0.8116	0.0302	0.1884	0.0302	 	 	
+3	0.5866	0.0236	0.4134	0.0236	 	 	
+	
+ 	Cluster_Proportional	
+Cluster	post1	s.e.	post2	s.e.	post3	s.e.	
+1	1.0000	.	0.0000	.	0.0000	.	
+2	0.0000	.	1.0000	.	0.0000	.	
+3	0.0000	.	0.0000	.	1.0000	.	

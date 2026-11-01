@@ -47,6 +47,7 @@ reference:
   - get_candidate
   - bootstrap_lrt
   - sensitivity
+  - align_labels
   - starts_with("parameter_inference")
   - pool_imputations
 

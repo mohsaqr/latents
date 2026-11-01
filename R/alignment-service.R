@@ -310,6 +310,28 @@
   x
 }
 
+#' Relabel the per-profile rows of a stored Gaussian diagnostics table
+#'
+#' The table is computed once at the end of the fit, one row per profile,
+#' and is read back as stored; its rows must follow the profiles like the
+#' parameter blocks do. Rows that belong to no profile keep their place.
+#' @param table The fit's `gaussian_diagnostics` data frame, or `NULL`.
+#' @param profile_order An integer permutation: new profile `j` is old
+#'   profile `profile_order[j]`.
+#' @return The table with its profile rows in the new order and relabelled.
+#' @noRd
+.latents_permute_gaussian_diagnostics <- function(table, profile_order) {
+  if (is.null(table) || nrow(table) == 0L) return(table)
+  labels <- paste0("profile_", seq_along(profile_order))
+  old <- match(table$profile, labels)
+  positions <- which(!is.na(old))
+  new <- match(old[positions], profile_order)
+  moved <- table[positions[base::order(new)], , drop = FALSE]
+  moved$profile <- labels[sort(new)]
+  table[positions, ] <- moved
+  table
+}
+
 #' Reorder a fit's profile-indexed blocks
 #' @param x A fitted `multilpa` model.
 #' @param order An integer permutation of the profiles.
@@ -362,6 +384,7 @@
     x$effective_profile_counts <- x$effective_profile_counts[order]
     names(x$effective_profile_counts) <- labels
   }
+  x$gaussian_diagnostics <- .latents_permute_gaussian_diagnostics(x$gaussian_diagnostics, order)
   x
 }
 
@@ -460,6 +483,8 @@
   x$group_classes <- match(x$group_classes, group_order)
   x$effective_profile_counts <- x$effective_profile_counts[profile_order]
   x$effective_group_counts <- x$effective_group_counts[group_order]
+  x$gaussian_diagnostics <- .latents_permute_gaussian_diagnostics(x$gaussian_diagnostics,
+                                                                  profile_order)
   if (!is.null(x$group_priors)) {
     x$group_priors <- x$group_priors[, group_order, drop = FALSE]
   }
@@ -478,8 +503,10 @@
 #' it carries and that description only means something once the profiles
 #' agree. A covariate fit is matched on its posterior shares and relabelled
 #' with its logits rebased; any other profile model on its mixing
-#' probabilities. Used by the cluster bootstrap, seed sensitivity and
-#' multiple-imputation pooling, which all need the same alignment.
+#' probabilities. The two fits may differ in kind (a covariate fit aligned to
+#' the model without covariates), and correlations are compared only when
+#' both fits estimate them. Used by the cluster bootstrap, seed sensitivity,
+#' multiple-imputation pooling and `align_labels()`.
 #'
 #' @param fit A fit to relabel.
 #' @param reference The fit whose labels it takes.
@@ -487,28 +514,35 @@
 #'   `group_order` that aligned it (new label `j` is old label `order[j]`).
 #' @noRd
 .multilpa_pool_align <- function(fit, reference) {
-  if (inherits(fit, "multilpa_covariates")) {
-    profile_order <- .multilpa_match_order(
-      .multilpa_cov_profile_signature(reference, reference),
-      .multilpa_cov_profile_signature(fit, reference))
-    fit <- .multilpa_cov_permute(fit, profile_order, seq_len(fit$n_group_classes))
-    group_order <- .multilpa_match_order(.multilpa_cov_group_signature(reference),
-                                         .multilpa_cov_group_signature(fit))
-    fit <- .multilpa_cov_permute(fit, seq_len(fit$n_profiles), group_order)
-    return(list(fit = fit, profile_order = profile_order, group_order = group_order))
+  covariates <- function(x) inherits(x, "multilpa_covariates")
+  # A diagonal fit has no correlations to compare a full one's with.
+  shared <- function(x) {
+    if (is.null(fit$covariances) || is.null(reference$covariances)) x$covariances <- NULL
+    x
   }
-  profile_order <- .multilpa_match_order(
-    .multilpa_profile_signature(reference, reference),
-    .multilpa_profile_signature(fit, reference))
-  fit <- .multilpa_permute_profiles(fit, profile_order)
-  # One group class has nothing to match, and relabelling it to itself would
-  # only rewrite its names.
+  profile_signature <- function(x) {
+    share <- if (covariates(x)) colMeans(x$subject_posteriors) else
+      colMeans(x$profile_probabilities)
+    .latents_measurement_signature(list(shared(x)), list(reference), mixing = share)
+  }
+  group_signature <- function(x) {
+    if (covariates(x)) .multilpa_cov_group_signature(x) else .multilpa_group_signature(x)
+  }
+  permute <- function(x, profile_order = seq_len(x$n_profiles),
+                      group_order = seq_len(x$n_group_classes)) {
+    if (covariates(x)) return(.multilpa_cov_permute(x, profile_order, group_order))
+    x <- .multilpa_permute_profiles(x, profile_order)
+    # One group class has nothing to match, and relabelling it to itself would
+    # only rewrite its names.
+    if (x$n_group_classes == 1L) x else .multilpa_permute_group_classes(x, group_order)
+  }
+  profile_order <- .multilpa_match_order(profile_signature(reference), profile_signature(fit))
+  fit <- permute(fit, profile_order)
   if (reference$n_group_classes == 1L) {
     return(list(fit = fit, profile_order = profile_order, group_order = 1L))
   }
-  group_order <- .multilpa_match_order(.multilpa_group_signature(reference),
-                                       .multilpa_group_signature(fit))
-  list(fit = .multilpa_permute_group_classes(fit, group_order),
+  group_order <- .multilpa_match_order(group_signature(reference), group_signature(fit))
+  list(fit = permute(fit, group_order = group_order),
        profile_order = profile_order, group_order = group_order)
 }
 

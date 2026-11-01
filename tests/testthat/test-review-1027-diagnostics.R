@@ -307,3 +307,12 @@ test_that("a flagged local-independence check reports the pair, not advice", {
   expect_identical(check$detail, "largest: a x b in profile_1, residual 0.400, adjusted p <1e-04")
   expect_no_match(check$detail, "consider|local_dependence")
 })
+
+test_that("the local-independence check reads Benjamini-Hochberg adjusted p-values", {
+  fit <- lpa(datasets::faithful, c("eruptions", "waiting"), n_profiles = 3, model = "VVI",
+             n_starts = 3, seed = 1)
+  residuals <- get_results(diagnostics(fit), "residuals")
+  # Up to 1.1.9 the column was the unadjusted p-value under a "BH-adjusted" label.
+  expect_equal(residuals$p_adjusted, stats::p.adjust(residuals$p_value, method = "BH"))
+  expect_false(isTRUE(all.equal(residuals$p_adjusted, residuals$p_value)))
+})

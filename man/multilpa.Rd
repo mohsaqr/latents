@@ -85,9 +85,19 @@ the one-step maximum-likelihood covariate model and returns a
 profile slopes are shared across group classes unless
 \code{profile_slopes = "group_class"}. A group covariate must be constant
 within each group. Covariates enter in their supplied units, without
-centring or scaling. The covariate model rejects \code{start} and \code{fixed}; it
-accepts \code{missing = "fiml"} for the indicators, but the covariates must be
-complete. \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the staged alternatives.}
+centring or scaling. The covariate model takes any of the fourteen
+covariance structures (\code{model}); \code{\link[=parameter_inference]{parameter_inference()}} gives its Wald
+standard errors for EEI, VVI, EEE and VVV and refuses the others with
+\code{latents_unsupported_inference}. \code{start} sets where its first start
+begins; with \code{fixed}, the named measurement blocks are held at \code{start}
+(for example \verb{start = starting_values(fit), fixed = "measurement"} from
+a fit without covariates), which is the two-step estimator of Bakk and
+Kuha (2018): only the membership logits are estimated, the criteria and
+standard errors condition on the held measurement, and \code{n_parameters}
+counts the free parameters (\code{n_parameters_with_measurement} all of
+them). It accepts \code{missing = "fiml"} for the indicators, but the
+covariates must be complete. \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the
+staged alternatives.}
 
 \item{variance_model}{\code{"varying"} (the default; profile-specific variances
 or covariance matrices) or \code{"equal"} (shared across profiles).}
@@ -739,6 +749,10 @@ non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
 Bandeen-Roche, K., Miglioretti, D. L., Zeger, S. L., & Rathouz, P. J.
 (1997). Latent variable regression for multiple discrete outcomes.
 Journal of the American Statistical Association, 92(440), 1375--1386.
+
+Bakk, Z., & Kuha, J. (2018). Two-step estimation of models between latent
+classes and external variables. Psychometrika, 83(4), 871--892.
+doi:10.1007/s11336-017-9592-7.
 
 Meng, X.-L., & Rubin, D. B. (1993). Maximum likelihood estimation via the
 ECM algorithm: A general framework. Biometrika, 80(2), 267--278.

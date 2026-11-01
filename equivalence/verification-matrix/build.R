@@ -36,16 +36,17 @@ source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
 #' @noRd
 .matrix_evidence_files <- function() {
   files <- data.frame(
-    role = c("harness", "tests", "tests", "tests", "tests"),
-    dir = c(NA, "tests/equivalence", "equivalence", "equivalence", "equivalence"),
+    role = c("harness", "tests", "tests", "tests", "tests", "tests"),
+    dir = c(NA, "tests/equivalence", "equivalence", "equivalence", "equivalence", "equivalence"),
     path = file.path("validation", c(
       "release-fixes-2026-10-28/equivalence/report.csv",
       "release-fixes-2026-10-28/release/external-tests-consolidated.csv",
       "release-fixes-2026-10-28/release/retained-references-results.csv",
       "matrix-refresh-2026-10-28/equivalence-results.csv",
-      "release-0.96.1-2026-10-20/outer-final/cases.csv")),
-    run = c("2026-10-28", "2026-10-28", "2026-10-28", "2026-10-29", "2026-10-20"),
-    code = c("0.98.0", "0.98.0", "0.98.0", "0.98.1", "0.96.1"),
+      "release-0.96.1-2026-10-20/outer-final/cases.csv",
+      "matrix-refresh-2026-11-01/equivalence-results.csv")),
+    run = c("2026-10-28", "2026-10-28", "2026-10-28", "2026-10-29", "2026-10-20", "2026-11-01"),
+    code = c("0.98.0", "0.98.0", "0.98.0", "0.98.1", "0.96.1", "1.1.9 features"),
     current = FALSE)
   files$current <- vapply(files$path, matrix_evidence_current, logical(1))
   files

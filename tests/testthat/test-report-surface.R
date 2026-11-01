@@ -32,7 +32,7 @@ test_that("diagnostics() forwards `by` instead of dropping it", {
   expect_false(any(grepl("profile_", pooled$profile, fixed = TRUE)))
   # The default is unchanged, and is still the per-profile table.
   by_profile <- get_results(diagnostics(fit), "residuals")
-  expect_identical(by_profile, get_results(fit, "residuals"))
+  expect_identical(by_profile, get_results(fit, "residuals", adjust = "BH"))
   expect_false(identical(pooled, by_profile))
 })
 

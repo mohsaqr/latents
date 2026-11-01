@@ -4,9 +4,10 @@
 #' Hessian both work on an unbounded space; the delta method returns them.
 #'
 #' @param object A fitted `multilpa_covariates` model.
-#' @return A numeric vector: means, log variances, categorical response logits,
-#'   profile logits, group logits. A block is empty when the fit has no
-#'   indicator of that kind.
+#' @return A numeric vector: means, the spread (log variances, log-Cholesky
+#'   coordinates, or a constrained structure's chart coordinates), categorical
+#'   response logits, profile logits, group logits. A block is empty when the
+#'   fit has no indicator of that kind.
 #' @noRd
 .multilpa_cov_encode <- function(object) {
   variances <- if (identical(object$variance_model, "equal")) {
@@ -18,7 +19,11 @@
   centred_means <- if (ncol(object$means) > 0L) {
     sweep(object$means, 2L, object$center, "-")
   } else object$means
-  spread <- if (.multilpa_cov_is_full(object)) {
+  ## A structure that ties the profiles' covariances together is carried in
+  ## the chart the covariate-free model is estimated in (structure-inference.R).
+  spread <- if (.multilpa_uses_chart(object)) {
+    unname(.multilpa_chart_encode(object)$values)
+  } else if (.multilpa_cov_is_full(object)) {
     .multilpa_cov_cholesky_coordinates(object)
   } else as.vector(t(log(variances)))
   ## Response probabilities as multinomial logits against each indicator's last
@@ -36,6 +41,16 @@
 #' @noRd
 .multilpa_cov_is_full <- function(object) {
   identical(object$covariance_model %||% "diagonal", "full")
+}
+
+#' The number of chart coordinates of a constrained-structure covariate fit
+#' @param object A fitted `multilpa_covariates` model whose structure uses a
+#'   chart.
+#' @return A single integer: the structure's spread parameter count.
+#' @noRd
+.multilpa_cov_chart_width <- function(object) {
+  .multilpa_structure_parameters(object$covariance_structure, object$n_profiles,
+                                 length(.multilpa_continuous_names(object)))
 }
 
 #' Which rows of the spread block are estimated separately
@@ -104,7 +119,11 @@
   means <- matrix(take(n_profiles * n_indicators), n_profiles, n_indicators,
                   byrow = TRUE)
   covariances <- NULL
-  if (.multilpa_cov_is_full(object)) {
+  if (.multilpa_uses_chart(object)) {
+    spread <- .multilpa_chart_decode(take(.multilpa_cov_chart_width(object)), object)
+    variances <- spread$variances
+    covariances <- spread$covariances
+  } else if (.multilpa_cov_is_full(object)) {
     width <- n_indicators * (n_indicators + 1L) / 2L
     covariances <- .multilpa_cov_cholesky_decode(
       take(length(.multilpa_cov_spread_rows(object)) * width), n_indicators,
@@ -167,7 +186,13 @@
   equal <- identical(object$variance_model, "equal")
 
   ## Measurement: means, then the spread on the scale it is estimated on.
-  if (.multilpa_cov_is_full(object)) {
+  if (.multilpa_uses_chart(object)) {
+    phi <- theta[length(pieces$parameters$means) + seq_len(.multilpa_cov_chart_width(object))]
+    measurement <- .multilpa_chart_scores(pieces$parameters, expectation, x, object, phi,
+                                          object$group_index)
+    mean_block <- measurement$means
+    variance_block <- measurement$covariances
+  } else if (.multilpa_cov_is_full(object)) {
     measurement <- .multilpa_cov_full_scores(x, pieces$parameters, posteriors,
                                              object, expectation$gaussian_moments)
     mean_block <- measurement$means
@@ -317,16 +342,16 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1
   )
-  ## A covariate fit reaches the covariance structures only through
-  ## `variance_model` and `covariance_model`, so it has no structure the Wald
-  ## coordinates cannot express and nothing to send to the bootstrap. The
+  ## Every covariance structure of a covariate fit has Wald coordinates (the
+  ## ten constrained ones in their chart), so there is nothing to send to the
+  ## bootstrap. The
   ## argument is accepted so that every method of the generic has the generic's
   ## formals, and refused rather than silently ignored.
   if (!identical(.latents_match_formal(method), "wald")) {
     stop(errorCondition(paste(
-      "`method = \"bootstrap\"` is not implemented for a covariate fit. Its",
-      "covariance structures are the four the Wald coordinates already",
-      "express, so `method = \"wald\"` covers every model this verb can fit."),
+      "`method = \"bootstrap\"` is not implemented for a covariate fit. The",
+      "Wald coordinates express every covariance structure it can have, so",
+      "`method = \"wald\"` covers every model this verb can fit."),
       class = "latents_unsupported_inference", call = NULL))
   }
   # missing() is FALSE once vcov_type is reassigned, so it is read first. A
@@ -484,7 +509,10 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
   ## diagonal does not. This is the same scaling the covariate-free path in
   ## `parameter_inference()` applies, shared through one helper.
   dimension <- length(.multilpa_continuous_names(object))
-  if (.multilpa_cov_is_full(object) && dimension > 0L) {
+  if (.multilpa_uses_chart(object)) {
+    chart_scale <- .multilpa_chart_encode(object)$scale
+    scale[length(object$means) + seq_along(chart_scale)] <- chart_scale
+  } else if (.multilpa_cov_is_full(object) && dimension > 0L) {
     covariance_scale <- .multilpa_covariance_coordinate_scale(
       object$variances, dimension, .multilpa_cov_spread_rows(object))
     scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
@@ -527,6 +555,10 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
   held <- if (identical(boundary, "fix")) {
     estimation_names %in% .multilpa_response_bound(object)$unconstrained
   } else rep(FALSE, length(theta))
+  # Measurement blocks held by `fixed` are constants too: the standard errors
+  # are conditional on that measurement model, as for a staged multilpa() fit.
+  held <- held | .multilpa_cov_estimation_labels(object)$parameter %in%
+    .multilpa_cov_held_parameters(object$fixed)
   free <- which(!held)
   moves <- transform[, free, drop = FALSE]
   information <- .multilpa_observed_hessian(
@@ -654,7 +686,13 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     labels$parameter == "variance", "log_variance",
     ifelse(labels$parameter == "covariance",
            ifelse(on_diagonal, "log_cholesky", "cholesky"), labels$parameter))
-  labels
+  if (!.multilpa_uses_chart(object)) return(labels)
+  ## A constrained structure's spread is its chart coordinates, named as the
+  ## covariate-free model names them (log volumes, log shapes, rotations).
+  spread <- labels$parameter %in% c("log_variance", "log_cholesky", "cholesky")
+  chart <- .multilpa_tidy_labels(names(.multilpa_chart_encode(object)$values), object)
+  rbind(labels[seq_len(min(which(spread)) - 1L), , drop = FALSE], chart,
+        labels[-seq_len(max(which(spread))), , drop = FALSE])
 }
 
 #' Assemble the tidy inference table
@@ -706,11 +744,31 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   ## it has no standard error to report rather than a spurious zero.
   at_bound <- .multilpa_cov_parameter_names(object) %in% held
   result[at_bound, c("standard_error", "conf_low", "conf_high")] <- NA_real_
+  # A block held by `fixed` was not estimated, so it has no row, as in a
+  # staged multilpa() fit.
+  result <- result[!result$parameter %in% .multilpa_cov_held_parameters(object$fixed), ,
+                   drop = FALSE]
+  rownames(result) <- NULL
   result <- .multilpa_adjust_p(result, adjust)
   attr(result, "vcov_type") <- vcov_type
   attr(result, "level") <- level
   attr(result, "fixed_at_bound") <- held
   result
+}
+
+#' The parameter labels of the measurement blocks a covariate fit holds
+#' @param fixed The fit's `fixed` blocks.
+#' @return The `parameter` values of those blocks, on the natural and the
+#'   estimation scale.
+#' @noRd
+.multilpa_cov_held_parameters <- function(fixed) {
+  fixed <- fixed %||% character()
+  c(if ("means" %in% fixed) "mean",
+    if ("variances" %in% fixed) {
+      c("variance", "covariance", "log_variance", "log_cholesky", "cholesky",
+        "log_volume", "log_shape", "rotation", "shape_cholesky", "log_shape_cholesky")
+    },
+    if ("response_probabilities" %in% fixed) "response")
 }
 
 #' Natural-unit estimates of a covariate fit's free parameters
@@ -773,6 +831,40 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   jacobian
 }
 
+#' Natural means and spread of a constrained-structure covariate fit
+#'
+#' The chart has one coordinate per parameter the structure has, the natural
+#' spread one entry per variance (or covariance) of every profile, so the map
+#' between them is not square. The means are a location shift.
+#'
+#' @param object A fitted `multilpa_covariates` model whose structure uses a
+#'   chart.
+#' @param front The means and chart coordinates, as `.multilpa_cov_encode()`
+#'   packs them.
+#' @return A list: `estimate` (the means in input units, then the natural
+#'   spread in `.multilpa_cov_labels()` order) and `jacobian` (natural entries
+#'   by `front` coordinates).
+#' @noRd
+.multilpa_cov_chart_front <- function(object, front) {
+  n_means <- length(object$means)
+  d <- ncol(object$means)
+  spread <- .multilpa_chart_decode(front[-seq_len(n_means)], object)
+  rows <- if (.multilpa_spread_shared(object)) 1L else seq_len(object$n_profiles)
+  natural <- if (.multilpa_is_ellipsoidal(object$covariance_structure)) {
+    lower <- lower.tri(diag(d), diag = TRUE)
+    unlist(lapply(rows, function(profile) {
+      matrix(spread$covariances[, , profile], d, d)[lower]
+    }), use.names = FALSE)
+  } else as.vector(t(spread$variances[rows, , drop = FALSE]))
+  spread_jacobian <- .multilpa_chart_natural_jacobian(object)
+  jacobian <- matrix(0, n_means + nrow(spread_jacobian), length(front))
+  jacobian[cbind(seq_len(n_means), seq_len(n_means))] <- 1
+  jacobian[n_means + seq_len(nrow(spread_jacobian)), -seq_len(n_means)] <- spread_jacobian
+  list(estimate = c(front[seq_len(n_means)] + rep(object$center, times = object$n_profiles),
+                    natural),
+       jacobian = jacobian)
+}
+
 #' Where the categorical response block sits in the parameter vector
 #'
 #' The encoding packs means, spread, response logits, profile logits and group
@@ -808,7 +900,11 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @noRd
 .multilpa_cov_natural_estimate <- function(object, theta, labels) {
   at <- .multilpa_cov_blocks(object, length(theta))
-  front_labels <- labels[at$front, , drop = FALSE]
+  front <- if (.multilpa_uses_chart(object)) {
+    .multilpa_cov_chart_front(object, theta[at$front])$estimate
+  } else {
+    .multilpa_cov_front_estimate(object, theta[at$front], labels[at$front, , drop = FALSE])
+  }
   response <- if (length(at$response) > 0L) {
     unlist(lapply(.multilpa_response_decode(theta[at$response], object),
                   function(block) as.vector(t(block))), use.names = FALSE)
@@ -818,8 +914,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
       .latents_extra_decode(theta[at$extra], object$extra_data, object$n_profiles),
       object$extra_data, object$n_profiles, "natural"))
   } else numeric(0)
-  estimate <- c(.multilpa_cov_front_estimate(object, theta[at$front], front_labels),
-                response, extra, theta[at$back])
+  estimate <- c(front, response, extra, theta[at$back])
   stopifnot("every natural parameter must be labelled" =
               length(estimate) == nrow(labels))
   estimate
@@ -844,7 +939,15 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     .multilpa_response_decode(theta[at$response], object)
   } else list()
   n_natural_response <- sum(vapply(blocks, length, integer(1)))
-  n_front <- length(at$front)
+  ## A chart has fewer spread coordinates than natural spread entries, so the
+  ## measurement block is square only outside it.
+  front <- if (.multilpa_uses_chart(object)) {
+    .multilpa_cov_chart_front(object, theta[at$front])$jacobian
+  } else {
+    .multilpa_cov_front_jacobian(object, theta[at$front],
+                                 labels[seq_along(at$front), , drop = FALSE])
+  }
+  n_front <- nrow(front)
   n_extra <- length(at$extra)
   jacobian <- matrix(0, n_front + n_natural_response + n_extra + length(at$back),
                      length(theta))
@@ -854,12 +957,11 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
         .latents_extra_decode(theta[at$extra], object$extra_data, object$n_profiles),
         object$extra_data, object$n_profiles)
   }
-  jacobian[seq_len(n_front), at$front] <- .multilpa_cov_front_jacobian(
-    object, theta[at$front], labels[seq_len(n_front), , drop = FALSE])
+  jacobian[seq_len(n_front), at$front] <- front
   ## One simplex per profile and indicator, walked in the order both the
   ## natural labels and the free logits use: indicator, then profile.
   row_at <- n_front
-  column_at <- n_front
+  column_at <- length(at$front)
   invisible(lapply(blocks, function(block) {
     n_categories <- ncol(block)
     invisible(lapply(seq_len(nrow(block)), function(profile) {
@@ -932,7 +1034,9 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   response <- match.arg(response)
   vars <- object$vars
   profiles <- paste0("profile_", seq_len(object$n_profiles))
-  variance_rows <- if (identical(object$variance_model, "equal")) "shared" else profiles
+  ## One block when every profile's spread is the same matrix (an equal
+  ## variance model, or EII), one per profile otherwise.
+  variance_rows <- if (.multilpa_spread_shared(object)) "shared" else profiles
   block <- function(term, outcome, level, parameter) {
     grid <- expand.grid(term = term, outcome = outcome, stringsAsFactors = FALSE)
     data.frame(level = rep(level, nrow(grid)), outcome = grid$outcome, term = grid$term,

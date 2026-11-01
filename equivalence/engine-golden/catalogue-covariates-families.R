@@ -223,7 +223,7 @@ golden_cases_covariates_families <- function() {
       data = engagement),
     golden_case(
       "cov_refusal_start", "covariates",
-      "refusal: start = with membership covariates",
+      "start = with membership covariates (fitted from 1.2; refused before)",
       fit = function() {
         base <- multilpa(engagement, vars, id = "student", n_profiles = 2,
                          n_group_classes = 1, n_starts = 2, seed = 1)
@@ -234,7 +234,7 @@ golden_cases_covariates_families <- function() {
       data = engagement),
     golden_case(
       "cov_refusal_fixed", "covariates",
-      "refusal: fixed measurement with membership covariates",
+      "fixed without start, with membership covariates: latents_bad_fixed, as for any fit (latents_bad_argument before 1.2)",
       fit = function() multilpa(engagement, vars, id = "student", n_profiles = 2,
                                 n_group_classes = 1, fixed = "means",
                                 profile_covariates = "previous_grade",

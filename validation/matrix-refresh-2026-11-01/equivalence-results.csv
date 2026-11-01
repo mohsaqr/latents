@@ -1,0 +1,9 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.016,0.00800000000000001,0.927000000000007,3
+"test-claims.R","claims","every claim is still worded as registered in its source",88,0,FALSE,FALSE,0,0.354,0.138,9.06699999999999,88
+"test-claims.R","claims","every backed claim names a test that exists",86,0,FALSE,FALSE,0,0.259,0.125,8.513,86
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.006,0.003,0.111000000000004,2
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","the kit is the one Latent GOLD was given",3,0,FALSE,FALSE,0,2.103,0.1,7.76700000000001,3
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","categorical distal outcomes match Latent GOLD's step-three model",3,0,FALSE,FALSE,0,1.763,0.144,4.46499999999999,3
+"test-lrt.R","lrt","likelihood-ratio tests agree with mclust, glca and Mplus",2,0,FALSE,FALSE,0,17.168,0.761,26.233,2
+"test-moeclust-covariate-structures.R","moeclust-covariate-structures","covariate models match MoEClust in every covariance structure",55,0,FALSE,FALSE,0,93.499,3.141,123.52,55

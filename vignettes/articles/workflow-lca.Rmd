@@ -157,7 +157,7 @@ stopifnot(nrow(largest) == 1L, with(largest, indicator_1 == "listened_music" &&
 ```
 
 The largest residual is that of listening to music and walking in class
-`r sub("profile_", "", largest$profile)` (`r round(largest$statistic, 1)`). `local_dependence`
+`r with(largest, sub("profile_", "", profile))` (`r with(largest, round(statistic, 1))`). `local_dependence`
 names pairs of categorical indicators that are modelled jointly within each
 class: the pair then has its own joint distribution in every class, and the
 other activities remain independent given the class.

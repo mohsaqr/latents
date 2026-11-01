@@ -192,9 +192,9 @@
 #'     posterior plot. Also raised by `predict()` for partially observed rows
 #'     when the fitted model has a noise component, because its stored
 #'     hypervolume does not define the required marginal noise density.}
-#'   \item{`latents_unsupported_structure`}{`multilpa()` was asked for a
-#'     covariance structure other than EEI, VVI, EEE or VVV together with
-#'     `profile_covariates` or `group_covariates`.}
+#'   \item{`latents_bch_out_of_range`}{Warning from [three_step()] when the
+#'     BCH weights give a categorical outcome a class probability outside
+#'     `[0, 1]`; the probability is reported without an interval or test.}
 #'   \item{`latents_bad_weights`}{`weights` does not name a column, or its
 #'     values are missing, negative, non-finite, vary within a unit, or are
 #'     positive for fewer than two units.}

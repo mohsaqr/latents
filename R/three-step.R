@@ -288,8 +288,10 @@
 #'   little identifying information raises a warning that alignment cannot be
 #'   verified. For a trajectory model it must be the data frame the model was
 #'   fitted to.
-#' @param outcome Name of a numeric outcome column, without missing or
-#'   infinite values, that is not a measurement indicator of `x`. For
+#' @param outcome Name of the outcome column, without missing values, that is
+#'   not a measurement indicator of `x`: numeric (finite) for class means, or
+#'   a factor, character or logical column for the class-specific probability
+#'   of each category (a factor's unused levels are dropped). For
 #'   `level = "groups"` it must be constant within each group, and for a
 #'   trajectory model within each person.
 #' @param level `"individuals"` (default) relates the outcome to profiles,
@@ -302,9 +304,11 @@
 #'   correction for classification error;
 #'   `"modal"` uses the uncorrected modal assignment, for comparison.
 #' @param ci_level Confidence level for the intervals (default 0.95).
-#' @param contrast `"none"` (default) reports one outcome mean per class;
-#'   `"pairs"` reports the difference between every pair of classes, with a
-#'   test against zero.
+#' @param contrast `"none"` (default) reports one outcome mean per class (one
+#'   probability per class and category); `"pairs"` reports the difference
+#'   between every pair of classes, with a test against zero; `"overall"`
+#'   tests that every class has the same mean (the same distribution over
+#'   the categories) with one Wald statistic.
 #' @param adjust Multiplicity correction across the pairwise differences,
 #'   passed to [stats::p.adjust()]: `"BH"` (default), `"holm"`,
 #'   `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BY"` or `"none"`. Ignored for
@@ -315,13 +319,17 @@
 #'   groups. `"independent"` treats every observation as an independent unit,
 #'   which is appropriate only when observations can be treated as independent. The choice is recorded in the result's `vcov_type`
 #'   attribute.
-#' @param variance For `method = "ml"`: `"varying"` (default) estimates a
-#'   variance of the outcome in each class, `"equal"` one variance shared by
-#'   the classes. Given with another method it raises `latents_bad_argument`.
+#' @param variance For `method = "ml"` with a numeric outcome: `"varying"`
+#'   (default) estimates a variance of the outcome in each class, `"equal"`
+#'   one variance shared by the classes. Given with another method or a
+#'   categorical outcome it raises `latents_bad_argument`.
 #' @return A base `data.frame`. For `contrast = "none"`, one row per class
 #'   with the columns `level`, `method`, `class`, `estimate`,
 #'   `standard_error`, `conf_low`, `conf_high` and `effective_n`; class means
-#'   are not tested. For `method = "ml"`, a `variance` column (the outcome's
+#'   are not tested. For a categorical outcome, one row per class and
+#'   category, with `category` after `class` and `estimate` the probability
+#'   of the category in the class; the interval is formed on the logit scale
+#'   and stays in (0, 1). For `method = "ml"`, a `variance` column (the outcome's
 #'   estimated variance in the class) comes before `effective_n`, which is
 #'   then the expected number of units in the class under the step-three
 #'   model; the `variance` attribute records the choice. For `contrast = "pairs"`, one row per pair of classes
@@ -329,7 +337,13 @@
 #'   `estimate` (the mean of `class` minus the mean of `reference_class`),
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
 #'   `conf_high`, as in [r3step()]. A contrast with zero or missing standard
-#'   error has `NA_real_` statistic and p-values.
+#'   error has `NA_real_` statistic and p-values. For a categorical outcome
+#'   the pairs are compared category by category, with `category` after
+#'   `reference_class` and `estimate` the difference in probability. For
+#'   `contrast = "overall"`, one row with `level`, `method`, `statistic`,
+#'   `df` and `p_value`: `(K - 1)` degrees of freedom for a mean,
+#'   `(K - 1)(C - 1)` for `C` categories, tested on the baseline-category
+#'   logits.
 #'
 #'   The result's `vcov_type` attribute records the variance used; for
 #'   `contrast = "pairs"` the `adjust` attribute records the correction
@@ -377,6 +391,19 @@
 #'   estimated means; BCH is less sensitive to these distributional assumptions
 #'   (Bakk and Vermunt, 2016).
 #'
+#'   A categorical outcome is described by its probability in each class.
+#'   The weighting methods give the weighted share of each category; BCH
+#'   weights can be negative, and with poorly separated classes a share can
+#'   fall outside `[0, 1]`: it is then reported without an interval or test,
+#'   with a `latents_bch_out_of_range` warning. With `method = "ml"` the
+#'   step-three model estimates a distribution over the categories in each
+#'   class, with the class sizes and classification errors fixed as for a
+#'   numeric outcome, as Latent GOLD's step-three model of a nominal dependent
+#'   variable does without an equation for the sizes. Its probabilities stay
+#'   in `[0, 1]`; where the BCH shares do not, its maximum usually lies on
+#'   the bound, and it reports the estimates without standard errors, with a
+#'   `latents_boundary` warning.
+#'
 #'   Because uncertainty in the estimated classification-error probabilities
 #'   is omitted, interval coverage can be below the nominal level,
 #'   particularly when classification is uncertain.
@@ -403,11 +430,15 @@
 #'                 n_group_classes = 1, n_starts = 4, seed = 1)
 #' three_step(fit, example_data, "y")
 #' three_step(fit, example_data, "y", contrast = "pairs")
+#' # A categorical outcome: its probability in each class.
+#' example_data <- transform(example_data, passed = y + rnorm(400, sd = 6) > 5)
+#' three_step(fit, example_data, "passed")
+#' three_step(fit, example_data, "passed", contrast = "overall")
 #' @export
 three_step <- function(x, data, outcome,
                        level = c("individuals", "groups"),
                        method = c("bch", "proportional", "modal", "ml"),
-                       ci_level = 0.95, contrast = c("none", "pairs"),
+                       ci_level = 0.95, contrast = c("none", "pairs", "overall"),
                        adjust = c("BH", "holm", "hochberg", "hommel",
                                     "bonferroni", "BY", "none"),
                        vcov_type = c("cluster", "independent"),
@@ -446,12 +477,35 @@ three_step <- function(x, data, outcome,
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
       is.character(outcome) && length(outcome) == 1L && outcome %in% names(data),
-    "`outcome` must be numeric" = is.numeric(data[[outcome]]),
+    "`outcome` must be numeric, a factor, character or logical" =
+      is.numeric(data[[outcome]]) || is.factor(data[[outcome]]) ||
+      is.character(data[[outcome]]) || is.logical(data[[outcome]]),
     "`outcome` must not be missing" = !anyNA(data[[outcome]]),
-    "`outcome` must be finite" = all(is.finite(data[[outcome]])),
     "`ci_level` must be a single number in (0, 1)" =
       is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
+  categorical <- !is.numeric(data[[outcome]])
+  if (categorical) {
+    if (variance_given) {
+      stop(errorCondition(paste(
+        "`variance` sets the class variances of a numeric outcome; a categorical",
+        "outcome has a probability for each category instead."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    # Categories in the factor's level order (unused levels dropped), or
+    # sorted the same way in every locale.
+    observed <- data[[outcome]]
+    categories <- if (is.factor(observed)) levels(droplevels(observed)) else
+      sort(unique(as.character(observed)), method = "radix")
+    if (length(categories) < 2L) {
+      stop(errorCondition(sprintf(
+        "`%s` takes one category, so it has no distribution to compare across classes.",
+        outcome), class = "latents_bad_outcome", call = NULL))
+    }
+    data[[outcome]] <- match(as.character(observed), categories)
+  } else {
+    .latents_require("`outcome` must be finite" = all(is.finite(data[[outcome]])))
+  }
   if (.trajectory_is_fit(x)) {
     # Trajectory models classify persons: one outcome value per person.
     if (identical(level, "groups")) {
@@ -477,6 +531,10 @@ three_step <- function(x, data, outcome,
     .multilpa_check_alignment(x, data)
     # Only the classified units enter step three, as they do the error matrix.
     values <- .multilpa_outcome_values(x, data, outcome, level)[pieces$kept]
+  }
+  if (categorical) {
+    return(.multilpa_three_step_categorical(pieces, as.integer(values), categories, level,
+                                            method, ci_level, contrast, adjust, vcov_type))
   }
   if (identical(method, "ml")) {
     return(.multilpa_three_step_ml(pieces, values, level, variance, ci_level,
@@ -512,6 +570,10 @@ three_step <- function(x, data, outcome,
   # by construction, not an estimate; the ML path already says so (INF-1).
   clustered <- .multilpa_step_thin_classes(clustered, weights, pieces, vcov_type)
 
+  if (identical(contrast, "overall")) {
+    return(.multilpa_step_overall(centered_estimates, clustered, pieces$n_classes, level,
+                                  method, vcov_type))
+  }
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
                                 adjust, vcov_type))
@@ -586,6 +648,18 @@ three_step <- function(x, data, outcome,
 #' @return `clustered`, with the columns of thinly carried classes `NA`.
 #' @noRd
 .multilpa_step_thin_classes <- function(clustered, carrying, pieces, vcov_type) {
+  clustered[, .multilpa_step_thin(carrying, pieces, vcov_type)] <- NA_real_
+  clustered
+}
+
+#' Which classes are carried by a single independent unit
+#'
+#' The rule of `.multilpa_step_thin_classes()`, with its warning, for a
+#' caller whose contributions have several columns per class.
+#' @param carrying,pieces,vcov_type As in `.multilpa_step_thin_classes()`.
+#' @return One logical per class, `TRUE` for a thinly carried class.
+#' @noRd
+.multilpa_step_thin <- function(carrying, pieces, vcov_type) {
   carried <- abs(carrying)
   if (identical(vcov_type, "cluster")) {
     carried <- rowsum(carried, pieces$group_index, reorder = FALSE)
@@ -603,9 +677,8 @@ three_step <- function(x, data, outcome,
       if (several) "their" else "its", if (several) "s" else "",
       if (several) "are" else "is"),
       class = "latents_small_classes", call = NULL))
-    clustered[, thin] <- NA_real_
   }
-  clustered
+  thin
 }
 
 #' Pairwise differences between class outcome means
