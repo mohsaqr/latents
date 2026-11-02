@@ -93,7 +93,8 @@
     cells <- which(outside, arr.ind = TRUE)
     warning(warningCondition(sprintf(paste(
       "The BCH weights give %s outside [0, 1] (%s): the classes are too poorly",
-      "separated for the correction. They are reported without an interval;",
+      "separated for the correction. They are reported without an interval or",
+      "test, as is any class difference that involves them;",
       "`method = \"ml\"` keeps the probabilities in range."),
       if (nrow(cells) > 1L) "probabilities" else "a probability",
       paste(sprintf("class %d, %s", cells[, 1L], categories[cells[, 2L]]), collapse = "; ")),
@@ -125,7 +126,8 @@
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_categorical_pairs(probabilities, clustered, categories, level,
-                                            method, quantile, adjust, vcov_type))
+                                            method, quantile, adjust, vcov_type,
+                                            invalid = outside))
   }
   errors <- sqrt(colSums(clustered^2))
   # Intervals on the logit scale, back-transformed, so they stay in (0, 1).
@@ -319,10 +321,15 @@
 #' @param categories The category labels.
 #' @param level,method,adjust,vcov_type As in [three_step()].
 #' @param quantile The normal quantile for the interval.
+#' @param invalid Classes-by-categories logical matrix of the probabilities
+#'   reported without inference (BCH shares outside `[0, 1]`); a difference
+#'   that involves one keeps its estimate and standard error but gets no
+#'   statistic, p-value or interval, and does not count in the adjustment.
 #' @return One row per pair of classes and category.
 #' @noRd
 .multilpa_step_categorical_pairs <- function(probabilities, clustered, categories, level,
-                                             method, quantile, adjust, vcov_type) {
+                                             method, quantile, adjust, vcov_type,
+                                             invalid = array(FALSE, dim(probabilities))) {
   n_classes <- nrow(probabilities)
   if (n_classes < 2L) {
     stop(errorCondition("A single class has no other class to be compared with.",
@@ -338,14 +345,16 @@
     probabilities[cbind(reference, grid$category)]
   errors <- sqrt(colSums((clustered[, column_of(class), drop = FALSE] -
                             clustered[, column_of(reference), drop = FALSE])^2))
-  valid <- is.finite(errors) & errors > 0
+  involved <- invalid[cbind(class, grid$category)] | invalid[cbind(reference, grid$category)]
+  valid <- is.finite(errors) & errors > 0 & !involved
   statistic <- ifelse(valid, difference / errors, NA_real_)
   raw <- ifelse(valid, 2 * stats::pnorm(-abs(statistic)), NA_real_)
   result <- data.frame(
     level = level, method = method, class = class, reference_class = reference,
     category = categories[grid$category], estimate = difference, standard_error = errors,
     statistic = statistic, p_value = raw, p_adjusted = stats::p.adjust(raw, method = adjust),
-    conf_low = difference - quantile * errors, conf_high = difference + quantile * errors,
+    conf_low = ifelse(involved, NA_real_, difference - quantile * errors),
+    conf_high = ifelse(involved, NA_real_, difference + quantile * errors),
     row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "adjust") <- adjust
   attr(result, "vcov_type") <- vcov_type

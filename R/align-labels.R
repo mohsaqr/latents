@@ -30,7 +30,9 @@
 #'   posterior probabilities follow the new labels. Raises
 #'   `latents_bad_argument` when either object is not a profile or class
 #'   model, or when the two fits differ in their indicators, how they are
-#'   coded, or their numbers of profiles or group classes.
+#'   coded (the message names each categorical or ordinal indicator whose
+#'   categories or their order differ), or their numbers of profiles or
+#'   group classes.
 #' @seealso [compare_models()] to compare fits on their criteria.
 #' @examples
 #' first_days <- subset(student_esm, day <= 3)
@@ -56,7 +58,7 @@ align_labels <- function(fit, reference) {
   layout <- function(x) {
     list(profiles = x$n_profiles, group_classes = x$n_group_classes,
          continuous = colnames(x$means),
-         categorical = lapply(x$response_probabilities %||% list(), colnames),
+         categorical = names(x$response_probabilities %||% list()),
          ordinal = x$ordinal %||% character(), count = x[["count"]] %||% character(),
          count_dispersion = length(x$count_dispersion) > 0L)
   }
@@ -66,13 +68,42 @@ align_labels <- function(fit, reference) {
   if (any(differs)) {
     described <- c(profiles = "numbers of profiles", group_classes = "numbers of group classes",
                    continuous = "continuous indicators",
-                   categorical = "categorical indicators or their categories",
+                   categorical = "categorical indicators",
                    ordinal = "ordinal indicators", count = "count indicators",
                    count_dispersion = "count models")
     stop(errorCondition(sprintf(paste(
       "`fit` and `reference` must be the same model of the same indicators to",
       "be aligned; they differ in their %s."),
       paste(described[names(differs)[differs]], collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  # Probabilities are matched by category position, so the same indicator
+  # must have the same categories in the same order in both fits; equal
+  # category counts do not make two codings the same.
+  coding <- function(x) {
+    categories <- lapply(x$response_probabilities %||% list(), colnames)
+    ordinal <- lapply(stats::setNames(nm = x$ordinal %||% character()), function(name) {
+      list(levels = x$extra_data$ordinal_levels[[name]],
+           values = x$extra_data$ordinal_values[[name]])
+    })
+    c(categories, ordinal)
+  }
+  fit_coding <- coding(fit)
+  reference_coding <- coding(reference)
+  recoded <- names(fit_coding)[!vapply(names(fit_coding), function(name) {
+    identical(fit_coding[[name]], reference_coding[[name]])
+  }, logical(1))]
+  if (length(recoded) > 0L) {
+    categories <- function(entry) {
+      paste(if (is.list(entry)) entry$levels else entry, collapse = ", ")
+    }
+    stop(errorCondition(sprintf(paste(
+      "`fit` and `reference` must code each indicator with the same categories in",
+      "the same order to be aligned; they differ for %s."),
+      paste(vapply(recoded, function(name) {
+        sprintf("`%s` (`fit`: %s; `reference`: %s)", name,
+                categories(fit_coding[[name]]), categories(reference_coding[[name]]))
+      }, character(1)), collapse = "; ")),
       class = "latents_bad_argument", call = NULL))
   }
   .multilpa_align_labels(fit, reference)

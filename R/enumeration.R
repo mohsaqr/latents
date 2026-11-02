@@ -535,8 +535,8 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   counts given together with `n_group_classes` or `model`, for a value that
 #'   names no candidate, and for a comparison given no label;
 #'   `latents_incomplete_fit` for a comparison that no longer carries its
-#'   models. Counts that are not single positive integers fail the
-#'   argument checks.
+#'   models. Counts that are not single positive integers, and a `model`
+#'   that is not a single string, also raise `latents_bad_argument`.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
@@ -568,6 +568,11 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
   }
   .latents_require_fit(x, substitute(x), .latents_enumeration_classes,
                        "an enumeration result (from enumerate_classes(), enumerate_lpa() or enumerate_lca())")
+  # Checked once for every grid kind, classed as the other argument checks
+  # are: a vector `model` built a message per element on the family grid.
+  .latents_require("`model` must be a single model code, or NULL" =
+                     is.null(model) || (is.character(model) &&
+                                          length(model) == 1L && !is.na(model)))
   # A name, or a pair of counts, names the candidate on its own. (A
   # group-class family grid names candidates without `n_profiles`.)
   if (!missing(n_profiles) && (is.character(n_profiles) || length(n_profiles) == 2L)) {
@@ -601,6 +606,9 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
     return(x$fits[[at]])
   }
   if (inherits(x, "latents_family_enumeration")) {
+    # A fractional count was reported truncated, as if a present candidate
+    # with that many group classes were absent.
+    .latents_check_candidate_counts(n_group_classes = n_group_classes)
     at <- which(x$table$n_group_classes == n_group_classes &
                   (is.null(model) | x$table$model %in% (model %||% "")))
     if (length(at) != 1L) {
@@ -618,12 +626,6 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
     }
     return(x$fits[[at]])
   }
-  stopifnot(
-    "`x` must be an `multilpa_enumeration` result" =
-      inherits(x, "multilpa_enumeration"),
-    "`model` must be a single model code, or NULL" =
-      is.null(model) || (is.character(model) &&
-                           length(model) == 1L && !is.na(model)))
   .latents_check_candidate_counts(n_profiles, n_group_classes)
   grid <- x$table
   at <- which(grid$n_profiles == n_profiles &
@@ -659,12 +661,13 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
 }
 
 #' Check the class counts that name a candidate
-#' @param n_profiles,n_group_classes The counts [get_candidate()] received.
-#' @return `NULL`, invisibly; an argument error for anything but a single
-#'   positive whole number each.
+#' @param n_profiles,n_group_classes The counts [get_candidate()] received
+#'   (`n_profiles` 1 for a family grid, whose candidates have none).
+#' @return `NULL`, invisibly; `latents_bad_argument` for anything but a
+#'   single positive whole number each.
 #' @noRd
-.latents_check_candidate_counts <- function(n_profiles, n_group_classes) {
-  stopifnot(
+.latents_check_candidate_counts <- function(n_profiles = 1L, n_group_classes) {
+  .latents_require(
     "`n_profiles` must be a single positive integer" =
       is.numeric(n_profiles) && length(n_profiles) == 1L &&
       is.finite(n_profiles) && n_profiles >= 1 &&
@@ -1193,12 +1196,18 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' is still the alternative with one class emptied, so there the alternative
 #' may add them.
 #'
+#' A covariate both models name must also enter both with the same values:
+#' otherwise the two were fitted to different data, and the pair is refused
+#' as incomparable before the likelihood check would refuse it as data that
+#' do not reproduce a fit (naming `data` the caller may not have supplied).
+#'
 #' @param null_model,alternative_model Fitted `multilpa_covariates` models.
-#' @return `NULL`, invisibly; raises `latents_bad_nesting`.
+#' @return `NULL`, invisibly; raises `latents_bad_nesting`, or
+#'   `latents_incomparable_models` for a shared covariate with other values.
 #' @noRd
 .multilpa_check_covariate_nesting <- function(null_model, alternative_model) {
-  refuse <- function(message) {
-    stop(errorCondition(message, class = "latents_bad_nesting", call = NULL))
+  refuse <- function(message, class = "latents_bad_nesting") {
+    stop(errorCondition(message, class = class, call = NULL))
   }
   if (!identical(null_model$profile_covariates, alternative_model$profile_covariates)) {
     refuse("The models use different profile covariates, so they are not nested.")
@@ -1216,6 +1225,29 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     refuse(paste(
       "One model lets profile slopes differ by group class and the other does",
       "not, so they differ by more than one class."))
+  }
+  # The values, judged as compare_models(test = "lrt") judges them (column
+  # spaces, .latents_lrt_spans()). Group class 1's profile design holds the
+  # profile covariates under either slope rule and has one row per
+  # observation whatever the class counts, so it compares a profile step and
+  # a group-class step alike; the stacked designs differ in rows when the
+  # group classes do.
+  different_values <- function(inner, outer) {
+    !is.null(inner) && !is.null(outer) && !.latents_lrt_spans(inner, outer)
+  }
+  if (different_values(null_model$profile_design[[1L]],
+                       alternative_model$profile_design[[1L]])) {
+    refuse(paste(
+      "The models name the same profile covariates with different values, so",
+      "they were not fitted to the same data. Fit both to one data frame."),
+      class = "latents_incomparable_models")
+  }
+  if (length(null_model$group_covariates) > 0L &&
+      different_values(null_model$group_design, alternative_model$group_design)) {
+    refuse(paste(
+      "The models name the same group covariates with different values, so",
+      "they were not fitted to the same data. Fit both to one data frame."),
+      class = "latents_incomparable_models")
   }
   invisible(NULL)
 }

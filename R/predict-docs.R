@@ -31,8 +31,9 @@
 #' With the default `drop_empty = TRUE`, rows with every indicator missing
 #' retain their position but have `NA` for the predicted profile and its
 #' probabilities. A group is unclassified only when none of its rows has an
-#' observed indicator. Fitted rows with zero sampling weight are unclassified
-#' under either setting of `drop_empty`. New-data prediction does not apply
+#' observed indicator. Fitted rows with zero sampling weight keep their
+#' predicted profile and probabilities under either setting of `drop_empty`,
+#' as in `get_results(x, "assignments")`. New-data prediction does not apply
 #' sampling weights. These exclusions apply to classification output;
 #' density predictions retain each row's evaluated log density.
 #' For a model with a noise component, prediction supports complete rows and,
@@ -107,7 +108,10 @@
 #'   outside the ordinal family; `latents_unsupported_prediction` for
 #'   `predict()` on a membership-covariate fit or a latent transition fit.
 #'   `latents_unsupported_noise` for partially observed prediction rows in a
-#'   model with a noise component.
+#'   model with a noise component. A profile or class model's `predict()`
+#'   raises `latents_bad_argument` for a `type` it does not offer and warns
+#'   with `latents_unused_argument` for arguments it ignores, such as `data =`
+#'   in place of `newdata =`.
 #'   A growth mixture prediction raises `latents_bad_data` when `newdata`
 #'   lacks `id`, the cluster column or (for the outcome-based types) the
 #'   outcome, and warns with `latents_unused_argument` for arguments it

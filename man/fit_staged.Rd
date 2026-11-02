@@ -49,7 +49,10 @@ and matching profiles, indicators and measurement options. Models with
 \code{weights}, \code{centering}, \code{scaling}, \code{ordinal} or \code{count} indicators,
 \code{direct_effects}, or \code{local_dependence} between continuous indicators are
 not supported. Supported covariance structures are EEI, VVI, EEE and VVV.
-An incompatible measurement model raises \code{latents_bad_stage}.}
+An incompatible measurement model raises \code{latents_bad_stage}; a
+\code{measurement} that is not a fitted \code{multilpa} model, an \code{n_group_classes}
+below two, or an unknown \code{variance_model}, \code{covariance_model} or
+\code{missing} raises \code{latents_bad_argument}.}
 
 \item{variance_model}{\code{"varying"} (the default; profile-specific variances
 or covariance matrices) or \code{"equal"} (shared across profiles).}

@@ -60,9 +60,10 @@ test_that("a refit with permuted labels is aligned back in every table", {
 test_that("latent classes and the group classes of a two-level model are aligned", {
   items <- c("time_with_friends", "on_social_media", "sports", "walking")
   first_week <- subset(student_esm, day <= 3)
-  classes <- lca(first_week, items, n_classes = 3, n_starts = 3, seed = 1)
+  # A tight tolerance leaves no score large enough to warn under Wald inference.
+  classes <- lca(first_week, items, n_classes = 3, n_starts = 3, seed = 1, tol = 1e-10)
   expect_aligned_refit(function(start) {
-    lca(first_week, items, n_classes = 3, n_starts = 1, start = start)
+    lca(first_week, items, n_classes = 3, n_starts = 1, start = start, tol = 1e-10)
   }, classes, c(2L, 3L, 1L))
   feelings <- c("happy", "relaxed", "worried")
   two_level <- function(...) {

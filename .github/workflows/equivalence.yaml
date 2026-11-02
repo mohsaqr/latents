@@ -140,6 +140,16 @@ jobs:
             packages: any::numDeriv
           - kit: latentgold-coverage
             packages: any::numDeriv
+          # Reads the mclust, glca and Mplus references saved in lrt/reference.rds.
+          - kit: lrt
+            packages: ""
+          # Both read the retained Latent GOLD 6.1 listings in returned/ (offline).
+          - kit: latentgold-categorical-distal
+            packages: ""
+          - kit: latentgold-step-one
+            packages: any::numDeriv
+          - kit: moeclust-covariate-structures
+            packages: any::MoEClust
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       NOT_CRAN: true

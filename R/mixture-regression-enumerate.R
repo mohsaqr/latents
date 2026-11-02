@@ -279,7 +279,10 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
   observed <- max(0, observed)
   # Replicate refits routinely meet unconverged or degenerate starts. Those
   # warnings mark the replicate invalid and are counted in `blrt_n_invalid`,
-  # not repeated hundreds of times on the console.
+  # not repeated hundreds of times on the console. A boundary estimate (a
+  # negative-binomial dispersion at the Poisson limit, an ordinal threshold
+  # gap at zero) or a growth start that could not be built is a valid
+  # replicate: its warning is not repeated either, and does not invalidate it.
   statistics <- vapply(seq_len(replicates), function(b) {
     simulated <- base_data
     simulated[[response]] <- if (inherits(null_fit, "latents_growth_mixture")) {
@@ -295,6 +298,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
           invokeRestart("muffleWarning")
         },
         latents_degenerate_start = function(w) invokeRestart("muffleWarning"),
+        latents_boundary = function(w) invokeRestart("muffleWarning"),
+        latents_failed_starts = function(w) invokeRestart("muffleWarning"),
         latents_random_boundary = function(w) {
           warned <<- TRUE
           invokeRestart("muffleWarning")

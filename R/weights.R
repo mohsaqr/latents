@@ -79,19 +79,31 @@
 #' product of the weighted scores alone; the sandwich is (Skinner, 1989).
 #' A weighted fit therefore defaults to `"robust"` and refuses the others.
 #'
+#' The refusal names only the alternatives the caller's family offers: the
+#' sandwich always, and the bootstrap only where the caller says its
+#' inference has one for a weighted fit. A mixture regression, whose
+#' inference has no bootstrap, was told to use `method = "bootstrap"`.
+#'
 #' @param weighted Whether the fit carries sampling weights.
 #' @param vcov_type The requested type, already matched.
 #' @param defaulted Whether the caller left `vcov_type` at its default.
-#' @return The type to use.
+#' @param bootstrap Whether the caller's inference offers
+#'   `method = "bootstrap"` for this weighted fit, so the refusal may name it.
+#' @return The type to use; raises `latents_unsupported_weights` for a
+#'   non-robust type asked of a weighted fit.
 #' @noRd
-.latents_weighted_vcov <- function(weighted, vcov_type, defaulted) {
+.latents_weighted_vcov <- function(weighted, vcov_type, defaulted,
+                                   bootstrap = FALSE) {
+  stopifnot("`bootstrap` must be TRUE or FALSE" =
+              isTRUE(bootstrap) || isFALSE(bootstrap))
   if (!isTRUE(weighted)) return(vcov_type)
   if (defaulted) return("robust")
   if (!identical(vcov_type, "robust")) {
     stop(errorCondition(sprintf(paste(
       "A fit with sampling weights is a pseudo likelihood fit, whose",
       "`vcov_type = \"%s\"` errors are not valid; use `vcov_type = \"robust\"`",
-      "(the default for weighted fits) or `method = \"bootstrap\"`."), vcov_type),
+      "(the default for weighted fits)%s."), vcov_type,
+      if (bootstrap) " or `method = \"bootstrap\"`" else ""),
       class = "latents_unsupported_weights", call = NULL))
   }
   vcov_type

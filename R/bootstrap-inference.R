@@ -1,13 +1,11 @@
 # Cluster bootstrap inference, for every covariance structure.
 #
-# The Wald path differentiates one log variance per profile and indicator. A
-# structure that constrains the volume, the shape or the orientation has fewer
-# free parameters than that chart has coordinates, so its information matrix is
-# singular by construction and the Wald path refuses it. The constrained model
-# is still a model, and its natural parameters -- the means, the variances or
-# covariances, the mixing probabilities -- are still estimable. The bootstrap
-# reaches them without needing a chart at all: resample, refit inside the same
-# family, and read the spread of the estimates.
+# The Wald path covers every structure too: the ten that constrain the volume,
+# the shape or the orientation are differentiated in their own charts
+# (R/structure-inference.R). The bootstrap is the alternative that needs no
+# chart and no normal approximation: resample, refit inside the same family,
+# and read the spread of the natural parameters -- the means, the variances or
+# covariances, the mixing probabilities -- across the refits.
 #
 # Groups are the resampling unit, not rows. Observations inside a group are not
 # independent, and resampling rows would treat a repeated measure as fresh
@@ -264,18 +262,40 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
 #' data frame (one row per parameter, its label columns before `estimate`);
 #' the `replicates` attribute holds the kept replicates, one column per row,
 #' `replicate_number` the resample each kept replicate came from, and
-#' `replicate_rows` the row names the replicate columns belong to: `[` keeps
-#' attributes when it only reorders or repeats rows, so the row names are what
-#' tells a reordered copy from the table itself.
+#' `replicate_identity` the parameters the replicate columns belong to, in
+#' their order: every label column and the estimate
+#' (.latents_bootstrap_identity()). `[`, `subset()` and `dplyr::arrange()` keep
+#' the attributes while they reorder, repeat or drop rows, and they keep or
+#' regenerate ordinary row names, so the row names cannot tell a modified copy
+#' from the table itself; the labels and estimates can.
 #' @param result The bootstrap table, with its `replicates` attribute.
 #' @param valid One logical per resample: whether it produced a usable fit.
 #' @return `result` with class `c("latents_bootstrap", "data.frame")`.
 #' @noRd
 .latents_bootstrap_table <- function(result, valid) {
+  stopifnot(
+    "the bootstrap table must have an `estimate` column" = "estimate" %in% names(result),
+    "the replicates must have one column per row of the table" =
+      identical(ncol(attr(result, "replicates")), nrow(result)))
   attr(result, "replicate_number") <- which(valid)
-  attr(result, "replicate_rows") <- row.names(result)
+  attr(result, "replicate_identity") <- .latents_bootstrap_identity(result)
   class(result) <- c("latents_bootstrap", "data.frame")
   result
+}
+
+#' The identity of every row of a bootstrap table, in order
+#'
+#' Each label column as text (so that a factor and its levels as text name the
+#' same parameter) and the estimate, as stored: the comparison is of a copied
+#' value with its original, not of two computations, so it is exact.
+#' @param x A bootstrap table that has an `estimate` column.
+#' @return A named list: one character vector per label column, in table
+#'   order, then `estimate`, a numeric vector.
+#' @noRd
+.latents_bootstrap_identity <- function(x) {
+  labels <- .latents_bootstrap_columns(x)$labels
+  c(lapply(stats::setNames(labels, labels), \(name) as.character(x[[name]])),
+    list(estimate = as.numeric(x[["estimate"]])))
 }
 
 #' The label columns of a bootstrap table and the column naming the kind
@@ -294,13 +314,20 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
 }
 
 #' The kept replicates of a bootstrap table, one column per row of the table
+#'
+#' The replicate columns are paired with the rows only while the table still
+#' has, row for row and in order, the labels and estimates it was made with:
+#' a reordered, repeated, subset or relabelled copy, or one that lost a label
+#' column, is refused rather than paired with replicates of other parameters.
 #' @return A replicates-by-parameters matrix, or `latents_bad_argument` when a
 #'   subset, reordered or modified copy of the table no longer matches them.
 #' @noRd
 .latents_bootstrap_matrix <- function(x) {
   kept <- attr(x, "replicates")
-  if (is.null(kept) || !identical(ncol(kept), nrow(x)) ||
-      !identical(attr(x, "replicate_rows"), row.names(x))) {
+  stored <- attr(x, "replicate_identity")
+  matches <- !is.null(kept) && !is.null(stored) && "estimate" %in% names(x) &&
+    identical(ncol(kept), nrow(x)) && identical(.latents_bootstrap_identity(x), stored)
+  if (!matches) {
     stop(errorCondition(paste(
       "This table no longer matches its bootstrap replicates (a subset or a",
       "reordered or modified copy loses them). Use the table",
@@ -357,7 +384,7 @@ plot.latents_bootstrap <- function(x, what = NULL, main = NULL, subtitle = NULL,
   chosen <- if (is.null(what)) rep(TRUE, nrow(table)) else table[[columns$kind]] %in% what
   # A parameter held fixed or determined by the others (the probability of a
   # single group class) has no interval to draw; the caption names it instead.
-  spread <- apply(kept, 2L, function(values) diff(range(values)) > 1e-10 * max(1, abs(values)))
+  spread <- .latents_bootstrap_spread(kept)
   shown <- which(chosen & spread)
   if (length(shown) == 0L) {
     stop(errorCondition(
@@ -414,6 +441,26 @@ plot.latents_bootstrap <- function(x, what = NULL, main = NULL, subtitle = NULL,
                    panel.spacing = ggplot2::unit(1, "lines"),
                    panel.grid.minor = ggplot2::element_blank())
   plot
+}
+
+#' Which parameters vary across the bootstrap replicates
+#'
+#' A parameter is constant when its replicates differ by no more than rounding:
+#' a few dozen units in the last place of the largest of them. The rule is
+#' relative to the values, so rescaling the data, or shifting their origin, does
+#' not change which parameters vary; a fixed threshold in the data's units
+#' would call a parameter measured in small units constant. A parameter that is
+#' exactly zero, or exactly the same, in every replicate is constant.
+#' @param kept A replicates-by-parameters matrix without missing values.
+#' @return One logical per column of `kept`: `TRUE` when it varies.
+#' @noRd
+.latents_bootstrap_spread <- function(kept) {
+  stopifnot("`kept` must be a numeric matrix" = is.matrix(kept) && is.numeric(kept))
+  rounding <- 64 * .Machine$double.eps
+  vapply(seq_len(ncol(kept)), \(column) {
+    values <- kept[, column]
+    diff(range(values)) > rounding * max(abs(values))
+  }, logical(1))
 }
 
 #' Where each drawn parameter of a bootstrap table sits on the plot

@@ -186,8 +186,10 @@
 .additive_inference <- function(x, vcov_type = c("observed", "robust", "opg"),
                                 step = 1e-4, warn_weak = TRUE) {
   vcov_type <- match.arg(vcov_type)
-  stopifnot("`step` must be finite and positive" =
-              is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
+  # Classed, as every other argument of parameter_inference() (a bare
+  # stopifnot() raised simpleError).
+  .latents_require("`step` must be a single finite positive number" =
+                     is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   if (!isTRUE(x$converged)) {
     stop(errorCondition("Inference requires a converged fit.",
                         class = "latents_no_converge", call = NULL))

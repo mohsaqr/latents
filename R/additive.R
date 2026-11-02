@@ -4,14 +4,6 @@
 # indicator; the families differ in which blocks vary across classes. See
 # validation/ADDITIVE_MODEL_DESIGN.md for the specification.
 
-#' Reduce raw ratings to the additive model's sufficient statistics
-#'
-#' Validates the raw-rating contract of the first increment (complete numeric
-#' indicators, a known group identifier, replication within at least one
-#' group) and returns, per group and indicator, the mean and the scatter about
-#' it. The exact likelihood depends on the data only through these, the group
-#' sizes and nothing else.
-#'
 #' How far two computations of the same sufficient statistics may differ
 #'
 #' Relative, as `all.equal()` reads it: 64 units in the last place, which a

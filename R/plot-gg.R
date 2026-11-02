@@ -748,8 +748,12 @@ utils::globalVariables(c(
   chosen <- vapply(blocks, \(block) {
     index <- if (identical(category, "last")) ncol(block) else
       if (identical(category, "first")) 1L else
-        if (is.numeric(category)) as.integer(category) else
-          match(as.character(category), colnames(block))
+        # A fractional index names no category; it is refused, not truncated.
+        if (is.numeric(category)) {
+          if (isTRUE(all.equal(category, round(category)))) {
+            as.integer(round(category))
+          } else NA_integer_
+        } else match(as.character(category), colnames(block))
     if (is.na(index) || index < 1L || index > ncol(block)) {
       stop(errorCondition(sprintf(
         "`category` does not match a category of an indicator with categories %s.",
@@ -1050,20 +1054,30 @@ utils::globalVariables(c(
 #'
 #' @param x A fitted model.
 #' @param level `"individuals"` or `"groups"`.
-#' @return A list: `posteriors` (units by classes, or `NULL`), `key` (as
-#'   `.gg_profile_key()`, one row per class), `class_word` and `unit_word`
-#'   (singular, lower case), `total` (units the sizes are shares of) and
-#'   `noise` (whether a noise component is excluded).
+#' @return A list: `posteriors` (units by classes, or `NULL`), `weights`
+#'   (the sampling weight of each posterior row, as the classification tables
+#'   use it; `NULL` for an unweighted fit), `key` (as `.gg_profile_key()`, one
+#'   row per class), `class_word` and `unit_word` (singular, lower case),
+#'   `total` (units the sizes are shares of) and `noise` (whether a noise
+#'   component is excluded).
 #' @noRd
 .gg_level <- function(x, level = c("individuals", "groups")) {
   level <- match.arg(level)
+  # The weights the "classification", "average_posteriors" and "entropy"
+  # tables give each posterior row, so a view's means and entropy are theirs.
+  row_weights <- function(posteriors) {
+    if (is.null(posteriors) || !.multilpa_any_fit(x)) return(NULL)
+    .multilpa_level_weights(x, level, nrow(posteriors))
+  }
   if (identical(level, "individuals")) {
     noise <- isTRUE(x$noise)
+    # Rows with no observed indicator were not classified; the certainty,
+    # entropy and AvePP views describe the rows that were.
+    posteriors <- if (is.null(x$subject_posteriors)) NULL else
+      x$subject_posteriors[.multilpa_informative_rows(x), , drop = FALSE]
     return(list(
-      # Rows with no observed indicator were not classified; the certainty,
-      # entropy and AvePP views describe the rows that were.
-      posteriors = if (is.null(x$subject_posteriors)) NULL else
-        x$subject_posteriors[.multilpa_informative_rows(x), , drop = FALSE],
+      posteriors = posteriors,
+      weights = row_weights(posteriors),
       counts = x$effective_profile_counts,
       key = if (length(x$effective_profile_counts)) .gg_profile_key(x),
       class_word = "profile", unit_word = "case", level = level,
@@ -1085,7 +1099,9 @@ utils::globalVariables(c(
     colour = rep_len(.gg_okabe_ito, n_classes)[rank],
     shape = rep_len(.gg_shapes, n_classes)[rank],
     stringsAsFactors = FALSE)
-  list(posteriors = .multilpa_classified_group_posteriors(x), counts = counts, key = key,
+  posteriors <- .multilpa_classified_group_posteriors(x)
+  list(posteriors = posteriors, weights = row_weights(posteriors),
+       counts = counts, key = key,
        class_word = "group class", unit_word = "group", level = level,
        total = sum(counts), noise = FALSE)
 }
@@ -1139,9 +1155,13 @@ utils::globalVariables(c(
 #' Per-unit certainty and relative entropy from the fit's own posteriors
 #' @param x A fitted model.
 #' @param level `"individuals"` or `"groups"`.
+#' @return A `data.frame`, one row per classified unit: `profile` (assigned
+#'   class), `certainty`, `entropy` and `weight` (its sampling weight; 1 for
+#'   an unweighted fit).
 #' @noRd
 .gg_case_values <- function(x, level = "individuals") {
-  posteriors <- .gg_level(x, level)$posteriors
+  unit <- .gg_level(x, level)
+  posteriors <- unit$posteriors
   k <- ncol(posteriors)
   assigned <- max.col(posteriors, ties.method = "first")
   # -sum p log p per unit, relative to its maximum log(K): 0 is certain,
@@ -1151,7 +1171,8 @@ utils::globalVariables(c(
   # [0, 1] axis and drop it from the plot with a warning.
   data.frame(profile = assigned,
              certainty = pmin(posteriors[cbind(seq_len(nrow(posteriors)), assigned)], 1),
-             entropy = if (k > 1L) pmax(entropy / log(k), 0) else 0)
+             entropy = if (k > 1L) pmax(entropy / log(k), 0) else 0,
+             weight = unit$weights %||% 1)
 }
 
 #' Strip plot of one per-unit value by class, with each class's mean
@@ -1159,7 +1180,8 @@ utils::globalVariables(c(
 .gg_case_strip <- function(x, value, limits, reference, reference_label,
                            default_main, default_subtitle, x_label, main,
                            subtitle, level = "individuals") {
-  key <- .gg_level(x, level)$key
+  unit <- .gg_level(x, level)
+  key <- unit$key
   cases <- .gg_case_values(x, level)
   k <- nrow(key)
   y0 <- k + 1L - key$rank
@@ -1169,7 +1191,16 @@ utils::globalVariables(c(
   within <- stats::ave(cases$value, cases$profile,
                        FUN = \(v) rank(v, ties.method = "first"))
   cases$y <- cases$y0 + 0.5 * ((within * 0.618) %% 1 - 0.5)
-  means <- stats::aggregate(value ~ profile + y0, data = cases, FUN = mean)
+  # Under sampling weights each class's mean is weighted, as the
+  # "classification" table's average posterior is; unweighted, a plain mean.
+  means <- if (is.null(unit$weights)) {
+    stats::aggregate(value ~ profile + y0, data = cases, FUN = mean)
+  } else {
+    sums <- stats::aggregate(cbind(weighted = value * weight, weight) ~
+                               profile + y0, data = cases, FUN = sum)
+    data.frame(profile = sums$profile, y0 = sums$y0,
+               value = sums$weighted / sums$weight)
+  }
   means$label <- sprintf("mean %.2f", means$value)
   at_right <- isTRUE(all.equal(reference, limits[2L]))
   ggplot2::ggplot(cases, ggplot2::aes(value, y, colour = profile_label)) +
@@ -1231,7 +1262,6 @@ utils::globalVariables(c(
   unit <- .gg_level(x, level)
   view <- if (identical(level, "groups")) "group_entropy" else "entropy"
   .multilpa_require_case_posteriors(x, view, level)
-  cases <- .gg_case_values(x, level)
   .gg_case_strip(
     x, value = "entropy", limits = c(0, 1),
     reference = 1, reference_label = "flat",
@@ -1240,7 +1270,9 @@ utils::globalVariables(c(
     default_subtitle = sprintf(paste(
       "Each %s's entropy relative to a flat posterior (0 = certain,",
       "1 = flat); relative entropy = 1 - mean = %.3f"),
-      unit$unit_word, 1 - mean(cases$entropy)),
+      unit$unit_word,
+      # The "entropy" table's value, weighted as that table is.
+      .multilpa_relative_entropy(unit$posteriors, unit$weights)),
     x_label = sprintf("Relative %s entropy", unit$unit_word),
     main = main, subtitle = subtitle, level = level)
 }
@@ -1260,10 +1292,7 @@ utils::globalVariables(c(
   class_title <- .gg_capitalize(unit$class_word)
   # Weighted as the "average_posteriors" table is: under sampling weights the
   # population's average posterior; the assigned counts stay counts.
-  weights <- if (.multilpa_any_fit(x)) {
-    .multilpa_level_weights(x, level, nrow(posteriors))
-  }
-  averages <- .multilpa_average_posterior_matrix(posteriors, weights)
+  averages <- .multilpa_average_posterior_matrix(posteriors, unit$weights)
   k <- ncol(averages)
   assigned <- tabulate(max.col(posteriors, ties.method = "first"), k)
   display <- order(key$rank)
@@ -1434,6 +1463,14 @@ utils::globalVariables(c(
             xvar = vars[i], yvar = vars[j])
     }))
   }, pairs$i, pairs$j))
+  # Each ellipse's centre, the profile's mean, carries the profile's marker,
+  # so an ellipse is told from the others by shape as well as by colour.
+  centres <- do.call(rbind, Map(\(i, j) {
+    data.frame(x = x$means[seq_len(x$n_profiles), i],
+               y = x$means[seq_len(x$n_profiles), j],
+               profile_label = as.character(key$label), xvar = vars[i],
+               yvar = vars[j])
+  }, pairs$i, pairs$j))
   diagonal <- do.call(rbind, lapply(seq_len(d), \(index) {
     values <- cases$values[, index]
     range_v <- range(values, na.rm = TRUE)
@@ -1464,6 +1501,7 @@ utils::globalVariables(c(
   }
   scatter <- as_levels(scatter)
   ellipses <- as_levels(ellipses)
+  centres <- as_levels(centres)
   diagonal <- as_levels(diagonal)
   panels <- as_levels(unique(rbind(
     scatter[c("xvar", "yvar")],
@@ -1486,21 +1524,27 @@ utils::globalVariables(c(
   plot +
     ggplot2::geom_point(data = scatter,
                         ggplot2::aes(x = x, y = y, colour = profile_label,
+                                     fill = profile_label,
+                                     shape = profile_label,
                                      size = uncertainty),
                         alpha = 0.7, stroke = 0) +
     ggplot2::geom_path(data = ellipses,
                        ggplot2::aes(x = x, y = y, colour = profile_label,
                                     group = profile_label),
                        linewidth = 0.7) +
+    ggplot2::geom_point(data = centres,
+                        ggplot2::aes(x = x, y = y, fill = profile_label,
+                                     shape = profile_label),
+                        colour = "grey10", size = 2.6, stroke = 0.6) +
     ggplot2::facet_grid(rows = ggplot2::vars(yvar), cols = ggplot2::vars(xvar),
                         scales = "free", switch = "both") +
     ggplot2::scale_size_continuous(range = c(0.9, 3.4), limits = c(0, 1),
                                    guide = "none") +
-    .gg_scales(key, "colour", legend = TRUE) +
-    .gg_scales(key, "fill") +
+    .gg_scales(key, legend = TRUE) +
     .gg_titles(main, subtitle, "Profiles in each pair of indicators",
-               paste0("Cases coloured by profile, larger when less certain; ",
-                      "95% ellipses of the fitted covariances\n",
+               paste0("Cases coloured and shaped by profile, larger when less ",
+                      "certain; 95% ellipses of the fitted covariances around ",
+                      "each profile's mean\n",
                       "Diagonal: each profile's density, weighted by its size",
                       .gg_adjusted_note(x))) +
     ggplot2::labs(x = NULL, y = NULL) +

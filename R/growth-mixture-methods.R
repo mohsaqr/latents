@@ -206,7 +206,10 @@
   }
   wanted <- vcov_type %||% stored$vcov_type %||% if (.latents_is_weighted(x))
     "robust" else "observed"
-  wanted <- .latents_weighted_vcov(.latents_is_weighted(x), wanted, is.null(vcov_type))
+  # A weighted growth fit is never multilevel (`cluster` with `weights` is
+  # refused at the fit), so its bootstrap is always there to name.
+  wanted <- .latents_weighted_vcov(.latents_is_weighted(x), wanted, is.null(vcov_type),
+                                   bootstrap = TRUE)
   if (!is.null(stored) && identical(stored$vcov_type, wanted)) return(stored)
   .growth_inference(x, wanted)
 }

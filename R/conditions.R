@@ -116,6 +116,11 @@
 #'     requires, including a [bootstrap_lrt()] pair whose held measurement
 #'     blocks differ, are held at different values, or are held in only one of
 #'     the two models.}
+#'   \item{`latents_singular_restriction`}{Two models are nested, but the
+#'     restriction is singular at the null, so the likelihood-ratio statistic
+#'     has no chi-square reference: in `compare_models(test = "lrt")`, a
+#'     spherical covariance structure (EII, VII) within EVE, VVE, EEV or VEV.
+#'     Also inherits from `latents_bad_nesting`.}
 #'   \item{`latents_incomparable_models`}{Two models were fitted to different
 #'     data, or differ in covariance structure, centering, scaling mode or
 #'     `drop_empty` where the comparison requires them to match.}

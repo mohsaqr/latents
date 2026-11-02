@@ -27,7 +27,9 @@ require_completed_kit_tests <- function(results) {
 run_package_kit_tests <- function(kit, output = file.path("tmp", "equivalence-kits", kit)) {
   kits <- c("lca-packages", "lpa-packages", "regression-packages", "lta-packages",
             "pool-packages", "enumeration-packages", "growth-published",
-            "stata-published", "mplus-growth", "latentgold-coverage")
+            "stata-published", "mplus-growth", "latentgold-coverage", "lrt",
+            "latentgold-categorical-distal", "latentgold-step-one",
+            "moeclust-covariate-structures")
   stopifnot("select one registered comparison kit" =
               is.character(kit) && length(kit) == 1L && kit %in% kits)
   dir.create(output, recursive = TRUE, showWarnings = FALSE)

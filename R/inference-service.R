@@ -408,7 +408,9 @@
 #' @param cache_key `NULL`, or a list of everything the objective and the
 #'   gradient depend on (see `.latents_memo()`).
 #' @return A list with the `scaled` and `natural` Hessians, the scaled
-#'   `condition_ratio`, and the `inverse` of the scaled Hessian.
+#'   `condition_ratio`, and the `inverse` of the scaled Hessian. An
+#'   information that cannot be formed, is not positive definite or cannot be
+#'   inverted raises `latents_singular_information`.
 #' @noRd
 .multilpa_observed_hessian <- function(scaled_objective, scaled_gradient,
                                      parameter_scale, step, cache_key = NULL) {
@@ -419,11 +421,17 @@
                            scaled_objective, scaled_gradient, parameter_scale, step)))
   }
   n_parameters <- length(parameter_scale)
+  # A likelihood that cannot be evaluated a step away from the estimate leaves
+  # no information to invert; that is refused with the class every other
+  # unusable information carries, not an unclassed error.
   scaled <- tryCatch(
     stats::optimHess(rep(0, n_parameters), scaled_objective, gr = scaled_gradient,
                      control = list(ndeps = rep(step, n_parameters))),
     error = function(error) {
-      stop(sprintf("Observed Hessian failed: %s", conditionMessage(error)))
+      stop(errorCondition(sprintf(paste(
+        "The observed information could not be differentiated at the",
+        "estimate (%s); Wald inference is unavailable."), conditionMessage(error)),
+        class = "latents_singular_information", call = NULL))
     })
   natural <- scaled / tcrossprod(parameter_scale)
   eigenvalues <- eigen(natural, symmetric = TRUE, only.values = TRUE)$values
@@ -436,8 +444,9 @@
       class = "latents_singular_information", call = NULL))
   }
   inverse <- tryCatch(solve(scaled), error = function(error) {
-    stop(sprintf("Observed information could not be inverted: %s",
-                 conditionMessage(error)))
+    stop(errorCondition(sprintf("Observed information could not be inverted: %s",
+                                conditionMessage(error)),
+                        class = "latents_singular_information", call = NULL))
   })
   list(scaled = scaled, natural = natural, condition_ratio = condition_ratio,
        inverse = inverse)

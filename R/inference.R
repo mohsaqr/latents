@@ -855,8 +855,9 @@
 #'   on the log scale, then
 #'   back-transformed, so they stay within the parameter's range; every other
 #'   interval is `estimate +/- z * standard_error`. `confint()` returns the
-#'   same intervals. A probability at or below 1e-6 is treated as on its bound
-#'   (refused, or held by `boundary = "fix"`).
+#'   same intervals. A categorical response probability at or below 1e-6 is
+#'   treated as on its bound (refused, or held by `boundary = "fix"`); a
+#'   mixing probability is refused only at zero.
 #'
 #'   A fit made with `fixed` reports only the parameters it estimated: a held
 #'   measurement block contributes no row to the table or to the information
@@ -1118,7 +1119,8 @@ parameter_inference.multilpa <-function(x, data = NULL, level = 0.95, step = 1e-
       is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   vcov_defaulted <- missing(vcov_type)
   vcov_type <- .latents_weighted_vcov(!is.null(x$sampling_weights),
-                                      .latents_match_formal(vcov_type), vcov_defaulted)
+                                      .latents_match_formal(vcov_type), vcov_defaulted,
+                                      bootstrap = TRUE)
   adjust <- .latents_match_formal(adjust)
   method <- .latents_match_formal(method)
   # A seed set.seed() would not take is refused on either path, so the

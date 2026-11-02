@@ -820,23 +820,31 @@ lta <- function(data, vars, id, n_profiles, time,
     stop(errorCondition("`order` must be 1 or 2.", class = "latents_bad_argument",
                         call = NULL))
   }
-  stopifnot("`mover_stayer` must be TRUE or FALSE" = isTRUE(mover_stayer) ||
-              isFALSE(mover_stayer))
+  .latents_require("`mover_stayer` must be TRUE or FALSE" = isTRUE(mover_stayer) ||
+                     isFALSE(mover_stayer))
   general <- mover_stayer || order == 2 || !identical(transitions, "homogeneous") ||
     length(transition_covariates) > 0L || length(initial_covariates) > 0L ||
     !identical(measurement_model, "invariant") || !is.null(weights) ||
     length(ordinal) > 0L || length(count) > 0L
   .latents_check_extra_arguments(vars, categorical, ordinal, count)
   .latents_check_data_frame(data)
-  stopifnot(is.character(vars), is.character(id),
-            "`categorical` must be a character vector of indicator names" =
-              is.character(categorical) && !anyNA(categorical),
-            "`min_probability` must be a single number in (0, 1)" =
-              is.numeric(min_probability) && length(min_probability) == 1L &&
-              is.finite(min_probability) && min_probability > 0 &&
-              min_probability < 1,
-            "`time` must be supplied; a transition model is defined by the ordering" =
-              !is.null(time))
+  # Classed, as multilpa() classes the same mistakes: a bare stopifnot() raised
+  # an unclassed "is.character(id) is not TRUE" for `id = NULL`, and a missing
+  # `id` or `time` R's own missing-argument error (audit 2026-11-01).
+  id_given <- !missing(id)
+  time_given <- !missing(time)
+  .latents_require(
+    "`vars` must be a character vector of column names" = is.character(vars),
+    "`id` must be a single column name; a transition model needs the units whose occasions it orders" =
+      id_given && is.character(id) && length(id) == 1L && !is.na(id),
+    "`categorical` must be a character vector of indicator names" =
+      is.character(categorical) && !anyNA(categorical),
+    "`min_probability` must be a single number in (0, 1)" =
+      is.numeric(min_probability) && length(min_probability) == 1L &&
+      is.finite(min_probability) && min_probability > 0 &&
+      min_probability < 1,
+    "`time` must be supplied; a transition model is defined by the ordering" =
+      time_given && !is.null(time))
   if (is.null(call)) call <- match.call()
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
@@ -1168,7 +1176,9 @@ lta <- function(data, vars, id, n_profiles, time,
 .multilpa_transitions_table <- function(x, estimated = NULL, stable = NULL) {
   stopifnot(
     "`object` must be a fitted `multilpa_transitions` model" =
-      inherits(x, "multilpa_transitions"),
+      inherits(x, "multilpa_transitions"))
+  # Classed: they are arguments of get_results(), which classes its own.
+  .latents_require(
     "`estimated` must be NULL, TRUE or FALSE" =
       .multilpa_optional_flag(estimated),
     "`stable` must be NULL, TRUE or FALSE" = .multilpa_optional_flag(stable))

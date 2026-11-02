@@ -103,7 +103,9 @@
 #'     for `profile`, `uncertainty` and the posterior columns. Group assignments
 #'     are missing only when the entire group is excluded; an empty observation
 #'     can therefore retain a group assignment supported by other observations.
-#'     Zero-weight units are unclassified under either `drop_empty` setting.}
+#'     Units of sampling weight zero keep their assignment and posteriors
+#'     under either `drop_empty` setting; they are left out of every count and
+#'     classification statistic.}
 #'   \item{`"classification"`}{Classification quality, one row per level and
 #'     class: `level`, `class`, `n_modal`, `proportion_modal`, `estimated_n`,
 #'     `estimated_proportion`, `average_posterior`,
@@ -145,7 +147,9 @@
 #'     `entropy_sum` is `sum_i w_i e_i` and `relative_entropy`
 #'     `1 - sum_i w_i e_i / (sum_i w_i log K)`; `n_units` stays a count.}
 #'   \item{`"replication"`}{One row: `n_starts` (starts run to the end),
-#'     `n_best_replicated` (those whose log likelihood is within `tolerance`
+#'     `n_screened` (screening runs not run to the end, under
+#'     `search = "emEM"`), `n_converged` and `n_failed` (among the starts run
+#'     to the end), `n_best_replicated` (those whose log likelihood is within `tolerance`
 #'     of the best), `share`, `tolerance`, `best_start` (the selected start's
 #'     index) and `log_likelihood`. A best solution reached by one start of
 #'     several may not be the global maximum: refit with more starts.}
@@ -352,8 +356,9 @@
 #'     per profile and ordered pair of continuous indicators, its covariances
 #'     (`profile`, `indicator`, `indicator_2`, `covariance`).}
 #'   \item{`"entropy"`, `"classification"`, `"average_posteriors"`,
-#'     `"residuals"`, `"replication"`}{A [diagnostics()] object: the tables of the same names
-#'     described above.}
+#'     `"residuals"`, `"replication"`, `"checks"`}{A [diagnostics()] object: the
+#'     tables of the same names described above, and its `"checks"` table,
+#'     described in [diagnostics()].}
 #' }
 #'
 #' @section Tables of the other model families:

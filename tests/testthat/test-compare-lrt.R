@@ -146,7 +146,7 @@ test_that("weighted, unconverged and regression fits are refused", {
   expect_error(compare_models(trajectories, trajectories, test = "lrt"),
                class = "latents_bad_argument")
   expect_error(compare_models(eruption_fit("EEI"), eruption_fit("VVI"), test = "wald"),
-               class = "simpleError")
+               class = "latents_bad_argument")
 })
 
 test_that("a model passed as `test` is still a model", {

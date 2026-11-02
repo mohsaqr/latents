@@ -229,7 +229,10 @@
 #'   `weights`, `centering`, `scaling`, `ordinal` or `count` indicators,
 #'   `direct_effects`, or `local_dependence` between continuous indicators are
 #'   not supported. Supported covariance structures are EEI, VVI, EEE and VVV.
-#'   An incompatible measurement model raises `latents_bad_stage`.
+#'   An incompatible measurement model raises `latents_bad_stage`; a
+#'   `measurement` that is not a fitted `multilpa` model, an `n_group_classes`
+#'   below two, or an unknown `variance_model`, `covariance_model` or
+#'   `missing` raises `latents_bad_argument`.
 #' @param n_starts Number of EM starts used in each estimated stage. When
 #'   `measurement` is supplied, only the second stage is estimated.
 #' @param max_iter Nonnegative integer maximum number of EM updates per start
@@ -304,14 +307,16 @@ fit_staged <- function(data, vars, id, n_profiles,
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
                        time = NULL, search = NULL, n_screen = NULL) {
-  variance_model <- match.arg(variance_model)
-  covariance_model <- match.arg(covariance_model)
-  missing <- match.arg(missing)
+  # Classed, as multilpa() classes the same mistakes: base match.arg() and
+  # stopifnot() raised unclassed errors here.
+  variance_model <- .latents_match_formal(variance_model)
+  covariance_model <- .latents_match_formal(covariance_model)
+  missing <- .latents_match_formal(missing)
   search <- .latents_check_search(search)
   # The data contract itself is checked once, by multilpa(), which both stages
   # call; only what is specific to staging is checked here. `is.numeric` is
   # explicit because `"3" >= 2L` compares as strings and would pass silently.
-  stopifnot(
+  .latents_require(
     "`n_group_classes` must be at least two; staging one leaves nothing to estimate" =
       is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
       is.finite(n_group_classes) && n_group_classes >= 2L &&

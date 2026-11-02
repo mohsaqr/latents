@@ -20,7 +20,9 @@
 #' @noRd
 .mixture_pack <- function(spec, params) {
   class_names <- paste0("class_", seq_len(spec$n_classes))
-  regression <- stats::setNames(
+  # An ordinal mixture may have no class-specific slope (every predictor in
+  # `common`, or none): paste0() of empty vectors would return one stray name.
+  regression <- if (ncol(spec$x) == 0L) numeric() else stats::setNames(
     as.vector(params$beta),
     paste0("coefficient.", rep(class_names, each = ncol(spec$x)), ".",
            rep(colnames(spec$x), spec$n_classes)))

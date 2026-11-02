@@ -328,9 +328,10 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           what = c("lines", "bars", "heatmap", "raincloud",
                                    "parallel", "pairs", "all")) {
   .gg_require_fit(x, "plot_profiles", substitute(x))
-  what <- match.arg(what)
-  statistic <- match.arg(statistic)
-  scale <- match.arg(scale)
+  what <- .latents_match_arg(what, eval(formals(plot_profiles)$what), "what")
+  statistic <- .latents_match_arg(statistic, eval(formals(plot_profiles)$statistic),
+                                  "statistic")
+  scale <- .latents_match_arg(scale, eval(formals(plot_profiles)$scale), "scale")
   titles <- c("main", "subtitle")
   # The arguments each view takes; which plot() view each one draws is in
   # .latents_named_plot_registry().
@@ -379,7 +380,7 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
                                          "group_avepp"),
                              main = NULL, subtitle = NULL) {
   .gg_require_fit(x, "plot_diagnostics", substitute(x))
-  what <- match.arg(what)
+  what <- .latents_match_arg(what, eval(formals(plot_diagnostics)$what), "what")
   .gg_require()
   # The other fitted models draw their posteriors in their own plot(), as
   # .latents_named_plot_registry() maps them.
@@ -452,7 +453,7 @@ plot_selection <- function(x, what = c("all", "deltas", "heatmap", "smallest",
                            using = "bic_groups", cutoff = 0.8, main = NULL,
                            subtitle = NULL) {
   views <- .latents_grid_views(x, "plot_selection")
-  what <- match.arg(what)
+  what <- .latents_match_arg(what, eval(formals(plot_selection)$what), "what")
   view <- if (identical(what, "all")) "selection" else what
   .latents_require_grid_views(x, view, "plot_selection")
   # Each kind of grid reads its own criterion unless `using` names one.

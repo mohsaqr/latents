@@ -129,6 +129,11 @@ group-level plot of a fit with fewer than two group classes.}
 requires, including a \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} pair whose held measurement
 blocks differ, are held at different values, or are held in only one of
 the two models.}
+\item{\code{latents_singular_restriction}}{Two models are nested, but the
+restriction is singular at the null, so the likelihood-ratio statistic
+has no chi-square reference: in \code{compare_models(test = "lrt")}, a
+spherical covariance structure (EII, VII) within EVE, VVE, EEV or VEV.
+Also inherits from \code{latents_bad_nesting}.}
 \item{\code{latents_incomparable_models}}{Two models were fitted to different
 data, or differ in covariance structure, centering, scaling mode or
 \code{drop_empty} where the comparison requires them to match.}

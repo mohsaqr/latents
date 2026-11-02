@@ -152,8 +152,8 @@ get_group_tna.default <-function(x, ...) {
 #' @export
 get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   .multilpa_require_tna()
-  stopifnot("`label` must be a single string" =
-              is.character(label) && length(label) == 1L && !is.na(label))
+  .latents_require("`label` must be a single string" =
+                     is.character(label) && length(label) == 1L && !is.na(label))
   if (any(x$empty_transition_rows %||% FALSE)) {
     .multilpa_warn_tna_empty_rows()
   }
@@ -298,8 +298,8 @@ get_tna.multilpa_covariates <-get_tna.multilpa
 #' @export
 get_group_tna.multilpa <-function(x, label = "Group class", ...) {
   .multilpa_require_tna()
-  stopifnot("`label` must be a single string" =
-              is.character(label) && length(label) == 1L && !is.na(label))
+  .latents_require("`label` must be a single string" =
+                     is.character(label) && length(label) == 1L && !is.na(label))
   sequences <- .multilpa_modal_sequences(x)
   grouped <- cbind(sequences$states,
                    .group = sprintf("%s %d", label, sequences$group_class))

@@ -140,7 +140,7 @@ test_that("named plots refuse what a fit cannot draw, by condition class", {
   expect_error(plot_responses(fits$lpa), class = "latents_no_categorical")
   expect_error(plot_prevalence(fits$lta), class = "latents_nothing_to_plot")
   expect_error(plot_transitions(fits$lpa), class = "latents_bad_argument")
-  expect_error(plot_profiles(fits$lpa, statistic = "average"), "should be one of")
+  expect_error(plot_profiles(fits$lpa, statistic = "average"), class = "latents_bad_argument")
   # Their arguments are their own formals, so a misspelt one is refused by R.
   expect_error(plot_profiles(fits$lpa, palette = "x"), "unused argument")
   expect_error(plot_tree(fits$lpa), class = "latents_bad_argument")

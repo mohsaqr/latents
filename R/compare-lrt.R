@@ -5,9 +5,10 @@
 #'
 #' Each row is tested against the row before it, as [stats::anova()] does: the
 #' earlier model must be nested in the later one, with the same numbers of
-#' profiles and group classes, so the restriction holds parameters at interior
-#' values and twice the log-likelihood difference has a chi-square reference
-#' with the difference in free parameters as degrees of freedom (Wilks, 1938).
+#' profiles and group classes, and the restriction must be regular (see
+#' `.latents_lrt_singular_covariance()`), so twice the log-likelihood
+#' difference has a chi-square reference with the difference in free
+#' parameters as degrees of freedom (Wilks, 1938).
 #'
 #' @param table A `latents_comparison` with its `models` attribute.
 #' @return `table` with `lr_statistic`, `lr_df` and `lr_p_value` (`NA` in the
@@ -66,7 +67,9 @@
 #' @return A list with `statistic` (twice the log-likelihood difference, zero
 #'   when the alternative is lower only by optimization tolerance) and `df`.
 #'   Raises `latents_bad_nesting` for a pair that is not nested, differs in
-#'   class counts or does not add parameters, and
+#'   class counts or does not add parameters;
+#'   `latents_singular_restriction` (also a `latents_bad_nesting`) for a
+#'   nested covariance restriction that is singular at the null; and
 #'   `latents_reversed_likelihood` when the alternative's likelihood is lower
 #'   beyond tolerance.
 #' @noRd
@@ -97,6 +100,9 @@
       "a stayer class adds a mixing proportion whose null value is on its bound; use bootstrap_lrt()"
     } else if (!.lta_nested(null, alternative)) {
       "every option of the first must be at most as free as in the second"
+    } else if (!.lta_lrt_designs_nested(null, alternative)) {
+      paste("a transition or initial-state covariate of the first has values",
+            "the second's covariates do not reproduce")
     }
   } else if (!inherits(null, transition) && !inherits(alternative, transition)) {
     .multilpa_lrt_nesting(null, alternative)
@@ -104,6 +110,16 @@
     "a transition model and a profile model are different models of the data"
   }
   if (!is.null(reason)) refuse(reason)
+  if (.latents_lrt_singular_covariance(null, alternative)) {
+    stop(errorCondition(sprintf(paste(
+      "%s (%s) is nested in %s (%s), but the restriction is singular: when",
+      "every profile is spherical, the orientation %s adds has no value, so",
+      "twice the log-likelihood difference has no chi-square reference.",
+      "Compare these two structures on their information criteria."),
+      null_label, .latents_lrt_structure(null), alternative_label,
+      .latents_lrt_structure(alternative), alternative_label),
+      class = c("latents_singular_restriction", "latents_bad_nesting"), call = NULL))
+  }
   df <- as.integer(alternative$n_parameters - null$n_parameters)
   if (df <= 0L) {
     refuse(sprintf("the second estimates %d free parameters against %d",
@@ -131,7 +147,12 @@
 #' chosen pairs (a subset of the alternative's pairs, or all of them inside a
 #' full covariance that extends the same diagonal); joint pairs of discrete
 #' items; direct effects; membership covariates; profile slopes shared across
-#' group classes; and count dispersions shared across profiles.
+#' group classes; and count dispersions shared across profiles. Ordinal
+#' indicators must have the same categories in the same order. A predictor
+#' both fits name must enter both with the same values: each design of the
+#' first (profile membership, group-class membership, the direct effects on
+#' each indicator) must lie in the column space of the second's, so that
+#' setting the added coefficients to zero gives the first model back.
 #'
 #' @param null,alternative Fits of class `multilpa` or `multilpa_covariates`.
 #' @return `NULL` when `null` is nested in `alternative`, otherwise the
@@ -150,11 +171,19 @@
            unlist(joint_pairs[joint[!is.na(joint)], c("item_1", "item_2")],
                   use.names = FALSE)))
   }
+  # Ordinal categories in their fitted order: the order sets the scores the
+  # ordinal likelihood gives them, so the same labels in another order are a
+  # different measurement model.
+  ordinal_levels <- function(fit) {
+    levels <- fit$extra_data$ordinal_levels
+    if (length(levels) == 0L) NULL else levels[sort(names(levels))]
+  }
   setting <- function(fit) {
     list(vars = fit$original_vars %||% fit$vars, id = fit$id,
          single_level = isTRUE(fit$single_level),
          categorical = nominal(fit),
          ordinal = sort(fit$ordinal %||% character()),
+         ordinal_levels = ordinal_levels(fit),
          count = sort(fit[["count"]] %||% character()),
          count_model = fit$extra_data$count_model %||% "poisson",
          missing = fit$missing %||% "error", centering = fit$centering %||% "none",
@@ -163,8 +192,9 @@
   }
   if (!identical(setting(null), setting(alternative))) {
     return(paste(
-      "they differ in their indicators, how the indicators are coded, or an",
-      "estimation setting (missing data, centering, scaling, bounds)"))
+      "they differ in their indicators, how the indicators are coded (including",
+      "the order of ordinal categories), or an estimation setting (missing",
+      "data, centering, scaling, bounds)"))
   }
   held <- function(fit) fit$fixed %||% character()
   if (length(held(null)) > 0L || length(held(alternative)) > 0L) {
@@ -190,16 +220,191 @@
   if (!included("profile_covariates") || !included("group_covariates")) {
     return("the first has a membership covariate the second does not")
   }
-  rank <- function(value, order) match(value, order)
-  if (rank(null$profile_slopes %||% "shared", c("shared", "varying")) >
-      rank(alternative$profile_slopes %||% "shared", c("shared", "varying"))) {
+  # The options as the fitter stores them, least free first. A value outside
+  # the vocabulary is refused by name rather than ranked as missing.
+  ranks <- c(slopes = .latents_lrt_option_rank(null$profile_slopes %||% "shared",
+                                               alternative$profile_slopes %||% "shared",
+                                               c("shared", "group_class")),
+             dispersion = .latents_lrt_option_rank(
+               null$extra_data$count_dispersion %||% "varying",
+               alternative$extra_data$count_dispersion %||% "varying",
+               c("equal", "varying")))
+  if (is.na(ranks[["slopes"]])) {
+    return("a fit records a `profile_slopes` value other than \"shared\" or \"group_class\"")
+  }
+  if (is.na(ranks[["dispersion"]])) {
+    return("a fit records a `count_dispersion` value other than \"equal\" or \"varying\"")
+  }
+  if (ranks[["slopes"]] > 0L) {
     return("the first lets profile slopes vary by group class and the second does not")
   }
-  if (rank(null$extra_data$count_dispersion %||% "varying", c("equal", "varying")) >
-      rank(alternative$extra_data$count_dispersion %||% "varying", c("equal", "varying"))) {
+  if (ranks[["dispersion"]] > 0L) {
     return("the first lets count dispersions vary by profile and the second does not")
   }
+  .multilpa_lrt_predictors_nested(null, alternative)
+}
+
+#' Compare one option of two fits on its ordered vocabulary
+#' @param null_value,alternative_value The two fits' stored values.
+#' @param order The vocabulary, least free first.
+#' @return The null's rank minus the alternative's (positive when the null is
+#'   freer), or `NA_integer_` when either value is not one string of `order`.
+#' @noRd
+.latents_lrt_option_rank <- function(null_value, alternative_value, order) {
+  stopifnot("`order` must be a character vector" = is.character(order))
+  position <- function(value) {
+    if (!is.character(value) || length(value) != 1L) NA_integer_ else match(value, order)
+  }
+  position(null_value) - position(alternative_value)
+}
+
+#' Does every column of one design lie in the column space of another
+#'
+#' Both designs have the same rows: the comparison has already established
+#' that the two fits share their observations and groups. A column lies in
+#' the space when its least-squares residual on the other design is zero up to
+#' rounding, relative to the column's own length.
+#' @param inner,outer Numeric matrices, or `NULL` for no design.
+#' @return One logical value; `TRUE` when `inner` has no columns.
+#' @noRd
+.latents_lrt_spans <- function(inner, outer) {
+  if (is.null(inner) || ncol(inner) == 0L) return(TRUE)
+  if (is.null(outer) || ncol(outer) == 0L || nrow(inner) != nrow(outer) ||
+      !all(is.finite(inner)) || !all(is.finite(outer))) {
+    return(FALSE)
+  }
+  residual <- qr.resid(qr(outer), inner)
+  length_of <- function(columns) sqrt(colSums(columns^2))
+  # Relative to the column alone, so the verdict does not depend on the units
+  # a predictor was recorded in; a zero column has a zero residual.
+  all(length_of(residual) <= sqrt(.Machine$double.eps) * length_of(inner))
+}
+
+#' Why the predictors of one profile model do not restrict another's
+#'
+#' The membership models are multinomial logits on the stacked profile design
+#' (group-class intercepts and profile covariates, once per group class) and
+#' on the group design (intercept and group covariates), and a direct effect
+#' shifts an indicator's mean by the same linear predictor in every profile.
+#' Setting the second fit's added coefficients to zero gives the first fit
+#' back only when each design of the first lies in the column space of the
+#' second's matching design; a shared predictor with other values does not.
+#' Names alone cannot show this.
+#' @param null,alternative Fits of class `multilpa` or `multilpa_covariates`
+#'   whose predictor names already nest.
+#' @return `NULL` when nested, otherwise the reason as one phrase.
+#' @noRd
+.multilpa_lrt_predictors_nested <- function(null, alternative) {
+  stacked <- function(fit) {
+    if (is.null(fit$profile_design)) NULL else do.call(rbind, fit$profile_design)
+  }
+  # A fit without membership covariates has group-class intercepts only,
+  # which every alternative's design carries.
+  if (length(null$profile_covariates) > 0L &&
+      !.latents_lrt_spans(stacked(null), stacked(alternative))) {
+    return(paste("a profile membership covariate of the first has values the",
+                 "second's covariates do not reproduce"))
+  }
+  if (length(null$group_covariates) > 0L &&
+      !.latents_lrt_spans(null$group_design, alternative$group_design)) {
+    return(paste("a group-class membership covariate of the first has values the",
+                 "second's covariates do not reproduce"))
+  }
+  direct <- function(fit, indicator) {
+    carrier <- fit$extra_data$direct
+    rows <- carrier$effects$indicator == indicator
+    carrier$covariates[, carrier$effects$covariate_column[rows], drop = FALSE]
+  }
+  targets <- unique(null$extra_data$direct$effects$indicator %||% character())
+  # The profile means absorb a constant, so each indicator's predictors are
+  # judged together with an intercept.
+  reproduced <- vapply(targets, function(indicator) {
+    outer <- direct(alternative, indicator)
+    .latents_lrt_spans(direct(null, indicator), cbind(1, outer))
+  }, logical(1))
+  if (!all(reproduced)) {
+    return(paste("a direct-effect covariate of the first has values the second's",
+                 "covariates do not reproduce"))
+  }
   NULL
+}
+
+#' Do the covariate designs of one transition model restrict another's
+#'
+#' The initial-state logits are fitted on one design and the transition
+#' logits on the designs of each move, stacked; with second-order
+#' transitions, the move into occasion 2 and the later moves have
+#' coefficients of their own, so those two blocks are judged apart. Each block
+#' of the first must lie in the column space of the second's.
+#' @param null,alternative Transition fits already nested by `.lta_nested()`.
+#' @return One logical value; `TRUE` when either fit has no stored designs
+#'   (a homogeneous fit without covariates, whose intercepts every
+#'   alternative carries).
+#' @noRd
+.lta_lrt_designs_nested <- function(null, alternative) {
+  if (is.null(null$designs) || is.null(alternative$designs)) return(TRUE)
+  second_order <- identical(as.integer(.lta_arguments(alternative)$order), 2L)
+  blocks <- function(designs) {
+    moves <- designs$transition
+    parts <- if (second_order) list(moves[1L], moves[-1L]) else list(moves)
+    c(list(designs$initial), lapply(parts, function(part) do.call(rbind, part)))
+  }
+  inner <- blocks(null$designs)
+  outer <- blocks(alternative$designs)
+  all(vapply(seq_along(inner), function(block) {
+    .latents_lrt_spans(inner[[block]], outer[[block]])
+  }, logical(1)))
+}
+
+#' A fit's Gaussian covariance structure, as the comparison names it
+#' @param fit A profile, class or transition fit.
+#' @return One string: one of the fourteen structures, the label of a pattern
+#'   of chosen covariances, or `NA` without continuous indicators.
+#' @noRd
+.latents_lrt_structure <- function(fit) {
+  if (inherits(fit, c("multilpa_transitions", "multilpa_lta"))) {
+    arguments <- .lta_arguments(fit)
+    return(arguments$model %||% .multilpa_resolve_structure(
+      arguments$variance_model, arguments$covariance_model %||% "diagonal"))
+  }
+  if (length(.multilpa_continuous_names(fit)) == 0L) return(NA_character_)
+  .latents_comparison_structure(fit)
+}
+
+#' Is a nested covariance restriction singular at the null
+#'
+#' The covariance of profile k is `lambda_k D_k A_k t(D_k)` (volume, shape,
+#' orientation). EVE and VVE share one orientation across profiles with
+#' shapes that vary; EEV and VEV share one shape with orientations that vary.
+#' At a spherical null (EII or VII), every `A_k` is the identity, so those
+#' orientations have no value: near the null these alternatives are a union
+#' of linear spaces, one per orientation, not one smooth extension, and
+#' Wilks' chi-square reference does not hold (Drton, 2009). The review study
+#' of EII within EVE rejected 8.0% of 500 null data sets at the nominal 5%
+#' (validation/review-2026-11-01/lrt-orientation.log). Every other nested
+#' pair of the fourteen structures is regular at a generic null: the full
+#' structures (EEE, VEE, EVV, VVV) and the diagonal ones are smooth sets, and
+#' a non-spherical null has distinct variances, which fix the orientation.
+#' With one profile, or one continuous indicator, there is no orientation to
+#' lose.
+#' @param null,alternative Fits already found nested.
+#' @return One logical value.
+#' @references Drton, M. (2009). Likelihood ratio tests and singularities.
+#'   *The Annals of Statistics*, 37(2), 979--1012.
+#' @noRd
+.latents_lrt_singular_covariance <- function(null, alternative) {
+  counted <- function(fit) {
+    if (inherits(fit, c("multilpa_transitions", "multilpa_lta"))) {
+      arguments <- .lta_arguments(fit)
+      continuous <- fit$continuous %||%
+        setdiff(arguments$vars, c(arguments$categorical, arguments$ordinal, arguments$count))
+      c(profiles = arguments$n_profiles, continuous = length(continuous))
+    } else c(profiles = fit$n_profiles, continuous = length(.multilpa_continuous_names(fit)))
+  }
+  size <- counted(alternative)
+  isTRUE(.latents_lrt_structure(null) %in% c("EII", "VII") &&
+           .latents_lrt_structure(alternative) %in% c("EVE", "VVE", "EEV", "VEV") &&
+           size[["profiles"]] >= 2L && size[["continuous"]] >= 2L)
 }
 
 #' Is one fit's Gaussian covariance a restriction of another's

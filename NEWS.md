@@ -1,4 +1,4 @@
-# latents 1.1.11
+# latents 1.1.12
 
 Changes since the CRAN release 0.9.21.
 
@@ -72,6 +72,36 @@ Changes since the CRAN release 0.9.21.
   although it states a Benjamini-Hochberg adjustment, and flagged a pair in
   up to half of correctly specified profile models. It now applies the
   adjustment, and flags about 5% or fewer.
+* `compare_models(test = "lrt")` accepted pairs that are not nested: a shared
+  membership predictor with different values, a changed order of ordinal
+  categories, and covariance pairs whose restriction is singular at the null
+  (`EII` or `VII` within `EVE`, `VVE`, `EEV` or `VEV`). All are now refused;
+  the last with `latents_singular_restriction`. Comparing shared with
+  group-class slopes failed; it now works.
+* A bootstrap table whose rows were reordered or modified attached its
+  replicates to the wrong parameters in `as.data.frame(what = "replicates")`
+  and `plot()`. Such tables are now refused, and `plot()` no longer treats
+  parameters in small units as constant.
+* `confint()` on a covariate fit with `fixed = "measurement"` failed;
+  `vcov()` now covers the estimated parameters only, as for other fits.
+* `three_step()`: pairwise BCH contrasts that involve a probability outside
+  [0, 1] are reported without a test, as the help states; an outcome category
+  seen only on excluded rows no longer removes every categorical ML standard
+  error.
+* `align_labels()` refuses fits whose ordinal or categorical indicators are
+  coded differently.
+* `lca(count_dispersion = )` silently fitted the count indicator as Gaussian.
+* `diagnostics()` reported "2 of 2 starts" for restricted cross-level fits,
+  and covariate fits with a constrained structure gave false thin-profile
+  warnings.
+* Weighted fits: the posterior-strip means and the entropy subtitle in
+  `plot()`, and the classification subtitle of growth plots, were unweighted.
+  The individuals view of growth plots dropped classes beyond the fourth.
+* `predict()` ignored a misnamed argument; `get_results(pooled, "all")` was
+  refused; `vcov(pooled, type = )` ignored `type`.
+* Invalid argument values across `lta()`, `fit_staged()`, `get_candidate()`,
+  `compare_models()`, the plot verbs and the three-step and transition methods
+  now raise `latents_bad_argument` instead of an unclassed error.
 
 # latents 0.9.21
 

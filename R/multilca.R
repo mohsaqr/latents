@@ -91,10 +91,14 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
 #' @return A character vector of indicator names.
 #' @noRd
 .latents_lca_categorical <- function(vars, extra) {
+  # Exact names: `$` on a list matches partially, so `extra$count` read a
+  # `count_model` or `count_dispersion` value as indicator names whenever
+  # `count` itself was absent (audit 2026-11-01).
+  categorical <- extra[["categorical"]]
   .latents_require("`categorical` must be a character vector of column names" =
-                     is.null(extra$categorical) ||
-                     (is.character(extra$categorical) && !anyNA(extra$categorical)))
-  unknown <- setdiff(extra$categorical, vars)
+                     is.null(categorical) ||
+                     (is.character(categorical) && !anyNA(categorical)))
+  unknown <- setdiff(categorical, vars)
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
       "`categorical` names %s, which %s not in `vars`.",
@@ -102,5 +106,5 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
       if (length(unknown) == 1L) "is" else "are"),
       class = "latents_bad_categorical", call = NULL))
   }
-  union(setdiff(vars, c(extra$ordinal, extra$count)), extra$categorical)
+  union(setdiff(vars, c(extra[["ordinal"]], extra[["count"]])), categorical)
 }

@@ -204,6 +204,13 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       paste(sprintf("\"%s\"", families), collapse = ", ")),
       class = "latents_bad_argument", call = NULL))
   }
+  # The profile grid's check: a count of zero, a fraction or NA used to become
+  # a grid of failed candidates instead of a refusal.
+  .latents_require(
+    "`n_group_classes` must be one or more positive whole numbers" =
+      is.numeric(n_group_classes) && length(n_group_classes) > 0L &&
+      all(is.finite(n_group_classes)) && all(n_group_classes >= 1) &&
+      all(n_group_classes == as.integer(n_group_classes)))
   if (!is.character(between_variance) || length(between_variance) < 1L ||
       anyNA(between_variance) ||
       !all(between_variance %in% c("varying", "equal"))) {
@@ -283,9 +290,11 @@ get_results.latents_family_enumeration <- function(x, what = c("candidates", "be
                                                    criterion = c("bic", "aic",
                                                                  "bic_individual"),
                                                    ...) {
-  what <- match.arg(what)
+  # Classed refusals (`latents_bad_argument`), as the transition grid and
+  # every fit's tables refuse an unknown name, not match.arg()'s plain error.
+  what <- .latents_match_formal(what)
   if (identical(what, "tree")) return(.latents_tree_results(x, list(...)))
-  criterion <- match.arg(criterion)
+  criterion <- .latents_match_formal(criterion)
   .latents_warn_unused_arguments(list(...), "get_results()",
                                  "An enumeration's tables take only `what` and `criterion`.")
   table <- .latents_named_table(x)

@@ -178,6 +178,18 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
                              variance_model, between_variance, n_starts,
                              max_iter, tol, min_variance, seed, call,
                              weights = NULL, search = "kmeans", n_screen = NULL) {
+  # multilpa() hands both over as unevaluated matches; first forced inside a
+  # start, a refused value became a failed start and the fit ended with
+  # `latents_all_starts_failed` instead of `latents_bad_argument` (audit
+  # 2026-11-01).
+  force(variance_model)
+  force(between_variance)
+  if (!all(vapply(list(variance_model, between_variance), function(mode) {
+    is.character(mode) && length(mode) == 1L && mode %in% c("varying", "equal")
+  }, logical(1)))) {
+    stop(errorCondition("`variance_model` and `between_variance` must be \"varying\" or \"equal\".",
+                        class = "latents_bad_argument", call = NULL))
+  }
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
   invisible(lapply(names(counts), function(field) {
@@ -486,7 +498,14 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 #' @noRd
 #' @export
 get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
-  what <- match.arg(what, c(.cross_level_tables(), "all"))
+  # A misspelt table is refused with the class every other get_results()
+  # method raises, and an argument no table of this family takes is named
+  # back rather than dropped without a word (audit 2026-11-01); it warns, as
+  # the methods that ignored it up to 0.9.21 do.
+  .latents_warn_unused_arguments(
+    list(...), "get_results()",
+    "The cross-level tables take no further arguments.")
+  what <- .latents_match_arg(what, c(.cross_level_tables(), "all"))
   if (identical(what, "all")) {
     return(stats::setNames(lapply(.cross_level_tables(), function(name) {
       .cross_level_table(x, name)
@@ -567,7 +586,7 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
 #' @export
 as.data.frame.multilpa_cross_level <- function(x, row.names = NULL, optional = FALSE,
                                                what = "profiles", ...) {
-  get_results.multilpa_cross_level(x, what = what)
+  get_results.multilpa_cross_level(x, what = what, ...)
 }
 
 #' @noRd
@@ -626,7 +645,7 @@ plot.multilpa_cross_level <-function(x, what = c("profiles", "group_means",
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
-  what <- match.arg(what)
+  what <- .latents_match_formal(what)
   .gg_require()
   if (identical(what, "composition")) {
     frame <- .cross_level_table(x, "composition")

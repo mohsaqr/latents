@@ -213,8 +213,10 @@ observations) its intervals still cover less than the nominal level.
 
 Correction for classification error depends on the fitted measurement
 model and assumes that the outcome and assigned class are independent
-conditional on latent class membership. The maximum-likelihood method
-additionally assumes a normal outcome distribution within each class.
+conditional on latent class membership. For a numeric outcome, the
+maximum-likelihood method additionally assumes a normal outcome distribution
+within each class; for a categorical outcome it estimates a multinomial
+distribution in each class.
 By default, uncertainty is conditional on the estimated classification-error
 probabilities. With \code{step_one = "estimated"}, it also includes uncertainty
 from estimating the measurement model, holding modal assignments fixed.

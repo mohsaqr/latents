@@ -262,8 +262,10 @@
 #' @section Interpretation:
 #' Correction for classification error depends on the fitted measurement
 #' model and assumes that the outcome and assigned class are independent
-#' conditional on latent class membership. The maximum-likelihood method
-#' additionally assumes a normal outcome distribution within each class.
+#' conditional on latent class membership. For a numeric outcome, the
+#' maximum-likelihood method additionally assumes a normal outcome distribution
+#' within each class; for a categorical outcome it estimates a multinomial
+#' distribution in each class.
 #' By default, uncertainty is conditional on the estimated classification-error
 #' probabilities. With `step_one = "estimated"`, it also includes uncertainty
 #' from estimating the measurement model, holding modal assignments fixed.
@@ -524,15 +526,11 @@ three_step <- function(x, data, outcome,
         class = "latents_bad_argument", call = NULL))
     }
     # Categories in the factor's level order (unused levels dropped), or
-    # sorted the same way in every locale.
+    # sorted the same way in every locale. They code the outcome here; the
+    # categories analysed are those of the units that enter step three.
     observed <- data[[outcome]]
     categories <- if (is.factor(observed)) levels(droplevels(observed)) else
       sort(unique(as.character(observed)), method = "radix")
-    if (length(categories) < 2L) {
-      stop(errorCondition(sprintf(
-        "`%s` takes one category, so it has no distribution to compare across classes.",
-        outcome), class = "latents_bad_outcome", call = NULL))
-    }
     data[[outcome]] <- match(as.character(observed), categories)
   } else {
     .latents_require("`outcome` must be finite" = all(is.finite(data[[outcome]])))
@@ -562,6 +560,22 @@ three_step <- function(x, data, outcome,
     .multilpa_check_alignment(x, data)
     # Only the classified units enter step three, as they do the error matrix.
     values <- .multilpa_outcome_values(x, data, outcome, level)[pieces$kept]
+  }
+  if (categorical) {
+    # A category carried only by units left out of step three (unclassified
+    # rows, wholly excluded groups) is not part of the analysed outcome: kept,
+    # it would be an empty column whose zero probability puts the ML model on
+    # its bound and withholds every standard error. The codes follow the
+    # category order, so sorting them keeps that order.
+    present <- sort(unique(values))
+    categories <- categories[present]
+    values <- match(values, present)
+    if (length(categories) < 2L) {
+      stop(errorCondition(sprintf(paste(
+        "`%s` takes one category among the units entering step three, so it",
+        "has no distribution to compare across classes."), outcome),
+        class = "latents_bad_outcome", call = NULL))
+    }
   }
   correction <- if (identical(step_one, "estimated")) {
     .multilpa_step_one_correction(x, pieces, level, method)

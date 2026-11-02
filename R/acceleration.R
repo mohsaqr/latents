@@ -199,7 +199,9 @@
 .lta_accelerator <- function(acceleration, x, parameters, general = FALSE,
                              row_weights = NULL) {
   if (identical(acceleration, "none")) return(NULL)
-  if (!general) return(.multilpa_accelerator(x, parameters))
+  # The reference spread is over rows of positive weight in both branches; the
+  # homogeneous branch dropped `row_weights` (audit 2026-11-01).
+  if (!general) return(.multilpa_accelerator(x, parameters, row_weights))
   blocks <- c("measurement", "initial", "transition", "transition2",
               "group_probabilities")
   flatten <- function(point) .multilpa_flatten_parameters(point, blocks)

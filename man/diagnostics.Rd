@@ -35,9 +35,10 @@ and columns \code{domain}, \code{check}, \code{level}, \code{value} (numeric), \
 Tables are accessed with \code{\link[=get_results]{get_results()}}, using \code{what = "checks"}, \code{"entropy"},
 \code{"classification"}, \code{"average_posteriors"}, \code{"residuals"},
 \code{"replication"} or \code{"all"}. A
-model family without bivariate residuals leaves that table out of
-\code{"all"}, and asking for it by name raises \code{latents_no_group_classes}; a
-fit with a noise component has none either, and raises
+model family without bivariate residuals (a mixture regression, growth
+mixture, additive or cross-level model) has no such table: it is left out
+of \code{"all"}, and asking for it by name raises \code{latents_bad_argument}. A
+fit with a noise component has none either, and asking for it raises
 \code{latents_unsupported_noise}.
 
 \code{print()} groups checks by domain, highlights those requiring review and

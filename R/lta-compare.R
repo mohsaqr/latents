@@ -437,6 +437,12 @@
                                 if (length(unknown) == 1L) "is" else "are"),
                         class = "latents_bad_argument", call = NULL))
   }
+  whole_numbers <- function(value) is.numeric(value) && length(value) > 0L &&
+    all(is.finite(value)) && all(value == floor(value))
+  .latents_require(
+    "`n_profiles` must be one or more whole numbers" = whole_numbers(n_profiles),
+    "`n_group_classes` must be one or more whole numbers of at least one" =
+      whole_numbers(n_group_classes) && all(n_group_classes >= 1))
   if (any(n_profiles < 2)) {
     stop(errorCondition("Transition models need at least two profiles.",
                         class = "latents_bad_transition", call = NULL))
@@ -562,9 +568,11 @@
 get_results.latents_transition_enumeration <- function(
     x, what = c("candidates", "best", "all", "tree"),
     criterion = c("bic", "aic", "bic_individual"), ...) {
-  what <- match.arg(what)
+  # Classed refusals (`latents_bad_argument`), as every fit's tables refuse
+  # an unknown name, not match.arg()'s plain error.
+  what <- .latents_match_formal(what)
   if (identical(what, "tree")) return(.latents_tree_results(x, list(...)))
-  criterion <- match.arg(criterion)
+  criterion <- .latents_match_formal(criterion)
   .latents_warn_unused_arguments(list(...), "get_results()",
                                  "An enumeration's tables take only `what` and `criterion`.")
   table <- .latents_named_table(x)

@@ -360,7 +360,9 @@
                                     seed, adjust) {
   whole <- function(value, minimum) is.numeric(value) && length(value) == 1L &&
     is.finite(value) && value >= minimum && value == floor(value)
-  stopifnot(
+  # Classed, as the profile families refuse the same controls
+  # (`latents_bad_argument`), not stopifnot()'s plain error.
+  .latents_require(
     "`iter` must be a single integer of at least two" = whole(iter, 2),
     "`n_starts` must be a single positive integer" = whole(n_starts, 1),
     "`max_iter` must be a single positive integer" = whole(max_iter, 1),

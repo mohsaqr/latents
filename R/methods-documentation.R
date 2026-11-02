@@ -56,9 +56,11 @@
 #'   a transition model warns `latents_unused_argument` for any. `confint()`
 #'   of a transition model passes them to [parameter_inference()]. Ignored
 #'   otherwise.
-#' @return `coef()`: a named numeric vector. `vcov()`: a named symmetric matrix
-#'   over the same parameters. `confint()`: a matrix with one row per parameter
-#'   and the lower and upper bounds as columns. `logLik()`: a `"logLik"` object
+#' @return `coef()`: a named numeric vector of every parameter, including any
+#'   held by `fixed`. `vcov()`: a named symmetric matrix over the estimated
+#'   parameters; a coefficient held by `fixed` has no row. `confint()`: a
+#'   matrix with one row per estimated parameter and the lower and upper
+#'   bounds as columns. `logLik()`: a `"logLik"` object
 #'   with `df` and `nobs` attributes. `nobs()`: the number of independent groups
 #'   counted by the fitted BIC. With `drop_empty = TRUE`, groups without any
 #'   observed indicator are excluded; with `drop_empty = FALSE`, they are counted.

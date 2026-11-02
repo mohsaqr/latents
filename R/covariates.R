@@ -550,11 +550,14 @@
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  # Counted as multilpa() counts them: a constrained structure's own share of
+  # the spread (one volume for VEI, not a variance per indicator), and nothing
+  # for variances held by `fixed` (audit 2026-11-01).
   .latents_warn_thin_profiles(
     colSums(weighted_expectation$subject_posteriors[
       rowSums(!is.na(x)) > 0L, , drop = FALSE]),
     .latents_profile_parameters(length(base$continuous), variance_model,
-                                covariance_model))
+                                covariance_model, structure, fixed = fixed))
   result$gaussian_diagnostics <- .latents_gaussian_diagnostics(
     result, x, result$subject_posteriors,
     weights = if (is.null(sampling_weights)) NULL else sampling_weights[group_index],

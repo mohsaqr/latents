@@ -580,7 +580,9 @@
 #'
 #' @param log_density Rows-by-profiles log densities, offset removed.
 #' @param density_offset The per-row offset that was removed.
-#' @param group_index Group of each row.
+#' @param group_index Group of each row, `1..G`; row `j` of every group-level
+#'   input and result belongs to group `j`, whatever order the groups first
+#'   appear in.
 #' @param parameters A list with `profile_probabilities` (group classes by
 #'   profiles), `group_probabilities` and optionally `group_log_density`
 #'   (groups by group classes).
@@ -600,9 +602,12 @@
     list(log_marginal = log_marginal,
          posterior = posterior / rowSums(posterior))
   })
+  # `reorder = TRUE` puts group j in row j. First-appearance order (`FALSE`)
+  # agreed only for an index numbered in order of appearance; any other
+  # numbering misaligned the group posteriors and weights (audit 2026-11-01).
   group_scores <- matrix(vapply(seq_len(n_types), function(group_type) {
     as.numeric(rowsum(conditional[[group_type]]$log_marginal,
-                      group_index, reorder = FALSE))
+                      group_index, reorder = TRUE))
   }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
   # The full cross-level family adds a group-level measurement density per
   # group class (manifest group means as between indicators); absent, nothing
@@ -616,7 +621,7 @@
   group_scores <- sweep(sweep(group_scores, 1L, group_offset, "-"), 2L,
                         log(parameters$group_probabilities), "+")
   group_log_likelihood <- .multilpa_log_sum_exp(group_scores) + group_offset +
-    as.numeric(rowsum(density_offset, group_index, reorder = FALSE))
+    as.numeric(rowsum(density_offset, group_index, reorder = TRUE))
   group_posteriors <- exp(sweep(group_scores, 1L, .multilpa_row_max(group_scores), "-"))
   group_posteriors <- group_posteriors / rowSums(group_posteriors)
   joint <- lapply(seq_len(n_types), function(group_type) {
@@ -643,7 +648,8 @@
 #'
 #' @param log_density Rows-by-profiles log densities, offset removed.
 #' @param density_offset The per-row offset that was removed.
-#' @param group_index Group of each row.
+#' @param group_index Group of each row, `1..G`, as for
+#'   `.multilpa_nested_structure()`.
 #' @param profile_design List of profile design matrices, one per group class.
 #' @param group_design Group-level design matrix.
 #' @param beta Profile logit coefficients.
@@ -667,7 +673,7 @@
   group_log_prior <- .multilpa_log_softmax(group_design, gamma)
   group_prior <- exp(group_log_prior)
   evidence <- matrix(vapply(seq_along(conditional), function(h) {
-    as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE))
+    as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = TRUE))
   }, numeric(nrow(group_design))), nrow(group_design))
   evidence_offset <- .multilpa_row_max(evidence)
   scores <- sweep(evidence, 1L, evidence_offset, "-") + group_log_prior
@@ -676,7 +682,7 @@
   total <- rowSums(weights)
   group_posteriors <- weights / total
   group_log_likelihood <- evidence_offset + score_offset + log(total) +
-    as.vector(rowsum(density_offset, group_index, reorder = FALSE))
+    as.vector(rowsum(density_offset, group_index, reorder = TRUE))
   joint <- lapply(seq_along(conditional), function(h) {
     conditional[[h]]$posterior * group_posteriors[group_index, h]
   })

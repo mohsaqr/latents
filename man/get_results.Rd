@@ -117,7 +117,9 @@ table instead (see \emph{Recovery}). Row order is preserved. Under the default
 for \code{profile}, \code{uncertainty} and the posterior columns. Group assignments
 are missing only when the entire group is excluded; an empty observation
 can therefore retain a group assignment supported by other observations.
-Zero-weight units are unclassified under either \code{drop_empty} setting.}
+Units of sampling weight zero keep their assignment and posteriors
+under either \code{drop_empty} setting; they are left out of every count and
+classification statistic.}
 \item{\code{"classification"}}{Classification quality, one row per level and
 class: \code{level}, \code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
 \code{estimated_proportion}, \code{average_posterior},
@@ -159,7 +161,9 @@ with a noise component, as for \code{"classification_errors"}.}
 \code{entropy_sum} is \verb{sum_i w_i e_i} and \code{relative_entropy}
 \verb{1 - sum_i w_i e_i / (sum_i w_i log K)}; \code{n_units} stays a count.}
 \item{\code{"replication"}}{One row: \code{n_starts} (starts run to the end),
-\code{n_best_replicated} (those whose log likelihood is within \code{tolerance}
+\code{n_screened} (screening runs not run to the end, under
+\code{search = "emEM"}), \code{n_converged} and \code{n_failed} (among the starts run
+to the end), \code{n_best_replicated} (those whose log likelihood is within \code{tolerance}
 of the best), \code{share}, \code{tolerance}, \code{best_start} (the selected start's
 index) and \code{log_likelihood}. A best solution reached by one start of
 several may not be the global maximum: refit with more starts.}
@@ -366,8 +370,9 @@ variances, response probabilities, profile probabilities and, one row
 per profile and ordered pair of continuous indicators, its covariances
 (\code{profile}, \code{indicator}, \code{indicator_2}, \code{covariance}).}
 \item{\code{"entropy"}, \code{"classification"}, \code{"average_posteriors"},
-\code{"residuals"}, \code{"replication"}}{A \code{\link[=diagnostics]{diagnostics()}} object: the tables of the same names
-described above.}
+\code{"residuals"}, \code{"replication"}, \code{"checks"}}{A \code{\link[=diagnostics]{diagnostics()}} object: the
+tables of the same names described above, and its \code{"checks"} table,
+described in \code{\link[=diagnostics]{diagnostics()}}.}
 }
 }
 

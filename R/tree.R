@@ -215,7 +215,10 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
       }
       return(value)
     }
-    if (!(is.numeric(value) && length(value) %in% 1:2 && all(is.finite(value)))) {
+    # A family grid's candidates have group classes only: a second count used
+    # to be dropped, so c(1, 3) named the one-group-class candidate.
+    if (!(is.numeric(value) && length(value) %in% (if (families) 1L else 1:2) &&
+          all(is.finite(value)))) {
       stop(errorCondition(paste(
         "`from` and `to` each take one candidate: its name, or its class counts",
         "c(n_profiles, n_group_classes) (one count means one group class; on a",

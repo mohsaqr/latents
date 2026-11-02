@@ -91,9 +91,10 @@
 #'   Tables are accessed with [get_results()], using `what = "checks"`, `"entropy"`,
 #'   `"classification"`, `"average_posteriors"`, `"residuals"`,
 #'   `"replication"` or `"all"`. A
-#'   model family without bivariate residuals leaves that table out of
-#'   `"all"`, and asking for it by name raises `latents_no_group_classes`; a
-#'   fit with a noise component has none either, and raises
+#'   model family without bivariate residuals (a mixture regression, growth
+#'   mixture, additive or cross-level model) has no such table: it is left out
+#'   of `"all"`, and asking for it by name raises `latents_bad_argument`. A
+#'   fit with a noise component has none either, and asking for it raises
 #'   `latents_unsupported_noise`.
 #'
 #'   `print()` groups checks by domain, highlights those requiring review and
@@ -317,10 +318,18 @@ print.multilpa_diagnostics <-function(x, ...) {
 #'   `best_start`, `log_likelihood`.
 #' @noRd
 .multilpa_replication_table <- function(x) {
-  n_starts <- x$n_starts %||% (if (is.null(x$starts)) NA_integer_ else nrow(x$starts))
-  replicated <- x$n_best_replicated %||% NA_integer_
   starts <- x$starts
-  counted <- is.data.frame(starts) && all(c("log_likelihood", "converged") %in% names(starts))
+  # The restricted cross-level family searches its two factors separately and
+  # records one row per factor (`part`), not per start: those rows are not
+  # starts, so neither the count of starts nor the converged and failed
+  # counts can be read from them (audit 2026-11-01: "2 of 2 starts" was
+  # printed for a fit of five starts per factor).
+  per_part <- is.data.frame(starts) && "part" %in% names(starts)
+  n_starts <- x$n_starts %||%
+    (if (is.null(starts) || per_part) NA_integer_ else nrow(starts))
+  replicated <- x$n_best_replicated %||% NA_integer_
+  counted <- is.data.frame(starts) && !per_part &&
+    all(c("log_likelihood", "converged") %in% names(starts))
   n_screened <- 0L
   if (counted && "stage" %in% names(starts)) {
     # A family that screens starts (short runs that choose which to finish)

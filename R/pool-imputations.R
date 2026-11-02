@@ -361,7 +361,13 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 #' @export
 get_results.latents_pooled <- function(x, what = c("estimates", "imputations", "fits"),
                                        ...) {
-  what <- .latents_match_formal(what)
+  # `what = "all"` was refused although ?get_results promises it for every
+  # object, and an argument no table takes was dropped without a word, where
+  # every other get_results() method refuses it (audit 2026-11-01).
+  tables <- c("estimates", "imputations", "fits")
+  what <- if (identical(what, "all")) "all" else .latents_match_formal(what)
+  .multilpa_check_table_arguments(what, character(), list(...))
+  if (identical(what, "all")) return(unclass(x)[tables])
   x[[what]]
 }
 
@@ -370,6 +376,8 @@ get_results.latents_pooled <- function(x, what = c("estimates", "imputations", "
 #' @export
 as.data.frame.latents_pooled <- function(x, row.names = NULL, optional = FALSE,
                                          what = "estimates", ...) {
+  # One table: "all" is a list, which is get_results()'s to return.
+  what <- .latents_match_arg(what, c("estimates", "imputations", "fits"), "what")
   get_results.latents_pooled(x, what = what)
 }
 
@@ -416,6 +424,10 @@ summary.latents_pooled <- function(object, ...) {
 #' @noRd
 #' @export
 vcov.latents_pooled <-function(object, ...) {
+  # As coef() and confint() of a pooled result do: `type =` or `vcov_type =`
+  # cannot change a covariance pooled once, and was dropped without a word.
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "The pooled covariance has no options.")
   object$covariance
 }
 

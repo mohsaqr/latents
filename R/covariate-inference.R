@@ -391,7 +391,7 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
   # check that the caller still holds the frame that produced the estimates.
   data <- if (is.null(data)) .multilpa_cov_stored_data(object) else
     .multilpa_resolve_data(object, data)
-  stopifnot(
+  .latents_require(
     "`data` must be a data frame" = is.data.frame(data),
     "`step` must be a single positive number" =
       is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0
@@ -654,9 +654,10 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   if (identical(scale, "unconstrained")) {
     ## The kind in the name has to name the scale, or a log variance is served
     ## under a name that says `variance`.
-    names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+    labels <- .multilpa_cov_estimation_labels(object)
+    names <- .multilpa_parameter_names(labels)
     dimnames(covariance) <- list(names, names)
-    return(covariance)
+    return(.multilpa_cov_drop_held(covariance, object, labels))
   }
   theta <- .multilpa_cov_encode(object)
   jacobian <- .multilpa_cov_natural_jacobian(object, theta,
@@ -664,7 +665,25 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   natural <- .inference_delta_covariance(jacobian, covariance)
   natural_names <- .multilpa_cov_parameter_names(object)
   dimnames(natural) <- list(natural_names, natural_names)
-  natural
+  .multilpa_cov_drop_held(natural, object, .multilpa_cov_labels(object))
+}
+
+#' Remove the coefficients `fixed` held from a covariate fit's covariance
+#'
+#' A held block was not estimated: its rows and columns are structural zeros,
+#' and [parameter_inference()] gives it no row. The covariance keeps only the
+#' estimated coefficients, as the covariate-free [vcov.multilpa()] does, so its
+#' rows are the rows of the inference table and of the default `confint()`.
+#' @param covariance A square covariance named by `labels`.
+#' @param object A fitted `multilpa_covariates` model.
+#' @param labels The tidy labels of the covariance rows, on its scale.
+#' @return `covariance` without the held rows and columns.
+#' @noRd
+.multilpa_cov_drop_held <- function(covariance, object, labels) {
+  stopifnot("`labels` must have one row per covariance row" =
+              nrow(labels) == nrow(covariance))
+  estimated <- !labels$parameter %in% .multilpa_cov_held_parameters(object$fixed)
+  covariance[estimated, estimated, drop = FALSE]
 }
 
 #' Tidy labels of a covariate fit on the scale it is estimated on
@@ -1104,9 +1123,13 @@ confint.multilpa_covariates <-function(object, parm, level = 0.95, data = NULL,
   if (!is.null(data)) .latents_check_data_frame(data, substitute(data))
   .multilpa_reject_inference_arguments(list(...), "confint()")
   inference <- parameter_inference(object, data, level = level, ...)
+  ## Every coefficient coef() reports can be named; only those the table
+  ## carries were estimated. A block held by `fixed` has no row there, so the
+  ## intervals are named from the rows themselves, never from the full list.
   names_all <- .multilpa_cov_parameter_names(object)
+  estimated <- .multilpa_parameter_names(inference)
   intervals <- cbind(inference$conf_low, inference$conf_high)
-  dimnames(intervals) <- list(names_all, paste0(
+  dimnames(intervals) <- list(estimated, paste0(
     format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%"))
   if (missing(parm)) return(intervals)
   ## The class confint.multilpa() raises for the same mistake.
@@ -1116,14 +1139,26 @@ confint.multilpa_covariates <-function(object, parm, level = 0.95, data = NULL,
       class = "latents_bad_argument", call = NULL))
   }
   if (is.numeric(parm)) {
-    if (anyNA(parm) || any(parm < 1) || any(parm > length(names_all)) ||
-        any(parm != floor(parm))) {
+    if (anyNA(parm) || any(!is.finite(parm)) || any(parm < 1) ||
+        any(parm > length(names_all)) || any(parm != floor(parm))) {
       bad_parm()
     }
     parm <- names_all[parm]
   }
   if (!is.character(parm) || anyNA(parm) || !all(parm %in% names_all)) {
     bad_parm()
+  }
+  ## As confint.multilpa(): a held coefficient is part of the model, so it is
+  ## named, but it was not estimated and has no interval.
+  held <- setdiff(parm, estimated)
+  if (length(held) > 0L) {
+    stop(errorCondition(sprintf(
+      "%s %s held fixed by this fit, so %s carr%s no confidence interval.",
+      paste(sprintf("`%s`", held), collapse = ", "),
+      if (length(held) == 1L) "was" else "were",
+      if (length(held) == 1L) "it" else "they",
+      if (length(held) == 1L) "ies" else "y"),
+      class = "latents_held_parameter", call = NULL))
   }
   intervals[parm, , drop = FALSE]
 }

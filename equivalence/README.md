@@ -29,10 +29,13 @@ Run everything from the project root.
 Scripts other than the testthat files rewrite committed reports. To check
 only that they still run, run them in a scratch copy of the repository.
 
-The ten new comparison kits also run as separate CI jobs. Run one locally
+The ten new comparison kits, and the suites `lrt`,
+`latentgold-categorical-distal`, `latentgold-step-one` and
+`moeclust-covariate-structures`, also run as separate CI jobs. Run one locally
 with `Rscript equivalence/run-package-kit-tests.R pool-packages` (substitute
-the kit name). It writes fresh test outcomes and their source identity under
-`tmp/equivalence-kits/` and fails on skipped tests, errors or disagreements.
+the kit or suite name). It writes fresh test outcomes and their source
+identity under `tmp/equivalence-kits/` and fails on skipped tests, errors or
+disagreements.
 The fast validation regressions run with
 `Rscript equivalence/verification-matrix/tests/run.R`; they inject missing
 results, incorrect counts, skipped tests and changed source files without

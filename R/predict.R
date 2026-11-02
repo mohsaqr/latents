@@ -5,7 +5,12 @@
 #' @export
 predict.multilpa <- function(object, newdata = NULL,
                              type = c("class", "posterior", "density"), ...) {
-  type <- match.arg(type)
+  # A bad `type` raised an unclassed match.arg() error, and a misnamed
+  # argument (`data =` for `newdata =`) fell into `...` and returned the
+  # fitted rows' predictions without a word (audit 2026-11-01).
+  type <- .latents_match_arg(type, c("class", "posterior", "density"), "type")
+  .latents_warn_unused_arguments(list(...), "predict()",
+                                 "It takes `newdata` and `type`.")
   prepared <- if (is.null(newdata)) .multilpa_training_rows(object) else
     .multilpa_prediction_rows(object, newdata)
   parameters <- object[intersect(c("means", "variances", "covariances",

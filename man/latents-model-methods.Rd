@@ -76,9 +76,11 @@ raises \code{latents_bad_argument}.}
 \item{level}{Confidence level, strictly between 0 and 1 (default 0.95).}
 }
 \value{
-\code{coef()}: a named numeric vector. \code{vcov()}: a named symmetric matrix
-over the same parameters. \code{confint()}: a matrix with one row per parameter
-and the lower and upper bounds as columns. \code{logLik()}: a \code{"logLik"} object
+\code{coef()}: a named numeric vector of every parameter, including any
+held by \code{fixed}. \code{vcov()}: a named symmetric matrix over the estimated
+parameters; a coefficient held by \code{fixed} has no row. \code{confint()}: a
+matrix with one row per estimated parameter and the lower and upper
+bounds as columns. \code{logLik()}: a \code{"logLik"} object
 with \code{df} and \code{nobs} attributes. \code{nobs()}: the number of independent groups
 counted by the fitted BIC. With \code{drop_empty = TRUE}, groups without any
 observed indicator are excluded; with \code{drop_empty = FALSE}, they are counted.

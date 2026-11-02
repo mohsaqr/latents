@@ -414,7 +414,9 @@ mixture_regression <- function(formula, data, n_classes,
   if (!is.null(weights)) {
     spec <- .mixture_weight_spec(spec, data, weights, min_variance)
     if (!identical(vcov_type, "none")) {
-      vcov_type <- .latents_weighted_vcov(TRUE, vcov_type, vcov_defaulted)
+      # Only a growth fit (`random`) has a bootstrap to name.
+      vcov_type <- .latents_weighted_vcov(TRUE, vcov_type, vcov_defaulted,
+                                          bootstrap = !is.null(random))
     }
   }
   if (!is.null(random)) {

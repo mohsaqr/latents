@@ -273,10 +273,16 @@
       return(c(state[c("parameters", "value")], list(done = TRUE)))
     }
     hessian <- .multilpa_step_ml_hessian(gradient, state$parameters, scale)
-    # Solved on the coordinates' own scale, like the sandwich's inverse.
-    direction <- tryCatch(scale * solve(hessian * tcrossprod(scale), score * scale),
-                          error = function(condition) NULL)
-    if (is.null(direction)) return(c(state[c("parameters", "value")], list(done = FALSE)))
+    # Solved on the coordinates' own scale, like the sandwich's inverse. A
+    # Hessian that is not finite or is singular to solve()'s own tolerance
+    # gives no Newton direction: the polish stops at the estimate it has.
+    # Tested here rather than by catching every error of solve(), which would
+    # also have hidden a mistake in the call itself (audit 2026-11-01).
+    conditioned <- hessian * tcrossprod(scale)
+    if (any(!is.finite(conditioned)) || rcond(conditioned) < .Machine$double.eps) {
+      return(c(state[c("parameters", "value")], list(done = FALSE)))
+    }
+    direction <- scale * solve(conditioned, score * scale)
     # Halve the step until the likelihood does not fall.
     candidates <- lapply(2^-(0:20), \(size) state$parameters - size * direction)
     values_at <- vapply(candidates, objective, numeric(1))

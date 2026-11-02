@@ -69,8 +69,8 @@ there is no model to return; \code{latents_bad_argument} for a name or pair of
 counts given together with \code{n_group_classes} or \code{model}, for a value that
 names no candidate, and for a comparison given no label;
 \code{latents_incomplete_fit} for a comparison that no longer carries its
-models. Counts that are not single positive integers fail the
-argument checks.
+models. Counts that are not single positive integers, and a \code{model}
+that is not a single string, also raise \code{latents_bad_argument}.
 }
 
 \examples{

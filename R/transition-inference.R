@@ -341,12 +341,13 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
                                                      max_iter = 5000L, tol = 1e-10,
                                                      seed = NULL,
                                                      boundary = c("error", "fix")) {
-  stopifnot(inherits(x, "multilpa_transitions"),
-            "`level` must be a single number in (0, 1)" =
-              is.numeric(level) && length(level) == 1L && is.finite(level) &&
-              level > 0 && level < 1,
-            "`step` must be a single positive number" =
-              is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
+  stopifnot(inherits(x, "multilpa_transitions"))
+  # Classed, as parameter_inference() on a profile fit classes the same
+  # mistakes (review 2026-10-27, INF-6); a bare stopifnot() left them unclassed.
+  .latents_require(
+    "`level` must be a single number in (0, 1)" =
+      is.numeric(level) && length(level) == 1L && is.finite(level) &&
+      level > 0 && level < 1)
   # Nothing is held at a bound here and a bound-active fit is refused, so
   # "fix" and "error" agree wherever a table is returned.
   .latents_match_formal(boundary)
@@ -401,6 +402,11 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
 #'   the measurement `view`.
 #' @noRd
 .multilpa_transition_covariance <- function(x, data, step, vcov_type) {
+  # Checked here, where both parameter_inference() and vcov() arrive: vcov()
+  # passed any `step` on unchecked, and 0 divided by zero.
+  .latents_require(
+    "`step` must be a single positive number" =
+      is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   .multilpa_check_transition_regularity(x, vcov_type)
   x_matrix <- x$indicator_data
   if (is.null(x_matrix)) x_matrix <- matrix(numeric(0), x$n_observations, 0L)

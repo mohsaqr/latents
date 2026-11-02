@@ -55,20 +55,31 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' in their log likelihoods, `lr_df` the difference in their numbers of free
 #' parameters, and `lr_p_value` its upper chi-square tail (Wilks, 1938). List
 #' the models from the most restricted to the most general. A model is nested
-#' in the next when the two have the same indicators, coding, estimation
-#' settings and numbers of profiles and group classes, and the first only
-#' restricts the second: a covariance structure restricted letter by letter
-#' (EEI within VVI or EEE, and both within VVV), covariances of chosen pairs
-#' (`local_dependence`) within more pairs or a full covariance, fewer joint
-#' item pairs, direct effects or membership covariates, profile slopes shared
-#' across group classes, count dispersions shared across profiles; and for
-#' [lta()], measurement invariant within measurement by occasion, homogeneous
-#' within occasion-specific transitions, first within second order, and fewer
-#' transition or initial covariates. These restrictions hold parameters at
-#' interior values, where the chi-square reference applies. A different number
-#' of profiles or group classes, or a stayer class, puts the null on the
-#' boundary of the parameter space, where it does not: those comparisons are
-#' refused and belong to [bootstrap_lrt()] or `get_results(grid, "lmr")`.
+#' in the next when the two have the same indicators, coding (including the
+#' order of ordinal categories), estimation settings and numbers of profiles
+#' and group classes, and the first only restricts the second: a covariance
+#' structure restricted letter by letter (EEI within VVI or EEE, and both
+#' within VVV), covariances of chosen pairs (`local_dependence`) within more
+#' pairs or a full covariance, fewer joint item pairs, direct effects or
+#' membership covariates, profile slopes shared across group classes, count
+#' dispersions shared across profiles; and for [lta()], measurement invariant
+#' within measurement by occasion, homogeneous within occasion-specific
+#' transitions, first within second order, and fewer transition or initial
+#' covariates. A predictor both models use must enter both with the same
+#' values (or an affine recoding of them): the first model's covariate design
+#' has to be recovered by setting the second's added coefficients to zero.
+#'
+#' Nested is not enough for the chi-square reference: the restriction must
+#' also be regular (Wilks, 1938). The restrictions above are regular at a
+#' generic null, with one exception among the covariance structures. A
+#' spherical structure (EII, VII) within EVE, VVE, EEV or VEV is singular:
+#' when every profile is spherical, the orientation those structures add has
+#' no value, and the likelihood-ratio statistic is not chi-square distributed
+#' (Drton, 2009). These pairs are refused; compare them on their information
+#' criteria. A different number of profiles or group classes, or a stayer
+#' class, puts the null on the boundary of the parameter space, where the
+#' chi-square reference does not hold either: those comparisons are refused
+#' and belong to [bootstrap_lrt()] or `get_results(grid, "lmr")`.
 #'
 #' @param ... Either an enumeration grid from [enumerate_classes()] followed
 #'   by the candidates to compare (none for all of them, or a selection
@@ -118,18 +129,25 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'   `latents_unknown_candidate` for a name, counts or selection not in the
 #'   grid; `latents_failed_candidate` for a named candidate that could not be
 #'   fitted; `latents_incomparable_models` for fits to different data. A
-#'   `cutoff` outside (0, 1] fails the argument checks.
+#'   `cutoff` outside (0, 1] raises `latents_bad_argument`; so do
+#'   group-class family fits
+#'   (`multilpa(family = ...)`) and mixture-regression grids, which are
+#'   compared in their own tables.
 #'
 #'   With `test = "lrt"`: `latents_bad_nesting` for consecutive models that
 #'   are not nested as described in *Details*, or that differ in their
-#'   numbers of profiles or group classes; `latents_reversed_likelihood` when
-#'   the more general model has the lower likelihood beyond the fits'
+#'   numbers of profiles or group classes; `latents_singular_restriction`
+#'   (also a `latents_bad_nesting`) for a singular covariance restriction;
+#'   `latents_reversed_likelihood` when the more general model has the lower likelihood beyond the fits'
 #'   tolerance; `latents_no_converge` for a fit that did not converge;
 #'   `latents_unsupported_weights`, `latents_unsupported_prior` and
 #'   `latents_unsupported_noise` for fits with sampling weights, a prior or a
 #'   noise component; `latents_bad_argument` for mixture regressions. A fit
 #'   with a variance at `min_variance` warns `latents_boundary`.
 #' @references
+#' Drton, M. (2009). Likelihood ratio tests and singularities. *The Annals of
+#' Statistics*, 37(2), 979--1012. \doi{10.1214/07-AOS571}
+#'
 #' Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
 #' for testing composite hypotheses. *The Annals of Mathematical Statistics*,
 #' 9(1), 60--62.
@@ -194,14 +212,28 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
     if (model_controls[["cutoff"]]) cutoff <- 0.8
     if (model_controls[["test"]]) test <- "none"
   }
-  test <- match.arg(test)
+  test <- .latents_match_arg(test, c("none", "lrt"), "test")
+  .latents_require("`cutoff` must be a single number in (0, 1]" =
+                     is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+                     cutoff > 0 && cutoff <= 1)
   tested <- function(table) {
     if (identical(test, "lrt")) .latents_comparison_lrt(table) else table
   }
-  if (length(fits) >= 1L && inherits(fits[[1L]], "latents_family_enumeration")) {
+  if (length(fits) >= 1L && inherits(fits[[1L]], c("latents_family_enumeration",
+                                                    "latents_regression_enumeration"))) {
     stop(errorCondition(paste(
-      "Group-class family grids are compared in their own table:",
+      if (inherits(fits[[1L]], "latents_family_enumeration")) "Group-class family"
+      else "Mixture-regression", "grids are compared in their own table:",
       "as.data.frame(grid)."), class = "latents_bad_argument", call = NULL))
+  }
+  # A group-class family fit is a multilpa() fit, so the general refusal below
+  # (which lists multilpa() among the accepted sources) misled.
+  if (any(vapply(fits, inherits, logical(1), "multilpa_additive"))) {
+    stop(errorCondition(paste(
+      "Group-class family fits (multilpa(family = ...)) are compared through",
+      "enumerate_classes(family = ...) and its table, as.data.frame(grid), or",
+      "two at a time with bootstrap_lrt()."),
+      class = "latents_bad_argument", call = NULL))
   }
   if (length(fits) >= 1L && .latents_is_grid(fits[[1L]])) {
     return(tested(.multilpa_compare_candidates(fits[[1L]], fits[-1L], labels[-1L],
@@ -401,9 +433,6 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
     stop(errorCondition("Every model needs a distinct name.",
                         class = "latents_bad_argument", call = NULL))
   }
-  stopifnot("`cutoff` must be a single number between 0 and 1" =
-              is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
-              cutoff > 0 && cutoff <= 1)
   # The data a likelihood is computed on: the same units in the same groups
   # with the same indicator values.
   signature <- .latents_comparison_signature

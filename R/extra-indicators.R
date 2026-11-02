@@ -492,11 +492,14 @@
 #' @param vars,categorical,ordinal,count The indicator arguments of the fit.
 #' @param unsupported Named logicals: options the new indicators do not take
 #'   yet; a `TRUE` one is refused.
-#' @return `NULL`, invisibly.
+#' @return `NULL`, invisibly. A non-character or `NA` name raises
+#'   `latents_bad_argument`.
 #' @noRd
 .latents_check_extra_arguments <- function(vars, categorical, ordinal, count,
                                            unsupported = list()) {
-  stopifnot(
+  # Classed, as every other argument contract of the fitting verbs: a bare
+  # stopifnot() raised an unclassed error here (audit 2026-11-01).
+  .latents_require(
     "`ordinal` must be a character vector of indicator names" =
       is.character(ordinal) && !anyNA(ordinal),
     "`count` must be a character vector of indicator names" =
@@ -683,9 +686,10 @@
       parameters$ordinal_intercepts[[j]], parameters$ordinal_locations[, j]))
     weight <- posteriors * observed
     intercepts <- vapply(seq_len(n_categories)[-1L], function(k) {
+      # `code == k & observed` is FALSE, not NA, on a missing cell, so no NA
+      # arises here; an NA would be a real fault and must not be summed away.
       rowSums(weight * (outer(code == k & observed, rep(1, n_profiles)) -
-                          matrix(probability[, k], n_rows, n_profiles, byrow = TRUE)),
-              na.rm = TRUE)
+                          matrix(probability[, k], n_rows, n_profiles, byrow = TRUE)))
     }, numeric(n_rows))
     expected_score <- drop(probability %*% (seq_len(n_categories) - 1))
     locations <- vapply(seq_len(n_profiles - 1L), function(profile) {

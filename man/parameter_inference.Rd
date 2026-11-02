@@ -129,8 +129,9 @@ logit scale and for variances (and covariance diagonals) and count means
 on the log scale, then
 back-transformed, so they stay within the parameter's range; every other
 interval is \verb{estimate +/- z * standard_error}. \code{confint()} returns the
-same intervals. A probability at or below 1e-6 is treated as on its bound
-(refused, or held by \code{boundary = "fix"}).
+same intervals. A categorical response probability at or below 1e-6 is
+treated as on its bound (refused, or held by \code{boundary = "fix"}); a
+mixing probability is refused only at zero.
 
 A fit made with \code{fixed} reports only the parameters it estimated: a held
 measurement block contributes no row to the table or to the information

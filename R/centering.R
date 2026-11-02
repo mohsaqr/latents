@@ -69,8 +69,12 @@
     return(list(x = x, offsets = NULL, scales = NULL))
   }
   stopifnot("`x` must be numeric to be centred" = is.numeric(x))
-  # A standard deviation does not move with a shift, so the scales are read
-  # off the raw values whatever the centring.
+  # The scales are read off the raw values whatever the centring, as
+  # `scaling` documents ("its standard deviation over all observations").
+  # A grand or a per-group shift leaves a group's own standard deviation
+  # alone, but person centring does change the grand one: under
+  # `centering = "person", scaling = "grand"` the scale still includes the
+  # between-group spread.
   scales <- .multilpa_indicator_scales(x, group_index, n_groups, scaling,
                                        carrying = carrying)
   centred <- .multilpa_center_only(x, group_index, n_groups, centering,

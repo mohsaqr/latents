@@ -104,8 +104,9 @@ their supplied observations.
 With the default \code{drop_empty = TRUE}, rows with every indicator missing
 retain their position but have \code{NA} for the predicted profile and its
 probabilities. A group is unclassified only when none of its rows has an
-observed indicator. Fitted rows with zero sampling weight are unclassified
-under either setting of \code{drop_empty}. New-data prediction does not apply
+observed indicator. Fitted rows with zero sampling weight keep their
+predicted profile and probabilities under either setting of \code{drop_empty},
+as in \code{get_results(x, "assignments")}. New-data prediction does not apply
 sampling weights. These exclusions apply to classification output;
 density predictions retain each row's evaluated log density.
 For a model with a noise component, prediction supports complete rows and,
@@ -138,7 +139,10 @@ Binomial count predictions without trial counts also raise
 outside the ordinal family; \code{latents_unsupported_prediction} for
 \code{predict()} on a membership-covariate fit or a latent transition fit.
 \code{latents_unsupported_noise} for partially observed prediction rows in a
-model with a noise component.
+model with a noise component. A profile or class model's \code{predict()}
+raises \code{latents_bad_argument} for a \code{type} it does not offer and warns
+with \code{latents_unused_argument} for arguments it ignores, such as \verb{data =}
+in place of \verb{newdata =}.
 A growth mixture prediction raises \code{latents_bad_data} when \code{newdata}
 lacks \code{id}, the cluster column or (for the outcome-based types) the
 outcome, and warns with \code{latents_unused_argument} for arguments it

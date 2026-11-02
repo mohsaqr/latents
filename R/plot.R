@@ -46,7 +46,7 @@ plot.multilpa <-function(x, what = c("profiles", "bars", "heatmap", "raincloud",
     extra, "plot()",
     paste("Style the returned plot with ggplot2, for example",
           "`+ ggplot2::theme()` or `+ ggplot2::scale_colour_manual()`."))
-  stopifnot(
+  .latents_require(
     "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
     "`intervals` must be TRUE or FALSE" =
       isTRUE(intervals) || isFALSE(intervals),
@@ -336,12 +336,12 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
                                           .latents_tree_arguments())] else
       tree_arguments,
     "plot_enumeration()", .multilpa_enumeration_plot_advice())
-  stopifnot("`what` must name one or more criteria, or be \"all\"" =
-              is.character(what) && length(what) >= 1L && !anyNA(what),
-            "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
-            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
-            "`mark_minimum` must be TRUE or FALSE" =
-              isTRUE(mark_minimum) || isFALSE(mark_minimum))
+  .latents_require("`what` must name one or more criteria, or be \"all\"" =
+                     is.character(what) && length(what) >= 1L && !anyNA(what),
+                   "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
+                   "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
+                   "`mark_minimum` must be TRUE or FALSE" =
+                     isTRUE(mark_minimum) || isFALSE(mark_minimum))
   .latents_require_grid_views(x, what, "plot_enumeration")
   .gg_require()
   if ("tree" %in% what) {
@@ -365,9 +365,9 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
         "takes criteria, or views such as \"deltas\", \"heatmap\" and \"selection\"."),
         class = "latents_bad_argument", call = NULL))
     }
-    stopifnot("`cutoff` must be a single number between 0 and 1" =
-                is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
-                cutoff > 0 && cutoff <= 1)
+    .latents_require("`cutoff` must be a single number between 0 and 1" =
+                       is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+                       cutoff > 0 && cutoff <= 1)
     # "selection" is every selection view the grid offers, and diagnostics.
     views <- unique(unlist(lapply(what, function(view) {
       if (identical(view, "selection")) {
@@ -392,9 +392,9 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
         "`what` takes criteria, or \"entropy\", \"avepp\" and \"diagnostics\"."),
         class = "latents_bad_argument", call = NULL))
     }
-    stopifnot("`cutoff` must be a single number between 0 and 1" =
-                is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
-                cutoff > 0 && cutoff <= 1)
+    .latents_require("`cutoff` must be a single number between 0 and 1" =
+                       is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+                       cutoff > 0 && cutoff <= 1)
     measures <- if ("diagnostics" %in% what) c("entropy", "avepp") else what
     if (isFALSE(combine) && length(measures) > 1L) {
       return(.gg_plots(stats::setNames(lapply(measures, \(measure) {

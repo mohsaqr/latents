@@ -20,7 +20,9 @@ renumbered: every table of \code{\link[=get_results]{get_results()}}, the assign
 posterior probabilities follow the new labels. Raises
 \code{latents_bad_argument} when either object is not a profile or class
 model, or when the two fits differ in their indicators, how they are
-coded, or their numbers of profiles or group classes.
+coded (the message names each categorical or ordinal indicator whose
+categories or their order differ), or their numbers of profiles or
+group classes.
 }
 \description{
 Profiles and latent classes have no natural order, so two fits of the

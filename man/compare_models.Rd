@@ -66,12 +66,16 @@ named together with \code{n_profiles} or \code{n_group_classes}, and for
 \code{latents_unknown_candidate} for a name, counts or selection not in the
 grid; \code{latents_failed_candidate} for a named candidate that could not be
 fitted; \code{latents_incomparable_models} for fits to different data. A
-\code{cutoff} outside (0, 1] fails the argument checks.
+\code{cutoff} outside (0, 1] raises \code{latents_bad_argument}; so do
+group-class family fits
+(\code{multilpa(family = ...)}) and mixture-regression grids, which are
+compared in their own tables.
 
 With \code{test = "lrt"}: \code{latents_bad_nesting} for consecutive models that
 are not nested as described in \emph{Details}, or that differ in their
-numbers of profiles or group classes; \code{latents_reversed_likelihood} when
-the more general model has the lower likelihood beyond the fits'
+numbers of profiles or group classes; \code{latents_singular_restriction}
+(also a \code{latents_bad_nesting}) for a singular covariance restriction;
+\code{latents_reversed_likelihood} when the more general model has the lower likelihood beyond the fits'
 tolerance; \code{latents_no_converge} for a fit that did not converge;
 \code{latents_unsupported_weights}, \code{latents_unsupported_prior} and
 \code{latents_unsupported_noise} for fits with sampling weights, a prior or a
@@ -120,20 +124,31 @@ before it, as \code{\link[stats:anova]{stats::anova()}} does: \code{lr_statistic
 in their log likelihoods, \code{lr_df} the difference in their numbers of free
 parameters, and \code{lr_p_value} its upper chi-square tail (Wilks, 1938). List
 the models from the most restricted to the most general. A model is nested
-in the next when the two have the same indicators, coding, estimation
-settings and numbers of profiles and group classes, and the first only
-restricts the second: a covariance structure restricted letter by letter
-(EEI within VVI or EEE, and both within VVV), covariances of chosen pairs
-(\code{local_dependence}) within more pairs or a full covariance, fewer joint
-item pairs, direct effects or membership covariates, profile slopes shared
-across group classes, count dispersions shared across profiles; and for
-\code{\link[=lta]{lta()}}, measurement invariant within measurement by occasion, homogeneous
-within occasion-specific transitions, first within second order, and fewer
-transition or initial covariates. These restrictions hold parameters at
-interior values, where the chi-square reference applies. A different number
-of profiles or group classes, or a stayer class, puts the null on the
-boundary of the parameter space, where it does not: those comparisons are
-refused and belong to \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} or \code{get_results(grid, "lmr")}.
+in the next when the two have the same indicators, coding (including the
+order of ordinal categories), estimation settings and numbers of profiles
+and group classes, and the first only restricts the second: a covariance
+structure restricted letter by letter (EEI within VVI or EEE, and both
+within VVV), covariances of chosen pairs (\code{local_dependence}) within more
+pairs or a full covariance, fewer joint item pairs, direct effects or
+membership covariates, profile slopes shared across group classes, count
+dispersions shared across profiles; and for \code{\link[=lta]{lta()}}, measurement invariant
+within measurement by occasion, homogeneous within occasion-specific
+transitions, first within second order, and fewer transition or initial
+covariates. A predictor both models use must enter both with the same
+values (or an affine recoding of them): the first model's covariate design
+has to be recovered by setting the second's added coefficients to zero.
+
+Nested is not enough for the chi-square reference: the restriction must
+also be regular (Wilks, 1938). The restrictions above are regular at a
+generic null, with one exception among the covariance structures. A
+spherical structure (EII, VII) within EVE, VVE, EEV or VEV is singular:
+when every profile is spherical, the orientation those structures add has
+no value, and the likelihood-ratio statistic is not chi-square distributed
+(Drton, 2009). These pairs are refused; compare them on their information
+criteria. A different number of profiles or group classes, or a stayer
+class, puts the null on the boundary of the parameter space, where the
+chi-square reference does not hold either: those comparisons are refused
+and belong to \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} or \code{get_results(grid, "lmr")}.
 }
 \section{Interpretation}{
 
@@ -175,6 +190,9 @@ varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 compare_models(shared = shared, varying = varying, test = "lrt")
 }
 \references{
+Drton, M. (2009). Likelihood ratio tests and singularities. \emph{The Annals of
+Statistics}, 37(2), 979--1012. \doi{10.1214/07-AOS571}
+
 Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
 for testing composite hypotheses. \emph{The Annals of Mathematical Statistics},
 9(1), 60--62.

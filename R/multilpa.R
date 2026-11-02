@@ -1667,7 +1667,10 @@ multilpa <- function(data, vars, id, n_profiles,
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
-  .latents_check_data_frame(data, substitute(data))
+  # The caller's own expression for `data`: `multilpa()` binds argument
+  # values to internal symbols, so `substitute(data)` here named `.data`
+  # rather than what the caller wrote (audit 2026-11-01).
+  .latents_check_data_frame(data, .call[["data"]])
   .latents_require(
     "`vars` must be a character vector of column names" =
       is.character(vars),

@@ -56,9 +56,11 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   .gg_require()
   what <- match.arg(what)
-  stopifnot("`spread` must be a single number in [0, 1)" =
-              is.numeric(spread) && length(spread) == 1L && spread >= 0 && spread < 1,
-            "`facet` must be TRUE or FALSE" = isTRUE(facet) || isFALSE(facet))
+  .latents_require(
+    "`spread` must be a single number in [0, 1)" =
+      is.numeric(spread) && length(spread) == 1L && is.finite(spread) &&
+      spread >= 0 && spread < 1,
+    "`facet` must be TRUE or FALSE" = isTRUE(facet) || isFALSE(facet))
   key <- .growth_class_key(x)
   switch(what,
     trajectories = .growth_plot_trajectories(x, key, time, facet, max_persons, spread,
@@ -127,6 +129,12 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
 #' @noRd
 .growth_plot_trajectories <- function(x, key, time, facet, max_persons, spread, level,
                                       main, subtitle) {
+  # Checked here, where both growth and latent class growth plots arrive: a
+  # level outside (0, 1) drew NaN bands with only a base warning.
+  .mixture_require_level(level)
+  .latents_require("`max_persons` must be a single non-negative number" =
+                     is.numeric(max_persons) && length(max_persons) == 1L &&
+                     is.finite(max_persons) && max_persons >= 0)
   time <- .growth_time_variable(x, time)
   bands <- as.data.frame(.growth_trajectory_table(x, level, .trajectory_inference(x),
                                                   time))
@@ -226,16 +234,25 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
   rows$trajectory_time <- rows[[time]]
   rows$person <- rows[[x$spec$id]]
   assignments <- as.data.frame(.growth_assignment_table(x))
+  .latents_require("`persons` must be a number of persons (at least 1) or identifiers" =
+                     length(persons) >= 1L && !anyNA(persons) &&
+                     !(length(persons) == 1L && is.numeric(persons) && persons < 1))
   if (length(persons) == 1L && is.numeric(persons)) {
     # Persons spread over each class's range of certainty, from its most to
     # its least clearly classified, so uncertain members are shown too.
     by_class <- split(assignments, assignments$class)
     per_class <- ceiling(persons / length(by_class))
-    chosen <- unlist(lapply(by_class, function(members) {
+    picks <- lapply(by_class, function(members) {
       ranked <- members[[x$spec$id]][order(-members$probability)]
       ranked[unique(round(seq(1, length(ranked), length.out = min(per_class,
                                                                    length(ranked)))))]
-    }), use.names = FALSE)
+    })
+    # Taken in turns across the classes, so that cutting the picks to
+    # `persons` thins every class instead of dropping the last ones (12
+    # persons over 5 classes showed no member of class 5).
+    turn <- unlist(lapply(picks, seq_along), use.names = FALSE)
+    owner <- rep(seq_along(picks), lengths(picks))
+    chosen <- unlist(picks, use.names = FALSE)[order(turn, owner)]
     chosen <- utils::head(chosen, persons)
   } else chosen <- persons
   rows <- rows[rows$person %in% chosen, , drop = FALSE]
@@ -433,7 +450,13 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
                stringsAsFactors = FALSE)
   }))
   names_on_bars <- names_on_bars[names_on_bars$share >= 0.12, , drop = FALSE]
-  average <- vapply(seq_along(classes), function(k) mean(certainty[modal == k]), numeric(1))
+  # As the classes tables report it: weighted by the persons' sampling
+  # weights, without persons of weight zero (who keep their bar).
+  weights <- .trajectory_view(x)$weights %||% rep(1, length(modal))
+  average <- vapply(seq_along(classes), function(k) {
+    members <- modal == k & weights > 0
+    if (any(members)) stats::weighted.mean(certainty[members], weights[members]) else NA_real_
+  }, numeric(1))
   subtitle_text <- paste0("One bar per person, split by their class probabilities. ",
                           "Average probability of the assigned class: ",
                           paste(sprintf("%s %.2f", sub(" \\(.*", "", key$label), average),
