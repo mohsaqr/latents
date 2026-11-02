@@ -1,4 +1,4 @@
-# latents 1.1.13
+# latents 1.1.14
 
 Changes since the CRAN release 0.9.21.
 
@@ -21,6 +21,26 @@ Changes since the CRAN release 0.9.21.
 
 ## New features
 
+* One function per plot or diagnostic table, taking any object the package
+  returns (a fit of any family, an enumeration grid, a comparison, a
+  diagnostics result), with no `what =` to choose: `plot_sizes()`,
+  `plot_entropy()`, `plot_posteriors()`, `plot_avepp()`, `plot_heatmap()`,
+  `plot_bars()`, `plot_raincloud()`, `plot_parallel()`, `plot_pairs()`,
+  `plot_trajectories()`, `plot_individuals()`, `plot_classification()`,
+  `plot_coefficients()`, `plot_criteria()`, `plot_deltas()`, `plot_trust()`
+  and `plot_all()`; `get_checks()`, `get_entropy()`, `get_classification()`,
+  `get_avepp()`, `get_residuals()` and `get_replication()` (a grid stacks its
+  candidates). Mixture regressions, growth mixtures, additive, cross-level
+  and general transition fits now have size, certainty, entropy and AvePP
+  plots. `overview()` prints and draws everything about any object.
+  Existing functions are unchanged.
+* Enumeration grids have a verb per table: `get_candidates()` (leaving out
+  columns that are empty in every row), `get_best()`, `get_deltas()`,
+  `get_knees()` and `get_tree()`. The printed summary of a grid is one screen:
+  it warns when every criterion is lowest at the edge of the grid, when a
+  candidate's best log likelihood was reached by one start only, and when a
+  class has an average posterior below 0.8, then shows the lowest value of
+  each criterion and the knees.
 * `three_step(step_one = "estimated")` includes uncertainty from the fitted
   measurement model in outcome comparisons.
 * `plot()` on a bootstrap from `parameter_inference(method = "bootstrap")`

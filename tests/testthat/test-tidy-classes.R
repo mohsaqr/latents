@@ -93,7 +93,7 @@ test_that("an enumeration summary names the minimising candidate per criterion",
   expect_s3_class(summary_object, "summary_multilpa_enumeration")
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_enumeration(summary_object),
-                "-- best", fixed = TRUE)
+                "-- lowest value of each criterion", fixed = TRUE)
   criteria <- get_results(summary_object, "best")
   # Each pick is named by its candidate, beside its class counts.
   expect_identical(names(criteria), c("criterion", "convention", "candidate",

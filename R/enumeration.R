@@ -890,24 +890,90 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
               nrow(disagreement)))
   cat("No candidate is selected automatically. Choose one convention and keep it.\n")
-  # An LCA grid has no covariance structure, so its `model` column is empty
-  # in every row; the printed tables leave it out (get_results() keeps it).
-  tables <- lapply(x$tables, function(table) {
-    if (is.data.frame(table) && "model" %in% names(table) && all(is.na(table$model))) {
-      table[setdiff(names(table), "model")]
-    } else table
-  })
-  if (!is.null(tables$candidates)) {
-    full_width <- ncol(x$tables$candidates)
-    tables$candidates <- .multilpa_compact_candidates(tables$candidates)
-    cat(sprintf(paste(
-      "The candidates table shows %d of its %d columns;",
-      "get_results(x, what = \"candidates\") returns all of them.\n"),
-      ncol(tables$candidates), full_width))
+  grid <- x$candidates
+  # What a reader must know before reading any minimum: whether the minima lie
+  # inside the grid, whether the fits behind them were found more than once,
+  # and whether their classes are separated. The tables themselves have their
+  # own verbs; the print is the reading of them (review 2026-11-02: the print
+  # was seven truncated tables and pointed to a 5,000-line list).
+  .multilpa_print_enumeration_warnings(grid, best)
+  shown <- best[, intersect(c("criterion", "convention", "candidate", "value"),
+                            names(best)), drop = FALSE]
+  cat("\n-- lowest value of each criterion ", strrep("-", 32L), "\n", sep = "")
+  # Every criterion is shown by default (the table is the reason to print);
+  # a `rows` the caller gives limits it as it limits every other table, and
+  # `rows = 0` asks for the headings alone.
+  limit <- if (missing(rows)) nrow(shown) else rows
+  if (limit > 0) print(utils::head(shown, limit), digits = digits, row.names = FALSE)
+  if (nrow(shown) > limit) cat(sprintf("   ... %d more rows.\n", nrow(shown) - limit))
+  knees <- x$tables$knees
+  if (is.data.frame(knees) && nrow(knees) > 0L) {
+    cat("\n-- knees of ", knees$criterion[1L], " ", strrep("-", 40L), "\n", sep = "")
+    if (rows > 0) {
+      print(utils::head(knees[, intersect(c("direction", "line", "knee_candidate",
+                                             "knee_without_largest", "stable"),
+                                           names(knees)), drop = FALSE], rows),
+            row.names = FALSE)
+    }
+    if (nrow(knees) > rows) cat(sprintf("   ... %d more rows.\n", nrow(knees) - rows))
   }
-  .multilpa_print_tables(tables, rows = rows, digits = digits)
-  .multilpa_print_table_footer(tables)
+  cat(paste0("\nTables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),\n",
+             "        get_tree(x), get_classification(x), get_entropy(x), get_checks(x).\n",
+             "Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).\n"))
   invisible(x)
+}
+
+#' The warnings a candidate grid needs before its minima are read
+#'
+#' * Every criterion lowest at an edge of the grid: no criterion has a minimum
+#'   inside it, so the grid does not bracket one.
+#' * Candidates whose best log likelihood was reached by one start only.
+#' * Candidates with a class whose average posterior is below 0.8.
+#' @param grid The candidates table.
+#' @param best The table of the lowest value of each criterion.
+#' @return `NULL`, invisibly. Called for the printing.
+#' @noRd
+.multilpa_print_enumeration_warnings <- function(grid, best) {
+  lines <- character()
+  converged <- grid[grid$converged %in% TRUE, , drop = FALSE]
+  chosen <- unique(best$candidate[!is.na(best$candidate)])
+  if (length(chosen) > 0L) {
+    # The edges are those of the grid that was asked for: a largest count that
+    # failed to fit does not make the next one the edge, and a minimum at the
+    # largest count is at the edge even when the others failed.
+    edge <- function(column) {
+      values <- grid[[column]]
+      if (is.null(values) || length(unique(values)) < 2L) return(rep(FALSE, length(chosen)))
+      at <- grid[[column]][match(chosen, grid$candidate)]
+      at == max(values) | (at == min(values) & min(values) > 1L)
+    }
+    at_edge <- edge("n_profiles") | edge("n_group_classes")
+    if (all(at_edge %in% TRUE)) {
+      lines <- c(lines, sprintf(paste(
+        "Every criterion is lowest at the edge of the grid (%s): the grid does",
+        "not bracket a minimum. Extend it, or choose on the knees and the",
+        "classification quality."), paste(chosen, collapse = ", ")))
+    }
+  }
+  once <- converged$candidate[converged$n_best_replicated %in% 1L]
+  if (length(once) > 0L) {
+    named <- if (length(once) > 6L) c(utils::head(once, 6L), "...") else once
+    lines <- c(lines, sprintf(paste(
+      "%d of %d candidates reached their best log likelihood from one start",
+      "only (%s); refit those you consider with more starts."),
+      length(once), nrow(converged), paste(named, collapse = ", ")))
+  }
+  below <- (converged$avepp_below %||% 0) > 0 | (converged$group_avepp_below %||% 0) > 0
+  if (any(below %in% TRUE)) {
+    lines <- c(lines, sprintf(
+      "%d candidates have a class with average posterior below 0.8 (%s).",
+      sum(below %in% TRUE), paste(converged$candidate[below %in% TRUE], collapse = ", ")))
+  }
+  if (length(lines) == 0L) return(invisible(NULL))
+  cat("\n")
+  cat(paste0("! ", strwrap(lines, width = 76L, exdent = 2L, simplify = FALSE) |>
+               vapply(paste, character(1), collapse = "\n  ")), sep = "\n")
+  invisible(NULL)
 }
 
 #' The columns of an enumeration grid worth printing

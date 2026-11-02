@@ -38,6 +38,9 @@ reference:
   - descriptives
   - diagnostics
   - report
+  - overview
+  - wildcard-tables
+  - wildcard-grid-tables
 
 - title: Evaluating a model
   contents:
@@ -70,6 +73,7 @@ reference:
 - title: Plots
   contents:
   - latents-plots
+  - wildcard-plots
 
 - title: Transition networks
   desc: Latent transitions handed to the tna package.
