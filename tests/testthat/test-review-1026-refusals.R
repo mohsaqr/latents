@@ -73,3 +73,17 @@ test_that("more cores than the machine has are capped with a classed warning", {
                  class = "latents_too_many_cores")
   expect_identical(capped, as.integer(available))
 })
+
+test_that("an unknown processor count runs on one core with a classed warning", {
+  expect_identical(.latents_check_cores(1L, available = NA_integer_), 1L)
+  expect_warning(cores <- .latents_check_cores(20L, available = NA_integer_),
+                 class = "latents_unknown_cores")
+  expect_identical(cores, 1L)
+  expect_warning(.latents_check_cores(4L, available = 0L),
+                 class = "latents_unknown_cores")
+  # A known count is capped as before.
+  expect_warning(capped <- .latents_check_cores(6L, available = 4L),
+                 class = "latents_too_many_cores")
+  expect_identical(capped, 4L)
+  expect_identical(.latents_check_cores(2L, available = 4L), 2L)
+})

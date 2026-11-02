@@ -86,6 +86,9 @@
 #'     enough for the requested three-step correction.}
 #'   \item{`latents_too_many_cores`}{`cores` exceeds the machine's core count;
 #'     the fit uses the machine's count instead.}
+#'   \item{`latents_unknown_cores`}{`cores` is above one but the platform does
+#'     not report its processor count (for example R in WebAssembly); the fit
+#'     uses one core.}
 #'   \item{`latents_no_converge`}{A fit required by the request did not
 #'     converge.}
 #'   \item{`latents_vanished_density`}{Every component density is zero, or one

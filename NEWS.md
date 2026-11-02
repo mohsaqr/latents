@@ -1,4 +1,4 @@
-# latents 1.1.12
+# latents 1.1.13
 
 Changes since the CRAN release 0.9.21.
 
@@ -53,6 +53,8 @@ Changes since the CRAN release 0.9.21.
 * `print()` says how many starts reached the best log likelihood.
 * `cores` runs the starts of one fit, an enumeration or `sensitivity()` in
   parallel, with the same result as one core.
+  A platform that does not report its processor count runs on one core with a
+  `latents_unknown_cores` warning instead of failing in `fork()`.
 * New arguments: `scaling` (grand or within-person z-scores),
   `boundary = "exclude"` (set aside starts with a variance at its bound) and
   `drop_empty` (rows with no observed indicator).

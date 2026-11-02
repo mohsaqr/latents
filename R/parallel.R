@@ -9,19 +9,31 @@
 #' @param cores The caller's `cores`.
 #' @return The number of cores as an integer.
 #' @noRd
-.latents_check_cores <- function(cores) {
+.latents_check_cores <- function(cores, available = .latents_available_cores()) {
   if (!is.numeric(cores) || length(cores) != 1L || !is.finite(cores) ||
       cores < 1 || cores != as.integer(cores)) {
     stop(errorCondition("`cores` must be a single whole number of at least 1.",
                         class = "latents_bad_argument", call = NULL))
   }
   cores <- as.integer(cores)
+  # A platform that cannot report its processors (WebAssembly R, some
+  # sandboxes) usually cannot fork either: `cores = 20` under webR failed in
+  # mcfork() with "Resource temporarily unavailable" (2026-11-02). Run on one
+  # core and say why rather than start workers blind.
+  if (!is.finite(available) || available < 1L) {
+    if (cores > 1L) {
+      warning(warningCondition(sprintf(paste(
+        "`cores = %d` was requested but this platform does not report its",
+        "processor count, so one core is used."), cores),
+        class = "latents_unknown_cores", call = NULL))
+    }
+    return(1L)
+  }
   # More workers than the machine has cores gains nothing and, as socket
   # workers (Windows, or macOS with Accelerate), each is a full R process
   # holding the package and a copy of the data: `cores = 24` on a ten-core
   # Mac started 24 of them and exhausted memory (2026-10-26).
-  available <- tryCatch(parallel::detectCores(), error = function(condition) NA_integer_)
-  if (is.finite(available) && available >= 1L && cores > available) {
+  if (cores > available) {
     warning(warningCondition(sprintf(paste(
       "`cores = %d` exceeds the %d cores this machine has; %d workers are",
       "used. Each socket worker is a separate R process."),
@@ -30,6 +42,14 @@
     cores <- as.integer(available)
   }
   cores
+}
+
+#' Processor count as the platform reports it
+#' @return An integer, or `NA_integer_` when the platform cannot say.
+#' @noRd
+.latents_available_cores <- function() {
+  tryCatch(as.integer(parallel::detectCores()),
+           error = function(condition) NA_integer_)
 }
 
 #' Whether forked workers can use this R's linear algebra

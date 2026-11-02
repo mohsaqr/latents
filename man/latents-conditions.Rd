@@ -97,6 +97,9 @@ most one dimension fewer than the number of groups.}
 enough for the requested three-step correction.}
 \item{\code{latents_too_many_cores}}{\code{cores} exceeds the machine's core count;
 the fit uses the machine's count instead.}
+\item{\code{latents_unknown_cores}}{\code{cores} is above one but the platform does
+not report its processor count (for example R in WebAssembly); the fit
+uses one core.}
 \item{\code{latents_no_converge}}{A fit required by the request did not
 converge.}
 \item{\code{latents_vanished_density}}{Every component density is zero, or one
