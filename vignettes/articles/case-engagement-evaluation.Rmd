@@ -186,7 +186,7 @@ full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
 get_results(full, "residuals") |> head(4)
 ```
 
-In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 1 is 0.226, which matches the corresponding observed within-profile correlation to six decimal places. As a result, even the largest residual correlations are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
+In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 1 is 0.226, closely matching the corresponding observed within-profile correlation. As a result, even the largest residual correlations are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
 
 The close agreement between the observed and expected correlations therefore verifies that the fitted covariance structure is reproducing the associations it was designed to model. It should not, however, be interpreted as independent evidence that the two-profile solution or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
 

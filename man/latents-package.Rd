@@ -75,13 +75,8 @@ The vignettes \code{vignette("lpa", package = "latents")} and
 \code{vignette("lca", package = "latents")} introduce the main workflows;
 class enumeration and latent transition analysis are covered in articles on
 the package website, \url{https://pak.dynasite.org/latents/articles/}.
-See \code{\link{latents-plots}} for graphical summaries,
+See \code{\link{plot_all}} and the other \code{plot_} functions for graphical summaries,
 \code{\link{latents-predict}} for prediction, and
 \code{\link{latents-conditions}} for diagnostic conditions.
-}
-\references{
-Vermunt, J. K. (2003). Multilevel latent class models.
-\emph{Sociological Methodology}, 33, 213--239.
-\doi{10.1111/j.0081-1750.2003.t01-1-00131.x}.
 }
 \keyword{package}

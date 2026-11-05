@@ -79,11 +79,6 @@ get_results(lca, what = "responses")
 get_results(lca, what = "profile_probabilities")
 }
 }
-\references{
-Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic
-adjustment on multiple time scales. \emph{Zeitschrift für
-Erziehungswissenschaft}, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
-}
 \seealso{
 \code{\link[=multilpa]{multilpa()}} with \verb{categorical =} for the two-level latent class
 model.

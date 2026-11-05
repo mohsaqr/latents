@@ -80,7 +80,7 @@ model.
 Pooling is on the reported (natural) scale: the pooled estimate is the mean
 over imputations, and its variance is the mean within-imputation variance
 plus \code{(1 + 1/m)} times the between-imputation variance. Degrees of freedom
-follow Rubin (1987) with a large complete-data sample. Pooled intervals are
+follow Rubin's rules with a large complete-data sample. Pooled intervals are
 symmetric t intervals, rather than the transformed Wald intervals used
 for bounded parameters by \code{\link[=parameter_inference]{parameter_inference()}}. A structural constant, such as the
 probability of one for a single class, has zero within- and
@@ -139,14 +139,4 @@ pooled <- pool_imputations(completed, c("browse", "lectures", "forum_read"),
                            n_starts = 2, seed = 1)
 pooled
 get_results(pooled, "fits")
-}
-\references{
-Rubin, D. B. (1987). \emph{Multiple Imputation for Nonresponse in Surveys}.
-Wiley.
-
-Meng, X.-L. (1994). Multiple-imputation inferences with uncongenial
-sources of input. \emph{Statistical Science}, 9(4), 538--558.
-
-van Buuren, S. (2018). \emph{Flexible Imputation of Missing Data} (2nd ed.),
-section 5.2. Chapman & Hall/CRC.
 }

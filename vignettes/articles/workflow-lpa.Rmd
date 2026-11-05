@@ -223,7 +223,7 @@ residuals <- get_results(independent, "residuals")
 large <- with(residuals, sum(statistic > 5))
 ```
 
-`r large` pairs of indicators have a residual above 5 in the model without
+`r large` pairs of indicators have a residual-test z statistic above 5 in the model without
 covariances, so the dependence is not confined to one pair. The covariance of
 one pair lowers BIC from `r round(bic_of("independent"), 1)` to
 `r round(bic_of("paired"), 1)`, and the full covariance lowers it to

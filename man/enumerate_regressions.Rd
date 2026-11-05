@@ -16,8 +16,8 @@ enumerate_regressions(
 )
 }
 \arguments{
-\item{formula}{A model formula \code{outcome ~ predictors}. Factors, interactions
-and \code{offset()} are supported.}
+\item{formula}{A model formula \code{outcome ~ predictors}. Factors,
+interactions and \code{offset()} are supported.}
 
 \item{data}{A data frame.}
 
@@ -31,10 +31,8 @@ test; \code{0} (the default) skips it. Not available with sampling weights.}
 
 \item{bootstrap_starts}{Random starts for each bootstrap refit. Default 3.}
 
-\item{seed}{\code{NULL} (default) advances the caller's random stream. An integer
-seed restores the caller's \code{.Random.seed} afterwards. R does not store a
-cached Box-Muller normal draw
-in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
+\item{seed}{Optional integer seed; when given, the caller's random-number
+state is restored on exit.}
 
 \item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family},
 \code{id}, \code{class_level}, \code{common}, \code{membership} or \code{variance}. \code{n_classes},
@@ -87,8 +85,7 @@ improvement in likelihood supports the more complex specification.
 }
 \details{
 The optional parametric bootstrap likelihood-ratio test compares \code{k - 1}
-with \code{k} classes at a fixed number of group classes (McLachlan, 1987;
-Nylund, Asparouhov and Muthen, 2007). Outcomes are simulated under the smaller model,
+with \code{k} classes at a fixed number of group classes. Outcomes are simulated under the smaller model,
 and both models are refitted to each simulated dataset. The p-value is
 \code{(1 + b) / (1 + V)}, where \code{b} is the number of valid replicate statistics
 at least as large as the observed statistic and \code{V} is the number of valid
@@ -145,14 +142,4 @@ with_test <- enumerate_regressions(score ~ hours, data = study_hours,
                                    bootstrap = 4)
 as.data.frame(with_test)
 }
-}
-\references{
-McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
-statistic for the number of components in a normal mixture. \emph{Applied
-Statistics}, 36, 318--324.
-
-Nylund, K. L., Asparouhov, T., & Muthen, B. O. (2007). Deciding on the
-number of classes in latent class analysis and growth mixture modeling: A
-Monte Carlo simulation study. \emph{Structural Equation Modeling}, 14,
-535--569.
 }

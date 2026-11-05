@@ -19,210 +19,156 @@ three_step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fit from \code{\link[=multilpa]{multilpa()}} (\code{family = "profiles"},
-the default) or from \code{\link[=lta]{lta()}} with its default homogeneous first-order
-transitions and invariant measurement, or a trajectory model that
-classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"},
-with or without \code{random} effects) fitted without \code{membership}
-covariates. Fits with membership covariates and multilevel growth
-mixtures (\code{cluster}) raise \code{latents_unsupported_three_step}:
-the correction uses a fixed, unconditional classification-error matrix
-and independent units. The other families of \code{\link[=multilpa]{multilpa()}}, \code{\link[=lta]{lta()}} fits
-from the general transition engine (occasion-varying, second-order or
-covariate transitions, occasion-specific measurement, a stayer class,
-ordinal or count indicators) and mixture regressions with observation
-classes raise \code{latents_unsupported_three_step} too.}
+\item{x}{A covariate-free fit: from \code{\link[=multilpa]{multilpa()}} (the profile family),
+from \code{\link[=lta]{lta()}} with its default homogeneous first-order transitions and
+invariant measurement, or a trajectory model that classifies persons
+(\code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"}, with or without
+\code{random}) fitted without \code{membership} covariates. Refused: fits with
+membership covariates, multilevel growth mixtures (\code{cluster}), the
+other \code{multilpa()} families, observation-level mixture regressions,
+fits with weights or a noise component, and \code{lta()} fits with
+occasion-specific or covariate transitions, second order, occasion-
+specific measurement, a stayer class or ordinal or count indicators.}
 
-\item{data}{The data frame carrying the outcome, in the fit's row order.
-Columns shared with the fit are checked row by row; a frame with too
-little identifying information raises a warning that alignment cannot be
-verified. For a trajectory model it must be the data frame the model was
-fitted to.}
+\item{data}{The data frame carrying the outcome, in the fit's row order;
+columns shared with the fit are checked row by row. For a trajectory
+model, the data the model was fitted to.}
 
-\item{outcome}{Name of the outcome column, without missing values, that is
-not a measurement indicator of \code{x}: numeric (finite) for class means, or
-a factor, character or logical column for the class-specific probability
-of each category (a factor's unused levels are dropped). For
-\code{level = "groups"} it must be constant within each group, and for a
-trajectory model within each person.}
+\item{outcome}{Name of the outcome column, without missing or infinite
+values and not an indicator of \code{x}: numeric for class means, or a
+factor, character or logical column for the probability of each
+category in each class. For
+\code{level = "groups"} it must be constant within each group; for a
+trajectory model, within each person.}
 
-\item{level}{\code{"individuals"} (default) relates the outcome to profiles,
-\code{"groups"} to group classes. For a trajectory model the outcome is
-related to its person classes, reported with \code{level = "persons"};
-\code{"groups"} is refused there with \code{latents_bad_argument}.}
+\item{level}{\code{"individuals"} (default) relates the outcome to the
+profiles, \code{"groups"} to the group classes. A trajectory model relates
+it to its person classes, reported as \code{level = "persons"}.}
 
-\item{method}{\code{"bch"} (default) applies the Bolck-Croon-Hagenaars weights;
-\code{"ml"} fits the maximum-likelihood step-three model (see \emph{Details});
-\code{"proportional"} weights by the posterior probabilities without
-correction for classification error;
-\code{"modal"} uses the uncorrected modal assignment, for comparison.}
+\item{method}{\code{"bch"} (default): Bolck-Croon-Hagenaars weights. \code{"ml"}:
+the maximum-likelihood step-three model. \code{"proportional"}: posterior
+weights without correction. \code{"modal"}: modal assignment without
+correction. See \emph{Methods}.}
 
-\item{ci_level}{Confidence level for the intervals (default 0.95).}
+\item{ci_level}{Confidence level of the intervals (default 0.95).}
 
-\item{contrast}{\code{"none"} (default) reports one outcome mean per class (one
-probability per class and category); \code{"pairs"} reports the difference
-between every pair of classes, with a test against zero; \code{"overall"}
-tests that every class has the same mean (the same distribution over
-the categories) with one Wald statistic.}
+\item{contrast}{\code{"none"} (default): one outcome mean per class (one
+probability per class and category). \code{"pairs"}: the difference between
+every pair of classes, tested against zero. \code{"overall"}: one Wald test
+that every class has the same mean (the same category distribution).}
 
 \item{adjust}{Multiplicity correction across the pairwise differences,
-passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default), \code{"holm"},
-\code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BY"} or \code{"none"}. Ignored for
-\code{contrast = "none"}.}
+a \code{stats::p.adjust()} method; \code{"BH"} by default. Ignored for
+\code{contrast = "none"} or \code{"overall"}. With a binary outcome, its two
+complementary category rows count as one test per class pair; with
+more categories, every reported category difference enters the family.}
 
-\item{vcov_type}{\code{"cluster"} (default) sums the influence contributions
-within the fit's groups and treats the groups as the independent units,
-as required when the outcome is measured on observations nested in
-groups. \code{"independent"} treats every observation as an independent unit,
-which is appropriate only when observations can be treated as independent. The choice is recorded in the result's \code{vcov_type}
-attribute.}
+\item{vcov_type}{\code{"cluster"} (default) treats the fit's groups as the
+independent units of the sandwich variance, as the nesting requires;
+\code{"independent"} treats every observation as independent.}
 
-\item{variance}{For \code{method = "ml"} with a numeric outcome: \code{"varying"}
-(default) estimates a variance of the outcome in each class, \code{"equal"}
-one variance shared by the classes. Given with another method or a
-categorical outcome it raises \code{latents_bad_argument}.}
+\item{variance}{For \code{method = "ml"} with a numeric outcome (refused
+otherwise): \code{"varying"} (default) estimates an outcome variance in each
+class, \code{"equal"} one shared by the classes.}
 
-\item{step_one}{\code{"fixed"} (default) conditions on the step-one estimates;
-\code{"estimated"} adds their first-order contribution to the step-three
-covariance, including classification errors and ML class sizes. Available
-for \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and \code{\link[=multilpa]{multilpa()}} profile fits at either level, when
-step-one Wald inference is available. Modal assignments remain fixed.
-The choice is recorded in the result's \code{step_one} attribute.}
+\item{step_one}{\code{"fixed"} (default) conditions on the step-one estimates.
+\code{"estimated"} adds the uncertainty of the classification-error
+probabilities (and, under \code{"ml"}, of the class sizes) to the step-three
+covariance; available for \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and \code{\link[=multilpa]{multilpa()}} profile
+fits at either level when their Wald inference is available and their
+measurement was estimated jointly. Staged fits and fits holding a
+measurement block fixed are refused. See
+\emph{Step-one uncertainty}.}
 }
 \value{
-A base \code{data.frame}. For \code{contrast = "none"}, one row per class
-with the columns \code{level}, \code{method}, \code{class}, \code{estimate},
-\code{standard_error}, \code{conf_low}, \code{conf_high} and \code{effective_n}; class means
-are not tested. For a categorical outcome, one row per class and
-category, with \code{category} after \code{class} and \code{estimate} the probability
-of the category in the class; the interval is formed on the logit scale
-and stays in (0, 1). For \code{method = "ml"}, a \code{variance} column (the outcome's
-estimated variance in the class) comes before \code{effective_n}, which is
-then the expected number of units in the class under the step-three
-model; the \code{variance} attribute records the choice. For \code{contrast = "pairs"}, one row per pair of classes
-with the columns \code{level}, \code{method}, \code{class}, \code{reference_class},
-\code{estimate} (the mean of \code{class} minus the mean of \code{reference_class}),
+A data frame. For \code{contrast = "none"}, one row per class (per
+class and category for a categorical outcome, with \code{category} after
+\code{class}): \code{level}, \code{method}, \code{class}, \code{estimate}, \code{standard_error},
+\code{conf_low}, \code{conf_high} and \code{effective_n}; means are not tested, and a
+probability's interval is formed on the logit scale. Under
+\code{method = "ml"} with a numeric outcome a \code{variance} column precedes
+\code{effective_n}, and under \code{"ml"} \code{effective_n} is the expected number of
+units in the class. For \code{contrast = "pairs"}, one row per pair (per pair and category): \code{level}, \code{method},
+\code{class}, \code{reference_class}, \code{estimate} (class minus reference),
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. A contrast with zero or missing standard
-error has \code{NA_real_} statistic and p-values. For a categorical outcome
-the pairs are compared category by category, with \code{category} after
-\code{reference_class} and \code{estimate} the difference in probability. For
-\code{contrast = "overall"}, one row with \code{level}, \code{method}, \code{statistic},
-\code{df} and \code{p_value}: \code{(K - 1)} degrees of freedom for a mean,
-\code{(K - 1)(C - 1)} for \code{C} categories, tested on the baseline-category
-logits.
-
-The result's \code{vcov_type} attribute records the variance used; for
-\code{contrast = "pairs"} the \code{adjust} attribute records the correction
-applied to \code{p_adjusted}.
+\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. For \code{contrast = "overall"}, one row:
+\code{level}, \code{method}, \code{statistic}, \code{df} (\code{K - 1} for a mean,
+\code{(K - 1)(C - 1)} for \code{C} categories) and \code{p_value}. The attributes
+\code{vcov_type} and \code{step_one} record the choices, \code{adjust} on a pairs
+result and \code{variance} on a numeric ML result with \code{contrast = "none"}.
 }
 \description{
-\code{three_step()} estimates differences in an external outcome between latent
-classes defined by a previously fitted model. It addresses whether classes
-distinguished by their indicator patterns also differ on a variable that
-was not used to identify them. The measurement model remains fixed, so the
-outcome comparison retains the original meaning of the classes.
-
-Latent class membership is inferred rather than observed. Assigning each
-observation to its most probable class and comparing the resulting groups
-treats those assignments as certain, which can distort estimated outcome
-differences. Three-step methods address this problem by using
-classification-error probabilities from the fitted model when estimating
-class-specific outcome means. The default Bolck--Croon--Hagenaars (\code{"bch"})
-method applies correction weights; the alternative maximum-likelihood
-(\code{"ml"}) method incorporates the classification-error probabilities into
-a model for the outcome.
-
-The analysis provides estimated outcome means within classes or differences
-between pairs of classes, together with standard errors and confidence
-intervals. Pairwise differences can also be tested against zero, with
-adjustment for multiple comparisons. For supported multilevel models,
-comparisons may concern individual profiles or group classes. Uncorrected
-modal-assignment and posterior-weighted analyses are available as
-additional methods.
-}
-\details{
-On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"}
-uses one row per occasion and relates the outcome to the profile at that
-occasion, with the default group-clustered variance accounting for the
-repeated occasions within a group. This is a marginal profile-outcome
-analysis, not a model of outcome effects on transitions or of a
-sequence-level outcome.
-
-The cluster-robust variance is the sum of one outer product per
-independent unit, scaled by the small-sample (CR1) factor \code{G / (G - 1)}
-for \code{G} units (groups, or observations under \code{vcov_type = "independent"}). These contributions sum to zero at the estimate, so the
-variance has rank at most \code{G - 1}: it is zero with a single group and
-singular with as many groups as classes. Both cases raise
-\code{latents_too_few_groups}; \code{vcov_type = "independent"} gives the
-unclustered variance. For the same reason a class carried by a single
-unit (all its weight in one group, or under \code{vcov_type = "independent"}
-in one observation; Kish's effective number of carrying units below 1.5)
-has no standard error, whichever the method: its standard error, its
-interval and those of the contrasts involving it are \code{NA}, with a
-\code{latents_small_classes} warning.
-
-With \code{method = "ml"} the assigned class is an indicator of the true
-class whose error probabilities are those of step one, and the outcome is
-normal within each true class. The log likelihood
-\verb{sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)} is maximised over
-the class means and variances by EM followed by Newton steps, with the
-class sizes \code{pi_t} fixed at the average posterior probabilities and the
-classification errors \code{D} fixed, as in Latent GOLD's step-three model for
-a dependent variable. Multiple initialisations are used because the
-likelihood may have several local maxima. Equal-variance fits additionally
-use bounded BFGS optimisation from quantile-based initial values; accepted
-solutions must converge, have a sufficiently small score and yield a
-positive-definite information matrix. These searches do not guarantee the
-global maximum. Twenty random starts use a fixed internal seed, and the
-caller's \code{.Random.seed} is restored. R's hidden Box-Muller normal cache
-cannot be restored; see \link[base:Random]{base::Random}. Standard errors use a sandwich
-covariance estimator, clustered as for the other methods. As described
-above, a class supported by a single independent unit has no standard error.
-Maximum-likelihood estimates depend on the assumed within-class outcome
-distribution. Skewness or an incorrect equal-variance constraint can bias
-estimated means; BCH is less sensitive to these distributional assumptions
-(Bakk and Vermunt, 2016).
-
-A categorical outcome is described by its probability in each class.
-The weighting methods give the weighted share of each category; BCH
-weights can be negative, and with poorly separated classes a share can
-fall outside \verb{[0, 1]}: it is then reported without an interval or test,
-with a \code{latents_bch_out_of_range} warning. With \code{method = "ml"} the
-step-three model estimates a distribution over the categories in each
-class, with the class sizes and classification errors fixed as for a
-numeric outcome, as Latent GOLD's step-three model of a nominal dependent
-variable does without an equation for the sizes. Its probabilities stay
-in \verb{[0, 1]}; where the BCH shares do not, its maximum usually lies on
-the bound, and it reports the estimates without standard errors, with a
-\code{latents_boundary} warning.
-
-With \code{step_one = "fixed"}, omitted uncertainty in the classification-error
-probabilities can reduce interval coverage, particularly when classification
-is uncertain. \code{step_one = "estimated"} adds \verb{G V1 G'}, where \code{V1} is
-the step-one covariance on the unconstrained scale and \code{G} differentiates
-the step-three estimates through the posteriors, with data and modal
-assignments held fixed (Bakk, Oberski and Vermunt, 2014). Estimates stay
-the same; standard errors, intervals and Wald tests use the corrected
-covariance. The modal method is unchanged because it uses no posteriors.
-The correction is a large-sample one: with poorly separated classes in
-a small sample (relative entropy near 0.6, three classes, 300
-observations) its intervals still cover less than the nominal level.
-}
-\section{Interpretation}{
-
-Correction for classification error depends on the fitted measurement
-model and assumes that the outcome and assigned class are independent
-conditional on latent class membership. For a numeric outcome, the
-maximum-likelihood method additionally assumes a normal outcome distribution
-within each class; for a categorical outcome it estimates a multinomial
-distribution in each class.
-By default, uncertainty is conditional on the estimated classification-error
-probabilities. With \code{step_one = "estimated"}, it also includes uncertainty
-from estimating the measurement model, holding modal assignments fixed.
-Neither option includes uncertainty from selecting the class solution.
-Outcome differences describe associations; they do not establish causal
+\code{three_step()} estimates how an outcome that was not used to define the
+classes differs between them, holding the measurement model fixed so the
+classes keep their meaning. Comparing classes by modal assignment treats
+uncertain assignments as certain and biases the differences; the
+three-step methods correct for the classification error of the fitted
+model. The default is the Bolck-Croon-Hagenaars (\code{"bch"}) weighting; the
+maximum-likelihood (\code{"ml"}) method models the outcome given the true
+class instead. Both assume that the outcome and the assigned class are
+independent given the true class; the differences are associations, not
 effects of class membership.
+}
+\section{Methods}{
+
+BCH gives each observation one weight per class, the row of the inverse
+classification-error matrix for its assigned class, and takes weighted
+means. With \code{method = "ml"} the assigned
+class is an
+indicator of the true class with the step-one error probabilities, and
+the outcome is normal within each true class (a multinomial distribution
+for a categorical outcome), with the class sizes fixed at the average
+posteriors, as in Latent GOLD's step-three model. The likelihood is
+maximised from a fixed set of starts plus twenty seeded random ones, so
+the result does not depend on the caller's seed; the global maximum is
+not guaranteed.
+ML depends on the within-class outcome distribution: skewness or a wrong
+equal-variance constraint can bias the means, and BCH is less sensitive to
+that.
+
+A categorical outcome is described by its probability in each class. BCH
+weights can be negative, so with poorly separated classes a share can
+fall outside 0 to 1; it is then reported without an interval or test,
+with a warning. The ML probabilities stay in range; where the BCH shares
+do not, the ML maximum usually sits on the bound and is reported without
+standard errors, with a warning.
+
+On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} uses one row per occasion and
+relates the outcome to the profile at that occasion, with the
+group-clustered variance accounting for the repeated occasions. It is a
+marginal profile-outcome analysis, not a model of outcome effects on
+transitions.
+}
+
+\section{Standard errors}{
+
+The variance is a sandwich over the \code{G} independent units (the groups,
+or the observations under \code{vcov_type = "independent"}) with the
+\code{G / (G - 1)} small-sample factor. It needs more units than classes;
+with as many or fewer, the analysis is refused. A class carried by one unit (Kish's
+effective number of units carrying it below 1.5) has no standard error:
+its interval and the contrasts involving it are \code{NA}, with a warning.
+}
+
+\section{Step-one uncertainty}{
+
+With \code{step_one = "fixed"} the intervals ignore the uncertainty of the
+classification-error probabilities, which lowers their coverage when
+classification is uncertain. \code{"estimated"} adds the first-order
+contribution of the step-one covariance, with the data and modal
+assignments held fixed; the estimates
+are unchanged, the standard errors and intervals grow, and the tests use
+the corrected covariance. The first-stage contribution uses its
+model-based observed information, even when the step-three sandwich is
+clustered; it does not add a robust first-stage covariance for residual
+dependence outside the fitted model. The correction is a large-sample one: in a
+small, poorly separated sample the intervals still cover less than the
+nominal level. The modal method is unaffected, as it uses no posteriors.
+A staged fit or a fit with a held measurement block does not carry the
+measurement covariance needed by this correction; use \code{step_one = "fixed"}
+to report inference conditional on that measurement.
+Neither option includes the uncertainty of having selected the class
+solution.
 }
 
 \examples{
@@ -244,17 +190,6 @@ example_data <- transform(example_data, passed = y + rnorm(400, sd = 6) > 5)
 three_step(fit, example_data, "passed")
 three_step(fit, example_data, "passed", contrast = "overall")
 }
-\references{
-Vermunt, J. K. (2010). Latent class modeling with covariates: two
-improved three-step approaches. \emph{Political Analysis}, 18, 450--469.
-Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
-association between latent class membership and external variables
-using bias-adjusted three-step approaches. \emph{Sociological Methodology},
-43, 272--311.
-Bakk, Z., Oberski, D. L., & Vermunt, J. K. (2014). Relating latent class
-assignments to external variables: standard errors for correct inference.
-\emph{Political Analysis}, 22, 520--540.
-Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
-modeling with continuous distal outcomes. \emph{Structural Equation Modeling},
-23, 20--31.
+\seealso{
+\code{\link[=r3step]{r3step()}} for covariates of class membership; \code{\link[=fit_staged]{fit_staged()}}.
 }

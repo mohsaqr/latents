@@ -22,188 +22,116 @@ enumerate_classes(
 )
 }
 \arguments{
-\item{data}{A data frame with one row per observation and columns containing
-the indicators, group identifier and, when applicable, occasion order and
-covariates. Use the same observations and measurement scale throughout a
-candidate comparison.}
+\item{data}{A data frame with one row per observation: the indicators,
+the group identifier and, when used, the occasion column and
+covariates. Use the same rows and scale for every candidate.}
 
-\item{vars}{Character vector naming the indicator columns in \code{data}.
-Indicator distributions are determined by \code{type} and the measurement
-arguments supplied through \code{...}.}
+\item{vars}{Names of the indicator columns.}
 
-\item{id}{The column identifying the groups the observations are nested in
-(students in schools, reports in students). Required; \code{NULL} enumerates
-single-level models, with a message. \code{\link[=enumerate_lpa]{enumerate_lpa()}} and
-\code{\link[=enumerate_lca]{enumerate_lca()}} fit single-level models directly.}
+\item{id}{The column identifying the groups the rows are nested in.
+\code{NULL} enumerates single-level models, with a message; \code{\link[=enumerate_lpa]{enumerate_lpa()}}
+and \code{\link[=enumerate_lca]{enumerate_lca()}} do that directly.}
 
-\item{n_profiles}{Positive integer profile counts to try. Default \code{1:4}.}
+\item{n_profiles}{Profile (class) counts to try (default \code{1:4}; \code{2:4} for
+transition models).}
 
-\item{n_group_classes}{Positive integer group-class counts to try. Default
-\code{1:3}. With \code{id = NULL} it is 1 and may be left out.}
+\item{n_group_classes}{Group-class counts to try (default \code{1:3}; default
+\code{1} with \code{time}, and only \code{1} with \code{id = NULL}).}
 
-\item{model}{The covariance structures to cross with the class counts.
-\code{"basic"} (the default) fits four structures: \code{"EEI"} (equal variances,
-no covariances), \code{"VVI"} (varying variances, no covariances), \code{"EEE"}
-(one covariance matrix shared by all profiles) and \code{"VVV"} (a covariance
-matrix for each profile). Omitting covariances between correlated
-indicators tends to favour additional profiles. \code{"all"} fits all 14
-structures of Celeux and Govaert (1995). Otherwise, name structures by
-their three-letter codes, as \code{\link[=multilpa]{multilpa()}}'s \code{model} takes them: the
-letters give the volume, shape and orientation of each profile's
-covariance matrix, each equal (\code{E}) or varying (\code{V}) across profiles,
-with \code{I} for no covariances. \code{NULL} crosses no structures. With one
-continuous indicator, codes that coincide (equal or varying variance)
-are fitted once; with only categorical indicators no structure is
-crossed. A structure set through \code{variance_model}, \code{covariance_model},
-\code{volume}, \code{shape} or \code{orientation} in \code{...} replaces the default.}
+\item{model}{Covariance structures to cross with the class counts.
+\code{"basic"} (the default for profile grids) fits EEI (equal variances, no
+covariances), VVI (varying variances), EEE (one covariance matrix
+shared by all profiles) and VVV (a covariance matrix per profile).
+\code{"all"} fits all fourteen structures.
+Otherwise mclust's three-letter codes (volume, shape and orientation,
+each equal \code{E} or varying \code{V}, \code{I} for no covariances), or \code{NULL} for
+none, which is the default for a transition grid. With one continuous
+indicator, codes that coincide are fitted once; with only categorical
+indicators no structure is crossed. Giving \code{variance_model},
+\code{covariance_model}, \code{volume}, \code{shape} or \code{orientation} in \code{...} sets
+one structure instead.}
 
-\item{seed}{Optional integer random seed accepted by \code{\link[=set.seed]{set.seed()}}. Used
-to reproduce the starting values for the same data and fitting controls.
-Invalid values raise \code{latents_bad_argument} before fitting begins.}
+\item{seed}{Optional integer seed, reproducing the starting values for
+the same data and controls.}
 
-\item{family}{\code{"profiles"} (the default) enumerates the profile model over
-\code{n_profiles}, \code{n_group_classes} and \code{model}. One or more of the
-group-class families \code{"additive"}, \code{"dispersion"} and
-\code{"additive_dispersion"} enumerates those instead, over \code{family},
-\code{n_group_classes} and \code{between_variance}; these need \code{id}, \code{n_profiles}
-and \code{model} are then rejected, and the result is a
-\code{latents_family_enumeration}, read with \code{\link[=get_results]{get_results()}} and
-\code{\link[=get_candidate]{get_candidate()}}.}
+\item{family}{\code{"profiles"} (default) enumerates the profile model over
+\code{n_profiles}, \code{n_group_classes} and \code{model}. One or more of
+\code{"additive"}, \code{"dispersion"} and \code{"additive_dispersion"} enumerates
+those group-class families over \code{family}, \code{n_group_classes} and
+\code{between_variance} instead; they need \code{id}, refuse \code{n_profiles} and
+\code{model}, and return a \code{latents_family_enumeration}.}
 
-\item{between_variance}{For group-class families: the between-variance
-restrictions to cross, \code{"varying"}, \code{"equal"} or both (the default). The
-dispersion family is always fitted with \code{"equal"}. Refused for the
-profile family.}
+\item{between_variance}{For the group-class families, the restrictions to
+cross: \code{"varying"}, \code{"equal"} or both (default). The dispersion family
+is fitted with \code{"equal"} only.}
 
 \item{time}{The occasion column. Enumerates latent transition models
-(\code{\link[=lta]{lta()}}) over \code{n_profiles} (default \code{2:4}) and \code{n_group_classes}
-(default \code{1}), with every other \code{lta()} argument given in \code{...} held
-fixed. \code{model}, when given, crosses those covariance structures. Only
-the profile family is available. The result is a
-\code{latents_transition_enumeration}, read with \code{\link[=get_results]{get_results()}} and
-\code{\link[=get_candidate]{get_candidate()}}.}
+(\code{\link[=lta]{lta()}}) over \code{n_profiles} and \code{n_group_classes}, every other \code{lta()}
+argument in \code{...} held fixed; \code{model}, when given, crosses structures.
+Profile family only; returns a \code{latents_transition_enumeration}.}
 
-\item{...}{Additional fitting arguments passed to \code{\link[=multilpa]{multilpa()}}, or to
-\code{\link[=lta]{lta()}} when \code{time} is supplied. The same settings are used for each
-candidate. Common arguments include \code{n_starts}, \code{max_iter}, \code{missing},
-\code{categorical}, \code{centering}, \code{scaling}, \code{drop_empty} and \code{boundary}.
-The group-class families accept only \code{n_starts}, \code{max_iter}, \code{tol} and
-\code{min_variance} through \code{...}.}
+\item{...}{Further arguments of \code{\link[=multilpa]{multilpa()}}, or of \code{\link[=lta]{lta()}} with \code{time},
+used for every candidate: typically \code{n_starts}, \code{max_iter}, \code{missing},
+\code{categorical}, \code{centering}, \code{scaling}, \code{drop_empty} and \code{boundary}. The
+group-class families take only \code{n_starts}, \code{max_iter}, \code{tol} and
+\code{min_variance}.}
 
-\item{cores}{Positive integer maximum number of parallel workers; the
-default, \code{1}, fits models serially. With a fixed \code{seed}, parallel and
-serial execution produce the same results. Parallel fitting requires
-additional memory. See \emph{Parallel estimation} for platform requirements
-and the handling of interrupted workers.}
+\item{cores}{Maximum number of parallel workers (default 1, serial). With
+\code{seed}, parallel and serial runs give the same result. On Windows, and
+on macOS with Apple's Accelerate BLAS, each worker is a separate R
+process, so memory grows with \code{cores}.}
 
-\item{type}{Optional model type: \code{"lca"}, \code{"lpa"} or \code{"lta"}. \code{NULL}
-(the default) determines the model from the other arguments.
-\code{"lca"} treats every indicator as categorical, as \code{\link[=multilca]{multilca()}} does:
-indicators named in \code{ordinal} or \code{count} keep those distributions, and
-\code{categorical} adds to the set rather than replacing it. Numeric response
-codes are categorical with \code{type = "lca"}. \code{"lpa"} requires continuous
-indicators and rejects non-empty \code{categorical}, \code{ordinal} or \code{count}.
-Both require \code{time = NULL}. \code{"lta"} requires \code{time} and takes its
-measurement settings from \code{categorical}, as \code{\link[=lta]{lta()}} does; it does not
-make numeric indicators categorical. An explicit type requires
-\code{family = "profiles"}; leave \code{type = NULL} for group-class families.}
+\item{type}{\code{"lca"}, \code{"lpa"} or \code{"lta"}; \code{NULL} (default) reads the type
+from the other arguments. \code{"lca"} treats every indicator as categorical,
+numeric codes included, as \code{\link[=multilca]{multilca()}} does (indicators in \code{ordinal} or
+\code{count} keep those distributions, and \code{categorical} adds to the set).
+\code{"lpa"} needs continuous indicators and no \code{categorical}, \code{ordinal} or
+\code{count}. Both need \code{time = NULL}. \code{"lta"} needs \code{time} and reads the
+measurement from \code{categorical}, as \code{\link[=lta]{lta()}} does, without making numeric
+indicators categorical. An explicit type needs \code{family = "profiles"}.}
 
 \item{verbose}{Whether to report progress: one message each when the
-candidates are prepared, when their starts are fitted, and when the grid
-is done, with the elapsed time. The default reports when \code{cores > 1},
-where a grid is usually long. Group-class families (\code{family}) are not
-reported.}
+candidates are prepared, when starts are screened, when they are fitted
+and when the grid is done. Default on when \code{cores > 1}. Not reported
+for the group-class families.}
 }
 \value{
-An object of class \code{multilpa_enumeration} (or the transition or
-family enumeration described above). Its \code{type} records the resolved
-model: \code{"lca"}, \code{"lpa"} or \code{"lta"}, or \code{"mixed"}/\code{"family"} for
-those grids under \code{type = NULL}. The print header reports this type.
-\code{\link[=as.data.frame]{as.data.frame()}} gives
-one row per candidate, starting with its name (\code{"profiles3_groups2"}),
-with every criterion and diagnostic (including both entropies and, at
-each level, the smallest, largest and mean average posterior probability
-and the number of classes below a cutoff) and the candidate's warnings
-and error. \code{get_results(x, "best")} names the candidate at each
-criterion's minimum; \code{get_results(x, "classification")} gives every
-class's average posterior probability and relative entropy for every
-candidate; \code{get_results(x, "deltas")} and \code{"knees"} give model-selection
-evidence. \code{\link[=summary]{summary()}} prints each criterion's minimum and every table,
-\code{\link[=plot]{plot()}} draws the information criteria (and, with \code{what},
-classification quality and model-selection views), \code{\link[=get_candidate]{get_candidate()}}
-extracts a fitted candidate, and \code{\link[=compare_models]{compare_models()}} compares candidates
-selected by name.
+A \code{multilpa_enumeration} object, or the transition or family
+enumeration named under \code{time} and \code{family}; the print header names
+the resolved type (LPA, LCA, LTA, mixed or family). On every grid:
+\code{\link[=get_candidates]{get_candidates()}} gives one row per candidate (named like
+\code{"profiles3_groups2"}) with its class counts, log likelihood, criteria,
+entropy, convergence, boundary and replication, leaving out columns
+empty in every row; \code{\link[=get_best]{get_best()}} the best candidate per criterion;
+\code{\link[=get_tree]{get_tree()}} and \code{\link[=plot_tree]{plot_tree()}} how classes split; \code{\link[=get_entropy]{get_entropy()}},
+\code{\link[=get_avepp]{get_avepp()}} and \code{\link[=get_classification]{get_classification()}} the classification tables of
+every candidate; \code{\link[=plot_criteria]{plot_criteria()}} the criteria; \code{\link[=get_candidate]{get_candidate()}} one
+fitted candidate; \code{\link[=compare_models]{compare_models()}} candidates by name (a family grid
+is compared in its own candidates table). A profile or
+class grid also has the AvePP summaries at each level in its candidates
+table, \code{\link[=get_deltas]{get_deltas()}} and \code{\link[=get_knees]{get_knees()}}, and a \code{summary()} that prints
+one screen of the evidence; a transition or family grid's \code{summary()}
+is its candidates table. Invalid arguments are refused with the
+classed conditions listed on \link{latents-conditions}.
 }
 \description{
-Class enumeration evaluates alternative numbers of latent classes to inform
-model selection. \code{enumerate_classes()} fits a specified set of candidate
-models and summarizes their fit, classification quality, and estimation
-diagnostics. It supports latent profile, latent class, and latent transition
-models, including multilevel specifications.
+\code{enumerate_classes()} fits every candidate in a grid of class counts
+(and, for continuous indicators, covariance structures) and collects
+their information criteria, classification quality and estimation
+diagnostics in one object. It covers latent profile, latent class and
+latent transition models, single-level or two-level, and the additive,
+dispersion and additive-dispersion families of \code{\link[=multilpa]{multilpa()}}. The fitted
+candidates stay in the result (see \emph{Value}).
 
-For multilevel profile and class models, candidates can differ in the number
-of observation-level profiles or classes, the number of group-level classes,
-and, for continuous indicators, the within-profile covariance structure.
-Comparing these specifications allows the analyst to assess both the latent
-class structure and the assumptions used to represent variation within
-classes.
-
-The function retains the fitted candidates and provides tables for comparing
-information criteria, posterior classification probabilities, class sizes,
-and convergence diagnostics. Individual models can be extracted with
-\code{\link[=get_candidate]{get_candidate()}} for further examination and analysis.
+Information criteria summarise relative support; entropy and average
+posteriors describe classification certainty within each candidate.
+Neither picks a solution: also check that the best likelihood was
+replicated across starts, that no estimate sits at a bound, and that an
+added class brings interpretable differences in the response patterns.
+More profiles can stand in for covariances a diagonal structure cannot
+hold, so compare class counts alongside plausible structures. The grid
+is the analyst's: when every criterion is lowest at its edge, extend it.
 }
-\section{Model selection}{
-
-Information criteria summarize relative support for the candidate
-specifications, whereas entropy and posterior membership probabilities
-describe classification uncertainty within each fitted model. These measures
-address different aspects of the analysis. Model selection should also
-examine whether the selected likelihood is replicated across starts,
-whether estimates approach parameter bounds, and whether additional classes
-yield interpretable differences in response patterns. The function reports
-this evidence without prescribing a final number of classes.
-
-Comparisons of class counts depend on the measurement specification. For
-example, additional profiles can represent residual associations that a
-diagonal covariance model cannot accommodate within profiles. Evaluate the
-number of classes alongside plausible covariance structures and indicator
-distributions. The candidate range and fitting controls are supplied by the
-analyst; the function does not expand the range automatically.
-}
-
-\section{Parallel estimation}{
-
-Socket workers are used on Windows and on macOS with Apple's Accelerate
-BLAS; these workers load the installed package, which must match the
-version used in the main R session. Other supported Unix configurations
-use forked processes. Each worker requires memory for its fitting tasks.
-
-Depending on the model family, parallel tasks consist of individual starts
-or complete candidate models. The total number of workers does not exceed
-\code{cores}. Warnings and messages are reported in candidate order. Without a
-fixed \code{seed}, starting values can differ between runs.
-
-Lost worker results are retried once with fewer workers, and a
-\code{latents_worker_lost} warning reports the interruption. Unrecovered tasks
-are recorded as failed starts or candidates; other results are retained.
-}
-
-\section{Conditions}{
-
-\code{latents_bad_argument} when \code{model} names an unknown structure, when it is
-given together with another way of setting the structure, or when it is
-given although no indicator is continuous; when \code{seed} is not a seed
-\code{set.seed()} accepts; when \code{...} contains an argument \code{\link[=multilpa]{multilpa()}} does
-not take; when \code{n_group_classes} other than 1 is given with \code{id = NULL};
-when \code{id} is missing; when \code{between_variance} is given for the profile
-family; when \code{n_profiles} or \code{model} is given for a group-class family,
-or \code{id} is \code{NULL}; when \code{time} is combined with a group-class family or
-with \code{between_variance}; and when \code{cores} is not an integer of at
-least 1; and when \code{type} is invalid or conflicts with \code{time}, \code{family}
-or the requested measurement distributions.
-}
-
 \examples{
 set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
@@ -225,11 +153,7 @@ single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
                         n_starts = 2, seed = 1)
 summary(single)
 }
-\references{
-Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
-\emph{Pattern Recognition}, 28(5), 781--793.
-}
 \seealso{
-\code{\link[=get_candidate]{get_candidate()}} to extract a fitted candidate,
-\code{summary()} for the criterion-by-criterion comparison.
+\code{\link[=get_candidate]{get_candidate()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to test one class count
+against the next, \code{\link[=enumerate_regressions]{enumerate_regressions()}} for mixture regressions.
 }

@@ -18,168 +18,130 @@ r3step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fit from \code{\link[=multilpa]{multilpa()}} (\code{family = "profiles"},
-the default) or from \code{\link[=lta]{lta()}} with its default homogeneous first-order
-transitions and invariant measurement, or a trajectory model from
-\code{\link[=mixture_regression]{mixture_regression()}} that classifies persons (with or without
-\code{random}), whose person classes are then predicted. Fits with membership
-covariates and multilevel growth mixtures (\code{cluster}) raise
-\code{latents_unsupported_three_step}: the correction uses a fixed,
-unconditional classification-error matrix and independent units. The
-other families of \code{\link[=multilpa]{multilpa()}}, general transition fits of \code{\link[=lta]{lta()}} and
-mixture regressions with observation classes raise
-\code{latents_unsupported_three_step} too, except that a covariate-free
-general transition fit takes \code{initial_covariates} and
-\code{transition_covariates}.}
+\item{x}{A covariate-free fit without weights or a noise component: from
+\code{\link[=multilpa]{multilpa()}} (the profile family), from \code{\link[=lta]{lta()}}, or a trajectory model
+from \code{\link[=mixture_regression]{mixture_regression()}} that classifies persons. A default \code{lta()}
+fit takes \code{covariates} or the Markov covariates; one with
+occasion-specific or second-order transitions, occasion-specific
+measurement, or ordinal or count indicators takes the Markov
+covariates only. Refused: fits with membership covariates, multilevel
+growth mixtures (\code{cluster}), the other \code{multilpa()} families,
+observation-level mixture regressions and stayer-class fits.}
 
-\item{data}{The data frame carrying the covariates, in the fit's row order.
-Columns shared with the fit are checked row by row; a frame with too
-little identifying information raises a warning that alignment cannot be
-verified.}
+\item{data}{The data frame carrying the covariates, in the fit's row
+order; columns shared with the fit are checked row by row.}
 
-\item{covariates}{Character vector of numeric columns, without missing or
-infinite values, that are not measurement indicators of \code{x}. For
-\code{level = "groups"} each must be constant within a group; for a
-trajectory model each must be constant within a person and not part of
-the trajectory regression (\code{latents_bad_covariate}).}
+\item{covariates}{Names of numeric columns, complete and finite, that
+are not indicators of \code{x}. For \code{level = "groups"} each must be
+constant within a group; for a trajectory model, constant within a
+person and not part of the trajectory regression.}
 
 \item{level}{\code{"individuals"} (default) predicts profile membership,
-\code{"groups"} group-class membership. For a trajectory model the rows have
-\code{level = "persons"} and outcomes \code{class_1}, \code{class_2}, ...; \code{"groups"} is
-refused there with \code{latents_bad_argument}.}
+\code{"groups"} group-class membership. A trajectory model predicts its
+person classes, reported as \code{level = "persons"} with outcomes
+\code{class_1}, \code{class_2} and so on.}
 
-\item{ci_level}{Confidence level for the intervals (default 0.95).}
+\item{ci_level}{Confidence level of the intervals (default 0.95).}
 
-\item{vcov_type}{\code{"robust"} (default) uses the sandwich clustered on the
-fit's groups with the small-sample (CR1) factor \code{G / (G - 1)} for \code{G}
-groups, as the default of \code{\link[=three_step]{three_step()}}. \code{"observed"} uses the observed
-information; for the pooled regression it treats every observation as
-independent, and with \code{by_group_class = TRUE} it is the model-based
-variance of the two-level likelihood. \code{"robust"} requires more
-independent groups than the regression has coefficients, because the
-group score contributions sum to zero at the estimate; otherwise it is
-refused with \code{latents_too_few_groups}, and \code{"observed"} remains
-available.}
+\item{vcov_type}{\code{"robust"} (default): the sandwich clustered on the
+independent units (the fit's groups; the persons of a trajectory model
+or a transition chain), which needs more units than the regression has
+coefficients, \code{"observed"} remaining available otherwise.
+\code{"observed"}: the observed information, treating every observation as
+independent in the pooled regression; with \code{by_group_class = TRUE},
+the model-based variance of the two-level likelihood.}
 
 \item{adjust}{Multiplicity correction across the covariate terms of every
-non-reference class (not the intercepts), passed to
-\code{\link[stats:p.adjust]{stats::p.adjust()}}: \code{"BH"} (default), \code{"holm"}, \code{"hochberg"},
-\code{"hommel"}, \code{"bonferroni"}, \code{"BY"} or \code{"none"}.}
+non-reference class (not the intercepts), a \code{stats::p.adjust()} method;
+\code{"BH"} by default.}
 
-\item{by_group_class}{\code{FALSE} (default) fits one pooled multinomial logit
-with a single intercept per profile. \code{TRUE} fits the two-level form of
-the one-step model: each group class has its own profile intercepts, the
-covariate slopes are shared across group classes, and a group's
-observations share one latent group class whose proportions are
-estimated jointly. Group classes represent between-group differences in
-profile membership that are not explained by the covariates. This changes
-the regression specification relative to the pooled analysis. Available
-only for \code{level = "individuals"} on a covariate-free
-\code{\link[=multilpa]{multilpa()}} fit; refused with \code{latents_bad_argument} otherwise.}
+\item{by_group_class}{\code{FALSE} (default): one pooled multinomial logit with
+one intercept per profile. \code{TRUE}: the two-level form of the one-step
+model, with profile intercepts per group class, slopes shared across
+group classes, and the group-class proportions estimated jointly; the
+group classes then capture between-group differences in membership the
+covariates do not explain. Only for \code{level = "individuals"} on a
+\code{multilpa()} fit.}
 
-\item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit with one
-group class: covariates of the profile at the first occasion (constant
-within a person) and of every transition (read at the destination
-occasion, so they may vary over occasions). Either one fits the
-three-step latent Markov model described below instead of the
-occasion-by-occasion profile regression; \code{covariates} must then be
-empty, and \code{level} and \code{by_group_class} do not apply. Refused with
-\code{latents_bad_argument} on a fit that is not a transition model.}
+\item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit with
+one group class: covariates of the profile at the first occasion
+(constant within a person) and of every transition (read at the
+destination occasion, so they may vary over occasions). Either one fits
+the three-step latent Markov model (see \emph{Transition fits}) instead of
+the occasion-by-occasion profile regression; \code{covariates}, \code{level} and
+\code{by_group_class} are refused then.}
 }
 \value{
-A base \code{data.frame} with one row per non-reference class and term,
-and the columns \code{level}, \code{outcome}, \code{term}, \code{estimate},
-\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}. \code{p_value} is uncorrected; \code{p_adjusted} applies \code{adjust}
-(also recorded in the \code{adjust} attribute) and is \code{NA} on the intercept
-rows. A coefficient with zero standard error has \code{NA_real_} statistic
-and p-value. Coefficients are log odds against the last class, as in
-\code{multilpa(profile_covariates = )}; the reference class is named in the
-\code{reference_class} attribute and the variance used in the \code{vcov_type}
-attribute. With \code{by_group_class = TRUE} there is one intercept row per
-group class (\code{group_class_1}, \code{group_class_2}, ...), followed by the
-shared slopes and, at \code{level = "groups"}, the group-class logits against
-the last group class; the result also carries the attributes
-\code{by_group_class} and \code{log_likelihood} (the maximised log likelihood).
+A data frame with one row per non-reference class and term:
+\code{level}, \code{outcome}, \code{term}, \code{estimate}, \code{standard_error}, \code{statistic},
+\code{p_value}, \code{p_adjusted} (\code{NA} on the intercept rows), \code{conf_low} and
+\code{conf_high}. Coefficients are log odds against the last class, named
+in the \code{reference_class} attribute; \code{vcov_type} and \code{adjust} are
+attributes too. With \code{by_group_class = TRUE} there is one intercept row
+per group class and non-reference profile, then the shared slopes and,
+at \code{level = "groups"}, the group-class logits, with the attributes
+\code{by_group_class} and \code{log_likelihood}.
 
 With \code{initial_covariates} or \code{transition_covariates}, one row per
 coefficient of the step-three chain: \code{block} (\code{"initial"} or
-\code{"transition"}), \code{from} (the origin profile of a transition, \code{NA} for an
-initial logit), \code{to}, \code{term}, \code{estimate}, \code{standard_error}, \code{statistic},
-\code{p_value}, \code{p_adjusted}, \code{conf_low} and \code{conf_high}, with the attributes
-\code{log_likelihood}, \code{classification_errors} (the step-two error matrix,
-rows the true profile), \code{vcov_type} and \code{adjust}. Initial logits are
-against the last profile and transition logits against staying, as in
-\code{lta(initial_covariates =, transition_covariates =)}; \code{p_adjusted} covers
-the covariate terms.
+\code{"transition"}), \code{from} (the origin profile, \code{NA} for an initial
+logit), \code{to}, \code{term} and the estimate columns (\code{p_adjusted} on the
+covariate terms), with the attributes \code{log_likelihood},
+\code{classification_errors} (the step-two error matrix, rows the true
+profile), \code{vcov_type} and \code{adjust}. Initial logits are
+against the last profile, transition logits against staying, as in
+\code{lta(initial_covariates =, transition_covariates =)}.
 }
 \description{
-\code{r3step()} examines how external covariates are associated with membership
-in latent classes identified by a previously fitted model. It addresses
-whether the relative likelihood of belonging to particular classes varies
-with characteristics that were not used to define them. The measurement
-parameters remain fixed, preserving the class definitions while estimating
-their associations with the covariates.
-
-Because class membership is unobserved, a regression that treats assigned
-classes as known outcomes can distort these associations. The three-step
-approach incorporates estimated classification-error probabilities into
-the membership regression, treating each assignment as an imperfect
-indicator of latent membership. Covariates enter a multinomial logistic
-model whose coefficients describe changes in the log odds of membership
-in a class relative to a reference class, holding the other covariates
-constant.
-
-For supported multilevel models, the regression can concern individual
-profiles or group classes. For supported transition models, a separate
-specification relates covariates to initial profile membership and
-movement between profiles over time. The function reports regression
-coefficients, standard errors, confidence intervals, and hypothesis tests,
-with options for clustered inference and adjustment for multiple
-comparisons.
+\code{r3step()} regresses membership in the classes of a fitted model on
+covariates that were not used to define them, holding the measurement
+model fixed. Treating the assigned classes as known outcomes distorts the
+associations; the three-step approach instead treats each assignment as
+an imperfect indicator of the true class, with the classification-error
+probabilities of the fitted model built into a multinomial logit.
+Coefficients are changes in the log odds of a class
+against the reference class, the last one, holding the other covariates
+constant; their exponentials are odds ratios. A transition fit can also
+have its initial state and transitions regressed on covariates, a
+separate specification. The correction assumes the classification-error
+probabilities do not vary with the covariates within a class; the
+standard errors treat them as fixed and ignore the choice of class
+solution, so interval coverage can fall below the nominal level when the
+classes are poorly separated; inspect the error matrix with
+\code{get_results(x, "classification_errors")}. Associations are not causal
+effects.
 }
-\details{
-On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} models the marginal profile at
-each occasion; it does not regress initial-state or transition
-probabilities on the covariates. \code{vcov_type = "robust"} clusters the
-occasion scores by group; \code{"observed"} treats them as independent.
-On a trajectory model the units are persons, each with one covariate
-value, and \code{"robust"} is the sandwich over persons.
+\section{Transition fits}{
 
-The three-step latent Markov model (\code{initial_covariates},
-\code{transition_covariates}) classifies each occasion from its own
-indicators, using the transition fit's measurement model and its profile
-shares pooled over occasions (the latent class model of the pooled
-data), and assigns it to its modal profile. Step three is a hidden Markov
-model for those assignments, with the classification errors fixed at
-their step-two values and the initial and transition logits regressed on
-the covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's
-own posteriors are not used for the assignments, because they draw on a
-person's other occasions and their errors are therefore not independent
-across occasions, as step three assumes. The step-one fit must have no
-covariates and one group class (\code{latents_unsupported_three_step}
-otherwise). \code{"robust"} uses a sandwich covariance estimator with persons
-as independent units; \code{"observed"} uses the observed information.
+With \code{covariates} and \code{level = "individuals"}, an \code{\link[=lta]{lta()}} fit is treated
+occasion by occasion: the covariates predict the marginal profile at each
+occasion, with the scores clustered by group under \code{"robust"}. That is
+not a model of the initial state or the transitions.
 
-Because uncertainty in the estimated classification-error matrix is
-omitted, interval coverage may be below the nominal level when class
-separation is weak. Inspect the estimated error
-matrix with \code{get_results(x, "classification_errors")}.
+With \code{initial_covariates} or \code{transition_covariates}, each occasion is
+classified from its own indicators by the transition fit's measurement
+model (with the profile shares pooled over occasions) and assigned to its
+modal profile; step three is a hidden Markov model for those assignments
+with the classification errors fixed and the initial and transition
+logits regressed on the covariates.
+The transition fit's own posteriors are not used, because they draw on a
+person's other occasions and their errors would not be independent across
+occasions as step three assumes. The step-one fit must have one group
+class and no covariates.
+The step-three chain is homogeneous and first order, even when the
+step-one transition structure varies over occasions or has higher order.
+It uses one classification-error matrix pooled over occasions. Step-one
+occasion-specific measurement is refused because its error probabilities
+can change over occasions.
 }
-\section{Interpretation}{
 
-The correction assumes that classification-error probabilities remain
-constant across covariate values within each latent class. Reported
-standard errors and confidence intervals treat those probabilities as
-fixed and omit uncertainty from their estimation and from selecting the
-class solution.
+\section{Boundary estimates}{
 
-In the ordinary membership regression, the last class is the reference.
-A positive coefficient indicates higher odds of membership in the
-specified class relative to that reference; exponentiating the coefficient
-gives the corresponding odds ratio. Transition regressions instead compare
-movement to another profile with remaining in the origin profile. These
-associations do not, by themselves, establish causal relationships.
+A step-three logit with a coefficient exceeding 20 in centred, scaled
+design coordinates, or an average class probability at or below 1e-6
+over the contributing design rows, is treated as separated or on a boundary. Wald
+inference is refused for that regression, under both covariance types;
+changing the covariance estimator does not make the boundary regular.
 }
 
 \examples{
@@ -202,18 +164,7 @@ moves <- lta(course_engagement,
              id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 r3step(moves, course_engagement, transition_covariates = "sequence")
 }
-\references{
-Vermunt, J. K. (2010). Latent class modeling with covariates: two
-improved three-step approaches. \emph{Political Analysis}, 18, 450--469.
-Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
-modeling: three-step approaches using Mplus. \emph{Structural Equation
-Modeling}, 21, 329--341.
-Di Mari, R., Oberski, D. L., & Vermunt, J. K. (2016). Bias-adjusted
-three-step latent Markov modeling with covariates. \emph{Structural Equation
-Modeling}, 23, 649--660.
-}
 \seealso{
-\code{\link[=three_step]{three_step()}} for a distal outcome, and
-\code{multilpa(profile_covariates = )} for the
-one-step alternative that estimates everything jointly.
+\code{\link[=three_step]{three_step()}} for a distal outcome;
+\code{multilpa(profile_covariates = )} for the one-step alternative.
 }

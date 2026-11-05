@@ -16,195 +16,102 @@ bootstrap_lrt(
 )
 }
 \arguments{
-\item{null_model}{A converged fitted model representing the null hypothesis.
-Supported inputs are profile or class models, with or without membership
-covariates; transition models from \code{\link[=lta]{lta()}}; and group-class models fitted
-through \code{\link[=multilpa]{multilpa()}}. See \emph{Supported comparisons} for nesting requirements.}
+\item{null_model}{A converged fit under the null: a profile or class
+model with or without membership covariates, an \code{\link[=lta]{lta()}} fit, or a
+group-class family fit from \code{\link[=multilpa]{multilpa()}}. See \emph{Supported comparisons}.}
 
-\item{alternative_model}{A compatible, more flexible model fitted to the
-same data, within which \code{null_model} is nested.}
+\item{alternative_model}{A converged, more flexible model fitted to the
+same data, in which \code{null_model} is nested.}
 
-\item{data}{The data frame used to fit both models. Required for transition
-models, whose simulations retain the observed groups, occasions and
-covariates. For ordinary profile and class models, omission reconstructs
-the data from the null fit, or from the alternative for membership-covariate
-models. For group-class models, the stored sufficient statistics are used
-when \code{data} is omitted. Supplied data are checked against the fitted models.}
+\item{data}{The data frame both models were fitted to. Required for
+transition models, whose simulations keep the observed groups,
+occasions and covariates; otherwise taken from the fits when omitted,
+and checked against them when supplied.}
 
-\item{iter}{Number of simulated datasets; default 199. Profile, class and
-group-class comparisons require at least two replicates; transition
-comparisons accept any positive integer. Larger values reduce Monte Carlo
-uncertainty in the estimated p-value.}
+\item{iter}{Number of simulated data sets (default 199; at least 2). More
+replicates reduce the Monte Carlo error of the p-value but do not cure
+estimation problems.}
 
-\item{n_starts}{Number of starts for each simulated fit. With \code{NULL} (the
-default), each model retains its original number of starts and search
-strategy. A supplied number applies to both models.}
+\item{n_starts, max_iter, tol}{Controls for each simulated refit; \code{NULL}
+(default) keeps each model's own controls and search strategy. A
+supplied value applies to both models.}
 
-\item{max_iter}{Maximum iterations for each simulated fit. With \code{NULL}
-(the default), each model retains its original iteration limit.}
-
-\item{tol}{Convergence tolerance for each simulated fit. With \code{NULL} (the
-default), each model retains its original tolerance.}
-
-\item{seed}{Optional integer seed accepted by \code{\link[=set.seed]{set.seed()}}. The caller's
-random-number state is restored on exit.}
+\item{seed}{Optional integer seed. The caller's random-number state is
+restored on exit.}
 }
 \value{
-An object of class \code{multilpa_bootstrap_lrt} containing the observed
-statistic, bootstrap p-value, Monte Carlo standard error, numbers of valid
-and invalid replicates, and replicate-level diagnostics. The \code{fixed}
-component identifies any measurement blocks held constant.
-
-\code{\link[=as.data.frame]{as.data.frame()}} returns a one-row test summary.
-\code{get_results(result, what = "replicates")} returns one row per simulated
-replicate. \code{\link[=summary]{summary()}} combines the test summary and replicate diagnostics;
-\code{\link[=plot]{plot()}} displays the simulated reference distribution and observed statistic.
+A \code{multilpa_bootstrap_lrt} object: the observed statistic, the
+bootstrap p-value and its Monte Carlo standard error, \code{n_valid} and
+\code{n_invalid} replicates, \code{fixed} (the measurement blocks held in every
+refit) and per-replicate diagnostics, including how many starts of
+each refit replicated its best likelihood. \code{as.data.frame()} returns the one-row test
+summary, \code{get_results(result, "replicates")} one row per replicate,
+\code{summary()} both, and \code{plot()} the simulated distribution with the
+observed statistic.
 }
 \description{
-The parametric bootstrap likelihood-ratio test evaluates whether a more
-flexible mixture model provides an improvement in fit that is inconsistent
-with a simpler, nested model. \code{bootstrap_lrt()} compares two fitted models
-using twice the difference between their maximized log likelihoods. In class
-enumeration, this comparison assesses the evidence for adding a latent
-profile or group class.
-
-The function generates datasets from the fitted null model and refits both
-candidate models to each dataset. These simulated comparisons approximate
-the distribution of the likelihood-ratio statistic under the null hypothesis.
-The observed statistic is then evaluated against this distribution to obtain
-a bootstrap p-value. This approach avoids relying on the usual chi-squared
-approximation, which is generally inappropriate when comparing different
-numbers of mixture components.
-
-The result includes the observed test statistic, bootstrap p-value, Monte
-Carlo standard error, and diagnostics for the simulated refits. The function
-supports profile and class models, latent transition models, and group-class
-model families, subject to the nesting and compatibility requirements below.
+\code{bootstrap_lrt()} tests whether a more flexible model improves on a
+simpler one nested in it, typically one more profile or group class. The
+statistic is twice the difference in maximised log likelihoods; its null
+distribution is simulated by generating data from the fitted null model
+and refitting both models to each data set, since the chi-squared
+approximation does not hold when the number of mixture components
+changes. A small p-value is
+evidence against the null in favour of this alternative; it does not say
+the alternative has the right number of classes.
 }
-\section{Interpretation}{
-
-A small p-value provides evidence against the null model in favour of the
-specified alternative, subject to the model assumptions and the quality of
-estimation. It does not establish that the alternative has the correct
-number of classes or fits the data adequately in an absolute sense.
-Interpretation should consider convergence, replication across starting
-values, and the frequency of invalid bootstrap replicates. Increasing the
-number of replicates reduces simulation uncertainty but does not resolve
-systematic estimation problems.
-}
-
 \section{Supported comparisons}{
 
-For ordinary profile and class models, with or without membership
-covariates, the models must differ by exactly one observation-level profile
-or class, or by exactly one group class. They must use the same observations,
-group layout, covariance structure, centering and scaling, missing-data
-handling, and \code{drop_empty} setting. Grand-mean centering is repeated in each
-simulated refit. Person-centred or person-scaled fits are not supported,
-because the model does not specify a distribution for the group baselines
-removed by these transformations.
+Both models must be of one kind: profile or class models, transition
+models, or group-class family fits. Profile and class models, with or
+without membership covariates, must differ by exactly one profile
+(class) or exactly one group class, and share their observations, group
+layout, covariance structure, centring and scaling, missing-data
+handling and \code{drop_empty}. \code{centering = "grand"} is repeated in each
+refit; person-centred or person-scaled fits are refused, because the
+model gives the group means removed by those transformations no
+distribution. Covariate models must share their covariates and slope
+specification (a one-group-class null may be compared with an
+alternative that adds group covariates or group-class-specific slopes);
+covariates are held at their observed values when simulating, and both
+originals must be fully converged, logits included.
 
-Transition models fitted with \code{\link[=lta]{lta()}} support comparisons in which the null
-specification is nested within the alternative. Supported differences include
-class counts and restrictions on measurement, transition probabilities,
-Markov order, and covariate effects. Both models must use compatible
-indicators, grouping, occasion layout, and measurement distributions. The
-original \code{data} must be supplied for transition comparisons.
-
-Group-class models fitted through the \code{family} argument of \code{\link[=multilpa]{multilpa()}}
-support comparisons across class counts and parameter restrictions. The null
-must be nested within, and distinct from, the alternative: the alternative
-must have at least as many group classes and cannot impose additional
-restrictions on the class-specific means or variance components. Models from
-different families cannot be combined arbitrarily.
-
-For membership-covariate models, covariates are held at their observed values
-when simulating data. Group classes and profiles are drawn using the fitted
-membership probabilities. Both models must use the same profile covariates,
-group covariates and slope specification, except that a one-group-class null
-may be compared with an alternative that adds group covariates or slopes
-that vary by group class.
-
-For models fitted with \code{fixed}, including those from \code{\link[=fit_staged]{fit_staged()}}, each
-replicate retains the same fixed blocks at the same values. The resulting
-p-value is conditional on that measurement solution; uncertainty in its
-estimation is not propagated. Pairs for which nesting cannot be established
-are rejected.
+Transition models may differ in class counts or in restrictions on
+measurement, transitions, Markov order or covariate effects, with
+compatible indicators, grouping, occasion layout and measurement
+distributions. Group-class family fits may differ in the number of group
+classes or in restrictions on the means and variance components, the
+alternative being the less restricted one. A profile or class fit with
+\code{fixed} (including a \code{\link[=fit_staged]{fit_staged()}} result) keeps the same held blocks in
+every replicate, so the p-value is conditional on that measurement
+solution; a covariate fit's held blocks are re-estimated in each
+replicate. Fits with a prior, sampling weights or a noise component are
+refused.
 }
 
-\section{Bootstrap calculation}{
+\section{Calculation}{
 
-The observed statistic is \code{2 * (logLik(alternative_model) - logLik(null_model))}.
-Datasets are simulated under the fitted null model, retaining the group
-structure and other design features required by the model family. Both
-models are refitted to each simulated dataset and the statistic is
-recalculated. By default, each model retains its original search controls;
-\code{n_starts}, \code{max_iter} and \code{tol} can override the corresponding settings for
-both models.
+The p-value is \code{(1 + b) / (V + 1)}, with \code{b} the number of valid
+simulated statistics at least as large as the observed one and \code{V} the
+number of valid replicates. A replicate is invalid when a refit fails or
+does not converge, or when the alternative's likelihood falls below the
+null's beyond numerical tolerance; such replicates are left out with a
+warning, and the p-value is \code{NA} when fewer than half of the requested
+replicates are valid. Leaving them out conditions the reference
+distribution on successful estimation. Report the invalid share, and look at whether the
+refits replicated their likelihoods across starts. For covariate models
+a refit counts as converged when its likelihood has converged even if a
+membership logit is still moving, as happens with an empty or separated
+class in the alternative; \code{logits_settled} records whether the logits
+converged too.
 
-The bootstrap p-value is \code{(1 + b) / (V + 1)}, where \code{b} is the number of valid
-simulated statistics at least as large as the observed statistic and \code{V} is
-the number of valid replicates. When all replicates are valid, \code{V = iter}.
-The reported Monte Carlo standard error summarizes uncertainty from the
-finite number of simulated replicates.
-}
-
-\section{Estimation failures}{
-
-Both original models must have converged. A simulated replicate is invalid
-if a refit fails, does not converge, or produces an alternative-model
-likelihood below the null-model likelihood beyond numerical tolerance. The
-result reports \code{n_valid} and \code{n_invalid}; \code{latents_failed_replicates} warns
-when any replicate is invalid. The p-value uses only valid replicates and is
-\code{NA} when fewer than half of the requested replicates are valid.
-
-Excluding invalid replicates conditions the reference distribution on
-successful estimation and may affect calibration. Report the invalid
-proportion and examine the replicate diagnostics before interpreting the test.
-
-For membership-covariate models, a simulated refit is considered converged
-for this test when its likelihood has converged, even if a membership logit
-is still changing. This can occur with an empty or separated class in an
-alternative model. The \code{logits_settled} column records whether the logits
-also converged. The original covariate models must be fully converged.
-}
-
-\section{Missing-data assumptions}{
-
-Fits estimated with \code{missing = "fiml"} are supported when both models use
-that setting. Each simulated dataset retains the original missing-value
-pattern before refitting. Calibration requires missingness independent of
-the indicators and latent classes, conditional on any fixed covariates.
-A fixed missingness pattern does not reproduce a missing-at-random (MAR)
-mechanism that depends on observed indicators or a missing-not-at-random
-(MNAR) mechanism. Valid FIML estimation under MAR does not by itself establish
-validity of this bootstrap under MAR.
-}
-
-\section{Conditions}{
-
-For ordinary profile and class comparisons, \code{latents_bad_nesting} indicates
-incompatible class counts, fixed measurement blocks, covariate
-specifications, or parameter counts. \code{latents_incomparable_models} indicates
-incompatible data or fitting specifications. Transition and group-class
-comparisons use their family-specific nesting checks and raise
-\code{latents_bad_argument} for unsupported nesting requests. Transition models
-also raise \code{latents_bad_argument} when \code{data} is omitted.
-
-\code{latents_unsupported_bootstrap} identifies unsupported person centering or
-scaling. Models with a prior, sampling weights or a noise component raise
-\code{latents_unsupported_prior}, \code{latents_unsupported_weights} or
-\code{latents_unsupported_noise}, respectively. \code{latents_bad_data} identifies
-unsupported missing indicators, and \code{latents_bad_inference_data} identifies
-supplied data that do not reproduce the original fitting data or likelihood.
-
-\code{latents_no_converge} indicates that an original model has not converged;
-for ordinary profile and class models it also identifies active variance
-bounds. \code{latents_reversed_likelihood} indicates that the alternative has a
-lower likelihood than the null beyond numerical tolerance. Invalid seeds or
-incompatible model families raise \code{latents_bad_argument}.
-\code{latents_failed_replicates} warns about invalid simulated replicates; see
-\emph{Estimation failures} for their treatment.
+Fits with \code{missing = "fiml"} are supported when both models use it; each
+simulated data set keeps the original missing-value pattern. That is
+calibrated only when missingness is independent of the indicators and
+the classes given any fixed covariates: a fixed pattern does not
+reproduce an MAR mechanism that depends on observed indicators, nor an
+MNAR one, so valid FIML estimation does not by itself make this test
+valid.
 }
 
 \examples{
@@ -222,12 +129,7 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
                             max_iter = 2000, tol = 1e-6, seed = 1)
 comparison
 }
-\references{
-Nylund, K. L., Asparouhov, T., & Muthen, B. O. (2007). Deciding on the number
-of classes in latent class analysis and growth mixture modeling: A Monte
-Carlo simulation study. \emph{Structural Equation Modeling}, 14(4), 535--569.
-}
 \seealso{
-\code{\link[=enumerate_classes]{enumerate_classes()}} for fitting candidate models;
+\code{\link[=enumerate_classes]{enumerate_classes()}} for fitting the candidates;
 \code{\link[=compare_models]{compare_models()}} for information-criterion comparisons.
 }

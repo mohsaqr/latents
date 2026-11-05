@@ -57,10 +57,6 @@ fit <- lca(student_esm, c("time_with_friends", "on_social_media",
 fit
 plot(fit, what = "heatmap")
 }
-\references{
-Lazarsfeld, P. F., & Henry, N. W. (1968). \emph{Latent Structure Analysis}.
-Houghton Mifflin.
-}
 \seealso{
 \code{\link[=lpa]{lpa()}} for continuous indicators; \code{\link[=multilca]{multilca()}} for the
 two-level model; \code{\link[=enumerate_lca]{enumerate_lca()}} to compare numbers of classes.

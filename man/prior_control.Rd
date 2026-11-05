@@ -42,7 +42,7 @@ the data during fitting. The parameterisation follows the conventions of
 mclust, with effects that depend on the chosen covariance structure.
 }
 \details{
-The prior follows Fraley and Raftery (2007) and \code{mclust::priorControl()}.
+The prior follows \code{mclust::priorControl()}.
 Arguments set to \code{NULL} use the data-dependent defaults of
 \code{mclust::defaultPrior()}: the prior mean is the vector of indicator means, the
 degrees of freedom are \code{d + 2} for \code{d} indicators, and the scale is
@@ -78,11 +78,6 @@ square, symmetric, positive-definite matrix.
 \examples{
 prior_control()
 prior_control(shrinkage = 0)
-}
-\references{
-Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for
-normal mixture estimation and model-based clustering. \emph{Journal of
-Classification}, 24, 155--181. \doi{10.1007/s00357-007-0004-5}
 }
 \seealso{
 \code{\link[=multilpa]{multilpa()}} for the supported model specifications.

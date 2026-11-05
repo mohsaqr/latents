@@ -141,7 +141,7 @@ stopifnot(bic_groups_pick == "profiles4_groups3",
           awe_groups_pick == "profiles2_groups2")
 ```
 
-The result holds `r n_candidates` fitted candidates. Each candidate is named
+The result records `r n_candidates` requested candidates. Each candidate is named
 by its numbers of profiles and group classes, so that `profiles4_groups3` has
 four profiles and three group classes, and the name identifies the candidate
 in every function that follows. The `r n_failed` candidates with one profile

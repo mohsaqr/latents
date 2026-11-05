@@ -1,7 +1,9 @@
-# The claims registry (CLAIMS.csv): listed documentation statements that
-# describe agreement with another program or a published result, with
-# the test that backs it. A claim whose wording changes, or whose test is
-# renamed or removed, fails here, so the registry cannot drift from either.
+# The claims registry (CLAIMS.csv): documented behavior and conventions
+# backed by another program or a published reference, with the test that
+# checks the registered behavior. The source anchor need not name that
+# reference: the reference and its numerical comparison stay in the registry
+# when help text is rewritten without citations. Changed anchors or renamed
+# tests fail here so both sides must be reconciled deliberately.
 # This checks registered text and test presence; it neither discovers omitted
 # claims nor establishes that a named test substantively proves its claim.
 # A test file named with a path is read from the project root (tests outside
@@ -36,7 +38,7 @@ test_that("the registry has its columns and no duplicate claims", {
   expect_false(anyDuplicated(claims[c("source", "phrase", "reference")]) > 0L)
 })
 
-test_that("every claim is still worded as registered in its source", {
+test_that("every registered behavior retains its documentation anchor", {
   invisible(Map(function(source, phrase) {
     expect_true(file.exists(file.path(claims_root, source)), label = source)
     found <- any(grepl(phrase, claims_source_text(source), fixed = TRUE))

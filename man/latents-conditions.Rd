@@ -77,7 +77,8 @@ usually because it was made by an older version.}
 \item{\code{latents_unidentified}}{The requested model is not identified from
 the data: more profiles than distinct observed indicator rows, more
 group classes than groups, or more than one group class with only one
-profile or only singleton groups. Raised as a warning, and the fit
+profile or only singleton groups, or a known structurally unidentified
+short-panel transition specification. Raised as a warning, and the fit
 returned, for a model of complete categorical and ordinal indicators
 with one group class that has more free parameters than free cells of
 its table (negative degrees of freedom); a model with membership
@@ -108,7 +109,8 @@ overflowed, at a point EM reached: the start is recorded as failed
 raises \code{latents_all_starts_failed}.}
 \item{\code{latents_boundary_fit}}{A variance or response probability is at
 its bound, a mixing probability is zero, or a membership logit
-coefficient diverges (separation). The usual normal approximation for
+coefficient diverges (separation), including pooled and transition
+three-step membership regressions. The usual normal approximation for
 Wald inference does not apply at the parameter boundary, so standard
 errors are unavailable under the requested inference method.}
 \item{\code{latents_singular_information}}{The observed information is not
@@ -199,7 +201,8 @@ made by an older version, and for a fit recording a covariance
 structure code this version does not know; and by
 \code{parameter_inference(method = "bootstrap")} for an additive or
 covariate fit, a multilevel growth mixture, or a fit holding a
-measurement block through \code{fixed}. Also raised by
+measurement block through \code{fixed}, or a staged fit whose measurement
+was estimated on different data or has unknown provenance. Also raised by
 \code{vcov(scale = "unconstrained")} for a bootstrap covariance.}
 \item{\code{latents_unsupported_prior}}{\code{multilpa(prior = )} was combined
 with an option the conjugate prior is not defined for: the VEE, EVE,
@@ -334,7 +337,10 @@ complete estimation. Message-only conditions are identified explicitly.
 remaining starts are in \code{get_results(fit, "starts")}.}
 \item{\code{latents_not_identified}}{\code{\link[=mixture_regression]{mixture_regression()}} with a binary
 outcome and one trial per class assignment, where a mixture of
-Bernoulli regressions is not identified.}
+Bernoulli regressions is not identified; a repeated categorical mixture
+exceeding the distinguishable response-pattern capacity; or a growth
+specification whose random/residual covariance decomposition is rank
+deficient on the observed occasions.}
 \item{\code{latents_missing_data}}{\code{\link[=mixture_regression]{mixture_regression()}} with
 \code{missing = "error"} met a missing value in a variable the model uses.}
 \item{\code{latents_rows_dropped}}{\code{\link[=mixture_regression]{mixture_regression()}} with
@@ -368,6 +374,12 @@ membership below one observation; or, in \code{\link[=three_step]{three_step()}}
 \code{method}, a class is carried by a single unit (fewer than 1.5 effective
 carrying units, by Kish's formula), so its standard error is reported
 as \code{NA}.}
+\item{\code{latents_cross_level_criteria}}{A cross-level fit has group
+classes. Its likelihood counts the ratings twice, so its criteria do
+not choose the number of group classes or the form.}
+\item{\code{latents_unweighted_descriptives}}{\code{\link[=descriptives]{descriptives()}} received a fit
+with sampling weights. Its table describes recorded rows without
+weights, including zero-weight rows, and its ICC is unweighted.}
 \item{\code{latents_thin_profiles}}{A Gaussian component with free variances
 of its own has posterior membership mass below the number of free
 parameters in its Gaussian density. This is a heuristic prompt to
@@ -415,6 +427,11 @@ logits are fixed at zero and marked \code{estimated = FALSE} in
 \code{get_results(fit, "transitions")} and \code{\link[=parameter_inference]{parameter_inference()}}. In both
 engines such a row is not counted in \code{n_parameters}, AIC or BIC. The
 transition-network handoff also warns when it includes such a row.}
+\item{\code{latents_weak_transition_support}}{A transition origin has positive
+but less than one expected outgoing move. Its formal parameters remain
+counted, but its rows are marked \code{supported = FALSE}, their expected
+counts are reported, and Wald inference is refused. This diagnostic
+threshold signals weak information rather than structural identification.}
 \item{\code{latents_unidentified_occasion}}{An \code{\link[=lta]{lta()}} fit with
 \code{transitions = "occasion"} has an occasion at which no row observes an
 indicator, followed by an occasion that does. The moves into and out of

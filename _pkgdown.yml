@@ -39,8 +39,12 @@ reference:
   - diagnostics
   - report
   - overview
-  - wildcard-tables
-  - wildcard-grid-tables
+  - get_checks
+  - get_entropy
+  - get_classification
+  - get_avepp
+  - get_residuals
+  - get_replication
 
 - title: Evaluating a model
   contents:
@@ -48,6 +52,11 @@ reference:
   - enumerate_lca
   - enumerate_classes
   - get_candidate
+  - get_candidates
+  - get_best
+  - get_deltas
+  - get_knees
+  - get_tree
   - bootstrap_lrt
   - sensitivity
   - align_labels
@@ -70,10 +79,43 @@ reference:
   - three_step
   - r3step
 
-- title: Plots
+- title: Plots of a fit
+  desc: One function per picture; each takes any fit that has the view.
   contents:
-  - latents-plots
-  - wildcard-plots
+  - plot_profiles
+  - plot_bars
+  - plot_heatmap
+  - plot_raincloud
+  - plot_parallel
+  - plot_pairs
+  - plot_responses
+  - plot_prevalence
+  - plot_sequences
+  - plot_transitions
+  - plot_trajectories
+  - plot_individuals
+  - plot_coefficients
+  - plot_classification
+  - plot_all
+
+- title: Classification plots
+  desc: The four classification views, for a fit of any family or a grid.
+  contents:
+  - plot_sizes
+  - plot_posteriors
+  - plot_entropy
+  - plot_avepp
+  - plot_diagnostics
+
+- title: Plots of a candidate grid
+  contents:
+  - plot_criteria
+  - plot_enumeration
+  - plot_selection
+  - plot_deltas
+  - plot_trust
+  - plot_tree
+  - plot_views
 
 - title: Transition networks
   desc: Latent transitions handed to the tna package.

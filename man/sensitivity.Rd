@@ -49,7 +49,8 @@ that fitted it).}
 
 \item{tolerance}{Maximum log-likelihood difference for grouping refits.
 Each group is anchored at its highest log likelihood
-and spans no more than \code{tolerance}. Defaults to the reference fit's
+and spans no more than \code{tolerance}. Only converged refits receive an
+optimum index or a best flag. Defaults to the reference fit's
 replication tolerance, 1e-6 per observed value.}
 
 \item{cores}{Number of processor cores (default 1). The seeds are refitted
@@ -131,15 +132,11 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 3, seed = 1)
 sensitivity(fit, seeds = 1:3, n_starts = 3)
 
-# Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+# Growth mixtures are known for local solutions.
 growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
                              n_classes = 2, id = "student", class_level = "group",
                              random = ~ 1, n_starts = 1, seed = 1)
 sensitivity(growth, seeds = 1:2)
-}
-\references{
-Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the
-estimation of growth mixture models. \emph{Psychological Methods, 11}, 36--53.
 }
 \seealso{
 \code{\link[=enumerate_classes]{enumerate_classes()}} to vary the number of classes, and

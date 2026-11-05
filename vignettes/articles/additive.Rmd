@@ -277,11 +277,15 @@ rbind(get_results(full, "fit"), get_results(restricted, "fit"))
 ```
 
 In the full model one class of students has most of its sessions in one
-profile and the other class mostly in the other, and letting the composition
-differ by class raises the likelihood far more than its one extra parameter
-costs. Because the group means are computed from the same ratings, these
-likelihoods compare cross-level fits of the same data only, not the
-group-class families above, and standard errors are not reported.
+profile and the other class mostly in the other. The fits warn that their
+criteria cannot show this is real. A group mean is computed from the same
+ratings, so these likelihoods count the data twice: on simulated data in which
+group membership has no effect, BIC still preferred two group classes in every
+data set we checked. The `fit` table therefore does not choose the number of
+group classes or the form, and it is not comparable with the group-class
+families above. Standard errors are not reported. Evidence for the classes has
+to come from outside these criteria, such as an ordinary `family = "profiles"`
+fit to the same data, whose BIC did not prefer group classes in those data sets.
 
 ```{r plot-composition, eval = has_ggplot}
 plot(full, what = "composition")

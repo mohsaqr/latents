@@ -13,152 +13,113 @@ compare_models(
 )
 }
 \arguments{
-\item{...}{Either an enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} followed
-by the candidates to compare (none for all of them, or a selection
-through \code{n_profiles} and \code{n_group_classes}); or two or more fits from
+\item{...}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} followed by the
+candidates to compare (none for all); or two or more fits from
 \code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}}; or two or
-more fits from \code{\link[=mixture_regression]{mixture_regression()}} (with or without \code{random}). Named
-fits are labelled by their names, unnamed fits by their expression, and
-candidates by their candidate name. Labels must be distinct.}
+more fits from \code{\link[=mixture_regression]{mixture_regression()}}. Named fits are labelled by their
+names, unnamed ones by their expression, candidates by their candidate
+name; labels must be distinct. See \emph{Choosing candidates}.}
 
 \item{n_profiles, n_group_classes}{With a grid, the class counts of the
-candidates to compare; \code{NULL} (the default) takes every count. Candidates
+candidates to compare; \code{NULL} (default) takes every count. Candidates
 whose fit failed are left out, with a message.}
 
 \item{cutoff}{For profile and class models, the average posterior
 probability below which a class is counted in \code{avepp_below} and
-\code{group_avepp_below}; a single number in (0, 1], default 0.8. Not used for
-mixture regressions.}
+\code{group_avepp_below} (default 0.8). Not used for mixture regressions.}
 
-\item{test}{\code{"none"} (the default) for the comparison table alone, or
-\code{"lrt"} to add a likelihood-ratio test of each profile, class or
-transition model against the one before it (see \emph{Details}).}
+\item{test}{\code{"none"} (default) for the table alone; \code{"lrt"} adds a
+likelihood-ratio test of each model against the one before it. See
+\emph{Likelihood-ratio tests}.}
 }
 \value{
-A base \code{data.frame} of class \code{latents_comparison}, one row per
-model.
+A data frame of class \code{latents_comparison}, one row per model.
 
-For mixture regressions the columns are \code{model}, \code{n_classes}, \code{random},
+For profile and class models: \code{model}, \code{n_profiles} (classes, for a
+class model), \code{n_group_classes}, \code{structure} (the covariance
+structure, \code{NA} without continuous indicators), \code{n_parameters} (see
+\emph{Held measurement}),
+\code{log_likelihood}, every information criterion of \code{\link[=get_candidates]{get_candidates()}},
+\code{profile_entropy}, \code{group_entropy}, \code{avepp_min}, \code{avepp_max},
+\code{avepp_mean}, \code{avepp_below} and the same four prefixed \code{group_},
+\code{smallest_share} (the smallest estimated profile share), \code{converged},
+\code{n_best_replicated}, \code{delta_bic} and \code{bic_weight} (on \code{bic_groups}, the
+BIC that counts groups as the independent units; the ordinary BIC for
+single-level models).
+
+For mixture regressions: \code{model}, \code{n_classes}, \code{random},
 \code{n_parameters}, \code{log_likelihood}, \code{aic}, \code{bic}, \code{sabic}, \code{icl},
 \code{entropy}, \code{smallest_share}, \code{delta_bic}, \code{bic_weight} and \code{converged}.
 
-For profile and class models they are \code{model}, \code{n_profiles},
-\code{n_group_classes}, \code{structure} (the covariance structure, \code{NA} without
-continuous indicators), \code{n_parameters}, \code{log_likelihood}, every
-information criterion of \code{\link[=enumerate_classes]{enumerate_classes()}}'s candidates table,
-\code{profile_entropy}, \code{group_entropy}, \code{avepp_min}, \code{avepp_max},
-\code{avepp_mean}, \code{avepp_below} and the same four prefixed \code{group_},
-\code{smallest_share} (the smallest estimated profile share, relative to all
-observation mass including any noise component), \code{converged},
-\code{n_best_replicated}, and \code{delta_bic} and \code{bic_weight}, computed on
-\code{bic_groups} (the BIC that counts groups as the independent units; on a
-single-level model, the ordinary BIC). The values are those of the
-grid's candidates table.
-
-With \code{test = "lrt"}, three more columns: \code{lr_statistic}, \code{lr_df} and
-\code{lr_p_value}, \code{NA} in the first row.
-
-Raises \code{latents_bad_argument} for fits that cannot be compared, for
-fewer than two models, for duplicate labels, for a group-class family grid (its own
-table, \code{as.data.frame(grid)}, compares its candidates), for candidates
-named together with \code{n_profiles} or \code{n_group_classes}, and for
-\code{n_profiles} or \code{n_group_classes} without a grid;
-\code{latents_unknown_candidate} for a name, counts or selection not in the
-grid; \code{latents_failed_candidate} for a named candidate that could not be
-fitted; \code{latents_incomparable_models} for fits to different data. A
-\code{cutoff} outside (0, 1] raises \code{latents_bad_argument}; so do
-group-class family fits
-(\code{multilpa(family = ...)}) and mixture-regression grids, which are
-compared in their own tables.
-
-With \code{test = "lrt"}: \code{latents_bad_nesting} for consecutive models that
-are not nested as described in \emph{Details}, or that differ in their
-numbers of profiles or group classes; \code{latents_singular_restriction}
-(also a \code{latents_bad_nesting}) for a singular covariance restriction;
-\code{latents_reversed_likelihood} when the more general model has the lower likelihood beyond the fits'
-tolerance; \code{latents_no_converge} for a fit that did not converge;
-\code{latents_unsupported_weights}, \code{latents_unsupported_prior} and
-\code{latents_unsupported_noise} for fits with sampling weights, a prior or a
-noise component; \code{latents_bad_argument} for mixture regressions. A fit
-with a variance at \code{min_variance} warns \code{latents_boundary}.
+With \code{test = "lrt"}, also \code{lr_statistic}, \code{lr_df} and \code{lr_p_value},
+\code{NA} in the first row. Fits to different data, fewer than two models,
+a group-class family fit or grid, and a mixture-regression grid are
+refused with classed conditions (\link{latents-conditions}); the family and
+regression grids have their own tables. The criteria compare the
+models with each other; a final choice also needs the estimation to be
+stable and the classes to mean something.
 }
 \description{
-\code{compare_models()} compares alternative mixture models fitted to the same
-observed data. It supports assessment of the number of latent classes and
-other model specifications by presenting evidence about model fit,
-complexity, classification, and convergence.
-
-Information criteria summarise the trade-off between fit and the number of
-estimated parameters. Classification measures provide complementary
-information about the separation and relative size of the classes, while
-convergence summaries help identify estimation problems that may compromise
-the comparison. These measures address different aspects of a solution and
-should be interpreted together.
-
-The function accepts separately fitted models or candidates from an
-enumeration grid and returns their comparison statistics in a single
-table. BIC differences express each model's distance from the smallest BIC
-among the candidates; normalised BIC weights summarise their relative
-support within that set. The function does not select a final model.
+\code{compare_models()} puts the fit, complexity, classification and
+convergence of several models fitted to the same data in one table:
+separately fitted models, or candidates of an enumeration grid. BIC
+differences give each model's distance from the smallest BIC among those
+compared, and the Schwarz weights \code{exp(-delta_bic / 2)}, normalised over
+them, give relative support. The
+function does not select a model: a lower criterion favours a model
+among those compared and says nothing about absolute fit.
 }
-\details{
-\code{delta_bic} is the difference from the smallest BIC among the supplied
-candidates. \code{bic_weight} is the Schwarz weight \code{exp(-delta_bic / 2)},
-normalised across those candidates (Wagenmakers and Farrell, 2004).
-Incompatible data produce an error.
+\section{Held measurement}{
 
-Candidates of an enumeration grid are selected by name, as the grid's
-\code{candidate} column shows them
-(\code{compare_models(grid, "profiles3_groups4", "profiles3_groups5")}), or by
-class counts (\code{compare_models(grid, c(3, 4), c(3, 5))}, where a single
-number means one group class). Alternatively, \code{n_profiles} and
-\code{n_group_classes} select candidates: \code{compare_models(grid, n_profiles = 3)}
-compares every candidate with 3 profiles, and \code{compare_models(grid)}
-compares them all. Latent class grids work the same way, with \code{classes}
-in the names, and the \code{n_profiles} column counting classes. Fits from
-\code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}} can also be
-passed directly.
+Fits that hold the same measurement (\code{\link[=fit_staged]{fit_staged()}}, \code{fixed}) are compared
+on the parameters they estimate. In any other comparison, such as a staged
+fit against a jointly estimated one, every criterion and \code{n_parameters}
+count the measurement parameters too, and the table's title says so. Such
+a comparison is descriptive, since staged estimates do not maximise the
+joint likelihood.
+}
+
+\section{Choosing candidates}{
+
+Candidates of a grid are named as its \code{candidate} column shows them
+(\code{compare_models(grid, "profiles3_groups4", "profiles3_groups5")}), by
+class counts (\code{compare_models(grid, c(3, 4), c(3, 5))}, a single number
+meaning one group class), or through \code{n_profiles} and \code{n_group_classes}
+(\code{compare_models(grid, n_profiles = 3)} compares every candidate with
+three profiles). Latent class grids work the same way with \code{classes} in
+the names.
+}
+
+\section{Likelihood-ratio tests}{
 
 With \code{test = "lrt"}, each model is tested against the model in the row
-before it, as \code{\link[stats:anova]{stats::anova()}} does: \code{lr_statistic} is twice the difference
-in their log likelihoods, \code{lr_df} the difference in their numbers of free
-parameters, and \code{lr_p_value} its upper chi-square tail (Wilks, 1938). List
-the models from the most restricted to the most general. A model is nested
-in the next when the two have the same indicators, coding (including the
-order of ordinal categories), estimation settings and numbers of profiles
-and group classes, and the first only restricts the second: a covariance
-structure restricted letter by letter (EEI within VVI or EEE, and both
-within VVV), covariances of chosen pairs (\code{local_dependence}) within more
-pairs or a full covariance, fewer joint item pairs, direct effects or
-membership covariates, profile slopes shared across group classes, count
-dispersions shared across profiles; and for \code{\link[=lta]{lta()}}, measurement invariant
-within measurement by occasion, homogeneous within occasion-specific
-transitions, first within second order, and fewer transition or initial
-covariates. A predictor both models use must enter both with the same
-values (or an affine recoding of them): the first model's covariate design
-has to be recovered by setting the second's added coefficients to zero.
+before it, as \code{stats::anova()} does: \code{lr_statistic} is twice the
+difference in log likelihoods, \code{lr_df} the difference in free parameters
+and \code{lr_p_value} the upper chi-square tail. List the models
+from the most restricted to the most general. Two models are nested when
+they share indicators, coding, estimation settings and numbers of
+profiles and group classes, and the first only restricts the second: a
+covariance structure restricted letter by letter (EEI within VVI or EEE,
+both within VVV), \code{local_dependence} pairs within more pairs or a full
+covariance, fewer direct effects or membership covariates, profile
+slopes shared across group classes, count dispersions shared across
+profiles, and for \code{\link[=lta]{lta()}} fits also invariant within occasion-specific
+measurement, homogeneous within occasion-specific transitions, first
+within second order, fewer transition or initial covariates. A covariate
+both models use must enter both with the same values (or an affine
+recoding).
 
-Nested is not enough for the chi-square reference: the restriction must
-also be regular (Wilks, 1938). The restrictions above are regular at a
-generic null, with one exception among the covariance structures. A
-spherical structure (EII, VII) within EVE, VVE, EEV or VEV is singular:
-when every profile is spherical, the orientation those structures add has
-no value, and the likelihood-ratio statistic is not chi-square distributed
-(Drton, 2009). These pairs are refused; compare them on their information
+Nesting is not enough: the restriction must also be regular. A spherical
+structure (EII, VII) within EVE, VVE, EEV or VEV is singular, because the
+orientation those structures add has no value when every profile is
+spherical; such pairs are refused, so compare them on the
 criteria. A different number of profiles or group classes, or a stayer
 class, puts the null on the boundary of the parameter space, where the
 chi-square reference does not hold either: those comparisons are refused
-and belong to \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} or \code{get_results(grid, "lmr")}.
-}
-\section{Interpretation}{
-
-Models must use the same outcomes or indicators and observational units,
-and their likelihoods must be comparable. Lower information criteria favour
-a model relative to the alternatives considered, but do not establish
-adequate fit or substantive validity. Classification separation should
-inform interpretation rather than serve as the sole basis for choosing the
-number of classes. Final selection also requires examination of estimation
-stability, model assumptions, and the meaning of the resulting classes.
+and belong to \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} (or, for class counts,
+\code{get_results(grid, "lmr")}). Fits with sampling weights, a prior or a
+noise component, and mixture regressions, are refused under
+\code{test = "lrt"}.
 }
 
 \examples{
@@ -189,14 +150,7 @@ varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
                model = "VVI", n_starts = 2, seed = 1)
 compare_models(shared = shared, varying = varying, test = "lrt")
 }
-\references{
-Drton, M. (2009). Likelihood ratio tests and singularities. \emph{The Annals of
-Statistics}, 37(2), 979--1012. \doi{10.1214/07-AOS571}
-
-Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
-for testing composite hypotheses. \emph{The Annals of Mathematical Statistics},
-9(1), 60--62.
-
-Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
-weights. \emph{Psychonomic Bulletin & Review}, 11, 192--196.
+\seealso{
+\code{\link[=enumerate_classes]{enumerate_classes()}} and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}; \code{\link[=plot_criteria]{plot_criteria()}}
+draws the criteria of a comparison.
 }

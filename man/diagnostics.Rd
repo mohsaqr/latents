@@ -36,7 +36,8 @@ Tables are accessed with \code{\link[=get_results]{get_results()}}, using \code{
 \code{"classification"}, \code{"average_posteriors"}, \code{"residuals"},
 \code{"replication"} or \code{"all"}. A
 model family without bivariate residuals (a mixture regression, growth
-mixture, additive or cross-level model) has no such table: it is left out
+mixture, additive or cross-level model, or a general transition fit) has no
+such table: it is left out
 of \code{"all"}, and asking for it by name raises \code{latents_bad_argument}. A
 fit with a noise component has none either, and asking for it raises
 \code{latents_unsupported_noise}.
@@ -72,21 +73,21 @@ examination.
 \details{
 \itemize{
 \item \strong{Estimation}: convergence of the selected solution; replication of the
-best log likelihood across completed starts (Masyn, 2013); failed or
+best log likelihood across completed starts; failed or
 unfinished starts; and estimates at parameter bounds. Preliminary
 screening starts are reported separately from full optimisation runs.
 \item \strong{Class size}, at each level the fit classifies: the smallest class,
 the largest gap between modal and model-estimated class proportions, and
 classes to which no unit is assigned.
-\item \strong{Classification}: relative entropy (Ramaswamy et al., 1993), which
+\item \strong{Classification}: relative entropy, which
 describes classification precision and is not a criterion for the number
-of classes (Clark & Muthen, 2009); the lowest average posterior
+of classes; the lowest average posterior
 probability of the assigned class and the lowest odds of correct
-classification (Nagin, 2005).
+classification.
 \item \strong{Bivariate residuals}: discrepancies between observed and model-implied
 indicator associations, reported under the \code{"Local independence"} domain.
 Where tests are available, pairs are flagged at 0.05 after
-Benjamini-Hochberg adjustment (Vermunt & Magidson, 2005). Residuals
+Benjamini-Hochberg adjustment. Residuals
 without an available test are reported descriptively.
 \item \strong{Information}: log likelihood, number of parameters and BIC, for
 comparison with other fitted models using \code{\link[=compare_models]{compare_models()}}.
@@ -133,25 +134,6 @@ quality
 get_results(quality, "checks")
 get_results(quality, what = "classification")
 get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
-}
-\references{
-Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
-variables not included in the analysis. Unpublished manuscript.
-
-Masyn, K. E. (2013). Latent class analysis and finite mixture modeling. In
-T. D. Little (Ed.), \emph{The Oxford handbook of quantitative methods} (Vol. 2,
-pp. 551-611). Oxford University Press.
-
-Nagin, D. S. (2005). \emph{Group-based modeling of development}. Harvard
-University Press.
-
-Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
-An empirical pooling approach for estimating marketing mix elasticities
-with PIMS data. \emph{Marketing Science}, 12(1), 103-124.
-\doi{10.1287/mksc.12.1.103}
-
-Vermunt, J. K., & Magidson, J. (2005). \emph{Latent GOLD 4.0 user's guide}.
-Statistical Innovations.
 }
 \seealso{
 \code{\link[=get_results]{get_results()}} for these and the other tables, \code{\link[=descriptives]{descriptives()}}

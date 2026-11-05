@@ -222,7 +222,10 @@ three_step(straight, data = growth_scores, outcome = "motivation",
   variation is not plausible.
 - **Number of classes.** Read the BIC with the over-extraction above in mind;
   the bootstrap likelihood-ratio test (`enumerate_regressions(bootstrap =)`)
-  is the stronger evidence.
+  simulates from the same model without random effects. It can also favour
+  extra classes that absorb omitted within-class variation. Compare the
+  random-effects model as well; the bootstrap does not repair misspecification
+  of its null model.
 - **Starts.** Use several (`n_starts`), and check that the best likelihood is
   reached more than once (the fit reports how many times).
 

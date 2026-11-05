@@ -34,302 +34,238 @@ mixture_regression(
 )
 }
 \arguments{
-\item{formula}{A model formula \code{outcome ~ predictors}. Factors, interactions
-and \code{offset()} are supported.}
+\item{formula}{A model formula \code{outcome ~ predictors}. Factors,
+interactions and \code{offset()} are supported.}
 
 \item{data}{A data frame.}
 
 \item{n_classes}{Number of regression classes.}
 
 \item{family}{\code{"gaussian"} (default), \code{"binomial"}, \code{"poisson"},
-\code{"negative_binomial"} or \code{"ordinal"} (proportional-odds cumulative logit;
-see \emph{Families}).}
+\code{"negative_binomial"} or \code{"ordinal"}. See \emph{Families}.}
 
-\item{id}{\code{NULL} (default), or the name of the column identifying groups
-(persons, schools, ...).}
+\item{id}{\code{NULL} (default), or the column identifying the units (persons,
+schools) the rows belong to.}
 
-\item{class_level}{\code{"observation"} (default; each row has its own class) or
-\code{"group"} (all rows of a group share a class; requires \code{id}).}
+\item{class_level}{\code{"observation"} (default): each row has its own class.
+\code{"group"}: all rows of a unit share a class (needs \code{id}). See \emph{Nesting}.}
 
 \item{n_group_classes}{Number of second-level group classes (default 1,
-no latent group classes), for \code{class_level = "observation"} with \code{id}, or for the
-clusters of a multilevel growth mixture (\code{cluster}).}
+none). For \code{class_level = "observation"} with \code{id}, classes of the
+units: a unit's class sets the class probabilities of its rows. For a
+growth mixture with \code{cluster}, classes of the clusters.}
 
-\item{common}{\code{NULL}, or the predictor terms whose coefficients are
-shared by every class: variable names such as \code{"age"}, or a one-sided
-formula such as \code{~ age}. Each term must appear in \code{formula}. The
-intercept cannot be shared: \code{"intercept"} or \code{~ 1} alone raises
-\code{latents_bad_argument}.}
+\item{common}{Predictor terms whose coefficients are shared by every
+class, as names (\code{"age"}) or a one-sided formula (\code{~ age}). Each term
+must appear in \code{formula}; the intercept cannot be shared.}
 
-\item{membership}{Covariates predicting class membership (a multinomial
-logit, the first class as the reference): variable names such as
-\code{"age"}, or a one-sided formula (\code{~ 1}, the default, for none).
-Row-level for \code{"observation"}; constant within groups for \code{"group"}.}
+\item{membership}{Covariates of class membership, a multinomial logit
+with the first class as reference: names or a one-sided formula (\code{~ 1},
+the default, for none). Row-level under \code{"observation"}, constant within
+units under \code{"group"}.}
 
-\item{group_membership}{Group-level covariates predicting the group class,
-for the two-level model, as names or a one-sided formula. Must be
-constant within groups.}
+\item{group_membership}{Covariates of the group class, as names or a
+one-sided formula; constant within the units that carry group classes
+(the \code{id} units, or the clusters under \code{cluster}).}
 
-\item{variance}{\code{"varying"} (default; a residual standard deviation, or a
-negative-binomial dispersion, per class) or \code{"equal"} (one shared).
-Gaussian and negative-binomial families only.}
+\item{variance}{\code{"varying"} (default): a residual standard deviation (or
+negative-binomial dispersion) per class; \code{"equal"}: one shared. Gaussian
+and negative-binomial families only.}
 
 \item{n_starts}{Number of random starts (default 10), besides one start
-built from the residuals of a pooled regression. Each start runs for up to
+built from the residuals of a pooled regression. Each start runs up to
 50 EM iterations; the better half (at least two) continue to
 convergence.}
 
 \item{max_iter}{Maximum EM iterations per start (default 1000).}
 
-\item{tol}{Convergence tolerance (default \code{1e-8}): EM has converged when
-one step changes the log likelihood by no more than \code{tol} times the
-number of positive-weight rows. The tolerance is therefore expressed per
-observation.}
+\item{tol}{Convergence tolerance (default \code{1e-8}), per row: EM stops when
+a step changes the log likelihood by no more than \code{tol} times the number
+of rows of positive weight.}
 
-\item{min_variance}{Floor for a Gaussian residual variance, relative to the
-outcome's variance (default \code{1e-6}). Starts in which a class reaches the
-lower bound are excluded from selection. In a growth mixture, the
-same floor bounds each random effect's conditional variance, applied in
-the standardized coordinates the model is fitted in (outcome and
-predictors centred and scaled), so it does not depend on the units of the
-time variable.}
+\item{min_variance}{Floor on a Gaussian residual variance, as a fraction
+of the outcome's variance (default \code{1e-6}). A start in which a class's
+residual variance reaches the floor is excluded from selection. In a
+growth mixture the same floor bounds each random effect's conditional
+variance; a random-effect variance at the floor is kept and warned
+about.}
 
-\item{seed}{\code{NULL} (default) advances the caller's random stream. An integer
-seed restores the caller's \code{.Random.seed} afterwards. R does not store a
-cached Box-Muller normal draw
-in \code{.Random.seed}, so that hidden cached draw cannot be preserved.}
+\item{seed}{Optional integer seed; when given, the caller's random-number
+state is restored on exit.}
 
-\item{missing}{\code{"error"} (default) rejects rows with missing values in any
-variable the model uses; \code{"omit"} drops them with a
-\code{latents_rows_dropped} warning stating how many.}
+\item{missing}{\code{"error"} (default) rejects rows with a missing value in
+any variable the model uses; \code{"omit"} drops them with a warning saying
+how many.}
 
-\item{select_start}{\code{"likelihood"} (default) selects the start with the
-highest likelihood; \code{"converged"} prefers the best start that converged.}
+\item{select_start}{\code{"likelihood"} (default): the start with the highest
+likelihood; \code{"converged"}: the best start that converged.}
 
 \item{vcov_type}{Covariance of the estimates stored with the fit:
-\code{"observed"} (default; inverse observed information), \code{"robust"} (sandwich with
-the CR1 factor \code{G / (G - 1)}, clustered on the top-level unit, or on \code{id} for a single-level fit given
-\code{id}) or \code{"opg"} (outer product of the scores). \code{"none"} skips inference.}
+\code{"observed"} (default, inverse observed information), \code{"robust"}
+(sandwich, clustered on the independent units), \code{"opg"} (outer product
+of the scores) or \code{"none"}. A weighted fit takes \code{"robust"} or
+\code{"none"} only.}
 
-\item{weights}{\code{NULL}, or the name of a numeric column of \code{data} with a
-sampling weight per independent unit: per row without \code{id}, per \code{id}
-group otherwise (constant within it). Pseudo maximum likelihood with the
-weights scaled to sum to the units of positive weight; \code{vcov_type}
-defaults to \code{"robust"} and rejects \code{"observed"} and \code{"opg"}. The
-information criteria use the weighted log likelihood, and the entropy
-term of ICL is weighted by the sampling weights, as the likelihood is. A
-unit of weight zero is absent from the fit: from every start, estimate,
-sample size and criterion; it keeps its row and posterior. A row of
-weight zero whose factor level (or ordinal outcome category) no row of
-positive weight has is left out, with a \code{latents_rows_dropped} warning,
-since the model has no parameter for that level.}
+\item{weights}{Name of a numeric column holding a sampling weight per
+independent unit (per row without \code{id}, per unit with it): pseudo
+maximum likelihood with robust standard errors. A unit of weight zero
+is absent from the fit and every criterion but keeps its row and
+posterior.}
 
-\item{random}{\code{NULL} (default; no random effects), or the random effects
-within classes: variable names such as \code{"time"} (a random intercept and
-a random slope on \code{time}) or \code{"intercept"} (random intercepts only), or a
-one-sided formula such as \code{~ 1 + time}. A slope without a random
-intercept needs the formula \code{~ 0 + time}. See \emph{Growth mixture models}.}
+\item{random}{\code{NULL} (default), or the random effects within classes:
+names such as \code{"time"} (a random intercept and a random slope on time)
+or \code{"intercept"}, or a one-sided formula such as \code{~ 1 + time} (\code{~ 0 + time} for a slope alone). See \emph{Growth mixture models}.}
 
 \item{random_covariance}{How the random-effect covariance differs across
-classes: \code{"varying"} (default; one per class), \code{"equal"} (one shared matrix, as
-\code{lcmm::hlme()} with \code{nwg = FALSE}) or \code{"proportional"} (a shared matrix
-times a class-specific scale, the last class's being one; \code{nwg = TRUE}).}
+classes: \code{"varying"} (default, one per class), \code{"equal"} (one shared
+matrix, \code{lcmm::hlme(nwg = FALSE)}) or \code{"proportional"} (a shared matrix
+times a class-specific scale, the last class's being one, \code{nwg = TRUE}).}
 
-\item{random_diagonal}{\code{TRUE} for uncorrelated random effects (a diagonal
-covariance, as \code{idiag = TRUE} in lcmm); default \code{FALSE}.}
+\item{random_diagonal}{\code{TRUE} for uncorrelated random effects (\code{idiag = TRUE} in lcmm); default \code{FALSE}.}
 
-\item{cluster}{\code{NULL} (default), or the name of a column grouping the
-persons (\code{id}) into clusters, such as schools, for the multilevel growth
-mixture model (with \code{random}): each cluster belongs to one of
-\code{n_group_classes} group classes, which sets the trajectory-class
-probabilities of its persons. The clusters are the independent units of
-the likelihood, the standard errors and the BIC; with
-\code{n_group_classes = 1} the model is the single-level growth mixture with
-clusters as those units, comparable by BIC with fits with additional group
-classes. See \emph{Growth mixture models}.}
+\item{cluster}{Column grouping the units of \code{id} into clusters, such as
+schools, for the multilevel growth mixture model (with \code{random}): each
+cluster belongs to one of \code{n_group_classes} group classes, which sets
+the trajectory-class probabilities of its persons. The clusters are the
+independent units of the likelihood, the standard errors and the BIC.
+See \emph{Growth mixture models}.}
 
-\item{residual_correlation}{\code{"none"} (default) for independent residuals
-within a person; with \code{random}, \code{"ar"} adds a continuous-time
-autoregressive process, covariance \verb{sd^2 exp(-rate |t - s|)}, and
-\code{"brownian"} Brownian motion, \verb{sd^2 min(t, s)}, to the residual
-variance, shared by the classes: \code{lcmm::hlme(cor = AR(time))} and
-\code{cor = BM(time)}. The model without the process is fitted first from
-every start; the process is then estimated jointly with all other
-parameters. A process the data cannot separate from the residual variance or the
-random effects is left on its bound and warned about
-(\code{latents_random_boundary}); its rows then have no standard error.
-Refused with \code{latents_bad_argument} without \code{random}.}
+\item{residual_correlation}{\code{"none"} (default): independent residuals
+within a unit. With \code{random}, \code{"ar"} adds a continuous-time
+autoregressive process (covariance \verb{sd^2 * exp(-rate * |t - s|)}) and
+\code{"brownian"} Brownian motion (\code{sd^2 * min(t, s)}) to the residuals,
+shared by the classes: \code{lcmm::hlme(cor = AR(time))} and \code{cor = BM(time)}. A process the data cannot separate from the residual
+variance or the random effects stays on its bound, warns, and has no
+standard error. These fits refine one class placement from the model
+without the process; \code{n_best_replicated} is \code{NA}, and \code{"starts"} reports
+the correlated fit rather than the initialization's replication count.}
 
-\item{residual_time}{Name of the numeric time column for the residual
-process. Defaults to the first numeric variable in \code{random}, or otherwise
-the predictors. Brownian motion requires non-negative times
-(\code{latents_bad_data}).}
+\item{residual_time}{Numeric time column of the residual process; default
+the first numeric variable in \code{random}, otherwise in the predictors.
+Brownian motion needs non-negative times.}
 }
 \value{
-An object of class \code{latents_mixture_regression}, or
-\code{latents_growth_mixture} when \code{random} is given. \code{\link[=as.data.frame]{as.data.frame()}}
-returns the coefficient table and \code{\link[=get_results]{get_results()}} every table by name
-(described there); \code{\link[=predict]{predict()}}, \code{\link[=plot]{plot()}}, \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}},
-\code{\link[=vcov]{vcov()}}, \code{\link[=confint]{confint()}}, \code{\link[=logLik]{logLik()}} and \code{\link[=nobs]{nobs()}} also apply.
+A \code{latents_mixture_regression} object, or \code{latents_growth_mixture}
+when \code{random} is given. \code{as.data.frame()} returns the coefficient table
+and \code{\link[=get_results]{get_results()}} every table by name; \code{\link[=predict]{predict()}}, \code{plot()} (and
+\code{\link[=plot_trajectories]{plot_trajectories()}}, \code{\link[=plot_coefficients]{plot_coefficients()}}), \code{summary()}, \code{coef()},
+\code{vcov()}, \code{confint()}, \code{logLik()} and \code{nobs()} apply. The within-class
+coefficients are conditional associations under the specified model,
+not causal effects; check the starts table and the classification
+diagnostics before reading substance into the classes.
 }
 \description{
-\code{mixture_regression()} examines whether the relationship between an outcome
-and its predictors differs across latent classes. It represents the
-conditional outcome distribution as a mixture of class-specific regression
-models, allowing classes to differ in their outcome levels, predictor
-associations, or trajectories over time.
+\code{mixture_regression()} asks whether the relationship between an outcome
+and its predictors differs across latent classes. The conditional outcome
+distribution is a mixture of class-specific regressions, so classes can
+differ in outcome level, in predictor associations or in trajectory over
+time. Regression parameters and class probabilities are estimated jointly
+by maximum likelihood.
 
-Regression parameters and class-membership probabilities are estimated
-jointly by maximum likelihood. Coefficients may vary across classes or,
-for selected predictor terms, be constrained to a common value. Predictors
-in the outcome formula describe variation within classes; covariates
-supplied through \code{membership} describe variation in the probability of
-belonging to each class. Posterior membership probabilities express the
-uncertainty in assigning observations or groups to the estimated classes.
-
-The function supports Gaussian, binomial, Poisson, negative-binomial, and
-ordinal outcome models, subject to the restrictions described below. Class
-membership may be defined for individual observations or shared across
-repeated observations from the same unit. With time predictors, shared
-membership defines class-specific trajectories; Gaussian random effects
-additionally allow individual trajectories to vary within classes.
+Predictors in \code{formula} describe variation within classes; covariates in
+\code{membership} describe who belongs to which class. A coefficient may be
+shared by every class (\code{common}). Class membership can belong to each row
+or to every row of a unit (\code{class_level}); with a time predictor and
+shared membership the classes are trajectories, and \code{random} adds
+within-class variation around them (a growth mixture model). Outcomes can
+be Gaussian, binomial, Poisson, negative binomial or ordinal.
 }
-\section{Interpretation}{
-
-The classes describe heterogeneity under the specified regression model.
-Their interpretation depends on the outcome distribution, included
-predictors, coefficient constraints, and treatment of repeated
-observations. Within-class coefficients describe conditional associations
-and do not, by themselves, establish causal effects. Estimation stability
-and classification uncertainty should be examined before assigning
-substantive meaning to the classes.
-}
-
 \section{Nesting}{
 
-Arguments \code{class_level} and \code{n_group_classes} specify the level of latent
-class membership and the likelihood contribution of each independent unit.
 \describe{
-\item{Single level (\code{id = NULL})}{Each row is an independent unit with its own
-class.}
-\item{\code{class_level = "group"}}{All rows of a group (\code{id}) belong to the
-same class: the regression mixture for repeated measures, as
-\code{flexmix(y ~ x | id)}. A group's likelihood contribution is the product
-of its rows' densities.}
-\item{\code{class_level = "observation"} with \code{id} and \code{n_group_classes >= 2}}{
-Each row has its own class, and a second-level group class determines the
-class probabilities within its groups (Vermunt 2003).
-With \code{n_group_classes = 1}, \code{id} enters only the \code{"robust"} standard
-errors, which are then clustered on \code{id}.}
+\item{\code{id = NULL}}{Each row is an independent unit.}
+\item{\code{class_level = "group"}}{All rows of a unit share a class, the
+regression mixture for repeated measures (\code{flexmix(y ~ x | id)}); a
+unit's likelihood is the product of its rows' densities.}
+\item{\code{class_level = "observation"} with \code{id} and
+\code{n_group_classes >= 2}}{Each row has its own class, and a group class
+of its unit sets the class probabilities. With
+\code{n_group_classes = 1}, \code{id} clusters the robust standard errors and
+is the unit of \code{weights}.}
 }
 }
 
 \section{Growth mixture models}{
 
-For repeated measurements (\code{id}, \code{class_level = "group"}), including time
-in \code{formula} specifies class-specific trajectories. Without random effects,
-this is a latent class growth model (Nagin, 2005). Argument \code{random} adds
-within-class variation in individual trajectories, yielding a growth mixture
-model (Verbeke and Lesaffre, 1996; Muthen and Shedden, 1999). For individual
-i in class k, the model is
-\deqn{y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k),
-\quad e_i \sim N(0, \sigma_k^2 I),}{y_i = X_i beta_k + Z_i b_i + e_i, b_i ~ N(0, G_k), e_i ~ N(0, sigma_k^2 I),}
-where \code{Z} is the design matrix specified by \code{random}. The Gaussian random
-effects are integrated analytically. Estimation uses EM followed by
-quasi-Newton optimization with analytic scores. The fitted object has class
-\code{latents_growth_mixture}; its tables and plots are described on
-\code{\link[=get_results]{get_results()}} and \link[=latents-plots]{plot()}. Random effects require the
-gaussian family, \code{id} and \code{class_level = "group"}.
+With repeated measurements (\code{id}, \code{class_level = "group"}) and time in
+\code{formula}, the classes are trajectories: without random effects a latent
+class growth model, with \code{random} a growth mixture model. For unit \code{i}
+in class \code{k},
 
-With \code{residual_correlation}, the residuals also carry a process shared by
-the classes, \eqn{e_i \sim N(0, W_i + \sigma_k^2 I)}{e_i ~ N(0, W_i + sigma_k^2 I)}:
-a continuous-time autoregressive process (\code{"ar"}) or Brownian motion
-(\code{"brownian"}) over \code{residual_time}, corresponding to the correlation
-structures specified by \code{lcmm::hlme(cor = )}.
+\deqn{y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k), \quad
+  e_i \sim N(0, \sigma_k^2 I),}{y_i = X_i beta_k + Z_i b_i + e_i,
+  b_i ~ N(0, G_k), e_i ~ N(0, sigma_k^2 I),}
 
-With \code{cluster}, persons are nested in clusters (students in schools) and
-the multilevel growth mixture model is fitted: each cluster belongs to a
-group class h, and the trajectory-class logits of its persons have a
-group-class-specific intercept and shared covariate slopes,
-\deqn{L = \prod_j \sum_h \omega_h \prod_{i \in j} \sum_k \pi_{k|h} f_k(y_i)}{L = prod_j sum_h omega_h prod_(i in j) sum_k pi_(k|h) f_k(y_i)}
-(Asparouhov and Muthen 2008; Vermunt 2003). \code{group_membership} names
-cluster-level covariates of the group class. The group classes are
-returned by \code{get_results(fit, "group_classes")} and \code{"clusters"}.
+with \code{Z} the design of \code{random}. Random effects need the Gaussian family,
+\code{id}, \code{class_level = "group"} and, for a random intercept, repeated rows
+in at least some units. With \code{residual_correlation}, \code{e_i} also carries the
+autoregressive or Brownian process over \code{residual_time}.
+
+With \code{cluster}, persons are nested in clusters and each cluster belongs
+to a group class \code{h} that sets the trajectory-class logits of its
+persons (a class-specific intercept with shared covariate slopes):
+
+\deqn{L = \prod_j \sum_h \omega_h \prod_{i \in j} \sum_k \pi_{k|h}
+  f_k(y_i)}{L = prod_j sum_h omega_h prod_(i in j) sum_k pi_(k|h) f_k(y_i)}
+
+\code{group_membership} names
+cluster-level covariates of the group class; the group classes are in
+\code{get_results(fit, "group_classes")} and \code{"clusters"}. With
+\code{n_group_classes = 1} the fit is comparable by BIC with fits that add
+group classes.
 }
 
 \section{Families}{
 
-\code{"gaussian"} (identity link, a residual standard deviation per class, or
-one shared under \code{variance = "equal"}), \code{"binomial"} (logit link; the
-outcome is 0/1, logical, a two-level factor whose second level is the
-success, or \code{cbind(successes, failures)}), \code{"poisson"} (log link;
-\code{offset()} terms in the formula are honoured) and \code{"negative_binomial"}
-(log link, NB2: variance mu + alpha mu^2 with a dispersion alpha per class,
-or one shared under \code{variance = "equal"}, for overdispersed counts; a
-dispersion estimated at zero is the Poisson limit and raises
-\code{latents_boundary}).
+\code{"gaussian"}: identity link, a residual standard deviation per class or
+one shared. \code{"binomial"}: logit link; the outcome is 0/1, logical, a
+two-level factor (second level the success) or \code{cbind(successes, failures)}. \code{"poisson"}: log link, \code{offset()} honoured.
+\code{"negative_binomial"}: log link, NB2 (variance \code{mu + alpha * mu^2}) with a
+dispersion per class or one shared; a dispersion estimated at zero is the
+Poisson limit, reported with a warning and no standard error.
 
-\code{"ordinal"} fits a cumulative-logit (proportional-odds) regression within
-each class (McCullagh 1980),
-\deqn{P(Y \le c \mid x, k) = F(t_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,}{P(Y <= c | x, k) = plogis(t_kc - x' beta_k), c = 1, ..., C - 1,}
-with ordered thresholds \eqn{t_{k1} < \ldots < t_{k,C-1}}{t_k1 < ... < t_k,C-1}
-per class in place of the intercept, and the parametrization of
-\code{MASS::polr()}: a positive slope increases the probability of higher
-categories. The outcome is an ordered factor, a factor (its levels taken
-in order) or whole-number categories; the categories are those observed,
-at least two. \code{common} terms share their slopes across classes, and
-\code{offset()} is honoured; the formula's intercept is replaced by the
-thresholds, so it must not be removed. The thresholds appear in the
-coefficient table as terms \code{"threshold:<lower>|<upper>"}, and
-\code{exp_estimate} of a slope is the cumulative odds ratio of a higher
-category. The class "mean" of an ordinal outcome (fitted values,
-\code{predict()}, trajectories) is the expected category score
-\eqn{\sum_c c P(Y = c)}{sum_c c P(Y = c)}, the categories scored 1 to C in
-order; \code{predict(type = "probabilities")} gives the category probabilities.
-With one outcome per class assignment, an ordinal mixture with no
-predictors is not identified. Two-category mixtures follow the binary
-support restriction below. Both are rejected with \code{latents_not_identified}, unless
-\code{class_level = "group"} gives each class assignment several outcomes. A
-single-level mixture is also rejected when it has more free parameters than
-P (C - 1), the number of free category probabilities in P distinct
-covariate patterns (for example two classes and one binary factor).
+\code{"ordinal"}: a cumulative-logit (proportional-odds) regression within each
+class, \eqn{P(Y \le c \mid x, k) = \mathrm{plogis}(t_{kc}
+- x'\beta_k)}{P(Y <= c | x, k) = plogis(t_kc - x' beta_k)}, with ordered thresholds per class in place of the intercept
+and the sign convention of \code{MASS::polr()}: a positive slope raises the
+probability of a higher category. The outcome is an ordered factor, a
+factor (levels in order) or whole numbers; the categories are those
+observed, at least two. The formula keeps its intercept, which the
+thresholds replace. Thresholds appear in the
+coefficient table as \code{"threshold:<lower>|<upper>"}, and \code{exp_estimate} of a
+slope is a cumulative odds ratio. The class mean of an ordinal outcome
+(fitted values, trajectories) is the expected category score with
+categories scored 1 to C; \code{predict(type = "probabilities")} gives the
+category probabilities.
 
-Binary mixtures with one trial per class assignment are not supported:
-whether such a model is identified depends on the covariate design and the
-model constraints, which the package does not assess. A binary mixture
-therefore requires \code{class_level = "group"} (several rows per class
-assignment) or binomial counts with more than one trial per row; other
-binary specifications are rejected.
-}
+Identification. Call the thing that carries a class the unit: a row, or
+an \code{id} group under \code{class_level = "group"}. An ordinal mixture whose
+units have one outcome each and no predictors is not identified (a
+mixture of categorical distributions is itself one) and is refused. A
+binary mixture with one trial per unit, and an ordinal one with one
+outcome per unit and two categories, are refused too: whether such a
+model is identified depends on the covariate design, which the package
+does not assess. Give each unit several
+outcomes (\code{class_level = "group"}) or, for binomial, counts with more than
+one trial per row. A single-level ordinal mixture is also refused when it
+has more free parameters than the distinct covariate patterns can
+identify.
+Repeated binary or ordinal outcomes without predictors must also have
+enough distinct response-count patterns to identify the class parameters.
+A growth model is refused when its random-effects and residual covariance
+components cannot be separated by the observed designs. With class-specific
+residual variances, two common waves do not identify an unrestricted random
+intercept and slope covariance. A diagonal covariance can be identified
+there, as can proportional class covariances with a shared residual variance.
 
-\section{Conditions}{
+Unused factor levels in membership and random-effects formulas are dropped
+before fitting. In output tables, an identifier whose name conflicts with
+a result column is prefixed with \code{id_} or \code{cluster_} (for example, an
+\code{id = "class"} column is returned as \code{id_class}, beside the latent \code{class}).
+A numeric suffix is added if that name is also occupied.
 
-\code{latents_bad_argument} for an inconsistent specification (including a
-\code{common} that names no predictor term);
-\code{latents_bad_data} for an outcome outside the family's support, a
-covariate that varies within a group where it may not, or a factor
-predictor with a single value among the fitted (positive-weight) rows;
-\code{latents_not_identified} for a binary outcome with one trial per class
-assignment, or an ordinal mixture with one outcome per class assignment
-and two categories, no predictors, or fewer distinct covariate patterns
-times C - 1 than free parameters; \code{latents_missing_data} for missing
-values under
-\code{missing = "error"}; \code{latents_rows_dropped} (warning) under
-\code{missing = "omit"}, and for rows of weight zero carrying a factor level
-or outcome category that no row of positive weight has;
-\code{latents_no_valid_start} when every start
-degenerated; \code{latents_unconverged} (warning) when the selected start did
-not converge; \code{latents_degenerate_start} (warning) when some starts
-degenerated; \code{latents_separation} (warning) for extreme fitted logits or
-log means that may signal separation;
-\code{latents_failed_starts} (warning) when some growth-mixture starts could
-not be built (they are marked \code{"failed"} in the starts table);
-\code{latents_boundary} (warning) for a negative-binomial dispersion at the
-Poisson limit, or an ordinal threshold gap at zero (a class that gives
-no row some middle category; that gap and the thresholds above it have
-no standard error); \code{latents_random_boundary} (warning) for a degenerate
-random-effect covariance; \code{latents_singular_information} (warning) when
-some standard errors cannot be computed.
+Every refusal and warning is a classed condition; \link{latents-conditions}
+lists them.
 }
 
 \examples{
@@ -355,44 +291,8 @@ schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
 get_results(schools, "group_classes")
 }
 }
-\references{
-Asparouhov, T., & Muthen, B. (2008). Multilevel mixture models. In G. R.
-Hancock & K. M. Samuelsen (Eds.), \emph{Advances in latent variable mixture
-models} (pp. 27--51). Information Age.
-
-McCullagh, P. (1980). Regression models for ordinal data. \emph{Journal of the
-Royal Statistical Society B}, 42, 109--142.
-
-Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
-outcomes using the EM algorithm. \emph{Biometrics}, 55, 463--469.
-
-Nagin, D. S. (2005). \emph{Group-based modeling of development}. Harvard
-University Press.
-
-Proust-Lima, C., Philipps, V., & Liquet, B. (2017). Estimation of extended
-mixed models using latent classes and latent processes: the R package
-lcmm. \emph{Journal of Statistical Software}, 78(2), 1--56.
-
-Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
-heterogeneity in the random-effects population. \emph{Journal of the American
-Statistical Association}, 91, 217--221.
-
-DeSarbo, W. S., & Cron, W. L. (1988). A maximum likelihood methodology for
-clusterwise linear regression. \emph{Journal of Classification}, 5, 249--282.
-
-Wedel, M., & DeSarbo, W. S. (1995). A mixture likelihood approach for
-generalized linear models. \emph{Journal of Classification}, 12, 21--55.
-
-Follmann, D. A., & Lambert, D. (1991). Identifiability of finite mixtures
-of logistic regression models. \emph{Journal of Statistical Planning and
-Inference}, 27, 375--381.
-
-Vermunt, J. K. (2003). Multilevel latent class models. \emph{Sociological
-Methodology}, 33, 213--239.
-
-Leisch, F. (2004). FlexMix: A general framework for finite mixture models
-and latent class regression in R. \emph{Journal of Statistical Software}, 11(8).
-}
 \seealso{
-\code{\link[=enumerate_regressions]{enumerate_regressions()}} to compare numbers of classes.
+\code{\link[=enumerate_regressions]{enumerate_regressions()}} to compare numbers of classes;
+\code{\link[=plot_trajectories]{plot_trajectories()}}, \code{\link[=plot_coefficients]{plot_coefficients()}} and, for fits that classify
+persons, \code{\link[=plot_classification]{plot_classification()}}.
 }

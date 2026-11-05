@@ -230,8 +230,9 @@ Celeux and Govaert, 2000) by `r icl_groups_pick` and the approximate weight
 of evidence (AWE; Banfield and Raftery, 1993) by `r awe_groups_pick`. With
 enrolments as the units, BIC is minimized by `r bic_individual_pick`. The
 Akaike information criterion (AIC; Akaike, 1974) is minimized by
-`r aic_pick`, the largest candidate, because its weak penalty leaves it
-decreasing over the entire range. ICL and AWE penalize classification
+`r aic_pick`, the largest candidate in this grid. Its per-parameter penalty
+is smaller than BIC's here, but its values need not decrease at every
+increment in class count. ICL and AWE penalize classification
 uncertainty in addition to the number of parameters and therefore favour
 fewer, better separated classes.
 
@@ -497,8 +498,9 @@ plot_diagnostics(chosen)
 With two or more group classes, the four views for the enrolments in their
 profiles are followed by the same views for the students in their group
 classes. Because a student is classified from all of their enrolments
-jointly, the group classes are typically far better separated than the
-profiles. A single view is selected with `what`, for example
+jointly, the two levels use different amounts of information. This does not
+guarantee better separation at the group level: inspect each level's entropy
+and average posterior probabilities. A single view is selected with `what`, for example
 `plot_diagnostics(chosen, what = "group_posteriors")`.
 
 Each enrolment with its modal profile, the group class of its student and
@@ -521,15 +523,16 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 
 The bootstrap likelihood ratio test (McLachlan, 1987) compares two
 candidates that differ by one class. Data sets are simulated from the
-smaller candidate and both candidates are re-estimated on each. With `B`
-simulated data sets, of which `b` yield a likelihood ratio at least as large
-as the observed one, the p-value is `(b + 1) / (B + 1)` (Davison and
-Hinkley, 1997); the additional count includes the observed statistic and
-precludes a p-value of zero from a finite simulation. The p-value is
-withheld unless every replicate satisfies the estimation checks. The test
-below compares three and four profiles with three group classes. Nineteen
-simulated data sets keep the example brief; the smallest attainable p-value
-is then 1/20 = 0.05, and applied analyses should use at least 99.
+smaller candidate and both candidates are re-estimated on each. Of `B`
+requested data sets, let `V` pass the estimation checks and `b` of those yield
+a likelihood ratio at least as large as the observed one. The p-value is
+`(b + 1) / (V + 1)` (Davison and Hinkley, 1997); the additional count includes
+the observed statistic and precludes a p-value of zero. Invalid replicates
+are reported, and the p-value is withheld when fewer than half the requested
+replicates are valid. The test below compares three and four profiles with
+three group classes. Nineteen data sets keep the example brief; if all pass,
+the smallest attainable p-value is 1/20 = 0.05. Applied analyses should use
+at least 99 and inspect the valid count.
 
 ```{r blrt}
 smaller <- get_candidate(models, "profiles3_groups3")

@@ -55,10 +55,6 @@ models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
 summary(models)
 plot(models)
 }
-\references{
-Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
-\emph{Pattern Recognition}, 28(5), 781--793.
-}
 \seealso{
 \code{\link[=lpa]{lpa()}} to fit one model; \code{\link[=enumerate_lca]{enumerate_lca()}} for categorical
 indicators; \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to test one number of profiles against

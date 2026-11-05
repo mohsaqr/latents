@@ -56,11 +56,6 @@ fit <- lpa(srl, c("cognitive_strategies", "intrinsic_value",
 fit
 plot(fit, what = "raincloud")
 }
-\references{
-Oberski, D. (2016). Mixture models: Latent profile and latent class
-analysis. In J. Robertson & M. Kaptein (Eds.), \emph{Modern Statistical Methods
-for HCI} (pp. 275--287). Springer.
-}
 \seealso{
 \code{\link[=lca]{lca()}} for categorical indicators; \code{\link[=multilpa]{multilpa()}} for the two-level
 model; \code{\link[=enumerate_lpa]{enumerate_lpa()}} to compare numbers of profiles.
