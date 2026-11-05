@@ -264,7 +264,9 @@ plot.latents_sensitivity <-function(x, main = NULL, subtitle = NULL, ...) {
   shapes <- c("best maximum" = 21L, "a lower maximum" = 24L, "unfinished" = 23L, "failed" = 4L)
   plot <- ggplot2::ggplot(frame, ggplot2::aes(seed, value, colour = status, fill = status,
                                               shape = status)) +
-    ggplot2::geom_point(size = 2.6, stroke = 0.6) +
+    # show.legend = TRUE draws the key of a status with no point, such as
+    # "failed", whose refits have no value; drop = FALSE alone keeps only its label.
+    ggplot2::geom_point(size = 2.6, stroke = 0.6, show.legend = TRUE) +
     ggplot2::facet_wrap(~panel, ncol = 1L, scales = "free_y") +
     ggplot2::scale_colour_manual(values = colours, drop = FALSE, name = NULL) +
     ggplot2::scale_fill_manual(values = colours, drop = FALSE, name = NULL) +

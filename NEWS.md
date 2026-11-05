@@ -50,6 +50,14 @@
   weights when supplied, so unit weights and integer replication agree.
   `descriptives()` explicitly warns that it describes recorded rows without
   weights and reports an unweighted ICC.
+* `plot_trust()` and the selection heatmap draw a legend key for every
+  status, including statuses no candidate has, and leave out the group-class
+  axis when every candidate has one group class. The seed-sensitivity plot
+  keeps the key of a status no seed reached. Profile heatmaps of weighted
+  fits name their reference moments as weighted.
+* `plot_individuals()` takes `persons`: how many persons to draw, or their
+  identifiers. Person panels name an identifier as the assignment table
+  does, so an `id` column called `class` reads `id_class 1001`.
 * Assignment tables retain identifiers named `class` under collision-safe
   names. Small coefficients retain their precision beside large intercepts;
   regression intercepts no longer appear as odds or rate ratios. Growth

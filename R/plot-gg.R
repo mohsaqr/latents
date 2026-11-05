@@ -511,6 +511,8 @@ utils::globalVariables(c(
                               "grey15")
   means$profile_label <- factor(means$profile_label,
                                 levels = rev(levels(key$label)))
+  # With sampling weights the reference moments are weighted; say so.
+  moments <- if (.latents_is_weighted(x)) "weighted" else "observed"
   ggplot2::ggplot(means, ggplot2::aes(indicator, profile_label, fill = mean)) +
     ggplot2::geom_tile(colour = "white", linewidth = 1.2) +
     ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", mean),
@@ -518,14 +520,14 @@ utils::globalVariables(c(
     ggplot2::scale_colour_identity() +
     ggplot2::scale_fill_gradient2(
       low = "#D33F6A", mid = "white", high = "#4A6FE3", midpoint = 0,
-      limits = c(-limit, limit), name = "SDs from\nobserved mean",
+      limits = c(-limit, limit), name = sprintf("SDs from\n%s mean", moments),
       guide = ggplot2::guide_colourbar(barheight = ggplot2::unit(7, "lines"),
                                        barwidth = ggplot2::unit(0.7, "lines"))) +
     ggplot2::scale_x_discrete(position = "top", expand = c(0, 0)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
     .gg_titles(main, subtitle, "Profile means in standard deviations",
-               paste("Each profile mean minus the indicator's observed mean,",
-                     "in observed standard deviations"),
+               sprintf(paste("Each profile mean minus the indicator's %s mean,",
+                             "in %s standard deviations"), moments, moments),
                caption = .gg_undrawn_caption(
                  x, .multilpa_continuous_names(x))) +
     ggplot2::labs(x = NULL, y = NULL) +

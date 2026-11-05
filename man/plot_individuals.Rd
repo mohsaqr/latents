@@ -4,26 +4,34 @@
 \alias{plot_individuals}
 \title{Trajectories of individual persons}
 \usage{
-plot_individuals(x, main = NULL, subtitle = NULL)
+plot_individuals(x, persons = 12L, main = NULL, subtitle = NULL)
 }
 \arguments{
 \item{x}{A growth mixture, or a mixture regression that classifies
 persons (\code{class_level = "group"}).}
 
+\item{persons}{Which persons to draw. A single number is how many
+(default 12), taken from each class's most to least certain members.
+Two or more values, or text, are the persons' identifiers as they
+appear in the data; a single numeric identifier is given as text,
+\code{persons = "1001"}.}
+
 \item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
 view's own.}
 }
 \value{
-A ggplot object.
+A ggplot object, one panel per person.
 An object with nothing to draw raises \code{latents_nothing_to_plot},
 naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+return raises \code{latents_not_a_fit}. A \code{persons} that is not a positive
+number or a vector of identifiers, or names none of the fitted persons,
+raises \code{latents_bad_argument}.
 }
 \description{
-The observed and predicted trajectory of each of twelve persons of a
+The observed and predicted trajectory of each of several persons of a
 growth mixture or a regression that classifies persons, coloured by
-class. The fit's own \code{plot(x, what = "individuals")} takes \code{persons},
-a number or identifiers.
+class. Each panel is titled with the person's identifier, named as in the
+assignment table, and the person's class and posterior probability.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -31,6 +39,7 @@ fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
                           n_classes = 2, id = "student", class_level = "group",
                           random = "wave", n_starts = 2, seed = 1)
 plot_individuals(fit)
+plot_individuals(fit, persons = c(3, 17, 42))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

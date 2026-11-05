@@ -221,6 +221,21 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
                    legend.title = ggplot2::element_blank())
 }
 
+#' The group-class axis of a tile view, or no axis for a single-level grid
+#'
+#' The tile views lay candidates out by number of profiles (x) and number of
+#' group classes (y). When every candidate has one group class, the y-axis
+#' has a single "1" and no second dimension, so it is left out.
+#' @param counts The number of group classes of each candidate.
+#' @return A list of ggplot components.
+#' @noRd
+.latents_group_class_axis <- function(counts) {
+  if (all(counts %in% 1L)) {
+    return(list(ggplot2::scale_y_discrete(breaks = NULL), ggplot2::labs(y = NULL)))
+  }
+  list(ggplot2::labs(y = "Number of group classes"))
+}
+
 #' "profiles" or "classes", as the grid's indicators make them
 #' @noRd
 .latents_class_word <- function(x) {
@@ -318,7 +333,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
     ggplot2::scale_fill_gradient(low = "#4A6FE3", high = "white", na.value = "grey85",
                                  name = sprintf("%s above the lowest", using)) +
     ggplot2::scale_x_continuous(breaks = sort(unique(frame$n_profiles))) +
-    ggplot2::labs(y = "Number of group classes")
+    .latents_group_class_axis(frame$n_group_classes)
   if (several_models) plot <- plot + ggplot2::facet_wrap(ggplot2::vars(model))
   .latents_selection_look(
     plot, main, subtitle, sprintf("%s over the whole grid", using),
@@ -401,7 +416,9 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
                       stringsAsFactors = FALSE)
   several_models <- length(unique(frame$model[!is.na(frame$model)])) > 1L
   plot <- ggplot2::ggplot(frame, ggplot2::aes(n_profiles, n_group_label, fill = status)) +
-    ggplot2::geom_tile(colour = "white", linewidth = 1.2) +
+    # show.legend = TRUE: ggplot2 >= 3.5 leaves the legend key of a status no
+    # candidate has blank, although drop = FALSE keeps its label.
+    ggplot2::geom_tile(colour = "white", linewidth = 1.2, show.legend = TRUE) +
     ggplot2::geom_text(ggplot2::aes(label = tile_label), size = 2.9,
                        lineheight = 0.85) +
     ggplot2::scale_fill_manual(values = c("best replicated" = "#009E73",
@@ -412,7 +429,7 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
                                           "not fitted" = "#999999"),
                                drop = FALSE) +
     ggplot2::scale_x_continuous(breaks = sort(unique(frame$n_profiles))) +
-    ggplot2::labs(y = "Number of group classes")
+    .latents_group_class_axis(grid$n_group_classes)
   if (several_models) plot <- plot + ggplot2::facet_wrap(ggplot2::vars(model))
   .latents_selection_look(
     plot, main, subtitle, "Convergence and repeated maxima",

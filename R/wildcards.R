@@ -66,10 +66,12 @@
 #' @param verb The calling verb, the key of `.latents_wild_views()`.
 #' @param expression The caller's `substitute(x)`, for messages.
 #' @param main,subtitle Titles, passed to the drawing method.
+#' @param ... Further arguments of a view the fit's own plot() draws, such as
+#'   `persons` for the individuals view; passed only to that plot() call.
 #' @return A ggplot object, or a `latents_plots` list of the individual and
 #'   group levels for a classification view of a fit with group classes.
 #' @noRd
-.latents_wild_plot <- function(x, verb, expression, main, subtitle) {
+.latents_wild_plot <- function(x, verb, expression, main, subtitle, ...) {
   if (inherits(x, "multilpa_diagnostics")) x <- x$fit
   kind <- .latents_wild_kind(x)
   if (is.na(kind)) .latents_wild_refuse_object(x, verb, expression)
@@ -108,7 +110,7 @@
   # A view the fit's own plot() does not offer (the case-level views of a
   # transition fit) is refused here, by class, rather than by match.arg().
   if (!view %in% .latents_plot_offered_views(x)) .latents_wild_refuse_view(x, kind, verb)
-  plot(x, what = view, main = main, subtitle = subtitle)
+  plot(x, what = view, main = main, subtitle = subtitle, ...)
 }
 
 #' A classification view drawn from any fit's posteriors
@@ -650,28 +652,37 @@ plot_trajectories <- function(x, main = NULL, subtitle = NULL) {
 
 #' Trajectories of individual persons
 #'
-#' The observed and predicted trajectory of each of twelve persons of a
+#' The observed and predicted trajectory of each of several persons of a
 #' growth mixture or a regression that classifies persons, coloured by
-#' class. The fit's own `plot(x, what = "individuals")` takes `persons`,
-#' a number or identifiers.
+#' class. Each panel is titled with the person's identifier, named as in the
+#' assignment table, and the person's class and posterior probability.
 #'
 #' @param x A growth mixture, or a mixture regression that classifies
 #'   persons (`class_level = "group"`).
+#' @param persons Which persons to draw. A single number is how many
+#'   (default 12), taken from each class's most to least certain members.
+#'   Two or more values, or text, are the persons' identifiers as they
+#'   appear in the data; a single numeric identifier is given as text,
+#'   `persons = "1001"`.
 #' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
 #'   view's own.
-#' @return A ggplot object.
+#' @return A ggplot object, one panel per person.
 #'   An object with nothing to draw raises `latents_nothing_to_plot`,
 #'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
+#'   return raises `latents_not_a_fit`. A `persons` that is not a positive
+#'   number or a vector of identifiers, or names none of the fitted persons,
+#'   raises `latents_bad_argument`.
 #' @seealso [plot_trajectories()], [plot_classification()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
 #'                           n_classes = 2, id = "student", class_level = "group",
 #'                           random = "wave", n_starts = 2, seed = 1)
 #' plot_individuals(fit)
+#' plot_individuals(fit, persons = c(3, 17, 42))
 #' @export
-plot_individuals <- function(x, main = NULL, subtitle = NULL) {
-  .latents_wild_plot(x, "plot_individuals", substitute(x), main, subtitle)
+plot_individuals <- function(x, persons = 12L, main = NULL, subtitle = NULL) {
+  .latents_wild_plot(x, "plot_individuals", substitute(x), main, subtitle,
+                     persons = persons)
 }
 
 #' Class probabilities of every person

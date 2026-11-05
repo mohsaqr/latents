@@ -269,7 +269,9 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
   if (is.numeric(people) && anyDuplicated(ids)) {
     ids <- format(people, digits = 17, trim = TRUE)
   }
-  labels <- sprintf("%s %s \u00b7 %s, p = %.2f", x$spec$id, ids,
+  # The identifier is named as in the assignment table, so an `id` column
+  # called `class` reads "id_class 1001", not "class 1001" beside "class 1".
+  labels <- sprintf("%s %s \u00b7 %s, p = %.2f", output_id, ids,
                     sub("class_", "class ", rows$class[first]), probability[first])
   # Facets follow native IDs, not their rounded printed representation.
   labels <- make.unique(labels)
