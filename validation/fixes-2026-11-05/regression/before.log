@@ -1,0 +1,75 @@
+fixes-1105-regression: 12.34.56.789.a.bc.def....ghi.jk..lmno..pq.rstuv.w...xyzA.B.CDEFG
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-fixes-1105-regression.R:24:3'): unused membership and group
+Expected `colnames(fit$spec$w)` to be identical to `c("(Intercept)", "memberb")`.
+Differences:
+`actual`:   "(Intercept)" "memberb" "memberunused"
+`expected`: "(Intercept)" "memberb"               
+
+
+── 2. Failure ('test-fixes-1105-regression.R:25:3'): unused membership and group
+Expected `fit$n_parameters` to be identical to `reference$n_parameters`.
+Differences:
+  `actual`: 9
+`expected`: 8
+
+
+── 3. Failure ('test-fixes-1105-regression.R:27:3'): unused membership and group
+Expected `get_results(fit, "fit")$bic` to equal `get_results(reference, "fit")$bic`.
+Differences:
+  `actual`: 678.0
+`expected`: 673.9
+
+
+── 4. Failure ('test-fixes-1105-regression.R:28:3'): unused membership and group
+Expected `all(is.finite(vcov(fit)))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+── 5. Failure ('test-fixes-1105-regression.R:36:3'): unused membership and group
+Expected `colnames(with_unused$spec$v)` to be identical to `c("(Intercept)", "memberb")`.
+Differences:
+`actual`:   "(Intercept)" "memberb" "memberunused"
+`expected`: "(Intercept)" "memberb"               
+
+
+── 6. Failure ('test-fixes-1105-regression.R:37:3'): unused membership and group
+Expected `with_unused$n_parameters` to be identical to `without_unused$n_parameters`.
+Differences:
+  `actual`: 11
+`expected`: 10
+
+
+── 7. Failure ('test-fixes-1105-regression.R:46:3'): unused random factor levels
+Expected `colnames(fit$spec$random_design)` to be identical to `c("membera", "memberb")`.
+Differences:
+`actual`:   "membera" "memberb" "memberunused"
+`expected`: "membera" "memberb"               
+
+
+── 8. Failure ('test-fixes-1105-regression.R:47:3'): unused random factor levels
+Expected `fit$spec$random_xlevels$member` to be identical to `c("a", "b")`.
+Differences:
+`actual`:   "a" "b" "unused"
+`expected`: "a" "b"         
+
+
+── 9. Failure ('test-fixes-1105-regression.R:48:3'): unused random factor levels
+Expected `fit$n_parameters` to be identical to 5L.
+Differences:
+  `actual`: 6
+`expected`: 5
+
+
+── 10. Failure ('test-fixes-1105-regression.R:50:3'): unused random factor level
+Expected `predict(fit, transform(data[1:4, ], member = "unused"))` to throw a error with class <latents_bad_data>.
+  ... and 32 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+No one gets it right on their first try

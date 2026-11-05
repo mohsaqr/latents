@@ -15,6 +15,35 @@
 # thumb, not derived criteria, and the package does not impose them.
 .latents_residual_alpha <- 0.05
 
+#' Whether estimated parameters reach a numerical bound
+#'
+#' This reporting predicate also checks discrete measurement parameters. It
+#' leaves the stored variance-bound flag unchanged, since bootstrap acceptance
+#' uses that field for a different purpose. Held response probabilities and
+#' structural one-category probabilities are constants, not boundary estimates.
+#' @param x A fitted model.
+#' @return One logical value.
+#' @noRd
+.latents_boundary_active <- function(x) {
+  stopifnot(is.list(x))
+  if (isTRUE(x$boundary) || isTRUE(x$random_boundary)) return(TRUE)
+  # General transition fits store one measurement block per occasion rather
+  # than top-level response/count arrays. Report their measurement bounds too.
+  measurement <- if (is.list(x$measurement)) x$measurement else list()
+  probabilities <- c(x$response_probabilities %||% list(),
+    unlist(lapply(measurement, function(block) block$response_probabilities), recursive = FALSE))
+  response <- if ("response_probabilities" %in% (x$fixed %||% character())) NULL else
+    unlist(Filter(function(probability) is.matrix(probability) && ncol(probability) > 1L,
+                  probabilities), use.names = FALSE)
+  count_means <- c(x$count_means, unlist(lapply(measurement, `[[`, "count_means")))
+  dispersion <- c(x$count_dispersion,
+                   unlist(lapply(measurement, `[[`, "count_dispersion")))
+  floor <- .multilpa_probability_floor(x)
+  any(response <= floor, na.rm = TRUE) ||
+    any(count_means <= 1e-8, na.rm = TRUE) ||
+    any(dispersion <= .latents_min_dispersion * (1 + 1e-6), na.rm = TRUE)
+}
+
 .latents_check_references <- c(
   replication = "Masyn (2013)",
   avepp = "Nagin (2005)",
@@ -65,14 +94,17 @@
                                                      replication$n_failed,
                                                      unfinished - replication$n_failed))
   }
-  boundary <- x$boundary %||% x$random_boundary
+  boundary <- if (any(vapply(c("boundary", "random_boundary", "response_probabilities",
+                                "count_means", "count_dispersion"),
+                              function(name) !is.null(x[[name]]), logical(1))))
+    .latents_boundary_active(x) else NULL
   if (!is.null(boundary)) {
     rows[[length(rows) + 1L]] <- .latents_check_row(
       "Estimation", "estimates at a bound", value = as.numeric(isTRUE(boundary)),
       display = if (isTRUE(boundary)) "yes" else "no",
       status = if (isTRUE(boundary)) "check" else "ok",
       detail = if (isTRUE(boundary)) {
-        "a variance or probability sits at its lower bound; its standard error is not available"
+        "a variance, probability, count mean or dispersion is at a numerical bound; ordinary Wald inference may be unavailable"
       } else "")
   }
   if (isTRUE(x$small_classes)) {
@@ -287,7 +319,13 @@
       display = sprintf("%.1f%% (n = %s, %s)", 100 * share, format(round(count), big.mark = ","),
                         .latents_class_label(table$class[[smallest]])),
       status = "info")
-    gap <- max(abs(table$n_assigned / sum(table$n_assigned) - table$estimated_proportion))
+    input <- .latents_classification_inputs(x, level)
+    posterior <- input$posteriors
+    weights <- input$weights %||% rep(1, nrow(posterior))
+    assigned <- max.col(posterior, ties.method = "first")
+    modal <- vapply(seq_len(ncol(posterior)), function(class) sum(weights[assigned == class]),
+                    numeric(1))
+    gap <- max(abs(modal / sum(modal) - table$estimated_proportion))
     rows[[length(rows) + 1L]] <- .latents_check_row(
       "Class size", "modal vs estimated proportions", level, value = gap,
       display = sprintf("largest gap %.3f", gap), status = "info")
@@ -386,7 +424,7 @@
   untested <- sum(!tested)
   flagged <- sum(adjusted[tested] < .latents_residual_alpha)
   worst <- residuals[which.min(ifelse(tested, adjusted, Inf)), , drop = FALSE]
-  detail <- sprintf("largest: %s x %s in %s, residual %.3f, adjusted p %s", worst$indicator_1,
+  detail <- sprintf("smallest adjusted p: %s x %s in %s, residual %.3f, adjusted p %s", worst$indicator_1,
                     worst$indicator_2, worst$profile, worst$residual,
                     format.pval(worst$p_adjusted, digits = 2L, eps = 1e-4))
   .latents_check_row(

@@ -1,0 +1,10 @@
+R version 4.5.2 (2025-10-31) 
+latents 1.1.17 
+Library /private/tmp/latents-fixes-1105-vtcym3fq/final-check/latents.Rcheck/latents 
+report-surface: .......................................`geom_line()`: Each group consists of only one observation.
+i Do you need to adjust the group aesthetic?
+.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ passed  failed   error warning skipped 
+     40       0       0       0       0 

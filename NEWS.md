@@ -1,4 +1,68 @@
-# latents 1.1.14
+# latents 1.1.17
+
+## Results and inference
+
+* Grand centring and scaling use sampling weights and exclude zero-weight
+  observations. Grand scaling now uses the population standard deviation,
+  including for unweighted data: its denominator is the observed weight or
+  observation count. This makes weight rescaling and integer replication
+  agree even with missing indicators. Person scaling still uses `n - 1`.
+  Refit grand-scaled models if exact reported likelihoods or scales matter.
+* Person centring refuses an indicator observed once in any positive-weight
+  group, rather than fitting artificial zero deviations. Groups with no
+  observed value of that indicator are unchanged.
+* OPG inference under grand transformations uses observed information for
+  transform sensitivity. Mixing-probability standard errors now respect a
+  shift of the indicators. Zero standard errors in profile and covariate
+  inference do not produce Wald tests.
+* `three_step(step_one = "estimated")` refuses a staged or measurement-held
+  fit whose measurement uncertainty it cannot propagate. A staged bootstrap
+  refuses measurement estimated on other data or with unknown provenance.
+* `r3step()` refuses separated membership logits before reporting Wald tests,
+  including transition-chain fits. Its private QR calculations are stable
+  under large covariate shifts. Unsupported occasion-specific measurement
+  is refused by the transition-chain approximation.
+* Unused factor levels no longer become regression membership or random-effect
+  parameters. Structurally unidentified growth covariance decompositions and
+  known short-panel transition specifications are refused before fitting.
+* Transition rows with fewer than one expected outgoing move warn and report
+  `origin_expected_count` and `supported = FALSE`; Wald inference is refused.
+  Nonzero rows retain their formal parameter counts. Exactly empty rows keep
+  the existing fixed/unestimated treatment. Homogeneous transition bounds
+  are flagged consistently with the general engine.
+* With `drop_empty = FALSE`, both transition engines use all positive-weight
+  rows for the individual-level BIC; `n_informative` still counts observations
+  containing indicators. This corrects the homogeneous engine's BIC.
+* Categorical joint-pair bootstrap likelihood-ratio tests preserve exact
+  column names. Ragged transition bootstraps count incompatible resamples as
+  failures and warn about conditional intervals, instead of crashing.
+
+## Tables, diagnostics and documentation
+
+* Cross-level profile prevalence is the weighted posterior share of individuals
+  in both forms. Tables and printing exclude zero-weight groups and rows from
+  sample counts. The warning against choosing group classes or form from
+  cross-level criteria remains.
+* Bound checks, LRT warnings and candidate trust tables include categorical
+  response and count bounds, without changing ordinary LCA bootstrap guards.
+  Classification gaps compare weighted modal and estimated proportions.
+* Standardized profile displays use observed population moments, with sampling
+  weights when supplied, so unit weights and integer replication agree.
+  `descriptives()` explicitly warns that it describes recorded rows without
+  weights and reports an unweighted ICC.
+* Assignment tables retain identifiers named `class` under collision-safe
+  names. Small coefficients retain their precision beside large intercepts;
+  regression intercepts no longer appear as odds or rate ratios. Growth
+  replication reports describe the fitted model, not its initialization.
+* Categorical three-step multiplicity adjustments count complementary binary
+  outcomes once; unavailable modal overall tests warn. Sensitivity rankings
+  exclude unconverged refits.
+* Help pages and articles describe the corrected behavior. The documentation
+  evidence registry retains all references and tests with current prose anchors.
+  Dispatch tests control reported processor availability; live multicore tests
+  skip when that information is unavailable.
+
+# latents 1.1.16
 
 Changes since the CRAN release 0.9.21.
 
@@ -17,7 +81,23 @@ Changes since the CRAN release 0.9.21.
 * it is an EII, EEI or EEE model, which now defaults to `search = "emEM"`
   and can reach a higher maximum (`search = "kmeans"` gives the old fit);
 * you compared models on ICL, AWE or CLC, which now use the entropy of the
-  complete classification.
+  complete classification;
+* it is a two-step model with covariates and categorical indicators
+  (`fixed = "measurement"`). Its standard errors now hold the response
+  probabilities, as documented, and can be substantially smaller;
+* you compared a staged fit with a jointly estimated one in
+  `compare_models()`. Criteria now count the staged fit's measurement
+  parameters, which can reverse the ranking;
+* you filtered on `p_adjusted` from `get_results(fit, "residuals")`. It was the
+  raw p-value by default and is now Benjamini-Hochberg, as in
+  `get_residuals()`; `adjust = "none"` gives the raw values.
+
+## Warnings
+
+* A cross-level fit with group classes now warns
+  (`latents_cross_level_criteria`): its likelihood counts the ratings twice, so
+  its criteria favour group classes and the full form even on data with no
+  group structure.
 
 ## New features
 
@@ -81,6 +161,17 @@ Changes since the CRAN release 0.9.21.
 * New and extended plots: `plot_sequences()`, `plot_selection()`, more views
   in `plot_profiles()`, group-level views in `plot_diagnostics()`, and one
   plot per tree in `plot_tree()` (`combine = TRUE` for one panel).
+* Every plot function and every table function (`get_checks()`,
+  `get_best()` and the others) has a help page of its own, named after
+  it, with its own arguments and a short example: `?plot_avepp` opens
+  `plot_avepp` and nothing else.
+* The help pages of `multilpa()`, `lta()`, `mixture_regression()`,
+  `parameter_inference()`, `get_results()`, `three_step()`, `r3step()`,
+  `enumerate_classes()`, `bootstrap_lrt()`, `fit_staged()` and
+  `compare_models()` are rewritten for readers: one to three sentences
+  per argument, the longer material in named sections, condition class
+  names on the conditions page only.
+* Help pages no longer carry reference lists or citations.
 
 ## Bug fixes
 

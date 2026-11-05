@@ -91,8 +91,9 @@ test_that("a failed full cross-level start is surfaced, as in every other family
              between_variance, min_variance, start_index, ...)
   })
   expect_warning(
-    fit <- multilpa(data, c("y1", "y2"), "group", n_profiles = 2, n_group_classes = 2,
+    fit <- quietly(multilpa(data, c("y1", "y2"), "group", n_profiles = 2, n_group_classes = 2,
                     family = "full_cross_level", n_starts = 3, seed = 1),
+                    classes = "latents_cross_level_criteria"),
     class = "latents_failed_starts")
   starts <- get_results(fit, "starts")
   expect_identical(starts$error[[2L]], "forced start failure")
@@ -151,9 +152,9 @@ test_that("cross-level fits store and report the profile prevalences", {
     list(means = rbind(c(0, 0), c(2, 1.5)), between = rbind(c(0.5, 0.5), c(0.3, 0.3)),
          within = c(1, 1), weights = c(0.7, 0.3)),
     sizes = rep(4L, 30L), seed = 2)
-  restricted <- multilpa(data, c("y1", "y2"), "group", n_profiles = 2,
+  restricted <- quietly(multilpa(data, c("y1", "y2"), "group", n_profiles = 2,
                          n_group_classes = 2, family = "restricted_cross_level",
-                         n_starts = 2, seed = 1)
+                         n_starts = 2, seed = 1))
   prevalence <- restricted$profile_prevalences
   expect_named(prevalence, c("profile_1", "profile_2"))
   expect_equal(sum(prevalence), 1, tolerance = 1e-12)
@@ -166,10 +167,10 @@ test_that("cross-level fits store and report the profile prevalences", {
   group <- subset(profiles, level == "group")
   expect_equal(individual$prevalence, unname(prevalence[individual$profile]))
   expect_equal(group$prevalence, unname(restricted$group_probabilities[group$profile]))
-  full <- multilpa(data, c("y1", "y2"), "group", n_profiles = 2, n_group_classes = 2,
-                   family = "full_cross_level", n_starts = 2, seed = 1)
+  full <- quietly(multilpa(data, c("y1", "y2"), "group", n_profiles = 2, n_group_classes = 2,
+                   family = "full_cross_level", n_starts = 2, seed = 1))
   expect_equal(unname(full$profile_prevalences),
-               unname(drop(crossprod(full$group_probabilities, full$composition))),
+               unname(colMeans(full$subject_posteriors)),
                tolerance = 1e-12)
 })
 

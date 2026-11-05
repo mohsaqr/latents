@@ -1,0 +1,23 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | claims                                                         
+⠼ |          5 | claims                                                         
+⠼ |         25 | claims                                                         
+⠇ |         49 | claims                                                         
+⠋ |         71 | claims                                                         
+⠦ |         87 | claims                                                         
+⠸ |        104 | claims                                                         
+⠇ |        119 | claims                                                         
+⠧ |        138 | claims                                                         
+⠇ |        159 | claims                                                         
+✔ |        179 | claims [1.0s]
+
+⠏ |          0 | mplus-standardize                                              
+⠙ |          2 | mplus-standardize                                              
+⠸ |          4 | mplus-standardize                                              
+✔ |          7 | mplus-standardize [4.3s]
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 5.4 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 186 ]

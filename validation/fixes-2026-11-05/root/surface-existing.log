@@ -1,0 +1,23 @@
+audit-1101-covariates-diagnostics: ..........................................
+bivariate-residuals: .........................................
+centering: ...................................No standard errors in this table: Robust and OPG inference need more groups than parameters; this fit has 20 groups and 30 parameters.
+.
+fixes-1105-surface: .................................
+plot-polish: .............................................................................................................
+review-1015-families: .......Fitted a single-level latent profile model.
+....W.............W.....W........
+review-1027-diagnostics: ..............................................................................................................................................................
+scaling: ...............................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. a failed full cross-level start is surfaced, as in every other family ('test-review-1015-families.R:93:3') - This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them.
+
+2. cross-level fits store and report the profile prevalences ('test-review-1015-families.R:154:3') - This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them.
+
+3. cross-level fits store and report the profile prevalences ('test-review-1015-families.R:169:3') - This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+[1] file   test   failed error 
+<0 rows> (or 0-length row.names)
+ passed  failed   error warning skipped 
+    487       0       0       3       0 

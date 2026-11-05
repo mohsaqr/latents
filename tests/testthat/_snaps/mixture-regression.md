@@ -66,8 +66,8 @@
       
       Class membership (log odds, 95% CI)
       
-      Class    Term       Estimate         95% CI     p  Odds ratio
-      -------  ---------  --------  -------------  ----  ----------
-      Class 2  Intercept     -0.26  [-0.54, 0.02]  .068        0.77
+      Class    Term       Estimate         95% CI     p
+      -------  ---------  --------  -------------  ----
+      Class 2  Intercept     -0.26  [-0.54, 0.02]  .068
       
 

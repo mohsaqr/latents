@@ -202,9 +202,10 @@ test_that("the bivariate residual of a 2x2 table is the hand Pearson chi-square,
   expect_equal(row$statistic, chi_square, tolerance = 1e-10)
   expect_identical(row$df, 1L)
   expect_equal(row$p_value, stats::pchisq(chi_square, 1, lower.tail = FALSE), tolerance = 1e-10)
-  # get_results() leaves p unadjusted by default; diagnostics() states and
-  # applies the Benjamini-Hochberg adjustment.
-  expect_equal(residuals$p_adjusted, residuals$p_value)
+  # Both diagnostic entry points apply BH; explicit none retains raw values.
+  expect_equal(residuals$p_adjusted, stats::p.adjust(residuals$p_value, "BH"))
+  raw <- get_results(fit, "residuals", adjust = "none")
+  expect_equal(raw$p_adjusted, raw$p_value)
   checked <- diagnostics(fit, plots = FALSE)
   adjusted <- get_results(checked, "residuals")
   expect_equal(adjusted$p_adjusted, stats::p.adjust(adjusted$p_value, "BH"))

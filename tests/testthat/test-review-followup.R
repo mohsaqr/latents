@@ -174,8 +174,8 @@ test_that("restricted cross-level composition and class counts use group weights
     multilpa(frame, c("x1", "x2"), "id", 2, 2, family = "restricted_cross_level",
              weights = weights, seed = 4, n_starts = 1, tol = 1e-14, max_iter = 20000)
   }
-  weighted <- fit(data, "w")
-  frequency <- fit(replicated, NULL)
+  expect_warning(weighted <- fit(data, "w"), class = "latents_cross_level_criteria")
+  expect_warning(frequency <- fit(replicated, NULL), class = "latents_cross_level_criteria")
   scale <- n_groups / sum(group_weight)
   classes_w <- get_results(weighted, "group_classes")
   classes_f <- get_results(frequency, "group_classes")

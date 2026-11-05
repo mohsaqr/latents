@@ -76,7 +76,8 @@ test_that("a pair of items modelled jointly nests the same items apart", {
   apart <- lca(first_week, items, n_classes = 2, n_starts = 2, seed = 1)
   joint <- lca(first_week, items, n_classes = 2, n_starts = 2, seed = 1,
                local_dependence = "sports:walking")
-  tested <- as.data.frame(compare_models(apart, joint, test = "lrt"))
+  expect_warning(tested <- as.data.frame(compare_models(apart, joint, test = "lrt")),
+                 class = "latents_boundary")
   # Two binary items: three free probabilities a class jointly, two apart.
   expect_identical(tested$lr_df[2L], 2L)
   expect_equal(tested$lr_statistic[2L],
@@ -123,10 +124,10 @@ test_that("measurement invariance across occasions is tested in lta()", {
                2 * (occasion$log_likelihood - invariant$log_likelihood), tolerance = 1e-12)
   expect_error(compare_models(occasion, invariant, test = "lrt"),
                class = "latents_bad_nesting")
-  # A stayer class has its null value on the boundary: the chi-square
-  # reference does not hold, and the bootstrap is the test for it.
+  # Two occasions cannot identify a separate stayer share; setup refuses it
+  # before an analytic or bootstrap comparison can be requested.
   expect_error(compare_models(invariant, fit(mover_stayer = TRUE), test = "lrt"),
-               class = "latents_bad_nesting")
+               class = "latents_unidentified")
 })
 
 test_that("weighted, unconverged and regression fits are refused", {

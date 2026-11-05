@@ -1,0 +1,40 @@
+                              file passed failed error warning skipped
+         test-audit-core-repairs.R     63      1     0       0       0
+                test-compare-lrt.R     33      0     1       1       0
+ test-plot-categorical-summaries.R    131      3     0       0       0
+             test-release-engine.R    124     11     0       0       0
+             test-report-surface.R     37      3     0       0       0
+           test-review-1015-lead.R     19      0     0       1       0
+          test-review-1015-plots.R     49      0     0       1       0
+    test-review-1015-transitions.R     38      0     0       3       0
+  test-review-1026-multilevel-r2.R     43      0     0       6       0
+            test-review-families.R     72      0     0       2       0
+            test-review-followup.R     33      0     0       2       0
+test-compare-lrt.R a pair of items modelled jointly nests the same items apart 
+apart, joint have a parameter at a numerical bound: a boundary can make the chi-square reference of the likelihood-ratio test inaccurate. 
+test-compare-lrt.R measurement invariance across occasions is tested in lta() 
+<latents_unidentified/error/condition>
+Error: Two occasions cannot identify multiple group classes or a separate stayer class. Use one freely moving group class, a supported simpler transition specification, or a longer panel. 
+test-review-1015-lead.R lta() retains enough default iterations for unaccelerated EM 
+An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+test-review-1015-plots.R plot_enumeration() and plot_tree() draw a transition grid 
+An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+test-review-1015-transitions.R numbers stored as text are refused when their alphabetical order is wrong 
+An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+test-review-1026-multilevel-r2.R the equal between-group variance divides by the weighted total (CL-2) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+test-review-1026-multilevel-r2.R cross-level criteria and nobs count units of positive weight (CL-3) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+test-review-1026-multilevel-r2.R covariate and cross-level fits count replicated maxima as multilpa() does (RP-1) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+test-review-families.R restricted cross-level weights preserve a similarly named indicator 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+test-review-followup.R restricted cross-level composition and class counts use group weights 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 

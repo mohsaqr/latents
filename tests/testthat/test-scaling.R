@@ -24,12 +24,13 @@ test_that("grand scaling is the fit to grand z-scores, and differs only in units
   # The same model fitted to columns standardized by hand.
   by_hand <- data
   by_hand[c("small", "large")] <- lapply(data[c("small", "large")],
-                                         \(v) (v - mean(v)) / stats::sd(v))
+                                         \(v) (v - mean(v)) / sqrt(mean((v - mean(v))^2)))
   manual <- fit_scaled(by_hand, model = "VVI")
   expect_equal(scaled$log_likelihood, manual$log_likelihood, tolerance = 1e-8)
   expect_equal(unname(scaled$means), unname(manual$means), tolerance = 1e-6)
   # Change of variables: the scaled likelihood plus n * sum(log sd) is the raw.
-  sds <- vapply(data[c("small", "large")], stats::sd, numeric(1))
+  sds <- vapply(data[c("small", "large")],
+                 function(v) sqrt(mean((v - mean(v))^2)), numeric(1))
   expect_equal(scaled$log_likelihood - nrow(data) * sum(log(sds)),
                raw$log_likelihood, tolerance = 1e-8)
   expect_identical(max.col(scaled$subject_posteriors),
@@ -72,11 +73,12 @@ test_that("scaling changes a spherical solution, as a hand-standardized fit does
   scaled <- fit_scaled(data, model = "EII", scaling = "grand")
   by_hand <- data
   by_hand[c("small", "large")] <- lapply(data[c("small", "large")],
-                                         \(v) v / stats::sd(v))
+                                         \(v) v / sqrt(mean((v - mean(v))^2)))
   manual <- fit_scaled(by_hand, model = "EII")
   expect_equal(scaled$log_likelihood, manual$log_likelihood, tolerance = 1e-8)
   # One variance for both indicators: the raw fit is dominated by `large`.
-  sds <- vapply(data[c("small", "large")], stats::sd, numeric(1))
+  sds <- vapply(data[c("small", "large")],
+                 function(x) sqrt(mean((x - mean(x))^2)), numeric(1))
   expect_false(isTRUE(all.equal(scaled$log_likelihood - nrow(data) * sum(log(sds)),
                                 raw$log_likelihood, tolerance = 1e-6)))
 })

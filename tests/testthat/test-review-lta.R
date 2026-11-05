@@ -32,7 +32,7 @@ review_lta_fit <- function(..., gaps = FALSE,
     transition_covariates = transition_covariates, initial_covariates = "w",
     occasions = "grid",
     n_starts = 1L, max_iter = 0L, seed = 51L, ...),
-          c("latents_unconverged", "latents_boundary", "latents_small_classes",
+          c("latents_unconverged", "latents_boundary", "latents_weak_transition_support", "latents_small_classes",
             "latents_thin_profiles"))
 }
 
@@ -85,7 +85,7 @@ test_that("every covariance structure uses the correct observed Gaussian margina
   lapply(.multilpa_structures(), function(model) {
     fit <- quietly(lta(data, c("y", "x"), "id", 2, time = "time",
       transition_covariates = "z", missing = "fiml", model = model,
-      n_starts = 1L, max_iter = 0L, seed = 62L), c("latents_unconverged", "latents_boundary"))
+      n_starts = 1L, max_iter = 0L, seed = 62L), c("latents_unconverged", "latents_boundary", "latents_weak_transition_support"))
     block <- fit$measurement[[1L]]
     block$means <- sweep(block$means, 2L, fit$centers, "-")
     theta <- .lta_theta(fit)
@@ -253,7 +253,7 @@ test_that("occasion covariance charts include mixed ordinal and count coordinate
       categorical = "c", ordinal = "o", count = "k", count_model = "negative_binomial",
       missing = "fiml", measurement = "occasion", model = model, n_starts = 1L,
       max_iter = 0L, seed = 51L),
-      c("latents_unconverged", "latents_boundary", "latents_thin_profiles"))
+      c("latents_unconverged", "latents_boundary", "latents_weak_transition_support", "latents_thin_profiles"))
     theta <- .lta_theta(fit)
     decoded <- .lta_unpack(theta, fit)
     expect_equal(length(theta), fit$n_parameters, info = model)
@@ -275,7 +275,7 @@ test_that("homogeneous LTA inference data preserve times and category labels", {
   data <- review_lta_data()
   fit <- quietly(lta(data, c("y", "c"), "id", 2, time = "time", categorical = "c",
                       missing = "fiml", n_starts = 1L, max_iter = 0L, seed = 5L),
-                 c("latents_unconverged", "latents_boundary"))
+                 c("latents_unconverged", "latents_boundary", "latents_weak_transition_support"))
   expect_invisible(.multilpa_check_transition_data(fit, data))
   changed <- data
   changed$time <- changed$time * 2
@@ -289,7 +289,7 @@ test_that("ordinal/count-only LTA supports all tables and likelihood reconstruct
   data <- review_lta_data()
   fit <- quietly(lta(data, c("o", "k"), "id", 2L, time = "time", ordinal = "o",
     count = "k", missing = "fiml", n_starts = 1L, max_iter = 0L, seed = 51L),
-    c("latents_unconverged", "latents_boundary"))
+    c("latents_unconverged", "latents_boundary", "latents_weak_transition_support"))
   tables <- quietly(get_results(fit, "all"), "latents_no_standard_errors")
   expect_true(all(vapply(tables, is.data.frame, logical(1))))
   expect_identical(nrow(tables$profiles), 0L)
@@ -314,7 +314,7 @@ test_that("every non-Gaussian LTA measurement exposes tables, coefficients, refi
       fit <- quietly(do.call(lta, c(list(data = data, id = "id", n_profiles = 2L,
         time = "time", missing = "fiml", transitions = "occasion", measurement = measurement,
         n_starts = 1L, max_iter = 0L, seed = 12L), specification)),
-        c("latents_unconverged", "latents_boundary"))
+        c("latents_unconverged", "latents_boundary", "latents_weak_transition_support"))
       tables <- quietly(get_results(fit, "all"), "latents_no_standard_errors")
       expect_true(all(vapply(tables, is.data.frame, logical(1))))
       expect_identical(nrow(tables$profiles), 0L)
@@ -325,7 +325,7 @@ test_that("every non-Gaussian LTA measurement exposes tables, coefficients, refi
       expect_equal(e$log_likelihood, fit$log_likelihood, tolerance = 1e-11)
       expect_invisible(.lta_check_data(fit, data))
       refit <- quietly(.lta_refit(fit, data, 1L, 0L, 1e-8),
-                        c("latents_unconverged", "latents_boundary"))
+                        c("latents_unconverged", "latents_boundary", "latents_weak_transition_support"))
       expect_identical(refit$categorical, fit$categorical)
       expect_identical(refit$ordinal, fit$ordinal)
       expect_identical(refit$count, fit$count)

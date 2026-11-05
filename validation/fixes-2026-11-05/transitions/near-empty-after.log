@@ -1,0 +1,30 @@
+[1] "latents_boundary An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld."                                                                                                                                                                                 
+[2] "latents_weak_transition_support Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld."
+  from to       probability    expected_count estimated
+7    3  1 1.00000000000e-10 1.20341162172e-19      TRUE
+8    3  2 1.77020268166e-09 6.96700609157e-17      TRUE
+9    3  3 9.99999998130e-01 2.92202788313e-07      TRUE
+origin total: 2.922028e-07 n_parameters: 38 boundary: TRUE 
+[1] "latents_weak_transition_support Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld."
+[2] "latents_boundary A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."                                                                                                                                  
+     group_class occasion      from        to      probability
+7  group_class_1        2 profile_3 profile_1 0.93322905747496
+8  group_class_1        2 profile_3 profile_2 0.06328410265545
+9  group_class_1        2 profile_3 profile_3 0.00348683986959
+16 group_class_1        3 profile_3 profile_1 0.13740973775813
+17 group_class_1        3 profile_3 profile_2 0.12621473148290
+18 group_class_1        3 profile_3 profile_3 0.73637553075898
+25 group_class_1        4 profile_3 profile_1 0.01540195585449
+26 group_class_1        4 profile_3 profile_2 0.01688238975380
+27 group_class_1        4 profile_3 profile_3 0.96771565439171
+   origin_expected_count supported estimated
+7      2.78919691034e-17     FALSE      TRUE
+8      2.78919691034e-17     FALSE      TRUE
+9      2.78919691034e-17     FALSE      TRUE
+16     4.50784619398e-24     FALSE      TRUE
+17     4.50784619398e-24     FALSE      TRUE
+18     4.50784619398e-24     FALSE      TRUE
+25     2.06418592428e-19     FALSE      TRUE
+26     2.06418592428e-19     FALSE      TRUE
+27     2.06418592428e-19     FALSE      TRUE
+General origin totals per move: 2.789197e-17 4.507846e-24 2.064186e-19 n_parameters: 50 

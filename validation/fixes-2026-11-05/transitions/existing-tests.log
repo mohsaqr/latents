@@ -1,0 +1,107 @@
+lta-bootstrap: ......................................................................................................
+lta-compare: .....................WW..........
+lta-general: ...................................
+review-1026-lta-open: ....................................1....
+review-1026-lta-r2: ...............................................
+review-1026-lta: ...........
+review-lta: W.................................................................................................................W........W................................W................................................................W.....W......W.....W......W.....W......W.....W......W.....W......W.....W......W.....W......W.....W......
+transition-inference: .......................
+transitions-numerics: ...........................No standard errors in this table: Inference requires a converged fit.
+...................
+transitions: .....................W.............2......No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........No standard errors in this table: Inference requires a converged fit.
+.No standard errors in this table: Inference requires a converged fit.
+........W..............WNo standard errors in this table: Inference requires a converged fit.
+...No standard errors in this table: Inference requires a converged fit.
+.......W........................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. transition enumeration crosses profiles, classes and structures ('test-lta-compare.R:85:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+2. transition enumeration crosses profiles, classes and structures ('test-lta-compare.R:85:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+3. second-order occasion models omit unused logits and report stayer identity ('test-review-lta.R:40:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+4. LTA simulation preserves ordinal types, counts and indicator missingness ('test-review-lta.R:127:5') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+5. LTA simulation preserves ordinal types, counts and indicator missingness ('test-review-lta.R:127:5') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+6. second-order boundary detection reads only the first-order move into occasion two ('test-review-lta.R:207:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+7. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+8. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+9. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+10. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+11. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+12. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+13. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+14. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+15. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+16. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+17. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+18. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+19. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+20. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+21. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:314:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+22. every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation ('test-review-lta.R:327:7') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+23. the free parameter count is the one the model actually has ('test-transitions.R:144:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+24. transitions() restricts by argument instead of by bracket ('test-transitions.R:240:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+25. the summary keeps named fields only, and reports its own tables ('test-transitions.R:276:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+26. the shared sequence and diagnostic verbs accept a transition fit ('test-transitions.R:308:3') - Some transition origins have fewer than one expected outgoing move. Their rows have weak support; inspect origin_expected_count and supported in the transition tables. Nonzero rows remain in the likelihood and its formal parameter count, but Wald inference is withheld.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-review-1026-lta-open.R:249:5'): covariate logits do not depen
+<latents_boundary_fit/error/condition>
+Error: A variance or covariance eigenvalue sits at min_variance, or a transition or initial probability at zero; Wald inference does not apply.
+Backtrace:
+     ▆
+  1. └─base::Map(...) at test-review-1026-lta-open.R:240:3
+  2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+  3.     └─`<fn>`(dots[[1L]][[1L]], dots[[2L]][[1L]])
+  4.       ├─testthat::expect_lt(...) at test-review-1026-lta-open.R:249:5
+  5.       │ └─testthat::quasi_label(enquo(object), label)
+  6.       │   └─rlang::eval_bare(expr, quo_get_env(quo))
+  7.       ├─base::diag(vcov(fit))
+  8.       ├─stats::vcov(fit)
+  9.       └─latents:::vcov.multilpa_lta(fit)
+ 10.         └─latents:::.lta_inference(...) at latents/R/lta-methods.R:561:3
+
+── 2. Failure ('test-transitions.R:190:3'): the accessors return the tidy tables
+Expected `moves` to have names `c(...)`.
+Differences:
+     actual                    | expected                     
+ [3] "to"                      | "to"                      [3]
+ [4] "probability"             | "probability"             [4]
+ [5] "expected_count"          | "expected_count"          [5]
+ [6] "origin_expected_count"   -                              
+ [7] "supported"               -                              
+ [8] "stable"                  | "stable"                  [6]
+ [9] "estimated"               | "estimated"               [7]
+[10] "group_class_probability" | "group_class_probability" [8]
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ passed  failed   error warning skipped 
+    757       1       1      26       0 

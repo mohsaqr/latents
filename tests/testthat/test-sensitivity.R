@@ -276,6 +276,7 @@ test_that("cores is validated and appended after every existing argument", {
 })
 
 test_that("the seeds reach the parallel map with the cores asked for, in order", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   fit <- quietly(separated_fit())
   seen <- NULL
   serial <- .latents_map_candidates

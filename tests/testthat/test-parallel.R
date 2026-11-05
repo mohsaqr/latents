@@ -41,6 +41,7 @@ skip_if_socket_ports_unavailable <- function() {
 }
 
 test_that("a profile grid on several cores is identical to one core", {
+  skip_if_unknown_cores()
   skip_on_cran()
   skip_on_os("windows")
   data <- subset(course_engagement, student <= 40)
@@ -56,6 +57,7 @@ test_that("a profile grid on several cores is identical to one core", {
 })
 
 test_that("transition and family grids on several cores are identical to one core", {
+  skip_if_unknown_cores()
   skip_on_cran()
   skip_on_os("windows")
   data <- subset(course_engagement, student <= 30)
@@ -71,6 +73,7 @@ test_that("transition and family grids on several cores are identical to one cor
 })
 
 test_that("candidates' warnings reach the caller in grid order, as on one core", {
+  skip_if_unknown_cores()
   skip_on_cran()
   skip_on_os("windows")
   vars <- c("cognitive_strategies", "intrinsic_value", "self_efficacy",
@@ -162,6 +165,7 @@ test_that("a socket worker that dies becomes a failed candidate", {
 })
 
 test_that("one fit's starts on several cores give the same fit as one core", {
+  skip_if_unknown_cores()
   skip_on_cran()
   skip_on_os("windows")
   items <- c("time_with_friends", "on_social_media", "sports")
@@ -586,6 +590,7 @@ test_that("unretired socket workers prevent replacement and give a classed failu
 })
 
 test_that("a seeded multilevel LCA grid prepared on workers is identical to one core", {
+  skip_if_unknown_cores()
   skip_on_cran()
   skip_on_os("windows")
   data <- subset(student_esm, student <= 40)

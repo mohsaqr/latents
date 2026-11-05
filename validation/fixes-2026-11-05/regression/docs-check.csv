@@ -1,0 +1,9 @@
+file,status,artifact
+vignettes/articles/case-esm-lca.Rmd,full_render_ok,tmp/nov5-docs/case-esm-lca.html
+vignettes/lca.Rmd,full_render_ok,tmp/nov5-docs/lca.html
+vignettes/articles/model-selection.Rmd,full_render_ok,tmp/nov5-docs/model-selection.html
+vignettes/articles/class-enumeration.Rmd,full_render_ok,tmp/nov5-docs/class-enumeration.html
+vignettes/articles/trajectory-classes.Rmd,full_render_ok,tmp/nov5-docs/trajectory-classes.html
+vignettes/articles/workflow-lpa.Rmd,prose_preview_only,tmp/nov5-docs/workflow-lpa-prose-preview.html
+vignettes/articles/case-engagement-evaluation.Rmd,prose_preview_only,tmp/nov5-docs/case-engagement-evaluation-prose-preview.html
+vignettes/articles/enumeration.Rmd,prose_preview_only,tmp/nov5-docs/enumeration-prose-preview.html

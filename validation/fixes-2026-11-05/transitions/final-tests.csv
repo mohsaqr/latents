@@ -1,0 +1,38 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-fixes-1105-transitions.R","fixes-1105-transitions","short-panel latent transition ridges are refused before fitting",7,0,FALSE,FALSE,0,0.419,0.014,0.496,7
+"test-fixes-1105-transitions.R","fixes-1105-transitions","positive but negligible transition support is distinct from an empty origin",6,0,FALSE,FALSE,0,0.0479999999999998,0.006,0.0589999999999999,6
+"test-fixes-1105-transitions.R","fixes-1105-transitions","first-order support in a second-order chain reads only its first move",3,0,FALSE,FALSE,0,0.00800000000000001,0.003,0.012,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","bootstrap extraction failures stay inside the counted replicate loop",5,0,FALSE,FALSE,0,0.028,0.003,0.034,5
+"test-fixes-1105-transitions.R","fixes-1105-transitions","coefficient schemas are checked before transition bootstrap alignment",3,0,FALSE,FALSE,0,0.958,0.02,1.024,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","evaluate-only general fits do not claim an unsuccessful optimization",2,0,FALSE,FALSE,0,0.0150000000000001,0.003,0.0359999999999996,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","trailing dots survive logit identification tables and relabelling",3,0,FALSE,FALSE,0,0.012,0.003,0.0190000000000001,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","an extreme covariate row alone is not a probability boundary",2,0,FALSE,FALSE,0,0.00699999999999967,0.002,0.0100000000000002,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","second-order first-move tables label occasion two and expose support",3,0,FALSE,FALSE,0,0.154,0.006,0.179,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","both transition engines honor the explicit all-row individual BIC",12,0,FALSE,FALSE,0,0.442,0.022,0.592,12
+"test-fixes-1105-transitions.R","fixes-1105-transitions","covariance charts alone govern spherical-to-diagonal transition nesting",3,0,FALSE,FALSE,0,0.136,0.006,0.187,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","unit-free transition logit checks allow finite effects and detect separation",3,0,FALSE,FALSE,0,0.00800000000000001,0.003,0.0150000000000001,3
+"test-review-1026-lta-open.R","review-1026-lta-open","a rank-deficient initial or transition design is refused",4,0,FALSE,FALSE,0,0.0489999999999999,0.004,0.104,4
+"test-review-1026-lta-open.R","review-1026-lta-open","the rank decision depends on the pattern of a design, not its units",8,0,FALSE,FALSE,0,1.194,0.031,1.391,8
+"test-review-1026-lta-open.R","review-1026-lta-open","an lta() with no observed indicator after the first occasion is refused",1,0,FALSE,FALSE,0,0.0229999999999997,0.004,0.0430000000000001,1
+"test-review-1026-lta-open.R","review-1026-lta-open","an all-missing trailing occasion leaves the count and the criteria unchanged",6,0,FALSE,FALSE,0,1.808,0.054,1.983,6
+"test-review-1026-lta-open.R","review-1026-lta-open","a network from a fit without an ordering is still refused",1,0,FALSE,FALSE,0,0.106,0.006,0.129,1
+"test-review-1026-lta-open.R","review-1026-lta-open","an occasion with nothing observed is treated as an absent one",5,0,FALSE,FALSE,0,0.56,0.026,0.702,5
+"test-review-1026-lta-open.R","review-1026-lta-open","the sequence table leaves out an occasion with nothing observed",4,0,FALSE,FALSE,0,0.123,0.00900000000000001,0.17,4
+"test-review-1026-lta-open.R","review-1026-lta-open","an empty occasion before an observed one warns under occasion transitions",2,0,FALSE,FALSE,0,0.27,0.00900000000000001,0.321999999999999,2
+"test-review-1026-lta-open.R","review-1026-lta-open","zero-weight rows cannot mask a constant indicator in lta()",2,0,FALSE,FALSE,0,0.0339999999999998,0.004,0.0800000000000001,2
+"test-review-1026-lta-open.R","review-1026-lta-open","covariate logits do not depend on a covariate's origin or units",8,0,FALSE,FALSE,0,1.363,0.06,1.611,8
+"test-review-1026-lta-open.R","review-1026-lta-open","the sequence plot marks an occasion that observes nothing as its own legend entry",4,0,FALSE,FALSE,0,0.952,0.067,1.164,4
+"test-transitions.R","transitions","known transition probabilities are recovered across seeds",2,0,FALSE,FALSE,0,0.468999999999999,0.022,0.563000000000001,2
+"test-transitions.R","transitions","the ordering comes from time, so input row order changes nothing",2,0,FALSE,FALSE,0,0.00999999999999979,0.003,0.0169999999999995,2
+"test-transitions.R","transitions","enough starts reach the same maximum from either row order",1,0,FALSE,FALSE,0,1.015,0.024,1.112,1
+"test-transitions.R","transitions","a grid of occasions differs from consecutive ones only when a wave is skipped",7,0,FALSE,FALSE,0,0.178000000000001,0.0159999999999999,0.266999999999999,7
+"test-transitions.R","transitions","the fitted quantities satisfy their own definitions",9,0,FALSE,FALSE,0,0.132,0.013,0.173,9
+"test-transitions.R","transitions","the free parameter count is the one the model actually has",6,0,FALSE,FALSE,0,0.0860000000000003,0.00800000000000001,0.115,6
+"test-transitions.R","transitions","broken contracts raise their own condition classes",6,0,FALSE,FALSE,0,0.032,0.005,0.105,6
+"test-transitions.R","transitions","the accessors return the tidy tables they promise",27,0,FALSE,FALSE,0,0.357999999999999,0.035,0.442,27
+"test-transitions.R","transitions","transitions() restricts by argument instead of by bracket",14,0,FALSE,FALSE,0,0.148,0.021,0.209999999999999,14
+"test-transitions.R","transitions","the summary keeps named fields only, and reports its own tables",10,0,FALSE,FALSE,0,0.494,0.023,0.56,10
+"test-transitions.R","transitions","the shared sequence and diagnostic verbs accept a transition fit",7,0,FALSE,FALSE,0,0.124000000000001,0.0089999999999999,0.157999999999999,7
+"test-transitions.R","transitions","the per-occasion offset keeps extreme densities from erasing the priors",4,0,FALSE,FALSE,0,0.0309999999999988,0.006,0.0449999999999999,4
+"test-transitions.R","transitions","the emission layout removes an offset it can add back exactly",3,0,FALSE,FALSE,0,0.0140000000000011,0.006,0.0259999999999998,3
+"test-transitions.R","transitions","the generics either answer or refuse, and never answer emptily",20,0,FALSE,FALSE,0,0.873000000000001,0.04,0.992000000000001,20

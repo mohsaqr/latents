@@ -315,7 +315,49 @@ plot.multilpa_enumeration <-function(x, what = c("enumeration", "tree"),
   if (is.na(at)) what else choices[at]
 }
 
-#' @rdname latents-plots
+#' Information criteria across a candidate grid
+#'
+#' Each information criterion against the number of classes, one panel per
+#' criterion and one line per number of group classes (or covariance
+#' structure), with each criterion's lowest value circled. `what` also names
+#' the other views of a grid, which [plot_entropy()], [plot_avepp()],
+#' [plot_deltas()], [plot_heatmap()], [plot_sizes()], [plot_trust()] and
+#' [plot_tree()] draw by name.
+#'
+#' @inheritParams plot_tree
+#' @param what Criterion columns of `as.data.frame(x)`, such as
+#'   `"bic_groups"`, or `"all"`. The default draws AIC, both BICs and ICL on
+#'   a profile or class grid; AIC, BIC and BIC over individuals on a
+#'   transition or family grid; AIC, BIC, SABIC and ICL on a regression
+#'   grid. Otherwise one of `"entropy"`, `"avepp"`, `"diagnostics"` (both),
+#'   `"deltas"`, `"heatmap"`, `"smallest"`, `"trust"`, `"selection"` (those
+#'   four and `"diagnostics"`) or `"tree"`; these cannot be mixed with
+#'   criteria.
+#' @param combine `TRUE` (default) draws the criteria as panels of one plot;
+#'   `FALSE` returns one plot per criterion.
+#' @param labels `TRUE` (default) labels each line directly; `FALSE` uses a
+#'   legend.
+#' @param mark_minimum `TRUE` (default) circles each criterion's lowest value
+#'   among converged candidates, without selecting a model.
+#' @param cutoff The AvePP cutoff drawn dashed by `"avepp"`, `"diagnostics"`
+#'   and `"selection"` (default 0.8).
+#' @param using The criterion `"deltas"`, `"heatmap"` and `"selection"` use:
+#'   when not given, `"bic_groups"` on a profile or class grid and `"bic"` on
+#'   the others.
+#' @param ... With `what = "tree"`, the arguments of [plot_tree()].
+#' @return A ggplot object; a `latents_plots` list for several criteria with
+#'   `combine = FALSE`, or for a `what` of several views. A criterion not in
+#'   the grid raises `latents_unknown_criterion`; a view the kind of grid
+#'   does not offer raises `latents_unsupported_view`.
+#' @seealso [plot_criteria()] draws every criterion of any grid or
+#'   comparison; [plot_views()] lists the views a grid offers;
+#'   [plot_selection()].
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_enumeration(grid)
+#' plot_enumeration(grid, what = "bic_individual")
 #' @export
 plot_enumeration <- function(x, what = c("aic", "bic_groups",
                                          "bic_individual", "icl_individual"),
@@ -550,7 +592,17 @@ plot.multilpa_covariates <-function(x, what = c("profiles", "bars", "heatmap",
     .gg_scorable_categories(x$response_probabilities)
 }
 
-#' @rdname latents-plots
+#' The plot views of a fitted model, or of one grid
+#'
+#' Without an argument, one row per `what` value of a fitted model's
+#' `plot()`. With a grid, one row per `what` value of that grid's
+#' [plot_enumeration()], saying whether the grid offers it and, if not, why.
+#'
+#' @param x `NULL` (default), or an enumeration grid.
+#' @return A data frame, one row per view: `type` (the value for `what`),
+#'   `group` and `description`; for a grid also `supported` and `reason`.
+#' @examples
+#' plot_views()
 #' @export
 plot_views <- function(x = NULL) {
   if (!is.null(x)) return(.latents_grid_view_table(x))

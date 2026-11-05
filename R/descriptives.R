@@ -19,6 +19,9 @@
 #' class and should be distinguished from the model's estimated class-specific
 #' parameters. Rows excluded from classification are retained in a separate
 #' stratum with a missing class label, following the fit's `drop_empty` setting.
+#' These are unweighted descriptions of the recorded rows, including rows with
+#' sampling weight zero. Describing a weighted fit warns explicitly; the ICC
+#' is the unweighted one-way ANOVA quantity, not a survey-weighted estimate.
 #'
 #' An intraclass correlation (ICC) near zero indicates little between-group
 #' variation in that variable's mean. It does not rule out group classes that
@@ -67,9 +70,6 @@
 #'   the same name. A `by` named like one of the summary's own columns raises
 #'   `latents_bad_data`. Describing no variables raises
 #'   `latents_nothing_to_describe`.
-#' @references Bliese, P. D. (2000). Within-group agreement, non-independence,
-#'   and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
-#'   theory, research, and methods in organizations*.
 #' @seealso [multilpa()] for model estimation and [diagnostics()] for
 #'   diagnostics of a fitted model.
 #' @examples
@@ -161,6 +161,13 @@ descriptives.multilpa <-function(x, by = NULL, ...) {
     list(...), "descriptives()",
     "A fit supplies its own `vars` and `id`; describe a data frame to choose them.")
   frame <- .multilpa_model_frame(x)
+  if (.latents_is_weighted(x)) {
+    warning(warningCondition(paste(
+      "descriptives() summarizes the recorded rows without sampling weights,",
+      "including zero-weight rows; its ICC is also unweighted. Describe the",
+      "data frame directly when that unweighted summary is intended."),
+      class = "latents_unweighted_descriptives", call = NULL))
+  }
   # A single-level fit numbers its rows as one-row groups of its own making.
   # Its grouping summaries would describe that numbering, not the data.
   id <- if (isTRUE(x$single_level)) NULL else x$id

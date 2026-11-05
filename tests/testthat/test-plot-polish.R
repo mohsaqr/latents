@@ -143,7 +143,7 @@ test_that("the enumeration print shows a compact candidates table", {
                     names(compact)))
   expect_false(any(c("bic_groups", "bic_individual", "n_group_classes") %in%
                      names(compact)))
-  expect_output(print(summary(grid)), "returns all of them")
+  expect_output(print(summary(grid)), "lowest value of each criterion")
 })
 
 test_that("a latent class model is printed as one", {

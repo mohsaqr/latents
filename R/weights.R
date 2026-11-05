@@ -76,7 +76,7 @@
 #'
 #' Under pseudo maximum likelihood the inverse Hessian of the weighted log
 #' likelihood is not the variance of the estimate, and neither is the outer
-#' product of the weighted scores alone; the sandwich is (Skinner, 1989).
+#' product of the weighted scores alone; the sandwich of the two is.
 #' A weighted fit therefore defaults to `"robust"` and refuses the others.
 #'
 #' The refusal names only the alternatives the caller's family offers: the

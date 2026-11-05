@@ -36,7 +36,8 @@ test_that("ordinary and covariate fits expose the same Gaussian table in summari
 
 test_that("homogeneous and general LTA Gaussian diagnostics follow measurement occasions", {
   data <- gaussian_table_data()
-  shared <- lta(data, c("a", "b"), "id", 2L, time = "time", n_starts = 1L, seed = 1)
+  expect_warning(shared <- lta(data, c("a", "b"), "id", 2L, time = "time",
+                               n_starts = 1L, seed = 1), class = "latents_boundary")
   occasion <- quietly(lta(
     data, c("a", "b"), "id", 2L, time = "time", transitions = "occasion",
     measurement = "occasion", n_starts = 1L, seed = 1, max_iter = 0L),
@@ -101,10 +102,10 @@ test_that("weighted Gaussian tables use observed support and weighted reference 
 test_that("cross-level tables distinguish individual and group Gaussian densities", {
   data <- gaussian_table_data()
   invisible(lapply(c("full_cross_level", "restricted_cross_level"), function(family) {
-    fit <- quietly(multilpa(
+    expect_warning(fit <- quietly(multilpa(
       data, c("a", "b"), "id", 2L, 2L, family = family,
       between_variance = "varying", n_starts = 1L, seed = 1L, max_iter = 0L),
-      "latents_unconverged")
+      "latents_unconverged"), class = "latents_cross_level_criteria")
     table <- get_results(fit, "gaussian_diagnostics")
     expect_identical(table, fit$gaussian_diagnostics)
     expect_identical(summary(fit)$gaussian_diagnostics, table)

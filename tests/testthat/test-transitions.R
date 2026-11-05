@@ -188,7 +188,8 @@ test_that("the accessors return the tidy tables they promise", {
   moves <- get_results(fit, "transitions")
   expect_s3_class(moves, "data.frame")
   expect_named(moves, c("group_class", "from", "to", "probability",
-                        "expected_count", "stable", "estimated",
+                        "expected_count", "origin_expected_count", "supported",
+                        "stable", "estimated",
                         "group_class_probability"))
   expect_identical(nrow(moves), 8L)
   expect_identical(moves$stable, moves$from == moves$to)

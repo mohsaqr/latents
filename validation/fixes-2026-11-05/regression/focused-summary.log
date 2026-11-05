@@ -1,0 +1,24 @@
+                                                                             test
+1          unused membership and group-membership levels do not become parameters
+2            unused random factor levels are dropped with their prediction coding
+3           a membership level carried only by zero-weight units has no parameter
+4   growth covariance identification respects the actual designs and restrictions
+5        binary and ordinal repeated mixtures need enough response-count patterns
+6            class-named IDs survive regression and growth output and predictions
+7            cluster identifiers and occupied identifier prefixes remain distinct
+8              individual trajectory plots select the original collision-safe IDs
+9              recovery refuses another row order and two-level labels count rows
+10                       exponentiated intercepts are not labeled as slope ratios
+11 correlated growth starts describe the fitted model rather than its initializer
+   failed passed error warning
+1       0      9 FALSE       0
+2       0      5 FALSE       0
+3       0      5 FALSE       0
+4       0      8 FALSE       0
+5       0      3 FALSE       0
+6       0     12 FALSE       0
+7       0      6 FALSE       0
+8       0      4 FALSE       0
+9       0      4 FALSE       0
+10      0      4 FALSE       0
+11      0      5 FALSE       0

@@ -1,0 +1,42 @@
+compare-lrt: .................W..........1......
+diagnostics: .....................................................................................No standard errors in this table: Inference requires a converged fit.
+................................................
+enumeration: ...........................................................................................................................................................................................................................................................................................................................
+fixes-1105-surface: ...................................................
+gaussian-diagnostic-tables: ................................................................................
+lta-compare: ...............................
+lta-general: ...................................
+plot-polish: .............................................................................................................
+review-1027-diagnostics: ..............................................................................................................................................................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. a pair of items modelled jointly nests the same items apart ('test-compare-lrt.R:79:3') - apart, joint have a parameter at a numerical bound: a boundary can make the chi-square reference of the likelihood-ratio test inaccurate.
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-compare-lrt.R:115:10'): measurement invariance across occasio
+<latents_unidentified/error/condition>
+Error: Two occasions cannot identify multiple group classes or a separate stayer class. Use one freely moving group class, a supported simpler transition specification, or a longer panel.
+Backtrace:
+     ▆
+  1. ├─testthat::expect_error(...) at test-compare-lrt.R:128:3
+  2. │ └─testthat:::expect_condition_matching_(...)
+  3. │   └─testthat:::quasi_capture(...)
+  4. │     ├─testthat (local) .capture(...)
+  5. │     │ └─base::withCallingHandlers(...)
+  6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+  7. ├─latents::compare_models(...)
+  8. └─fit(mover_stayer = TRUE) at latents/R/compare-models.R:138:3
+  9.   └─latents::lta(...) at test-compare-lrt.R:115:10
+ 10.     ├─base::eval(setup_call, environment()) at latents/R/transitions.R:749:3
+ 11.     │ └─base::eval(setup_call, environment())
+ 12.     └─latents:::.lta_setup(...)
+ 13.       └─latents:::.lta_setup_general(...) at latents/R/transitions.R:857:5
+ 14.         └─latents:::.lta_check_short_panel(...) at latents/R/lta-engine.R:954:3
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                file                                                       test
+7 test-compare-lrt.R measurement invariance across occasions is tested in lta()
+  failed error
+7      0  TRUE
+ passed  failed   error warning skipped 
+    945       0       1       1       0 

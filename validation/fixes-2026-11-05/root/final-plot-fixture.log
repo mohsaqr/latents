@@ -1,0 +1,26 @@
+R version 4.5.2 (2025-10-31) 
+latents 1.1.17 
+Library /private/tmp/latents-fixes-1105-vtcym3fq/final-check/latents.Rcheck/latents 
+review-1015-plots: ..................W...............................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. plot_enumeration() and plot_tree() draw a transition grid ('test-review-1015-plots.R:61:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+🥇 Your tests deserve a gold medal 🥇
+ passed  failed   error warning skipped 
+     49       0       0       1       0 
+
+test-review-1015-plots.R: plot_enumeration() and plot_tree() draw a transition grid
+expectation_warning, expectation, condition 
+ An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+    ▆
+ 1. └─latents::enumerate_classes(...) at test-review-1015-plots.R:61:3
+ 2.   ├─latents:::.latents_report_once(...)
+ 3.   │ └─base::withCallingHandlers(...)
+ 4.   └─latents:::.lta_enumerate(...)
+ 5.     └─base::lapply(...)
+ 6.       └─latents (local) FUN(X[[i]], ...)
+ 7.         └─latents:::.latents_signal_conditions(conditions)
+ 8.           └─base::lapply(...)
+ 9.             └─latents (local) FUN(X[[i]], ...)

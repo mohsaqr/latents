@@ -154,7 +154,7 @@
 
 #' The classification error matrix, rows indexed by the true class
 #'
-#' `D[t, s] = sum_i w_i p_it 1(W_i = s) / sum_i w_i p_it` (Vermunt 2010), with
+#' `D[t, s] = sum_i w_i p_it 1(W_i = s) / sum_i w_i p_it`, with
 #' `w_i` the unit's sampling weight (1 without weights), so under weights it
 #' is the population's error matrix (review 2026-10-26 round 2, S-4).
 #'
@@ -235,207 +235,142 @@
 #' Compare latent classes on an external outcome
 #'
 #' @description
-#' `three_step()` estimates differences in an external outcome between latent
-#' classes defined by a previously fitted model. It addresses whether classes
-#' distinguished by their indicator patterns also differ on a variable that
-#' was not used to identify them. The measurement model remains fixed, so the
-#' outcome comparison retains the original meaning of the classes.
-#'
-#' Latent class membership is inferred rather than observed. Assigning each
-#' observation to its most probable class and comparing the resulting groups
-#' treats those assignments as certain, which can distort estimated outcome
-#' differences. Three-step methods address this problem by using
-#' classification-error probabilities from the fitted model when estimating
-#' class-specific outcome means. The default Bolck--Croon--Hagenaars (`"bch"`)
-#' method applies correction weights; the alternative maximum-likelihood
-#' (`"ml"`) method incorporates the classification-error probabilities into
-#' a model for the outcome.
-#'
-#' The analysis provides estimated outcome means within classes or differences
-#' between pairs of classes, together with standard errors and confidence
-#' intervals. Pairwise differences can also be tested against zero, with
-#' adjustment for multiple comparisons. For supported multilevel models,
-#' comparisons may concern individual profiles or group classes. Uncorrected
-#' modal-assignment and posterior-weighted analyses are available as
-#' additional methods.
-#'
-#' @section Interpretation:
-#' Correction for classification error depends on the fitted measurement
-#' model and assumes that the outcome and assigned class are independent
-#' conditional on latent class membership. For a numeric outcome, the
-#' maximum-likelihood method additionally assumes a normal outcome distribution
-#' within each class; for a categorical outcome it estimates a multinomial
-#' distribution in each class.
-#' By default, uncertainty is conditional on the estimated classification-error
-#' probabilities. With `step_one = "estimated"`, it also includes uncertainty
-#' from estimating the measurement model, holding modal assignments fixed.
-#' Neither option includes uncertainty from selecting the class solution.
-#' Outcome differences describe associations; they do not establish causal
+#' `three_step()` estimates how an outcome that was not used to define the
+#' classes differs between them, holding the measurement model fixed so the
+#' classes keep their meaning. Comparing classes by modal assignment treats
+#' uncertain assignments as certain and biases the differences; the
+#' three-step methods correct for the classification error of the fitted
+#' model. The default is the Bolck-Croon-Hagenaars (`"bch"`) weighting; the
+#' maximum-likelihood (`"ml"`) method models the outcome given the true
+#' class instead. Both assume that the outcome and the assigned class are
+#' independent given the true class; the differences are associations, not
 #' effects of class membership.
 #'
-#' @param x A covariate-free fit from [multilpa()] (`family = "profiles"`,
-#'   the default) or from [lta()] with its default homogeneous first-order
-#'   transitions and invariant measurement, or a trajectory model that
-#'   classifies persons ([mixture_regression()] with `class_level = "group"`,
-#'   with or without `random` effects) fitted without `membership`
-#'   covariates. Fits with membership covariates and multilevel growth
-#'   mixtures (`cluster`) raise `latents_unsupported_three_step`:
-#'   the correction uses a fixed, unconditional classification-error matrix
-#'   and independent units. The other families of [multilpa()], [lta()] fits
-#'   from the general transition engine (occasion-varying, second-order or
-#'   covariate transitions, occasion-specific measurement, a stayer class,
-#'   ordinal or count indicators) and mixture regressions with observation
-#'   classes raise `latents_unsupported_three_step` too.
-#' @param data The data frame carrying the outcome, in the fit's row order.
-#'   Columns shared with the fit are checked row by row; a frame with too
-#'   little identifying information raises a warning that alignment cannot be
-#'   verified. For a trajectory model it must be the data frame the model was
-#'   fitted to.
-#' @param outcome Name of the outcome column, without missing values, that is
-#'   not a measurement indicator of `x`: numeric (finite) for class means, or
-#'   a factor, character or logical column for the class-specific probability
-#'   of each category (a factor's unused levels are dropped). For
-#'   `level = "groups"` it must be constant within each group, and for a
-#'   trajectory model within each person.
-#' @param level `"individuals"` (default) relates the outcome to profiles,
-#'   `"groups"` to group classes. For a trajectory model the outcome is
-#'   related to its person classes, reported with `level = "persons"`;
-#'   `"groups"` is refused there with `latents_bad_argument`.
-#' @param method `"bch"` (default) applies the Bolck-Croon-Hagenaars weights;
-#'   `"ml"` fits the maximum-likelihood step-three model (see *Details*);
-#'   `"proportional"` weights by the posterior probabilities without
-#'   correction for classification error;
-#'   `"modal"` uses the uncorrected modal assignment, for comparison.
-#' @param ci_level Confidence level for the intervals (default 0.95).
-#' @param contrast `"none"` (default) reports one outcome mean per class (one
-#'   probability per class and category); `"pairs"` reports the difference
-#'   between every pair of classes, with a test against zero; `"overall"`
-#'   tests that every class has the same mean (the same distribution over
-#'   the categories) with one Wald statistic.
+#' @param x A covariate-free fit: from [multilpa()] (the profile family),
+#'   from [lta()] with its default homogeneous first-order transitions and
+#'   invariant measurement, or a trajectory model that classifies persons
+#'   ([mixture_regression()] with `class_level = "group"`, with or without
+#'   `random`) fitted without `membership` covariates. Refused: fits with
+#'   membership covariates, multilevel growth mixtures (`cluster`), the
+#'   other `multilpa()` families, observation-level mixture regressions,
+#'   fits with weights or a noise component, and `lta()` fits with
+#'   occasion-specific or covariate transitions, second order, occasion-
+#'   specific measurement, a stayer class or ordinal or count indicators.
+#' @param data The data frame carrying the outcome, in the fit's row order;
+#'   columns shared with the fit are checked row by row. For a trajectory
+#'   model, the data the model was fitted to.
+#' @param outcome Name of the outcome column, without missing or infinite
+#'   values and not an indicator of `x`: numeric for class means, or a
+#'   factor, character or logical column for the probability of each
+#'   category in each class. For
+#'   `level = "groups"` it must be constant within each group; for a
+#'   trajectory model, within each person.
+#' @param level `"individuals"` (default) relates the outcome to the
+#'   profiles, `"groups"` to the group classes. A trajectory model relates
+#'   it to its person classes, reported as `level = "persons"`.
+#' @param method `"bch"` (default): Bolck-Croon-Hagenaars weights. `"ml"`:
+#'   the maximum-likelihood step-three model. `"proportional"`: posterior
+#'   weights without correction. `"modal"`: modal assignment without
+#'   correction. See *Methods*.
+#' @param ci_level Confidence level of the intervals (default 0.95).
+#' @param contrast `"none"` (default): one outcome mean per class (one
+#'   probability per class and category). `"pairs"`: the difference between
+#'   every pair of classes, tested against zero. `"overall"`: one Wald test
+#'   that every class has the same mean (the same category distribution).
 #' @param adjust Multiplicity correction across the pairwise differences,
-#'   passed to [stats::p.adjust()]: `"BH"` (default), `"holm"`,
-#'   `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BY"` or `"none"`. Ignored for
-#'   `contrast = "none"`.
-#' @param vcov_type `"cluster"` (default) sums the influence contributions
-#'   within the fit's groups and treats the groups as the independent units,
-#'   as required when the outcome is measured on observations nested in
-#'   groups. `"independent"` treats every observation as an independent unit,
-#'   which is appropriate only when observations can be treated as independent. The choice is recorded in the result's `vcov_type`
-#'   attribute.
-#' @param variance For `method = "ml"` with a numeric outcome: `"varying"`
-#'   (default) estimates a variance of the outcome in each class, `"equal"`
-#'   one variance shared by the classes. Given with another method or a
-#'   categorical outcome it raises `latents_bad_argument`.
-#' @param step_one `"fixed"` (default) conditions on the step-one estimates;
-#'   `"estimated"` adds their first-order contribution to the step-three
-#'   covariance, including classification errors and ML class sizes. Available
-#'   for [lpa()], [lca()] and [multilpa()] profile fits at either level, when
-#'   step-one Wald inference is available. Modal assignments remain fixed.
-#'   The choice is recorded in the result's `step_one` attribute.
-#' @return A base `data.frame`. For `contrast = "none"`, one row per class
-#'   with the columns `level`, `method`, `class`, `estimate`,
-#'   `standard_error`, `conf_low`, `conf_high` and `effective_n`; class means
-#'   are not tested. For a categorical outcome, one row per class and
-#'   category, with `category` after `class` and `estimate` the probability
-#'   of the category in the class; the interval is formed on the logit scale
-#'   and stays in (0, 1). For `method = "ml"`, a `variance` column (the outcome's
-#'   estimated variance in the class) comes before `effective_n`, which is
-#'   then the expected number of units in the class under the step-three
-#'   model; the `variance` attribute records the choice. For `contrast = "pairs"`, one row per pair of classes
-#'   with the columns `level`, `method`, `class`, `reference_class`,
-#'   `estimate` (the mean of `class` minus the mean of `reference_class`),
+#'   a `stats::p.adjust()` method; `"BH"` by default. Ignored for
+#'   `contrast = "none"` or `"overall"`. With a binary outcome, its two
+#'   complementary category rows count as one test per class pair; with
+#'   more categories, every reported category difference enters the family.
+#' @param vcov_type `"cluster"` (default) treats the fit's groups as the
+#'   independent units of the sandwich variance, as the nesting requires;
+#'   `"independent"` treats every observation as independent.
+#' @param variance For `method = "ml"` with a numeric outcome (refused
+#'   otherwise): `"varying"` (default) estimates an outcome variance in each
+#'   class, `"equal"` one shared by the classes.
+#' @param step_one `"fixed"` (default) conditions on the step-one estimates.
+#'   `"estimated"` adds the uncertainty of the classification-error
+#'   probabilities (and, under `"ml"`, of the class sizes) to the step-three
+#'   covariance; available for [lpa()], [lca()] and [multilpa()] profile
+#'   fits at either level when their Wald inference is available and their
+#'   measurement was estimated jointly. Staged fits and fits holding a
+#'   measurement block fixed are refused. See
+#'   *Step-one uncertainty*.
+#'
+#' @return A data frame. For `contrast = "none"`, one row per class (per
+#'   class and category for a categorical outcome, with `category` after
+#'   `class`): `level`, `method`, `class`, `estimate`, `standard_error`,
+#'   `conf_low`, `conf_high` and `effective_n`; means are not tested, and a
+#'   probability's interval is formed on the logit scale. Under
+#'   `method = "ml"` with a numeric outcome a `variance` column precedes
+#'   `effective_n`, and under `"ml"` `effective_n` is the expected number of
+#'   units in the class. For `contrast =
+#'   "pairs"`, one row per pair (per pair and category): `level`, `method`,
+#'   `class`, `reference_class`, `estimate` (class minus reference),
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`, as in [r3step()]. A contrast with zero or missing standard
-#'   error has `NA_real_` statistic and p-values. For a categorical outcome
-#'   the pairs are compared category by category, with `category` after
-#'   `reference_class` and `estimate` the difference in probability. For
-#'   `contrast = "overall"`, one row with `level`, `method`, `statistic`,
-#'   `df` and `p_value`: `(K - 1)` degrees of freedom for a mean,
-#'   `(K - 1)(C - 1)` for `C` categories, tested on the baseline-category
-#'   logits.
+#'   `conf_high`, as in [r3step()]. For `contrast = "overall"`, one row:
+#'   `level`, `method`, `statistic`, `df` (`K - 1` for a mean,
+#'   `(K - 1)(C - 1)` for `C` categories) and `p_value`. The attributes
+#'   `vcov_type` and `step_one` record the choices, `adjust` on a pairs
+#'   result and `variance` on a numeric ML result with `contrast = "none"`.
 #'
-#'   The result's `vcov_type` attribute records the variance used; for
-#'   `contrast = "pairs"` the `adjust` attribute records the correction
-#'   applied to `p_adjusted`.
-#' @details On an [lta()] fit, `level = "individuals"`
-#'   uses one row per occasion and relates the outcome to the profile at that
-#'   occasion, with the default group-clustered variance accounting for the
-#'   repeated occasions within a group. This is a marginal profile-outcome
-#'   analysis, not a model of outcome effects on transitions or of a
-#'   sequence-level outcome.
+#' @section Methods:
+#' BCH gives each observation one weight per class, the row of the inverse
+#' classification-error matrix for its assigned class, and takes weighted
+#' means. With `method = "ml"` the assigned
+#' class is an
+#' indicator of the true class with the step-one error probabilities, and
+#' the outcome is normal within each true class (a multinomial distribution
+#' for a categorical outcome), with the class sizes fixed at the average
+#' posteriors, as in Latent GOLD's step-three model. The likelihood is
+#' maximised from a fixed set of starts plus twenty seeded random ones, so
+#' the result does not depend on the caller's seed; the global maximum is
+#' not guaranteed.
+#' ML depends on the within-class outcome distribution: skewness or a wrong
+#' equal-variance constraint can bias the means, and BCH is less sensitive to
+#' that.
 #'
-#'   The cluster-robust variance is the sum of one outer product per
-#'   independent unit, scaled by the small-sample (CR1) factor `G / (G - 1)`
-#'   for `G` units (groups, or observations under `vcov_type =
-#'   "independent"`). These contributions sum to zero at the estimate, so the
-#'   variance has rank at most `G - 1`: it is zero with a single group and
-#'   singular with as many groups as classes. Both cases raise
-#'   `latents_too_few_groups`; `vcov_type = "independent"` gives the
-#'   unclustered variance. For the same reason a class carried by a single
-#'   unit (all its weight in one group, or under `vcov_type = "independent"`
-#'   in one observation; Kish's effective number of carrying units below 1.5)
-#'   has no standard error, whichever the method: its standard error, its
-#'   interval and those of the contrasts involving it are `NA`, with a
-#'   `latents_small_classes` warning.
+#' A categorical outcome is described by its probability in each class. BCH
+#' weights can be negative, so with poorly separated classes a share can
+#' fall outside 0 to 1; it is then reported without an interval or test,
+#' with a warning. The ML probabilities stay in range; where the BCH shares
+#' do not, the ML maximum usually sits on the bound and is reported without
+#' standard errors, with a warning.
 #'
-#'   With `method = "ml"` the assigned class is an indicator of the true
-#'   class whose error probabilities are those of step one, and the outcome is
-#'   normal within each true class. The log likelihood
-#'   `sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)` is maximised over
-#'   the class means and variances by EM followed by Newton steps, with the
-#'   class sizes `pi_t` fixed at the average posterior probabilities and the
-#'   classification errors `D` fixed, as in Latent GOLD's step-three model for
-#'   a dependent variable. Multiple initialisations are used because the
-#'   likelihood may have several local maxima. Equal-variance fits additionally
-#'   use bounded BFGS optimisation from quantile-based initial values; accepted
-#'   solutions must converge, have a sufficiently small score and yield a
-#'   positive-definite information matrix. These searches do not guarantee the
-#'   global maximum. Twenty random starts use a fixed internal seed, and the
-#'   caller's `.Random.seed` is restored. R's hidden Box-Muller normal cache
-#'   cannot be restored; see [base::Random]. Standard errors use a sandwich
-#'   covariance estimator, clustered as for the other methods. As described
-#'   above, a class supported by a single independent unit has no standard error.
-#'   Maximum-likelihood estimates depend on the assumed within-class outcome
-#'   distribution. Skewness or an incorrect equal-variance constraint can bias
-#'   estimated means; BCH is less sensitive to these distributional assumptions
-#'   (Bakk and Vermunt, 2016).
+#' On an [lta()] fit, `level = "individuals"` uses one row per occasion and
+#' relates the outcome to the profile at that occasion, with the
+#' group-clustered variance accounting for the repeated occasions. It is a
+#' marginal profile-outcome analysis, not a model of outcome effects on
+#' transitions.
 #'
-#'   A categorical outcome is described by its probability in each class.
-#'   The weighting methods give the weighted share of each category; BCH
-#'   weights can be negative, and with poorly separated classes a share can
-#'   fall outside `[0, 1]`: it is then reported without an interval or test,
-#'   with a `latents_bch_out_of_range` warning. With `method = "ml"` the
-#'   step-three model estimates a distribution over the categories in each
-#'   class, with the class sizes and classification errors fixed as for a
-#'   numeric outcome, as Latent GOLD's step-three model of a nominal dependent
-#'   variable does without an equation for the sizes. Its probabilities stay
-#'   in `[0, 1]`; where the BCH shares do not, its maximum usually lies on
-#'   the bound, and it reports the estimates without standard errors, with a
-#'   `latents_boundary` warning.
+#' @section Standard errors:
+#' The variance is a sandwich over the `G` independent units (the groups,
+#' or the observations under `vcov_type = "independent"`) with the
+#' `G / (G - 1)` small-sample factor. It needs more units than classes;
+#' with as many or fewer, the analysis is refused. A class carried by one unit (Kish's
+#' effective number of units carrying it below 1.5) has no standard error:
+#' its interval and the contrasts involving it are `NA`, with a warning.
 #'
-#'   With `step_one = "fixed"`, omitted uncertainty in the classification-error
-#'   probabilities can reduce interval coverage, particularly when classification
-#'   is uncertain. `step_one = "estimated"` adds `G V1 G'`, where `V1` is
-#'   the step-one covariance on the unconstrained scale and `G` differentiates
-#'   the step-three estimates through the posteriors, with data and modal
-#'   assignments held fixed (Bakk, Oberski and Vermunt, 2014). Estimates stay
-#'   the same; standard errors, intervals and Wald tests use the corrected
-#'   covariance. The modal method is unchanged because it uses no posteriors.
-#'   The correction is a large-sample one: with poorly separated classes in
-#'   a small sample (relative entropy near 0.6, three classes, 300
-#'   observations) its intervals still cover less than the nominal level.
-#' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
-#'   improved three-step approaches. *Political Analysis*, 18, 450--469.
-#'   Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
-#'   association between latent class membership and external variables
-#'   using bias-adjusted three-step approaches. *Sociological Methodology*,
-#'   43, 272--311.
-#'   Bakk, Z., Oberski, D. L., & Vermunt, J. K. (2014). Relating latent class
-#'   assignments to external variables: standard errors for correct inference.
-#'   *Political Analysis*, 22, 520--540.
-#'   Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
-#'   modeling with continuous distal outcomes. *Structural Equation Modeling*,
-#'   23, 20--31.
+#' @section Step-one uncertainty:
+#' With `step_one = "fixed"` the intervals ignore the uncertainty of the
+#' classification-error probabilities, which lowers their coverage when
+#' classification is uncertain. `"estimated"` adds the first-order
+#' contribution of the step-one covariance, with the data and modal
+#' assignments held fixed; the estimates
+#' are unchanged, the standard errors and intervals grow, and the tests use
+#' the corrected covariance. The first-stage contribution uses its
+#' model-based observed information, even when the step-three sandwich is
+#' clustered; it does not add a robust first-stage covariance for residual
+#' dependence outside the fitted model. The correction is a large-sample one: in a
+#' small, poorly separated sample the intervals still cover less than the
+#' nominal level. The modal method is unaffected, as it uses no posteriors.
+#' A staged fit or a fit with a held measurement block does not carry the
+#' measurement covariance needed by this correction; use `step_one = "fixed"`
+#' to report inference conditional on that measurement.
+#' Neither option includes the uncertainty of having selected the class
+#' solution.
+#'
+#' @seealso [r3step()] for covariates of class membership; [fit_staged()].
 #' @examples
 #' set.seed(11)
 #' group <- rep(seq_len(40), each = 10)
@@ -665,13 +600,21 @@ three_step <- function(x, data, outcome,
 .multilpa_step_one_correction <- function(x, pieces, level, method) {
   stopifnot("`x` must be a multilpa fit" = inherits(x, "multilpa"),
             "`pieces` must describe the analysed units" = is.list(pieces))
+  if (isTRUE(x$staged) || length(x$fixed %||% character()) > 0L) {
+    stop(errorCondition(paste(
+      "`step_one = \"estimated\"` needs the covariance of the estimated",
+      "measurement parameters; a staged fit or one holding measurement",
+      "blocks fixed does not carry that covariance. Use",
+      "`step_one = \"fixed\"` for inference conditional on the measurement."),
+      class = "latents_unsupported_three_step", call = NULL))
+  }
+  if (identical(method, "modal")) return(NULL)
   covariance <- tryCatch(stats::vcov(x, scale = "unconstrained"),
                          error = function(condition) {
     condition$message <- paste(conditionMessage(condition),
                                 '`step_one = "fixed"` still works without step-one inference.')
     stop(condition)
   })
-  if (identical(method, "modal")) return(NULL)
   root <- .multilpa_covariance_root(covariance)
   prepared <- .multilpa_inference_matrix(x, .multilpa_resolve_data(x, NULL))
   centered <- x
@@ -914,165 +857,120 @@ three_step <- function(x, data, outcome,
 #' Relate latent class membership to external covariates
 #'
 #' @description
-#' `r3step()` examines how external covariates are associated with membership
-#' in latent classes identified by a previously fitted model. It addresses
-#' whether the relative likelihood of belonging to particular classes varies
-#' with characteristics that were not used to define them. The measurement
-#' parameters remain fixed, preserving the class definitions while estimating
-#' their associations with the covariates.
+#' `r3step()` regresses membership in the classes of a fitted model on
+#' covariates that were not used to define them, holding the measurement
+#' model fixed. Treating the assigned classes as known outcomes distorts the
+#' associations; the three-step approach instead treats each assignment as
+#' an imperfect indicator of the true class, with the classification-error
+#' probabilities of the fitted model built into a multinomial logit.
+#' Coefficients are changes in the log odds of a class
+#' against the reference class, the last one, holding the other covariates
+#' constant; their exponentials are odds ratios. A transition fit can also
+#' have its initial state and transitions regressed on covariates, a
+#' separate specification. The correction assumes the classification-error
+#' probabilities do not vary with the covariates within a class; the
+#' standard errors treat them as fixed and ignore the choice of class
+#' solution, so interval coverage can fall below the nominal level when the
+#' classes are poorly separated; inspect the error matrix with
+#' `get_results(x, "classification_errors")`. Associations are not causal
+#' effects.
 #'
-#' Because class membership is unobserved, a regression that treats assigned
-#' classes as known outcomes can distort these associations. The three-step
-#' approach incorporates estimated classification-error probabilities into
-#' the membership regression, treating each assignment as an imperfect
-#' indicator of latent membership. Covariates enter a multinomial logistic
-#' model whose coefficients describe changes in the log odds of membership
-#' in a class relative to a reference class, holding the other covariates
-#' constant.
-#'
-#' For supported multilevel models, the regression can concern individual
-#' profiles or group classes. For supported transition models, a separate
-#' specification relates covariates to initial profile membership and
-#' movement between profiles over time. The function reports regression
-#' coefficients, standard errors, confidence intervals, and hypothesis tests,
-#' with options for clustered inference and adjustment for multiple
-#' comparisons.
-#'
-#' @section Interpretation:
-#' The correction assumes that classification-error probabilities remain
-#' constant across covariate values within each latent class. Reported
-#' standard errors and confidence intervals treat those probabilities as
-#' fixed and omit uncertainty from their estimation and from selecting the
-#' class solution.
-#'
-#' In the ordinary membership regression, the last class is the reference.
-#' A positive coefficient indicates higher odds of membership in the
-#' specified class relative to that reference; exponentiating the coefficient
-#' gives the corresponding odds ratio. Transition regressions instead compare
-#' movement to another profile with remaining in the origin profile. These
-#' associations do not, by themselves, establish causal relationships.
-#'
-#' @param x A covariate-free fit from [multilpa()] (`family = "profiles"`,
-#'   the default) or from [lta()] with its default homogeneous first-order
-#'   transitions and invariant measurement, or a trajectory model from
-#'   [mixture_regression()] that classifies persons (with or without
-#'   `random`), whose person classes are then predicted. Fits with membership
-#'   covariates and multilevel growth mixtures (`cluster`) raise
-#'   `latents_unsupported_three_step`: the correction uses a fixed,
-#'   unconditional classification-error matrix and independent units. The
-#'   other families of [multilpa()], general transition fits of [lta()] and
-#'   mixture regressions with observation classes raise
-#'   `latents_unsupported_three_step` too, except that a covariate-free
-#'   general transition fit takes `initial_covariates` and
-#'   `transition_covariates`.
-#' @param data The data frame carrying the covariates, in the fit's row order.
-#'   Columns shared with the fit are checked row by row; a frame with too
-#'   little identifying information raises a warning that alignment cannot be
-#'   verified.
-#' @param covariates Character vector of numeric columns, without missing or
-#'   infinite values, that are not measurement indicators of `x`. For
-#'   `level = "groups"` each must be constant within a group; for a
-#'   trajectory model each must be constant within a person and not part of
-#'   the trajectory regression (`latents_bad_covariate`).
+#' @param x A covariate-free fit without weights or a noise component: from
+#'   [multilpa()] (the profile family), from [lta()], or a trajectory model
+#'   from [mixture_regression()] that classifies persons. A default `lta()`
+#'   fit takes `covariates` or the Markov covariates; one with
+#'   occasion-specific or second-order transitions, occasion-specific
+#'   measurement, or ordinal or count indicators takes the Markov
+#'   covariates only. Refused: fits with membership covariates, multilevel
+#'   growth mixtures (`cluster`), the other `multilpa()` families,
+#'   observation-level mixture regressions and stayer-class fits.
+#' @param data The data frame carrying the covariates, in the fit's row
+#'   order; columns shared with the fit are checked row by row.
+#' @param covariates Names of numeric columns, complete and finite, that
+#'   are not indicators of `x`. For `level = "groups"` each must be
+#'   constant within a group; for a trajectory model, constant within a
+#'   person and not part of the trajectory regression.
 #' @param level `"individuals"` (default) predicts profile membership,
-#'   `"groups"` group-class membership. For a trajectory model the rows have
-#'   `level = "persons"` and outcomes `class_1`, `class_2`, ...; `"groups"` is
-#'   refused there with `latents_bad_argument`.
-#' @param ci_level Confidence level for the intervals (default 0.95).
-#' @param vcov_type `"robust"` (default) uses the sandwich clustered on the
-#'   fit's groups with the small-sample (CR1) factor `G / (G - 1)` for `G`
-#'   groups, as the default of [three_step()]. `"observed"` uses the observed
-#'   information; for the pooled regression it treats every observation as
-#'   independent, and with `by_group_class = TRUE` it is the model-based
-#'   variance of the two-level likelihood. `"robust"` requires more
-#'   independent groups than the regression has coefficients, because the
-#'   group score contributions sum to zero at the estimate; otherwise it is
-#'   refused with `latents_too_few_groups`, and `"observed"` remains
-#'   available.
+#'   `"groups"` group-class membership. A trajectory model predicts its
+#'   person classes, reported as `level = "persons"` with outcomes
+#'   `class_1`, `class_2` and so on.
+#' @param ci_level Confidence level of the intervals (default 0.95).
+#' @param vcov_type `"robust"` (default): the sandwich clustered on the
+#'   independent units (the fit's groups; the persons of a trajectory model
+#'   or a transition chain), which needs more units than the regression has
+#'   coefficients, `"observed"` remaining available otherwise.
+#'   `"observed"`: the observed information, treating every observation as
+#'   independent in the pooled regression; with `by_group_class = TRUE`,
+#'   the model-based variance of the two-level likelihood.
 #' @param adjust Multiplicity correction across the covariate terms of every
-#'   non-reference class (not the intercepts), passed to
-#'   [stats::p.adjust()]: `"BH"` (default), `"holm"`, `"hochberg"`,
-#'   `"hommel"`, `"bonferroni"`, `"BY"` or `"none"`.
-#' @param by_group_class `FALSE` (default) fits one pooled multinomial logit
-#'   with a single intercept per profile. `TRUE` fits the two-level form of
-#'   the one-step model: each group class has its own profile intercepts, the
-#'   covariate slopes are shared across group classes, and a group's
-#'   observations share one latent group class whose proportions are
-#'   estimated jointly. Group classes represent between-group differences in
-#'   profile membership that are not explained by the covariates. This changes
-#'   the regression specification relative to the pooled analysis. Available
-#'   only for `level = "individuals"` on a covariate-free
-#'   [multilpa()] fit; refused with `latents_bad_argument` otherwise.
-#' @param initial_covariates,transition_covariates For an [lta()] fit with one
-#'   group class: covariates of the profile at the first occasion (constant
-#'   within a person) and of every transition (read at the destination
-#'   occasion, so they may vary over occasions). Either one fits the
-#'   three-step latent Markov model described below instead of the
-#'   occasion-by-occasion profile regression; `covariates` must then be
-#'   empty, and `level` and `by_group_class` do not apply. Refused with
-#'   `latents_bad_argument` on a fit that is not a transition model.
-#' @return A base `data.frame` with one row per non-reference class and term,
-#'   and the columns `level`, `outcome`, `term`, `estimate`,
-#'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`. `p_value` is uncorrected; `p_adjusted` applies `adjust`
-#'   (also recorded in the `adjust` attribute) and is `NA` on the intercept
-#'   rows. A coefficient with zero standard error has `NA_real_` statistic
-#'   and p-value. Coefficients are log odds against the last class, as in
-#'   `multilpa(profile_covariates = )`; the reference class is named in the
-#'   `reference_class` attribute and the variance used in the `vcov_type`
-#'   attribute. With `by_group_class = TRUE` there is one intercept row per
-#'   group class (`group_class_1`, `group_class_2`, ...), followed by the
-#'   shared slopes and, at `level = "groups"`, the group-class logits against
-#'   the last group class; the result also carries the attributes
-#'   `by_group_class` and `log_likelihood` (the maximised log likelihood).
+#'   non-reference class (not the intercepts), a `stats::p.adjust()` method;
+#'   `"BH"` by default.
+#' @param by_group_class `FALSE` (default): one pooled multinomial logit with
+#'   one intercept per profile. `TRUE`: the two-level form of the one-step
+#'   model, with profile intercepts per group class, slopes shared across
+#'   group classes, and the group-class proportions estimated jointly; the
+#'   group classes then capture between-group differences in membership the
+#'   covariates do not explain. Only for `level = "individuals"` on a
+#'   `multilpa()` fit.
+#' @param initial_covariates,transition_covariates For an [lta()] fit with
+#'   one group class: covariates of the profile at the first occasion
+#'   (constant within a person) and of every transition (read at the
+#'   destination occasion, so they may vary over occasions). Either one fits
+#'   the three-step latent Markov model (see *Transition fits*) instead of
+#'   the occasion-by-occasion profile regression; `covariates`, `level` and
+#'   `by_group_class` are refused then.
+#'
+#' @return A data frame with one row per non-reference class and term:
+#'   `level`, `outcome`, `term`, `estimate`, `standard_error`, `statistic`,
+#'   `p_value`, `p_adjusted` (`NA` on the intercept rows), `conf_low` and
+#'   `conf_high`. Coefficients are log odds against the last class, named
+#'   in the `reference_class` attribute; `vcov_type` and `adjust` are
+#'   attributes too. With `by_group_class = TRUE` there is one intercept row
+#'   per group class and non-reference profile, then the shared slopes and,
+#'   at `level = "groups"`, the group-class logits, with the attributes
+#'   `by_group_class` and `log_likelihood`.
 #'
 #'   With `initial_covariates` or `transition_covariates`, one row per
 #'   coefficient of the step-three chain: `block` (`"initial"` or
-#'   `"transition"`), `from` (the origin profile of a transition, `NA` for an
-#'   initial logit), `to`, `term`, `estimate`, `standard_error`, `statistic`,
-#'   `p_value`, `p_adjusted`, `conf_low` and `conf_high`, with the attributes
-#'   `log_likelihood`, `classification_errors` (the step-two error matrix,
-#'   rows the true profile), `vcov_type` and `adjust`. Initial logits are
-#'   against the last profile and transition logits against staying, as in
-#'   `lta(initial_covariates =, transition_covariates =)`; `p_adjusted` covers
-#'   the covariate terms.
-#' @details On an [lta()] fit, `level = "individuals"` models the marginal profile at
-#'   each occasion; it does not regress initial-state or transition
-#'   probabilities on the covariates. `vcov_type = "robust"` clusters the
-#'   occasion scores by group; `"observed"` treats them as independent.
-#'   On a trajectory model the units are persons, each with one covariate
-#'   value, and `"robust"` is the sandwich over persons.
+#'   `"transition"`), `from` (the origin profile, `NA` for an initial
+#'   logit), `to`, `term` and the estimate columns (`p_adjusted` on the
+#'   covariate terms), with the attributes `log_likelihood`,
+#'   `classification_errors` (the step-two error matrix, rows the true
+#'   profile), `vcov_type` and `adjust`. Initial logits are
+#'   against the last profile, transition logits against staying, as in
+#'   `lta(initial_covariates =, transition_covariates =)`.
 #'
-#'   The three-step latent Markov model (`initial_covariates`,
-#'   `transition_covariates`) classifies each occasion from its own
-#'   indicators, using the transition fit's measurement model and its profile
-#'   shares pooled over occasions (the latent class model of the pooled
-#'   data), and assigns it to its modal profile. Step three is a hidden Markov
-#'   model for those assignments, with the classification errors fixed at
-#'   their step-two values and the initial and transition logits regressed on
-#'   the covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's
-#'   own posteriors are not used for the assignments, because they draw on a
-#'   person's other occasions and their errors are therefore not independent
-#'   across occasions, as step three assumes. The step-one fit must have no
-#'   covariates and one group class (`latents_unsupported_three_step`
-#'   otherwise). `"robust"` uses a sandwich covariance estimator with persons
-#'   as independent units; `"observed"` uses the observed information.
+#' @section Transition fits:
+#' With `covariates` and `level = "individuals"`, an [lta()] fit is treated
+#' occasion by occasion: the covariates predict the marginal profile at each
+#' occasion, with the scores clustered by group under `"robust"`. That is
+#' not a model of the initial state or the transitions.
 #'
-#'   Because uncertainty in the estimated classification-error matrix is
-#'   omitted, interval coverage may be below the nominal level when class
-#'   separation is weak. Inspect the estimated error
-#'   matrix with `get_results(x, "classification_errors")`.
-#' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
-#'   improved three-step approaches. *Political Analysis*, 18, 450--469.
-#'   Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
-#'   modeling: three-step approaches using Mplus. *Structural Equation
-#'   Modeling*, 21, 329--341.
-#'   Di Mari, R., Oberski, D. L., & Vermunt, J. K. (2016). Bias-adjusted
-#'   three-step latent Markov modeling with covariates. *Structural Equation
-#'   Modeling*, 23, 649--660.
-#' @seealso [three_step()] for a distal outcome, and
-#'   `multilpa(profile_covariates = )` for the
-#'   one-step alternative that estimates everything jointly.
+#' With `initial_covariates` or `transition_covariates`, each occasion is
+#' classified from its own indicators by the transition fit's measurement
+#' model (with the profile shares pooled over occasions) and assigned to its
+#' modal profile; step three is a hidden Markov model for those assignments
+#' with the classification errors fixed and the initial and transition
+#' logits regressed on the covariates.
+#' The transition fit's own posteriors are not used, because they draw on a
+#' person's other occasions and their errors would not be independent across
+#' occasions as step three assumes. The step-one fit must have one group
+#' class and no covariates.
+#' The step-three chain is homogeneous and first order, even when the
+#' step-one transition structure varies over occasions or has higher order.
+#' It uses one classification-error matrix pooled over occasions. Step-one
+#' occasion-specific measurement is refused because its error probabilities
+#' can change over occasions.
+#'
+#' @section Boundary estimates:
+#' A step-three logit with a coefficient exceeding 20 in centred, scaled
+#' design coordinates, or an average class probability at or below 1e-6
+#' over the contributing design rows, is treated as separated or on a boundary. Wald
+#' inference is refused for that regression, under both covariance types;
+#' changing the covariance estimator does not make the boundary regular.
+#'
+#' @seealso [three_step()] for a distal outcome;
+#'   `multilpa(profile_covariates = )` for the one-step alternative.
 #' @examples
 #' set.seed(21)
 #' g <- rep(seq_len(50), each = 12)
@@ -1191,7 +1089,7 @@ r3step <- function(x, data, covariates = character(),
   ## neither the units nor the origin of a covariate; a covariate held far from
   ## zero relative to its spread is otherwise nearly collinear with the
   ## intercept, and BFGS then stops far from the maximum or not at all.
-  basis <- .multilpa_design_basis(design) %||%
+  basis <- .r3step_design_basis(design) %||%
     diag(.multilpa_design_scale(design), ncol(design))
   terms <- colnames(design)
   design <- t(backsolve(basis, t(design), transpose = TRUE))
@@ -1255,6 +1153,7 @@ r3step <- function(x, data, covariates = character(),
   }
   attempts <- attempts[converged]
   fitted <- attempts[[which.min(vapply(attempts, `[[`, numeric(1), "value"))]]
+  .r3step_require_interior(shape(fitted$par), design)
   information <- .multilpa_observed_hessian(
     function(step) objective(fitted$par + step),
     function(step) gradient(fitted$par + step),
@@ -1363,12 +1262,71 @@ r3step <- function(x, data, covariates = character(),
 #' @return `design`, or `latents_bad_covariate`.
 #' @noRd
 .multilpa_r3step_check_rank <- function(design) {
-  if (qr(sweep(design, 2L, .multilpa_design_scale(design), "/"))$rank < ncol(design)) {
+  if (is.null(.r3step_design_basis(design))) {
     stop(errorCondition(
       "The covariate design is rank deficient; remove constant or collinear predictors.",
       class = "latents_bad_covariate", call = NULL))
   }
   design
+}
+
+#' Orthonormal logit coordinates without a covariate-origin rank artefact
+#'
+#' Factor the centred, standardized design first and map its upper-triangular
+#' factor back to the original coordinates. Direct QR of an intercept and a
+#' predictor near 1e8 can lose rank even when their centred design is regular.
+#' @param design A numeric design matrix with a leading column of ones.
+#' @return An upper-triangular coordinate basis, or `NULL` for a deficient design.
+#' @noRd
+.r3step_design_basis <- function(design) {
+  stopifnot(is.matrix(design), is.numeric(design), ncol(design) >= 1L,
+            all(is.finite(design)), all(design[, 1L] == 1))
+  if (ncol(design) == 1L) return(.multilpa_design_basis(design))
+  centre <- colMeans(design[, -1L, drop = FALSE])
+  centered <- sweep(design[, -1L, drop = FALSE], 2L, centre, "-")
+  spread <- sqrt(colMeans(centered^2))
+  if (any(!is.finite(spread)) || any(spread <= 0)) return(NULL)
+  standardized <- cbind(1, sweep(centered, 2L, spread, "/"))
+  basis <- .multilpa_design_basis(standardized)
+  if (is.null(basis)) return(NULL)
+  restore <- diag(c(1, spread), ncol(design))
+  restore[1L, -1L] <- centre
+  basis %*% restore
+}
+
+#' Refuse Wald inference for separated or empty step-three logit classes
+#'
+#' Coefficients are checked in orthonormal design coordinates, independently
+#' of the units and origin of the supplied covariates. A class that has
+#' negligible average probability over the design is a boundary even when its
+#' intercept has not reached the coefficient limit.
+#' @param coefficients A matrix with one row per design term and one column
+#'   per non-reference logit.
+#' @param design The contributing rows of that logit's design.
+#' @param limit Largest absolute coefficient in orthonormal coordinates.
+#' @param min_probability Largest probability treated as zero.
+#' @return `NULL`, invisibly, or `latents_boundary_fit`.
+#' @noRd
+.r3step_require_interior <- function(coefficients, design, limit = 20,
+                                      min_probability = 1e-6) {
+  stopifnot(is.matrix(coefficients), is.matrix(design),
+            nrow(coefficients) == ncol(design), ncol(coefficients) >= 1L,
+            nrow(design) >= 1L)
+  basis <- .r3step_design_basis(design)
+  scaled <- if (is.null(basis)) {
+    coefficients * .multilpa_design_scale(design)
+  } else basis %*% coefficients
+  probabilities <- .multilpa_logit_prior(coefficients, design)
+  if (any(!is.finite(scaled)) ||
+      any(abs(scaled) > limit) ||
+      any(colMeans(probabilities) <= min_probability)) {
+    stop(errorCondition(paste(
+      "The step-three regression has separated or boundary logits, so finite",
+      "Wald standard errors and tests are unavailable. Check sparse classes",
+      "and transitions or reduce the membership covariates."),
+      class = "latents_boundary_fit", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Wald standard errors of a membership regression, refusing negative variances
@@ -1468,6 +1426,7 @@ r3step <- function(x, data, covariates = character(),
               fitted$convergence),
       class = "latents_no_converge", call = NULL))
   }
+  model$check_interior(fitted$par)
   information <- .multilpa_observed_hessian(
     function(step) model$objective(fitted$par + step),
     function(step) model$gradient(fitted$par + step),
@@ -1511,7 +1470,7 @@ r3step <- function(x, data, covariates = character(),
   ## `alpha_h + z beta = (alpha_h + r' beta) + Q_z (R_z beta)`: the search
   ## estimates the bracketed intercepts and `R_z beta`, and `transform` maps
   ## them back to the covariates' own units and origin.
-  basis <- .multilpa_design_basis(cbind(1, z))
+  basis <- .r3step_design_basis(cbind(1, z))
   shift <- if (is.null(basis)) rep(0, n_covariates) else basis[1L, -1L]
   slope_basis <- if (is.null(basis)) {
     diag(.multilpa_design_scale(z), n_covariates)
@@ -1586,8 +1545,20 @@ r3step <- function(x, data, covariates = character(),
              rep(0, n_beta),
              log(pmax(x$group_probabilities[seq_len(n_group_classes - 1L)], 1e-8) /
                    max(x$group_probabilities[n_group_classes], 1e-8)))
+  check_interior <- function(theta) {
+    parameters <- unpack(theta)
+    invisible(lapply(seq_len(n_group_classes), function(h) {
+      .r3step_require_interior(rbind(parameters$alpha[h, ], parameters$beta),
+                               cbind(1, scaled_z))
+    }))
+    if (length(parameters$gamma) > 0L) {
+      .r3step_require_interior(matrix(parameters$gamma, 1L),
+                               matrix(1, n_groups, 1L))
+    }
+    invisible(NULL)
+  }
   list(objective = objective, gradient = gradient, group_scores = group_scores,
-       start = start, transform = transform)
+       start = start, transform = transform, check_interior = check_interior)
 }
 
 #' Assemble the table of R3STEP with group-class intercepts

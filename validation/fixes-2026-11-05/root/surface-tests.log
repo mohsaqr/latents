@@ -1,0 +1,54 @@
+Centering/scaling probe
+$x
+              a          b
+[1,] -1.7888544 -1.7453978
+[2,] -0.7453560 -0.7808359
+[3,]  0.8198916  0.8267674
+
+$offsets
+            a        b
+[1,] 3.428571 6.428571
+
+$scales
+           a       b
+[1,] 1.91663 3.11022
+
+fixes-1105-surface: ....................1..2........
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-fixes-1105-surface.R:101:3'): categorical simulators retain
+Expected `names(.multilpa_simulate(null))` to be identical to `null$vars`.
+Differences:
+`actual`:   "a:b" "y" "id"
+`expected`: "a:b" "y"     
+
+
+── 2. Failure ('test-fixes-1105-surface.R:108:3'): categorical simulators retain
+Expected `names(.multilpa_simulate(unusual))` to be identical to `unusual$vars`.
+Differences:
+`actual`:   "item one" "item-two" ".observation"
+`expected`: "item one" "item-two"               
+
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                       file            context
+1 test-fixes-1105-surface.R fixes-1105-surface
+2 test-fixes-1105-surface.R fixes-1105-surface
+3 test-fixes-1105-surface.R fixes-1105-surface
+4 test-fixes-1105-surface.R fixes-1105-surface
+5 test-fixes-1105-surface.R fixes-1105-surface
+6 test-fixes-1105-surface.R fixes-1105-surface
+                                                                       test nb
+1      grand moments agree with weighted population moments and replication  6
+2     person centering refuses partial singletons and ignores absent groups  3
+3    weighted grand fits reproduce integer-expanded data with missing cells  5
+4 categorical bounds inform diagnostics and LRT without changing BLRT flags  6
+5          categorical simulators retain non-syntactic and joint item names  4
+6    cross-level prevalence and sample counts refer to weighted individuals  8
+  failed skipped error warning  user system  real passed
+1      0   FALSE FALSE       0 0.143  0.018 0.174      6
+2      0   FALSE FALSE       0 0.019  0.002 0.023      3
+3      0   FALSE FALSE       0 2.563  0.051 2.694      5
+4      0   FALSE FALSE       0 0.687  0.028 0.785      6
+5      2   FALSE FALSE       0 0.872  0.035 1.124      2
+6      0   FALSE FALSE       0 0.302  0.015 0.397      8

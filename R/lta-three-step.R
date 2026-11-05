@@ -37,6 +37,12 @@
   }
   .lta_check_data(x, data)
   a <- .lta_arguments(x)
+  if (!identical(a$measurement %||% "invariant", "invariant")) {
+    unsupported(paste(
+      "Three-step transition regression needs invariant measurement: one",
+      "pooled classification-error matrix cannot describe occasion-specific",
+      "measurement. Fit invariant measurement or model the covariates jointly."))
+  }
   reused <- intersect(c(initial_covariates, transition_covariates),
                       unique(c(a$vars, .multilpa_measured_items(x))))
   if (length(reused) > 0L) {
@@ -272,6 +278,20 @@
       "score %.3g)."), fitted$convergence, max(abs(colSums(scores)))),
       class = "latents_no_converge", call = NULL))
   }
+  n_initial <- p0 * (k_profiles - 1L)
+  .r3step_require_interior(
+    matrix(fitted$par[seq_len(n_initial)], p0, k_profiles - 1L),
+    standardized$designs$initial[contributing, , drop = FALSE])
+  transition_coefficients <- array(fitted$par[-seq_len(n_initial)],
+                                    c(p, k_profiles - 1L, k_profiles))
+  transition_design <- do.call(rbind, Map(function(design, keep) {
+    design[keep, , drop = FALSE]
+  }, standardized$designs$transition, inside))
+  invisible(lapply(seq_len(k_profiles), function(k) {
+    .r3step_require_interior(
+      matrix(transition_coefficients[, , k], p, k_profiles - 1L),
+      transition_design)
+  }))
   information <- .inference_score_information(total, fitted$par, 1e-5, scheme = "central",
                                               h_rule = "plus1")
   inverse <- .mixture_invert(information)

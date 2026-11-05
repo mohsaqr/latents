@@ -1,0 +1,49 @@
+Updated 23 phrases; retained all 44 rows and all reference/test metadata.
+ row                 source
+   9          R/inference.R
+  10          R/inference.R
+  11          R/inference.R
+  12          R/inference.R
+  13  R/inference-service.R
+  18           R/get-data.R
+  19           R/get-data.R
+  21           R/multilpa.R
+  22           R/multilpa.R
+  23           R/multilpa.R
+  24           R/multilpa.R
+  25           R/multilpa.R
+  26           R/multilpa.R
+  27           R/multilpa.R
+  28           R/multilpa.R
+  29           R/multilpa.R
+  30           R/multilpa.R
+  31 R/mixture-regression.R
+  32 R/mixture-regression.R
+  33 R/mixture-regression.R
+  34 R/mixture-regression.R
+  36              R/prior.R
+  44         R/three-step.R
+                                                                   phrase
+                                      `"robust"` is the sandwich over the
+  independent units (groups), with the `G / (G - 1)` small-sample factor;
+    reports every other parameter conditional on them, as Mplus does. The
+     `scaling_correction`, the MLR factor used by scaled likelihood-ratio
+                          default of `sandwich::vcovCL()`. Without it the
+                                                  `bic_rows` on the rows)
+                                        in no sample size and no entropy.
+                             combinations are the fourteen mclust models:
+      covariates; the mixing proportions have no prior. As in mclust, the
+                             The component's density is `1 / V`, with `V`
+      mclust's `hypvol()`, and it adds two parameters; a supplied `start`
+      the classification: `subject_profiles` is `0` there, the assignment
+   and classification tables, as Mplus does, keeping their rows with `NA`
+        same indicators, each group's indicator means being between-level
+ positive weight as Mplus does, so integer weights act as repeated units.
+      by all profiles and one location per profile, Latent GOLD's default
+   variance `mu + alpha * mu^2`) for counts more dispersed than a Poisson
+                 unit's likelihood is the product of its rows' densities.
+  matrix, `lcmm::hlme(nwg = FALSE)`) or `"proportional"` (a shared matrix
+                         `TRUE` for uncorrelated random effects (`idiag =
+    autoregressive process (covariance `sd^2 * exp(-rate * |t - s|)`) and
+                              The prior follows `mclust::priorControl()`.
+      posteriors, as in Latent GOLD's step-three model. The likelihood is

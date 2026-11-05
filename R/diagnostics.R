@@ -18,7 +18,7 @@
 
 #' Relative classification entropy
 #'
-#' `1 - EN / (n log K)` (Ramaswamy et al. 1993). Under sampling weights `EN`
+#' `1 - EN / (n log K)`. Under sampling weights `EN`
 #' is the weighted entropy sum and `n` the sum of the weights, so the value is
 #' that of the population the weights describe (review 2026-10-26 round 2,
 #' S-4).

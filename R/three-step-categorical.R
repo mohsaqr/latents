@@ -106,6 +106,12 @@
     # test a class effect on a nominal outcome; the statistic does not depend
     # on which category is the baseline. A share outside (0, 1) has no logit.
     if (any(probabilities <= 0 | probabilities >= 1)) {
+      if (identical(method, "modal")) {
+        warning(warningCondition(paste(
+          "An outcome category is absent from a modal class, so its probability",
+          "is on the boundary and the overall logit-scale Wald test is unavailable."),
+          class = "latents_boundary", call = NULL))
+      }
       return(.multilpa_step_overall(rep(NA_real_, n_classes * (n_categories - 1L)),
                                     matrix(NA_real_, nrow(clustered),
                                            n_classes * (n_categories - 1L)),
@@ -349,10 +355,15 @@
   valid <- is.finite(errors) & errors > 0 & !involved
   statistic <- ifelse(valid, difference / errors, NA_real_)
   raw <- ifelse(valid, 2 * stats::pnorm(-abs(statistic)), NA_real_)
+  adjusted <- if (n_categories == 2L) {
+    # Complementary binary shares give the same test with opposite signs.
+    # Count that hypothesis once, as when the outcome is coded zero/one.
+    stats::p.adjust(raw[grid$category == 1L], method = adjust)[grid$pair]
+  } else stats::p.adjust(raw, method = adjust)
   result <- data.frame(
     level = level, method = method, class = class, reference_class = reference,
     category = categories[grid$category], estimate = difference, standard_error = errors,
-    statistic = statistic, p_value = raw, p_adjusted = stats::p.adjust(raw, method = adjust),
+    statistic = statistic, p_value = raw, p_adjusted = adjusted,
     conf_low = ifelse(involved, NA_real_, difference - quantile * errors),
     conf_high = ifelse(involved, NA_real_, difference + quantile * errors),
     row.names = NULL, stringsAsFactors = FALSE)

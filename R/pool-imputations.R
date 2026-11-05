@@ -49,7 +49,7 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #' Pooling is on the reported (natural) scale: the pooled estimate is the mean
 #' over imputations, and its variance is the mean within-imputation variance
 #' plus `(1 + 1/m)` times the between-imputation variance. Degrees of freedom
-#' follow Rubin (1987) with a large complete-data sample. Pooled intervals are
+#' follow Rubin's rules with a large complete-data sample. Pooled intervals are
 #' symmetric t intervals, rather than the transformed Wald intervals used
 #' for bounded parameters by [parameter_inference()]. A structural constant, such as the
 #' probability of one for a single class, has zero within- and
@@ -106,15 +106,6 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #'   gives the original reason); `latents_missing_package` for a `mids` object
 #'   without mice installed. Warnings from the individual fits are passed on
 #'   as they are raised.
-#' @references
-#' Rubin, D. B. (1987). *Multiple Imputation for Nonresponse in Surveys*.
-#' Wiley.
-#'
-#' Meng, X.-L. (1994). Multiple-imputation inferences with uncongenial
-#' sources of input. *Statistical Science*, 9(4), 538--558.
-#'
-#' van Buuren, S. (2018). *Flexible Imputation of Missing Data* (2nd ed.),
-#' section 5.2. Chapman & Hall/CRC.
 #' @examples
 #' set.seed(1)
 #' # Illustrative completed data sets for demonstrating the pooling interface.
@@ -250,7 +241,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 
 #' Pool inference tables with Rubin's rules
 #'
-#' Rubin (1987): the pooled estimate is the mean `Q`, the total variance
+#' Rubin's rules: the pooled estimate is the mean `Q`, the total variance
 #' `T = U + (1 + 1/m) B` with `U` the mean within-imputation variance and `B`
 #' the between-imputation variance, `r=(1 + 1/m) * B / U`, degrees of freedom
 #' `(m - 1)(1 + 1/r)^2` (infinite when `B` is zero), and the fraction of

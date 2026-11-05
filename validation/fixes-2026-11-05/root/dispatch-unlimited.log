@@ -1,0 +1,16 @@
+parallel-profile-pool: S...............................................................................SSS..
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. profile grids match serial and direct categorical and continuous fits ('test-parallel-profile-pool.R:66:3') - Reason: This BLAS cannot run safely in forked workers
+
+2. a recovered categorical grid start preserves all fitted results ('test-parallel-profile-pool.R:376:3') - Reason: This BLAS cannot run safely in forked workers
+
+3. a persistently killed categorical start leaves other starts intact ('test-parallel-profile-pool.R:400:3') - Reason: This BLAS cannot run safely in forked workers
+
+4. losing every categorical start fails only that candidate ('test-parallel-profile-pool.R:426:3') - Reason: This BLAS cannot run safely in forked workers
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+[1] file   test   failed error 
+<0 rows> (or 0-length row.names)
+ passed  failed   error warning skipped 
+     81       0       0       0       4 

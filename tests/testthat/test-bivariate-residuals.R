@@ -166,13 +166,14 @@ test_that("the residual table corrects for the number of pairs it tests", {
   # `attendance` is generated from the click measures, so these indicators are
   # deliberately locally dependent and the table has real findings in it. Ten
   # pairs are tested at once, which is what `adjust` is for.
-  unadjusted <- get_results(fit, "residuals", by = "overall")
+  unadjusted <- get_results(fit, "residuals", by = "overall", adjust = "none")
   expect_true("p_adjusted" %in% names(unadjusted))
-  # The default leaves the column equal to the raw p-value rather than absent,
-  # so a caller reading `p_adjusted` always gets the stated correction.
+  # `adjust = "none"` leaves the column equal to the raw p-value rather than
+  # absent, so a caller reading `p_adjusted` always gets the stated correction.
   expect_equal(unadjusted$p_adjusted, unadjusted$p_value)
 
-  adjusted <- get_results(fit, "residuals", by = "overall", adjust = "BH")
+  # Benjamini-Hochberg unless told otherwise (review 2026-11-04).
+  adjusted <- get_results(fit, "residuals", by = "overall")
   expect_equal(adjusted$p_value, unadjusted$p_value)
   expect_true(all(adjusted$p_adjusted >= adjusted$p_value))
   # Correction can only remove findings, never create them.

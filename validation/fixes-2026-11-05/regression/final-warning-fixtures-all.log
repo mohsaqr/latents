@@ -1,0 +1,93 @@
+Package: /private/tmp/latents-fixes-1105-vtcym3fq/final-check/latents.Rcheck/latents version: 1.1.17 
+review-1026-multilevel-r2: ...........................................
+review-families: ..........................................................................
+review-followup: ...................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                               file                   context
+1  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+2  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+3  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+4  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+5  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+6  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+7  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+8  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+9  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+10 test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+11 test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+12           test-review-families.R           review-families
+13           test-review-families.R           review-families
+14           test-review-families.R           review-families
+15           test-review-families.R           review-families
+16           test-review-families.R           review-families
+17           test-review-families.R           review-families
+18           test-review-families.R           review-families
+19           test-review-families.R           review-families
+20           test-review-families.R           review-families
+21           test-review-followup.R           review-followup
+22           test-review-followup.R           review-followup
+23           test-review-followup.R           review-followup
+24           test-review-followup.R           review-followup
+25           test-review-followup.R           review-followup
+26           test-review-followup.R           review-followup
+27           test-review-followup.R           review-followup
+                                                                                        test
+1                      the equal between-group variance divides by the weighted total (CL-2)
+2                        cross-level criteria and nobs count units of positive weight (CL-3)
+3  a zero-weight group with a degenerate person scale does not refuse a covariate fit (ZW-3)
+4                                 grand centring and scaling ignore zero-weight units (ZW-4)
+5                drop_empty = FALSE still leaves zero-weight units out of every count (ZW-5)
+6   a covariate fit's bic_individual is its criteria table's under drop_empty = FALSE (CV-1)
+7              weighted ICL charges the weighted entropy, that of the replicated data (EN-1)
+8                   start 1 is the same whatever the seed, with several group classes (ST-1)
+9                        a covariate emEM pool begins with the kmeans search's starts (ST-2)
+10          covariate and cross-level fits count replicated maxima as multilpa() does (RP-1)
+11                              the weights line counts the units of positive weight (DOC-1)
+12                             group-class bootstrap refuses changed scatter and group sizes
+13                                  weighted family EM is stationary before Newton polishing
+14                       one-class equivalent group-class models cannot form a bootstrap LRT
+15                    family inference validates finite levels and positive difference steps
+16                             family bootstrap validates controls before fitting replicates
+17                       weighted family covariance is the sandwich of weighted group scores
+18                       restricted cross-level weights preserve a similarly named indicator
+19                              cross-level counts refuse overflow before integer conversion
+20                       family enumeration rejects missing variance restrictions explicitly
+21                                  bootstrap_lrt simulates full-covariance transition nulls
+22                  transition parameter_inference handles every generic argument explicitly
+23                         categorical transition response tables keep their standard errors
+24                general transition inference applies the requested multiplicity correction
+25                            bootstrap_lrt accepts the caller's frame for single-level fits
+26                                  weighted classification tables use weighted class totals
+27                     restricted cross-level composition and class counts use group weights
+   nb failed skipped error warning  user system  real passed
+1   2      0   FALSE FALSE       0 0.295  0.022 0.359      2
+2   4      0   FALSE FALSE       0 0.280  0.014 0.335      4
+3   4      0   FALSE FALSE       0 0.467  0.019 0.562      4
+4  10      0   FALSE FALSE       0 1.536  0.038 1.711     10
+5   8      0   FALSE FALSE       0 0.655  0.020 0.768      8
+6   2      0   FALSE FALSE       0 0.218  0.007 0.256      2
+7   5      0   FALSE FALSE       0 0.385  0.014 0.434      5
+8   1      0   FALSE FALSE       0 0.044  0.004 0.096      1
+9   2      0   FALSE FALSE       0 0.572  0.018 0.651      2
+10  4      0   FALSE FALSE       0 0.613  0.020 0.722      4
+11  1      0   FALSE FALSE       0 0.071  0.002 0.087      1
+12  2      0   FALSE FALSE       0 0.205  0.007 0.251      2
+13 20      0   FALSE FALSE       0 0.153  0.010 0.171     20
+14  1      0   FALSE FALSE       0 0.066  0.003 0.096      1
+15 20      0   FALSE FALSE       0 0.179  0.006 0.203     20
+16 16      0   FALSE FALSE       0 0.312  0.012 0.357     16
+17  5      0   FALSE FALSE       0 0.087  0.005 0.110      5
+18  5      0   FALSE FALSE       0 0.153  0.009 0.238      5
+19  4      0   FALSE FALSE       0 0.055  0.004 0.108      4
+20  1      0   FALSE FALSE       0 0.031  0.001 0.046      1
+21  3      0   FALSE FALSE       0 2.570  0.068 2.888      3
+22  6      0   FALSE FALSE       0 0.654  0.021 0.722      6
+23  3      0   FALSE FALSE       0 0.106  0.005 0.128      3
+24  8      0   FALSE FALSE       0 0.523  0.019 0.574      8
+25  3      0   FALSE FALSE       0 0.297  0.012 0.440      3
+26  7      0   FALSE FALSE       0 0.088  0.009 0.144      7
+27  5      0   FALSE FALSE       0 0.142  0.009 0.226      5
+ failed  passed warning 
+      0     152       0 
+errors 0 skips 0 

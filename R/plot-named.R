@@ -319,7 +319,49 @@
   .latents_draw_named(x, verb, what, arguments, uses[[what]], warn_unused = TRUE)
 }
 
-#' @rdname latents-plots
+#' Profile means across the indicators
+#'
+#' One line per profile (class), joining its mean, median or mode of each
+#' indicator, with 95% intervals when the fit has standard errors. On a
+#' growth mixture or a regression that classifies persons it draws the class
+#' trajectories, on another mixture regression the fitted lines, on an
+#' additive fit the group-class means, on a cross-level fit the profiles and
+#' on pooled imputations the pooled measurement parameters.
+#'
+#' @param x A fitted model of any family.
+#' @param statistic `"mean"` (default), `"median"` or `"mode"`; they coincide
+#'   for continuous indicators. For categorical ones the fitted probabilities
+#'   are summarised on the numeric category scale, without intervals.
+#' @param scale `"raw"` (default) keeps each indicator in its own units;
+#'   `"standardized"` divides its deviation from the observed mean by the
+#'   observed standard deviation.
+#' @param intervals `TRUE` (default) draws the 95% intervals of
+#'   [parameter_inference()] when the fit has standard errors; otherwise the
+#'   subtitle says why there are none.
+#' @param labels `TRUE` (default) labels each profile directly; `FALSE` uses
+#'   a legend.
+#' @param data The data the model was fitted to, used only for the intervals.
+#'   `NULL` (default) uses the data stored in the fit.
+#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
+#'   view's own.
+#' @param what `"lines"` (default). The other values draw the view of the
+#'   function with that name ([plot_bars()], [plot_heatmap()],
+#'   [plot_raincloud()], [plot_parallel()], [plot_pairs()]); `"all"` draws
+#'   every view the fit supports, as a list.
+#' @return A ggplot object; a `latents_plots` list for `what = "all"`. A fit
+#'   the function has no view for raises `latents_nothing_to_plot`, naming
+#'   the plot functions that apply; an argument no view of the fit takes
+#'   (for example `scale` on a growth mixture) raises `latents_bad_argument`,
+#'   and one that belongs to another view of the same fit is dropped with
+#'   a warning.
+#' @seealso [plot_responses()] for categorical indicators; [plot_bars()],
+#'   [plot_heatmap()], [plot_raincloud()], [plot_parallel()], [plot_pairs()];
+#'   [plot_all()].
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'            n_starts = 2, seed = 1)
+#' plot_profiles(fit)
+#' plot_profiles(fit, scale = "standardized")
 #' @export
 plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           scale = c("raw", "standardized"), intervals = TRUE,
@@ -345,7 +387,23 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
     .multilpa_supplied_arguments(match.call(), environment()), "plot_profiles")
 }
 
-#' @rdname latents-plots
+#' Response probabilities of the categorical indicators
+#'
+#' One line per profile (class), joining the probability of one category of
+#' each categorical indicator, with 95% intervals (formed on the logit scale)
+#' when the fit has standard errors.
+#'
+#' @inheritParams plot_profiles
+#' @param category The category drawn: `"last"` (default), `"first"`, or one
+#'   label or index.
+#' @return A ggplot object. A fit without categorical indicators raises
+#'   `latents_no_categorical`; a `category` no indicator has raises
+#'   `latents_unknown_category`.
+#' @seealso [plot_profiles()] for continuous indicators; [plot_heatmap()].
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
+#'            n_classes = 2, n_starts = 2, seed = 1)
+#' plot_responses(fit)
 #' @export
 plot_responses <- function(x, category = "last", intervals = TRUE,
                            labels = TRUE, data = NULL, main = NULL,
@@ -355,7 +413,23 @@ plot_responses <- function(x, category = "last", intervals = TRUE,
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' @rdname latents-plots
+#' Assigned profiles over the occasions
+#'
+#' One row per group (person) and one cell per occasion, coloured by the
+#' profile assigned at that occasion, for a fit with `time`.
+#'
+#' @inheritParams plot_profiles
+#' @param labels `TRUE` (default) groups the rows by group class under
+#'   labelled strips; `FALSE` does not.
+#' @param cell_labels `TRUE` (default) prints the profile in each cell when
+#'   the cells are large enough for the text.
+#' @return A ggplot object. A fit without occasions raises `latents_no_time`.
+#' @seealso [plot_transitions()] for the transition matrix.
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
+#'            id = "student", n_profiles = 2, time = "sequence",
+#'            n_starts = 2, seed = 1)
+#' plot_sequences(fit)
 #' @export
 plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
                            subtitle = NULL) {
@@ -364,7 +438,22 @@ plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' @rdname latents-plots
+#' Profile prevalence within each group class
+#'
+#' The probability of each profile within each group class, the quantity a
+#' two-level model adds to a one-level one. On a cross-level fit it draws
+#' the profile composition of each group class and on pooled imputations the
+#' pooled profile probabilities beside each imputation's.
+#'
+#' @inheritParams plot_profiles
+#' @return A ggplot object; a fit with one group class is drawn too. A
+#'   covariate model has no view and raises `latents_nothing_to_plot`.
+#' @seealso [plot_sizes()] for the class sizes at each level.
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- multilpa(course_engagement, c("browse", "lectures", "forum_read"),
+#'                 "student", n_profiles = 2, n_group_classes = 2,
+#'                 n_starts = 2, seed = 1)
+#' plot_prevalence(fit)
 #' @export
 plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
   .gg_require_fit(x, "plot_prevalence", substitute(x))
@@ -372,7 +461,31 @@ plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' @rdname latents-plots
+#' Classification summaries of a fit
+#'
+#' The four classification views of a profile, class or transition fit:
+#' effective class sizes, the posterior probability of each case's assigned
+#' class, each case's entropy and the average posterior matrix; and the same
+#' four for the groups of a fit with two or more group classes. Each view is
+#' also a function of its own that takes a fit of any family: [plot_sizes()],
+#' [plot_posteriors()], [plot_entropy()] and [plot_avepp()].
+#'
+#' @inheritParams plot_profiles
+#' @param what `"all"` (default) draws every view the fit supports, as a
+#'   list; `"sizes"`, `"posteriors"`, `"entropy"` or `"avepp"` one view of
+#'   the cases; `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` or
+#'   `"group_avepp"` one view of the groups.
+#' @return A ggplot object; a `latents_plots` list for `"all"`. A group view
+#'   of a fit with fewer than two group classes raises
+#'   `latents_no_group_classes`; a fit with a noise component (always one
+#'   group class) draws only `"sizes"` and refuses the other case views
+#'   with `latents_unsupported_noise`.
+#' @seealso [diagnostics()] and [get_checks()] for the tables behind the
+#'   views.
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'            n_starts = 2, seed = 1)
+#' plot_diagnostics(fit, what = "avepp")
 #' @export
 plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
                                          "entropy", "avepp", "group_sizes",
@@ -417,7 +530,22 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
   .gg_plots(lapply(views, \(view) view(x, main, subtitle)))
 }
 
-#' @rdname latents-plots
+#' Transition probabilities between profiles
+#'
+#' The estimated transition matrix of a latent transition model: from the
+#' profile at one occasion (rows) to the profile at the next (columns), one
+#' panel per group class.
+#'
+#' @inheritParams plot_profiles
+#' @return A ggplot object. A fit without transitions raises
+#'   `latents_nothing_to_plot`.
+#' @seealso [plot_sequences()]; [get_tna()] hands the transitions to the tna
+#'   package.
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
+#'            id = "student", n_profiles = 2, time = "sequence",
+#'            n_starts = 2, seed = 1)
+#' plot_transitions(fit)
 #' @export
 plot_transitions <- function(x, main = NULL, subtitle = NULL) {
   .gg_require_fit(x, "plot_transitions", substitute(x))
@@ -425,7 +553,50 @@ plot_transitions <- function(x, main = NULL, subtitle = NULL) {
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' @rdname latents-plots
+#' How classes split as more are added
+#'
+#' A clustering tree of an enumeration grid: one
+#' row per number of classes, one bar per class, and bands between the rows
+#' showing where each class's units go in the next solution. At the
+#' individual level a tree runs down the numbers of profiles (classes) at one
+#' number of group classes and one covariance structure; at the group level,
+#' down the numbers of group classes at one number of profiles. A family
+#' grid's tree compares its group classes.
+#'
+#' @param x An enumeration grid from [enumerate_classes()],
+#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()].
+#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
+#'   view's own.
+#' @param n_group_classes,n_profiles,model Which trees and rows to draw;
+#'   `NULL` (default) keeps every converged candidate. At the individual
+#'   level `n_group_classes` and `model` choose the trees and `n_profiles`
+#'   the rows; at the group level `n_profiles` and `model` choose the trees
+#'   and `n_group_classes` the rows. A single count for the rows compares
+#'   that level's solutions across the trees instead:
+#'   `plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))` draws the
+#'   four-profile solution at two and at five group classes as two rows.
+#' @param candidates Two or more candidate names, drawn as the rows of one
+#'   tree in the order given. Not with `n_group_classes`, `n_profiles` or
+#'   `model`.
+#' @param from,to Two solutions compared as a two-row tree, each named by its
+#'   class counts `c(n_profiles, n_group_classes)` (one count means one group
+#'   class) or by its candidate name:
+#'   `plot_tree(x, from = c(3, 3), to = c(4, 3))`. Given together, not with
+#'   `candidates`.
+#' @param level `"individuals"` (default): the cases divided into profiles;
+#'   `"groups"`: the groups divided into group classes.
+#' @param combine `FALSE` (default) returns one plot per tree; `TRUE` draws
+#'   every tree as a panel of one plot.
+#' @return One ggplot for a single tree or `combine = TRUE`, otherwise a
+#'   `latents_plots` list named by tree. A tree with fewer than two rows
+#'   raises `latents_no_tree`; a name no converged candidate has raises
+#'   `latents_unknown_candidate`.
+#' @seealso [get_tree()] for the flows as a table; [plot_enumeration()].
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_tree(grid)
 #' @export
 plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
                       n_profiles = NULL, model = NULL, candidates = NULL,
@@ -446,7 +617,30 @@ plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
                 subtitle = subtitle)
 }
 
-#' @rdname latents-plots
+#' Model-selection evidence across a candidate grid
+#'
+#' Five views that bear on the choice of a solution, none of which selects
+#' one: the decrease in a criterion with each added class (`"deltas"`), the
+#' criterion over profiles and group classes relative to its lowest value
+#' (`"heatmap"`), the smallest class share with 5% dashed (`"smallest"`),
+#' convergence, boundary and replication of every candidate (`"trust"`), and
+#' relative entropy with the lowest AvePP (`"diagnostics"`). Each is also a
+#' function of its own: [plot_deltas()], [plot_heatmap()], [plot_sizes()],
+#' [plot_trust()], [plot_entropy()] and [plot_avepp()].
+#'
+#' @inheritParams plot_enumeration
+#' @param what `"all"` (default) draws the five views as a list, or one of
+#'   `"deltas"`, `"heatmap"`, `"smallest"`, `"trust"` and `"diagnostics"`.
+#' @return A ggplot object; a `latents_plots` list for `"all"`. A view
+#'   the kind of grid does not offer raises
+#'   `latents_unsupported_view`.
+#' @seealso [get_deltas()], [get_knees()] and [get_best()] for the tables;
+#'   [plot_enumeration()] for the information criteria.
+#' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_selection(grid, what = "deltas")
 #' @export
 plot_selection <- function(x, what = c("all", "deltas", "heatmap", "smallest",
                                        "trust", "diagnostics"),

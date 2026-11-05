@@ -11,6 +11,70 @@
 # so G is never inverted and a variance on its boundary stays finite. Every
 # quantity comes from per-person cross-products computed once.
 
+#' Check the structural rank of the growth covariance design
+#'
+#' A random covariance entry multiplies the symmetric product of two random
+#' design columns; residual variance multiplies the identity. If those
+#' products are linearly dependent across every carrying person's design,
+#' distinct admissible covariance components give the same distribution.
+#' @param spec A growth specification in standardized coordinates.
+#' @return `NULL`, invisibly; raises `latents_not_identified`.
+#' @noRd
+.growth_check_covariance_design <- function(spec) {
+  stopifnot(is.list(spec), is.matrix(spec$random_design))
+  carrying <- (spec$row_weights %||% rep(1, spec$n)) > 0
+  rows <- split(which(carrying), spec$group_index[carrying])
+  designs <- lapply(rows, function(i) spec$random_design[i, , drop = FALSE])
+  keys <- vapply(designs, function(z) paste(nrow(z),
+    paste(sprintf("%a", as.vector(z)), collapse = ":"), sep = "/"), "")
+  designs <- designs[!duplicated(keys)]
+  q <- ncol(spec$random_design)
+  free <- which(if (isTRUE(spec$random_diagonal)) diag(TRUE, q) else
+    upper.tri(matrix(FALSE, q, q), diag = TRUE), arr.ind = TRUE)
+  blocks <- lapply(designs, function(z) {
+    # A row-space basis preserves every random covariance restriction. One
+    # extra row, when available, also preserves whether residual identity is
+    # outside that covariance space. This bounds each block by (q + 1)^2
+    # rather than allocating a long person's full observation covariance.
+    basis <- qr(t(z), tol = 1e-10)
+    picked <- basis$pivot[seq_len(basis$rank)]
+    if (length(picked) < nrow(z)) {
+      picked <- c(picked, setdiff(seq_len(nrow(z)), picked)[1L])
+    }
+    z <- z[picked, , drop = FALSE]
+    pairs <- which(upper.tri(matrix(FALSE, nrow(z), nrow(z)), diag = TRUE),
+                    arr.ind = TRUE)
+    random <- vapply(seq_len(nrow(free)), function(j) {
+      a <- free[j, 1L]
+      b <- free[j, 2L]
+      product <- z[pairs[, 1L], a] * z[pairs[, 2L], b]
+      if (a != b) product <- product + z[pairs[, 1L], b] * z[pairs[, 2L], a]
+      product
+    }, numeric(nrow(pairs))) |> matrix(nrow(pairs), nrow(free))
+    cbind(random, residual = as.numeric(pairs[, 1L] == pairs[, 2L]))
+  })
+  design <- do.call(rbind, blocks)
+  # Unequal proportional class covariances can separate a shared residual
+  # variance even when one class alone cannot: their difference identifies
+  # the covariance shape. This needs at least two observable shape entries;
+  # a scalar random variance remains confounded with residual variance.
+  if (identical(spec$random_covariance, "proportional") &&
+      identical(spec$variance, "equal") && spec$n_classes > 1L && nrow(free) > 1L) {
+    design <- design[, seq_len(nrow(free)), drop = FALSE]
+  }
+  scales <- sqrt(colSums(design^2))
+  rank <- qr(sweep(design, 2L, pmax(scales, .Machine$double.xmin), "/"),
+              tol = 1e-10)$rank
+  if (rank < ncol(design)) {
+    stop(errorCondition(sprintf(paste(
+      "The observed random-effects designs identify only %d of %d covariance",
+      "components. Random-effect and residual variances cannot be separated;",
+      "use more occasions or simplify `random` or its covariance."),
+      rank, ncol(design)), class = "latents_not_identified", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' Per-person cross-products of the growth mixture model
 #'
 #' @param spec The model specification, with `random_design`.
@@ -311,7 +375,7 @@
 #' Regression coefficients given the variances, then residual variances,
 #' random-effect covariances and class shares: each step maximizes the
 #' expected complete-data log likelihood with the random effects as missing
-#' data (Laird and Ware 1982), so the likelihood never decreases.
+#' data, so the likelihood never decreases.
 #'
 #' @return The updated parameter list.
 #' @noRd
@@ -438,7 +502,7 @@
 #' are nested in clusters (students in schools) and a group class of the
 #' cluster shifts how probable each trajectory class is -- the `"two-level"`
 #' structure, whose independent units are the clusters: the multilevel growth
-#' mixture model (Asparouhov and Muthen 2008; Vermunt 2003).
+#' mixture model.
 #'
 #' @param spec The growth specification.
 #' @return A structure list (see kernel-structures.R).

@@ -1,0 +1,25 @@
+'data.frame':	4 obs. of  4 variables:
+ $ group_class            : int  1 1 2 2
+ $ profile                : int  1 2 1 2
+ $ probability            : num  0.5654 0.4346 0.0261 0.9739
+ $ group_class_probability: num  0.416 0.416 0.584 0.584
+  group_class profile probability group_class_probability
+1           1       1  0.56542580               0.4159742
+2           1       2  0.43457420               0.4159742
+3           2       1  0.02605075               0.5840258
+4           2       2  0.97394925               0.5840258
+        level class effective_count effective_proportion
+1 individuals     1       678.37931            0.2627340
+2 individuals     2      1903.62069            0.7372660
+3      groups     1        41.59763            0.4159763
+4      groups     2        58.40237            0.5840237
+        level class n_modal proportion_modal estimated_n estimated_proportion
+1 individuals     1     621        0.2405112   678.37931            0.2627340
+2 individuals     2    1961        0.7594888  1903.62069            0.7372660
+3      groups     1      40        0.4000000    41.59763            0.4159763
+4      groups     2      60        0.6000000    58.40237            0.5840237
+  average_posterior odds_correct_classification
+1         0.8588357                   17.072336
+2         0.9260365                    4.461728
+3         0.9798639                   68.320731
+4         0.9599487                   17.071429

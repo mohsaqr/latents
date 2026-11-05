@@ -515,6 +515,13 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
       "group before its last occasion, so its outgoing probabilities are not",
       "estimated and have no standard error."), "latents_boundary_fit")
   }
+  origin_counts <- apply(x$transition_counts, c(1L, 3L), sum)
+  if (any(origin_counts > 0 & origin_counts < 1)) {
+    refuse(paste(
+      "Some transition origins have fewer than one expected outgoing move;",
+      "Wald inference is withheld because these rows have weak support."),
+      "latents_boundary_fit")
+  }
   floor <- .multilpa_probability_floor(x)
   probabilities <- c(unlist(x$response_probabilities, use.names = FALSE),
                      x$initial_probabilities, x$transition_probabilities,

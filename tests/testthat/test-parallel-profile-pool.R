@@ -103,6 +103,7 @@ test_that("profile grids match serial and direct categorical and continuous fits
 })
 
 test_that("profile enumeration shares one unnested start pool per search phase", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   data <- profile_pool_data()
   mapper <- .latents_map_candidates
   active <- 0L
@@ -138,6 +139,7 @@ test_that("profile enumeration shares one unnested start pool per search phase",
 })
 
 test_that("profile start dispatch is longest first without exceeding cores", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   skip_if_cores_limited()
   data <- profile_pool_data()
   mapper <- .latents_map_candidates
@@ -171,6 +173,7 @@ test_that("profile start dispatch is longest first without exceeding cores", {
 })
 
 test_that("serialized profile worker payloads own caller data and search controls", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   data <- profile_pool_data()
   worker_names <- c("profile_worker_data", "profile_worker_vars",
                     "profile_worker_categorical", "profile_worker_model",
@@ -218,6 +221,7 @@ test_that("serialized profile worker payloads own caller data and search control
 })
 
 test_that("membership covariate grids retain candidate parallelism and serial starts", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   data <- profile_pool_data()
   arguments <- c(profile_pool_arguments(data, "VVI"),
                  list(profile_covariates = "predictor", n_profiles = 2:3,
@@ -249,6 +253,7 @@ test_that("membership covariate grids retain candidate parallelism and serial st
 })
 
 test_that("joined categorical pairs retain exact candidate fits and worker payloads", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   data <- profile_pool_data()
   arguments <- c(profile_pool_arguments(data, "categorical"),
     list(local_dependence = "a:b", n_profiles = 2:3, n_group_classes = 1:2))
@@ -318,6 +323,7 @@ test_that("group-class family enumeration retains its public direct fits", {
 })
 
 test_that("unseeded profile starts draw in the direct fits' parent grid order", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   data <- profile_pool_data()
   mapper <- .latents_map_candidates
   local_mocked_bindings(.latents_map_candidates = function(indices, fun, cores, ...) {

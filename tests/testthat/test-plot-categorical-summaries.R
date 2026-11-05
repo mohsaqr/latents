@@ -141,7 +141,7 @@ test_that("mixed profiles preserve the continuous-only view for all statistics",
     observed <- fit$indicator_data[, "score"]
     expect_equal(standardized$mean,
       (unname(fit$means[standardized$profile, "score"]) - mean(observed)) /
-        stats::sd(observed))
+        sqrt(mean((observed - mean(observed))^2)))
   }))
 })
 

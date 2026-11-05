@@ -1,0 +1,9 @@
+PARSE OK README.Rmd 
+PARSE OK vignettes/articles/case-esm-lca.Rmd 
+PARSE OK vignettes/lca.Rmd 
+PARSE OK vignettes/articles/model-selection.Rmd 
+PARSE OK vignettes/articles/class-enumeration.Rmd 
+PARSE OK vignettes/articles/trajectory-classes.Rmd 
+PARSE OK vignettes/articles/workflow-lpa.Rmd 
+PARSE OK vignettes/articles/case-engagement-evaluation.Rmd 
+PARSE OK vignettes/articles/enumeration.Rmd 

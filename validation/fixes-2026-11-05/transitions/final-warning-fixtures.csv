@@ -1,0 +1,13 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-review-1015-transitions.R","review-1015-transitions","a dotted covariate name gives the coefficient table without a warning",3,0,FALSE,FALSE,0,0.369,0.024,0.421,3
+"test-review-1015-transitions.R","review-1015-transitions","get_results() on a general transition fit refuses an argument it does not use",2,0,FALSE,FALSE,0,0.241,0.00700000000000001,0.266,2
+"test-review-1015-transitions.R","review-1015-transitions","vcov() warns when given the other family's covariance argument",5,0,FALSE,FALSE,0,0.282,0.012,0.316,5
+"test-review-1015-transitions.R","review-1015-transitions","a one-class general fit prints 'group class' in the singular",1,0,FALSE,FALSE,0,0.004,0.001,0.00800000000000001,1
+"test-review-1015-transitions.R","review-1015-transitions","an emptied stayer class is reported as a small class",2,0,FALSE,FALSE,0,3.707,0.085,3.886,2
+"test-review-1015-transitions.R","review-1015-transitions","a transition enumeration's get_results() names an argument it ignores",2,0,FALSE,FALSE,0,0.048,0.004,0.0789999999999997,2
+"test-review-1015-transitions.R","review-1015-transitions","a transition covariate at a skipped grid position is refused",4,0,FALSE,FALSE,0,1.171,0.03,1.294,4
+"test-review-1015-transitions.R","review-1015-transitions","numbers stored as text are refused when their alphabetical order is wrong",7,0,FALSE,FALSE,0,0.107,0.00800000000000001,0.188000000000001,7
+"test-review-1015-transitions.R","review-1015-transitions","a categorical general transition fit reports its response probabilities",8,0,FALSE,FALSE,0,3.944,0.097,4.17,8
+"test-review-1015-transitions.R","review-1015-transitions","a weighted covariate fit averages its model-implied tables with the weights",3,0,FALSE,FALSE,0,0.264000000000001,0.01,0.296000000000001,3
+"test-review-1015-transitions.R","review-1015-transitions","the general transition plot uses the shared probability ramp and legible ink",2,0,FALSE,FALSE,0,0.657,0.045,0.74,2
+"test-review-1015-transitions.R","review-1015-transitions","multilpa(time = ) refuses numbers stored as text in the wrong order",2,0,FALSE,FALSE,0,0.0229999999999997,0.003,0.0579999999999998,2

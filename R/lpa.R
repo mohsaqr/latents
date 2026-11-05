@@ -39,10 +39,6 @@
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed; the
 #'   conditions [multilpa()] raises otherwise.
-#' @references
-#' Oberski, D. (2016). Mixture models: Latent profile and latent class
-#' analysis. In J. Robertson & M. Kaptein (Eds.), *Modern Statistical Methods
-#' for HCI* (pp. 275--287). Springer.
 #' @seealso [lca()] for categorical indicators; [multilpa()] for the two-level
 #'   model; [enumerate_lpa()] to compare numbers of profiles.
 #' @examples
@@ -100,9 +96,6 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' @section Conditions:
 #'   `latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
 #'   passed; the conditions [multilca()] raises otherwise.
-#' @references
-#' Lazarsfeld, P. F., & Henry, N. W. (1968). *Latent Structure Analysis*.
-#' Houghton Mifflin.
 #' @seealso [lpa()] for continuous indicators; [multilca()] for the
 #'   two-level model; [enumerate_lca()] to compare numbers of classes.
 #' @examples
@@ -158,9 +151,6 @@ lca <- function(data, vars, n_classes, ...) {
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed, or when
 #'   `model` names an unknown structure.
-#' @references
-#' Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
-#' *Pattern Recognition*, 28(5), 781--793.
 #' @seealso [lpa()] to fit one model; [enumerate_lca()] for categorical
 #'   indicators; [bootstrap_lrt()] to test one number of profiles against
 #'   another.

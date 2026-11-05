@@ -35,11 +35,11 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   selected <- startsWith(names_all, paste0(block, "."))
   # name layout: block.group_class.profile(s).term ; a term may contain dots,
   # so the pieces differ in length and are read by position, never bound.
-  pieces <- strsplit(names_all[selected], ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names_all[selected])
   table <- data.frame(
     group_class = vapply(pieces, `[`, character(1), 2L),
     outcome = vapply(pieces, `[`, character(1), 3L),
-    term = vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1)),
+    term = .lta_coefficient_term(names_all[selected]),
     estimate = theta[selected], stringsAsFactors = FALSE)
   if (identical(block, "transition")) {
     moves <- strsplit(table$outcome, "->", fixed = TRUE)
@@ -125,14 +125,19 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     }
     do.call(rbind, lapply(seq_along(per_occasion), function(t) {
       cells <- expand.grid(from = seq_len(n_states), to = seq_len(n_states))
+      support <- .lta_table_support(fit, "first", h,
+        if (by_occasion) transition_occasions[t] else NULL)
       estimated <- vapply(seq_len(n_states), function(k) {
         .lta_logits_identified(identified, "transition", classes[h], profiles[k],
                                profiles[-k], terms[[t]])
       }, logical(1))
       data.frame(group_class = classes[h],
-                 occasion = if (by_occasion) transition_occasions[t] + 1L else NA_integer_,
+                 occasion = if (by_occasion) transition_occasions[t] + 1L else
+                   if ((fit$order %||% 1L) >= 2L) 2L else NA_integer_,
                  from = profiles[cells$from], to = profiles[cells$to],
                  probability = per_occasion[[t]][cbind(cells$from, cells$to)],
+                 origin_expected_count = support$count[cells$from],
+                 supported = support$supported[cells$from],
                  estimated = estimated[cells$from],
                  stringsAsFactors = FALSE)
     }))
@@ -159,6 +164,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   terms <- unique(unlist(lapply(occasions, .lta_terms_used, fit = fit,
                                 unit_weights = unit_weights)))
   do.call(rbind, lapply(seq_len(fit$n_group_classes), function(h) {
+    support <- .lta_table_support(fit, "second", h)
     averaged <- Reduce(`+`, Map(function(t, w) {
       active <- fit$layout$within[, t + 1L]
       log_p <- if (isTRUE(parameters$stayer[h])) {
@@ -182,6 +188,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                from = profiles[from],
                to = profiles[cells$to],
                probability = averaged[cbind(cells$pair, cells$to)],
+               origin_expected_count = support$count[cells$pair],
+               supported = support$supported[cells$pair],
                estimated = estimated[cells$pair],
                stringsAsFactors = FALSE)
   }))

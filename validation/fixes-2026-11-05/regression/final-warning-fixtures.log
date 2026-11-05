@@ -1,0 +1,43 @@
+Package: /private/tmp/latents-fixes-1105-vtcym3fq/final-check/latents.Rcheck/latents version: 1.1.17 
+review-1026-multilevel-r2: ...........................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                               file                   context
+1  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+2  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+3  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+4  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+5  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+6  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+7  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+8  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+9  test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+10 test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+11 test-review-1026-multilevel-r2.R review-1026-multilevel-r2
+                                                                                        test
+1                      the equal between-group variance divides by the weighted total (CL-2)
+2                        cross-level criteria and nobs count units of positive weight (CL-3)
+3  a zero-weight group with a degenerate person scale does not refuse a covariate fit (ZW-3)
+4                                 grand centring and scaling ignore zero-weight units (ZW-4)
+5                drop_empty = FALSE still leaves zero-weight units out of every count (ZW-5)
+6   a covariate fit's bic_individual is its criteria table's under drop_empty = FALSE (CV-1)
+7              weighted ICL charges the weighted entropy, that of the replicated data (EN-1)
+8                   start 1 is the same whatever the seed, with several group classes (ST-1)
+9                        a covariate emEM pool begins with the kmeans search's starts (ST-2)
+10          covariate and cross-level fits count replicated maxima as multilpa() does (RP-1)
+11                              the weights line counts the units of positive weight (DOC-1)
+   nb failed skipped error warning  user system  real passed
+1   2      0   FALSE FALSE       0 0.291  0.023 0.360      2
+2   4      0   FALSE FALSE       0 0.360  0.039 0.486      4
+3   4      0   FALSE FALSE       0 0.502  0.038 0.652      4
+4  10      0   FALSE FALSE       0 1.515  0.041 1.703     10
+5   8      0   FALSE FALSE       0 0.646  0.021 0.769      8
+6   2      0   FALSE FALSE       0 0.225  0.008 0.270      2
+7   5      0   FALSE FALSE       0 0.414  0.017 0.478      5
+8   1      0   FALSE FALSE       0 0.048  0.005 0.116      1
+9   2      0   FALSE FALSE       0 0.596  0.016 0.681      2
+10  4      0   FALSE FALSE       0 0.623  0.022 0.740      4
+11  1      0   FALSE FALSE       0 0.071  0.003 0.090      1
+ failed  passed warning 
+      0      43       0 
+errors 0 skips 0 

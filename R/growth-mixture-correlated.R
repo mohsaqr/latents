@@ -329,6 +329,14 @@
   fit$converged <- newton$converged
   fit$iterations <- uncorrelated$iterations + best$iterations + newton$iterations
   fit$history <- c(uncorrelated$history, fit$log_likelihood)
+  # The uncorrelated starts initialize the class placement; they did not fit
+  # this process model and cannot establish replication of its maximum.
+  fit$initialization_starts <- uncorrelated$starts
+  fit$starts <- data.frame(start = 1L, kind = "correlated",
+    log_likelihood = fit$log_likelihood, converged = fit$converged,
+    iterations = as.integer(best$iterations + newton$iterations),
+    stage = "completed", degenerate = fit$random_boundary, selected = TRUE)
+  fit$n_best_replicated <- NA_integer_
   fit
 }
 

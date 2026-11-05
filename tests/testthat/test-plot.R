@@ -53,7 +53,8 @@ test_that("standardizing uses the observed indicator scales", {
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   observed <- fit$indicator_data
   centre <- colMeans(observed)
-  spread <- c(stats::sd(observed[, 1L]), stats::sd(observed[, 2L]))
+  spread <- vapply(seq_len(ncol(observed)), function(j)
+    sqrt(mean((observed[, j] - mean(observed[, j]))^2)), numeric(1))
   expected <- sweep(sweep(fit$means, 2L, centre, "-"), 2L, spread, "/")
   # The b indicator is on a far wider scale, so standardizing must shrink it
   # relative to a; this is the whole point of the option.
@@ -263,8 +264,9 @@ test_that("a transition fit gets bars without whiskers, not an error", {
   # The transition bars carry point estimates only, even where inference
   # would refuse: on these pure-noise data a probability sits at its bound and
   # parameter_inference() raises latents_boundary_fit.
-  moves <- lta(data, c("score_a", "score_b"), "school",
-               n_profiles = 2, time = "wave", n_starts = 1, seed = 1)
+  expect_warning(moves <- lta(data, c("score_a", "score_b"), "school",
+               n_profiles = 2, time = "wave", n_starts = 1, seed = 1),
+               class = "latents_boundary")
   expect_error(parameter_inference(moves), class = "latents_boundary_fit")
   bars <- expect_plot(plot(moves, what = "bars"))
   expect_true(all(is.na(bars$data$upper)))

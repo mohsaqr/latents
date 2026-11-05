@@ -5,155 +5,106 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' Compare the fit and classification of mixture models
 #'
 #' @description
-#' `compare_models()` compares alternative mixture models fitted to the same
-#' observed data. It supports assessment of the number of latent classes and
-#' other model specifications by presenting evidence about model fit,
-#' complexity, classification, and convergence.
+#' `compare_models()` puts the fit, complexity, classification and
+#' convergence of several models fitted to the same data in one table:
+#' separately fitted models, or candidates of an enumeration grid. BIC
+#' differences give each model's distance from the smallest BIC among those
+#' compared, and the Schwarz weights `exp(-delta_bic / 2)`, normalised over
+#' them, give relative support. The
+#' function does not select a model: a lower criterion favours a model
+#' among those compared and says nothing about absolute fit.
 #'
-#' Information criteria summarise the trade-off between fit and the number of
-#' estimated parameters. Classification measures provide complementary
-#' information about the separation and relative size of the classes, while
-#' convergence summaries help identify estimation problems that may compromise
-#' the comparison. These measures address different aspects of a solution and
-#' should be interpreted together.
-#'
-#' The function accepts separately fitted models or candidates from an
-#' enumeration grid and returns their comparison statistics in a single
-#' table. BIC differences express each model's distance from the smallest BIC
-#' among the candidates; normalised BIC weights summarise their relative
-#' support within that set. The function does not select a final model.
-#'
-#' @section Interpretation:
-#' Models must use the same outcomes or indicators and observational units,
-#' and their likelihoods must be comparable. Lower information criteria favour
-#' a model relative to the alternatives considered, but do not establish
-#' adequate fit or substantive validity. Classification separation should
-#' inform interpretation rather than serve as the sole basis for choosing the
-#' number of classes. Final selection also requires examination of estimation
-#' stability, model assumptions, and the meaning of the resulting classes.
-#'
-#' @details
-#' `delta_bic` is the difference from the smallest BIC among the supplied
-#' candidates. `bic_weight` is the Schwarz weight `exp(-delta_bic / 2)`,
-#' normalised across those candidates (Wagenmakers and Farrell, 2004).
-#' Incompatible data produce an error.
-#'
-#' Candidates of an enumeration grid are selected by name, as the grid's
-#' `candidate` column shows them
-#' (`compare_models(grid, "profiles3_groups4", "profiles3_groups5")`), or by
-#' class counts (`compare_models(grid, c(3, 4), c(3, 5))`, where a single
-#' number means one group class). Alternatively, `n_profiles` and
-#' `n_group_classes` select candidates: `compare_models(grid, n_profiles = 3)`
-#' compares every candidate with 3 profiles, and `compare_models(grid)`
-#' compares them all. Latent class grids work the same way, with `classes`
-#' in the names, and the `n_profiles` column counting classes. Fits from
-#' [multilpa()], [lpa()], [lca()], [lta()] or [get_candidate()] can also be
-#' passed directly.
-#'
-#' With `test = "lrt"`, each model is tested against the model in the row
-#' before it, as [stats::anova()] does: `lr_statistic` is twice the difference
-#' in their log likelihoods, `lr_df` the difference in their numbers of free
-#' parameters, and `lr_p_value` its upper chi-square tail (Wilks, 1938). List
-#' the models from the most restricted to the most general. A model is nested
-#' in the next when the two have the same indicators, coding (including the
-#' order of ordinal categories), estimation settings and numbers of profiles
-#' and group classes, and the first only restricts the second: a covariance
-#' structure restricted letter by letter (EEI within VVI or EEE, and both
-#' within VVV), covariances of chosen pairs (`local_dependence`) within more
-#' pairs or a full covariance, fewer joint item pairs, direct effects or
-#' membership covariates, profile slopes shared across group classes, count
-#' dispersions shared across profiles; and for [lta()], measurement invariant
-#' within measurement by occasion, homogeneous within occasion-specific
-#' transitions, first within second order, and fewer transition or initial
-#' covariates. A predictor both models use must enter both with the same
-#' values (or an affine recoding of them): the first model's covariate design
-#' has to be recovered by setting the second's added coefficients to zero.
-#'
-#' Nested is not enough for the chi-square reference: the restriction must
-#' also be regular (Wilks, 1938). The restrictions above are regular at a
-#' generic null, with one exception among the covariance structures. A
-#' spherical structure (EII, VII) within EVE, VVE, EEV or VEV is singular:
-#' when every profile is spherical, the orientation those structures add has
-#' no value, and the likelihood-ratio statistic is not chi-square distributed
-#' (Drton, 2009). These pairs are refused; compare them on their information
-#' criteria. A different number of profiles or group classes, or a stayer
-#' class, puts the null on the boundary of the parameter space, where the
-#' chi-square reference does not hold either: those comparisons are refused
-#' and belong to [bootstrap_lrt()] or `get_results(grid, "lmr")`.
-#'
-#' @param ... Either an enumeration grid from [enumerate_classes()] followed
-#'   by the candidates to compare (none for all of them, or a selection
-#'   through `n_profiles` and `n_group_classes`); or two or more fits from
+#' @param ... An enumeration grid from [enumerate_classes()] followed by the
+#'   candidates to compare (none for all); or two or more fits from
 #'   [multilpa()], [lpa()], [lca()], [lta()] or [get_candidate()]; or two or
-#'   more fits from [mixture_regression()] (with or without `random`). Named
-#'   fits are labelled by their names, unnamed fits by their expression, and
-#'   candidates by their candidate name. Labels must be distinct.
+#'   more fits from [mixture_regression()]. Named fits are labelled by their
+#'   names, unnamed ones by their expression, candidates by their candidate
+#'   name; labels must be distinct. See *Choosing candidates*.
 #' @param n_profiles,n_group_classes With a grid, the class counts of the
-#'   candidates to compare; `NULL` (the default) takes every count. Candidates
+#'   candidates to compare; `NULL` (default) takes every count. Candidates
 #'   whose fit failed are left out, with a message.
 #' @param cutoff For profile and class models, the average posterior
 #'   probability below which a class is counted in `avepp_below` and
-#'   `group_avepp_below`; a single number in (0, 1], default 0.8. Not used for
-#'   mixture regressions.
-#' @param test `"none"` (the default) for the comparison table alone, or
-#'   `"lrt"` to add a likelihood-ratio test of each profile, class or
-#'   transition model against the one before it (see *Details*).
-#' @return A base `data.frame` of class `latents_comparison`, one row per
-#'   model.
+#'   `group_avepp_below` (default 0.8). Not used for mixture regressions.
+#' @param test `"none"` (default) for the table alone; `"lrt"` adds a
+#'   likelihood-ratio test of each model against the one before it. See
+#'   *Likelihood-ratio tests*.
 #'
-#'   For mixture regressions the columns are `model`, `n_classes`, `random`,
+#' @return A data frame of class `latents_comparison`, one row per model.
+#'
+#'   For profile and class models: `model`, `n_profiles` (classes, for a
+#'   class model), `n_group_classes`, `structure` (the covariance
+#'   structure, `NA` without continuous indicators), `n_parameters` (see
+#'   *Held measurement*),
+#'   `log_likelihood`, every information criterion of [get_candidates()],
+#'   `profile_entropy`, `group_entropy`, `avepp_min`, `avepp_max`,
+#'   `avepp_mean`, `avepp_below` and the same four prefixed `group_`,
+#'   `smallest_share` (the smallest estimated profile share), `converged`,
+#'   `n_best_replicated`, `delta_bic` and `bic_weight` (on `bic_groups`, the
+#'   BIC that counts groups as the independent units; the ordinary BIC for
+#'   single-level models).
+#'
+#'   For mixture regressions: `model`, `n_classes`, `random`,
 #'   `n_parameters`, `log_likelihood`, `aic`, `bic`, `sabic`, `icl`,
 #'   `entropy`, `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
 #'
-#'   For profile and class models they are `model`, `n_profiles`,
-#'   `n_group_classes`, `structure` (the covariance structure, `NA` without
-#'   continuous indicators), `n_parameters`, `log_likelihood`, every
-#'   information criterion of [enumerate_classes()]'s candidates table,
-#'   `profile_entropy`, `group_entropy`, `avepp_min`, `avepp_max`,
-#'   `avepp_mean`, `avepp_below` and the same four prefixed `group_`,
-#'   `smallest_share` (the smallest estimated profile share, relative to all
-#'   observation mass including any noise component), `converged`,
-#'   `n_best_replicated`, and `delta_bic` and `bic_weight`, computed on
-#'   `bic_groups` (the BIC that counts groups as the independent units; on a
-#'   single-level model, the ordinary BIC). The values are those of the
-#'   grid's candidates table.
+#'   With `test = "lrt"`, also `lr_statistic`, `lr_df` and `lr_p_value`,
+#'   `NA` in the first row. Fits to different data, fewer than two models,
+#'   a group-class family fit or grid, and a mixture-regression grid are
+#'   refused with classed conditions ([latents-conditions]); the family and
+#'   regression grids have their own tables. The criteria compare the
+#'   models with each other; a final choice also needs the estimation to be
+#'   stable and the classes to mean something.
 #'
-#'   With `test = "lrt"`, three more columns: `lr_statistic`, `lr_df` and
-#'   `lr_p_value`, `NA` in the first row.
+#' @section Held measurement:
+#' Fits that hold the same measurement ([fit_staged()], `fixed`) are compared
+#' on the parameters they estimate. In any other comparison, such as a staged
+#' fit against a jointly estimated one, every criterion and `n_parameters`
+#' count the measurement parameters too, and the table's title says so. Such
+#' a comparison is descriptive, since staged estimates do not maximise the
+#' joint likelihood.
 #'
-#'   Raises `latents_bad_argument` for fits that cannot be compared, for
-#'   fewer than two models, for duplicate labels, for a group-class family grid (its own
-#'   table, `as.data.frame(grid)`, compares its candidates), for candidates
-#'   named together with `n_profiles` or `n_group_classes`, and for
-#'   `n_profiles` or `n_group_classes` without a grid;
-#'   `latents_unknown_candidate` for a name, counts or selection not in the
-#'   grid; `latents_failed_candidate` for a named candidate that could not be
-#'   fitted; `latents_incomparable_models` for fits to different data. A
-#'   `cutoff` outside (0, 1] raises `latents_bad_argument`; so do
-#'   group-class family fits
-#'   (`multilpa(family = ...)`) and mixture-regression grids, which are
-#'   compared in their own tables.
+#' @section Choosing candidates:
+#' Candidates of a grid are named as its `candidate` column shows them
+#' (`compare_models(grid, "profiles3_groups4", "profiles3_groups5")`), by
+#' class counts (`compare_models(grid, c(3, 4), c(3, 5))`, a single number
+#' meaning one group class), or through `n_profiles` and `n_group_classes`
+#' (`compare_models(grid, n_profiles = 3)` compares every candidate with
+#' three profiles). Latent class grids work the same way with `classes` in
+#' the names.
 #'
-#'   With `test = "lrt"`: `latents_bad_nesting` for consecutive models that
-#'   are not nested as described in *Details*, or that differ in their
-#'   numbers of profiles or group classes; `latents_singular_restriction`
-#'   (also a `latents_bad_nesting`) for a singular covariance restriction;
-#'   `latents_reversed_likelihood` when the more general model has the lower likelihood beyond the fits'
-#'   tolerance; `latents_no_converge` for a fit that did not converge;
-#'   `latents_unsupported_weights`, `latents_unsupported_prior` and
-#'   `latents_unsupported_noise` for fits with sampling weights, a prior or a
-#'   noise component; `latents_bad_argument` for mixture regressions. A fit
-#'   with a variance at `min_variance` warns `latents_boundary`.
-#' @references
-#' Drton, M. (2009). Likelihood ratio tests and singularities. *The Annals of
-#' Statistics*, 37(2), 979--1012. \doi{10.1214/07-AOS571}
+#' @section Likelihood-ratio tests:
+#' With `test = "lrt"`, each model is tested against the model in the row
+#' before it, as `stats::anova()` does: `lr_statistic` is twice the
+#' difference in log likelihoods, `lr_df` the difference in free parameters
+#' and `lr_p_value` the upper chi-square tail. List the models
+#' from the most restricted to the most general. Two models are nested when
+#' they share indicators, coding, estimation settings and numbers of
+#' profiles and group classes, and the first only restricts the second: a
+#' covariance structure restricted letter by letter (EEI within VVI or EEE,
+#' both within VVV), `local_dependence` pairs within more pairs or a full
+#' covariance, fewer direct effects or membership covariates, profile
+#' slopes shared across group classes, count dispersions shared across
+#' profiles, and for [lta()] fits also invariant within occasion-specific
+#' measurement, homogeneous within occasion-specific transitions, first
+#' within second order, fewer transition or initial covariates. A covariate
+#' both models use must enter both with the same values (or an affine
+#' recoding).
 #'
-#' Wilks, S. S. (1938). The large-sample distribution of the likelihood ratio
-#' for testing composite hypotheses. *The Annals of Mathematical Statistics*,
-#' 9(1), 60--62.
+#' Nesting is not enough: the restriction must also be regular. A spherical
+#' structure (EII, VII) within EVE, VVE, EEV or VEV is singular, because the
+#' orientation those structures add has no value when every profile is
+#' spherical; such pairs are refused, so compare them on the
+#' criteria. A different number of profiles or group classes, or a stayer
+#' class, puts the null on the boundary of the parameter space, where the
+#' chi-square reference does not hold either: those comparisons are refused
+#' and belong to [bootstrap_lrt()] (or, for class counts,
+#' `get_results(grid, "lmr")`). Fits with sampling weights, a prior or a
+#' noise component, and mixture regressions, are refused under
+#' `test = "lrt"`.
 #'
-#' Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
-#' weights. *Psychonomic Bulletin & Review*, 11, 192--196.
+#' @seealso [enumerate_classes()] and [bootstrap_lrt()]; [plot_criteria()]
+#'   draws the criteria of a comparison.
 #' @examples
 #' # Compare trajectory and random-intercept growth models for 60 students.
 #' few_students <- subset(growth_scores, student <= 60)
@@ -447,6 +398,7 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
       labels[1L]), class = "latents_incomparable_models", call = NULL))
   }
   statistics <- c("min", "max", "mean", "below")
+  parameter_counts <- .latents_comparison_counts(fits)
   rows <- lapply(seq_along(fits), function(i) {
     fit <- fits[[i]]
     level_summary <- function(level, prefix) {
@@ -457,6 +409,7 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
       columns
     }
     diagnostic <- .latents_comparison_diagnostic_view(fit)
+    diagnostic$n_parameters <- parameter_counts[[i]]
     # Shares are of the rows the fit counts (see `drop_empty`), with the
     # weights of those rows.
     counted <- .multilpa_classified_posteriors(diagnostic)
@@ -473,7 +426,7 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
                  n_group_classes = as.integer(fit$n_group_classes %||% 1L),
                  structure = if (length(.multilpa_continuous_names(fit)) == 0L)
                    NA_character_ else .latents_comparison_structure(fit),
-                 n_parameters = as.integer(fit$n_parameters),
+                 n_parameters = as.integer(parameter_counts[[i]]),
                  log_likelihood = fit$log_likelihood, stringsAsFactors = FALSE),
       .multilpa_enumeration_indices(diagnostic),
       data.frame(profile_entropy = .multilpa_level_relative_entropy(fit, "individuals"),
@@ -496,7 +449,11 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
   latent_class <- all(vapply(fits, function(fit)
     length(.multilpa_continuous_names(fit)) == 0L, logical(1)))
   grouped <- any(table$n_group_classes > 1L)
-  table <- .latents_table(table, title = "Model comparison", display = c(
+  counted <- !isTRUE(all.equal(parameter_counts, vapply(fits, function(fit)
+    as.numeric(fit$n_parameters), numeric(1))))
+  title <- if (counted) "Model comparison, counting the held measurement parameters"
+  else "Model comparison"
+  table <- .latents_table(table, title = title, display = c(
     list(column("Model", "model", "text"),
          column(if (latent_class) "Classes" else "Profiles", "n_profiles",
                 "integer")),
@@ -514,6 +471,35 @@ plot.latents_comparison <-function(x, main = NULL, subtitle = NULL, ...) {
   attr(table, "models") <- stats::setNames(fits, labels)
   class(table) <- c("latents_comparison", class(table))
   table
+}
+
+#' The parameter count each fit is compared on
+#'
+#' A held measurement is a constant of the likelihood only among fits that all
+#' hold the same one, which are compared on the parameters they estimate.
+#' Against any other fit that measurement was estimated somewhere, so every
+#' fit is charged for its measurement parameters. Without this a staged fit
+#' pays for its second stage alone and wins any comparison with a joint fit.
+#'
+#' @param fits The fitted models compared.
+#' @return A numeric vector of counts, one per fit.
+#' @noRd
+.latents_comparison_counts <- function(fits) {
+  stored <- vapply(fits, function(fit) as.numeric(fit$n_parameters), numeric(1))
+  held <- lapply(fits, function(fit) sort(fit$fixed %||% character()))
+  if (all(lengths(held) == 0L)) return(stored)
+  blocks <- list(means = "means", variances = c("variances", "covariances"),
+                 response_probabilities = "response_probabilities")
+  held_values <- function(fit) {
+    fit[unlist(blocks[intersect(names(blocks), fit$fixed)], use.names = FALSE)]
+  }
+  reference <- held_values(fits[[1L]])
+  same <- all(vapply(held, identical, logical(1), held[[1L]])) &&
+    all(vapply(fits, function(fit) isTRUE(all.equal(held_values(fit), reference)),
+               logical(1)))
+  if (same) return(stored)
+  vapply(fits, function(fit)
+    as.numeric(fit$n_parameters_with_measurement %||% fit$n_parameters), numeric(1))
 }
 
 #' The model behind one row of a comparison

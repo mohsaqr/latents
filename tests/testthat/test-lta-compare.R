@@ -82,9 +82,9 @@ test_that("bootstrap LRT between nested transition fits", {
 
 test_that("transition enumeration crosses profiles, classes and structures", {
   skip_on_cran()
-  grid <- enumerate_classes(course_engagement, compare_activity, "student",
+  grid <- quietly(enumerate_classes(course_engagement, compare_activity, "student",
                             time = "sequence", n_profiles = 2:3, n_group_classes = 1:2,
-                            n_starts = 1, seed = 1)
+                            n_starts = 1, seed = 1))
   expect_s3_class(grid, "latents_transition_enumeration")
   table <- get_results(grid)
   expect_identical(nrow(table), 4L)

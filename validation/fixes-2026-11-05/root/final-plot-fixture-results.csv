@@ -1,0 +1,8 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-review-1015-plots.R","review-1015-plots","response whiskers are the inference table's own bounds",8,0,FALSE,FALSE,0,1.187,0.122,1.472,8
+"test-review-1015-plots.R","review-1015-plots","named plots refuse objects they cannot draw with a classed error",10,0,FALSE,FALSE,0,62.808,2.112,66.479,10
+"test-review-1015-plots.R","review-1015-plots","plot_enumeration() and plot_tree() draw a transition grid",9,0,FALSE,FALSE,1,0.628,0.0220000000000002,0.696999999999989,8
+"test-review-1015-plots.R","review-1015-plots","a noise fit's prevalence plot accounts for the noise share",5,0,FALSE,FALSE,0,0.268000000000001,0.00999999999999979,0.308999999999997,5
+"test-review-1015-plots.R","review-1015-plots","profile views say which indicators they leave out",12,0,FALSE,FALSE,0,1.102,0.0559999999999996,1.22,12
+"test-review-1015-plots.R","review-1015-plots","covariate fits refuse an abbreviated prevalence with the reason",4,0,FALSE,FALSE,0,0.283000000000001,0.0300000000000002,0.335000000000008,4
+"test-review-1015-plots.R","review-1015-plots","a centred fit's case-level views are refused as nothing to plot",2,0,FALSE,FALSE,0,0.185000000000002,0.0089999999999999,0.212999999999994,2

@@ -88,7 +88,8 @@ test_that("the standardized profile means the plot draws are available as data",
   # Computed independently from the input data, not from the fit, so that the
   # table is checked against the definition rather than against itself.
   centre <- vapply(tidy_fixture[c("score_a", "score_b")], mean, numeric(1))
-  spread <- vapply(tidy_fixture[c("score_a", "score_b")], stats::sd, numeric(1))
+  spread <- vapply(tidy_fixture[c("score_a", "score_b")],
+                    function(x) sqrt(mean((x - mean(x))^2)), numeric(1))
   expect_equal(standardized$mean,
                (raw$mean - rep(centre, times = 2L)) / rep(spread, times = 2L),
                ignore_attr = TRUE)

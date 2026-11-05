@@ -304,7 +304,7 @@ test_that("a flagged local-independence check reports the pair, not advice", {
   check <- latents:::.latents_residual_checks(residuals, reason = "")
   expect_identical(check$status, "check")
   expect_equal(check$value, 1)
-  expect_identical(check$detail, "largest: a x b in profile_1, residual 0.400, adjusted p <1e-04")
+  expect_identical(check$detail, "smallest adjusted p: a x b in profile_1, residual 0.400, adjusted p <1e-04")
   expect_no_match(check$detail, "consider|local_dependence")
 })
 

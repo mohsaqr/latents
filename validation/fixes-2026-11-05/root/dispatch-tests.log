@@ -1,0 +1,51 @@
+fixes-1105-surface: ......................................
+lta-parallel: .........SS.....................................................................................Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+.Preparing 1 candidate on 1 worker.
+Fitting 2 starts on 2 workers.
+....
+parallel-profile-pool: S......................................123.................................SSS..
+sensitivity: ............................................................................S
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. both lta engines have identical forked starts and emEM screening ('test-lta-parallel.R:61:3') - Reason: This BLAS cannot run safely in forked workers
+
+2. transition grids match serial and direct fits for both searches and engines ('test-lta-parallel.R:88:3') - Reason: This BLAS cannot run safely in forked workers
+
+3. profile grids match serial and direct categorical and continuous fits ('test-parallel-profile-pool.R:66:3') - Reason: This BLAS cannot run safely in forked workers
+
+4. a recovered categorical grid start preserves all fitted results ('test-parallel-profile-pool.R:375:3') - Reason: This BLAS cannot run safely in forked workers
+
+5. a persistently killed categorical start leaves other starts intact ('test-parallel-profile-pool.R:399:3') - Reason: This BLAS cannot run safely in forked workers
+
+6. losing every categorical start fails only that candidate ('test-parallel-profile-pool.R:425:3') - Reason: This BLAS cannot run safely in forked workers
+
+7. parallel seeds give the serial table for every refitted family ('test-sensitivity.R:297:3') - Reason: This BLAS cannot run safely in forked workers
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-parallel-profile-pool.R:164:3'): profile start dispatch is 
+Expected `requested` to have length 2.
+Actual length: 1.
+
+── 2. Failure ('test-parallel-profile-pool.R:165:3'): profile start dispatch is 
+Expected `dispatched` to have length 2.
+Actual length: 0.
+
+── 3. Error ('test-parallel-profile-pool.R:168:5'): profile start dispatch is lo
+<subscriptOutOfBoundsError/error/condition>
+Error in `dispatched[[i]]`: subscript out of bounds
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-parallel-profile-pool.R:166:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─testthat::expect_identical(dispatched[[i]]$tasks, requested[[i]]$tasks[expected_order]) at test-parallel-profile-pool.R:168:5
+ 4.       └─testthat::quasi_label(enquo(object), label)
+ 5.         └─rlang::eval_bare(expr, quo_get_env(quo))
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+                           file
+23 test-parallel-profile-pool.R
+                                                              test failed error
+23 profile start dispatch is longest first without exceeding cores      2  TRUE
+ passed  failed   error warning skipped 
+    286       2       1       0       7 

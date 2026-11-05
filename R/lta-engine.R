@@ -951,6 +951,9 @@
     stop(errorCondition("Second-order transitions require at least three occasions.",
                         class = "latents_bad_transition", call = NULL))
   }
+  .lta_check_short_panel(layout$n_occasions, n_movers, transitions, order,
+    mover_stayer, length(transition_covariates) + length(initial_covariates) > 0L,
+    n_profiles = n_profiles)
   sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   # Identification is judged on the groups that enter the likelihood: a group
   # of weight zero supplies neither a distinct row nor a group for a class to
@@ -986,14 +989,18 @@
   # the logits of the move into it are not counted (.lta_identified_columns()).
   inner_empty <- which(!occupied & seq_along(occupied) < max(which(occupied)))
   if (identical(transitions, "occasion") && length(inner_empty) > 0L) {
+    identification_detail <- if (order >= 2L) paste(
+      "Under second order the earlier state also enters later moves. The",
+      "remaining logits stay counted, so n_parameters, AIC and BIC use an",
+      "upper-bound parameter count; individual logits may be unidentified.") else paste(
+      "Only their product is identified: the logits of the move into the empty",
+      "occasion are not counted in n_parameters, AIC or BIC and have no",
+      "standard error; the logits of the move out are reported given them.")
     warning(warningCondition(sprintf(paste(
       "No row observes an indicator at occasion %s, which later occasions",
       "follow. With transitions = \"occasion\", the moves into and out of an",
-      "empty occasion enter the likelihood only through their product, so only",
-      "the product is identified: the logits of the move into it are not",
-      "counted in n_parameters, AIC or BIC and have no standard error, and",
-      "those of the move out of it are reported given them."),
-      paste(inner_empty, collapse = ", ")),
+      "empty occasion cannot in general be distinguished. %s"),
+      paste(inner_empty, collapse = ", "), identification_detail),
       class = "latents_unidentified_occasion", call = NULL))
   }
   occasion_of_row <- integer(nrow(x))
@@ -1123,6 +1130,9 @@
     # The weighted posteriors are counts; each person is classified by their
     # own posterior, while the likelihood stays the weighted one.
     weighted_expectation <- best$expectation
+    origin_support <- .lta_origin_support(weighted_expectation,
+                                          best$parameters$stayer, n_profiles)
+    weak_origins <- .lta_weak_origins(origin_support, transitions)
     if (!is.null(sampling_weights)) {
       best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
                                            occasion_of_row, extra = extra)
@@ -1130,6 +1140,8 @@
     }
     # From the fitting chart to the units the covariates arrived in: the same
     # model, so the expectation and the likelihood carry over unchanged.
+    boundary_parameters <- best$parameters
+    boundary_designs <- designs
     best$parameters <- .lta_map_coefficients(best$parameters, chart, "to_raw")
     designs <- raw_designs
     result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
@@ -1141,7 +1153,11 @@
                           covariance_model, structure,
                           final_stage = .latents_final_stage(found),
                           sampling_weights = sampling_weights, occupied = occupied, used = used,
-                          empty_origins = empty_origins, extra = extra)
+                          empty_origins = empty_origins, extra = extra,
+                          origin_support = origin_support, weak_origins = weak_origins,
+                          warn_unconverged = max_iter > 0L,
+                          boundary_parameters = boundary_parameters,
+                          boundary_designs = boundary_designs)
     result$starts <- .latents_search_columns(result$starts, found, n_starts)
     record <- .latents_search_record(search, n_starts, screen, select_start, "allow")
     result[names(record)] <- record
@@ -1192,11 +1208,11 @@
       # The sample sizes of 0.9.37 and earlier: every row and every group,
       # except those of a unit of weight zero, which is in no count under
       # either convention (ML-1; the units `nobs()` and `BIC()` count).
-      result$n_informative <- sum(.multilpa_carrying_rows(result, result$n_observations))
+      counted_rows <- sum(.multilpa_carrying_rows(result, result$n_observations))
       result$bic <- -2 * result$log_likelihood +
         log(.multilpa_group_sample_size(result)) * result$n_parameters
       result$bic_individual <- -2 * result$log_likelihood +
-        log(result$n_informative) * result$n_parameters
+        log(counted_rows) * result$n_parameters
     }
     # This diagnostic concerns Gaussian measurement, so rows without any
     # Gaussian observation cannot support its spread, regardless of drop_empty.
@@ -1360,19 +1376,9 @@
 #'   (profile pairs by group classes, `NULL` without second order), logical.
 #' @noRd
 .lta_empty_origins <- function(expectation, stayer, n_profiles) {
-  empty <- function(moves, n_origins) {
-    vapply(seq_along(expectation$moments), function(h) {
-      if (isTRUE(stayer[h])) return(rep(FALSE, n_origins))
-      # Arrays are units x origins x destinations, one per move.
-      totals <- Reduce(`+`, lapply(expectation$moments[[h]][[moves]], function(pair) {
-        apply(pair, 2L, sum)
-      }), numeric(n_origins))
-      !(totals > 0)
-    }, logical(n_origins))
-  }
-  second <- !is.null(expectation$moments[[1L]]$pairs2)
-  list(first = matrix(empty("pairs", n_profiles), n_profiles),
-       second = if (second) matrix(empty("pairs2", n_profiles^2), n_profiles^2) else NULL)
+  support <- .lta_origin_support(expectation, stayer, n_profiles)
+  list(first = support$first <= 0,
+       second = if (!is.null(support$second)) support$second <= 0 else NULL)
 }
 
 #' Fix the logits of empty transition origins at zero
@@ -1448,7 +1454,9 @@
                         covariance_model = "diagonal", structure = NULL,
                         final_stage = rep(TRUE, length(attempts)),
                         sampling_weights = NULL, occupied = NULL, used = NULL,
-                        empty_origins = NULL, extra = NULL) {
+                        empty_origins = NULL, extra = NULL, origin_support = NULL,
+                        weak_origins = NULL, warn_unconverged = TRUE,
+                        boundary_parameters = NULL, boundary_designs = NULL) {
   occupied <- occupied %||% rep(TRUE, layout$n_occasions)
   # The observed values of the EM stopping rule (`.lta_em()`).
   replication_tolerance <- .latents_replication_tolerance(.latents_observed_values(
@@ -1467,6 +1475,9 @@
     block
   })
   expectation <- best$expectation
+  origin_support <- origin_support %||%
+    .lta_origin_support(expectation, parameters$stayer, n_profiles)
+  weak_origins <- weak_origins %||% .lta_weak_origins(origin_support, transitions)
   free <- .lta_identified_columns(colnames(designs$transition[[1L]]), layout$n_occasions,
                                   transitions, order, occupied)
   n_parameters <- .lta_count_parameters(n_profiles, n_group_classes, ncol(x),
@@ -1514,7 +1525,8 @@
       paste0(pairs$previous, "->", pairs$current), class_names)
   }
   probability_boundary <- .lta_probability_boundary(expectation, layout,
-                                                    parameters$stayer, used = used)
+    parameters$stayer, used = used, parameters = boundary_parameters %||% parameters,
+    designs = boundary_designs %||% designs)
   boundary <- probability_boundary || any(vapply(parameters$measurement, function(block) {
     .multilpa_covariance_boundary(block, min_variance)
   }, logical(1)))
@@ -1554,6 +1566,11 @@
     converged = isTRUE(best$converged), iterations = best$iterations,
     log_likelihood_history = best$history, boundary = boundary,
     probability_boundary = probability_boundary,
+    origin_support = origin_support,
+    transition_origin_counts = origin_support$first,
+    second_order_origin_counts = origin_support$second,
+    weak_transition_rows = weak_origins$first,
+    weak_second_order_rows = weak_origins$second,
     # Which occasions observe anything: they decide which logits and
     # measurement blocks are identified (.lta_identified_coordinates()).
     occupied = occupied,
@@ -1593,10 +1610,11 @@
                      model = structure, min_variance = min_variance,
                      min_probability = min_probability))
   class(result) <- "multilpa_lta"
-  if (!result$converged) {
+  if (!result$converged && isTRUE(warn_unconverged)) {
     warning(warningCondition("The best start did not converge; increase max_iter.",
                              class = "latents_unconverged", call = NULL))
   }
+  .lta_warn_weak_origins(weak_origins$first, weak_origins$second)
   if (boundary) {
     warning(warningCondition(if (probability_boundary) paste(
       "A transition or initial probability is estimated at zero (a move or",

@@ -1,12 +1,10 @@
 # `scaling = "grand"` against Mplus's DEFINE: STANDARDIZE (genuine Mplus 9
 # Demo, mplus/standardize/). Mplus divides by the standard deviation with
-# denominator n; this package, like sd() and scale(), uses n - 1. The two
-# therefore differ by a known constant and nothing else: standardized with
-# denominator n by hand, the package reproduces Mplus exactly, and with its
-# own convention its log likelihood is Mplus's plus
-# n * sum(log(sqrt(n / (n - 1)))) over the indicators, with the same classes.
+# denominator n; grand scaling uses the same population standard deviation.
+# Both hand standardization and the package's transform therefore reproduce
+# Mplus directly, including its likelihood, without a sample-SD correction.
 
-test_that("grand scaling matches Mplus STANDARDIZE up to the n versus n - 1 constant", {
+test_that("grand scaling matches Mplus STANDARDIZE with the population SD", {
   directory <- file.path("mplus", "standardize")
   lines <- read_mplus_lines(file.path(directory, "standardize.out"))
   expect_true(any(grepl("THE MODEL ESTIMATION TERMINATED NORMALLY", lines)))
@@ -16,7 +14,6 @@ test_that("grand scaling matches Mplus STANDARDIZE up to the n versus n - 1 cons
   vars <- paste0("y", 1:4)
   data <- utils::read.table(file.path(directory, "standardize.dat"),
                             col.names = c("id", vars))
-  n <- nrow(data)
   fit <- function(frame, ...) lpa(frame, vars, n_profiles = 3, model = "VVI",
                                   n_starts = 20, seed = 1, tol = 1e-10, ...)
   # Denominator n by hand: Mplus exactly.
@@ -25,10 +22,12 @@ test_that("grand scaling matches Mplus STANDARDIZE up to the n versus n - 1 cons
   hand <- fit(by_n)
   expect_identical(as.integer(hand$n_parameters), npar)
   expect_lt(abs(hand$log_likelihood - mplus_ll), 5e-4)
-  # The package's own convention: the same fit, shifted by the known constant.
+  # The built-in transform uses the same denominator, with no likelihood shift.
   scaled <- fit(data, centering = "grand", scaling = "grand")
-  constant <- n * length(vars) * log(sqrt(n / (n - 1)))
-  expect_lt(abs(scaled$log_likelihood - (mplus_ll + constant)), 5e-4)
+  expect_lt(abs(scaled$log_likelihood - mplus_ll), 5e-4)
+  expect_equal(scaled$scaling_factors[1L, ],
+                vapply(data[vars], function(v) sqrt(mean((v - mean(v))^2)), numeric(1)),
+                tolerance = 1e-12)
   expect_identical(max.col(scaled$subject_posteriors), max.col(hand$subject_posteriors))
   # And the posteriors are Mplus's, row by row.
   saved <- utils::read.table(file.path(directory, "standardize-posteriors.dat"))

@@ -58,9 +58,10 @@ test_that("named plots refuse objects they cannot draw with a classed error", {
 test_that("plot_enumeration() and plot_tree() draw a transition grid", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
-  grid <- enumerate_classes(review_lta_data(), c("browse", "lectures"),
+  # This small grid has a fitted transition/initial probability at its bound.
+  expect_warning(grid <- enumerate_classes(review_lta_data(), c("browse", "lectures"),
                             "student", 2:3, 1, time = "sequence",
-                            n_starts = 1, seed = 1)
+                            n_starts = 1, seed = 1), class = "latents_boundary")
   expect_s3_class(grid, "latents_transition_enumeration")
   # Refused before the grid contract; every grid kind now draws its views
   # (test-grid-contract.R).

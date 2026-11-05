@@ -13,6 +13,17 @@ skip_on_cran()
                        seed = 3, ...))
 }
 
+#' Independent observed population SD for a transformation Jacobian
+#' @param x A numeric indicator.
+#' @param weights Optional nonnegative row weights.
+#' @return Its weighted population standard deviation.
+.release_engine_population_sd <- function(x, weights = rep(1, length(x))) {
+  stopifnot(is.numeric(x), length(weights) == length(x), all(weights >= 0))
+  keep <- !is.na(x) & weights > 0
+  center <- stats::weighted.mean(x[keep], weights[keep])
+  sqrt(stats::weighted.mean((x[keep] - center)^2, weights[keep]))
+}
+
 # `converged`: grand scaling divides by a standard deviation, which is not
 # exact in floating point, and an unconverged SQUAREM trajectory amplifies
 # that rounding differently on each platform's BLAS (CI, 2026-10-28: even the
@@ -78,7 +89,7 @@ invisible(lapply(c("EEI", "VEI", "EVI", "VVI", "EEE", "VEE", "EVV", "VVV"), func
                                max_iter = 100000)
     changed <- .release_engine_fit(data, model = model, search = "kmeans", tol = 1e-15,
                                    max_iter = 100000, centering = "grand", scaling = "grand")
-    jacobian <- nrow(data) * sum(log(vapply(data, stats::sd, numeric(1))))
+    jacobian <- nrow(data) * sum(log(vapply(data, .release_engine_population_sd, numeric(1))))
     .release_engine_compare(raw, changed, jacobian, converged = TRUE)
   })
 }))
@@ -92,7 +103,7 @@ test_that("the CORE-1 competing VVV maxima no longer depend on units", {
                                             n_starts = 5, seed = 3, ...))
   raw <- fit()
   changed <- fit(centering = "grand", scaling = "grand")
-  jacobian <- nrow(data) * sum(log(vapply(data, stats::sd, numeric(1))))
+  jacobian <- nrow(data) * sum(log(vapply(data, .release_engine_population_sd, numeric(1))))
   .release_engine_compare(raw, changed, jacobian)
 })
 
@@ -102,7 +113,7 @@ test_that("mixed and categorical start tables retain unit-free replication", {
   raw <- .release_engine_fit(data, categorical = "item")
   changed <- .release_engine_fit(data, categorical = "item",
                                  centering = "grand", scaling = "grand")
-  jacobian <- nrow(data) * sum(log(vapply(data[1:2], stats::sd, numeric(1))))
+  jacobian <- nrow(data) * sum(log(vapply(data[1:2], .release_engine_population_sd, numeric(1))))
   .release_engine_compare(raw, changed, jacobian)
   categorical <- data.frame(a = data$item,
                             b = as.integer(data$cognitive_strategies > median(data$cognitive_strategies)),
@@ -139,7 +150,8 @@ test_that("replication counts observed cells and excludes zero-weight rows", {
   scaled <- .release_engine_fit(data, vars, categorical = "item", missing = "fiml",
     weights = "weight", centering = "grand", scaling = "grand")
   jacobian <- sum(colSums((!is.na(data[1:2])) * fit$sampling_weights[fit$group_index]) *
-                   log(vapply(data[data$weight > 0, 1:2], stats::sd, numeric(1), na.rm = TRUE)))
+                   log(vapply(data[1:2], .release_engine_population_sd, numeric(1),
+                                weights = fit$sampling_weights[fit$group_index])))
   .release_engine_compare(fit, scaled, jacobian)
 })
 

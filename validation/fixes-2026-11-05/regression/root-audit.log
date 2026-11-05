@@ -1,0 +1,29 @@
+Weighted vs replicated standardized reference spreads
+               [,1]     [,2]
+weighted   1.312354 1.017975
+replicated 1.317857 1.022243
+ratio 1.004193 1.004193  expected n-1 inflation 1.004193 
+Equal weight vs unweighted spreads
+             [,1]     [,2]
+weighted 1.477714 1.123211
+plain    1.490185 1.132690
+warning: latents_cross_level_criteria This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+Shuffled raw-data weighted prevalence error 1.110223e-16 
+            family n_profiles n_group_classes log_likelihood n_parameters
+1 full_cross_level          2               2      -468.8763           19
+       aic      bic bic_individual n_groups n_obs converged boundary
+1 975.7525 996.4823       1033.455       22   154      TRUE    FALSE
+warning: 4 of 19 bootstrap replicates were invalid (a refit failed, did not converge or reversed the likelihood); the p-value uses the 15 valid replicates. summary() reports every replicate. 
+$p_value
+[1] 0.125
+
+$monte_carlo_se
+[1] 0.08267973
+
+$n_valid
+[1] 15
+
+$n_invalid
+[1] 4
+
+Four-class relative entropy .7/.1/.1/.1 vs .7/.3/0/0: 0.3216102 0.5593546 

@@ -42,7 +42,8 @@ r2_quiet <- function(expr) {
   withCallingHandlers(expr, warning = function(condition) {
     if (inherits(condition, c("latents_boundary", "latents_thin_profiles",
                               "latents_small_classes", "latents_unconverged",
-                              "latents_extreme_coefficients"))) {
+                              "latents_extreme_coefficients",
+                              "latents_cross_level_criteria"))) {
       invokeRestart("muffleWarning")
     }
   })

@@ -217,7 +217,7 @@
 #' Small-sample factor of a cluster-robust variance
 #'
 #' `G / (G - 1)` for `G` independent units: the CR1 correction, which is the
-#' default of `sandwich::vcovCL()` (Cameron and Miller, 2015). Without it the
+#' default of `sandwich::vcovCL()`. Without it the
 #' variance (CR0) is biased downward when there are few units.
 #'
 #' @param n_units Number of independent units (groups, or rows when each row
@@ -519,8 +519,6 @@
 #'   or `NULL` when there is none.
 #' @return `invisible(TRUE)` when the rule holds. Otherwise raises
 #'   `latents_too_few_groups`.
-#' @references Cameron, A. C., & Miller, D. L. (2015). A practitioner's guide
-#'   to cluster-robust inference. *Journal of Human Resources*, 50, 317--372.
 #' @noRd
 .multilpa_require_clusters <- function(n_units, n_quantities, what,
                                        unit = "independent groups",
@@ -671,15 +669,16 @@
 
 #' The grand transform of the indicators, as estimated quantities
 #'
-#' `centering = "grand"` subtracts the sample mean of each indicator and
-#' `scaling = "grand"` divides by its sample standard deviation. Both are
+#' `centering = "grand"` subtracts the weighted mean of each indicator and
+#' `scaling = "grand"` divides by its population standard deviation. Both are
 #' estimates, computed from the same data the model is fitted to, so a
 #' reported mean `mu_k - xbar` varies with `xbar` as well as with `mu_k`.
 #' Each is written as an estimating equation summed over units, over the
 #' observed cells of the units that carry weight (the rows that set them):
-#' `sum_i (x_ij - m_j) = 0` for the mean and
-#' `sum_i ((x_ij - m_j)^2 - s_j^2 (n_j - 1) / n_j) = 0` for the standard
-#' deviation (denominator `n_j - 1`, as `.multilpa_indicator_scales()` uses).
+#' `sum_i w_i (x_ij - m_j) = 0` for the mean and
+#' `sum_i w_i ((x_ij - m_j)^2 - s_j^2) = 0` for the standard
+#' deviation (denominator the observed row-weight total, as the grand
+#' transform in `.multilpa_indicator_scales()` uses).
 #' A person transform is a function of each unit's own data and needs no
 #' equation; it is held at its stored value.
 #'
@@ -699,14 +698,15 @@
       ncol(object$indicator_data) == 0L) return(NULL)
   raw <- .multilpa_uncentered_indicators(object)
   n_groups <- object$n_groups
-  carrying <- if (is.null(object$sampling_weights)) rep(TRUE, nrow(raw)) else
-    (object$sampling_weights > 0)[object$group_index]
-  observed <- !is.na(raw) & carrying
-  counts <- colSums(observed)
+  row_weights <- if (is.null(object$sampling_weights)) rep(1, nrow(raw)) else
+    unname(object$sampling_weights)[object$group_index]
+  observed <- !is.na(raw) & row_weights > 0
+  weighted_observed <- observed * row_weights
+  counts <- colSums(weighted_observed)
   means <- if (identical(centering, "grand")) object$centering_offsets[1L, ] else
-    colSums(ifelse(observed, raw, 0)) / counts
+    colSums(ifelse(observed, raw, 0) * row_weights) / counts
   deviations <- ifelse(observed, sweep(raw, 2L, means, "-"), 0)
-  spread <- sqrt(colSums(deviations^2) / pmax(counts - 1, 1))
+  spread <- sqrt(colSums(deviations^2 * row_weights) / counts)
   scaled <- identical(scaling, "grand")
   n_columns <- ncol(raw)
   eta <- c(means, if (scaled) object$scaling_factors[1L, ])
@@ -728,12 +728,11 @@
     dimnames(value) <- dimnames(object$indicator_data)
     value
   }
-  mean_terms <- rowsum(deviations, object$group_index, reorder = TRUE)
+  mean_terms <- rowsum(deviations * row_weights, object$group_index, reorder = TRUE)
   contributions <- if (!scaled) mean_terms else {
     standard <- eta[n_columns + seq_len(n_columns)]
-    square_terms <- deviations^2 -
-      observed * matrix(standard^2 * (counts - 1) / counts, nrow(raw), n_columns,
-                        byrow = TRUE)
+    square_terms <- (deviations^2 -
+      observed * matrix(standard^2, nrow(raw), n_columns, byrow = TRUE)) * row_weights
     cbind(mean_terms, rowsum(square_terms, object$group_index, reorder = TRUE))
   }
   contributions <- matrix(contributions, n_groups, length(eta))
@@ -741,7 +740,7 @@
        steps = 1e-4 * unname(c(spread, if (scaled) spread)),
        transform = transform, contributions = contributions,
        slope = unname(c(counts, if (scaled) 2 * eta[n_columns + seq_len(n_columns)] *
-                                              (counts - 1))))
+                                              counts)))
 }
 
 #' Add the variability of an estimated grand transform to a covariance
@@ -768,8 +767,8 @@
 #'
 #' @param object A fitted `multilpa` model.
 #' @param covariance The covariance of the free unconstrained coordinates.
-#' @param bread The inverse information those coordinates were inverted with
-#'   (the OPG inverse for `vcov_type = "opg"`).
+#' @param bread The inverse observed information in the same coordinates,
+#'   giving the sensitivity of the estimating score to the transform.
 #' @param free Positions of the free coordinates in the unconstrained vector.
 #' @param codes The categorical codes of the fit.
 #' @param robust Whether `covariance` is the CR1 sandwich.
@@ -781,8 +780,6 @@
 #'   has a grand transform. A variance that comes out negative beyond rounding
 #'   (more than 1e-8 of the model's own) raises
 #'   `latents_singular_information`; one within rounding of zero is zero.
-#' @references Stefanski, L. A., & Boos, D. D. (2002). The calculus of
-#'   M-estimation. *The American Statistician*, 56, 29--38.
 #' @noRd
 .multilpa_transform_covariance <- function(object, covariance, bread, free,
                                            codes = NULL, robust = FALSE,

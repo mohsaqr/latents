@@ -32,8 +32,7 @@
 #'
 #' @details
 #' The optional parametric bootstrap likelihood-ratio test compares `k - 1`
-#' with `k` classes at a fixed number of group classes (McLachlan, 1987;
-#' Nylund, Asparouhov and Muthen, 2007). Outcomes are simulated under the smaller model,
+#' with `k` classes at a fixed number of group classes. Outcomes are simulated under the smaller model,
 #' and both models are refitted to each simulated dataset. The p-value is
 #' `(1 + b) / (1 + V)`, where `b` is the number of valid replicate statistics
 #' at least as large as the observed statistic and `V` is the number of valid
@@ -99,15 +98,6 @@
 #'   some replicates are invalid (the p-value then uses the valid ones), and
 #'   when the observed fits fail validation or fewer than half of the
 #'   replicates are valid (the p-value is then `NA`).
-#' @references
-#' McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
-#' statistic for the number of components in a normal mixture. *Applied
-#' Statistics*, 36, 318--324.
-#'
-#' Nylund, K. L., Asparouhov, T., & Muthen, B. O. (2007). Deciding on the
-#' number of classes in latent class analysis and growth mixture modeling: A
-#' Monte Carlo simulation study. *Structural Equation Modeling*, 14,
-#' 535--569.
 #' @examples
 #' classes <- enumerate_regressions(score ~ hours, data = study_hours,
 #'                                  n_classes = 1:3, n_starts = 3, seed = 1)

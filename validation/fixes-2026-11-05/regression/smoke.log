@@ -1,0 +1,33 @@
+<latents_growth_mixture> Growth mixture model
+ A list of 18 components. Tables: get_results(x, what = ); raw list: str(unclass(x))
+Classes
+
+Class    Share        95% CI  Persons  Avg. posterior  Residual SD
+-------  -----  ------------  -------  --------------  -----------
+Class 1      1  [1.00, 1.00]       30               1         0.52
+Class assignments
+
+id_class  Class    Probability
+--------  -------  -----------
+1001      Class 1            1
+1002      Class 1            1
+1003      Class 1            1
+1004      Class 1            1
+1005      Class 1            1
+1006      Class 1            1
+Observations with fitted trajectories
+
+id_class  t  Class    Observed  Class mean  Predicted
+--------  -  -------  --------  ----------  ---------
+1001      0  Class 1      0.50        1.14       0.64
+1001      1  Class 1      1.27        1.72       1.22
+1001      2  Class 1      1.73        2.29       1.79
+1001      3  Class 1      2.41        2.87       2.37
+1002      0  Class 1      1.76        1.14       2.39
+1002      1  Class 1      3.68        1.72       2.97
+Error : The observed random-effects designs identify only 3 of 4 covariance components. Random-effect and residual variances cannot be separated; use more occasions or simplify `random` or its covariance.
+[1] "Error : The observed random-effects designs identify only 3 of 4 covariance components. Random-effect and residual variances cannot be separated; use more occasions or simplify `random` or its covariance.\n"
+attr(,"class")
+[1] "try-error"
+attr(,"condition")
+<latents_not_identified: The observed random-effects designs identify only 3 of 4 covariance components. Random-effect and residual variances cannot be separated; use more occasions or simplify `random` or its covariance.>

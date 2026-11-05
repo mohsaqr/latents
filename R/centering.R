@@ -30,7 +30,7 @@
 #'
 #' `"person"` subtracts each group's own mean from its rows, so a value reads
 #' as a deviation from that unit's average and the profiles become profiles of
-#' *change* (Quintana, 2021; Voelkle et al., 2014). `"grand"` subtracts one
+#' *change*. `"grand"` subtracts one
 #' mean per indicator, which shifts the origin without touching the
 #' within-group structure. `"none"` returns the matrix unchanged.
 #'
@@ -48,13 +48,16 @@
 #'   neither the grand offset nor the grand scale, and its own degenerate
 #'   person scale is not refused (see `.multilpa_indicator_scales()`). Its rows
 #'   are still transformed, so they keep their place in the fit.
+#' @param row_weights Optional nonnegative sampling weights in row order.
+#'   Grand moments use their relative values; person moments are unchanged.
 #' @return A list with the transformed matrix `x`, `offsets`, the matrix that
 #'   was subtracted, and `scales`, the matrix that the result was divided by:
 #'   each one row per group under `"person"`, one row overall under `"grand"`,
 #'   and `NULL` under `"none"`.
 #' @noRd
 .multilpa_center_indicators <- function(x, group_index, n_groups, centering,
-                                        scaling = "none", carrying = NULL) {
+                                        scaling = "none", carrying = NULL,
+                                        row_weights = NULL) {
   stopifnot(
     "`x` must be a matrix" = is.matrix(x),
     "`centering` must be one scheme" =
@@ -75,10 +78,16 @@
   # alone, but person centring does change the grand one: under
   # `centering = "person", scaling = "grand"` the scale still includes the
   # between-group spread.
+  stopifnot(is.null(row_weights) ||
+              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
+                 all(is.finite(row_weights)) && all(row_weights >= 0)))
+  if (is.null(carrying) && !is.null(row_weights)) {
+    carrying <- tabulate(group_index[row_weights > 0], n_groups) > 0L
+  }
   scales <- .multilpa_indicator_scales(x, group_index, n_groups, scaling,
-                                       carrying = carrying)
+                                       carrying = carrying, row_weights = row_weights)
   centred <- .multilpa_center_only(x, group_index, n_groups, centering,
-                                   carrying = carrying)
+                                   carrying = carrying, row_weights = row_weights)
   scaled <- if (is.null(scales)) centred$x else if (nrow(scales) == 1L)
     sweep(centred$x, 2L, scales[1L, ], "/") else
       centred$x / scales[group_index, , drop = FALSE]
@@ -87,9 +96,11 @@
 
 #' The standard deviation each indicator is divided by
 #'
-#' The sample standard deviation (denominator `n - 1`) of the observed values:
-#' one per indicator under `"grand"`, one per group and indicator under
-#' `"person"`. A scale that is missing or zero -- a group observed once on an
+#' The population standard deviation under `"grand"`, using observed sampling
+#' weight as its denominator, and the sample standard deviation (denominator
+#' `n - 1`) within each group under `"person"`. Population grand moments make
+#' integer replication and rescaling all weights agree even with missing cells.
+#' A scale that is missing or zero -- a group observed once on an
 #' indicator, or always giving the same value -- cannot be divided by, and a
 #' stand-in would put that group on a different scale from the rest, so it is
 #' refused with `latents_bad_data` naming the indicators and how many groups.
@@ -103,20 +114,27 @@
 #'   group with no observed value; its rows enter nothing (review 2026-10-26,
 #'   ML-2).
 #' @return A matrix of standard deviations, or `NULL` under `"none"`.
+#' @param row_weights Optional nonnegative weights in row order, used for grand moments.
 #' @noRd
 .multilpa_indicator_scales <- function(x, group_index, n_groups, scaling,
-                                       carrying = NULL) {
+                                       carrying = NULL, row_weights = NULL) {
   if (identical(scaling, "none")) return(NULL)
   stopifnot("`carrying` must hold one logical per group" =
               is.null(carrying) ||
               (is.logical(carrying) && length(carrying) == n_groups &&
-                 !anyNA(carrying)))
+                 !anyNA(carrying)),
+            is.null(row_weights) ||
+              (is.numeric(row_weights) && length(row_weights) == nrow(x) &&
+                 all(is.finite(row_weights)) && all(row_weights >= 0)))
   # The grand scale is the sample's: rows of a zero-weight group do not set
   # it (ZW-4), and the constancy verdict below is then on the same rows.
-  if (identical(scaling, "grand") && !is.null(carrying)) {
-    kept <- carrying[group_index]
+  if (identical(scaling, "grand") &&
+      (!is.null(carrying) || !is.null(row_weights))) {
+    kept <- (if (is.null(carrying)) rep(TRUE, nrow(x)) else carrying[group_index]) &
+      (if (is.null(row_weights)) rep(TRUE, nrow(x)) else row_weights > 0)
     x <- x[kept, , drop = FALSE]
     group_index <- group_index[kept]
+    if (!is.null(row_weights)) row_weights <- row_weights[kept]
   }
   observed <- !is.na(x)
   units <- if (identical(scaling, "person")) group_index else rep(1L, nrow(x))
@@ -124,21 +142,23 @@
   # Sums of values and of squares by unit give every standard deviation in
   # one pass; `reorder = TRUE` sorts them by unit index.
   filled <- ifelse(observed, x, 0)
-  counts <- rowsum(observed * 1, units, reorder = TRUE)
-  totals <- rowsum(filled, units, reorder = TRUE)
+  weights <- if (identical(scaling, "grand") && !is.null(row_weights))
+    row_weights / max(row_weights) else rep(1, nrow(x))
+  counts <- rowsum(observed * weights, units, reorder = TRUE)
+  totals <- rowsum(filled * weights, units, reorder = TRUE)
   present <- sort(unique(units))
-  means <- totals / pmax(counts, 1)
+  means <- totals / ifelse(counts > 0, counts, 1)
   deviations <- (filled - means[match(units, present), , drop = FALSE]) * observed
-  squares <- rowsum(deviations^2, units, reorder = TRUE)
+  squares <- rowsum(deviations^2 * weights, units, reorder = TRUE)
   standard <- matrix(NA_real_, n_units, ncol(x),
                      dimnames = list(NULL, colnames(x)))
   # A unit with no observed value of an indicator has nothing to divide, so
   # its scale is one and touches nothing; only a unit with values whose
   # standard deviation is missing or zero is a problem.
+  denominator <- if (identical(scaling, "grand")) counts else counts - 1
   standard[present, ] <- ifelse(counts == 0, 1,
-                                ifelse(counts > 1,
-                                       sqrt(squares / pmax(counts - 1, 1)),
-                                       NA_real_))
+    ifelse(denominator > 0, sqrt(squares / ifelse(denominator > 0, denominator, 1)),
+           NA_real_))
   # Constancy is decided exactly, from each unit's range. A threshold based
   # on raw magnitudes would turn an ordinary variable into a constant merely
   # by translating its origin, while the computed standard deviation of a
@@ -181,15 +201,28 @@
 }
 
 #' Subtract the centring offsets, without scaling
+#' @param x A numeric indicator matrix.
+#' @param group_index,n_groups Group membership and number of groups.
+#' @param centering The centering scheme.
+#' @param carrying Optional positive-weight group mask.
+#' @param row_weights Optional weights for grand moments.
+#' @return A list containing centered values and offsets.
 #' @noRd
 .multilpa_center_only <- function(x, group_index, n_groups, centering,
-                                  carrying = NULL) {
+                                  carrying = NULL, row_weights = NULL) {
+  stopifnot(is.matrix(x), length(group_index) == nrow(x),
+            is.null(row_weights) || length(row_weights) == nrow(x))
   if (identical(centering, "none")) return(list(x = x, offsets = NULL))
   if (identical(centering, "grand")) {
     # The grand mean of the sample: rows of a zero-weight group are not in it
     # (review 2026-10-26 round 2, ZW-4).
     rows <- if (is.null(carrying)) rep(TRUE, nrow(x)) else carrying[group_index]
-    offsets <- matrix(colMeans(x[rows, , drop = FALSE], na.rm = TRUE), nrow = 1L,
+    values <- x[rows, , drop = FALSE]
+    weights <- if (is.null(row_weights)) rep(1, nrow(values)) else row_weights[rows]
+    weights <- weights / max(weights)
+    observed <- !is.na(values)
+    offsets <- matrix(colSums(ifelse(observed, values, 0) * weights) /
+                        colSums(observed * weights), nrow = 1L,
                       ncol = ncol(x), dimnames = list(NULL, colnames(x)))
     return(list(x = sweep(x, 2L, offsets[1L, ], "-"), offsets = offsets))
   }
@@ -204,6 +237,17 @@
   totals <- rowsum(ifelse(observed, x, 0), group_index, reorder = TRUE)
   counts <- rowsum(observed * 1, group_index, reorder = TRUE)
   present <- sort(unique(group_index))
+  single <- counts == 1L
+  if (!is.null(carrying)) single <- single & carrying[present]
+  if (any(single)) {
+    stop(errorCondition(sprintf(paste(
+      "`centering = \"person\"` needs at least two observed values per indicator",
+      "in each group of positive weight; %s has only one in %d group(s).",
+      "A singly observed deviation is not informative. Remove the affected",
+      "groups or use `centering = \"none\"` or `\"grand\"`."),
+      paste(sprintf("`%s`", colnames(x)[colSums(single) > 0L]), collapse = ", "),
+      sum(rowSums(single) > 0L)), class = "latents_bad_data", call = NULL))
+  }
   offsets <- matrix(0, nrow = n_groups, ncol = ncol(x),
                     dimnames = list(NULL, colnames(x)))
   offsets[present, ] <- ifelse(counts > 0, totals / pmax(counts, 1), 0)

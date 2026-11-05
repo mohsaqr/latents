@@ -222,8 +222,6 @@
     isTRUE(a$mover_stayer) <= isTRUE(b$mover_stayer) &&
     all(a$transition_covariates %in% b$transition_covariates) &&
     all(a$initial_covariates %in% b$initial_covariates) &&
-    rank(a$variance_model, c("equal", "varying")) <=
-      rank(b$variance_model, c("equal", "varying")) &&
     identical(a$ordinal %||% character(), b$ordinal %||% character()) &&
     identical(a[["count"]] %||% character(), b[["count"]] %||% character()) &&
     identical(a$count_model %||% "poisson", b$count_model %||% "poisson") &&
@@ -549,7 +547,7 @@
       bic_individual = if (is.null(fit)) NA_real_ else fit$bic_individual,
       entropy = entropy,
       converged = !is.null(fit) && isTRUE(fit$converged),
-      boundary = if (is.null(fit)) NA else isTRUE(fit$boundary),
+      boundary = if (is.null(fit)) NA else .latents_boundary_active(fit),
       n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated,
       warnings = paste(unique(warnings), collapse = "; "), error = error_text,
       stringsAsFactors = FALSE)

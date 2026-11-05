@@ -476,7 +476,7 @@ utils::globalVariables(c("row_facet", "col_facet", "row", "xmin", "xmax",
 #' Each row's classes are ordered by the flow-weighted centre of their parents,
 #' so bands cross only where units really are reshuffled. A class that is its
 #' dominant parent's main continuation keeps the parent's colour; any other
-#' class takes a new one (Zappia and Oshlack, 2018).
+#' class takes a new one.
 #' @param x The grid.
 #' @param tree One element of `.latents_tree_specs()`.
 #' @param level `"individuals"` or `"groups"`.

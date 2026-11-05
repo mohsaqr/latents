@@ -800,7 +800,7 @@ nobs.multilpa_covariates <-function(object, ...) {
 #' parameter space: the class is separated by the covariate, or empty. The fit
 #' warns with `latents_extreme_coefficients`, and Wald inference is refused,
 #' because a standard error at a coefficient heading to infinity is
-#' meaningless (Hauck and Donner, 1977). A rank-deficient design falls back to
+#' meaningless. A rank-deficient design falls back to
 #' the per-column root-mean-square scale (`.multilpa_design_scale()`).
 #'
 #' @param profile_coefficients Profile logit coefficients, one row per column
@@ -880,7 +880,8 @@ nobs.multilpa_covariates <-function(object, ...) {
       row_weights[match(seq_len(max(group_index)), group_index)] > 0
     centred <- .multilpa_center_indicators(x, group_index, max(group_index),
                                            centering, scaling,
-                                           carrying = carrying)$x
+                                           carrying = carrying,
+                                           row_weights = row_weights)$x
     ## Judged on the raw values, as multilpa() does, so the verdict does not
     ## depend on the units the indicators were recorded in.
     .multilpa_check_centered(centred, centering, raw = x,

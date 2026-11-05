@@ -604,6 +604,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' standard deviation of the indicator, not the within-profile residual one,
 #' so the standardized means are comparable across indicators without being
 #' effect sizes.
+#' Both weighted and unweighted fits use the population standard deviation.
+#' Weighted fits use positive-weight moments, so absent units cannot shift the
+#' scale, and unit weights and integer replication give the same reference.
 #'
 #' @param x A fitted model of this package.
 #' @param vars The continuous indicator names of that fit.
@@ -617,15 +620,26 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       "This fit did not retain indicator data, so it cannot be standardized.",
       class = "latents_no_indicator_data", call = NULL))
   }
+  weights <- if (is.null(x$sampling_weights)) NULL else
+    unname(x$sampling_weights)[x$group_index]
+  centre <- if (is.null(weights)) unname(colMeans(observed, na.rm = TRUE)) else
+    vapply(seq_along(vars), function(index) {
+      kept <- !is.na(observed[, index]) & weights > 0
+      stats::weighted.mean(observed[kept, index], weights[kept])
+    }, numeric(1))
   spread <- vapply(seq_along(vars), function(index) {
-    stats::sd(observed[, index], na.rm = TRUE)
+    if (is.null(weights)) {
+      return(sqrt(mean((observed[, index] - centre[index])^2, na.rm = TRUE)))
+    }
+    kept <- !is.na(observed[, index]) & weights > 0
+    sqrt(stats::weighted.mean((observed[kept, index] - centre[index])^2, weights[kept]))
   }, numeric(1))
   if (any(!is.finite(spread)) || any(spread <= 0)) {
     stop(errorCondition(
       "An indicator has zero or undefined standard deviation.",
       class = "latents_bad_scale", call = NULL))
   }
-  list(centre = unname(colMeans(observed, na.rm = TRUE)), spread = spread)
+  list(centre = centre, spread = spread)
 }
 
 #' Standard errors for the measurement parameters of a fit

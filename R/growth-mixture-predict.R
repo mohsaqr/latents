@@ -135,7 +135,7 @@ predict.latents_growth_mixture <-function(object, newdata = NULL,
                       posterior = as.vector(posterior),
                       matrix(effects, ncol = length(terms)),
                       stringsAsFactors = FALSE)
-    names(out) <- c(spec$id, "class", "posterior", terms)
+    names(out) <- c(.mixture_output_identifiers(spec)$id, "class", "posterior", terms)
     return(out)
   }
   # A person's own curve under class k adds E(b | y, class k), the class's

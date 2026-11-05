@@ -147,7 +147,7 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
   means <- .growth_observed_means(x, time, level)
   observed <- as.data.frame(.growth_individual_table(x, time))
   observed$trajectory_time <- observed[[time]]
-  observed$person <- observed[[x$spec$id]]
+  observed$person <- observed[[.mixture_output_identifiers(x$spec)$id]]
   people <- unique(observed[c("person", "class")])
   per_class <- floor(max_persons / nrow(key))
   shown <- if (per_class < 1L) NULL else
@@ -232,7 +232,8 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
   time <- .growth_time_variable(x, time)
   rows <- as.data.frame(.growth_individual_table(x, time))
   rows$trajectory_time <- rows[[time]]
-  rows$person <- rows[[x$spec$id]]
+  output_id <- .mixture_output_identifiers(x$spec)$id
+  rows$person <- rows[[output_id]]
   assignments <- as.data.frame(.growth_assignment_table(x))
   .latents_require("`persons` must be a number of persons (at least 1) or identifiers" =
                      length(persons) >= 1L && !anyNA(persons) &&
@@ -243,7 +244,7 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
     by_class <- split(assignments, assignments$class)
     per_class <- ceiling(persons / length(by_class))
     picks <- lapply(by_class, function(members) {
-      ranked <- members[[x$spec$id]][order(-members$probability)]
+      ranked <- members[[output_id]][order(-members$probability)]
       ranked[unique(round(seq(1, length(ranked), length.out = min(per_class,
                                                                    length(ranked)))))]
     })
@@ -261,7 +262,7 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
                         class = "latents_bad_argument", call = NULL))
   }
   rows$class_label <- key$label[match(rows$class, key$class)]
-  probability <- assignments$probability[match(rows$person, assignments[[x$spec$id]])]
+  probability <- assignments$probability[match(rows$person, assignments[[output_id]])]
   people <- unique(rows$person)
   first <- match(people, rows$person)
   ids <- as.character(people)

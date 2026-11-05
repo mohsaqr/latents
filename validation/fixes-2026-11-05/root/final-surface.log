@@ -1,0 +1,17 @@
+fixes-1105-surface: .............................................
+plot: ........................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.............................W........................................................................
+tidy-accessors: ..........................................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+........................................................................................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. a transition fit gets bars without whiskers, not an error ('test-plot.R:267:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+[1] file   test   failed error 
+<0 rows> (or 0-length row.names)
+ passed  failed   error warning skipped 
+    454       0       0       1       0 

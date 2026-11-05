@@ -125,6 +125,7 @@ test_that("transition grids match serial and direct fits for both searches and e
 })
 
 test_that("serialized transition workers carry caller data and start controls", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   # Replay the actual task closure in a session lacking the caller's globals.
   # Keep the real mapper's condition envelope, including signal = FALSE.
   worker_names <- c("lta_worker_panel", "lta_worker_vars", "lta_worker_id",
@@ -193,6 +194,7 @@ test_that("flat task dispatch is longest first and respects the worker budget", 
 })
 
 test_that("transition enumeration uses one unnested pool per search phase", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   panel <- lta_parallel_panel()
   mapper <- .latents_map_candidates
   calls <- list()
@@ -227,6 +229,7 @@ test_that("transition enumeration uses one unnested pool per search phase", {
 })
 
 test_that("unseeded transition setup draws in the same parent grid order as lta", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   panel <- lta_parallel_panel()
   mapper <- .latents_map_candidates
   local_mocked_bindings(.latents_map_candidates = function(indices, fun, cores, ...) {
@@ -284,6 +287,7 @@ test_that("longest-first tasks replay classed conditions in input order", {
 })
 
 test_that("covariance qualifications count every screened and continued start once", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   panel <- lta_parallel_panel()
   original_em <- .multilpa_transition_em
   mapper <- .latents_map_candidates
@@ -317,6 +321,7 @@ test_that("covariance qualifications count every screened and continued start on
 })
 
 test_that("covariance qualifications survive failure of every transition start", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   panel <- lta_parallel_panel()
   mapper <- .latents_map_candidates
   local_mocked_bindings(
@@ -350,6 +355,7 @@ test_that("covariance qualifications survive failure of every transition start",
 })
 
 test_that("transition enumeration propagates a lost flat start worker", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   local_mocked_bindings(.latents_map_candidates = function(...) {
     stop(errorCondition("A flat start worker was lost.",
                          class = "latents_parallel_failure", call = NULL))
@@ -365,6 +371,7 @@ test_that("transition enumeration propagates a lost flat start worker", {
 })
 
 test_that("direct general lta workers serialize both emEM stages without caller globals", {
+  local_mocked_bindings(.latents_available_cores = function() 8L)
   panel <- lta_parallel_panel()
   serial <- lta_parallel_conditions(lta(
     panel, c("a", "b"), "person", 2L, time = "beep", n_starts = 2L,

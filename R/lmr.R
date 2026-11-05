@@ -152,7 +152,7 @@
   c(weights, rep(0, ncol(combined) - length(weights)))
 }
 
-#' Upper tail of a weighted sum of chi-square(1) variables (Imhof 1961)
+#' Upper tail of a weighted sum of chi-square(1) variables
 #'
 #' `P(sum_j lambda_j X_j > q)` for independent `X_j ~ chi-square(1)`:
 #' `1/2 + (1/pi) int_0^Inf sin(theta(u)) / (u rho(u)) du`, with

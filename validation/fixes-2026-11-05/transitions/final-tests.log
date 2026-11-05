@@ -1,0 +1,15 @@
+fixes-1105-transitions: ....................................................
+review-1026-lta-open: .............................................
+transitions: .........................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........No standard errors in this table: Inference requires a converged fit.
+.No standard errors in this table: Inference requires a converged fit.
+......................No standard errors in this table: Inference requires a converged fit.
+...No standard errors in this table: Inference requires a converged fit.
+...............................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ passed  failed   error warning skipped 
+    215       0       0       0       0 

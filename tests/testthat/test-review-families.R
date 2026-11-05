@@ -157,13 +157,15 @@ test_that("weighted family covariance is the sandwich of weighted group scores",
 
 test_that("restricted cross-level weights preserve a similarly named indicator", {
   data <- review_family_data()
-  ordinary <- multilpa(data, c("y1", "y2"), "id", n_profiles = 2,
+  expect_warning(ordinary <- multilpa(data, c("y1", "y2"), "id", n_profiles = 2,
                        n_group_classes = 2, family = "restricted_cross_level",
-                       weights = "w", n_starts = 1, seed = 1, tol = 1e-10)
+                       weights = "w", n_starts = 1, seed = 1, tol = 1e-10),
+                       class = "latents_cross_level_criteria")
   names(data)[names(data) == "y1"] <- ".sampling_weight"
-  named <- multilpa(data, c(".sampling_weight", "y2"), "id", n_profiles = 2,
+  expect_warning(named <- multilpa(data, c(".sampling_weight", "y2"), "id", n_profiles = 2,
                     n_group_classes = 2, family = "restricted_cross_level",
-                    weights = "w", n_starts = 1, seed = 1, tol = 1e-10)
+                    weights = "w", n_starts = 1, seed = 1, tol = 1e-10),
+                    class = "latents_cross_level_criteria")
   expect_equal(named$log_likelihood, ordinary$log_likelihood, tolerance = 1e-10)
   expect_equal(unname(named$profile_means), unname(ordinary$profile_means),
                tolerance = 1e-10)

@@ -1,0 +1,10 @@
+PARSE OK R/three-step.R 
+PARSE OK R/lta-three-step.R 
+PARSE OK R/three-step-categorical.R 
+PARSE OK R/inference.R 
+PARSE OK R/covariate-inference.R 
+PARSE OK R/bootstrap-inference.R 
+PARSE OK R/inference-service.R 
+PARSE OK tests/testthat/test-fixes-1105-inference.R 
+PARSE OK equivalence/test-claims.R 
+PARSE OK equivalence/test-mplus-standardize.R 

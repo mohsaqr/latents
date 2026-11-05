@@ -1,0 +1,55 @@
+VERSION 1.1.16 
+
+A held categorical conditional inference
+'data.frame':	500 obs. of  7 variables:
+ $ g : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ z : num  0.607 -1.749 -1.84 -1.045 0.227 ...
+ $ u1: Factor w/ 2 levels "no","yes": 1 1 2 2 2 1 2 1 1 2 ...
+ $ u2: Factor w/ 2 levels "no","yes": 1 2 2 2 1 1 2 1 2 2 ...
+ $ u3: Factor w/ 2 levels "no","yes": 2 2 2 2 1 1 1 1 1 2 ...
+ $ u4: Factor w/ 2 levels "no","yes": 1 1 1 2 2 2 1 1 1 2 ...
+ $ u5: Factor w/ 2 levels "no","yes": 1 2 1 2 2 2 2 1 1 2 ...
+     actual independent ratio
+1 0.1275603   0.1275603     1
+2 0.1401586   0.1401586     1
+n_parameters 2 vcov dims 2 2 
+confint dimension 2 2 
+
+B grand-transform OPG invariance
+      type       outcome          term      plain      grand ratio
+1 observed     profile_1 group_class_1 0.04197997 0.04197997     1
+2 observed     profile_2 group_class_1 0.04197997 0.04197997     1
+3 observed     profile_1 group_class_2 0.04964571 0.04964571     1
+4 observed     profile_2 group_class_2 0.04964571 0.04964571     1
+5 observed group_class_1          <NA> 0.09310329 0.09310329     1
+6 observed group_class_2          <NA> 0.09310329 0.09310329     1
+    type       outcome          term      plain      grand ratio
+1 robust     profile_1 group_class_1 0.04526576 0.04526576     1
+2 robust     profile_2 group_class_1 0.04526576 0.04526576     1
+3 robust     profile_1 group_class_2 0.05772056 0.05772056     1
+4 robust     profile_2 group_class_2 0.05772056 0.05772056     1
+5 robust group_class_1          <NA> 0.09938608 0.09938608     1
+6 robust group_class_2          <NA> 0.09938608 0.09938608     1
+  type       outcome          term      plain      grand ratio
+1  opg     profile_1 group_class_1 0.04270796 0.04270796     1
+2  opg     profile_2 group_class_1 0.04270796 0.04270796     1
+3  opg     profile_1 group_class_2 0.04585436 0.04585436     1
+4  opg     profile_2 group_class_2 0.04585436 0.04585436     1
+5  opg group_class_1          <NA> 0.09890501 0.09890501     1
+6  opg group_class_2          <NA> 0.09890501 0.09890501     1
+
+C staged three-step correction
+    fit      fixed  estimated    ratio
+1 joint 0.05582794 0.05741927 1.028504
+2 joint 0.05806840 0.06034860 1.039268
+vcov dims 15 15 step_one estimated warnings 0 
+ERROR latents_unsupported_three_step `step_one = "estimated"` needs the covariance of the estimated measurement parameters; a staged fit or one holding measurement blocks fixed does not carry that covariance. Use `step_one = "fixed"` for inference conditional on the measurement. 
+
+D staged bootstrap with foreign measurement
+ERROR latents_unsupported_inference The staged measurement was fitted to other observations, or its stored data cannot establish that both stages used the same sample. Resampling the current data would replace that measurement with a different estimator. Fit both stages to these observations with fit_staged() before using this bootstrap. 
+
+E r3step separation
+ERROR latents_boundary_fit The step-three regression has separated or boundary logits, so finite Wald standard errors and tests are unavailable. Check sparse classes and transitions or reduce the membership covariates. 
+vcov_type robust warnings 0 
+ERROR latents_boundary_fit The step-three regression has separated or boundary logits, so finite Wald standard errors and tests are unavailable. Check sparse classes and transitions or reduce the membership covariates. 
+vcov_type observed warnings 0 

@@ -8,6 +8,30 @@
     "recovery")
 }
 
+#' Output names for identifiers that collide with fitted result columns
+#' @param spec A regression or growth specification.
+#' @return A list with the output `id` and `cluster` names, possibly `NULL`.
+#' @noRd
+.mixture_output_identifiers <- function(spec) {
+  stopifnot(is.list(spec))
+  reserved <- c("row", "class", "posterior", "probability", "n_rows", "n_persons",
+                "group_class", "group_posterior", "observed", "fitted", "fitted_modal",
+                "residual", "class_mean", "predicted", colnames(spec$random_design),
+                paste0("probability_class_", seq_len(spec$n_classes)),
+                paste0("posterior_class_", seq_len(spec$n_classes)),
+                paste0("probability_group_class_", seq_len(spec$n_group_classes)),
+                paste0("posterior_group_class_", seq_len(spec$n_group_classes)))
+  identifier <- function(name, role, occupied) {
+    if (is.null(name) || !name %in% reserved) return(name)
+    candidate <- paste0(role, "_", name)
+    utils::tail(make.unique(c(unique(occupied), candidate)), 1L)
+  }
+  occupied <- unique(c(reserved, names(spec$model_data)))
+  id <- identifier(spec$id, "id", occupied)
+  cluster <- identifier(spec$cluster, "cluster", c(occupied, id))
+  list(id = id, cluster = cluster)
+}
+
 #' Inference at the requested covariance type, reusing the stored one
 #' @noRd
 .mixture_resolve_inference <- function(x, vcov_type) {
@@ -70,7 +94,7 @@
                                               method = "BH")
   if (!identical(spec$family, "gaussian")) {
     table$exp_estimate <- exp(table$estimate)
-    table$exp_estimate[thresholds] <- NA_real_
+    table$exp_estimate[!slopes] <- NA_real_
   }
   table
 }
@@ -162,6 +186,7 @@
                                                "group_class_1")),
                  .inference_wald(theta[mixing], std_error[mixing], level))
   table$odds_ratio <- exp(table$estimate)
+  table$odds_ratio[table$term == "(Intercept)"] <- NA_real_
   table
 }
 
@@ -280,7 +305,9 @@
   tau <- x$expectation$tau
   colnames(tau) <- paste0("probability_class_", seq_len(spec$n_classes))
   table <- data.frame(row = spec$kept_rows)
-  if (!is.null(spec$id)) table[[spec$id]] <- spec$group_levels[spec$group_index]
+  if (!is.null(spec$id)) {
+    table[[.mixture_output_identifiers(spec)$id]] <- spec$group_levels[spec$group_index]
+  }
   table$class <- max.col(tau, ties.method = "first")
   table$posterior <- tau[cbind(seq_len(spec$n), table$class)]
   if (identical(spec$nesting, "two-level")) {
@@ -307,7 +334,7 @@
                                 seq_len(ncol(posterior)))
   table <- data.frame(group = spec$group_levels,
                       n_rows = tabulate(spec$group_index, spec$n_groups))
-  names(table)[1L] <- spec$id
+  names(table)[1L] <- .mixture_output_identifiers(spec)$id
   table[[prefix]] <- max.col(posterior, ties.method = "first")
   table$posterior <- posterior[cbind(seq_len(nrow(posterior)),
                                      table[[prefix]])]
@@ -387,6 +414,15 @@
       "`data` has fewer rows than the fit used; pass the data frame the",
       "model was fitted to."), class = "latents_bad_data", call = NULL))
   }
+  if (!all(names(spec$model_data) %in% names(data)) ||
+      !all(vapply(names(spec$model_data), function(name) {
+        .multilpa_same_values(data[[name]][spec$kept_rows], spec$model_data[[name]])
+      }, logical(1)))) {
+    stop(errorCondition(paste(
+      "`data` must contain the fitted model variables in their original row",
+      "order; pass the data frame the model was fitted to."),
+      class = "latents_bad_inference_data", call = NULL))
+  }
   values <- data[[truth]][spec$kept_rows]
   group_level <- identical(by, "group_class") ||
     identical(spec$nesting, "group")
@@ -459,7 +495,13 @@
   interval <- function(low, high, from) {
     column(sprintf("%s%% CI", percent), c(low, high), "ci", from)
   }
-  units <- if (identical(x$spec$nesting, "observation")) "Rows" else "Groups"
+  ratio <- function(label, name) {
+    if (any(!is.na(table[[name]]))) column(label, name)
+  }
+  group_units <- identical(x$spec$nesting, "group") ||
+    (identical(what, "recovery") &&
+       any(startsWith(as.character(table$assigned), "group_class_")))
+  units <- if (group_units) "Groups" else "Rows"
   plan <- switch(what,
     coefficients = list(
       title = sprintf("Regression coefficients (%s%% CI)", percent),
@@ -467,7 +509,7 @@
                      column("Estimate", "estimate"),
                      interval("conf_low", "conf_high", "estimate"),
                      column("p", "p_value", "p"),
-                     column(if (x$spec$family %in% c("binomial", "ordinal")) "Odds ratio" else
+                     ratio(if (x$spec$family %in% c("binomial", "ordinal")) "Odds ratio" else
                        "Rate ratio", "exp_estimate"))),
     classes = list(
       title = "Classes",
@@ -482,7 +524,7 @@
       display = list(column("Model", "model", "label"), column("Class", "class", "label"),
                      column("Term", "term", "label"), column("Estimate", "estimate"),
                      interval("conf_low", "conf_high", "estimate"),
-                     column("p", "p_value", "p"), column("Odds ratio", "odds_ratio"))),
+                     column("p", "p_value", "p"), ratio("Odds ratio", "odds_ratio"))),
     group_classes = list(
       title = "Group classes",
       display = list(column("Group class", "group_class", "label"),
@@ -514,7 +556,8 @@
                         groups = "Groups", fitted = "Fitted values", starts = "Starts",
                         classification = "Classification (average posteriors)", NULL),
          display = NULL))
-  display <- Filter(function(spec) all(spec$column %in% names(table)), plan$display)
+  display <- Filter(function(spec) !is.null(spec) &&
+                       all(spec$column %in% names(table)), plan$display)
   if (!identical(x$spec$nesting, "two-level")) {
     display <- Filter(function(spec) !identical(spec$column, "model"), display)
   }

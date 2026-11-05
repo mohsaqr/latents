@@ -31,21 +31,21 @@
 #'
 #' @details
 #' * **Estimation**: convergence of the selected solution; replication of the
-#'   best log likelihood across completed starts (Masyn, 2013); failed or
+#'   best log likelihood across completed starts; failed or
 #'   unfinished starts; and estimates at parameter bounds. Preliminary
 #'   screening starts are reported separately from full optimisation runs.
 #' * **Class size**, at each level the fit classifies: the smallest class,
 #'   the largest gap between modal and model-estimated class proportions, and
 #'   classes to which no unit is assigned.
-#' * **Classification**: relative entropy (Ramaswamy et al., 1993), which
+#' * **Classification**: relative entropy, which
 #'   describes classification precision and is not a criterion for the number
-#'   of classes (Clark & Muthen, 2009); the lowest average posterior
+#'   of classes; the lowest average posterior
 #'   probability of the assigned class and the lowest odds of correct
-#'   classification (Nagin, 2005).
+#'   classification.
 #' * **Bivariate residuals**: discrepancies between observed and model-implied
 #'   indicator associations, reported under the `"Local independence"` domain.
 #'   Where tests are available, pairs are flagged at 0.05 after
-#'   Benjamini-Hochberg adjustment (Vermunt & Magidson, 2005). Residuals
+#'   Benjamini-Hochberg adjustment. Residuals
 #'   without an available test are reported descriptively.
 #' * **Information**: log likelihood, number of parameters and BIC, for
 #'   comparison with other fitted models using [compare_models()].
@@ -92,7 +92,8 @@
 #'   `"classification"`, `"average_posteriors"`, `"residuals"`,
 #'   `"replication"` or `"all"`. A
 #'   model family without bivariate residuals (a mixture regression, growth
-#'   mixture, additive or cross-level model) has no such table: it is left out
+#'   mixture, additive or cross-level model, or a general transition fit) has no
+#'   such table: it is left out
 #'   of `"all"`, and asking for it by name raises `latents_bad_argument`. A
 #'   fit with a noise component has none either, and asking for it raises
 #'   `latents_unsupported_noise`.
@@ -103,24 +104,6 @@
 #'   objects; printing the list draws
 #'   all four plots. `as.data.frame()` returns the entropy table. `summary()`
 #'   returns the diagnostics object.
-#' @references
-#' Clark, S. L., & Muthen, B. (2009). Relating latent class analysis results to
-#' variables not included in the analysis. Unpublished manuscript.
-#'
-#' Masyn, K. E. (2013). Latent class analysis and finite mixture modeling. In
-#' T. D. Little (Ed.), *The Oxford handbook of quantitative methods* (Vol. 2,
-#' pp. 551-611). Oxford University Press.
-#'
-#' Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
-#' University Press.
-#'
-#' Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
-#' An empirical pooling approach for estimating marketing mix elasticities
-#' with PIMS data. *Marketing Science*, 12(1), 103-124.
-#' \doi{10.1287/mksc.12.1.103}
-#'
-#' Vermunt, J. K., & Magidson, J. (2005). *Latent GOLD 4.0 user's guide*.
-#' Statistical Innovations.
 #' @seealso [get_results()] for these and the other tables, [descriptives()]
 #'   for the variables before fitting, and [summary()] for the estimates.
 #' @examples

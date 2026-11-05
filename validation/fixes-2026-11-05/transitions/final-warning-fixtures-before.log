@@ -1,0 +1,25 @@
+Package: /private/tmp/latents-fixes-1105-vtcym3fq/final-check/latents.Rcheck/latents version 1.1.17 
+review-1015-transitions: ...................W..W.W................
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. numbers stored as text are refused when their alphabetical order is wrong ('test-review-1015-transitions.R:130:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+2. numbers stored as text are refused when their alphabetical order is wrong ('test-review-1015-transitions.R:137:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+3. numbers stored as text are refused when their alphabetical order is wrong ('test-review-1015-transitions.R:140:3') - An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ passed  failed   error warning skipped 
+     38       0       0       3       0 
+
+ numbers stored as text are refused when their alphabetical order is wrong 
+ An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+numeric_fit <- lta(long, "y", "id", n_profiles = 2, time = "t", n_starts = 1, seed = 1)
+
+ numbers stored as text are refused when their alphabetical order is wrong 
+ An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+padded_fit <- lta(long, "y", "id", n_profiles = 2, time = "padded", n_starts = 1, seed = 1)
+
+ numbers stored as text are refused when their alphabetical order is wrong 
+ An initial, transition or group-class probability is at its numerical boundary; Wald inference is withheld. 
+date_fit <- lta(long, "y", "id", n_profiles = 2, time = "date", n_starts = 1, seed = 1)

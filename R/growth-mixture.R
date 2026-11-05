@@ -602,6 +602,10 @@
   fit$log_likelihood <- expectation$log_likelihood
   fit$history <- fit$history + shift
   fit$starts$log_likelihood <- fit$starts$log_likelihood + shift
+  if (!is.null(fit$initialization_starts)) {
+    fit$initialization_starts$log_likelihood <-
+      fit$initialization_starts$log_likelihood + shift
+  }
   fit
 }
 

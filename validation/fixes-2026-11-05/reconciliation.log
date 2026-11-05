@@ -1,0 +1,197 @@
+Original sweep: 258 files; 2116 cases
+ passed  failed   error warning skipped 
+  15064      18       1      16      29 
+Complete sweep plus latest whole-file reruns: 258 files; 2117 cases
+ passed  failed   error warning skipped 
+  15105       0       0       0      28 
+
+Whole-file rerun provenance:
+                              file passed failed error warning skipped
+         test-audit-core-repairs.R     64      0     0       0       0
+                test-compare-lrt.R     35      0     0       0       0
+                test-diagnostics.R    133      0     0       0       0
+                test-enumeration.R    315      0     0       0       0
+       test-fixes-1105-inference.R     75      0     0       0       0
+      test-fixes-1105-regression.R     65      0     0       0       0
+         test-fixes-1105-surface.R     51      0     0       0       0
+     test-fixes-1105-transitions.R     58      0     0       0       0
+ test-gaussian-diagnostic-tables.R     80      0     0       0       0
+                test-lta-compare.R     31      0     0       0       0
+                test-lta-general.R     35      0     0       0       0
+      test-parallel-profile-pool.R     81      0     0       0       4
+ test-plot-categorical-summaries.R    134      0     0       0       0
+                test-plot-polish.R    109      0     0       0       0
+             test-release-engine.R    135      0     0       0       0
+             test-report-surface.R     40      0     0       0       0
+           test-review-1015-lead.R     19      0     0       0       0
+          test-review-1015-plots.R     50      0     0       0       0
+    test-review-1015-transitions.R     41      0     0       0       0
+  test-review-1026-multilevel-r2.R     43      0     0       0       0
+    test-review-1027-diagnostics.R    158      0     0       0       0
+            test-review-families.R     74      0     0       0       0
+            test-review-followup.R     35      0     0       0       0
+                    test-scaling.R     31      0     0       0       0
+                                                                 source_result
+               validation/fixes-2026-11-05/root/stale-expectations-results.rds
+               validation/fixes-2026-11-05/root/stale-expectations-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+              validation/fixes-2026-11-05/root/final-installed-regressions.rds
+              validation/fixes-2026-11-05/root/final-installed-regressions.rds
+              validation/fixes-2026-11-05/root/final-installed-regressions.rds
+              validation/fixes-2026-11-05/root/final-installed-regressions.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+               validation/fixes-2026-11-05/root/dispatch-unlimited-results.rds
+                 validation/fixes-2026-11-05/root/categorical-plot-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+               validation/fixes-2026-11-05/root/final-engine-units-results.rds
+             validation/fixes-2026-11-05/root/final-report-fixture-results.rds
+                       validation/fixes-2026-11-05/root/final-lead-results.rds
+         validation/fixes-2026-11-05/root/final-plot-fixture-clean-results.rds
+            validation/fixes-2026-11-05/transitions/final-warning-fixtures.rds
+ validation/fixes-2026-11-05/regression/final-warning-fixtures-all-results.rds
+                 validation/fixes-2026-11-05/root/final-boundaries-results.rds
+ validation/fixes-2026-11-05/regression/final-warning-fixtures-all-results.rds
+ validation/fixes-2026-11-05/regression/final-warning-fixtures-all-results.rds
+               validation/fixes-2026-11-05/root/final-engine-units-results.rds
+ cases
+    13
+     9
+    13
+    26
+    15
+    11
+    12
+    15
+     7
+     5
+     6
+    12
+    10
+    14
+    27
+     6
+     8
+     7
+    12
+    11
+    18
+     9
+     7
+    10
+
+Remaining conditions:
+
+test-lta-parallel.R: both lta engines have identical forked starts and emEM screening
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-lta-parallel.R: transition grids match serial and direct fits for both searches and engines
+expectation_skip, expectation, condition 
+ Reason: _R_CHECK_LIMIT_CORES_ allows at most two workers 
+
+test-parallel-recovery.R: a killed fork task is retried once and recovers its exact value
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: a permanently killed fork task leaves other task results intact
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: a socket retry loses only the task that kills its worker
+expectation_skip, expectation, condition 
+ Reason: _R_CHECK_LIMIT_CORES_ allows at most two workers 
+
+test-parallel-recovery.R: ordinary errors in start code are recorded without a process-loss retry
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: recovered flat starts preserve the complete transition grid
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: a recovered direct lta start preserves the undisturbed fitted object
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: a genuine transition start error is neither retried nor called worker loss
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: a permanently lost flat start is reported alongside fitted candidates
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: losing all starts fails only their candidate in a transition grid
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-recovery.R: emEM aggregates recovered screening and finalist losses into one warning
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel.R: a profile grid on several cores is identical to one core
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-parallel.R: transition and family grids on several cores are identical to one core
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-parallel.R: candidates' warnings reach the caller in grid order, as on one core
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-parallel.R: the socket backend returns values and conditions in order
+expectation_skip, expectation, condition 
+ Reason: Socket ports unavailable: creation of server socket failed: port 11116 cannot be opened 
+
+test-parallel.R: a socket worker that dies becomes a failed candidate
+expectation_skip, expectation, condition 
+ Reason: Socket ports unavailable: creation of server socket failed: port 11116 cannot be opened 
+
+test-parallel.R: one fit's starts on several cores give the same fit as one core
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-parallel.R: cleanup closes a live socket even when another node is already closed
+expectation_skip, expectation, condition 
+ Reason: Socket ports unavailable: creation of server socket failed: port 11116 cannot be opened 
+
+test-parallel.R: a seeded multilevel LCA grid prepared on workers is identical to one core
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-review-0970-parallel.R: C1 live socket family enumeration agrees under L'Ecuyer-CMRG
+expectation_skip, expectation, condition 
+ Reason: Socket ports unavailable: creation of server socket failed: port 11116 cannot be opened 
+
+test-review-1026-refusals.R: more cores than the machine has are capped with a classed warning
+expectation_skip, expectation, condition 
+ Reason: !is.finite(available) || available < 1L is TRUE 
+
+test-search.R: emEM gives the same fit on one core and on two
+expectation_skip, expectation, condition 
+ Reason: This platform cannot report at least two available processors 
+
+test-sensitivity.R: parallel seeds give the serial table for every refitted family
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-profile-pool.R: profile grids match serial and direct categorical and continuous fits
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-profile-pool.R: a recovered categorical grid start preserves all fitted results
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-profile-pool.R: a persistently killed categorical start leaves other starts intact
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 
+
+test-parallel-profile-pool.R: losing every categorical start fails only that candidate
+expectation_skip, expectation, condition 
+ Reason: This BLAS cannot run safely in forked workers 

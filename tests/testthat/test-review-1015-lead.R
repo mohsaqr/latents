@@ -39,8 +39,9 @@ test_that("lta() retains enough default iterations for unaccelerated EM", {
   skip_on_cran()
   # Ordinary EM takes over 1,000 updates here; its budget remains sufficient
   # even though the default SQUAREM accelerator now needs fewer updates.
-  fit <- lta(course_engagement, c("browse", "lectures"), "student", time = "sequence",
-             n_profiles = 3, n_starts = 1, seed = 1, acceleration = "none")
+  fit <- quietly(lta(course_engagement, c("browse", "lectures"), "student", time = "sequence",
+             n_profiles = 3, n_starts = 1, seed = 1, acceleration = "none"),
+                 classes = "latents_boundary")
   expect_true(fit$converged)
   expect_gt(fit$iterations, 1000)
   expect_identical(formals(lta)$max_iter, 5000L)

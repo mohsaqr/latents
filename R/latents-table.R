@@ -51,7 +51,8 @@
 
 #' Readable class and term names
 #' @noRd
-.latents_label <- function(values) {
+.latents_label <- function(values, class_alias = TRUE) {
+  stopifnot(is.logical(class_alias), length(class_alias) == 1L, !is.na(class_alias))
   values <- as.character(values)
   # A class logit's intercept within one group class.
   values <- sub("^\\(Intercept\\):group_class_([0-9]+)$", "Intercept, group class \\1",
@@ -63,7 +64,7 @@
   values <- sub("^profile_([0-9]+)$", "Profile \\1", values)
   values <- gsub("(Intercept)", "Intercept", values, fixed = TRUE)
   values <- gsub(":", " x ", values, fixed = TRUE)
-  values[values %in% c("common", "all")] <- "All classes"
+  if (class_alias) values[values %in% c("common", "all")] <- "All classes"
   words <- c(variance = "Variance", sd = "SD", correlation = "Correlation",
              covariance = "Covariance")
   known <- values %in% names(words)
@@ -86,15 +87,15 @@
   }
   switch(spec$format,
     text = ifelse(is.na(values), "", as.character(values)),
-    label = .latents_label(values),
+    label = .latents_label(values, class_alias =
+      !spec$column[1L] %in% c("term", "predictor", "indicator")),
     integer = ifelse(is.na(values), "", format(round(values), trim = TRUE)),
     number = {
       finite <- values[is.finite(values)]
       if (length(finite) > 0L && all(abs(finite - round(finite)) < 1e-9)) {
         ifelse(is.na(values), "", format(round(values), trim = TRUE))
       } else {
-        large <- length(finite) > 0L && max(abs(finite)) >= 100
-        fixed(values, if (large) 2L else .latents_column_decimals(values))
+        fixed(values, .latents_column_decimals(values))
       }
     },
     share = fixed(values, 3L),

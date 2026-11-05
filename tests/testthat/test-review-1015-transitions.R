@@ -127,17 +127,26 @@ test_that("numbers stored as text are refused when their alphabetical order is w
       data.frame(id = j, t = 1:11, y = stats::rnorm(11, rep(c(-1.5, 1.5), c(5, 6)), 0.6))
     }))
   })
-  numeric_fit <- lta(long, "y", "id", n_profiles = 2, time = "t", n_starts = 1, seed = 1)
+  # Every sequence starts low and finishes high, so some fitted start/move
+  # probabilities are at their numerical bound. Require that specific
+  # qualification for each valid time encoding while comparing their fits.
+  expect_warning(
+    numeric_fit <- lta(long, "y", "id", n_profiles = 2, time = "t", n_starts = 1, seed = 1),
+    class = "latents_boundary")
   long$text <- as.character(long$t)
   expect_error(lta(long, "y", "id", n_profiles = 2, time = "text", n_starts = 1, seed = 1),
                class = "latents_bad_data")
   expect_error(lta(long, "y", "id", n_profiles = 2, time = "text", n_starts = 1, seed = 1,
                    transitions = "occasion"), class = "latents_bad_data")
   long$padded <- sprintf("%02d", long$t)
-  padded_fit <- lta(long, "y", "id", n_profiles = 2, time = "padded", n_starts = 1, seed = 1)
+  expect_warning(
+    padded_fit <- lta(long, "y", "id", n_profiles = 2, time = "padded", n_starts = 1, seed = 1),
+    class = "latents_boundary")
   expect_equal(padded_fit$log_likelihood, numeric_fit$log_likelihood)
   long$date <- format(as.Date("2024-01-01") + 30 * (long$t - 1))
-  date_fit <- lta(long, "y", "id", n_profiles = 2, time = "date", n_starts = 1, seed = 1)
+  expect_warning(
+    date_fit <- lta(long, "y", "id", n_profiles = 2, time = "date", n_starts = 1, seed = 1),
+    class = "latents_boundary")
   expect_equal(date_fit$log_likelihood, numeric_fit$log_likelihood)
 })
 

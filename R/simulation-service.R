@@ -148,8 +148,12 @@
     fit <- tryCatch(refit(resampled), error = function(error) conditionMessage(error))
     if (is.character(fit)) return(failure(fit))
     if (!isTRUE(fit$converged)) return(failure("the replicate did not converge"))
-    estimate <- extract(fit)
+    estimate <- tryCatch(extract(fit), error = function(error) conditionMessage(error))
     if (is.character(estimate)) return(failure(estimate))
+    if (!is.numeric(estimate) || length(estimate) != length(reference_names) ||
+        any(!is.finite(estimate))) {
+      return(failure("the replicate's estimates are nonfinite or have a different shape"))
+    }
     list(estimate = estimate, message = NA_character_)
   })
   estimates <- do.call(rbind, lapply(replicates, `[[`, "estimate"))

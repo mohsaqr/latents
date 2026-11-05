@@ -173,6 +173,7 @@ test_that("emEM is reproducible under a seed and leaves the caller's stream alon
 })
 
 test_that("emEM gives the same fit on one core and on two", {
+  skip_if_unknown_cores()
   skip_on_cran()
   items <- names(srl)
   one <- quietly(lpa(srl, items, 3, seed = 4, search = "emEM", n_starts = 4))

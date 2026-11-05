@@ -1,0 +1,7 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-report-surface.R","report-surface","diagnostics() forwards `by` instead of dropping it",5,0,FALSE,FALSE,0,1.995,0.085,2.655,5
+"test-report-surface.R","report-surface","report() forwards `by` through to the residual it prints",3,0,FALSE,FALSE,0,0.108,0.006,0.132,3
+"test-report-surface.R","report-surface","an argument the reporting surface cannot forward is refused",4,0,FALSE,FALSE,0,0.0289999999999999,0.002,0.0470000000000002,4
+"test-report-surface.R","report-surface","plot(diagnostics()) draws for a covariate fit",16,0,FALSE,FALSE,0,0.698,0.016,0.792,16
+"test-report-surface.R","report-surface","a single-profile fit refuses the case diagnostics by class",10,0,FALSE,FALSE,0,0.227,0.00699999999999998,0.253,10
+"test-report-surface.R","report-surface","report() draws every view it offers, for every family",2,0,FALSE,FALSE,0,4.436,0.096,4.707,2

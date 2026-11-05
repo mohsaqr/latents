@@ -145,7 +145,7 @@
 #' Which parameter blocks are class-specific in each group-class family
 #'
 #' Every group-class family shares one engine; they differ only in which
-#' blocks vary across group classes (Houle, Morin & Harvey, 2026):
+#' blocks vary across group classes:
 #' additive (class means, shared within variance), dispersion (class within
 #' variances, shared means and between variances) and additive-dispersion
 #' (class means and class within variances).
@@ -604,7 +604,7 @@
 
 #' EM for a group-class family from one starting point
 #'
-#' SQUAREM-accelerated by default (Varadhan & Roland, 2008): plain EM crawls
+#' SQUAREM-accelerated by default: plain EM crawls
 #' when classes overlap or a between variance heads for zero, and with the
 #' default `max_iter` such fits stopped unconverged.
 #'

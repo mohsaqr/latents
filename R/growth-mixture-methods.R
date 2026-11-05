@@ -230,12 +230,21 @@
   inverse <- switch(scale, identity = identity, log = exp, atanh = tanh,
                     logit = stats::plogis)
   natural <- .mixture_delta(inference$theta, inference$vcov, transform)
+  fixed <- if (identical(scale, "logit"))
+    natural$estimate %in% c(0, 1) & natural$std_error %in% 0 else
+      rep(FALSE, length(natural$estimate))
   linked <- .mixture_delta(inference$theta, inference$vcov,
-                           function(v) link(transform(v)))
+                           function(v) {
+    values <- transform(v)
+    values[fixed] <- 0.5
+    link(values)
+  })
   z <- .inference_critical(level, "one_minus")
-  data.frame(estimate = natural$estimate, std_error = natural$std_error,
+  result <- data.frame(estimate = natural$estimate, std_error = natural$std_error,
              conf_low = inverse(linked$estimate - z * linked$std_error),
              conf_high = inverse(linked$estimate + z * linked$std_error))
+  result$conf_low[fixed] <- result$conf_high[fixed] <- natural$estimate[fixed]
+  result
 }
 
 #' Regression coefficients, one row per class and term
@@ -572,7 +581,7 @@
                     group_class = paste0("group_class_", modal),
                     probability = rho[cbind(seq_along(modal), modal)],
                     stringsAsFactors = FALSE)
-  names(out)[1L] <- spec$cluster
+  names(out)[1L] <- .mixture_output_identifiers(spec)$cluster
   posterior <- as.data.frame(rho)
   names(posterior) <- paste0("posterior_group_class_", seq_len(ncol(rho)))
   cbind(out, posterior)
@@ -585,10 +594,11 @@
   posterior <- view$posterior
   out <- data.frame(id = view$spec$group_levels, class = view$classes[view$modal],
                     probability = apply(posterior, 1L, max), stringsAsFactors = FALSE)
-  names(out)[1L] <- view$spec$id
+  identifiers <- .mixture_output_identifiers(view$spec)
+  names(out)[1L] <- identifiers$id
   if (!is.null(view$spec$cluster)) {
     out <- cbind(out[1L], stats::setNames(
-      data.frame(view$spec$cluster_levels[view$spec$cluster_index]), view$spec$cluster),
+      data.frame(view$spec$cluster_levels[view$spec$cluster_index]), identifiers$cluster),
       out[-1L])
   }
   posterior_frame <- as.data.frame(posterior)
@@ -607,7 +617,7 @@
   }, numeric(length(terms)))) |> matrix(length(modal), length(terms))
   out <- data.frame(id = x$spec$group_levels, class = .growth_class_names(x)[modal],
                     effects, stringsAsFactors = FALSE)
-  names(out) <- c(x$spec$id, "class", terms)
+  names(out) <- c(.mixture_output_identifiers(x$spec)$id, "class", terms)
   out
 }
 
@@ -695,10 +705,11 @@
                     class_mean = view$response_mean(linear, modal[person]),
                     predicted = view$response_mean(own, modal[person]),
                     stringsAsFactors = FALSE)
-  names(out)[1L] <- spec$id
+  output_id <- .mixture_output_identifiers(spec)$id
+  names(out)[1L] <- output_id
   time <- .growth_time_variable(x, time)
   out[[time]] <- spec$model_data[[time]]
-  out[c(spec$id, time, "class", "observed", "class_mean", "predicted")]
+  out[c(output_id, time, "class", "observed", "class_mean", "predicted")]
 }
 
 .growth_tables <- function(x = NULL) {
@@ -744,7 +755,8 @@
     column(sprintf("%s%% CI", format(100 * level)), c(low, high), "ci", from)
   }
   percent <- format(100 * level)
-  id <- x$spec$id
+  identifiers <- .mixture_output_identifiers(x$spec)
+  id <- identifiers$id
   time <- if (identical(what, "trajectories")) names(table)[2L] else if (
     identical(what, "individual")) names(table)[2L] else NULL
   # The recovery table's second column is the caller's truth column.
@@ -797,7 +809,7 @@
       title = "Class assignments",
       display = list(column(id, id, "text"),
                      if (!is.null(x$spec$cluster))
-                       column(x$spec$cluster, x$spec$cluster, "text"),
+                       column(x$spec$cluster, identifiers$cluster, "text"),
                      column("Class", "class", "label"),
                      column("Probability", "probability"))),
     random_effects = list(
@@ -827,7 +839,7 @@
                      column("Clusters", "assigned_clusters", "integer"))),
     clusters = list(
       title = "Cluster group classes",
-      display = list(column(x$spec$cluster %||% "cluster", x$spec$cluster %||% "cluster",
+      display = list(column(x$spec$cluster %||% "cluster", identifiers$cluster %||% "cluster",
                             "text"),
                      column("Persons", "n_persons", "integer"),
                      column("Group class", "group_class", "label"),

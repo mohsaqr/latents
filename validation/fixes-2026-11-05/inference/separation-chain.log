@@ -1,0 +1,10 @@
+         assigned_1   assigned_2
+true_1 9.991945e-01 0.0008054816
+true_2 3.374097e-06 0.9999966259
+warnings/errors: ERROR:latents_boundary_fit 
+near separated, warnings/errors: ERROR:latents_boundary_fit 
+one-step warnings: latents_extreme_coefficients 
+Error in `[.data.frame`(as.data.frame(r$v), , c("block", "from", "to",  : 
+  undefined columns selected
+Calls: source ... withVisible -> eval -> eval -> one -> print -> [ -> [.data.frame
+Execution halted

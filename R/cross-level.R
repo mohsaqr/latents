@@ -447,10 +447,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     log_likelihood_history = fitted$history, boundary = boundary,
     starts = fitted$starts, sufficient_statistics = stats,
     min_variance = min_variance,
-    # Restricted: the estimated prevalences shared by every group class.
-    # Full: the model-implied marginal prevalences, sum_h omega_h pi_{k|h}.
+    # Both forms report the weighted posterior share of individuals. Averaging
+    # composition over group classes instead targets an average group and can
+    # disagree sharply when group sizes differ.
     profile_prevalences = stats::setNames(
-      drop(crossprod(p$group_probabilities, p$profile_probabilities)),
+      colSums(subject_posteriors * (stats$sampling_weights[stats$index] %||% 1)) /
+        sum((stats$sampling_weights[stats$index] %||% rep(1, nrow(x)))),
       profile_names))
   class(result) <- "multilpa_cross_level"
   if (!result$converged) {
@@ -460,6 +462,16 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   if (boundary) {
     warning(warningCondition("A variance reached min_variance; this is a bound-active fit.",
                              class = "latents_boundary", call = NULL))
+  }
+  # A group mean is computed from its members' ratings, so the same data enter
+  # the likelihood twice and the criteria reward group classes even with no
+  # group structure (validation/review-2026-11-04, additive-crosslevel.md).
+  if (length(p$group_probabilities) > 1L) {
+    warning(warningCondition(paste(
+      "This likelihood counts the ratings twice, so its criteria favour group",
+      "classes and the full form even on data with no group structure. Do not",
+      "choose the number of group classes, or the form, from them."),
+      class = "latents_cross_level_criteria", call = NULL))
   }
   # Reporting posteriors belong to each unit. For Gaussian support, restore
   # the normalized sampling weights used by each density's M-step. The
@@ -575,7 +587,8 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
                      n_group_classes = length(class_names),
                      log_likelihood = x$log_likelihood, n_parameters = x$n_parameters,
                      aic = x$aic, bic = x$bic, bic_individual = x$bic_individual,
-                     n_groups = x$n_groups, n_obs = x$n_obs, converged = x$converged,
+                     n_groups = x$n_used_groups %||% x$n_groups,
+                     n_obs = x$n_used_obs %||% x$n_obs, converged = x$converged,
                      boundary = x$boundary, stringsAsFactors = FALSE),
     starts = x$starts,
     gaussian_diagnostics = x$gaussian_diagnostics)
@@ -597,8 +610,9 @@ print.multilpa_cross_level <- function(x, ...) {
     "%s cross-level model: %d profiles, %d group classes\n",
     "%d groups, %d observations; working log-likelihood %.3f, %d parameters\n",
     "converged: %s\n"),
-    label, nrow(x$profile_means), length(x$group_probabilities), x$n_groups,
-    x$n_obs, x$log_likelihood, x$n_parameters, if (x$converged) "yes" else "no"))
+    label, nrow(x$profile_means), length(x$group_probabilities),
+    x$n_used_groups %||% x$n_groups, x$n_used_obs %||% x$n_obs,
+    x$log_likelihood, x$n_parameters, if (x$converged) "yes" else "no"))
   .latents_print_weights(x)
   .latents_print_gaussian_diagnostics(x$gaussian_diagnostics)
   cat(paste("Tables: get_results(x, what = ), e.g. \"profiles\", \"composition\",",

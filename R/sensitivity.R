@@ -66,7 +66,8 @@ utils::globalVariables(c("seed", "status"))
 #'   that fitted it).
 #' @param tolerance Maximum log-likelihood difference for grouping refits.
 #'   Each group is anchored at its highest log likelihood
-#'   and spans no more than `tolerance`. Defaults to the reference fit's
+#'   and spans no more than `tolerance`. Only converged refits receive an
+#'   optimum index or a best flag. Defaults to the reference fit's
 #'   replication tolerance, 1e-6 per observed value.
 #' @param cores Number of processor cores (default 1). The seeds are refitted
 #'   in parallel, one seed per worker at a time, each refit on one core. Every
@@ -98,8 +99,6 @@ utils::globalVariables(c("seed", "status"))
 #' @seealso [enumerate_classes()] to vary the number of classes, and
 #'   [parameter_inference()] for uncertainty about the parameters of a single
 #'   solution.
-#' @references Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the
-#'   estimation of growth mixture models. *Psychological Methods, 11*, 36--53.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -111,7 +110,7 @@ utils::globalVariables(c("seed", "status"))
 #'                 n_profiles = 2, n_group_classes = 1, n_starts = 3, seed = 1)
 #' sensitivity(fit, seeds = 1:3, n_starts = 3)
 #'
-#' # Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+#' # Growth mixtures are known for local solutions.
 #' growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
 #'                              n_classes = 2, id = "student", class_level = "group",
 #'                              random = ~ 1, n_starts = 1, seed = 1)
@@ -192,7 +191,8 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     if (inherits(fit, "condition")) NA_real_ else family$agreement(fit)
   }, numeric(1))
   tolerance <- tolerance %||% family$tolerance
-  optimum <- .multilpa_optimum_index(likelihood, tolerance)
+  optimum <- .multilpa_optimum_index(
+    ifelse(converged %in% TRUE, likelihood, NA_real_), tolerance)
 
   result <- data.frame(
     seed = as.integer(seeds),
@@ -200,7 +200,7 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     converged = converged,
     iterations = iterations,
     optimum = optimum,
-    best = optimum == 1L,
+    best = !is.na(optimum) & optimum == 1L,
     agreement = agreement,
     row.names = NULL, stringsAsFactors = FALSE)
   # Still a data frame: the class adds plot(), and the tolerance the

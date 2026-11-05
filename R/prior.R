@@ -48,7 +48,7 @@
 #' settings.
 #'
 #' @details
-#' The prior follows Fraley and Raftery (2007) and `mclust::priorControl()`.
+#' The prior follows `mclust::priorControl()`.
 #' Arguments set to `NULL` use the data-dependent defaults of
 #' `mclust::defaultPrior()`: the prior mean is the vector of indicator means, the
 #' degrees of freedom are `d + 2` for `d` indicators, and the scale is
@@ -85,9 +85,6 @@
 #'   non-finite `mean`, a `mean` with a zero `shrinkage`, a non-positive or
 #'   non-finite `dof`, or a `scale` that is neither a positive number nor a
 #'   square, symmetric, positive-definite matrix.
-#' @references Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for
-#'   normal mixture estimation and model-based clustering. *Journal of
-#'   Classification*, 24, 155--181. \doi{10.1007/s00357-007-0004-5}
 #' @seealso [multilpa()] for the supported model specifications.
 #' @examples
 #' prior_control()

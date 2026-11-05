@@ -1,0 +1,39 @@
+Model fit
+
+Family          gaussian
+Nesting         observation
+Classes         2
+Group classes   1
+Observations    900
+Parameters      7
+Log likelihood  -3144.01
+AIC             6302.01
+BIC             6335.63
+SABIC           6313.40
+ICL             7030.42
+Entropy         0.443
+Smallest class  43.5%
+Converged       yes
+
+Regression coefficients (95% CI)
+
+Class    Term       Estimate          95% CI      p
+-------  ---------  --------  --------------  -----
+Class 1  Intercept     34.37  [32.96, 35.78]  <.001
+Class 1  hours          4.56  [ 4.36,  4.77]  <.001
+Class 2  Intercept     54.91  [52.77, 57.05]  <.001
+Class 2  hours          0.81  [ 0.47,  1.14]  <.001
+
+Classes
+
+Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+-------  -----  --------  -------------  --------------  -----------
+Class 1  0.565    508.10            573           0.789         5.24
+Class 2  0.435    391.90            327           0.829         6.89
+
+Class membership (log odds, 95% CI)
+
+Class    Term       Estimate         95% CI     p
+-------  ---------  --------  -------------  ----
+Class 2  Intercept     -0.26  [-0.54, 0.02]  .068
+

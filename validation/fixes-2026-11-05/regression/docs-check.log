@@ -1,0 +1,30 @@
+
+Rendering vignettes/articles/case-esm-lca.Rmd 
+OK /Users/mohammedsaqr/Documents/Github/latents/tmp/nov5-docs/case-esm-lca.html elapsed 38.727 
+
+Rendering vignettes/lca.Rmd 
+OK /Users/mohammedsaqr/Documents/Github/latents/tmp/nov5-docs/lca.html elapsed 4.476 
+
+Rendering vignettes/articles/model-selection.Rmd 
+OK /Users/mohammedsaqr/Documents/Github/latents/tmp/nov5-docs/model-selection.html elapsed 78.424 
+
+Rendering vignettes/articles/class-enumeration.Rmd 
+OK /Users/mohammedsaqr/Documents/Github/latents/tmp/nov5-docs/class-enumeration.html elapsed 102.572 
+
+Rendering vignettes/articles/trajectory-classes.Rmd 
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+Error in eval(x, envir = envir) : object 'has_ggplot' not found
+OK /Users/mohammedsaqr/Documents/Github/latents/tmp/nov5-docs/trajectory-classes.html elapsed 14.991 
+
+Rendering vignettes/articles/workflow-lpa.Rmd 
+
+
+Quitting from workflow-lpa.Rmd:93-98 [bootstrap]
+Timing stopped at: 267.5 8.151 283.4
+Execution halted

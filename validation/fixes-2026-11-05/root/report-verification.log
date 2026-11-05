@@ -1,0 +1,6 @@
+Main repair report rendered as self-contained HTML with two tables.
+All local links in the main HTML and five report sources resolve.
+Both retained plot previews contain two embedded images.
+Old review HTML links to the completed repair report.
+No pending validation placeholder remains.
+Final git diff --check: clean.

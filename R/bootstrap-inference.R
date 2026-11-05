@@ -111,6 +111,50 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
        search = x$search %||% "kmeans")
 }
 
+#' Establish that both stages used the same measurement observations
+#'
+#' A supplied measurement may use another row order or identifier name.
+#' The one-group-class profile measurement depends on the multiset of
+#' indicator rows; its grouping and optional sequence labels do not alter it.
+#' Stored indicators are required: an unknown origin cannot justify resampling
+#' the supplied measurement from the second-stage observations.
+#' @param x A staged fit with its `stage_one` measurement fit.
+#' @return A logical scalar.
+#' @noRd
+.multilpa_staged_same_data <- function(x) {
+  stopifnot(isTRUE(x$staged))
+  first <- x$stage_one
+  if (is.null(first) || !setequal(first$vars, x$vars)) return(FALSE)
+  canonical <- function(object) {
+    frame <- .multilpa_model_frame(object)[, sort(x$vars), drop = FALSE]
+    columns <- lapply(names(frame), function(name) {
+      column <- frame[[name]]
+      if (name %in% object$categorical) as.character(column) else as.numeric(column)
+    })
+    names(columns) <- names(frame)
+    index <- do.call(order, c(columns, list(na.last = TRUE, method = "radix")))
+    lapply(columns, function(column) unname(column[index]))
+  }
+  tryCatch(identical(canonical(first), canonical(x)), error = function(e) FALSE)
+}
+
+#' Refuse resampling an externally estimated staged measurement from these data
+#' @param x A fitted profile model.
+#' @return `NULL`, invisibly, or `latents_unsupported_inference`.
+#' @noRd
+.multilpa_check_staged_bootstrap <- function(x) {
+  if (isTRUE(x$staged) && !.multilpa_staged_same_data(x)) {
+    stop(errorCondition(paste(
+      "The staged measurement was fitted to other observations, or its",
+      "stored data cannot establish that both stages used the same sample.",
+      "Resampling the current data would replace that measurement with a",
+      "different estimator. Fit both stages to these observations with",
+      "fit_staged() before using this bootstrap."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' Bootstrap replicates of the natural coefficients
 #'
 #' A staged fit is refitted through [fit_staged()], both stages on every
@@ -124,6 +168,7 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
 #'   rows are `NA`, and `messages`, the reason each failure gave.
 #' @noRd
 .multilpa_bootstrap_replicates <- function(x, data, iter, n_starts, max_iter, tol) {
+  .multilpa_check_staged_bootstrap(x)
   staged <- isTRUE(x$staged)
   estimator <- if (staged) fit_staged else multilpa
   arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
@@ -184,6 +229,9 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
 #' the replicates vary the measurement as well as the group-class structure.
 #' Its table therefore has a row for every parameter, the held measurement
 #' included, and the second-stage errors carry the first stage's uncertainty.
+#' This requires both stages to use the same indicator observations; an
+#' externally estimated measurement, or one without stored data establishing
+#' that origin, is refused rather than refitted on a different sample.
 #'
 #' @param x A fitted `multilpa` model.
 #' @param data The fitting data.
@@ -195,6 +243,7 @@ utils::globalVariables(c("estimate", "panel", "at", "series", "conf_low", "conf_
 #' @noRd
 .multilpa_bootstrap_inference <- function(x, data, level, iter, n_starts,
                                           max_iter, tol, adjust) {
+  .multilpa_check_staged_bootstrap(x)
   staged <- isTRUE(x$staged)
   if (length(x$fixed %||% character()) > 0L && !staged) {
     stop(errorCondition(paste(
@@ -403,7 +452,7 @@ plot.latents_bootstrap <- function(x, what = NULL, main = NULL, subtitle = NULL,
   flat_names <- vapply(flat, function(row) {
     parts <- vapply(columns$labels, function(name) as.character(table[[name]][row]),
                     character(1))
-    paste(parts[!is.na(parts)], collapse = " · ")
+    paste(parts[!is.na(parts)], collapse = " \u00b7 ")
   }, character(1))
   # Series are told apart by colour and shape; a panel with a single series
   # (the group classes' probabilities) is drawn in black without a key.
@@ -500,7 +549,7 @@ plot.latents_bootstrap <- function(x, what = NULL, main = NULL, subtitle = NULL,
     at <- if (length(varying) == 0L) panel[index] else text(varying[length(varying)])[index]
     series <- if (length(varying) < 2L) rep(NA_character_, length(index)) else {
       do.call(paste, c(lapply(varying[-length(varying)], function(name) text(name)[index]),
-                       sep = " · "))
+                       sep = " \u00b7 "))
     }
     data.frame(row = index, at = at, series = series, stringsAsFactors = FALSE)
   })

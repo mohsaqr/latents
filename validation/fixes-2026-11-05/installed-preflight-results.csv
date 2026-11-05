@@ -1,0 +1,53 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-fixes-1105-inference.R","fixes-1105-inference","a staged or held measurement cannot claim estimated step-one uncertainty",6,0,FALSE,FALSE,0,0.31,0.03,0.541,6
+"test-fixes-1105-inference.R","fixes-1105-inference","modal uncertainty does not require an unused step-one covariance",2,0,FALSE,FALSE,0,0.024,0.003,0.0309999999999999,2
+"test-fixes-1105-inference.R","fixes-1105-inference","OPG probability and covariate SEs are invariant to grand transforms",12,0,FALSE,FALSE,0,1.949,0.089,2.299,12
+"test-fixes-1105-inference.R","fixes-1105-inference","staged bootstrap checks the measurement sample before resampling",5,0,FALSE,FALSE,0,0.194,0.01,0.239,5
+"test-fixes-1105-inference.R","fixes-1105-inference","same-data supplied measurement permits row order and identifier changes",4,0,FALSE,FALSE,0,0.41,0.02,0.551,4
+"test-fixes-1105-inference.R","fixes-1105-inference","categorical sample provenance compares labels and preserves missing rows",3,0,FALSE,FALSE,0,0.135,0.00800000000000001,0.175,3
+"test-fixes-1105-inference.R","fixes-1105-inference","measurement provenance ignores grouping and sequence metadata",3,0,FALSE,FALSE,0,0.0569999999999999,0.006,0.0990000000000002,3
+"test-fixes-1105-inference.R","fixes-1105-inference","step-three boundary checks use the whole design and unit-free coordinates",5,0,FALSE,FALSE,0,0.016,0.002,0.0190000000000001,5
+"test-fixes-1105-inference.R","fixes-1105-inference","r3step refuses separated Wald tests under both covariance estimators",5,0,FALSE,FALSE,0,1.914,0.033,1.998,5
+"test-fixes-1105-inference.R","fixes-1105-inference","a rare transition regression cannot report finite sandwich Wald tests",3,0,FALSE,FALSE,0,2.175,0.066,2.318,3
+"test-fixes-1105-inference.R","fixes-1105-inference","binary category pairs count the same hypotheses as zero-one outcomes",14,0,FALSE,FALSE,0,0.175,0.02,0.231,14
+"test-fixes-1105-inference.R","fixes-1105-inference","weighted grand-transform inference uses the fitted weighted moments",3,0,FALSE,FALSE,0,0.736,0.016,0.800999999999998,3
+"test-fixes-1105-inference.R","fixes-1105-inference","zero Wald uncertainty cannot produce an infinite test statistic",5,0,FALSE,FALSE,0,0.194000000000001,0.015,0.263999999999999,5
+"test-fixes-1105-inference.R","fixes-1105-inference","covariate Wald inference warns about a material unfinished score",2,0,FALSE,FALSE,0,0.261000000000001,0.00700000000000001,0.332000000000001,2
+"test-fixes-1105-inference.R","fixes-1105-inference","group-class r3step slopes survive a large covariate origin",3,0,FALSE,FALSE,0,0.315,0.013,0.353,3
+"test-fixes-1105-regression.R","fixes-1105-regression","unused membership and group-membership levels do not become parameters",9,0,FALSE,FALSE,0,0.974,0.029,1.034,9
+"test-fixes-1105-regression.R","fixes-1105-regression","unused random factor levels are dropped with their prediction coding",5,0,FALSE,FALSE,0,0.316000000000001,0.01,0.338999999999999,5
+"test-fixes-1105-regression.R","fixes-1105-regression","a membership level carried only by zero-weight units has no parameter",5,0,FALSE,FALSE,0,0.165000000000001,0.00700000000000001,0.18,5
+"test-fixes-1105-regression.R","fixes-1105-regression","growth covariance identification respects the actual designs and restrictions",8,0,FALSE,FALSE,0,2.16,0.043,2.244,8
+"test-fixes-1105-regression.R","fixes-1105-regression","binary and ordinal repeated mixtures need enough response-count patterns",3,0,FALSE,FALSE,0,0.0579999999999998,0.002,0.0630000000000006,3
+"test-fixes-1105-regression.R","fixes-1105-regression","class-named IDs survive regression and growth output and predictions",12,0,FALSE,FALSE,0,0.192,0.014,0.222999999999999,12
+"test-fixes-1105-regression.R","fixes-1105-regression","cluster identifiers and occupied identifier prefixes remain distinct",6,0,FALSE,FALSE,0,0.158999999999999,0.00800000000000001,0.177,6
+"test-fixes-1105-regression.R","fixes-1105-regression","individual trajectory plots select the original collision-safe IDs",4,0,FALSE,FALSE,0,0.715000000000002,0.045,0.800000000000001,4
+"test-fixes-1105-regression.R","fixes-1105-regression","recovery refuses another row order and two-level labels count rows",4,0,FALSE,FALSE,0,0.403,0.0219999999999999,0.450999999999999,4
+"test-fixes-1105-regression.R","fixes-1105-regression","exponentiated intercepts are not labeled as slope ratios",4,0,FALSE,FALSE,0,0.119999999999999,0.00800000000000001,0.135000000000002,4
+"test-fixes-1105-regression.R","fixes-1105-regression","correlated growth starts describe the fitted model rather than its initializer",5,0,FALSE,FALSE,0,0.590999999999999,0.015,0.623000000000001,5
+"test-fixes-1105-surface.R","fixes-1105-surface","grand moments agree with weighted population moments and replication",6,0,FALSE,FALSE,0,0.0180000000000007,0.00700000000000001,0.0330000000000013,6
+"test-fixes-1105-surface.R","fixes-1105-surface","person centering refuses partial singletons and ignores absent groups",3,0,FALSE,FALSE,0,0.0120000000000005,0.003,0.017000000000003,3
+"test-fixes-1105-surface.R","fixes-1105-surface","weighted grand fits reproduce integer-expanded data with missing cells",5,0,FALSE,FALSE,0,1.086,0.023,1.163,5
+"test-fixes-1105-surface.R","fixes-1105-surface","categorical bounds inform diagnostics and LRT without changing BLRT flags",6,0,FALSE,FALSE,0,0.189,0.014,0.267000000000003,6
+"test-fixes-1105-surface.R","fixes-1105-surface","categorical simulators retain non-syntactic and joint item names",4,0,FALSE,FALSE,0,0.618000000000002,0.022,0.786000000000001,4
+"test-fixes-1105-surface.R","fixes-1105-surface","classification gaps compare weighted modal and posterior shares",5,0,FALSE,FALSE,0,0.0370000000000026,0.005,0.0599999999999987,5
+"test-fixes-1105-surface.R","fixes-1105-surface","printed small slopes keep digits beside a large intercept",2,0,FALSE,FALSE,0,0.00500000000000256,0.003,0.0100000000000016,2
+"test-fixes-1105-surface.R","fixes-1105-surface","standardized references agree under unit weights and integer replication",2,0,FALSE,FALSE,0,0.103000000000002,0.0069999999999999,0.170999999999999,2
+"test-fixes-1105-surface.R","fixes-1105-surface","zero-weight missing Gaussian values do not enter the data contract",3,0,FALSE,FALSE,0,0.0329999999999977,0.006,0.070999999999998,3
+"test-fixes-1105-surface.R","fixes-1105-surface","unconverged sensitivity refits cannot be called the best optimum",3,0,FALSE,FALSE,0,0.0549999999999997,0.006,0.136000000000003,3
+"test-fixes-1105-surface.R","fixes-1105-surface","cross-level prevalence and sample counts refer to weighted individuals",8,0,FALSE,FALSE,0,0.0990000000000002,0.011,0.178999999999998,8
+"test-fixes-1105-transitions.R","fixes-1105-transitions","short-panel latent transition ridges are refused before fitting",7,0,FALSE,FALSE,0,0.027000000000001,0.004,0.0799999999999983,7
+"test-fixes-1105-transitions.R","fixes-1105-transitions","positive but negligible transition support is distinct from an empty origin",6,0,FALSE,FALSE,0,0.0139999999999993,0.005,0.0250000000000021,6
+"test-fixes-1105-transitions.R","fixes-1105-transitions","first-order support in a second-order chain reads only its first move",3,0,FALSE,FALSE,0,0.00800000000000267,0.003,0.0150000000000006,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","bootstrap extraction failures stay inside the counted replicate loop",5,0,FALSE,FALSE,0,0.00899999999999679,0.003,0.0169999999999995,5
+"test-fixes-1105-transitions.R","fixes-1105-transitions","coefficient schemas are checked before transition bootstrap alignment",3,0,FALSE,FALSE,0,0.0279999999999987,0.005,0.065999999999999,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","evaluate-only general fits do not claim an unsuccessful optimization",2,0,FALSE,FALSE,0,0.0139999999999993,0.003,0.0330000000000013,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","trailing dots survive logit identification tables and relabelling",3,0,FALSE,FALSE,0,0.00799999999999912,0.003,0.0139999999999993,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","an extreme covariate row alone is not a probability boundary",2,0,FALSE,FALSE,0,0.004999999999999,0.002,0.0100000000000016,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","second-order first-move tables label occasion two and expose support",3,0,FALSE,FALSE,0,0.0259999999999998,0.004,0.0489999999999995,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","both transition engines honor the explicit all-row individual BIC",12,0,FALSE,FALSE,0,0.0769999999999982,0.014,0.158999999999999,12
+"test-fixes-1105-transitions.R","fixes-1105-transitions","covariance charts alone govern spherical-to-diagonal transition nesting",3,0,FALSE,FALSE,0,0.0279999999999987,0.005,0.0790000000000006,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","unit-free transition logit checks allow finite effects and detect separation",3,0,FALSE,FALSE,0,0.00600000000000023,0.003,0.0120000000000005,3
+"test-fixes-1105-transitions.R","fixes-1105-transitions","support on older weighted reporting moments uses the sampling masses",2,0,FALSE,FALSE,0,0.00500000000000256,0.002,0.00900000000000034,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","chain coordinates cannot exceed the latent path distribution dimension",2,0,FALSE,FALSE,0,0.00600000000000023,0.001,0.00900000000000034,2
+"test-fixes-1105-transitions.R","fixes-1105-transitions","the structural one-group-class probability is not a boundary",2,0,FALSE,FALSE,0,0.0169999999999995,0.003,0.036999999999999,2

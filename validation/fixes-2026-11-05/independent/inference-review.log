@@ -1,0 +1,16 @@
+Version 1.1.17 
+Orthonormal Gram error: 8.038015e-16 
+Orthonormal Gram error: 4.016239e-09 
+Affine predicted probability error 9.505492e-10 
+Group likelihood affine error -2.022261e-09 
+'data.frame':	270 obs. of  4 variables:
+ $ g: int  1 1 1 1 1 1 2 2 2 2 ...
+ $ w: num  0 0 0 0 0 0 1 1 1 1 ...
+ $ a: num  -1.881 -0.713 0.205 -2.366 -0.442 ...
+ $ b: num  2.356 -0.296 1.71 1.018 1.023 ...
+Grand weighted mean equations -2.664535e-15 -5.329071e-14 -1.447731e-13 -8.038015e-14 
+Grand transform replay error 4.440892e-16 
+Shared helper zeroSE result (existing path):
+  estimate std_error statistic p_value conf_low conf_high
+1        1         0       Inf       0        1         1
+Independent algebra and nuisance-equation checks passed.

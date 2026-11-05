@@ -166,7 +166,7 @@ predict.multilpa_transitions <-function(object, ...) {
   informative <- checked & (isFALSE(object$drop_empty) |
     rowSums(!is.na(newdata[object$vars])) > 0L)
   if (identical(object$missing %||% "error", "error") &&
-      (anyNA(x) || (!is.null(codes) && anyNA(codes[checked, , drop = FALSE])) ||
+      (anyNA(x[checked, , drop = FALSE]) || (!is.null(codes) && anyNA(codes[checked, , drop = FALSE])) ||
        (!is.null(extra_values) && anyNA(extra_values[checked, , drop = FALSE])))) {
     bad_data(paste(
       "`newdata` has missing indicator values, and the fit was made with",
@@ -178,6 +178,8 @@ predict.multilpa_transitions <-function(object, ...) {
   if (two_level && anyNA(groups)) bad_data("The `id` column has missing values.")
   group_levels <- unique(groups)
   group_index <- match(groups, group_levels)
+  carrying <- if (is.null(contributing)) NULL else
+    tabulate(group_index[checked], length(group_levels)) > 0L
   centering <- object$centering %||% "none"
   scaling <- object$scaling %||% "none"
   # Grand offsets and scales are the fit's own; person ones belong to each
@@ -191,13 +193,13 @@ predict.multilpa_transitions <-function(object, ...) {
     x <- sweep(x, 2L, object$centering_offsets[1L, continuous], "-")
   } else if (identical(centering, "person")) {
     x <- .multilpa_center_indicators(x, group_index, length(group_levels),
-                                     "person")$x
+                                     "person", carrying = carrying)$x
   }
   if (identical(scaling, "grand")) {
     x <- sweep(x, 2L, object$scaling_factors[1L, continuous], "/")
   } else if (identical(scaling, "person")) {
     scales <- .multilpa_indicator_scales(x, group_index, length(group_levels),
-                                         "person")
+                                         "person", carrying = carrying)
     x <- x / scales[group_index, , drop = FALSE]
   }
   list(x = x, codes = codes, extra = extra, group_index = group_index,

@@ -105,7 +105,8 @@ test_that("indicator scaling depends on variation rather than its origin", {
   original <- fit(d)
   shifted_data <- transform(d, y = y + 1e9)
   shifted <- fit(shifted_data)
-  expect_equal(unname(shifted$scaling_factors), matrix(sd(shifted_data$y), 1, 1),
+  population_sd <- sqrt(mean((shifted_data$y - mean(shifted_data$y))^2))
+  expect_equal(unname(shifted$scaling_factors), matrix(population_sd, 1, 1),
                tolerance = 1e-7)
   expect_equal(shifted$variances, original$variances, tolerance = 1e-10)
   expect_equal(shifted$log_likelihood, original$log_likelihood, tolerance = 1e-8)

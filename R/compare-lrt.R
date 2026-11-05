@@ -8,7 +8,7 @@
 #' profiles and group classes, and the restriction must be regular (see
 #' `.latents_lrt_singular_covariance()`), so twice the log-likelihood
 #' difference has a chi-square reference with the difference in free
-#' parameters as degrees of freedom (Wilks, 1938).
+#' parameters as degrees of freedom.
 #'
 #' @param table A `latents_comparison` with its `models` attribute.
 #' @return `table` with `lr_statistic`, `lr_df` and `lr_p_value` (`NA` in the
@@ -45,10 +45,10 @@
   table$lr_statistic <- c(NA_real_, vapply(tests, `[[`, numeric(1), "statistic"))
   table$lr_df <- c(NA_integer_, vapply(tests, `[[`, integer(1), "df"))
   table$lr_p_value <- stats::pchisq(table$lr_statistic, table$lr_df, lower.tail = FALSE)
-  bound <- labels[vapply(models, function(fit) isTRUE(fit$boundary), logical(1))]
+  bound <- labels[vapply(models, .latents_boundary_active, logical(1))]
   if (length(bound) > 0L) {
     warning(warningCondition(sprintf(paste(
-      "%s %s a variance at `min_variance`: a parameter on its bound can make",
+      "%s %s a parameter at a numerical bound: a boundary can make",
       "the chi-square reference of the likelihood-ratio test inaccurate."),
       paste(bound, collapse = ", "), if (length(bound) > 1L) "have" else "has"),
       class = "latents_boundary", call = NULL))
@@ -379,7 +379,7 @@
 #' At a spherical null (EII or VII), every `A_k` is the identity, so those
 #' orientations have no value: near the null these alternatives are a union
 #' of linear spaces, one per orientation, not one smooth extension, and
-#' Wilks' chi-square reference does not hold (Drton, 2009). The review study
+#' Wilks' chi-square reference does not hold. The review study
 #' of EII within EVE rejected 8.0% of 500 null data sets at the nominal 5%
 #' (validation/review-2026-11-01/lrt-orientation.log). Every other nested
 #' pair of the fourteen structures is regular at a generic null: the full
@@ -389,8 +389,6 @@
 #' lose.
 #' @param null,alternative Fits already found nested.
 #' @return One logical value.
-#' @references Drton, M. (2009). Likelihood ratio tests and singularities.
-#'   *The Annals of Statistics*, 37(2), 979--1012.
 #' @noRd
 .latents_lrt_singular_covariance <- function(null, alternative) {
   counted <- function(fit) {

@@ -48,7 +48,9 @@
   }
   if (sum(valid) < iter) {
     warning(warningCondition(sprintf(
-      "%d of %d resamples did not produce a usable fit and were dropped.",
+      paste("%d of %d resamples did not produce a usable fit and were dropped;",
+            "intervals use the retained resamples only. Inspect messages for",
+            "missing occasions, factor levels or other unsupported coefficients."),
       iter - sum(valid), iter), class = "latents_bootstrap_dropped", call = NULL))
   }
   kept <- drawn$estimates[valid, , drop = FALSE]
@@ -99,7 +101,7 @@
                       conf_low = NA_real_, conf_high = NA_real_, name = names(estimates),
                       row.names = NULL, stringsAsFactors = FALSE))
   }
-  pieces <- strsplit(names(estimates), ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names(estimates))
   block <- vapply(pieces, `[`, character(1), 1L)
   moves <- strsplit(vapply(pieces, `[`, character(1), 3L), "->", fixed = TRUE)
   second <- block == "transition2"
@@ -110,7 +112,7 @@
     from = vapply(moves, function(m) if (length(m) < 2L) NA_character_ else
       m[length(m) - 1L], character(1)),
     to = vapply(moves, function(m) m[length(m)], character(1)),
-    term = vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1)),
+    term = .lta_coefficient_term(names(estimates)),
     estimate = unname(estimates), standard_error = NA_real_, statistic = NA_real_,
     p_value = NA_real_, p_adjusted = NA_real_, conf_low = NA_real_,
     conf_high = NA_real_,
@@ -162,6 +164,9 @@
         message = function(m) invokeRestart("muffleMessage"))
     },
     extract = function(fit) {
+      if (!setequal(names(.lta_bootstrap_estimates(fit)), reference_names)) {
+        return("the replicate's coefficients could not be matched: an occasion or design term is absent")
+      }
       aligned <- .lta_align_estimates(fit, x)
       if (!setequal(names(aligned), reference_names)) {
         return("the replicate's coefficients could not be matched")
@@ -242,7 +247,7 @@
                  }, numeric(x$n_profiles^2)))))
   }
   classes <- names(x$group_probabilities)
-  pieces <- strsplit(names(estimates), ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names(estimates))
   owner <- vapply(pieces, `[`, character(1), 2L)
   key <- vapply(pieces, function(p) paste(p[-2L], collapse = "."), character(1))
   keys <- sort(unique(key))
@@ -272,7 +277,7 @@
 .lta_relabel_profiles <- function(estimates, order) {
   n_profiles <- length(order)
   new_of_old <- match(seq_len(n_profiles), order)
-  pieces <- strsplit(names(estimates), ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names(estimates))
   block <- vapply(pieces, `[`, character(1), 1L)
   rename <- function(profiles) {
     numbers <- as.integer(sub("^profile_", "", strsplit(profiles, "->", fixed = TRUE)[[1L]]))
@@ -310,7 +315,7 @@
 #' @noRd
 .lta_relabel_classes <- function(estimates, order, classes) {
   new_name <- stats::setNames(classes[match(seq_along(classes), order)], classes)
-  pieces <- strsplit(names(estimates), ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names(estimates))
   names(estimates) <- vapply(pieces, function(p) {
     paste(c(p[1L], new_name[[p[2L]]], p[-(1:2)]), collapse = ".")
   }, character(1))

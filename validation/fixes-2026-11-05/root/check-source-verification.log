@@ -1,0 +1,3 @@
+R/help/NAMESPACE byte comparison: 191 checked; 0 differences.
+DESCRIPTION source fields normalized: 17 checked; 0 differences.
+R CMD build adds generated package metadata; this is expected.

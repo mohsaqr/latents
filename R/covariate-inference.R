@@ -569,6 +569,14 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
     cache_key = list(path = "covariates", fit = object, indicators = x,
                      designs = designs, codes = codes, moves = moves))
   free_covariance <- information$inverse
+  score_displacement <- max(abs(as.vector(crossprod(moves, gradient(theta)))) *
+                              sqrt(pmax(diag(free_covariance), 0)))
+  if (is.finite(score_displacement) && score_displacement > 0.01) {
+    warning(warningCondition(sprintf(paste(
+      "The fitted likelihood still carries a score worth %.1f%% of a",
+      "standard error; refit with a tighter `tol` before using Wald inference."),
+      100 * score_displacement), class = "latents_unconverged", call = NULL))
+  }
   if (vcov_type %in% c("robust", "opg")) {
     scores <- .multilpa_cov_group_scores(theta, x, object, codes) %*% moves
     # Only OPG inverts the outer product of the scores; the sandwich never
@@ -589,10 +597,10 @@ parameter_inference.multilpa_covariates <-function(x, data = NULL, level = 0.95,
   ## A grand mean or standard deviation the indicators were transformed with
   ## is estimated from the same data; its variability is added through the
   ## stacked estimating equations, as for the covariate-free fit (review
-  ## 2026-10-26 round 2, INF2-1). The bread is the inverse the model's own
-  ## covariance was formed with, in the same coordinates.
+  ## 2026-10-26 round 2, INF2-1). The transform's sensitivity uses the inverse
+  ## derivative of the score, irrespective of the covariance estimator.
   if (ncol(x) > 0L) {
-    bread <- if (identical(vcov_type, "opg")) free_covariance else information$inverse
+    bread <- information$inverse
     on_model_scale <- function(transformed) sweep(transformed, 2L, object$center, "-")
     covariance <- .multilpa_transform_covariance(
       object, covariance, moves %*% bread %*% t(moves), seq_along(theta), codes,
@@ -738,7 +746,9 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   is_response <- labels$parameter %in% c("response", "count_mean", "count_dispersion")
 
   quantile <- .inference_critical(level, "one_minus")
-  statistic <- estimate / errors
+  statistic <- rep(NA_real_, length(estimate))
+  testable <- is.finite(errors) & errors > 0
+  statistic[testable] <- estimate[testable] / errors[testable]
   result <- data.frame(
     labels, estimate = estimate, standard_error = errors,
     statistic = statistic,
@@ -787,7 +797,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
       c("variance", "covariance", "log_variance", "log_cholesky", "cholesky",
         "log_volume", "log_shape", "rotation", "shape_cholesky", "log_shape_cholesky")
     },
-    if ("response_probabilities" %in% fixed) "response")
+    if ("response_probabilities" %in% fixed) c("response", "response_logit"))
 }
 
 #' Natural-unit estimates of a covariate fit's free parameters

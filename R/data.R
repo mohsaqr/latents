@@ -155,9 +155,6 @@
 #'   `data-raw/student-esm.R` in the source repository; identifiers are
 #'   renumbered and the values are otherwise unchanged.
 #' @encoding UTF-8
-#' @references Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic
-#'   adjustment on multiple time scales. *Zeitschrift für
-#'   Erziehungswissenschaft*, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
 #' @seealso [multilpa()] with `categorical =` for the two-level latent class
 #'   model.
 #' @examples

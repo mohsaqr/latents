@@ -507,6 +507,13 @@
     stop(errorCondition("Inference requires a converged fit.",
                         class = "latents_no_converge", call = NULL))
   }
+  weak <- .lta_fit_weak_origins(fit)
+  if (any(weak$first) || any(weak$second)) {
+    stop(errorCondition(paste(
+      "Some transition origins have fewer than one expected outgoing move;",
+      "Wald inference is withheld because these rows have weak support."),
+      class = "latents_boundary_fit", call = NULL))
+  }
   if (isTRUE(fit$boundary)) {
     stop(errorCondition(paste(
       "A variance or covariance eigenvalue sits at min_variance, or a transition",
@@ -615,10 +622,10 @@
                                      fit$order %||% 1L, occupied)
   # Names are kind.owner.outcome.term; the owner of a measurement coordinate
   # is its block ("all" or "occasion_t"), of a logit its group class.
-  pieces <- strsplit(names_all, ".", fixed = TRUE)
+  pieces <- .lta_name_pieces(names_all)
   kind <- vapply(pieces, `[`, character(1), 1L)
   owner <- vapply(pieces, function(p) if (length(p) >= 2L) p[[2L]] else "", character(1))
-  term <- vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1))
+  term <- .lta_coefficient_term(names_all)
   identified <- rep(TRUE, length(names_all))
   by_occasion <- !kind %in% c("initial", "transition", "transition2") &
     grepl("^occasion_[0-9]+$", owner)
@@ -763,22 +770,35 @@
 
 #' Does any fitted initial or transition probability sit at zero?
 #'
-#' Read only where the weighted observed likelihood uses the probability; a probability
-#' below 1e-6 marks a move (or start) that never occurs, whose logit has no
-#' finite maximum.
+#' Read only where the weighted observed likelihood uses the probability.
+#' A category whose probability is below 1e-6 on every contributing design row
+#' is numerically absent. A single extreme covariate row is insufficient.
+#' Extreme coefficients are checked in the original fitting design chart,
+#' before mapping back to a potentially ill-conditioned raw covariate scale.
+#' @param expectation Final E-step probability terms.
+#' @param layout Sequence layout.
+#' @param stayer Structural stayer indicators.
+#' @param used Initial and transition rows that enter the likelihood.
+#' @param parameters,designs Logit parameters and design in the fitting chart.
+#' @return A single logical boundary diagnostic.
 #' @noRd
-.lta_probability_boundary <- function(expectation, layout, stayer = NULL, used = NULL) {
+.lta_probability_boundary <- function(expectation, layout, stayer = NULL, used = NULL,
+                                       parameters = NULL, designs = NULL) {
   used <- used %||% list(initial = rep(TRUE, nrow(layout$slot)), moves = layout$within)
   initial_min <- function(log_initial) {
     if (!any(used$initial)) return(1)
-    min(exp(log_initial[used$initial, , drop = FALSE]))
+    min(apply(exp(log_initial[used$initial, , drop = FALSE]), 2L, max))
   }
   # A stayer class's zero moves are structural, not estimated: skip them.
   stayer <- stayer %||% rep(FALSE, length(expectation$per_class))
   any(vapply(seq_along(expectation$per_class), function(h) {
     class_terms <- expectation$per_class[[h]]
+    extreme <- if (is.null(parameters) || is.null(designs)) FALSE else {
+      .lta_extreme_logits(matrix(parameters$initial[, , h], ncol(designs$initial)),
+                            designs$initial[used$initial, , drop = FALSE])
+    }
     if (isTRUE(stayer[h])) {
-      return(initial_min(class_terms$log_initial) < 1e-6)
+      return(extreme || initial_min(class_terms$log_initial) < 1e-6)
     }
     initial <- initial_min(class_terms$log_initial)
     first_occasions <- if (length(class_terms$log_transition2) > 0L) 1L else
@@ -786,14 +806,31 @@
     moves <- vapply(first_occasions, function(t) {
       active <- used$moves[, t + 1L]
       if (!any(active)) return(1)
-      min(exp(class_terms$log_transition[[t]][active, , , drop = FALSE]))
+      probability <- exp(class_terms$log_transition[[t]][active, , , drop = FALSE])
+      min(apply(probability, c(2L, 3L), max))
     }, numeric(1))
     second <- vapply(seq_along(class_terms$log_transition2), function(t) {
       active <- used$moves[, t + 2L]
       if (!any(active)) return(1)
-      min(exp(class_terms$log_transition2[[t]][active, , , drop = FALSE]))
+      probability <- exp(class_terms$log_transition2[[t]][active, , , drop = FALSE])
+      min(apply(probability, c(2L, 3L), max))
     }, numeric(1))
-    min(initial, moves, second) < 1e-6
+    if (!is.null(parameters) && !is.null(designs)) {
+      block_extreme <- function(coefficient, occasions) {
+        design <- do.call(rbind, lapply(occasions, function(t)
+          designs$transition[[t]][used$moves[, t + 1L], , drop = FALSE]))
+        if (is.null(design)) return(FALSE)
+        any(vapply(seq_len(dim(coefficient)[3L]), function(origin) {
+          .lta_extreme_logits(matrix(coefficient[, , origin, h], ncol(design)), design)
+        }, logical(1)))
+      }
+      extreme <- extreme || block_extreme(parameters$transition, first_occasions)
+      if (!is.null(parameters$transition2)) {
+        extreme <- extreme || block_extreme(parameters$transition2,
+                                             seq_along(class_terms$log_transition2) + 1L)
+      }
+    }
+    extreme || min(initial, moves, second) < 1e-6
   }, logical(1)))
 }
 

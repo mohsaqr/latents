@@ -22,7 +22,9 @@
   "latents_extreme_coefficients",
   # Not a defect: a single-level fixture is a deliberate `id = NULL`.
   "latents_single_level",
-  "latents_empty_transition_row"
+  "latents_empty_transition_row",
+  "latents_cross_level_criteria",
+  "latents_weak_transition_support"
 )
 # Deliberately NOT muffled by default, because each reports a result the suite
 # should not quietly accept: `multilpa_quadrature_check` (the integral is not

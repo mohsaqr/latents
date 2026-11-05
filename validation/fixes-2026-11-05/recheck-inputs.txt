@@ -1,0 +1,12 @@
+validation/fixes-2026-11-05/full-suite-results.rds
+validation/fixes-2026-11-05/root/final-boundaries-results.rds
+validation/fixes-2026-11-05/root/final-installed-regressions.rds
+validation/fixes-2026-11-05/root/stale-expectations-results.rds
+validation/fixes-2026-11-05/root/categorical-plot-results.rds
+validation/fixes-2026-11-05/root/final-engine-units-results.rds
+validation/fixes-2026-11-05/root/final-lead-results.rds
+validation/fixes-2026-11-05/root/dispatch-unlimited-results.rds
+validation/fixes-2026-11-05/root/final-plot-fixture-clean-results.rds
+validation/fixes-2026-11-05/regression/final-warning-fixtures-all-results.rds
+validation/fixes-2026-11-05/transitions/final-warning-fixtures.rds
+validation/fixes-2026-11-05/root/final-report-fixture-results.rds
