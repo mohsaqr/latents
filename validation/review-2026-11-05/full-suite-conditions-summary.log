@@ -1,0 +1,16 @@
+
+cross-level criterion warning       unknown processor count 
+                           26                            10 
+skips
+                                       Reason: _R_CHECK_LIMIT_CORES_ allows at most two workers 
+                                                                                              3 
+                                        Reason: !is.finite(available) || available < 1L is TRUE 
+                                                                                              1 
+Reason: Socket ports unavailable: creation of server socket failed: port 11466 cannot be opened 
+                                                                                              4 
+                                      Reason: supporting study is outside the installed package 
+                                                                                              2 
+                                          Reason: This BLAS cannot run safely in forked workers 
+                                                                                             15 
+                                   Reason: validation sources are outside the installed package 
+                                                                                              3 

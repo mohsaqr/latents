@@ -1,0 +1,4 @@
+.multilpa_compare_fits
+.multilpa_cov_held_parameters
+.cross_level_result
+.multilpa_diagnostic_catalogue

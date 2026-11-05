@@ -1,0 +1,118 @@
+expression(Sys.setenv(VECLIB_MAXIMUM_THREADS = "1", OMP_NUM_THREADS = "1", 
+    NOT_CRAN = "true"), pkgload::load_all(".", quiet = TRUE), 
+    cat("VERSION", as.character(packageVersion("latents")), "\n"), 
+    capture <- function(expr) {
+        warnings <- character()
+        value <- withCallingHandlers(tryCatch(expr, error = function(e) {
+            cat("ERROR", class(e)[1L], conditionMessage(e), "\n")
+            NULL
+        }), warning = function(w) {
+            warnings <<- c(warnings, paste(class(w)[1L], conditionMessage(w)))
+            invokeRestart("muffleWarning")
+        })
+        if (length(warnings)) 
+            cat("WARNINGS", paste(warnings, collapse = " | "), 
+                "\n")
+        list(value = value, warnings = warnings)
+    }, cat("\nA held categorical conditional inference\n"), set.seed(15051), 
+    n <- 500L, z <- rnorm(n), k <- 1L + rbinom(n, 1, plogis(0.2 + 
+        0.8 * z)), d <- data.frame(g = seq_len(n), z = z), vars <- paste0("u", 
+        1:5), d[vars] <- lapply(vars, function(v) factor(ifelse(runif(n) < 
+        c(0.75, 0.3)[k], "yes", "no"))), str(d), base <- multilpa(d, 
+        vars, "g", n_profiles = 2, n_group_classes = 1, categorical = vars, 
+        n_starts = 3, seed = 1, tol = 1e-10), held <- multilpa(d, 
+        vars, "g", n_profiles = 2, n_group_classes = 1, categorical = vars, 
+        profile_covariates = "z", start = starting_values(base, 
+            what = "measurement"), fixed = "measurement", n_starts = 1, 
+        seed = 1, tol = 1e-10), rp <- held$response_probabilities, 
+    ld <- vapply(1:2, function(kk) Reduce(`+`, lapply(vars, function(v) log(rp[[v]][kk, 
+        as.character(d[[v]])]))), numeric(n)), ll <- function(b) {
+        p <- plogis(b[1L] + b[2L] * d$z)
+        sum(log(p * exp(ld[, 1L]) + (1 - p) * exp(ld[, 2L])))
+    }, hand <- sqrt(diag(solve(-numDeriv::hessian(ll, as.vector(held$profile_coefficients))))), 
+    actual <- parameter_inference(held)$standard_error, print(data.frame(actual = actual, 
+        independent = hand, ratio = actual/hand)), cat("n_parameters", 
+        held$n_parameters, "vcov dims", dim(vcov(held, scale = "unconstrained")), 
+        "\n"), stopifnot(max(abs(actual/hand - 1)) < 1e-04, nrow(vcov(held, 
+        scale = "unconstrained")) == held$n_parameters), cat("confint dimension", 
+        dim(confint(held)), "\n"), stopifnot(nrow(confint(held)) == 
+        held$n_parameters), cat("\nB grand-transform OPG invariance\n"), 
+    set.seed(15052), G <- 70L, m <- 8L, g <- rep(seq_len(G), 
+        each = m), h <- sample(1:2, G, TRUE), k <- 1L + rbinom(G * 
+        m, 1, c(0.25, 0.75)[h[g]]), d <- data.frame(g = g, a = rnorm(G * 
+        m, c(-1.3, 1.3)[k]), b = rnorm(G * m, c(1, -1)[k]), c = rnorm(G * 
+        m, c(-0.5, 0.5)[k])), args <- list(data = d, vars = c("a", 
+        "b", "c"), id = "g", n_profiles = 2, n_group_classes = 2, 
+        n_starts = 3, seed = 1, tol = 1e-10), plain <- do.call(multilpa, 
+        args), grand <- do.call(multilpa, c(args, list(centering = "grand"))), 
+    invisible(lapply(c("observed", "robust", "opg"), function(type) {
+        p <- capture(parameter_inference(plain, vcov_type = type))$value
+        q <- capture(parameter_inference(grand, vcov_type = type))$value
+        if (is.null(p) || is.null(q)) return(NULL)
+        keep <- p$parameter == "probability"
+        print(data.frame(type = type, outcome = p$outcome[keep], 
+            term = p$term[keep], plain = p$standard_error[keep], 
+            grand = q$standard_error[keep], ratio = q$standard_error[keep]/p$standard_error[keep]))
+    })), cat("\nC staged three-step correction\n"), set.seed(15053), 
+    G <- 100L, m <- 10L, g <- rep(seq_len(G), each = m), h <- rep(1:2, 
+        length.out = G), k <- 1L + rbinom(G * m, 1, c(0.3, 0.7)[h[g]]), 
+    d <- data.frame(g = g, a = rnorm(G * m, c(-0.8, 0.8)[k]), 
+        b = rnorm(G * m, c(-0.7, 0.7)[k]), c = rnorm(G * m, c(0.7, 
+            -0.7)[k]), y = rnorm(G * m, c(0, 1)[k])), joint <- multilpa(d, 
+        c("a", "b", "c"), "g", n_profiles = 2, n_group_classes = 2, 
+        n_starts = 3, seed = 1, tol = 1e-10), staged <- fit_staged(d, 
+        c("a", "b", "c"), "g", n_profiles = 2, n_group_classes = 2, 
+        n_starts = 3, seed = 1), invisible(lapply(c("joint", 
+        "staged"), function(label) {
+        fit <- get(label)
+        a <- capture(three_step(fit, d, "y"))
+        b <- capture(three_step(fit, d, "y", step_one = "estimated"))
+        if (!is.null(a$value) && !is.null(b$value)) {
+            print(data.frame(fit = label, fixed = a$value$standard_error, 
+                estimated = b$value$standard_error, ratio = b$value$standard_error/a$value$standard_error))
+            cat("vcov dims", dim(vcov(fit, scale = "unconstrained")), 
+                "step_one", attr(b$value, "step_one"), "warnings", 
+                length(b$warnings), "\n")
+        }
+    })), cat("\nD staged bootstrap with foreign measurement\n"), 
+    set.seed(15054), G <- 50L, m <- 6L, g <- rep(seq_len(G), 
+        each = m), make_data <- function(shift = 0) {
+        h <- sample(1:2, G, TRUE)
+        k <- 1L + rbinom(G * m, 1, c(0.2, 0.8)[h[g]])
+        data.frame(g = g, a = shift + rnorm(G * m, c(-1.5, 1.5)[k]), 
+            b = rnorm(G * m, c(-1, 1)[k]), c = rnorm(G * m, c(-1, 
+                1)[k]))
+    }, foreign <- make_data(3), current <- make_data(), measurement <- multilpa(foreign, 
+        c("a", "b", "c"), "g", n_profiles = 2, n_group_classes = 1, 
+        n_starts = 3, seed = 1), staged <- fit_staged(current, 
+        c("a", "b", "c"), "g", n_profiles = 2, n_group_classes = 2, 
+        measurement = measurement, n_starts = 3, seed = 1), boot <- capture(parameter_inference(staged, 
+        method = "bootstrap", iter = 16, n_starts = 2, seed = 1)), 
+    if (!is.null(boot$value)) {
+        b <- boot$value
+        print(b[b$parameter == "mean", c("outcome", "term", "estimate", 
+            "conf_low", "conf_high")])
+        cat("outside intervals", sum(b$estimate < b$conf_low | 
+            b$estimate > b$conf_high), "of", nrow(b), "valid", 
+            attr(b, "n_valid"), "\n")
+        replicates <- as.data.frame(b, what = "replicates")
+        cat("bootstrap identity control, replicate rows", nrow(replicates), 
+            "\n")
+        altered <- b[rev(seq_len(nrow(b))), , drop = FALSE]
+        refused <- capture(as.data.frame(altered, what = "replicates"))
+        stopifnot(is.null(refused$value), nrow(replicates) == 
+            attr(b, "n_valid") * nrow(b))
+    }, cat("\nE r3step separation\n"), set.seed(15055), n <- 400L, 
+    k <- 1L + rbinom(n, 1, 0.5), d <- data.frame(a = rnorm(n, 
+        c(-2.5, 2.5)[k]), b = rnorm(n, c(-2.5, 2.5)[k])), fit <- lpa(d, 
+        c("a", "b"), n_profiles = 2, n_starts = 3, seed = 1), 
+    d$x <- ifelse(fit$subject_profiles == 1L, 1, -1) * 0.6 + 
+        rnorm(n, 0, 0.2), invisible(lapply(c("robust", "observed"), 
+        function(type) {
+            r <- capture(r3step(fit, d, "x", vcov_type = type))
+            cat("vcov_type", type, "warnings", length(r$warnings), 
+                "\n")
+            if (!is.null(r$value)) print(as.data.frame(r$value)[, 
+                c("term", "estimate", "standard_error", "p_value")])
+        })))
+PARSE_OK

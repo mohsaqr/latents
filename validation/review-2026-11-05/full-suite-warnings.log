@@ -1,0 +1,80 @@
+
+FILE test-cross-level.R TEST full nests restricted, and one group class makes them coincide 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-cross-level.R TEST the full model recovers group composition 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-cross-level.R TEST tables, plots and refusals of the cross-level families 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-fit-verbs.R TEST every fit class is a kind the named functions know 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-gaussian-diagnostic-tables.R TEST cross-level tables distinguish individual and group Gaussian densities 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-lta-parallel.R TEST transition enumeration propagates a lost flat start worker 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-parallel.R TEST a profile grid on several cores is identical to one core 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-parallel.R TEST transition and family grids on several cores are identical to one core 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-parallel.R TEST one fit's starts on several cores give the same fit as one core 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-parallel.R TEST a seeded multilevel LCA grid prepared on workers is identical to one core 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-release-units.R TEST every family counts replication within 1e-6 per observed value 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-1015-families.R TEST a failed full cross-level start is surfaced, as in every other family 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-1015-families.R TEST cross-level fits store and report the profile prevalences 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-1026-multilevel-r2.R TEST the equal between-group variance divides by the weighted total (CL-2) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-1026-multilevel-r2.R TEST cross-level criteria and nobs count units of positive weight (CL-3) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-1026-multilevel-r2.R TEST covariate and cross-level fits count replicated maxima as multilpa() does (RP-1) 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-families.R TEST restricted cross-level weights preserve a similarly named indicator 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-review-followup.R TEST restricted cross-level composition and class counts use group weights 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-search.R TEST emEM gives the same fit on one core and on two 
+`cores = 2` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-search.R TEST every fit path runs the emEM search and records it 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+
+FILE test-sensitivity.R TEST the seeds reach the parallel map with the cores asked for, in order 
+`cores = 3` was requested but this platform does not report its processor count, so one core is used. 
+
+FILE test-weights.R TEST weighted group-class families reproduce duplicated groups 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 

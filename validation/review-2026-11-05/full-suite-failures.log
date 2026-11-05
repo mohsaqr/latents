@@ -1,0 +1,438 @@
+
+FILE test-audit-1101-covariates-diagnostics.R TEST the bivariate residual of a 2x2 table is the hand Pearson chi-square, BH-adjusted in diagnostics() 
+expectation_failure: Expected `residuals$p_adjusted` to equal `residuals$p_value`.
+Differences:
+     actual  | expected               
+ [1] 0.96333 - 0.73317  [1]           
+ [2] 0.96333 - 0.80632  [2]           
+ [3] 0.96333 - 0.80597  [3]           
+ [4] 0.96333 - 0.81318  [4]           
+ [5] 0.96333 - 0.87373  [5]           
+ [6] 0.96333 - 0.88157  [6]           
+ [7] 0.96333 - 0.91773  [7]           
+ [8] 0.96333 - 0.92347  [8]           
+ [9] 0.96333 - 0.95118  [9]           
+[10] 0.96333 - 0.95095  [10]          
+ ... ...       ...      and 2 more ...
+
+
+FILE test-lta-parallel.R TEST serialized transition workers carry caller data and start controls 
+expectation_failure: Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual vs expected
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+
+expectation_failure: Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+
+expectation_failure: Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "Profile 2: 3.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+  "A variance reached min_variance; this is a bound-active constrained fit."
+  "A profile or group class has effective membership below one."
+
+expectation_failure: Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "Profile 2: 3.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+
+
+FILE test-lta-parallel.R TEST transition enumeration uses one unnested pool per search phase 
+expectation_failure: Expected `vapply(calls, `[[`, integer(1), "tasks")` to be identical to `if (search == "emEM") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 8  
+`expected`: 4 8
+
+expectation_failure: Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 8  8 9 9 18 18
+`expected`: 4 8 9 18          
+
+expectation_failure: Expected `vapply(calls, `[[`, integer(1), "tasks")` to be identical to `if (search == "emEM") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 16  8  
+`expected`:  4 16 8
+
+expectation_failure: Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 4  4 8 8 8 8 9 9 and 6 more...
+`expected`: 4 8 9 18                       ...
+
+expectation_failure: Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 8 8 9 9 18 18     and 6 more...
+`expected`: 4 4 4 4 8 8  8  8 9 9           ...
+
+
+FILE test-lta-parallel.R TEST unseeded transition setup draws in the same parent grid order as lta 
+expectation_failure: Expected `enumerated$result$conditions` to be identical to `as.character(...)`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+
+expectation_failure: Expected `enumerated$result$conditions` to be identical to `as.character(...)`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+
+
+FILE test-lta-parallel.R TEST covariance qualifications count every screened and continued start once 
+expectation_failure: Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+  "2 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+
+expectation_failure: Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+  "6 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+
+
+FILE test-lta-parallel.R TEST covariance qualifications survive failure of every transition start 
+expectation_failure: Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "2 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+
+expectation_failure: Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "4 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+
+
+FILE test-lta-parallel.R TEST direct general lta workers serialize both emEM stages without caller globals 
+expectation_failure: Expected `spread$conditions` to be identical to `serial$conditions`.
+Differences:
+actual vs expected
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+
+
+FILE test-parallel-profile-pool.R TEST profile enumeration shares one unnested start pool per search phase 
+expectation_failure: Expected `vapply(calls, function(call) length(call$tasks), integer(1))` to be identical to `if (kind == "EEE") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 8  
+`expected`: 4 8
+
+expectation_failure: Expected `vapply(calls, function(call) length(call$tasks), integer(1))` to be identical to `if (kind == "EEE") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 16  8  
+`expected`:  4 16 8
+
+expectation_failure: Expected `vapply(calls, function(call) length(call$tasks), integer(1))` to be identical to `if (kind == "EEE") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 8  
+`expected`: 4 8
+
+
+FILE test-parallel-profile-pool.R TEST serialized profile worker payloads own caller data and search controls 
+expectation_failure: Expected `result$conditions` to be identical to `expected[[i]]$conditions`.
+Differences:
+`actual` is length 6
+`expected` is length 5
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[2]])`:   "latents_unconverged"  "warning" "condition"
+`class(expected[[2]])`: "latents_unidentified" "warning" "condition"
+
+actual[[2]]$message vs expected[[2]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "The model is not identified: it has 14 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-3 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
+
+`class(actual[[3]])`:   "latents_unidentified" "warning" "condition"
+`class(expected[[3]])`: "latents_unconverged"  "warning" "condition"
+
+actual[[3]]$message vs expected[[3]]$message
+- "The model is not identified: it has 14 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-3 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`actual[[6]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[6]]` is absent
+
+expectation_failure: Expected `result$conditions` to be identical to `expected[[i]]$conditions`.
+Differences:
+`actual` is length 5
+`expected` is length 4
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[3]])`:   "latents_unconverged"   "warning" "condition"
+`class(expected[[3]])`: "latents_small_classes" "warning" "condition"
+
+actual[[3]]$message vs expected[[3]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "A profile or group class has effective membership below one."
+
+`class(actual[[4]])`:   "latents_small_classes" "warning" "condition"
+`class(expected[[4]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[4]]$message vs expected[[4]]$message
+- "A profile or group class has effective membership below one."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`actual[[5]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[5]]` is absent
+
+expectation_failure: Expected `result$conditions` to be identical to `expected[[i]]$conditions`.
+Differences:
+`actual` is length 6
+`expected` is length 5
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[2]])`:   "latents_unconverged"   "warning" "condition"
+`class(expected[[2]])`: "latents_thin_profiles" "warning" "condition"
+
+actual[[2]]$message vs expected[[2]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "Profile 3: 2.5 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+
+`class(actual[[3]])`:   "latents_thin_profiles" "warning" "condition"
+`class(expected[[3]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[3]]$message vs expected[[3]]$message
+- "Profile 3: 2.5 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[5]])`:   "latents_unconverged"   "warning" "condition"
+`class(expected[[5]])`: "latents_thin_profiles" "warning" "condition"
+
+actual[[5]]$message vs expected[[5]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "Profile 3: 3.6 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+
+`actual[[6]]` is an S3 object of class <latents_thin_profiles/warning/condition>, a list
+`expected[[6]]` is absent
+
+expectation_failure: Expected `replayed` to be identical to 7L.
+Differences:
+  `actual`: 4
+`expected`: 7
+
+
+FILE test-parallel-profile-pool.R TEST membership covariate grids retain candidate parallelism and serial starts 
+expectation_failure: Expected `result$conditions` to be identical to `expected$conditions`.
+Differences:
+`actual` is length 4
+`expected` is length 3
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best covariate start had not converged when `max_iter` was reached, or its membership logits still carry a non-negligible score, so the returned estimate is not a maximum."
+
+`actual[[4]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[4]]` is absent
+
+expectation_failure: Expected `calls` to have length 1.
+Actual length: 0.
+
+FILE test-parallel-profile-pool.R TEST joined categorical pairs retain exact candidate fits and worker payloads 
+expectation_failure: Expected `parallel_calls` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+expectation_failure: Expected `result$conditions` to be identical to `expected$conditions`.
+Differences:
+`actual` is length 5
+`expected` is length 4
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unidentified"  "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The model is not identified: it has 13 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-2 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
+
+actual[[2]]$message vs expected[[2]]$message
+- "The model is not identified: it has 13 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-2 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
++ "The model is not identified: it has 20 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-9 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
+
+`class(actual[[3]])`:   "latents_unidentified" "warning" "condition"
+`class(expected[[3]])`: "latents_unconverged"  "warning" "condition"
+
+actual[[3]]$message vs expected[[3]]$message
+- "The model is not identified: it has 20 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-9 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`actual[[5]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[5]]` is absent
+
+
+FILE test-parallel-profile-pool.R TEST unseeded profile starts draw in the direct fits' parent grid order 
+expectation_failure: Expected `grid$result$conditions` to be identical to `do.call(c, lapply(direct$result, `[[`, "conditions"))`.
+Differences:
+`actual` is length 4
+`expected` is length 3
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[2]])`:   "latents_unconverged"  "warning" "condition"
+`class(expected[[2]])`: "latents_unidentified" "warning" "condition"
+
+actual[[2]]$message vs expected[[2]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "The model is not identified: it has 14 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-3 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
+
+`class(actual[[3]])`:   "latents_unidentified" "warning" "condition"
+`class(expected[[3]])`: "latents_unconverged"  "warning" "condition"
+
+actual[[3]]$message vs expected[[3]]$message
+- "The model is not identified: it has 14 free parameters, but its indicators' 12 response patterns leave only 11 free cell probabilities (-3 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`actual[[4]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[4]]` is absent
+
+expectation_failure: Expected `grid$result$conditions` to be identical to `do.call(c, lapply(direct$result, `[[`, "conditions"))`.
+Differences:
+`actual` is length 2
+`expected` is length 1
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`actual[[2]]` is an S3 object of class <latents_unconverged/warning/condition>, a list
+`expected[[2]]` is absent
+
+expectation_failure: Expected `grid$result$conditions` to be identical to `do.call(c, lapply(direct$result, `[[`, "conditions"))`.
+Differences:
+`actual` is length 3
+`expected` is length 2
+
+`class(actual[[1]])`:   "latents_unknown_cores" "warning" "condition"
+`class(expected[[1]])`: "latents_unconverged"   "warning" "condition"
+
+actual[[1]]$message vs expected[[1]]$message
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
++ "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
+
+`class(actual[[2]])`:   "latents_unconverged"   "warning" "condition"
+`class(expected[[2]])`: "latents_thin_profiles" "warning" "condition"
+
+actual[[2]]$message vs expected[[2]]$message
+- "The best start did not converge; increase max_iter and see get_results(fit, \"starts\")."
++ "Profile 3: 2.5 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+
+`actual[[3]]` is an S3 object of class <latents_thin_profiles/warning/condition>, a list
+`expected[[3]]` is absent
+
+
+FILE test-parallel.R TEST candidates' warnings reach the caller in grid order, as on one core 
+expectation_failure: Expected `runs[[2]]$conditions` to be identical to `runs[[1]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "warning: `cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "warning: Profile 4: 9.8 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+  "warning: A variance reached min_variance; this is a bound-active constrained fit."
+  "warning: Profile 3: 3.0 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+
+
+FILE test-parallel.R TEST a seeded multilevel LCA grid prepared on workers is identical to one core 
+expectation_failure: Expected `progress` to have length 3.
+Actual length: 0.
+expectation_failure: Expected `progress[1L]` to match regexp "^Preparing 4 candidates on 2 workers\\.".
+Actual text:
+x | <NA>
+expectation_failure: Expected `progress[2L]` to match regexp "^Fitting 12 starts on 2 workers\\.".
+Actual text:
+x | <NA>
+expectation_failure: Expected `progress[3L]` to match regexp "^Done in ".
+Actual text:
+x | <NA>
+
+FILE test-plot-polish.R TEST the enumeration print shows a compact candidates table 
+expectation_failure: Expected output from `print(summary(grid))` to match regexp "returns all of them".
+Actual output:
+x | Class enumeration: 4 candidates, 4 converged, 0 failed to fit
+  | 1 distinct candidate(s) are minimal under some criterion.
+  | No candidate is selected automatically. Choose one convention and keep it.
+  | 
+  | ! Every criterion is lowest at the edge of the grid (profiles2_VVI): the grid
+  |     does not bracket a minimum. Extend it, or choose on the knees and the
+  |     classification quality.
+  | ! 4 of 4 candidates reached their best log likelihood from one start only
+  |     (profiles1_EEI, profiles2_EEI, profiles1_VVI, profiles2_VVI); refit those
+  |     you consider with more starts.
+  | 
+  | -- lowest value of each criterion --------------------------------
+  |  criterion  convention     candidate value
+  |        aic        <NA> profiles2_VVI 656.4
+  |        kic        <NA> profiles2_VVI 668.4
+  |        bic      groups profiles2_VVI 683.5
+  |        bic individuals profiles2_VVI 683.5
+  |      sabic      groups profiles2_VVI 655.0
+  |      sabic individuals profiles2_VVI 655.0
+  |       caic      groups profiles2_VVI 692.5
+  |       caic individuals profiles2_VVI 692.5
+  |        awe      groups profiles2_VVI 755.6
+  |        awe individuals profiles2_VVI 755.6
+  |        icl      groups profiles2_VVI 683.5
+  |        icl individuals profiles2_VVI 683.5
+  |        clc      groups profiles2_VVI 638.4
+  |        clc individuals profiles2_VVI 638.4
+  | 
+  | -- knees of bic_groups ----------------------------------------
+  |   direction                line knee_candidate knee_without_largest stable
+  |    profiles  1 group class, EEI           <NA>                 <NA>     NA
+  |    profiles  1 group class, VVI           <NA>                 <NA>     NA
+  |  parameters all candidates, EEI           <NA>                 <NA>     NA
+  |  parameters all candidates, VVI           <NA>                 <NA>     NA
+  | 
+  | Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+  |         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+  | Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
+
+FILE test-sensitivity.R TEST the seeds reach the parallel map with the cores asked for, in order 
+expectation_failure: Expected `seen$cores` to be identical to 3L.
+Differences:
+  `actual`: 1
+`expected`: 3
+

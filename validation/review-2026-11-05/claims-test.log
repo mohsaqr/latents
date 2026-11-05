@@ -1,0 +1,148 @@
+claims: ....................1.2.3.4.5.........6.7...8.9.a.b.c.d.e.f.g.h.i.j.k.l...m...............n........................................................................................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/inference.R: `sandwich::vcovCL()`, applied to every robust standard error in the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 2. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/inference.R: `sqrt(G / (G - 1))` times Mplus's. Groups are the independent units: to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 3. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/inference.R: on them, as Mplus does; the held probabilities are omitted from the table to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 4. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/inference.R: scaling correction factor `tr(A^-1 B) / q` (with `B` without the CR1 to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 5. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/inference-service.R: default of `sandwich::vcovCL()` (Cameron and Miller, 2015). Without it the to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 6. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/get-data.R: of independent units, `bic_rows` by the number of rows, as flexmix to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 7. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/get-data.R: exclude the same rows and groups, as in Mplus. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 8. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/multilpa.R: counts match mclust's for all fourteen. to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 9. Failure ('test-claims.R:43:5'): every claim is still worded as registered 
+Expected R/multilpa.R: The mixing proportions have no prior. As in mclust, the fit's to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+
+── 10. Failure ('test-claims.R:43:5'): every claim is still worded as registered
+Expected R/multilpa.R: `initialization = list(noise = )` and `Vinv`). `V` is mclust's to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─base::Map(...) at test-claims.R:40:3
+ 2.   └─base::mapply(FUN = f, ..., SIMPLIFY = FALSE)
+ 3.     └─`<fn>`(dots[[1L]][[44L]], dots[[2L]][[44L]])
+ 4.       └─testthat::expect_true(...) at test-claims.R:43:5
+  ... and 13 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+           file context                                                    test
+1 test-claims.R  claims    the registry has its columns and no duplicate claims
+2 test-claims.R  claims every claim is still worded as registered in its source
+3 test-claims.R  claims             every backed claim names a test that exists
+4 test-claims.R  claims unbacked claims are explained and do not grow unnoticed
+  nb failed skipped error warning  user system  real passed
+1  3      0   FALSE FALSE       0 0.026  0.005 0.035      3
+2 88     23   FALSE FALSE       0 0.620  0.090 0.857     65
+3 86      0   FALSE FALSE       0 0.134  0.061 0.353     86
+4  2      0   FALSE FALSE       0 0.004  0.002 0.007      2

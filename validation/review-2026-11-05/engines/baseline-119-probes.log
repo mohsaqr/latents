@@ -1,0 +1,67 @@
+
+E1 partial singleton centring
+'data.frame':	400 obs. of  4 variables:
+ $ id: int  1 2 3 4 5 6 7 8 9 10 ...
+ $ a : num  -1.125 -0.949 -0.884 1.241 -3.033 ...
+ $ b : num  -0.341 1.043 0.675 2.496 -2.414 ...
+ $ c : num  1.017 0.396 -0.675 0.499 -1.214 ...
+  k      bic boundary
+1 2 3228.997    FALSE
+2 3 2919.770     TRUE
+                   a             b             c
+profile_1  0.0000000 -7.703720e-34 -3.851860e-34
+profile_2  0.9653854 -9.241553e-01  3.074161e-01
+profile_3 -0.8341604  7.985347e-01 -2.656290e-01
+                     a            b            c
+profile_1 9.270624e-07 9.270624e-07 9.270624e-07
+profile_2 5.281359e-01 4.007470e-01 8.245984e-01
+profile_3 4.901270e-01 3.824633e-01 9.032604e-01
+All-zero rows: 10 
+[1] "latents_boundary A variance reached min_variance; this is a bound-active constrained fit."
+  k trimmed_bic
+1 2    3155.763
+2 3    3157.454
+
+E2 weighted grand transformations against duplicated rows
+           a          b        c
+[1,] 1.47741 -0.9221741 0.436157
+             a          b         c
+[1,] 0.7737117 -0.4368985 0.1922195
+            a        b        c
+[1,] 1.750772 1.880344 1.108491
+            a       b        c
+[1,] 1.599845 1.56926 1.093994
+  transform raw_mean_difference mean_difference
+1      none        2.033515e-08    2.033515e-08
+2     grand        2.914472e-01    6.424431e-01
+
+E3 membership unused level
+             case k       LL      bic
+1 unused retained 9 -330.325 698.8865
+2  unused dropped 8 -330.325 694.6380
+[1] "(Intercept)" "grpb"        "grpunused"  
+[1] "latents_singular_information The information matrix is singular or not positive definite: some parameters are not identified at this estimate (an empty class, a boundary solution or separation). Their standard errors are NA."
+
+E4 reserved id class overwrites ids
+  class n_rows posterior probability_class_1 probability_class_2
+1     1      4 0.9998736        0.9998736390        1.263610e-04
+2     1      4 0.9999996        0.9999996022        3.977710e-07
+3     2      4 0.9997315        0.0002685246        9.997315e-01
+4     1      4 0.9999996        0.9999996261        3.738701e-07
+5     1      4 0.9999998        0.9999998495        1.505054e-07
+6     2      4 0.9999298        0.0000702370        9.999298e-01
+[1] "class"               "n_rows"              "posterior"           "probability_class_1" "probability_class_2"
+character(0)
+Input IDs range: 1001 1070 reported class range: 1 2 
+
+E5 growth two-occasion exact covariance ridge
+          delta min_eigen residual_variance        LL
+class_1  -0.050 0.2941268         0.4119606 -367.7593
+class_11  0.000 0.2185894         0.4619606 -367.7593
+class_12  0.025 0.1786366         0.4869606 -367.7593
+Converged: TRUE n_parameters: 6 random boundary: FALSE 
+character(0)
+
+E6 occasion transitions bootstrap loses unique longest person
+Bootstrap result class: simpleError error condition 
+Bootstrap error: the two signatures must have the same shape 

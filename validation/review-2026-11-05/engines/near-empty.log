@@ -1,0 +1,18 @@
+character(0)
+  from to       probability    expected_count estimated
+7    3  1 1.00000000000e-10 1.20341162172e-19      TRUE
+8    3  2 1.77020268166e-09 6.96700609157e-17      TRUE
+9    3  3 9.99999998130e-01 2.92202788313e-07      TRUE
+origin total: 2.922028e-07 n_parameters: 38 boundary: FALSE 
+[1] "latents_boundary A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+     group_class occasion      from        to      probability estimated
+7  group_class_1        2 profile_3 profile_1 0.93322905747496      TRUE
+8  group_class_1        2 profile_3 profile_2 0.06328410265545      TRUE
+9  group_class_1        2 profile_3 profile_3 0.00348683986959      TRUE
+16 group_class_1        3 profile_3 profile_1 0.13740973775813      TRUE
+17 group_class_1        3 profile_3 profile_2 0.12621473148290      TRUE
+18 group_class_1        3 profile_3 profile_3 0.73637553075898      TRUE
+25 group_class_1        4 profile_3 profile_1 0.01540195585449      TRUE
+26 group_class_1        4 profile_3 profile_2 0.01688238975380      TRUE
+27 group_class_1        4 profile_3 profile_3 0.96771565439171      TRUE
+General origin totals per move: 2.789197e-17 4.507846e-24 2.064186e-19 n_parameters: 50 

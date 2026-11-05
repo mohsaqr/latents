@@ -1,0 +1,7 @@
+<subscriptOutOfBoundsError/error/condition>
+Error in `calls[[1L]]`: subscript out of bounds 
+expect_length(calls[[1L]]$tasks, 4L)
+    ▆
+ 1. └─testthat::expect_length(calls[[1L]]$tasks, 4L) at test-parallel-profile-pool.R:247:3
+ 2.   └─testthat::quasi_label(enquo(object))
+ 3.     └─rlang::eval_bare(expr, quo_get_env(quo))

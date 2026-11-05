@@ -1,0 +1,64 @@
+   step_one within_92_98
+1 estimated           47
+2     fixed           40
+        outcome classes categories entropy    n method min_coverage
+5   categorical       2          2     0.6 1000    bch    0.9500000
+7   categorical       2          2     0.6 1000     ml    0.9500000
+33  categorical       3          2     0.6  300    bch    0.8850000
+35  categorical       3          2     0.6  300     ml    0.8934010
+45  categorical       3          2     0.8 1000    bch    0.9450000
+47  categorical       3          2     0.8 1000     ml    0.9450000
+49  categorical       3          3     0.6  300    bch    0.8500000
+51  categorical       3          3     0.6  300     ml    0.8608247
+53  categorical       3          3     0.6 1000    bch    0.9150000
+55  categorical       3          3     0.6 1000     ml    0.9100000
+97      numeric       3          2     0.6  300    bch    0.8450000
+99      numeric       3          2     0.6  300     ml    0.8341709
+103     numeric       3          2     0.6 1000     ml    0.9100000
+113     numeric       3          3     0.6  300    bch    0.8500000
+115     numeric       3          3     0.6  300     ml    0.8950000
+121     numeric       3          3     0.8  300    bch    0.9150000
+123     numeric       3          3     0.8  300     ml    0.9100000
+    max_coverage
+5      0.9900000
+7      0.9900000
+33     0.9500000
+35     0.9543147
+45     0.9850000
+47     0.9850000
+49     0.9646465
+51     0.9690722
+53     0.9750000
+55     0.9750000
+97     0.9500000
+99     0.9396985
+103    0.9650000
+113    0.9650000
+115    0.9550000
+121    0.9550000
+123    0.9500000
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_4.5.2
+testthat 3.3.2
+pkgload 1.4.1
+numDeriv 2016.8.1.1
+ggplot2 4.0.3
+dplyr 1.2.1
+MoEClust 1.6.0

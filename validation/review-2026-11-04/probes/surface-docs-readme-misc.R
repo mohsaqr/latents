@@ -1,0 +1,38 @@
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+options(digits = 5, width = 150)
+vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(data = course_engagement, vars = vars, id = "student", n_profiles = 2, n_group_classes = 2, variance_model = "varying", n_starts = 10, seed = 1)
+print(get_results(fit)); print(get_results(fit, "profile_probabilities")); print(get_results(fit, "entropy"))
+print(get_results(fit, "assignments", data = course_engagement, truth = c("engagement", "student_type")))
+# default variance model and the eval=FALSE reference calls
+f0 <- multilpa(course_engagement, vars, id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 3, seed = 1)
+cat("default variance_model:", f0$variance_model, " structure:", f0$covariance_structure, "\n")
+## residual p_adjusted: table vs verb
+a <- get_results(f0, "residuals"); b <- get_residuals(f0)
+cat("identical p_adjusted? ", isTRUE(all.equal(a$p_adjusted, b$p_adjusted)), " p_adjusted==p_value in get_results:", isTRUE(all.equal(a$p_adjusted, a$p_value)), "\n")
+print(head(a[c("profile","indicator_1","indicator_2","p_value","p_adjusted")], 6)); print(head(b[c("profile","indicator_1","indicator_2","p_value","p_adjusted")], 6))
+## evaluation.Rmd reference: bootstrap test with VVI candidate vs default fit
+cand <- enumerate_classes(course_engagement, vars = vars, id = "student", n_profiles = 2:3, n_group_classes = 2, model="VVI", n_starts = 2, seed = 1)
+big <- get_candidate(cand, n_profiles = 3, n_group_classes = 2)
+r <- tryCatch({bootstrap_lrt(f0, big, iter = 1, seed = 42); "ran"}, error = function(e) paste("ERR", class(e)[1], conditionMessage(e)))
+print(r)
+## lca vignette eval=FALSE plot_profiles(lca)
+act <- c("time_with_friends", "on_social_media", "tv_video_games","listened_music", "sports", "walking", "reading","part_time_job")
+fw <- subset(student_esm, day <= 6)
+lca <- multilca(fw, vars = act, id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 3, seed = 1)
+print(tryCatch({plot_profiles(lca); "ran"}, error = function(e) paste("ERR", class(e)[1], conditionMessage(e))))
+## staged vs joint comparison
+st <- fit_staged(course_engagement, vars, id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 3, seed = 1)
+cmp <- tryCatch(compare_models(joint = f0, staged = st), error = function(e) {cat("cmp ERR", class(e)[1], conditionMessage(e), "\n"); NULL}, warning = function(w) {cat("cmp WARN", conditionMessage(w), "\n"); NULL})
+print(cmp)
+print(st$aic); print(f0$aic); print(BIC(st)); print(BIC(f0)); print(attr(logLik(st),"df"))
+## weighted standardization
+w <- transform(course_engagement, wt = ifelse(student_type == "wavering", 3, 1))
+wf <- multilpa(w, vars, id = "student", n_profiles = 2, n_group_classes = 2, weights = "wt", n_starts = 3, seed = 1)
+print(wf)
+sm <- get_results(wf, "profiles", scale = "standardized")
+pr <- subset(get_results(wf, "counts"), level == "individuals")$effective_proportion
+wm <- tapply(sm$mean * pr[sm$profile], sm$indicator, sum)
+cat("model-implied overall standardized mean (should be ~0 if centre weighted):\n"); print(wm)
+print(descriptives(wf))
+print(tryCatch(parameter_inference(wf, vcov_type = "observed")[1:2,], error = function(e) paste("ERR", class(e)[1], conditionMessage(e))))

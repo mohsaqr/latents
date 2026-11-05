@@ -1,0 +1,12 @@
+Datasets: 500 
+Boundary fits: 0 
+Degrees of freedom: 3 
+Mean statistic: 3.687609 
+5% rejection rate: 0.08 
+
+	Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  results$p_value
+D = 0.1582, p-value = 2.706e-11
+alternative hypothesis: two-sided
+

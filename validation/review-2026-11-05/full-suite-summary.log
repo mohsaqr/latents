@@ -1,0 +1,59 @@
+                                     file
+ test-audit-1101-covariates-diagnostics.R
+                      test-lta-parallel.R
+                      test-lta-parallel.R
+                      test-lta-parallel.R
+                      test-lta-parallel.R
+                      test-lta-parallel.R
+                      test-lta-parallel.R
+             test-parallel-profile-pool.R
+             test-parallel-profile-pool.R
+             test-parallel-profile-pool.R
+             test-parallel-profile-pool.R
+             test-parallel-profile-pool.R
+                          test-parallel.R
+                          test-parallel.R
+                       test-plot-polish.R
+                       test-sensitivity.R
+                                                                                               test
+ the bivariate residual of a 2x2 table is the hand Pearson chi-square, BH-adjusted in diagnostics()
+                                 serialized transition workers carry caller data and start controls
+                                     transition enumeration uses one unnested pool per search phase
+                               unseeded transition setup draws in the same parent grid order as lta
+                            covariance qualifications count every screened and continued start once
+                                covariance qualifications survive failure of every transition start
+                       direct general lta workers serialize both emEM stages without caller globals
+                                profile enumeration shares one unnested start pool per search phase
+                             serialized profile worker payloads own caller data and search controls
+                          membership covariate grids retain candidate parallelism and serial starts
+                           joined categorical pairs retain exact candidate fits and worker payloads
+                                 unseeded profile starts draw in the direct fits' parent grid order
+                                candidates' warnings reach the caller in grid order, as on one core
+                          a seeded multilevel LCA grid prepared on workers is identical to one core
+                                             the enumeration print shows a compact candidates table
+                                the seeds reach the parallel map with the cores asked for, in order
+ failed error warning passed
+      1 FALSE       0      6
+      4 FALSE       0     16
+      5 FALSE       0      7
+      2 FALSE       0      4
+      2 FALSE       0      6
+      2 FALSE       0     10
+      1 FALSE       0      2
+      3 FALSE       0     22
+      4 FALSE       0      3
+      2  TRUE       0      2
+      2 FALSE       0      3
+      3 FALSE       0      6
+      1 FALSE       0      2
+      4 FALSE       2      3
+      1 FALSE       0      2
+      1 FALSE       1      2
+FILES 254 CASES 2064 
+                                     file failed error warning skipped passed
+ test-audit-1101-covariates-diagnostics.R      1     0       0       0     40
+                      test-lta-parallel.R     16     0       2       2     79
+             test-parallel-profile-pool.R     14     1       0       5     40
+                          test-parallel.R      5     0       6       3     94
+                       test-plot-polish.R      1     0       0       0    108
+                       test-sensitivity.R      1     0       1       1     75

@@ -1,0 +1,7 @@
+args <- commandArgs(TRUE)
+pkgload::load_all(args[[1]],quiet=TRUE)
+x <- testthat::test_dir(file.path(args[[1]],"tests/testthat"), filter="^(audit-core-repairs|audit-validation-fork-safety)$",load_package="none",reporter="summary",stop_on_failure=FALSE)
+saveRDS(x,file.path(args[[2]],"supplemental-validation-results.rds"))
+z<-as.data.frame(x)
+write.csv(z[,setdiff(names(z),"result"),drop=FALSE],file.path(args[[2]],"supplemental-validation-results.csv"),row.names=FALSE)
+print(colSums(z[,c("passed","failed","error","warning","skipped")]))

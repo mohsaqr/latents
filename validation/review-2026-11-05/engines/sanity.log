@@ -1,0 +1,44 @@
+[1] "multilpa"
+ [1] "means"                         "variances"                     "profile_probabilities"        
+ [4] "group_probabilities"           "call"                          "vars"                         
+ [7] "continuous"                    "continuous_types"              "ordinal"                      
+[10] "count"                         "extra_data"                    "categorical"                  
+[13] "categorical_levels"            "min_probability"               "categorical_values"           
+[16] "indicator_data"                "centering"                     "centering_offsets"            
+[19] "scaling"                       "scaling_factors"               "categorical_data"             
+[22] "id"                            "group_ids"                     "single_level"                 
+[25] "weights"                       "sampling_weights"              "time"                         
+[28] "time_values"                   "group_values"                  "group_index"                  
+[31] "group_sizes"                   "n_observations"                "n_informative"                
+[34] "informative"                   "n_informative_groups"          "drop_empty"                   
+[37] "n_groups"                      "n_profiles"                    "n_group_classes"              
+[40] "variance_model"                "covariance_model"              "covariance_structure"         
+[43] "prior"                         "acceleration"                  "prior_parameters"             
+[46] "missing"                       "max_iter"                      "tol"                          
+[49] "n_observed_by_indicator"       "min_variance"                  "standard_deviations"          
+[52] "fixed"                         "measurement_model"             "subject_posteriors"           
+[55] "group_posteriors"              "subject_profiles"              "group_classes"                
+[58] "log_likelihood"                "group_log_likelihood"          "n_parameters"                 
+[61] "n_parameters_with_measurement" "aic"                           "bic"                          
+[64] "bic_groups"                    "bic_individual"                "converged"                    
+[67] "iterations"                    "log_likelihood_history"        "starts"                       
+[70] "best_start"                    "n_failed_starts"               "boundary"                     
+[73] "small_classes"                 "effective_profile_counts"      "effective_group_counts"       
+[76] "n_best_replicated"             "replication_tolerance"         "noise"                        
+[79] "search"                        "n_starts"                      "n_screen"                     
+[82] "select_start"                  "boundary_policy"               "classification_entropy_rows"  
+[85] "gaussian_diagnostics"         
+     profile_1    profile_2
+1 1.000000e+00 5.589712e-12
+2 2.333555e-09 1.000000e+00
+3 1.752905e-07 9.999998e-01
+4 1.000000e+00 1.225993e-08
+5 1.000000e+00 2.302102e-14
+6 1.000000e+00 2.438903e-15
+VVI hand likelihood error: 0 
+Tiny-unit likelihood Jacobian error: 5.456968e-12 
+Gaussian regression LL error vs lm ML: -1.136868e-13 
+coefficient.class_1.(Intercept)           coefficient.class_1.a               log_sigma.class_1 
+                      1.0290264                       0.7011126                      -0.1385894 
+(Intercept)           a 
+  1.0290264   0.7011126 

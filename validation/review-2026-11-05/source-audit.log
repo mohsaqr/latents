@@ -1,0 +1,1204 @@
+
+BASELINE a10a919b 
+functions before/current: 972 1588 
+added/removed/changed: 622 6 482 
+exports removed:  
+exports added: align_labels, get_avepp, get_best, get_candidate, get_candidates, get_checks, get_classification, get_deltas, get_entropy, get_knees, get_replication, get_residuals, get_tree, overview, plot_all, plot_avepp, plot_bars, plot_classification, plot_coefficients, plot_criteria, plot_deltas, plot_diagnostics, plot_entropy, plot_enumeration, plot_heatmap, plot_individuals, plot_pairs, plot_parallel, plot_posteriors, plot_prevalence, plot_profiles, plot_raincloud, plot_responses, plot_selection, plot_sequences, plot_sizes, plot_trajectories, plot_transitions, plot_tree, plot_trust 
+[[1]]
+[[1]]$name
+[1] "compare_models"
+
+[[1]]$before
+[[1]]$before$...
+
+
+
+[[1]]$after
+[[1]]$after$...
+
+
+[[1]]$after$n_profiles
+NULL
+
+[[1]]$after$n_group_classes
+NULL
+
+[[1]]$after$cutoff
+[1] 0.8
+
+[[1]]$after$test
+c("none", "lrt")
+
+
+
+[[2]]
+[[2]]$name
+[1] "enumerate_classes"
+
+[[2]]$before
+[[2]]$before$data
+
+
+[[2]]$before$vars
+
+
+[[2]]$before$id
+
+
+[[2]]$before$n_profiles
+1:4
+
+[[2]]$before$n_group_classes
+1:3
+
+[[2]]$before$model
+[1] "basic"
+
+[[2]]$before$seed
+NULL
+
+[[2]]$before$family
+[1] "profiles"
+
+[[2]]$before$between_variance
+c("varying", "equal")
+
+[[2]]$before$time
+NULL
+
+[[2]]$before$...
+
+
+
+[[2]]$after
+[[2]]$after$data
+
+
+[[2]]$after$vars
+
+
+[[2]]$after$id
+
+
+[[2]]$after$n_profiles
+1:4
+
+[[2]]$after$n_group_classes
+1:3
+
+[[2]]$after$model
+[1] "basic"
+
+[[2]]$after$seed
+NULL
+
+[[2]]$after$family
+[1] "profiles"
+
+[[2]]$after$between_variance
+c("varying", "equal")
+
+[[2]]$after$time
+NULL
+
+[[2]]$after$...
+
+
+[[2]]$after$cores
+[1] 1
+
+[[2]]$after$type
+NULL
+
+[[2]]$after$verbose
+cores > 1L
+
+
+
+[[3]]
+[[3]]$name
+[1] "bootstrap_lrt"
+
+[[3]]$before
+[[3]]$before$null_model
+
+
+[[3]]$before$alternative_model
+
+
+[[3]]$before$data
+NULL
+
+[[3]]$before$iter
+[1] 199
+
+[[3]]$before$n_starts
+[1] 10
+
+[[3]]$before$max_iter
+[1] 1000
+
+[[3]]$before$tol
+[1] 1e-08
+
+[[3]]$before$seed
+NULL
+
+
+[[3]]$after
+[[3]]$after$null_model
+
+
+[[3]]$after$alternative_model
+
+
+[[3]]$after$data
+NULL
+
+[[3]]$after$iter
+[1] 199
+
+[[3]]$after$n_starts
+NULL
+
+[[3]]$after$max_iter
+NULL
+
+[[3]]$after$tol
+NULL
+
+[[3]]$after$seed
+NULL
+
+
+
+[[4]]
+[[4]]$name
+[1] "fit_staged"
+
+[[4]]$before
+[[4]]$before$data
+
+
+[[4]]$before$vars
+
+
+[[4]]$before$id
+
+
+[[4]]$before$n_profiles
+
+
+[[4]]$before$n_group_classes
+[1] 2
+
+[[4]]$before$measurement
+NULL
+
+[[4]]$before$variance_model
+c("varying", "equal")
+
+[[4]]$before$n_starts
+[1] 10
+
+[[4]]$before$max_iter
+[1] 1000
+
+[[4]]$before$tol
+[1] 1e-08
+
+[[4]]$before$min_variance
+[1] 1e-06
+
+[[4]]$before$seed
+NULL
+
+[[4]]$before$missing
+c("error", "fiml")
+
+[[4]]$before$covariance_model
+c("diagonal", "full")
+
+[[4]]$before$categorical
+character()
+
+[[4]]$before$min_probability
+[1] 1e-10
+
+[[4]]$before$time
+NULL
+
+
+[[4]]$after
+[[4]]$after$data
+
+
+[[4]]$after$vars
+
+
+[[4]]$after$id
+
+
+[[4]]$after$n_profiles
+
+
+[[4]]$after$n_group_classes
+[1] 2
+
+[[4]]$after$measurement
+NULL
+
+[[4]]$after$variance_model
+c("varying", "equal")
+
+[[4]]$after$n_starts
+[1] 10
+
+[[4]]$after$max_iter
+[1] 1000
+
+[[4]]$after$tol
+[1] 1e-08
+
+[[4]]$after$min_variance
+NULL
+
+[[4]]$after$seed
+NULL
+
+[[4]]$after$missing
+c("error", "fiml")
+
+[[4]]$after$covariance_model
+c("diagonal", "full")
+
+[[4]]$after$categorical
+character()
+
+[[4]]$after$min_probability
+[1] 1e-10
+
+[[4]]$after$time
+NULL
+
+[[4]]$after$search
+NULL
+
+[[4]]$after$n_screen
+NULL
+
+
+
+[[5]]
+[[5]]$name
+[1] "mixture_regression"
+
+[[5]]$before
+[[5]]$before$formula
+
+
+[[5]]$before$data
+
+
+[[5]]$before$n_classes
+
+
+[[5]]$before$family
+c("gaussian", "binomial", "poisson", "negative_binomial", "ordinal")
+
+[[5]]$before$id
+NULL
+
+[[5]]$before$class_level
+c("observation", "group")
+
+[[5]]$before$n_group_classes
+[1] 1
+
+[[5]]$before$common
+NULL
+
+[[5]]$before$membership
+~1
+
+[[5]]$before$group_membership
+~1
+
+[[5]]$before$variance
+c("varying", "equal")
+
+[[5]]$before$n_starts
+[1] 10
+
+[[5]]$before$max_iter
+[1] 1000
+
+[[5]]$before$tol
+[1] 1e-08
+
+[[5]]$before$min_variance
+[1] 1e-06
+
+[[5]]$before$seed
+NULL
+
+[[5]]$before$missing
+c("error", "omit")
+
+[[5]]$before$select_start
+c("likelihood", "converged")
+
+[[5]]$before$vcov_type
+c("observed", "robust", "opg", "none")
+
+[[5]]$before$weights
+NULL
+
+[[5]]$before$random
+NULL
+
+[[5]]$before$random_covariance
+c("varying", "equal", "proportional")
+
+[[5]]$before$random_diagonal
+[1] FALSE
+
+[[5]]$before$cluster
+NULL
+
+
+[[5]]$after
+[[5]]$after$formula
+
+
+[[5]]$after$data
+
+
+[[5]]$after$n_classes
+
+
+[[5]]$after$family
+c("gaussian", "binomial", "poisson", "negative_binomial", "ordinal")
+
+[[5]]$after$id
+NULL
+
+[[5]]$after$class_level
+c("observation", "group")
+
+[[5]]$after$n_group_classes
+[1] 1
+
+[[5]]$after$common
+NULL
+
+[[5]]$after$membership
+~1
+
+[[5]]$after$group_membership
+~1
+
+[[5]]$after$variance
+c("varying", "equal")
+
+[[5]]$after$n_starts
+[1] 10
+
+[[5]]$after$max_iter
+[1] 1000
+
+[[5]]$after$tol
+[1] 1e-08
+
+[[5]]$after$min_variance
+[1] 1e-06
+
+[[5]]$after$seed
+NULL
+
+[[5]]$after$missing
+c("error", "omit")
+
+[[5]]$after$select_start
+c("likelihood", "converged")
+
+[[5]]$after$vcov_type
+c("observed", "robust", "opg", "none")
+
+[[5]]$after$weights
+NULL
+
+[[5]]$after$random
+NULL
+
+[[5]]$after$random_covariance
+c("varying", "equal", "proportional")
+
+[[5]]$after$random_diagonal
+[1] FALSE
+
+[[5]]$after$cluster
+NULL
+
+[[5]]$after$residual_correlation
+c("none", "ar", "brownian")
+
+[[5]]$after$residual_time
+NULL
+
+
+
+[[6]]
+[[6]]$name
+[1] "multilpa"
+
+[[6]]$before
+[[6]]$before$data
+
+
+[[6]]$before$vars
+
+
+[[6]]$before$id
+
+
+[[6]]$before$n_profiles
+
+
+[[6]]$before$n_group_classes
+[1] 2
+
+[[6]]$before$profile_covariates
+character()
+
+[[6]]$before$group_covariates
+character()
+
+[[6]]$before$variance_model
+c("varying", "equal")
+
+[[6]]$before$n_starts
+[1] 10
+
+[[6]]$before$max_iter
+[1] 1000
+
+[[6]]$before$tol
+[1] 1e-08
+
+[[6]]$before$min_variance
+[1] 1e-06
+
+[[6]]$before$seed
+NULL
+
+[[6]]$before$start
+NULL
+
+[[6]]$before$missing
+c("error", "fiml")
+
+[[6]]$before$profile_slopes
+c("shared", "group_class")
+
+[[6]]$before$covariance_model
+c("diagonal", "full")
+
+[[6]]$before$categorical
+character()
+
+[[6]]$before$min_probability
+[1] 1e-10
+
+[[6]]$before$time
+NULL
+
+[[6]]$before$fixed
+character()
+
+[[6]]$before$centering
+c("none", "person", "grand")
+
+[[6]]$before$volume
+NULL
+
+[[6]]$before$shape
+NULL
+
+[[6]]$before$orientation
+NULL
+
+[[6]]$before$model
+NULL
+
+[[6]]$before$select_start
+c("likelihood", "converged")
+
+[[6]]$before$prior
+NULL
+
+[[6]]$before$noise
+[1] FALSE
+
+[[6]]$before$acceleration
+c("squarem", "none")
+
+[[6]]$before$family
+c("profiles", "additive", "dispersion", "additive_dispersion", 
+    "restricted_cross_level", "full_cross_level")
+
+[[6]]$before$between_variance
+c("varying", "equal")
+
+[[6]]$before$weights
+NULL
+
+[[6]]$before$ordinal
+character()
+
+[[6]]$before$count
+character()
+
+[[6]]$before$count_model
+c("poisson", "negative_binomial")
+
+[[6]]$before$count_dispersion
+c("varying", "equal")
+
+
+[[6]]$after
+[[6]]$after$data
+
+
+[[6]]$after$vars
+
+
+[[6]]$after$id
+
+
+[[6]]$after$n_profiles
+
+
+[[6]]$after$n_group_classes
+[1] 2
+
+[[6]]$after$profile_covariates
+character()
+
+[[6]]$after$group_covariates
+character()
+
+[[6]]$after$variance_model
+c("varying", "equal")
+
+[[6]]$after$n_starts
+[1] 10
+
+[[6]]$after$max_iter
+[1] 1000
+
+[[6]]$after$tol
+[1] 1e-08
+
+[[6]]$after$min_variance
+NULL
+
+[[6]]$after$seed
+NULL
+
+[[6]]$after$start
+NULL
+
+[[6]]$after$missing
+c("error", "fiml")
+
+[[6]]$after$profile_slopes
+c("shared", "group_class")
+
+[[6]]$after$covariance_model
+c("diagonal", "full")
+
+[[6]]$after$categorical
+character()
+
+[[6]]$after$min_probability
+[1] 1e-10
+
+[[6]]$after$time
+NULL
+
+[[6]]$after$fixed
+character()
+
+[[6]]$after$centering
+c("none", "person", "grand")
+
+[[6]]$after$volume
+NULL
+
+[[6]]$after$shape
+NULL
+
+[[6]]$after$orientation
+NULL
+
+[[6]]$after$model
+NULL
+
+[[6]]$after$select_start
+c("likelihood", "converged")
+
+[[6]]$after$prior
+NULL
+
+[[6]]$after$noise
+[1] FALSE
+
+[[6]]$after$acceleration
+c("squarem", "none")
+
+[[6]]$after$family
+c("profiles", "additive", "dispersion", "additive_dispersion", 
+    "restricted_cross_level", "full_cross_level")
+
+[[6]]$after$between_variance
+c("varying", "equal")
+
+[[6]]$after$weights
+NULL
+
+[[6]]$after$ordinal
+character()
+
+[[6]]$after$count
+character()
+
+[[6]]$after$count_model
+c("poisson", "negative_binomial")
+
+[[6]]$after$count_dispersion
+c("varying", "equal")
+
+[[6]]$after$scaling
+c("none", "person", "grand")
+
+[[6]]$after$drop_empty
+[1] TRUE
+
+[[6]]$after$cores
+[1] 1
+
+[[6]]$after$local_dependence
+character()
+
+[[6]]$after$direct_effects
+character()
+
+[[6]]$after$search
+NULL
+
+[[6]]$after$n_screen
+NULL
+
+[[6]]$after$boundary
+c("allow", "exclude")
+
+
+
+[[7]]
+[[7]]$name
+[1] "plot_views"
+
+[[7]]$before
+NULL
+
+[[7]]$after
+[[7]]$after$x
+NULL
+
+
+
+[[8]]
+[[8]]$name
+[1] "sensitivity"
+
+[[8]]$before
+[[8]]$before$x
+
+
+[[8]]$before$data
+NULL
+
+[[8]]$before$seeds
+1:10
+
+[[8]]$before$n_starts
+NULL
+
+[[8]]$before$max_iter
+NULL
+
+[[8]]$before$tol
+NULL
+
+[[8]]$before$tolerance
+NULL
+
+
+[[8]]$after
+[[8]]$after$x
+
+
+[[8]]$after$data
+NULL
+
+[[8]]$after$seeds
+1:10
+
+[[8]]$after$n_starts
+NULL
+
+[[8]]$after$max_iter
+NULL
+
+[[8]]$after$tol
+NULL
+
+[[8]]$after$tolerance
+NULL
+
+[[8]]$after$cores
+[1] 1
+
+
+
+[[9]]
+[[9]]$name
+[1] "three_step"
+
+[[9]]$before
+[[9]]$before$x
+
+
+[[9]]$before$data
+
+
+[[9]]$before$outcome
+
+
+[[9]]$before$level
+c("individuals", "groups")
+
+[[9]]$before$method
+c("bch", "proportional", "modal")
+
+[[9]]$before$ci_level
+[1] 0.95
+
+[[9]]$before$contrast
+c("none", "pairs")
+
+[[9]]$before$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[9]]$before$vcov_type
+c("cluster", "independent")
+
+
+[[9]]$after
+[[9]]$after$x
+
+
+[[9]]$after$data
+
+
+[[9]]$after$outcome
+
+
+[[9]]$after$level
+c("individuals", "groups")
+
+[[9]]$after$method
+c("bch", "proportional", "modal", "ml")
+
+[[9]]$after$ci_level
+[1] 0.95
+
+[[9]]$after$contrast
+c("none", "pairs", "overall")
+
+[[9]]$after$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[9]]$after$vcov_type
+c("cluster", "independent")
+
+[[9]]$after$variance
+c("varying", "equal")
+
+[[9]]$after$step_one
+c("fixed", "estimated")
+
+
+
+[[10]]
+[[10]]$name
+[1] "r3step"
+
+[[10]]$before
+[[10]]$before$x
+
+
+[[10]]$before$data
+
+
+[[10]]$before$covariates
+
+
+[[10]]$before$level
+c("individuals", "groups")
+
+[[10]]$before$ci_level
+[1] 0.95
+
+[[10]]$before$vcov_type
+c("robust", "observed")
+
+[[10]]$before$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[10]]$before$by_group_class
+[1] FALSE
+
+
+[[10]]$after
+[[10]]$after$x
+
+
+[[10]]$after$data
+
+
+[[10]]$after$covariates
+character()
+
+[[10]]$after$level
+c("individuals", "groups")
+
+[[10]]$after$ci_level
+[1] 0.95
+
+[[10]]$after$vcov_type
+c("robust", "observed")
+
+[[10]]$after$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[10]]$after$by_group_class
+[1] FALSE
+
+[[10]]$after$initial_covariates
+character()
+
+[[10]]$after$transition_covariates
+character()
+
+
+
+[[11]]
+[[11]]$name
+[1] "lta"
+
+[[11]]$before
+[[11]]$before$data
+
+
+[[11]]$before$vars
+
+
+[[11]]$before$id
+
+
+[[11]]$before$n_profiles
+
+
+[[11]]$before$time
+
+
+[[11]]$before$n_group_classes
+[1] 1
+
+[[11]]$before$variance_model
+c("varying", "equal")
+
+[[11]]$before$n_starts
+[1] 10
+
+[[11]]$before$max_iter
+[1] 1000
+
+[[11]]$before$tol
+[1] 1e-08
+
+[[11]]$before$min_variance
+[1] 1e-06
+
+[[11]]$before$seed
+NULL
+
+[[11]]$before$missing
+c("error", "fiml")
+
+[[11]]$before$covariance_model
+c("diagonal", "full")
+
+[[11]]$before$categorical
+character()
+
+[[11]]$before$min_probability
+[1] 1e-10
+
+[[11]]$before$occasions
+c("observed", "grid")
+
+[[11]]$before$select_start
+c("likelihood", "converged")
+
+[[11]]$before$transitions
+c("homogeneous", "occasion")
+
+[[11]]$before$transition_covariates
+character()
+
+[[11]]$before$initial_covariates
+character()
+
+[[11]]$before$measurement
+c("invariant", "occasion")
+
+[[11]]$before$order
+[1] 1
+
+[[11]]$before$model
+NULL
+
+[[11]]$before$mover_stayer
+[1] FALSE
+
+[[11]]$before$weights
+NULL
+
+[[11]]$before$ordinal
+character()
+
+[[11]]$before$count
+character()
+
+[[11]]$before$count_model
+c("poisson", "negative_binomial")
+
+[[11]]$before$count_dispersion
+c("varying", "equal")
+
+
+[[11]]$after
+[[11]]$after$data
+
+
+[[11]]$after$vars
+
+
+[[11]]$after$id
+
+
+[[11]]$after$n_profiles
+
+
+[[11]]$after$time
+
+
+[[11]]$after$n_group_classes
+[1] 1
+
+[[11]]$after$variance_model
+c("varying", "equal")
+
+[[11]]$after$n_starts
+[1] 10
+
+[[11]]$after$max_iter
+[1] 5000
+
+[[11]]$after$tol
+[1] 1e-10
+
+[[11]]$after$min_variance
+NULL
+
+[[11]]$after$seed
+NULL
+
+[[11]]$after$missing
+c("error", "fiml")
+
+[[11]]$after$covariance_model
+c("diagonal", "full")
+
+[[11]]$after$categorical
+character()
+
+[[11]]$after$min_probability
+[1] 1e-10
+
+[[11]]$after$occasions
+c("observed", "grid")
+
+[[11]]$after$select_start
+c("likelihood", "converged")
+
+[[11]]$after$transitions
+c("homogeneous", "occasion")
+
+[[11]]$after$transition_covariates
+character()
+
+[[11]]$after$initial_covariates
+character()
+
+[[11]]$after$measurement
+c("invariant", "occasion")
+
+[[11]]$after$order
+[1] 1
+
+[[11]]$after$model
+NULL
+
+[[11]]$after$mover_stayer
+[1] FALSE
+
+[[11]]$after$weights
+NULL
+
+[[11]]$after$ordinal
+character()
+
+[[11]]$after$count
+character()
+
+[[11]]$after$count_model
+c("poisson", "negative_binomial")
+
+[[11]]$after$count_dispersion
+c("varying", "equal")
+
+[[11]]$after$drop_empty
+[1] TRUE
+
+[[11]]$after$search
+c("kmeans", "emEM")
+
+[[11]]$after$n_screen
+NULL
+
+[[11]]$after$acceleration
+c("squarem", "none")
+
+[[11]]$after$cores
+[1] 1
+
+
+
+
+BASELINE 8518dffe 
+functions before/current: 1502 1588 
+added/removed/changed: 86 0 95 
+exports removed:  
+exports added: align_labels, get_avepp, get_best, get_candidates, get_checks, get_classification, get_deltas, get_entropy, get_knees, get_replication, get_residuals, get_tree, overview, plot_all, plot_avepp, plot_bars, plot_classification, plot_coefficients, plot_criteria, plot_deltas, plot_entropy, plot_heatmap, plot_individuals, plot_pairs, plot_parallel, plot_posteriors, plot_raincloud, plot_sizes, plot_trajectories, plot_trust 
+[[1]]
+[[1]]$name
+[1] "three_step"
+
+[[1]]$before
+[[1]]$before$x
+
+
+[[1]]$before$data
+
+
+[[1]]$before$outcome
+
+
+[[1]]$before$level
+c("individuals", "groups")
+
+[[1]]$before$method
+c("bch", "proportional", "modal", "ml")
+
+[[1]]$before$ci_level
+[1] 0.95
+
+[[1]]$before$contrast
+c("none", "pairs")
+
+[[1]]$before$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[1]]$before$vcov_type
+c("cluster", "independent")
+
+[[1]]$before$variance
+c("varying", "equal")
+
+
+[[1]]$after
+[[1]]$after$x
+
+
+[[1]]$after$data
+
+
+[[1]]$after$outcome
+
+
+[[1]]$after$level
+c("individuals", "groups")
+
+[[1]]$after$method
+c("bch", "proportional", "modal", "ml")
+
+[[1]]$after$ci_level
+[1] 0.95
+
+[[1]]$after$contrast
+c("none", "pairs", "overall")
+
+[[1]]$after$adjust
+c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+
+[[1]]$after$vcov_type
+c("cluster", "independent")
+
+[[1]]$after$variance
+c("varying", "equal")
+
+[[1]]$after$step_one
+c("fixed", "estimated")
+
+
+
+
+BASELINE HEAD 
+functions before/current: 1587 1588 
+added/removed/changed: 1 0 4 
+exports removed:  
+exports added:  
+list()
+[[1]]
+NULL
+
+[[2]]
+NULL
+
+[[3]]
+NULL
+

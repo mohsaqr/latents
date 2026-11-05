@@ -1,0 +1,153 @@
+                  file      context
+1  test-lta-parallel.R lta-parallel
+2  test-lta-parallel.R lta-parallel
+3  test-lta-parallel.R lta-parallel
+4  test-lta-parallel.R lta-parallel
+5  test-lta-parallel.R lta-parallel
+6  test-lta-parallel.R lta-parallel
+7  test-lta-parallel.R lta-parallel
+8  test-lta-parallel.R lta-parallel
+9  test-lta-parallel.R lta-parallel
+10 test-lta-parallel.R lta-parallel
+11 test-lta-parallel.R lta-parallel
+12 test-lta-parallel.R lta-parallel
+                                                                           test
+1             lta appends and validates cores without moving existing arguments
+2              both lta engines have identical forked starts and emEM screening
+3   transition grids match serial and direct fits for both searches and engines
+4            serialized transition workers carry caller data and start controls
+5            flat task dispatch is longest first and respects the worker budget
+6                transition enumeration uses one unnested pool per search phase
+7          unseeded transition setup draws in the same parent grid order as lta
+8                  longest-first tasks replay classed conditions in input order
+9       covariance qualifications count every screened and continued start once
+10          covariance qualifications survive failure of every transition start
+11                   transition enumeration propagates a lost flat start worker
+12 direct general lta workers serialize both emEM stages without caller globals
+   nb failed skipped error warning   user system   real passed
+1   9      0   FALSE FALSE       0  0.126  0.013  0.169      9
+2   1      0    TRUE FALSE       0  0.011  0.001  0.013      0
+3   1      0    TRUE FALSE       0  0.007  0.000  0.008      0
+4  20      4   FALSE FALSE       0 78.110  0.600 79.706     16
+5  20      0   FALSE FALSE       0  0.037  0.012  0.064     20
+6  12      5   FALSE FALSE       0  0.725  0.018  0.854      7
+7   6      2   FALSE FALSE       0  0.506  0.013  0.646      4
+8   3      0   FALSE FALSE       0  0.008  0.004  0.015      3
+9   8      2   FALSE FALSE       0  0.141  0.008  0.209      6
+10 12      2   FALSE FALSE       0  0.058  0.008  0.130     10
+11  4      0   FALSE FALSE       2  0.023  0.003  0.066      2
+12  3      1   FALSE FALSE       0  0.772  0.012  0.815      2
+TOTALS
+     nb  failed warning    user  system    real  passed 
+ 99.000  16.000   2.000  80.524   0.692  82.695  79.000 
+
+TEST: serialized transition workers carry caller data and start controls 
+Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual vs expected
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+ 
+Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+ 
+Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "Profile 2: 3.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+  "A variance reached min_variance; this is a bound-active constrained fit."
+  "A profile or group class has effective membership below one."
+ 
+Expected `result$conditions` to be identical to `serial[[i]]$conditions`.
+Differences:
+actual[1:4] vs expected[1:3]
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+  "Profile 2: 3.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics."
+ 
+
+TEST: transition enumeration uses one unnested pool per search phase 
+Expected `vapply(calls, `[[`, integer(1), "tasks")` to be identical to `if (search == "emEM") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 8  
+`expected`: 4 8
+ 
+Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 8  8 9 9 18 18
+`expected`: 4 8 9 18          
+ 
+Expected `vapply(calls, `[[`, integer(1), "tasks")` to be identical to `if (search == "emEM") c(4L, 16L, 8L) else c(4L, 8L)`.
+Differences:
+  `actual`: 16  8  
+`expected`:  4 16 8
+ 
+Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 4  4 8 8 8 8 9 9 and 6 more...
+`expected`: 4 8 9 18                       ...
+ 
+Expected `sort(calls[[i]]$costs)` to be identical to `sort(rep(costs, each = expected[i]))`.
+Differences:
+  `actual`: 4 4 8 8 9 9 18 18     and 6 more...
+`expected`: 4 4 4 4 8 8  8  8 9 9           ...
+ 
+
+TEST: unseeded transition setup draws in the same parent grid order as lta 
+Expected `enumerated$result$conditions` to be identical to `as.character(...)`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+ 
+Expected `enumerated$result$conditions` to be identical to `as.character(...)`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+ 
+
+TEST: covariance qualifications count every screened and continued start once 
+Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+  "2 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+ 
+Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "The best start did not converge; increase max_iter and inspect starts."
+  "6 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+ 
+
+TEST: covariance qualifications survive failure of every transition start 
+Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "2 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+ 
+Expected `enumerated$conditions` to be identical to `direct$conditions`.
+Differences:
+actual vs expected
+- "`cores = 3` was requested but this platform does not report its processor count, so one core is used."
+  "4 M-step(s) of the VVI covariance stopped at 7 iterations without settling, so those steps returned the last value they reached rather than the maximizer. The fit continued from them; its own convergence is reported separately."
+ 
+
+TEST: direct general lta workers serialize both emEM stages without caller globals 
+Expected `spread$conditions` to be identical to `serial$conditions`.
+Differences:
+actual vs expected
+- "`cores = 2` was requested but this platform does not report its processor count, so one core is used."
+  "A transition or initial probability is estimated at zero (a move or start that never occurs); this is a boundary fit and its standard errors are withheld."
+ 

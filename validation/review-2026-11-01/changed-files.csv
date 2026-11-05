@@ -1,0 +1,591 @@
+path,added,deleted,category
+DESCRIPTION,1,1,documentation or metadata
+NAMESPACE,3,0,documentation or metadata
+NEWS.md,70,1845,documentation or metadata
+R/accessors.R,5,3,runtime R
+R/align-labels.R,79,0,runtime R
+R/alignment-service.R,54,20,runtime R
+R/bootstrap-inference.R,212,0,runtime R
+R/compare-lrt.R,242,0,runtime R
+R/compare-models.R,66,7,runtime R
+R/conditions.R,3,3,runtime R
+R/covariate-inference.R,126,22,runtime R
+R/covariates.R,41,10,runtime R
+R/diagnostics-checks.R,3,3,runtime R
+R/get-data.R,1,1,runtime R
+R/growth-mixture-parameter-inference.R,4,3,runtime R
+R/inference.R,63,32,runtime R
+R/lta-bootstrap.R,4,3,runtime R
+R/lta-methods.R,2,2,runtime R
+R/multilpa.R,20,28,runtime R
+R/noise.R,33,3,runtime R
+R/predict.R,1,1,runtime R
+R/report.R,6,2,runtime R
+R/three-step-categorical.R,413,0,runtime R
+R/three-step-ml.R,28,1,runtime R
+R/three-step.R,232,36,runtime R
+README.Rmd,1,3,documentation or metadata
+README.md,1,3,documentation or metadata
+_pkgdown.yml,3,2,documentation or metadata
+equivalence/CLAIMS.csv,2,12,reference or validation evidence
+equivalence/engine-golden/catalogue-covariates-families.R,2,2,equivalence code
+equivalence/engine-golden/catalogue.csv,63,63,reference or validation evidence
+equivalence/engine-golden/golden/cov_both_shared.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_categorical_boundary.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_categorical_esm.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_count_poisson.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_esm_mixed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_fiml.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_full_covariance.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_group_only.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_one_group_class.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_ordinal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_profile_shared.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_refusal_fixed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_refusal_start.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_single_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_slopes_group_class.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_three_profiles_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/cov_weights.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_dispersion_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_dispersion_three_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_dispersion_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_engagement_boundary.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_three_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_additive_weights.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_bootstrap_lrt.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_dispersion_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_dispersion_three_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_enumeration.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_full_cross_level_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_full_cross_level_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_refusal_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_refusal_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_refusal_cross_level_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_refusal_fiml.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_restricted_cross_level_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/family_restricted_cross_level_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_covariance_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_covariance_proportional.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_lcga.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_membership.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_multilevel.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_multilevel_one_class.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_random_diagonal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_random_intercept.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_random_slope.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_random_slope_only.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_variance_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_vcov_opg.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_vcov_robust.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/growth_weights.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_bootstrap_lrt_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_bootstrap_lrt_group_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_enumeration.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_enumeration_candidate.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_enumeration_structures.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_bootstrap.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_count_nb_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_count_nb_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_count_poisson.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_fiml_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_full_covariance.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_group_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_initial_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_mixed_extensions.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_model_VEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_mover_stayer.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_occasion_measurement.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_occasion_transitions.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_order2.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_order2_mover_stayer.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_ordinal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_transition_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_weights.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_general_weights_bootstrap.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_basic.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_bootstrap.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_equal_variance.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_fiml.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_full_covariance.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_group_classes.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_mixed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_model_EEE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_model_EEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_model_VEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_model_VVI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_model_VVV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_occasions_grid.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_occasions_observed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_homogeneous_select_converged.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/lta_refusal_missing_error.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_acceleration_none.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_acceleration_none_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_acceleration_squarem_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_centering_grand.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_centering_person.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_count_nb_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_count_nb_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_count_poisson.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_count_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_evaluate_only.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_extra_fiml.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_fiml_single_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_fiml_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_fixed_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_fixed_means.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_fixed_measurement.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lca_single.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_engagement_id_null.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_one_profile.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_single_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_single_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_single_full_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_lpa_single_varying.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_min_variance_tol.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_mixed_all_types.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_mixed_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_multilca_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_noise_VVV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_noise_single.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_ordinal_single.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_ordinal_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_prior_EEE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_prior_VEV_shrinkage.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_prior_VVI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_prior_noise_EII.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_refusal_missing_error.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_select_converged.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_select_likelihood.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EEE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EEV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EII.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EVE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EVI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_EVV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VEE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VEV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VII.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VVE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VVI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_VVV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_pieces_EII.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_pieces_VEV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_structure_three_profiles_EVE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_time_sequences.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_EEV.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_VEI.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_VVE.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_basic.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_equal.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_one_class.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_two_level_three_profiles.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_user_start.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_weights_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_weights_single.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/profiles_weights_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_binomial_cbind.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_binomial_group.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_compare_models.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_enumerate.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_enumerate_bootstrap.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_common.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_equal_variance.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_membership.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_missing_omit.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_select_converged.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_single.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_vcov_none.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_vcov_opg.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_vcov_robust_clustered.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_gaussian_weights_rows.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_group_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_group_membership.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_group_weights.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_negative_binomial.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_negative_binomial_group.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_ordinal_common.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_ordinal_group.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_ordinal_refusal_two_categories.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_ordinal_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_poisson.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_poisson_offset.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_refusal_binary_rows.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_two_level_group_membership.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/reg_two_level_robust.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_fiml.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_fixed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_lca.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_lpa.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_mixed_families.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_bootstrap_lrt_profiles.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_candidate_fit.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_candidate_fit_ambiguous.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_diagnostics_overall.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_diagnostics_report.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_enumerate_classes_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_enumerate_lca.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_enumerate_lpa_all_structures.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_enumerate_lpa_basic.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_fit_staged.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_fit_staged_categorical.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_adjust_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_bootstrap_lca.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_bootstrap_mixed_extra.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_bootstrap_staged.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_bootstrap_vei.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_boundary_lca.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_lpa.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_lpa_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_inference_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_pool_covariates.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_pool_mice.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_pool_robust.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_predict_types.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_r3step_by_group_class.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_r3step_observed.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_r3step_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_sensitivity_options.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_sensitivity_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_starting_values_full.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_three_step_independent.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_three_step_single_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/golden/svc_three_step_two_level.rds,-,-,reference or validation evidence
+equivalence/engine-golden/last-compare.csv,253,253,reference or validation evidence
+equivalence/engine-golden/session-info.txt,8,8,reference or validation evidence
+equivalence/engine-golden/timing.csv,253,253,reference or validation evidence
+equivalence/engine-golden/unexpected-errors.csv,0,1,reference or validation evidence
+equivalence/harness/REPORT.md,101,49,documentation or metadata
+equivalence/harness/SESSION.txt,51,46,reference or validation evidence
+equivalence/harness/coverage.csv,4832,927,reference or validation evidence
+equivalence/harness/outputs.R,12,0,equivalence code
+equivalence/harness/report.csv,12468,8916,reference or validation evidence
+equivalence/harness/suites.csv,24,15,reference or validation evidence
+equivalence/helper-montecarlo.R,1,1,equivalence code
+equivalence/latentgold-categorical-distal/README.md,69,0,documentation or metadata
+equivalence/latentgold-categorical-distal/common.R,163,0,equivalence code
+equivalence/latentgold-categorical-distal/compare.R,14,0,equivalence code
+equivalence/latentgold-categorical-distal/comparison.csv,215,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/comparison.csv.provenance.csv,109,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/MANIFEST.md5,18,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01.dat,601,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_bch.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_bch_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_ml.lgs,24,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_ml_robust.lgs,24,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_modal.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_modal_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_proportional.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d01_proportional_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02.dat,901,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_bch.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_bch_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_ml.lgs,24,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_ml_robust.lgs,24,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_modal.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_modal_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_proportional.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/kit/d02_proportional_robust.lgs,25,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/make-kit.R,34,0,equivalence code
+equivalence/latentgold-categorical-distal/returned/INPUTS.md5,18,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_bch.lst,158,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_bch_robust.lst,159,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_ml.lst,152,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_ml_robust.lst,153,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_modal.lst,158,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_modal_robust.lst,159,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_proportional.lst,158,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d01_proportional_robust.lst,159,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_bch.lst,164,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_bch_robust.lst,165,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_ml.lst,155,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_ml_robust.lst,156,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_modal.lst,164,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_modal_robust.lst,165,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_proportional.lst,164,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/returned/d02_proportional_robust.lst,165,0,reference or validation evidence
+equivalence/latentgold-categorical-distal/run-kit.sh,25,0,equivalence code
+equivalence/latentgold-step-one/README.md,94,0,documentation or metadata
+equivalence/latentgold-step-one/common.R,342,0,equivalence code
+equivalence/latentgold-step-one/compare.R,26,0,equivalence code
+equivalence/latentgold-step-one/comparison.csv,159,0,reference or validation evidence
+equivalence/latentgold-step-one/comparison.csv.provenance.csv,109,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/MANIFEST.md5,51,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/independent.rds,-,-,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01.dat,601,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_estimated.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_estimated_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_fixed.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_fixed_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_second.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_cat_second_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_fixed.txt,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_fixed_gradients.txt,628,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_step1.dat,601,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_step1.lgs,29,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_estimated.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_estimated_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_fixed.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_fixed_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_second.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s01_z_second_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02.dat,901,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_estimated.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_estimated_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_fixed.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_fixed_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_second.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_cat_second_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_fixed.txt,54,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_fixed_gradients.txt,955,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_step1.dat,901,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_step1.lgs,31,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_estimated.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_estimated_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_fixed.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_fixed_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_second.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s02_z_second_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03.dat,1001,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_estimated.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_estimated_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_fixed.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_fixed_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_second.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_cat_second_robust.lgs,27,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_fixed.txt,54,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_fixed_gradients.txt,1055,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_step1.dat,1001,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_step1.lgs,31,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_estimated.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_estimated_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_fixed.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_fixed_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_second.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/kit/s03_z_second_robust.lgs,28,0,reference or validation evidence
+equivalence/latentgold-step-one/make-kit.R,67,0,equivalence code
+equivalence/latentgold-step-one/returned/INPUTS.md5,51,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_estimated.lst,182,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_estimated_robust.lst,183,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_fixed.lst,182,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_fixed_robust.lst,183,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_second.lst,182,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_cat_second_robust.lst,183,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_lg_classes.txt,601,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_lg_errors.txt,630,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_step1.lst,177,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_estimated.lst,168,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_estimated_robust.lst,169,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_fixed.lst,168,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_fixed_robust.lst,169,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_second.lst,168,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s01_z_second_robust.lst,169,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_estimated.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_estimated_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_fixed.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_fixed_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_second.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_cat_second_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_lg_classes.txt,901,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_lg_errors.txt,960,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_step1.lst,222,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_estimated.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_estimated_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_fixed.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_fixed_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_second.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s02_z_second_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_estimated.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_estimated_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_fixed.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_fixed_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_second.lst,203,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_cat_second_robust.lst,204,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_lg_classes.txt,1001,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_lg_errors.txt,1060,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_step1.lst,307,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_estimated.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_estimated_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_fixed.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_fixed_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_second.lst,190,0,reference or validation evidence
+equivalence/latentgold-step-one/returned/s03_z_second_robust.lst,191,0,reference or validation evidence
+equivalence/latentgold-step-one/run-kit.sh,28,0,equivalence code
+equivalence/lca-packages/known-differences.csv,8,7,reference or validation evidence
+equivalence/lrt/README.md,48,0,documentation or metadata
+equivalence/lrt/common.R,91,0,equivalence code
+equivalence/lrt/compare.R,10,0,equivalence code
+equivalence/lrt/comparison.csv,28,0,reference or validation evidence
+equivalence/lrt/make-kit.R,87,0,equivalence code
+equivalence/lrt/mplus/lta-invariant-console.txt,4866,0,reference or validation evidence
+equivalence/lrt/mplus/lta-invariant.inp,26,0,documentation or metadata
+equivalence/lrt/mplus/lta-invariant.out,523,0,reference or validation evidence
+equivalence/lrt/mplus/lta-occasion-console.txt,5329,0,reference or validation evidence
+equivalence/lrt/mplus/lta-occasion.inp,26,0,documentation or metadata
+equivalence/lrt/mplus/lta-occasion.out,523,0,reference or validation evidence
+equivalence/lrt/mplus/lta.dat,1200,0,reference or validation evidence
+equivalence/lrt/reference.rds,-,-,reference or validation evidence
+equivalence/package-kit-runner.R,10,3,equivalence code
+equivalence/regression-packages/known-differences.csv,3,2,reference or validation evidence
+equivalence/sabotage/results.csv,13,2,reference or validation evidence
+equivalence/sabotage/run.R,105,1,equivalence code
+equivalence/test-latentgold-categorical-distal.R,40,0,equivalence code
+equivalence/test-latentgold-step-one.R,41,0,equivalence code
+equivalence/test-lca-packages.R,4,1,equivalence code
+equivalence/test-lrt.R,12,0,equivalence code
+equivalence/test-moeclust-covariate-structures.R,72,0,equivalence code
+equivalence/test-montecarlo.R,1,1,equivalence code
+equivalence/test-regression-packages.R,4,1,equivalence code
+equivalence/verification-matrix/build.R,6,5,equivalence code
+equivalence/verification-matrix/kit-datasets.csv,2,0,reference or validation evidence
+equivalence/verification-matrix/kit-evidence.csv,2,0,reference or validation evidence
+equivalence/verification-matrix/kit-functions.csv,2,0,reference or validation evidence
+equivalence/verification-matrix/test-attribution.csv,6,0,reference or validation evidence
+equivalence/verification-matrix/tests/run.R,21,0,equivalence code
+man/align_labels.Rd,60,0,documentation or metadata
+man/compare_models.Rd,58,3,documentation or metadata
+man/diagnostics.Rd,1,1,documentation or metadata
+man/latents-conditions.Rd,3,3,documentation or metadata
+man/latents-package.Rd,4,4,documentation or metadata
+man/multilpa.Rd,16,3,documentation or metadata
+man/parameter_inference.Rd,21,10,documentation or metadata
+man/three_step.Rd,71,20,documentation or metadata
+tests/equivalence/test-noise.R,6,2,tests
+tests/testthat/test-acceleration.R,2,0,tests
+tests/testthat/test-additive-fit.R,2,0,tests
+tests/testthat/test-additive-methods.R,2,0,tests
+tests/testthat/test-align-labels.R,137,0,tests
+tests/testthat/test-alignment-service.R,2,0,tests
+tests/testthat/test-assignment-alignment.R,2,0,tests
+tests/testthat/test-assignments-empty-rows.R,29,5,tests
+tests/testthat/test-astra-surface.R,2,0,tests
+tests/testthat/test-audit-core-repairs.R,2,0,tests
+tests/testthat/test-audit-drawing-integration.R,2,0,tests
+tests/testthat/test-audit-extension-repairs.R,2,0,tests
+tests/testthat/test-audit-ml3-optimizer.R,2,0,tests
+tests/testthat/test-audit-nb-alignment-repairs.R,2,0,tests
+tests/testthat/test-audit-services-fixes.R,2,0,tests
+tests/testthat/test-audit-validation-fork-safety.R,2,0,tests
+tests/testthat/test-bootstrap-inference.R,2,0,tests
+tests/testthat/test-bootstrap-replicates.R,192,0,tests
+tests/testthat/test-categorical-inference.R,2,0,tests
+tests/testthat/test-categorical.R,2,0,tests
+tests/testthat/test-centering.R,2,0,tests
+tests/testthat/test-compare-lrt.R,158,0,tests
+tests/testthat/test-convenience.R,2,1,tests
+tests/testthat/test-covariate-fixed.R,92,0,tests
+tests/testthat/test-covariate-fold.R,12,9,tests
+tests/testthat/test-covariate-inference.R,2,0,tests
+tests/testthat/test-covariate-separation.R,2,0,tests
+tests/testthat/test-covariate-structure-inference.R,158,0,tests
+tests/testthat/test-covariate-surface.R,2,0,tests
+tests/testthat/test-covariates.R,14,12,tests
+tests/testthat/test-cross-level-thin-profiles.R,2,0,tests
+tests/testthat/test-data.R,2,0,tests
+tests/testthat/test-diagnostics.R,2,0,tests
+tests/testthat/test-direct-effects.R,2,0,tests
+tests/testthat/test-empty-classification-consumers.R,2,1,tests
+tests/testthat/test-enumerate-verbs.R,2,0,tests
+tests/testthat/test-evaluate-only.R,2,0,tests
+tests/testthat/test-extra-indicators.R,2,0,tests
+tests/testthat/test-features-pair-covariance.R,2,0,tests
+tests/testthat/test-gaussian-diagnostic-tables.R,2,0,tests
+tests/testthat/test-gaussian-warning-support.R,2,0,tests
+tests/testthat/test-inference-cache.R,2,0,tests
+tests/testthat/test-inference-fixed-measurement.R,2,0,tests
+tests/testthat/test-inference.R,2,0,tests
+tests/testthat/test-latents-controls.R,2,0,tests
+tests/testthat/test-local-dependence.R,2,0,tests
+tests/testthat/test-lta-bootstrap.R,2,0,tests
+tests/testthat/test-lta-covariance-boundary.R,2,0,tests
+tests/testthat/test-lta-general.R,2,0,tests
+tests/testthat/test-missing-covariance.R,2,0,tests
+tests/testthat/test-mixture-regression-labels.R,2,0,tests
+tests/testthat/test-multilca.R,2,0,tests
+tests/testthat/test-multilevel-growth.R,2,0,tests
+tests/testthat/test-multilpa.R,2,0,tests
+tests/testthat/test-negative-binomial-regression.R,2,0,tests
+tests/testthat/test-ordinal-regression.R,2,0,tests
+tests/testthat/test-parallel.R,2,0,tests
+tests/testthat/test-plot-gg.R,2,0,tests
+tests/testthat/test-plot-named.R,2,0,tests
+tests/testthat/test-plot.R,2,0,tests
+tests/testthat/test-posterior-rounding.R,2,0,tests
+tests/testthat/test-predict-empty-rows.R,11,10,tests
+tests/testthat/test-prior.R,2,0,tests
+tests/testthat/test-release-audit-comparison.R,2,0,tests
+tests/testthat/test-release-audit-core.R,2,0,tests
+tests/testthat/test-release-audit-lta.R,2,0,tests
+tests/testthat/test-release-audit-regression.R,2,0,tests
+tests/testthat/test-report-surface.R,1,1,tests
+tests/testthat/test-review-0970-estimation.R,2,0,tests
+tests/testthat/test-review-0971-fixes.R,2,0,tests
+tests/testthat/test-review-1015-accessors.R,2,0,tests
+tests/testthat/test-review-1015-core.R,2,0,tests
+tests/testthat/test-review-1015-inference.R,2,0,tests
+tests/testthat/test-review-1015-lead.R,2,0,tests
+tests/testthat/test-review-1015-plots.R,2,0,tests
+tests/testthat/test-review-1020-zero-weights.R,2,0,tests
+tests/testthat/test-review-1026-additive-r2.R,2,0,tests
+tests/testthat/test-review-1026-constancy.R,2,0,tests
+tests/testthat/test-review-1026-empty-rows.R,2,0,tests
+tests/testthat/test-review-1026-inference-r2.R,2,0,tests
+tests/testthat/test-review-1026-inference.R,2,0,tests
+tests/testthat/test-review-1026-kernel.R,2,0,tests
+tests/testthat/test-review-1026-refusals.R,2,0,tests
+tests/testthat/test-review-1026-selection.R,2,0,tests
+tests/testthat/test-review-1026-zero-weight-checks.R,2,0,tests
+tests/testthat/test-review-1026-zero-weight-likelihood.R,2,0,tests
+tests/testthat/test-review-1027-diagnostics.R,24,0,tests
+tests/testthat/test-review-1027-error-contract.R,2,0,tests
+tests/testthat/test-review-pairs-trees.R,2,0,tests
+tests/testthat/test-robust.R,2,0,tests
+tests/testthat/test-scaling.R,2,0,tests
+tests/testthat/test-sensitivity.R,16,0,tests
+tests/testthat/test-sequences.R,2,0,tests
+tests/testthat/test-staged-identity.R,2,0,tests
+tests/testthat/test-three-step-categorical.R,158,0,tests
+tests/testthat/test-three-step-step-one.R,423,0,tests
+tests/testthat/test-three-step.R,2,0,tests
+tests/testthat/test-tidy-accessors.R,2,0,tests
+tests/testthat/test-tidy-classes.R,2,0,tests
+tests/testthat/test-tidy-core.R,2,0,tests
+tests/testthat/test-tidy-diagnostics.R,2,0,tests
+tests/testthat/test-tidy-three-step.R,2,0,tests
+tests/testthat/test-tna-fits.R,2,0,tests
+tests/testthat/test-transitions-numerics.R,2,0,tests
+tests/testthat/test-transitions.R,2,0,tests
+tests/testthat/test-weights.R,2,0,tests
+tests/testthat/test-zero-weight-initialization.R,2,0,tests
+validation/bivariate-residual-size.R,81,0,validation code
+validation/bivariate-residual-size.csv,9,0,reference or validation evidence
+validation/lrt-size-replicates.csv,1201,0,reference or validation evidence
+validation/lrt-size.R,129,0,validation code
+validation/lrt-size.csv,5,0,reference or validation evidence
+validation/matrix-refresh-2026-11-01/SESSION.txt,29,0,reference or validation evidence
+validation/matrix-refresh-2026-11-01/equivalence-results.csv,9,0,reference or validation evidence
+validation/matrix-refresh-2026-11-01/equivalence-results.csv.provenance.csv,109,0,reference or validation evidence
+validation/matrix-refresh-2026-11-01/record-categorical-kit.R,8,0,validation code
+validation/matrix-refresh-2026-11-01/record-step-one-kit.R,8,0,validation code
+validation/matrix-refresh-2026-11-01/run-equivalence.R,26,0,validation code
+validation/matrix-refresh-2026-11-01/run.log,8,0,documentation or metadata
+validation/three-step-categorical-coverage-replicates.csv,40001,0,reference or validation evidence
+validation/three-step-categorical-coverage.R,111,0,validation code
+validation/three-step-categorical-coverage.csv,33,0,reference or validation evidence
+validation/three-step-step-one-coverage-replicates.csv,111997,0,reference or validation evidence
+validation/three-step-step-one-coverage.R,141,0,validation code
+validation/three-step-step-one-coverage.csv,129,0,reference or validation evidence
+vignettes/articles/class-enumeration.Rmd,21,14,documentation or metadata
+vignettes/{ => articles}/enumeration.Rmd,0,0,documentation or metadata
+vignettes/{ => articles}/lta.Rmd,0,0,documentation or metadata
+vignettes/articles/workflow-lca.Rmd,1,1,documentation or metadata
+vignettes/lpa.Rmd,6,4,documentation or metadata

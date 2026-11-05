@@ -1,0 +1,130 @@
+parallel: Preparing 6 candidates on 2 workers.
+1Preparing 2 candidates on 2 workers.
+23S.............S4.......SPreparing 1 candidate on 1 worker.
+Fitting 1 start on 1 worker.
+Done in under a minute.
+Preparing 4 candidates on 2 workers.
+Screening 10 starts on 2 workers.
+Fitting 4 starts on 2 workers.
+Done in under a minute.
+.............................................................5
+
+══ Skipped ═════════════════════════════════════════════════════════════════════
+1. the socket backend returns values and conditions in order ('test-parallel.R:89:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11016 cannot be opened
+
+2. a socket worker that dies becomes a failed candidate ('test-parallel.R:150:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11016 cannot be opened
+
+3. cleanup closes a live socket even when another node is already closed ('test-parallel.R:228:3') - Reason: Socket ports unavailable: creation of server socket failed: port 11016 cannot be opened
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-parallel.R:51:3'): a profile grid on several cores is identic
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11016 cannot be opened).
+Backtrace:
+     ▆
+  1. └─latents::enumerate_classes(...) at test-parallel.R:51:3
+  2.   └─latents:::.multilpa_enumerate_fits(...) at latents/R/enumeration.R:329:3
+  3.     └─worker_report$collect(...) at latents/R/multilpa-pool.R:111:3
+  4.       ├─base::withCallingHandlers(...) at latents/R/parallel-report.R:12:5
+  5.       └─latents (local) fun() at latents/R/parallel-report.R:12:5
+  6.         └─latents:::.latents_pool_setup(...) at latents/R/multilpa-pool.R:111:3
+  7.           └─latents:::.latents_map_candidates(...) at latents/R/start-pool.R:89:3
+  8.             └─latents (local) run_pass(indices[positions], collected, workers) at latents/R/parallel.R:449:5
+  9.               └─base::lapply(...) at latents/R/parallel.R:330:3
+ 10.                 └─latents (local) FUN(X[[i]], ...)
+ 11.                   └─base::tryCatch(...) at latents/R/parallel.R:333:7
+ 12.                     └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 13.                       └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 14.                         └─value[[3L]](cond)
+
+── 2. Error ('test-parallel.R:63:29'): transition and family grids on several co
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11016 cannot be opened).
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-parallel.R:63:3
+  2.   └─latents (local) FUN(X[[i]], ...)
+  3.     └─latents::enumerate_classes(...) at test-parallel.R:63:29
+  4.       ├─latents:::.latents_report_once(...) at latents/R/enumeration.R:221:5
+  5.       │ └─base::withCallingHandlers(...) at latents/R/categorical.R:232:3
+  6.       └─latents:::.lta_enumerate(...) at latents/R/enumeration.R:221:5
+  7.         └─worker_report$collect(...) at latents/R/lta-compare.R:468:3
+  8.           ├─base::withCallingHandlers(...) at latents/R/parallel-report.R:12:5
+  9.           └─latents (local) fun() at latents/R/parallel-report.R:12:5
+ 10.             └─latents:::.latents_pool_setup(...) at latents/R/lta-compare.R:468:3
+ 11.               └─latents:::.latents_map_candidates(...) at latents/R/start-pool.R:89:3
+ 12.                 └─latents (local) run_pass(indices[positions], collected, workers) at latents/R/parallel.R:449:5
+ 13.                   └─base::lapply(...) at latents/R/parallel.R:330:3
+ 14.                     └─latents (local) FUN(X[[i]], ...)
+ 15.                       └─base::tryCatch(...) at latents/R/parallel.R:333:7
+ 16.                         └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 17.                           └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 18.                             └─value[[3L]](cond)
+
+── 3. Error ('test-parallel.R:78:23'): candidates' warnings reach the caller in 
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11016 cannot be opened).
+Backtrace:
+     ▆
+  1. └─base::lapply(...) at test-parallel.R:78:3
+  2.   └─latents (local) FUN(X[[i]], ...)
+  3.     ├─latents (local) collect_conditions(...) at test-parallel.R:78:23
+  4.     │ └─base::withCallingHandlers(...) at test-parallel.R:17:3
+  5.     └─latents::enumerate_lpa(...)
+  6.       ├─latents:::.latents_candidate_data(...) at latents/R/lpa.R:186:3
+  7.       │ └─base::lapply(...) at latents/R/candidates.R:49:3
+  8.       ├─latents:::.multilpa_quiet_single_level(...)
+  9.       │ └─base::withCallingHandlers(...) at latents/R/lpa.R:276:3
+ 10.       └─latents::enumerate_classes(...)
+ 11.         └─latents:::.multilpa_enumerate_fits(...) at latents/R/enumeration.R:329:3
+ 12.           └─worker_report$collect(...) at latents/R/multilpa-pool.R:111:3
+ 13.             ├─base::withCallingHandlers(...) at latents/R/parallel-report.R:12:5
+ 14.             └─latents (local) fun() at latents/R/parallel-report.R:12:5
+ 15.               └─latents:::.latents_pool_setup(...) at latents/R/multilpa-pool.R:111:3
+ 16.                 └─latents:::.latents_map_candidates(...) at latents/R/start-pool.R:89:3
+ 17.                   └─latents (local) run_pass(indices[positions], collected, workers) at latents/R/parallel.R:449:5
+ 18.                     └─base::lapply(...) at latents/R/parallel.R:330:3
+ 19.                       └─latents (local) FUN(X[[i]], ...)
+ 20.                         └─base::tryCatch(...) at latents/R/parallel.R:333:7
+ 21.                           └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 22.                             └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 23.                               └─value[[3L]](cond)
+
+── 4. Error ('test-parallel.R:171:3'): one fit's starts on several cores give th
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11016 cannot be opened).
+Backtrace:
+    ▆
+ 1. └─latents::multilca(...) at test-parallel.R:171:3
+ 2.   └─base::eval(fitting_call, fitting_env) at latents/R/multilca.R:77:3
+ 3.     └─base::eval(fitting_call, fitting_env)
+ 4.       └─latents::multilpa(...)
+ 5.         └─latents:::.multilpa_run_plan(plan, plan$cores) at latents/R/multilpa.R:1558:3
+ 6.           └─base::tryCatch(...) at latents/R/multilpa-starts.R:42:3
+ 7.             └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 8.               └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 9.                 └─value[[3L]](cond)
+
+── 5. Error ('test-parallel.R:594:5'): a seeded multilevel LCA grid prepared on 
+<latents_parallel_failure/error/condition>
+Error: Could not start the worker cluster (creation of server socket failed: port 11016 cannot be opened).
+Backtrace:
+     ▆
+  1. ├─base::withCallingHandlers(...) at test-parallel.R:600:3
+  2. └─latents (local) lca_grid(cores = 2)
+  3.   └─latents::enumerate_classes(...) at test-parallel.R:594:5
+  4.     └─latents:::.multilpa_enumerate_fits(...) at latents/R/enumeration.R:329:3
+  5.       └─worker_report$collect(...) at latents/R/multilpa-pool.R:111:3
+  6.         ├─base::withCallingHandlers(...) at latents/R/parallel-report.R:12:5
+  7.         └─latents (local) fun() at latents/R/parallel-report.R:12:5
+  8.           └─latents:::.latents_pool_setup(...) at latents/R/multilpa-pool.R:111:3
+  9.             └─latents:::.latents_map_candidates(...) at latents/R/start-pool.R:89:3
+ 10.               └─latents (local) run_pass(indices[positions], collected, workers) at latents/R/parallel.R:449:5
+ 11.                 └─base::lapply(...) at latents/R/parallel.R:330:3
+ 12.                   └─latents (local) FUN(X[[i]], ...)
+ 13.                     └─base::tryCatch(...) at latents/R/parallel.R:333:7
+ 14.                       └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+ 15.                         └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 16.                           └─value[[3L]](cond)
+
+══ DONE ════════════════════════════════════════════════════════════════════════

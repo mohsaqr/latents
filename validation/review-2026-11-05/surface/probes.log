@@ -1,0 +1,122 @@
+Working version: 1.1.16 
+'data.frame':	400 obs. of  5 variables:
+ $ a: chr  "x" "y" "y" "x" ...
+ $ b: chr  "u" "v" "v" "u" ...
+ $ c: chr  "s" "s" "r" "r" ...
+ $ d: chr  "p" "q" "p" "p" ...
+ $ e: chr  "m" "n" "n" "m" ...
+
+BOUNDARY PROBE
+              x     y
+profile_1 1e+00 1e-10
+profile_2 1e-10 1e+00
+min probability 1e-10 floor 1e-06 boundary FALSE 
+      domain                check level value display criterion status detail
+4 Estimation estimates at a bound model     0      no               ok       
+  reference
+4          
+        model lr_statistic lr_df lr_p_value
+1 independent           NA    NA         NA
+2      joined     4.214299     2   0.121584
+LRT warnings:  
+Inference result: latents_boundary_fit Wald inference is unavailable for bound-active categorical response probabilities. `boundary = "fix"` holds them at their bound and reports the other parameters conditionally on them. 
+
+CATEGORICAL BLRT NAMES PROBE
+'data.frame':	225 obs. of  4 variables:
+ $ id: int  1 1 1 1 1 2 2 2 2 2 ...
+ $ a : chr  "y" "y" "y" "y" ...
+ $ b : chr  "u" "u" "u" "v" ...
+ $ y : num  -1.37 -1.88 1.34 -1.24 2.77 ...
+Converged TRUE TRUE vars a:b y 
+Direct simulation: simpleError undefined columns selected 
+  null_profiles null_group_classes alternative_profiles
+1             2                  1                    2
+  alternative_group_classes statistic p_value monte_carlo_se iter n_valid
+1                         2  57.47968      NA             NA    3       0
+  n_invalid fixed null_family alternative_family
+1         3  <NA>    profiles           profiles
+  replicate statistic valid boundary logits_settled null_replications
+1         1        NA FALSE       NA             NA                NA
+2         2        NA FALSE       NA             NA                NA
+3         3        NA FALSE       NA             NA                NA
+  alternative_replications warnings                      error
+1                       NA          undefined columns selected
+2                       NA          undefined columns selected
+3                       NA          undefined columns selected
+
+CROSS LEVEL PREVALENCE AND ZERO COUNTS
+'data.frame':	1170 obs. of  3 variables:
+ $ team: int  1 1 1 1 2 2 2 2 2 2 ...
+ $ y1  : num  -1.279 1.779 -1.831 -0.783 -0.524 ...
+ $ y2  : num  -0.988 1.61 -2.124 -1.562 -1.279 ...
+Full warning classes: latents_cross_level_criteria This likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure. Do not choose the number of group classes, or the form, from them. 
+Full table:
+    profile prevalence
+1 profile_1  0.5799628
+2 profile_2  0.4200372
+Full posterior means: 0.3255514 0.6744486 
+Restricted table:
+    profile prevalence
+1 profile_1  0.3257314
+2 profile_2  0.6742686
+Restricted posterior means: 0.3257312 0.6742688 
+Zero-weight fit table:
+            family n_profiles n_group_classes log_likelihood n_parameters
+1 full_cross_level          2               2      -2599.055           19
+      aic      bic bic_individual n_groups n_obs converged boundary
+1 5236.11 5273.901       5330.339       60  1170      TRUE    FALSE
+Subset fit table:
+            family n_profiles n_group_classes log_likelihood n_parameters
+1 full_cross_level          2               2      -2599.055           19
+      aic      bic bic_individual n_groups n_obs converged boundary
+1 5236.11 5273.901       5330.339       54  1053      TRUE    FALSE
+nobs 54 LL difference -9.094947e-13 BIC difference 1.818989e-12 
+
+LATEST FIX AND WILDCARD TESTS
+review-1105-fixes: .......................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+wildcards: ...............................................................................................................................................................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Way to go!
+plot-docs: .......
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+  failed error warning skipped passed
+1      0     0       0       0    237
+
+Session:
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_1.1.16 testthat_3.3.2
+
+loaded via a namespace (and not attached):
+ [1] vctrs_0.7.3         cli_3.6.6           rlang_1.3.0        
+ [4] otel_0.2.0          pkgload_1.4.1       generics_0.1.4     
+ [7] S7_0.2.2            labeling_0.4.3      glue_1.8.1         
+[10] rprojroot_2.1.1     pkgbuild_1.4.8      praise_1.0.0       
+[13] brio_1.1.5          scales_1.4.0        grid_4.5.2         
+[16] tibble_3.3.1        lifecycle_1.0.5     numDeriv_2016.8-1.1
+[19] compiler_4.5.2      dplyr_1.2.1         RColorBrewer_1.1-3 
+[22] pkgconfig_2.0.3     waldo_0.6.2         farver_2.1.2       
+[25] R6_2.6.1            tidyselect_1.2.1    pillar_1.11.1      
+[28] parallel_4.5.2      magrittr_2.0.5      tools_4.5.2        
+[31] withr_3.0.3         gtable_0.3.6        ggplot2_4.0.3      
+[34] desc_1.4.3         

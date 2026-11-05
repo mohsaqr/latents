@@ -1,0 +1,30 @@
+                                                                           test
+1             lta appends and validates cores without moving existing arguments
+2              both lta engines have identical forked starts and emEM screening
+3   transition grids match serial and direct fits for both searches and engines
+4            serialized transition workers carry caller data and start controls
+5            flat task dispatch is longest first and respects the worker budget
+6                transition enumeration uses one unnested pool per search phase
+7          unseeded transition setup draws in the same parent grid order as lta
+8                  longest-first tasks replay classed conditions in input order
+9       covariance qualifications count every screened and continued start once
+10          covariance qualifications survive failure of every transition start
+11                   transition enumeration propagates a lost flat start worker
+12 direct general lta workers serialize both emEM stages without caller globals
+   failed skipped error warning passed
+1       0   FALSE FALSE       0      9
+2       0    TRUE FALSE       0      0
+3       0    TRUE FALSE       0      0
+4       0   FALSE FALSE       0     20
+5       0   FALSE FALSE       0     20
+6       0   FALSE FALSE       0     16
+7       0   FALSE FALSE       0      6
+8       0   FALSE FALSE       0      3
+9       0   FALSE FALSE       0      8
+10      0   FALSE FALSE       0     12
+11      0   FALSE FALSE       0      2
+12      0   FALSE FALSE       0      3
+TOTALS
+ failed warning  passed 
+      0       0      99 
+skipped 2 errors 0 

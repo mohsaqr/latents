@@ -1,0 +1,17 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-audit-core-repairs.R","audit-core-repairs","zero-count rows do not change the membership optimum or its score",5,0,FALSE,FALSE,0,0.134,0.00900000000000001,0.219,5
+"test-audit-core-repairs.R","audit-core-repairs","zero-weight predictor outliers do not change a public covariate fit",6,0,FALSE,FALSE,0,1.888,0.018,1.973,6
+"test-audit-core-repairs.R","audit-core-repairs","an extreme common count density preserves priors and other indicators",3,0,FALSE,FALSE,0,0.213,0.005,0.231,3
+"test-audit-core-repairs.R","audit-core-repairs","ordinary categorical measurements retain their original arithmetic",6,0,FALSE,FALSE,0,0.0339999999999998,0.00399999999999998,0.0430000000000001,6
+"test-audit-core-repairs.R","audit-core-repairs","ordinal whole numbers retain distinct native categories",6,0,FALSE,FALSE,0,0.149,0.006,0.172,6
+"test-audit-core-repairs.R","audit-core-repairs","indicator scaling depends on variation rather than its origin",5,0,FALSE,FALSE,0,0.108,0.005,0.149,5
+"test-audit-core-repairs.R","audit-core-repairs","within-unit weight validation is invariant to a common scale",12,0,FALSE,FALSE,0,0.0449999999999999,0.004,0.0540000000000003,12
+"test-audit-core-repairs.R","audit-core-repairs","mixture structure posteriors preserve priors at extreme common densities",6,0,FALSE,FALSE,0,0.0430000000000001,0.005,0.0540000000000003,6
+"test-audit-core-repairs.R","audit-core-repairs","only positive-weight rows can identify membership predictors",1,0,FALSE,FALSE,0,0.073,0.002,0.0950000000000006,1
+"test-audit-core-repairs.R","audit-core-repairs","covariate logLik and nobs use the BIC group convention",5,0,FALSE,FALSE,0,0.171,0.00599999999999998,0.227,5
+"test-audit-core-repairs.R","audit-core-repairs","the additive study CLI validates its stage before loading helpers",4,0,FALSE,FALSE,0,0.0110000000000001,0.002,0.0190000000000001,4
+"test-audit-core-repairs.R","audit-core-repairs","the recovery pivot requires a complete unique grid of parameter cells",4,0,FALSE,FALSE,0,0.0339999999999998,0.002,0.0510000000000002,4
+"test-audit-core-repairs.R","audit-core-repairs","Poisson class evidence survives subtraction of huge log pmfs",1,0,FALSE,FALSE,0,0.00399999999999956,0.001,0.00800000000000001,1
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","validation preflight refuses unsafe forks without changing core counts",14,0,FALSE,FALSE,0,0.048,0.004,0.0599999999999996,14
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","validation preflight preserves explicit arguments and the RNG state",3,0,FALSE,FALSE,0,0.0140000000000002,0.002,0.0199999999999996,3
+"test-audit-validation-fork-safety.R","audit-validation-fork-safety","every retained study guards each direct mclapply core request",72,0,FALSE,FALSE,0,0.239,0.037,0.378,72

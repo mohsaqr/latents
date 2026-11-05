@@ -1,0 +1,11 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.024,0.006,0.081,3
+"test-claims.R","claims","every claim is still worded as registered in its source",88,0,FALSE,FALSE,0,0.267,0.095,0.527,88
+"test-claims.R","claims","every backed claim names a test that exists",86,0,FALSE,FALSE,0,0.203,0.085,0.527,86
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.00499999999999989,0.002,0.0089999999999999,2
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","the kit is the one Latent GOLD was given",3,0,FALSE,FALSE,0,1.921,0.052,2.136,3
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","categorical distal outcomes match Latent GOLD's step-three model",3,0,FALSE,FALSE,0,1.357,0.049,2.024,3
+"test-latentgold-step-one.R","latentgold-step-one","the kit is the one Latent GOLD was given",4,0,FALSE,FALSE,0,5.43,0.267,6.675,4
+"test-latentgold-step-one.R","latentgold-step-one","step-one uncertainty matches Latent GOLD's correction",4,0,FALSE,FALSE,0,17.546,0.351,18.702,4
+"test-lrt.R","lrt","likelihood-ratio tests agree with mclust, glca and Mplus",2,0,FALSE,FALSE,0,14.59,0.372,16.736,2
+"test-moeclust-covariate-structures.R","moeclust-covariate-structures","covariate models match MoEClust in every covariance structure",55,0,FALSE,FALSE,0,71.544,1.341,78.159,55

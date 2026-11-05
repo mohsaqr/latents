@@ -1,0 +1,27 @@
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(2)
+nid <- 80; nt <- 4
+state <- matrix(0L, nid, nt); state[,1] <- 1 + rbinom(nid, 1, .5)
+for (t in 2:nt) state[,t] <- ifelse(runif(nid) < .8, state[,t-1], 3 - state[,t-1])
+dl <- data.frame(id = rep(seq_len(nid), each = nt), time = rep(seq_len(nt), nid))
+s <- as.vector(t(state))
+dl$y1 <- rnorm(nrow(dl), c(-1.5, 1.5)[s]); dl$y2 <- rnorm(nrow(dl), c(0, 2)[s])
+codes <- .multilpa_structures()
+fits <- lapply(setNames(codes, codes), function(m) lta(dl, c("y1","y2"), "id", n_profiles = 2, time = "time", model = m, n_starts = 2, seed = 1))
+vm <- vapply(fits, function(f) .lta_arguments(f)$variance_model, "")
+print(vm)
+# Letter rule: every code pair the profile rule calls nested, is .lta_nested the same?
+within <- function(a, b) all(vapply(1:3, function(p) match(substr(a,p,p), c("I","E","V")) <= match(substr(b,p,p), c("I","E","V")), TRUE))
+gr <- expand.grid(null = codes, alt = codes, stringsAsFactors = FALSE)
+gr <- subset(gr, null != alt)
+gr$letters <- mapply(within, gr$null, gr$alt)
+gr$lta_nested <- mapply(function(a, b) isTRUE(.lta_nested(fits[[a]], fits[[b]])), gr$null, gr$alt)
+print(subset(gr, letters != lta_nested))
+cat("pairs nested by letters:", sum(gr$letters), " agreed:", sum(gr$letters & gr$lta_nested), "\n")
+# The refused pair is really nested: EII within EEE on this 2-profile LTA
+cat("EII LL", fits$EII$log_likelihood, "q", fits$EII$n_parameters, " EEE LL", fits$EEE$log_likelihood, "q", fits$EEE$n_parameters, "EEI LL", fits$EEI$log_likelihood, "q", fits$EEI$n_parameters, "\n")
+r <- tryCatch(compare_models(EII = fits$EII, EEE = fits$EEE, test = "lrt"), error = function(e) e); cat(class(r)[1], ":", if (inherits(r,"error")) conditionMessage(r), "\n")
+r <- tryCatch(compare_models(EII = fits$EII, EEI = fits$EEI, test = "lrt"), error = function(e) e); cat(class(r)[1], ":", if (inherits(r,"error")) conditionMessage(r), "\n")
+r <- tryCatch(bootstrap_lrt(fits$EII, fits$EEE, data = dl, iter = 2), error = function(e) e); cat("BLRT", class(r)[1], ":", if (inherits(r,"error")) conditionMessage(r), "\n")
+# Same pair in the profile family
+pf <- lapply(c(EII = "EII", EEE = "EEE"), function(m) lpa(dl, c("y1","y2"), n_profiles = 2, model = m, n_starts = 2, seed = 1))
+print(as.data.frame(compare_models(EII = pf$EII, EEE = pf$EEE, test = "lrt"))[, c("model","n_parameters","log_likelihood","lr_statistic","lr_df","lr_p_value")])

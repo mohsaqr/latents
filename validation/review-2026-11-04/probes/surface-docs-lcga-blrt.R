@@ -1,0 +1,6 @@
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+options(digits = 5, width = 160)
+t0 <- Sys.time()
+e <- enumerate_regressions(score ~ wave, growth_scores, n_classes = 3:6, id = "student", class_level = "group", n_starts = 3, bootstrap = 19, seed = 1)
+print(e); print(as.data.frame(get_results(e,"fit")))
+print(Sys.time()-t0)

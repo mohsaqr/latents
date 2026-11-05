@@ -1,0 +1,84 @@
+
+PROBE: LRT shared versus group_class slopes 
+Converged: TRUE TRUE 
+ERROR CLASS: simpleError 
+MESSAGE: missing value where TRUE/FALSE needed 
+
+PROBE: BCH out of range pairwise inference 
+        level method class category    estimate standard_error  conf_low
+1 individuals    bch     1   common  1.01069914     0.02397783        NA
+2 individuals    bch     1     rare -0.01069914     0.02397783        NA
+3 individuals    bch     2   common  0.77429655     0.06500783 0.6233201
+4 individuals    bch     2     rare  0.22570345     0.06500783 0.1232722
+  conf_high effective_n
+1        NA   103.61270
+2        NA   103.61270
+3 0.8767278    33.29872
+4 0.3766799    33.29872
+        level method class reference_class category   estimate standard_error
+1 individuals    bch     2               1   common -0.2364026     0.08209129
+2 individuals    bch     2               1     rare  0.2364026     0.08209129
+  statistic     p_value  p_adjusted    conf_low   conf_high
+1 -2.879752 0.003979877 0.003979877 -0.39729855 -0.07550661
+2  2.879752 0.003979877 0.003979877  0.07550661  0.39729855
+
+PROBE: align ordinal category labels 
+Reference levels: low medium high 
+Fit levels: red green blue 
+Accepted class: multilpa 
+
+PROBE: covariate alignment posterior column labels 
+Measurement row names: 
+Posterior column names: 
+Covariance dimension names: 
+Posterior names absent before alignment too: TRUE 
+
+PROBE: confint for fixed covariate measurement 
+Free parameters: 4 
+Inference rows: 4 
+vcov dimension: 16 16 
+ERROR CLASS: simpleError 
+MESSAGE: length of 'dimnames' [1] not equal to array extent 
+
+PROBE: LRT shared predictor with changed values 
+Same predictor name, equal values: FALSE 
+Converged: TRUE TRUE 
+  model lr_statistic lr_df   lr_p_value
+1 small           NA    NA           NA
+2 large     222.0624     1 3.210245e-50
+
+PROBE: bootstrap plot in small measurement units 
+Mean replicate ranges: 9.898963e-14 7.471107e-13 6.718518e-14 2.554754e-12 
+ERROR CLASS: latents_nothing_to_plot 
+MESSAGE: No chosen parameter varies across the replicates, so there is nothing to plot. 
+
+PROBE: bootstrap row reorder followed by row name normalization 
+Maximum difference from the matching reported standard error: 3.693022 
+dplyr::arrange preserves row names: TRUE 
+dplyr::arrange maximum standard error mismatch: 4.768007 
+
+PROBE: categorical outcome category present only in excluded rows 
+Finite errors before: 4 
+Finite errors after: 0 
+        level method class category  estimate standard_error conf_low conf_high
+1 individuals     ml     1 excluded 0.0000000             NA       NA        NA
+2 individuals     ml     1       no 0.5714399             NA       NA        NA
+3 individuals     ml     1      yes 0.4285601             NA       NA        NA
+4 individuals     ml     2 excluded 0.0000000             NA       NA        NA
+5 individuals     ml     2       no 0.3710568             NA       NA        NA
+6 individuals     ml     2      yes 0.6289432             NA       NA        NA
+  effective_n
+1   175.02745
+2   175.02745
+3   175.02745
+4    96.97255
+5    96.97255
+6    96.97255
+
+PROBE: LRT ordinal category order mismatch 
+Null category order: low middle high 
+Alternative category order: low high middle 
+Nesting checker returns NULL: TRUE 
+   model lr_statistic lr_df  lr_p_value
+1  first           NA    NA          NA
+2 second     225.0226     1 7.25905e-51
