@@ -77,14 +77,23 @@ invisible(lapply(configurations, function(cfg) {
                  as.matrix(their_posterior[sprintf("prob%d", classes)]),
                  tolerance = 1e-6, ignore_attr = TRUE)
 
-    subject <- lcmm::predictY(theirs, newdata = new_persons, var.time = "time",
-                              marg = FALSE, subject = "id")$pred
-    class_conditional <- predict(ours, new_persons, type = "class_conditional")
-    expect_equal(class_conditional$fitted,
-                 unlist(subject[sprintf("pred_ss%d", classes)], use.names = FALSE),
-                 tolerance = 1e-6)
-    expect_equal(predict(ours, new_persons, type = "conditional")$fitted,
-                 subject$pred_ss, tolerance = 1e-6)
+    # lcmm 2.2.1 returns the subject-specific predictions (`pred_ss`, one
+    # `pred_ss<class>` per class) as a data frame. lcmm 2.2.2 returns the
+    # class-specific marginal predictions (`Ypred_class<class>`, a matrix) for
+    # the same call, so it has no reference for these two results
+    # (argument-sweep/diagnostics/lcmm-predict-shape.R); the test then ends
+    # with a skip that says so, after everything lcmm does provide.
+    subject <- as.data.frame(lcmm::predictY(theirs, newdata = new_persons, var.time = "time",
+                                            marg = FALSE, subject = "id")$pred)
+    subject_specific <- all(c("pred_ss", sprintf("pred_ss%d", classes)) %in% names(subject))
+    if (subject_specific) {
+      class_conditional <- predict(ours, new_persons, type = "class_conditional")
+      expect_equal(class_conditional$fitted,
+                   unlist(subject[sprintf("pred_ss%d", classes)], use.names = FALSE),
+                   tolerance = 1e-6)
+      expect_equal(predict(ours, new_persons, type = "conditional")$fitted,
+                   subject$pred_ss, tolerance = 1e-6)
+    }
 
     effects <- predict(ours, new_persons, type = "random_effects")
     terms <- setdiff(names(effects), c("id", "class", "posterior"))
@@ -94,5 +103,8 @@ invisible(lapply(configurations, function(cfg) {
     their_effects <- lcmm::predictRE(theirs, newdata = new_persons, subject = "id")
     expect_equal(unname(weighted), unname(as.matrix(their_effects[-1L])),
                  tolerance = 1e-6, ignore_attr = TRUE)
+    skip_if(!subject_specific, sprintf(
+      "lcmm %s returns no subject-specific predictions: the conditional predictions are unchecked",
+      utils::packageVersion("lcmm")))
   })
 }))

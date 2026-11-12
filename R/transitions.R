@@ -778,14 +778,15 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_screen = NULL,
                             acceleration = c("squarem", "none"), cores = 1L, call = NULL) {
   cores <- .latents_check_cores(cores)
-  acceleration <- match.arg(acceleration)
-  count_model <- match.arg(count_model)
-  count_dispersion <- match.arg(count_dispersion)
+  acceleration <- .latents_match_formal(acceleration)
+  count_model <- .latents_match_formal(count_model)
+  count_dispersion <- .latents_match_formal(count_dispersion)
+  .latents_warn_unused_count_arguments(count, count_model, count_dispersion)
   .multilpa_check_drop_empty(drop_empty)
-  select_start <- match.arg(select_start)
-  search <- match.arg(search)
-  transitions <- match.arg(transitions)
-  measurement_model <- match.arg(measurement)
+  select_start <- .latents_match_formal(select_start)
+  search <- .latents_match_formal(search)
+  transitions <- .latents_match_formal(transitions)
+  measurement_model <- .latents_match_formal(measurement)
   if (!is.numeric(order) || length(order) != 1L || !order %in% c(1, 2)) {
     stop(errorCondition("`order` must be 1 or 2.", class = "latents_bad_argument",
                         call = NULL))
@@ -816,10 +817,10 @@ lta <- function(data, vars, id, n_profiles, time,
     "`time` must be supplied; a transition model is defined by the ordering" =
       time_given && !is.null(time))
   if (is.null(call)) call <- match.call()
-  variance_model <- match.arg(variance_model)
-  covariance_model <- match.arg(covariance_model)
-  missing <- match.arg(missing)
-  occasions <- match.arg(occasions)
+  variance_model <- .latents_match_formal(variance_model)
+  covariance_model <- .latents_match_formal(covariance_model)
+  missing <- .latents_match_formal(missing)
+  occasions <- .latents_match_formal(occasions)
   # `model` names the covariance structure in mclust's three letters, as in
   # multilpa(); NULL keeps the `variance_model` x `covariance_model` choice.
   structure <- NULL
@@ -1386,8 +1387,8 @@ plot.multilpa_transitions <-function(x, what = c("transitions", "profiles",
               inherits(x, "multilpa_transitions"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
-  what <- match.arg(what)
-  scale <- match.arg(scale)
+  what <- .latents_match_formal(what)
+  scale <- .latents_match_formal(scale)
   .gg_require()
   if (identical(what, "all")) {
     return(.gg_every_view(x, match.call(), parent.frame()))

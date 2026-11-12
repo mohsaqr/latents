@@ -185,7 +185,7 @@
 #' @noRd
 .additive_inference <- function(x, vcov_type = c("observed", "robust", "opg"),
                                 step = 1e-4, warn_weak = TRUE) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_match_formal(vcov_type)
   # Classed, as every other argument of parameter_inference() (a bare
   # stopifnot() raised simpleError).
   .latents_require("`step` must be a single finite positive number" =

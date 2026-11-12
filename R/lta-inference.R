@@ -484,7 +484,7 @@
 #' @noRd
 .lta_inference <- function(fit, vcov_type = c("observed", "robust", "opg"),
                            step = 1e-4) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_match_formal(vcov_type)
   if (!is.numeric(step) || length(step) != 1L || !is.finite(step) || step <= 0) {
     stop(errorCondition("`step` must be a positive finite number.",
                         class = "latents_bad_argument", call = NULL))

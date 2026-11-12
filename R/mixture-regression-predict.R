@@ -125,7 +125,7 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
                                    type = c("response", "class_response",
                                             "posterior", "probabilities"), ...,
                                    trials = NULL) {
-  type <- match.arg(type)
+  type <- .latents_match_formal(type)
   if (identical(type, "probabilities") && !identical(object$spec$family, "ordinal")) {
     stop(errorCondition(paste(
       "`type = \"probabilities\"` gives category probabilities of an ordinal",

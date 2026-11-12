@@ -249,19 +249,19 @@ mixture_regression <- function(formula, data, n_classes,
                    residual_correlation = c("none", "ar", "brownian"),
                    residual_time = NULL) {
   vcov_defaulted <- missing(vcov_type)
-  random_covariance <- match.arg(random_covariance)
-  residual_correlation <- match.arg(residual_correlation)
+  random_covariance <- .latents_match_formal(random_covariance)
+  residual_correlation <- .latents_match_formal(residual_correlation)
   # Variable names may stand in for a one-sided formula, so no `~` is needed.
   common <- .mixture_as_formula(common, "common")
   membership <- .mixture_as_formula(membership, "membership")
   group_membership <- .mixture_as_formula(group_membership, "group_membership")
   random <- .mixture_as_formula(random, "random")
-  family <- match.arg(family)
-  class_level <- match.arg(class_level)
-  variance <- match.arg(variance)
-  missing <- match.arg(missing)
-  select_start <- match.arg(select_start)
-  vcov_type <- match.arg(vcov_type)
+  family <- .latents_match_formal(family)
+  class_level <- .latents_match_formal(class_level)
+  variance <- .latents_match_formal(variance)
+  missing <- .latents_match_formal(missing)
+  select_start <- .latents_match_formal(select_start)
+  vcov_type <- .latents_match_formal(vcov_type)
   .latents_check_data_frame(data, substitute(data))
   .latents_require(
     "`formula` must be a two-sided formula" =

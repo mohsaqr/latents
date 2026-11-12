@@ -283,13 +283,13 @@
       if (length(absent) > 1L) "are" else "is"),
       class = "latents_bad_data", call = NULL))
   }
-  variance_model <- match.arg(variance_model)
-  covariance_model <- match.arg(covariance_model)
+  variance_model <- .latents_match_formal(variance_model)
+  covariance_model <- .latents_match_formal(covariance_model)
   # Any of the fourteen structures; called without one, the structure the
   # variance and covariance models name.
   structure <- structure %||% .multilpa_resolve_structure(variance_model, covariance_model)
-  missing <- match.arg(missing)
-  profile_slopes <- match.arg(profile_slopes)
+  missing <- .latents_match_formal(missing)
+  profile_slopes <- .latents_match_formal(profile_slopes)
   stopifnot(
     "`categorical` must be a character vector of indicator names" =
       is.character(categorical) && !anyNA(categorical),

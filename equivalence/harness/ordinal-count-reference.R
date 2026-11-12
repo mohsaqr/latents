@@ -716,6 +716,12 @@ ordinal_count_lta_tables <- function(reference, layout, frame, ntimes, min_varia
     transitions = data.frame(group_class = "group_class_1", occasion = NA_integer_,
                              from = label(pairs$from), to = label(pairs$to),
                              probability = reference$transition[cbind(pairs$from, pairs$to)],
+                             # Expected moves out of each origin, from the
+                             # reference's posteriors on rows with a successor.
+                             origin_expected_count = unname(colSums(
+                               posteriors[inner, , drop = FALSE])[pairs$from]),
+                             supported = unname(colSums(
+                               posteriors[inner, , drop = FALSE])[pairs$from] >= 1),
                              estimated = occupied[pairs$from], stringsAsFactors = FALSE),
     transition_coefficients = data.frame(
       group_class = "group_class_1", from = label(moves$from), to = label(moves$to),

@@ -42,8 +42,11 @@ test_that("a non-character ordinal or count argument is a classed bad argument",
 
 test_that("lca() keeps an indicator categorical whatever count_* values are given", {
   data <- audit_1101_pf_data()
-  fit <- lca(data, c("equal", "b", "o"), n_classes = 2, count_dispersion = "equal",
-             n_starts = 1, seed = 1)
+  # Since 2026-11-11 a count argument that changes nothing says so.
+  expect_warning(
+    fit <- lca(data, c("equal", "b", "o"), n_classes = 2, count_dispersion = "equal",
+               n_starts = 1, seed = 1),
+    class = "latents_unused_argument")
   expect_setequal(names(fit$response_probabilities), c("equal", "b", "o"))
   expect_identical(ncol(fit$means), 0L)
   reference <- lca(data, c("equal", "b", "o"), n_classes = 2, n_starts = 1, seed = 1)

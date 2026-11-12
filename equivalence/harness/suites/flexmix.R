@@ -1013,7 +1013,11 @@ suite_flexmix <- function() {
   coefficient_rows$p_adjusted <- NA_real_
   coefficient_rows$p_adjusted[slopes] <- stats::p.adjust(coefficient_rows$p_value[slopes],
                                                          method = "BH")
-  if (non_gaussian) coefficient_rows$exp_estimate <- exp(coefficient_rows$estimate)
+  # A ratio is reported for slopes only: an intercept's exponential is an odds
+  # or a rate at covariate zero, not a ratio.
+  if (non_gaussian) {
+    coefficient_rows$exp_estimate <- ifelse(slopes, exp(coefficient_rows$estimate), NA_real_)
+  }
 
   unit_posterior <- reference$unit_posterior
   n_units <- nrow(unit_posterior)
@@ -1041,7 +1045,8 @@ suite_flexmix <- function() {
     model = "class", class = rep(classes[-1L], each = length(membership_terms)),
     term = rep(membership_terms, k - 1L), reference = "class_1",
     .flexmix_wald(as.vector(estimates$gamma), as.vector(errors$gamma)))
-  membership_rows$odds_ratio <- exp(membership_rows$estimate)
+  membership_rows$odds_ratio <- ifelse(membership_rows$term == "(Intercept)", NA_real_,
+                                       exp(membership_rows$estimate))
 
   posterior <- reference$posterior
   rows <- seq_len(nrow(posterior))

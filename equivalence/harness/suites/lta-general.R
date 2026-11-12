@@ -493,8 +493,13 @@ suite_lta_general <- function() {
   cells <- expand.grid(from = seq_len(k), to = seq_len(k))
   transitions <- do.call(rbind, lapply(destinations, function(t) {
     rows <- which(!is.na(lead) & lead == t)
+    # The expected number of units making this occasion's move out of each
+    # origin, from the reference's smoothed posteriors.
+    origin <- colSums(posteriors[rows, , drop = FALSE])
     data.frame(group_class = "group_class_1", occasion = t,
                from = profiles[cells$from], to = profiles[cells$to],
+               origin_expected_count = unname(origin[cells$from]),
+               supported = unname(origin[cells$from] >= 1),
                probability = vapply(seq_len(nrow(cells)), function(cell) {
                  mean(shared@trDens[rows, cells$to[[cell]], cells$from[[cell]]])
                }, numeric(1)),

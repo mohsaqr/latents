@@ -17,7 +17,11 @@ test_that("the kit is the one Latent GOLD was given", {
   # The data files latents writes now reproduce the ones Latent GOLD read.
   invisible(Map(function(case, made) {
     written <- utils::read.delim(file.path(base, "kit", sprintf("%s.dat", case)))
-    expect_equal(written, distal_data_file(made), tolerance = 1e-12, ignore_attr = TRUE,
+    # The step-one fit is re-estimated here, so its posteriors match the file
+    # to the optimizer's reproducibility across platforms, not to the last
+    # bit: 1e-12 held under macOS Accelerate and failed under Linux's
+    # reference BLAS, where posteriors differ by 1e-10.
+    expect_equal(written, distal_data_file(made), tolerance = 1e-8, ignore_attr = TRUE,
                  label = case)
   }, distal_cases, references))
   files <- sort(list.files(file.path(base, "kit"), pattern = "[.](dat|lgs)$", full.names = TRUE),

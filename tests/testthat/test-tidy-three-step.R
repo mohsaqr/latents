@@ -232,7 +232,7 @@ test_that("a single class is refused a contrast by condition class", {
   expect_error(three_step(fit, data, "y", contrast = "pairs"),
                class = "latents_inseparable_classes")
   expect_error(three_step(fit, data, "y", contrast = "nonsense"),
-               "'arg' should be one of")
+               class = "latents_bad_argument")
 })
 
 test_that("a wrong row count is the same classed error in every verb", {

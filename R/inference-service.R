@@ -122,7 +122,14 @@
                                                   "min_le_eps_maxabs"),
                                          message = NULL) {
   rule <- match.arg(rule)
-  eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
+  # eigen() stops on a non-finite entry with base R's unclassed "infinite or
+  # missing values in 'x'". Under separation the differenced information has
+  # such entries off its diagonal, so a fit that should report NA standard
+  # errors stopped instead. Such a matrix is not positive definite: every
+  # rule below already treats non-finite eigenvalues that way.
+  eigenvalues <- if (all(is.finite(information))) {
+    eigen(information, symmetric = TRUE, only.values = TRUE)$values
+  } else NA_real_
   refuse <- function(text) {
     stop(errorCondition(text, class = "latents_singular_information", call = NULL))
   }
@@ -434,8 +441,15 @@
         class = "latents_singular_information", call = NULL))
     })
   natural <- scaled / tcrossprod(parameter_scale)
-  eigenvalues <- eigen(natural, symmetric = TRUE, only.values = TRUE)$values
-  scaled_eigenvalues <- eigen(scaled, symmetric = TRUE, only.values = TRUE)$values
+  # A non-finite second difference would stop eigen() with an unclassed error;
+  # it is information that cannot be inverted, refused just below.
+  finite <- all(is.finite(scaled)) && all(is.finite(natural))
+  eigenvalues <- if (finite) {
+    eigen(natural, symmetric = TRUE, only.values = TRUE)$values
+  } else NA_real_
+  scaled_eigenvalues <- if (finite) {
+    eigen(scaled, symmetric = TRUE, only.values = TRUE)$values
+  } else NA_real_
   condition_ratio <- min(scaled_eigenvalues) / max(scaled_eigenvalues)
   if (any(!is.finite(eigenvalues)) || !is.finite(condition_ratio) ||
       min(scaled_eigenvalues) <= 0 || condition_ratio <= 1e-10) {

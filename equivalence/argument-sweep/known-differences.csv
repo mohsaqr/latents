@@ -1,0 +1,2 @@
+"module","case","quantity","reason"
+"categorical","classes[data=esm,k=3,fiml]","optimum at least that of poLCA's search","Ten k-means starts (the default search for categorical indicators) stop 1.82 below the maximum poLCA's random starts reach on five binary items with missing values; search = ""emEM"" reaches it with ten starts and k-means with a hundred (diagnostics/esm-search.R, diagnostics/search-categorical.R). A search limit, not a likelihood error: the fit's own likelihood, posteriors and local maximum agree with their references."

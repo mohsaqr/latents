@@ -80,7 +80,7 @@
 #' @noRd
 .multilpa_sequences <- function(x, format = c("long", "wide")) {
   time_values <- .multilpa_require_time(x)
-  format <- match.arg(format)
+  format <- .latents_match_formal(format)
   long <- data.frame(
     group = x$group_values[x$group_index],
     group_class = x$group_classes[x$group_index],

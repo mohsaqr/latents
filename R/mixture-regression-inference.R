@@ -286,7 +286,7 @@
 #'   `information` matrix.
 #' @noRd
 .mixture_inference <- function(fit, vcov_type = c("observed", "robust", "opg")) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_match_formal(vcov_type)
   # Excluded units cannot set the chart's origin or spread, contribute score
   # rows, or affect rank and cluster counts. Keep their data/posteriors on the
   # fitted object, but differentiate the same support used by its fit.

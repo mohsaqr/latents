@@ -42,3 +42,5 @@
 ^joint-results\.rds$
 ^Project_docs$
 ^winbox-.*$
+^\.mini-ci$
+^\.ci$

@@ -128,8 +128,12 @@ test_that("the transitions table leaves out moves only zero-weight units make (T
   table <- get_results(extended, "transitions")
   expect_false(anyNA(table$probability))
   expect_identical(sort(unique(table$occasion)), 2:4)
+  # The two quasi-Newton finishes stop at likelihoods equal to 1e-8, which
+  # fixes the probabilities only to about its square root. On Linux's
+  # reference BLAS they stop 5e-7 apart (1.3e-6 relative), and `tol = 1e-13`
+  # does not move either, so 1e-6 measured the optimizer and failed there.
   expect_equal(table$probability, get_results(reference, "transitions")$probability,
-               tolerance = 1e-6)
+               tolerance = 1e-5)
   expect_true(all(table$estimated))
   # Homogeneous transitions averaged over occasions are not poisoned either.
   pooled <- release_fit(release_zero_weight, weights = "wt")

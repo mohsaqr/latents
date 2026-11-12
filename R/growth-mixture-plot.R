@@ -55,7 +55,7 @@ plot.latents_growth_mixture <-function(x, what = c("trajectories", "individuals"
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   .gg_require()
-  what <- match.arg(what)
+  what <- .latents_match_formal(what)
   .latents_require(
     "`spread` must be a single number in [0, 1)" =
       is.numeric(spread) && length(spread) == 1L && is.finite(spread) &&

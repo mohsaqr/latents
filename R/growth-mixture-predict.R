@@ -95,7 +95,7 @@ predict.latents_growth_mixture <-function(object, newdata = NULL,
                                                     "posterior", "conditional",
                                                     "class_conditional",
                                                     "random_effects"), ...) {
-  type <- match.arg(type)
+  type <- .latents_match_formal(type)
   .latents_warn_unused_arguments(list(...), "predict()",
     "A growth mixture prediction takes `newdata` and `type`.")
   with_response <- type %in% c("posterior", "conditional", "class_conditional",

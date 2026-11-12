@@ -134,8 +134,15 @@ compare_published_help <- function() {
 }
 
 fit_latents_lca <- function(case) {
+  # `tol` is per observed value: lca() stops when a step gains no more than
+  # `tol` times their number. The references stop on a gain of 1e-12 in all,
+  # so `tol` is divided by that number. With `tol = 1e-12` as written, the
+  # flat three-class dentistry model (19,345 values) stopped 2e-6 from the
+  # maximum in its parameters and 2e-5 in its posteriors on macOS, and past
+  # the posteriors' tolerance of 1e-4 on Linux (dentistry-posteriors.R).
+  n_observed <- sum(!is.na(case$data[case$items]))
   fit <- lca(case$data, case$items, n_classes = case$classes, n_starts = 50L, seed = 1L,
-             tol = 1e-12, max_iter = 100000L)
+             tol = 1e-12 / n_observed, max_iter = 100000L)
   theta <- stats::coef(fit)
   k <- case$classes
   levels <- .levels(case)

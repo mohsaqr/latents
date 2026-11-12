@@ -1,0 +1,30 @@
+# How latents is tested on the Mac mini (ci VM). Run in the repo: mini-ci [job]
+#   job NAME COMMAND (first = default) · env KEY=VALUE · sibling ../DIR · include PATH
+#   fetch PATH · report cvs · node mac|X.Y.Z|system (mac = the same Node version as this Mac)
+node system
+
+# R package: dependencies (incl. Suggests) come from DESCRIPTION. A local package this one
+# needs unreleased goes in as: sibling ../DIR
+job test   Rscript -e 'testthat::test_local(stop_on_failure = TRUE)'
+job check  Rscript -e 'r <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never"); print(r); if (r$status != 0 || length(r$errors) || length(r$warnings)) quit(status = 1)'
+
+# simulab draws the Monte Carlo datasets of the equivalence suite; it is a local package.
+sibling ../simulab
+
+# Equivalence: every comparison with other software, published output or an independent
+# implementation (equivalence/README.md). Reference packages beyond Suggests are installed
+# once with: mini-ci deps
+env NOT_CRAN=true
+env OMP_NUM_THREADS=1
+env OPENBLAS_NUM_THREADS=1
+env VECLIB_MAXIMUM_THREADS=1
+job deps         Rscript equivalence/install-reference-packages.R
+job equivalence  R CMD INSTALL . && Rscript equivalence/run.R
+# The same suite in three shards by file name, for three workspaces side by side.
+job equivalence-a  R CMD INSTALL . && Rscript equivalence/run.R '^[a-f]'
+job equivalence-b  R CMD INSTALL . && Rscript equivalence/run.R '^[g-l]'
+job equivalence-c  R CMD INSTALL . && Rscript equivalence/run.R '^[m-z]'
+job harness      R CMD INSTALL . && Rscript equivalence/harness/test-harness.R && LATENTS_EQUIVALENCE_REQUIRE_ALL=true LATENTS_EQUIVALENCE_OUTPUT=tmp/equivalence Rscript equivalence/harness/run.R
+job sweep        R CMD INSTALL . && Rscript equivalence/argument-sweep/run.R
+fetch tmp/equivalence
+fetch tmp/argument-sweep

@@ -365,6 +365,10 @@ suite_depmixs4 <- function() {
     group_class = 1L, from = rep(seq_len(k), each = k), to = rep(seq_len(k), times = k),
     probability = as.vector(t(estimates$transition)),
     expected_count = as.vector(t(reference$counts)),
+    # The expected number of moves out of each origin (`?lta`, *Transition
+    # support*): a row with fewer than one is unsupported.
+    origin_expected_count = rep(rowSums(reference$counts), each = k),
+    supported = rep(rowSums(reference$counts) >= 1, each = k),
     stable = stable,
     # A transition row is estimable when its origin is expected to be left at
     # least once in some sequence.

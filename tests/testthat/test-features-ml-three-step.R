@@ -197,7 +197,7 @@ test_that("weighted fits and impossible outcomes are refused by class", {
   expect_error(three_step(fit, data, "y", method = "proportional", variance = "varying"),
                class = "latents_bad_argument")
   expect_error(three_step(fit, data, "y", method = "ml", variance = "pooled"),
-               "should be one of")
+               class = "latents_bad_argument")
   # Classed since 2026-10-27: a missing column names it, and NA is refused.
   expect_error(three_step(fit, data, "absent", method = "ml"), "`absent`",
                class = "latents_bad_data")

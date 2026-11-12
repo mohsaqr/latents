@@ -1121,8 +1121,9 @@ align_reference <- function(reference, fit) {
   })
   out <- do.call(rbind, rows)
   if (is.null(out)) return(NULL)
-  # The default adjustment is "none", so the adjusted p-value is the raw one.
-  out$p_adjusted <- out$p_value
+  # The table's default adjustment is Benjamini-Hochberg over every row
+  # (it was "none" until 1.1.15; NEWS, "you filtered on `p_adjusted`").
+  out$p_adjusted <- stats::p.adjust(out$p_value, method = "BH")
   out
 }
 

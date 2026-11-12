@@ -414,7 +414,7 @@ three_step <- function(x, data, outcome,
       "use `step_one = \"fixed\"`, which still works for supported three-step fits."),
       class = "latents_unsupported_three_step", call = NULL))
   }
-  level <- match.arg(level)
+  level <- .latents_match_formal(level)
   # The released methods keep their abbreviations ("m" is "modal", as it was
   # before "ml" existed); anything else is matched against all four, so "ml"
   # is taken by its full name and an unknown method's error lists every one.
@@ -422,17 +422,17 @@ three_step <- function(x, data, outcome,
   released <- pmatch(method[1L], c("bch", "proportional", "modal"))
   method <- if (identical(method, methods)) "bch" else
     if (length(method) == 1L && !is.na(released)) methods[released] else
-      match.arg(method, methods)
-  variance <- match.arg(variance)
+      .latents_match_arg(method, methods, "method")
+  variance <- .latents_match_formal(variance)
   if (variance_given && !identical(method, "ml")) {
     stop(errorCondition(paste(
       "`variance` sets the class variances of the outcome in the ML step-three",
       "model; the other methods weight the outcome and model no variance. Use",
       "`method = \"ml\"`."), class = "latents_bad_argument", call = NULL))
   }
-  contrast <- match.arg(contrast)
-  adjust <- match.arg(adjust)
-  vcov_type <- match.arg(vcov_type)
+  contrast <- .latents_match_formal(contrast)
+  adjust <- .latents_match_formal(adjust)
+  vcov_type <- .latents_match_formal(vcov_type)
   .multilpa_refuse_noise(x, "three_step()")
   if (.latents_is_weighted(x)) .latents_refuse_weights("`three_step()` yet")
   .latents_check_data_frame(data, substitute(data))
@@ -998,9 +998,9 @@ r3step <- function(x, data, covariates = character(),
                                 "bonferroni", "BY", "none"),
                    by_group_class = FALSE, initial_covariates = character(),
                    transition_covariates = character()) {
-  level <- match.arg(level)
-  vcov_type <- match.arg(vcov_type)
-  adjust <- match.arg(adjust)
+  level <- .latents_match_formal(level)
+  vcov_type <- .latents_match_formal(vcov_type)
+  adjust <- .latents_match_formal(adjust)
   if (length(initial_covariates) > 0L || length(transition_covariates) > 0L) {
     return(.r3step_transitions(x, data, covariates, level, ci_level, vcov_type,
                                adjust, by_group_class, initial_covariates,

@@ -275,7 +275,8 @@
 #'     `origin_expected_count` and `supported` describing transition-row
 #'     information, `"transition_coefficients"`,
 #'     `"initial_coefficients"` and `"second_order_coefficients"` (log odds
-#'     with odds ratios), `"profiles"`, `"responses"` (with `occasion`),
+#'     with odds ratios), `"profiles"`, `"covariances"` (under
+#'     `covariance_model = "full"`), `"responses"` (with `occasion`),
 #'     `"ordinal"`, `"count_means"`, `"group_classes"`, `"assignments"`,
 #'     `"fit"` and `"starts"`.}
 #'   \item{Pooled imputations}{`"estimates"`, `"imputations"` (each

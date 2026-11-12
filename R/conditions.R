@@ -442,8 +442,10 @@
 #'     `plot()` methods, `summary()` of the fits and grids whose summary
 #'     takes no `level` or `vcov_type`,
 #'     `vcov()`, `predict()` and [descriptives()] of a data frame) was given
-#'     an argument it does not use. The call proceeds and
-#'     the warning names the argument.}
+#'     an argument it does not use, or [multilpa()] or [lta()] was given a
+#'     `count_model` or `count_dispersion` that changes nothing (no `count`
+#'     indicator, or a dispersion option for a Poisson model). The call
+#'     proceeds and the warning names the argument.}
 #'   \item{`latents_unused_category`}{An ordinal indicator is a factor with
 #'     levels never observed in the data. Their intercepts diverge, so Wald
 #'     inference is refused; call `droplevels()` before fitting. It is a

@@ -19,6 +19,10 @@ Sys.setenv(NOT_CRAN = "true")
 # The package is loaded here rather than by `load_package = "source"`: that
 # mode sources the helpers of tests/testthat/ and skips this folder's own.
 pkgload::load_all(".", quiet = TRUE)
+# Every file reports: testthat otherwise quits after ten failed expectations,
+# and one reference package's changed return value (six failures in a file)
+# ended a run with thirteen files unread.
+testthat::set_max_fails(Inf)
 testthat::test_dir(file.path("equivalence"), filter = filter,
                    package = "latents", load_package = "none",
                    stop_on_failure = TRUE)

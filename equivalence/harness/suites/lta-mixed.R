@@ -429,6 +429,10 @@ suite_lta_mixed <- function() {
     from = rep(rep(seq_len(k2), each = k2), times = k1),
     to = rep(seq_len(k2), times = k2 * k1),
     expected_count = as.vector(aperm(evaluated$counts, c(2L, 1L, 3L))),
+    # The expected number of moves out of each origin (`?lta`, *Transition
+    # support*): a row with fewer than one is unsupported.
+    origin_expected_count = rep(as.vector(apply(evaluated$counts, c(1L, 3L), sum)), each = k2),
+    supported = rep(as.vector(apply(evaluated$counts, c(1L, 3L), sum)) >= 1, each = k2),
     stable = rep(as.vector(t(diag(TRUE, k2))), times = k1),
     # `?lta`: a row is estimated unless no sequence of its group class is
     # expected to occupy its origin before the final occasion, which leaves

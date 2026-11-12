@@ -71,6 +71,16 @@ predict.multilpa_transitions <-function(object, ...) {
     class = "latents_unsupported_prediction", call = NULL))
 }
 
+#' @noRd
+#' @export
+predict.multilpa_lta <- function(object, ...) {
+  stop(errorCondition(paste(
+    "predict() is not implemented for latent transition models yet: a row's",
+    "class depends on the rest of its sequence. The fitted rows' posteriors",
+    "are in get_results(x, \"assignments\")."),
+    class = "latents_unsupported_prediction", call = NULL))
+}
+
 #' The fitted rows, prepared as the fit prepared them
 #' @noRd
 .multilpa_training_rows <- function(object) {

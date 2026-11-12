@@ -21,7 +21,7 @@
 #'   uses the free block only (`.mixture_delta()`).
 #' @noRd
 .growth_inference <- function(fit, vcov_type = c("observed", "robust", "opg")) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_match_formal(vcov_type)
   if (is.null(fit$standard)) {
     inference <- .growth_inference_at(fit$spec, fit$stats, fit$params,
                                       fit$residual_boundary, vcov_type)

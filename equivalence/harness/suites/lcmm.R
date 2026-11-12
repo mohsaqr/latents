@@ -705,6 +705,9 @@ suite_lcmm <- function() {
     colMeans(exp(linear) / rowSums(exp(linear)))
   })
   shares <- .lcmm_linked(share$estimate, share$std_error, "logit")
+  # One class has share one by definition: the table reports the interval
+  # [1, 1], where the logit of one has no interval to transform.
+  if (k == 1L) shares$conf_low <- shares$conf_high <- 1
   residual <- delta(function(v) sqrt(unpack(v)$sigma2))
   tables$classes <- data.frame(
     class = classes, share = shares$estimate, share_std_error = shares$std_error,

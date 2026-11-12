@@ -1287,6 +1287,7 @@ multilpa <- function(data, vars, id, n_profiles,
   cores <- .latents_check_cores(cores)
   count_model <- .latents_match_formal(count_model)
   count_dispersion <- .latents_match_formal(count_dispersion)
+  .latents_warn_unused_count_arguments(count, count_model, count_dispersion)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
     supplied <- setdiff(names(.call)[-1L], .cross_level_arguments())
     if (length(supplied) > 0L || missing(id) || is.null(id) || missing(n_profiles)) {

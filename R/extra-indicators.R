@@ -1077,6 +1077,32 @@
   if (identical(extra$count_dispersion, "equal")) 1L else as.integer(n_profiles)
 }
 
+#' Warn about count arguments that change nothing
+#'
+#' `count_model` governs only `count` indicators and `count_dispersion` only
+#' a negative-binomial model, so a non-default value given without them was
+#' dropped in silence: a caller asking for `count_dispersion = "equal"` and
+#' forgetting `count_model = "negative_binomial"` got a Poisson fit with no
+#' hint. Defaults are never reported.
+#' @param count The count indicators.
+#' @param count_model,count_dispersion The matched values.
+#' @return `NULL`, invisibly; warns `latents_unused_argument`.
+#' @noRd
+.latents_warn_unused_count_arguments <- function(count, count_model, count_dispersion) {
+  unused <- c(
+    if (length(count) == 0L && identical(count_model, "negative_binomial"))
+      list(count_model = count_model),
+    if (identical(count_dispersion, "equal") &&
+        (length(count) == 0L || !identical(count_model, "negative_binomial")))
+      list(count_dispersion = count_dispersion))
+  # Reached through lpa(), lca(), multilca() and the enumerations too, so the
+  # message names the model rather than one verb.
+  .latents_warn_unused_arguments(
+    unused, "This model",
+    paste("`count_model` applies to the indicators named in `count`, and",
+          "`count_dispersion` to `count_model = \"negative_binomial\"`."))
+}
+
 #' Attach the count model to prepared indicators
 #' @param extra Prepared indicators, or `NULL`.
 #' @param count_model `"poisson"` or `"negative_binomial"`.

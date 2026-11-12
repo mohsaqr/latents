@@ -1,3 +1,34 @@
+# latents 1.1.18
+
+## Arguments and conditions
+
+* An unknown option value is refused with `latents_bad_argument` in `lta()`,
+  `mixture_regression()`, `three_step()`, `r3step()`, the covariate fits of
+  `multilpa()`, and the `predict()` and `plot()` methods of regression,
+  growth and transition fits. These raised base R's unclassed `match.arg()`
+  error; the message now names the argument and its accepted values.
+* `count_model = "negative_binomial"` without a `count` indicator, and
+  `count_dispersion = "equal"` without a negative-binomial model, warn
+  `latents_unused_argument`. They were dropped in silence, so a call that
+  asked for a shared dispersion and omitted the count model returned a
+  Poisson fit with no hint.
+* Information that is not finite is treated as not positive definite. Under
+  separation `mixture_regression()` could stop with base R's "infinite or
+  missing values in 'x'" from `eigen()`; it now returns the fit with `NA`
+  standard errors and the `latents_singular_information` warning, and the
+  other engines refuse with that class.
+* `predict()` of a transition fit from the general engine (occasion-specific
+  transitions or measurement, second order, movers and stayers, covariates)
+  raises `latents_unsupported_prediction`, as the other transition fits do,
+  not "no applicable method".
+
+## Tables
+
+* `get_results(fit, "covariances")` is available for a general transition fit
+  with `covariance_model = "full"`: one row per occasion block, profile and
+  pair of indicators. The table reported variances only, and the estimated
+  covariances could not be read from the fit.
+
 # latents 1.1.17
 
 ## Results and inference

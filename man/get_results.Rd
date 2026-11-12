@@ -290,7 +290,8 @@ averaged over the groups and applicable occasions), with
 \code{origin_expected_count} and \code{supported} describing transition-row
 information, \code{"transition_coefficients"},
 \code{"initial_coefficients"} and \code{"second_order_coefficients"} (log odds
-with odds ratios), \code{"profiles"}, \code{"responses"} (with \code{occasion}),
+with odds ratios), \code{"profiles"}, \code{"covariances"} (under
+\code{covariance_model = "full"}), \code{"responses"} (with \code{occasion}),
 \code{"ordinal"}, \code{"count_means"}, \code{"group_classes"}, \code{"assignments"},
 \code{"fit"} and \code{"starts"}.}
 \item{Pooled imputations}{\code{"estimates"}, \code{"imputations"} (each

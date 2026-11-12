@@ -7,12 +7,49 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     if (!is.null(fit) && isTRUE(fit$order >= 2L))
       c("second_order_transitions", "second_order_coefficients"),
     "initial", "initial_coefficients", "profiles",
+    if (.lta_has_covariances(fit)) "covariances",
     if (length(fit$categorical) > 0L) "responses",
     if (!is.null(fit$extra_data$ordinal)) "ordinal",
     if (!is.null(fit$extra_data$count)) "count_means",
     "group_classes", "assignments", "fit", "starts",
     if (!is.null(fit$gaussian_diagnostics) && nrow(fit$gaussian_diagnostics) > 0L)
       "gaussian_diagnostics")
+}
+
+#' Does a general transition fit estimate within-profile covariances?
+#' @param fit A `multilpa_lta` fit, or `NULL`.
+#' @return A single logical.
+#' @noRd
+.lta_has_covariances <- function(fit) {
+  !is.null(fit) && length(fit$continuous) > 0L &&
+    any(vapply(fit$measurement, function(block) !is.null(block$covariances), logical(1)))
+}
+
+#' Within-profile covariance matrices of a general transition fit
+#'
+#' The layout of the profile model's `"covariances"` table (one row per
+#' profile and pair of indicators, both triangles), with the `occasion` column
+#' of `"profiles"`. Without it a full-covariance fit reported its variances
+#' only, and the estimated covariances could not be read from the fit.
+#' @param fit A `multilpa_lta` fit with `covariance_model = "full"`.
+#' @return A base `data.frame`: `occasion`, `profile`, `indicator`,
+#'   `indicator_2`, `covariance`.
+#' @noRd
+.lta_covariances_table <- function(fit) {
+  profiles <- paste0("profile_", seq_len(fit$n_profiles))
+  indicators <- seq_along(fit$continuous)
+  do.call(rbind, lapply(seq_along(fit$measurement), function(b) {
+    covariances <- fit$measurement[[b]]$covariances
+    cells <- expand.grid(indicator = indicators, indicator_2 = indicators,
+                         profile = seq_len(fit$n_profiles))
+    data.frame(occasion = rep(if (length(fit$measurement) == 1L) NA_integer_ else b,
+                              nrow(cells)),
+               profile = profiles[cells$profile],
+               indicator = fit$continuous[cells$indicator],
+               indicator_2 = fit$continuous[cells$indicator_2],
+               covariance = covariances[cbind(cells$indicator, cells$indicator_2, cells$profile)],
+               stringsAsFactors = FALSE)
+  }))
 }
 
 #' Coefficient table (log odds) with Wald columns when inference applies
@@ -375,6 +412,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                  variance = block$variances[cbind(cells$profile, cells$indicator)],
                  stringsAsFactors = FALSE)
     })),
+    covariances = .lta_covariances_table(fit),
     responses = .lta_responses_table(fit),
     ordinal = .lta_extra_table(fit, "ordinal"),
     count_means = .lta_extra_table(fit, "count_means"),
