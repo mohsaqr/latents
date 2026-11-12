@@ -527,6 +527,8 @@ suite_lta_general <- function() {
                      bic = -2 * log_likelihood + n_parameters * log(n_groups),
                      bic_individual = -2 * log_likelihood + n_parameters * log(n_observations),
                      n_groups = n_groups, n_observations = n_observations))
+  tables <- c(tables, .reference_transition_classification(
+    unname(as.matrix(posteriors)), frame$id, log_likelihood, n_parameters))
   if (length(case$continuous) > 0L) {
     variances <- matrix(at_package[sprintf("variance|%s|%s", rep(profiles, length(case$continuous)),
                                            rep(case$continuous, each = k))],

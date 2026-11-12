@@ -984,6 +984,41 @@ align_reference <- function(reference, fit) {
              clc_groups = groups[["clc"]], clc_individual = individuals[["clc"]])
 }
 
+#' The classification tables of a one-chain transition fit
+#'
+#' `get_results()` of a general transition fit reports the smoothed posterior
+#' of every row (`"posteriors"`), the entropy of each level (`"entropy"`) and
+#' the criteria (`"information_criteria"`), a transition model keeping one
+#' entropy per level. With one chain class the group level has one class and
+#' no entropy. Written from those definitions and the reference's posteriors.
+#'
+#' @param posteriors Rows-by-profiles smoothed posteriors of the reference.
+#' @param unit The unit (sequence) of each row.
+#' @param log_likelihood,n_parameters The reference's.
+#' @return A named list of the three tables.
+.reference_transition_classification <- function(posteriors, unit, log_likelihood,
+                                                 n_parameters) {
+  stopifnot("one unit per posterior row" = length(unit) == nrow(posteriors))
+  k <- ncol(posteriors)
+  n_units <- length(unique(unit))
+  entropy <- .reference_entropy(posteriors)
+  modal <- max.col(posteriors, ties.method = "first")
+  cells <- expand.grid(row = seq_len(nrow(posteriors)), profile = seq_len(k))
+  list(
+    posteriors = data.frame(row = cells$row,
+                            group = match(unit, sort(unique(unit)))[cells$row],
+                            profile = cells$profile,
+                            posterior = posteriors[cbind(cells$row, cells$profile)],
+                            modal = modal[cells$row] == cells$profile),
+    entropy = data.frame(level = c("individuals", "groups"), n_classes = c(k, 1L),
+                         n_units = c(nrow(posteriors), n_units),
+                         entropy_sum = c(entropy, 0),
+                         relative_entropy = c(if (k > 1L)
+                           1 - entropy / (nrow(posteriors) * log(k)) else NA_real_, NA_real_)),
+    information_criteria = .reference_criteria(log_likelihood, n_parameters,
+                                               nrow(posteriors), n_units, entropy, 0))
+}
+
 #' Within-profile residual association for every pair of indicators
 #'
 #' Gaussian pairs: the posterior-weighted residual correlation against the

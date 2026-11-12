@@ -1,3 +1,9 @@
+# latents 1.1.20
+
+* No change to the package. The equivalence harness gained references for
+  the `"posteriors"`, `"entropy"` and `"information_criteria"` tables of
+  general transition fits.
+
 # latents 1.1.19
 
 * `plot()` of a mixture regression or of a pooled result refuses an unknown

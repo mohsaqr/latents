@@ -712,7 +712,7 @@ ordinal_count_lta_tables <- function(reference, layout, frame, ntimes, min_varia
   shared <- harness_reference(log_likelihood = log_likelihood, n_parameters = q,
                               posteriors = posteriors, means = emission$means,
                               variances = emission$variances, data = frame[layout$gaussian])
-  list(
+  c(list(
     transitions = data.frame(group_class = "group_class_1", occasion = NA_integer_,
                              from = label(pairs$from), to = label(pairs$to),
                              probability = reference$transition[cbind(pairs$from, pairs$to)],
@@ -754,5 +754,7 @@ ordinal_count_lta_tables <- function(reference, layout, frame, ntimes, min_varia
                      bic_individual = -2 * log_likelihood + q * log(nrow(frame)),
                      n_groups = length(ntimes), n_observations = nrow(frame)),
     gaussian_diagnostics = .reference_gaussian_diagnostics(shared, layout$gaussian,
-                                                           min_variance))
+                                                           min_variance)),
+    .reference_transition_classification(unname(as.matrix(posteriors)), frame$g,
+                                         log_likelihood, q))
 }
