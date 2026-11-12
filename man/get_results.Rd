@@ -293,7 +293,11 @@ information, \code{"transition_coefficients"},
 with odds ratios), \code{"profiles"}, \code{"covariances"} (under
 \code{covariance_model = "full"}), \code{"responses"} (with \code{occasion}),
 \code{"ordinal"}, \code{"count_means"}, \code{"group_classes"}, \code{"assignments"},
-\code{"fit"} and \code{"starts"}.}
+\code{"posteriors"} (with \code{format}), \code{"entropy"}, \code{"information_criteria"}
+(with \code{format} and \code{definitions}; one entropy per level, as for the
+other transition fits), \code{"fit"} and \code{"starts"}. \code{profile} is
+\code{"profile_1"}, ... in \code{"profiles"}, \code{"responses"} and the transition
+tables, and the profile's number in the others.}
 \item{Pooled imputations}{\code{"estimates"}, \code{"imputations"} (each
 imputation's aligned estimates) and \code{"fits"} (one row per
 imputation).}

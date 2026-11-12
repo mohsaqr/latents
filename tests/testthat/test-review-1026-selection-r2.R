@@ -131,8 +131,12 @@ test_that("S-1: two-level criteria charge the complete-data entropy of group cla
 
 test_that("S-1: CLC no longer selects the largest single-level candidate by deviance alone", {
   data <- r2_two_level()
-  grid <- suppressMessages(enumerate_lpa(data, c("a", "b"), n_profiles = 1:4,
-                                         model = "VVI", n_starts = 3, seed = 1))
+  # Four VVI profiles on two-profile data: on some platforms a start ends in
+  # a one-member profile at the variance floor, which the package reports.
+  grid <- quietly(suppressMessages(enumerate_lpa(data, c("a", "b"), n_profiles = 1:4,
+                                                 model = "VVI", n_starts = 3, seed = 1)),
+                  classes = c("latents_boundary", "latents_small_classes",
+                              "latents_thin_profiles"))
   best <- get_results(grid, "best")
   clc <- best[best$criterion == "clc", ]
   expect_identical(clc$candidate[clc$convention == "groups"],

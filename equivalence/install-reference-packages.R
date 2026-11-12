@@ -6,7 +6,8 @@ reference_packages <- c(
   "knitr", "rmarkdown", "glca", "poLCA", "multilevLCA", "depmixS4", "flexmix", "lcmm",
   "nnet", "nlme", "lme4", "mvtnorm", "LMest", "VGAM", "mice", "CompQuadForm", "tidySEM",
   "ordinal", "randomLCA", "BayesLCA", "Rmixmod", "EMCluster", "mixtools", "MoEClust",
-  "seqHMM", "TraMineR", "mitml", "mitools", "tidyLPA", "tna", "dplyr", "ggplot2")
+  "seqHMM", "TraMineR", "mitml", "mitools", "tidyLPA", "tna", "dplyr", "ggplot2",
+  "nnls", "Rmpfr", "jsonlite")
 missing_packages <- setdiff(reference_packages, rownames(utils::installed.packages()))
 if (length(missing_packages)) utils::install.packages(missing_packages)
 still_missing <- setdiff(reference_packages, rownames(utils::installed.packages()))

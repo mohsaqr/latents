@@ -62,9 +62,12 @@ test_that("transition and family grids on several cores are identical to one cor
   skip_on_os("windows")
   data <- subset(course_engagement, student <= 30)
   vars <- c("browse", "lectures")
-  transition <- lapply(1:2, \(cores) enumerate_classes(
+  # Thirty students: whether a transition probability of the three-profile
+  # candidate rests on its boundary depends on the platform's arithmetic (it
+  # does under Linux arm64, not under macOS); the grids are compared either way.
+  transition <- lapply(1:2, \(cores) quietly(enumerate_classes(
     data, vars, "student", time = "sequence", n_profiles = 2:3, n_starts = 2,
-    seed = 1, cores = cores))
+    seed = 1, cores = cores), classes = "latents_boundary"))
   expect_identical(strip_calls(transition[[2]]), strip_calls(transition[[1]]))
   family <- lapply(1:2, \(cores) collect_conditions(enumerate_classes(
     data, vars, "student", family = c("additive", "dispersion"),

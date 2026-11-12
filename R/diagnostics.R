@@ -88,6 +88,20 @@
 .multilpa_information_criteria <- function(x, definitions = FALSE,
                                  format = c("wide", "long")) {
   .latents_require_fit(x)
+  .multilpa_criteria_table(x, definitions = definitions, format = format)
+}
+
+#' The criteria of any fit that carries a likelihood and posteriors
+#'
+#' The body of `.multilpa_information_criteria()`, without its check of the
+#' model family: the general transition engine's table calls it for a
+#' `multilpa_lta` fit, which that check refuses.
+#'
+#' @inheritParams .multilpa_information_criteria
+#' @return As `.multilpa_information_criteria()`.
+#' @noRd
+.multilpa_criteria_table <- function(x, definitions = FALSE,
+                                     format = c("wide", "long")) {
   .latents_require("`definitions` must be TRUE or FALSE" =
               isTRUE(definitions) || isFALSE(definitions))
   format <- .latents_match_arg(format, c("wide", "long"), "format")
@@ -110,7 +124,7 @@
   # conventions differ only in `n` (round 2, S-1). A transition model keeps
   # one entropy per level: its profiles are a Markov chain within a person,
   # whose path entropy is not the sum of the occasions' entropies.
-  transition <- inherits(x, "multilpa_transitions")
+  transition <- inherits(x, c("multilpa_transitions", "multilpa_lta"))
   level_entropy <- function(level, posteriors) {
     if (is.null(posteriors)) return(NA_real_)
     .multilpa_entropy_sum(posteriors,
@@ -432,6 +446,18 @@
 #' @noRd
 .multilpa_entropy_table <- function(x) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .multilpa_entropy_frame(x)
+}
+
+#' The entropy rows of any fit that carries posteriors
+#'
+#' The body of `.multilpa_entropy_table()`, without its check of the model
+#' family, for the general transition engine's table.
+#'
+#' @param x A fitted model with classified posteriors.
+#' @return One row per level.
+#' @noRd
+.multilpa_entropy_frame <- function(x) {
   posteriors <- list(individuals = .multilpa_classified_posteriors(x),
                      groups = .multilpa_classified_group_posteriors(x))
   posteriors <- Filter(Negate(is.null), posteriors)

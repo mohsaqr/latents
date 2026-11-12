@@ -11,6 +11,12 @@ job check  Rscript -e 'r <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-c
 # simulab draws the Monte Carlo datasets of the equivalence suite; it is a local package.
 sibling ../simulab
 
+# Mplus runs and latent transition fixtures kept in JStats, read by
+# equivalence/weights/ and equivalence/lta-extensions/ (test-external-scripts.R).
+include ../JStats/validation/r-reference
+include ../JStats/tests/fixtures/latent/lta-time-varying-ref.json
+include ../JStats/tests/fixtures/lta-covariate-ref.json
+
 # Equivalence: every comparison with other software, published output or an independent
 # implementation (equivalence/README.md). Reference packages beyond Suggests are installed
 # once with: mini-ci deps

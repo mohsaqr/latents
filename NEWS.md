@@ -1,3 +1,15 @@
+# latents 1.1.19
+
+* `plot()` of a mixture regression or of a pooled result refuses an unknown
+  `what` with `latents_bad_argument`; these two still raised `match.arg()`'s
+  unclassed error.
+* A general transition fit (occasion-specific or covariate transitions,
+  occasion-specific measurement, second order, a stayer class) has the
+  `"posteriors"`, `"entropy"` and `"information_criteria"` tables of the other
+  fits; it reported AIC and BIC only, in `"fit"`.
+* `starting_values()` of a transition fit says that `lta()` takes no `start`.
+  It reported "missing starting values for profile_probabilities".
+
 # latents 1.1.18
 
 ## Arguments and conditions

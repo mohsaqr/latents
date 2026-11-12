@@ -958,7 +958,8 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   blocks the model uses: `means` with `variances` or `covariances` for
 #'   continuous indicators, `response_probabilities` for categorical ones. An
 #'   all-categorical model needs no Gaussian block. Other elements are
-#'   ignored. A missing block raises `latents_bad_start`; a fit with a noise
+#'   ignored. A missing block, or a transition fit from [lta()] (which takes
+#'   no `start`), raises `latents_bad_start`; a fit with a noise
 #'   component raises `latents_unsupported_noise`; anything that is not a
 #'   list raises `latents_bad_argument`.
 #' @param what `"all"` (the default) returns the measurement and mixing
@@ -1006,6 +1007,13 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
       .latents_describe(x)), class = "latents_bad_argument", call = NULL))
   }
   .multilpa_refuse_noise(x, "starting_values()")
+  if (inherits(x, c("multilpa_transitions", "multilpa_lta"))) {
+    stop(errorCondition(paste(
+      "`starting_values()` does not read a transition fit: `lta()` takes no",
+      "`start`, and its measurement is held per occasion block. Use",
+      "`get_results()` for its estimates."),
+      class = "latents_bad_start", call = NULL))
+  }
   covariance <- .latents_match_arg(covariance, c("auto", "drop", "keep"),
                                   "covariance")
   what <- .latents_match_arg(what, c("all", "measurement"), "what")

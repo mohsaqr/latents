@@ -58,14 +58,22 @@ Gaussian M-step is not the maximum likelihood one.
 | `regression` | `mixture_regression()`: five families, `class_level`, `common`, `membership`, `variance`, `vcov_type`, `missing`, `weights`, predictor types; `enumerate_regressions()` | `study_hours`, flexmix `NPreg`, simulated nested set |
 | `growth` | `mixture_regression()` with `random`, `random_covariance`, `random_diagonal`, `residual_correlation`, `residual_time`, `membership` | `growth_scores`, `study_hours` |
 | `covariates` | `profile_covariates`, `group_covariates`, `profile_slopes`, `direct_effects`, `start` with `fixed`, `fit_staged()` | simulated two-level set, simulated nominal items |
+| `families` | `multilpa(family = )`: `additive`, `dispersion`, `additive_dispersion`, `restricted_cross_level`, `full_cross_level`; `n_group_classes`, `between_variance`, `variance_model`, `weights`, `search`, identifier types | simulated group-intercept set, simulated two-level set, `course_engagement` |
+| `pooling` | `pool_imputations()`: `imputed` (list or mice `mids`), number of imputations, `vcov_type`, `level`, `adjust`, single-level and two-level models | simulated blobs, simulated two-level set |
+| `plots` | `plot()` with every `what` of every method, each `plot_*()` verb on a fit of every family, an enumeration grid and a pooled result; the arguments of `plot_profiles()`, `plot_diagnostics()`, `plot_responses()`, `plot_enumeration()`, `plot_selection()` | simulated sets, `study_hours`, `growth_scores` |
 | `postfit` | classification tables, `three_step()` (methods, contrasts, adjustments, levels), `r3step()`, `parameter_inference()` (three covariance types), `compare_models()`, `enumerate_lpa()`, `bootstrap_lrt()`, `sensitivity()` | `srl`, `faithful`, simulated blobs |
 
-Not swept here, and covered by their own kits: the additive and cross-level
-families (`tests/equivalence/test-additive-*.R`, `test-cross-level.R`),
-`pool_imputations()` (`pool-packages/`), the plotting verbs, and the
-numerical values of `prior` and `noise` (`test-mclust-prior.R`,
-`test-mclust-noise.R`); the sweep checks only their relations to the maximum
-likelihood fit.
+Further references of these three modules: each family's likelihood written
+from its definition (a group's ratings exchangeable Gaussian in the group-class
+families; Houle, Morin and Harvey's manifest-aggregation likelihood in the
+cross-level ones) and evaluated at the result tables, `lme4::lmer()` at one
+group class, Rubin's rules written out and `mitools::MIcombine()`. A picture
+has no reference package: a view must draw to a device or refuse by class,
+and the numbers behind two views are compared with the fit's tables.
+
+Not swept here: the numerical values of `prior` and `noise`
+(`test-mclust-prior.R`, `test-mclust-noise.R`); the sweep checks only their
+relations to the maximum likelihood fit.
 
 `diagnostics/` keeps the scripts that settled a flagged row: which side holds
 the higher likelihood under VVE, how the categorical searches compare, and the

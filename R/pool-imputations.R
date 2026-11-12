@@ -511,7 +511,9 @@ plot.latents_pooled <-function(x, level = c("profile", "group", "measurement"),
   what <- .latents_former_argument(what, !is.null(what),
                                    if (missing(level)) NULL else level,
                                    c("what", "level"))
-  what <- match.arg(what %||% level, c("profile", "group", "measurement"))
+  # The default `level` is the vector of its choices: its first is the view.
+  what <- .latents_match_arg(what %||% if (missing(level)) "profile" else level,
+                             c("profile", "group", "measurement"), "what")
   estimates <- x$estimates[x$estimates$level %in% what, , drop = FALSE]
   imputations <- x$imputations[x$imputations$level %in% what, , drop = FALSE]
   if (nrow(estimates) == 0L) {

@@ -278,7 +278,11 @@
 #'     with odds ratios), `"profiles"`, `"covariances"` (under
 #'     `covariance_model = "full"`), `"responses"` (with `occasion`),
 #'     `"ordinal"`, `"count_means"`, `"group_classes"`, `"assignments"`,
-#'     `"fit"` and `"starts"`.}
+#'     `"posteriors"` (with `format`), `"entropy"`, `"information_criteria"`
+#'     (with `format` and `definitions`; one entropy per level, as for the
+#'     other transition fits), `"fit"` and `"starts"`. `profile` is
+#'     `"profile_1"`, ... in `"profiles"`, `"responses"` and the transition
+#'     tables, and the profile's number in the others.}
 #'   \item{Pooled imputations}{`"estimates"`, `"imputations"` (each
 #'     imputation's aligned estimates) and `"fits"` (one row per
 #'     imputation).}

@@ -119,8 +119,11 @@ test_that("the fits themselves are unchanged by the symbol forwarding", {
                                      n_profiles = 2, n_group_classes = 2,
                                      categorical = c("a", "b"), n_starts = 1, seed = 1))
   expect_equal(by_value$log_likelihood, direct$log_likelihood, tolerance = 1e-12)
-  transition <- lta(data, c("a", "b"), id = "id", n_profiles = 2, time = "t",
-                    categorical = c("a", "b"), n_starts = 1, seed = 1)
+  # The items are independent noise, so two profiles are not identified and a
+  # probability can rest on its boundary, depending on the platform.
+  transition <- quietly(lta(data, c("a", "b"), id = "id", n_profiles = 2, time = "t",
+                            categorical = c("a", "b"), n_starts = 1, seed = 1),
+                        classes = "latents_boundary")
   expect_true(transition$converged)
   expect_identical(transition$call[[1L]], as.symbol("lta"))
 })

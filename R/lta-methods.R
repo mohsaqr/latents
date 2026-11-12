@@ -11,7 +11,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     if (length(fit$categorical) > 0L) "responses",
     if (!is.null(fit$extra_data$ordinal)) "ordinal",
     if (!is.null(fit$extra_data$count)) "count_means",
-    "group_classes", "assignments", "fit", "starts",
+    "group_classes", "assignments", "posteriors", "entropy", "information_criteria",
+    "fit", "starts",
     if (!is.null(fit$gaussian_diagnostics) && nrow(fit$gaussian_diagnostics) > 0L)
       "gaussian_diagnostics")
 }
@@ -389,7 +390,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 
 #' Build one table of a general transition fit
 #' @noRd
-.lta_table <- function(fit, what, level = 0.95, vcov_type = "observed") {
+.lta_table <- function(fit, what, level = 0.95, vcov_type = "observed", extra = list()) {
   classes <- names(fit$group_probabilities)
   profiles <- paste0("profile_", seq_len(fit$n_profiles))
   switch(what,
@@ -424,6 +425,12 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                                       .multilpa_informative_groups(fit)]))),
                                stringsAsFactors = FALSE),
     assignments = .lta_assignments(fit),
+    posteriors = .multilpa_posterior_frame(
+      fit, .latents_match_arg(extra$format %||% "long", c("long", "wide"), "format")),
+    entropy = .multilpa_entropy_frame(fit),
+    information_criteria = .multilpa_criteria_table(
+      fit, definitions = extra$definitions %||% FALSE,
+      format = .latents_match_arg(extra$format %||% "wide", c("wide", "long"), "format")),
     fit = data.frame(n_profiles = fit$n_profiles, n_group_classes = fit$n_group_classes,
                      transitions = fit$transitions,
                      transition_covariates = paste(fit$transition_covariates, collapse = ", "),
@@ -449,8 +456,9 @@ get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
   # `assignments` alone takes further arguments; any other is refused, as the
   # profile families refuse it, rather than dropped (API-4).
   extra <- list(...)
-  .multilpa_check_table_arguments(what, if (identical(what, "assignments"))
-    c("data", "truth") else character(), extra)
+  .multilpa_check_table_arguments(what, switch(what,
+    assignments = c("data", "truth"), posteriors = "format",
+    information_criteria = c("definitions", "format"), character()), extra)
   vcov_type <- .latents_weighted_vcov(
     .latents_is_weighted(x),
     .latents_match_arg(vcov_type, c("observed", "robust", "opg"), "vcov_type"),
@@ -461,7 +469,7 @@ get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
     }), .lta_tables(x)))
   }
   if (identical(what, "assignments")) return(do.call(.lta_assignments, c(list(x), extra)))
-  .lta_table(x, what, level, vcov_type)
+  .lta_table(x, what, level, vcov_type, extra)
 }
 
 #' @noRd

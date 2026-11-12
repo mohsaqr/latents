@@ -123,3 +123,71 @@ test_that("non-finite information is not positive definite rather than an eigen(
   expect_warning(inverse <- .mixture_invert(broken), class = "latents_singular_information")
   expect_true(all(is.na(inverse)))
 })
+
+test_that("a general transition fit reports posteriors, entropy and criteria", {
+  skip_on_cran()
+  set.seed(3)
+  n <- 150L
+  occasions <- 4L
+  state <- Reduce(function(previous, t) {
+    ifelse(stats::runif(n) < 0.8, previous, 3L - previous)
+  }, seq_len(occasions - 1L), accumulate = TRUE, sample(1:2, n, TRUE))
+  state <- as.vector(t(do.call(cbind, state)))
+  data <- data.frame(id = rep(seq_len(n), each = occasions),
+                     t = rep(seq_len(occasions), n),
+                     y1 = stats::rnorm(n * occasions, c(0, 3)[state]),
+                     y2 = stats::rnorm(n * occasions, c(0, 2)[state]))
+  fit <- quietly(lta(data, c("y1", "y2"), id = "id", time = "t", n_profiles = 2,
+                     transitions = "occasion", n_starts = 2, seed = 1))
+  expect_s3_class(fit, "multilpa_lta")
+  posterior <- fit$subject_posteriors
+  entropy_sum <- -sum(ifelse(posterior > 0, posterior * log(posterior), 0))
+  entropy <- get_results(fit, "entropy")
+  individuals <- subset(entropy, level == "individuals")
+  expect_equal(individuals$entropy_sum, entropy_sum, tolerance = 1e-10)
+  expect_equal(individuals$relative_entropy,
+               1 - entropy_sum / (nrow(posterior) * log(2)), tolerance = 1e-10)
+  criteria <- get_results(fit, "information_criteria")
+  deviance <- -2 * fit$log_likelihood
+  expect_equal(criteria$aic, deviance + 2 * fit$n_parameters, tolerance = 1e-10)
+  expect_equal(criteria$bic_individual, fit$bic_individual, tolerance = 1e-10)
+  expect_equal(criteria$icl_individual,
+               deviance + fit$n_parameters * log(nrow(posterior)) + 2 * entropy_sum,
+               tolerance = 1e-10)
+  long <- get_results(fit, "posteriors")
+  expect_identical(nrow(long), nrow(posterior) * 2L)
+  # Invariant: each row's posteriors sum to one.
+  expect_equal(unname(tapply(long$posterior, long$row, sum)), rep(1, nrow(posterior)),
+               tolerance = 1e-10, ignore_attr = TRUE)
+  expect_identical(nrow(get_results(fit, "posteriors", format = "wide")), nrow(posterior))
+  expect_true(all(c("posteriors", "entropy", "information_criteria") %in%
+                    names(get_results(fit, "all"))))
+  expect_error(get_results(fit, "entropy", format = "wide"), class = "latents_bad_argument")
+  expect_error(get_results(fit, "posteriors", format = "tall"), class = "latents_bad_argument")
+  expect_error(starting_values(fit), class = "latents_bad_start")
+  expect_error(starting_values(fit), "takes no")
+})
+
+test_that("an unknown plot view of a regression or a pooled result is refused by class", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  regression <- quietly(mixture_regression(hours ~ week, study_hours, n_classes = 2,
+                                           n_starts = 2, seed = 1))
+  expect_error(plot(regression, what = "radar"), class = "latents_bad_argument")
+  expect_s3_class(plot(regression, what = "coefficients"), "ggplot")
+  set.seed(4)
+  # Two well-separated profiles, so neither completed data set fits on a bound.
+  profile <- rep(1:2, each = 100)
+  separated <- data.frame(a = stats::rnorm(200, c(0, 4)[profile]),
+                          b = stats::rnorm(200, c(0, -3)[profile]))
+  completed <- lapply(1:2, function(i) {
+    transform(separated, a = a + stats::rnorm(200, sd = 0.1))
+  })
+  pooled <- quietly(suppressMessages(pool_imputations(
+    completed, c("a", "b"), NULL, n_profiles = 2, n_starts = 2, seed = 1)))
+  expect_error(plot(pooled, what = "radar"), class = "latents_bad_argument")
+  # The default view and each named one still draw.
+  expect_s3_class(plot(pooled), "ggplot")
+  expect_s3_class(plot(pooled, what = "measurement"), "ggplot")
+  expect_s3_class(plot(pooled, level = "measurement"), "ggplot")
+})

@@ -283,9 +283,9 @@ plot.latents_mixture_regression <-function(x, what = NULL, predictor = NULL,
   trajectory <- identical(x$spec$nesting, "group")
   trajectory_views <- .mixture_trajectory_views()
   # Naming a `predictor` asks for the fitted-values view, as before.
-  what <- match.arg(what %||% if (trajectory && is.null(predictor)) "trajectories" else
-    "fitted",
-                    union(.mixture_plot_views(x), trajectory_views))
+  what <- .latents_match_arg(
+    what %||% if (trajectory && is.null(predictor)) "trajectories" else "fitted",
+    union(.mixture_plot_views(x), trajectory_views), "what")
   if (what %in% trajectory_views && !trajectory) {
     stop(errorCondition(sprintf(paste(
       "`what = \"%s\"` draws trajectories of persons: fit with `id` and",
