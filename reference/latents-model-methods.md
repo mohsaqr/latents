@@ -129,11 +129,12 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 ## Value
 
-[`coef()`](https://rdrr.io/r/stats/coef.html): a named numeric vector.
+[`coef()`](https://rdrr.io/r/stats/coef.html): a named numeric vector of
+every parameter, including any held by `fixed`.
 [`vcov()`](https://rdrr.io/r/stats/vcov.html): a named symmetric matrix
-over the same parameters.
+over the estimated parameters; a coefficient held by `fixed` has no row.
 [`confint()`](https://rdrr.io/r/stats/confint.html): a matrix with one
-row per parameter and the lower and upper bounds as columns.
+row per estimated parameter and the lower and upper bounds as columns.
 [`logLik()`](https://rdrr.io/r/stats/logLik.html): a `"logLik"` object
 with `df` and `nobs` attributes.
 [`nobs()`](https://rdrr.io/r/stats/nobs.html): the number of independent

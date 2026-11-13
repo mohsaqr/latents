@@ -138,9 +138,9 @@ get_results(fit, "membership")
 #> 
 #> Class    Term        Estimate          95% CI      p  Odds ratio
 #> -------  ----------  --------  --------------  -----  ----------
-#> Class 2  Intercept      -0.28  [-0.62,  0.06]   .109        0.76
+#> Class 2  Intercept      -0.28  [-0.62,  0.06]   .109            
 #> Class 2  motivation     -1.01  [-1.39, -0.62]  <.001        0.36
-#> Class 3  Intercept      -0.30  [-0.69,  0.09]   .127        0.74
+#> Class 3  Intercept      -0.30  [-0.69,  0.09]   .127            
 #> Class 3  motivation      0.62  [ 0.26,  0.99]  <.001        1.87
 get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 #> Recovery of a known classification
@@ -264,12 +264,12 @@ get_results(pass_fit, "coefficients")
 #> 
 #> Class    Term       Estimate          95% CI      p  Odds ratio
 #> -------  ---------  --------  --------------  -----  ----------
-#> Class 1  Intercept     -0.74  [-1.14, -0.35]  <.001       0.476
-#> Class 1  wave          -0.75  [-1.07, -0.43]  <.001       0.472
-#> Class 2  Intercept     -3.85  [-4.80, -2.91]  <.001       0.021
-#> Class 2  wave           1.14  [ 0.90,  1.39]  <.001       3.133
-#> Class 3  Intercept      1.28  [ 0.40,  2.17]   .004       3.610
-#> Class 3  wave           0.42  [ 0.13,  0.71]   .005       1.519
+#> Class 1  Intercept     -0.74  [-1.14, -0.35]  <.001            
+#> Class 1  wave          -0.75  [-1.07, -0.43]  <.001        0.47
+#> Class 2  Intercept     -3.85  [-4.80, -2.91]  <.001            
+#> Class 2  wave           1.14  [ 0.90,  1.39]  <.001        3.13
+#> Class 3  Intercept      1.28  [ 0.40,  2.17]   .004            
+#> Class 3  wave           0.42  [ 0.13,  0.71]   .005        1.52
 ```
 
 Each class’s probability of passing over the waves, and the
@@ -316,7 +316,7 @@ get_results(band_fit, "coefficients")
 #> Class 2  Threshold middle|high     0.100  [ -0.205,  0.404]   .520            
 #> Class 2  Threshold high|top        2.913  [  2.195,  3.630]  <.001            
 #> Class 2  wave                     -0.822  [ -0.951, -0.692]  <.001        0.44
-#> Class 3  Threshold low|middle     -6.246  [-13.827,  1.335]   .106            
+#> Class 3  Threshold low|middle     -6.248  [-13.838,  1.343]   .107            
 #> Class 3  Threshold middle|high    -1.538  [ -2.106, -0.971]  <.001            
 #> Class 3  Threshold high|top        0.802  [  0.403,  1.202]  <.001            
 #> Class 3  wave                      0.241  [  0.137,  0.346]  <.001        1.27
@@ -376,7 +376,11 @@ three_step(straight, data = growth_scores, outcome = "motivation",
   variation is not plausible.
 - **Number of classes.** Read the BIC with the over-extraction above in
   mind; the bootstrap likelihood-ratio test
-  (`enumerate_regressions(bootstrap =)`) is the stronger evidence.
+  (`enumerate_regressions(bootstrap =)`) simulates from the same model
+  without random effects. It can also favour extra classes that absorb
+  omitted within-class variation. Compare the random-effects model as
+  well; the bootstrap does not repair misspecification of its null
+  model.
 - **Starts.** Use several (`n_starts`), and check that the best
   likelihood is reached more than once (the fit reports how many times).
 

@@ -177,15 +177,13 @@ plot_responses(lca)
 
 ![](lca_files/figure-html/responses-plot-1.png)
 
-For numeric categories, such as ratings from 1 to 5, a profile plot can
-summarize each item’s fitted distribution on the original score scale:
-
-``` r
-
-plot_profiles(lca)                        # probability-weighted means
-plot_profiles(lca, statistic = "median")  # fitted medians
-plot_profiles(lca, statistic = "mode")    # most probable scores
-```
+These activity items have “no”/“yes” labels, so `plot_responses(lca)` is
+the appropriate view. A profile-score plot requires distinct finite
+numeric category labels. On a model fitted to numeric categories, such
+as ratings from 1 to 5,
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/plot_profiles.md)
+can summarize each item’s distribution with probability-weighted means,
+or with `statistic = "median"` or `"mode"`.
 
 Means assume meaningful spacing between category scores. The median is
 the smallest score whose cumulative probability reaches 0.5; tied modes
@@ -195,7 +193,7 @@ class. They require numeric category labels and use the raw scale.
 Confidence intervals are not computed, so these plots avoid the
 parameter-inference calculation used by the response-probability plot.
 In mixed models,
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/plot_profiles.md)
 continues to show only continuous indicators.
 
 The `"profile_probabilities"` table and the prevalence plot summarize

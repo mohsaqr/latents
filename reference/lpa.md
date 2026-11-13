@@ -64,12 +64,6 @@ conditions
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 raises otherwise.
 
-## References
-
-Oberski, D. (2016). Mixture models: Latent profile and latent class
-analysis. In J. Robertson & M. Kaptein (Eds.), *Modern Statistical
-Methods for HCI* (pp. 275–287). Springer.
-
 ## See also
 
 [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) for

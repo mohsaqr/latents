@@ -1,29 +1,15 @@
 # Compare latent classes on an external outcome
 
-`three_step()` estimates differences in an external outcome between
-latent classes defined by a previously fitted model. It addresses
-whether classes distinguished by their indicator patterns also differ on
-a variable that was not used to identify them. The measurement model
-remains fixed, so the outcome comparison retains the original meaning of
-the classes.
-
-Latent class membership is inferred rather than observed. Assigning each
-observation to its most probable class and comparing the resulting
-groups treats those assignments as certain, which can distort estimated
-outcome differences. Three-step methods address this problem by using
-classification-error probabilities from the fitted model when estimating
-class-specific outcome means. The default Bolck–Croon–Hagenaars
-(`"bch"`) method applies correction weights; the alternative
-maximum-likelihood (`"ml"`) method incorporates the classification-error
-probabilities into a model for the outcome.
-
-The analysis provides estimated outcome means within classes or
-differences between pairs of classes, together with standard errors and
-confidence intervals. Pairwise differences can also be tested against
-zero, with adjustment for multiple comparisons. For supported multilevel
-models, comparisons may concern individual profiles or group classes.
-Uncorrected modal-assignment and posterior-weighted analyses are
-available as additional methods.
+`three_step()` estimates how an outcome that was not used to define the
+classes differs between them, holding the measurement model fixed so the
+classes keep their meaning. Comparing classes by modal assignment treats
+uncertain assignments as certain and biases the differences; the
+three-step methods correct for the classification error of the fitted
+model. The default is the Bolck-Croon-Hagenaars (`"bch"`) weighting; the
+maximum-likelihood (`"ml"`) method models the outcome given the true
+class instead. Both assume that the outcome and the assigned class are
+independent given the true class; the differences are associations, not
+effects of class membership.
 
 ## Usage
 
@@ -35,10 +21,11 @@ three_step(
   level = c("individuals", "groups"),
   method = c("bch", "proportional", "modal", "ml"),
   ci_level = 0.95,
-  contrast = c("none", "pairs"),
+  contrast = c("none", "pairs", "overall"),
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
   vcov_type = c("cluster", "independent"),
-  variance = c("varying", "equal")
+  variance = c("varying", "equal"),
+  step_one = c("fixed", "estimated")
 )
 ```
 
@@ -46,182 +33,178 @@ three_step(
 
 - x:
 
-  A covariate-free fit from
+  A covariate-free fit: from
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  (`family = "profiles"`, the default) or from
+  (the profile family), from
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with its
   default homogeneous first-order transitions and invariant measurement,
   or a trajectory model that classifies persons
   ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  with `class_level = "group"`, with or without `random` effects) fitted
-  without `membership` covariates. Fits with membership covariates and
-  multilevel growth mixtures (`cluster`) raise
-  `latents_unsupported_three_step`: the correction uses a fixed,
-  unconditional classification-error matrix and independent units. The
-  other families of
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits from
-  the general transition engine (occasion-varying, second-order or
-  covariate transitions, occasion-specific measurement, a stayer class,
-  ordinal or count indicators) and mixture regressions with observation
-  classes raise `latents_unsupported_three_step` too.
+  with `class_level = "group"`, with or without `random`) fitted without
+  `membership` covariates. Refused: fits with membership covariates,
+  multilevel growth mixtures (`cluster`), the other
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  families, observation-level mixture regressions, fits with weights or
+  a noise component, and
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits with
+  occasion-specific or covariate transitions, second order, occasion-
+  specific measurement, a stayer class or ordinal or count indicators.
 
 - data:
 
-  The data frame carrying the outcome, in the fit's row order. Columns
-  shared with the fit are checked row by row; a frame with too little
-  identifying information raises a warning that alignment cannot be
-  verified. For a trajectory model it must be the data frame the model
-  was fitted to.
+  The data frame carrying the outcome, in the fit's row order; columns
+  shared with the fit are checked row by row. For a trajectory model,
+  the data the model was fitted to.
 
 - outcome:
 
-  Name of a numeric outcome column, without missing or infinite values,
-  that is not a measurement indicator of `x`. For `level = "groups"` it
-  must be constant within each group, and for a trajectory model within
-  each person.
+  Name of the outcome column, without missing or infinite values and not
+  an indicator of `x`: numeric for class means, or a factor, character
+  or logical column for the probability of each category in each class.
+  For `level = "groups"` it must be constant within each group; for a
+  trajectory model, within each person.
 
 - level:
 
-  `"individuals"` (default) relates the outcome to profiles, `"groups"`
-  to group classes. For a trajectory model the outcome is related to its
-  person classes, reported with `level = "persons"`; `"groups"` is
-  refused there with `latents_bad_argument`.
+  `"individuals"` (default) relates the outcome to the profiles,
+  `"groups"` to the group classes. A trajectory model relates it to its
+  person classes, reported as `level = "persons"`.
 
 - method:
 
-  `"bch"` (default) applies the Bolck-Croon-Hagenaars weights; `"ml"`
-  fits the maximum-likelihood step-three model (see *Details*);
-  `"proportional"` weights by the posterior probabilities without
-  correction for classification error; `"modal"` uses the uncorrected
-  modal assignment, for comparison.
+  `"bch"` (default): Bolck-Croon-Hagenaars weights. `"ml"`: the
+  maximum-likelihood step-three model. `"proportional"`: posterior
+  weights without correction. `"modal"`: modal assignment without
+  correction. See *Methods*.
 
 - ci_level:
 
-  Confidence level for the intervals (default 0.95).
+  Confidence level of the intervals (default 0.95).
 
 - contrast:
 
-  `"none"` (default) reports one outcome mean per class; `"pairs"`
-  reports the difference between every pair of classes, with a test
-  against zero.
+  `"none"` (default): one outcome mean per class (one probability per
+  class and category). `"pairs"`: the difference between every pair of
+  classes, tested against zero. `"overall"`: one Wald test that every
+  class has the same mean (the same category distribution).
 
 - adjust:
 
-  Multiplicity correction across the pairwise differences, passed to
-  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html): `"BH"`
-  (default), `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BY"`
-  or `"none"`. Ignored for `contrast = "none"`.
+  Multiplicity correction across the pairwise differences, a
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) method;
+  `"BH"` by default. Ignored for `contrast = "none"` or `"overall"`.
+  With a binary outcome, its two complementary category rows count as
+  one test per class pair; with more categories, every reported category
+  difference enters the family.
 
 - vcov_type:
 
-  `"cluster"` (default) sums the influence contributions within the
-  fit's groups and treats the groups as the independent units, as
-  required when the outcome is measured on observations nested in
-  groups. `"independent"` treats every observation as an independent
-  unit, which is appropriate only when observations can be treated as
-  independent. The choice is recorded in the result's `vcov_type`
-  attribute.
+  `"cluster"` (default) treats the fit's groups as the independent units
+  of the sandwich variance, as the nesting requires; `"independent"`
+  treats every observation as independent.
 
 - variance:
 
-  For `method = "ml"`: `"varying"` (default) estimates a variance of the
-  outcome in each class, `"equal"` one variance shared by the classes.
-  Given with another method it raises `latents_bad_argument`.
+  For `method = "ml"` with a numeric outcome (refused otherwise):
+  `"varying"` (default) estimates an outcome variance in each class,
+  `"equal"` one shared by the classes.
+
+- step_one:
+
+  `"fixed"` (default) conditions on the step-one estimates.
+  `"estimated"` adds the uncertainty of the classification-error
+  probabilities (and, under `"ml"`, of the class sizes) to the
+  step-three covariance; available for
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) and
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  profile fits at either level when their Wald inference is available
+  and their measurement was estimated jointly. Staged fits and fits
+  holding a measurement block fixed are refused. See *Step-one
+  uncertainty*.
 
 ## Value
 
-A base `data.frame`. For `contrast = "none"`, one row per class with the
-columns `level`, `method`, `class`, `estimate`, `standard_error`,
-`conf_low`, `conf_high` and `effective_n`; class means are not tested.
-For `method = "ml"`, a `variance` column (the outcome's estimated
-variance in the class) comes before `effective_n`, which is then the
-expected number of units in the class under the step-three model; the
-`variance` attribute records the choice. For `contrast = "pairs"`, one
-row per pair of classes with the columns `level`, `method`, `class`,
-`reference_class`, `estimate` (the mean of `class` minus the mean of
-`reference_class`), `standard_error`, `statistic`, `p_value`,
-`p_adjusted`, `conf_low` and `conf_high`, as in
-[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md). A
-contrast with zero or missing standard error has `NA_real_` statistic
-and p-values.
+A data frame. For `contrast = "none"`, one row per class (per class and
+category for a categorical outcome, with `category` after `class`):
+`level`, `method`, `class`, `estimate`, `standard_error`, `conf_low`,
+`conf_high` and `effective_n`; means are not tested, and a probability's
+interval is formed on the logit scale. Under `method = "ml"` with a
+numeric outcome a `variance` column precedes `effective_n`, and under
+`"ml"` `effective_n` is the expected number of units in the class. For
+`contrast = "pairs"`, one row per pair (per pair and category): `level`,
+`method`, `class`, `reference_class`, `estimate` (class minus
+reference), `standard_error`, `statistic`, `p_value`, `p_adjusted`,
+`conf_low` and `conf_high`, as in
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md). For
+`contrast = "overall"`, one row: `level`, `method`, `statistic`, `df`
+(`K - 1` for a mean, `(K - 1)(C - 1)` for `C` categories) and `p_value`.
+The attributes `vcov_type` and `step_one` record the choices, `adjust`
+on a pairs result and `variance` on a numeric ML result with
+`contrast = "none"`.
 
-The result's `vcov_type` attribute records the variance used; for
-`contrast = "pairs"` the `adjust` attribute records the correction
-applied to `p_adjusted`.
+## Methods
 
-## Details
+BCH gives each observation one weight per class, the row of the inverse
+classification-error matrix for its assigned class, and takes weighted
+means. With `method = "ml"` the assigned class is an indicator of the
+true class with the step-one error probabilities, and the outcome is
+normal within each true class (a multinomial distribution for a
+categorical outcome), with the class sizes fixed at the average
+posteriors, as in Latent GOLD's step-three model. The likelihood is
+maximised from a fixed set of starts plus twenty seeded random ones, so
+the result does not depend on the caller's seed; the global maximum is
+not guaranteed. ML depends on the within-class outcome distribution:
+skewness or a wrong equal-variance constraint can bias the means, and
+BCH is less sensitive to that.
+
+A categorical outcome is described by its probability in each class. BCH
+weights can be negative, so with poorly separated classes a share can
+fall outside 0 to 1; it is then reported without an interval or test,
+with a warning. The ML probabilities stay in range; where the BCH shares
+do not, the ML maximum usually sits on the bound and is reported without
+standard errors, with a warning.
 
 On an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit,
 `level = "individuals"` uses one row per occasion and relates the
-outcome to the profile at that occasion, with the default
-group-clustered variance accounting for the repeated occasions within a
-group. This is a marginal profile-outcome analysis, not a model of
-outcome effects on transitions or of a sequence-level outcome.
+outcome to the profile at that occasion, with the group-clustered
+variance accounting for the repeated occasions. It is a marginal
+profile-outcome analysis, not a model of outcome effects on transitions.
 
-The cluster-robust variance is the sum of one outer product per
-independent unit, scaled by the small-sample (CR1) factor `G / (G - 1)`
-for `G` units (groups, or observations under
-`vcov_type = "independent"`). These contributions sum to zero at the
-estimate, so the variance has rank at most `G - 1`: it is zero with a
-single group and singular with as many groups as classes. Both cases
-raise `latents_too_few_groups`; `vcov_type = "independent"` gives the
-unclustered variance. For the same reason a class carried by a single
-unit (all its weight in one group, or under `vcov_type = "independent"`
-in one observation; Kish's effective number of carrying units below 1.5)
-has no standard error, whichever the method: its standard error, its
-interval and those of the contrasts involving it are `NA`, with a
-`latents_small_classes` warning.
+## Standard errors
 
-With `method = "ml"` the assigned class is an indicator of the true
-class whose error probabilities are those of step one, and the outcome
-is normal within each true class. The log likelihood
-`sum_i log sum_t pi_t D[t, W_i] phi(z_i; mu_t, sigma_t)` is maximised
-over the class means and variances by EM followed by Newton steps, with
-the class sizes `pi_t` fixed at the average posterior probabilities and
-the classification errors `D` fixed, as in Latent GOLD's step-three
-model for a dependent variable. Multiple initialisations are used
-because the likelihood may have several local maxima. Equal-variance
-fits additionally use bounded BFGS optimisation from quantile-based
-initial values; accepted solutions must converge, have a sufficiently
-small score and yield a positive-definite information matrix. These
-searches do not guarantee the global maximum. Twenty random starts use a
-fixed internal seed, and the caller's `.Random.seed` is restored. R's
-hidden Box-Muller normal cache cannot be restored; see
-[base::Random](https://rdrr.io/r/base/Random.html). Standard errors use
-a sandwich covariance estimator, clustered as for the other methods. As
-described above, a class supported by a single independent unit has no
-standard error. Maximum-likelihood estimates depend on the assumed
-within-class outcome distribution. Skewness or an incorrect
-equal-variance constraint can bias estimated means; BCH is less
-sensitive to these distributional assumptions (Bakk and Vermunt, 2016).
+The variance is a sandwich over the `G` independent units (the groups,
+or the observations under `vcov_type = "independent"`) with the
+`G / (G - 1)` small-sample factor. It needs more units than classes;
+with as many or fewer, the analysis is refused. A class carried by one
+unit (Kish's effective number of units carrying it below 1.5) has no
+standard error: its interval and the contrasts involving it are `NA`,
+with a warning.
 
-Because uncertainty in the estimated classification-error probabilities
-is omitted, interval coverage can be below the nominal level,
-particularly when classification is uncertain.
+## Step-one uncertainty
 
-## Interpretation
+With `step_one = "fixed"` the intervals ignore the uncertainty of the
+classification-error probabilities, which lowers their coverage when
+classification is uncertain. `"estimated"` adds the first-order
+contribution of the step-one covariance, with the data and modal
+assignments held fixed; the estimates are unchanged, the standard errors
+and intervals grow, and the tests use the corrected covariance. The
+first-stage contribution uses its model-based observed information, even
+when the step-three sandwich is clustered; it does not add a robust
+first-stage covariance for residual dependence outside the fitted model.
+The correction is a large-sample one: in a small, poorly separated
+sample the intervals still cover less than the nominal level. The modal
+method is unaffected, as it uses no posteriors. A staged fit or a fit
+with a held measurement block does not carry the measurement covariance
+needed by this correction; use `step_one = "fixed"` to report inference
+conditional on that measurement. Neither option includes the uncertainty
+of having selected the class solution.
 
-Correction for classification error depends on the fitted measurement
-model and assumes that the outcome and assigned class are independent
-conditional on latent class membership. The maximum-likelihood method
-additionally assumes a normal outcome distribution within each class.
-Reported uncertainty is conditional on the estimated
-classification-error probabilities and does not include uncertainty from
-estimating those probabilities or selecting the class solution. Outcome
-differences describe associations; they do not establish causal effects
-of class membership.
+## See also
 
-## References
-
-Vermunt, J. K. (2010). Latent class modeling with covariates: two
-improved three-step approaches. *Political Analysis*, 18, 450–469. Bakk,
-Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the association
-between latent class membership and external variables using
-bias-adjusted three-step approaches. *Sociological Methodology*, 43,
-272–311. Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise
-latent class modeling with continuous distal outcomes. *Structural
-Equation Modeling*, 23, 20–31.
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) for
+covariates of class membership;
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md).
 
 ## Examples
 
@@ -250,4 +233,21 @@ three_step(fit, example_data, "y", contrast = "pairs")
 #> Class  vs  Difference         95% CI      p  p (BH)
 #> -----  --  ----------  -------------  -----  ------
 #>     2   1       10.04  [9.37, 10.72]  <.001   <.001
+# A categorical outcome: its probability in each class.
+example_data <- transform(example_data, passed = y + rnorm(400, sd = 6) > 5)
+three_step(fit, example_data, "passed")
+#> Distal outcome by class (bch, 95% CI)
+#> 
+#> Class  Category  Probability        95% CI     SE  Effective n
+#> -----  --------  -----------  ------------  -----  -----------
+#>     1  FALSE            0.80  [0.73, 0.85]  0.030       182.74
+#>     1  TRUE             0.20  [0.15, 0.27]  0.030       182.74
+#>     2  FALSE            0.17  [0.12, 0.23]  0.030       170.37
+#>     2  TRUE             0.83  [0.77, 0.88]  0.030       170.37
+three_step(fit, example_data, "passed", contrast = "overall")
+#> Distal outcome: equal across classes (bch, Wald)
+#> 
+#>  Wald  df      p
+#> -----  --  -----
+#> 99.11   1  <.001
 ```

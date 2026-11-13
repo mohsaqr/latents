@@ -70,139 +70,37 @@ summary(models)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
-#> -- candidates ------------------------------------------------------
-#>  candidate n_profiles log_likelihood n_parameters   aic   bic icl_individual
-#>   classes1          1          -8035            8 16086 16133          16133
-#>   classes2          2          -7892           17 15819 15918          17748
-#>   classes3          3          -7848           26 15749 15901          17820
-#>   classes4          4          -7807           35 15683 15888          17934
-#>   classes5          5          -7795           44 15678 15935          18074
-#>   classes6          6          -7771           53 15648 15959          18290
-#>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
-#>               NA        NA         NA          NA      TRUE    FALSE
-#>           0.4887    0.7035     0.8222           1      TRUE    FALSE
-#>           0.6618    0.7046     0.8632           1      TRUE    FALSE
-#>           0.7142    0.7151     0.8307           2      TRUE    FALSE
-#>           0.7426    0.5196     0.8051           2      TRUE    FALSE
-#>           0.7481    0.6008     0.7803           4      TRUE    FALSE
+#> ! 2 of 6 candidates reached their best log likelihood from one start only
+#>     (classes4, classes5); refit those you consider with more starts.
+#> ! 5 candidates have a class with average posterior below 0.8 (classes2,
+#>     classes3, classes4, classes5, classes6).
 #> 
-#> -- best ------------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes6          6               1 15648
-#>        kic        <NA>  classes6          6               1 15704
-#>        bic      groups  classes4          4               1 15888
-#>        bic individuals  classes4          4               1 15888
-#>      sabic      groups  classes4          4               1 15777
-#>      sabic individuals  classes4          4               1 15777
-#>       caic      groups  classes4          4               1 15923
-#>       caic individuals  classes4          4               1 15923
-#>        awe      groups  classes1          1               1 16220
-#>        awe individuals  classes1          1               1 16220
-#>    ... 4 more rows.  get_results(x, what = "best")
+#> -- lowest value of each criterion --------------------------------
+#>  criterion  convention candidate value
+#>        aic        <NA>  classes6 15648
+#>        kic        <NA>  classes6 15704
+#>        bic      groups  classes4 15888
+#>        bic individuals  classes4 15888
+#>      sabic      groups  classes4 15777
+#>      sabic individuals  classes4 15777
+#>       caic      groups  classes4 15923
+#>       caic individuals  classes4 15923
+#>        awe      groups  classes1 16220
+#>        awe individuals  classes1 16220
+#>        icl      groups  classes1 16133
+#>        icl individuals  classes1 16133
+#>        clc      groups  classes1 16070
+#>        clc individuals  classes1 16070
 #> 
-#> -- criteria --------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes6          6               1 15648
-#>        kic        <NA>  classes6          6               1 15704
-#>        bic      groups  classes4          4               1 15888
-#>        bic individuals  classes4          4               1 15888
-#>      sabic      groups  classes4          4               1 15777
-#>      sabic individuals  classes4          4               1 15777
-#>       caic      groups  classes4          4               1 15923
-#>       caic individuals  classes4          4               1 15923
-#>        awe      groups  classes1          1               1 16220
-#>        awe individuals  classes1          1               1 16220
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> -- knees of bic_groups ----------------------------------------
+#>   direction           line knee_candidate knee_without_largest stable
+#>    profiles  1 group class       classes2             classes2   TRUE
+#>  parameters all candidates       classes2             classes2   TRUE
 #> 
-#> -- classification --------------------------------------------------
-#>  candidate n_profiles n_group_classes       level class n_modal proportion_modal
-#>   classes2          2               1 individuals     1    1271          0.49225
-#>   classes2          2               1 individuals     2    1311          0.50775
-#>   classes3          3               1 individuals     1    1180          0.45701
-#>   classes3          3               1 individuals     2      98          0.03796
-#>   classes3          3               1 individuals     3    1304          0.50503
-#>   classes4          4               1 individuals     1    1258          0.48722
-#>   classes4          4               1 individuals     2      98          0.03796
-#>   classes4          4               1 individuals     3    1191          0.46127
-#>   classes4          4               1 individuals     4      35          0.01356
-#>   classes5          5               1 individuals     1     915          0.35438
-#>  estimated_n estimated_proportion average_posterior odds_correct_classification
-#>       971.75              0.37636            0.7035                       3.932
-#>      1610.25              0.62364            0.9408                       9.596
-#>      1490.65              0.57732            0.9329                      10.175
-#>        93.58              0.03624            0.9521                     527.981
-#>       997.77              0.38643            0.7046                       3.788
-#>      1464.22              0.56709            0.8863                       5.950
-#>        94.00              0.03640            0.9554                     567.495
-#>       991.37              0.38396            0.7151                       4.028
-#>        32.41              0.01255            0.7658                     257.212
-#>      1229.08              0.47602            0.9174                      12.231
-#>  relative_entropy
-#>            0.4887
-#>            0.4887
-#>            0.6618
-#>            0.6618
-#>            0.6618
-#>            0.7142
-#>            0.7142
-#>            0.7142
-#>            0.7142
-#>            0.7426
-#>    ... 10 more rows.  get_results(x, what = "classification")
-#> 
-#> -- deltas ----------------------------------------------------------
-#>  candidate n_profiles n_group_classes  criterion value delta_profile from_profile
-#>   classes1          1               1 bic_groups 16133            NA         <NA>
-#>   classes2          2               1 bic_groups 15918        214.97     classes1
-#>   classes3          3               1 bic_groups 15901         17.20     classes2
-#>   classes4          4               1 bic_groups 15888         13.17     classes3
-#>   classes5          5               1 bic_groups 15935        -47.40     classes4
-#>   classes6          6               1 bic_groups 15959        -23.35     classes5
-#>  delta_group_class from_group_class
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#> 
-#> -- knees -----------------------------------------------------------
-#>   direction           line  criterion     from       to n_points knee_candidate distance
-#>    profiles  1 group class bic_groups classes1 classes6        6       classes2   0.5979
-#>  parameters all candidates bic_groups classes1 classes6        6       classes2   0.5979
-#>  knee_without_largest stable note
-#>              classes2   TRUE     
-#>              classes2   TRUE     
-#> 
-#> -- tree ------------------------------------------------------------
-#>  tree       level from_candidate from_class from_share to_candidate to_class to_share
-#>  tree individuals       classes1          1    1.00000     classes2        1  0.37636
-#>  tree individuals       classes1          1    1.00000     classes2        2  0.62364
-#>  tree individuals       classes2          1    0.37636     classes3        1  0.57732
-#>  tree individuals       classes2          2    0.62364     classes3        1  0.57732
-#>  tree individuals       classes2          1    0.37636     classes3        2  0.03624
-#>  tree individuals       classes2          2    0.62364     classes3        2  0.03624
-#>  tree individuals       classes2          1    0.37636     classes3        3  0.38643
-#>  tree individuals       classes2          2    0.62364     classes3        3  0.38643
-#>  tree individuals       classes3          1    0.57732     classes4        1  0.56709
-#>  tree individuals       classes3          2    0.03624     classes4        1  0.56709
-#>      mass share_of_from share_of_to
-#>  0.376356      0.376356    1.000000
-#>  0.623644      0.623644    1.000000
-#>  0.101205      0.268906    0.175299
-#>  0.476120      0.763449    0.824701
-#>  0.033106      0.087964    0.913435
-#>  0.003137      0.005031    0.086565
-#>  0.242046      0.643130    0.626361
-#>  0.144386      0.231520    0.373639
-#>  0.441853      0.765345    0.779164
-#>  0.001454      0.040120    0.002564
-#>    ... 60 more rows.  get_results(x, what = "tree")
-#> 
-#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
-#> of them whole, and get_results(x, what = "all") returns every one.
+#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
 ```
 
 The BIC is lowest for four classes, 13.2 points below the three-class
@@ -323,13 +221,14 @@ diagnostics(fit)
 ![](workflow-lca_files/figure-html/diagnostics-1.png)![](workflow-lca_files/figure-html/diagnostics-2.png)![](workflow-lca_files/figure-html/diagnostics-3.png)![](workflow-lca_files/figure-html/diagnostics-4.png)
 
     #> Diagnostics: Latent class analysis, 3 classes
-    #> 1 check needs attention: pairs dependent within a class
+    #> 2 checks need attention: estimates at a bound; pairs dependent within a class
     #> 
     #> Estimation
     #>   ok     best start converged                                yes                      
     #>   info   best log likelihood reached by                      2 of 10 starts           
     #>   ok     starts failed or unfinished                         0 of 10                  
-    #>   ok     estimates at a bound                                no                       
+    #>   check  estimates at a bound                                yes                      
+    #>          a variance, probability, count mean or dispersion is at a numerical bound; ordinary Wald inference may be unavailable
     #> 
     #> Class size
     #>   info   smallest class                         individuals  3.6% (n = 94, class 1)   
@@ -342,8 +241,8 @@ diagnostics(fit)
     #>   info   lowest odds of correct classification  individuals  3.8 (class 3)            
     #> 
     #> Local independence
-    #>   check  pairs dependent within a class                      9 of 84 tested pairs     BH-adjusted p < 0.05
-    #>          largest: listened_music x walking in profile_2, residual 0.110, adjusted p <1e-04
+    #>   check  pairs dependent within a class                      4 of 84 tested pairs     BH-adjusted p < 0.05
+    #>          smallest adjusted p: listened_music x walking in profile_2, residual 0.110, adjusted p 0.0019
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -7848.45, 26, 15901.17   
@@ -363,27 +262,18 @@ dependence the classes do not explain. The p-value refers this Pearson
 statistic to a chi-square distribution that ignores the estimation of
 the model’s table, which makes it very conservative: in simulated data
 from a correctly specified latent class model it rejected 0.25% of pairs
-per class, and 0.08% pooled, at a nominal 5%. A pair that passes the
+per class, and 0.08% pooled, at a nominal 5%. `p_adjusted` is corrected
+across all the pairs by Benjamini-Hochberg. A pair that passes the
 filter below is therefore strong evidence of dependence, but a pair that
 does not pass it is not evidence of independence.
 
 ``` r
 
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
-#>     profile       indicator_1    indicator_2        kind observed expected residual
-#> 3 profile_2    listened_music        walking categorical   0.1099 4.24e-17   0.1099
-#> 4 profile_2    listened_music        reading categorical   0.0881 1.03e-16   0.0881
-#> 5 profile_2            sports        walking categorical   0.0879 1.73e-16   0.0879
-#> 6 profile_2    listened_music         sports categorical   0.0874 0.00e+00   0.0874
-#> 8 profile_2 time_with_friends        walking categorical   0.0762 3.56e-17   0.0762
-#> 9 profile_2   on_social_media listened_music categorical   0.0697 5.57e-17   0.0697
-#>   effective_n statistic df  p_value p_adjusted
-#> 3        1490     17.98  1 2.23e-05   2.23e-05
-#> 4        1490     11.57  1 6.71e-04   6.71e-04
-#> 5        1490     11.52  1 6.89e-04   6.89e-04
-#> 6        1490     11.38  1 7.43e-04   7.43e-04
-#> 8        1490      8.65  1 3.27e-03   3.27e-03
-#> 9        1490      7.23  1 7.17e-03   7.17e-03
+#>     profile    indicator_1 indicator_2        kind observed expected residual effective_n
+#> 3 profile_2 listened_music     walking categorical     0.11 4.24e-17     0.11        1490
+#>   statistic df  p_value p_adjusted
+#> 3        18  1 2.23e-05    0.00187
 ```
 
 The largest residual is that of listening to music and walking in class

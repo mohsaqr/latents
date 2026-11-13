@@ -100,16 +100,9 @@ and
 introduce the main workflows; class enumeration and latent transition
 analysis are covered in articles on the package website,
 <https://pak.dynasite.org/latents/articles/>. See
-[`latents-plots`](https://pak.dynasite.org/latents/reference/latents-plots.md)
-for graphical summaries,
+[`plot_all`](https://pak.dynasite.org/latents/reference/plot_all.md) and
+the other `plot_` functions for graphical summaries,
 [`latents-predict`](https://pak.dynasite.org/latents/reference/latents-predict.md)
 for prediction, and
 [`latents-conditions`](https://pak.dynasite.org/latents/reference/latents-conditions.md)
 for diagnostic conditions.
-
-## References
-
-Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
-Methodology*, 33, 213–239.
-[doi:10.1111/j.0081-1750.2003.t01-1-00131.x](https://doi.org/10.1111/j.0081-1750.2003.t01-1-00131.x)
-.

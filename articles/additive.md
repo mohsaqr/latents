@@ -403,9 +403,15 @@ engagement profiles and students form group classes.
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 full <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                  n_group_classes = 2, family = "full_cross_level", seed = 1)
+#> Warning: This likelihood counts the ratings twice, so its criteria favour group classes
+#> and the full form even on data with no group structure. Do not choose the number of group
+#> classes, or the form, from them.
 restricted <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                        n_group_classes = 2, family = "restricted_cross_level",
                        seed = 1)
+#> Warning: This likelihood counts the ratings twice, so its criteria favour group classes
+#> and the full form even on data with no group structure. Do not choose the number of group
+#> classes, or the form, from them.
 get_results(full, "composition")
 #>     group_class   profile share
 #> 1 group_class_1 profile_1 0.166
@@ -422,12 +428,17 @@ rbind(get_results(full, "fit"), get_results(restricted, "fit"))
 ```
 
 In the full model one class of students has most of its sessions in one
-profile and the other class mostly in the other, and letting the
-composition differ by class raises the likelihood far more than its one
-extra parameter costs. Because the group means are computed from the
-same ratings, these likelihoods compare cross-level fits of the same
-data only, not the group-class families above, and standard errors are
-not reported.
+profile and the other class mostly in the other. The fits warn that
+their criteria cannot show this is real. A group mean is computed from
+the same ratings, so these likelihoods count the data twice: on
+simulated data in which group membership has no effect, BIC still
+preferred two group classes in every data set we checked. The `fit`
+table therefore does not choose the number of group classes or the form,
+and it is not comparable with the group-class families above. Standard
+errors are not reported. Evidence for the classes has to come from
+outside these criteria, such as an ordinary `family = "profiles"` fit to
+the same data, whose BIC did not prefer group classes in those data
+sets.
 
 ``` r
 

@@ -65,11 +65,6 @@ passed; the conditions
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
 raises otherwise.
 
-## References
-
-Lazarsfeld, P. F., & Henry, N. W. (1968). *Latent Structure Analysis*.
-Houghton Mifflin.
-
 ## See also
 
 [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) for

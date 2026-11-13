@@ -56,7 +56,7 @@ settings and returns the object invisibly.
 
 ## Details
 
-The prior follows Fraley and Raftery (2007) and
+The prior follows
 [`mclust::priorControl()`](https://mclust-org.github.io/mclust/reference/priorControl.html).
 Arguments set to `NULL` use the data-dependent defaults of
 [`mclust::defaultPrior()`](https://mclust-org.github.io/mclust/reference/defaultPrior.html):
@@ -88,13 +88,6 @@ prior settings.
 non-finite `mean`, a `mean` with a zero `shrinkage`, a non-positive or
 non-finite `dof`, or a `scale` that is neither a positive number nor a
 square, symmetric, positive-definite matrix.
-
-## References
-
-Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
-mixture estimation and model-based clustering. *Journal of
-Classification*, 24, 155–181.
-[doi:10.1007/s00357-007-0004-5](https://doi.org/10.1007/s00357-007-0004-5)
 
 ## See also
 

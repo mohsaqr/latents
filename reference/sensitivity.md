@@ -88,8 +88,9 @@ sensitivity(
 
   Maximum log-likelihood difference for grouping refits. Each group is
   anchored at its highest log likelihood and spans no more than
-  `tolerance`. Defaults to the reference fit's replication tolerance,
-  1e-6 per observed value.
+  `tolerance`. Only converged refits receive an optimum index or a best
+  flag. Defaults to the reference fit's replication tolerance, 1e-6 per
+  observed value.
 
 - cores:
 
@@ -145,11 +146,6 @@ identical parameter estimates. The analysis assesses sensitivity to
 initialisation, rather than uncertainty arising from sampling or model
 selection.
 
-## References
-
-Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the estimation of
-growth mixture models. *Psychological Methods, 11*, 36–53.
-
 ## See also
 
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
@@ -174,7 +170,7 @@ sensitivity(fit, seeds = 1:3, n_starts = 3)
 #> 2    2      -396.1633      TRUE          9       1 TRUE         1
 #> 3    3      -396.1633      TRUE          9       1 TRUE         1
 
-# Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+# Growth mixtures are known for local solutions.
 growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
                              n_classes = 2, id = "student", class_level = "group",
                              random = ~ 1, n_starts = 1, seed = 1)

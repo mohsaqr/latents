@@ -1,24 +1,22 @@
 # Class enumeration and comparison of mixture models
 
-Class enumeration evaluates alternative numbers of latent classes to
-inform model selection. `enumerate_classes()` fits a specified set of
-candidate models and summarizes their fit, classification quality, and
-estimation diagnostics. It supports latent profile, latent class, and
-latent transition models, including multilevel specifications.
+`enumerate_classes()` fits every candidate in a grid of class counts
+(and, for continuous indicators, covariance structures) and collects
+their information criteria, classification quality and estimation
+diagnostics in one object. It covers latent profile, latent class and
+latent transition models, single-level or two-level, and the additive,
+dispersion and additive-dispersion families of
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+The fitted candidates stay in the result (see *Value*).
 
-For multilevel profile and class models, candidates can differ in the
-number of observation-level profiles or classes, the number of
-group-level classes, and, for continuous indicators, the within-profile
-covariance structure. Comparing these specifications allows the analyst
-to assess both the latent class structure and the assumptions used to
-represent variation within classes.
-
-The function retains the fitted candidates and provides tables for
-comparing information criteria, posterior classification probabilities,
-class sizes, and convergence diagnostics. Individual models can be
-extracted with
-[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-for further examination and analysis.
+Information criteria summarise relative support; entropy and average
+posteriors describe classification certainty within each candidate.
+Neither picks a solution: also check that the best likelihood was
+replicated across starts, that no estimate sits at a bound, and that an
+added class brings interpretable differences in the response patterns.
+More profiles can stand in for covariances a diagonal structure cannot
+hold, so compare class counts alongside plausible structures. The grid
+is the analyst's: when every criterion is lowest at its edge, extend it.
 
 ## Usage
 
@@ -45,230 +43,159 @@ enumerate_classes(
 
 - data:
 
-  A data frame with one row per observation and columns containing the
-  indicators, group identifier and, when applicable, occasion order and
-  covariates. Use the same observations and measurement scale throughout
-  a candidate comparison.
+  A data frame with one row per observation: the indicators, the group
+  identifier and, when used, the occasion column and covariates. Use the
+  same rows and scale for every candidate.
 
 - vars:
 
-  Character vector naming the indicator columns in `data`. Indicator
-  distributions are determined by `type` and the measurement arguments
-  supplied through `...`.
+  Names of the indicator columns.
 
 - id:
 
-  The column identifying the groups the observations are nested in
-  (students in schools, reports in students). Required; `NULL`
-  enumerates single-level models, with a message.
+  The column identifying the groups the rows are nested in. `NULL`
+  enumerates single-level models, with a message;
   [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
   and
   [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
-  fit single-level models directly.
+  do that directly.
 
 - n_profiles:
 
-  Positive integer profile counts to try. Default `1:4`.
+  Profile (class) counts to try (default `1:4`; `2:4` for transition
+  models).
 
 - n_group_classes:
 
-  Positive integer group-class counts to try. Default `1:3`. With
-  `id = NULL` it is 1 and may be left out.
+  Group-class counts to try (default `1:3`; default `1` with `time`, and
+  only `1` with `id = NULL`).
 
 - model:
 
-  The covariance structures to cross with the class counts. `"basic"`
-  (the default) fits four structures: `"EEI"` (equal variances, no
-  covariances), `"VVI"` (varying variances, no covariances), `"EEE"`
-  (one covariance matrix shared by all profiles) and `"VVV"` (a
-  covariance matrix for each profile). Omitting covariances between
-  correlated indicators tends to favour additional profiles. `"all"`
-  fits all 14 structures of Celeux and Govaert (1995). Otherwise, name
-  structures by their three-letter codes, as
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)'s
-  `model` takes them: the letters give the volume, shape and orientation
-  of each profile's covariance matrix, each equal (`E`) or varying (`V`)
-  across profiles, with `I` for no covariances. `NULL` crosses no
-  structures. With one continuous indicator, codes that coincide (equal
-  or varying variance) are fitted once; with only categorical indicators
-  no structure is crossed. A structure set through `variance_model`,
-  `covariance_model`, `volume`, `shape` or `orientation` in `...`
-  replaces the default.
+  Covariance structures to cross with the class counts. `"basic"` (the
+  default for profile grids) fits EEI (equal variances, no covariances),
+  VVI (varying variances), EEE (one covariance matrix shared by all
+  profiles) and VVV (a covariance matrix per profile). `"all"` fits all
+  fourteen structures. Otherwise mclust's three-letter codes (volume,
+  shape and orientation, each equal `E` or varying `V`, `I` for no
+  covariances), or `NULL` for none, which is the default for a
+  transition grid. With one continuous indicator, codes that coincide
+  are fitted once; with only categorical indicators no structure is
+  crossed. Giving `variance_model`, `covariance_model`, `volume`,
+  `shape` or `orientation` in `...` sets one structure instead.
 
 - seed:
 
-  Optional integer random seed accepted by
-  [`set.seed()`](https://rdrr.io/r/base/Random.html). Used to reproduce
-  the starting values for the same data and fitting controls. Invalid
-  values raise `latents_bad_argument` before fitting begins.
+  Optional integer seed, reproducing the starting values for the same
+  data and controls.
 
 - family:
 
-  `"profiles"` (the default) enumerates the profile model over
-  `n_profiles`, `n_group_classes` and `model`. One or more of the
-  group-class families `"additive"`, `"dispersion"` and
-  `"additive_dispersion"` enumerates those instead, over `family`,
-  `n_group_classes` and `between_variance`; these need `id`,
-  `n_profiles` and `model` are then rejected, and the result is a
-  `latents_family_enumeration`, read with
-  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-  and
-  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
+  `"profiles"` (default) enumerates the profile model over `n_profiles`,
+  `n_group_classes` and `model`. One or more of `"additive"`,
+  `"dispersion"` and `"additive_dispersion"` enumerates those
+  group-class families over `family`, `n_group_classes` and
+  `between_variance` instead; they need `id`, refuse `n_profiles` and
+  `model`, and return a `latents_family_enumeration`.
 
 - between_variance:
 
-  For group-class families: the between-variance restrictions to cross,
-  `"varying"`, `"equal"` or both (the default). The dispersion family is
-  always fitted with `"equal"`. Refused for the profile family.
+  For the group-class families, the restrictions to cross: `"varying"`,
+  `"equal"` or both (default). The dispersion family is fitted with
+  `"equal"` only.
 
 - time:
 
   The occasion column. Enumerates latent transition models
   ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md)) over
-  `n_profiles` (default `2:4`) and `n_group_classes` (default `1`), with
-  every other
+  `n_profiles` and `n_group_classes`, every other
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) argument
-  given in `...` held fixed. `model`, when given, crosses those
-  covariance structures. Only the profile family is available. The
-  result is a `latents_transition_enumeration`, read with
-  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-  and
-  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
+  in `...` held fixed; `model`, when given, crosses structures. Profile
+  family only; returns a `latents_transition_enumeration`.
 
 - ...:
 
-  Additional fitting arguments passed to
+  Further arguments of
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  or to [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
-  when `time` is supplied. The same settings are used for each
-  candidate. Common arguments include `n_starts`, `max_iter`, `missing`,
-  `categorical`, `centering`, `scaling`, `drop_empty` and `boundary`.
-  The group-class families accept only `n_starts`, `max_iter`, `tol` and
-  `min_variance` through `...`.
+  or of [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  with `time`, used for every candidate: typically `n_starts`,
+  `max_iter`, `missing`, `categorical`, `centering`, `scaling`,
+  `drop_empty` and `boundary`. The group-class families take only
+  `n_starts`, `max_iter`, `tol` and `min_variance`.
 
 - cores:
 
-  Positive integer maximum number of parallel workers; the default, `1`,
-  fits models serially. With a fixed `seed`, parallel and serial
-  execution produce the same results. Parallel fitting requires
-  additional memory. See *Parallel estimation* for platform requirements
-  and the handling of interrupted workers.
+  Maximum number of parallel workers (default 1, serial). With `seed`,
+  parallel and serial runs give the same result. On Windows, and on
+  macOS with Apple's Accelerate BLAS, each worker is a separate R
+  process, so memory grows with `cores`.
 
 - type:
 
-  Optional model type: `"lca"`, `"lpa"` or `"lta"`. `NULL` (the default)
-  determines the model from the other arguments. `"lca"` treats every
-  indicator as categorical, as
+  `"lca"`, `"lpa"` or `"lta"`; `NULL` (default) reads the type from the
+  other arguments. `"lca"` treats every indicator as categorical,
+  numeric codes included, as
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-  does: indicators named in `ordinal` or `count` keep those
-  distributions, and `categorical` adds to the set rather than replacing
-  it. Numeric response codes are categorical with `type = "lca"`.
-  `"lpa"` requires continuous indicators and rejects non-empty
-  `categorical`, `ordinal` or `count`. Both require `time = NULL`.
-  `"lta"` requires `time` and takes its measurement settings from
-  `categorical`, as
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) does; it
-  does not make numeric indicators categorical. An explicit type
-  requires `family = "profiles"`; leave `type = NULL` for group-class
-  families.
+  does (indicators in `ordinal` or `count` keep those distributions, and
+  `categorical` adds to the set). `"lpa"` needs continuous indicators
+  and no `categorical`, `ordinal` or `count`. Both need `time = NULL`.
+  `"lta"` needs `time` and reads the measurement from `categorical`, as
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) does,
+  without making numeric indicators categorical. An explicit type needs
+  `family = "profiles"`.
 
 - verbose:
 
   Whether to report progress: one message each when the candidates are
-  prepared, when their starts are fitted, and when the grid is done,
-  with the elapsed time. The default reports when `cores > 1`, where a
-  grid is usually long. Group-class families (`family`) are not
-  reported.
+  prepared, when starts are screened, when they are fitted and when the
+  grid is done. Default on when `cores > 1`. Not reported for the
+  group-class families.
 
 ## Value
 
-An object of class `multilpa_enumeration` (or the transition or family
-enumeration described above). Its `type` records the resolved model:
-`"lca"`, `"lpa"` or `"lta"`, or `"mixed"`/`"family"` for those grids
-under `type = NULL`. The print header reports this type.
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives one
-row per candidate, starting with its name (`"profiles3_groups2"`), with
-every criterion and diagnostic (including both entropies and, at each
-level, the smallest, largest and mean average posterior probability and
-the number of classes below a cutoff) and the candidate's warnings and
-error. `get_results(x, "best")` names the candidate at each criterion's
-minimum; `get_results(x, "classification")` gives every class's average
-posterior probability and relative entropy for every candidate;
-`get_results(x, "deltas")` and `"knees"` give model-selection evidence.
-[`summary()`](https://rdrr.io/r/base/summary.html) prints each
-criterion's minimum and every table,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws the
-information criteria (and, with `what`, classification quality and
-model-selection views),
+A `multilpa_enumeration` object, or the transition or family enumeration
+named under `time` and `family`; the print header names the resolved
+type (LPA, LCA, LTA, mixed or family). On every grid:
+[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
+gives one row per candidate (named like `"profiles3_groups2"`) with its
+class counts, log likelihood, criteria, entropy, convergence, boundary
+and replication, leaving out columns empty in every row;
+[`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md)
+the best candidate per criterion;
+[`get_tree()`](https://pak.dynasite.org/latents/reference/get_tree.md)
+and
+[`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
+how classes split;
+[`get_entropy()`](https://pak.dynasite.org/latents/reference/get_entropy.md),
+[`get_avepp()`](https://pak.dynasite.org/latents/reference/get_avepp.md)
+and
+[`get_classification()`](https://pak.dynasite.org/latents/reference/get_classification.md)
+the classification tables of every candidate;
+[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
+the criteria;
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-extracts a fitted candidate, and
+one fitted candidate;
 [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
-compares candidates selected by name.
-
-## Model selection
-
-Information criteria summarize relative support for the candidate
-specifications, whereas entropy and posterior membership probabilities
-describe classification uncertainty within each fitted model. These
-measures address different aspects of the analysis. Model selection
-should also examine whether the selected likelihood is replicated across
-starts, whether estimates approach parameter bounds, and whether
-additional classes yield interpretable differences in response patterns.
-The function reports this evidence without prescribing a final number of
-classes.
-
-Comparisons of class counts depend on the measurement specification. For
-example, additional profiles can represent residual associations that a
-diagonal covariance model cannot accommodate within profiles. Evaluate
-the number of classes alongside plausible covariance structures and
-indicator distributions. The candidate range and fitting controls are
-supplied by the analyst; the function does not expand the range
-automatically.
-
-## Parallel estimation
-
-Socket workers are used on Windows and on macOS with Apple's Accelerate
-BLAS; these workers load the installed package, which must match the
-version used in the main R session. Other supported Unix configurations
-use forked processes. Each worker requires memory for its fitting tasks.
-
-Depending on the model family, parallel tasks consist of individual
-starts or complete candidate models. The total number of workers does
-not exceed `cores`. Warnings and messages are reported in candidate
-order. Without a fixed `seed`, starting values can differ between runs.
-
-Lost worker results are retried once with fewer workers, and a
-`latents_worker_lost` warning reports the interruption. Unrecovered
-tasks are recorded as failed starts or candidates; other results are
-retained.
-
-## Conditions
-
-`latents_bad_argument` when `model` names an unknown structure, when it
-is given together with another way of setting the structure, or when it
-is given although no indicator is continuous; when `seed` is not a seed
-[`set.seed()`](https://rdrr.io/r/base/Random.html) accepts; when `...`
-contains an argument
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-does not take; when `n_group_classes` other than 1 is given with
-`id = NULL`; when `id` is missing; when `between_variance` is given for
-the profile family; when `n_profiles` or `model` is given for a
-group-class family, or `id` is `NULL`; when `time` is combined with a
-group-class family or with `between_variance`; and when `cores` is not
-an integer of at least 1; and when `type` is invalid or conflicts with
-`time`, `family` or the requested measurement distributions.
-
-## References
-
-Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering
-models. *Pattern Recognition*, 28(5), 781–793.
+candidates by name (a family grid is compared in its own candidates
+table). A profile or class grid also has the AvePP summaries at each
+level in its candidates table,
+[`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md)
+and
+[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md),
+and a [`summary()`](https://rdrr.io/r/base/summary.html) that prints one
+screen of the evidence; a transition or family grid's
+[`summary()`](https://rdrr.io/r/base/summary.html) is its candidates
+table. Invalid arguments are refused with the classed conditions listed
+on
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md).
 
 ## See also
 
-[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-to extract a fitted candidate,
-[`summary()`](https://rdrr.io/r/base/summary.html) for the
-criterion-by-criterion comparison.
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md),
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+to test one class count against the next,
+[`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+for mixture regressions.
 
 ## Examples
 
@@ -322,135 +249,37 @@ summary(candidates)
 #> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 15 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
-#> -- candidates ------------------------------------------------------
-#>              candidate n_profiles model log_likelihood n_parameters   aic
-#>  profiles1_groups1_EEI          1   EEI         -130.7            2 265.3
-#>  profiles2_groups1_EEI          2   EEI         -130.6            4 269.2
-#>  profiles1_groups1_VVI          1   VVI         -130.7            2 265.3
-#>  profiles2_groups1_VVI          2   VVI         -130.6            5 271.2
-#>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_mean
-#>       265.9          270.5          270.5              NA        NA         NA
-#>       270.4          279.6          355.6         0.45177    0.6412     0.7470
-#>       265.9          270.5          270.5              NA        NA         NA
-#>       272.7          284.2          411.6         0.08115    0.6381     0.6393
-#>  avepp_below converged boundary
-#>           NA      TRUE    FALSE
-#>            1      TRUE    FALSE
-#>           NA      TRUE    FALSE
-#>            2      TRUE    FALSE
+#> ! 2 candidates have a class with average posterior below 0.8
+#>     (profiles2_groups1_EEI, profiles2_groups1_VVI).
 #> 
-#> -- best ------------------------------------------------------------
-#>  criterion  convention             candidate n_profiles n_group_classes model
-#>        aic        <NA> profiles1_groups1_EEI          1               1   EEI
-#>        kic        <NA> profiles1_groups1_EEI          1               1   EEI
-#>        bic      groups profiles1_groups1_EEI          1               1   EEI
-#>        bic individuals profiles1_groups1_EEI          1               1   EEI
-#>      sabic      groups profiles2_groups1_VVI          2               1   VVI
-#>      sabic individuals profiles1_groups1_EEI          1               1   EEI
-#>       caic      groups profiles1_groups1_EEI          1               1   EEI
-#>       caic individuals profiles1_groups1_EEI          1               1   EEI
-#>        awe      groups profiles1_groups1_EEI          1               1   EEI
-#>        awe individuals profiles1_groups1_EEI          1               1   EEI
-#>  value
-#>  265.3
-#>  270.3
-#>  265.9
-#>  270.5
-#>  257.7
-#>  264.2
-#>  267.9
-#>  272.5
-#>  276.5
-#>  285.7
-#>    ... 4 more rows.  get_results(x, what = "best")
+#> -- lowest value of each criterion --------------------------------
+#>  criterion  convention             candidate value
+#>        aic        <NA> profiles1_groups1_EEI 265.3
+#>        kic        <NA> profiles1_groups1_EEI 270.3
+#>        bic      groups profiles1_groups1_EEI 265.9
+#>        bic individuals profiles1_groups1_EEI 270.5
+#>      sabic      groups profiles2_groups1_VVI 257.7
+#>      sabic individuals profiles1_groups1_EEI 264.2
+#>       caic      groups profiles1_groups1_EEI 267.9
+#>       caic individuals profiles1_groups1_EEI 272.5
+#>        awe      groups profiles1_groups1_EEI 276.5
+#>        awe individuals profiles1_groups1_EEI 285.7
+#>        icl      groups profiles1_groups1_EEI 265.9
+#>        icl individuals profiles1_groups1_EEI 270.5
+#>        clc      groups profiles1_groups1_EEI 261.3
+#>        clc individuals profiles1_groups1_EEI 261.3
 #> 
-#> -- criteria --------------------------------------------------------
-#>  criterion  convention             candidate n_profiles n_group_classes model
-#>        aic        <NA> profiles1_groups1_EEI          1               1   EEI
-#>        kic        <NA> profiles1_groups1_EEI          1               1   EEI
-#>        bic      groups profiles1_groups1_EEI          1               1   EEI
-#>        bic individuals profiles1_groups1_EEI          1               1   EEI
-#>      sabic      groups profiles2_groups1_VVI          2               1   VVI
-#>      sabic individuals profiles1_groups1_EEI          1               1   EEI
-#>       caic      groups profiles1_groups1_EEI          1               1   EEI
-#>       caic individuals profiles1_groups1_EEI          1               1   EEI
-#>        awe      groups profiles1_groups1_EEI          1               1   EEI
-#>        awe individuals profiles1_groups1_EEI          1               1   EEI
-#>  value
-#>  265.3
-#>  270.3
-#>  265.9
-#>  270.5
-#>  257.7
-#>  264.2
-#>  267.9
-#>  272.5
-#>  276.5
-#>  285.7
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> -- knees of bic_groups ----------------------------------------
+#>   direction                line knee_candidate knee_without_largest stable
+#>    profiles  1 group class, EEI           <NA>                 <NA>     NA
+#>    profiles  1 group class, VVI           <NA>                 <NA>     NA
+#>  parameters all candidates, EEI           <NA>                 <NA>     NA
+#>  parameters all candidates, VVI           <NA>                 <NA>     NA
 #> 
-#> -- classification --------------------------------------------------
-#>              candidate n_profiles n_group_classes model       level class
-#>  profiles2_groups1_EEI          2               1   EEI individuals     1
-#>  profiles2_groups1_EEI          2               1   EEI individuals     2
-#>  profiles2_groups1_VVI          2               1   VVI individuals     1
-#>  profiles2_groups1_VVI          2               1   VVI individuals     2
-#>  n_modal proportion_modal estimated_n estimated_proportion average_posterior
-#>        6             0.06       17.67               0.1767            0.6412
-#>       94             0.94       82.33               0.8233            0.8529
-#>       31             0.31       44.58               0.4458            0.6381
-#>       69             0.69       55.42               0.5542            0.6406
-#>  odds_correct_classification relative_entropy
-#>                        8.324          0.45177
-#>                        1.245          0.45177
-#>                        2.192          0.08115
-#>                        1.434          0.08115
-#> 
-#> -- deltas ----------------------------------------------------------
-#>              candidate n_profiles n_group_classes model  criterion value
-#>  profiles1_groups1_EEI          1               1   EEI bic_groups 265.9
-#>  profiles2_groups1_EEI          2               1   EEI bic_groups 270.4
-#>  profiles1_groups1_VVI          1               1   VVI bic_groups 265.9
-#>  profiles2_groups1_VVI          2               1   VVI bic_groups 272.7
-#>  delta_profile          from_profile delta_group_class from_group_class
-#>             NA                  <NA>                NA             <NA>
-#>         -4.453 profiles1_groups1_EEI                NA             <NA>
-#>             NA                  <NA>                NA             <NA>
-#>         -6.782 profiles1_groups1_VVI                NA             <NA>
-#> 
-#> -- knees -----------------------------------------------------------
-#>   direction                line  criterion                  from
-#>    profiles  1 group class, EEI bic_groups profiles1_groups1_EEI
-#>    profiles  1 group class, VVI bic_groups profiles1_groups1_VVI
-#>  parameters all candidates, EEI bic_groups profiles1_groups1_EEI
-#>  parameters all candidates, VVI bic_groups profiles1_groups1_VVI
-#>                     to n_points knee_candidate distance knee_without_largest
-#>  profiles2_groups1_EEI        2           <NA>       NA                 <NA>
-#>  profiles2_groups1_VVI        2           <NA>       NA                 <NA>
-#>  profiles2_groups1_EEI        2           <NA>       NA                 <NA>
-#>  profiles2_groups1_VVI        2           <NA>       NA                 <NA>
-#>  stable                        note
-#>      NA fewer than three candidates
-#>      NA fewer than three candidates
-#>      NA fewer than three candidates
-#>      NA fewer than three candidates
-#> 
-#> -- tree ------------------------------------------------------------
-#>  tree       level        from_candidate from_class from_share
-#>   EEI individuals profiles1_groups1_EEI          1          1
-#>   EEI individuals profiles1_groups1_EEI          1          1
-#>   VVI individuals profiles1_groups1_VVI          1          1
-#>   VVI individuals profiles1_groups1_VVI          1          1
-#>           to_candidate to_class to_share   mass share_of_from share_of_to
-#>  profiles2_groups1_EEI        1   0.1767 0.1767        0.1767           1
-#>  profiles2_groups1_EEI        2   0.8233 0.8233        0.8233           1
-#>  profiles2_groups1_VVI        1   0.4458 0.4458        0.4458           1
-#>  profiles2_groups1_VVI        2   0.5542 0.5542        0.5542           1
-#> 
-#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
-#> of them whole, and get_results(x, what = "all") returns every one.
+#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
 
 # Numeric response codes, explicitly categorical:
 codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
@@ -467,152 +296,35 @@ summary(single)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 14 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
-#> -- candidates ------------------------------------------------------
-#>      candidate n_profiles model log_likelihood n_parameters   aic   bic
-#>  profiles1_VVV          1   VVV         -379.9           14 787.8 830.0
-#>  profiles2_VVV          2   VVV         -214.4           29 486.7 574.0
-#>  profiles3_VVV          3   VVV         -180.2           44 448.4 580.8
-#>  profiles1_EEE          1   EEE         -379.9           14 787.8 830.0
-#>  profiles2_EEE          2   EEE         -296.4           19 630.9 688.1
-#>  profiles3_EEE          3   EEE         -256.4           24 560.7 633.0
-#>  icl_individual profile_entropy avepp_min avepp_mean avepp_below converged
-#>           830.0              NA        NA         NA          NA      TRUE
-#>           574.0          0.9999    1.0000     1.0000           0      TRUE
-#>           590.6          0.9704    0.9823     0.9900           0      TRUE
-#>           830.0              NA        NA         NA          NA      TRUE
-#>           688.1          0.9999    1.0000     1.0000           0      TRUE
-#>           645.6          0.9616    0.9742     0.9855           0      TRUE
-#>  boundary
-#>     FALSE
-#>     FALSE
-#>     FALSE
-#>     FALSE
-#>     FALSE
-#>     FALSE
+#> ! 1 of 6 candidates reached their best log likelihood from one start only
+#>     (profiles3_VVV); refit those you consider with more starts.
 #> 
-#> -- best ------------------------------------------------------------
-#>  criterion  convention     candidate n_profiles n_group_classes model value
-#>        aic        <NA> profiles3_VVV          3               1   VVV 448.4
-#>        kic        <NA> profiles3_VVV          3               1   VVV 495.4
-#>        bic      groups profiles2_VVV          2               1   VVV 574.0
-#>        bic individuals profiles2_VVV          2               1   VVV 574.0
-#>      sabic      groups profiles3_VVV          3               1   VVV 441.6
-#>      sabic individuals profiles3_VVV          3               1   VVV 441.6
-#>       caic      groups profiles2_VVV          2               1   VVV 603.0
-#>       caic individuals profiles2_VVV          2               1   VVV 603.0
-#>        awe      groups profiles2_VVV          2               1   VVV 806.3
-#>        awe individuals profiles2_VVV          2               1   VVV 806.3
-#>    ... 4 more rows.  get_results(x, what = "best")
+#> -- lowest value of each criterion --------------------------------
+#>  criterion  convention     candidate value
+#>        aic        <NA> profiles3_VVV 448.4
+#>        kic        <NA> profiles3_VVV 495.4
+#>        bic      groups profiles2_VVV 574.0
+#>        bic individuals profiles2_VVV 574.0
+#>      sabic      groups profiles3_VVV 441.6
+#>      sabic individuals profiles3_VVV 441.6
+#>       caic      groups profiles2_VVV 603.0
+#>       caic individuals profiles2_VVV 603.0
+#>        awe      groups profiles2_VVV 806.3
+#>        awe individuals profiles2_VVV 806.3
+#>        icl      groups profiles2_VVV 574.0
+#>        icl individuals profiles2_VVV 574.0
+#>        clc      groups profiles3_VVV 370.1
+#>        clc individuals profiles3_VVV 370.1
 #> 
-#> -- criteria --------------------------------------------------------
-#>  criterion  convention     candidate n_profiles n_group_classes model value
-#>        aic        <NA> profiles3_VVV          3               1   VVV 448.4
-#>        kic        <NA> profiles3_VVV          3               1   VVV 495.4
-#>        bic      groups profiles2_VVV          2               1   VVV 574.0
-#>        bic individuals profiles2_VVV          2               1   VVV 574.0
-#>      sabic      groups profiles3_VVV          3               1   VVV 441.6
-#>      sabic individuals profiles3_VVV          3               1   VVV 441.6
-#>       caic      groups profiles2_VVV          2               1   VVV 603.0
-#>       caic individuals profiles2_VVV          2               1   VVV 603.0
-#>        awe      groups profiles2_VVV          2               1   VVV 806.3
-#>        awe individuals profiles2_VVV          2               1   VVV 806.3
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> -- knees of bic_groups ----------------------------------------
+#>   direction                line knee_candidate knee_without_largest stable
+#>    profiles  1 group class, EEE  profiles2_EEE                 <NA>     NA
+#>    profiles  1 group class, VVV  profiles2_VVV                 <NA>     NA
+#>  parameters all candidates, EEE  profiles2_EEE                 <NA>     NA
+#>  parameters all candidates, VVV  profiles2_VVV                 <NA>     NA
 #> 
-#> -- classification --------------------------------------------------
-#>      candidate n_profiles n_group_classes model       level class n_modal
-#>  profiles2_VVV          2               1   VVV individuals     1      50
-#>  profiles2_VVV          2               1   VVV individuals     2     100
-#>  profiles3_VVV          3               1   VVV individuals     1      50
-#>  profiles3_VVV          3               1   VVV individuals     2      45
-#>  profiles3_VVV          3               1   VVV individuals     3      55
-#>  profiles2_EEE          2               1   EEE individuals     1      50
-#>  profiles2_EEE          2               1   EEE individuals     2     100
-#>  profiles3_EEE          3               1   EEE individuals     1      50
-#>  profiles3_EEE          3               1   EEE individuals     2      49
-#>  profiles3_EEE          3               1   EEE individuals     3      51
-#>  proportion_modal estimated_n estimated_proportion average_posterior
-#>            0.3333       50.00               0.3333            1.0000
-#>            0.6667      100.00               0.6667            1.0000
-#>            0.3333       50.00               0.3333            1.0000
-#>            0.3000       44.88               0.2992            0.9823
-#>            0.3667       55.12               0.3675            0.9877
-#>            0.3333       50.00               0.3333            1.0000
-#>            0.6667      100.00               0.6667            1.0000
-#>            0.3333       50.00               0.3333            1.0000
-#>            0.3267       49.44               0.3296            0.9822
-#>            0.3400       50.56               0.3371            0.9742
-#>  odds_correct_classification relative_entropy
-#>                    157977.78           0.9999
-#>                          Inf           0.9999
-#>                          Inf           0.9704
-#>                       129.97           0.9704
-#>                       138.39           0.9704
-#>                    329661.62           0.9999
-#>                    147652.77           0.9999
-#>                          Inf           0.9616
-#>                       112.24           0.9616
-#>                        74.41           0.9616
-#> 
-#> -- deltas ----------------------------------------------------------
-#>      candidate n_profiles n_group_classes model  criterion value delta_profile
-#>  profiles1_VVV          1               1   VVV bic_groups 830.0            NA
-#>  profiles2_VVV          2               1   VVV bic_groups 574.0       255.960
-#>  profiles3_VVV          3               1   VVV bic_groups 580.8        -6.821
-#>  profiles1_EEE          1               1   EEE bic_groups 830.0            NA
-#>  profiles2_EEE          2               1   EEE bic_groups 688.1       141.881
-#>  profiles3_EEE          3               1   EEE bic_groups 633.0        55.134
-#>   from_profile delta_group_class from_group_class
-#>           <NA>                NA             <NA>
-#>  profiles1_VVV                NA             <NA>
-#>  profiles2_VVV                NA             <NA>
-#>           <NA>                NA             <NA>
-#>  profiles1_EEE                NA             <NA>
-#>  profiles2_EEE                NA             <NA>
-#> 
-#> -- knees -----------------------------------------------------------
-#>   direction                line  criterion          from            to n_points
-#>    profiles  1 group class, EEE bic_groups profiles1_EEE profiles3_EEE        3
-#>    profiles  1 group class, VVV bic_groups profiles1_VVV profiles3_VVV        3
-#>  parameters all candidates, EEE bic_groups profiles1_EEE profiles3_EEE        3
-#>  parameters all candidates, VVV bic_groups profiles1_VVV profiles3_VVV        3
-#>  knee_candidate distance knee_without_largest stable
-#>   profiles2_EEE   0.1557                 <NA>     NA
-#>   profiles2_VVV   0.3678                 <NA>     NA
-#>   profiles2_EEE   0.1557                 <NA>     NA
-#>   profiles2_VVV   0.3678                 <NA>     NA
-#>                                      note
-#>  three candidates: stability not assessed
-#>  three candidates: stability not assessed
-#>  three candidates: stability not assessed
-#>  three candidates: stability not assessed
-#> 
-#> -- tree ------------------------------------------------------------
-#>  tree       level from_candidate from_class from_share  to_candidate to_class
-#>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        1
-#>   VVV individuals  profiles1_VVV          1     1.0000 profiles2_VVV        2
-#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        1
-#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        1
-#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        2
-#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        2
-#>   VVV individuals  profiles2_VVV          1     0.3333 profiles3_VVV        3
-#>   VVV individuals  profiles2_VVV          2     0.6667 profiles3_VVV        3
-#>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        1
-#>   EEE individuals  profiles1_EEE          1     1.0000 profiles2_EEE        2
-#>  to_share      mass share_of_from share_of_to
-#>    0.3333 3.333e-01     3.333e-01   1.000e+00
-#>    0.6667 6.667e-01     6.667e-01   1.000e+00
-#>    0.3333 3.333e-01     1.000e+00   1.000e+00
-#>    0.3333 4.220e-06     6.330e-06   1.266e-05
-#>    0.2992 2.275e-17     6.824e-17   7.603e-17
-#>    0.2992 2.992e-01     4.488e-01   1.000e+00
-#>    0.3675 2.015e-21     6.044e-21   5.482e-21
-#>    0.3675 3.675e-01     5.512e-01   1.000e+00
-#>    0.3333 3.333e-01     3.333e-01   1.000e+00
-#>    0.6667 6.667e-01     6.667e-01   1.000e+00
-#>    ... 6 more rows.  get_results(x, what = "tree")
-#> 
-#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
-#> of them whole, and get_results(x, what = "all") returns every one.
+#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
 ```

@@ -91,139 +91,37 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
-#> -- candidates ------------------------------------------------------
-#>  candidate n_profiles log_likelihood n_parameters  aic  bic icl_individual
-#>  profiles1          1         -615.7           20 1271 1345           1345
-#>  profiles2          2         -600.9           26 1254 1350           1457
-#>  profiles3          3         -593.1           32 1250 1369           1609
-#>  profiles4          4         -582.1           38 1240 1381           1574
-#>  profiles5          5         -572.1           44 1232 1395           1642
-#>  profiles6          6         -562.8           50 1226 1411           1688
-#>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
-#>               NA        NA         NA          NA      TRUE    FALSE
-#>           0.7440    0.8801     0.9169           0      TRUE    FALSE
-#>           0.6347    0.7966     0.8340           1      TRUE    FALSE
-#>           0.7686    0.8180     0.8777           0      TRUE    FALSE
-#>           0.7440    0.8046     0.8427           0      TRUE    FALSE
-#>           0.7422    0.7602     0.8214           2      TRUE    FALSE
+#> ! 1 of 6 candidates reached their best log likelihood from one start only
+#>     (profiles4); refit those you consider with more starts.
+#> ! 2 candidates have a class with average posterior below 0.8 (profiles3,
+#>     profiles6).
 #> 
-#> -- best ------------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes model value
-#>        aic        <NA> profiles6          6               1   EEE  1226
-#>        kic        <NA> profiles6          6               1   EEE  1279
-#>        bic      groups profiles1          1               1   EEE  1345
-#>        bic individuals profiles1          1               1   EEE  1345
-#>      sabic      groups profiles6          6               1   EEE  1252
-#>      sabic individuals profiles6          6               1   EEE  1252
-#>       caic      groups profiles1          1               1   EEE  1365
-#>       caic individuals profiles1          1               1   EEE  1365
-#>        awe      groups profiles1          1               1   EEE  1520
-#>        awe individuals profiles1          1               1   EEE  1520
-#>    ... 4 more rows.  get_results(x, what = "best")
+#> -- lowest value of each criterion --------------------------------
+#>  criterion  convention candidate value
+#>        aic        <NA> profiles6  1226
+#>        kic        <NA> profiles6  1279
+#>        bic      groups profiles1  1345
+#>        bic individuals profiles1  1345
+#>      sabic      groups profiles6  1252
+#>      sabic individuals profiles6  1252
+#>       caic      groups profiles1  1365
+#>       caic individuals profiles1  1365
+#>        awe      groups profiles1  1520
+#>        awe individuals profiles1  1520
+#>        icl      groups profiles1  1345
+#>        icl individuals profiles1  1345
+#>        clc      groups profiles1  1231
+#>        clc individuals profiles1  1231
 #> 
-#> -- criteria --------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes model value
-#>        aic        <NA> profiles6          6               1   EEE  1226
-#>        kic        <NA> profiles6          6               1   EEE  1279
-#>        bic      groups profiles1          1               1   EEE  1345
-#>        bic individuals profiles1          1               1   EEE  1345
-#>      sabic      groups profiles6          6               1   EEE  1252
-#>      sabic individuals profiles6          6               1   EEE  1252
-#>       caic      groups profiles1          1               1   EEE  1365
-#>       caic individuals profiles1          1               1   EEE  1365
-#>        awe      groups profiles1          1               1   EEE  1520
-#>        awe individuals profiles1          1               1   EEE  1520
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> -- knees of bic_groups ----------------------------------------
+#>   direction           line knee_candidate knee_without_largest stable
+#>    profiles  1 group class           <NA>                 <NA>     NA
+#>  parameters all candidates           <NA>                 <NA>     NA
 #> 
-#> -- classification --------------------------------------------------
-#>  candidate n_profiles n_group_classes model       level class n_modal proportion_modal
-#>  profiles2          2               1   EEE individuals     1      95           0.3167
-#>  profiles2          2               1   EEE individuals     2     205           0.6833
-#>  profiles3          3               1   EEE individuals     1     126           0.4200
-#>  profiles3          3               1   EEE individuals     2      82           0.2733
-#>  profiles3          3               1   EEE individuals     3      92           0.3067
-#>  profiles4          4               1   EEE individuals     1      91           0.3033
-#>  profiles4          4               1   EEE individuals     2      60           0.2000
-#>  profiles4          4               1   EEE individuals     3      33           0.1100
-#>  profiles4          4               1   EEE individuals     4     116           0.3867
-#>  profiles5          5               1   EEE individuals     1      64           0.2133
-#>  estimated_n estimated_proportion average_posterior odds_correct_classification
-#>        93.07               0.3102            0.8801                      16.315
-#>       206.93               0.6898            0.9538                       9.290
-#>       129.81               0.4327            0.8242                       6.149
-#>        80.37               0.2679            0.7966                      10.705
-#>        89.82               0.2994            0.8810                      17.327
-#>        84.23               0.2808            0.8180                      11.514
-#>        66.74               0.2225            0.8793                      25.451
-#>        33.29               0.1110            0.8961                      69.070
-#>       115.74               0.3858            0.9175                      17.715
-#>        68.24               0.2275            0.8764                      24.072
-#>  relative_entropy
-#>            0.7440
-#>            0.7440
-#>            0.6347
-#>            0.6347
-#>            0.6347
-#>            0.7686
-#>            0.7686
-#>            0.7686
-#>            0.7686
-#>            0.7440
-#>    ... 10 more rows.  get_results(x, what = "classification")
-#> 
-#> -- deltas ----------------------------------------------------------
-#>  candidate n_profiles n_group_classes model  criterion value delta_profile from_profile
-#>  profiles1          1               1   EEE bic_groups  1345            NA         <NA>
-#>  profiles2          2               1   EEE bic_groups  1350        -4.704    profiles1
-#>  profiles3          3               1   EEE bic_groups  1369       -18.531    profiles2
-#>  profiles4          4               1   EEE bic_groups  1381       -12.349    profiles3
-#>  profiles5          5               1   EEE bic_groups  1395       -14.143    profiles4
-#>  profiles6          6               1   EEE bic_groups  1411       -15.520    profiles5
-#>  delta_group_class from_group_class
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#>                 NA             <NA>
-#> 
-#> -- knees -----------------------------------------------------------
-#>   direction           line  criterion      from        to n_points knee_candidate
-#>    profiles  1 group class bic_groups profiles1 profiles6        6           <NA>
-#>  parameters all candidates bic_groups profiles1 profiles6        6           <NA>
-#>  distance knee_without_largest stable                                        note
-#>        NA                 <NA>     NA the criterion does not fall along this line
-#>        NA                 <NA>     NA the criterion does not fall along this line
-#> 
-#> -- tree ------------------------------------------------------------
-#>  tree       level from_candidate from_class from_share to_candidate to_class to_share
-#>  tree individuals      profiles1          1     1.0000    profiles2        1   0.3102
-#>  tree individuals      profiles1          1     1.0000    profiles2        2   0.6898
-#>  tree individuals      profiles2          1     0.3102    profiles3        1   0.4327
-#>  tree individuals      profiles2          2     0.6898    profiles3        1   0.4327
-#>  tree individuals      profiles2          1     0.3102    profiles3        2   0.2679
-#>  tree individuals      profiles2          2     0.6898    profiles3        2   0.2679
-#>  tree individuals      profiles2          1     0.3102    profiles3        3   0.2994
-#>  tree individuals      profiles2          2     0.6898    profiles3        3   0.2994
-#>  tree individuals      profiles3          1     0.4327    profiles4        1   0.2808
-#>  tree individuals      profiles3          2     0.2679    profiles4        1   0.2808
-#>     mass share_of_from share_of_to
-#>  0.31025       0.31025     1.00000
-#>  0.68975       0.68975     1.00000
-#>  0.04628       0.14917     0.10696
-#>  0.38641       0.56021     0.89304
-#>  0.01008       0.03249     0.03763
-#>  0.25782       0.37379     0.96237
-#>  0.25389       0.81834     0.84796
-#>  0.04552       0.06600     0.15204
-#>  0.17826       0.41199     0.63493
-#>  0.07619       0.28441     0.27139
-#>    ... 60 more rows.  get_results(x, what = "tree")
-#> 
-#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
-#> of them whole, and get_results(x, what = "all") returns every one.
+#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
 ```
 
 The BIC is lowest for one profile, and the two-profile model is 4.7
@@ -377,7 +275,7 @@ diagnostics(fit)
 ![](workflow-lpa_files/figure-html/diagnostics-1.png)![](workflow-lpa_files/figure-html/diagnostics-2.png)![](workflow-lpa_files/figure-html/diagnostics-3.png)![](workflow-lpa_files/figure-html/diagnostics-4.png)
 
     #> Diagnostics: Latent profile analysis, 2 profiles
-    #> 1 check needs attention: pairs dependent within a class
+    #> No check needs attention.
     #> 
     #> Estimation
     #>   ok     best start converged                                yes                      
@@ -396,8 +294,8 @@ diagnostics(fit)
     #>   info   lowest odds of correct classification  individuals  9.3 (class 2)            
     #> 
     #> Local independence
-    #>   check  pairs dependent within a class                      1 of 20 tested pairs     BH-adjusted p < 0.05
-    #>          largest: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.049
+    #>   ok     pairs dependent within a class                      0 of 20 tested pairs     BH-adjusted p < 0.05
+    #>          smallest adjusted p: self_efficacy x self_regulation in profile_1, residual 0.103, adjusted p 0.97
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -600.92, 26, 1350.15     
@@ -480,12 +378,12 @@ head(subset(get_results(independent, "residuals"), statistic > 5))
 #> 5 profile_1        self_efficacy self_regulation gaussian    0.644        0    0.644
 #> 6 profile_2 cognitive_strategies self_regulation gaussian    0.604        0    0.604
 #>   effective_n statistic df  p_value p_adjusted
-#> 1         130      9.62 NA 6.59e-22   6.59e-22
-#> 2         130      9.50 NA 2.03e-21   2.03e-21
-#> 3         130      9.23 NA 2.63e-20   2.63e-20
-#> 4         130      9.02 NA 1.80e-19   1.80e-19
-#> 5         130      8.63 NA 6.22e-18   6.22e-18
-#> 6         170      9.03 NA 1.77e-19   1.77e-19
+#> 1         130      9.62 NA 6.59e-22   1.32e-20
+#> 2         130      9.50 NA 2.03e-21   2.03e-20
+#> 3         130      9.23 NA 2.63e-20   1.75e-19
+#> 4         130      9.02 NA 1.80e-19   6.60e-19
+#> 5         130      8.63 NA 6.22e-18   1.78e-17
+#> 6         170      9.03 NA 1.77e-19   6.60e-19
 ```
 
 ``` r
@@ -502,11 +400,11 @@ compare_models(independent = independent, paired = paired, full = fit)
 #> full                2  26  -600.92  1350.15    0.00   1.000  1456.62     0.74       0.88      0
 ```
 
-12 pairs of indicators have a residual above 5 in the model without
-covariances, so the dependence is not confined to one pair. The
-covariance of one pair lowers BIC from 1904.7 to 1744, and the full
-covariance lowers it to 1350.1. A covariance for chosen pairs suits a
-dependence between one or two pairs of indicators; when every pair is
+12 pairs of indicators have a residual-test z statistic above 5 in the
+model without covariances, so the dependence is not confined to one
+pair. The covariance of one pair lowers BIC from 1904.7 to 1744, and the
+full covariance lowers it to 1350.1. A covariance for chosen pairs suits
+a dependence between one or two pairs of indicators; when every pair is
 dependent, the full covariance is the model.
 
 ## Further analyses

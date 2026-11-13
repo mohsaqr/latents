@@ -82,8 +82,8 @@ there is no model to return; `latents_bad_argument` for a name or pair
 of counts given together with `n_group_classes` or `model`, for a value
 that names no candidate, and for a comparison given no label;
 `latents_incomplete_fit` for a comparison that no longer carries its
-models. Counts that are not single positive integers fail the argument
-checks.
+models. Counts that are not single positive integers, and a `model` that
+is not a single string, also raise `latents_bad_argument`.
 
 ## Examples
 

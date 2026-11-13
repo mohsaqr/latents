@@ -222,7 +222,7 @@ have no variances. A spurious profile need not reach the bound: a few
 nearly coincident observations can give it variances close to zero. A
 candidate with a profile that has fewer effective members than its own
 means and variances is therefore reported by a `latents_thin_profiles`
-warning, which the grid above raises once.
+warning naming the affected profile and its effective membership.
 
 ``` r
 
@@ -266,20 +266,20 @@ spherical <- enumerate_lpa(srl, srl_indicators, n_profiles = 2:4,
                            scaling = "grand", n_starts = 5, seed = 1)
 get_results(spherical, "best")
 #>    criterion  convention candidate n_profiles n_group_classes model value
-#> 1        aic        <NA> profiles4          4               1   EII  3372
-#> 2        kic        <NA> profiles4          4               1   EII  3399
-#> 3        bic      groups profiles4          4               1   EII  3461
-#> 4        bic individuals profiles4          4               1   EII  3461
-#> 5      sabic      groups profiles4          4               1   EII  3385
-#> 6      sabic individuals profiles4          4               1   EII  3385
-#> 7       caic      groups profiles4          4               1   EII  3485
-#> 8       caic individuals profiles4          4               1   EII  3485
-#> 9        awe      groups profiles4          4               1   EII  3779
-#> 10       awe individuals profiles4          4               1   EII  3779
-#> 11       icl      groups profiles4          4               1   EII  3570
-#> 12       icl individuals profiles4          4               1   EII  3570
-#> 13       clc      groups profiles4          4               1   EII  3433
-#> 14       clc individuals profiles4          4               1   EII  3433
+#> 1        aic        <NA> profiles4          4               1   EII  3377
+#> 2        kic        <NA> profiles4          4               1   EII  3404
+#> 3        bic      groups profiles4          4               1   EII  3466
+#> 4        bic individuals profiles4          4               1   EII  3466
+#> 5      sabic      groups profiles4          4               1   EII  3390
+#> 6      sabic individuals profiles4          4               1   EII  3390
+#> 7       caic      groups profiles4          4               1   EII  3490
+#> 8       caic individuals profiles4          4               1   EII  3490
+#> 9        awe      groups profiles4          4               1   EII  3784
+#> 10       awe individuals profiles4          4               1   EII  3784
+#> 11       icl      groups profiles4          4               1   EII  3575
+#> 12       icl individuals profiles4          4               1   EII  3575
+#> 13       clc      groups profiles4          4               1   EII  3438
+#> 14       clc individuals profiles4          4               1   EII  3438
 ```
 
 Because scaling shifts the log likelihood by a constant, information
@@ -305,8 +305,11 @@ on the same grounds (`n_informative_groups`), whereas a group with at
 least one observed row is retained. Partially observed rows remain in
 every statistic: they are classified, with correspondingly greater
 uncertainty, from the indicators available. Setting `drop_empty = FALSE`
-restores the counting rules of latents 0.9.37 and earlier, so that
-previously reported results can be reproduced.
+includes empty rows in classification summaries and empty groups in
+group-based criteria. Profile/class models keep informative rows for
+individual-based criteria; transition models count all positive-weight
+rows under this setting. These choices leave the estimated likelihood
+unchanged but can change reported diagnostics and criteria.
 
 ``` r
 
@@ -639,9 +642,11 @@ students as units favours profiles4_groups3, BIC with enrolments as
 units profiles3_groups3, ICL with students as units profiles2_groups3,
 and AIC profiles6_groups4. Such disagreement is typical rather than
 anomalous. The criteria were derived for different purposes, and their
-penalties largely account for the pattern: AIC, with the lightest
-penalty, favours the largest candidate, whereas the entropy-based
-criteria favour smaller ones.
+penalties largely account for the pattern: AIC favours the largest
+candidate in this grid, whereas the entropy-based criteria favour
+smaller ones. AIC does not always have the lightest penalty: SABIC’s
+per-parameter penalty is smaller at the group sample size used here, as
+the formula above shows.
 
 A minimum at the boundary of the grid, that is, at the largest number of
 profiles or group classes estimated, indicates that the criterion was
@@ -653,7 +658,7 @@ becomes the relevant evidence (see below).
 
 ### Plotting the criteria
 
-[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
 displays the criteria against the number of profiles, with one line per
 number of group classes and the minimum of each criterion marked. `what`
 selects criteria by column name, and `what = "all"` displays all of
@@ -1158,7 +1163,7 @@ get_results(models, "classification")
 the minimum AvePP across candidates, with the cutoff indicated;
 `what = "entropy"` and `what = "avepp"` display either one. For a single
 fitted candidate,
-[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
 displays the posterior probability of each unit’s assigned class, each
 unit’s relative entropy, the class sizes and the matrix of average
 posterior probabilities, for the profiles and, when there are two or
@@ -1175,13 +1180,14 @@ plot_selection(models, what = "diagnostics")
 Entropy and AvePP may diverge, and the divergence is informative. AvePP
 depends only on the posterior probability of each unit’s assigned class,
 whereas entropy depends on the full vector of posterior probabilities. A
-unit with posterior probabilities of 0.70, 0.10, 0.10 and 0.10 and a
-unit with 0.70 and 0.30 contribute equally to AvePP, but the former,
-whose uncertainty is distributed across all classes, reduces entropy
-considerably more. Moreover, entropy is more sensitive to a minority of
-highly uncertain units than to a majority of nearly certain ones. A
-level comprising mostly well-classified units and a tail of uncertain
-ones therefore exhibits moderate AvePP together with low entropy.
+unit with posterior probabilities of 0.70, 0.10, 0.10 and 0.10 and one
+with 0.70, 0.30, 0 and 0 in the same four-class model contribute equally
+to AvePP. The former has lower relative entropy because its uncertainty
+is spread across more alternatives. Mostly certain assignments with a
+small tail of uncertain units can still give both high AvePP and high
+relative entropy. Moderate uncertainty spread across many units can
+instead give a relatively high AvePP alongside lower relative entropy.
+Inspect the posterior distribution as well as either summary.
 
 The two levels of a two-level model are classified on the basis of
 different amounts of information. A group’s class is inferred from all
@@ -1190,7 +1196,7 @@ inferred from its own responses and the group’s inferred class, which
 also uses the other observations in that group. Certainty at either
 level depends on the fitted separation and available information. For a
 single candidate,
-[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
 displays both levels:
 
 ``` r
@@ -1378,13 +1384,14 @@ statistic does not follow its usual asymptotic distribution.
 approximates the null distribution by parametric bootstrap (McLachlan,
 1987; Nylund, Asparouhov and Muthén, 2007): data sets are simulated from
 the fitted null model, both models are re-estimated on each, and the
-observed statistic is referred to the simulated distribution. With `B`
-simulated data sets of which `b` yield a statistic at least as large as
-the observed one, the p-value is `(b + 1) / (B + 1)`, which is bounded
-below by `1 / (B + 1)`. If any replicate fails an estimation check, the
-p-value is withheld rather than computed from the remaining replicates.
-The example uses 19 replicates, for which the smallest attainable
-p-value is 0.05; applied analyses should use 99 or more.
+observed statistic is referred to the simulated distribution. Of `B`
+requested data sets, let `V` satisfy the estimation checks and `b` of
+those have a statistic at least as large as the observed one. The
+p-value is `(b + 1) / (V + 1)`, bounded below by `1 / (V + 1)`. Invalid
+replicates are reported; the p-value is withheld when fewer than half
+the requested replicates are valid. The example requests 19 replicates:
+if all are valid, the smallest attainable p-value is 0.05. Applied
+analyses should use 99 or more and inspect the valid count.
 
 ``` r
 

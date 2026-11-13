@@ -27,9 +27,11 @@ starting_values(
   `means` with `variances` or `covariances` for continuous indicators,
   `response_probabilities` for categorical ones. An all-categorical
   model needs no Gaussian block. Other elements are ignored. A missing
-  block raises `latents_bad_start`; a fit with a noise component raises
-  `latents_unsupported_noise`; anything that is not a list raises
-  `latents_bad_argument`.
+  block, or a transition fit from
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) (which
+  takes no `start`), raises `latents_bad_start`; a fit with a noise
+  component raises `latents_unsupported_noise`; anything that is not a
+  list raises `latents_bad_argument`.
 
 - covariance:
 

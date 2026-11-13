@@ -145,14 +145,14 @@ as.data.frame(candidates)
 #> 9     0.839     0.989      0.881           0           0.951           0.961            0.955
 #>   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
 #> 1                NA      TRUE    FALSE                          NA                NA
-#> 2                NA      TRUE    FALSE                          NA                NA
-#> 3                NA      TRUE    FALSE                          NA                NA
+#> 2                NA      TRUE     TRUE                          NA                NA
+#> 3                NA      TRUE     TRUE                          NA                NA
 #> 4                 0      TRUE    FALSE                          NA                NA
-#> 5                 0      TRUE    FALSE                          NA                NA
-#> 6                 0      TRUE    FALSE                          NA                NA
+#> 5                 0      TRUE     TRUE                          NA                NA
+#> 6                 0      TRUE     TRUE                          NA                NA
 #> 7                 0      TRUE    FALSE                          NA                NA
-#> 8                 0      TRUE    FALSE                          NA                NA
-#> 9                 0      TRUE    FALSE                          NA                NA
+#> 8                 0      TRUE     TRUE                          NA                NA
+#> 9                 0      TRUE     TRUE                          NA                NA
 #>   n_best_replicated warnings error
 #> 1                 5           <NA>
 #> 2                 2           <NA>
@@ -317,9 +317,9 @@ get_results(lca, "profile_probabilities")
 ```
 
 The low-media profile holds 73.7% of prompts and the media-heavy profile
-26.3%. The student classes differ sharply in their mix. In class 1,
+26.3%. The student classes differ sharply in their mix. In class 2,
 which holds 58.4% of students, 0.974 of prompts fall in the low-media
-profile. In class 2, with 41.6% of students, the media-heavy profile is
+profile. In class 1, with 41.6% of students, the media-heavy profile is
 the more common, at 0.565. Media-heavy leisure is therefore concentrated
 in a minority of students, and for them it is the usual pattern, while
 most students almost never report it.
@@ -333,8 +333,8 @@ plot_prevalence(lca)
 
 ![](case-esm-lca_files/figure-html/probabilities-plot-1.png)
 
-Class 1 runs close to one on the low-media profile and close to zero on
-the media-heavy one; class 2 divides its prompts more evenly, with the
+Class 2 runs close to one on the low-media profile and close to zero on
+the media-heavy one; class 1 divides its prompts more evenly, with the
 larger share on the media-heavy profile.
 
 ## Classification certainty
@@ -394,16 +394,16 @@ get_results(lca, "residuals") |> head(10)
 #> 9  profile_2 time_with_friends       reading categorical   0.0727 9.48e-17   0.0727        1904
 #> 10 profile_2           reading part_time_job categorical   0.0683 1.30e-16   0.0683        1904
 #>    statistic df  p_value p_adjusted
-#> 1      19.75  1 8.82e-06   8.82e-06
-#> 2      13.37  1 2.55e-04   2.55e-04
-#> 3      12.07  1 5.12e-04   5.12e-04
-#> 4       7.67  1 5.61e-03   5.61e-03
-#> 5       7.41  1 6.49e-03   6.49e-03
-#> 6      16.83  1 4.08e-05   4.08e-05
-#> 7      16.27  1 5.48e-05   5.48e-05
-#> 8      14.25  1 1.60e-04   1.60e-04
-#> 9      10.07  1 1.51e-03   1.51e-03
-#> 10      8.87  1 2.90e-03   2.90e-03
+#> 1      19.75  1 8.82e-06   0.000494
+#> 2      13.37  1 2.55e-04   0.002860
+#> 3      12.07  1 5.12e-04   0.004776
+#> 4       7.67  1 5.61e-03   0.028551
+#> 5       7.41  1 6.49e-03   0.030292
+#> 6      16.83  1 4.08e-05   0.001023
+#> 7      16.27  1 5.48e-05   0.001023
+#> 8      14.25  1 1.60e-04   0.002244
+#> 9      10.07  1 1.51e-03   0.012052
+#> 10      8.87  1 2.90e-03   0.020314
 ```
 
 The largest residual is 0.171, between sports and walking in the

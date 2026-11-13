@@ -423,7 +423,7 @@ starting values used in this analysis.
 
 ## Profile means as a plot
 
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/plot_profiles.md)
 displays the estimated profile means across the five activity
 indicators. Because the indicators were standardized within course, the
 vertical axis is expressed in standard deviations from the corresponding

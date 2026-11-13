@@ -71,10 +71,11 @@ Tables are accessed with
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
 using `what = "checks"`, `"entropy"`, `"classification"`,
 `"average_posteriors"`, `"residuals"`, `"replication"` or `"all"`. A
-model family without bivariate residuals leaves that table out of
-`"all"`, and asking for it by name raises `latents_no_group_classes`; a
-fit with a noise component has none either, and raises
-`latents_unsupported_noise`.
+model family without bivariate residuals (a mixture regression, growth
+mixture, additive or cross-level model, or a general transition fit) has
+no such table: it is left out of `"all"`, and asking for it by name
+raises `latents_bad_argument`. A fit with a noise component has none
+either, and asking for it raises `latents_unsupported_noise`.
 
 [`print()`](https://rdrr.io/r/base/print.html) groups checks by domain,
 highlights those requiring review and returns the object invisibly. For
@@ -89,26 +90,24 @@ returns the diagnostics object.
 ## Details
 
 - **Estimation**: convergence of the selected solution; replication of
-  the best log likelihood across completed starts (Masyn, 2013); failed
-  or unfinished starts; and estimates at parameter bounds. Preliminary
-  screening starts are reported separately from full optimisation runs.
+  the best log likelihood across completed starts; failed or unfinished
+  starts; and estimates at parameter bounds. Preliminary screening
+  starts are reported separately from full optimisation runs.
 
 - **Class size**, at each level the fit classifies: the smallest class,
   the largest gap between modal and model-estimated class proportions,
   and classes to which no unit is assigned.
 
-- **Classification**: relative entropy (Ramaswamy et al., 1993), which
-  describes classification precision and is not a criterion for the
-  number of classes (Clark & Muthen, 2009); the lowest average posterior
-  probability of the assigned class and the lowest odds of correct
-  classification (Nagin, 2005).
+- **Classification**: relative entropy, which describes classification
+  precision and is not a criterion for the number of classes; the lowest
+  average posterior probability of the assigned class and the lowest
+  odds of correct classification.
 
 - **Bivariate residuals**: discrepancies between observed and
   model-implied indicator associations, reported under the
   `"Local independence"` domain. Where tests are available, pairs are
-  flagged at 0.05 after Benjamini-Hochberg adjustment (Vermunt &
-  Magidson, 2005). Residuals without an available test are reported
-  descriptively.
+  flagged at 0.05 after Benjamini-Hochberg adjustment. Residuals without
+  an available test are reported descriptively.
 
 - **Information**: log likelihood, number of parameters and BIC, for
   comparison with other fitted models using
@@ -142,27 +141,6 @@ poorly separated classes, while sharply separated classes may arise
 under an inadequate measurement specification. The diagnostics should
 therefore be interpreted jointly, with attention to the study design and
 the substantive meaning of the estimated classes.
-
-## References
-
-Clark, S. L., & Muthen, B. (2009). Relating latent class analysis
-results to variables not included in the analysis. Unpublished
-manuscript.
-
-Masyn, K. E. (2013). Latent class analysis and finite mixture modeling.
-In T. D. Little (Ed.), *The Oxford handbook of quantitative methods*
-(Vol. 2, pp. 551-611). Oxford University Press.
-
-Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
-University Press.
-
-Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T.
-(1993). An empirical pooling approach for estimating marketing mix
-elasticities with PIMS data. *Marketing Science*, 12(1), 103-124.
-[doi:10.1287/mksc.12.1.103](https://doi.org/10.1287/mksc.12.1.103)
-
-Vermunt, J. K., & Magidson, J. (2005). *Latent GOLD 4.0 user's guide*.
-Statistical Innovations.
 
 ## See also
 
@@ -210,7 +188,7 @@ quality
 #> 
 #> Local independence
 #>   check  pairs dependent within a class                      9 of 20 tested pairs     BH-adjusted p < 0.05
-#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
+#>          smallest adjusted p: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
 #> 
 #> Information
 #>   info   log likelihood, parameters, BIC                     -8439.82, 23, 16986.89   
@@ -255,25 +233,25 @@ get_results(quality, "checks")
 #> 16  5.989189e+01           59.9 (class 2)                        info
 #> 17  9.000000e+00     9 of 20 tested pairs BH-adjusted p < 0.05  check
 #> 18 -8.439816e+03   -8439.82, 23, 16986.89                        info
-#>                                                                            detail
-#> 1                                                                                
-#> 2                                                                                
-#> 3                                                                                
-#> 4                                                                                
-#> 5                                                                                
-#> 6                                                                                
-#> 7                                                                                
-#> 8                                                                                
-#> 9                                                                                
-#> 10                                                                               
-#> 11                                                                               
-#> 12                                                                               
-#> 13                                                                               
-#> 14                                                                               
-#> 15                                                                               
-#> 16                                                                               
-#> 17 largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
-#> 18                         meaningful only against other models: compare_models()
+#>                                                                                        detail
+#> 1                                                                                            
+#> 2                                                                                            
+#> 3                                                                                            
+#> 4                                                                                            
+#> 5                                                                                            
+#> 6                                                                                            
+#> 7                                                                                            
+#> 8                                                                                            
+#> 9                                                                                            
+#> 10                                                                                           
+#> 11                                                                                           
+#> 12                                                                                           
+#> 13                                                                                           
+#> 14                                                                                           
+#> 15                                                                                           
+#> 16                                                                                           
+#> 17 smallest adjusted p: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
+#> 18                                     meaningful only against other models: compare_models()
 #>                              reference
 #> 1                                     
 #> 2                         Masyn (2013)
@@ -317,14 +295,14 @@ get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
 #> 9  overall    lectures  forum_post gaussian  0.017095238        0  0.017095238
 #> 10 overall    lectures  forum_read gaussian  0.001925386        0  0.001925386
 #>    effective_n   statistic df      p_value   p_adjusted
-#> 1         1422  8.26195524 NA 1.433054e-16 1.433054e-16
-#> 2         1422  7.33689602 NA 2.186043e-13 2.186043e-13
-#> 3         1422  6.88504161 NA 5.777064e-12 5.777064e-12
-#> 4         1422  6.55944223 NA 5.400941e-11 5.400941e-11
-#> 5         1422  2.36319122 NA 1.811832e-02 1.811832e-02
-#> 6         1422 -0.94610998 NA 3.440925e-01 3.440925e-01
-#> 7         1422 -0.80091906 NA 4.231785e-01 4.231785e-01
-#> 8         1422  0.74826444 NA 4.543007e-01 4.543007e-01
-#> 9         1422  0.64403379 NA 5.195535e-01 5.195535e-01
+#> 1         1422  8.26195524 NA 1.433054e-16 1.433054e-15
+#> 2         1422  7.33689602 NA 2.186043e-13 1.093022e-12
+#> 3         1422  6.88504161 NA 5.777064e-12 1.925688e-11
+#> 4         1422  6.55944223 NA 5.400941e-11 1.350235e-10
+#> 5         1422  2.36319122 NA 1.811832e-02 3.623664e-02
+#> 6         1422 -0.94610998 NA 3.440925e-01 5.678758e-01
+#> 7         1422 -0.80091906 NA 4.231785e-01 5.678758e-01
+#> 8         1422  0.74826444 NA 4.543007e-01 5.678758e-01
+#> 9         1422  0.64403379 NA 5.195535e-01 5.772817e-01
 #> 10        1422  0.07252866 NA 9.421812e-01 9.421812e-01
 ```

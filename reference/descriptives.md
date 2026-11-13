@@ -111,18 +111,15 @@ classification uncertainty. They describe the observations assigned to
 each class and should be distinguished from the model's estimated
 class-specific parameters. Rows excluded from classification are
 retained in a separate stratum with a missing class label, following the
-fit's `drop_empty` setting.
+fit's `drop_empty` setting. These are unweighted descriptions of the
+recorded rows, including rows with sampling weight zero. Describing a
+weighted fit warns explicitly; the ICC is the unweighted one-way ANOVA
+quantity, not a survey-weighted estimate.
 
 An intraclass correlation (ICC) near zero indicates little between-group
 variation in that variable's mean. It does not rule out group classes
 that differ in other variables, in profile prevalence, or in other
 features of the distributions.
-
-## References
-
-Bliese, P. D. (2000). Within-group agreement, non-independence, and
-reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
-theory, research, and methods in organizations*.
 
 ## See also
 

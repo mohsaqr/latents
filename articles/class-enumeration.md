@@ -544,8 +544,9 @@ Celeux and Govaert, 2000) by profiles2_groups3 and the approximate
 weight of evidence (AWE; Banfield and Raftery, 1993) by
 profiles2_groups2. With enrolments as the units, BIC is minimized by
 profiles3_groups3. The Akaike information criterion (AIC; Akaike, 1974)
-is minimized by profiles6_groups4, the largest candidate, because its
-weak penalty leaves it decreasing over the entire range. ICL and AWE
+is minimized by profiles6_groups4, the largest candidate in this grid.
+Its per-parameter penalty is smaller than BIC’s here, but its values
+need not decrease at every increment in class count. ICL and AWE
 penalize classification uncertainty in addition to the number of
 parameters and therefore favour fewer, better separated classes.
 
@@ -1423,16 +1424,16 @@ summary(chosen)
 #>  profile_4      browse  attendance gaussian  0.08654        0  0.08654       331.1     1.571 NA
 #>  profile_2    lectures  attendance gaussian  0.08412        0  0.08412       201.5     1.188 NA
 #>  p_value p_adjusted
-#>  0.10265    0.10265
-#>  0.02323    0.02323
-#>  0.04594    0.04594
-#>  0.16491    0.16491
-#>  0.03283    0.03283
-#>  0.03640    0.03640
-#>  0.18813    0.18813
-#>  0.07995    0.07995
-#>  0.11609    0.11609
-#>  0.23486    0.23486
+#>  0.10265     0.5375
+#>  0.02323     0.4594
+#>  0.04594     0.4594
+#>  0.16491     0.5375
+#>  0.03283     0.4594
+#>  0.03640     0.4594
+#>  0.18813     0.5375
+#>  0.07995     0.5375
+#>  0.11609     0.5375
+#>  0.23486     0.5537
 #>    ... 30 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
@@ -1507,7 +1508,7 @@ diagnostics(chosen)
 ![](class-enumeration_files/figure-html/chosen-diagnostics-1.png)![](class-enumeration_files/figure-html/chosen-diagnostics-2.png)![](class-enumeration_files/figure-html/chosen-diagnostics-3.png)![](class-enumeration_files/figure-html/chosen-diagnostics-4.png)![](class-enumeration_files/figure-html/chosen-diagnostics-5.png)![](class-enumeration_files/figure-html/chosen-diagnostics-6.png)![](class-enumeration_files/figure-html/chosen-diagnostics-7.png)![](class-enumeration_files/figure-html/chosen-diagnostics-8.png)
 
     #> Diagnostics: Two-level latent profile analysis, 4 profiles, 3 group classes
-    #> 1 check needs attention: pairs dependent within a class
+    #> No check needs attention.
     #> 
     #> Estimation
     #>   ok     best start converged                                yes                      
@@ -1532,8 +1533,8 @@ diagnostics(chosen)
     #>   info   lowest odds of correct classification  groups       14.6 (class 3)           
     #> 
     #> Local independence
-    #>   check  pairs dependent within a class                      4 of 40 tested pairs     BH-adjusted p < 0.05
-    #>          largest: browse x forum_post in profile_1, residual -0.102, adjusted p 0.023
+    #>   ok     pairs dependent within a class                      0 of 40 tested pairs     BH-adjusted p < 0.05
+    #>          smallest adjusted p: browse x forum_post in profile_1, residual -0.102, adjusted p 0.46
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -8307.15, 51, 16852.14   
@@ -1550,8 +1551,10 @@ plot_diagnostics(chosen)
 With two or more group classes, the four views for the enrolments in
 their profiles are followed by the same views for the students in their
 group classes. Because a student is classified from all of their
-enrolments jointly, the group classes are typically far better separated
-than the profiles. A single view is selected with `what`, for example
+enrolments jointly, the two levels use different amounts of information.
+This does not guarantee better separation at the group level: inspect
+each level’s entropy and average posterior probabilities. A single view
+is selected with `what`, for example
 `plot_diagnostics(chosen, what = "group_posteriors")`.
 
 Each enrolment with its modal profile, the group class of its student
@@ -1606,16 +1609,17 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 
 The bootstrap likelihood ratio test (McLachlan, 1987) compares two
 candidates that differ by one class. Data sets are simulated from the
-smaller candidate and both candidates are re-estimated on each. With `B`
-simulated data sets, of which `b` yield a likelihood ratio at least as
-large as the observed one, the p-value is `(b + 1) / (B + 1)` (Davison
-and Hinkley, 1997); the additional count includes the observed statistic
-and precludes a p-value of zero from a finite simulation. The p-value is
-withheld unless every replicate satisfies the estimation checks. The
-test below compares three and four profiles with three group classes.
-Nineteen simulated data sets keep the example brief; the smallest
-attainable p-value is then 1/20 = 0.05, and applied analyses should use
-at least 99.
+smaller candidate and both candidates are re-estimated on each. Of `B`
+requested data sets, let `V` pass the estimation checks and `b` of those
+yield a likelihood ratio at least as large as the observed one. The
+p-value is `(b + 1) / (V + 1)` (Davison and Hinkley, 1997); the
+additional count includes the observed statistic and precludes a p-value
+of zero. Invalid replicates are reported, and the p-value is withheld
+when fewer than half the requested replicates are valid. The test below
+compares three and four profiles with three group classes. Nineteen data
+sets keep the example brief; if all pass, the smallest attainable
+p-value is 1/20 = 0.05. Applied analyses should use at least 99 and
+inspect the valid count.
 
 ``` r
 
@@ -1671,11 +1675,11 @@ lca_models
 #>           15612          18012           0.651         0.900     0.635     0.883      0.793
 #>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
 #>            1              NA              NA               NA                NA      TRUE    FALSE
-#>            1              NA              NA               NA                NA      TRUE    FALSE
-#>            3              NA              NA               NA                NA      TRUE    FALSE
+#>            1              NA              NA               NA                NA      TRUE     TRUE
+#>            3              NA              NA               NA                NA      TRUE     TRUE
 #>            0           0.960           0.980            0.970                 0      TRUE    FALSE
-#>            1           0.974           0.984            0.979                 0      TRUE    FALSE
-#>            1           0.966           0.976            0.971                 0      TRUE    FALSE
+#>            1           0.974           0.984            0.979                 0      TRUE     TRUE
+#>            1           0.966           0.976            0.971                 0      TRUE     TRUE
 #>  n_best_replicated
 #>                  5
 #>                  2
@@ -1850,6 +1854,10 @@ transition_models <- enumerate_classes(course_engagement, activity, "student",
                                        time = "sequence", n_profiles = 2:6,
                                        n_group_classes = 1, n_starts = 3,
                                        max_iter = 2000, seed = 1)
+#> Warning: An initial, transition or group-class probability is at its numerical boundary; Wald
+#> inference is withheld.
+#> Warning: An initial, transition or group-class probability is at its numerical boundary; Wald
+#> inference is withheld.
 transition_models
 #> Transition-model enumeration: 5 candidates (LTA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy
@@ -1862,8 +1870,8 @@ transition_models
 #>       TRUE    FALSE
 #>       TRUE    FALSE
 #>       TRUE    FALSE
-#>       TRUE    FALSE
-#>       TRUE    FALSE
+#>       TRUE     TRUE
+#>       TRUE     TRUE
 #> Pick one by its name: get_candidate(x, "<candidate>").
 compare_models(transition_models)
 #> Model comparison

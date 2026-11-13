@@ -1,25 +1,29 @@
 # Estimate group classes with fixed individual profile definitions
 
-`fit_staged()` estimates a multilevel mixture model in which observed
-groups are distinguished by their composition of individual profiles. It
-separates the estimation of profile definitions from the estimation of
-group classes, allowing between-group differences to be studied while
-retaining a common measurement model.
+`fit_staged()` fits a two-level profile model in two stages. The first
+stage estimates the profiles with one group class; the second holds
+their measurement parameters (means and covariances of continuous
+indicators, response probabilities of categorical ones) fixed and
+estimates the profile probabilities within each group class and the
+group-class proportions. The profiles therefore keep one definition
+while the group classes differ in composition. A fitted measurement
+model can be supplied instead of the first stage, to reuse established
+profiles. The result holds the second-stage estimates and keeps the
+first-stage fit.
 
-The first stage estimates the individual profiles using a model with one
-group class. These profiles are defined by their indicator
-distributions, including means and covariance parameters for continuous
-indicators and response probabilities for categorical indicators. The
-second stage holds these measurement parameters fixed and estimates the
-profile probabilities within each group class, together with the
-proportions of the group classes. Group classes therefore differ in
-their profile composition while the profiles retain the same measurement
-definitions.
-
-A compatible fitted measurement model may also be supplied, allowing
-established profile definitions to be reused. The returned model
-contains the second-stage estimates and retains the first-stage fit, so
-both stages can be inspected.
+Information criteria and likelihood-ratio comparisons condition on the
+held measurement. Staged fits that hold the same measurement are
+compared on `n_parameters`. A comparison with a jointly estimated fit
+uses `n_parameters_with_measurement` and stays descriptive, since staged
+estimates do not maximise the joint likelihood. Wald standard errors
+omit the uncertainty of the first stage.
+`parameter_inference(fit, method = "bootstrap")` resamples groups and
+re-estimates both stages (a supplied same-sample `measurement` model
+with its own options), so that uncertainty is propagated and the
+measurement parameters get intervals too. A measurement fitted to
+different observations, or with unknown provenance, is refused by this
+bootstrap; resampling the current data cannot represent uncertainty from
+an external measurement sample.
 
 ## Usage
 
@@ -51,190 +55,131 @@ fit_staged(
 
 - data:
 
-  A data frame containing the indicators and the group identifier.
+  A data frame with the indicators and the group identifier.
 
 - vars:
 
-  Unique character vector of indicator column names. Indicators named in
-  `categorical` use categorical response distributions; the remaining
-  indicators are continuous and use Gaussian distributions.
+  Names of the indicator columns. Those not named in `categorical` are
+  continuous.
 
 - id:
 
-  Name of the observed group identifier column. Character, factor and
-  numeric identifiers are supported; missing identifiers are not.
-  Required; `id = NULL` is not accepted.
+  Name of the group identifier column (character, factor or numeric,
+  without missing values). Required.
 
 - n_profiles:
 
-  Positive integer number of individual profiles.
+  Number of individual profiles.
 
 - n_group_classes:
 
-  Number of latent group classes in the second stage. Must be at least
-  two; the default is 2.
+  Number of group classes in the second stage, at least two (default 2).
 
 - measurement:
 
-  An optional fitted `multilpa` model supplying the first-stage
-  measurement estimates. With `NULL` (the default), the first stage is
-  estimated from `data`. A supplied model must have one group class and
-  matching profiles, indicators and measurement options. Models with
-  `weights`, `centering`, `scaling`, `ordinal` or `count` indicators,
-  `direct_effects`, or `local_dependence` between continuous indicators
-  are not supported. Supported covariance structures are EEI, VVI, EEE
-  and VVV. An incompatible measurement model raises `latents_bad_stage`.
+  `NULL` (default) estimates the first stage from `data`; otherwise a
+  fitted `multilpa` model supplying the measurement estimates, with one
+  group class and the same profiles, indicators and measurement options.
+  Its covariance structure must be EEI, VVI, EEE or VVV, and it must not
+  have `weights`, `centering`, `scaling`, `ordinal` or `count`
+  indicators, `direct_effects`, `local_dependence` or `noise`.
 
 - variance_model:
 
-  `"varying"` (the default; profile-specific variances or covariance
-  matrices) or `"equal"` (shared across profiles).
+  `"varying"` (default): each profile has its own variances or
+  covariance matrix; `"equal"`: one shared by all profiles.
 
 - n_starts:
 
-  Number of EM starts used in each estimated stage. When `measurement`
-  is supplied, only the second stage is estimated.
+  Number of EM starts in each estimated stage (default 10). With
+  `measurement`, only the second stage is estimated.
 
 - max_iter:
 
-  Nonnegative integer maximum number of EM updates per start in each
-  estimated stage (default 1000). Zero evaluates initial values without
-  performing EM updates.
+  Maximum EM updates per start in each stage (default 1000); zero
+  evaluates the starting values without updating them.
 
 - tol:
 
-  Positive convergence tolerance (default `1e-8`). EM has converged when
-  one step (or SQUAREM cycle) changes the log likelihood by no more than
-  `tol` times the number of observed indicator values (each non-missing
-  cell in a row of positive weight, with a minimum count of one). The
-  tolerance is therefore expressed per observed indicator value.
+  Convergence tolerance (default `1e-8`), per observed indicator value:
+  EM stops when a step changes the log likelihood by no more than `tol`
+  times the number of observed indicator values.
 
 - min_variance:
 
-  Lower bound on each continuous-indicator variance, or on each
-  covariance eigenvalue under full covariance. `NULL` (the default) uses
-  `1e-6` times the smallest observed sample variance of the continuous
-  indicators. A numeric value specifies an absolute bound in squared
-  indicator units. Estimates at the bound raise a warning. In the second
-  stage, measurement parameters are held at their first-stage values.
+  Lower bound on every variance (on every covariance eigenvalue under
+  full covariance), as in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  applied in both stages; a supplied `measurement` must satisfy it.
 
 - seed:
 
-  Optional random seed: any integer
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts, including
-  negative integers. When supplied, the caller's random-number state is
-  restored on exit.
+  Optional integer seed. The caller's random-number state is restored on
+  exit.
 
 - missing:
 
-  `"error"` (the default) rejects missing indicators; `"fiml"` maximises
-  the observed-data likelihood under an ignorable missingness mechanism
-  (MAR), integrating over missing indicators.
+  `"error"` (default) rejects missing indicator values; `"fiml"`
+  maximises the observed-data likelihood under MAR, integrating the
+  missing values out.
 
 - covariance_model:
 
-  `"diagonal"` (the default) assumes conditional independence; `"full"`
-  estimates within-profile residual covariances.
+  `"diagonal"` (default): the indicators are independent within a
+  profile; `"full"`: within-profile covariances are estimated.
 
 - categorical:
 
-  Character vector naming indicators to treat as categorical. Each is
-  modelled by unrestricted, profile-specific response probabilities over
-  its observed categories (the latent class measurement model); binary,
-  ordinal and unordered indicators are handled by the same
-  parameterization. Numeric, integer, logical, character and factor
-  columns are accepted. Indicators not named here stay Gaussian, so
-  naming a subset fits a mixed-mode model.
+  Indicators modelled by profile-specific response probabilities over
+  their observed categories, the latent class measurement model. Binary,
+  ordered and unordered indicators share this parameterization. Naming a
+  subset of `vars` fits a mixed-mode model.
 
 - min_probability:
 
-  Positive lower bound on every categorical response probability
-  (default `1e-10`), constraining the maximum-likelihood problem as
-  `min_variance` does for Gaussian indicators.
+  Lower bound on every categorical response probability (default
+  `1e-10`).
 
 - time:
 
-  Optional name of a column giving each observation's position within
-  its group, such as a wave, occasion or course number. It is not used
-  in estimation; it is stored for `get_results(x, "sequences")`,
-  `get_results(x, "sequence_summary")` and `plot(what = "sequences")`.
-  Values must be complete and unique within each group, and are ordered
-  as [`sort()`](https://rdrr.io/r/base/sort.html) orders them: numbers
-  numerically, a factor by its levels, and character strings
-  alphabetically. Numbers stored as text whose alphabetical order is not
-  their numeric order (`"2"`, `"10"`), and numbered labels sharing their
-  text around the number whose alphabetical order is not the numbers'
-  (`"T2"`, `"T10"`; `"week 2"`, `"week 10"`), raise `latents_bad_time`
-  (also `latents_bad_data`); give the order with `factor(levels = )` or
-  zero-pad the numbers. Zero-padded numbers and ISO dates are accepted.
+  Optional column giving each row's occasion within its group, used only
+  to order the rows for `get_results(x, "sequences")`,
+  `"sequence_summary"` and
+  [`plot_sequences()`](https://pak.dynasite.org/latents/reference/plot_sequences.md).
+  Values must be unique within a group and sort in their intended order
+  (numbers numerically, factors by level, text alphabetically, so
+  `"T2"`, `"T10"` is refused: use a factor or zero-pad).
 
 - search:
 
-  Initialisation strategy for each estimated stage: `NULL` (the
-  default), `"kmeans"` or `"emEM"`. The default is `"emEM"` for models
-  containing continuous indicators with a shared covariance matrix (EEI
-  or EEE), and `"kmeans"` otherwise. `"kmeans"` uses clustering-based
-  starts; `"emEM"` screens a pool of starts with short EM runs before
-  completing `n_starts` selected searches. The second stage uses the
-  first-stage measurement estimates as supplied starting values and
-  holds them fixed. See
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  for the screening and start-selection procedure.
+  `NULL` (default), `"kmeans"` or `"emEM"` for each estimated stage, as
+  under
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
+  the default is `"emEM"` for continuous indicators with a shared
+  covariance matrix (EEI or EEE) and `"kmeans"` otherwise. The second
+  stage starts from the first-stage measurement and holds it.
 
 - n_screen:
 
-  Number of starts screened under `search = "emEM"`, at least
-  `n_starts`. The default is five times `n_starts`. Screening is skipped
-  in the second stage when `n_starts = 1`, because a starting
-  measurement solution is supplied. A value with `search = "kmeans"`, or
-  one below `n_starts`, raises `latents_bad_argument`.
+  For `search = "emEM"` only, the size of the screened pool (default
+  five times `n_starts`, at least `n_starts`). The second stage skips
+  screening when `n_starts = 1`.
 
 ## Value
 
-A second-stage `multilpa` object with measurement parameters equal to
-the first-stage estimates. The `fixed` component identifies the
-parameter blocks held constant. `n_parameters` counts the parameters
-estimated in the second stage; `n_parameters_with_measurement` also
-includes the first-stage measurement parameters.
-`get_results(fit, what = "stages")` returns a two-row summary of the
-estimation stages. Standard result-extraction and diagnostic methods for
-`multilpa` objects are available.
-
-## Details
-
-Information criteria and likelihood-ratio comparisons condition on the
-fixed measurement model.
-
-With `parameter_inference(fit, method = "bootstrap")`, groups are
-resampled and both stages are re-estimated. This procedure propagates
-first-stage estimation uncertainty and reports standard errors and
-intervals for the measurement parameters as well as the second-stage
-parameters. A supplied `measurement` model is re-estimated in each
-resample using its fitting options.
-
-For staged models with the same fixed measurement specification, use
-`n_parameters` when comparing conditional information criteria.
-Comparisons with jointly estimated models can include the measurement
-parameters through `n_parameters_with_measurement`, but remain
-descriptive because the staged estimates do not generally maximize the
-joint likelihood.
-
-## Interpretation
-
-The second-stage estimates are conditional on the fixed measurement
-model. Default Wald standard errors omit uncertainty from estimating
-that model; bootstrap inference can propagate this uncertainty by
-resampling groups and re-estimating both stages. Staged estimates do not
-generally maximise the joint likelihood, so comparisons with jointly
-estimated models require care.
+A second-stage `multilpa` object whose measurement parameters equal the
+first-stage estimates; `fixed` names the held blocks, `n_parameters`
+counts the second-stage parameters and `n_parameters_with_measurement`
+adds the measurement ones. `get_results(fit, what = "stages")`
+summarises the two stages in two rows. Every table, plot and diagnostic
+of a `multilpa` fit applies.
 
 ## See also
 
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-for selective constraints through `fixed`;
-[`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md)
-with `what = "measurement"` to extract measurement parameters for a
-subsequent fit.
+for holding chosen blocks through `fixed`;
+`starting_values(fit, what = "measurement")` to extract measurement
+parameters for a later fit.
 
 ## Examples
 

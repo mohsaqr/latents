@@ -98,7 +98,7 @@ and
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-[`plot_views()`](https://pak.dynasite.org/latents/reference/latents-plots.md).
+[`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md).
 
 ## Examples
 
@@ -304,16 +304,16 @@ report(fit, plots = FALSE)
 #>  profile_2      browse  forum_read gaussian  0.10925        0  0.10925
 #>  profile_2  forum_read  forum_post gaussian  0.06676        0  0.06676
 #>  effective_n statistic df   p_value p_adjusted
-#>        834.1     6.871 NA 6.374e-12  6.374e-12
-#>        587.9     5.630 NA 1.799e-08  1.799e-08
-#>        834.1     6.109 NA 1.001e-09  1.001e-09
-#>        834.1     5.939 NA 2.867e-09  2.867e-09
-#>        587.9     4.714 NA 2.429e-06  2.429e-06
-#>        834.1     5.042 NA 4.619e-07  4.619e-07
-#>        587.9     2.921 NA 3.493e-03  3.493e-03
-#>        587.9     2.888 NA 3.883e-03  3.883e-03
-#>        587.9     2.653 NA 7.983e-03  7.983e-03
-#>        587.9     1.617 NA 1.059e-01  1.059e-01
+#>        834.1     6.871 NA 6.374e-12  1.275e-10
+#>        587.9     5.630 NA 1.799e-08  8.994e-08
+#>        834.1     6.109 NA 1.001e-09  1.001e-08
+#>        834.1     5.939 NA 2.867e-09  1.912e-08
+#>        587.9     4.714 NA 2.429e-06  8.098e-06
+#>        834.1     5.042 NA 4.619e-07  1.847e-06
+#>        587.9     2.921 NA 3.493e-03  9.708e-03
+#>        587.9     2.888 NA 3.883e-03  9.708e-03
+#>        587.9     2.653 NA 7.983e-03  1.774e-02
+#>        587.9     1.617 NA 1.059e-01  2.118e-01
 #>    ... 10 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
@@ -404,7 +404,7 @@ report(fit, plots = FALSE)
 #> 
 #> Local independence
 #>   check  pairs dependent within a class                      9 of 20 tested pairs     BH-adjusted p < 0.05
-#>          largest: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
+#>          smallest adjusted p: lectures x attendance in profile_1, residual 0.234, adjusted p <1e-04
 #> 
 #> Information
 #>   info   log likelihood, parameters, BIC                     -8439.82, 23, 16986.89   

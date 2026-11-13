@@ -608,15 +608,15 @@ get_results(fit, "residuals", by = "overall")
 #> 9  overall    lectures  forum_post gaussian  0.01710        0  0.01710        1422    0.6440
 #> 10 overall    lectures  forum_read gaussian  0.00193        0  0.00193        1422    0.0725
 #>    df  p_value p_adjusted
-#> 1  NA 1.43e-16   1.43e-16
-#> 2  NA 2.19e-13   2.19e-13
-#> 3  NA 5.78e-12   5.78e-12
-#> 4  NA 5.40e-11   5.40e-11
-#> 5  NA 1.81e-02   1.81e-02
-#> 6  NA 3.44e-01   3.44e-01
-#> 7  NA 4.23e-01   4.23e-01
-#> 8  NA 4.54e-01   4.54e-01
-#> 9  NA 5.20e-01   5.20e-01
+#> 1  NA 1.43e-16   1.43e-15
+#> 2  NA 2.19e-13   1.09e-12
+#> 3  NA 5.78e-12   1.93e-11
+#> 4  NA 5.40e-11   1.35e-10
+#> 5  NA 1.81e-02   3.62e-02
+#> 6  NA 3.44e-01   5.68e-01
+#> 7  NA 4.23e-01   5.68e-01
+#> 8  NA 4.54e-01   5.68e-01
+#> 9  NA 5.20e-01   5.77e-01
 #> 10 NA 9.42e-01   9.42e-01
 ```
 
@@ -832,10 +832,12 @@ Both models must be fitted by maximum likelihood to the same data. FIML
 fits are supported by preserving the missingness pattern; this bootstrap
 assumes missingness independent of indicators and latent classes
 conditional on fixed covariates, and is not generally calibrated under
-indicator-dependent MAR. The package withholds the p-value if any
-replicate fails validation. For membership-covariate replicates,
-likelihood convergence is sufficient even when separated logits continue
-to drift; this is recorded in `logits_settled`.
+indicator-dependent MAR. The package reports invalid replicates and
+withholds the p-value when fewer than half the requested replicates pass
+validation; otherwise the p-value uses the valid replicates. For
+membership-covariate replicates, likelihood convergence is sufficient
+even when separated logits continue to drift; this is recorded in
+`logits_settled`.
 
 ## Parameter uncertainty
 
@@ -1110,15 +1112,24 @@ get_results(moves, "initial")
 #> 3           2       1       0.816       0.78                   0.648
 #> 4           2       2       0.184       0.22                   0.648
 get_results(moves, "transitions")
-#>   group_class from to probability expected_count stable estimated group_class_probability
-#> 1           1    1  1      0.7420           80.1   TRUE      TRUE                   0.352
-#> 2           1    1  2      0.2580           27.9  FALSE      TRUE                   0.352
-#> 3           1    2  1      0.0692           24.6  FALSE      TRUE                   0.352
-#> 4           1    2  2      0.9308          330.2   TRUE      TRUE                   0.352
-#> 5           2    1  1      0.8778          586.8   TRUE      TRUE                   0.648
-#> 6           2    1  2      0.1222           81.7  FALSE      TRUE                   0.648
-#> 7           2    2  1      0.4130           76.3  FALSE      TRUE                   0.648
-#> 8           2    2  2      0.5870          108.4   TRUE      TRUE                   0.648
+#>   group_class from to probability expected_count origin_expected_count supported stable
+#> 1           1    1  1      0.7420           80.1                   108      TRUE   TRUE
+#> 2           1    1  2      0.2580           27.9                   108      TRUE  FALSE
+#> 3           1    2  1      0.0692           24.6                   355      TRUE  FALSE
+#> 4           1    2  2      0.9308          330.2                   355      TRUE   TRUE
+#> 5           2    1  1      0.8778          586.8                   668      TRUE   TRUE
+#> 6           2    1  2      0.1222           81.7                   668      TRUE  FALSE
+#> 7           2    2  1      0.4130           76.3                   185      TRUE  FALSE
+#> 8           2    2  2      0.5870          108.4                   185      TRUE   TRUE
+#>   estimated group_class_probability
+#> 1      TRUE                   0.352
+#> 2      TRUE                   0.352
+#> 3      TRUE                   0.352
+#> 4      TRUE                   0.352
+#> 5      TRUE                   0.648
+#> 6      TRUE                   0.648
+#> 7      TRUE                   0.648
+#> 8      TRUE                   0.648
 plot_transitions(moves)
 ```
 

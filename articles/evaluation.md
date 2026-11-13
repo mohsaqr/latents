@@ -127,7 +127,7 @@ get_results(fit, "classification")
 ```
 
 To see the uncertainty, we call
-[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
 with `what = "entropy"` for the per-case uncertainty within each
 profile, and with `what = "avepp"` for the average posterior of each
 assigned class across all classes.
@@ -170,15 +170,15 @@ get_results(fit, "residuals", by = "overall")
 #> 9  overall    lectures  forum_post gaussian  0.01710        0  0.01710        1422    0.6440 NA
 #> 10 overall    lectures  forum_read gaussian  0.00193        0  0.00193        1422    0.0725 NA
 #>     p_value p_adjusted
-#> 1  1.43e-16   1.43e-16
-#> 2  2.19e-13   2.19e-13
-#> 3  5.78e-12   5.78e-12
-#> 4  5.40e-11   5.40e-11
-#> 5  1.81e-02   1.81e-02
-#> 6  3.44e-01   3.44e-01
-#> 7  4.23e-01   4.23e-01
-#> 8  4.54e-01   4.54e-01
-#> 9  5.20e-01   5.20e-01
+#> 1  1.43e-16   1.43e-15
+#> 2  2.19e-13   1.09e-12
+#> 3  5.78e-12   1.93e-11
+#> 4  5.40e-11   1.35e-10
+#> 5  1.81e-02   3.62e-02
+#> 6  3.44e-01   5.68e-01
+#> 7  4.23e-01   5.68e-01
+#> 8  4.54e-01   5.68e-01
+#> 9  5.20e-01   5.77e-01
 #> 10 9.42e-01   9.42e-01
 ```
 
@@ -362,7 +362,7 @@ as.data.frame(candidates)
 #> 30          18746      17679          17894      17292          17292           0.892            NA
 #> 31          17570      17017          17128      16816          16816           0.906         0.942
 #> 32          17931      17095          17264      16792          16792           0.933         0.943
-#> 33          18817      17699          17925      17293          17293           0.805         0.946
+#> 33          18817      17699          17924      17293          17293           0.806         0.946
 #> 34          17593      17015          17132      16805          16805           0.909         0.816
 #> 35          18312      17437          17614      17120          17120           0.828         0.824
 #> 36          18667      17497          17734      17073          17073           0.855         0.837
@@ -396,10 +396,10 @@ as.data.frame(candidates)
 #> 27     0.652     0.971      0.771           3           0.841           0.970            0.920
 #> 28     0.959     0.971      0.965           0              NA              NA               NA
 #> 29     0.665     0.956      0.833           1              NA              NA               NA
-#> 30     0.630     0.958      0.837           1              NA              NA               NA
+#> 30     0.630     0.958      0.838           1              NA              NA               NA
 #> 31     0.973     0.978      0.976           0           0.971           0.993            0.982
 #> 32     0.796     0.976      0.915           1           0.979           0.990            0.985
-#> 33     0.798     0.974      0.856           1           0.962           0.995            0.979
+#> 33     0.797     0.974      0.855           1           0.962           0.995            0.979
 #> 34     0.974     0.978      0.976           0           0.903           0.960            0.923
 #> 35     0.650     0.973      0.841           1           0.878           0.955            0.920
 #> 36     0.649     0.967      0.838           1           0.881           0.976            0.928
@@ -579,7 +579,7 @@ get_results(candidates, "best")
 ```
 
 To draw one criterion across the grid, we call
-[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
 with its name as `what`; `what = "all"` draws every criterion.
 
 ``` r

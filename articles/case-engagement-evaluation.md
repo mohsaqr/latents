@@ -379,10 +379,10 @@ get_results(fit, "residuals") |> head(4)
 #> 3 profile_2    lectures  attendance gaussian 0.113807        0 0.113807     574.963   2.73363 NA
 #> 4 profile_2  forum_post  attendance gaussian 0.105264        0 0.105264     574.963   2.52683 NA
 #>       p_value  p_adjusted
-#> 1 2.96802e-07 2.96802e-07
-#> 2 1.86407e-05 1.86407e-05
-#> 3 6.26406e-03 6.26406e-03
-#> 4 1.15097e-02 1.15097e-02
+#> 1 2.96802e-07 8.90406e-06
+#> 2 1.86407e-05 2.79610e-04
+#> 3 6.26406e-03 6.26406e-02
+#> 4 1.15097e-02 8.63227e-02
 ```
 
 The largest residual correlation is 0.211 between forum reading and
@@ -586,19 +586,19 @@ get_results(full, "residuals") |> head(4)
 #> 3 profile_1    lectures  forum_read gaussian 0.00953707 0.0095362 8.64190e-07     832.514
 #> 4 profile_2  forum_read  forum_post gaussian 0.07712515 0.0771244 7.70121e-07     589.486
 #>     statistic df  p_value p_adjusted
-#> 1 2.59609e-05 NA 0.999979   0.999979
-#> 2 2.65807e-05 NA 0.999979   0.999979
-#> 3 2.48920e-05 NA 0.999980   0.999980
-#> 4 1.87620e-05 NA 0.999985   0.999985
+#> 1 2.59609e-05 NA 0.999979          1
+#> 2 2.65807e-05 NA 0.999979          1
+#> 3 2.48920e-05 NA 0.999980          1
+#> 4 1.87620e-05 NA 0.999985          1
 ```
 
 In the two-profile, three-class full-covariance model, the estimated
 correlation between forum reading and attendance in Profile 1 is 0.226,
-which matches the corresponding observed within-profile correlation to
-six decimal places. As a result, even the largest residual correlations
-are close to zero. This is expected because the full-covariance
-specification estimates these within-profile associations directly
-rather than constraining them to zero.
+closely matching the corresponding observed within-profile correlation.
+As a result, even the largest residual correlations are close to zero.
+This is expected because the full-covariance specification estimates
+these within-profile associations directly rather than constraining them
+to zero.
 
 The close agreement between the observed and expected correlations
 therefore verifies that the fitted covariance structure is reproducing

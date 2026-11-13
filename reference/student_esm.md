@@ -106,13 +106,6 @@ measurement model. `worried` has a pronounced floor effect (49.7% of
 ratings are 1). A Gaussian component representing low-worry prompts may
 therefore reach the `min_variance` bound.
 
-## References
-
-Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment
-on multiple time scales. *Zeitschrift für Erziehungswissenschaft*, 27,
-147–168.
-[doi:10.1007/s11618-023-01182-8](https://doi.org/10.1007/s11618-023-01182-8)
-
 ## See also
 
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)

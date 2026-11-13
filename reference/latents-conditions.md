@@ -115,9 +115,10 @@ without depending on message wording, which may change between versions.
   The requested model is not identified from the data: more profiles
   than distinct observed indicator rows, more group classes than groups,
   or more than one group class with only one profile or only singleton
-  groups. Raised as a warning, and the fit returned, for a model of
-  complete categorical and ordinal indicators with one group class that
-  has more free parameters than free cells of its table (negative
+  groups, or a known structurally unidentified short-panel transition
+  specification. Raised as a warning, and the fit returned, for a model
+  of complete categorical and ordinal indicators with one group class
+  that has more free parameters than free cells of its table (negative
   degrees of freedom); a model with membership covariates is not judged
   by that count.
 
@@ -154,6 +155,11 @@ without depending on message wording, which may change between versions.
   `cores` exceeds the machine's core count; the fit uses the machine's
   count instead.
 
+- `latents_unknown_cores`:
+
+  `cores` is above one but the platform does not report its processor
+  count (for example R in WebAssembly); the fit uses one core.
+
 - `latents_no_converge`:
 
   A fit required by the request did not converge.
@@ -168,7 +174,8 @@ without depending on message wording, which may change between versions.
 
   A variance or response probability is at its bound, a mixing
   probability is zero, or a membership logit coefficient diverges
-  (separation). The usual normal approximation for Wald inference does
+  (separation), including pooled and transition three-step membership
+  regressions. The usual normal approximation for Wald inference does
   not apply at the parameter boundary, so standard errors are
   unavailable under the requested inference method.
 
@@ -201,6 +208,14 @@ without depending on message wording, which may change between versions.
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
   pair whose held measurement blocks differ, are held at different
   values, or are held in only one of the two models.
+
+- `latents_singular_restriction`:
+
+  Two models are nested, but the restriction is singular at the null, so
+  the likelihood-ratio statistic has no chi-square reference: in
+  `compare_models(test = "lrt")`, a spherical covariance structure
+  (EII, VII) within EVE, VVE, EEV or VEV. Also inherits from
+  `latents_bad_nesting`.
 
 - `latents_incomparable_models`:
 
@@ -297,8 +312,9 @@ analysis.
   recording a covariance structure code this version does not know; and
   by `parameter_inference(method = "bootstrap")` for an additive or
   covariate fit, a multilevel growth mixture, or a fit holding a
-  measurement block through `fixed`. Also raised by
-  `vcov(scale = "unconstrained")` for a bootstrap covariance.
+  measurement block through `fixed`, or a staged fit whose measurement
+  was estimated on different data or has unknown provenance. Also raised
+  by `vcov(scale = "unconstrained")` for a bootstrap covariance.
 
 - `latents_unsupported_prior`:
 
@@ -326,11 +342,13 @@ analysis.
   stored hypervolume does not define the required marginal noise
   density.
 
-- `latents_unsupported_structure`:
+- `latents_bch_out_of_range`:
 
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  was asked for a covariance structure other than EEI, VVI, EEE or VVV
-  together with `profile_covariates` or `group_covariates`.
+  Warning from
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  when the BCH weights give a categorical outcome a class probability
+  outside `[0, 1]`; the probability is reported without an interval or
+  test.
 
 - `latents_bad_weights`:
 
@@ -512,9 +530,9 @@ analysis.
 - `latents_unsupported_view`:
 
   A grid function
-  ([`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
-  [`plot_selection()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
-  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  ([`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md),
+  [`plot_selection()`](https://pak.dynasite.org/latents/reference/plot_selection.md),
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
   or [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a grid)
   was asked for a view that this kind of grid cannot draw, such as the
   tree of a group-class family or regression grid. The message gives the
@@ -548,7 +566,10 @@ explicitly.
 
   [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
   with a binary outcome and one trial per class assignment, where a
-  mixture of Bernoulli regressions is not identified.
+  mixture of Bernoulli regressions is not identified; a repeated
+  categorical mixture exceeding the distinguishable response-pattern
+  capacity; or a growth specification whose random/residual covariance
+  decomposition is rank deficient on the observed occasions.
 
 - `latents_missing_data`:
 
@@ -618,6 +639,19 @@ explicitly.
   with any `method`, a class is carried by a single unit (fewer than 1.5
   effective carrying units, by Kish's formula), so its standard error is
   reported as `NA`.
+
+- `latents_cross_level_criteria`:
+
+  A cross-level fit has group classes. Its likelihood counts the ratings
+  twice, so its criteria do not choose the number of group classes or
+  the form.
+
+- `latents_unweighted_descriptives`:
+
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+  received a fit with sampling weights. Its table describes recorded
+  rows without weights, including zero-weight rows, and its ICC is
+  unweighted.
 
 - `latents_thin_profiles`:
 
@@ -700,6 +734,14 @@ explicitly.
   BIC. The transition-network handoff also warns when it includes such a
   row.
 
+- `latents_weak_transition_support`:
+
+  A transition origin has positive but less than one expected outgoing
+  move. Its formal parameters remain counted, but its rows are marked
+  `supported = FALSE`, their expected counts are reported, and Wald
+  inference is refused. This diagnostic threshold signals weak
+  information rather than structural identification.
+
 - `latents_unidentified_occasion`:
 
   An [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
@@ -743,8 +785,12 @@ explicitly.
   [`vcov()`](https://rdrr.io/r/stats/vcov.html),
   [`predict()`](https://rdrr.io/r/stats/predict.html) and
   [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
-  of a data frame) was given an argument it does not use. The call
-  proceeds and the warning names the argument.
+  of a data frame) was given an argument it does not use, or
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) was
+  given a `count_model` or `count_dispersion` that changes nothing (no
+  `count` indicator, or a dispersion option for a Poisson model). The
+  call proceeds and the warning names the argument.
 
 - `latents_unused_category`:
 

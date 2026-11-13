@@ -41,6 +41,8 @@ moves <- lta(course_engagement,
                       "attendance"),
              id = "student", time = "sequence",
              n_profiles = 3, n_group_classes = 2, n_starts = 3, seed = 1)
+#> Warning: An initial, transition or group-class probability is at its numerical boundary; Wald
+#> inference is withheld.
 moves
 #> Latent transition model: 3 profiles, 2 group classes
 #> 1422 observations in 106 groups, up to 15 occasions (unbalanced, observed grid)
@@ -130,25 +132,44 @@ lacks information for estimating that transition distribution.
 ``` r
 
 get_results(moves, "transitions")
-#>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1      0.5202          17.54   TRUE      TRUE                     0.3
-#> 2            1    1  2      0.3394          11.44  FALSE      TRUE                     0.3
-#> 3            1    1  3      0.1405           4.74  FALSE      TRUE                     0.3
-#> 4            1    2  1      0.0302           9.75  FALSE      TRUE                     0.3
-#> 5            1    2  2      0.9386         303.22   TRUE      TRUE                     0.3
-#> 6            1    2  3      0.0313          10.10  FALSE      TRUE                     0.3
-#> 7            1    3  1      0.2221           8.71  FALSE      TRUE                     0.3
-#> 8            1    3  2      0.2961          11.61  FALSE      TRUE                     0.3
-#> 9            1    3  3      0.4818          18.90   TRUE      TRUE                     0.3
-#> 10           2    1  1      0.5256         214.24   TRUE      TRUE                     0.7
-#> 11           2    1  2      0.1141          46.50  FALSE      TRUE                     0.7
-#> 12           2    1  3      0.3603         146.88  FALSE      TRUE                     0.7
-#> 13           2    2  1      0.2099          43.69  FALSE      TRUE                     0.7
-#> 14           2    2  2      0.6146         127.95   TRUE      TRUE                     0.7
-#> 15           2    2  3      0.1756          36.55  FALSE      TRUE                     0.7
-#> 16           2    3  1      0.4951         150.59  FALSE      TRUE                     0.7
-#> 17           2    3  2      0.1277          38.85  FALSE      TRUE                     0.7
-#> 18           2    3  3      0.3772         114.74   TRUE      TRUE                     0.7
+#>    group_class from to probability expected_count origin_expected_count supported stable estimated
+#> 1            1    1  1      0.5202          17.54                  33.7      TRUE   TRUE      TRUE
+#> 2            1    1  2      0.3394          11.44                  33.7      TRUE  FALSE      TRUE
+#> 3            1    1  3      0.1405           4.74                  33.7      TRUE  FALSE      TRUE
+#> 4            1    2  1      0.0302           9.75                 323.1      TRUE  FALSE      TRUE
+#> 5            1    2  2      0.9386         303.22                 323.1      TRUE   TRUE      TRUE
+#> 6            1    2  3      0.0313          10.10                 323.1      TRUE  FALSE      TRUE
+#> 7            1    3  1      0.2221           8.71                  39.2      TRUE  FALSE      TRUE
+#> 8            1    3  2      0.2961          11.61                  39.2      TRUE  FALSE      TRUE
+#> 9            1    3  3      0.4818          18.90                  39.2      TRUE   TRUE      TRUE
+#> 10           2    1  1      0.5256         214.24                 407.6      TRUE   TRUE      TRUE
+#> 11           2    1  2      0.1141          46.50                 407.6      TRUE  FALSE      TRUE
+#> 12           2    1  3      0.3603         146.88                 407.6      TRUE  FALSE      TRUE
+#> 13           2    2  1      0.2099          43.69                 208.2      TRUE  FALSE      TRUE
+#> 14           2    2  2      0.6146         127.95                 208.2      TRUE   TRUE      TRUE
+#> 15           2    2  3      0.1756          36.55                 208.2      TRUE  FALSE      TRUE
+#> 16           2    3  1      0.4951         150.59                 304.2      TRUE  FALSE      TRUE
+#> 17           2    3  2      0.1277          38.85                 304.2      TRUE  FALSE      TRUE
+#> 18           2    3  3      0.3772         114.74                 304.2      TRUE   TRUE      TRUE
+#>    group_class_probability
+#> 1                      0.3
+#> 2                      0.3
+#> 3                      0.3
+#> 4                      0.3
+#> 5                      0.3
+#> 6                      0.3
+#> 7                      0.3
+#> 8                      0.3
+#> 9                      0.3
+#> 10                     0.7
+#> 11                     0.7
+#> 12                     0.7
+#> 13                     0.7
+#> 14                     0.7
+#> 15                     0.7
+#> 16                     0.7
+#> 17                     0.7
+#> 18                     0.7
 ```
 
 The transition plot displays one matrix per group class, with current

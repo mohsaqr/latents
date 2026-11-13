@@ -1,23 +1,13 @@
 # Compare the fit and classification of mixture models
 
-`compare_models()` compares alternative mixture models fitted to the
-same observed data. It supports assessment of the number of latent
-classes and other model specifications by presenting evidence about
-model fit, complexity, classification, and convergence.
-
-Information criteria summarise the trade-off between fit and the number
-of estimated parameters. Classification measures provide complementary
-information about the separation and relative size of the classes, while
-convergence summaries help identify estimation problems that may
-compromise the comparison. These measures address different aspects of a
-solution and should be interpreted together.
-
-The function accepts separately fitted models or candidates from an
-enumeration grid and returns their comparison statistics in a single
-table. BIC differences express each model's distance from the smallest
-BIC among the candidates; normalised BIC weights summarise their
-relative support within that set. The function does not select a final
-model.
+`compare_models()` puts the fit, complexity, classification and
+convergence of several models fitted to the same data in one table:
+separately fitted models, or candidates of an enumeration grid. BIC
+differences give each model's distance from the smallest BIC among those
+compared, and the Schwarz weights `exp(-delta_bic / 2)`, normalised over
+them, give relative support. The function does not select a model: a
+lower criterion favours a model among those compared and says nothing
+about absolute fit.
 
 ## Usage
 
@@ -35,10 +25,9 @@ compare_models(
 
 - ...:
 
-  Either an enumeration grid from
+  An enumeration grid from
   [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  followed by the candidates to compare (none for all of them, or a
-  selection through `n_profiles` and `n_group_classes`); or two or more
+  followed by the candidates to compare (none for all); or two or more
   fits from
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
@@ -46,142 +35,118 @@ compare_models(
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) or
   [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
   or two or more fits from
-  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  (with or without `random`). Named fits are labelled by their names,
-  unnamed fits by their expression, and candidates by their candidate
-  name. Labels must be distinct.
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
+  Named fits are labelled by their names, unnamed ones by their
+  expression, candidates by their candidate name; labels must be
+  distinct. See *Choosing candidates*.
 
 - n_profiles, n_group_classes:
 
   With a grid, the class counts of the candidates to compare; `NULL`
-  (the default) takes every count. Candidates whose fit failed are left
-  out, with a message.
+  (default) takes every count. Candidates whose fit failed are left out,
+  with a message.
 
 - cutoff:
 
   For profile and class models, the average posterior probability below
-  which a class is counted in `avepp_below` and `group_avepp_below`; a
-  single number in (0, 1\], default 0.8. Not used for mixture
-  regressions.
+  which a class is counted in `avepp_below` and `group_avepp_below`
+  (default 0.8). Not used for mixture regressions.
 
 - test:
 
-  `"none"` (the default) for the comparison table alone, or `"lrt"` to
-  add a likelihood-ratio test of each profile, class or transition model
-  against the one before it (see *Details*).
+  `"none"` (default) for the table alone; `"lrt"` adds a
+  likelihood-ratio test of each model against the one before it. See
+  *Likelihood-ratio tests*.
 
 ## Value
 
-A base `data.frame` of class `latents_comparison`, one row per model.
+A data frame of class `latents_comparison`, one row per model.
 
-For mixture regressions the columns are `model`, `n_classes`, `random`,
-`n_parameters`, `log_likelihood`, `aic`, `bic`, `sabic`, `icl`,
-`entropy`, `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
+For profile and class models: `model`, `n_profiles` (classes, for a
+class model), `n_group_classes`, `structure` (the covariance structure,
+`NA` without continuous indicators), `n_parameters` (see *Held
+measurement*), `log_likelihood`, every information criterion of
+[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md),
+`profile_entropy`, `group_entropy`, `avepp_min`, `avepp_max`,
+`avepp_mean`, `avepp_below` and the same four prefixed `group_`,
+`smallest_share` (the smallest estimated profile share), `converged`,
+`n_best_replicated`, `delta_bic` and `bic_weight` (on `bic_groups`, the
+BIC that counts groups as the independent units; the ordinary BIC for
+single-level models).
 
-For profile and class models they are `model`, `n_profiles`,
-`n_group_classes`, `structure` (the covariance structure, `NA` without
-continuous indicators), `n_parameters`, `log_likelihood`, every
-information criterion of
-[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)'s
-candidates table, `profile_entropy`, `group_entropy`, `avepp_min`,
-`avepp_max`, `avepp_mean`, `avepp_below` and the same four prefixed
-`group_`, `smallest_share` (the smallest estimated profile share,
-relative to all observation mass including any noise component),
-`converged`, `n_best_replicated`, and `delta_bic` and `bic_weight`,
-computed on `bic_groups` (the BIC that counts groups as the independent
-units; on a single-level model, the ordinary BIC). The values are those
-of the grid's candidates table.
+For mixture regressions: `model`, `n_classes`, `random`, `n_parameters`,
+`log_likelihood`, `aic`, `bic`, `sabic`, `icl`, `entropy`,
+`smallest_share`, `delta_bic`, `bic_weight` and `converged`.
 
-With `test = "lrt"`, three more columns: `lr_statistic`, `lr_df` and
-`lr_p_value`, `NA` in the first row.
+With `test = "lrt"`, also `lr_statistic`, `lr_df` and `lr_p_value`, `NA`
+in the first row. Fits to different data, fewer than two models, a
+group-class family fit or grid, and a mixture-regression grid are
+refused with classed conditions
+([latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md));
+the family and regression grids have their own tables. The criteria
+compare the models with each other; a final choice also needs the
+estimation to be stable and the classes to mean something.
 
-Raises `latents_bad_argument` for fits that cannot be compared, for
-fewer than two models, for duplicate labels, for a group-class family
-grid (its own table, `as.data.frame(grid)`, compares its candidates),
-for candidates named together with `n_profiles` or `n_group_classes`,
-and for `n_profiles` or `n_group_classes` without a grid;
-`latents_unknown_candidate` for a name, counts or selection not in the
-grid; `latents_failed_candidate` for a named candidate that could not be
-fitted; `latents_incomparable_models` for fits to different data. A
-`cutoff` outside (0, 1\] fails the argument checks.
+## Held measurement
 
-With `test = "lrt"`: `latents_bad_nesting` for consecutive models that
-are not nested as described in *Details*, or that differ in their
-numbers of profiles or group classes; `latents_reversed_likelihood` when
-the more general model has the lower likelihood beyond the fits'
-tolerance; `latents_no_converge` for a fit that did not converge;
-`latents_unsupported_weights`, `latents_unsupported_prior` and
-`latents_unsupported_noise` for fits with sampling weights, a prior or a
-noise component; `latents_bad_argument` for mixture regressions. A fit
-with a variance at `min_variance` warns `latents_boundary`.
+Fits that hold the same measurement
+([`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md),
+`fixed`) are compared on the parameters they estimate. In any other
+comparison, such as a staged fit against a jointly estimated one, every
+criterion and `n_parameters` count the measurement parameters too, and
+the table's title says so. Such a comparison is descriptive, since
+staged estimates do not maximise the joint likelihood.
 
-## Details
+## Choosing candidates
 
-`delta_bic` is the difference from the smallest BIC among the supplied
-candidates. `bic_weight` is the Schwarz weight `exp(-delta_bic / 2)`,
-normalised across those candidates (Wagenmakers and Farrell, 2004).
-Incompatible data produce an error.
+Candidates of a grid are named as its `candidate` column shows them
+(`compare_models(grid, "profiles3_groups4", "profiles3_groups5")`), by
+class counts (`compare_models(grid, c(3, 4), c(3, 5))`, a single number
+meaning one group class), or through `n_profiles` and `n_group_classes`
+(`compare_models(grid, n_profiles = 3)` compares every candidate with
+three profiles). Latent class grids work the same way with `classes` in
+the names.
 
-Candidates of an enumeration grid are selected by name, as the grid's
-`candidate` column shows them
-(`compare_models(grid, "profiles3_groups4", "profiles3_groups5")`), or
-by class counts (`compare_models(grid, c(3, 4), c(3, 5))`, where a
-single number means one group class). Alternatively, `n_profiles` and
-`n_group_classes` select candidates:
-`compare_models(grid, n_profiles = 3)` compares every candidate with 3
-profiles, and `compare_models(grid)` compares them all. Latent class
-grids work the same way, with `classes` in the names, and the
-`n_profiles` column counting classes. Fits from
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-[`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
-[`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
-[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) or
-[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-can also be passed directly.
+## Likelihood-ratio tests
 
 With `test = "lrt"`, each model is tested against the model in the row
 before it, as [`stats::anova()`](https://rdrr.io/r/stats/anova.html)
-does: `lr_statistic` is twice the difference in their log likelihoods,
-`lr_df` the difference in their numbers of free parameters, and
-`lr_p_value` its upper chi-square tail (Wilks, 1938). List the models
-from the most restricted to the most general. A model is nested in the
-next when the two have the same indicators, coding, estimation settings
-and numbers of profiles and group classes, and the first only restricts
-the second: a covariance structure restricted letter by letter (EEI
-within VVI or EEE, and both within VVV), covariances of chosen pairs
-(`local_dependence`) within more pairs or a full covariance, fewer joint
-item pairs, direct effects or membership covariates, profile slopes
-shared across group classes, count dispersions shared across profiles;
-and for [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
-measurement invariant within measurement by occasion, homogeneous within
-occasion-specific transitions, first within second order, and fewer
-transition or initial covariates. These restrictions hold parameters at
-interior values, where the chi-square reference applies. A different
-number of profiles or group classes, or a stayer class, puts the null on
-the boundary of the parameter space, where it does not: those
-comparisons are refused and belong to
+does: `lr_statistic` is twice the difference in log likelihoods, `lr_df`
+the difference in free parameters and `lr_p_value` the upper chi-square
+tail. List the models from the most restricted to the most general. Two
+models are nested when they share indicators, coding, estimation
+settings and numbers of profiles and group classes, and the first only
+restricts the second: a covariance structure restricted letter by letter
+(EEI within VVI or EEE, both within VVV), `local_dependence` pairs
+within more pairs or a full covariance, fewer direct effects or
+membership covariates, profile slopes shared across group classes, count
+dispersions shared across profiles, and for
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits also
+invariant within occasion-specific measurement, homogeneous within
+occasion-specific transitions, first within second order, fewer
+transition or initial covariates. A covariate both models use must enter
+both with the same values (or an affine recoding).
+
+Nesting is not enough: the restriction must also be regular. A spherical
+structure (EII, VII) within EVE, VVE, EEV or VEV is singular, because
+the orientation those structures add has no value when every profile is
+spherical; such pairs are refused, so compare them on the criteria. A
+different number of profiles or group classes, or a stayer class, puts
+the null on the boundary of the parameter space, where the chi-square
+reference does not hold either: those comparisons are refused and belong
+to
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-or `get_results(grid, "lmr")`.
+(or, for class counts, `get_results(grid, "lmr")`). Fits with sampling
+weights, a prior or a noise component, and mixture regressions, are
+refused under `test = "lrt"`.
 
-## Interpretation
+## See also
 
-Models must use the same outcomes or indicators and observational units,
-and their likelihoods must be comparable. Lower information criteria
-favour a model relative to the alternatives considered, but do not
-establish adequate fit or substantive validity. Classification
-separation should inform interpretation rather than serve as the sole
-basis for choosing the number of classes. Final selection also requires
-examination of estimation stability, model assumptions, and the meaning
-of the resulting classes.
-
-## References
-
-Wilks, S. S. (1938). The large-sample distribution of the likelihood
-ratio for testing composite hypotheses. *The Annals of Mathematical
-Statistics*, 9(1), 60–62.
-
-Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using
-Akaike weights. *Psychonomic Bulletin & Review*, 11, 192–196.
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+and
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md);
+[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
+draws the criteria of a comparison.
 
 ## Examples
 

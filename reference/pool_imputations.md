@@ -103,9 +103,9 @@ convergence and the label permutation that aligned it.
 Pooling is on the reported (natural) scale: the pooled estimate is the
 mean over imputations, and its variance is the mean within-imputation
 variance plus `(1 + 1/m)` times the between-imputation variance. Degrees
-of freedom follow Rubin (1987) with a large complete-data sample. Pooled
-intervals are symmetric t intervals, rather than the transformed Wald
-intervals used for bounded parameters by
+of freedom follow Rubin's rules with a large complete-data sample.
+Pooled intervals are symmetric t intervals, rather than the transformed
+Wald intervals used for bounded parameters by
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
 A structural constant, such as the probability of one for a single
 class, has zero within- and between-imputation variance and zero missing
@@ -147,17 +147,6 @@ when any imputation's fit or inference fails (the message names the
 imputation and gives the original reason); `latents_missing_package` for
 a `mids` object without mice installed. Warnings from the individual
 fits are passed on as they are raised.
-
-## References
-
-Rubin, D. B. (1987). *Multiple Imputation for Nonresponse in Surveys*.
-Wiley.
-
-Meng, X.-L. (1994). Multiple-imputation inferences with uncongenial
-sources of input. *Statistical Science*, 9(4), 538–558.
-
-van Buuren, S. (2018). *Flexible Imputation of Missing Data* (2nd ed.),
-section 5.2. Chapman & Hall/CRC.
 
 ## Examples
 

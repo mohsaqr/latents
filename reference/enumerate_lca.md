@@ -89,107 +89,33 @@ summary(models)
 #> Class enumeration: 3 candidates, 3 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 13 of its 37 columns; get_results(x, what = "candidates") returns all of them.
 #> 
-#> -- candidates ------------------------------------------------------
-#>  candidate n_profiles log_likelihood n_parameters  aic  bic icl_individual
-#>   classes1          1          -3280            3 6566 6584           6584
-#>   classes2          2          -3270            7 6555 6596           6655
-#>   classes3          3          -3269           11 6560 6624           6651
-#>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
-#>               NA        NA         NA          NA      TRUE    FALSE
-#>           0.9835    0.9942     0.9970           0      TRUE    FALSE
-#>           0.9953    0.9983     0.9992           0      TRUE    FALSE
+#> ! 2 of 3 candidates reached their best log likelihood from one start only
+#>     (classes2, classes3); refit those you consider with more starts.
 #> 
-#> -- best ------------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes2          2               1  6555
-#>        kic        <NA>  classes2          2               1  6565
-#>        bic      groups  classes1          1               1  6584
-#>        bic individuals  classes1          1               1  6584
-#>      sabic      groups  classes2          2               1  6574
-#>      sabic individuals  classes2          2               1  6574
-#>       caic      groups  classes1          1               1  6587
-#>       caic individuals  classes1          1               1  6587
-#>        awe      groups  classes1          1               1  6616
-#>        awe individuals  classes1          1               1  6616
-#>    ... 4 more rows.  get_results(x, what = "best")
+#> -- lowest value of each criterion --------------------------------
+#>  criterion  convention candidate value
+#>        aic        <NA>  classes2  6555
+#>        kic        <NA>  classes2  6565
+#>        bic      groups  classes1  6584
+#>        bic individuals  classes1  6584
+#>      sabic      groups  classes2  6574
+#>      sabic individuals  classes2  6574
+#>       caic      groups  classes1  6587
+#>       caic individuals  classes1  6587
+#>        awe      groups  classes1  6616
+#>        awe individuals  classes1  6616
+#>        icl      groups  classes1  6584
+#>        icl individuals  classes1  6584
+#>        clc      groups  classes1  6560
+#>        clc individuals  classes1  6560
 #> 
-#> -- criteria --------------------------------------------------------
-#>  criterion  convention candidate n_profiles n_group_classes value
-#>        aic        <NA>  classes2          2               1  6555
-#>        kic        <NA>  classes2          2               1  6565
-#>        bic      groups  classes1          1               1  6584
-#>        bic individuals  classes1          1               1  6584
-#>      sabic      groups  classes2          2               1  6574
-#>      sabic individuals  classes2          2               1  6574
-#>       caic      groups  classes1          1               1  6587
-#>       caic individuals  classes1          1               1  6587
-#>        awe      groups  classes1          1               1  6616
-#>        awe individuals  classes1          1               1  6616
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> -- knees of bic_groups ----------------------------------------
+#>   direction           line knee_candidate knee_without_largest stable
+#>    profiles  1 group class           <NA>                 <NA>     NA
+#>  parameters all candidates           <NA>                 <NA>     NA
 #> 
-#> -- classification --------------------------------------------------
-#>  candidate n_profiles n_group_classes       level class n_modal
-#>   classes2          2               1 individuals     1    1837
-#>   classes2          2               1 individuals     2     745
-#>   classes3          3               1 individuals     1    2054
-#>   classes3          3               1 individuals     2     185
-#>   classes3          3               1 individuals     3     343
-#>  proportion_modal estimated_n estimated_proportion average_posterior
-#>           0.71146      1841.1              0.71303            0.9998
-#>           0.28854       740.9              0.28697            0.9942
-#>           0.79551      2053.6              0.79535            0.9996
-#>           0.07165       185.4              0.07182            0.9997
-#>           0.13284       343.0              0.13283            0.9983
-#>  odds_correct_classification relative_entropy
-#>                       2505.7           0.9835
-#>                        423.5           0.9835
-#>                        573.9           0.9953
-#>                      46383.8           0.9953
-#>                       3920.3           0.9953
-#> 
-#> -- deltas ----------------------------------------------------------
-#>  candidate n_profiles n_group_classes  criterion value delta_profile
-#>   classes1          1               1 bic_groups  6584            NA
-#>   classes2          2               1 bic_groups  6596        -12.42
-#>   classes3          3               1 bic_groups  6624        -28.39
-#>  from_profile delta_group_class from_group_class
-#>          <NA>                NA             <NA>
-#>      classes1                NA             <NA>
-#>      classes2                NA             <NA>
-#> 
-#> -- knees -----------------------------------------------------------
-#>   direction           line  criterion     from       to n_points knee_candidate
-#>    profiles  1 group class bic_groups classes1 classes3        3           <NA>
-#>  parameters all candidates bic_groups classes1 classes3        3           <NA>
-#>  distance knee_without_largest stable
-#>        NA                 <NA>     NA
-#>        NA                 <NA>     NA
-#>                                         note
-#>  the criterion does not fall along this line
-#>  the criterion does not fall along this line
-#> 
-#> -- tree ------------------------------------------------------------
-#>  tree       level from_candidate from_class from_share to_candidate to_class
-#>  tree individuals       classes1          1      1.000     classes2        1
-#>  tree individuals       classes1          1      1.000     classes2        2
-#>  tree individuals       classes2          1      0.713     classes3        1
-#>  tree individuals       classes2          2      0.287     classes3        1
-#>  tree individuals       classes2          1      0.713     classes3        2
-#>  tree individuals       classes2          2      0.287     classes3        2
-#>  tree individuals       classes2          1      0.713     classes3        3
-#>  tree individuals       classes2          2      0.287     classes3        3
-#>  to_share    mass share_of_from share_of_to
-#>   0.71303 0.71303       0.71303      1.0000
-#>   0.28697 0.28697       0.28697      1.0000
-#>   0.79535 0.55064       0.77225      0.6923
-#>   0.79535 0.24471       0.85273      0.3077
-#>   0.07182 0.05643       0.07914      0.7857
-#>   0.07182 0.01539       0.05364      0.2143
-#>   0.13283 0.10597       0.14861      0.7977
-#>   0.13283 0.02687       0.09362      0.2023
-#> 
-#> 7 tables above, truncated to fit. get_results(x, what = ) returns any
-#> of them whole, and get_results(x, what = "all") returns every one.
+#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
+#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
+#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
 ```

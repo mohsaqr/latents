@@ -234,9 +234,9 @@ models
 #> No candidate is selected automatically. Compare one convention consistently.
 ```
 
-The result holds 24 fitted candidates. Each candidate is named by its
-numbers of profiles and group classes, so that `profiles4_groups3` has
-four profiles and three group classes, and the name identifies the
+The result records 24 requested candidates. Each candidate is named by
+its numbers of profiles and group classes, so that `profiles4_groups3`
+has four profiles and three group classes, and the name identifies the
 candidate in every function that follows. The 3 candidates with one
 profile and several group classes could not be estimated. Group classes
 are defined by differences in the distribution of profiles, and a model
@@ -1376,16 +1376,16 @@ summary(chosen)
 #>  profile_4      browse  attendance gaussian  0.08654        0  0.08654       331.1     1.571 NA
 #>  profile_2    lectures  attendance gaussian  0.08412        0  0.08412       201.5     1.188 NA
 #>  p_value p_adjusted
-#>  0.10265    0.10265
-#>  0.02323    0.02323
-#>  0.04594    0.04594
-#>  0.16491    0.16491
-#>  0.03283    0.03283
-#>  0.03640    0.03640
-#>  0.18813    0.18813
-#>  0.07995    0.07995
-#>  0.11609    0.11609
-#>  0.23486    0.23486
+#>  0.10265     0.5375
+#>  0.02323     0.4594
+#>  0.04594     0.4594
+#>  0.16491     0.5375
+#>  0.03283     0.4594
+#>  0.03640     0.4594
+#>  0.18813     0.5375
+#>  0.07995     0.5375
+#>  0.11609     0.5375
+#>  0.23486     0.5537
 #>    ... 30 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
@@ -1461,7 +1461,7 @@ diagnostics(chosen)
 ![](enumeration_files/figure-html/chosen-diagnostics-1.png)![](enumeration_files/figure-html/chosen-diagnostics-2.png)![](enumeration_files/figure-html/chosen-diagnostics-3.png)![](enumeration_files/figure-html/chosen-diagnostics-4.png)![](enumeration_files/figure-html/chosen-diagnostics-5.png)![](enumeration_files/figure-html/chosen-diagnostics-6.png)![](enumeration_files/figure-html/chosen-diagnostics-7.png)![](enumeration_files/figure-html/chosen-diagnostics-8.png)
 
     #> Diagnostics: Two-level latent profile analysis, 4 profiles, 3 group classes
-    #> 1 check needs attention: pairs dependent within a class
+    #> No check needs attention.
     #> 
     #> Estimation
     #>   ok     best start converged                                yes                      
@@ -1486,8 +1486,8 @@ diagnostics(chosen)
     #>   info   lowest odds of correct classification  groups       14.6 (class 3)           
     #> 
     #> Local independence
-    #>   check  pairs dependent within a class                      4 of 40 tested pairs     BH-adjusted p < 0.05
-    #>          largest: browse x forum_post in profile_1, residual -0.102, adjusted p 0.023
+    #>   ok     pairs dependent within a class                      0 of 40 tested pairs     BH-adjusted p < 0.05
+    #>          smallest adjusted p: browse x forum_post in profile_1, residual -0.102, adjusted p 0.46
     #> 
     #> Information
     #>   info   log likelihood, parameters, BIC                     -8307.15, 51, 16852.14   

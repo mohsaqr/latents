@@ -169,7 +169,7 @@ get_results(with_sleep, "membership")
 #> 
 #> Class    Term       Estimate          95% CI     p  Odds ratio
 #> -------  ---------  --------  --------------  ----  ----------
-#> Class 2  Intercept      1.56  [ 0.22,  2.89]  .022        4.75
+#> Class 2  Intercept      1.56  [ 0.22,  2.89]  .022            
 #> Class 2  sleep         -0.26  [-0.45, -0.07]  .007        0.77
 ```
 
@@ -208,10 +208,10 @@ students
 #> 
 #> Class    Term       Estimate            95% CI      p  Odds ratio
 #> -------  ---------  --------  ----------------  -----  ----------
-#> Class 1  Intercept    -2.463  [-3.098, -1.827]  <.001       0.085
-#> Class 1  hours         0.514  [ 0.391,  0.636]  <.001       1.671
-#> Class 2  Intercept     0.070  [-0.455,  0.596]   .793       1.073
-#> Class 2  hours        -0.041  [-0.122,  0.040]   .318       0.960
+#> Class 1  Intercept    -2.463  [-3.098, -1.827]  <.001            
+#> Class 1  hours         0.514  [ 0.391,  0.636]  <.001        1.67
+#> Class 2  Intercept     0.070  [-0.455,  0.596]   .793            
+#> Class 2  hours        -0.041  [-0.122,  0.040]   .318        0.96
 #> 
 #> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
 get_results(students, "membership")
@@ -219,7 +219,7 @@ get_results(students, "membership")
 #> 
 #> Class    Term        Estimate          95% CI      p  Odds ratio
 #> -------  ----------  --------  --------------  -----  ----------
-#> Class 2  Intercept      -0.15  [-0.88,  0.58]   .688        0.86
+#> Class 2  Intercept      -0.15  [-0.88,  0.58]   .688            
 #> Class 2  motivation     -1.82  [-2.78, -0.86]  <.001        0.16
 ```
 
@@ -283,16 +283,16 @@ summary(two_level)
 #> 
 #> Classes
 #> 
-#> Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD
-#> -------  -----  --------  ---------------  --------------  -----------
-#> Class 1  0.579    521.42              532           0.873         5.28
-#> Class 2  0.421    378.58              368           0.845         6.79
+#> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+#> -------  -----  --------  -------------  --------------  -----------
+#> Class 1  0.579    521.42            532           0.873         5.28
+#> Class 2  0.421    378.58            368           0.845         6.79
 #> 
 #> Class membership (log odds, 95% CI)
 #> 
 #> Model        Class          Term                      Estimate          95% CI      p  Odds ratio
 #> -----------  -------------  ------------------------  --------  --------------  -----  ----------
-#> group_class  Group class 2  Intercept                    -0.12  [-1.02,  0.77]   .788        0.88
+#> group_class  Group class 2  Intercept                    -0.12  [-1.02,  0.77]   .788            
 #> group_class  Group class 2  motivation                   -1.87  [-2.80, -0.93]  <.001        0.15
 #> class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.83
 #> class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.32]  <.001       69.91
@@ -344,9 +344,9 @@ get_results(asked, "coefficients")
 #> 
 #> Class        Term       Estimate            95% CI      p  Rate ratio
 #> -----------  ---------  --------  ----------------  -----  ----------
-#> Class 1      Intercept     0.558  [ 0.243,  0.873]  <.001        1.75
+#> Class 1      Intercept     0.558  [ 0.243,  0.873]  <.001            
 #> Class 1      hours         0.104  [ 0.083,  0.125]  <.001        1.11
-#> Class 2      Intercept     1.509  [ 1.021,  1.997]  <.001        4.52
+#> Class 2      Intercept     1.509  [ 1.021,  1.997]  <.001            
 #> Class 2      hours        -0.110  [-0.198, -0.023]   .014        0.90
 #> All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98
 ```

@@ -1,24 +1,33 @@
-# Plot information criteria across an enumeration grid
+# Information criteria across a candidate grid
 
-Draws information criteria against the number of profiles, one panel per
-criterion and one line per covariance model and number of group classes.
-It is the view `plot(x)` draws for an enumeration, as a function of its
-own so that its arguments are listed (and completed by an editor)
-without going through `what =`. A candidate that failed to converge is
-marked with a cross on its panel's floor, so a gap in a line reads as a
-failure and not as a missing candidate.
+Each information criterion against the number of classes, one panel per
+criterion and one line per number of group classes (or covariance
+structure), with each criterion's lowest value circled. `what` also
+names the other views of a grid, which
+[`plot_entropy()`](https://pak.dynasite.org/latents/reference/plot_entropy.md),
+[`plot_avepp()`](https://pak.dynasite.org/latents/reference/plot_avepp.md),
+[`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md),
+[`plot_heatmap()`](https://pak.dynasite.org/latents/reference/plot_heatmap.md),
+[`plot_sizes()`](https://pak.dynasite.org/latents/reference/plot_sizes.md),
+[`plot_trust()`](https://pak.dynasite.org/latents/reference/plot_trust.md)
+and
+[`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
+draw by name.
 
 ## Usage
 
 ``` r
 plot_enumeration(
   x,
-  criterion = c("aic", "bic_groups", "bic_individual", "icl_individual"),
+  what = c("aic", "bic_groups", "bic_individual", "icl_individual"),
   combine = TRUE,
   labels = TRUE,
   mark_minimum = TRUE,
   main = NULL,
-  subtitle = NULL
+  subtitle = NULL,
+  cutoff = 0.8,
+  using = "bic_groups",
+  ...
 )
 ```
 
@@ -26,67 +35,79 @@ plot_enumeration(
 
 - x:
 
-  A `multilpa_enumeration` result from
+  An enumeration grid from
   [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   or
-  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md).
+  [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md).
 
-- criterion:
+- what:
 
-  One or more criterion columns of `as.data.frame(x)`, such as
-  `"bic_individual"` or `"sabic_groups"`, or `"all"` for every
-  information criterion in the grid. The default draws AIC, BIC under
-  both sample-size conventions and ICL counted over individuals. A
-  criterion identical at both levels, as in a single-level grid, is
-  drawn once.
+  Criterion columns of `as.data.frame(x)`, such as `"bic_groups"`, or
+  `"all"`. The default draws AIC, both BICs and ICL on a profile or
+  class grid; AIC, BIC and BIC over individuals on a transition or
+  family grid; AIC, BIC, SABIC and ICL on a regression grid. Otherwise
+  one of `"entropy"`, `"avepp"`, `"diagnostics"` (both), `"deltas"`,
+  `"heatmap"`, `"smallest"`, `"trust"`, `"selection"` (those four and
+  `"diagnostics"`) or `"tree"`; these cannot be mixed with criteria.
 
 - combine:
 
-  `TRUE` draws several criteria as panels of one plot; `FALSE` returns
-  one plot per criterion.
+  `TRUE` (default) draws the criteria as panels of one plot; `FALSE`
+  returns one plot per criterion.
 
 - labels:
 
-  `TRUE` labels each series at its right end.
+  `TRUE` (default) labels each line directly; `FALSE` uses a legend.
 
 - mark_minimum:
 
-  `TRUE` rings each criterion's lowest value among converged candidates.
-  This marks an extremum; it does not select a model.
+  `TRUE` (default) circles each criterion's lowest value among converged
+  candidates, without selecting a model.
 
 - main, subtitle:
 
-  Title and subtitle. `NULL` uses the view's own.
+  Title and subtitle; `NULL` (default) keeps the view's own.
+
+- cutoff:
+
+  The AvePP cutoff drawn dashed by `"avepp"`, `"diagnostics"` and
+  `"selection"` (default 0.8).
+
+- using:
+
+  The criterion `"deltas"`, `"heatmap"` and `"selection"` use: when not
+  given, `"bic_groups"` on a profile or class grid and `"bic"` on the
+  others.
+
+- ...:
+
+  With `what = "tree"`, the arguments of
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md).
 
 ## Value
 
-A ggplot object, one panel per criterion; with `combine = FALSE` and
-several criteria, a `latents_plots` list of ggplot objects, one per
-criterion, named by its criterion column.
-
-## Errors
-
-`latents_unknown_criterion` for a criterion that is not an information
-criterion of the grid; `latents_nothing_to_plot` when no converged
-candidate has a finite value.
+A ggplot object; a `latents_plots` list for several criteria with
+`combine = FALSE`, or for a `what` of several views. A criterion not in
+the grid raises `latents_unknown_criterion`; a view the kind of grid
+does not offer raises `latents_unsupported_view`.
 
 ## See also
 
-[`plot.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.md)
-for the profile tree,
-[`summary.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-for the candidate each criterion prefers.
+[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
+draws every criterion of any grid or comparison;
+[`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
+lists the views a grid offers;
+[`plot_selection()`](https://pak.dynasite.org/latents/reference/plot_selection.md).
 
 ## Examples
 
 ``` r
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  set.seed(7)
-  example_data <- data.frame(score_a = rnorm(120), score_b = rnorm(120))
-  candidates <- enumerate_lpa(example_data, c("score_a", "score_b"),
-                              n_profiles = 1:3, n_starts = 2)
-  plot_enumeration(candidates)
-  plot_enumeration(candidates, criterion = "all")
-}
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:3, model = "EEI",
+                      n_starts = 2, seed = 1)
+plot_enumeration(grid)
+
+plot_enumeration(grid, what = "bic_individual")
 ```

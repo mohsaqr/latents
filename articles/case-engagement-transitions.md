@@ -48,6 +48,8 @@ vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 moves <- lta(course_engagement, vars, "student", n_profiles = 3,
              n_group_classes = 2, time = "sequence", n_starts = 10, seed = 1)
+#> Warning: An initial, transition or group-class probability is at its numerical boundary; Wald
+#> inference is withheld.
 get_results(moves, "starts")
 #>    start log_likelihood converged iterations error
 #> 1      1          -8243      TRUE         36  <NA>
@@ -67,7 +69,7 @@ replicated within this seed’s starts.
 
 ## The profiles
 
-[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/plot_profiles.md)
 draws the profile means across the indicators, and each line’s label
 gives the profile’s share of the enrolments.
 
@@ -81,7 +83,7 @@ plot_profiles(moves)
 ``` r
 
 get_results(moves)
-#> No standard errors in this table: Wald inference is unavailable when a probability sits at its lower bound: its logit is at minus infinity, where the likelihood has no curvature to invert.
+#> No standard errors in this table: Wald inference is unavailable for a bound-active fit.
 #>    profile  indicator    mean variance standard_deviation mean_standard_error
 #> 1        1     browse  0.3959   0.6100             0.7810                  NA
 #> 2        1   lectures  0.1893   0.7592             0.8713                  NA
@@ -176,25 +178,44 @@ estimated in this fit.
 ``` r
 
 get_results(moves, "transitions")
-#>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1     0.52017         17.541   TRUE      TRUE                  0.3003
-#> 2            1    1  2     0.33936         11.444  FALSE      TRUE                  0.3003
-#> 3            1    1  3     0.14047          4.737  FALSE      TRUE                  0.3003
-#> 4            1    2  1     0.03017          9.748  FALSE      TRUE                  0.3003
-#> 5            1    2  2     0.93857        303.221   TRUE      TRUE                  0.3003
-#> 6            1    2  3     0.03126         10.099  FALSE      TRUE                  0.3003
-#> 7            1    3  1     0.22210          8.712  FALSE      TRUE                  0.3003
-#> 8            1    3  2     0.29606         11.613  FALSE      TRUE                  0.3003
-#> 9            1    3  3     0.48184         18.900   TRUE      TRUE                  0.3003
-#> 10           2    1  1     0.52559        214.238   TRUE      TRUE                  0.6997
-#> 11           2    1  2     0.11407         46.497  FALSE      TRUE                  0.6997
-#> 12           2    1  3     0.36034        146.876  FALSE      TRUE                  0.6997
-#> 13           2    2  1     0.20987         43.694  FALSE      TRUE                  0.6997
-#> 14           2    2  2     0.61457        127.949   TRUE      TRUE                  0.6997
-#> 15           2    2  3     0.17555         36.548  FALSE      TRUE                  0.6997
-#> 16           2    3  1     0.49508        150.595  FALSE      TRUE                  0.6997
-#> 17           2    3  2     0.12771         38.847  FALSE      TRUE                  0.6997
-#> 18           2    3  3     0.37721        114.743   TRUE      TRUE                  0.6997
+#>    group_class from to probability expected_count origin_expected_count supported stable estimated
+#> 1            1    1  1     0.52017         17.541                 33.72      TRUE   TRUE      TRUE
+#> 2            1    1  2     0.33936         11.444                 33.72      TRUE  FALSE      TRUE
+#> 3            1    1  3     0.14047          4.737                 33.72      TRUE  FALSE      TRUE
+#> 4            1    2  1     0.03017          9.748                323.07      TRUE  FALSE      TRUE
+#> 5            1    2  2     0.93857        303.221                323.07      TRUE   TRUE      TRUE
+#> 6            1    2  3     0.03126         10.099                323.07      TRUE  FALSE      TRUE
+#> 7            1    3  1     0.22210          8.712                 39.22      TRUE  FALSE      TRUE
+#> 8            1    3  2     0.29606         11.613                 39.22      TRUE  FALSE      TRUE
+#> 9            1    3  3     0.48184         18.900                 39.22      TRUE   TRUE      TRUE
+#> 10           2    1  1     0.52559        214.238                407.61      TRUE   TRUE      TRUE
+#> 11           2    1  2     0.11407         46.497                407.61      TRUE  FALSE      TRUE
+#> 12           2    1  3     0.36034        146.876                407.61      TRUE  FALSE      TRUE
+#> 13           2    2  1     0.20987         43.694                208.19      TRUE  FALSE      TRUE
+#> 14           2    2  2     0.61457        127.949                208.19      TRUE   TRUE      TRUE
+#> 15           2    2  3     0.17555         36.548                208.19      TRUE  FALSE      TRUE
+#> 16           2    3  1     0.49508        150.595                304.18      TRUE  FALSE      TRUE
+#> 17           2    3  2     0.12771         38.847                304.18      TRUE  FALSE      TRUE
+#> 18           2    3  3     0.37721        114.743                304.18      TRUE   TRUE      TRUE
+#>    group_class_probability
+#> 1                   0.3003
+#> 2                   0.3003
+#> 3                   0.3003
+#> 4                   0.3003
+#> 5                   0.3003
+#> 6                   0.3003
+#> 7                   0.3003
+#> 8                   0.3003
+#> 9                   0.3003
+#> 10                  0.6997
+#> 11                  0.6997
+#> 12                  0.6997
+#> 13                  0.6997
+#> 14                  0.6997
+#> 15                  0.6997
+#> 16                  0.6997
+#> 17                  0.6997
+#> 18                  0.6997
 ```
 
 The transition plot draws each class’s matrix as a heatmap, with the

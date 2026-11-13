@@ -544,9 +544,9 @@ print(summary(fit), rows = 3)
 #>  profile_2  forum_read  attendance gaussian   0.2287        0   0.2287       587.9     5.630 NA
 #>  profile_1  forum_read  attendance gaussian   0.2088        0   0.2088       834.1     6.109 NA
 #>    p_value p_adjusted
-#>  6.374e-12  6.374e-12
-#>  1.799e-08  1.799e-08
-#>  1.001e-09  1.001e-09
+#>  6.374e-12  1.275e-10
+#>  1.799e-08  8.994e-08
+#>  1.001e-09  1.001e-08
 #>    ... 17 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
