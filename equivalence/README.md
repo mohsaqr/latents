@@ -26,6 +26,7 @@ Run everything from the project root.
 | `argument-sweep/` | Every argument of the fitting and post-fit functions at each of its options, on several datasets: the likelihood rebuilt from the result tables (mixture, hidden Markov, mixture of regressions, random effects), mclust, poLCA and flexmix continued from the package's solution, one-class limits (`lm`, `glm`, `glm.nb`, `polr`, `lmer`), `optim` and `numDeriv` for the step-three and Wald results, invariances and classed refusals. See its [README](argument-sweep/README.md). Writes `tmp/argument-sweep/`. | `Rscript equivalence/argument-sweep/run.R` |
 | `cvs/` | Reports every run of the testthat equivalence files, the package's own tests, the harness and the argument sweep to CVS, the validation service in `../validation` (one JSON file per run; see [Reporting to CVS](#reporting-to-cvs)). | used by the runners; `Rscript equivalence/cvs/test-local.R` for the package's tests |
 | `REFERENCE-CANDIDATES.md` | Published and software references not yet wired in, by function, with data access and the numbers to match. | — |
+| `verification/` | CVS manifests: one `modules/<fn>.yaml` per verified function and `references.bib`, generated from the matrix for CVS's Verification tab (see [Reporting to CVS](#reporting-to-cvs)). | `Rscript equivalence/verification/build-manifests.R` |
 | `verification-matrix/` | **The living verification record**: every major function against every reference that checks it (strength as one + per source and one P per paper, datasets, checks), built from saved results. Read [`VERIFICATION-MATRIX.md`](verification-matrix/VERIFICATION-MATRIX.md); rebuild after any equivalence run ([how](verification-matrix/README.md#keeping-it-current)). | `Rscript equivalence/verification-matrix/build.R` |
 
 Scripts other than the testthat files rewrite committed reports. To check
@@ -61,6 +62,27 @@ Each file declares its CVS tier (`_cvs.tier`), since CVS otherwise
 classifies by file name and an R file name carries none: `equiv` for the
 equivalence files, harness suites and sweep modules, `unit` for
 `tests/testthat`. CVS honours the declaration from validation PR #23 on.
+
+Each assertion also names the reference it is evidence for (`_cvs` `axis`,
+`authority`, `reference`), by the verification matrix's own rules
+(`verification-matrix/attribution.R`, shared with `build.R`): R package →
+`r-equivalence`, Latent GOLD / Mplus / Stata → `latentgold` / `mplus` /
+`stata`, published → `paper`, independent code → `independent`, and internal,
+component, provenance and infrastructure checks → `internal` (shown, never
+counted). A block whose references fall on several axes (one block checking
+Stata and Masyn's table) keeps `reference` but gets no axis; sweep checks and
+the package's own tests name no reference and stay untagged. A commercial
+program the map does not know stops the reporter
+(`latents_cvs_unknown_program`); the reporter's tests check every program in
+the rule tables first. `cvs_retag_report()` tags a report saved before
+tagging, keeping its name, run, start and version.
+
+The manifests CVS's per-target Verification tab reads
+(`../validation/docs/TARGET-VERIFICATION.md`) are generated from the matrix:
+`Rscript equivalence/verification/build-manifests.R` writes
+`verification/modules/<fn>.yaml` and `verification/references.bib`; rebuild
+them after the matrix (`test-verification-manifests.R` fails when they are
+stale). A manifest never claims a block that has no single axis.
 
 The report goes to the CVS inbox when reporting is on (`CVS_INBOX_DIR`, else
 `../validation/data/inbox`; `CVS_DISABLED=1` turns it off) and a copy always
@@ -103,7 +125,8 @@ non-zero exit status if any test fails.
 | `test-external-scripts.R` | the comparisons kept as scripts (weights, BCH against tidySEM, Houle et al., latent-transition extensions, ordinal and count against Latent GOLD), each run in its own process; a non-zero exit or a disagreeing row fails |
 | `test-claims.R` (`CLAIMS.csv`) | documented behavior and conventions checked against software or published references. Each row preserves a documentation anchor, its reference and the backing test, including when help prose omits the reference name. Changed anchors or renamed tests fail; the one unbacked row explains the `boundary = "fix"` convention. This checks registered text and test presence; it does not discover every claim or prove that a named test is sufficient. |
 | `test-boundary-polca.R` | The categorical boundary flag (`get_candidates()`'s `boundary`, the trust view) against poLCA on five binary items, with and without items that copy the class: which candidates reach a probability bound (poLCA at the package's 1e-6 floor), likelihood to 1e-6, parameter counts, and the interior two-class estimates to 1e-6 |
-| `test-cvs-report.R` | The CVS reporter (`cvs/cvs-report.R`): statuses of real testthat results, harness and sweep rows, inbox and local copy, totals equal to the assertions in the file |
+| `test-cvs-report.R` | The CVS reporter (`cvs/cvs-report.R`): statuses of real testthat results, harness and sweep rows, inbox and local copy, totals equal to the assertions in the file; the reference tags (axis per kind of reference, untagged when several axes or none) |
+| `test-verification-manifests.R` | The CVS manifests (`verification/`): current with the matrix, valid YAML with CVS's required fields, claimed files are report entry names, needles claim exactly as CVS matches |
 | `test-tidylpa-classification.R` | Relative entropy and AvePP against tidyLPA's formulas on the same posteriors (`srl`, VVI, 3 to 5 profiles). An independent tidyLPA fit is not compared, because mclust can stop at a different maximum |
 | `test-numerical-equivalence.R` | The in-house exhaustive-enumeration likelihood (`tests/testthat/helper-independent-likelihood.R`) |
 | `test-jstats-lta.R` | Latent transition references pinned by JStats: depmixS4 (Gaussian and binary), two Mplus LTA runs, and Table 5 of Muthen & Asparouhov (2022) |

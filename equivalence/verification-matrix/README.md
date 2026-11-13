@@ -33,6 +33,7 @@ Rscript equivalence/verification-matrix/build.R
 | A new `test-*.R` file | `test-attribution.csv` (one rule per test when its tests compare different references) |
 | A testthat kit gained or lost cases | `test-datasets.R`, then rerun it |
 | A new reference found, or one wired in | add it to `candidates.csv`, or remove it there |
+| The matrix was rebuilt | `Rscript equivalence/verification/build-manifests.R` (the CVS manifests) |
 
 The build stops if any harness quantity, harness source, kit case, test file or
 kit dataset is left unattributed, so a new piece of evidence cannot silently
@@ -42,6 +43,7 @@ drop out of the counts.
 
 | File | What it holds |
 |---|---|
+| `attribution.R` | The matching of these rules (first match wins), shared with the CVS reporter so both attribute evidence alike |
 | `harness-functions.csv` | Which function each harness quantity belongs to: suite plus a regex on the quantity; first match wins |
 | `harness-references.csv` | Which reference each harness `source` is, and its kind |
 | `test-attribution.csv` | For every `test-*.R` in `equivalence/` and `tests/equivalence/`: function, reference and kind, by a regex on the test name. `;` lists several; such tests count once per function |

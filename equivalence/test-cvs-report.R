@@ -182,3 +182,151 @@ test_that("a report goes to the inbox and to tmp/cvs, or only to tmp/cvs when re
   expect_error(cvs_write_report(suites, "Sweep Run", started, output = local), "lowercase")
   expect_error(cvs_write_report(list(), "sweep", started, output = local), "non-empty")
 })
+
+# Tagging: every assertion carries the reference it is evidence for, by the
+# verification matrix's own rules (verification-matrix/attribution.R).
+
+test_that("each kind of reference maps to its CVS axis and authority", {
+  mapped <- .cvs_axis(
+    c("poLCA", "Latent GOLD", "Mplus", "Mplus 9 Demo (JStats fixtures)", "Stata 19 [SEM] Example 52g (gsem)",
+      "Masyn (2013)", "numDeriv / dense likelihood", "internal identity", "tidySEM classification-error matrix",
+      "kit provenance", "CVS reporter"),
+    c("R package", "commercial program", "commercial program", "commercial program", "commercial program",
+      "published", "independent code", "internal", "component check", "provenance", "infrastructure"))
+  expect_identical(mapped$axis, c("r-equivalence", "latentgold", "mplus", "mplus", "stata", "paper",
+                                  "independent", "internal", "internal", "internal", "internal"))
+  expect_identical(mapped$authority, c("r", "latentgold-only", "mplus-only", "mplus-only", "stata-only",
+                                       "paper", "independent", "internal", "internal", "internal", "internal"))
+  expect_identical(mapped$software, c(NA, "latentgold", "Mplus", "Mplus", "stata", "paper", "independent",
+                                      NA, NA, NA, NA))
+  # A kind CVS has no axis for stays untagged rather than guessed.
+  expect_true(is.na(.cvs_axis("StepMix", "Python package")$axis))
+})
+
+test_that("an unknown commercial program stops with a classed error", {
+  expect_error(.cvs_axis("SAS/STAT 14.2", "commercial program"), class = "latents_cvs_unknown_program")
+  expect_error(.cvs_axis("Mplus and Latent GOLD", "commercial program"), class = "latents_cvs_unknown_program")
+  expect_identical(.cvs_axis("IMMERSE lca-bookdown (Mplus 8.11)", "commercial program")$axis, "mplus")
+  # Every commercial program latents' rule tables and matrix name as evidence has an
+  # axis, so the error can only come from an edit of those tables, caught here and not
+  # in a run. Candidates (references not yet wired in) are not evidence.
+  rules <- cvs_rules()
+  tests <- do.call(rbind, Map(matrix_rule_references, rules$tests$reference, rules$tests$kind))
+  cells <- utils::read.csv(file.path("verification-matrix", "matrix.csv"), stringsAsFactors = FALSE)
+  kits <- utils::read.csv(file.path("verification-matrix", "kit-evidence.csv"), stringsAsFactors = FALSE)
+  every <- rbind(tests, rules$harness[c("reference", "kind")], cells[!cells$candidate, c("reference", "kind")],
+                 kits[nzchar(kits$reference), c("reference", "kind")])
+  commercial <- unique(every[every$kind == "commercial program", ])
+  expect_gt(nrow(commercial), 3L)
+  expect_false(anyNA(.cvs_axis(commercial$reference, commercial$kind)$axis))
+})
+
+cvs_tag_fixture <- function() {
+  rules <- list(
+    harness = data.frame(pattern = c("^poLCA", "^Mplus", "^invariance"),
+                         reference = c("poLCA", "Mplus", "invariance"),
+                         kind = c("R package", "commercial program", "internal"), stringsAsFactors = FALSE),
+    tests = data.frame(
+      dir = "equivalence", file = c("test-a.R", "test-a.R", "test-a.R", "test-b.R"),
+      pattern = c("^the kit", "Stata", ".", "^published"),
+      fn = c("none", "lpa;lca", "lpa", "lca"),
+      reference = c("kit provenance", "Stata 19;Masyn (2013)", "glca;depmixS4", "Goodman (2002)"),
+      kind = c("provenance", "commercial program;published", "R package", "published"),
+      stringsAsFactors = FALSE))
+  testthat_entry <- function(name, titles) {
+    list(name = name, `_cvs` = list(tier = "equiv"), assertionResults = lapply(titles, function(title) {
+      .cvs_assertion(basename(name), title, "passed", meta = list(checkKind = "testthat"))
+    }))
+  }
+  harness <- .cvs_from_harness(
+    data.frame(suite = "polca", source = c("poLCA 1.6.0.2", "Mplus 8.11", "invariance", "unmapped 1.0"),
+               quantity = c("loglik", "loglik", "rows permuted", "x"), difference = 0, tolerance = 1e-6,
+               agrees = TRUE, output = NA_character_, n_values = 1L, known_open = NA_character_,
+               stringsAsFactors = FALSE),
+    data.frame(suite = c("polca", "lcmm"), status = c("ran", "skipped"), reason = c(NA, "not installed"),
+               stringsAsFactors = FALSE))
+  sweep <- .cvs_from_sweep(data.frame(module = "gaussian", case = "a", quantity = "loglik", difference = 0,
+                                      tolerance = 1e-8, status = "agrees", note = NA_character_,
+                                      stringsAsFactors = FALSE))
+  suites <- c(list(testthat_entry("equivalence/test-a.R",
+                                  c("the kit is complete", "Stata and Masyn agree", "glca agrees", "glca agrees [2]")),
+                   testthat_entry("equivalence/test-b.R", c("published table", "a test no rule names")),
+                   testthat_entry("tests/testthat/test-a.R", "glca agrees")),
+              harness, sweep)
+  list(rules = rules, suites = suites)
+}
+
+cvs_tags <- function(suite) {
+  keys <- c("axis", "authority", "reference")
+  lapply(suite$assertionResults, function(a) stats::setNames(lapply(keys, function(k) a[["_cvs"]][[k]]), keys))
+}
+
+test_that("assertions are tagged by the matrix's rules, and the untaggable are left as they are", {
+  fixture <- cvs_tag_fixture()
+  tagged <- cvs_tag_suites(fixture$suites, fixture$rules)
+  tags <- cvs_tags(tagged[[1L]])
+  # Provenance is an internal check; a numbered repeat is attributed by its name.
+  expect_identical(tags[[1L]], list(axis = "internal", authority = "internal", reference = "kit provenance"))
+  expect_identical(tags[[3L]], list(axis = "r-equivalence", authority = "r", reference = "glca; depmixS4"))
+  expect_identical(tags[[4L]], tags[[3L]])
+  # References on two axes: the reference is kept, no axis is chosen.
+  expect_identical(tags[[2L]], list(axis = NULL, authority = NULL, reference = "Stata 19; Masyn (2013)"))
+  b <- cvs_tags(tagged[[2L]])
+  expect_identical(b[[1L]], list(axis = "paper", authority = "paper", reference = "Goodman (2002)"))
+  expect_identical(b[[2L]], list(axis = NULL, authority = NULL, reference = NULL))
+  # The package's own tests have no attribution rule: untagged.
+  expect_identical(tagged[[3L]], fixture$suites[[3L]])
+  harness <- cvs_tags(tagged[[4L]])
+  expect_identical(harness[[1L]], list(axis = "r-equivalence", authority = "r", reference = "poLCA"))
+  expect_identical(harness[[2L]], list(axis = "mplus", authority = "mplus-only", reference = "Mplus"))
+  expect_identical(harness[[3L]]$axis, "internal")
+  expect_null(harness[[4L]]$reference)                     # a source no rule names
+  expect_identical(tagged[[5L]], fixture$suites[[5L]])     # "(suite ran)" has no source
+  expect_identical(tagged[[6L]], fixture$suites[[6L]])     # sweep checks name no reference
+  expect_identical(cvs_axis_counts(tagged), data.frame(
+    axis = c("(several axes)", "(unattributed)", "internal", "mplus", "paper", "r-equivalence"),
+    assertions = c(1L, 5L, 2L, 1L, 1L, 3L), stringsAsFactors = FALSE))
+})
+
+test_that("tagging only adds fields: nothing is dropped, renamed or reordered", {
+  fixture <- cvs_tag_fixture()
+  tagged <- cvs_tag_suites(fixture$suites, fixture$rules)
+  strip <- function(suites) lapply(suites, function(suite) {
+    suite$assertionResults <- lapply(suite$assertionResults, function(a) {
+      kept <- a[["_cvs"]][setdiff(names(a[["_cvs"]]), c("axis", "authority", "reference"))]
+      a[["_cvs"]] <- if (length(kept)) kept else NULL
+      a
+    })
+    suite
+  })
+  expect_identical(strip(tagged), strip(fixture$suites))
+  expect_identical(sum(cvs_axis_counts(tagged)$assertions),
+                   sum(vapply(fixture$suites, function(s) length(s$assertionResults), integer(1))))
+  # Tagging is idempotent.
+  expect_identical(cvs_tag_suites(tagged, fixture$rules), tagged)
+})
+
+test_that("a saved report is tagged again with its own name, run, start and version", {
+  local <- withr::local_tempdir()
+  withr::local_envvar(CVS_DISABLED = "1")
+  suites <- .cvs_from_harness(
+    data.frame(suite = "polca", source = "poLCA 1.6.0.2", quantity = "loglik", difference = 1e-9,
+               tolerance = 1e-6, agrees = TRUE, output = NA_character_, n_values = 1L,
+               known_open = NA_character_, stringsAsFactors = FALSE),
+    data.frame(suite = "polca", status = "ran", reason = NA_character_, stringsAsFactors = FALSE))
+  # A report as written before tagging.
+  saved <- file.path(local, "latents-harness-20261112T192825-1.json")
+  writeLines(jsonlite::toJSON(list(numTotalTests = 1L, startTime = 1.7629e12, testResults = suites,
+                                   `_cvs` = list(target = "latents", run = "harness", version = "1.1.19")),
+                              auto_unbox = TRUE, null = "null", digits = NA), saved)
+  output <- file.path(local, "out")
+  expect_message(path <- cvs_retag_report(saved, output = output), "axes: r-equivalence 1")
+  expect_identical(basename(path), basename(saved))
+  report <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_identical(report[["_cvs"]], list(target = "latents", run = "harness", version = "1.1.19"))
+  expect_identical(report$startTime, 1.7629e12)
+  tag <- report$testResults[[1L]]$assertionResults[[1L]][["_cvs"]]
+  expect_identical(tag[c("axis", "authority", "reference", "rPackage")],
+                   list(axis = "r-equivalence", authority = "r", reference = "poLCA", rPackage = "poLCA 1.6.0.2"))
+  expect_error(cvs_retag_report(file.path(local, "missing.json")), "existing file")
+})

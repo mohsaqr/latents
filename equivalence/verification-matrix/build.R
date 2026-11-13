@@ -13,6 +13,8 @@
 
 .matrix_dir <- file.path("equivalence", "verification-matrix")
 source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
+# The attribution rules are shared with the CVS reporter (../cvs/cvs-report.R).
+source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 
 .matrix_functions <- c(
   lpa = "lpa()", multilpa = "multilpa()", lca = "lca()", multilca = "multilca()",
@@ -54,19 +56,7 @@ source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
 
 #' Read one rule table beside this script
 #' @noRd
-.matrix_rules <- function(name) {
-  utils::read.csv(file.path(.matrix_dir, name), stringsAsFactors = FALSE)
-}
-
-#' Index of the first pattern each text matches (NA when none does)
-#' @noRd
-.matrix_first_match <- function(text, patterns) {
-  vapply(text, function(value) {
-    hits <- which(vapply(patterns, function(pattern) grepl(pattern, value, perl = TRUE),
-                         logical(1)))
-    if (length(hits)) hits[[1L]] else NA_integer_
-  }, integer(1), USE.NAMES = FALSE)
-}
+.matrix_rules <- function(name) matrix_read_rules(name, .matrix_dir)
 
 #' One evidence row per harness quantity
 #' @noRd
@@ -75,12 +65,8 @@ source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
   report <- utils::read.csv(source$path, stringsAsFactors = FALSE)
   fn_rules <- .matrix_rules("harness-functions.csv")
   ref_rules <- .matrix_rules("harness-references.csv")
-  fn_index <- vapply(seq_len(nrow(report)), function(i) {
-    candidates <- which(fn_rules$suite == report$suite[[i]])
-    hit <- .matrix_first_match(report$quantity[[i]], fn_rules$pattern[candidates])
-    if (is.na(hit)) NA_integer_ else candidates[[hit]]
-  }, integer(1))
-  ref_index <- .matrix_first_match(report$source, ref_rules$pattern)
+  fn_index <- matrix_harness_function(report$suite, report$quantity, fn_rules)
+  ref_index <- matrix_harness_reference(report$source, ref_rules)
   stopifnot(
     "every harness quantity is attributed to a function" = !anyNA(fn_index),
     "every harness source is mapped to a reference" = !anyNA(ref_index))
@@ -134,14 +120,11 @@ source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
 #' @noRd
 .matrix_expand <- function(base, fn, reference, kind) {
   fns <- strsplit(fn, ";", fixed = TRUE)[[1L]]
-  refs <- strsplit(reference, ";", fixed = TRUE)[[1L]]
-  kinds <- strsplit(kind, ";", fixed = TRUE)[[1L]]
-  stopifnot("one kind per reference" = length(kinds) %in% c(1L, length(refs)))
-  kinds <- rep_len(kinds, length(refs))
-  grid <- expand.grid(f = seq_along(fns), r = seq_along(refs))
+  refs <- matrix_rule_references(reference, kind)
+  grid <- expand.grid(f = seq_along(fns), r = seq_len(nrow(refs)))
   data.frame(base[rep(1L, nrow(grid)), , drop = FALSE], fn = fns[grid$f],
-             reference = refs[grid$r], kind = kinds[grid$r], shared = nrow(grid) > 1L,
-             row.names = NULL, stringsAsFactors = FALSE)
+             reference = refs$reference[grid$r], kind = refs$kind[grid$r],
+             shared = nrow(grid) > 1L, row.names = NULL, stringsAsFactors = FALSE)
 }
 
 #' One evidence row per saved test (and per registered file with no result)
@@ -162,9 +145,10 @@ source(file.path(.matrix_dir, "provenance.R"), local = TRUE)
       all(ruled %in% paste(on_disk$dir, on_disk$file)))
   results <- .matrix_test_results(files)
   results <- results[paste(results$dir, results$file) %in% ruled, ]
+  hits <- matrix_test_rule(results$dir, results$file, results$test, rules)
+  stopifnot("every saved test matches an attribution rule of its file" = !anyNA(hits))
   saved <- lapply(seq_len(nrow(results)), function(i) {
-    own <- which(rules$dir == results$dir[[i]] & rules$file == results$file[[i]])
-    hit <- own[[.matrix_first_match(results$test[[i]], rules$pattern[own])]]
+    hit <- hits[[i]]
     base <- data.frame(
       evidence_id = paste0(results$dir[[i]], "/", results$file[[i]], ":", results$test[[i]]),
       origin = "testthat", location = file.path(results$dir[[i]], results$file[[i]]),
