@@ -40,6 +40,7 @@ if (nrow(stale) > 0L) {
 cat(sprintf("API check: every validation call matches multilpa %s.\n",
             utils::packageVersion("latents")))
 
+started <- Sys.time()
 run <- run_equivalence(if (length(requested) > 0L) requested else NULL,
                        check_api = FALSE)
 
@@ -85,6 +86,11 @@ writeLines(c(sprintf("multilpa %s", equivalence_provenance(run, "multilpa")),
 
 cat(sprintf("\nwrote report.csv, suites.csv, coverage.csv, known-open-status.csv, REPORT.md and SESSION.txt in %s\n",
             directory))
+
+# Every run reports to CVS, failing runs included (equivalence/cvs/cvs-report.R).
+source(file.path("equivalence", "cvs", "cvs-report.R"))
+cvs_write_report(.cvs_from_harness(comparisons, as.data.frame(run, what = "suites"),
+                                   coverage, register), "harness", started)
 
 suites <- as.data.frame(run, what = "suites")
 # A known open defect does not fail the run; a new disagreement, a failed

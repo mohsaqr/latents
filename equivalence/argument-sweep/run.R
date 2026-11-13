@@ -35,6 +35,7 @@ jobs <- unlist(lapply(modules, function(module) {
 }), recursive = FALSE)
 cores <- as.integer(Sys.getenv("SWEEP_CORES", "6"))
 message(sprintf("%d cases in %d modules on %d cores", length(jobs), length(modules), cores))
+started <- Sys.time()
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20261111)
 outcomes <- parallel::mclapply(jobs, function(job) {
@@ -86,4 +87,16 @@ summary_lines <- c(
 writeLines(summary_lines, file.path(output, sprintf("SUMMARY%s.md", suffix)))
 writeLines(utils::capture.output(utils::sessionInfo()), file.path(output, "SESSION.txt"))
 cat(summary_lines, sep = "\n")
+
+# Every run reports to CVS, failing runs included (equivalence/cvs/cvs-report.R).
+# A stale register entry fails the run but has no check row; it reaches CVS as
+# a failed assertion of its module.
+source(file.path("equivalence", "cvs", "cvs-report.R"))
+reported <- results
+if (nrow(stale)) {
+  reported <- rbind(reported, problems[problems$status == "stale known difference", names(results)])
+  reported$status[reported$status == "stale known difference"] <- "error"
+}
+cvs_write_report(.cvs_from_sweep(reported), if (length(requested)) paste0("sweep", suffix) else "sweep",
+                 started)
 if (nrow(problems)) quit(status = 1L)

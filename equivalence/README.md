@@ -24,6 +24,7 @@ Run everything from the project root.
 | `enumeration-packages/` | `enumerate_lpa()` against `mclustBIC()`, `enumerate_lca()` against poLCA, `bootstrap_lrt()` against `mclustBootstrapLRT()` and mclust's vignette (mclust run to 1e-12; its default 1e-5 stops short). | `Rscript equivalence/enumeration-packages/compare.R` |
 | `growth-published/`, `stata-published/`, `mplus-growth/` | Published analyses reproduced (Proust-Lima et al. 2017 on paquid; Stata [SEM] Examples 52g and 50g and Masyn 2013 Table 25.12) and genuine Mplus 9 growth runs from JStats. | `Rscript equivalence/<kit>/compare.R` |
 | `argument-sweep/` | Every argument of the fitting and post-fit functions at each of its options, on several datasets: the likelihood rebuilt from the result tables (mixture, hidden Markov, mixture of regressions, random effects), mclust, poLCA and flexmix continued from the package's solution, one-class limits (`lm`, `glm`, `glm.nb`, `polr`, `lmer`), `optim` and `numDeriv` for the step-three and Wald results, invariances and classed refusals. See its [README](argument-sweep/README.md). Writes `tmp/argument-sweep/`. | `Rscript equivalence/argument-sweep/run.R` |
+| `cvs/` | Reports every run of the testthat equivalence files, the package's own tests, the harness and the argument sweep to CVS, the validation service in `../validation` (one JSON file per run; see [Reporting to CVS](#reporting-to-cvs)). | used by the runners; `Rscript equivalence/cvs/test-local.R` for the package's tests |
 | `REFERENCE-CANDIDATES.md` | Published and software references not yet wired in, by function, with data access and the numbers to match. | — |
 | `verification-matrix/` | **The living verification record**: every major function against every reference that checks it (strength as one + per source and one P per paper, datasets, checks), built from saved results. Read [`VERIFICATION-MATRIX.md`](verification-matrix/VERIFICATION-MATRIX.md); rebuild after any equivalence run ([how](verification-matrix/README.md#keeping-it-current)). | `Rscript equivalence/verification-matrix/build.R` |
 
@@ -41,6 +42,32 @@ The fast validation regressions run with
 `Rscript equivalence/verification-matrix/tests/run.R`; they inject missing
 results, incorrect counts, skipped tests and changed source files without
 refitting models.
+
+## Reporting to CVS
+
+`equivalence/run.R`, `harness/run.R`, `argument-sweep/run.R` and
+`cvs/test-local.R` (the ci job `test`) each end by writing one CVS report,
+failing runs included: a JSON file in the vitest layout CVS ingests, named
+`latents-<run>-<time>.json` (the prefix assigns it to the CVS target
+`latents`). One entry per source file, one assertion per item:
+
+| Run | Entry (file) | Assertion | Status |
+|---|---|---|---|
+| testthat (`equivalence/`, `tests/testthat/`) | the test file | one `test_that()` block, `checkKind` "testthat" | failed when an expectation failed or errored, skipped when it skipped, else passed |
+| harness | `harness/suites/<suite>.R` | one compared quantity, with difference, tolerance, reference and output | passed when it agrees, else failed (also when a known open defect explains it); a suite that did not run is one "(suite ran)" assertion |
+| argument sweep | `argument-sweep/modules/<module>.R` | one check, with difference and tolerance | agrees: passed; disagrees or error: failed; known difference, no reference: skipped with the reason |
+
+Each file declares its CVS tier (`_cvs.tier`), since CVS otherwise
+classifies by file name and an R file name carries none: `equiv` for the
+equivalence files, harness suites and sweep modules, `unit` for
+`tests/testthat`. CVS honours the declaration from validation PR #23 on.
+
+The report goes to the CVS inbox when reporting is on (`CVS_INBOX_DIR`, else
+`../validation/data/inbox`; `CVS_DISABLED=1` turns it off) and a copy always
+goes to `tmp/cvs/`. On ci, mini-ci turns reporting on for the named jobs of a
+`.mini-ci` that says `report cvs`, and fetches `tmp/cvs` back otherwise. A
+filtered run (`equivalence/run.R mclust`, a shard) is labelled by its filter.
+The reporter is tested by `test-cvs-report.R`.
 
 ## The testthat assertions
 
@@ -76,6 +103,7 @@ non-zero exit status if any test fails.
 | `test-external-scripts.R` | the comparisons kept as scripts (weights, BCH against tidySEM, Houle et al., latent-transition extensions, ordinal and count against Latent GOLD), each run in its own process; a non-zero exit or a disagreeing row fails |
 | `test-claims.R` (`CLAIMS.csv`) | documented behavior and conventions checked against software or published references. Each row preserves a documentation anchor, its reference and the backing test, including when help prose omits the reference name. Changed anchors or renamed tests fail; the one unbacked row explains the `boundary = "fix"` convention. This checks registered text and test presence; it does not discover every claim or prove that a named test is sufficient. |
 | `test-boundary-polca.R` | The categorical boundary flag (`get_candidates()`'s `boundary`, the trust view) against poLCA on five binary items, with and without items that copy the class: which candidates reach a probability bound (poLCA at the package's 1e-6 floor), likelihood to 1e-6, parameter counts, and the interior two-class estimates to 1e-6 |
+| `test-cvs-report.R` | The CVS reporter (`cvs/cvs-report.R`): statuses of real testthat results, harness and sweep rows, inbox and local copy, totals equal to the assertions in the file |
 | `test-tidylpa-classification.R` | Relative entropy and AvePP against tidyLPA's formulas on the same posteriors (`srl`, VVI, 3 to 5 profiles). An independent tidyLPA fit is not compared, because mclust can stop at a different maximum |
 | `test-numerical-equivalence.R` | The in-house exhaustive-enumeration likelihood (`tests/testthat/helper-independent-likelihood.R`) |
 | `test-jstats-lta.R` | Latent transition references pinned by JStats: depmixS4 (Gaussian and binary), two Mplus LTA runs, and Table 5 of Muthen & Asparouhov (2022) |

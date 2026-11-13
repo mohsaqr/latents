@@ -122,6 +122,7 @@ tests/equivalence,test-vignette-claims.R,latent profile,lpa,vignette claims,inte
 tests/equivalence,test-vignette-claims.R,latent class,lca,vignette claims,internal
 tests/equivalence,test-weighted-logits.R,.,multilpa,stats weighted-logit M-step,component check
 equivalence,test-claims.R,.,none,claims registry,infrastructure
+equivalence,test-cvs-report.R,.,none,CVS reporter,infrastructure
 equivalence,test-depmixs4-standard-errors.R,.,lta,depmixS4,R package
 equivalence,test-direct-effects-search-protocol.R,.,lca,search protocol,internal
 equivalence,test-enumeration-mplus.R,.,enumeration,Mplus,commercial program

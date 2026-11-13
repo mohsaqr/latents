@@ -1,3 +1,9 @@
+# latents 1.1.21
+
+* No change to the package. Every run of the equivalence tests, the
+  comparison harness, the argument sweep and the package tests now reports to
+  CVS, the validation service.
+
 # latents 1.1.20
 
 * No change to the package. The equivalence harness gained references for

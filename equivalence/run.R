@@ -23,6 +23,19 @@ pkgload::load_all(".", quiet = TRUE)
 # and one reference package's changed return value (six failures in a file)
 # ended a run with thirteen files unread.
 testthat::set_max_fails(Inf)
-testthat::test_dir(file.path("equivalence"), filter = filter,
-                   package = "latents", load_package = "none",
-                   stop_on_failure = TRUE)
+started <- Sys.time()
+results <- testthat::test_dir(file.path("equivalence"), filter = filter,
+                              package = "latents", load_package = "none",
+                              stop_on_failure = FALSE)
+
+# Every run reports to CVS, failing runs included (equivalence/cvs/cvs-report.R),
+# labelled by its filter when it has one (the ci shards report disjoint files).
+source(file.path("equivalence", "cvs", "cvs-report.R"))
+filter_label <- gsub("^-+|-+$", "", substr(gsub("[^a-z0-9]+", "-", tolower(filter %||% "")), 1L, 40L))
+label <- if (nzchar(filter_label)) paste0("equivalence-", filter_label) else "equivalence"
+cvs_write_report(.cvs_from_testthat(results, "equivalence", "equiv"), label, started)
+
+outcome <- as.data.frame(results)
+if (any(outcome$failed > 0L | outcome$error)) {
+  quit(status = 1L, save = "no")
+}
