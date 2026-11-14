@@ -5,20 +5,30 @@ family: "cluster"
 label: "pool_imputations()"
 slug: "pool-imputations"
 name: "Fit and pool mixture models across multiple imputations"
-summary: "Fit and pool mixture models across multiple imputations. Verification strength +++ in latents' verification matrix: 3 source(s) (mice, mitml, mitools), 0 published paper(s), 2 dataset(s), 114 current checks of which 0 failed."
+summary: "Fit and pool mixture models across multiple imputations. Verification strength +++ in latents' verification matrix: 3 source(s) (mitools, mice, mitml), 0 published paper(s), 2 dataset(s), 805 current checks of which 0 failed."
 module_files:
   - "R/pool-imputations.R"
 public_api:
   - "pool_imputations"
 papers: []
 tolerances:
+  - { function: "pool_imputations(): 294 quantities (sweep)", reference: "Rubin's rules written here", tolerance: "1e-10 (294 of 294 within)", status: "pass" }
   - { function: "pool_imputations(): 16 quantities (harness)", reference: "base-R likelihood + numDeriv", tolerance: "1e-10 to 0.5 (16 of 16 within)", status: "pass" }
   - { function: "pool_imputations(): 62 quantities (harness)", reference: "mice", tolerance: "1e-10 to 0.5 (62 of 62 within)", status: "pass" }
   - { function: "pool_imputations(): 20 quantities (pool-packages)", reference: "mitml", tolerance: "1e-10 (20 of 20 within)", status: "pass" }
+  - { function: "pool_imputations(): 147 quantities (sweep)", reference: "mitools", tolerance: "1e-10 (147 of 147 within)", status: "pass" }
   - { function: "pool_imputations(): 16 quantities (pool-packages)", reference: "mitools", tolerance: "1e-10 (16 of 16 within)", status: "pass" }
+  - { function: "pool_imputations(): 147 quantities (sweep)", reference: "published formula computed here", tolerance: "0 (147 of 147 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/pooling.R"
   - "equivalence/harness/suites/pool-imputations.R"
   - "equivalence/test-pool-packages.R"
-cvs_test_filter: []
+  - "tests/equivalence/test-audit-services-fixes.R"
+  - "tests/equivalence/test-pool-imputations.R"
+  - "tests/equivalence/test-review-1026-inference.R"
+cvs_test_filter:
+  - { file: "tests/equivalence/test-review-1026-inference.R", test_name_includes: "Rubin's rules match hand computation and mice::pool.scalar" }
 cross_software_expected:
+  - { software: "independent", package: "Rubin's rules written here" }
   - { software: "independent", package: "base-R likelihood + numDeriv" }
+  - { software: "independent", package: "published formula computed here" }

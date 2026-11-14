@@ -73,15 +73,20 @@ test_that("every claimed file is an entry name the CVS reporter writes", {
     sub("^  - \"(.*)\"$", "\\1", block)
   })))
   # The names the runners report under: equivalence/run.R names each test file
-  # file.path("equivalence", file); the harness names each suite with .cvs_harness_entry().
+  # file.path(<its folder>, file) (equivalence/, or tests/equivalence/ with
+  # --dir=); the harness names each suite with .cvs_harness_entry(), the sweep
+  # each module with .cvs_sweep_entry().
   suites <- sub("[.]R$", "", list.files(file.path("harness", "suites"), "[.]R$"))
   harness <- .cvs_from_harness(
     data.frame(suite = suites, source = "poLCA", quantity = "q", difference = 0, tolerance = 1,
                agrees = TRUE, output = NA_character_, n_values = 1L, known_open = NA_character_,
                stringsAsFactors = FALSE),
     data.frame(suite = suites, status = "ran", reason = NA_character_, stringsAsFactors = FALSE))
+  modules <- sub("[.]R$", "", list.files(file.path("argument-sweep", "modules"), "[.]R$"))
   reported <- c(file.path("equivalence", list.files(".", "^test-.*[.]R$")),
-                vapply(harness, `[[`, character(1), "name"))
+                file.path("tests", "equivalence",
+                          list.files(file.path("..", "tests", "equivalence"), "^test-.*[.]R$")),
+                vapply(harness, `[[`, character(1), "name"), .cvs_sweep_entry(modules))
   expect_gt(length(claimed), 20L)
   expect_identical(setdiff(claimed, reported), character())
 })

@@ -111,9 +111,10 @@ cvs_rules <- function(dir = .cvs_matrix_dir()) {
 
 #' The references each assertion of one report entry compares with
 #'
-#' Harness quantities by their source (`_cvs$rPackage`), testthat blocks by the
-#' rule of test-attribution.csv their file and name match (a numbered repeat,
-#' "name [2]", by its name). Sweep checks, the harness's coverage and
+#' Harness quantities by their source (`_cvs$rPackage`), sweep checks by the
+#' reference and kind their run recorded (`_cvs$rPackage`, `_cvs$referenceKind`),
+#' testthat blocks by the rule of test-attribution.csv their file and name match
+#' (a numbered repeat, "name [2]", by its name). The harness's coverage and
 #' known-open rows, and tests no rule names have none.
 #' @return A list with one element per assertion: a data.frame of
 #'   `reference` and `kind` (zero rows when unattributed).
@@ -122,7 +123,12 @@ cvs_rules <- function(dir = .cvs_matrix_dir()) {
   none <- data.frame(reference = character(), kind = character(), stringsAsFactors = FALSE)
   assertions <- entry$assertionResults
   if (startsWith(entry$name, file.path("equivalence", "argument-sweep", ""))) {
-    return(rep(list(none), length(assertions)))
+    return(lapply(assertions, function(a) {
+      reference <- a[["_cvs"]]$rPackage
+      kind <- a[["_cvs"]]$referenceKind
+      if (is.null(reference) || is.null(kind)) none else
+        data.frame(reference = reference, kind = kind, stringsAsFactors = FALSE)
+    }))
   }
   if (startsWith(entry$name, file.path("equivalence", "harness", "suites", ""))) {
     sources <- vapply(assertions, function(a) a[["_cvs"]]$rPackage %||% NA_character_, character(1))
@@ -343,12 +349,21 @@ cvs_axis_counts <- function(suites) {
 #' One suite per module, one assertion per check. "agrees" passes;
 #' "disagrees" and "error" fail; "known difference" (registered in
 #' known-differences.csv) and "no reference" are skipped with their reason.
+#' Each assertion carries the reference and kind of reference its check is
+#' evidence for (`rPackage`, `referenceKind`), from the run's `reference` and
+#' `kind` columns, or, for results saved before the sweep recorded them, from
+#' the verification matrix's sweep rules.
 #' @param results The results table the sweep writes as results.csv.
 #' @return A list of suites.
 #' @noRd
 .cvs_from_sweep <- function(results) {
   needed <- c("module", "case", "quantity", "difference", "tolerance", "status", "note")
   stopifnot("`results` lacks sweep columns" = all(needed %in% names(results)))
+  if (!all(c("reference", "kind") %in% names(results))) {
+    results <- cbind(results[setdiff(names(results), c("fn", "reference", "kind"))],
+                     matrix_sweep_attribution(results$module, results$case, results$quantity,
+                                              .cvs_matrix_dir()))
+  }
   status_map <- c(agrees = "passed", disagrees = "failed", error = "failed",
                   `known difference` = "skipped", `no reference` = "skipped")
   unknown <- setdiff(unique(results$status), names(status_map))
@@ -366,7 +381,8 @@ cvs_axis_counts <- function(suites) {
       .cvs_assertion(module, titles[[i]], status,
                      if (identical(status, "passed")) character() else reason,
                      list(delta = abs(rows$difference[[i]]), tolerance = rows$tolerance[[i]],
-                          module = module))
+                          module = module, rPackage = rows$reference[[i]],
+                          referenceKind = rows$kind[[i]]))
     })
     list(name = .cvs_sweep_entry(module),
          `_cvs` = list(tier = "equiv"), assertionResults = assertions)

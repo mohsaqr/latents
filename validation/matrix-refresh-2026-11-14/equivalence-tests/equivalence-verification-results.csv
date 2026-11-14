@@ -1,0 +1,11 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-verification-artifact-export.R","verification-artifact-export","verification tables are written only to an explicitly declared artifact directory",5,0,FALSE,FALSE,0,0.036,0,0.036,5
+"test-verification-attribution.R","verification-attribution","component and local-oracle checks cannot become model sources",27,0,FALSE,FALSE,0,0.037,0,0.037,27
+"test-verification-attribution.R","verification-attribution","Latent GOLD checks credit the public function that actually runs",10,0,FALSE,FALSE,0,0.00999999999999995,0,0.01,10
+"test-verification-attribution.R","verification-attribution","a kit's rows fall into one reference group per CVS axis",2,0,FALSE,FALSE,0,0.00700000000000001,0,0.00700000000000001,2
+"test-verification-attribution.R","verification-attribution","every kit with a test saves the comparison that test computes",2,0,FALSE,FALSE,0,0.003,0,0.002,2
+"test-verification-manifests.R","verification-manifests","the committed manifests are the ones the matrix generates",3,0,FALSE,FALSE,0,11.501,0.032,11.534,3
+"test-verification-manifests.R","verification-manifests","every manifest parses and carries what CVS requires",92,0,FALSE,FALSE,0,0.0820000000000007,0.005,0.0909999999999993,92
+"test-verification-manifests.R","verification-manifests","every claimed file is an entry name the CVS reporter writes",2,0,FALSE,FALSE,0,0.0120000000000005,0,0.0119999999999987,2
+"test-verification-manifests.R","verification-manifests","needles claim exactly as CVS matches them",7,0,FALSE,FALSE,0,0.00900000000000034,0.001,0.00900000000000034,7
+"test-verification-manifests.R","verification-manifests","references get stable BibTeX keys and YAML strings are escaped",6,0,FALSE,FALSE,0,0.00699999999999967,0,0.00699999999999967,6

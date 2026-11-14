@@ -46,15 +46,27 @@ test_that("every case of the kit has its Latent GOLD and Mplus output", {
                          logical(1))))
 })
 
-test_that("two seeds of latents reach the same maximum, and no reference a higher one", {
+# A comparison with the programs is one block per program, so a block is
+# evidence for exactly one reference (CVS and the verification matrix take one
+# reference per test). ji_table names the program in `reference`.
+ji_programs <- c(latentgold = "Latent GOLD", mplus = "Mplus")
+
+test_that("two seeds of latents reach the same maximum", {
   spread <- vapply(ji_all_fits, \(fit) diff(range(fit$ji_seed_maxima)) /
                      ji_latents_loglik(fit$log_likelihood), numeric(1))
   expect_true(all(spread <= 2), info = paste(names(spread)[spread > 2], collapse = ", "))
   expect_true(all(vapply(ji_all_fits, \(fit) isTRUE(fit$converged), logical(1))))
-  expect_within(subset(ji_table, quantity == "log_likelihood"))
   # A reference that stopped lower than latents is reported, not compared.
   expect_identical(ji_notes, character())
+  expect_setequal(unique(ji_table$reference), names(ji_programs))
 })
+
+invisible(lapply(names(ji_programs), \(code) {
+  program <- ji_programs[[code]]
+  test_that(sprintf("the log likelihood agrees with %s, which finds no higher maximum", program), {
+    expect_within(subset(ji_table, reference == code & quantity == "log_likelihood"))
+  })
+}))
 
 test_that("the reference likelihood at latents' estimates is latents' likelihood", {
   expect_identical(nrow(ji_gaps), 52L)
@@ -87,21 +99,29 @@ test_that("every original joint-item seed remains visible beside its verificatio
   expect_true(all(known$original_posterior_gap > .001))
 })
 
-test_that("the parameter counts agree under Latent GOLD's full-grid convention", {
-  # Latent GOLD's `a <-> b | Cluster` keeps C1 C2 - 1 probabilities per class
-  # even for combinations never observed (they go to zero), as does latents.
-  # The Mplus kit and poLCA receive only observed joined categories. Their
-  # reported counts are increased by k x (unobserved combinations), and their
-  # BIC by that count difference x log(N), before comparing full-grid models.
-  expect_within(subset(ji_table, quantity == "n_parameters"))
+# Latent GOLD's `a <-> b | Cluster` keeps C1 C2 - 1 probabilities per class
+# even for combinations never observed (they go to zero), as does latents.
+# The Mplus kit and poLCA receive only observed joined categories. Their
+# reported counts are increased by k x (unobserved combinations), and their
+# BIC by that count difference x log(N), before comparing full-grid models.
+test_that("the kit's sparse cases have unobserved combinations", {
   unobserved <- vapply(ji_all_cases, ji_unobserved_cells, numeric(1))
   expect_true(all(unobserved[grepl("^(sparse|perfect)_", names(unobserved))] > 0))
   expect_identical(unname(unobserved[["perfect_01"]]), 6)
 })
 
-test_that("BIC agrees with Latent GOLD and Mplus", {
-  expect_within(subset(ji_table, quantity %in% c("bic", "bic_individual")))
-})
+invisible(lapply(names(ji_programs), \(code) {
+  program <- ji_programs[[code]]
+  test_that(sprintf("the parameter count agrees with %s under the full-grid convention", program), {
+    expect_within(subset(ji_table, reference == code & quantity == "n_parameters"))
+  })
+  test_that(sprintf("BIC agrees with %s", program), {
+    expect_within(subset(ji_table, reference == code & quantity %in% c("bic", "bic_individual")))
+  })
+  test_that(sprintf("posteriors agree row by row with %s", program), {
+    expect_within(subset(ji_table, reference == code & quantity == "posteriors"))
+  })
+}))
 
 test_that("class sizes, item and joint probabilities agree with Latent GOLD", {
   expect_within(subset(ji_table, reference == "latentgold" &
@@ -115,10 +135,6 @@ test_that("class sizes, item and joint probabilities agree with Latent GOLD", {
   expected_cells <- sum(vapply(ji_all_cases,
     \(case) case$spec$k * ji_unobserved_cells(case), numeric(1)))
   expect_equal(sum(floor_rows$n), expected_cells)
-})
-
-test_that("posteriors agree row by row with Latent GOLD and Mplus", {
-  expect_within(subset(ji_table, quantity == "posteriors"))
 })
 
 test_that("the probabilities implied by Mplus's posteriors agree", {

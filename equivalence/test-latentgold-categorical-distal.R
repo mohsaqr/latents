@@ -10,6 +10,7 @@
 base <- "latentgold-categorical-distal"
 source(file.path("latentgold", "compare-functions.R"), local = TRUE)
 source(file.path(base, "common.R"), local = TRUE)
+source("package-kit-runner.R", local = TRUE)
 
 test_that("the kit is the one Latent GOLD was given", {
   recorded <- readLines(file.path(base, "returned", "INPUTS.md5"))
@@ -30,10 +31,12 @@ test_that("the kit is the one Latent GOLD was given", {
 })
 
 test_that("categorical distal outcomes match Latent GOLD's step-three model", {
+  snapshot <- matrix_capture_source("..")
   references <- lapply(stats::setNames(distal_cases, distal_cases), function(case) {
     distal_reference(distal_case(case))
   })
   comparison <- distal_comparison(references, file.path(base, "returned"))
+  kit_save_comparison(base, comparison, snapshot)
   differing <- subset(comparison, status != "agree" & status != "not comparable")
   expect_identical(nrow(differing), 0L, label = paste(differing$quantity, collapse = "; "))
   # Every probability of every method, and the robust standard errors and

@@ -16,22 +16,15 @@ source(file.path(regression_packages_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("mixture_regression() reproduces three packages and three publications", {
-  known <- utils::read.csv(file.path(regression_packages_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_regression()
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 76L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(registered$stale), 0L)
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-  published <- subset(comparison, kind == "published")
-  expect_identical(nrow(published), 20L)
-  expect_true(all(published$agrees))
-  # Rows explained by a "sometimes" entry (a platform-dependent reference)
-  # count with the agreeing rows; the floor still bounds what the register waives.
-  optional <- registered$explained %in% which(known$occurs == "sometimes")
-  expect_gte(sum(comparison$agrees | optional), 71L)
-})
+kit_reference_tests(
+  "regression-packages", compare_all_regression, n_rows = 76L,
+  groups = c("R packages", "published analyses"),
+  coverage = function(result) {
+    published <- subset(result$comparison, kind == "published")
+    testthat::expect_identical(nrow(published), 20L)
+    testthat::expect_true(all(published$agrees))
+    # Rows explained by a "sometimes" entry (a platform-dependent reference)
+    # count with the agreeing rows; the floor still bounds what the register waives.
+    optional <- result$explained %in% which(result$known$occurs == "sometimes")
+    testthat::expect_gte(sum(result$comparison$agrees | optional), 71L)
+  })

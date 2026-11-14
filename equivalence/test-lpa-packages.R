@@ -18,16 +18,6 @@ source(file.path(lpa_packages_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("lpa() reproduces independent Gaussian mixture implementations", {
-  known <- utils::read.csv(file.path(lpa_packages_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_lpa()
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 156L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-  expect_identical(nrow(registered$stale), 0L)
-  expect_gte(sum(comparison$agrees), 155L)
-})
+kit_reference_tests(
+  "lpa-packages", compare_all_lpa, n_rows = 156L, groups = "R packages", kind = "R package",
+  coverage = function(result) testthat::expect_gte(sum(result$comparison$agrees), 155L))

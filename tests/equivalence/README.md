@@ -9,7 +9,9 @@ path-enumeration likelihoods, the log-space recursion in
 `helper-lta-log-reference.R`), and the numbers stated in the workflow articles.
 They are for development only: this directory is excluded from the package
 build, so they never run in `R CMD check` or on CRAN. CI runs them in the
-`equivalence` workflow.
+`equivalence` workflow, and the Mac mini's ci in the job `equivalence-t`
+(`Rscript equivalence/run.R --dir=tests/equivalence`), which reports to CVS and
+saves the results the verification matrix reads (`equivalence/README.md`).
 
 A file here has the name of the `tests/testthat/` file whose model it checks;
 `tests/testthat/` keeps the package's own contracts, invariants and refusals.

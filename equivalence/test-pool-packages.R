@@ -9,15 +9,5 @@ source(file.path(pool_packages_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("pool-packages agrees with its references", {
-  known <- utils::read.csv(file.path(pool_packages_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_pool()
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 36L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-  expect_identical(nrow(registered$stale), 0L)
-})
+kit_reference_tests(
+  "pool-packages", compare_all_pool, n_rows = 36L, groups = "R packages", kind = "R package")

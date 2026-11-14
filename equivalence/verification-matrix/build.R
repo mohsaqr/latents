@@ -3,8 +3,9 @@
 #
 #   Rscript equivalence/verification-matrix/build.R      (from the project root)
 #
-# Inputs are the harness report and the saved testthat results named in
-# `.matrix_evidence_files()`, the attribution rules beside this script, and
+# Inputs are the harness report, the argument sweep's results and the saved
+# testthat results named in `.matrix_evidence_files()`, the attribution rules
+# beside this script, and
 # `candidates.csv` (references found but not yet wired in). Outputs, written
 # beside this script: evidence.csv (one row per check), matrix.csv (one row per
 # function and reference), summary.csv (one row per function), and
@@ -37,18 +38,31 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 #' @return A data.frame: one row per input file.
 #' @noRd
 .matrix_evidence_files <- function() {
+  # The 2026-11-14 refresh: every equivalence/ test file in four ci shards, the
+  # tests/equivalence/ files, the harness and the argument sweep, each with its
+  # provenance sidecar. Older results stay listed: a file's newest current
+  # result is preferred.
+  refresh <- "matrix-refresh-2026-11-14"
+  shards <- c("a-f", "g-l", "m-u-v-e-w-z", "verification")
   files <- data.frame(
-    role = c("harness", "tests", "tests", "tests", "tests", "tests"),
-    dir = c(NA, "tests/equivalence", "equivalence", "equivalence", "equivalence", "equivalence"),
+    role = c("harness", "sweep", "tests", "tests", "tests", "tests", "tests",
+             rep("tests", length(shards)), "tests"),
+    dir = c(NA, NA, "tests/equivalence", "equivalence", "equivalence", "equivalence", "equivalence",
+            rep("equivalence", length(shards)), "tests/equivalence"),
     path = file.path("validation", c(
-      "release-fixes-2026-10-28/equivalence/report.csv",
+      file.path(refresh, "equivalence", "report.csv"),
+      file.path(refresh, "argument-sweep", "results.csv"),
       "release-fixes-2026-10-28/release/external-tests-consolidated.csv",
       "release-fixes-2026-10-28/release/retained-references-results.csv",
       "matrix-refresh-2026-10-28/equivalence-results.csv",
       "release-0.96.1-2026-10-20/outer-final/cases.csv",
-      "matrix-refresh-2026-11-01/equivalence-results.csv")),
-    run = c("2026-10-28", "2026-10-28", "2026-10-28", "2026-10-29", "2026-10-20", "2026-11-01"),
-    code = c("0.98.0", "0.98.0", "0.98.0", "0.98.1", "0.96.1", "1.1.9 features"),
+      "matrix-refresh-2026-11-01/equivalence-results.csv",
+      file.path(refresh, "equivalence-tests", sprintf("equivalence-%s-results.csv", shards)),
+      file.path(refresh, "equivalence-tests", "tests-equivalence-results.csv"))),
+    run = c("2026-11-14", "2026-11-14", "2026-10-28", "2026-10-28", "2026-10-29", "2026-10-20",
+            "2026-11-01", rep("2026-11-14", length(shards)), "2026-11-14"),
+    code = c("1.1.22", "1.1.22", "0.98.0", "0.98.0", "0.98.1", "0.96.1", "1.1.9 features",
+             rep("1.1.22", length(shards)), "1.1.22"),
     current = FALSE)
   files$current <- vapply(files$path, matrix_evidence_current, logical(1))
   files
@@ -80,6 +94,52 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     run = source$run, code = source$code, current = source$current,
     dataset = ifelse(is.na(report$dataset) | report$dataset == "NA", NA_character_, report$dataset),
     stringsAsFactors = FALSE)
+}
+
+#' One evidence row per argument-sweep check
+#'
+#' Each check of the sweep's results.csv is one check of the function and
+#' reference its run recorded (`fn`, `reference`, `kind`, from
+#' sweep-functions.csv and sweep-references.csv; a results file saved before
+#' the sweep recorded them is attributed by the same rules here). A check of no
+#' matrix function (a plot) is left out. "agrees" is a check, "disagrees" and
+#' "error" are failures and "known difference" is registered. "no reference"
+#' (the reference cannot judge the case, e.g. a fit on a boundary for the
+#' rebuilt-likelihood optimality check) is left out, as a kit's "not
+#' comparable" rows are. The dataset is the case's `data=` option, where it has
+#' one.
+#' @noRd
+.matrix_sweep <- function(files) {
+  sources <- files[files$role == "sweep" & file.exists(files$path), ]
+  pieces <- lapply(seq_len(nrow(sources)), function(i) {
+    rows <- utils::read.csv(sources$path[[i]], stringsAsFactors = FALSE)
+    if (!all(c("fn", "reference", "kind") %in% names(rows))) {
+      rows <- cbind(rows[setdiff(names(rows), c("fn", "reference", "kind"))],
+                    matrix_sweep_attribution(rows$module, rows$case, rows$quantity, .matrix_dir))
+    }
+    rows$fn[is.na(rows$fn)] <- ""
+    stopifnot("every sweep check has a status the matrix knows" =
+                all(rows$status %in% c("agrees", "disagrees", "error", "known difference",
+                                       "no reference")))
+    # Ids number every check of the file, plots included, so they stay stable.
+    keep <- nzchar(rows$fn) & rows$status != "no reference"
+    ids <- paste0("sweep:", i, ":", seq_len(nrow(rows)))[keep]
+    rows <- rows[keep, ]
+    agrees <- rows$status == "agrees"
+    dataset <- regmatches(rows$case, regexec("data=([^],]+)", rows$case))
+    data.frame(
+      evidence_id = ids,
+      origin = "sweep", location = paste0("argument-sweep/modules/", rows$module, ".R"),
+      item = paste0(rows$case, ": ", rows$quantity), fn = rows$fn,
+      reference = rows$reference, kind = rows$kind, checks = as.integer(agrees),
+      values = ifelse(agrees, rows$n_values, 0), failed = as.integer(rows$status %in% c("disagrees", "error")),
+      incomplete = 0L,
+      run = sources$run[[i]], code = sources$code[[i]], current = sources$current[[i]],
+      dataset = vapply(dataset, function(m) if (length(m) == 2L) m[[2L]] else NA_character_,
+                       character(1)),
+      shared = FALSE, known = rows$status == "known difference", stringsAsFactors = FALSE)
+  })
+  do.call(rbind, pieces)
 }
 
 #' Saved testthat results: the current run where one exists, else the older
@@ -220,7 +280,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
       kind = rows$kind %||% rep(kit$kind, nrow(standard)), checks = as.integer(standard$agrees),
       values = ifelse(standard$agrees, standard$values, 0), failed = as.integer(!standard$agrees & !standard$known),
       incomplete = 0L,
-      run = kit$run, code = "0.98.1", current = matrix_evidence_current(kit$path),
+      run = kit$run, code = kit$code, current = matrix_evidence_current(kit$path),
       shared = FALSE, known = standard$known,
       dataset = .matrix_kit_datasets(kit$path, standard$case), stringsAsFactors = FALSE)
   }))
@@ -271,7 +331,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
   tests <- transform(.matrix_tests(files), known = FALSE)
   wrappers <- .matrix_rules("kit-evidence.csv")$test_file
   tests <- tests[!tests$location %in% wrappers, ]
-  out <- rbind(harness, tests, .matrix_kits())
+  out <- rbind(harness, tests, .matrix_kits(), .matrix_sweep(files))
   stopifnot("every evidence row names a known function" =
               all(out$fn %in% names(.matrix_functions)))
   out$one_class <- grepl(.matrix_one_class_pattern, out$item, perl = TRUE)
@@ -586,7 +646,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     sprintf('<p class="meta">Package %s. Built from saved evidence on %s; nothing was refitted. %s current checks (%s values) against references other than latents itself.</p>',
             version, format(Sys.Date()), format(totals[["checks"]], big.mark = ","),
             format(totals[["values"]], big.mark = ",")),
-    "<p>A <b>check</b> is one harness quantity (a whole output column counts once; <i>values</i> counts every number inside it) or one testthat expectation. ",
+    "<p>A <b>check</b> is one harness quantity (a whole output column counts once; <i>values</i> counts every number inside it), one argument-sweep check or one testthat expectation. ",
     "<b>Current</b> requires matching runtime-source and result-file hashes in an evidence sidecar. Historical 1.0.0 evidence carries an explicit retrospective source-equivalence attestation, not a claimed rerun. Missing or mismatched provenance is stale and does not count toward strength. ",
     "</p>",
     "<div class=\"legend\"><h3>Legend</h3><dl>",
@@ -595,8 +655,8 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     "Colour: <span class=\"badge none\">0</span> no source, <span class=\"badge single\">+</span> one, <span class=\"badge strong\">++</span> two, <span class=\"badge very_strong\">+++</span> three or more.</dd>",
     "<dt>Not counted</dt><dd>Agreement on a one-class reduction only (one class equals lm(), glm.nb(), polr(), lme4, a linear mixed model), shown as \"(1 class)\"; component checks (formulas and helper routines); our own independent code (numDeriv, dense likelihoods, the kits' reference implementations); internal checks; stale results; sources with failed or incomplete tests.</dd>",
     "<dt>Sources, papers</dt><dd>The number of + and of P.</dd>",
-    "<dt>Datasets</dt><dd>Distinct datasets on which the function was compared with a source or a paper on current code, for models with two or more classes: the harness's datasets, the kits' datasets (kit-datasets.csv) and the simulated datasets of the testthat kits that the other program ran (test-datasets.csv). A dataset used by several kits counts once. Tests that build their own small data inline are not counted, so this is a lower bound.</dd>",
-    "<dt>Checks passed</dt><dd>Current checks against every reference other than latents itself: one harness quantity (a whole output column), one kit quantity or one testthat expectation. <i>Values</i> counts the numbers inside the harness checks.</dd>",
+    "<dt>Datasets</dt><dd>Distinct datasets on which the function was compared with a source or a paper on current code, for models with two or more classes: the harness's datasets, the argument sweep's datasets (each case's data= option), the kits' datasets (kit-datasets.csv) and the simulated datasets of the testthat kits that the other program ran (test-datasets.csv). A dataset used by several kits counts once. Tests that build their own small data inline are not counted, so this is a lower bound.</dd>",
+    "<dt>Checks passed</dt><dd>Current checks against every reference other than latents itself: one harness quantity (a whole output column), one kit quantity, one argument-sweep check or one testthat expectation. <i>Values</i> counts the numbers inside the harness checks.</dd>",
     "<dt>Failed</dt><dd>Current disagreements without a registered explanation, plus test errors. Skipped or incomplete tests provide no source credit.</dd>",
     "<dt>Grid cells</dt><dd><span class=\"cur\">bold</span>: current checks on mixtures; <span class=\"one\">(1 class)</span>: one-class reductions only; <span class=\"old\">grey italic</span>: stale provenance or no saved result; <span class=\"cand\">candidate</span>: found, not yet wired in; *: a test that checks several functions or references at once (counted once in each function's total).</dd>",
     "</dl></div>",
@@ -606,7 +666,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     .matrix_grid(cells, summary),
     "<div class=\"pagebreak\"></div><h2>Evidence by function</h2>", detail,
     "<div class=\"pagebreak\"></div><h2>Inputs</h2>", .matrix_html_table(sources, "detail"),
-    "<p>Attribution rules: harness-functions.csv, harness-references.csv and test-attribution.csv beside build.R. ",
+    "<p>Attribution rules: harness-functions.csv, harness-references.csv, test-attribution.csv, sweep-functions.csv and sweep-references.csv beside build.R. ",
     "lca(): every indicator categorical, one level; multilca(): the same with groups; lpa(): every indicator Gaussian, one level; multilpa(): everything else, including count and ordinal indicators and tests that call the engine directly.</p>",
     "</body></html>")
 }
@@ -671,12 +731,12 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     paste("- **Not counted**: agreement on one-class reductions only (marked \"(1 class)\"), our",
           "own independent code, component checks, internal checks, stale results, and sources with failed or incomplete tests."),
     paste("- **Datasets**: distinct datasets on which the function was compared with a source or",
-          "a paper on current code, for models with two or more classes (the harness, the kits",
+          "a paper on current code, for models with two or more classes (the harness, the sweep, the kits",
           "and the testthat simulation kits that the other program ran). A dataset used by",
           "several kits counts once; tests with small inline data are not counted, so this is a",
           "lower bound."),
     paste("- **Current**: both the complete runtime-source manifest and the result-file hash match their evidence sidecar. Historical 1.0.0 evidence uses an explicitly labelled retrospective source-equivalence attestation; it is not a new run."),
-    paste("- **Checks**: current harness quantities, kit quantities and passed testthat expectations",
+    paste("- **Checks**: current harness quantities, kit quantities, argument-sweep checks and passed testthat expectations",
           "against every reference other than latents itself. **Failed**: checks that disagree",
           "without a registered, explained difference, plus test errors. Skips are incomplete and earn no source credit."),
     "", "## By function", "", per_function)

@@ -103,9 +103,10 @@ source(file.path("equivalence", "cvs", "cvs-report.R"), local = TRUE)
 
 #' Tolerances each function is held to, per reference
 #'
-#' From the harness comparisons the matrix reads and the per-quantity kits
-#' that name their function. A known difference (registered, explained) is
-#' left out; any other quantity outside its tolerance makes the entry "fail".
+#' From the harness comparisons the matrix reads, the argument sweep's checks
+#' and the per-quantity kits that name their function. A known difference
+#' (registered, explained) is left out; any other quantity outside its
+#' tolerance makes the entry "fail".
 #' @return A data.frame: `fn`, `function`, `reference`, `tolerance`, `status`.
 #' @noRd
 .manifest_tolerances <- function() {
@@ -131,7 +132,16 @@ source(file.path("equivalence", "cvs", "cvs-report.R"), local = TRUE)
                source = basename(dirname(kits$path[[i]])), tolerance = rows$tolerance,
                agrees = rows$status == "agrees", stringsAsFactors = FALSE)
   })
-  all_rows <- do.call(rbind, c(list(harness), kit_rows))
+  sweep_files <- files$path[files$role == "sweep" & file.exists(files$path)]
+  sweep_rows <- lapply(sweep_files, function(path) {
+    rows <- utils::read.csv(path, stringsAsFactors = FALSE)
+    rows <- rows[rows$status %in% c("agrees", "disagrees", "error") & !is.na(rows$fn) &
+                   nzchar(rows$fn), ]
+    data.frame(fn = rows$fn, reference = rows$reference, kind = rows$kind, source = "sweep",
+               tolerance = rows$tolerance, agrees = rows$status == "agrees",
+               stringsAsFactors = FALSE)
+  })
+  all_rows <- do.call(rbind, c(list(harness), kit_rows, sweep_rows))
   all_rows <- all_rows[all_rows$kind %in% .manifest_reference_kinds & !is.na(all_rows$tolerance) &
                          !is.na(all_rows$fn), ]
   groups <- unique(all_rows[c("fn", "reference", "source")])
@@ -196,8 +206,10 @@ source(file.path("equivalence", "cvs", "cvs-report.R"), local = TRUE)
 #'
 #' Locations of evidence.csv become report entry names as the CVS reporter
 #' writes them: harness/suites/<suite>.R is equivalence/harness/suites/<suite>.R,
+#' argument-sweep/modules/<module>.R is equivalence/argument-sweep/modules/<module>.R,
 #' a kit is the testthat file that wraps it (kit-evidence.csv), a test file
-#' keeps its path. tests/equivalence/ is not run by any reporting runner.
+#' keeps its path (tests/equivalence/ ones too: the job equivalence-t reports
+#' them as tests/equivalence/<file>).
 #' A file is claimed whole when every test in it is this function's evidence
 #' or an internal check; otherwise only this function's tests, by needle. A
 #' test whose references fall on several CVS axes is never claimed.
@@ -206,11 +218,12 @@ source(file.path("equivalence", "cvs", "cvs-report.R"), local = TRUE)
 .manifest_claims <- function(evidence) {
   kits <- .matrix_rules("kit-evidence.csv")
   wrapper <- kits$test_file[match(evidence$location, kits$path)]
+  stem <- sub("[.]R$", "", basename(evidence$location))
   evidence$file <- ifelse(
-    evidence$origin == "harness", .cvs_harness_entry(sub("[.]R$", "", basename(evidence$location))),
-    ifelse(evidence$origin == "kit", wrapper, evidence$location))
-  evidence <- evidence[!is.na(evidence$file) & nzchar(evidence$file) &
-                         !startsWith(evidence$file, file.path("tests", "equivalence", "")), ]
+    evidence$origin == "harness", .cvs_harness_entry(stem),
+    ifelse(evidence$origin == "sweep", .cvs_sweep_entry(stem),
+           ifelse(evidence$origin == "kit", wrapper, evidence$location)))
+  evidence <- evidence[!is.na(evidence$file) & nzchar(evidence$file), ]
   rules <- .matrix_rules("test-attribution.csv")
   # Each rule: the functions it credits and its single CVS axis (NA when several or none).
   rule_axis <- vapply(seq_len(nrow(rules)), function(r) {
@@ -225,12 +238,18 @@ source(file.path("equivalence", "cvs", "cvs-report.R"), local = TRUE)
     fn <- pairs$fn[[i]]
     file <- pairs$file[[i]]
     in_file <- unique(evidence[evidence$file == file, c("fn", "item", "origin")])
-    if (identical(pairs$origin[[i]], "harness")) {
+    if (pairs$origin[[i]] %in% c("harness", "sweep")) {
       if (all(in_file$fn == fn)) return(data.frame(fn = fn, file = file, needle = NA_character_))
       wanted <- unique(in_file$item[in_file$fn == fn])
       unwanted <- unique(in_file$item[in_file$fn != fn])
+      # Shortest first: a sweep case family ("structure["), then the case or
+      # harness fit ("<case>: "), then the whole title.
+      prefixes <- lapply(wanted, function(item) {
+        c(if (identical(pairs$origin[[i]], "sweep") && grepl("[", item, fixed = TRUE))
+            sub("\\[.*$", "[", item), sub(": .*$", ": ", item))
+      })
       needles <- .manifest_needles(wanted, unwanted, sub("[.]R$", "", basename(file)),
-                                   prefixes = sub(": .*$", ": ", wanted))
+                                   prefixes = prefixes)
       return(data.frame(fn = fn, file = file, needle = needles))
     }
     own <- which(rules$dir == dirname(file) & rules$file == basename(file))

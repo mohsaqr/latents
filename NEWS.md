@@ -1,3 +1,15 @@
+# latents 1.3.0
+
+* No change to the package. The verification matrix and the CVS verification
+  manifests were rebuilt from fresh runs of the harness, the argument sweep,
+  every equivalence test and every package kit, all on the current code.
+  The Latent GOLD kit tests now save the comparison they compute, and
+  `tests/equivalence/` has its own ci job (`equivalence-t`). Every test block
+  checks references of one kind only, the argument-sweep checks name their
+  function and reference, and `mixture_regression()` lists its three
+  published examples (SAS/STAT PROC FMM, Benaglia et al. 2009, Grün and
+  Leisch 2008).
+
 # latents 1.1.22
 
 * No change to the package. CVS reports now tag every assertion with the

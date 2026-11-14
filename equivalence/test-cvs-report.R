@@ -282,10 +282,13 @@ test_that("assertions are tagged by the matrix's rules, and the untaggable are l
   expect_identical(harness[[3L]]$axis, "internal")
   expect_null(harness[[4L]]$reference)                     # a source no rule names
   expect_identical(tagged[[5L]], fixture$suites[[5L]])     # "(suite ran)" has no source
-  expect_identical(tagged[[6L]], fixture$suites[[6L]])     # sweep checks name no reference
+  # A sweep check carries the reference its run recorded (here, by the sweep's
+  # rules: a plain log likelihood with no reference named is an internal check).
+  expect_identical(cvs_tags(tagged[[6L]])[[1L]],
+                   list(axis = "internal", authority = "internal", reference = "internal check"))
   expect_identical(cvs_axis_counts(tagged), data.frame(
     axis = c("(several axes)", "(unattributed)", "internal", "mplus", "paper", "r-equivalence"),
-    assertions = c(1L, 5L, 2L, 1L, 1L, 3L), stringsAsFactors = FALSE))
+    assertions = c(1L, 4L, 3L, 1L, 1L, 3L), stringsAsFactors = FALSE))
 })
 
 test_that("tagging only adds fields: nothing is dropped, renamed or reordered", {
@@ -329,4 +332,84 @@ test_that("a saved report is tagged again with its own name, run, start and vers
   expect_identical(tag[c("axis", "authority", "reference", "rPackage")],
                    list(axis = "r-equivalence", authority = "r", reference = "poLCA", rPackage = "poLCA 1.6.0.2"))
   expect_error(cvs_retag_report(file.path(local, "missing.json")), "existing file")
+})
+
+test_that("sweep checks reach CVS tagged with the reference their run recorded", {
+  results <- data.frame(
+    module = "gaussian", case = c("structure[data=iris,model=VVV,k=2]", "structure[data=iris,model=VVV,k=2]",
+                                  "structure[data=iris,model=VVV,k=2]", "spelling[model=EEE]"),
+    quantity = c("mclust's EM from the package's posteriors: means",
+                 "log likelihood rebuilt from the result tables", "parameter count is mclust's",
+                 "model code against volume/shape/orientation: log likelihood"),
+    difference = 0, tolerance = 1e-6, n_values = 1L, status = "agrees", note = NA_character_,
+    stringsAsFactors = FALSE)
+  # Without reference columns (results saved before the sweep recorded them),
+  # the matrix's sweep rules attribute each check.
+  from_rules <- cvs_tags(cvs_tag_suites(.cvs_from_sweep(results))[[1L]])
+  expect_identical(vapply(from_rules, `[[`, character(1), "axis"),
+                   c("r-equivalence", "independent", "internal", "internal"))
+  expect_identical(vapply(from_rules, `[[`, character(1), "reference"),
+                   c("mclust", "likelihood rebuilt from the result tables", "mclust parameter counts",
+                     "internal check"))
+  # A run's own columns win over the rules.
+  recorded <- cbind(results, fn = "lpa", reference = c("poLCA", "Rubin's rules written here",
+                                                        "mclust parameter counts", "internal check"),
+                    kind = c("R package", "independent code", "component check", "internal"),
+                    stringsAsFactors = FALSE)
+  from_run <- cvs_tags(cvs_tag_suites(.cvs_from_sweep(recorded))[[1L]])
+  expect_identical(vapply(from_run, `[[`, character(1), "reference"), recorded$reference)
+  expect_identical(from_run[[1L]]$axis, "r-equivalence")
+})
+
+test_that("the sweep's rules give every reference check a reference and stop on an unnamed check", {
+  dir <- file.path("verification-matrix")
+  calibration <- data.frame(
+    module = c("gaussian", "categorical", "regression", "pooling", "pooling", "postfit", "postfit",
+               "growth", "discrete", "families", "lta", "postfit", "plots", "covariates"),
+    case = c("structure[data=srl,model=VVI,k=2]", "classes[data=carcinoma,k=1,complete]",
+             "flexmix[data=NPreg,k=2]", "pooling[m=5]", "pooling[m=5]", "three-step[data=srl,k=2]",
+             "parameter-inference[data=srl,k=2,model=VVI]", "one-class[data=scores,random=slope]",
+             "negative-binomial[k=1]", "additive[g=2]", "transitions[data=x]",
+             "bootstrap-and-sensitivity[data=srl]", "views", "class-regression-against-poLCA[k=2]"),
+    quantity = c("optimum at least that of mclust's search", "one class: poLCA's log likelihood",
+                 "flexmix's EM from the package's posteriors: log likelihood", "mitools::MIcombine: estimates",
+                 "Rubin's rules: standard errors", "logits against stats::optim on the step-three likelihood",
+                 "observed: standard errors of means and variances against numDeriv", "lme4's fixed effects",
+                 "one profile: glm.nb's means", "group posteriors rebuilt from the result tables",
+                 "log likelihood by the forward recursion from the result tables",
+                 "sensitivity(): each seed's log likelihood is the direct fit's", "plot_profiles() draws, or is refused by class",
+                 "poLCA's regression continued from the package's probabilities"),
+    stringsAsFactors = FALSE)
+  attributed <- matrix_sweep_attribution(calibration$module, calibration$case, calibration$quantity, dir)
+  expect_identical(attributed$kind, c("R package", "component check", "R package", "R package",
+                                      "independent code", "independent code", "independent code",
+                                      "component check", "component check", "independent code",
+                                      "independent code", "internal", "internal", "R package"))
+  expect_identical(attributed$fn, c("lpa", "lca", "mixture_regression", "pool_imputations",
+                                    "pool_imputations", "three_step", "lpa", "growth", "multilpa",
+                                    "multilpa", "lta", "lpa", "", "lca"))
+  # Every kind in the tables has a CVS axis.
+  references <- matrix_read_rules("sweep-references.csv", dir)
+  expect_false(anyNA(.cvs_axis(references$reference, references$kind)$axis))
+  # A check no rule names stops the attribution, by class.
+  local <- withr::local_tempdir()
+  utils::write.csv(data.frame(module = "gaussian", pattern = "^structure", fn = "lpa"),
+                   file.path(local, "sweep-functions.csv"), row.names = FALSE)
+  utils::write.csv(references[references$pattern != ".", ], file.path(local, "sweep-references.csv"),
+                   row.names = FALSE)
+  expect_error(matrix_sweep_attribution("gaussian", "spelling[model=EEE]", "rows shuffled: log likelihood",
+                                        local), class = "latents_sweep_unattributed")
+})
+
+test_that("every attribution rule of a reported test names references on one CVS axis", {
+  # CVS takes one axis per assertion, so a block checking two references on
+  # different axes (a package and a published table) counted for neither.
+  # equivalence/ and tests/equivalence/ both report (jobs equivalence-*).
+  rules <- cvs_rules()$tests
+  expect_setequal(unique(rules$dir), c("equivalence", "tests/equivalence"))
+  axes <- vapply(seq_len(nrow(rules)), function(r) {
+    references <- matrix_rule_references(rules$reference[[r]], rules$kind[[r]])
+    length(unique(.cvs_axis(references$reference, references$kind)$axis))
+  }, integer(1))
+  expect_identical(paste(rules$file, rules$pattern)[axes != 1L], character())
 })

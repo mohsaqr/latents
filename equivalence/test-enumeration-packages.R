@@ -11,17 +11,6 @@ source(file.path(enumeration_packages_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("enumeration grids and the bootstrap LRT reproduce mclust and poLCA", {
-  known <- utils::read.csv(file.path(enumeration_packages_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_enumeration()
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 168L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-  # Every register entry still explains a disagreement.
-  expect_identical(nrow(registered$stale), 0L)
-  expect_gte(sum(comparison$agrees), 164L)
-})
+kit_reference_tests(
+  "enumeration-packages", compare_all_enumeration, n_rows = 168L, groups = "R packages",
+  coverage = function(result) testthat::expect_gte(sum(result$comparison$agrees), 164L))

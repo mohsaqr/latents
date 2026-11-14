@@ -5,7 +5,7 @@ family: "cluster"
 label: "enumerate_*() / compare_models()"
 slug: "enumeration"
 name: "Class enumeration and comparison of mixture models"
-summary: "Class enumeration and comparison of mixture models. Verification strength +++ in latents' verification matrix: 3 source(s) (Mplus, mclust, poLCA), 0 published paper(s), 8 dataset(s), 205 current checks of which 0 failed."
+summary: "Class enumeration and comparison of mixture models. Verification strength ++++ in latents' verification matrix: 4 source(s) (Mplus, mclust, poLCA, glca), 0 published paper(s), 8 dataset(s), 227 current checks of which 0 failed."
 module_files:
   - "R/compare-models.R"
   - "R/enumeration.R"
@@ -22,10 +22,18 @@ tolerances:
   - { function: "enumerate_*() / compare_models(): 120 quantities (enumeration-packages)", reference: "mclust", tolerance: "0 to 2.5e-06 (120 of 120 within)", status: "pass" }
   - { function: "enumerate_*() / compare_models(): 36 quantities (enumeration-packages)", reference: "poLCA", tolerance: "0 to 2.1e-06 (36 of 36 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/postfit.R"
   - "equivalence/harness/suites/refusals.R"
+  - "equivalence/test-boundary-polca.R"
   - "equivalence/test-enumeration-mplus.R"
   - "equivalence/test-enumeration-packages.R"
+  - "equivalence/test-lrt.R"
+  - "tests/equivalence/test-enumeration.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "compare-models[" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: compare_models(): not a fit" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: compare_models(): one fit" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: get_candidate(): a candidate outside the grid" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "a categorical indicator missing in every row: enumerate_lca refuses with latents_bad_categorical (got: latents_bad_categorical)" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "a categorical indicator with one category: enumerate_lca refuses with latents_bad_categorical (got: latents_bad_categorical)" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "a continuous variable declared categorical: enumerate_lca fits, warning latents_suspect_categorical (got: fitted, warning latents_suspect_categorical/latents_unidentified)" }
@@ -42,6 +50,7 @@ cvs_test_filter:
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "an infinite value: enumerate_lpa refuses with latents_bad_data (got: latents_bad_data)" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "no rows: enumerate_classes refuses with latents_bad_data (got: latents_bad_data)" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "no rows: enumerate_lpa refuses with latents_bad_data (got: latents_bad_data)" }
+  - { file: "equivalence/test-boundary-polca.R", test_name_includes: "the categorical boundary flag agrees with poLCA at the same maximum" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "Kneedle hand-worked and reported values" }

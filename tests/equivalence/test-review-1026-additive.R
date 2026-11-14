@@ -214,9 +214,17 @@ test_that("cross-level likelihoods equal their brute-force definitions", {
   expect_identical(fits[[2L]]$n_parameters, 18L)
 })
 
-test_that("covariance-structure charts have analytic Jacobians and mclust's counts", {
-  skip_if_not_installed("numDeriv")
+test_that("covariance-structure charts have mclust's parameter counts", {
   skip_if_not_installed("mclust")
+  codes <- setdiff(.multilpa_structures(), .multilpa_separable_structures())
+  widths <- vapply(codes, function(code) .multilpa_chart(code, 3L, 3L)$width, integer(1))
+  counts <- vapply(codes, function(code) as.integer(mclust::nVarParams(code, d = 3L, G = 3L)),
+                   integer(1))
+  expect_identical(widths, counts)
+})
+
+test_that("covariance-structure charts have analytic Jacobians and positive definite maps", {
+  skip_if_not_installed("numDeriv")
   old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old_seed)) rm(".Random.seed", envir = globalenv()) else
     assign(".Random.seed", old_seed, globalenv()), add = TRUE)
@@ -224,8 +232,6 @@ test_that("covariance-structure charts have analytic Jacobians and mclust's coun
   codes <- setdiff(.multilpa_structures(), .multilpa_separable_structures())
   invisible(lapply(codes, function(code) {
     chart <- .multilpa_chart(code, 3L, 3L)
-    expect_identical(chart$width, as.integer(mclust::nVarParams(code, d = 3L, G = 3L)),
-                     info = code)
     anchor <- if (identical(chart$form, "rotation")) {
       lapply(seq_len(chart$rotation_rows), function(row) {
         qr.Q(qr(matrix(stats::rnorm(9L), 3L)))

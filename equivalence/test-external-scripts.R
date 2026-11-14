@@ -43,25 +43,32 @@ test_that("Houle et al. (2026) likelihood and fit-index arithmetic agree", {
   expect_script_passes(file.path("equivalence", "houle-2026", "check-fit-indices.R"))
 })
 
-test_that("latent transition extensions agree with Mplus, depmixS4 and LMest", {
-  skip_if_not(dir.exists(file.path("..", "..", "JStats", "validation", "r-reference")))
-  scripts <- c("compare-ex814.R", "compare-ex813.R", "compare-mplus-measurement.R",
-               "compare-depmix-covariate.R", "compare-lmest-occasion.R")
-  results <- do.call(rbind, lapply(scripts, function(script) {
-    stem <- sub("^compare-(.*)[.]R$", "result-\\1.rds", script)
-    path <- file.path("lta-extensions", stem)
-    unlink(path)
-    run <- run_script(file.path("equivalence", "lta-extensions", script))
-    expect_identical(as.integer(run$status), 0L, label = script,
-                     info = paste(utils::tail(run$output, 25L), collapse = "\n"))
-    # A script that ran but wrote no result must fail, not be skipped.
-    expect_true(file.exists(path), label = stem)
-    if (file.exists(path)) readRDS(path) else NULL
-  }))
-  disagreeing <- subset(results, !agree)
-  expect_identical(nrow(disagreeing), 0L,
-                   info = paste(capture.output(print(disagreeing)), collapse = "\n"))
-})
+# The latent transition scripts, one block per reference program: each block
+# is evidence for one reference (CVS and the verification matrix take one per
+# test).
+lta_extension_scripts <- list(
+  Mplus = c("compare-ex814.R", "compare-ex813.R", "compare-mplus-measurement.R"),
+  `depmixS4 and LMest` = c("compare-depmix-covariate.R", "compare-lmest-occasion.R"))
+invisible(lapply(names(lta_extension_scripts), function(program) {
+  test_that(sprintf("latent transition extensions agree with %s", program), {
+    skip_if_not(dir.exists(file.path("..", "..", "JStats", "validation", "r-reference")))
+    scripts <- lta_extension_scripts[[program]]
+    results <- do.call(rbind, lapply(scripts, function(script) {
+      stem <- sub("^compare-(.*)[.]R$", "result-\\1.rds", script)
+      path <- file.path("lta-extensions", stem)
+      unlink(path)
+      run <- run_script(file.path("equivalence", "lta-extensions", script))
+      expect_identical(as.integer(run$status), 0L, label = script,
+                       info = paste(utils::tail(run$output, 25L), collapse = "\n"))
+      # A script that ran but wrote no result must fail, not be skipped.
+      expect_true(file.exists(path), label = stem)
+      if (file.exists(path)) readRDS(path) else NULL
+    }))
+    disagreeing <- subset(results, !agree)
+    expect_identical(nrow(disagreeing), 0L,
+                     info = paste(capture.output(print(disagreeing)), collapse = "\n"))
+  })
+}))
 
 test_that("ordinal and count indicators agree with Latent GOLD", {
   # latentgold-ordinal/compare.R writes its table and has no failure exit of

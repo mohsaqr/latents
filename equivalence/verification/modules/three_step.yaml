@@ -5,7 +5,7 @@ family: "regression"
 label: "three_step() / r3step()"
 slug: "three-step"
 name: "Compare latent classes on an external outcome"
-summary: "Compare latent classes on an external outcome. Verification strength ++++ in latents' verification matrix: 4 source(s) (Latent GOLD, Mplus, depmixS4, sandwich), 0 published paper(s), 77 dataset(s), 2344 current checks of which 0 failed."
+summary: "Compare latent classes on an external outcome. Verification strength ++++ in latents' verification matrix: 4 source(s) (Latent GOLD, Mplus, depmixS4, sandwich), 0 published paper(s), 82 dataset(s), 2854 current checks of which 0 failed."
 module_files:
   - "R/three-step.R"
 public_api:
@@ -15,24 +15,55 @@ papers: []
 tolerances:
   - { function: "three_step() / r3step(): 18 quantities (harness)", reference: "base-R likelihood + numDeriv", tolerance: "1e-08 to 0.5 (18 of 18 within)", status: "pass" }
   - { function: "three_step() / r3step(): 157 quantities (harness)", reference: "depmixS4", tolerance: "1e-12 to 0.5 (157 of 157 within)", status: "pass" }
+  - { function: "three_step() / r3step(): 12 quantities (sweep)", reference: "numDeriv / dense likelihood", tolerance: "0.005 (12 of 12 within)", status: "pass" }
+  - { function: "three_step() / r3step(): 90 quantities (sweep)", reference: "published formula computed here", tolerance: "0 (90 of 90 within)", status: "pass" }
+  - { function: "three_step() / r3step(): 12 quantities (sweep)", reference: "reference optimizer", tolerance: "0.002 (12 of 12 within)", status: "pass" }
   - { function: "three_step() / r3step(): 56 quantities (harness)", reference: "sandwich", tolerance: "1e-10 to 0.5 (56 of 56 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/postfit.R"
   - "equivalence/harness/suites/three-step.R"
   - "equivalence/test-external-scripts.R"
   - "equivalence/test-features-ml-three-step.R"
   - "equivalence/test-jstats-mplus.R"
+  - "equivalence/test-latentgold-categorical-distal.R"
+  - "equivalence/test-latentgold-step-one.R"
   - "equivalence/test-latentgold-step3-markov.R"
   - "equivalence/test-ml-three-step-runtime.R"
   - "equivalence/test-tidysem-bch.R"
+  - "tests/equivalence/test-audit-ml3-optimizer.R"
+  - "tests/equivalence/test-audit-services-fixes.R"
+  - "tests/equivalence/test-features-ml-three-step.R"
+  - "tests/equivalence/test-growth-r3step.R"
+  - "tests/equivalence/test-lta-three-step.R"
+  - "tests/equivalence/test-review-1015-covariates.R"
+  - "tests/equivalence/test-review-1026-lta.R"
+  - "tests/equivalence/test-review-1026-selection.R"
+  - "tests/equivalence/test-three-step-ml.R"
+  - "tests/equivalence/test-tidy-three-step.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "r3step[" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: r3step(): an unknown covariate" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: r3step(): an unknown vcov_type" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: r3step(): no covariate" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): a missing outcome value" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): an unknown adjustment" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): an unknown contrast" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): an unknown method" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): an unknown outcome" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): ci_level = 1" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: three_step(): data of another length" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "three-step[" }
   - { file: "equivalence/test-external-scripts.R", test_name_includes: "BCH weights and corrected means agree with tidySEM" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lca-r3step-joint: R3STEP logits match Mplus" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "ug-ex7.3-r3step: R3STEP logits match Mplus" }
+  - { file: "tests/equivalence/test-review-1026-lta.R", test_name_includes: "the step-three chain matches its brute-force likelihood and numerical scores" }
+  - { file: "tests/equivalence/test-review-1026-selection.R", test_name_includes: "ML step three matches an independent likelihood and sandwich (Bakk et al. 2013)" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "ML three-step reference (reference.R)" }
   - { software: "independent", package: "base-R likelihood + numDeriv" }
   - { software: "independent", package: "cluster bootstrap reference" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
+  - { software: "independent", package: "published formula computed here" }
   - { software: "independent", package: "reference optimizer" }
   - { software: "latentgold", package: "Latent GOLD" }

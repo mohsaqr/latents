@@ -14,8 +14,20 @@ Rscript equivalence/argument-sweep/run.R lta growth  # modules whose name matche
 
 `run.R` writes `tmp/argument-sweep/results.csv` (one row per check: module,
 case, quantity, difference, tolerance, status, the conditions the case
-signalled, seconds) and `SUMMARY.md`, and exits non-zero when a check
-disagrees or a case stops with an error. Reference packages are installed by
+signalled, seconds, and the function, reference and kind of reference the
+check is evidence for) with its provenance sidecar, and `SUMMARY.md`, and
+exits non-zero when a check disagrees or a case stops with an error. The
+function and reference come from the verification matrix's
+`sweep-functions.csv` and `sweep-references.csv` (a regex on
+"<case>: <quantity>" within the module; the first match wins): a check of
+another package's EM or search is that package, the likelihood or posteriors
+rebuilt from the result tables and the forward/backward recursions are
+independent code, a one-class reduction (lm, glm.nb, lme4, closed forms at
+one class) is a component check, and invariances, nesting, refusals and plots
+are internal. A check no rule names stops the run
+(`latents_sweep_unattributed`), so new evidence cannot drop out unattributed.
+The CVS report carries the same reference on each check, and the
+verification matrix counts the sweep as evidence. Reference packages are installed by
 `Rscript equivalence/install-reference-packages.R` (`mini-ci deps`).
 
 ## References

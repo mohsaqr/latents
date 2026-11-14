@@ -128,15 +128,17 @@ test_that("every case reproduces Latent GOLD, rows with nothing observed include
   }))
 })
 
-test_that("no reference program finds a higher maximum than the package", {
-  cases <- montecarlo_cases()
-  gaps <- vapply(names(cases), function(name) {
-    reference <- max(montecarlo_mplus(name, cases[[name]])$log_likelihood,
-                     montecarlo_latentgold(name, cases[[name]])$log_likelihood)
-    montecarlo_fits[[name]]$log_likelihood - reference
-  }, numeric(1))
-  expect_true(all(gaps > -5e-4), info = paste(names(gaps)[gaps <= -5e-4], collapse = ", "))
-})
+# One block per program, so each block is evidence for one reference.
+invisible(lapply(list(list(name = "Mplus", read = montecarlo_mplus),
+                      list(name = "Latent GOLD", read = montecarlo_latentgold)), function(program) {
+  test_that(sprintf("%s finds no higher maximum than the package", program$name), {
+    cases <- montecarlo_cases()
+    gaps <- vapply(names(cases), function(name) {
+      montecarlo_fits[[name]]$log_likelihood - program$read(name, cases[[name]])$log_likelihood
+    }, numeric(1))
+    expect_true(all(gaps > -5e-4), info = paste(names(gaps)[gaps <= -5e-4], collapse = ", "))
+  })
+}))
 
 test_that("the retained global-maximum audit covers every case and found no lower maximum", {
   # montecarlo/audit-maxima.R: every case from 5 seeds, with 10 and 20 starts.

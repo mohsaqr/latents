@@ -11,16 +11,7 @@ source(file.path(lta_packages_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("lta-packages agrees with its references", {
-  known <- utils::read.csv(file.path(lta_packages_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_lta_packages()
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 52L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-  expect_identical(nrow(registered$stale), 0L)
-  expect_gte(sum(comparison$agrees), 48L)
-})
+kit_reference_tests(
+  "lta-packages", compare_all_lta_packages, n_rows = 52L,
+  groups = c("R packages", "published analyses"),
+  coverage = function(result) testthat::expect_gte(sum(result$comparison$agrees), 48L))

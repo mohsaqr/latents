@@ -34,8 +34,10 @@ test_that("growth, latent class, profile, transition and enumeration fits reprod
   expect_length(cases, 22L)
   known <- utils::read.csv(file.path(coverage_dir, "known-differences.csv"),
                            stringsAsFactors = FALSE)
+  snapshot <- matrix_capture_source("..")
   comparison <- compare_all(cases, file.path(coverage_dir, "returned"))
-  registered <- apply_register(comparison, known)
+  registered <- apply_known_differences(comparison, known)
+  kit_save_comparison(coverage_dir, registered$comparison, snapshot)
   expect_identical(nrow(comparison), 440L)
   unexplained <- subset(registered$comparison, status == "disagrees")
   expect_identical(nrow(unexplained), 0L,

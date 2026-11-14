@@ -14,6 +14,7 @@
 
 wider_dir <- file.path("latentgold-wider")
 source(file.path(wider_dir, "compare-functions.R"), local = TRUE)
+source("package-kit-runner.R", local = TRUE)
 
 test_that("the kit is the one Latent GOLD was run on", {
   recorded <- utils::read.table(file.path(wider_dir, "returned", "INPUTS.md5"),
@@ -25,7 +26,9 @@ test_that("the kit is the one Latent GOLD was run on", {
 test_that("mixture regressions and weighted fits reproduce Latent GOLD", {
   cases <- readRDS(file.path(wider_dir, "kit", "cases.rds"))
   expect_identical(names(cases), c("r01", "r02", "r03", "r04", "r05", "w01", "w02", "w03"))
+  snapshot <- matrix_capture_source("..")
   comparison <- compare_all(cases, file.path(wider_dir, "returned"))
+  kit_save_comparison(wider_dir, comparison, snapshot)
   expect_identical(nrow(comparison), 172L)
   disagreements <- subset(comparison, !agrees)
   expect_identical(nrow(disagreements), 0L,

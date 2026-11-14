@@ -3,6 +3,8 @@
 # No model fitting, reference-package installation, or report mutation is needed.
 library(testthat)
 source(file.path("equivalence", "package-kit-runner.R"))
+# apply_known_differences(), which the coverage wrapper's test body calls.
+source(file.path("equivalence", "latentgold-coverage", "compare-functions.R"))
 
 kits <- c("lca-packages", "lpa-packages", "lta-packages", "regression-packages",
            "pool-packages", "enumeration-packages", "growth-published", "stata-published",
@@ -15,19 +17,36 @@ directory_names <- c("packages_dir", "lpa_packages_dir", "lta_packages_dir",
                       "regression_packages_dir", "pool_packages_dir", "enumeration_packages_dir",
                       "growth_published_dir", "stata_dir", "mplus_growth_dir", "coverage_dir")
 
-#' Original comparison test body with only the expensive fitter replaced
+#' The kit_reference_tests() of a wrapper, run inline from the project root:
+#' the same registration and expectations, without testthat blocks and without
+#' saving the comparison as evidence
+gate_reference_tests <- function(kit, compute, n_rows, groups, kind = NULL, coverage = NULL) {
+  result <- kit_registered_comparison(file.path("equivalence", kit), compute, kind)
+  kit_expect_complete(result, n_rows, groups, coverage)
+  invisible(lapply(groups, kit_expect_group, result = result))
+}
+
+#' Original comparison test with only the expensive fitter replaced
+#'
+#' A wrapper ends in kit_reference_tests() (run through gate_reference_tests())
+#' or in one test_that() block (its body is run). Neither saves evidence: the
+#' provenance capture and kit_save_comparison() are replaced by no-ops.
 #' @param i Kit index.
 #' @param mutation Function applied to a copy of its saved comparison.
-#' @return The wrapper's test body and its evaluation environment.
+#' @return The wrapper's test code and its evaluation environment.
 wrapper_case <- function(i, mutation = identity) {
   directory <- file.path("equivalence", kits[[i]])
   env <- new.env(parent = globalenv())
   env$comparison <- mutation(utils::read.csv(file.path(directory, "comparison.csv")))
   env[[compare_names[[i]]]] <- function(...) env$comparison
   env[[directory_names[[i]]]] <- directory
+  env$kit_reference_tests <- gate_reference_tests
+  env$matrix_capture_source <- function(...) NULL
+  env$kit_save_comparison <- function(...) invisible(NULL)
   expression <- tail(parse(file.path("equivalence", paste0("test-", kits[[i]], ".R"))), 1L)[[1L]]
-  stopifnot(identical(expression[[1L]], as.name("test_that")))
-  list(body = expression[[3L]], env = env)
+  head <- expression[[1L]]
+  stopifnot(identical(head, as.name("test_that")) || identical(head, as.name("kit_reference_tests")))
+  list(body = if (identical(head, as.name("test_that"))) expression[[3L]] else expression, env = env)
 }
 
 invisible(lapply(seq_along(kits), function(i) {

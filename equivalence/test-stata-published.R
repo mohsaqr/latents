@@ -9,14 +9,6 @@ source(file.path(stata_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("lpa() and lca() reproduce Stata's printed output and Masyn's table", {
-  known <- utils::read.csv(file.path(stata_dir, "known-differences.csv"), stringsAsFactors = FALSE)
-  comparison <- compare_all_stata(stata_dir)
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 154L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(registered$stale), 0L)
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$reference, unexplained$quantity,
-                                collapse = "; "))
-})
+kit_reference_tests(
+  "stata-published", function() compare_all_stata(stata_dir), n_rows = 154L,
+  groups = c("Stata", "published analyses"))

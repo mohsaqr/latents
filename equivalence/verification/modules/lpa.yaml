@@ -5,7 +5,7 @@ family: "cluster"
 label: "lpa()"
 slug: "lpa"
 name: "Fit a latent profile model"
-summary: "Fit a latent profile model. Verification strength +++++++ PPP in latents' verification matrix: 7 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 52g (gsem), mclust, Rmixmod, mixtools, EMCluster), 3 published paper(s), 231 dataset(s), 13807 current checks of which 0 failed."
+summary: "Fit a latent profile model. Verification strength ++++++++ PPP in latents' verification matrix: 8 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 52g (gsem), mclust, Rmixmod, MoEClust, mixtools, EMCluster), 3 published paper(s), 233 dataset(s), 15543 current checks of which 0 failed."
 module_files:
   - "R/lpa.R"
 public_api:
@@ -22,9 +22,16 @@ tolerances:
   - { function: "lpa(): 3 quantities (harness)", reference: "Scrucca et al. (2023) mclust book", tolerance: "1 (3 of 3 within)", status: "pass" }
   - { function: "lpa(): 74 quantities (stata-published)", reference: "Stata 19 [SEM] Example 52g (gsem)", tolerance: "2.7e-07 to 0.0018 (74 of 74 within)", status: "pass" }
   - { function: "lpa(): 125 quantities (harness)", reference: "base-R likelihood + numDeriv", tolerance: "1e-10 to 0.5 (125 of 125 within)", status: "pass" }
+  - { function: "lpa(): 664 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (664 of 664 within)", status: "pass" }
   - { function: "lpa(): 2093 quantities (harness)", reference: "mclust", tolerance: "1e-10 to 1 (2093 of 2093 within)", status: "pass" }
+  - { function: "lpa(): 602 quantities (sweep)", reference: "mclust", tolerance: "1e-08 to 0.001 (602 of 602 within)", status: "pass" }
   - { function: "lpa(): 50 quantities (lpa-packages)", reference: "mixtools", tolerance: "1e-06 to 1e-04 (50 of 50 within)", status: "pass" }
+  - { function: "lpa(): 24 quantities (sweep)", reference: "numDeriv / dense likelihood", tolerance: "0.01 (24 of 24 within)", status: "pass" }
+  - { function: "lpa(): 50 quantities (sweep)", reference: "published formula computed here", tolerance: "0 (50 of 50 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/covariates.R"
+  - "equivalence/argument-sweep/modules/gaussian.R"
+  - "equivalence/argument-sweep/modules/postfit.R"
   - "equivalence/harness/suites/hard-mclust.R"
   - "equivalence/harness/suites/invariance.R"
   - "equivalence/harness/suites/mclust.R"
@@ -43,14 +50,48 @@ cvs_files:
   - "equivalence/test-mclust-prior.R"
   - "equivalence/test-mclust.R"
   - "equivalence/test-missing-patterns.R"
+  - "equivalence/test-moeclust-covariate-structures.R"
   - "equivalence/test-montecarlo.R"
   - "equivalence/test-mplus-classification.R"
   - "equivalence/test-mplus-mixture-weights.R"
   - "equivalence/test-mplus-public.R"
   - "equivalence/test-mplus-standardize.R"
+  - "equivalence/test-stata-published.R"
   - "equivalence/test-structure-inference.R"
   - "equivalence/test-tidylpa-classification.R"
+  - "tests/equivalence/test-audit-services-fixes.R"
+  - "tests/equivalence/test-direct-effects.R"
+  - "tests/equivalence/test-features-direct-effects.R"
+  - "tests/equivalence/test-local-dependence.R"
+  - "tests/equivalence/test-missing-covariance.R"
+  - "tests/equivalence/test-noise.R"
+  - "tests/equivalence/test-predict.R"
+  - "tests/equivalence/test-prior.R"
+  - "tests/equivalence/test-review-0970-estimation.R"
+  - "tests/equivalence/test-review-1026-categorical-r2.R"
+  - "tests/equivalence/test-review-1026-categorical.R"
+  - "tests/equivalence/test-review-1026-kernel-r2.R"
+  - "tests/equivalence/test-review-1026-kernel.R"
+  - "tests/equivalence/test-review-1026-selection.R"
+  - "tests/equivalence/test-review-followup.R"
+  - "tests/equivalence/test-structure-inference.R"
+  - "tests/equivalence/test-vignette-claims.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "direct-effect-at-one-profile-is-lm: " }
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "direct-effect-nesting: " }
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "fit_staged-is-the-two-stage-fit: " }
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "profile-covariates[" }
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "refusals: " }
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "two-step-holds-the-measurement: " }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=blobs]: sensitivity(): each seed's log likelihood is the direct fit's" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=faithful]: sensitivity(): each seed's log likelihood is the direct fit's" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=srl]: sensitivity(): each seed's log likelihood is the direct fit's" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "classification[" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "parameter-inference[" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: parameter_inference(): an unknown method" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: parameter_inference(): an unknown vcov_type" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: parameter_inference(): level = 0" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: sensitivity(): no seeds" }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "faithful VVV 2, every unit duplicated: " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "faithful VVV 2, rows permuted: " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "faithful VVV 2, y -> a + c y with c = (1e-03, 1e+03): " }
@@ -66,10 +107,6 @@ cvs_test_filter:
   - { file: "equivalence/harness/suites/stability.R", test_name_includes: "faithful, 3 components, EEE, 60 starts: " }
   - { file: "equivalence/test-external-scripts.R", test_name_includes: "Houle et al. (2026) likelihood and fit-index arithmetic agree" }
   - { file: "equivalence/test-external-scripts.R", test_name_includes: "weights agree with Mplus TYPE = COMPLEX and the weighted closed form" }
-  - { file: "equivalence/test-features-direct-effects.R", test_name_includes: "an independent implementation agrees on 84 more datasets" }
-  - { file: "equivalence/test-features-direct-effects.R", test_name_includes: "one profile is a linear regression of each indicator" }
-  - { file: "equivalence/test-features-direct-effects.R", test_name_includes: "the declared searches retain every default attempt and its reference gap" }
-  - { file: "equivalence/test-features-direct-effects.R", test_name_includes: "the estimated effects recover the generating effects" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lpa-constraint-new: classification quality matches Mplus" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lpa-constraint-new: latents reaches Mplus's maximum" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lpa-cov-tech14: classification quality matches Mplus" }
@@ -89,19 +126,29 @@ cvs_test_filter:
   - { file: "equivalence/test-missing-patterns.R", test_name_includes: "likelihood and every row's posteriors reproduce Latent GOLD" }
   - { file: "equivalence/test-missing-patterns.R", test_name_includes: "likelihood, sample size, BIC, entropy and AvePP reproduce Mplus" }
   - { file: "equivalence/test-missing-patterns.R", test_name_includes: "the programs' sample sizes differ only by the rows with nothing observed" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "Latent GOLD finds no higher maximum than the package" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "Mplus finds no higher maximum than the package" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "criteria, the AvePP matrix and OCC follow from Mplus's own quantities" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "drop_empty = FALSE counts every row, as Latent GOLD does" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Latent GOLD, rows with nothing observed included" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Mplus" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "predict() on the data reproduces Mplus's posteriors" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "the retained global-maximum audit covers every case and found no lower maximum" }
   - { file: "equivalence/test-mplus-classification.R", test_name_includes: "single-level entropy and AvePP reproduce published Mplus examples" }
   - { file: "equivalence/test-structure-inference.R", test_name_includes: "single-level Wald SEs of all fourteen structures match numDeriv" }
+  - { file: "tests/equivalence/test-local-dependence.R", test_name_includes: "a covariance for a continuous pair agrees with Latent GOLD" }
+  - { file: "tests/equivalence/test-review-1026-categorical-r2.R", test_name_includes: "lpa() fits a shared NB dispersion at its interior maximum (C2-1)" }
+  - { file: "tests/equivalence/test-review-1026-categorical-r2.R", test_name_includes: "the NB M-step keeps a shared interior dispersion that beats the floor (C2-1)" }
+  - { file: "tests/equivalence/test-review-1026-kernel.R", test_name_includes: "the noise hypervolume is mclust's, in logs" }
+  - { file: "tests/equivalence/test-review-1026-selection.R", test_name_includes: "every information criterion equals its definition (Nylund et al. 2007; Masyn 2013)" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "base-R likelihood + numDeriv" }
   - { software: "independent", package: "direct-effects independent implementation" }
+  - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
   - { software: "independent", package: "pair-covariance independent likelihood and derivatives" }
+  - { software: "independent", package: "published formula computed here" }
   - { software: "independent", package: "reference optimizer" }
   - { software: "latentgold", package: "Latent GOLD" }
   - { software: "paper", package: "Houle et al. (2026)" }

@@ -14,14 +14,17 @@ local({
   source(file.path(latentgold_root, "cases.R"), local = TRUE)
   source(file.path(latentgold_root, "compare-functions.R"), local = TRUE)
   source(file.path(latentgold_root, "targets.R"), local = TRUE)
+  source("package-kit-runner.R", local = TRUE)
 
   test_that("every Latent GOLD case agrees with the current package", {
     cases <- lg_cases()
-    comparison <- do.call(rbind, lapply(names(cases), function(name) {
+    snapshot <- matrix_capture_source("..")
+    targets <- lapply(names(cases), function(name) {
       case <- cases[[name]]
-      target <- .targets(name, case, suppressWarnings(case$fit()))
-      lg_compare_case(target, file.path(latentgold_root, "returned"))
-    }))
+      .targets(name, case, suppressWarnings(case$fit()))
+    })
+    comparison <- lg_compare_all(targets, file.path(latentgold_root, "returned"))
+    kit_save_comparison(latentgold_root, comparison, snapshot)
     disagreeing <- subset(comparison, status == "disagree")
     expect_identical(nrow(disagreeing), 0L,
                      info = paste(capture.output(print(disagreeing)), collapse = "\n"))

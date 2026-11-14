@@ -1,0 +1,105 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-mclust-noise.R","mclust-noise","the hypervolume is mclust's hypvol()",1,0,FALSE,FALSE,0,0.025,0.00199999999999999,0.038,1
+"test-mclust-noise.R","mclust-noise","a noise fit reproduces mclust's EM for all fourteen structures",6,0,FALSE,FALSE,0,1.154,0.00700000000000001,2.084,6
+"test-mclust-noise.R","mclust-noise","noise and prior together reproduce mclust's EM",2,0,FALSE,FALSE,0,0.367,0.00499999999999999,0.84,2
+"test-mclust-noise.R","mclust-noise","from Mclust's own noise initialization the fits agree",3,0,FALSE,FALSE,0,0.118,0.001,0.278,3
+"test-mclust-noise.R","mclust-noise","an observation assigned to noise is profile 0, as in mclust",2,0,FALSE,FALSE,0,0.0250000000000004,0.001,0.0359999999999996,2
+"test-mclust-prior.R","mclust-prior","each MAP M-step is mclust's EM step from the same posteriors",20,0,FALSE,FALSE,0,0.0339999999999998,0.004,0.0449999999999999,20
+"test-mclust-prior.R","mclust-prior","the whole MAP EM reproduces mclust::me from the same start",31,0,FALSE,FALSE,0,16.051,0.02,19.87,31
+"test-mclust.R","mclust","every M-step reproduces mclust's own, or beats it",16,0,FALSE,FALSE,0,0.0309999999999988,0.003,0.0399999999999991,16
+"test-mclust.R","mclust","the parameter counts are the ones mclust reports",14,0,FALSE,FALSE,0,4.87,0.047,6.166,14
+"test-mclust.R","mclust","the likelihood is the mixture likelihood, at mclust's own estimate",1,0,FALSE,FALSE,0,0.348000000000003,0.001,0.414000000000001,1
+"test-mclust.R","mclust","full covariance mixture limits reproduce mclust VVV and EEE",10,0,FALSE,FALSE,0,0.0730000000000004,0.002,0.172000000000001,10
+"test-missing-patterns.R","missing-patterns","the five patterns' data are what the kit describes",2,0,FALSE,FALSE,0,0.00300000000000011,0,0.00600000000000023,2
+"test-missing-patterns.R","missing-patterns","likelihood, sample size, BIC, entropy and AvePP reproduce Mplus",50,0,FALSE,FALSE,0,38.955,0.217,48.111,50
+"test-missing-patterns.R","missing-patterns","likelihood and every row's posteriors reproduce Latent GOLD",20,0,FALSE,FALSE,0,38.514,0.053,44.77,20
+"test-missing-patterns.R","missing-patterns","class counts reproduce Mplus's counts based on posterior probabilities",5,0,FALSE,FALSE,0,38.273,0.025,42.262,5
+"test-missing-patterns.R","missing-patterns","the programs' sample sizes differ only by the rows with nothing observed",4,0,FALSE,FALSE,0,0.00899999999998613,0.002,0.0120000000000005,4
+"test-missing-patterns.R","missing-patterns","m5's group level reproduces Mplus: clusters, posteriors and statistics",11,0,FALSE,FALSE,0,7.01300000000001,0.026,8.078,11
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","flexmix exposes a working bootstrap likelihood-ratio test",4,0,FALSE,FALSE,0,0.108000000000004,0.001,0.119,4
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian rows",2,0,FALSE,FALSE,0,0.430999999999983,0.005,0.47999999999999,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian rows with a concomitant model",2,0,FALSE,FALSE,0,0.774000000000001,0.001,0.829000000000008,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian, one class per group",2,0,FALSE,FALSE,0,0.103999999999985,0,0.119999999999976,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","binomial, one class per group",3,0,FALSE,FALSE,0,0.498999999999995,0.001,0.619,3
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","binomial, one class per group, with a concomitant model",3,0,FALSE,FALSE,0,0.599999999999994,0.001,0.640999999999991,3
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Poisson rows and Poisson per group",6,0,FALSE,FALSE,0,0.835000000000008,0.002,1.02100000000002,6
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Poisson with a coefficient shared across classes",2,0,FALSE,FALSE,0,0.841000000000008,0.002,0.978999999999985,2
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","Gaussian with equal variances",1,0,FALSE,FALSE,0,0.254999999999995,0.001,0.257000000000005,1
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","the parameter count is flexmix's",1,0,FALSE,FALSE,0,0.495000000000005,0.001,0.572000000000003,1
+"test-mixture-regression-flexmix.R","mixture-regression-flexmix","bic_rows is flexmix's BIC, penalised by rows",2,0,FALSE,FALSE,0,0.5,0,0.739000000000004,2
+"test-ml-three-step-runtime.R","ml-three-step-runtime","ML3 uses serial execution when requested or on unsafe platforms",2,0,FALSE,FALSE,0,0.0120000000000005,0,0.0250000000000057,2
+"test-ml-three-step-runtime.R","ml-three-step-runtime","ML3 automatically avoids Accelerate forks and retains safe-fork controls",4,0,FALSE,FALSE,0,0.007000000000005,0.001,0.0139999999999816,4
+"test-ml-three-step-runtime.R","ml-three-step-runtime","actual fixed-seed ML3 case fits are identical across runtime routes",4,0,FALSE,FALSE,0,1.125,0.00600000000000001,1.66900000000001,4
+"test-moeclust-covariate-structures.R","moeclust-covariate-structures","covariate models match MoEClust in every covariance structure",55,0,FALSE,FALSE,0,63.371,0.198,72.205,55
+"test-montecarlo-extended.R","montecarlo-extended","the extended kit holds 4 configurations of 10, each with its outputs",62,0,FALSE,FALSE,0,0.0670000000000073,0.0449999999999999,0.142999999999972,62
+"test-montecarlo-extended.R","montecarlo-extended","two-level full-covariance models reproduce Mplus",141,0,FALSE,FALSE,0,0.37299999999999,0.0349999999999999,0.665999999999997,141
+"test-montecarlo-extended.R","montecarlo-extended","every extended case reproduces Latent GOLD, every row included",200,0,FALSE,FALSE,0,0.506,0.0880000000000001,0.87700000000001,200
+"test-montecarlo.R","montecarlo","the kit holds 8 configurations of 15 replicates, each with both outputs",5,0,FALSE,FALSE,0,0.0429999999999779,0.0329999999999999,0.288999999999987,5
+"test-montecarlo.R","montecarlo","every case reproduces Mplus",1410,0,FALSE,FALSE,0,3.85300000000001,0.33,7.56799999999998,1410
+"test-montecarlo.R","montecarlo","two-level cases reproduce Mplus at the group level",121,0,FALSE,FALSE,0,1.07399999999998,0.0259999999999998,1.923,121
+"test-montecarlo.R","montecarlo","every case reproduces Latent GOLD, rows with nothing observed included",600,0,FALSE,FALSE,0,1.29400000000001,0.113,2.50099999999998,600
+"test-montecarlo.R","montecarlo","Mplus finds no higher maximum than the package",1,0,FALSE,FALSE,0,1.09800000000001,0.077,2.04600000000005,1
+"test-montecarlo.R","montecarlo","Latent GOLD finds no higher maximum than the package",1,0,FALSE,FALSE,0,0.536000000000001,0.0130000000000003,0.973999999999933,1
+"test-montecarlo.R","montecarlo","the retained global-maximum audit covers every case and found no lower maximum",4,0,FALSE,FALSE,0,0.0219999999999914,0.00199999999999978,0.0690000000000737,4
+"test-montecarlo.R","montecarlo","criteria, the AvePP matrix and OCC follow from Mplus's own quantities",1200,0,FALSE,FALSE,0,4.09899999999999,0.262,10.47,1200
+"test-montecarlo.R","montecarlo","predict() on the data reproduces Mplus's posteriors",90,0,FALSE,FALSE,0,0.955000000000013,0.0289999999999999,1.64599999999996,90
+"test-montecarlo.R","montecarlo","drop_empty = FALSE counts every row, as Latent GOLD does",30,0,FALSE,FALSE,0,48.858,0.336,70.8480000000001,30
+"test-mplus-categorical.R","mplus-categorical","thresholds and their standard errors reproduce a genuine Mplus run",3,0,FALSE,FALSE,0,0.483000000000004,0.036,0.810000000000059,3
+"test-mplus-categorical.R","mplus-categorical","categorical fits reproduce genuine Mplus two-level results",6,0,FALSE,FALSE,0,1.15600000000001,0.00999999999999979,1.56899999999996,6
+"test-mplus-classification.R","mplus-classification","single-level entropy and AvePP reproduce published Mplus examples",6,0,FALSE,FALSE,0,1.68400000000003,0.0259999999999998,3.23199999999997,6
+"test-mplus-classification.R","mplus-classification","two-level FIML entropy and AvePP reproduce genuine Mplus at each level",6,0,FALSE,FALSE,0,1.92700000000002,0.0230000000000001,3.22200000000009,6
+"test-mplus-classification.R","mplus-classification","the parser reads a two-level output's levels by name",3,0,FALSE,FALSE,0,0.00600000000002865,0.00099999999999989,0.00699999999994816,3
+"test-mplus-covariates.R","mplus-covariates","one-step covariate model agrees with genuine multilevel Mplus ML",12,0,FALSE,FALSE,0,0.163000000000011,0.0180000000000002,0.278999999999996,12
+"test-mplus-covariates.R","mplus-covariates","standard errors reproduce a genuine Mplus covariate run",8,0,FALSE,FALSE,0,0.490000000000009,0.0179999999999998,0.649000000000001,8
+"test-mplus-covariates.R","mplus-covariates","the group-class contrast matches Mplus through vcov()",2,0,FALSE,FALSE,0,0.468000000000018,0.0089999999999999,0.664999999999964,2
+"test-mplus-growth.R","mplus-growth","mplus-growth compares every case, and its register explains only what occurs",4,0,FALSE,FALSE,1,396.591,0.983,441.463,3
+"test-mplus-growth.R","mplus-growth","mplus-growth agrees with Mplus",2,0,FALSE,FALSE,0,0.00499999999999545,0,0.00600000000008549,2
+"test-mplus-inference.R","mplus-inference","ordinary ML Hessian standard errors reproduce genuine Mplus9 results",6,0,FALSE,FALSE,0,0.307999999999993,0.00599999999999978,0.528999999999996,6
+"test-mplus-inference.R","mplus-inference","full-covariance FIML Hessian standard errors reproduce genuine Mplus9",4,0,FALSE,FALSE,0,0.29200000000003,0,0.375,4
+"test-mplus-lmr.R","mplus-lmr","the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11",2,0,FALSE,FALSE,0,0.00200000000006639,0.00100000000000033,0.00300000000015643,2
+"test-mplus-missing-full.R","mplus-missing-full","full covariance with missing indicators reproduces genuine two-level Mplus",28,0,FALSE,FALSE,0,1.69500000000005,0.0089999999999999,2.41000000000008,28
+"test-mplus-mixture-weights.R","mplus-mixture-weights","a weighted mixture reproduces Mplus's pseudo likelihood, posteriors and robust SEs",9,0,FALSE,FALSE,0,0.975000000000023,0.00199999999999978,1.19299999999998,9
+"test-mplus-person-scaling.R","mplus-person-scaling","person centring and scaling reproduce Mplus on within-person z-scores",5,0,FALSE,FALSE,0,2.423,0.00700000000000056,2.51999999999998,5
+"test-mplus-public-parser.R","mplus-public-parser","the public Mplus parser handles known synthetic output and label reversal",12,0,FALSE,FALSE,0,0.04200000000003,0,0.0440000000000964,12
+"test-mplus-public.R","mplus-public","single-level equal and varying LPA reproduce published Mplus examples",22,0,FALSE,FALSE,0,1.53800000000001,0.00499999999999989,1.64300000000003,22
+"test-mplus-random-intercept.R","mplus-random-intercept","one-profile random intercept matches genuine Mplus output",5,0,FALSE,FALSE,0,0.166000000000054,0,0.188000000000102,5
+"test-mplus-robust.R","mplus-robust","robust standard errors reproduce genuine Mplus MLR results",6,0,FALSE,FALSE,0,0.0610000000000355,0,0.0910000000001219,6
+"test-mplus-standardize.R","mplus-standardize","grand scaling matches Mplus STANDARDIZE with the population SD",7,0,FALSE,FALSE,0,1.86700000000008,0.00599999999999934,2.15599999999995,7
+"test-mplus-tech14.R","mplus-tech14","the bootstrap LRT statistic and parameter difference match TECH14",9,0,FALSE,FALSE,0,3.30700000000002,0.00600000000000023,3.61899999999991,9
+"test-mplus-tech14.R","mplus-tech14","bootstrap_lrt()'s p-value agrees with TECH14 where the null is true",4,0,FALSE,FALSE,0,1197.157,1.753,1247.348,4
+"test-mplus-twolevel-public.R","mplus-twolevel-public","matched multilevel fits reproduce Mplus on public continuous data",36,0,FALSE,FALSE,0,2.48800000000006,0.0219999999999994,2.70100000000002,36
+"test-mplus-twolevel-synthetic.R","mplus-twolevel-synthetic","native multilevel LPA reproduces Mplus9 on two synthetic variance models",28,0,FALSE,FALSE,0,0.884999999999991,0.00400000000000045,0.909999999999854,28
+"test-numerical-equivalence.R","numerical-equivalence","exhaustive reference agrees with an analytically solvable model",8,0,FALSE,FALSE,0,0.186999999999898,0.00100000000000033,0.202999999999975,8
+"test-numerical-equivalence.R","numerical-equivalence","fitted likelihood and posteriors match exhaustive latent assignments",7,0,FALSE,FALSE,1,0.0199999999999818,0,0.0300000000002001,6
+"test-numerical-equivalence.R","numerical-equivalence","one EM update matches an independent exhaustive E-step and M-step",11,0,FALSE,FALSE,1,0.0430000000001201,0.000999999999999446,0.0579999999999927,10
+"test-numerical-equivalence.R","numerical-equivalence","EM agrees with independent direct numerical maximum likelihood",7,0,FALSE,FALSE,0,0.133000000000038,0.00100000000000033,0.165999999999713,7
+"test-numerical-equivalence.R","numerical-equivalence","single group class reproduces mclust diagonal Gaussian mixtures",8,0,FALSE,FALSE,0,0.0339999999998781,0.00199999999999978,0.0640000000003056,8
+"test-pool-packages.R","pool-packages","pool-packages compares every case, and its register explains only what occurs",3,0,FALSE,FALSE,0,4.95900000000006,0.0329999999999995,5.61200000000008,3
+"test-pool-packages.R","pool-packages","pool-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999995271,2
+"test-regression-packages.R","regression-packages","regression-packages compares every case, and its register explains only what occurs",8,0,FALSE,FALSE,2,25.2860000000001,0.0379999999999994,25.5160000000001,6
+"test-regression-packages.R","regression-packages","regression-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00299999999970169,2
+"test-regression-packages.R","regression-packages","regression-packages agrees with the published analyses",2,0,FALSE,FALSE,0,0.00299999999992906,0,0.00199999999995271,2
+"test-review-1026-oracles.R","review-1026-oracles","lta() agrees with depmixS4 at the same parameters",2,0,FALSE,FALSE,0,0.230999999999995,0.00700000000000056,0.302999999999884,2
+"test-review-1026-oracles.R","review-1026-oracles","one class reproduces the linear mixed model of nlme::lme (ML)",5,0,FALSE,FALSE,0,0.509000000000015,0.00199999999999978,0.526000000000295,5
+"test-review-1026-oracles.R","review-1026-oracles","an outcome in small units fits like the same outcome in ordinary units",1,0,FALSE,FALSE,0,0.512000000000171,0.00100000000000033,0.513999999999669,1
+"test-review-1026-oracles.R","review-1026-oracles","sufficient-statistic density equals the dense Gaussian density of the ratings",2,0,FALSE,FALSE,0,0.0519999999999072,0.000999999999999446,0.0639999999998508,2
+"test-review-1026-oracles.R","review-1026-oracles","FIML densities and conditional moments are the multivariate normal ones",176,0,FALSE,FALSE,0,0.228000000000065,0.0129999999999999,0.242000000000189,176
+"test-review-1026-oracles.R","review-1026-oracles","Poisson offset stays within 1e-7 of the exact log ratio at counts near 1e17",2,0,FALSE,FALSE,0,0.125999999999976,0.00100000000000033,0.146999999999935,2
+"test-review-1026-oracles.R","review-1026-oracles","negative-binomial dispersion derivatives match exact Rmpfr values",1,0,FALSE,FALSE,0,0.633000000000038,0.00100000000000033,0.635000000000218,1
+"test-review-1026-oracles.R","review-1026-oracles","latent class fit agrees with poLCA and is an EM fixed point",5,0,FALSE,FALSE,0,0.442000000000007,0.000999999999999446,0.467999999999847,5
+"test-review-1026-oracles.R","review-1026-oracles","the CR1 sandwich composition equals sandwich::vcovCL(type = 'HC0')",3,0,FALSE,FALSE,0,0.0119999999999436,0,0.0190000000002328,3
+"test-stata-published.R","stata-published","stata-published compares every case, and its register explains only what occurs",6,0,FALSE,FALSE,3,48.943,0.0880000000000001,49.8219999999997,3
+"test-stata-published.R","stata-published","stata-published agrees with Stata",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00300000000015643,2
+"test-stata-published.R","stata-published","stata-published agrees with the published analyses",2,0,FALSE,FALSE,0,0.0160000000000764,0.000999999999999446,0.0169999999998254,2
+"test-structure-inference.R","structure-inference","single-level Wald SEs of all fourteen structures match numDeriv",42,0,FALSE,FALSE,0,7.08199999999988,0.0199999999999996,7.44900000000007,42
+"test-structure-inference.R","structure-inference","two-level Wald SEs of all fourteen structures match numDeriv",42,0,FALSE,FALSE,0,8.68700000000013,0.0200000000000005,8.94000000000005,42
+"test-supporting-fork-preflight.R","supporting-fork-preflight","supporting fork guards preserve the complete scientific AST",27,0,FALSE,FALSE,0,0.0660000000000309,0.000999999999999446,0.0779999999999745,27
+"test-supporting-fork-preflight.R","supporting-fork-preflight","supporting preflight refuses unsafe forks and preserves safe requests",6,0,FALSE,FALSE,0,0.00900000000001455,0.00100000000000033,0.0109999999999673,6
+"test-supporting-fork-preflight.R","supporting-fork-preflight","the historical kit refuses unsafe forks before deleting its data",3,0,FALSE,FALSE,0,0.00500000000010914,0,0.00500000000010914,3
+"test-supporting-fork-preflight.R","supporting-fork-preflight","search scripts locate the common guard from their script location",4,0,FALSE,FALSE,0,0.00999999999999091,0,0.00999999999976353,4
+"test-tidylpa-classification.R","tidylpa-classification","relative entropy and AvePP equal tidyLPA's on the same posteriors",9,0,FALSE,FALSE,0,1.65899999999988,0.0229999999999997,1.83100000000013,9
+"test-tidylpa-classification.R","tidylpa-classification","tidyLPA's formulas take every row, so they agree on complete data only",2,0,FALSE,FALSE,0,0.125,0,0.134000000000015,2
+"test-tidysem-bch.R","tidysem-bch","the correction agrees with an independent implementation",2,0,FALSE,FALSE,0,0.103000000000065,0,0.134999999999764,2
+"test-vlmr-runtime.R","vlmr-runtime","VLMR uses serial execution when requested or on unsafe platforms",2,0,FALSE,FALSE,0,0.00399999999990541,0,0.00500000000010914,2
+"test-vlmr-runtime.R","vlmr-runtime","VLMR automatically avoids Accelerate forks and preserves safe worker controls",4,0,FALSE,FALSE,0,0.00500000000010914,0,0.00599999999985812,4
+"test-vlmr-runtime.R","vlmr-runtime","a real seeded VLMR fit and reference preserve results across runtime routes",8,0,FALSE,FALSE,0,6.74199999999996,0.0279999999999996,6.91300000000001,8

@@ -51,48 +51,72 @@ test_that("every kit case has both programs' outputs, and both terminated", {
   expect_length(de_results()$failed, 0L)
 })
 
-test_that("log likelihood, parameter count and BIC agree with both programs", {
-  rows <- subset(de_results()$comparison,
-                 quantity %in% c("log_likelihood", "n_parameters", "bic"))
-  expect_setequal(unique(rows$program), c("latentgold", "mplus"))
-  de_expect_rows(rows)
-})
+# Each comparison is one block per program, so a block is evidence for exactly
+# one reference (CVS and the verification matrix take one reference per test).
+de_programs <- c(latentgold = "Latent GOLD", mplus = "Mplus")
 
-test_that("posteriors and predict() on the training data agree row by row", {
-  de_expect_rows(subset(de_results()$comparison, quantity %in% c("posterior", "predict")))
-})
+# The compared rows of one program, of the quantities `keep` selects.
+de_program_rows <- function(code, keep) {
+  rows <- de_results()$comparison
+  rows[rows$program == code & keep(rows$quantity), , drop = FALSE]
+}
 
-test_that("means, variances, effects and class proportions agree", {
-  rows <- subset(de_results()$comparison, endsWith(quantity, "_estimate"))
-  expect_true(all(c("mean_estimate", "variance_estimate", "effect_estimate",
-                    "proportion_estimate") %in% rows$quantity))
-  de_expect_rows(rows)
-})
+invisible(lapply(names(de_programs), \(code) {
+  program <- de_programs[[code]]
 
-test_that("their standard errors agree", {
-  rows <- subset(de_results()$comparison, endsWith(quantity, "_se"))
-  # Latent GOLD reports no standard error for the one class of k = 1 (-1).
-  rows <- subset(rows, reference >= 0)
-  expect_true(all(c("mean_se", "variance_se", "effect_se") %in% rows$quantity))
-  de_expect_rows(rows)
-})
+  test_that(sprintf("log likelihood, parameter count and BIC agree with %s", program), {
+    rows <- de_program_rows(code, \(q) q %in% c("log_likelihood", "n_parameters", "bic"))
+    expect_gt(nrow(rows), 0L)
+    de_expect_rows(rows)
+  })
 
-test_that("latents reaches the best maximum either program found", {
+  test_that(sprintf("posteriors and predict() on the training data agree with %s row by row",
+                    program), {
+    de_expect_rows(de_program_rows(code, \(q) q %in% c("posterior", "predict")))
+  })
+
+  test_that(sprintf("means, variances, effects and class proportions agree with %s", program), {
+    rows <- de_program_rows(code, \(q) endsWith(q, "_estimate"))
+    expect_true(all(c("mean_estimate", "variance_estimate", "effect_estimate",
+                      "proportion_estimate") %in% rows$quantity))
+    de_expect_rows(rows)
+  })
+
+  test_that(sprintf("their standard errors agree with %s", program), {
+    rows <- de_program_rows(code, \(q) endsWith(q, "_se"))
+    # Latent GOLD reports no standard error for the one class of k = 1 (-1).
+    rows <- subset(rows, reference >= 0)
+    expect_true(all(c("mean_se", "variance_se", "effect_se") %in% rows$quantity))
+    de_expect_rows(rows)
+  })
+
+  test_that(sprintf("latents reaches every maximum %s found", program), {
+    maxima <- de_results()$maxima
+    mine <- subset(maxima, program == "latents")
+    theirs <- maxima[maxima$program == code, , drop = FALSE]
+    expect_gt(nrow(theirs), 0L)
+    at <- match(theirs$case, mine$case)
+    # The same tolerance as the log-likelihood comparison: Mplus's own value
+    # drifts from the others by up to 3.5e-8 relative at agreeing estimates.
+    invisible(lapply(seq_len(nrow(theirs)), \(i) {
+      expect_gte(mine$log_likelihood[[at[[i]]]] - theirs$log_likelihood[[i]],
+                 -1e-6 * abs(theirs$log_likelihood[[i]]),
+                 label = sprintf("%s latents %.6f vs %s %.6f", theirs$case[[i]],
+                                 mine$log_likelihood[[at[[i]]]], program,
+                                 theirs$log_likelihood[[i]]))
+    }))
+  })
+}))
+
+test_that("every seed of latents reaches one maximum, and every case is compared", {
   maxima <- de_results()$maxima
   mine <- subset(maxima, program == "latents")
-  # The same tolerance as the log-likelihood comparison: Mplus's own value
-  # drifts from the others by up to 3.5e-8 relative at agreeing estimates.
-  invisible(lapply(seq_len(nrow(mine)), \(i) {
-    expect_gte(mine$gap_to_best[[i]], -1e-6 * abs(mine$best_reference[[i]]),
-               label = sprintf("%s latents %.6f vs best reference %.6f", mine$case[[i]],
-                               mine$log_likelihood[[i]], mine$best_reference[[i]]))
-  }))
-  # Every seed of latents reaches the same maximum.
   expect_true(all(mine$seed_spread < 1e-6))
   # Every case is compared quantity by quantity with at least one program.
   compared <- aggregate(compared ~ case, data = subset(maxima, program != "latents"), FUN = any)
   expect_true(all(compared$compared), info = paste(subset(compared, !compared)$case,
                                                    collapse = ", "))
+  expect_setequal(unique(de_results()$comparison$program), names(de_programs))
 })
 
 test_that("the declared searches retain every default attempt and its reference gap", {

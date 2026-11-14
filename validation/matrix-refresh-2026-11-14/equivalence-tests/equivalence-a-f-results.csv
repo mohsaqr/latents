@@ -1,0 +1,226 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-boundary-polca.R","boundary-polca","the categorical boundary flag agrees with poLCA at the same maximum",11,0,FALSE,FALSE,0,14.037,0.175,17.917,11
+"test-boundary-polca.R","boundary-polca","the interior two-class solution equals poLCA's estimates",6,0,FALSE,FALSE,0,0.500999999999999,0.003,0.856999999999999,6
+"test-claims.R","claims","the registry has its columns and no duplicate claims",3,0,FALSE,FALSE,0,0.00500000000000078,0,0.00600000000000023,3
+"test-claims.R","claims","every registered behavior retains its documentation anchor",88,0,FALSE,FALSE,0,0.115,0.00599999999999998,0.149999999999999,88
+"test-claims.R","claims","every backed claim names a test that exists",86,0,FALSE,FALSE,0,0.0909999999999993,0.00900000000000001,0.140000000000001,86
+"test-claims.R","claims","unbacked claims are explained and do not grow unnoticed",2,0,FALSE,FALSE,0,0.00200000000000067,0,0.00300000000000011,2
+"test-cvs-report.R","cvs-report","testthat results keep each block's outcome",12,0,FALSE,FALSE,0,0.118,0.001,0.166999999999998,12
+"test-cvs-report.R","cvs-report","harness quantities keep their difference, tolerance and reference",12,0,FALSE,FALSE,0,0.0220000000000002,0.001,0.0350000000000001,12
+"test-cvs-report.R","cvs-report","every other reason the harness fails a run reaches CVS as a failure",6,0,FALSE,FALSE,0,0.0280000000000005,0,0.0510000000000019,6
+"test-cvs-report.R","cvs-report","sweep statuses map to CVS statuses, and an unknown one stops",6,0,FALSE,FALSE,0,0.0399999999999991,0.001,0.0649999999999977,6
+"test-cvs-report.R","cvs-report","a report goes to the inbox and to tmp/cvs, or only to tmp/cvs when reporting is off",20,0,FALSE,FALSE,0,0.0810000000000013,0.001,0.131999999999998,20
+"test-cvs-report.R","cvs-report","each kind of reference maps to its CVS axis and authority",4,0,FALSE,FALSE,0,0.00399999999999956,0,0.00799999999999912,4
+"test-cvs-report.R","cvs-report","an unknown commercial program stops with a classed error",5,0,FALSE,FALSE,0,0.032,0,0.0510000000000019,5
+"test-cvs-report.R","cvs-report","assertions are tagged by the matrix's rules, and the untaggable are left as they are",14,0,FALSE,FALSE,0,0.0190000000000001,0.001,0.0280000000000022,14
+"test-cvs-report.R","cvs-report","tagging only adds fields: nothing is dropped, renamed or reordered",3,0,FALSE,FALSE,0,0.0190000000000001,0.002,0.0329999999999977,3
+"test-cvs-report.R","cvs-report","a saved report is tagged again with its own name, run, start and version",6,0,FALSE,FALSE,0,0.0149999999999988,0.001,0.0250000000000021,6
+"test-cvs-report.R","cvs-report","sweep checks reach CVS tagged with the reference their run recorded",4,0,FALSE,FALSE,0,0.00900000000000034,0.001,0.0160000000000018,4
+"test-cvs-report.R","cvs-report","the sweep's rules give every reference check a reference and stop on an unnamed check",4,0,FALSE,FALSE,0,0.00999999999999979,0.001,0.0199999999999996,4
+"test-cvs-report.R","cvs-report","every attribution rule of an equivalence/ test names references on one CVS axis",1,0,FALSE,FALSE,0,0.0310000000000006,0.001,0.0519999999999996,1
+"test-depmixs4-standard-errors.R","depmixs4-standard-errors","transition standard errors agree with depmixS4's numerical ones",15,0,FALSE,FALSE,0,2.733,0.037,3.763,15
+"test-direct-effects-search-protocol.R","direct-effects-search-protocol","both search controls are fixed before reading any reference",13,0,FALSE,FALSE,0,0.0229999999999997,0.001,0.0259999999999998,13
+"test-direct-effects-search-protocol.R","direct-effects-search-protocol","selection reports defaults and rejects boundary or unconverged higher attempts",11,0,FALSE,FALSE,0,0.0150000000000006,0.003,0.0219999999999985,11
+"test-direct-effects-search-protocol.R","direct-effects-search-protocol","failed attempts remain visible and no admissible fit fails validation",5,0,FALSE,FALSE,0,0.0290000000000035,0.001,0.0300000000000011,5
+"test-enumeration-mplus.R","enumeration-mplus","every candidate of a grid reproduces Mplus at its number of classes",46,0,FALSE,FALSE,0,28.656,0.174,37.486,46
+"test-enumeration-mplus.R","enumeration-mplus","compare_models() BIC weights follow Mplus's BIC",2,0,FALSE,FALSE,0,16.574,0.017,18.941,2
+"test-enumeration-mplus.R","enumeration-mplus","a grid fitted on two cores is identical to one fitted on one",1,0,FALSE,FALSE,0,5.872,0.37,22.252,1
+"test-enumeration-packages.R","enumeration-packages","enumeration-packages compares every case, and its register explains only what occurs",484,0,FALSE,FALSE,480,2245.709,20.734,2556.788,4
+"test-enumeration-packages.R","enumeration-packages","enumeration-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00499999999965439,0,0.00499999999965439,2
+"test-external-scripts.R","external-scripts","weights agree with Mplus TYPE = COMPLEX and the weighted closed form",1,0,FALSE,FALSE,0,0.00399999999990541,0,1.0010000000002,1
+"test-external-scripts.R","external-scripts","BCH weights and corrected means agree with tidySEM",1,0,FALSE,FALSE,0,0.423999999999978,0.0269999999999975,2.25699999999961,1
+"test-external-scripts.R","external-scripts","Houle et al. (2026) likelihood and fit-index arithmetic agree",2,0,FALSE,FALSE,0,0.00499999999965439,0,1.75500000000011,2
+"test-external-scripts.R","external-scripts","latent transition extensions agree with Mplus",7,0,FALSE,FALSE,0,0.00900000000001455,0.00200000000000244,141.026,7
+"test-external-scripts.R","external-scripts","latent transition extensions agree with depmixS4 and LMest",5,0,FALSE,FALSE,0,0.00599999999985812,0.00200000000000244,47.4029999999998,5
+"test-external-scripts.R","external-scripts","ordinal and count indicators agree with Latent GOLD",5,0,FALSE,FALSE,0,0.00800000000026557,0.000999999999997669,71.4299999999998,5
+"test-features-direct-effects.R","features-direct-effects","every kit case has both programs' outputs, and both terminated",69,0,FALSE,FALSE,0,817.776,1.238,826.046,69
+"test-features-direct-effects.R","features-direct-effects","log likelihood, parameter count and BIC agree with Latent GOLD",265,0,FALSE,FALSE,0,0.123999999999796,0.000999999999997669,0.125,265
+"test-features-direct-effects.R","features-direct-effects","posteriors and predict() on the training data agree with Latent GOLD row by row",132,0,FALSE,FALSE,0,0.0510000000003856,0.00100000000000122,0.0520000000001346,132
+"test-features-direct-effects.R","features-direct-effects","means, variances, effects and class proportions agree with Latent GOLD",1261,0,FALSE,FALSE,0,0.543999999999869,0.00300000000000011,0.547000000000025,1261
+"test-features-direct-effects.R","features-direct-effects","their standard errors agree with Latent GOLD",1259,0,FALSE,FALSE,0,0.534999999999854,0.00400000000000134,0.539999999999964,1259
+"test-features-direct-effects.R","features-direct-effects","latents reaches every maximum Latent GOLD found",68,0,FALSE,FALSE,0,0.0349999999998545,0,0.0350000000003092,68
+"test-features-direct-effects.R","features-direct-effects","log likelihood, parameter count and BIC agree with Mplus",269,0,FALSE,FALSE,0,0.110000000000127,0.00199999999999889,0.11200000000008,269
+"test-features-direct-effects.R","features-direct-effects","posteriors and predict() on the training data agree with Mplus row by row",134,0,FALSE,FALSE,0,0.0710000000003674,0.00100000000000122,0.0719999999996617,134
+"test-features-direct-effects.R","features-direct-effects","means, variances, effects and class proportions agree with Mplus",1280,0,FALSE,FALSE,0,0.548999999999978,0.00999999999999801,0.559000000000196,1280
+"test-features-direct-effects.R","features-direct-effects","their standard errors agree with Mplus",1133,0,FALSE,FALSE,0,0.519999999999982,0.00100000000000122,0.523000000000138,1133
+"test-features-direct-effects.R","features-direct-effects","latents reaches every maximum Mplus found",68,0,FALSE,FALSE,0,0.0250000000000909,0,0.0259999999998399,68
+"test-features-direct-effects.R","features-direct-effects","every seed of latents reaches one maximum, and every case is compared",3,0,FALSE,FALSE,0,0.00499999999965439,0.000999999999997669,0.00599999999985812,3
+"test-features-direct-effects.R","features-direct-effects","the declared searches retain every default attempt and its reference gap",539,0,FALSE,FALSE,0,0.495000000000346,0.0300000000000011,0.525000000000091,539
+"test-features-direct-effects.R","features-direct-effects","one profile is a linear regression of each indicator",9,0,FALSE,FALSE,0,0.0700000000001637,0.00199999999999889,0.0740000000000691,9
+"test-features-direct-effects.R","features-direct-effects","the estimated effects recover the generating effects",2,0,FALSE,FALSE,0,5.92399999999998,0.0120000000000005,5.93799999999965,2
+"test-features-direct-effects.R","features-direct-effects","an independent implementation agrees on 84 more datasets",336,0,FALSE,FALSE,2,239.746,0.246000000000002,240.199,334
+"test-features-joint-items.R","features-joint-items","every case of the kit has its Latent GOLD and Mplus output",6,0,FALSE,FALSE,0,0.264000000000124,0.0069999999999979,0.271999999999935,6
+"test-features-joint-items.R","features-joint-items","two seeds of latents reach the same maximum",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00399999999990541,4
+"test-features-joint-items.R","features-joint-items","the log likelihood agrees with Latent GOLD, which finds no higher maximum",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999949796,2
+"test-features-joint-items.R","features-joint-items","the log likelihood agrees with Mplus, which finds no higher maximum",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","the reference likelihood at latents' estimates is latents' likelihood",4,0,FALSE,FALSE,0,0.00399999999990541,0.00100000000000122,0.00399999999990541,4
+"test-features-joint-items.R","features-joint-items","the strict own-parameter verification recipe reaches the independent maximum",2,0,FALSE,FALSE,0,0.00100000000020373,0.00100000000000122,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","every original joint-item seed remains visible beside its verification",7,0,FALSE,FALSE,0,0.00399999999990541,0.00199999999999889,0.00600000000031287,7
+"test-features-joint-items.R","features-joint-items","the kit's sparse cases have unobserved combinations",2,0,FALSE,FALSE,0,0.0330000000003565,0.0199999999999996,0.0530000000007931,2
+"test-features-joint-items.R","features-joint-items","the parameter count agrees with Latent GOLD under the full-grid convention",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","BIC agrees with Latent GOLD",2,0,FALSE,FALSE,0,0.00199999999995271,0.000999999999997669,0.00199999999949796,2
+"test-features-joint-items.R","features-joint-items","posteriors agree row by row with Latent GOLD",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","the parameter count agrees with Mplus under the full-grid convention",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","BIC agrees with Mplus",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","posteriors agree row by row with Mplus",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,2
+"test-features-joint-items.R","features-joint-items","class sizes, item and joint probabilities agree with Latent GOLD",5,0,FALSE,FALSE,0,0.0419999999999163,0,0.0410000000001673,5
+"test-features-joint-items.R","features-joint-items","the probabilities implied by Mplus's posteriors agree",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00100000000020373,2
+"test-features-joint-items.R","features-joint-items","a partially observed pair keeps its observed item, as Latent GOLD's includeall does",16,0,FALSE,FALSE,0,4.89200000000028,0.0530000000000008,4.94800000000032,16
+"test-features-joint-items.R","features-joint-items","a truly independent pair gives Latent GOLD's likelihood ratio",15,0,FALSE,FALSE,0,2.12199999999984,0.00400000000000134,2.13699999999972,15
+"test-features-joint-items.R","features-joint-items","integer weights are duplicated rows, up to latents' rescaling",9,0,FALSE,FALSE,0,1.46399999999994,0.00399999999999778,1.47400000000016,9
+"test-features-joint-items.R","features-joint-items","the two-level model with a joined pair is compared in full",3,0,FALSE,FALSE,0,0.00199999999995271,0,0.00200000000040745,3
+"test-features-joint-items.R","features-joint-items","poLCA on the joined item reaches latents' maximum and estimates",6,0,FALSE,FALSE,0,0.0299999999997453,0.348000000000003,170.571,6
+"test-features-joint-items.R","features-joint-items","the independent reference is independent of latents",1,0,FALSE,FALSE,0,0.0230000000001382,0.00900000000000034,0.0340000000005602,1
+"test-features-joint-items.R","features-joint-items","the reference study: 140 more datasets against the independent EM",8,0,FALSE,FALSE,0,0.0479999999997744,0.959,249.034,8
+"test-features-ml-three-step.R","features-ml-three-step","the kit's posteriors are latents' own fit, refitted to the same maximum",584,0,FALSE,FALSE,0,0.788000000000011,0.172000000000001,0.967999999999847,584
+"test-features-ml-three-step.R","features-ml-three-step","step three matches Latent GOLD on latents' posteriors",155,0,FALSE,FALSE,0,623.055,0.873000000000001,624.422,155
+"test-features-ml-three-step.R","features-ml-three-step","Latent GOLD's model-based and design-based variances match the reference and latents",5,0,FALSE,FALSE,0,562.038,1.015,563.291999999999,5
+"test-features-ml-three-step.R","features-ml-three-step","the independent reference agrees on every kit case",432,0,FALSE,FALSE,0,959.898,0.384,960.305,432
+"test-features-ml-three-step.R","features-ml-three-step","the independent reference agrees on the sweep of 120 datasets",733,0,FALSE,FALSE,0,1199.259,1.121,1201.107,733
+"test-features-ml-three-step.R","features-ml-three-step","on the sweep's multimodal cases latents reaches the best known maximum",2,0,FALSE,FALSE,0,37.3009999999995,0.0219999999999985,37.3400000000001,2
+"test-features-ml-three-step.R","features-ml-three-step","a class mean carried by a single unit does not report certainty",1,0,FALSE,FALSE,0,0.136000000000422,0,0.135999999999513,1
+"test-features-ml-three-step.R","features-ml-three-step","Latent GOLD end to end: its own step one, then step three",26,0,FALSE,FALSE,0,17.6509999999998,0.00900000000000034,17.6740000000009,26
+"test-features-ml-three-step.R","features-ml-three-step","Mplus DU3STEP and DE3STEP follow the fixed-size convention without CR1",38,0,FALSE,FALSE,0,30.6689999999999,0.027000000000001,30.726999999999,38
+"test-features-ml-three-step.R","features-ml-three-step","edge cases: transformed outcomes, perfect classification, refusals",16,0,FALSE,FALSE,0,192.142,0.0820000000000007,192.237999999999,16
+"test-features-ml-three-step.R","features-ml-three-step","two-level fits: groups as units, and clustered against independent",25,0,FALSE,FALSE,0,2.09099999999944,0.00600000000000023,2.09799999999996,25
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0889999999999418,0,0.0940000000009604,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0450000000000728,0.00100000000000122,0.0480000000006839,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0630000000001019,0,0.0630000000001019,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0389999999997599,0,0.0409999999992579,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0469999999995707,0,0.0470000000004802,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0180000000000291,0,0.0189999999984138,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0529999999998836,0,0.0540000000000873,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0200000000004366,0,0.0210000000006403,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0479999999997744,0,0.0480000000006839,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_m_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0190000000002328,0.00100000000000122,0.0209999999988213,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.108000000000175,0,0.108000000000175,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0250000000005457,0.00100000000000122,0.0300000000006548,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.115000000000691,0,0.114999999999782,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0249999999996362,0,0.0270000000000437,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.109000000000378,0,0.110999999998967,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.024000000000342,0.00100000000000122,0.0280000000002474,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.108000000000175,0.00199999999999889,0.111000000000786,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0249999999996362,0,0.0279999999984284,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.135000000000218,0,0.136000000000422,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k3_m_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0250000000005457,0.00100000000000122,0.0280000000002474,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.045999999999367,0,0.0470000000004802,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0200000000004366,0,0.0199999999986176,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0389999999997599,0,0.0390000000006694,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0190000000002328,0,0.0200000000004366,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0369999999993524,0,0.0369999999984429,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0180000000000291,0.00100000000000122,0.0180000000000291,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0479999999997744,0,0.0480000000006839,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0190000000002328,0.000999999999997669,0.0200000000004366,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0380000000004657,0,0.0389999999988504,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_one_k2_m_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0190000000002328,0,0.0190000000002328,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0770000000002256,0,0.0779999999995198,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0229999999992287,0,0.0270000000000437,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0799999999999272,0,0.0799999999999272,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0230000000001382,0,0.0249999999996362,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0690000000004147,0.00100000000000122,0.069999999999709,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.032999999999447,0,0.0360000000000582,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.069999999999709,0,0.069999999999709,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0230000000001382,0.00100000000000122,0.0259999999998399,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0799999999999272,0,0.081000000000131,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k3_m_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.024000000000342,0,0.0280000000002474,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.219000000000051,0.00100000000000122,0.220999999999549,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0399999999999636,0.00199999999999889,0.043999999999869,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.219999999999345,0.00100000000000122,0.221999999999753,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0309999999999491,0.000999999999997669,0.0349999999998545,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.221000000000458,0.00100000000000122,0.221999999999753,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0410000000001673,0,0.043999999999869,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.221999999999753,0,0.222999999999956,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0330000000003565,0,0.0349999999998545,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.404999999999745,0.0180000000000007,0.434000000001106,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_two_k4_m_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0280000000002474,0.00100000000000122,0.0319999999992433,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0270000000000437,0,0.0290000000004511,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0140000000001237,0.000999999999997669,0.0159999999996217,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0370000000002619,0,0.0380000000004657,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0159999999996217,0,0.0159999999996217,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0280000000002474,0,0.0320000000010623,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0149999999994179,0,0.0149999999994179,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0270000000000437,0,0.0280000000002474,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0149999999994179,0,0.0159999999996217,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0360000000000582,0,0.0360000000000582,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k2_s_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0150000000003274,0,0.0149999999994179,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0259999999998399,0,0.0270000000000437,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0140000000001237,0.00100000000000122,0.0149999999994179,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0260000000007494,0,0.0280000000002474,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0150000000003274,0,0.0159999999996217,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0339999999996508,0.00100000000000122,0.0360000000000582,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0150000000003274,0,0.0149999999994179,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0259999999998399,0.000999999999997669,0.0270000000000437,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0149999999994179,0,0.0160000000014406,10
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0259999999998399,0.00100000000000122,0.0270000000000437,9
+"test-features-pair-covariance.R","features-pair-covariance","eei_two_k2_s_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0160000000005311,0,0.0150000000012369,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.269000000000233,0.00799999999999912,0.277000000000044,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0509999999994761,0.00100000000000122,0.0540000000000873,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.266999999999825,0,0.268000000000029,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.055000000000291,0,0.055000000000291,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_03: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.277999999999338,0.00100000000000122,0.282000000001062,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0480000000006839,0.00100000000000122,0.0490000000008877,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_04: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.284999999999854,0,0.286000000000058,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_04: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0509999999994761,0,0.0540000000000873,10
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_05: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.32300000000032,0,0.324000000000524,9
+"test-features-pair-covariance.R","features-pair-covariance","vvi_one_k3_l_05: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0489999999999782,0,0.0519999999996799,10
+"test-features-pair-covariance.R","features-pair-covariance","near_one_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0379999999995562,0,0.0389999999988504,9
+"test-features-pair-covariance.R","features-pair-covariance","near_one_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0180000000000291,0,0.0190000000002328,10
+"test-features-pair-covariance.R","features-pair-covariance","near_one_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0379999999995562,0,0.0390000000006694,9
+"test-features-pair-covariance.R","features-pair-covariance","near_one_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0430000000005748,0.00300000000000011,0.0460000000002765,10
+"test-features-pair-covariance.R","features-pair-covariance","zero_cov_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0579999999999927,0.000999999999997669,0.0599999999994907,9
+"test-features-pair-covariance.R","features-pair-covariance","zero_cov_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0199999999995271,0,0.0200000000004366,10
+"test-features-pair-covariance.R","features-pair-covariance","zero_cov_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0430000000005748,0.00300000000000011,0.0459999999984575,9
+"test-features-pair-covariance.R","features-pair-covariance","zero_cov_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0169999999998254,0.00100000000000122,0.0190000000002328,10
+"test-features-pair-covariance.R","features-pair-covariance","floor_unpaired_01: latents agrees with mplus",5,0,FALSE,FALSE,0,0.00900000000001455,0.000999999999997669,0.011000000000422,5
+"test-features-pair-covariance.R","features-pair-covariance","floor_unpaired_01_fixed: latents agrees with mplus_fixed",8,0,FALSE,FALSE,0,0.0100000000002183,0,0.011000000000422,8
+"test-features-pair-covariance.R","features-pair-covariance","floor_unpaired_02: latents agrees with mplus",5,0,FALSE,FALSE,0,0.00900000000001455,0,0.0100000000002183,5
+"test-features-pair-covariance.R","features-pair-covariance","floor_unpaired_02_fixed: latents agrees with mplus_fixed",8,0,FALSE,FALSE,0,0.0119999999997162,0,0.0129999999990105,8
+"test-features-pair-covariance.R","features-pair-covariance","floor_paired_01: latents agrees with mplus",5,0,FALSE,FALSE,0,0.00900000000001455,0,0.0100000000002183,5
+"test-features-pair-covariance.R","features-pair-covariance","floor_paired_01_fixed: latents agrees with mplus_fixed",8,0,FALSE,FALSE,0,0.00999999999930878,0,0.011000000000422,8
+"test-features-pair-covariance.R","features-pair-covariance","floor_paired_02: latents agrees with mplus",5,0,FALSE,FALSE,0,0.00900000000001455,0,0.0100000000002183,5
+"test-features-pair-covariance.R","features-pair-covariance","floor_paired_02_fixed: latents agrees with mplus_fixed",8,0,FALSE,FALSE,0,0.00900000000001455,0.00100000000000122,0.0100000000002183,8
+"test-features-pair-covariance.R","features-pair-covariance","small_class_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0659999999998035,0,0.0659999999988941,9
+"test-features-pair-covariance.R","features-pair-covariance","small_class_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0219999999999345,0,0.0239999999994325,10
+"test-features-pair-covariance.R","features-pair-covariance","small_class_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.079000000000633,0.00100000000000122,0.0799999999999272,9
+"test-features-pair-covariance.R","features-pair-covariance","small_class_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0209999999997308,0,0.0240000000012515,10
+"test-features-pair-covariance.R","features-pair-covariance","scales_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0429999999996653,0,0.043999999999869,9
+"test-features-pair-covariance.R","features-pair-covariance","scales_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.056999999999789,0.000999999999997669,0.058999999999287,9
+"test-features-pair-covariance.R","features-pair-covariance","two_vvi_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0289999999995416,0,0.032999999999447,9
+"test-features-pair-covariance.R","features-pair-covariance","two_vvi_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0159999999996217,0.00100000000000122,0.0180000000000291,10
+"test-features-pair-covariance.R","features-pair-covariance","two_vvi_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0300000000006548,0,0.0290000000004511,9
+"test-features-pair-covariance.R","features-pair-covariance","two_vvi_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0169999999998254,0,0.0169999999998254,10
+"test-features-pair-covariance.R","features-pair-covariance","two_eei_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0249999999996362,0,0.0259999999998399,9
+"test-features-pair-covariance.R","features-pair-covariance","two_eei_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0299999999997453,0,0.0309999999990396,10
+"test-features-pair-covariance.R","features-pair-covariance","two_eei_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0250000000005457,0.00100000000000122,0.0260000000016589,9
+"test-features-pair-covariance.R","features-pair-covariance","two_eei_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0159999999996217,0.000999999999997669,0.0180000000000291,10
+"test-features-pair-covariance.R","features-pair-covariance","missing_01: latents agrees with latentgold",8,0,FALSE,FALSE,0,0.104999999999563,0,0.104999999999563,8
+"test-features-pair-covariance.R","features-pair-covariance","missing_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0210000000006403,0,0.0239999999994325,10
+"test-features-pair-covariance.R","features-pair-covariance","missing_02: latents agrees with latentgold",8,0,FALSE,FALSE,0,0.0890000000008513,0,0.0900000000001455,8
+"test-features-pair-covariance.R","features-pair-covariance","missing_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0340000000005602,0.00100000000000122,0.0370000000002619,10
+"test-features-pair-covariance.R","features-pair-covariance","missing_03: latents agrees with latentgold",8,0,FALSE,FALSE,0,0.0880000000006476,0.00100000000000122,0.0900000000001455,8
+"test-features-pair-covariance.R","features-pair-covariance","missing_03: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0349999999998545,0,0.0379999999986467,10
+"test-features-pair-covariance.R","features-pair-covariance","misspecified_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0440000000007785,0,0.0450000000000728,9
+"test-features-pair-covariance.R","features-pair-covariance","misspecified_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0189999999993233,0,0.0190000000002328,10
+"test-features-pair-covariance.R","features-pair-covariance","misspecified_02: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.0410000000001673,0.000999999999997669,0.0429999999996653,9
+"test-features-pair-covariance.R","features-pair-covariance","misspecified_02: latents agrees with mplus",10,0,FALSE,FALSE,0,0.0189999999993233,0,0.0200000000004366,10
+"test-features-pair-covariance.R","features-pair-covariance","huge_01: latents agrees with latentgold",9,0,FALSE,FALSE,0,0.613000000000284,0.00300000000000011,0.617000000000189,9
+"test-features-pair-covariance.R","features-pair-covariance","huge_01: latents agrees with mplus",10,0,FALSE,FALSE,0,0.170000000000073,0.00199999999999889,0.172999999998865,10
+"test-features-pair-covariance.R","features-pair-covariance","Mplus refuses the indicator in units of 1e-4 as having no variance",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00400000000081491,4
+"test-features-pair-covariance.R","features-pair-covariance","with missing values latents' standard errors are the observed-data Hessian's",6,0,FALSE,FALSE,0,3.40799999999945,0.00600000000000023,3.41499999999905,6
+"test-features-pair-covariance.R","features-pair-covariance","the kit covers every configuration against both programs",4,0,FALSE,FALSE,0,0.00600000000031287,0.00100000000000122,0.00700000000142609,4
+"test-features-pair-covariance.R","features-pair-covariance","floor fits satisfy the KKT conditions and no feasible point is higher",45,0,FALSE,FALSE,0,0.823999999999614,0.00300000000000011,0.825999999999112,45
+"test-features-pair-covariance.R","features-pair-covariance","with two indicators the pair is VVV or EEE, as in mclust",33,0,FALSE,FALSE,0,3.85900000000038,0.00499999999999901,3.87099999999919,33
+"test-features-pair-covariance.R","features-pair-covariance","the reference likelihood at latents' estimates is latents' likelihood",3,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999879219,3
+"test-features-pair-covariance.R","features-pair-covariance","latents reaches the independent maximum",2,0,FALSE,FALSE,0,0.00200000000040745,0,0.00100000000020373,2
+"test-features-pair-covariance.R","features-pair-covariance","the covariance pattern holds exactly",5,0,FALSE,FALSE,0,0.00399999999990541,0.00100000000000122,0.00399999999899592,5
+"test-features-pair-covariance.R","features-pair-covariance","standard errors and the score agree with numerical derivatives",3,0,FALSE,FALSE,0,0.00299999999970169,0,0.00300000000061118,3
+"test-features-pair-covariance.R","features-pair-covariance","the constrained diagonal floor update is the constrained optimum (KKT)",6,0,FALSE,FALSE,0,0.908000000000357,0.00400000000000134,0.917999999999665,6
+"test-features-vlmr.R","features-vlmr","the kit holds 107 simulab datasets, 62 of them run through both programs",8,0,FALSE,FALSE,0,0.11699999999928,0.0259999999999998,0.141999999999825,8
+"test-features-vlmr.R","features-vlmr","every latents candidate reaches Latent GOLD's non-degenerate maximum",324,0,FALSE,FALSE,0,0.115000000000691,0.00600000000000023,0.120999999999185,324
+"test-features-vlmr.R","features-vlmr","LR, adjusted LR, moments and p-values reproduce Latent GOLD",873,0,FALSE,FALSE,0,3.10299999999916,0.0579999999999998,3.16200000000026,873
+"test-features-vlmr.R","features-vlmr","Latent GOLD's caseweight is a frequency weight, latents' a sampling weight",3,0,FALSE,FALSE,0,0.00200000000040745,0,0.00200000000040745,3
+"test-features-vlmr.R","features-vlmr","TECH11's log likelihoods, LR, parameter difference and adjusted LR match",858,0,FALSE,FALSE,0,0.378999999999905,0.0100000000000016,0.389000000001033,858
+"test-features-vlmr.R","features-vlmr","the independent reference reproduces the weights, moments and p-values",3376,0,FALSE,FALSE,0,1.59299999999985,0.0519999999999996,1.64500000000044,3376
+"test-features-vlmr.R","features-vlmr","Imhof matches exact probabilities on 460 stressed weight vectors",5,0,FALSE,FALSE,0,2.07700000000023,0.00100000000000122,2.07699999999932,5
+"test-features-vlmr.R","features-vlmr","kit p-values do not move with the indicators' units and origin",12,0,FALSE,FALSE,0,31.9929999999995,0.0619999999999976,32.0810000000001,12
+"test-features-vlmr.R","features-vlmr","weighted and incomplete cases count their informative units",3,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999899592,3

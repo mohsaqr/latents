@@ -1,0 +1,22 @@
+module,pattern,reference,kind
+*,: parameter count is mclust's,mclust parameter counts,component check
+*,: parameter count is poLCA's,poLCA parameter counts,component check
+*,: one class: poLCA's,poLCA (one-class reduction),component check
+*,mclust's,mclust,R package
+*,poLCA's,poLCA,R package
+*,flexmix,flexmix,R package
+*,mitools::MIcombine,mitools,R package
+*,glm\.nb's,MASS glm.nb (one-class reduction),component check
+*,lme4's,lme4 (one-class reduction),component check
+*,lm's (slope|intercept|ML residual variance),stats lm (one-class reduction),component check
+*,: (log likelihood|coefficients) of the standard regression|: residual standard deviation is the ML one,stats lm/glm (one-class reduction),component check
+*,thresholds of MASS::polr,MASS polr (one-class reduction),component check
+*,p\.adjust,stats p.adjust,component check
+*,numDeriv|against the sandwich,numDeriv / dense likelihood,independent code
+*,stats::optim,reference optimizer,independent code
+*,rebuilt|forward recursion|backward recursion|manual two-stage fit,likelihood rebuilt from the result tables,independent code
+*,Rubin's rules,Rubin's rules written here,independent code
+*,": one (profile|class): (means are the observed means|variances are the observed ML variances|probabilities are the observed proportions|Poisson means are the sample means|standard error of a (mean|variance))|^weighted-one-profile\[[^]]*\]: weighted (means|ML covariance)",closed form (one-class reduction),component check
+postfit,": (relative entropy|average posterior|classification errors|odds of correct classification|modal counts|estimated proportions are the mean posteriors|BCH weights|(bch|modal|proportional): |p-values are two-sided normal tails|overall test: |confidence limits|level = [0-9.]+: confidence limits)",published formula computed here,independent code
+pooling,": (intervals|p-values) from the t reference distribution|: no between-imputation variance gives infinite degrees of freedom",published formula computed here,independent code
+*,.,internal check,internal

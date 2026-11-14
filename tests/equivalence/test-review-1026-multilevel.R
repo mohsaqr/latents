@@ -112,7 +112,9 @@ test_that("one group class is the single-level mixture, at least as high as mclu
                    as.integer(mclust::nMclustParams("VVI", 2, 2)))
 })
 
-test_that("the membership Newton step matches glm and an independent optimizer", {
+# Soft class counts with two covariates, one far from zero (x2), for the
+# membership Newton step.
+review_newton_counts <- function() {
   withr::local_seed(4)
   n <- 200
   x1 <- stats::rnorm(n)
@@ -120,19 +122,28 @@ test_that("the membership Newton step matches glm and an independent optimizer",
   design <- cbind(1, x1, x2)
   eta <- cbind(0.5 + x1, -0.3 + 0.5 * (x2 - 5), 0)
   probabilities <- exp(eta) / rowSums(exp(eta))
-  counts <- probabilities * stats::runif(n, 0.5, 2)
-  solved <- .multilpa_weighted_logits(design, counts, matrix(0, 3, 2))
+  list(x1 = x1, x2 = x2, design = design, counts = probabilities * stats::runif(n, 0.5, 2))
+}
+
+test_that("the membership Newton step reaches an independent optimizer's minimum", {
+  newton <- review_newton_counts()
+  solved <- .multilpa_weighted_logits(newton$design, newton$counts, matrix(0, 3, 2))
   expect_true(solved$converged)
   objective <- function(b) {
-    -sum(counts * .multilpa_log_softmax(design, matrix(b, 3, 2)))
+    -sum(newton$counts * .multilpa_log_softmax(newton$design, matrix(b, 3, 2)))
   }
   reference <- stats::optim(rep(0, 6), objective, method = "BFGS",
                             control = list(reltol = 1e-16, maxit = 5000))
   expect_lte(objective(as.vector(solved$coefficients)), reference$value + 1e-10)
   expect_equal(as.vector(solved$coefficients), reference$par, tolerance = 1e-2)
-  # Two categories: the weighted binomial logit of glm().
-  binary <- cbind(counts[, 1], counts[, 2] + counts[, 3])
-  two <- .multilpa_weighted_logits(design, binary, matrix(0, 3, 1))
+})
+
+test_that("the membership Newton step with two categories is glm's weighted logit", {
+  newton <- review_newton_counts()
+  binary <- cbind(newton$counts[, 1], newton$counts[, 2] + newton$counts[, 3])
+  two <- .multilpa_weighted_logits(newton$design, binary, matrix(0, 3, 1))
+  x1 <- newton$x1
+  x2 <- newton$x2
   glm_fit <- stats::glm(binary[, 1] / rowSums(binary) ~ x1 + x2,
                         family = stats::quasibinomial(), weights = rowSums(binary),
                         control = stats::glm.control(epsilon = 1e-14, maxit = 100))

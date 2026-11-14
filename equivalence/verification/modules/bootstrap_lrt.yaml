@@ -5,7 +5,7 @@ family: "cluster"
 label: "bootstrap_lrt() / VLMR"
 slug: "bootstrap-lrt"
 name: "Parametric bootstrap likelihood-ratio test for nested mixture models"
-summary: "Parametric bootstrap likelihood-ratio test for nested mixture models. Verification strength +++ in latents' verification matrix: 3 source(s) (Latent GOLD, Mplus, mclust), 0 published paper(s), 63 dataset(s), 5462 current checks of which 0 failed."
+summary: "Parametric bootstrap likelihood-ratio test for nested mixture models. Verification strength +++ in latents' verification matrix: 3 source(s) (Latent GOLD, Mplus, mclust), 0 published paper(s), 63 dataset(s), 5502 current checks of which 0 failed."
 module_files:
   - "R/enumeration.R"
 public_api:
@@ -14,12 +14,28 @@ papers: []
 tolerances:
   - { function: "bootstrap_lrt() / VLMR: 8 quantities (enumeration-packages)", reference: "mclust", tolerance: "1.2e-06 to 0.033 (8 of 8 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/postfit.R"
   - "equivalence/test-enumeration-packages.R"
   - "equivalence/test-features-vlmr.R"
   - "equivalence/test-mplus-lmr.R"
   - "equivalence/test-mplus-tech14.R"
   - "equivalence/test-vlmr-runtime.R"
-cvs_test_filter: []
+  - "tests/equivalence/test-lmr.R"
+  - "tests/equivalence/test-review-1026-selection.R"
+cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=blobs]: bootstrap_lrt(): one seed, one result" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=blobs]: bootstrap_lrt(): p-value is (1 + exceedances) / (1 + replicates)" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=blobs]: bootstrap_lrt(): statistic is twice the likelihood difference" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=faithful]: bootstrap_lrt(): one seed, one result" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=faithful]: bootstrap_lrt(): p-value is (1 + exceedances) / (1 + replicates)" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=faithful]: bootstrap_lrt(): statistic is twice the likelihood difference" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=srl]: bootstrap_lrt(): one seed, one result" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=srl]: bootstrap_lrt(): p-value is (1 + exceedances) / (1 + replicates)" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "bootstrap-and-sensitivity[data=srl]: bootstrap_lrt(): statistic is twice the likelihood difference" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: bootstrap_lrt(): iter = 0" }
+  - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "refusals: bootstrap_lrt(): models in the wrong order" }
+  - { file: "tests/equivalence/test-review-1026-selection.R", test_name_includes: "VLMR weights equal the eigenvalues of Vuong's W from independent derivatives" }
+  - { file: "tests/equivalence/test-review-1026-selection.R", test_name_includes: "the weighted chi-square tail agrees with independent integrals" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "VLMR independent reference" }

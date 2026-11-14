@@ -5,7 +5,7 @@ family: "cluster"
 label: "multilpa()"
 slug: "multilpa"
 name: "Fit a two-level latent profile model"
-summary: "Fit a two-level latent profile model. Verification strength ++++ in latents' verification matrix: 4 source(s) (Mplus, Latent GOLD, depmixS4, mclust), 0 published paper(s), 88 dataset(s), 7045 current checks of which 0 failed."
+summary: "Fit a two-level latent profile model. Verification strength +++++ in latents' verification matrix: 5 source(s) (Mplus, Latent GOLD, depmixS4, mclust, flexmix), 0 published paper(s), 81 dataset(s), 8125 current checks of which 0 failed."
 module_files:
   - "R/multilpa.R"
 public_api:
@@ -17,8 +17,14 @@ tolerances:
   - { function: "multilpa(): 160 quantities (harness)", reference: "custom EM using MASS", tolerance: "1e-10 to 0.5 (160 of 160 within)", status: "pass" }
   - { function: "multilpa(): 83 quantities (harness)", reference: "custom EM using VGAM", tolerance: "1e-10 to 0.5 (83 of 83 within)", status: "pass" }
   - { function: "multilpa(): 290 quantities (harness)", reference: "depmixS4", tolerance: "1e-10 to 0.5 (290 of 290 within)", status: "pass" }
+  - { function: "multilpa(): 4 quantities (sweep)", reference: "flexmix", tolerance: "1e-06 (4 of 4 within)", status: "pass" }
+  - { function: "multilpa(): 640 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (640 of 640 within)", status: "pass" }
   - { function: "multilpa(): 95 quantities (harness)", reference: "sandwich", tolerance: "1e-10 to 0.5 (95 of 95 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/covariates.R"
+  - "equivalence/argument-sweep/modules/discrete.R"
+  - "equivalence/argument-sweep/modules/families.R"
+  - "equivalence/argument-sweep/modules/twolevel.R"
   - "equivalence/harness/suites/covariates.R"
   - "equivalence/harness/suites/invariance.R"
   - "equivalence/harness/suites/ordinal-count.R"
@@ -44,7 +50,47 @@ cvs_files:
   - "equivalence/test-numerical-equivalence.R"
   - "equivalence/test-review-1026-oracles.R"
   - "equivalence/test-structure-inference.R"
+  - "tests/equivalence/test-additive-engine.R"
+  - "tests/equivalence/test-additive-families.R"
+  - "tests/equivalence/test-additive-fit.R"
+  - "tests/equivalence/test-additive-methods.R"
+  - "tests/equivalence/test-covariate-measurement.R"
+  - "tests/equivalence/test-covariate-missing.R"
+  - "tests/equivalence/test-covariate-slopes.R"
+  - "tests/equivalence/test-covariates.R"
+  - "tests/equivalence/test-cross-level.R"
+  - "tests/equivalence/test-extra-indicators.R"
+  - "tests/equivalence/test-inference-fixed-measurement.R"
+  - "tests/equivalence/test-math-core-audit.R"
+  - "tests/equivalence/test-multilpa.R"
+  - "tests/equivalence/test-numerical-safeguards.R"
+  - "tests/equivalence/test-review-1020-inference.R"
+  - "tests/equivalence/test-review-1020-integration.R"
+  - "tests/equivalence/test-review-1026-additive.R"
+  - "tests/equivalence/test-review-1026-inference.R"
+  - "tests/equivalence/test-review-1026-kernel.R"
+  - "tests/equivalence/test-review-1026-multilevel-r2.R"
+  - "tests/equivalence/test-review-1026-multilevel.R"
+  - "tests/equivalence/test-review-families.R"
+  - "tests/equivalence/test-review-structures.R"
+  - "tests/equivalence/test-structure-inference.R"
+  - "tests/equivalence/test-weighted-logits.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "two-level-covariates[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "acceleration[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "cores[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "fiml[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "identifier-types[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "integer-group-weights[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "one-group-class-is-single-level[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "person-centering[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "refusals: " }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "restart[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "row-order[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "seed-reproducible[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "structure[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "time-is-only-an-order[" }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "unit-weights[" }
   - { file: "equivalence/harness/suites/covariates.R", test_name_includes: "single level, Poisson and Gaussian indicators, profile covariate x (depmixS4): " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "two-level 2 x 2, four zero-weight groups added: " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "two-level VVI 2 x 2, rows permuted and groups renamed: " }
@@ -69,21 +115,20 @@ cvs_test_filter:
   - { file: "equivalence/harness/suites/robust-se.R", test_name_includes: "covariates, row x, one group class, 40 clusters: " }
   - { file: "equivalence/harness/suites/robust-se.R", test_name_includes: "two-level Gaussian, 2 profiles x 2 group classes, 40 groups: " }
   - { file: "equivalence/test-external-scripts.R", test_name_includes: "ordinal and count indicators agree with Latent GOLD" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "criteria, the AvePP matrix and OCC follow from Mplus's own quantities" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "drop_empty = FALSE counts every row, as Latent GOLD does" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Latent GOLD, rows with nothing observed included" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Mplus" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "predict() on the data reproduces Mplus's posteriors" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "two-level cases reproduce Mplus at the group level" }
   - { file: "equivalence/test-mplus-classification.R", test_name_includes: "two-level FIML entropy and AvePP reproduce genuine Mplus at each level" }
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "FIML densities and conditional moments are the multivariate normal ones" }
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "sufficient-statistic density equals the dense Gaussian density of the ratings" }
   - { file: "equivalence/test-structure-inference.R", test_name_includes: "two-level Wald SEs of all fourteen structures match numDeriv" }
+  - { file: "tests/equivalence/test-review-1026-kernel.R", test_name_includes: "a floored axis-parallel M-step stays the constrained maximizer" }
+  - { file: "tests/equivalence/test-review-1026-kernel.R", test_name_includes: "each covariance M-step reproduces mclust's, or attains a lower objective" }
+  - { file: "tests/equivalence/test-review-1026-kernel.R", test_name_includes: "structure posteriors match brute force, and survive a -5e15 offset per row" }
+  - { file: "tests/equivalence/test-review-1026-kernel.R", test_name_includes: "the analytic FIML score is the numerical gradient of the likelihood" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "base-R likelihood + numDeriv" }
   - { software: "independent", package: "custom EM using MASS" }
   - { software: "independent", package: "custom EM using VGAM" }
+  - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "independent", package: "mvtnorm dense density" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
   - { software: "independent", package: "reference optimizer" }

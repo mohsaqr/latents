@@ -1,0 +1,24 @@
+module,pattern,fn
+categorical,.,lca
+covariates,^class-regression-against-poLCA,lca
+covariates,^two-level-covariates,multilpa
+covariates,.,lpa
+discrete,.,multilpa
+families,.,multilpa
+gaussian,.,lpa
+growth,.,growth
+lta,.,lta
+plots,.,
+pooling,.,pool_imputations
+postfit,^(three-step|r3step)\[,three_step
+postfit,^compare-models\[,enumeration
+postfit,^(classification|parameter-inference)\[,lpa
+postfit,^bootstrap-and-sensitivity\[[^]]*\]: sensitivity\(\),lpa
+postfit,^bootstrap-and-sensitivity\[,bootstrap_lrt
+postfit,^refusals: (three_step|r3step)\(\),three_step
+postfit,^refusals: bootstrap_lrt\(\),bootstrap_lrt
+postfit,^refusals: (compare_models|get_candidate)\(\),enumeration
+postfit,^refusals: (parameter_inference|sensitivity)\(\),lpa
+regression,.,mixture_regression
+twolevel,^multilca,multilca
+twolevel,.,multilpa

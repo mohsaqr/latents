@@ -481,3 +481,12 @@ compare_all <- function(cases, returned) {
   attr(out, "search") <- transform(search, reached = latents_search >= latent_gold - 1e-4)
   out
 }
+
+#' Apply the shared register (package-kit-runner.R) and retain the explanation column in this kit
+#' @noRd
+apply_known_differences <- function(comparison, known) {
+  result <- apply_register(comparison, known)
+  result$comparison$known_reason <- ifelse(is.na(result$explained), "",
+                                           known$reason[result$explained])
+  result
+}

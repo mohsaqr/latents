@@ -10,14 +10,6 @@ source(file.path(mplus_growth_dir, "compare-functions.R"), local = TRUE)
 
 source("package-kit-runner.R", local = TRUE)
 
-test_that("growth mixtures reproduce genuine Mplus runs", {
-  known <- utils::read.csv(file.path(mplus_growth_dir, "known-differences.csv"),
-                           stringsAsFactors = FALSE)
-  comparison <- compare_all_mplus_growth(mplus_growth_dir)
-  registered <- apply_register(comparison, known)
-  expect_identical(nrow(comparison), 212L)
-  unexplained <- subset(registered$comparison, status == "disagrees")
-  expect_identical(nrow(registered$stale), 0L)
-  expect_identical(nrow(unexplained), 0L,
-                   info = paste(unexplained$case, unexplained$quantity, collapse = "; "))
-})
+kit_reference_tests(
+  "mplus-growth", function() compare_all_mplus_growth(mplus_growth_dir), n_rows = 212L,
+  groups = "Mplus")

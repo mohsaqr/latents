@@ -142,3 +142,137 @@ reapply_package_register <- function(directory) {
   if (nrow(result$stale)) print(result$stale, row.names = FALSE)
   !any(comparison$status == "disagrees") && !nrow(result$stale)
 }
+
+#' The reference group of each comparison row
+#'
+#' "R packages", "published analyses", or the commercial program a row's
+#' reference names ("Mplus", "Latent GOLD", "Stata"); NA for a row of another
+#' kind. One group is one reference axis of CVS and the verification matrix.
+#' @param comparison Comparison rows; their `kind` column, or `kind` for all.
+#' @param kind Kind of every row when the comparison has no `kind` column.
+#' @return Character vector, one group per row.
+kit_reference_group <- function(comparison, kind = NULL) {
+  kinds <- comparison$kind %||% rep(kind %||% NA_character_, nrow(comparison))
+  programs <- c("Latent GOLD", "Mplus", "Stata")
+  vapply(seq_len(nrow(comparison)), function(i) {
+    switch(kinds[[i]],
+      `R package` = "R packages",
+      published = "published analyses",
+      `commercial program` = {
+        named <- programs[vapply(programs, grepl, logical(1), x = comparison$reference[[i]],
+                                 fixed = TRUE)]
+        if (length(named) == 1L) named else NA_character_
+      },
+      NA_character_)
+  }, character(1))
+}
+
+#' The testthat blocks of a package kit, one per reference group
+#'
+#' The first block checks that the kit compared every case and that its
+#' register explains only what occurs; then one block per reference group
+#' (`kit_reference_group()`), so each block is evidence for one reference axis:
+#' Save a kit's comparison, computed by a test, as verification-matrix evidence
+#'
+#' Writes tmp/kits/<kit>/comparison.csv under the project root with its
+#' provenance sidecar (verification-matrix/provenance.R), so the comparison a
+#' ci run computes from the current package becomes current evidence once it is
+#' copied over the kit's comparison.csv (equivalence/README.md, "Evidence for
+#' the matrix"). Call from a testthat file in equivalence/.
+#' @param kit Kit folder, e.g. "latentgold-wider".
+#' @param comparison The comparison rows, in the layout of the kit's own
+#'   comparison.csv.
+#' @param snapshot `matrix_capture_source("..")`, taken before the comparison
+#'   was computed.
+#' @return The path written, invisibly.
+kit_save_comparison <- function(kit, comparison, snapshot) {
+  stopifnot("`kit` is one kit folder" = is.character(kit) && length(kit) == 1L && dir.exists(kit),
+            "`comparison` has rows" = is.data.frame(comparison) && nrow(comparison) > 0L)
+  output <- file.path("..", "tmp", "kits", kit)
+  dir.create(output, recursive = TRUE, showWarnings = FALSE)
+  path <- file.path(output, "comparison.csv")
+  utils::write.csv(comparison, path, row.names = FALSE)
+  matrix_record_evidence(path, snapshot, "..")
+  invisible(path)
+}
+
+#' CVS and the verification matrix take one reference per test, and a block
+#' checking a package and a published table together counted for neither.
+#' The comparison is computed once, by the first block that needs it, and
+#' written with its provenance sidecar (verification-matrix/provenance.R) to
+#' tmp/kits/<kit>/comparison.csv, where the verification matrix takes it from.
+#' Call from a testthat file in equivalence/ (the working directory testthat
+#' sets).
+#' @param kit Kit folder, e.g. "stata-published"; also the start of each title.
+#' @param compute Function with no arguments returning the comparison rows.
+#' @param n_rows Rows the comparison must have.
+#' @param groups The reference groups the kit must have.
+#' @param kind Kind of every row when the comparison has no `kind` column.
+#' @param coverage Optional function of the registered result (`comparison`,
+#'   `stale`, `explained`, `known`) adding expectations to the first block.
+#' @return Nothing useful; the blocks are registered with testthat.
+kit_reference_tests <- function(kit, compute, n_rows, groups, kind = NULL, coverage = NULL) {
+  stopifnot("`kit` is one kit folder" = is.character(kit) && length(kit) == 1L && dir.exists(kit),
+            "`compute` is a function" = is.function(compute),
+            "`groups` names reference groups" = is.character(groups) && length(groups) > 0L)
+  state <- new.env()
+  registered <- function() {
+    if (is.null(state$value)) {
+      snapshot <- matrix_capture_source("..")
+      result <- kit_registered_comparison(kit, compute, kind)
+      kit_save_comparison(kit, result$comparison[setdiff(names(result$comparison), "group")],
+                          snapshot)
+      state$value <- result
+    }
+    state$value
+  }
+  testthat::test_that(sprintf("%s compares every case, and its register explains only what occurs",
+                              kit), {
+    kit_expect_complete(registered(), n_rows, groups, coverage)
+  })
+  invisible(lapply(groups, function(group) {
+    label <- if (group %in% c("R packages", "published analyses")) paste("the", group) else group
+    testthat::test_that(sprintf("%s agrees with %s", kit, label), {
+      kit_expect_group(registered(), group)
+    })
+  }))
+}
+
+#' A kit's comparison with its register applied and each row's reference group
+#' @param kit Kit folder, holding known-differences.csv.
+#' @param compute,kind As for [kit_reference_tests()].
+#' @return The [apply_register()] result (`comparison` with a `group` column,
+#'   `stale`, `explained`) plus the register as `known`.
+kit_registered_comparison <- function(kit, compute, kind = NULL) {
+  known <- utils::read.csv(file.path(kit, "known-differences.csv"), stringsAsFactors = FALSE)
+  result <- apply_register(compute(), known)
+  result$comparison$group <- kit_reference_group(result$comparison, kind)
+  c(result, list(known = known))
+}
+
+#' Expectations of a kit's first block: every case compared, every group
+#' present, no stale register entry, and the kit's own coverage floors
+#' @param result From [kit_registered_comparison()].
+#' @param n_rows,groups,coverage As for [kit_reference_tests()].
+#' @return Nothing useful; called for its expectations.
+kit_expect_complete <- function(result, n_rows, groups, coverage = NULL) {
+  testthat::expect_identical(nrow(result$comparison), n_rows)
+  testthat::expect_setequal(unique(result$comparison$group), groups)
+  testthat::expect_identical(nrow(result$stale), 0L)
+  if (!is.null(coverage)) coverage(result)
+  invisible(NULL)
+}
+
+#' Expectations of one reference group: it has rows and none disagrees unexplained
+#' @param result From [kit_registered_comparison()].
+#' @param group One reference group ([kit_reference_group()]).
+#' @return Nothing useful; called for its expectations.
+kit_expect_group <- function(result, group) {
+  rows <- result$comparison[result$comparison$group %in% group, , drop = FALSE]
+  testthat::expect_gt(nrow(rows), 0L)
+  unexplained <- rows[rows$status == "disagrees", , drop = FALSE]
+  testthat::expect_identical(nrow(unexplained), 0L,
+                             info = paste(unexplained$case, unexplained$reference,
+                                          unexplained$quantity, collapse = "; "))
+  invisible(NULL)
+}

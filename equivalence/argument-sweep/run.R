@@ -8,13 +8,21 @@
 #   Rscript equivalence/argument-sweep/run.R            # every module
 #   Rscript equivalence/argument-sweep/run.R gaussian   # modules whose name matches
 #
-# Writes tmp/argument-sweep/results.csv (one row per check) and
+# Writes tmp/argument-sweep/results.csv (one row per check, with the function
+# and the reference each check is evidence for, from the verification matrix's
+# sweep-functions.csv and sweep-references.csv), its provenance sidecar
+# (verification-matrix/provenance.R: the runtime source captured before the
+# run, so the verification matrix can count the result as current) and
 # tmp/argument-sweep/SUMMARY.md, and exits non-zero when any check disagrees
 # or any case stops with an error.
 requested <- commandArgs(trailingOnly = TRUE)
 Sys.setenv(NOT_CRAN = "true")
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 directory <- file.path("equivalence", "argument-sweep")
+matrix_dir <- file.path("equivalence", "verification-matrix")
+source(file.path(matrix_dir, "provenance.R"))
+source(file.path(matrix_dir, "attribution.R"))
+source_snapshot <- matrix_capture_source(".")
 source(file.path(directory, "helpers.R"))
 source(file.path(directory, "datasets.R"))
 module_files <- list.files(file.path(directory, "modules"), pattern = "[.]R$", full.names = TRUE)
@@ -59,11 +67,17 @@ explained <- results$status == "disagrees" & key(results) %in% key(known)
 results$status[explained] <- "known difference"
 results$note[explained] <- known$reason[match(key(results)[explained], key(known))]
 stale <- if (length(requested)) known[0L, ] else known[!key(known) %in% key(results)[explained], ]
+# The function and reference of every check; a check no rule names stops the run
+# (latents_sweep_unattributed) rather than reach the matrix or CVS unattributed.
+results <- cbind(results, matrix_sweep_attribution(results$module, results$case, results$quantity,
+                                                   matrix_dir))
 
 output <- file.path("tmp", "argument-sweep")
 dir.create(output, recursive = TRUE, showWarnings = FALSE)
 suffix <- if (length(requested)) paste0("-", paste(gsub("[^a-z0-9]+", "", requested), collapse = "-")) else ""
-utils::write.csv(results, file.path(output, sprintf("results%s.csv", suffix)), row.names = FALSE)
+results_path <- file.path(output, sprintf("results%s.csv", suffix))
+utils::write.csv(results, results_path, row.names = FALSE)
+matrix_record_evidence(results_path, source_snapshot, ".")
 tally <- as.data.frame(table(module = results$module, status = results$status),
                        stringsAsFactors = FALSE)
 tally <- tally[tally$Freq > 0L, ]
@@ -73,7 +87,8 @@ if (nrow(stale)) {
     module = stale$module, case = stale$case, quantity = stale$quantity, difference = NA_real_,
     tolerance = NA_real_, n_values = 0L, status = "stale known difference",
     note = "the register explains a disagreement that no longer occurs; remove the entry",
-    conditions = NA_character_, seconds = NA_real_, stringsAsFactors = FALSE))
+    conditions = NA_character_, seconds = NA_real_, stringsAsFactors = FALSE,
+    matrix_sweep_attribution(stale$module, stale$case, stale$quantity, matrix_dir)))
 }
 summary_lines <- c(
   sprintf("# Argument sweep, latents %s", utils::packageVersion("latents")),

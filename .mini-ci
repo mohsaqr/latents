@@ -27,14 +27,23 @@ env OPENBLAS_NUM_THREADS=1
 env VECLIB_MAXIMUM_THREADS=1
 job deps         Rscript equivalence/install-reference-packages.R
 job equivalence  R CMD INSTALL . && Rscript equivalence/run.R
-# The same suite in three shards by file name, for three workspaces side by side.
+# The same suite in four shards by file name, for workspaces side by side. The
+# verification files (equivalence-v) check the matrix and the CVS manifests that
+# are rebuilt from the other shards' results, so they run after those.
 job equivalence-a  R CMD INSTALL . && Rscript equivalence/run.R '^[a-f]'
 job equivalence-b  R CMD INSTALL . && Rscript equivalence/run.R '^[g-l]'
-job equivalence-c  R CMD INSTALL . && Rscript equivalence/run.R '^[m-z]'
+job equivalence-c  R CMD INSTALL . && Rscript equivalence/run.R '^([m-u]|v[^e]|[w-z])'
+job equivalence-v  R CMD INSTALL . && Rscript equivalence/run.R '^verification-'
+# The numerical references of the package's own models (tests/equivalence/).
+job equivalence-t  R CMD INSTALL . && Rscript equivalence/run.R --dir=tests/equivalence
 job harness      R CMD INSTALL . && Rscript equivalence/harness/test-harness.R && LATENTS_EQUIVALENCE_REQUIRE_ALL=true LATENTS_EQUIVALENCE_OUTPUT=tmp/equivalence Rscript equivalence/harness/run.R
 job sweep        R CMD INSTALL . && Rscript equivalence/argument-sweep/run.R
 fetch tmp/equivalence
 fetch tmp/argument-sweep
+# Results with provenance sidecars for the verification matrix: the testthat
+# equivalence files (equivalence/run.R) and the package kits their tests compare.
+fetch tmp/equivalence-tests
+fetch tmp/kits
 # Named jobs report to CVS (target latents; equivalence/README.md, "Reporting to CVS").
 # The local copy of each report comes back too.
 report cvs

@@ -5,7 +5,7 @@ family: "regression"
 label: "mixture_regression()"
 slug: "mixture-regression"
 name: "Estimate regression relationships that vary across latent classes"
-summary: "Estimate regression relationships that vary across latent classes. Verification strength +++++ PPP in latents' verification matrix: 5 source(s) (Latent GOLD, Mplus, flexmix, mixtools, MoEClust), 3 published paper(s), 21 dataset(s), 702 current checks of which 0 failed."
+summary: "Estimate regression relationships that vary across latent classes. Verification strength +++++ PPP in latents' verification matrix: 5 source(s) (Latent GOLD, Mplus, flexmix, MoEClust, mixtools), 3 published paper(s), 21 dataset(s), 981 current checks of which 0 failed."
 module_files:
   - "R/mixture-regression.R"
 public_api:
@@ -18,12 +18,15 @@ tolerances:
   - { function: "mixture_regression(): 4 quantities (regression-packages)", reference: "Benaglia et al. (2009) JSS 32(6), CO2data", tolerance: "5e-06 to 5e-05 (4 of 4 within)", status: "pass" }
   - { function: "mixture_regression(): 2 quantities (regression-packages)", reference: "Grun and Leisch (2008) JSS 28(4), betablocker", tolerance: "5e-05 (2 of 2 within)", status: "pass" }
   - { function: "mixture_regression(): 38 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (38 of 38 within)", status: "pass" }
-  - { function: "mixture_regression(): 20 quantities (regression-packages)", reference: "MoEClust", tolerance: "1e-06 to 1e-04 (20 of 20 within)", status: "pass" }
+  - { function: "mixture_regression(): 25 quantities (regression-packages)", reference: "MoEClust", tolerance: "1e-06 to 1e-04 (25 of 25 within)", status: "pass" }
   - { function: "mixture_regression(): 14 quantities (regression-packages)", reference: "SAS/STAT 14.2 PROC FMM Example 40.3 (Wang et al. 1996 model)", tolerance: "5e-07 to 0.05 (14 of 14 within)", status: "pass" }
   - { function: "mixture_regression(): 11 quantities (regression-packages)", reference: "flexmix", tolerance: "1e-06 to 1e-04 (11 of 11 within)", status: "pass" }
+  - { function: "mixture_regression(): 25 quantities (sweep)", reference: "flexmix", tolerance: "1e-08 to 1e-06 (25 of 25 within)", status: "pass" }
   - { function: "mixture_regression(): 443 quantities (harness)", reference: "flexmix", tolerance: "1e-10 to 0.5 (443 of 443 within)", status: "pass" }
+  - { function: "mixture_regression(): 112 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-07 to 1e-05 (112 of 112 within)", status: "pass" }
   - { function: "mixture_regression(): 20 quantities (regression-packages)", reference: "mixtools", tolerance: "1e-06 to 1e-04 (20 of 20 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/regression.R"
   - "equivalence/harness/suites/flexmix.R"
   - "equivalence/harness/suites/invariance.R"
   - "equivalence/harness/suites/predict-newdata.R"
@@ -34,6 +37,18 @@ cvs_files:
   - "equivalence/test-mixture-regression-flexmix.R"
   - "equivalence/test-regression-packages.R"
   - "equivalence/test-review-1026-oracles.R"
+  - "tests/equivalence/test-astra-core.R"
+  - "tests/equivalence/test-audit-extension-repairs.R"
+  - "tests/equivalence/test-cluster-robust-cr1.R"
+  - "tests/equivalence/test-mixture-regression-prediction-design.R"
+  - "tests/equivalence/test-mixture-regression.R"
+  - "tests/equivalence/test-negative-binomial-regression.R"
+  - "tests/equivalence/test-ordinal-regression.R"
+  - "tests/equivalence/test-post-submission-review.R"
+  - "tests/equivalence/test-review-1015-regression.R"
+  - "tests/equivalence/test-review-1026-codex.R"
+  - "tests/equivalence/test-review-1026-mixreg-r2.R"
+  - "tests/equivalence/test-review-1026-mixreg.R"
 cvs_test_filter:
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "mixture regression, hours + 2000: " }
   - { file: "equivalence/harness/suites/predict-newdata.R", test_name_includes: "gaussian-2-membership, flexmix, 2 classes, 80 held-out rows: " }
@@ -46,9 +61,13 @@ cvs_test_filter:
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "Poisson offset stays within 1e-7 of the exact log ratio at counts near 1e17" }
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "negative-binomial dispersion derivatives match exact Rmpfr values" }
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "the CR1 sandwich composition equals sandwich::vcovCL(type = 'HC0')" }
+  - { file: "tests/equivalence/test-review-1026-codex.R", test_name_includes: "two-level regression ICL charges the brute-force joint entropy" }
+  - { file: "tests/equivalence/test-review-1026-codex.R", test_name_includes: "zero-weight outcomes cannot change Gaussian residual floors" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "Rmpfr exact arithmetic" }
+  - { software: "independent", package: "hand-built CR1 sandwich" }
+  - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
   - { software: "independent", package: "reference optimizer" }
   - { software: "latentgold", package: "Latent GOLD" }

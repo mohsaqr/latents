@@ -1,0 +1,144 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: AR, one class",6,0,FALSE,FALSE,0,1.738,0.013,1.761,6
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: AR, two classes",6,0,FALSE,FALSE,0,5.797,0.00800000000000001,5.805,6
+"test-growth-correlated-lcmm.R","growth-correlated-lcmm","correlated growth mixture matches lcmm::hlme: Brownian motion, two classes",6,0,FALSE,FALSE,0,2.027,0.001,2.028,6
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: two classes, equal covariance",4,0,FALSE,FALSE,0,4.758,0.00299999999999999,4.761,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: one class (a linear mixed model)",4,0,FALSE,FALSE,0,0.963999999999999,0,0.965000000000002,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: proportional covariance (nwg)",4,0,FALSE,FALSE,0,6.579,0.002,6.581,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: diagonal random effects (idiag)",4,0,FALSE,FALSE,0,2.899,0.001,2.9,4
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: common covariate and membership covariate",5,0,FALSE,FALSE,0,6.542,0.00700000000000001,6.55,5
+"test-growth-mixture-lcmm.R","growth-mixture-lcmm","growth mixture matches lcmm::hlme: random intercept only, three classes",4,0,FALSE,FALSE,0,3.65,0.00599999999999999,3.657,4
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: random intercept and slope, equal covariance",6,0,TRUE,FALSE,0,2.461,0.001,2.462,5
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: proportional covariance (nwg)",6,0,TRUE,FALSE,0,3.142,0,3.142,5
+"test-growth-predict-lcmm.R","growth-predict-lcmm","growth predict() matches lcmm: random intercept, three classes",6,0,TRUE,FALSE,0,2.669,0.005,2.674,5
+"test-growth-published.R","growth-published","growth-published compares every case, and its register explains only what occurs",3,0,FALSE,FALSE,0,1337.124,0.247,1337.447,3
+"test-growth-published.R","growth-published","growth-published agrees with the R packages",2,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999990541,2
+"test-growth-published.R","growth-published","growth-published agrees with the published analyses",2,0,FALSE,FALSE,0,0.000999999999976353,0,0.000999999999976353,2
+"test-joint-items-polca-protocol.R","joint-items-polca-protocol","all eligible poLCA cases use the same two declared iteration budgets",8,0,FALSE,FALSE,0,3.0619999999999,0.002,3.07200000000012,8
+"test-joint-items-polca-protocol.R","joint-items-polca-protocol","poLCA resets the same case seed for both stock calls and restores caller RNG",5,0,FALSE,FALSE,0,0.0130000000001473,0.001,0.0169999999998254,5
+"test-joint-items-polca-protocol.R","joint-items-polca-protocol","an ordinary one-class stock poLCA fit is unchanged by the larger cap",9,0,FALSE,FALSE,0,0.0309999999999491,0,0.0320000000001528,9
+"test-joint-items-reference-optimizer.R","joint-items-reference-optimizer","independent EM retains coherent best states and passes negative numerical steps",1,0,TRUE,FALSE,0,0.0550000000000637,0.005,0.0609999999999218,0
+"test-joint-items-reference-optimizer.R","joint-items-reference-optimizer","independent EM retains ordinary improving states and iteration limits",11,0,FALSE,FALSE,0,0.0289999999999964,0,0.0289999999999964,11
+"test-joint-items-verification-protocol.R","joint-items-verification-protocol","joint verification controls never loosen the original requested precision",5,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999990541,5
+"test-joint-items-verification-protocol.R","joint-items-verification-protocol","joint verification retains all original seeds rather than replacing their evidence",10,0,FALSE,FALSE,0,0.00700000000006185,0,0.0080000000000382,10
+"test-joint-items-verification-protocol.R","joint-items-verification-protocol","actual joint seed fits resume from their own parameters",6,0,FALSE,FALSE,0,0.188000000000102,0,0.191000000000031,6
+"test-jstats-lta.R","jstats-lta","Gaussian LTA reproduces depmixS4 on both JStats scenarios",18,0,FALSE,FALSE,0,0.580000000000155,0,0.58199999999988,18
+"test-jstats-lta.R","jstats-lta","binary LTA reproduces depmixS4 where depmixS4 reached the maximum",8,0,FALSE,FALSE,0,0.2349999999999,0,0.236000000000104,8
+"test-jstats-lta.R","jstats-lta","on the three-profile binary scenario multilpa finds a higher maximum than depmixS4",5,0,FALSE,FALSE,1,3.38000000000011,0.001,3.38199999999983,4
+"test-jstats-lta.R","jstats-lta","binary LTA reproduces the two Mplus LTA runs pinned by JStats",18,0,FALSE,FALSE,0,0.682999999999993,0.002,0.688000000000102,18
+"test-jstats-lta.R","jstats-lta","plain LTA reproduces Table 5 of Muthen and Asparouhov (2022)",8,0,FALSE,FALSE,0,0.728000000000065,0.005,0.7349999999999,8
+"test-jstats-lta.R","jstats-lta","the brute-force path likelihood reproduces a Gaussian reference",1,0,FALSE,FALSE,0,0.0119999999999436,0,0.0130000000001473,1
+"test-jstats-mplus.R","jstats-mplus","lpa-constraint-new: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00399999999990541,0,0.00500000000010914,7
+"test-jstats-mplus.R","jstats-mplus","lpa-constraint-new: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00500000000010914,0,0.00499999999988177,7
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0199999999999818,0,0.0199999999999818,4
+"test-jstats-mplus.R","jstats-mplus","lpa-cov-tech14: membership logits match Mplus",3,0,FALSE,FALSE,0,0.00299999999992906,0,0.00400000000013279,3
+"test-jstats-mplus.R","jstats-mplus","lpa-eei-k3-tech11: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00300000000015643,0.001,0.00399999999990541,7
+"test-jstats-mplus.R","jstats-mplus","lpa-eei-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lpa-ex710-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00400000000013279,0,0.00399999999990541,7
+"test-jstats-mplus.R","jstats-mplus","lpa-ex710-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-tech11: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00399999999990541,0,0.00499999999988177,7
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-vvi-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00499999999988177,0,0.00400000000013279,7
+"test-jstats-mplus.R","jstats-mplus","lpa-k3-vvi-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.0080000000000382,0,0.00700000000006185,4
+"test-jstats-mplus.R","jstats-mplus","lpa-tech14: latents reaches Mplus's maximum",7,0,FALSE,FALSE,0,0.00400000000013279,0,0.00399999999990541,7
+"test-jstats-mplus.R","jstats-mplus","lpa-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-entropy: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-entropy: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00200000000018008,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-k1starts-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-k1starts-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0.001,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000015643,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00199999999995271,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-k3-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-k4-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-k4-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00399999999990541,4
+"test-jstats-mplus.R","jstats-mplus","lca-k5-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-k5-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00400000000013279,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00399999999990541,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-lrtstarts: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-lrtstarts: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00199999999995271,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-tech14-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","miterations-uncapped: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00699999999983447,0,0.00599999999985812,6
+"test-jstats-mplus.R","jstats-mplus","miterations-uncapped: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00400000000013279,4
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","training-partial-off: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00199999999995271,0.001,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","training-partial-off: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-4cat-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00400000000013279,0,0.00400000000013279,6
+"test-jstats-mplus.R","jstats-mplus","lca-4cat-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999990541,4
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00400000000013279,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-mixed-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00199999999995271,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-poly-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-poly-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999990541,4
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-k3-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-nominal-k3-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00399999999990541,4
+"test-jstats-mplus.R","jstats-mplus","lca-count-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-count-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00200000000018008,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-entropy: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0080000000000382,0,0.00700000000006185,3
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00400000000013279,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-tech10: membership logits match Mplus",3,0,FALSE,FALSE,0,0.0080000000000382,0,0.0080000000000382,3
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-covariate-tech11: membership logits match Mplus",3,0,FALSE,FALSE,0,0.00300000000015643,0,0.00199999999995271,3
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00400000000013279,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-cov-k3-tech14: membership logits match Mplus",3,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999992906,3
+"test-jstats-mplus.R","jstats-mplus","lca-du3step-multi: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-du3step-multi: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-de3step-multi: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999990541,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-de3step-multi: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00400000000013279,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-de3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00400000000013279,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-de3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-du3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-du3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00199999999995271,0,0.00400000000013279,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00299999999992906,0,0.00399999999990541,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00300000000015643,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00400000000013279,0,0.00299999999992906,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00299999999992906,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step-both: latents reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.00399999999990541,0,0.00300000000015643,6
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-two-step-du3step-both: classification quality matches Mplus",4,0,FALSE,FALSE,0,0.00300000000015643,0,0.00299999999992906,4
+"test-jstats-mplus.R","jstats-mplus","savedata-cprob: posteriors match the CPROB file Mplus saved",5,0,FALSE,FALSE,0,0.00499999999988177,0,0.00500000000010914,5
+"test-jstats-mplus.R","jstats-mplus","lca-r3step-joint: R3STEP logits match Mplus",4,0,FALSE,FALSE,0,0.163999999999987,0,0.163999999999987,4
+"test-jstats-mplus.R","jstats-mplus","ug-ex7.3-r3step: R3STEP logits match Mplus",4,0,FALSE,FALSE,0,0.553000000000111,0.001,0.552999999999884,4
+"test-jstats-mplus.R","jstats-mplus","mixreg-classspecific: mixture_regression() reaches Mplus's maximum",6,0,FALSE,FALSE,0,0.555000000000064,0.001,0.557000000000016,6
+"test-jstats-mplus.R","jstats-mplus","lta-classvarying-measurement: lta() reaches Mplus's maximum",9,0,FALSE,FALSE,0,8.66799999999989,0.00499999999999995,8.67499999999995,9
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","the kit is the one Latent GOLD was given",3,0,FALSE,FALSE,0,0.501999999999953,0,0.503999999999905,3
+"test-latentgold-categorical-distal.R","latentgold-categorical-distal","categorical distal outcomes match Latent GOLD's step-three model",3,0,FALSE,FALSE,0,0.868999999999915,0.003,0.875,3
+"test-latentgold-coverage.R","latentgold-coverage","the coverage kit is the one Latent GOLD was run on",2,0,FALSE,FALSE,0,0.00699999999983447,0,0.00999999999999091,2
+"test-latentgold-coverage.R","latentgold-coverage","growth, latent class, profile, transition and enumeration fits reproduce Latent GOLD",5,0,FALSE,FALSE,0,163.565,0.095,163.683,5
+"test-latentgold-families.R","latentgold-families","every group-class family reproduces Latent GOLD at its finest quadrature",25,0,FALSE,FALSE,0,219.207,0.68,219.916,25
+"test-latentgold-step-one.R","latentgold-step-one","the kit is the one Latent GOLD was given",4,0,FALSE,FALSE,0,3.40499999999997,0.002,3.41100000000006,4
+"test-latentgold-step-one.R","latentgold-step-one","step-one uncertainty matches Latent GOLD's correction",4,0,FALSE,FALSE,0,10.7900000000002,0.016,10.8099999999999,4
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m01",5,0,FALSE,FALSE,0,0.211000000000013,0.00100000000000011,0.213999999999942,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m02",5,0,FALSE,FALSE,0,0.374000000000024,0,0.374000000000024,5
+"test-latentgold-step3-markov.R","latentgold-step3-markov","three-step latent Markov model matches Latent GOLD: m03",5,0,FALSE,FALSE,0,0.16800000000012,0,0.167999999999893,5
+"test-latentgold-wider.R","latentgold-wider","the kit is the one Latent GOLD was run on",1,0,FALSE,FALSE,0,0.000999999999976353,0.00099999999999989,0.00199999999995271,1
+"test-latentgold-wider.R","latentgold-wider","mixture regressions and weighted fits reproduce Latent GOLD",3,0,FALSE,FALSE,0,40.7239999999999,0.026,40.7549999999999,3
+"test-latentgold.R","latentgold","every Latent GOLD case agrees with the current package",3,0,FALSE,FALSE,0,31.3440000000001,0.03,31.393,3
+"test-lca-packages.R","lca-packages","lca-packages compares every case, and its register explains only what occurs",6,0,FALSE,FALSE,0,1116.448,0.428,1116.968,6
+"test-lca-packages.R","lca-packages","lca-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00399999999990541,0,0.00399999999990541,2
+"test-lca-packages.R","lca-packages","lca-packages agrees with the published analyses",2,0,FALSE,FALSE,0,0.00100000000020373,0,0.00200000000040745,2
+"test-lpa-packages.R","lpa-packages","lpa-packages compares every case, and its register explains only what occurs",5,0,FALSE,FALSE,1,317.097,0.141,317.299,4
+"test-lpa-packages.R","lpa-packages","lpa-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999995271,2
+"test-lrt.R","lrt","the likelihood-ratio kit compares every case",3,0,FALSE,FALSE,1,8.56500000000005,0.014,8.58599999999979,2
+"test-lrt.R","lrt","likelihood-ratio tests agree with mclust and glca",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999995271,2
+"test-lrt.R","lrt","likelihood-ratio tests agree with Mplus",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999995271,2
+"test-lta-packages.R","lta-packages","lta-packages compares every case, and its register explains only what occurs",6,0,FALSE,FALSE,2,256.637,0.121,256.78,4
+"test-lta-packages.R","lta-packages","lta-packages agrees with the R packages",2,0,FALSE,FALSE,0,0.00199999999995271,0,0.00199999999995271,2
+"test-lta-packages.R","lta-packages","lta-packages agrees with the published analyses",2,0,FALSE,FALSE,0,0.00200000000040745,0,0.00199999999995271,2

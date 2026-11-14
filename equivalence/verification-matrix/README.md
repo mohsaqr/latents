@@ -29,7 +29,9 @@ Rscript equivalence/verification-matrix/build.R
 |---|---|
 | A kit's `compare.R` was rerun | preserve its `comparison.csv.provenance.csv` sidecar with the result; shared kit runners write it automatically |
 | A new kit | `kit-evidence.csv` (path, format, kind, run date, wrapper), `kit-datasets.csv`, and `kit-functions.csv` if its rows have no `fn` |
-| The harness was rerun, or equivalence tests were rerun into a new results file | that file in `.matrix_evidence_files()` in `build.R`, with its run date, package version and source/result sidecar |
+| The harness, the argument sweep or the equivalence tests were rerun | the new result in `.matrix_evidence_files()` in `build.R`, with its run date, package version and source/result sidecar; the runners write the sidecar themselves (see "Evidence for the matrix" in `../README.md`) |
+| A kit's testthat file was rerun | its `tmp/kits/<kit>/comparison.csv` and sidecar replace the kit's `comparison.csv` |
+| A new argument-sweep check or module | `sweep-functions.csv` and `sweep-references.csv` if no rule names it (the sweep stops on an unattributed check) |
 | A new `test-*.R` file | `test-attribution.csv` (one rule per test when its tests compare different references) |
 | A testthat kit gained or lost cases | `test-datasets.R`, then rerun it |
 | A new reference found, or one wired in | add it to `candidates.csv`, or remove it there |
@@ -46,15 +48,17 @@ drop out of the counts.
 | `attribution.R` | The matching of these rules (first match wins), shared with the CVS reporter so both attribute evidence alike |
 | `harness-functions.csv` | Which function each harness quantity belongs to: suite plus a regex on the quantity; first match wins |
 | `harness-references.csv` | Which reference each harness `source` is, and its kind |
-| `test-attribution.csv` | For every `test-*.R` in `equivalence/` and `tests/equivalence/`: function, reference and kind, by a regex on the test name. `;` lists several; such tests count once per function |
+| `test-attribution.csv` | For every `test-*.R` in `equivalence/` and `tests/equivalence/`: function, reference and kind, by a regex on the test name. `;` lists several; such tests count once per function. A rule of an `equivalence/` file names references on one CVS axis only (one block per reference, see `../README.md`) |
+| `sweep-functions.csv`, `sweep-references.csv` | For every argument-sweep check: function (empty for a plot, which no matrix function owns) and reference with its kind, by module and a regex on "<case>: <quantity>"; first match wins. The sweep writes them into its results.csv |
 | `candidates.csv` | References found but not yet wired in (see `../REFERENCE-CANDIDATES.md`) |
-| `kit-evidence.csv` | Per-quantity comparison files of the kits (`latentgold*/`, `*-packages/`, `*-published/`): path, format, reference, kind, run date, and the testthat wrapper whose expectations the kit replaces (so nothing is counted twice) |
+| `kit-evidence.csv` | Per-quantity comparison files of the kits (`latentgold*/`, `*-packages/`, `*-published/`): path, format, reference, kind, run date, package version (`code`), and the testthat wrapper whose expectations the kit replaces (so nothing is counted twice) |
 | `kit-functions.csv` | For kit files without a function column: a regex on the case name, and the function it checks |
 | `kit-datasets.csv` | For every kit: a regex on the case name and the dataset it names (`sub()` replacement); first match wins |
 | `test-datasets.csv` | One row per simulated dataset that a testthat file's kit sent to another program (file, function, dataset); written by `test-datasets.R` from the kits' `cases.rds` |
 
 The saved results it reads are listed in `.matrix_evidence_files()` in
-`build.R` and `kit-evidence.csv`. A result counts as current only when its
+`build.R` (the harness report, the argument sweep's results and the testthat
+results) and `kit-evidence.csv`. A result counts as current only when its
 `<result>.provenance.csv` sidecar matches both the result's contents and every
 runtime file in `R/` plus `NAMESPACE`. Missing sidecars, changed results,
 changed source and added/deleted runtime files make evidence historical.
@@ -84,6 +88,9 @@ commits 344dc7c/7d0e0df. The older 0.96.1 results remain historical. See
 The latest current result for each test file is preferred; historical results
 are shown separately and earn no source strength. Test errors invalidate the
 reference, skipped tests are incomplete, and neither earns source credit.
+A row whose reference cannot judge the case (a kit's "not comparable", the
+argument sweep's "no reference") is left out: it is neither a check nor
+incomplete.
 The build stops if any harness quantity, source or test file is unattributed.
 
 ## Outputs

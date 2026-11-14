@@ -5,7 +5,7 @@ family: "cluster"
 label: "lca()"
 slug: "lca"
 name: "Fit a latent class model"
-summary: "Fit a latent class model. Verification strength +++++++++ PPPPPPP in latents' verification matrix: 9 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 50g (gsem), poLCA, depmixS4, glca, BayesLCA, randomLCA, multilevLCA), 7 published paper(s), 93 dataset(s), 6002 current checks of which 0 failed."
+summary: "Fit a latent class model. Verification strength +++++++++ PPPPPPP in latents' verification matrix: 9 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 50g (gsem), poLCA, depmixS4, glca, BayesLCA, randomLCA, multilevLCA), 7 published paper(s), 95 dataset(s), 6188 current checks of which 0 failed."
 module_files:
   - "R/lpa.R"
 public_api:
@@ -31,10 +31,14 @@ tolerances:
   - { function: "lca(): 6 quantities (harness)", reference: "Zhou & Lange (2010)", tolerance: "1e-06 to 1 (6 of 6 within)", status: "pass" }
   - { function: "lca(): 52 quantities (lca-packages)", reference: "depmixS4", tolerance: "1e-06 to 1e-04 (52 of 52 within)", status: "pass" }
   - { function: "lca(): 52 quantities (lca-packages)", reference: "glca", tolerance: "1e-06 to 1e-04 (52 of 52 within)", status: "pass" }
+  - { function: "lca(): 74 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (74 of 74 within)", status: "pass" }
   - { function: "lca(): 25 quantities (lca-packages)", reference: "multilevLCA", tolerance: "1e-06 to 1e-04 (25 of 25 within)", status: "pass" }
   - { function: "lca(): 1801 quantities (harness)", reference: "poLCA", tolerance: "1e-10 to 0.5 (1801 of 1801 within)", status: "pass" }
+  - { function: "lca(): 75 quantities (sweep)", reference: "poLCA", tolerance: "1e-06 to 0.002 (75 of 75 within)", status: "pass" }
   - { function: "lca(): 30 quantities (lca-packages)", reference: "randomLCA", tolerance: "1e-06 to 1e-04 (30 of 30 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/categorical.R"
+  - "equivalence/argument-sweep/modules/covariates.R"
   - "equivalence/harness/suites/covariates.R"
   - "equivalence/harness/suites/hard-polca.R"
   - "equivalence/harness/suites/invariance.R"
@@ -43,6 +47,7 @@ cvs_files:
   - "equivalence/harness/suites/published.R"
   - "equivalence/harness/suites/refusals.R"
   - "equivalence/harness/suites/stability.R"
+  - "equivalence/test-boundary-polca.R"
   - "equivalence/test-direct-effects-search-protocol.R"
   - "equivalence/test-features-joint-items.R"
   - "equivalence/test-joint-items-polca-protocol.R"
@@ -53,7 +58,14 @@ cvs_files:
   - "equivalence/test-lca-packages.R"
   - "equivalence/test-montecarlo.R"
   - "equivalence/test-review-1026-oracles.R"
+  - "equivalence/test-stata-published.R"
+  - "tests/equivalence/test-audit-services-fixes.R"
+  - "tests/equivalence/test-local-dependence.R"
+  - "tests/equivalence/test-review-1026-categorical-r2.R"
+  - "tests/equivalence/test-tidy-diagnostics.R"
+  - "tests/equivalence/test-vignette-claims.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/covariates.R", test_name_includes: "class-regression-against-poLCA[" }
   - { file: "equivalence/harness/suites/covariates.R", test_name_includes: "single level, profile covariate x (poLCA): " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "carcinoma 3 classes, categories renamed: " }
   - { file: "equivalence/harness/suites/invariance.R", test_name_includes: "carcinoma 3 classes, indicators renamed: " }
@@ -63,16 +75,25 @@ cvs_test_filter:
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "a categorical indicator with one category: lca refuses with latents_bad_categorical (got: latents_bad_categorical)" }
   - { file: "equivalence/harness/suites/refusals.R", test_name_includes: "a continuous variable declared categorical: lca fits, warning latents_suspect_categorical (got: fitted, warning latents_suspect_categorical/latents_unidentified)" }
   - { file: "equivalence/harness/suites/stability.R", test_name_includes: "carcinoma, 3 classes, 30 starts: " }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "BIC agrees with Latent GOLD" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "BIC agrees with Mplus" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "a partially observed pair keeps its observed item, as Latent GOLD's includeall does" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "a truly independent pair gives Latent GOLD's likelihood ratio" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "class sizes, item and joint probabilities agree with Latent GOLD" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "every original joint-item seed remains visible beside its verification" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "integer weights are duplicated rows, up to latents' rescaling" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "poLCA on the joined item reaches latents' maximum and estimates" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "posteriors agree row by row with Latent GOLD" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "posteriors agree row by row with Mplus" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the log likelihood agrees with Latent GOLD, which finds no higher maximum" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the log likelihood agrees with Mplus, which finds no higher maximum" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the parameter count agrees with Latent GOLD under the full-grid convention" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the parameter count agrees with Mplus under the full-grid convention" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the probabilities implied by Mplus's posteriors agree" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the reference likelihood at latents' estimates is latents' likelihood" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the reference study: 140 more datasets against the independent EM" }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the strict own-parameter verification recipe reaches the independent maximum" }
+  - { file: "equivalence/test-features-joint-items.R", test_name_includes: "two seeds of latents reach the same maximum" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lca-4cat-tech10: classification quality matches Mplus" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lca-4cat-tech10: latents reaches Mplus's maximum" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "lca-count-tech11: classification quality matches Mplus" }
@@ -144,15 +165,22 @@ cvs_test_filter:
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "ug-ex7.3-two-step-du3step-both: latents reaches Mplus's maximum" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "ug-ex7.3-two-step-du3step: classification quality matches Mplus" }
   - { file: "equivalence/test-jstats-mplus.R", test_name_includes: "ug-ex7.3-two-step-du3step: latents reaches Mplus's maximum" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "Latent GOLD finds no higher maximum than the package" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "Mplus finds no higher maximum than the package" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "criteria, the AvePP matrix and OCC follow from Mplus's own quantities" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "drop_empty = FALSE counts every row, as Latent GOLD does" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Latent GOLD, rows with nothing observed included" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Mplus" }
   - { file: "equivalence/test-montecarlo.R", test_name_includes: "predict() on the data reproduces Mplus's posteriors" }
+  - { file: "equivalence/test-montecarlo.R", test_name_includes: "the retained global-maximum audit covers every case and found no lower maximum" }
   - { file: "equivalence/test-review-1026-oracles.R", test_name_includes: "latent class fit agrees with poLCA and is an EM fixed point" }
+  - { file: "tests/equivalence/test-local-dependence.R", test_name_includes: "a jointly modelled pair agrees with Latent GOLD's class-specific association" }
+  - { file: "tests/equivalence/test-review-1026-categorical-r2.R", test_name_includes: "a half-observed pair contributes its observed item to the likelihood (C2-2)" }
+  - { file: "tests/equivalence/test-review-1026-categorical-r2.R", test_name_includes: "observed and robust SEs with half-observed pairs match numDeriv (C2-2)" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "joint-items independent EM" }
+  - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
   - { software: "independent", package: "reference optimizer" }
   - { software: "latentgold", package: "Latent GOLD" }

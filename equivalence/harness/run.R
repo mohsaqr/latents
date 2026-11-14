@@ -19,6 +19,11 @@
 # harness cannot pass quietly in CI.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 source(file.path("equivalence", "harness", "registry.R"))
+# The runtime source, captured before anything is fitted and bound to
+# report.csv afterwards (report.csv.provenance.csv), so the verification
+# matrix can count this run as current evidence (verification-matrix/provenance.R).
+source(file.path("equivalence", "verification-matrix", "provenance.R"))
+source_snapshot <- matrix_capture_source(".")
 
 directory <- Sys.getenv("LATENTS_EQUIVALENCE_OUTPUT",
                          unset = file.path("equivalence", "harness"))
@@ -51,6 +56,7 @@ print(as.data.frame(run, what = "summary"))
 comparisons <- as.data.frame(run, what = "comparisons")
 comparisons$multilpa_version <- equivalence_provenance(run, "multilpa")
 utils::write.csv(comparisons, file.path(directory, "report.csv"), row.names = FALSE)
+matrix_record_evidence(file.path(directory, "report.csv"), source_snapshot, ".")
 utils::write.csv(as.data.frame(run, what = "suites"),
                  file.path(directory, "suites.csv"), row.names = FALSE)
 coverage <- as.data.frame(run, what = "coverage")

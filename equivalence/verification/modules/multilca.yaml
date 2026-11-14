@@ -5,7 +5,7 @@ family: "cluster"
 label: "multilca()"
 slug: "multilca"
 name: "Fit a two-level latent class model"
-summary: "Fit a two-level latent class model. Verification strength ++++ P in latents' verification matrix: 4 source(s) (Mplus, Latent GOLD, glca, multilevLCA), 1 published paper(s), 27 dataset(s), 5374 current checks of which 0 failed."
+summary: "Fit a two-level latent class model. Verification strength ++++ P in latents' verification matrix: 4 source(s) (Mplus, Latent GOLD, glca, multilevLCA), 1 published paper(s), 27 dataset(s), 5410 current checks of which 0 failed."
 module_files:
   - "R/multilca.R"
 public_api:
@@ -17,8 +17,10 @@ tolerances:
   - { function: "multilca(): 770 quantities (harness)", reference: "Mplus", tolerance: "1e-10 to 50 (770 of 770 within)", status: "pass" }
   - { function: "multilca(): 17 quantities (harness)", reference: "base-R likelihood + numDeriv", tolerance: "1e-10 to 0.5 (17 of 17 within)", status: "pass" }
   - { function: "multilca(): 552 quantities (harness)", reference: "glca", tolerance: "1e-08 to 0.5 (552 of 552 within)", status: "pass" }
+  - { function: "multilca(): 36 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (36 of 36 within)", status: "pass" }
   - { function: "multilca(): 549 quantities (harness)", reference: "multilevLCA", tolerance: "1e-08 to 0.5 (549 of 549 within)", status: "pass" }
 cvs_files:
+  - "equivalence/argument-sweep/modules/twolevel.R"
   - "equivalence/harness/suites/covariates.R"
   - "equivalence/harness/suites/glca.R"
   - "equivalence/harness/suites/mplus-twolevel-lca.R"
@@ -29,7 +31,10 @@ cvs_files:
   - "equivalence/test-latentgold.R"
   - "equivalence/test-montecarlo.R"
   - "equivalence/test-mplus-categorical.R"
+  - "tests/equivalence/test-latents-controls.R"
 cvs_test_filter:
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "multilca-is-multilpa-with-categorical: " }
+  - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "multilca[" }
   - { file: "equivalence/harness/suites/covariates.R", test_name_includes: "two level, profile covariate x with group_class slopes, group covariate z (multilevLCA): " }
   - { file: "equivalence/harness/suites/covariates.R", test_name_includes: "two level, profile covariate x with shared slopes, group covariate z (multilevLCA): " }
   - { file: "equivalence/harness/suites/covariates.R", test_name_includes: "two level, profile covariates x and z, shared slopes (glca): " }
@@ -37,14 +42,9 @@ cvs_test_filter:
   - { file: "equivalence/harness/suites/predict-newdata.R", test_name_includes: "student_esm, 2 profiles x 2 group classes, 20 held-out students (473 rows): " }
   - { file: "equivalence/harness/suites/stability.R", test_name_includes: "dataTOY, 3 profiles x 2 group classes, 30 starts: " }
   - { file: "equivalence/test-features-joint-items.R", test_name_includes: "the two-level model with a joined pair is compared in full" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "criteria, the AvePP matrix and OCC follow from Mplus's own quantities" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "drop_empty = FALSE counts every row, as Latent GOLD does" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Latent GOLD, rows with nothing observed included" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "every case reproduces Mplus" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "predict() on the data reproduces Mplus's posteriors" }
-  - { file: "equivalence/test-montecarlo.R", test_name_includes: "two-level cases reproduce Mplus at the group level" }
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "base-R likelihood + numDeriv" }
+  - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "latentgold", package: "Latent GOLD" }
   - { software: "paper", package: "Lyrvall et al. (2025)" }

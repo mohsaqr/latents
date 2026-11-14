@@ -69,7 +69,7 @@ tests/equivalence,test-review-1015-regression.R,.,mixture_regression,stats lm/gl
 tests/equivalence,test-review-1020-inference.R,.,multilpa,stats lm/glm (one-class reduction),component check
 tests/equivalence,test-review-1020-integration.R,.,multilpa,stats lm/glm (one-class reduction),component check
 tests/equivalence,test-review-1026-additive.R,^fitted maxima,multilpa,reference optimizer,independent code
-tests/equivalence,test-review-1026-additive.R,mclust,multilpa,mclust parameter counts;numDeriv / dense likelihood,component check;independent code
+tests/equivalence,test-review-1026-additive.R,mclust,multilpa,mclust parameter counts,component check
 tests/equivalence,test-review-1026-additive.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-review-1026-categorical-r2.R,^lta\(\),lta,reference optimizer,independent code
 tests/equivalence,test-review-1026-categorical-r2.R,C2-1,lpa,reference optimizer,independent code
@@ -100,7 +100,8 @@ tests/equivalence,test-review-1026-mixreg.R,never falls back,mixture_regression,
 tests/equivalence,test-review-1026-mixreg.R,.,mixture_regression,stats lm/glm (one-class reduction),component check
 tests/equivalence,test-review-1026-multilevel-r2.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-review-1026-multilevel.R,mclust,multilpa,mclust,R package
-tests/equivalence,test-review-1026-multilevel.R,membership Newton step,multilpa,stats lm/glm;reference optimizer,component check;independent code
+tests/equivalence,test-review-1026-multilevel.R,membership Newton step.*glm,multilpa,stats lm/glm,component check
+tests/equivalence,test-review-1026-multilevel.R,membership Newton step,multilpa,reference optimizer,independent code
 tests/equivalence,test-review-1026-multilevel.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-review-1026-selection.R,information criterion,lpa,mclust BIC convention,component check
 tests/equivalence,test-review-1026-selection.R,^ML step three,three_step,numDeriv / dense likelihood;reference optimizer,independent code;independent code
@@ -130,14 +131,17 @@ equivalence,test-enumeration-mplus.R,.,enumeration,Mplus,commercial program
 equivalence,test-external-scripts.R,weights agree with Mplus,lpa,Mplus,commercial program
 equivalence,test-external-scripts.R,tidySEM,three_step,tidySEM classification-error matrix,component check
 equivalence,test-external-scripts.R,Houle,lpa,Houle et al. (2026),published
-equivalence,test-external-scripts.R,latent transition,lta,Mplus;depmixS4;LMest,commercial program;R package;R package
+equivalence,test-external-scripts.R,^latent transition extensions agree with Mplus,lta,Mplus,commercial program
+equivalence,test-external-scripts.R,^latent transition extensions agree with depmixS4,lta,depmixS4;LMest,R package
 equivalence,test-external-scripts.R,ordinal and count,multilpa,Latent GOLD,commercial program
 equivalence,test-features-direct-effects.R,^every kit case,none,kit provenance,provenance
 equivalence,test-features-direct-effects.R,^the declared searches,lpa,search protocol,internal
 equivalence,test-features-direct-effects.R,^one profile,lpa,stats lm/glm,R package
 equivalence,test-features-direct-effects.R,^the estimated effects,lpa,simulation recovery,internal
 equivalence,test-features-direct-effects.R,^an independent implementation,lpa,direct-effects independent implementation,independent code
-equivalence,test-features-direct-effects.R,.,lpa,Mplus;Latent GOLD,commercial program;commercial program
+equivalence,test-features-direct-effects.R,^every seed of latents,lpa,search protocol,internal
+equivalence,test-features-direct-effects.R,Latent GOLD,lpa,Latent GOLD,commercial program
+equivalence,test-features-direct-effects.R,Mplus,lpa,Mplus,commercial program
 equivalence,test-features-joint-items.R,^every case of the kit|^the independent reference is independent,none,kit provenance,provenance
 equivalence,test-features-joint-items.R,^the reference likelihood|^the strict own-parameter|^the reference study,lca,joint-items independent EM,independent code
 equivalence,test-features-joint-items.R,^every original joint-item seed,lca,search protocol,internal
@@ -145,7 +149,10 @@ equivalence,test-features-joint-items.R,^poLCA on,lca,poLCA,R package
 equivalence,test-features-joint-items.R,^the probabilities implied by Mplus,lca,Mplus,commercial program
 equivalence,test-features-joint-items.R,^class sizes|^a partially observed|^a truly independent|^integer weights,lca,Latent GOLD,commercial program
 equivalence,test-features-joint-items.R,^the two-level,multilca,Latent GOLD,commercial program
-equivalence,test-features-joint-items.R,.,lca,Latent GOLD;Mplus,commercial program;commercial program
+equivalence,test-features-joint-items.R,^two seeds of latents,lca,search protocol,internal
+equivalence,test-features-joint-items.R,^the kit's sparse cases,none,kit provenance,provenance
+equivalence,test-features-joint-items.R,with Latent GOLD,lca,Latent GOLD,commercial program
+equivalence,test-features-joint-items.R,with Mplus,lca,Mplus,commercial program
 equivalence,test-features-ml-three-step.R,^(step three matches Latent GOLD|Latent GOLD),three_step,Latent GOLD,commercial program
 equivalence,test-features-ml-three-step.R,^Mplus,three_step,Mplus,commercial program
 equivalence,test-features-ml-three-step.R,.,three_step,ML three-step reference (reference.R),independent code
@@ -198,7 +205,7 @@ equivalence,test-montecarlo-extended.R,.,multilpa,Mplus,commercial program
 equivalence,test-montecarlo.R,kit holds,none,kit provenance,provenance
 equivalence,test-montecarlo.R,two-level,multilpa;multilca,Mplus,commercial program
 equivalence,test-montecarlo.R,Latent GOLD,lpa;lca;multilpa;multilca,Latent GOLD,commercial program
-equivalence,test-montecarlo.R,maximum,lpa;lca;multilpa;multilca,Mplus;Latent GOLD,commercial program;commercial program
+equivalence,test-montecarlo.R,^the retained global-maximum audit,lpa;lca;multilpa;multilca,search protocol,internal
 equivalence,test-montecarlo.R,.,lpa;lca;multilpa;multilca,Mplus,commercial program
 equivalence,test-mplus-categorical.R,.,multilca,Mplus,commercial program
 equivalence,test-mplus-classification.R,parser,none,output parser,infrastructure
@@ -236,21 +243,37 @@ equivalence,test-verification-artifact-export.R,.,none,artifact export,infrastru
 equivalence,test-vlmr-runtime.R,.,bootstrap_lrt,runtime guard,internal
 equivalence,test-latentgold-coverage.R,kit is the one,none,kit provenance,provenance
 equivalence,test-latentgold-coverage.R,.,growth;lca;lpa;lta;mixture_regression,Latent GOLD,commercial program
-equivalence,test-lca-packages.R,.,lca,glca;randomLCA;BayesLCA;multilevLCA;depmixS4,R package
-equivalence,test-lpa-packages.R,.,lpa,Rmixmod;EMCluster;mixtools,R package
-equivalence,test-regression-packages.R,.,mixture_regression,mixtools;MoEClust;flexmix,R package
-equivalence,test-growth-published.R,.,growth,lcmm;Proust-Lima et al. (2017),R package;published
-equivalence,test-pool-packages.R,.,pool_imputations,mitml;mitools,R package
-equivalence,test-lta-packages.R,.,lta,LMest;seqHMM;Bartolucci et al. (2017),R package;R package;published
-equivalence,test-stata-published.R,.,lpa;lca,Stata 19;Masyn (2013),commercial program;published
-equivalence,test-mplus-growth.R,.,growth,Mplus,commercial program
-equivalence,test-enumeration-packages.R,.,enumeration;bootstrap_lrt,mclust;poLCA,R package;R package
+equivalence,test-lca-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-lca-packages.R,the R packages,lca,glca;randomLCA;BayesLCA;multilevLCA;depmixS4,R package
+equivalence,test-lca-packages.R,the published analyses,lca,Kleinman and Horton (2011),published
+equivalence,test-lpa-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-lpa-packages.R,the R packages,lpa,Rmixmod;EMCluster;mixtools,R package
+equivalence,test-regression-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-regression-packages.R,the R packages,mixture_regression,mixtools;MoEClust;flexmix,R package
+equivalence,test-regression-packages.R,the published analyses,mixture_regression,SAS/STAT 14.2 PROC FMM Example 40.3;Benaglia et al. (2009);Grun and Leisch (2008),published
+equivalence,test-growth-published.R,compares every case,none,kit provenance,provenance
+equivalence,test-growth-published.R,the R packages,growth,lcmm,R package
+equivalence,test-growth-published.R,the published analyses,growth,Proust-Lima et al. (2017),published
+equivalence,test-pool-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-pool-packages.R,the R packages,pool_imputations,mitml;mitools,R package
+equivalence,test-lta-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-lta-packages.R,the R packages,lta,LMest;seqHMM,R package
+equivalence,test-lta-packages.R,the published analyses,lta,Bartolucci et al. (2017);Pennoni et al. (2024),published
+equivalence,test-stata-published.R,compares every case,none,kit provenance,provenance
+equivalence,test-stata-published.R,agrees with Stata,lpa;lca,Stata 19,commercial program
+equivalence,test-stata-published.R,the published analyses,lpa;lca,Masyn (2013),published
+equivalence,test-mplus-growth.R,compares every case,none,kit provenance,provenance
+equivalence,test-mplus-growth.R,agrees with Mplus,growth,Mplus,commercial program
+equivalence,test-enumeration-packages.R,compares every case,none,kit provenance,provenance
+equivalence,test-enumeration-packages.R,the R packages,enumeration;bootstrap_lrt,mclust;poLCA,R package
 equivalence,test-verification-attribution.R,.,none,verification attribution,infrastructure
 equivalence,test-latentgold-categorical-distal.R,^the kit is the one,none,kit provenance,provenance
 equivalence,test-latentgold-categorical-distal.R,.,three_step,Latent GOLD,commercial program
 equivalence,test-latentgold-step-one.R,^the kit is the one,none,kit provenance,provenance
 equivalence,test-latentgold-step-one.R,.,three_step,Latent GOLD,commercial program
-equivalence,test-lrt.R,.,enumeration,mclust;glca;Mplus,R package;R package;commercial program
+equivalence,test-lrt.R,^the likelihood-ratio kit compares,none,kit provenance,provenance
+equivalence,test-lrt.R,with mclust and glca,enumeration,mclust;glca,R package
+equivalence,test-lrt.R,with Mplus,enumeration,Mplus,commercial program
 equivalence,test-moeclust-covariate-structures.R,.,lpa,MoEClust,R package
 equivalence,test-boundary-polca.R,^the categorical boundary flag,lca;enumeration,poLCA,R package
 equivalence,test-boundary-polca.R,^the interior two-class,lca,poLCA,R package

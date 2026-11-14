@@ -56,7 +56,7 @@ failing runs included: a JSON file in the vitest layout CVS ingests, named
 |---|---|---|---|
 | testthat (`equivalence/`, `tests/testthat/`) | the test file | one `test_that()` block, `checkKind` "testthat" | failed when an expectation failed or errored, skipped when it skipped, else passed |
 | harness | `harness/suites/<suite>.R` | one compared quantity, with difference, tolerance, reference and output | passed when it agrees, else failed (also when a known open defect explains it); a suite that did not run is one "(suite ran)" assertion |
-| argument sweep | `argument-sweep/modules/<module>.R` | one check, with difference and tolerance | agrees: passed; disagrees or error: failed; known difference, no reference: skipped with the reason |
+| argument sweep | `argument-sweep/modules/<module>.R` | one check, with difference, tolerance and the reference the run recorded for it | agrees: passed; disagrees or error: failed; known difference, no reference: skipped with the reason |
 
 Each file declares its CVS tier (`_cvs.tier`), since CVS otherwise
 classifies by file name and an R file name carries none: `equiv` for the
@@ -69,9 +69,16 @@ Each assertion also names the reference it is evidence for (`_cvs` `axis`,
 `r-equivalence`, Latent GOLD / Mplus / Stata → `latentgold` / `mplus` /
 `stata`, published → `paper`, independent code → `independent`, and internal,
 component, provenance and infrastructure checks → `internal` (shown, never
-counted). A block whose references fall on several axes (one block checking
-Stata and Masyn's table) keeps `reference` but gets no axis; sweep checks and
-the package's own tests name no reference and stay untagged. A commercial
+counted). Sweep checks carry the reference their run recorded in
+`results.csv` (`fn`, `reference`, `kind`, from `verification-matrix/sweep-functions.csv`
+and `sweep-references.csv`; the sweep stops with `latents_sweep_unattributed`
+on a check no rule names). Every test block in this folder checks one
+reference axis: a comparison with several programs is one block per program,
+and a package kit is one block per reference group (`kit_reference_tests()` in
+`package-kit-runner.R`); `test-cvs-report.R` fails on a rule that names
+references on two axes. A block whose references still fall on several axes
+keeps `reference` but gets no axis, and the package's own tests name no
+reference and stay untagged. A commercial
 program the map does not know stops the reporter
 (`latents_cvs_unknown_program`); the reporter's tests check every program in
 the rule tables first. `cvs_retag_report()` tags a report saved before
@@ -91,11 +98,37 @@ goes to `tmp/cvs/`. On ci, mini-ci turns reporting on for the named jobs of a
 filtered run (`equivalence/run.R mclust`, a shard) is labelled by its filter.
 The reporter is tested by `test-cvs-report.R`.
 
+### Evidence for the matrix
+
+Each run also saves its results with a provenance sidecar
+(`verification-matrix/provenance.R`: the runtime source captured before the
+run, bound to the result file after it), which the verification matrix needs
+to count a result as current:
+
+| Run | Result |
+|---|---|
+| `equivalence/run.R` | `tmp/equivalence-tests/<label>-results.csv` (one row per test) |
+| `equivalence/run.R --dir=tests/equivalence` | `tmp/equivalence-tests/tests-equivalence-results.csv` |
+| a package kit's or a Latent GOLD kit's testthat file | `tmp/kits/<kit>/comparison.csv` (one row per compared quantity, from the current package; `kit_save_comparison()` in `package-kit-runner.R`) |
+| `harness/run.R` | `report.csv` in its output folder |
+| `argument-sweep/run.R` | `tmp/argument-sweep/results.csv` |
+
+`.mini-ci` fetches all of them. To refresh the matrix and the CVS manifests,
+run the jobs `harness`, `sweep`, `equivalence-a`, `-b`, `-c` and `-t`, copy the
+fetched results into a dated `validation/matrix-refresh-<date>/` folder (and
+each kit's `comparison.csv` with its sidecar into its kit folder, setting its
+`run` and `code` in `verification-matrix/kit-evidence.csv`), point
+`.matrix_evidence_files()` in `verification-matrix/build.R` at them, run
+`build.R` and `verification/build-manifests.R`, then the job `equivalence-v`
+(the verification files check the rebuilt matrix and manifests) and copy the
+manifests to the CVS server (`../validation/docs/TARGET-VERIFICATION.md`).
+
 ## The testthat assertions
 
 ```
 Rscript equivalence/run.R                  # every file
 Rscript equivalence/run.R jstats mclust    # only files whose names match
+Rscript equivalence/run.R --dir=tests/equivalence   # the tests/equivalence/ files
 ```
 
 `run.R` loads the package from source and then runs this folder's test files
