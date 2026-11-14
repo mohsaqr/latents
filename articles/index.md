@@ -35,6 +35,11 @@
 - [Group-class and cross-level models: classes of groups from raw
   ratings](https://pak.dynasite.org/latents/articles/additive.md):
 
+### Verification
+
+- [Verification and
+  validation](https://pak.dynasite.org/latents/articles/verification.md):
+
 ### Case studies
 
 - [Case study: Multilevel latent profile analysis of course
