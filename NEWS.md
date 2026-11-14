@@ -1,3 +1,14 @@
+# latents 1.3.2
+
+* No change to the package. The Mplus User's Guide equivalence kit
+  (`equivalence/mplus-ug/`, formerly `mplus-ug8/`) now covers the chapter 7
+  examples latents fits as well as chapter 8: mixture regression (7.1),
+  latent class models with binary, three-category and nominal indicators
+  (7.3, 7.4, 7.6, 7.7) and latent profile models (7.9, 7.10, 7.22), each
+  estimate compared with its MLR standard error from Mplus's own output.
+  `CATALOGUE.md` maps every example of chapters 7, 8 and 10 to the latents
+  function that fits it or the feature it would need.
+
 # latents 1.3.1
 
 * No change to the package. Three new published references in the

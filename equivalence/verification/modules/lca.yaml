@@ -5,7 +5,7 @@ family: "cluster"
 label: "lca()"
 slug: "lca"
 name: "Fit a latent class model"
-summary: "Fit a latent class model. Verification strength +++++++++ PPPPPPP in latents' verification matrix: 9 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 50g (gsem), poLCA, depmixS4, glca, BayesLCA, randomLCA, multilevLCA), 7 published paper(s), 99 dataset(s), 6420 current checks of which 0 failed."
+summary: "Fit a latent class model. Verification strength +++++++++ PPPPPPP in latents' verification matrix: 9 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 50g (gsem), poLCA, depmixS4, glca, BayesLCA, randomLCA, multilevLCA), 7 published paper(s), 103 dataset(s), 6599 current checks of which 0 failed."
 module_files:
   - "R/lpa.R"
 public_api:
@@ -27,6 +27,7 @@ tolerances:
   - { function: "lca(): 119 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 0.00012 (119 of 119 within)", status: "pass" }
   - { function: "lca(): 9 quantities (harness)", reference: "Linzer & Lewis (2011)", tolerance: "0.5 to 1 (9 of 9 within)", status: "pass" }
   - { function: "lca(): 5 quantities (harness)", reference: "McCutcheon (1987)", tolerance: "0.5 to 1 (5 of 5 within)", status: "pass" }
+  - { function: "lca(): 179 quantities (mplus-ug)", reference: "Mplus", tolerance: "0 to 0.043 (179 of 179 within)", status: "pass" }
   - { function: "lca(): 232 quantities (mplus-published)", reference: "Mplus", tolerance: "0 to 0.0061 (232 of 232 within)", status: "pass" }
   - { function: "lca(): 22 quantities (stata-published)", reference: "Stata 19 [SEM] Example 50g (gsem)", tolerance: "1.1e-07 to 0.00051 (22 of 22 within)", status: "pass" }
   - { function: "lca(): 6 quantities (harness)", reference: "Zhou & Lange (2010)", tolerance: "1e-06 to 1 (6 of 6 within)", status: "pass" }
@@ -59,6 +60,7 @@ cvs_files:
   - "equivalence/test-lca-packages.R"
   - "equivalence/test-montecarlo.R"
   - "equivalence/test-mplus-published.R"
+  - "equivalence/test-mplus-ug.R"
   - "equivalence/test-review-1026-oracles.R"
   - "equivalence/test-stata-published.R"
   - "tests/equivalence/test-audit-services-fixes.R"

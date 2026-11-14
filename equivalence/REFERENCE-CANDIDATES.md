@@ -88,7 +88,7 @@ which carries the `lpa()` references over.
 |---|---|---|---|---|
 | Bartolucci, Pandolfi & Pennoni (2017), LMest, *JSS* 81(4), doi:10.18637/jss.v081.i04 | bundled with LMest | `RLMSdat` (one ordinal item, T = 7, n = 1718), k = 3, homogeneous transitions: LL −13557.21, 20 parameters, BIC 27263.39, transition matrix and SEs. `data_SRHS_long`, covariates on initial and transition probabilities, k = 5: LL −62426.58. `data_criminal_sim` females, 2 clusters × 2 states: LL −18347.08, BIC 36925.18 | categories coded from 0; some transition logits near −30, so compare LL; LMest 3.x renamed `est_lm_*` to `lmest()` | ✓ |
 | IMMERSE lca-bookdown, `github.com/immerse-ucsb/lca-bookdown` | LSAY, 2 waves × 5 binary items, N = 3092 (`data/lsay_lta.csv`, `lta/lta_model/`) | Mplus 8.11, 4 classes. Measurement invariant: LL −14542.768, BIC 29366.816. Occasion-specific: LL −14531.997, BIC 29506.005 | — | ✓ |
-| Mplus 8.8 UG ch. 8 and 10, statmodel.com | posted with each example | ex8.12 hidden Markov: LL −13427.811. ex8.15 mover-stayer: LL −19504.367, mover/stayer .487/.513. ex10.13 two-level LTA with a between-level class: LL −20716.373 | ex10.13 needs no numerical integration, so it matches group classes | ○ |
+| Mplus 8.8 UG ch. 8 and 10, statmodel.com | posted with each example | ex8.12 hidden Markov: LL −13427.811; ex8.14 with a covariate: LL −12902.140; ex8.15 mover-stayer: LL −19504.367 (all in `mplus-ug/`). ex10.13 two-level LTA with a between-level class: LL −20716.373 | ex10.13 shifts only part of the logits by the group class; `lta(n_group_classes =)` frees them all (see `mplus-ug/CATALOGUE.md`) | ✓ (10.13 ○) |
 | Pennoni, Pandolfi & Bartolucci (2024), LMest, *R Journal* RJ-2024-036, section 3.3 | `data_market_sim` (200 customers, T = 5; `brand` and `price` as two categorical items) | `lmestSearch()`, homogeneous transitions, k = 2/3/4: LL −2520.131 / −2445.538 / −2434.262, np 17 / 29 / 43, AIC 5074.263 / 4949.075 / 4954.524, BIC 5130.334 / 5044.727 / 5096.352 (in `lta-packages/`). Its covariate model (LL −2444.437, np 12) holds Psi fixed and uses LMest's `difflogit` slopes, which `lta()` does not parametrize the same way | k = 1 is not a transition model | ✓ |
 
 No published weighted LTA: integer weights should equal LMest's
@@ -114,7 +114,7 @@ LL −2045.335) and MoEClust ML fixtures (`tests/fixtures/latent/mixture-experts
 |---|---|---|---|---|
 | Proust-Lima, Philipps & Liquet (2017), lcmm, *JSS* 78(2), doi:10.18637/jss.v078.i02 | `lcmm::paquid`, `normMMSE` | fixed `poly(age65, 2, raw) + CEP`, random and mixture on `poly(age65, 2)`, equal random covariance. ng = 2: LL −8899.228, 15 parameters, BIC 17891.67. ng = 3: −8891.351 from the default start, −8890.148 from the grid search | the ng = 3 pair is a ready local-maximum test | ✓ |
 | Mplus 9 Demo LCGA and GMM, in `../JStats/tests/fixtures/mplus/` (`lcga-ml/`, `runner-lcga/`, `gmm-ml/`, `runner-gmm-growth/`) | `.dat` beside each output | LCGA K = 2: −2091.416 (300 × 5). GMM K = 2: −2727.520, K = 3: −2715.247. Estimates with SEs, BIC, entropy | residual variance class-specific and equal across waves, as latents fits; GMM matches `random_covariance = "varying"` | ✓ |
-| Mplus 8.8 UG ex8.9 | posted | binary LCGA: LL −1272.307, classes .462/.538 | binomial, subject-level classes | ○ |
+| Mplus 8.8 UG ex8.9 | posted (in `mplus-ug/`) | binary LCGA: LL −1272.307, classes .462/.538 | binomial, subject-level classes | ✓ |
 | IMMERSE LSAY science GMM | `gmm/gmm_enum` in the repo above, N = 5866, 6 waves | 3 classes: LL −63254.481, 31 parameters | its residual variances vary by occasion | ○ |
 
 Mplus UG ex8.1 (LL −3183.703) leaves residual variances free by occasion and is
@@ -165,6 +165,9 @@ the pooling arithmetic.
 - Integer weights equal replicated rows, in every family.
 - One class with AR or Brownian residuals equals `nlme::lme` with `corAR1` or
   `corCAR1`.
+
+**Mplus User's Guide:** `mplus-ug/CATALOGUE.md` lists every example of
+chapters 7, 8 and 10 with what latents fits and what it would need.
 
 ## Before using these
 

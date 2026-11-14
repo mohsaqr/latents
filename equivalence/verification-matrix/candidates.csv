@@ -10,11 +10,10 @@ lca,StepMix (Morin et al. 2025),Python package,data_bakk_covariate(2000) exporte
 multilca,singleton-group identity,internal,any lca() reference,groups of size one: multilca() equals lca(),identity
 multilpa,singleton-group identity,internal,any lpa() reference,groups of size one: multilpa() equals lpa(),identity
 lta,IMMERSE lca-bookdown (Mplus 8.11),commercial program,LSAY lsay_lta.csv,invariant LL -14542.768; occasion-specific LL -14531.997,verified
-lta,Mplus UG ex8.12/8.15/10.13,commercial program,posted with the examples,HMM LL -13427.811; mover-stayer LL -19504.367; two-level LTA LL -20716.373,online
+lta,Mplus UG ex10.13,commercial program,posted with the example,two-level LTA LL -20716.373 (needs group-class effects on part of the logits),online
 mixture_regression,Stata 19 [FMM] Examples 1a/1b/2,commercial program,"mus03sub.dta, gsem_mixture.dta",3-class Gaussian LL -4727.6738; lcprob LL -4712.3871; Poisson LL -11502.686,verified
 mixture_regression,Deb & Trivedi (1997),published,AER::NMES1988,2-class negative binomial (tables not opened),online
 growth,Mplus 9 Demo LCGA/GMM (JStats),commercial program,../JStats/tests/fixtures/mplus (lcga-ml; gmm-ml; runner-*),LCGA K = 2 LL -2091.416; GMM K = 2 LL -2727.520,verified
-growth,Mplus UG ex8.9,commercial program,posted with the example,binary LCGA LL -1272.307,online
 growth,nlme corAR1/corCAR1 identity,R package,any growth data,one class with AR/Brownian residuals equals nlme::lme,identity
 three_step,StepMix (Morin et al. 2025) Table 9,Python package,GSS 1976-77 via gssr,BCH 26.71/36.81/44.68; ML LL -18754.72,verified
 three_step,Bakk & Kuha (2021) BJMSP,published,GSS 1976-77 (ICPSR),BCH 26.65/37.06/44.70; ML 20.63/44.94/65.67,online

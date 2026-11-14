@@ -14,7 +14,7 @@ papers:
   - "proustlima2017"
 tolerances:
   - { function: "mixture_regression(random =): 91 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (91 of 91 within)", status: "pass" }
-  - { function: "mixture_regression(random =): 18 quantities (mplus-ug8)", reference: "Mplus", tolerance: "0 to 0.0031 (18 of 18 within)", status: "pass" }
+  - { function: "mixture_regression(random =): 18 quantities (mplus-ug)", reference: "Mplus", tolerance: "0 to 0.0031 (18 of 18 within)", status: "pass" }
   - { function: "mixture_regression(random =): 134 quantities (mplus-growth)", reference: "Mplus 9 Demo (JStats fixtures)", tolerance: "0 to 0.0061 (134 of 134 within)", status: "pass" }
   - { function: "mixture_regression(random =): 19 quantities (growth-published)", reference: "Proust-Lima, Philipps and Liquet (2017), JSS 78(2), section 6", tolerance: "0 to 0.05 (19 of 19 within)", status: "pass" }
   - { function: "mixture_regression(random =): 36 quantities (proctraj-published)", reference: "SAS PROC TRAJ (Andruff et al. 2009)", tolerance: "5e-06 to 0.0053 (36 of 36 within)", status: "pass" }
@@ -30,7 +30,7 @@ cvs_files:
   - "equivalence/test-growth-published.R"
   - "equivalence/test-latentgold-coverage.R"
   - "equivalence/test-mplus-growth.R"
-  - "equivalence/test-mplus-ug8.R"
+  - "equivalence/test-mplus-ug.R"
   - "equivalence/test-proctraj-published.R"
   - "equivalence/test-review-1026-oracles.R"
   - "tests/equivalence/test-growth-calendar-reference.R"

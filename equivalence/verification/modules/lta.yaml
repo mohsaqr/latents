@@ -20,7 +20,7 @@ tolerances:
   - { function: "lta(): 364 quantities (harness)", reference: "LMest", tolerance: "1e-10 to 0.5 (364 of 364 within)", status: "pass" }
   - { function: "lta(): 75 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (75 of 75 within)", status: "pass" }
   - { function: "lta(): 6 quantities (mplus-published)", reference: "Mplus", tolerance: "0 to 0.031 (6 of 6 within)", status: "pass" }
-  - { function: "lta(): 94 quantities (mplus-ug8)", reference: "Mplus", tolerance: "0 to 0.04 (94 of 94 within)", status: "pass" }
+  - { function: "lta(): 94 quantities (mplus-ug)", reference: "Mplus", tolerance: "0 to 0.04 (94 of 94 within)", status: "pass" }
   - { function: "lta(): 12 quantities (lta-packages)", reference: "Pennoni, Pandolfi and Bartolucci (2024), R Journal RJ-2024-036, section 3.3", tolerance: "0 to 5e-04 (12 of 12 within)", status: "pass" }
   - { function: "lta(): 1867 quantities (harness)", reference: "depmixS4", tolerance: "1e-10 to 0.5 (1867 of 1867 within)", status: "pass" }
   - { function: "lta(): 103 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (103 of 103 within)", status: "pass" }
@@ -42,7 +42,7 @@ cvs_files:
   - "equivalence/test-latentgold-wider.R"
   - "equivalence/test-lta-packages.R"
   - "equivalence/test-mplus-published.R"
-  - "equivalence/test-mplus-ug8.R"
+  - "equivalence/test-mplus-ug.R"
   - "equivalence/test-review-1026-oracles.R"
   - "tests/equivalence/test-lta-acceleration.R"
   - "tests/equivalence/test-lta-general.R"

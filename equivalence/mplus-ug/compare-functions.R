@@ -1,7 +1,21 @@
-# Functions for compare.R: the growth and latent transition examples of the
-# Mplus 8.8 User's Guide, chapter 8 (statmodel.com, chapter8.zip): input,
+# Functions for compare.R: the Mplus 8.8 User's Guide examples latents fits,
+# chapters 7 (mixtures of cross-sectional data) and 8 (longitudinal
+# mixtures) (statmodel.com/usersguide, chapter7.zip and chapter8.zip): input,
 # data and Mplus's own output are kept in listings/ (LISTINGS.md5), and every
 # compared value is read from the output file, not copied by hand.
+# CATALOGUE.md maps every example of chapters 7, 8 and 10 to a latents
+# function, or to what latents would need to fit it.
+#
+# Chapter 7 (compare_ch7()):
+# - ex7.1, a mixture regression with a common slope (x1), a class-specific
+#   slope (x2), class-specific residual variances and x1 on membership:
+#   mixture_regression(y ~ x1 + x2, common = ~ x1, membership = ~ x1).
+# - ex7.3, ex7.4 (binary), ex7.6 (three categories), ex7.7 (nominal): lca().
+# - ex7.9 (EEI), ex7.10 (VVI), ex7.22 (EEE, three classes): lpa().
+# Compared: log likelihood, parameters, AIC, BIC, entropy, class proportions,
+# modal counts, and every estimate of MODEL RESULTS (or, for lca(), RESULTS
+# IN PROBABILITY SCALE) with its MLR standard error, by the delta method from
+# latents' robust covariance.
 #
 # - ex8.9, a latent class growth analysis of a binary outcome at four
 #   occasions: mixture_regression(family = "binomial", class_level = "group").
@@ -348,7 +362,277 @@ compare_ex8_9 <- function(directory) {
         estimate_rows)
 }
 
-compare_all_ug8 <- function(directory) {
-  rbind(compare_ex8_9(directory), compare_ex8_12(directory), compare_ex8_14(directory),
-        compare_ex8_15(directory))
+
+
+# ---------------------------------------------------------------------------
+# Chapter 7
+
+#' A printed results section as a table
+#'
+#' Mplus's MODEL RESULTS and RESULTS IN PROBABILITY SCALE: a block line
+#' ("Latent Class k", "Categorical Latent Variables") at the margin, a header
+#' line ("Y ON", "Means", "Y1 WITH", an indicator) one space in, and value
+#' lines further in ending in estimate, s.e., est./s.e., p-value.
+#' @return One row per value line: `block`, `header`, `name`, `estimate`,
+#'   `standard_error` (printed text).
+#' @noRd
+.ug_results <- function(lines, heading) {
+  start <- grep(sprintf("^%s$", heading), lines)[[1L]]
+  rest <- lines[(start + 1L):length(lines)]
+  rest <- rest[seq_len(grep("^[A-Z][A-Z ]+[A-Z]$", rest)[[1L]] - 1L)]
+  rest <- rest[nzchar(trimws(rest)) & !grepl("Estimate|Two-Tailed", rest)]
+  block_line <- grepl("^[A-Z]", rest)
+  header_line <- grepl("^ [^ ]", rest)
+  value_line <- grepl("^ {2,}[^ ]", rest)
+  block <- trimws(rest[block_line])[cumsum(block_line)]
+  header <- gsub("[[:space:]]+", " ", trimws(rest[header_line]))[pmax(cumsum(header_line), 1L)]
+  fields <- strsplit(trimws(rest[value_line]), "[[:space:]]+")
+  data.frame(block = block[value_line], header = header[value_line],
+             name = vapply(fields, function(f) paste(f[seq_len(length(f) - 4L)], collapse = " "), ""),
+             estimate = vapply(fields, function(f) f[[length(f) - 3L]], ""),
+             standard_error = vapply(fields, function(f) f[[length(f) - 2L]], ""),
+             stringsAsFactors = FALSE)
+}
+
+#' Rows comparing printed estimates and errors with latents' delta-method terms
+#' @param printed `.ug_results()` rows with a `term` column naming the terms.
+#' @param terms `delta_terms()` output.
+#' @noRd
+.ug_term_rows <- function(case, fn, printed, terms) {
+  at <- match(printed$term, terms$term)
+  stopifnot("every printed term has a latents counterpart" = !anyNA(at))
+  do.call(rbind, lapply(seq_len(nrow(printed)), function(i) rbind(
+    .ug8_row(case, fn, paste("estimate", printed$term[[i]]), printed$estimate[[i]],
+             terms$estimate[[at[[i]]]]),
+    .ug8_row(case, fn, paste("s.e.", printed$term[[i]]), printed$standard_error[[i]],
+             terms$standard_error[[at[[i]]]]))))
+}
+
+#' Delta-method terms from latents' robust covariance, scaled to Mplus's CR0
+#'
+#' The covariance may leave out parameters held at a bound; they stay fixed.
+#' @noRd
+.ug_delta <- function(map, theta, covariance, n) {
+  free <- intersect(rownames(covariance), names(theta))
+  on_free <- function(values) {
+    full <- theta
+    full[free] <- values
+    map(full)
+  }
+  delta_terms(on_free, theta[free], covariance[free, free, drop = FALSE] * (n - 1) / n)
+}
+
+#' Class proportions (estimated model) and modal counts as printed
+#' @noRd
+.ug_class_sizes <- function(lines, k) {
+  read_block <- function(heading, column) {
+    start <- grep(sprintf("^%s$", heading), lines)[[1L]]
+    following <- trimws(lines[(start + 1L):(start + 12L + k)])
+    rows <- following[grepl("^[0-9]+ +[0-9.]+ +[0-9.]+$", following)][seq_len(k)]
+    vapply(strsplit(rows, "[[:space:]]+"), `[[`, "", column)
+  }
+  list(proportion = read_block("BASED ON THE ESTIMATED MODEL", 3L),
+       modal = read_block("BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP", 2L))
+}
+
+#' Fit statistics, entropy, proportions and modal counts of a cross-sectional fit
+#' @param shares,modal latents' class proportions and modal counts in Mplus's
+#'   class order.
+#' @noRd
+.ug_size_rows <- function(case, fn, lines, fit, entropy, shares, modal) {
+  printed <- .ug_class_sizes(lines, length(shares))
+  rbind(.ug8_fit_rows(case, fn, lines, fit, entropy = entropy),
+        do.call(rbind, lapply(seq_along(shares), function(c) rbind(
+          .ug8_row(case, fn, sprintf("class %d proportion", c), printed$proportion[[c]], shares[[c]]),
+          .ug8_row(case, fn, sprintf("class %d modal count", c), printed$modal[[c]], modal[[c]],
+                   exact = TRUE)))))
+}
+
+#' Mplus's class logits C#c = log(p_c / p_K) from latents' class probabilities
+#' @noRd
+.ug_class_logits <- function(theta, perm) {
+  share <- function(j) theta[[sprintf("profile.probability.profile_%d.group_class_1", j)]]
+  k <- length(perm)
+  stats::setNames(vapply(seq_len(k - 1L), function(c) log(share(perm[[c]]) / share(perm[[k]])),
+                         numeric(1)), sprintf("C#%d", seq_len(k - 1L)))
+}
+
+#' A latent class or profile fit's sizes in Mplus's class order
+#' @noRd
+.ug_profile_sizes <- function(fit, perm) {
+  classification <- as.data.frame(get_results(fit, "classification"))
+  classification <- classification[classification$level == "individuals", ]
+  list(share = classification$estimated_proportion[match(perm, classification$class)],
+       modal = classification$n_modal[match(perm, classification$class)],
+       entropy = as.data.frame(get_results(fit, "entropy"))$relative_entropy[[1L]])
+}
+
+#' A latent class model of Mplus's chapter 7 (ex7.3, 7.4, 7.6, 7.7)
+#'
+#' Categorical indicators print RESULTS IN PROBABILITY SCALE; nominal ones
+#' (ex7.7) print only their logits Ui#c = log(P(c) / P(last category)).
+#' @noRd
+.ug_lca <- function(directory, example, k = 2L) {
+  case <- sprintf("%s_lca", example)
+  lines <- .ug8_lines(directory, example)
+  data <- utils::read.table(file.path(directory, "listings", paste0(example, ".dat")))[1:4]
+  items <- paste0("u", 1:4)
+  names(data) <- items
+  data[items] <- lapply(data[items], factor)
+  n <- nrow(data)
+  fit <- lca(data, items, n_classes = k, n_starts = 30L, seed = 1L, tol = 1e-12)
+  theta <- stats::coef(fit)
+  inference <- parameter_inference(fit, vcov_type = "robust", boundary = "fix")
+  categories <- lapply(data[items], levels)
+  results <- .ug_results(lines, "MODEL RESULTS")
+  results$class <- suppressWarnings(as.integer(sub("^Latent Class ", "", results$block)))
+  logits <- results[results$block == "Categorical Latent Variables", ]
+  logits$term <- logits$name
+  probability_scale <- any(grepl("^RESULTS IN PROBABILITY SCALE$", lines))
+  if (probability_scale) {
+    printed <- .ug_results(lines, "RESULTS IN PROBABILITY SCALE")
+    printed$class <- as.integer(sub("^Latent Class ", "", printed$block))
+    printed$category <- as.integer(sub("^Category ", "", printed$name))
+    printed$item <- tolower(printed$header)
+    printed$term <- sprintf("probability class %d %s category %d", printed$class, printed$item,
+                            printed$category)
+  } else {
+    printed <- results[!is.na(results$class) & results$header == "Means", ]
+    printed$item <- tolower(sub("#.*$", "", printed$name))
+    printed$category <- as.integer(sub("^.*#", "", printed$name))
+    printed$term <- sprintf("logit class %d %s", printed$class, printed$name)
+  }
+  response <- function(th, j, item, category) {
+    th[[sprintf("measurement.response.profile_%d.%s:%s", j, item, categories[[item]][[category]])]]
+  }
+  value <- function(th, perm, i) {
+    j <- perm[[printed$class[[i]]]]
+    item <- printed$item[[i]]
+    p <- response(th, j, item, printed$category[[i]])
+    if (probability_scale) p else log(p / response(th, j, item, length(categories[[item]])))
+  }
+  perms <- permutations(k)
+  gaps <- vapply(perms, function(perm) max(abs(vapply(seq_len(nrow(printed)), function(i)
+    value(theta, perm, i), numeric(1)) - as.numeric(printed$estimate))), numeric(1))
+  perm <- perms[[which.min(gaps)]]
+  map <- function(th) c(stats::setNames(vapply(seq_len(nrow(printed)), function(i)
+    value(th, perm, i), numeric(1)), printed$term), .ug_class_logits(th, perm))
+  terms <- .ug_delta(map, theta, attr(inference, "covariance"), n)
+  sizes <- .ug_profile_sizes(fit, perm)
+  rbind(.ug_size_rows(case, "lca", lines, fit, sizes$entropy, sizes$share, sizes$modal),
+        .ug_term_rows(case, "lca", printed, terms),
+        .ug_term_rows(case, "lca", logits, terms))
+}
+
+#' A latent profile model of Mplus's chapter 7 (ex7.9, 7.10, 7.22)
+#' @noRd
+.ug_lpa <- function(directory, example, k, model) {
+  case <- sprintf("%s_lpa", example)
+  lines <- .ug8_lines(directory, example)
+  data <- utils::read.table(file.path(directory, "listings", paste0(example, ".dat")))[1:4]
+  vars <- paste0("y", 1:4)
+  names(data) <- vars
+  n <- nrow(data)
+  fit <- lpa(data, vars, n_profiles = k, model = model, n_starts = 30L, seed = 1L, tol = 1e-12)
+  theta <- stats::coef(fit)
+  inference <- parameter_inference(fit, vcov_type = "robust", boundary = "fix")
+  printed <- .ug_results(lines, "MODEL RESULTS")
+  printed$class <- suppressWarnings(as.integer(sub("^Latent Class ", "", printed$block)))
+  measurement <- printed[!is.na(printed$class), ]
+  logits <- printed[printed$block == "Categorical Latent Variables", ]
+  logits$term <- logits$name
+  owner <- function(j, kind) {
+    shared <- grep(sprintf("^measurement[.]%s[.]shared[.]", kind), names(theta), value = TRUE)
+    if (length(shared)) "shared" else sprintf("profile_%d", j)
+  }
+  # Each printed measurement parameter as a function of latents' estimates.
+  value <- function(th, perm, row) {
+    j <- perm[[row$class]]
+    name <- tolower(row$name)
+    if (row$header == "Means") return(th[[sprintf("measurement.mean.profile_%d.%s", j, name)]])
+    if (row$header == "Variances") {
+      covariance <- sprintf("measurement.covariance.%s.%s:%s", owner(j, "covariance"), name, name)
+      variance <- sprintf("measurement.variance.%s.%s", owner(j, "variance"), name)
+      return(th[[if (covariance %in% names(th)) covariance else variance]])
+    }
+    first <- tolower(sub(" WITH$", "", row$header))
+    th[[sprintf("measurement.covariance.%s.%s:%s", owner(j, "covariance"), name, first)]]
+  }
+  means <- measurement[measurement$header == "Means", ]
+  perms <- permutations(k)
+  gaps <- vapply(perms, function(perm) max(abs(vapply(seq_len(nrow(means)), function(i)
+    value(theta, perm, means[i, ]), numeric(1)) - as.numeric(means$estimate))), numeric(1))
+  perm <- perms[[which.min(gaps)]]
+  measurement$term <- sprintf("class %d %s %s", measurement$class, measurement$header,
+                              measurement$name)
+  map <- function(th) c(stats::setNames(vapply(seq_len(nrow(measurement)), function(i)
+    value(th, perm, measurement[i, ]), numeric(1)), measurement$term), .ug_class_logits(th, perm))
+  terms <- .ug_delta(map, theta, attr(inference, "covariance"), n)
+  sizes <- .ug_profile_sizes(fit, perm)
+  rbind(.ug_size_rows(case, "lpa", lines, fit, sizes$entropy, sizes$share, sizes$modal),
+        .ug_term_rows(case, "lpa", measurement, terms),
+        .ug_term_rows(case, "lpa", logits, terms))
+}
+
+#' ex7.1: a mixture regression with a common and a class-specific slope
+#' @noRd
+.ug_ex7_1 <- function(directory) {
+  case <- "ex7.1_regression"
+  lines <- .ug8_lines(directory, "ex7.1")
+  data <- utils::read.table(file.path(directory, "listings", "ex7.1.dat"))[1:3]
+  names(data) <- c("y", "x1", "x2")
+  n <- nrow(data)
+  fit <- mixture_regression(y ~ x1 + x2, data, n_classes = 2L, common = ~ x1, membership = ~ x1,
+                            variance = "varying", n_starts = 20L, seed = 1L, tol = 1e-12,
+                            vcov_type = "robust")
+  theta <- stats::coef(fit)
+  printed <- .ug_results(lines, "MODEL RESULTS")
+  printed$class <- suppressWarnings(as.integer(sub("^Latent Class ", "", printed$block)))
+  # Mplus's class c is the latents class whose intercept is closest.
+  intercept <- function(j) theta[[sprintf("coefficient.class_%d.(Intercept)", j)]]
+  mplus_intercepts <- as.numeric(printed$estimate[printed$header == "Intercepts" &
+                                                    printed$name == "Y"])
+  perm <- if (abs(intercept(1L) - mplus_intercepts[[1L]]) < abs(intercept(2L) - mplus_intercepts[[1L]]))
+    c(1L, 2L) else c(2L, 1L)
+  # latents' membership logit is class_2 against class_1; Mplus's C#1 is its
+  # class 1 against class 2.
+  sign <- if (perm[[1L]] == 2L) 1 else -1
+  value <- function(th, row) {
+    if (row$block == "Categorical Latent Variables") {
+      term <- if (row$header == "Intercepts") "(Intercept)" else tolower(row$name)
+      return(sign * th[[sprintf("membership.class_2.%s", term)]])
+    }
+    j <- perm[[row$class]]
+    if (row$header == "Y ON") {
+      common <- sprintf("coefficient.common.%s", tolower(row$name))
+      return(th[[if (common %in% names(th)) common else
+        sprintf("coefficient.class_%d.%s", j, tolower(row$name))]])
+    }
+    if (row$header == "Intercepts") return(th[[sprintf("coefficient.class_%d.(Intercept)", j)]])
+    exp(2 * th[[sprintf("log_sigma.class_%d", j)]])  # Residual Variances
+  }
+  printed$term <- sprintf("%s %s %s", ifelse(is.na(printed$class), "categorical",
+                                             paste("class", printed$class)),
+                          printed$header, printed$name)
+  map <- function(th) stats::setNames(vapply(seq_len(nrow(printed)), function(i)
+    value(th, printed[i, ]), numeric(1)), printed$term)
+  terms <- delta_terms(map, theta, stats::vcov(fit) * (n - 1) / n)
+  classes <- as.data.frame(get_results(fit, "classes"))
+  sizes <- list(share = classes$share[perm], modal = classes$n_assigned[perm],
+                entropy = as.data.frame(get_results(fit, "fit"))$entropy)
+  rbind(.ug_size_rows(case, "mixture_regression", lines, fit, sizes$entropy, sizes$share,
+                      sizes$modal),
+        .ug_term_rows(case, "mixture_regression", printed, terms))
+}
+
+compare_ch7 <- function(directory) {
+  rbind(.ug_ex7_1(directory),
+        do.call(rbind, lapply(c("ex7.3", "ex7.4", "ex7.6", "ex7.7"), .ug_lca, directory = directory)),
+        .ug_lpa(directory, "ex7.9", 2L, "EEI"), .ug_lpa(directory, "ex7.10", 2L, "VVI"),
+        .ug_lpa(directory, "ex7.22", 3L, "EEE"))
+}
+
+compare_all_ug <- function(directory) {
+  rbind(compare_ch7(directory), compare_ex8_9(directory), compare_ex8_12(directory),
+        compare_ex8_14(directory), compare_ex8_15(directory))
 }

@@ -1,0 +1,410 @@
+Mplus VERSION 8
+MUTHEN & MUTHEN
+04/10/2017   4:43 AM
+
+INPUT INSTRUCTIONS
+
+  TITLE:	this is an example of a LCA with binary
+  	latent class indicators using user-
+  	specified starting values without random
+  	starts
+  DATA:	FILE IS ex7.4.dat;
+  VARIABLE:	NAMES ARE u1-u4 c;
+  	USEVARIABLES ARE u1-u4;
+  	CLASSES = c (2);
+  	CATEGORICAL = u1-u4;
+  ANALYSIS:	TYPE = MIXTURE;
+  	STARTS = 0;
+  MODEL:	
+  	%OVERALL%
+  	%c#1%
+  	[u1$1*1 u2$1*1 u3$1*-1 u4$1*-1];
+  	%c#2%
+  	[u1$1*-1 u2$1*-1 u3$1*1 u4$1*1];
+  OUTPUT:	TECH1 TECH8;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+this is an example of a LCA with binary
+latent class indicators using user-
+specified starting values without random
+starts
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         500
+
+Number of dependent variables                                    4
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Binary and ordered categorical (ordinal)
+   U1          U2          U3          U4
+
+Categorical latent variables
+   C
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                                 500
+  Convergence criteria
+    Loglikelihood change                                 0.100D-06
+    Relative loglikelihood change                        0.100D-06
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+Link                                                         LOGIT
+
+Input data file(s)
+  ex7.4.dat
+Input data format  FREE
+
+
+UNIVARIATE PROPORTIONS AND COUNTS FOR CATEGORICAL VARIABLES
+
+    U1
+      Category 1    0.500          250.000
+      Category 2    0.500          250.000
+    U2
+      Category 1    0.502          251.000
+      Category 2    0.498          249.000
+    U3
+      Category 1    0.504          252.000
+      Category 2    0.496          248.000
+    U4
+      Category 1    0.554          277.000
+      Category 2    0.446          223.000
+
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        9
+
+Loglikelihood
+
+          H0 Value                       -1325.213
+          H0 Scaling Correction Factor      1.0142
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                    2668.425
+          Bayesian (BIC)                  2706.357
+          Sample-Size Adjusted BIC        2677.790
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit for the Binary and Ordered Categorical
+(Ordinal) Outcomes
+
+          Pearson Chi-Square
+
+          Value                             12.611
+          Degrees of Freedom                     6
+          P-Value                           0.0496
+
+          Likelihood Ratio Chi-Square
+
+          Value                             12.742
+          Degrees of Freedom                     6
+          P-Value                           0.0473
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THE ESTIMATED MODEL
+
+    Latent
+   Classes
+
+       1        255.11204          0.51022
+       2        244.88796          0.48978
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1        255.11204          0.51022
+       2        244.88796          0.48978
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1              272          0.54400
+       2              228          0.45600
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.504
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.832    0.168
+    2   0.126    0.874
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.888    0.112
+    2   0.186    0.814
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      2.066    0.000
+    2     -1.475    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ Thresholds
+    U1$1               1.221      0.243      5.028      0.000
+    U2$1               1.086      0.273      3.977      0.000
+    U3$1              -0.906      0.190     -4.775      0.000
+    U4$1              -0.511      0.224     -2.282      0.022
+
+Latent Class 2
+
+ Thresholds
+    U1$1              -1.287      0.344     -3.735      0.000
+    U2$1              -1.119      0.239     -4.674      0.000
+    U3$1               0.990      0.260      3.813      0.000
+    U4$1               1.048      0.179      5.847      0.000
+
+Categorical Latent Variables
+
+ Means
+    C#1                0.041      0.254      0.161      0.872
+
+
+RESULTS IN PROBABILITY SCALE
+
+Latent Class 1
+
+ U1
+    Category 1         0.772      0.043     18.081      0.000
+    Category 2         0.228      0.043      5.334      0.000
+ U2
+    Category 1         0.748      0.052     14.513      0.000
+    Category 2         0.252      0.052      4.901      0.000
+ U3
+    Category 1         0.288      0.039      7.402      0.000
+    Category 2         0.712      0.039     18.312      0.000
+ U4
+    Category 1         0.375      0.052      7.149      0.000
+    Category 2         0.625      0.052     11.914      0.000
+
+Latent Class 2
+
+ U1
+    Category 1         0.216      0.058      3.705      0.000
+    Category 2         0.784      0.058     13.413      0.000
+ U2
+    Category 1         0.246      0.044      5.541      0.000
+    Category 2         0.754      0.044     16.966      0.000
+ U3
+    Category 1         0.729      0.051     14.216      0.000
+    Category 2         0.271      0.051      5.280      0.000
+ U4
+    Category 1         0.740      0.034     21.491      0.000
+    Category 2         0.260      0.034      7.533      0.000
+
+
+LATENT CLASS ODDS RATIO RESULTS
+
+Latent Class 1 Compared to Latent Class 2
+
+ U1
+    Category > 1       0.081      0.033      2.492      0.013
+ U2
+    Category > 1       0.110      0.038      2.882      0.004
+ U3
+    Category > 1       6.662      2.094      3.181      0.001
+ U4
+    Category > 1       4.754      1.458      3.261      0.001
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.421E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 1
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 2
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS INDICATOR MODEL PART
+
+
+           LAMBDA(U)
+              C#1           C#2
+              ________      ________
+ U1                 1             2
+ U2                 3             4
+ U3                 5             6
+ U4                 7             8
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                    9             0
+
+
+     STARTING VALUES FOR LATENT CLASS 1
+
+
+     STARTING VALUES FOR LATENT CLASS 2
+
+
+     STARTING VALUES FOR LATENT CLASS INDICATOR MODEL PART
+
+
+           LAMBDA(U)
+              C#1           C#2
+              ________      ________
+ U1            -1.000         1.000
+ U2            -1.000         1.000
+ U3             1.000        -1.000
+ U4             1.000        -1.000
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                0.000         0.000
+
+
+TECHNICAL 8 OUTPUT
+
+
+  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE      CLASS COUNTS    ALGORITHM
+     1 -0.13308427D+04    0.0000000    0.0000000    242.133   257.867    EM
+     2 -0.13261044D+04    4.7383081    0.0035604    242.465   257.535    EM
+     3 -0.13255717D+04    0.5326802    0.0004017    242.969   257.031    EM
+     4 -0.13253885D+04    0.1831222    0.0001381    243.554   256.446    EM
+     5 -0.13253222D+04    0.0663120    0.0000500    244.168   255.832    EM
+     6 -0.13252942D+04    0.0280563    0.0000212    244.782   255.218    EM
+     7 -0.13252792D+04    0.0149917    0.0000113    245.381   254.619    EM
+     8 -0.13252692D+04    0.0099642    0.0000075    245.957   254.043    EM
+     9 -0.13252616D+04    0.0076148    0.0000057    246.507   253.493    EM
+    10 -0.13252554D+04    0.0062499    0.0000047    247.028   252.972    EM
+    11 -0.13252501D+04    0.0053068    0.0000040    247.522   252.478    EM
+    12 -0.13252455D+04    0.0045809    0.0000035    247.987   252.013    EM
+    13 -0.13252415D+04    0.0039878    0.0000030    248.426   251.574    EM
+    14 -0.13252380D+04    0.0034873    0.0000026    248.839   251.161    EM
+    15 -0.13252349D+04    0.0030574    0.0000023    249.227   250.773    EM
+    16 -0.13252323D+04    0.0026844    0.0000020    249.592   250.408    EM
+    17 -0.13252299D+04    0.0023588    0.0000018    249.934   250.066    EM
+    18 -0.13252278D+04    0.0020738    0.0000016    250.256   249.744    EM
+    19 -0.13252260D+04    0.0018236    0.0000014    250.558   249.442    EM
+    20 -0.13252244D+04    0.0016038    0.0000012    250.842   249.158    EM
+    21 -0.13252230D+04    0.0014106    0.0000011    251.108   248.892    EM
+    22 -0.13252217D+04    0.0012407    0.0000009    251.358   248.642    EM
+    23 -0.13252207D+04    0.0010912    0.0000008    251.592   248.408    EM
+    24 -0.13252197D+04    0.0009598    0.0000007    251.811   248.189    EM
+    25 -0.13252188D+04    0.0008441    0.0000006    252.017   247.983    EM
+    26 -0.13252181D+04    0.0007424    0.0000006    252.211   247.789    EM
+    27 -0.13252175D+04    0.0006529    0.0000005    252.392   247.608    EM
+    28 -0.13252169D+04    0.0005741    0.0000004    252.562   247.438    EM
+    29 -0.13252164D+04    0.0005049    0.0000004    252.721   247.279    EM
+    30 -0.13252159D+04    0.0004439    0.0000003    252.870   247.130    EM
+    31 -0.13252155D+04    0.0003904    0.0000003    253.011   246.989    EM
+    32 -0.13252152D+04    0.0003432    0.0000003    253.142   246.858    EM
+    33 -0.13252149D+04    0.0003018    0.0000002    253.265   246.735    EM
+    34 -0.13252146D+04    0.0002653    0.0000002    253.381   246.619    EM
+    35 -0.13252144D+04    0.0002333    0.0000002    253.489   246.511    EM
+    36 -0.13252142D+04    0.0002051    0.0000002    253.591   246.409    EM
+    37 -0.13252140D+04    0.0001803    0.0000001    253.686   246.314    EM
+    38 -0.13252128D+04    0.0011615    0.0000009    255.175   244.825    FS
+    39 -0.13252127D+04    0.0001294    0.0000001    254.952   245.048    FS
+    40 -0.13252127D+04    0.0000172    0.0000000    255.132   244.868    FS
+    41 -0.13252127D+04    0.0000024    0.0000000    255.093   244.907    FS
+    42 -0.13252127D+04    0.0000003    0.0000000    255.119   244.881    FS
+    43 -0.13252127D+04    0.0000000    0.0000000    255.112   244.888    FS
+
+
+     Beginning Time:  04:43:50
+        Ending Time:  04:43:50
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2017 Muthen & Muthen

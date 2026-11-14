@@ -5,7 +5,7 @@ family: "cluster"
 label: "lpa()"
 slug: "lpa"
 name: "Fit a latent profile model"
-summary: "Fit a latent profile model. Verification strength ++++++++ PPP in latents' verification matrix: 8 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 52g (gsem), mclust, Rmixmod, MoEClust, mixtools, EMCluster), 3 published paper(s), 233 dataset(s), 15578 current checks of which 0 failed."
+summary: "Fit a latent profile model. Verification strength ++++++++ PPP in latents' verification matrix: 8 source(s) (Mplus, Latent GOLD, Stata 19 [SEM] Example 52g (gsem), mclust, Rmixmod, MoEClust, mixtools, EMCluster), 3 published paper(s), 236 dataset(s), 15763 current checks of which 0 failed."
 module_files:
   - "R/lpa.R"
 public_api:
@@ -18,6 +18,7 @@ tolerances:
   - { function: "lpa(): 30 quantities (lpa-packages)", reference: "EMCluster", tolerance: "1e-06 to 1e-04 (30 of 30 within)", status: "pass" }
   - { function: "lpa(): 111 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 0.00012 (111 of 111 within)", status: "pass" }
   - { function: "lpa(): 49 quantities (stata-published)", reference: "Masyn (2013), Oxford Handbook of Quantitative Methods, Table 25.12", tolerance: "0 to 0.0087 (49 of 49 within)", status: "pass" }
+  - { function: "lpa(): 185 quantities (mplus-ug)", reference: "Mplus", tolerance: "0 to 0.007 (185 of 185 within)", status: "pass" }
   - { function: "lpa(): 35 quantities (mplus-published)", reference: "Mplus", tolerance: "0 to 0.006 (35 of 35 within)", status: "pass" }
   - { function: "lpa(): 75 quantities (lpa-packages)", reference: "Rmixmod", tolerance: "1e-06 to 1e-04 (75 of 75 within)", status: "pass" }
   - { function: "lpa(): 3 quantities (harness)", reference: "Scrucca et al. (2023) mclust book", tolerance: "1 (3 of 3 within)", status: "pass" }
@@ -58,6 +59,7 @@ cvs_files:
   - "equivalence/test-mplus-public.R"
   - "equivalence/test-mplus-published.R"
   - "equivalence/test-mplus-standardize.R"
+  - "equivalence/test-mplus-ug.R"
   - "equivalence/test-stata-published.R"
   - "equivalence/test-structure-inference.R"
   - "equivalence/test-tidylpa-classification.R"

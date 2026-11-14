@@ -267,9 +267,9 @@ equivalence,test-mplus-published.R,compares every case,none,kit provenance,prove
 equivalence,test-mplus-published.R,agrees with Mplus,lca;lpa;lta;bootstrap_lrt,Mplus,commercial program
 equivalence,test-proctraj-published.R,compares every case,none,kit provenance,provenance
 equivalence,test-proctraj-published.R,agrees with SAS,growth,SAS PROC TRAJ (Andruff et al. 2009),commercial program
-equivalence,test-mplus-ug8.R,listings are the files statmodel.com posted,none,kit provenance,provenance
-equivalence,test-mplus-ug8.R,compares every case,none,kit provenance,provenance
-equivalence,test-mplus-ug8.R,agrees with Mplus,growth;lta,Mplus,commercial program
+equivalence,test-mplus-ug.R,listings are the files statmodel.com posted,none,kit provenance,provenance
+equivalence,test-mplus-ug.R,compares every case,none,kit provenance,provenance
+equivalence,test-mplus-ug.R,agrees with Mplus,lca;lpa;mixture_regression;growth;lta,Mplus,commercial program
 equivalence,test-mplus-growth.R,compares every case,none,kit provenance,provenance
 equivalence,test-mplus-growth.R,agrees with Mplus,growth,Mplus,commercial program
 equivalence,test-enumeration-packages.R,compares every case,none,kit provenance,provenance

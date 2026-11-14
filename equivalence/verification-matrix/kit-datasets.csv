@@ -25,7 +25,7 @@ equivalence/mplus-published/comparison.csv,^ucla_drinking_.*$,drinking (UCLA lca
 equivalence/mplus-published/comparison.csv,^vermunt_diabetes_.*$,diabetes (EXAM1.dat)
 equivalence/mplus-published/comparison.csv,^langeheine_.*$,Langeheine-van de Pol panel (ALCA ch. 11)
 equivalence/proctraj-published/comparison.csv,^proctraj_.*$,disengagement coping (Andruff et al. 2009)
-equivalence/mplus-ug8/comparison.csv,^(ex8[.][0-9]+)_.*$,Mplus User's Guide \1
+equivalence/mplus-ug/comparison.csv,^(ex[78][.][0-9]+)_.*$,Mplus User's Guide \1
 equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1
 equivalence/latentgold-categorical-distal/comparison.csv,^(.*)$,Latent GOLD categorical distal kit: \1
