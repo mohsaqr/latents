@@ -1,0 +1,8 @@
+disen.csv: transcribed 2026-11-14 from Appendix A of Andruff et al. (2009),
+Tutorials in Quantitative Methods for Psychology 5(1), 11-24 (the PDF the owner
+supplied, p011.pdf), by pdftotext -layout and a parser that requires the ids
+1 to 107 in order with three two-decimal scores each. Rows 97 to 107 agree
+with the SAS data window of the paper's Figure 1, and two printed log
+likelihoods (-300.45, -255.59) are reproduced from these values.
+The printed PROC TRAJ values in compare-functions.R are read from Figures 3
+and 4 (screenshots of SAS output) and from the text, pp. 17-18.

@@ -146,14 +146,14 @@ reapply_package_register <- function(directory) {
 #' The reference group of each comparison row
 #'
 #' "R packages", "published analyses", or the commercial program a row's
-#' reference names ("Mplus", "Latent GOLD", "Stata"); NA for a row of another
+#' reference names ("Mplus", "Latent GOLD", "Stata", "SAS"); NA for a row of another
 #' kind. One group is one reference axis of CVS and the verification matrix.
 #' @param comparison Comparison rows; their `kind` column, or `kind` for all.
 #' @param kind Kind of every row when the comparison has no `kind` column.
 #' @return Character vector, one group per row.
 kit_reference_group <- function(comparison, kind = NULL) {
   kinds <- comparison$kind %||% rep(kind %||% NA_character_, nrow(comparison))
-  programs <- c("Latent GOLD", "Mplus", "Stata")
+  programs <- c("Latent GOLD", "Mplus", "Stata", "SAS")
   vapply(seq_len(nrow(comparison)), function(i) {
     switch(kinds[[i]],
       `R package` = "R packages",

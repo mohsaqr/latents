@@ -100,6 +100,20 @@ test_that("actual testthat errors and skips cannot create source strength", {
   expect_equal(summary$incomplete_current[summary$fn == "multilpa"], 2L)
 })
 
+test_that("references run by one program are one source", {
+  sources <- .matrix_sources(
+    c("Mplus 9 Demo (JStats fixtures)", "Latent GOLD", "Mplus", "lcmm", "SAS PROC TRAJ (Andruff et al. 2009)"),
+    c("commercial program", "commercial program", "commercial program", "R package",
+      "commercial program"))
+  expect_identical(sources$n, 4L)
+  expect_identical(sources$label, paste("Mplus (Mplus 9 Demo (JStats fixtures); Mplus), Latent GOLD,",
+                                        "lcmm, SAS PROC TRAJ (Andruff et al. 2009)"))
+  # A package whose name contains a program's is not that program.
+  expect_identical(.matrix_sources(c("Mplus", "MplusAutomation"), c("commercial program", "R package"))$n,
+                   2L)
+  expect_identical(.matrix_sources(character(), character())$n, 0L)
+})
+
 test_that("internal checks are retained but excluded from external check totals", {
   evidence <- data.frame(evidence_id = c("external", "internal"), origin = "testthat",
     location = "synthetic", item = "two classes", fn = "lpa", reference = c("program", "self"),

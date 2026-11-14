@@ -189,22 +189,22 @@ test_that("a report goes to the inbox and to tmp/cvs, or only to tmp/cvs when re
 test_that("each kind of reference maps to its CVS axis and authority", {
   mapped <- .cvs_axis(
     c("poLCA", "Latent GOLD", "Mplus", "Mplus 9 Demo (JStats fixtures)", "Stata 19 [SEM] Example 52g (gsem)",
-      "Masyn (2013)", "numDeriv / dense likelihood", "internal identity", "tidySEM classification-error matrix",
+      "SAS PROC TRAJ (Andruff et al. 2009)", "Masyn (2013)", "numDeriv / dense likelihood", "internal identity", "tidySEM classification-error matrix",
       "kit provenance", "CVS reporter"),
     c("R package", "commercial program", "commercial program", "commercial program", "commercial program",
-      "published", "independent code", "internal", "component check", "provenance", "infrastructure"))
-  expect_identical(mapped$axis, c("r-equivalence", "latentgold", "mplus", "mplus", "stata", "paper",
+      "commercial program", "published", "independent code", "internal", "component check", "provenance", "infrastructure"))
+  expect_identical(mapped$axis, c("r-equivalence", "latentgold", "mplus", "mplus", "stata", "sas", "paper",
                                   "independent", "internal", "internal", "internal", "internal"))
   expect_identical(mapped$authority, c("r", "latentgold-only", "mplus-only", "mplus-only", "stata-only",
-                                       "paper", "independent", "internal", "internal", "internal", "internal"))
-  expect_identical(mapped$software, c(NA, "latentgold", "Mplus", "Mplus", "stata", "paper", "independent",
+                                       "sas-only", "paper", "independent", "internal", "internal", "internal", "internal"))
+  expect_identical(mapped$software, c(NA, "latentgold", "Mplus", "Mplus", "stata", "sas", "paper", "independent",
                                       NA, NA, NA, NA))
   # A kind CVS has no axis for stays untagged rather than guessed.
   expect_true(is.na(.cvs_axis("StepMix", "Python package")$axis))
 })
 
 test_that("an unknown commercial program stops with a classed error", {
-  expect_error(.cvs_axis("SAS/STAT 14.2", "commercial program"), class = "latents_cvs_unknown_program")
+  expect_error(.cvs_axis("SPSS 29", "commercial program"), class = "latents_cvs_unknown_program")
   expect_error(.cvs_axis("Mplus and Latent GOLD", "commercial program"), class = "latents_cvs_unknown_program")
   expect_identical(.cvs_axis("IMMERSE lca-bookdown (Mplus 8.11)", "commercial program")$axis, "mplus")
   # Every commercial program latents' rule tables and matrix name as evidence has an

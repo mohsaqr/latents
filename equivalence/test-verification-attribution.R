@@ -81,14 +81,18 @@ test_that("a kit's rows fall into one reference group per CVS axis", {
   sys.source("package-kit-runner.R", envir = environment)
   comparison <- data.frame(
     reference = c("glca", "Masyn (2013)", "Stata 19 [SEM] Example 52g (gsem)",
-                  "Mplus 9 Demo (JStats fixtures)", "Latent GOLD 6.1", "SAS 9.4", "x"),
+                  "Mplus 9 Demo (JStats fixtures)", "Latent GOLD 6.1",
+                  "SAS PROC TRAJ (Andruff et al. 2009)", "SPSS 29", "x"),
     kind = c("R package", "published", "commercial program", "commercial program",
-             "commercial program", "commercial program", "internal"), stringsAsFactors = FALSE)
+             "commercial program", "commercial program", "commercial program", "internal"),
+    stringsAsFactors = FALSE)
+  # A program with no CVS axis (SPSS) and a kind with none (internal) have no group.
   expect_identical(environment$kit_reference_group(comparison),
-                   c("R packages", "published analyses", "Stata", "Mplus", "Latent GOLD", NA, NA))
+                   c("R packages", "published analyses", "Stata", "Mplus", "Latent GOLD", "SAS",
+                     NA, NA))
   # A kit whose rows carry no kind takes the kit's kind.
   expect_identical(environment$kit_reference_group(comparison["reference"], kind = "R package"),
-                   rep("R packages", 7L))
+                   rep("R packages", 8L))
 })
 
 test_that("every kit with a test saves the comparison that test computes", {

@@ -1,0 +1,14 @@
+Data files downloaded 2026-11-14 from https://stats.oarc.ucla.edu/wp-content/uploads/2016/02/
+(the links on the pages below), unchanged; md5 in DATA.md5.
+
+page59_a.dat, page75.dat: https://stats.oarc.ucla.edu/mplus/examples/alca/applied-latent-class-analysis-chapter-2/
+EXAM1.dat: https://stats.oarc.ucla.edu/mplus/examples/alca/applied-latent-class-analysis-chapter-3/
+chap11.dat: https://stats.oarc.ucla.edu/mplus/examples/alca/applied-latent-class-analysis-chapter-11/
+table3_1.dat, table3_4.dat, table6_1_f-1.dat, table6_1_m-1.dat:
+  https://stats.oarc.ucla.edu/mplus/examples/lc-scaling-analysis/latent-class-scaling-analysis-by-c-mitchell-dayton/
+lca1.dat: https://stats.oarc.ucla.edu/mplus/dae/latent-class-analysis/
+
+The printed Mplus values in compare-functions.R are copied from the same pages
+(accessed 2026-11-14). table3_4.dat is poLCA's cheating data (the same 319
+response patterns). EXAM1.dat is Reaven and Miller's diabetes data as mclust
+shipped it before 6.0.

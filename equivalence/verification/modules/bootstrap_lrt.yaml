@@ -5,19 +5,21 @@ family: "cluster"
 label: "bootstrap_lrt() / VLMR"
 slug: "bootstrap-lrt"
 name: "Parametric bootstrap likelihood-ratio test for nested mixture models"
-summary: "Parametric bootstrap likelihood-ratio test for nested mixture models. Verification strength +++ in latents' verification matrix: 3 source(s) (Latent GOLD, Mplus, mclust), 0 published paper(s), 63 dataset(s), 5502 current checks of which 0 failed."
+summary: "Parametric bootstrap likelihood-ratio test for nested mixture models. Verification strength +++ in latents' verification matrix: 3 source(s) (Latent GOLD, Mplus, mclust), 0 published paper(s), 64 dataset(s), 5506 current checks of which 0 failed."
 module_files:
   - "R/enumeration.R"
 public_api:
   - "bootstrap_lrt"
 papers: []
 tolerances:
+  - { function: "bootstrap_lrt() / VLMR: 4 quantities (mplus-published)", reference: "Mplus", tolerance: "0 to 0.0048 (4 of 4 within)", status: "pass" }
   - { function: "bootstrap_lrt() / VLMR: 8 quantities (enumeration-packages)", reference: "mclust", tolerance: "1.2e-06 to 0.033 (8 of 8 within)", status: "pass" }
 cvs_files:
   - "equivalence/argument-sweep/modules/postfit.R"
   - "equivalence/test-enumeration-packages.R"
   - "equivalence/test-features-vlmr.R"
   - "equivalence/test-mplus-lmr.R"
+  - "equivalence/test-mplus-published.R"
   - "equivalence/test-mplus-tech14.R"
   - "equivalence/test-vlmr-runtime.R"
   - "tests/equivalence/test-lmr.R"

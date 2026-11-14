@@ -415,13 +415,46 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
   list(tier = tier, plus = plus, papers = marks, label = label)
 }
 
+# The commercial programs a source can name. Several references run by the
+# same program (Mplus 9 Demo fixtures, Mplus User's Guide output, Mplus pages
+# printed by UCLA) are one source: an independent program counts once. The
+# same names as the CVS reporter's .cvs_axis_map and kit_reference_group().
+.matrix_programs <- c("Latent GOLD", "Mplus", "Stata", "SAS")
+
+#' The independent sources among a function's current external references
+#'
+#' A commercial program's references are grouped under the program they name;
+#' any other reference (an R or Python package) is its own source.
+#' @param references,kinds Current external references and their kinds.
+#' @return A list: `n`, the number of sources, and `label`, the sources joined
+#'   by ", " with a program's several references listed after its name.
+#' @noRd
+.matrix_sources <- function(references, kinds) {
+  stopifnot("`references` and `kinds` have equal length" = length(references) == length(kinds))
+  if (!length(references)) return(list(n = 0L, label = ""))
+  keys <- vapply(seq_along(references), function(i) {
+    named <- .matrix_programs[vapply(.matrix_programs, grepl, logical(1), x = references[[i]],
+                                     fixed = TRUE)]
+    if (identical(kinds[[i]], "commercial program") && length(named) == 1L) named else
+      references[[i]]
+  }, character(1))
+  groups <- unique(keys)
+  labels <- vapply(groups, function(key) {
+    members <- unique(references[keys == key])
+    if (length(members) == 1L) members else sprintf("%s (%s)", key, paste(members, collapse = "; "))
+  }, character(1))
+  list(n = length(groups), label = paste(labels, collapse = ", "))
+}
+
 #' One row per function: its equivalence strength and how to raise it
 #' @noRd
 .matrix_summary <- function(evidence, cells, links = .matrix_dataset_links(evidence)) {
   do.call(rbind, lapply(names(.matrix_functions), function(fn) {
     own <- cells[cells$fn == fn, ]
     rows <- evidence[evidence$fn == fn & !evidence$kind %in% c("provenance", "infrastructure"), ]
-    external <- own$reference[own$kind %in% .matrix_external_kinds & own$status == "current"]
+    is_external <- own$kind %in% .matrix_external_kinds & own$status == "current"
+    external <- own$reference[is_external]
+    sources <- .matrix_sources(external, own$kind[is_external])
     published <- own$reference[own$kind == "published" & own$status == "current"]
     older_only <- own$reference[own$status == "older run" &
                                   own$kind %in% c(.matrix_external_kinds, "published")]
@@ -431,7 +464,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     candidate_sources <- own$reference[own$candidate & own$kind %in% .matrix_external_kinds]
     unrun <- length(unique(rows$location[rows$run == "no saved result"]))
     now <- .matrix_unique_checks(rows[rows$current & rows$kind != "internal", ])
-    strength <- .matrix_strength(length(external), length(published))
+    strength <- .matrix_strength(sources$n, length(published))
     raise <- c(
       if (now[["failed"]] > 0) sprintf("%d failing checks", now[["failed"]]),
       if (now[["incomplete"]] > 0) sprintf("%d incomplete tests", now[["incomplete"]]),
@@ -443,14 +476,14 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
       if (!length(published) && length(candidate_papers))
         sprintf("first paper from: %s", paste(candidate_papers, collapse = ", ")),
       if (!length(published) && !length(candidate_papers)) "no published paper found",
-      if (length(external) < 3L && length(candidate_sources))
+      if (sources$n < 3L && length(candidate_sources))
         sprintf("more sources from: %s", paste(candidate_sources, collapse = ", ")))
     data.frame(
       fn = fn, label = .matrix_functions[[fn]], strength = strength$label,
       tier = strength$tier, strength_plus = strength$plus,
-      strength_papers = strength$papers, n_sources = length(external),
+      strength_papers = strength$papers, n_sources = sources$n,
       n_datasets = length(unique(links$key[links$fn == fn])),
-      sources = paste(external, collapse = ", "), n_papers = length(published),
+      sources = sources$label, n_papers = length(published),
       papers = paste(published, collapse = ", "),
       checks_current = now[["checks"]], values_current = now[["values"]],
       failed_current = now[["failed"]], incomplete_current = now[["incomplete"]],

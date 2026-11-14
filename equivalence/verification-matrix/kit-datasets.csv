@@ -16,6 +16,16 @@ equivalence/lta-packages/comparison.csv,^rlms_.*$,RLMSdat
 equivalence/lta-packages/comparison.csv,^market_.*$,data_market_sim
 equivalence/stata-published/comparison.csv,^reaven_.*$,Reaven-Miller (Stata gsem)
 equivalence/stata-published/comparison.csv,^stouffer_toby_.*$,Stouffer-Toby (Stata gsem)
+equivalence/mplus-published/comparison.csv,^mccutcheon_ego_.*$,Stouffer-Toby (Ego's Dilemma; Mplus)
+equivalence/mplus-published/comparison.csv,^mccutcheon_abortion_.*$,abortion approval (McCutcheon 2002)
+equivalence/mplus-published/comparison.csv,^dayton_pleural_.*$,pleural thickening (Dayton 1998)
+equivalence/mplus-published/comparison.csv,^dayton_cheating_.*$,cheating (Dayton 1998)
+equivalence/mplus-published/comparison.csv,^dayton_(female|male)_.*$,cheating by gender (Dayton 1998)
+equivalence/mplus-published/comparison.csv,^ucla_drinking_.*$,drinking (UCLA lca1.dat)
+equivalence/mplus-published/comparison.csv,^vermunt_diabetes_.*$,diabetes (EXAM1.dat)
+equivalence/mplus-published/comparison.csv,^langeheine_.*$,Langeheine-van de Pol panel (ALCA ch. 11)
+equivalence/proctraj-published/comparison.csv,^proctraj_.*$,disengagement coping (Andruff et al. 2009)
+equivalence/mplus-ug8/comparison.csv,^(ex8[.][0-9]+)_.*$,Mplus User's Guide \1
 equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1
 equivalence/latentgold-categorical-distal/comparison.csv,^(.*)$,Latent GOLD categorical distal kit: \1

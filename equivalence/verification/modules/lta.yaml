@@ -5,7 +5,7 @@ family: "dynamics"
 label: "lta()"
 slug: "lta"
 name: "Fit a latent transition model"
-summary: "Fit a latent transition model. Verification strength +++++ PPP in latents' verification matrix: 5 source(s) (Latent GOLD, Mplus, depmixS4, LMest, seqHMM), 3 published paper(s), 28 dataset(s), 2753 current checks of which 0 failed."
+summary: "Fit a latent transition model. Verification strength +++++ PPP in latents' verification matrix: 5 source(s) (Mplus, Latent GOLD, depmixS4, LMest, seqHMM), 3 published paper(s), 32 dataset(s), 2853 current checks of which 0 failed."
 module_files:
   - "R/transitions.R"
 public_api:
@@ -19,6 +19,8 @@ tolerances:
   - { function: "lta(): 24 quantities (lta-packages)", reference: "LMest", tolerance: "1.2e-06 to 1e-04 (24 of 24 within)", status: "pass" }
   - { function: "lta(): 364 quantities (harness)", reference: "LMest", tolerance: "1e-10 to 0.5 (364 of 364 within)", status: "pass" }
   - { function: "lta(): 75 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (75 of 75 within)", status: "pass" }
+  - { function: "lta(): 6 quantities (mplus-published)", reference: "Mplus", tolerance: "0 to 0.031 (6 of 6 within)", status: "pass" }
+  - { function: "lta(): 94 quantities (mplus-ug8)", reference: "Mplus", tolerance: "0 to 0.04 (94 of 94 within)", status: "pass" }
   - { function: "lta(): 12 quantities (lta-packages)", reference: "Pennoni, Pandolfi and Bartolucci (2024), R Journal RJ-2024-036, section 3.3", tolerance: "0 to 5e-04 (12 of 12 within)", status: "pass" }
   - { function: "lta(): 1867 quantities (harness)", reference: "depmixS4", tolerance: "1e-10 to 0.5 (1867 of 1867 within)", status: "pass" }
   - { function: "lta(): 103 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-08 to 1e-06 (103 of 103 within)", status: "pass" }
@@ -39,6 +41,8 @@ cvs_files:
   - "equivalence/test-latentgold-coverage.R"
   - "equivalence/test-latentgold-wider.R"
   - "equivalence/test-lta-packages.R"
+  - "equivalence/test-mplus-published.R"
+  - "equivalence/test-mplus-ug8.R"
   - "equivalence/test-review-1026-oracles.R"
   - "tests/equivalence/test-lta-acceleration.R"
   - "tests/equivalence/test-lta-general.R"

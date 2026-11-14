@@ -5,7 +5,7 @@ family: "regression"
 label: "mixture_regression(random =)"
 slug: "growth"
 name: "Estimate regression relationships that vary across latent classes"
-summary: "Estimate regression relationships that vary across latent classes. Verification strength ++ P in latents' verification matrix: 2 source(s) (Mplus 9 Demo (JStats fixtures), Latent GOLD), 1 published paper(s), 14 dataset(s), 887 current checks of which 0 failed."
+summary: "Estimate regression relationships that vary across latent classes. Verification strength +++ P in latents' verification matrix: 3 source(s) (Mplus (Mplus 9 Demo (JStats fixtures); Mplus), Latent GOLD, SAS PROC TRAJ (Andruff et al. 2009)), 1 published paper(s), 16 dataset(s), 941 current checks of which 0 failed."
 module_files:
   - "R/mixture-regression.R"
 public_api:
@@ -14,8 +14,10 @@ papers:
   - "proustlima2017"
 tolerances:
   - { function: "mixture_regression(random =): 91 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (91 of 91 within)", status: "pass" }
+  - { function: "mixture_regression(random =): 18 quantities (mplus-ug8)", reference: "Mplus", tolerance: "0 to 0.0031 (18 of 18 within)", status: "pass" }
   - { function: "mixture_regression(random =): 134 quantities (mplus-growth)", reference: "Mplus 9 Demo (JStats fixtures)", tolerance: "0 to 0.0061 (134 of 134 within)", status: "pass" }
   - { function: "mixture_regression(random =): 19 quantities (growth-published)", reference: "Proust-Lima, Philipps and Liquet (2017), JSS 78(2), section 6", tolerance: "0 to 0.05 (19 of 19 within)", status: "pass" }
+  - { function: "mixture_regression(random =): 36 quantities (proctraj-published)", reference: "SAS PROC TRAJ (Andruff et al. 2009)", tolerance: "5e-06 to 0.0053 (36 of 36 within)", status: "pass" }
   - { function: "mixture_regression(random =): 14 quantities (growth-published)", reference: "lcmm", tolerance: "0 to 0.001 (14 of 14 within)", status: "pass" }
   - { function: "mixture_regression(random =): 457 quantities (harness)", reference: "lcmm", tolerance: "1e-11 to 0.5 (457 of 457 within)", status: "pass" }
   - { function: "mixture_regression(random =): 32 quantities (sweep)", reference: "likelihood rebuilt from the result tables", tolerance: "1e-06 (32 of 32 within)", status: "pass" }
@@ -28,6 +30,8 @@ cvs_files:
   - "equivalence/test-growth-published.R"
   - "equivalence/test-latentgold-coverage.R"
   - "equivalence/test-mplus-growth.R"
+  - "equivalence/test-mplus-ug8.R"
+  - "equivalence/test-proctraj-published.R"
   - "equivalence/test-review-1026-oracles.R"
   - "tests/equivalence/test-growth-calendar-reference.R"
   - "tests/equivalence/test-growth-correlated.R"
@@ -44,8 +48,10 @@ cvs_test_filter:
   - { file: "tests/equivalence/test-post-submission-review.R", test_name_includes: "trajectory estimates include offsets and errors are on the response scale" }
   - { file: "tests/equivalence/test-review-1026-codex.R", test_name_includes: "Brownian growth residuals preserve their model when time units change" }
 cross_software_expected:
+  - { software: "Mplus", package: "Mplus" }
   - { software: "Mplus", package: "Mplus 9 Demo (JStats fixtures)" }
   - { software: "independent", package: "likelihood rebuilt from the result tables" }
   - { software: "independent", package: "numDeriv / dense likelihood" }
   - { software: "latentgold", package: "Latent GOLD" }
   - { software: "paper", package: "Proust-Lima, Philipps and Liquet (2017), JSS 78(2), section 6" }
+  - { software: "sas", package: "SAS PROC TRAJ (Andruff et al. 2009)" }

@@ -53,7 +53,7 @@ test_that("every manifest parses and carries what CVS requires", {
     statuses <- vapply(manifest$tolerances, `[[`, character(1), "status")
     expect_true(any(statuses == "pass"), info = path)
     software <- vapply(manifest$cross_software_expected, `[[`, character(1), "software")
-    expect_true(all(software %in% c("latentgold", "Mplus", "stata", "paper", "independent")), info = path)
+    expect_true(all(software %in% c("latentgold", "Mplus", "stata", "sas", "paper", "independent")), info = path)
     filtered <- vapply(manifest$cvs_test_filter, `[[`, character(1), "file")
     expect_true(all(filtered %in% unlist(manifest$cvs_files)), info = path)
     unlist(manifest$cvs_files)

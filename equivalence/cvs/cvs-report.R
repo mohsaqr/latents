@@ -45,21 +45,22 @@ source(file.path(.cvs_matrix_dir(), "attribution.R"), local = TRUE)
 # CVS's reference axes (TARGET-VERIFICATION.md, "Tag every assertion") for
 # each kind of reference in the matrix's rule tables. A commercial program is
 # told apart by the program its reference names ("Mplus 9 Demo (JStats
-# fixtures)", "IMMERSE lca-bookdown (Mplus 8.11)" are Mplus). Provenance and infrastructure
+# fixtures)", "IMMERSE lca-bookdown (Mplus 8.11)" are Mplus; "SAS PROC TRAJ
+# (Andruff et al. 2009)" is SAS). Provenance and infrastructure
 # checks (kit completeness, the reporter's own tests) are latents' internal
 # checks: tagged internal, so CVS shows them and never counts them as a source,
 # rather than left untagged, which CVS would count as R. "Python package" has
 # no CVS axis in latents' configuration and stays untagged.
 .cvs_axis_map <- data.frame(
   kind = c("R package", "commercial program", "commercial program", "commercial program",
-           "published", "independent code", "internal", "component check", "provenance",
-           "infrastructure"),
-  program = c(NA, "Latent GOLD", "Mplus", "Stata", NA, NA, NA, NA, NA, NA),
-  axis = c("r-equivalence", "latentgold", "mplus", "stata", "paper", "independent",
+           "commercial program", "published", "independent code", "internal", "component check",
+           "provenance", "infrastructure"),
+  program = c(NA, "Latent GOLD", "Mplus", "Stata", "SAS", NA, NA, NA, NA, NA, NA),
+  axis = c("r-equivalence", "latentgold", "mplus", "stata", "sas", "paper", "independent",
            "internal", "internal", "internal", "internal"),
-  authority = c("r", "latentgold-only", "mplus-only", "stata-only", "paper", "independent",
-                "internal", "internal", "internal", "internal"),
-  software = c(NA, "latentgold", "Mplus", "stata", "paper", "independent", NA, NA, NA, NA),
+  authority = c("r", "latentgold-only", "mplus-only", "stata-only", "sas-only", "paper",
+                "independent", "internal", "internal", "internal", "internal"),
+  software = c(NA, "latentgold", "Mplus", "stata", "sas", "paper", "independent", NA, NA, NA, NA),
   stringsAsFactors = FALSE)
 
 #' The CVS axis of each reference
@@ -71,7 +72,7 @@ source(file.path(.cvs_matrix_dir(), "attribution.R"), local = TRUE)
 #'   for R and internal). `axis` and `authority` are NA for a kind CVS has no
 #'   axis for.
 #' @section Errors: a commercial program whose reference names none, or more
-#'   than one, of Latent GOLD, Mplus and Stata raises `latents_cvs_unknown_program`.
+#'   than one, of Latent GOLD, Mplus, Stata and SAS raises `latents_cvs_unknown_program`.
 #'   It is not left untagged: the rule tables are fixed files, and the
 #'   reporter's tests check that every commercial program in them maps, so a
 #'   new program fails those tests (seconds) rather than a run; untagged, its
