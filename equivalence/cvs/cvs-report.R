@@ -47,20 +47,22 @@ source(file.path(.cvs_matrix_dir(), "attribution.R"), local = TRUE)
 # told apart by the program its reference names ("Mplus 9 Demo (JStats
 # fixtures)", "IMMERSE lca-bookdown (Mplus 8.11)" are Mplus; "SAS PROC TRAJ
 # (Andruff et al. 2009)" is SAS). Provenance and infrastructure
-# checks (kit completeness, the reporter's own tests) are latents' internal
-# checks: tagged internal, so CVS shows them and never counts them as a source,
+# checks (kit completeness, the reporter's own tests) and simulation recovery
+# (estimates against the parameters that generated the data) are latents'
+# internal checks: tagged internal, so CVS shows them and never counts them as a source,
 # rather than left untagged, which CVS would count as R. "Python package" has
 # no CVS axis in latents' configuration and stays untagged.
 .cvs_axis_map <- data.frame(
   kind = c("R package", "commercial program", "commercial program", "commercial program",
            "commercial program", "published", "independent code", "internal", "component check",
-           "provenance", "infrastructure"),
-  program = c(NA, "Latent GOLD", "Mplus", "Stata", "SAS", NA, NA, NA, NA, NA, NA),
+           "provenance", "infrastructure", "simulation recovery"),
+  program = c(NA, "Latent GOLD", "Mplus", "Stata", "SAS", NA, NA, NA, NA, NA, NA, NA),
   axis = c("r-equivalence", "latentgold", "mplus", "stata", "sas", "paper", "independent",
-           "internal", "internal", "internal", "internal"),
+           "internal", "internal", "internal", "internal", "internal"),
   authority = c("r", "latentgold-only", "mplus-only", "stata-only", "sas-only", "paper",
-                "independent", "internal", "internal", "internal", "internal"),
-  software = c(NA, "latentgold", "Mplus", "stata", "sas", "paper", "independent", NA, NA, NA, NA),
+                "independent", "internal", "internal", "internal", "internal", "internal"),
+  software = c(NA, "latentgold", "Mplus", "stata", "sas", "paper", "independent", NA, NA, NA, NA,
+               NA),
   stringsAsFactors = FALSE)
 
 #' The CVS axis of each reference

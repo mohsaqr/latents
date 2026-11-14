@@ -23,6 +23,7 @@ cvs_files:
   - "equivalence/argument-sweep/modules/pooling.R"
   - "equivalence/harness/suites/pool-imputations.R"
   - "equivalence/test-pool-packages.R"
+  - "equivalence/test-simulab-recovery.R"
   - "tests/equivalence/test-audit-services-fixes.R"
   - "tests/equivalence/test-pool-imputations.R"
   - "tests/equivalence/test-review-1026-inference.R"

@@ -129,6 +129,92 @@ test_that("internal checks are retained but excluded from external check totals"
   expect_match(report[[3L]], "1 current checks.*3 values")
 })
 
+test_that("each function reports the four required references with their datasets", {
+  evidence <- data.frame(
+    evidence_id = paste0("e", 1:6), origin = "kit", location = "synthetic",
+    item = "two classes", fn = "lca",
+    reference = c("poLCA", "Mplus", "SAS PROC LCA (x)", "simulab (known parameters)",
+                  "simulab (known parameters)", "self"),
+    kind = c("R package", "commercial program", "commercial program", "simulation recovery",
+             "simulation recovery", "internal"),
+    checks = c(2L, 3L, 1L, 4L, 5L, 9L), values = 1, failed = 0L, incomplete = 0L,
+    run = "2026-11-14", code = "1.3.3", current = TRUE,
+    dataset = c("a", "a", "b", "design 1", "design 2", NA), shared = FALSE, known = FALSE,
+    one_class = FALSE)
+  candidates <- data.frame(fn = character(), reference = character(), kind = character())
+  cells <- .matrix_cells(evidence, candidates)
+  summary <- .matrix_summary(evidence, cells)
+  lca <- summary[summary$fn == "lca", ]
+  expect_identical(c(lca$has_r, lca$has_mplus, lca$has_latentgold, lca$has_recovery),
+                   c(TRUE, TRUE, FALSE, TRUE))
+  expect_identical(c(lca$r_datasets, lca$mplus_datasets, lca$latentgold_datasets,
+                     lca$recovery_datasets), c(1L, 1L, 0L, 2L))
+  # Recovery is reported beside the sources: never a source, never an external check,
+  # and its designs are not datasets compared with another program.
+  expect_identical(lca$n_sources, 3L)
+  expect_equal(lca$checks_current, 6L)
+  expect_equal(lca$recovery_checks, 9L)
+  expect_identical(lca$n_datasets, 2L)
+  expect_match(lca$to_strengthen, "needs Latent GOLD")
+  expect_no_match(lca$to_strengthen, "paper")
+  expect_identical(.matrix_requirement_cells(summary[summary$fn == "lca", ], "latentgold"), "no")
+  expect_identical(.matrix_requirement_cells(summary[summary$fn == "lca", ], "recovery"), "yes (2)")
+})
+
+test_that("a composite meets R, Mplus and Latent GOLD through its core fits only with a current identity check", {
+  evidence <- function(with_identity) data.frame(
+    evidence_id = paste0("e", seq_len(if (with_identity) 4L else 3L)), origin = "kit",
+    location = "synthetic", item = "two classes",
+    fn = c("multilpa", "multilpa", "pool_imputations", if (with_identity) "pool_imputations"),
+    reference = c("Mplus", "Latent GOLD", "mice", if (with_identity) "direct multilpa() call"),
+    kind = c("commercial program", "commercial program", "R package",
+             if (with_identity) "internal"),
+    checks = 2L, values = 1, failed = 0L, incomplete = 0L, run = "2026-11-14", code = "1.3.3",
+    current = TRUE, dataset = c("a", "b", "c", if (with_identity) NA), shared = FALSE,
+    known = FALSE, one_class = FALSE)
+  candidates <- data.frame(fn = character(), reference = character(), kind = character())
+  summarise <- function(rows) {
+    summary <- .matrix_summary(rows, .matrix_cells(rows, candidates))
+    summary[summary$fn == "pool_imputations", ]
+  }
+  with <- summarise(evidence(TRUE))
+  expect_identical(c(with$has_r, with$has_mplus, with$has_latentgold), c(TRUE, TRUE, TRUE))
+  expect_identical(c(with$r_via_core, with$mplus_via_core, with$latentgold_via_core),
+                   c(FALSE, TRUE, TRUE))
+  expect_identical(c(with$mplus_datasets, with$latentgold_datasets), c(1L, 1L))
+  expect_identical(.matrix_requirement_cells(with, "mplus"), "via core fits (1)")
+  expect_identical(.matrix_requirement_cells(with, "r"), "yes (1)")
+  # Recovery is never inherited, and the composite's own sources stay its own.
+  expect_false(with$has_recovery)
+  expect_identical(with$n_sources, 1L)
+  without <- summarise(evidence(FALSE))
+  expect_identical(c(without$has_mplus, without$has_latentgold), c(FALSE, FALSE))
+})
+
+test_that("totals count each dataset and each program once across functions", {
+  evidence <- data.frame(
+    evidence_id = paste0("e", 1:5), origin = "kit", location = "synthetic", item = "two classes",
+    fn = c("lca", "lpa", "lca", "lca", "lpa"),
+    reference = c("Mplus", "Mplus 9 Demo (JStats fixtures)", "poLCA", "simulab (known parameters)",
+                  "simulab (known parameters)"),
+    kind = c("commercial program", "commercial program", "R package", "simulation recovery",
+             "simulation recovery"),
+    checks = 1L, values = c(1, 1, 1, 100, 40), failed = 0L, incomplete = 0L,
+    run = "2026-11-14", code = "1.3.3", current = TRUE,
+    dataset = c("a", "a", "b", "design 1", "design 2"), shared = FALSE, known = FALSE,
+    one_class = FALSE)
+  candidates <- data.frame(fn = character(), reference = character(), kind = character())
+  cells <- .matrix_cells(evidence, candidates)
+  totals <- .matrix_totals(evidence, cells, .matrix_summary(evidence, cells))
+  value <- function(measure) totals$value[totals$measure == measure]
+  expect_equal(value("datasets"), 2)
+  expect_equal(value("programs"), 1)
+  expect_equal(value("r_packages"), 1)
+  expect_equal(value("recovery_datasets"), 140)
+  expect_equal(value("recovery_designs"), 2)
+  expect_equal(value("checks"), 3)
+})
+
 test_that("CI rejects empty, errored, skipped and partial outcome tables", {
   complete <- data.frame(passed = 3L, failed = 0L, error = FALSE, skipped = FALSE)
   expect_true(require_completed_kit_tests(complete))

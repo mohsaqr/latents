@@ -27,13 +27,16 @@ env OPENBLAS_NUM_THREADS=1
 env VECLIB_MAXIMUM_THREADS=1
 job deps         Rscript equivalence/install-reference-packages.R
 job equivalence  R CMD INSTALL . && Rscript equivalence/run.R
-# The same suite in four shards by file name, for workspaces side by side. The
+# The same suite in four shards by file name (plus the recovery job), for workspaces side by side. The
 # verification files (equivalence-v) check the matrix and the CVS manifests that
 # are rebuilt from the other shards' results, so they run after those.
 job equivalence-a  R CMD INSTALL . && Rscript equivalence/run.R '^[a-f]'
 job equivalence-b  R CMD INSTALL . && Rscript equivalence/run.R '^[g-l]'
-job equivalence-c  R CMD INSTALL . && Rscript equivalence/run.R '^([m-u]|v[^e]|[w-z])'
+job equivalence-c  R CMD INSTALL . && Rscript equivalence/run.R '^([m-r]|s[^i]|[tu]|v[^e]|[w-z])'
 job equivalence-v  R CMD INSTALL . && Rscript equivalence/run.R '^verification-'
+# Recovery of known parameters from simulab data (simulab-recovery/): about an
+# hour of Monte Carlo, so it runs on its own rather than in shard C.
+job equivalence-r  R CMD INSTALL . && Rscript equivalence/run.R '^simulab-recovery$'
 # The numerical references of the package's own models (tests/equivalence/).
 job equivalence-t  R CMD INSTALL . && Rscript equivalence/run.R --dir=tests/equivalence
 job harness      R CMD INSTALL . && Rscript equivalence/harness/test-harness.R && LATENTS_EQUIVALENCE_REQUIRE_ALL=true LATENTS_EQUIVALENCE_OUTPUT=tmp/equivalence Rscript equivalence/harness/run.R

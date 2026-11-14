@@ -145,9 +145,9 @@ reapply_package_register <- function(directory) {
 
 #' The reference group of each comparison row
 #'
-#' "R packages", "published analyses", or the commercial program a row's
-#' reference names ("Mplus", "Latent GOLD", "Stata", "SAS"); NA for a row of another
-#' kind. One group is one reference axis of CVS and the verification matrix.
+#' "R packages", "published analyses", "simulation recovery", or the commercial
+#' program a row's reference names ("Mplus", "Latent GOLD", "Stata", "SAS"); NA
+#' for a row of another kind. One group is one reference axis of CVS and the verification matrix.
 #' @param comparison Comparison rows; their `kind` column, or `kind` for all.
 #' @param kind Kind of every row when the comparison has no `kind` column.
 #' @return Character vector, one group per row.
@@ -158,6 +158,7 @@ kit_reference_group <- function(comparison, kind = NULL) {
     switch(kinds[[i]],
       `R package` = "R packages",
       published = "published analyses",
+      `simulation recovery` = "simulation recovery",
       `commercial program` = {
         named <- programs[vapply(programs, grepl, logical(1), x = comparison$reference[[i]],
                                  fixed = TRUE)]
@@ -231,8 +232,13 @@ kit_reference_tests <- function(kit, compute, n_rows, groups, kind = NULL, cover
     kit_expect_complete(registered(), n_rows, groups, coverage)
   })
   invisible(lapply(groups, function(group) {
-    label <- if (group %in% c("R packages", "published analyses")) paste("the", group) else group
-    testthat::test_that(sprintf("%s agrees with %s", kit, label), {
+    title <- if (identical(group, "simulation recovery")) {
+      sprintf("%s recovers simulab's generating parameters", kit)
+    } else {
+      sprintf("%s agrees with %s", kit,
+              if (group %in% c("R packages", "published analyses")) paste("the", group) else group)
+    }
+    testthat::test_that(title, {
       kit_expect_group(registered(), group)
     })
   }))

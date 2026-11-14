@@ -37,3 +37,15 @@ equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1
 equivalence/latentgold-categorical-distal/comparison.csv,^(.*)$,Latent GOLD categorical distal kit: \1
 equivalence/latentgold-step-one/comparison.csv,^(.*)$,Latent GOLD step-one correction kit: \1
+equivalence/simulab-recovery/comparison.csv,^lca_enumeration$,simulab LCA design (3 classes; 6 binary items; n = 1000); enumeration seeds
+equivalence/simulab-recovery/comparison.csv,^lca_.*$,simulab LCA design (3 classes; 6 binary items; n = 1000)
+equivalence/simulab-recovery/comparison.csv,^lpa_enumeration$,simulab LPA design (3 profiles; 4 indicators; n = 800); enumeration seeds
+equivalence/simulab-recovery/comparison.csv,^lpa_.*$,simulab LPA design (3 profiles; 4 indicators; n = 800)
+equivalence/simulab-recovery/comparison.csv,^lta_.*$,simulab hidden Markov design (2 states; 5 occasions; n = 1000)
+equivalence/simulab-recovery/comparison.csv,^mixture_regression_.*$,simulab regression mixture design (2 classes; n = 600)
+equivalence/simulab-recovery/comparison.csv,^growth_.*$,simulab growth mixture design (2 classes; 5 occasions; n = 500)
+equivalence/simulab-recovery/comparison.csv,^multilpa_.*$,simulab two-level LPA design (3 profiles; 2 cluster classes; 60 clusters)
+equivalence/simulab-recovery/comparison.csv,^multilca_.*$,simulab two-level LCA design (3 classes; 2 cluster classes; 60 clusters)
+equivalence/simulab-recovery/comparison.csv,^bootstrap_lrt_size$,simulab LCA design (2 classes; 6 binary items; n = 500)
+equivalence/simulab-recovery/comparison.csv,^bootstrap_lrt_power$,simulab LCA design (3 classes; 6 binary items; n = 500)
+equivalence/simulab-recovery/comparison.csv,^pool_imputations_.*$,simulab LPA design with 15% MCAR (2 profiles; n = 500)

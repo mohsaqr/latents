@@ -492,3 +492,5 @@
 "equivalence/test-missing-patterns.R","lpa","missing-patterns kit: m3"
 "equivalence/test-missing-patterns.R","lpa","missing-patterns kit: m4"
 "equivalence/test-missing-patterns.R","multilpa","missing-patterns kit: m5"
+"equivalence/test-enumeration-latentgold.R","enumeration","Latent GOLD coverage kit: e1"
+"equivalence/test-enumeration-latentgold.R","enumeration","Latent GOLD coverage kit: e2"

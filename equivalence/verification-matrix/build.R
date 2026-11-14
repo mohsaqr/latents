@@ -32,7 +32,41 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 # group-level classification, a genuine mixture.
 .matrix_one_class_pattern <- "(?i)(^|[^a-z])(one[- ]class(?! per)|1 class|one profile)([^a-z]|$)"
 .matrix_kind_order <- c("commercial program", "R package", "Python package", "published",
-                        "component check", "independent code", "internal")
+                        "simulation recovery", "component check", "independent code", "internal")
+
+# What every function needs: an R package, Mplus and Latent GOLD that fit the
+# same model to the same data, and recovery of known parameters from data
+# simulated with simulab. Published papers, Stata and SAS add sources but are
+# not required. Recovery compares with the truth, not with another program:
+# it is reported beside the sources and never counted as one.
+.matrix_requirements <- c(r = "R", mplus = "Mplus", latentgold = "Latent GOLD",
+                          recovery = "simulab recovery")
+
+# Composite functions estimate nothing of their own: they run core functions
+# (each verified on its own against all four requirements) and add a layer
+# (criteria and selection; Rubin's rules). A composite meets the R, Mplus and
+# Latent GOLD requirements through its core functions when its identity
+# check is current (every fit inside it is the direct fit of a core
+# function), and its layer is checked against independent references in its
+# own right.
+.matrix_composites <- data.frame(
+  fn = c("enumeration", "pool_imputations"),
+  core = c("lca;lpa;multilpa", "multilpa"),
+  identity = c("direct core-function fit", "direct multilpa() call"),
+  stringsAsFactors = FALSE)
+
+#' Which requirement a reference meets, if any
+#' @param reference,kind References and their kinds, of equal length.
+#' @return The requirement key (`names(.matrix_requirements)`) per reference,
+#'   NA for a reference that meets none.
+#' @noRd
+.matrix_requirement_of <- function(reference, kind) {
+  program <- function(name) kind == "commercial program" & grepl(name, reference, fixed = TRUE)
+  ifelse(kind == "R package", "r",
+    ifelse(program("Mplus"), "mplus",
+      ifelse(program("Latent GOLD"), "latentgold",
+        ifelse(kind == "simulation recovery", "recovery", NA_character_))))
+}
 
 #' Saved evidence the matrix reads, with the run it records
 #' @return A data.frame: one row per input file.
@@ -44,7 +78,10 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
   # provenance sidecar. Older results stay listed: a file's newest current
   # result is preferred.
   refresh <- "matrix-refresh-2026-11-14"
-  shards <- c("a-f", "g-l", "m-u-v-e-w-z", "verification", "latentgold-ordinal", "sas-published")
+  # Shard C was "m-u-v-e-w-z" until simulab-recovery left it ("m-r-s-i-tu-v-e-w-z").
+  shards <- c("a-f", "g-l", "m-u-v-e-w-z", "m-r-s-i-tu-v-e-w-z", "verification",
+              "latentgold-ordinal", "sas-published", "simulab-recovery",
+              "enumeration-identity-latentgold")
   files <- data.frame(
     role = c("harness", "sweep", "tests", "tests", "tests", "tests", "tests",
              rep("tests", length(shards)), "tests"),
@@ -300,11 +337,11 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
   }, character(1))
 }
 
-#' Every dataset compared with another program, package or paper, one row
-#' per dataset, function and reference
+#' Every dataset compared with another program, package or paper, or used to
+#' recover known parameters, one row per dataset, function and reference
 #'
 #' Current checks on mixtures (not one-class reductions) against external or
-#' published references only. Harness and kit rows name their dataset; a
+#' published references, and simulation recovery. Harness and kit rows name their dataset; a
 #' testthat file's datasets come from test-datasets.csv (its simulation kit),
 #' linked to every reference the file's current mixture checks compare with.
 #' Names are matched case-insensitively and without a trailing description
@@ -314,9 +351,13 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 .matrix_dataset_links <- function(evidence) {
   counted <- evidence[evidence$current & !evidence$one_class & evidence$checks > 0 &
                         evidence$failed == 0L & evidence$incomplete == 0L &
-                        evidence$kind %in% c(.matrix_external_kinds, "published"), ]
+                        evidence$kind %in% c(.matrix_external_kinds, "published",
+                                             "simulation recovery"), ]
   named <- counted[!is.na(counted$dataset), c("fn", "reference", "kind", "dataset")]
-  tests <- unique(counted[counted$origin == "testthat", c("location", "fn", "reference", "kind")])
+  # A test file's dataset list is linked to the programs and packages it
+  # compares with; simulation recovery counts only the designs a kit names.
+  tests <- unique(counted[counted$origin == "testthat" & counted$kind != "simulation recovery",
+                          c("location", "fn", "reference", "kind")])
   listed <- .matrix_rules("test-datasets.csv")
   linked <- merge(tests, listed, by = c("location", "fn"))
   out <- unique(rbind(named, linked[c("fn", "reference", "kind", "dataset")]))
@@ -464,9 +505,48 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     candidate_papers <- own$reference[own$candidate & own$kind == "published"]
     candidate_sources <- own$reference[own$candidate & own$kind %in% .matrix_external_kinds]
     unrun <- length(unique(rows$location[rows$run == "no saved result"]))
-    now <- .matrix_unique_checks(rows[rows$current & rows$kind != "internal", ])
+    now <- .matrix_unique_checks(rows[rows$current & !rows$kind %in% c("internal",
+                                                                        "simulation recovery"), ])
     strength <- .matrix_strength(sources$n, length(published))
+    # The four requirements: met when a current reference of that kind agrees
+    # on a mixture; datasets as for n_datasets, per requirement.
+    met <- .matrix_requirement_of(own$reference, own$kind)
+    own_links <- links[links$fn == fn, ]
+    link_met <- .matrix_requirement_of(own_links$reference, own_links$kind)
+    has <- vapply(names(.matrix_requirements), function(key)
+      any(met == key & own$status == "current", na.rm = TRUE), logical(1))
+    datasets <- vapply(names(.matrix_requirements), function(key)
+      length(unique(own_links$key[link_met %in% key])), integer(1))
+    # Recovery counts simulated datasets: each design's replicates (the
+    # largest n_values of its rows), summed over the designs.
+    recovered <- rows[rows$current & rows$kind == "simulation recovery" & !is.na(rows$dataset) &
+                        rows$checks > 0, ]
+    designs <- length(unique(recovered$dataset))
+    if (designs) datasets[["recovery"]] <- as.integer(sum(tapply(recovered$values,
+                                                                 recovered$dataset, max)))
+    # A composite inherits R, Mplus and Latent GOLD from its core functions
+    # when its identity check is current; recovery is never inherited.
+    composite <- .matrix_composites[.matrix_composites$fn == fn, ]
+    via <- stats::setNames(rep(FALSE, length(.matrix_requirements)), names(.matrix_requirements))
+    if (nrow(composite)) {
+      core <- strsplit(composite$core, ";", fixed = TRUE)[[1L]]
+      identity <- cells[cells$fn == fn & cells$reference == composite$identity, ]
+      if (any(identity$status == "current")) {
+        core_cells <- cells[cells$fn %in% core, ]
+        core_met <- .matrix_requirement_of(core_cells$reference, core_cells$kind)
+        core_links <- links[links$fn %in% core, ]
+        core_link_met <- .matrix_requirement_of(core_links$reference, core_links$kind)
+        inherited <- setdiff(c("r", "mplus", "latentgold"), names(has)[has])
+        inherited <- inherited[vapply(inherited, function(key)
+          any(core_met == key & core_cells$status == "current", na.rm = TRUE), logical(1))]
+        has[inherited] <- TRUE
+        via[inherited] <- TRUE
+        datasets[inherited] <- vapply(inherited, function(key)
+          length(unique(core_links$key[core_link_met %in% key])), integer(1))
+      }
+    }
     raise <- c(
+      if (!all(has)) sprintf("needs %s", paste(.matrix_requirements[!has], collapse = ", ")),
       if (now[["failed"]] > 0) sprintf("%d failing checks", now[["failed"]]),
       if (now[["incomplete"]] > 0) sprintf("%d incomplete tests", now[["incomplete"]]),
       if (length(one_class_only)) sprintf("one-class checks only, not counted: %s",
@@ -474,25 +554,43 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
       if (length(older_only)) sprintf("rerun stale evidence: adds %s",
                                       paste(older_only, collapse = ", ")),
       if (unrun) sprintf("%d test file(s) never saved a result", unrun),
-      if (!length(published) && length(candidate_papers))
-        sprintf("first paper from: %s", paste(candidate_papers, collapse = ", ")),
-      if (!length(published) && !length(candidate_papers)) "no published paper found",
       if (sources$n < 3L && length(candidate_sources))
         sprintf("more sources from: %s", paste(candidate_sources, collapse = ", ")))
     data.frame(
       fn = fn, label = .matrix_functions[[fn]], strength = strength$label,
       tier = strength$tier, strength_plus = strength$plus,
       strength_papers = strength$papers, n_sources = sources$n,
-      n_datasets = length(unique(links$key[links$fn == fn])),
+      n_datasets = length(unique(own_links$key[own_links$kind != "simulation recovery"])),
+      has_r = has[["r"]], has_mplus = has[["mplus"]], has_latentgold = has[["latentgold"]],
+      has_recovery = has[["recovery"]], r_via_core = via[["r"]],
+      mplus_via_core = via[["mplus"]], latentgold_via_core = via[["latentgold"]],
+      r_datasets = datasets[["r"]],
+      mplus_datasets = datasets[["mplus"]], latentgold_datasets = datasets[["latentgold"]],
+      recovery_datasets = datasets[["recovery"]], recovery_designs = designs,
       sources = sources$label, n_papers = length(published),
       papers = paste(published, collapse = ", "),
       checks_current = now[["checks"]], values_current = now[["values"]],
       failed_current = now[["failed"]], incomplete_current = now[["incomplete"]],
       internal_checks = .matrix_unique_checks(rows[rows$current & rows$kind == "internal", ])[["checks"]],
+      recovery_checks = .matrix_unique_checks(rows[rows$current &
+                                                     rows$kind == "simulation recovery", ])[["checks"]],
       candidates = sum(own$candidate),
       to_strengthen = if (length(raise)) paste(raise, collapse = "; ") else "",
       stringsAsFactors = FALSE)
   }))
+}
+
+#' One requirement cell per function: "yes (n datasets)", "yes" when its
+#' checks name no dataset, "via core fits (n)" for a composite that meets it
+#' through its core functions, or "no"
+#' @param summary The summary rows; @param key A requirement key.
+#' @noRd
+.matrix_requirement_cells <- function(summary, key) {
+  datasets <- summary[[paste0(key, "_datasets")]]
+  via <- summary[[paste0(key, "_via_core")]] %||% rep(FALSE, nrow(summary))
+  yes <- ifelse(via, "via core fits", "yes")
+  ifelse(!summary[[paste0("has_", key)]], "no",
+         ifelse(datasets > 0L, sprintf("%s (%s)", yes, prettyNum(datasets, big.mark = ",")), yes))
 }
 
 #' A strength badge
@@ -559,7 +657,8 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 #' The reference by function grid: one row per reference, grouped by kind
 #' @noRd
 .matrix_grid <- function(cells, summary) {
-  shown <- cells[cells$kind %in% c(.matrix_external_kinds, "published", "component check", "independent code"), ]
+  shown <- cells[cells$kind %in% c(.matrix_external_kinds, "published", "simulation recovery",
+                                    "component check", "independent code"), ]
   weight <- tapply(shown$current_checks + shown$older_checks, shown$reference, sum)
   references <- unique(shown[c("reference", "kind")])
   references <- references[order(match(references$kind, .matrix_kind_order),
@@ -608,6 +707,10 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
                                              !evidence$kind %in% c("provenance", "infrastructure", "internal"), ])
   overview <- data.frame(
     `function` = summary$label,
+    R = .matrix_requirement_cells(summary, "r"),
+    Mplus = .matrix_requirement_cells(summary, "mplus"),
+    `Latent GOLD` = .matrix_requirement_cells(summary, "latentgold"),
+    `simulab recovery` = .matrix_requirement_cells(summary, "recovery"),
     strength = .matrix_badge(summary$tier, summary$strength),
     sources = summary$n_sources,
     papers = summary$n_papers,
@@ -684,6 +787,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     "<b>Current</b> requires matching runtime-source and result-file hashes in an evidence sidecar. Historical 1.0.0 evidence carries an explicit retrospective source-equivalence attestation, not a claimed rerun. Missing or mismatched provenance is stale and does not count toward strength. ",
     "</p>",
     "<div class=\"legend\"><h3>Legend</h3><dl>",
+    "<dt>Required references</dt><dd>Every function needs an R package, Mplus and Latent GOLD that agree with it on the same models and data, and recovery of known parameters from data simulated with simulab. Each cell is <i>yes</i> with the number of datasets (none shown when the checks use inline data), or <i>no</i>; recovery counts the simulated datasets (the replicates of every simulab design). Published papers, Stata and SAS add sources but are not required. <i>Via core fits</i>: a composite function (the enumeration functions; pool_imputations()) runs core functions and adds a layer; with a current check that every fit inside it is the direct core fit, it meets the R, Mplus and Latent GOLD requirements through the core functions, and its layer is checked against independent references of its own.</dd>",
     "<dt>Strength</dt><dd>One <b>+</b> per <i>source</i>: an independent program or package (another R package, Mplus, Latent GOLD, Stata, Python) whose results agree on the current code for a model with two or more classes. ",
     "One <b>P</b> per published paper whose printed numbers are reproduced. <span class=\"badge very_strong\">++++ PP</span> is four sources and two papers. ",
     "Colour: <span class=\"badge none\">0</span> no source, <span class=\"badge single\">+</span> one, <span class=\"badge strong\">++</span> two, <span class=\"badge very_strong\">+++</span> three or more.</dd>",
@@ -694,7 +798,7 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
     "<dt>Failed</dt><dd>Current disagreements without a registered explanation, plus test errors. Skipped or incomplete tests provide no source credit.</dd>",
     "<dt>Grid cells</dt><dd><span class=\"cur\">bold</span>: current checks on mixtures; <span class=\"one\">(1 class)</span>: one-class reductions only; <span class=\"old\">grey italic</span>: stale provenance or no saved result; <span class=\"cand\">candidate</span>: found, not yet wired in; *: a test that checks several functions or references at once (counted once in each function's total).</dd>",
     "</dl></div>",
-    "<h2>Strength by function</h2>", .matrix_html_table(overview, "overview", raw = "strength"),
+    "<h2>Verification by function</h2>", .matrix_html_table(overview, "overview", raw = "strength"),
     "<div class=\"pagebreak\"></div><h2>Reference by function</h2>",
     "<p>Each cell: the current checks of a function against a reference (styles in the legend). Internal checks (invariance, seed stability, refusal parity, identities) are in the evidence pages, not in this grid.</p>",
     .matrix_grid(cells, summary),
@@ -727,6 +831,10 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
                                              !evidence$kind %in% c("provenance", "infrastructure", "internal"), ])
   overview <- data.frame(
     `function` = paste0("`", summary$label, "`"),
+    R = .matrix_requirement_cells(summary, "r"),
+    Mplus = .matrix_requirement_cells(summary, "mplus"),
+    `Latent GOLD` = .matrix_requirement_cells(summary, "latentgold"),
+    `simulab recovery` = .matrix_requirement_cells(summary, "recovery"),
     strength = paste0("`", summary$strength, "`"),
     sources = summary$n_sources, papers = summary$n_papers,
     datasets = trimws(format(summary$n_datasets, big.mark = ",")),
@@ -756,8 +864,18 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
                   "[.pdf](VERIFICATION-MATRIX.pdf)."),
             version, format(Sys.Date()), format(totals[["checks"]], big.mark = ","),
             format(totals[["values"]], big.mark = ",")), "",
-    "## Strength by function", "", .matrix_md_table(overview), "",
+    "## Verification by function", "", .matrix_md_table(overview), "",
     "## Legend", "",
+    paste("- **Required references**: every function needs an R package, Mplus and Latent GOLD",
+          "that agree with it on the same models and data, and recovery of known parameters from",
+          "data simulated with simulab. Each cell is *yes* with the number of datasets (none shown",
+          "when the checks use inline data), or *no*;",
+          "recovery counts the simulated datasets (the replicates of every simulab design). Published papers, Stata and SAS add sources",
+          "but are not required. *Via core fits*: a composite function (the enumeration",
+          "functions; pool_imputations()) runs core functions and adds a layer; with a current",
+          "check that every fit inside it is the direct core fit, it meets the R, Mplus and",
+          "Latent GOLD requirements through the core functions, and its layer is checked against",
+          "independent references of its own."),
     paste("- **Strength**: one `+` per *source*, an independent program or package (another R",
           "package, Mplus, Latent GOLD, Stata, Python) whose results agree on the current code",
           "for a model with two or more classes; one `P` per published paper whose printed",
@@ -796,6 +914,59 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 
 #' Build every output
 #' @noRd
+#' Totals across functions: one row per measure, for documents that report
+#' the matrix (the verification article)
+#'
+#' Datasets are counted once however many functions or references use them,
+#' with the keys of .matrix_dataset_links(); a program counts once however
+#' many of its outputs are used, as in .matrix_sources().
+#' @return A data.frame: `measure`, `value`, `description`.
+#' @noRd
+.matrix_totals <- function(evidence, cells, summary, links = .matrix_dataset_links(evidence)) {
+  current <- cells[cells$status == "current", ]
+  external <- current[current$kind %in% .matrix_external_kinds, ]
+  sources <- .matrix_sources(external$reference, external$kind)
+  programs <- unique(.matrix_programs[vapply(.matrix_programs, function(program)
+    any(external$kind == "commercial program" & grepl(program, external$reference, fixed = TRUE)),
+    logical(1))])
+  checks <- .matrix_unique_checks(evidence[evidence$current & !evidence$kind %in%
+                                             c("provenance", "infrastructure", "internal",
+                                               "simulation recovery"), ])
+  recovered <- evidence[evidence$current & evidence$kind == "simulation recovery" &
+                          !is.na(evidence$dataset) & evidence$checks > 0, ]
+  replicates <- if (nrow(recovered)) tapply(recovered$values, recovered$dataset, max) else 0
+  internal <- evidence[evidence$current & evidence$kind %in%
+                         c("internal", "independent code", "component check"), ]
+  data.frame(
+    measure = c("functions", "checks", "values", "failed", "datasets", "programs",
+                "r_packages", "papers", "recovery_datasets", "recovery_designs",
+                "recovery_checks", "internal_checks", "functions_meeting_all"),
+    value = c(nrow(summary), checks[["checks"]], checks[["values"]], checks[["failed"]],
+              length(unique(links$key[links$kind != "simulation recovery"])), length(programs),
+              length(unique(external$reference[external$kind == "R package"])),
+              length(unique(current$reference[current$kind == "published"])),
+              sum(replicates), length(unique(recovered$dataset)),
+              .matrix_unique_checks(recovered)[["checks"]],
+              .matrix_unique_checks(internal)[["checks"]],
+              sum(summary$has_r & summary$has_mplus & summary$has_latentgold &
+                    summary$has_recovery)),
+    description = c(
+      "public functions or function families in the matrix",
+      "current checks against programs, packages and papers",
+      "numbers inside those checks",
+      "current checks that disagree without a registered explanation",
+      "distinct datasets compared with a program, package or paper",
+      "commercial programs (Mplus, Latent GOLD, Stata, SAS) with current agreement",
+      "R packages with current agreement on a mixture",
+      "published analyses reproduced",
+      "simulated datasets from which known parameters were recovered",
+      "simulab designs and seed sets behind them",
+      "current recovery checks",
+      "internal checks, independent code and component checks (not counted as sources)",
+      "functions meeting all four required references"),
+    stringsAsFactors = FALSE)
+}
+
 build_verification_matrix <- function() {
   evidence <- .matrix_evidence()
   candidates <- .matrix_rules("candidates.csv")
@@ -804,6 +975,8 @@ build_verification_matrix <- function() {
   utils::write.csv(evidence, file.path(.matrix_dir, "evidence.csv"), row.names = FALSE)
   utils::write.csv(cells, file.path(.matrix_dir, "matrix.csv"), row.names = FALSE)
   utils::write.csv(summary, file.path(.matrix_dir, "summary.csv"), row.names = FALSE)
+  utils::write.csv(.matrix_totals(evidence, cells, summary),
+                   file.path(.matrix_dir, "totals.csv"), row.names = FALSE)
   html <- file.path(.matrix_dir, "VERIFICATION-MATRIX.html")
   writeLines(.matrix_html(evidence, cells, summary, candidates), html, useBytes = TRUE)
   writeLines(.matrix_markdown(evidence, cells, summary),

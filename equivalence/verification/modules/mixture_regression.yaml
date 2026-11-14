@@ -41,6 +41,7 @@ cvs_files:
   - "equivalence/test-regression-packages.R"
   - "equivalence/test-review-1026-oracles.R"
   - "equivalence/test-sas-published.R"
+  - "equivalence/test-simulab-recovery.R"
   - "tests/equivalence/test-astra-core.R"
   - "tests/equivalence/test-audit-extension-repairs.R"
   - "tests/equivalence/test-cluster-robust-cr1.R"

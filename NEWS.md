@@ -1,3 +1,17 @@
+# latents 1.3.4
+
+* No change to the package's functions. A new article, "Verification and
+  validation", sets out how every function is verified against independent
+  implementations (R packages, Mplus, Latent GOLD, Stata, SAS, published
+  analyses) and validated by recovering known parameters from data simulated
+  with simulab, with the coverage of each function.
+* The equivalence suite gains a recovery kit (`equivalence/simulab-recovery/`)
+  that fits every function to replicated simulated data and checks bias and
+  interval coverage, an identity check for the enumeration functions, and a
+  comparison of the enumeration criteria with Latent GOLD. The verification
+  matrix reports, for every function, its agreement with an R package, Mplus
+  and Latent GOLD and its recovery of known parameters, with dataset counts.
+
 # latents 1.3.3
 
 * No change to the package. A new equivalence kit, `equivalence/sas-published/`,

@@ -29,6 +29,7 @@ cvs_files:
   - "equivalence/test-latentgold-step-one.R"
   - "equivalence/test-latentgold-step3-markov.R"
   - "equivalence/test-ml-three-step-runtime.R"
+  - "equivalence/test-simulab-recovery.R"
   - "equivalence/test-tidysem-bch.R"
   - "tests/equivalence/test-audit-ml3-optimizer.R"
   - "tests/equivalence/test-audit-services-fixes.R"

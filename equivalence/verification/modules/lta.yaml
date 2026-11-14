@@ -44,6 +44,7 @@ cvs_files:
   - "equivalence/test-mplus-published.R"
   - "equivalence/test-mplus-ug.R"
   - "equivalence/test-review-1026-oracles.R"
+  - "equivalence/test-simulab-recovery.R"
   - "tests/equivalence/test-lta-acceleration.R"
   - "tests/equivalence/test-lta-general.R"
   - "tests/equivalence/test-review-1026-categorical-r2.R"

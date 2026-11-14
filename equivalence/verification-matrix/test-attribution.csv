@@ -17,7 +17,7 @@ tests/equivalence,test-cluster-robust-cr1.R,.,mixture_regression,sandwich,R pack
 tests/equivalence,test-covariate-measurement.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-covariate-missing.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-covariate-slopes.R,.,multilpa,numDeriv / dense likelihood,independent code
-tests/equivalence,test-covariates.R,.,multilpa,simulation recovery,internal
+tests/equivalence,test-covariates.R,.,multilpa,simulation recovery,simulation recovery
 tests/equivalence,test-cross-level.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-direct-effects.R,.,lpa,Latent GOLD,commercial program
 tests/equivalence,test-enumeration.R,.,enumeration,Kneedle hand-worked and reported values,independent code
@@ -128,6 +128,8 @@ equivalence,test-verification-manifests.R,.,none,CVS manifests,infrastructure
 equivalence,test-depmixs4-standard-errors.R,.,lta,depmixS4,R package
 equivalence,test-direct-effects-search-protocol.R,.,lca,search protocol,internal
 equivalence,test-enumeration-mplus.R,.,enumeration,Mplus,commercial program
+equivalence,test-enumeration-latentgold.R,.,enumeration,Latent GOLD,commercial program
+equivalence,test-enumeration-identity.R,.,enumeration,direct core-function fit,internal
 equivalence,test-external-scripts.R,weights agree with Mplus,lpa,Mplus,commercial program
 equivalence,test-external-scripts.R,tidySEM,three_step,tidySEM classification-error matrix,component check
 equivalence,test-external-scripts.R,Houle,lpa,Houle et al. (2026),published
@@ -137,7 +139,7 @@ equivalence,test-external-scripts.R,ordinal and count,multilpa,Latent GOLD,comme
 equivalence,test-features-direct-effects.R,^every kit case,none,kit provenance,provenance
 equivalence,test-features-direct-effects.R,^the declared searches,lpa,search protocol,internal
 equivalence,test-features-direct-effects.R,^one profile,lpa,stats lm/glm,R package
-equivalence,test-features-direct-effects.R,^the estimated effects,lpa,simulation recovery,internal
+equivalence,test-features-direct-effects.R,^the estimated effects,lpa,simulation recovery,simulation recovery
 equivalence,test-features-direct-effects.R,^an independent implementation,lpa,direct-effects independent implementation,independent code
 equivalence,test-features-direct-effects.R,^every seed of latents,lpa,search protocol,internal
 equivalence,test-features-direct-effects.R,Latent GOLD,lpa,Latent GOLD,commercial program
@@ -270,6 +272,8 @@ equivalence,test-proctraj-published.R,agrees with SAS,growth,SAS PROC TRAJ (Andr
 equivalence,test-sas-published.R,data are the files posted and transcribed,none,kit provenance,provenance
 equivalence,test-sas-published.R,compares every case,none,kit provenance,provenance
 equivalence,test-sas-published.R,agrees with SAS,lca;lpa;enumeration;mixture_regression,SAS PROC LCA (UCLA OARC data analysis example);SAS PROC LCA (UCLA OARC textbook examples of McCutcheon 1987);SAS PROC LCA (SAS and R Example 8.21);SAS/STAT 14.2 PROC FMM (User's Guide Getting Started),commercial program
+equivalence,test-simulab-recovery.R,compares every case,none,kit provenance,provenance
+equivalence,test-simulab-recovery.R,recovers simulab's generating parameters,lca;lpa;multilca;multilpa;lta;mixture_regression;growth;three_step;enumeration;bootstrap_lrt;pool_imputations,simulab (known parameters),simulation recovery
 equivalence,test-mplus-ug.R,listings are the files statmodel.com posted,none,kit provenance,provenance
 equivalence,test-mplus-ug.R,compares every case,none,kit provenance,provenance
 equivalence,test-mplus-ug.R,agrees with Mplus,lca;lpa;mixture_regression;growth;lta,Mplus,commercial program

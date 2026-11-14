@@ -1,0 +1,6 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-enumeration-identity.R","enumeration-identity","every enumerate_lca() candidate is the lca() fit, with compare_models()'s criteria",12,0,FALSE,FALSE,0,4.902,0.013,4.922,12
+"test-enumeration-identity.R","enumeration-identity","every enumerate_lpa() candidate is the lpa() fit, with compare_models()'s criteria",24,0,FALSE,FALSE,0,8.507,0.016,8.536,24
+"test-enumeration-identity.R","enumeration-identity","every enumerate_classes() candidate is the multilpa() fit, with compare_models()'s criteria",48,0,FALSE,FALSE,0,8.973,0.016,9.012,48
+"test-enumeration-latentgold.R","enumeration-latentgold","compare_models() criteria for lca() at one to four classes match Latent GOLD",31,0,FALSE,FALSE,0,0.166,0.001,0.170000000000002,31
+"test-enumeration-latentgold.R","enumeration-latentgold","compare_models() criteria for VVI lpa() at one to four profiles match Latent GOLD",31,0,FALSE,FALSE,0,0.0949999999999989,0.001,0.0990000000000002,31

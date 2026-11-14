@@ -186,6 +186,12 @@ test_that("a report goes to the inbox and to tmp/cvs, or only to tmp/cvs when re
 # Tagging: every assertion carries the reference it is evidence for, by the
 # verification matrix's own rules (verification-matrix/attribution.R).
 
+test_that("simulation recovery is an internal check in CVS, never a source", {
+  mapped <- .cvs_axis("simulab (known parameters)", "simulation recovery")
+  expect_identical(c(mapped$axis, mapped$authority), c("internal", "internal"))
+  expect_true(is.na(mapped$software))
+})
+
 test_that("each kind of reference maps to its CVS axis and authority", {
   mapped <- .cvs_axis(
     c("poLCA", "Latent GOLD", "Mplus", "Mplus 9 Demo (JStats fixtures)", "Stata 19 [SEM] Example 52g (gsem)",

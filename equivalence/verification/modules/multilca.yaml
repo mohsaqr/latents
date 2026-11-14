@@ -31,6 +31,7 @@ cvs_files:
   - "equivalence/test-latentgold.R"
   - "equivalence/test-montecarlo.R"
   - "equivalence/test-mplus-categorical.R"
+  - "equivalence/test-simulab-recovery.R"
   - "tests/equivalence/test-latents-controls.R"
 cvs_test_filter:
   - { file: "equivalence/argument-sweep/modules/twolevel.R", test_name_includes: "multilca-is-multilpa-with-categorical: " }

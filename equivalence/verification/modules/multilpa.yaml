@@ -50,6 +50,7 @@ cvs_files:
   - "equivalence/test-mplus-twolevel-synthetic.R"
   - "equivalence/test-numerical-equivalence.R"
   - "equivalence/test-review-1026-oracles.R"
+  - "equivalence/test-simulab-recovery.R"
   - "equivalence/test-structure-inference.R"
   - "tests/equivalence/test-additive-engine.R"
   - "tests/equivalence/test-additive-families.R"
