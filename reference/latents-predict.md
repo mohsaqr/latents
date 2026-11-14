@@ -73,7 +73,7 @@ predict(object, newdata = NULL, type = c("class", "posterior", "density"), ...)
   `"conditional"` (those averaged with the posterior class
   probabilities) and `"random_effects"` (one row per person and class
   with its posterior probability; their posterior-weighted mean is
-  `lcmm::predictRE()`).
+  [`lcmm::predictRE()`](https://cecileproust-lima.github.io/lcmm/reference/predictRE.html)).
 
 - ...:
 

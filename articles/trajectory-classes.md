@@ -316,7 +316,7 @@ get_results(band_fit, "coefficients")
 #> Class 2  Threshold middle|high     0.100  [ -0.205,  0.404]   .520            
 #> Class 2  Threshold high|top        2.913  [  2.195,  3.630]  <.001            
 #> Class 2  wave                     -0.822  [ -0.951, -0.692]  <.001        0.44
-#> Class 3  Threshold low|middle     -6.248  [-13.838,  1.343]   .107            
+#> Class 3  Threshold low|middle     -6.246  [-13.827,  1.335]   .106            
 #> Class 3  Threshold middle|high    -1.538  [ -2.106, -0.971]  <.001            
 #> Class 3  Threshold high|top        0.802  [  0.403,  1.202]  <.001            
 #> Class 3  wave                      0.241  [  0.137,  0.346]  <.001        1.27

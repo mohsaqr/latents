@@ -470,10 +470,12 @@ The model’s likelihood equals an independently written dense-matrix
 likelihood, and the analytic scores equal numerical derivatives; for the
 multilevel model too, whose likelihood is checked against a dense sum
 over group classes per school, which reduces to the single-level model
-when the group classes coincide. Against `lcmm::hlme()` (Proust-Lima,
-Philipps and Liquet 2017), on configurations with one to three classes,
-shared, proportional and diagonal covariances and membership covariates,
-the likelihoods agree at `hlme`’s own estimates and
+when the group classes coincide. Against
+[`lcmm::hlme()`](https://cecileproust-lima.github.io/lcmm/reference/hlme.html)
+(Proust-Lima, Philipps and Liquet 2017), on configurations with one to
+three classes, shared, proportional and diagonal covariances and
+membership covariates, the likelihoods agree at `hlme`’s own estimates
+and
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
 reaches at least `hlme`’s maximum.
 
