@@ -1,5 +1,24 @@
 # Changelog
 
+## latents 1.3.3
+
+- No change to the package. A new equivalence kit,
+  `equivalence/sas-published/`, reproduces SAS output: PROC LCA as
+  printed by UCLA OARC (its latent class example, with every standard
+  error, and McCutcheon 1987) and in SAS and R Example 8.21, and PROC
+  FMM in the SAS/STAT 14.2 manual (galaxies, yeast cells). SAS becomes a
+  source for
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  and the enumeration functions. PROC LCA’s estimates differ in the
+  fourth decimal where its stopping rule halts EM short of the maximum;
+  `mad-stop.R` reproduces that stop and its printed digits.
+- The Latent GOLD ordinal kit has a test, so its evidence is current,
+  and the growth comparisons with lcmm run against lcmm 2.2.1 (2.2.2
+  returns no subject-specific predictions), so growth counts lcmm as a
+  source again.
+
 ## latents 1.3.2
 
 - No change to the package. The Mplus User’s Guide equivalence kit

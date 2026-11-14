@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,11 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.3" id="latents-133">latents 1.3.3<a class="anchor" aria-label="anchor" href="#latents-133"></a></h2>
+<ul><li>No change to the package. A new equivalence kit, <code>equivalence/sas-published/</code>, reproduces SAS output: PROC LCA as printed by UCLA OARC (its latent class example, with every standard error, and McCutcheon 1987) and in SAS and R Example 8.21, and PROC FMM in the SAS/STAT 14.2 manual (galaxies, yeast cells). SAS becomes a source for <code><a href="../reference/lca.html">lca()</a></code>, <code><a href="../reference/lpa.html">lpa()</a></code>, <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> and the enumeration functions. PROC LCA’s estimates differ in the fourth decimal where its stopping rule halts EM short of the maximum; <code>mad-stop.R</code> reproduces that stop and its printed digits.</li>
+<li>The Latent GOLD ordinal kit has a test, so its evidence is current, and the growth comparisons with lcmm run against lcmm 2.2.1 (2.2.2 returns no subject-specific predictions), so growth counts lcmm as a source again.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.2" id="latents-132">latents 1.3.2<a class="anchor" aria-label="anchor" href="#latents-132"></a></h2>
 <ul><li>No change to the package. The Mplus User’s Guide equivalence kit (<code>equivalence/mplus-ug/</code>, formerly <code>mplus-ug8/</code>) now covers the chapter 7 examples latents fits as well as chapter 8: mixture regression (7.1), latent class models with binary, three-category and nominal indicators (7.3, 7.4, 7.6, 7.7) and latent profile models (7.9, 7.10, 7.22), each estimate compared with its MLR standard error from Mplus’s own output. <code>CATALOGUE.md</code> maps every example of chapters 7, 8 and 10 to the latents function that fits it or the feature it would need.</li>
